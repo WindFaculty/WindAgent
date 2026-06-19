@@ -68,3 +68,16 @@ desktop.ini
 .env
 .env.local
 .env.*.local
+
+# Vendored third-party sources. The README.md + .gitkeep are kept so
+# the directory structure is visible; the actual upstream checkouts
+# (external/Agent-S/) are populated by scripts/setup_agent_s3.ps1 and
+# must NOT be committed.
+external/**/.git/
+external/Agent-S/gui_agents/
+external/Agent-S/agent_s/
+external/Agent-S/setup.py
+external/Agent-S/pyproject.toml
+external/Agent-S/README.md
+external/Agent-S/LICENSE*
+external/Agent-S/.gitignore

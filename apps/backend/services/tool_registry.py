@@ -1,4 +1,4 @@
-"""Tool Registry — metadata + parameter schema for the 9 MVP tools.
+"""Tool Registry — metadata + parameter schema for the 10 MVP tools.
 
 Shape MUST match docs/event_protocol.md §6 + §7.
 

@@ -39,14 +39,60 @@ Status code chuẩn:
 
 Liveness probe. Không phụ thuộc Ollama.
 
-Response 200:
+Response 200 (Phase 11 — `agent_s3` block thêm vào):
 ```json
 {
   "status": "ok",
-  "phase": 1,
-  "service": "windagent-backend"
+  "service": "windagent-backend",
+  "agent_s3": {
+    "mode": "disabled",
+    "enabled": false,
+    "package_available": true,
+    "external_repo_available": false,
+    "config_missing_count": 0
+  }
 }
 ```
+
+> `agent_s3` block là summary rẻ, không chứa secret. Field đầy đủ ở
+> `GET /agent-s3/health` (xem bên dưới).
+
+### GET /agent-s3/health  *(Phase 11)*
+
+Snapshot đầy đủ của Agent-S3 integration. Trả 200 luôn — client tự check
+`mode` để biết khả dụng.
+
+Response 200 (Phase 11 — secret-scrubbed, `SEC-002` closed):
+```json
+{
+  "mode": "disabled" | "package" | "external" | "misconfigured",
+  "enabled": true | false,
+  "source": "package" | "external",
+  "package_available": true | false,
+  "external_repo_available": true | false,
+  "config_missing": ["WINDAGENT_AGENT_S3_PROVIDER", ...],
+  "last_error": null | "<reason>",
+  "config": {
+    "external_path": "D:\\antigaravity_code\\WindAgent\\external\\Agent-S",
+    "provider": "openai",
+    "model": "gpt-5-2025-08-07",
+    "ground_provider": "huggingface",
+    "ground_model": "ui-tars-1.5-7b",
+    "enable_local_env": false,
+    "notes": [],
+    "adapter_initialised": true,
+    "last_actions": []
+  }
+}
+```
+
+> **Quy tắc secret-scrubbing:** response **KHÔNG BAO GIỜ** chứa
+> `model_api_key` / `ground_api_key` / `bearer_token` / `password` /
+> `authorization`. Nếu env vars đó được set, scrub layer thay bằng
+> boolean `*_configured` field (`model_api_key_configured`,
+> `ground_api_key_configured`, ...). Xem
+> `services/agent_s3_health.py::scrub_secrets()`. Test
+> `tests/test_agent_s3_secret_scrubbing.py` pin contract này.
 
 ### GET /models/health  *(Phase 4)*
 

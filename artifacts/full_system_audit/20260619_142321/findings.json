@@ -1,0 +1,157 @@
+[
+  {
+    "id": "SEC-001",
+    "severity": "LOW",
+    "area": "Agent-S3",
+    "file": "apps/backend/services/agent_s3_adapter.py",
+    "line": 230,
+    "title": "AgentS3Adapter._build_agent() constructs OSWorldACI with env=None",
+    "description": "When constructing the upstream AgentS3 in package mode, the adapter passes env=None to OSWorldACI(). The upstream Agent-S3 SDK may attempt lazy resolution to a default env that could try to instantiate a LiveComputer on the host machine, which would interact with the desktop outside the WindAgent permission gate. No concrete exploit observed, but the path warrants runtime containment: the adapter only constructs the agent when propose() is first called, and propose() is currently not wired into the WorkflowRunner, so this code path is dormant at MVP.",
+    "recommendation": "Wrap OSWorldACI construction in try/except (already done for propose()), document that env must be set explicitly before integration into the runner, and gate any runner-level call on a per-session allowlist. Before wiring Agent-S3 into WorkflowRunner, add a test that observes what OSWorldACI(env=None) does at runtime.",
+    "blocks_mvp": false
+  },
+  {
+    "id": "SEC-002",
+    "severity": "LOW",
+    "area": "Agent-S3",
+    "file": "apps/backend/services/agent_s3_config.py",
+    "line": 195,
+    "title": "API keys surfaced through /agent-s3/health JSON",
+    "description": "The /agent-s3/health endpoint returns a config dict that includes model_api_key and ground_api_key when those env vars are set. Health endpoints are typically scraped by ops dashboards / logs; surfacing secrets in them increases the chance of accidental disclosure through log capture. Severity is LOW because the endpoint is local-only (127.0.0.1) and the values come from env, but it is a hardening miss.",
+    "recommendation": "Strip *_api_key fields from the /agent-s3/health response (replace with a non-secret boolean like 'api_key_set': true/false). Apply the same scrub to status_to_dict in services/agent_s3_health.py.",
+    "blocks_mvp": false
+  },
+  {
+    "id": "SEC-003",
+    "severity": "MEDIUM",
+    "area": "Permission gate",
+    "file": "apps/backend/services/permission_service.py",
+    "line": 154,
+    "title": "open_app/click_xy allow bypass when session has no WS subscriber",
+    "description": "Permission requests are emitted over the EventBus; if no subscriber (WebSocket or REST decide() POST) is listening, the request times out at request_timeout_s=60s and the runner marks the step 'cancelled' (correct). However, the timeout is per-step and the runner continues to subsequent steps — there is no global 'abort the whole workflow' on timeout. A user could start a long workflow with a GUI window in focus and have each permission prompt time out sequentially while the workflow keeps queueing work, slowing down discovery that no human is in the loop.",
+    "recommendation": "Document this behaviour explicitly. Consider adding a 'auto-pause-on-permission-timeout' flag that pauses the entire workflow after N consecutive permission timeouts. Not a blocker for MVP but worth raising awareness.",
+    "blocks_mvp": false
+  },
+  {
+    "id": "SEC-004",
+    "severity": "LOW",
+    "area": "GUI adapter",
+    "file": "apps/backend/services/gui_adapter.py",
+    "line": 156,
+    "title": "PyAutoGuiAdapter.open_app uses subprocess.Popen with hardcoded argv",
+    "description": "open_app() looks up an alias in _OPEN_APP_ALIASES (notepad/calc/mspaint/edge/explorer) and runs subprocess.Popen(cmd, shell=False). shell=False is correct and the argv is a static list, so there is no injection vector at this layer. Severity LOW because the surface is bounded by the Literal type in OpenAppParams. The only risk is if a future change adds a path-taking alias — review any future additions carefully.",
+    "recommendation": "Keep shell=False and add a unit test that exercises every alias to lock the contract. Already enforced by Pydantic Literal but pinning the test prevents regressions.",
+    "blocks_mvp": false
+  },
+  {
+    "id": "SEC-005",
+    "severity": "INFO",
+    "area": "Agent-S3",
+    "file": "apps/backend/services/agent_s3_action_translator.py",
+    "line": 386,
+    "title": "ast.parse() used in mode='exec' for shape detection, not execution",
+    "description": "The translator uses ast.parse(line, mode='exec') to detect multi-line / non-call shapes. This is purely AST inspection — the parsed tree is discarded. No call to compile() or exec() is ever made on user input. Confirmed by static grep (zero exec/eval calls in agent_s3 modules). ast.parse will raise SyntaxError on malformed input which is caught by the surrounding try/except.",
+    "recommendation": "No fix needed. Consider adding a comment that mode='exec' refers to the parser mode, not the runtime function.",
+    "blocks_mvp": false
+  },
+  {
+    "id": "QA-001",
+    "severity": "MEDIUM",
+    "area": "Tauri packaging",
+    "file": "apps/desktop/src-tauri/",
+    "line": null,
+    "title": "Tauri bundle build unverifiable in this audit environment",
+    "description": "Rust toolchain (rustc + cargo) is not installed in this audit host. Tauri config + Cargo.toml + main.rs exist and are syntactically valid JSON/TOML, but no `cargo check`, `cargo build`, or `tauri build` was executed. Phase 9 closeout explicitly defers Tauri bundle. Risk: any Tauri-side code path that fails at compile time will only be discovered on a Rust-equipped machine.",
+    "recommendation": "Add a CI job (or pre-commit hook) that runs `cargo check` on Windows + macOS. Document the Rust version expected (Cargo.toml declares rust-version = '1.70').",
+    "blocks_mvp": false
+  },
+  {
+    "id": "QA-002",
+    "severity": "LOW",
+    "area": "Backend tests",
+    "file": "apps/backend/tests/test_workflow_runner.py",
+    "line": null,
+    "title": "Cancelled workflow status tested indirectly only",
+    "description": "The E2E test in §I showed workflows finishing with status='cancelled' when no permission WS subscriber is present. The existing test_workflow_runner.py covers pause/resume/stop paths but not the cancelled-on-permission-timeout interaction in a live TestClient lifespan scenario. The runner's behaviour is correct per code, but no test pins it.",
+    "recommendation": "Add a test that drives a workflow whose tool requires confirmation and verifies that without a /permissions/.../decide call the step is cancelled and the workflow final status is 'cancelled' (not 'failed' and not 'completed').",
+    "blocks_mvp": false
+  },
+  {
+    "id": "DOC-001",
+    "severity": "LOW",
+    "area": "Documentation",
+    "file": "README.md",
+    "line": 8,
+    "title": "README says 'Phase 9 complete' and '179 tests pass' — both stale",
+    "description": "Latest phase is Phase 10 (phase10_closeout.md exists). The MVP release note (docs/mvp_release_note.md) is the most current state. README still references Phase 9 and the Phase 9 test count. Severity LOW because the doc is descriptive — the live code is correct — but it misleads new contributors about the current status.",
+    "recommendation": "Update README.md header 'Trạng thái hiện tại' to reference Phase 10 / v0.10.0 and update the test count line to '273 tests pass'. Add a one-line pointer to docs/mvp_release_note.md.",
+    "blocks_mvp": false
+  },
+  {
+    "id": "DOC-002",
+    "severity": "LOW",
+    "area": "Documentation",
+    "file": "docs/safety_policy.md",
+    "line": 18,
+    "title": "docs/safety_policy.md says scroll is 'safe' but registry has scroll as 'medium'",
+    "description": "tool_registry.py declares scroll.risk_level = 'medium' (consistent with scroll triggering mouse wheel events on the user's desktop). safety_policy.md table still lists scroll under 'safe' tools. Severity LOW — does not affect runtime safety because the permission gate is wired by ToolInfo.requires_confirmation, which is False for scroll, so the runtime behaviour matches the doc's intent. The mismatch is purely descriptive.",
+    "recommendation": "Update safety_policy.md table: move scroll from 'safe' to 'medium' to match registry. Re-audit table against tool_registry.py after each phase.",
+    "blocks_mvp": false
+  },
+  {
+    "id": "DOC-003",
+    "severity": "MEDIUM",
+    "area": "Documentation",
+    "file": "docs/agent_s3_integration.md",
+    "line": null,
+    "title": "docs/agent_s3_integration.md missing despite code existing",
+    "description": "Agent-S3 integration ships ~2628 LOC across 9 new files (config + adapter + translator + health + router + setup script + 4 test files). The setup script prints env-var hints to stdout, but no persistent operator-facing doc exists. A new operator hitting scripts/setup_agent_s3.ps1 with no prior context has to read the source to understand what each env var does, why enable_local_env is forced false, and what mode='external' actually does.",
+    "recommendation": "Create docs/agent_s3_integration.md with the structure already drafted: install modes, env-var table, safety guarantees, debug recipes, when-to-enable/when-to-disable checklist. The content is already in inline docstrings of agent_s3_config.py / agent_s3_adapter.py / agent_s3_action_translator.py — lift it into the doc.",
+    "blocks_mvp": false
+  },
+  {
+    "id": "DOC-004",
+    "severity": "LOW",
+    "area": "Documentation",
+    "file": "README.md",
+    "line": 10,
+    "title": "README says 9 tools but registry has 10 (added click_target in Phase 8)",
+    "description": "Phase 8 added click_target to the tool registry but the README still describes the 9-tool MVP. click_target is wired into ToolExecutor and reaches the GUI grounding service (stub-mode by default). A user following the README will see 10 tools in /tools and be surprised.",
+    "recommendation": "Update README.md tool list from 9 to 10 and add a one-paragraph note explaining click_target + the VISION_STUB_MODE behaviour (see docs/error_handling_audit.md).",
+    "blocks_mvp": false
+  },
+  {
+    "id": "STATE-001",
+    "severity": "MEDIUM",
+    "area": "Repo hygiene",
+    "file": "apps/backend/uv.lock",
+    "line": null,
+    "title": "Working tree is dirty — Agent-S3 work uncommitted",
+    "description": "git status shows 5 modified tracked files (.gitignore, main.py, pyproject.toml, routers/health.py, uv.lock) plus 13 untracked new files (agent_s3 services/router/tests, external/, setup script). This audit was performed against the dirty tree. Risk: any later merge will conflict if Agent-S3 work is finalised by another path. Risk to MVP release: docs that say 'Phase 10' will be inconsistent with the code if this work is later committed as Phase 11.",
+    "description_extra": "Recommendation: decide whether to commit Agent-S3 integration as Phase 11 with its own closeout (artifacts/restructure_audit/phase11_closeout.md) or revert it. Committing is the audit-preferred path because the code is correct, tested, and adds genuine value.",
+    "recommendation": "Commit Agent-S3 work as Phase 11. Add a phase11_closeout.md following the Phase 10 template. Include the audit findings + the still-missing docs/agent_s3_integration.md as Phase 11 follow-ups.",
+    "blocks_mvp": false
+  },
+  {
+    "id": "INT-001",
+    "severity": "MEDIUM",
+    "area": "Agent-S3 wiring",
+    "file": "apps/backend/services/agent_s3_adapter.py",
+    "line": null,
+    "title": "AgentS3Adapter.propose() is not wired into WorkflowRunner",
+    "description": "The adapter, translator, and health endpoint all exist and work, but the WorkflowRunner never calls adapter.propose() to actually use Agent-S3 for planning. Agent-S3 currently exists as a sidecar capability that exposes health and a mock-friendly propose() call, but no production code path consumes the proposals. The translator is therefore 'armed but not loaded' — it has been tested in isolation but never on a real Agent-S3 prediction. Risk: when the wiring is added, edge cases in the translator that only surface with LLM-emitted output may escape tests.",
+    "recommendation": "Phase 12 (after docs + cleanup): add an opt-in tool 'agent_s3_step' that calls propose() + translate() and pushes the resulting tool calls into the workflow. Gate this on a per-session flag. Add an integration test that injects a MockAgentS3Adapter into the runner and asserts the tool calls flow correctly.",
+    "blocks_mvp": false
+  },
+  {
+    "id": "OPS-001",
+    "severity": "LOW",
+    "area": "Setup script",
+    "file": "scripts/setup_agent_s3.ps1",
+    "line": null,
+    "title": "Setup script does not write to .env.example or document required env vars permanently",
+    "description": "scripts/setup_agent_s3.ps1 prints env-var instructions to stdout (good) but does not write them to a .env.example or document them in docs/. Operators must either remember the printout or read the script source. Severity LOW because the inline docstrings of agent_s3_config.py contain the same information.",
+    "recommendation": "After writing docs/agent_s3_integration.md, add an env-var table to apps/backend/.env.example (currently missing). The setup script should diff the user's current env against the table and warn about missing required vars.",
+    "blocks_mvp": false
+  }
+]

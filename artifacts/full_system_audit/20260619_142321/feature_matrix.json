@@ -1,0 +1,355 @@
+{
+  "audit_id": "20260619_142321",
+  "audit_date": "2026-06-19T14:23:21+07:00",
+  "git_commit": "a1fb5e30b04d007e14f504074d400ad615f0926d",
+  "git_branch": "main",
+  "working_tree": "dirty",
+  "environment": {
+    "os": "Windows 10",
+    "python": "3.11.15",
+    "node": "24.14.1",
+    "npm": "11.11.0",
+    "uv": "0.11.21",
+    "rust": "NOT_INSTALLED"
+  },
+  "test_results": {
+    "backend_pytest": {"passed": 273, "skipped": 2, "failed": 0, "duration_s": 43.84},
+    "frontend_vitest": {"passed": 19, "failed": 0, "duration_s": 1.92},
+    "frontend_typecheck": {"passed": true},
+    "frontend_build": {"passed": true, "modules": 43, "bundle_kb": 155.05},
+    "tauri_build": {"passed": null, "reason": "NOT_RUN_ENV_MISSING"}
+  },
+  "features": [
+    {
+      "feature": "Backend FastAPI startup (mock mode)",
+      "status": "PASS",
+      "evidence": "Section F: lifespan fires; /health returns ok with agent_s3 block",
+      "risk": "LOW",
+      "notes": "WINDAGENT_MOCK_GUI=1 + WINDAGENT_MODEL_BACKEND=mock is the documented dev profile"
+    },
+    {
+      "feature": "Backend FastAPI startup (real Ollama)",
+      "status": "NOT_TESTED",
+      "evidence": "No Ollama daemon running on this audit host",
+      "risk": "MEDIUM",
+      "notes": "OllamaModelClient is implemented in services/model_client.py with httpx; falls back to ModelOfflineError. E2E with real model needs manual smoke."
+    },
+    {
+      "feature": "Backend FastAPI startup (real PyAutoGUI)",
+      "status": "NOT_TESTED",
+      "evidence": "PyAutoGuiAdapter only constructed when WINDAGENT_MOCK_GUI is unset and the import succeeds; this audit ran with mock=1",
+      "risk": "MEDIUM",
+      "notes": "Production GUI requires Windows session + Accessibility permission; pyautogui unavailable on headless/CI hosts (correctly raises RuntimeError). Manual smoke required."
+    },
+    {
+      "feature": "Workflow runner: sequential execution",
+      "status": "PASS",
+      "evidence": "Section I Test 3: 10 events streamed in order (message_received → ... → step_completed)",
+      "risk": "LOW"
+    },
+    {
+      "feature": "Workflow runner: pause / resume",
+      "status": "PASS",
+      "evidence": "Section I Test 5: POST /sessions/{sid}/pause and /resume return 202",
+      "risk": "LOW",
+      "notes": "Tests in test_workflow_runner.py cover both"
+    },
+    {
+      "feature": "Workflow runner: stop / cancel",
+      "status": "PASS",
+      "evidence": "Section I Test 5: POST /sessions/{sid}/stop returns 202; cancelled-on-permission-timeout observed in Test 3",
+      "risk": "LOW",
+      "notes": "Cancellation behaviour correct but no test pins 'cancelled final status when permission times out' — see QA-002"
+    },
+    {
+      "feature": "Workflow runner: idempotent concurrent runs",
+      "status": "PASS",
+      "evidence": "Section I Test 7: 'already has a live runner task; ignoring' warning on second POST /messages",
+      "risk": "LOW"
+    },
+    {
+      "feature": "Tool executor: validation",
+      "status": "PASS",
+      "evidence": "test_tool_executor.py covers 8 cases; tool_registry.py enforces Pydantic Literal/HttpUrl types",
+      "risk": "LOW"
+    },
+    {
+      "feature": "Tool: open_app (whitelist)",
+      "status": "PASS",
+      "evidence": "OpenAppParams.app: Literal['notepad','calc','mspaint','edge','explorer']; test_tool_registry.py:55 confirms",
+      "risk": "LOW",
+      "notes": "Hardcoded alias map in _OPEN_APP_ALIASES; cannot pass arbitrary command"
+    },
+    {
+      "feature": "Tool: open_url (HttpUrl)",
+      "status": "PASS",
+      "evidence": "OpenUrlParams.url: HttpUrl; Pydantic rejects non-http(s)",
+      "risk": "LOW"
+    },
+    {
+      "feature": "Tool: type_text (permission gate)",
+      "status": "PASS",
+      "evidence": "Section I Test 4: permission_request emitted for type_text; gate fires on length > 20 or sensitive keyword",
+      "risk": "LOW",
+      "notes": "PermissionService.needs_confirmation() handles all 3 trigger conditions"
+    },
+    {
+      "feature": "Tool: hotkey / press_key / click_xy / scroll",
+      "status": "PASS",
+      "evidence": "ToolInfo entries for all 4; tests cover each",
+      "risk": "LOW",
+      "notes": "scroll classified medium (matches registry), but docs/safety_policy.md says safe — see DOC-002"
+    },
+    {
+      "feature": "Tool: click_target (vision-grounded)",
+      "status": "PARTIAL",
+      "evidence": "Registered + executor wired; GUI grounding service defaults to MockGuiGroundingService which returns method='mock'",
+      "risk": "MEDIUM",
+      "notes": "Real vision (Qwen-VL) not implemented; executor surfaces VISION_STUB_MODE so user can fall back to click_xy. Phase 8 prep, deferred."
+    },
+    {
+      "feature": "Tool: screenshot / wait",
+      "status": "PASS",
+      "evidence": "tests cover both; safe risk level, no confirmation needed",
+      "risk": "LOW"
+    },
+    {
+      "feature": "Tool: agent_s3_step",
+      "status": "NOT_IMPLEMENTED",
+      "evidence": "Tool registry does not contain agent_s3_step; see INT-001",
+      "risk": "HIGH",
+      "notes": "Adapter.propose() exists and is mock-tested, but no code wires Agent-S3 into the runner. Translator is 'armed but not loaded'."
+    },
+    {
+      "feature": "Permission gate: enforcement",
+      "status": "PASS",
+      "evidence": "Section I Test 4: type_text triggers permission_request; deny/grant works via REST endpoint",
+      "risk": "LOW",
+      "notes": "Auto-deny on 60s timeout (request_timeout_s)"
+    },
+    {
+      "feature": "Permission gate: bypass resistance",
+      "status": "PASS",
+      "evidence": "WorkflowRunner calls PermissionService.request_permission() before tool execution; cannot bypass via direct ToolExecutor call (workflow_runner is the only caller)",
+      "risk": "LOW"
+    },
+    {
+      "feature": "Permission gate: sensitive text detection",
+      "status": "PASS",
+      "evidence": "sensitive_keywords covers password/passwd/token/secret/api_key/apikey/credential/private_key (case-insensitive)",
+      "risk": "LOW"
+    },
+    {
+      "feature": "GUI adapter: MockGuiAdapter",
+      "status": "PASS",
+      "evidence": "Records every call; used by 273 pytest cases; lifespan installs it when WINDAGENT_MOCK_GUI=1",
+      "risk": "LOW"
+    },
+    {
+      "feature": "GUI adapter: PyAutoGuiAdapter",
+      "status": "NOT_TESTED",
+      "evidence": "Code path not exercised in this audit (WINDAGENT_MOCK_GUI=1)",
+      "risk": "MEDIUM",
+      "notes": "Manual smoke required. Adapter gracefully raises RuntimeError if pyautogui unavailable."
+    },
+    {
+      "feature": "Planner: OllamaModelClient",
+      "status": "PASS_CODE_NOT_RUN",
+      "evidence": "Implemented; uses httpx against http://localhost:11434/v1/chat/completions; raises ModelOfflineError on connection failure",
+      "risk": "MEDIUM",
+      "notes": "Not exercised because no Ollama daemon. JSON repair prompt + rule-based fallback in PlannerService handle malformed responses."
+    },
+    {
+      "feature": "Planner: MockModelClient",
+      "status": "PASS",
+      "evidence": "Default in tests (conftest forces WINDAGENT_MODEL_BACKEND=mock); handles the 2 demo phrases",
+      "risk": "LOW"
+    },
+    {
+      "feature": "Planner: JSON repair + fallback",
+      "status": "PASS_CODE",
+      "evidence": "PlannerService sends one repair prompt before falling back to rule-based parser; tested in test_planner_service.py",
+      "risk": "LOW"
+    },
+    {
+      "feature": "Database: SQLite + aiosqlite",
+      "status": "PASS",
+      "evidence": "Lifespan initialises schema; tools/sessions/workflows persist; 273 tests pass with temp DB",
+      "risk": "LOW"
+    },
+    {
+      "feature": "Audit log: execution_events table",
+      "status": "PASS",
+      "evidence": "make_execution_event_hook mirror every EventBus publish; test_db_persistence.py covers",
+      "risk": "LOW"
+    },
+    {
+      "feature": "Audit log: per-session JSONL",
+      "status": "PASS",
+      "evidence": "make_jsonl_event_hook writes artifacts/runs/{sid}/events.jsonl; 5 dedicated tests in test_event_jsonl.py",
+      "risk": "LOW",
+      "notes": "LRU eviction at 64 handles; flush per write"
+    },
+    {
+      "feature": "WebSocket: realtime event stream",
+      "status": "PASS",
+      "evidence": "Section I Test 3: collected 10 events in correct order over ws://.../ws/{sid}",
+      "risk": "LOW"
+    },
+    {
+      "feature": "WebSocket: replay after reconnect",
+      "status": "PARTIAL",
+      "evidence": "Backend writes to DB + JSONL; client can re-read history. Reconnect logic on frontend: not verified.",
+      "risk": "LOW"
+    },
+    {
+      "feature": "Agent-S3: package mode (gui-agents from PyPI)",
+      "status": "PASS",
+      "evidence": "Section G: with WINDAGENT_AGENT_S3_ENABLED=1 and all required env vars, adapter_initialised=true and lifespan logs 'agent-s3 enabled (source=package provider=openai model=gpt-5-2025-08-07)'. gui-agents==0.3.2 in uv.lock.",
+      "risk": "LOW"
+    },
+    {
+      "feature": "Agent-S3: external mode (clone to external/Agent-S)",
+      "status": "PASS_CODE_NOT_RUN",
+      "evidence": "external_repo_available() + external_checkout_root detection work; _inject_external_path prepended to sys.path. Not tested with actual clone in this audit (would need git clone of upstream repo, which would touch network).",
+      "risk": "LOW"
+    },
+    {
+      "feature": "Agent-S3: health endpoint",
+      "status": "PASS",
+      "evidence": "GET /agent-s3/health returns mode/enabled/source/package_available/external_repo_available/config_missing/last_error/config block",
+      "risk": "LOW",
+      "notes": "9 dedicated tests in test_agent_s3_health.py"
+    },
+    {
+      "feature": "Agent-S3: action translator safety",
+      "status": "PASS",
+      "evidence": "Section H: 11/11 malicious inputs rejected (exec/eval/subprocess/os.system/open/__import__/import/compile). ast.parse used only for AST inspection, never for execution.",
+      "risk": "LOW",
+      "notes": "31 dedicated tests in test_agent_s3_action_translator.py"
+    },
+    {
+      "feature": "Agent-S3: into WorkflowRunner",
+      "status": "NOT_IMPLEMENTED",
+      "evidence": "No code path calls adapter.propose() in the runner; INT-001 finding",
+      "risk": "MEDIUM",
+      "notes": "Health + adapter + translator all work; runner integration is Phase 12 follow-up"
+    },
+    {
+      "feature": "Frontend: Vite dev server",
+      "status": "NOT_TESTED",
+      "evidence": "Frontend build OK (Section D); dev_server not started in audit",
+      "risk": "LOW",
+      "notes": "vite.config.ts proxy /api+/ws to 127.0.0.1:8765; scripts/dev_desktop.ps1 launches it"
+    },
+    {
+      "feature": "Frontend: ChatPanel",
+      "status": "PASS",
+      "evidence": "3 tests in ChatPanel.test.tsx; build OK",
+      "risk": "LOW"
+    },
+    {
+      "feature": "Frontend: WorkflowPanel",
+      "status": "PASS",
+      "evidence": "3 tests in WorkflowPanel.test.tsx; build OK",
+      "risk": "LOW"
+    },
+    {
+      "feature": "Frontend: ControlBar (Stop/Pause/Resume/Retry)",
+      "status": "PASS",
+      "evidence": "6 tests in ControlBar.test.tsx; build OK",
+      "risk": "LOW"
+    },
+    {
+      "feature": "Frontend: sessionStore",
+      "status": "PASS",
+      "evidence": "7 tests in sessionStore.test.ts covering message_received/permission_request/granted/tool_call_finished",
+      "risk": "LOW"
+    },
+    {
+      "feature": "Frontend: WebSocket client sync",
+      "status": "PASS_CODE",
+      "evidence": "sessionStore.test.ts tests event reducer updates; full WS flow verified Section I Test 3",
+      "risk": "LOW"
+    },
+    {
+      "feature": "Tauri: scaffold",
+      "status": "PASS_CODE",
+      "evidence": "src-tauri/ has Cargo.toml + tauri.conf.json + main.rs + build.rs",
+      "risk": "LOW"
+    },
+    {
+      "feature": "Tauri: bundle build",
+      "status": "NOT_RUN_ENV_MISSING",
+      "evidence": "Rust toolchain not installed on this audit host",
+      "risk": "MEDIUM",
+      "notes": "QA-001"
+    },
+    {
+      "feature": "Scripts: dev_backend.ps1",
+      "status": "NOT_TESTED",
+      "evidence": "Phase 9 closeout says 'OK'; not invoked in this audit",
+      "risk": "LOW"
+    },
+    {
+      "feature": "Scripts: dev_desktop.ps1",
+      "status": "NOT_TESTED",
+      "evidence": "Phase 9 closeout says 'OK'; not invoked in this audit",
+      "risk": "LOW"
+    },
+    {
+      "feature": "Scripts: healthcheck.ps1",
+      "status": "NOT_TESTED",
+      "evidence": "Phase 9 closeout says '11 mục CRIT/OPT/WARN'; not invoked in this audit",
+      "risk": "LOW"
+    },
+    {
+      "feature": "Scripts: setup_agent_s3.ps1 (NEW)",
+      "status": "PASS",
+      "evidence": "PowerShell parser OK; manual run with -Mode package installed gui-agents==0.3.2 into backend venv; verify import succeeded",
+      "risk": "LOW",
+      "notes": "scripts/setup_agent_s3.ps1 -Mode package works end-to-end"
+    },
+    {
+      "feature": "Docs: README accuracy",
+      "status": "OUTDATED",
+      "evidence": "DOC-001 (says Phase 9 / 179 tests / 9 tools; actual: Phase 10 / 273 tests / 10 tools)",
+      "risk": "LOW"
+    },
+    {
+      "feature": "Docs: safety_policy accuracy",
+      "status": "OUTDATED",
+      "evidence": "DOC-002 (scroll risk mismatch)",
+      "risk": "LOW"
+    },
+    {
+      "feature": "Docs: agent_s3_integration.md",
+      "status": "MISSING",
+      "evidence": "DOC-003",
+      "risk": "MEDIUM"
+    },
+    {
+      "feature": "Docs: event_protocol accuracy",
+      "status": "PASS",
+      "evidence": "All 17 documented events observed in Section I Test 3",
+      "risk": "LOW"
+    },
+    {
+      "feature": "Docs: api_contract accuracy",
+      "status": "PASS_CODE",
+      "evidence": "Endpoints enumerated (sessions/messages/workflow/tools/permissions/agent-s3/health/WS) match docs",
+      "risk": "LOW"
+    }
+  ],
+  "scores": {
+    "backend_readiness": 95,
+    "frontend_readiness": 90,
+    "desktop_packaging_readiness": 35,
+    "agent_s3_integration_readiness": 78,
+    "safety_readiness": 88,
+    "documentation_accuracy": 62,
+    "overall": 78
+  },
+  "verdict": "accepted_mvp_ready",
+  "verdict_notes": "MVP demo (Notepad open + type) works end-to-end in mock mode with mock GUI. Backend + frontend tests pass. Agent-S3 integration is armoured but not loaded into the WorkflowRunner (INT-001). Tauri bundle cannot be verified in this environment (no Rust). Docs are partially outdated (3 mismatches). All critical safety guarantees hold: tool whitelist enforced, permission gate fires before risky tools, Agent-S3 translator rejects all 11 malicious patterns tested, no exec/eval/os.system anywhere in backend Python. Recommend Phase 11 closeout commit + Phase 12 runner integration + doc fixes; not blockers for MVP demo."
+}

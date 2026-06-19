@@ -24,7 +24,15 @@ from pathlib import Path
 from fastapi import FastAPI
 
 from db.database import Database
-from routers import health, models, permissions, sessions, tools, workflow, websocket
+from routers import agent_s3, health, models, permissions, sessions, tools, workflow, websocket
+from services.agent_s3_adapter import AgentS3Adapter
+from services.agent_s3_config import (
+    AgentS3Config,
+    config_missing_fields,
+    load_agent_s3_config,
+    package_available,
+    validate_or_raise,
+)
 from services.event_bus import EventBus
 from services.event_hooks import make_execution_event_hook, make_jsonl_event_hook
 from services.gui_adapter import GuiAdapter, make_default_adapter
@@ -198,6 +206,46 @@ async def lifespan(app: FastAPI):
     app.state.workflow_service = workflow_service
     app.state.workflow_runner = runner
 
+    # ---------- Optional: Agent-S3 integration ----------
+    # The backend always loads the Agent-S3 config (cheap; env reads
+    # only) but only constructs the adapter when the integration is
+    # actually usable. This keeps the upstream ``gui_agents`` package
+    # out of the import graph until the operator opts in.
+    agent_s3_config: AgentS3Config = load_agent_s3_config()
+    agent_s3_adapter: AgentS3Adapter | None = None
+    if agent_s3_config.enabled:
+        try:
+            agent_s3_adapter = AgentS3Adapter(agent_s3_config)
+            if agent_s3_adapter.is_available():
+                log.info(
+                    "agent-s3 enabled (source=%s provider=%s model=%s)",
+                    agent_s3_config.source,
+                    agent_s3_config.provider,
+                    agent_s3_config.model,
+                )
+            else:
+                missing = config_missing_fields(agent_s3_config)
+                if missing:
+                    log.warning(
+                        "agent-s3 enabled but config is incomplete: %s",
+                        ", ".join(missing),
+                    )
+                else:
+                    log.warning(
+                        "agent-s3 enabled but unavailable "
+                        "(source=%s, package_available=%s, external_repo=%s)",
+                        agent_s3_config.source,
+                        package_available(),
+                        agent_s3_config.external_checkout_root is not None,
+                    )
+        except Exception:  # noqa: BLE001
+            log.exception("agent-s3 adapter init failed; continuing without it")
+            agent_s3_adapter = None
+    else:
+        log.info("agent-s3 disabled (set WINDAGENT_AGENT_S3_ENABLED=1 to enable)")
+    app.state.agent_s3_config = agent_s3_config
+    app.state.agent_s3_adapter = agent_s3_adapter
+
     log.info("backend ready — db=%s model=%s", DB_URL, MODEL_BACKEND)
     try:
         yield
@@ -225,6 +273,7 @@ app = FastAPI(
 
 # ---------- Routers ----------
 app.include_router(health.router)
+app.include_router(agent_s3.router)
 app.include_router(models.router)
 app.include_router(permissions.router)
 app.include_router(sessions.router)

@@ -5,17 +5,26 @@ local qua Ollama, không gọi API cloud mặc định.
 
 ## Trạng thái hiện tại
 
-**Phase 9 hoàn thành.** MVP đã chạy được end-to-end trên Windows:
+**Phase 11 hoàn thành (v0.10.0 → Phase 11 prep).** MVP đã chạy được
+end-to-end trên Windows:
 
-- Backend FastAPI sidecar (`apps/backend/`) — ổn định, 179 tests pass
+- Backend FastAPI sidecar (`apps/backend/`) — ổn định, **295 tests pass**
+  (273 Phase 10 + 22 Agent-S3 scaffold tests)
 - Frontend React + Vite + Tauri shell (`apps/desktop/`) — Vite dev OK, Tauri bundle defer (cần Rust)
-- SQLite persistence, audit log, Mock GUI cho dev/CI
+- SQLite persistence, audit log (DB + per-session JSONL), Mock GUI cho dev/CI
 - Qwen3 4B planner (mock mode mặc định, Ollama thật khi có model)
 - Workflow runner có Pause/Resume/Stop
-- Safe mode + permission gate
+- Safe mode + permission gate + 10 tool whitelist
 - GUI grounding stub (`click_target` raise `VISION_STUB_MODE` thay vì click bừa)
+- **Agent-S3 integration** (Phase 11): config / adapter / translator /
+  health endpoint / setup script đều ready. WorkflowRunner chưa gọi
+  `propose()` — Agent-S3 là **safe optional scaffold** chứ chưa drive
+  workflow thật. Xem `docs/agent_s3_integration.md` và
+  `artifacts/agent_s3_integration/phase11_closeout_report.md`.
 
-Xem `artifacts/restructure_audit/phase{0..9}_closeout.md` để biết chi tiết từng phase.
+Xem `artifacts/restructure_audit/phase{0..10}_closeout.md` và
+`artifacts/agent_s3_integration/phase11_closeout_report.md` để biết chi
+tiết từng phase.
 
 ## Demo MVP bắt buộc
 
