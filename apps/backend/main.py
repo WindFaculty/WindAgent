@@ -33,6 +33,7 @@ from services.agent_s3_config import (
     package_available,
     validate_or_raise,
 )
+from services.agent_s3_step_executor import AgentS3StepExecutor
 from services.event_bus import EventBus
 from services.event_hooks import make_execution_event_hook, make_jsonl_event_hook
 from services.gui_adapter import GuiAdapter, make_default_adapter
@@ -170,12 +171,28 @@ async def lifespan(app: FastAPI):
     # Build it before the ToolExecutor so it can be injected.
     grounding_service = _build_grounding_service()
 
+    # Build ToolExecutor first (without Agent-S3 wiring). The
+    # AgentS3StepExecutor needs to bind to a GuiAdapter for screenshot,
+    # and it must call back into ToolExecutor._run for the inner mapped
+    # tool. We resolve the circular dependency by:
+    #   1. Construct ToolExecutor (without agent_s3_step_executor).
+    #   2. Construct AgentS3StepExecutor with a closure over ToolExecutor._run.
+    #   3. Re-bind ToolExecutor.agent_s3_step_executor.
     executor = ToolExecutor(
         event_bus=event_bus,
         db=db,
         gui=gui,
         grounding_service=grounding_service,
     )
+
+    # Phase 12: optional Agent-S3 step orchestrator. Only meaningful
+    # when ``agent_s3_config.enabled`` is True AND the adapter was
+    # constructed successfully. We attach the bound executor to the
+    # ToolExecutor AFTER construction so the orchestrator can delegate
+    # the inner mapped-tool call back through the executor's standard
+    # dispatch path.
+    agent_s3_step_executor: AgentS3StepExecutor | None = None
+    # (populated below after agent_s3_adapter is built)
 
     # Phase 4: model client + planner service.
     model_client = _build_model_client()
@@ -245,6 +262,30 @@ async def lifespan(app: FastAPI):
         log.info("agent-s3 disabled (set WINDAGENT_AGENT_S3_ENABLED=1 to enable)")
     app.state.agent_s3_config = agent_s3_config
     app.state.agent_s3_adapter = agent_s3_adapter
+
+    # Phase 12: wire the Agent-S3 step orchestrator now that the
+    # adapter is known. The orchestrator delegates the inner mapped
+    # tool call back through ``executor._run`` so the mapped action
+    # goes through the same Pydantic validation + audit path.
+    if agent_s3_adapter is not None and agent_s3_adapter.is_available():
+        from services.agent_s3_step_executor import AgentS3StepExecutor as _A3SE
+        agent_s3_step_executor = _A3SE(
+            config=agent_s3_config,
+            adapter=agent_s3_adapter,
+            event_bus=event_bus,
+            artifacts_root=artifacts_root,
+            run_mapped_tool=executor._run,  # type: ignore[attr-defined]
+        )
+        # The orchestrator captures screenshots via the GUI adapter.
+        agent_s3_step_executor.bind_gui_for_screenshot(gui)
+        # Inject into ToolExecutor so ``agent_s3_step`` dispatches here.
+        executor._agent_s3_step_executor = agent_s3_step_executor  # type: ignore[attr-defined]
+        log.info(
+            "agent-s3 step executor wired (source=%s provider=%s)",
+            agent_s3_config.source,
+            agent_s3_config.provider,
+        )
+    app.state.agent_s3_step_executor = agent_s3_step_executor
 
     log.info("backend ready — db=%s model=%s", DB_URL, MODEL_BACKEND)
     try:

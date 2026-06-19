@@ -77,6 +77,11 @@ Mọi event stream qua WebSocket đều là JSON object có 3 trường bắt bu
 | `user_resumed` | User bấm Resume | Frontend → Backend → phát lại |
 | `user_stopped` | User bấm Stop | Frontend → Backend → phát lại |
 
+### Nhóm Agent-S3 *(Phase 12)*
+| Event | Khi nào phát | Ai phát |
+|---|---|---|
+| `agent_s3_action_proposed` | Sau khi Agent-S3 propose + WindAgent translate xong (accepted hoặc rejected) | Backend (orchestrator) |
+
 ### Nhóm error
 | Event | Khi nào phát | Ai phát |
 |---|---|---|
@@ -284,6 +289,46 @@ hiện tại chưa phát nhưng contract đã chốt để Phase 10 hardening.
 }
 ```
 `final_status` là một trong: `completed`, `failed`, `cancelled`.
+
+### agent_s3_action_proposed  *(Phase 12)*
+
+Phát ra mỗi lần `agent_s3_step` chạy, sau khi Agent-S3 propose + WindAgent
+translate xong (cả accepted lẫn rejected). Không bao giờ chứa API key,
+raw screenshot bytes, hay secret. Nếu Agent-S3 bị disabled / misconfigured
+thì `tool_call_finished` của `agent_s3_step` sẽ thay thế với error code
+`AGENT_S3_DISABLED` / `AGENT_S3_UNAVAILABLE` — event này chỉ fire khi
+adapter thực sự được gọi.
+
+```json
+{
+  "session_id": "uuid",
+  "step_id": "uuid",
+  "instruction": "Click the OK button if visible",
+  "translated_tool": "click_xy",
+  "translated_params": {"x": 100, "y": 200, "button": "left"},
+  "safety_status": "accepted",
+  "rejection_code": null,
+  "rejected_count": 0,
+  "dry_run": false,
+  "screenshot_path": null
+}
+```
+
+`rejection_code` (khi `safety_status="rejected"`) là một trong:
+
+- `AGENT_S3_DISABLED`
+- `AGENT_S3_ADAPTER_NOT_READY`
+- `AGENT_S3_UNAVAILABLE`
+- `AGENT_S3_PROPOSE_FAILED`
+- `AGENT_S3_PARSE_FAILED`
+- `AGENT_S3_UNSAFE_ACTION`
+- `AGENT_S3_UNSUPPORTED_ACTION`
+- `MAPPED_TOOL_NOT_WHITELISTED`
+- `MAPPED_TOOL_INVALID_PARAMS`
+- `MAPPED_TOOL_EXECUTION_FAILED`
+
+Khi `safety_status="accepted"`, `translated_tool` + `translated_params` có
+giá trị và được echo lại cho UI render.
 
 ## 5. Quy tắc quan trọng
 

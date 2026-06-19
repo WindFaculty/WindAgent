@@ -28,10 +28,15 @@ from schemas.event import (
     ToolCallFinishedData,
     ToolCallStartedData,
 )
+from services.agent_s3_step_executor import AgentS3StepExecutor, AgentS3StepResult
 from services.event_bus import EventBus
 from services.gui_adapter import GuiAdapter
 from services.gui_grounding import GuiGroundingService, GuiPoint
-from services.tool_registry import get_tool, validate_params
+from services.tool_registry import (
+    AgentS3StepParams,
+    get_tool,
+    validate_params,
+)
 
 
 log = logging.getLogger(__name__)
@@ -50,12 +55,14 @@ class ToolExecutor:
         *,
         artifacts_root: Path = DEFAULT_ARTIFACTS_ROOT,
         grounding_service: Optional[GuiGroundingService] = None,
+        agent_s3_step_executor: Optional[AgentS3StepExecutor] = None,
     ) -> None:
         self._bus = event_bus
         self._db = db
         self._gui = gui
         self._artifacts_root = artifacts_root
         self._grounding = grounding_service
+        self._agent_s3_step_executor = agent_s3_step_executor
 
     # ---------- Public API ----------
 
@@ -114,6 +121,18 @@ class ToolExecutor:
                 session_id=session_id,
                 step_id=step_id,
                 params=params,
+                validated=validated,
+            )
+
+        # 4a.5: Phase 12 — `agent_s3_step` is handled by the dedicated
+        # orchestrator. The orchestrator drives Agent-S3 propose ->
+        # translate -> mapped tool execute. We pass `self._run` as the
+        # inner-tool callback so the mapped action goes through the
+        # exact same path as a hand-authored step.
+        if info.name == "agent_s3_step":
+            return await self._execute_agent_s3_step(
+                session_id=session_id,
+                step_id=step_id,
                 validated=validated,
             )
 
@@ -368,6 +387,105 @@ class ToolExecutor:
                     f"hãy nhập tọa độ hoặc dùng click_xy với x={point.x}, y={point.y}."
                 ),
                 code="VISION_STUB_MODE",
+            ).model_dump(mode="json"),
+            duration_ms=duration_ms,
+        )
+
+    # ---------- Phase 12: agent_s3_step (Agent-S3 wire) ----------
+
+    async def _execute_agent_s3_step(
+        self,
+        *,
+        session_id: UUID,
+        step_id: Optional[UUID],
+        validated: AgentS3StepParams,
+    ) -> Dict[str, Any]:
+        """Delegate ``agent_s3_step`` to the Agent-S3 orchestrator.
+
+        Two failure modes:
+
+        1. ``self._agent_s3_step_executor is None`` — lifespan didn't
+           wire Agent-S3 at all (most common: integration is disabled).
+           Fail with ``AGENT_S3_DISABLED`` so the user gets a clear
+           message instead of a silent crash.
+        2. ``_agent_s3_step_executor.execute(...)`` raises — propagate
+           as a normal tool failure with the stacktrace preserved.
+        """
+        start = time.perf_counter()
+        if self._agent_s3_step_executor is None:
+            duration_ms = int((time.perf_counter() - start) * 1000)
+            return await self._emit_and_persist(
+                session_id=session_id,
+                step_id=step_id,
+                tool_name="agent_s3_step",
+                params=validated.model_dump(mode="json"),
+                status="failed",
+                output=None,
+                error=StepErrorInfo(
+                    type="agent_s3_not_initialised",
+                    message=(
+                        "Agent-S3 orchestrator is not wired into this "
+                        "ToolExecutor. Set WINDAGENT_AGENT_S3_ENABLED=1 "
+                        "and restart the backend."
+                    ),
+                    code="AGENT_S3_DISABLED",
+                ).model_dump(mode="json"),
+                duration_ms=duration_ms,
+            )
+
+        try:
+            result: AgentS3StepResult = (
+                await self._agent_s3_step_executor.execute(
+                    session_id=session_id,
+                    step_id=step_id if step_id is not None else UUID(int=0),
+                    params=validated,
+                )
+            )
+        except Exception as exc:  # noqa: BLE001
+            duration_ms = int((time.perf_counter() - start) * 1000)
+            log.exception("agent_s3_step: orchestrator raised")
+            return await self._emit_and_persist(
+                session_id=session_id,
+                step_id=step_id,
+                tool_name="agent_s3_step",
+                params=validated.model_dump(mode="json"),
+                status="failed",
+                output=None,
+                error=StepErrorInfo(
+                    type=type(exc).__name__,
+                    message=str(exc),
+                    code="AGENT_S3_ORCHESTRATOR_RAISED",
+                ).model_dump(mode="json"),
+                duration_ms=duration_ms,
+                traceback_text=traceback.format_exc(),
+            )
+
+        # Translate orchestrator result into the standard emit+persist
+        # shape the runner expects.
+        duration_ms = int((time.perf_counter() - start) * 1000)
+        output = result.to_output_dict()
+        if result.status == "success":
+            return await self._emit_and_persist(
+                session_id=session_id,
+                step_id=step_id,
+                tool_name="agent_s3_step",
+                params=validated.model_dump(mode="json"),
+                status="success",
+                output=output,
+                error=None,
+                duration_ms=duration_ms,
+            )
+        return await self._emit_and_persist(
+            session_id=session_id,
+            step_id=step_id,
+            tool_name="agent_s3_step",
+            params=validated.model_dump(mode="json"),
+            status="failed",
+            output=output,
+            error=StepErrorInfo(
+                type=result.error_type or "agent_s3_error",
+                message=result.error_message or "agent_s3_step failed",
+                code=result.error_code or "AGENT_S3_FAILED",
             ).model_dump(mode="json"),
             duration_ms=duration_ms,
         )

@@ -14,11 +14,12 @@ def test_list_tools_returns_mvp_whitelisted(client):
     resp = client.get("/tools")
     assert resp.status_code == 200
     names = resp.json()
-    # Phase 8 added click_target (vision-grounded click); 10 tools
-    # total in the MVP whitelist.
+    # Phase 8 added click_target (vision-grounded click); Phase 12
+    # added agent_s3_step. 11 tools total in the MVP whitelist.
     assert set(names) == {
         "open_app", "open_url", "type_text", "hotkey", "press_key",
         "click_xy", "click_target", "scroll", "screenshot", "wait",
+        "agent_s3_step",
     }
 
 

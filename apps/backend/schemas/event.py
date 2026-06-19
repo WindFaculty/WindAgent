@@ -29,6 +29,7 @@ EventName = Literal[
     "permission_request",
     "permission_granted",
     "permission_denied",
+    "agent_s3_action_proposed",
     "user_paused",
     "user_resumed",
     "user_stopped",
@@ -172,3 +173,24 @@ class SessionFinishedData(BaseModel):
     workflow_id: Optional[UUID] = None
     final_status: Literal["completed", "failed", "cancelled"]
     total_duration_ms: int
+
+
+class AgentS3ActionProposedData(BaseModel):
+    """Phase 12 — emitted once per ``agent_s3_step`` invocation,
+    after Agent-S3 proposes + WindAgent translates the raw action.
+
+    Carries the **decision** (accepted vs rejected) plus the
+    translated tool + params (or rejection reason). Never includes
+    API keys, raw screenshot bytes, or secrets.
+    """
+
+    session_id: UUID
+    step_id: UUID
+    instruction: str
+    translated_tool: Optional[str] = None
+    translated_params: Optional[Dict[str, Any]] = None
+    safety_status: Literal["accepted", "rejected"]
+    rejection_code: Optional[str] = None
+    rejected_count: int = 0
+    dry_run: bool = False
+    screenshot_path: Optional[str] = None

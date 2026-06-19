@@ -142,10 +142,32 @@ Các safety guarantee bắt buộc:
    local coding sandbox (exec arbitrary Python + bash) bị cấm ở config
    layer bất kể env. Nếu user set 1, config layer set False + ghi note
    vào `status.extra.notes` để debug dễ.
-7. **WorkflowRunner chưa gọi `propose()`.** Agent-S3 hiện tại là **safe
+7. **WorkflowRunner không gọi `propose()`.** Agent-S3 hiện tại là **safe
    optional scaffold** — code + tests + config + health endpoint ready,
    nhưng runner không invoke adapter. Việc wire vào runner là Phase 12
    follow-up (finding `INT-001`) và phải giữ nguyên 7 guarantee trên.
+8. **`agent_s3_step` chỉ chạy đúng 1 action mỗi lần** (Phase 12).
+   `AgentS3StepExecutor` (`services/agent_s3_step_executor.py`) đi qua
+   toàn bộ safety pipeline:
+   1. Pre-flight: enabled + adapter available.
+   2. Capture screenshot (optional, best-effort).
+   3. `adapter.propose()` — async; nếu adapter báo `last_error` → fail
+      với `AGENT_S3_PROPOSE_FAILED`; nếu trả None mà không có last_error
+      → `AGENT_S3_UNAVAILABLE`.
+   4. `translator.translate(raw_actions)` — deny-pattern reject → fail
+      `AGENT_S3_UNSAFE_ACTION`; no-match → fail `AGENT_S3_UNSUPPORTED_ACTION`.
+   5. **Defence-in-depth**: re-validate mapped tool against
+      `AGENT_S3_MAPPED_TOOL_ALLOWLIST` =
+      `{click_xy, type_text, hotkey, press_key, scroll, wait, screenshot}`.
+      Lệch → fail `MAPPED_TOOL_NOT_WHITELISTED`.
+   6. `validate_params(mapped.tool_name, mapped.params)` — Pydantic.
+      Lỗi → fail `MAPPED_TOOL_INVALID_PARAMS`.
+   7. Emit `agent_s3_action_proposed` event (audit trail).
+   8. Nếu `dry_run=True` → return early, KHÔNG gọi GUI.
+   9. Nếu `dry_run=False` → `asyncio.to_thread(self._run_mapped_tool, ...)`
+      delegate về `ToolExecutor._run` để mapped action chạy qua cùng
+      Pydantic + permission gate + audit path như tool thường.
+   10. Inner raise → fail `MAPPED_TOOL_EXECUTION_FAILED`.
 
 Xem `docs/agent_s3_integration.md` để biết chi tiết cài đặt, env vars,
 và troubleshooting.

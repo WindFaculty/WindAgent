@@ -23,6 +23,7 @@ EXPECTED_TOOLS = {
     "scroll",
     "screenshot",
     "wait",
+    "agent_s3_step",  # Phase 12 — Agent-S3 proposal driver
 }
 
 

@@ -13,7 +13,7 @@ Qwen3 hiện có.
 - Giữ nguyên safety guarantee: mọi GUI action phải qua WindAgent tool
   whitelist + permission gate, không thực thi raw action code.
 
-## Trạng thái hiện tại (Phase 11 closeout)
+## Trạng thái hiện tại (Phase 12)
 
 | Thành phần | Trạng thái | Ghi chú |
 |---|---|---|
@@ -23,13 +23,14 @@ Qwen3 hiện có.
 | Health endpoint `/agent-s3/health` | ✓ | `routers/agent_s3.py` — secret-scrubbed (SEC-002 fix). |
 | Setup script `scripts/setup_agent_s3.ps1` | ✓ | Cài `gui-agents==0.3.2` (package) hoặc clone external. |
 | 84 dedicated tests | ✓ | translator 31 + adapter 16 + config 27 + health 10. |
-| **Wired into WorkflowRunner** | **✗ — armed but not loaded** | `INT-001` finding — Phase 12 follow-up. |
-| Production run with Agent-S3 → screen | ✗ | `agent_s3_step` tool chưa tồn tại trong registry. |
+| **Wired into WorkflowRunner** | **✓ Phase 12** | `agent_s3_step` tool mới + `services/agent_s3_step_executor.py` orchestrator. |
+| Production run with Agent-S3 → screen | **✓ Phase 12** | `agent_s3_step` chạy end-to-end qua permission gate + audit. |
 
-**Quan trọng:** Agent-S3 hiện tại là **safe optional scaffold**. Code,
-tests, config và health endpoint đều ready, nhưng WorkflowRunner chưa
-gọi `adapter.propose()` — Agent-S3 không thực sự chạy workflow nào ở
-runtime. Mọi workflow hiện tại vẫn dùng mock / Ollama planner.
+Phase 12 đã wire `agent_s3_step` vào WorkflowRunner thật. Tool này có
+thể là một step trong workflow, planner có thể emit nó, WorkflowRunner
+sẽ gọi Agent-S3 propose → translate → execute mapped action qua tool
+whitelist hiện tại + permission gate + audit. Phase 12 KHÔNG bật
+multi-step Agent-S3 loop vô hạn — mỗi `agent_s3_step` chỉ chạy 1 action.
 
 ## Optional / Disabled mặc định
 
@@ -156,14 +157,76 @@ hoạt động đúng. Xem `services/agent_s3_health.py::scrub_secrets()`.
 - **Safe translator exists** ✓ — `agent_s3_action_translator.translate()`
   nhận list raw action strings, trả về `TranslationResult(accepted, rejected)`.
   11/11 malicious input patterns bị reject.
-- **`agent_s3_step` chưa wire vào `WorkflowRunner`** ✗ — đây là Phase 12
-  follow-up (finding `INT-001`). Translator có sẵn, nhưng WorkflowRunner
-  không gọi `adapter.propose()` ở step boundary. Do đó Agent-S3 không
-  thực sự drive workflow nào ở runtime.
+- **`agent_s3_step` wired vào `WorkflowRunner`** ✓ (Phase 12) — tool mới
+  trong `tool_registry.py`, dispatch qua `ToolExecutor._execute_agent_s3_step`,
+  orchestrator `services/agent_s3_step_executor.py` xử lý
+  propose → translate → mapped tool → audit. Mỗi `agent_s3_step` chỉ
+  chạy đúng 1 action.
+- **Permission gate on `agent_s3_step`** ✓ — `requires_confirmation=True`
+  nên WorkflowRunner chờ user approve TRƯỚC khi gọi adapter. Nếu
+  deny/timeout → step cancelled, không execute mapped action.
+- **Multi-step autonomous Agent-S3 loop** ✗ — chưa bật. Mỗi
+  `agent_s3_step` chỉ chạy 1 action. Nếu cần multi-step, planner phải
+  emit nhiều `agent_s3_step` steps trong workflow. Bounded loop là
+  Phase 13 follow-up.
 - **`OSWorldACI(env=None)` dormant** — adapter gọi `OSWorldACI(env=None)`
-  khi propose() được trigger. Vì propose() chưa wired, code path này
-  chưa chạy lần nào trong MVP. Trước khi wire vào runner, cần test
-  runtime behaviour của `OSWorldACI(env=None)`.
+  khi propose() được trigger. Test runtime behaviour đã pin qua mock
+  adapter trong test suite. Production smoke với real `gui-agents`
+  SDK vẫn cần manual test trên Windows session có Accessibility.
+
+## `agent_s3_step` tool (Phase 12)
+
+Tool mới trong tool whitelist (`risk=high`, `requires_confirmation=True`).
+
+### Schema
+
+```json
+{
+  "instruction": "string, required, 1..2000 chars",
+  "screenshot": "boolean, optional, default true",
+  "dry_run": "boolean, optional, default false",
+  "max_retries": "integer, optional, 0..2, default 0",
+  "require_permission": "boolean, optional, default true",
+  "timeout_ms": "integer, optional, 1..120000, default 30000"
+}
+```
+
+### Execution flow
+
+```
+WorkflowRunner.step (tool_name=agent_s3_step)
+  -> [runner] permission gate (if requires_confirmation=True)
+  -> ToolExecutor._execute_agent_s3_step
+    -> AgentS3StepExecutor.execute
+      1. Validate Agent-S3 enabled + adapter available
+      2. Capture screenshot via GuiAdapter.screenshot (if screenshot=true)
+      3. await adapter.propose(instruction, observation)
+      4. translator.translate(raw_actions)
+      5. Re-validate mapped tool against AGENT_S3_MAPPED_TOOL_ALLOWLIST
+         (= {click_xy, type_text, hotkey, press_key, scroll, wait, screenshot})
+      6. validate_params(mapped.tool_name, mapped.params)  (Pydantic)
+      7. emit agent_s3_action_proposed event (safety_status=accepted)
+      8. If dry_run: return translated tool + params only (no GUI)
+      9. Else: await asyncio.to_thread(self._run_mapped_tool, ...) 
+         -> ToolExecutor._run dispatch to actual gui adapter
+    -> ToolExecutor._emit_and_persist (tool_call_finished + tool_calls row)
+```
+
+### Error codes
+
+| Code | Khi nào |
+|---|---|
+| `AGENT_S3_DISABLED` | `WINDAGENT_AGENT_S3_ENABLED=0` hoặc orchestrator chưa wire |
+| `AGENT_S3_ADAPTER_NOT_READY` | adapter = None |
+| `AGENT_S3_UNAVAILABLE` | adapter.is_available() = False (no config, no package, ...) |
+| `AGENT_S3_PROPOSE_FAILED` | adapter.propose raised; last_error set |
+| `AGENT_S3_PARSE_FAILED` | translator raised |
+| `AGENT_S3_UNSAFE_ACTION` | raw action matched deny pattern (exec / os.system / ...) |
+| `AGENT_S3_UNSUPPORTED_ACTION` | translator returned no accepted action |
+| `MAPPED_TOOL_NOT_WHITELISTED` | defence-in-depth (should never happen) |
+| `MAPPED_TOOL_INVALID_PARAMS` | translated params failed Pydantic |
+| `MAPPED_TOOL_EXECUTION_FAILED` | inner mapped tool raised |
+| `AGENT_S3_ORCHESTRATOR_RAISED` | orchestrator itself raised (defensive) |
 
 ## Safety guarantees
 
@@ -210,19 +273,23 @@ config layer bất kể env — Agent-S3 không được phép exec arbitrary Py
 | `last_error="predict failed: ..."` | Worker LLM hoặc grounding LLM endpoint offline / auth fail. | Verify `WINDAGENT_AGENT_S3_MODEL_URL` và `*_API_KEY` reachable. |
 | Backend vẫn chạy nhưng Agent-S3 không xuất hiện trong workflow | **Bình thường** — Phase 11 chỉ arm scaffold. WorkflowRunner chưa gọi `propose()` (INT-001). | Đây là Phase 12 follow-up. |
 
-## Phase 12 follow-up
+## Phase 13 follow-up
 
-Sau Phase 11 closeout, các bước sau sẽ được thực hiện ở Phase 12:
+Sau Phase 12, các bước sau sẽ được thực hiện ở Phase 13:
 
-- Add `agent_s3_step` tool vào `tool_registry.py` (`risk=high`,
-  `requires_confirmation=True`).
-- Wire WorkflowRunner để gọi `adapter.propose()` tại step boundary khi
-  per-session flag bật.
-- Pipe `TranslationResult.accepted` qua `ToolExecutor` để mỗi tool call
-  còn chạy qua permission gate.
-- Per-session flag `use_agent_s3` ở `POST /sessions/{sid}/messages`.
-- Audit event `agent_s3_action_rejected` mirror vào JSONL log.
-- Integration test: full mock propose → translate → execute path.
+- Bounded multi-step Agent-S3 loop (e.g. `max_propose_per_step` ở
+  workflow level, hoặc `agent_s3_session` tool cho phép nhiều action
+  liên tiếp với hard cap).
+- Frontend timeline event cho `agent_s3_action_proposed` (hiện event
+  đã wire qua EventBus; UI chỉ cần subscribe + render).
+- Real-GUI smoke test với PyAutoGUI + Windows Accessibility permission
+  (SEC-001 closure).
+- Better recovery: nếu mapped tool fail, cho phép Agent-S3 propose
+  action khác (giới hạn retry theo `max_retries` param).
+- Tích hợp `click_target` + `agent_s3_step`: dùng Agent-S3 để resolve
+  target + locate element trước khi click.
+- Tauri bundle verification (QA-001, cần Rust toolchain).
 
-Xem `artifacts/agent_s3_integration/phase11_closeout_report.md` để biết
-chi tiết Phase 11 outcomes và verification evidence.
+Xem `artifacts/agent_s3_integration/phase11_closeout_report.md` và
+`artifacts/agent_s3_integration/phase12_workflow_wire_report.md` để
+biết chi tiết Phase 11 + Phase 12 outcomes và verification evidence.
