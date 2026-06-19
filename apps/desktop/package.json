@@ -1,0 +1,32 @@
+{
+  "name": "windagent-desktop",
+  "version": "0.6.0",
+  "private": true,
+  "description": "WindAgent Tauri + React desktop app (Phase 6)",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "type-check": "tsc -b --noEmit",
+    "tauri": "tauri",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.0.0",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "happy-dom": "^20.10.6",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.11",
+    "vitest": "^4.1.9"
+  }
+}

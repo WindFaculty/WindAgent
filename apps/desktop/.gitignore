@@ -1,0 +1,15 @@
+# Build artifacts
+dist/
+node_modules/
+src-tauri/target/
+
+# Vite cache
+.vite/
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*

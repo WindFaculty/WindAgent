@@ -1,0 +1,70 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+venv/
+.venv/
+env/
+.env
+
+# Node / Tauri / React
+node_modules/
+dist/
+build/
+out/
+.vite/
+*.log
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Tauri
+src-tauri/target/
+src-tauri/gen/
+src-tauri/Cargo.lock
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Runtime artifacts — per-session JSONL audit logs.
+# Both locations are runtime output:
+#   - artifacts/runs/{session_id}/events.jsonl  (Phase 10 default)
+#   - apps/artifacts/runs/{session_id}/events.jsonl  (legacy, pre-Phase 10)
+# Keep the sample workflow as a reference, but never commit live session data.
+artifacts/runs/*
+apps/artifacts/runs/*
+!artifacts/runs/.gitkeep
+!artifacts/runs/sample_workflow.json
+!apps/artifacts/runs/.gitkeep
+
+# Logs
+logs/
+
+# SQLite (created at runtime by Phase 2)
+*.db
+*.sqlite
+*.sqlite3
+apps/backend/windagent.db
+apps/backend/windagent.db-journal
+
+# OS
+desktop.ini
+
+# Environment secrets (if any)
+.env
+.env.local
+.env.*.local
