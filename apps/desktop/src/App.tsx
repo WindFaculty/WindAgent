@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Dashboard, type MetricState } from "./pages/Dashboard";
 import { AgentWorkspace } from "./pages/AgentWorkspace";
 import { Agents } from "./pages/Agents";
@@ -8,6 +8,7 @@ import { Workflows } from "./pages/Workflows";
 import { Browser } from "./pages/Browser";
 import { Files } from "./pages/Files";
 import { Router } from "./pages/Router";
+import { Settings } from "./pages/Settings";
 
 interface ChecklistState {
   repoDiscovered: "success" | "pending" | "running";
@@ -33,14 +34,37 @@ export function App() {
     cpu: 18,
     ram: 61,
     ramGb: 9.7,
+    ramTotalGb: 16,
     gpu: 28,
+    gpuName: "NVIDIA GPU",
     vram: 42,
     vramGb: 6.7,
+    vramTotalGb: 16,
     cpuHistory: [15, 18, 16, 21, 19, 18],
     ramHistory: [60, 61, 61, 61, 61, 61],
     gpuHistory: [25, 30, 26, 29, 27, 28],
     vramHistory: [42, 42, 42, 42, 42, 42],
   });
+
+  // Whether we are running inside Tauri (true) or plain browser (false)
+  const isTauri = useRef<boolean>(
+    typeof (window as any).__TAURI__ !== "undefined" ||
+    typeof (window as any).__TAURI_INTERNALS__ !== "undefined" ||
+    (window as any).navigator?.userAgent?.includes("Tauri")
+  );
+  
+  // Debug: log Tauri detection
+  useEffect(() => {
+    console.log('[App] Tauri detection:', {
+      hasTauri: typeof (window as any).__TAURI__ !== "undefined",
+      hasTauriInternals: typeof (window as any).__TAURI_INTERNALS__ !== "undefined",
+      tauriObj: (window as any).__TAURI__,
+      tauriInternals: (window as any).__TAURI_INTERNALS__,
+      isTauriRef: isTauri.current,
+      userAgent: navigator.userAgent,
+      href: window.location.href
+    });
+  }, []);
 
   // Workspace simulation flow variables
   const [simulationStatus, setSimulationStatus] = useState<
@@ -116,33 +140,77 @@ export function App() {
 
   // Sync metrics changes on interval
   useEffect(() => {
-    const interval = setInterval(() => {
-      setMetrics((prev) => {
-        const nextCpu = Math.max(10, Math.min(90, Math.round(prev.cpu + (Math.random() * 6 - 3))));
-        const nextRam = Math.max(50, Math.min(85, Math.round(prev.ram + (Math.random() * 2 - 1))));
-        const nextRamGb = parseFloat(((nextRam / 100) * 16).toFixed(1));
-        const nextGpu = Math.max(15, Math.min(95, Math.round(prev.gpu + (Math.random() * 8 - 4))));
-        const nextVram = Math.max(35, Math.min(75, Math.round(prev.vram + (Math.random() * 2 - 1))));
-        const nextVramGb = parseFloat(((nextVram / 100) * 16).toFixed(1));
+    const updateHistory = (history: number[], nextVal: number) => {
+      return [...history.slice(1), nextVal];
+    };
 
-        const updateHistory = (history: number[], nextVal: number) => {
-          return [...history.slice(1), nextVal];
-        };
+    const fetchMetrics = async () => {
+      if (isTauri.current) {
+        // ── Real metrics from Tauri / Rust backend ────────────────────────
+        try {
+          const { invoke } = await import("@tauri-apps/api/core");
+          const m = await invoke<{
+            cpu: number;
+            ram: number;
+            ram_gb: number;
+            ram_total_gb: number;
+            gpu: number;
+            gpu_name: string;
+            vram: number;
+            vram_gb: number;
+            vram_total_gb: number;
+          }>("get_system_metrics");
 
-        return {
-          cpu: nextCpu,
-          ram: nextRam,
-          ramGb: nextRamGb,
-          gpu: nextGpu,
-          vram: nextVram,
-          vramGb: nextVramGb,
-          cpuHistory: updateHistory(prev.cpuHistory, nextCpu),
-          ramHistory: updateHistory(prev.ramHistory, nextRam),
-          gpuHistory: updateHistory(prev.gpuHistory, nextGpu),
-          vramHistory: updateHistory(prev.vramHistory, nextVram),
-        };
-      });
-    }, 2000);
+          setMetrics((prev) => ({
+            cpu: Math.round(m.cpu),
+            ram: Math.round(m.ram),
+            ramGb: m.ram_gb,
+            ramTotalGb: m.ram_total_gb,
+            gpu: Math.round(m.gpu),
+            gpuName: m.gpu_name,
+            vram: Math.round(m.vram),
+            vramGb: m.vram_gb,
+            vramTotalGb: m.vram_total_gb,
+            cpuHistory: updateHistory(prev.cpuHistory, Math.round(m.cpu)),
+            ramHistory: updateHistory(prev.ramHistory, Math.round(m.ram)),
+            gpuHistory: updateHistory(prev.gpuHistory, Math.round(m.gpu)),
+            vramHistory: updateHistory(prev.vramHistory, Math.round(m.vram)),
+          }));
+        } catch (err) {
+          console.warn("[metrics] Tauri invoke failed:", err);
+        }
+      } else {
+        // ── Fallback: random mock (plain browser / Vite dev) ──────────────
+        setMetrics((prev) => {
+          const nextCpu = Math.max(10, Math.min(90, Math.round(prev.cpu + (Math.random() * 6 - 3))));
+          const nextRam = Math.max(50, Math.min(85, Math.round(prev.ram + (Math.random() * 2 - 1))));
+          const nextRamGb = parseFloat(((nextRam / 100) * 16).toFixed(1));
+          const nextGpu = Math.max(15, Math.min(95, Math.round(prev.gpu + (Math.random() * 8 - 4))));
+          const nextVram = Math.max(35, Math.min(75, Math.round(prev.vram + (Math.random() * 2 - 1))));
+          const nextVramGb = parseFloat(((nextVram / 100) * 16).toFixed(1));
+
+          return {
+            cpu: nextCpu,
+            ram: nextRam,
+            ramGb: nextRamGb,
+            ramTotalGb: prev.ramTotalGb,
+            gpu: nextGpu,
+            gpuName: prev.gpuName,
+            vram: nextVram,
+            vramGb: nextVramGb,
+            vramTotalGb: prev.vramTotalGb,
+            cpuHistory: updateHistory(prev.cpuHistory, nextCpu),
+            ramHistory: updateHistory(prev.ramHistory, nextRam),
+            gpuHistory: updateHistory(prev.gpuHistory, nextGpu),
+            vramHistory: updateHistory(prev.vramHistory, nextVram),
+          };
+        });
+      }
+    };
+
+    // Initial fetch immediately, then every 2 s
+    fetchMetrics();
+    const interval = setInterval(fetchMetrics, 2000);
     return () => clearInterval(interval);
   }, []);
 
@@ -388,14 +456,14 @@ export function App() {
           </div>
           <div className="metric-item">
             <span>GPU</span>
-            <span className="metric-label">{metrics.gpu}%</span>
+            <span className="metric-label" title={metrics.gpuName}>{metrics.gpu}%</span>
             <svg className="metric-sparkline gpu">
               <polyline points={renderSparkline(metrics.gpuHistory, 100)} />
             </svg>
           </div>
           <div className="metric-item">
             <span>VRAM</span>
-            <span className="metric-label">{metrics.vram}% {metrics.vramGb} / 16 GB</span>
+            <span className="metric-label">{metrics.vram}% {metrics.vramGb} / {metrics.vramTotalGb} GB</span>
             <svg className="metric-sparkline vram">
               <polyline points={renderSparkline(metrics.vramHistory, 100)} />
             </svg>
@@ -563,6 +631,8 @@ export function App() {
           <Files />
         ) : activeTab === "router" ? (
           <Router />
+        ) : activeTab === "settings" ? (
+          <Settings />
         ) : activeTab === "workspace" ? (
           <AgentWorkspace
             chatMessages={chatMessages}

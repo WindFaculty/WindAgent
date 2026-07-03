@@ -4,9 +4,15 @@ export interface MetricState {
   cpu: number;
   ram: number;
   ramGb: number;
+  /** Total RAM in GB (from real hardware or 16 for mock) */
+  ramTotalGb: number;
   gpu: number;
+  /** GPU display name, e.g. "NVIDIA GeForce RTX 3060" */
+  gpuName: string;
   vram: number;
   vramGb: number;
+  /** Total VRAM in GB */
+  vramTotalGb: number;
   cpuHistory: number[];
   ramHistory: number[];
   gpuHistory: number[];
@@ -208,7 +214,7 @@ export function Dashboard({
           <div className="m-card-body" style={{ alignItems: 'stretch', flexDirection: 'column', gap: '8px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
               <span className="m-card-value">{metrics.ram}%</span>
-              <span className="m-card-subtext" style={{ fontSize: '0.68rem' }}>{metrics.ramGb} / 16 GB</span>
+              <span className="m-card-subtext" style={{ fontSize: '0.68rem' }}>{metrics.ramGb} / {metrics.ramTotalGb} GB</span>
             </div>
             <div className="progress-bar-bg" style={{ height: '5px', marginTop: '2px' }}>
               <div className="progress-bar-fill" style={{ width: `${metrics.ram}%`, background: 'linear-gradient(90deg, #3b82f6, #6366f1)' }} />
