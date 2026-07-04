@@ -1,116 +1,101 @@
-# E2E manual test checklist — WindAgent MVP
+# Danh sách Kiểm thử tích hợp E2E (E2E Manual Test Checklist)
 
-This is the canonical pre-release smoke checklist. Run every item
-once after `git pull` on a fresh Windows machine before declaring a
-new MVP build "good". Each item points at the script/command you can
-run to verify, and what to look for.
+Đây là tài liệu kiểm thử thủ công chính thức trước mỗi đợt phát hành phiên bản WindAgent v1.2.0. Người kiểm thử cần chạy tuần tự các bước dưới đây trên máy Windows để đảm bảo tính ổn định của hệ thống.
 
-## 0. Environment
+---
 
-- [ ] `scripts/healthcheck.ps1` exits 0
-  - Expect 7+ PASS under `[CRIT]`, 0 FAIL.
-  - WARN under `[OPT]` for Ollama / Rust / Tauri is acceptable for MVP.
+## 1. Kiểm tra môi trường & Khởi chạy hệ thống
 
-## 1. Backend bring-up
+### 1.1. Healthcheck Môi trường
+- [ ] Chạy lệnh kiểm tra môi trường:
+  ```powershell
+  powershell -ExecutionPolicy Bypass -File scripts\healthcheck.ps1
+  ```
+- [ ] Xác nhận kết quả: Toàn bộ mục đánh dấu `[CRIT]` phải trả về trạng thái **PASS**.
 
-- [ ] `scripts/dev_backend.ps1` (or `scripts/dev_backend.ps1 -Mock:$true`)
-      starts uvicorn on `127.0.0.1:8765`
-- [ ] Tail `artifacts/logs/backend.log` — first lines should include
-      `using MockModelClient` (or `using OllamaModelClient`) and
-      `backend ready — db=...`
-- [ ] `GET /health` returns `{"status":"ok","phase":1,"service":"windagent-backend"}`
-- [ ] `GET /api/health` (through Vite proxy) returns the same shape
+### 1.2. Khởi chạy Sidecar Backend (Mock Mode)
+- [ ] Chạy khởi động backend:
+  ```powershell
+  powershell -ExecutionPolicy Bypass -File scripts\dev_backend.ps1
+  ```
+- [ ] Đọc log tại `artifacts/logs/backend.log` và xác nhận xuất hiện dòng:
+  *   `using MockModelClient`
+  *   `backend ready — db=...`
+- [ ] Gửi request tới `http://127.0.0.1:8765/health` và nhận về JSON status: `"ok"`.
 
-## 2. Session + workflow happy path (mock mode)
+### 1.3. Khởi chạy Giao diện Frontend (Vite)
+- [ ] Mở terminal mới và chạy:
+  ```powershell
+  powershell -ExecutionPolicy Bypass -File scripts\dev_desktop.ps1
+  ```
+- [ ] Mở trình duyệt tại địa chỉ `http://localhost:5173`. Xác nhận giao diện hiển thị biểu tượng **WindAgent** và các chỉ số CPU/RAM/GPU bắt đầu nhảy số ở Header.
 
-- [ ] `POST /sessions` returns 201 with a `session_id`
-- [ ] `POST /sessions/{id}/messages` with `"Mở Notepad và gõ Hello"`
-      returns 202 with `workflow_id` and `step_count: 2`
-- [ ] `GET /sessions/{id}` shows `status: "completed"` after ~1s
-- [ ] `GET /sessions/{id}/workflow` shows 2 steps with
-      `tool_name` = `open_app` then `type_text`
-- [ ] `GET /tools` returns exactly 10 tool names (the whitelist)
-- [ ] `artifacts/runs/{session_id}/events.jsonl` exists and contains
-      >= 5 lines (one per event published on the bus)
+---
 
-## 3. WebSocket realtime stream
+## 2. Kiểm thử Tương tác Giao diện (10 Phân hệ)
 
-- [ ] `wscat -c ws://127.0.0.1:8765/ws/{session_id}` (or any WS client)
-      connects successfully
-- [ ] Sending a new message streams `planning_started` ->
-      `planning_finished` -> `workflow_created` -> `step_started` (x2)
-      -> `step_completed` (x2) -> `session_finished` in order
-- [ ] Each frame is a JSON envelope matching
-      `docs/event_protocol.md` (`event`, `timestamp`, `data`)
+### 2.1. Phân hệ Dashboard (Bảng điều khiển)
+- [ ] Xác nhận các biểu đồ nhỏ ở Header (CPU, RAM, GPU, VRAM) cập nhật liên tục mỗi 2 giây.
+- [ ] Kiểm tra phần **System Health**: Các chỉ số CPU, RAM, GPU, VRAM, Disk, Network hiển thị dấu tích xanh lá.
+- [ ] Kiểm tra danh sách **Active Agents**: Renders đầy đủ trạng thái các Agent (Planner, GUI Agent, Coder, Researcher).
+- [ ] Kiểm tra **Timeline Logs** và **Task Queue** hiển thị đúng dữ liệu giả lập/thực tế.
 
-## 4. Frontend render
+### 2.2. Phân hệ Agent Workspace (Không gian làm việc)
+- [ ] Vào phân hệ **Agent Workspace**. Nhập câu lệnh `"Mở Notepad và gõ Hello"` vào khung chat và ấn **Gửi**.
+- [ ] Xác nhận luồng chạy bắt đầu:
+  *   Danh sách checklist tin nhắn Agent tự động nhảy trạng thái `pending -> running -> success`.
+  *   Khung log **Terminal** in ra các dòng lệnh git clone, npm install, pytest giả lập.
+  *   Cột bên phải hiển thị mục tiêu hiện tại (Current Goal) và tiến độ nhảy lên `72%` rồi `100%`.
+  *   Thống kê công cụ đang dùng (Tools in Use) hiển thị chấm xanh lá nhấp nháy cho `File System`, `Terminal`, `Code Analyzer`.
 
-- [ ] `scripts/dev_desktop.ps1` (or `npm run dev`) starts Vite on
-      `localhost:5173`
-- [ ] Open `http://localhost:5173` — header shows
-      "WindAgent — Local Desktop AI Agent"
-- [ ] Chat panel renders the empty-state hint
-- [ ] Click "New session" (or send any message) — session id appears
-      in the status bar
-- [ ] Type `"Mở Notepad và gõ Hello"` and press Send — workflow
-      panel populates with 2 steps, both transition
-      `pending → running → success`
-- [ ] Tool call log (under chat) shows `open_app` and `type_text`
-      with status `success` and a duration in ms
+### 2.3. Phân hệ Router (Điều phối mô hình)
+- [ ] Vào phân hệ **Router**. Chọn dòng `Planner → Local Chat` trong bảng luật định tuyến.
+- [ ] Xác nhận cột bên phải hiển thị đầy đủ thông số của luật định tuyến đó (Route ID, Tags, Usage Rate, Latency).
+- [ ] Xác nhận biểu đồ đường tròn **Traffic Distribution** và sơ đồ **Routing Graph** vẽ các kết nối overlay nối từ Agent qua Router Core tới các Model đích.
+- [ ] Trình mô phỏng **Route Simulation** hiển thị đúng quy trình từ User Request -> Planner -> Router -> Primary Model.
 
-## 5. User controls (Stop / Pause / Resume / Retry)
+### 2.4. Phân hệ Agents (Thư mục Agent)
+- [ ] Vào phân hệ **Agents**. Xác nhận danh sách hiển thị đầy đủ 6 Agent chuyên biệt.
+- [ ] Click thử vào nút cấu hình cấu hình hoặc xem chi tiết của một Agent bất kỳ để xem mô tả.
 
-- [ ] Send a longer message (e.g. "Mở Notepad, gõ Hello, chờ 3s,
-      gõ World"). During the `wait` step, click **Pause**
-      — the workflow halts at the next step boundary
-- [ ] Click **Resume** — workflow continues
-- [ ] Click **Stop** while running — remaining steps are marked
-      `cancelled`, `session_finished.final_status == "cancelled"`
-- [ ] Manually induce a tool failure (or wait for one in the real
-      GUI) — Retry button enables; click it — workflow reruns from
-      the failed step
+### 2.5. Phân hệ Workflows (Quy trình)
+- [ ] Vào phân hệ **Workflows**.
+- [ ] Xác nhận danh sách hiển thị lịch sử chạy của các workflow trước đó từ SQLite.
+- [ ] Click vào một dòng workflow để mở rộng danh sách các bước con và xem trạng thái của từng bước.
 
-## 6. Persistence
+### 2.6. Phân hệ Browser & Files & Memory
+- [ ] Mở phân hệ **Browser**: Trình address bar hiển thị URL và khung web hiển thị mockup giao diện.
+- [ ] Mở phân hệ **Files**: Hiển thị danh sách cây thư mục cục bộ của dự án.
+- [ ] Mở phân hệ **Memory**: Thử gõ câu hỏi vào ô tìm kiếm ngữ cảnh dài hạn và xác nhận sơ đồ nút mạng Vector hiển thị.
 
-- [ ] `apps/backend/windagent.db` contains rows for the test session
-      (`SELECT COUNT(*) FROM chat_sessions` returns >= 1)
-- [ ] `apps/backend/windagent.db` execution_events table mirrors
-      every envelope from the WS stream
-- [ ] Stop the backend (`Ctrl+C`), restart it, then `GET /sessions/{id}`
-      — still returns the same session (loaded from SQLite)
-- [ ] `artifacts/runs/{session_id}/events.jsonl` still contains the
-      full event timeline (independent of SQLite)
+### 2.7. Phân hệ Models (Quản lý mô hình)
+- [ ] Vào phân hệ **Models**. Xác nhận trạng thái online/offline của Ollama được cập nhật.
+- [ ] Click thử nút "Pull" hoặc đổi nhà cung cấp AI để xem giao diện phản hồi.
 
-## 7. Safety
+### 2.8. Phân hệ Settings (Cài đặt)
+- [ ] Vào phân hệ **Settings**. Bật/Tắt nút gạt **Safe Mode**.
+- [ ] Thêm một từ khóa nhạy cảm mới vào danh sách cảnh báo, ấn Save và xác nhận cấu hình được cập nhật thành công (bằng cách kiểm tra cấu hình trả về qua API `/permissions/config`).
 
-- [ ] `POST /sessions/{id}/messages` with content `"delete all my
-      files"` — workflow is rejected (`step_count: 0`, planner falls
-      back to rule-based parser which finds no match)
-- [ ] In `WINDAGENT_PERMISSION_CONFIRM_BEFORE_TYPE=1`, sending a
-      `type_text` step triggers a `permission_request` event and the
-      UI dialog appears
-- [ ] Clicking **Cancel** in the dialog marks the step `cancelled`
-      and the workflow continues with the next step
-- [ ] Clicking **Allow** runs the step normally
+---
 
-## 8. Cleanup
+## 3. Kiểm thử Cổng phân quyền & Các lệnh dừng (Pause/Resume/Stop)
 
-- [ ] `Ctrl+C` in the backend terminal — process exits within 5s
-      (no hung uvicorn worker)
-- [ ] `Ctrl+C` in the Vite terminal — process exits within 5s
-- [ ] `scripts/healthcheck.ps1` still PASSes after restart
+### 3.1. Phê duyệt phân quyền (Permission Gate)
+- [ ] Bật cấu hình `WINDAGENT_PERMISSION_CONFIRM_BEFORE_TYPE=1` trong file env hoặc bật Safe Mode trên UI.
+- [ ] Gửi lệnh gõ văn bản dài hơn 20 ký tự qua Workspace.
+- [ ] Xác nhận xuất hiện **Permission Dialog** xin phép chạy `type_text`.
+- [ ] Thử chọn **Cancel** (Từ chối): Xác nhận bước chạy đó bị hủy (`cancelled`), luồng workflow không bị lỗi mà bỏ qua bước này để chạy tiếp.
+- [ ] Thử chọn **Allow** (Cho phép): Xác nhận công cụ thực thi bình thường.
 
-## Sign-off
+### 3.2. Lệnh tạm dừng & Dừng hẳn (Pause/Resume/Stop)
+- [ ] Gửi một câu lệnh dài (nhiều bước hoặc có bước chờ lâu như `wait seconds=5`).
+- [ ] Trong lúc workflow đang chạy, ấn nút **Pause** trên giao diện: Xác nhận workflow tạm ngừng ngay khi bước hiện tại chạy xong.
+- [ ] Ấn nút **Resume**: Xác nhận workflow tiếp tục chạy từ bước đang tạm dừng.
+- [ ] Ấn nút **Stop**: Toàn bộ các bước còn lại trong danh sách bị chuyển thành `cancelled`, phiên làm việc chuyển trạng thái thành `cancelled`.
 
-```
-Tester:    _______________
-Date:      2026-__-__
-Build:     v0.x.y (commit sha: ________)
-Result:    [ ] PASS  [ ] PASS with notes  [ ] FAIL
-Notes:
-```
+---
 
-If any item fails, copy the relevant log line from
-`artifacts/logs/backend.log` or the dev-server terminal into the
-issue tracker, and reference `docs/mvp_release_note.md` §"Known
-issues" before opening a bug — the failure may already be known.
+## 4. Kiểm thử Khôi phục & Tắt hệ thống
+
+- [ ] **Kiểm tra tắt nóng**: Ấn `Ctrl+C` tại terminal chạy Backend sidecar. Xác nhận toàn bộ tiến trình uvicorn dừng ngay lập tức, không bị treo luồng ngầm.
+- [ ] **Kiểm tra khôi phục**: Khởi động lại backend sidecar. Tải lại trang frontend `http://localhost:5173` và xác nhận toàn bộ lịch sử trò chuyện cùng các phiên cũ hiển thị đầy đủ (được nạp lại thành công từ file SQLite `windagent.db`).

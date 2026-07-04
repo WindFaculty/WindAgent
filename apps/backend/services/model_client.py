@@ -200,6 +200,85 @@ class OllamaModelClient:
             "error": None,
         }
 
+    async def list_ollama_models(self) -> List[Dict[str, Any]]:
+        """List local models using Ollama's /api/tags."""
+        try:
+            resp = await self._http.get(f"{self.base_url.replace('/v1', '')}/api/tags", timeout=2.0)
+            if resp.status_code != 200:
+                return []
+            data = resp.json()
+            result = []
+            for m in data.get("models", []):
+                name = m.get("name")
+                if not name:
+                    continue
+                
+                # Deduce capabilities
+                name_lower = name.lower()
+                caps = ["chat"]
+                if "coder" in name_lower or "code" in name_lower:
+                    caps.append("coding")
+                if "r1" in name_lower or "reason" in name_lower or "think" in name_lower:
+                    caps.append("reasoning")
+                if "vl" in name_lower or "vision" in name_lower:
+                    caps.append("vision")
+                if "phi" in name_lower or "gemma" in name_lower:
+                    caps.append("fast")
+                
+                result.append({
+                    "model_id": name,
+                    "display_name": name,
+                    "context_window": 8192,
+                    "capabilities": caps,
+                    "raw": m
+                })
+            return result
+        except Exception:
+            log.warning("Failed to fetch Ollama local tags")
+            return []
+
+    async def probe_ollama_model(self, model_name: str) -> bool:
+        """Probe if local model is loaded and reachable."""
+        try:
+            url = f"{self.base_url.replace('/v1', '')}/api/show"
+            resp = await self._http.post(url, json={"name": model_name}, timeout=2.0)
+            return resp.status_code == 200
+        except Exception:
+            return False
+
+    async def start_ollama_model(self, model_name: str, keep_alive: str = "30m") -> bool:
+        """Pre-load a model into memory using Ollama generate content with keep_alive."""
+        try:
+            url = f"{self.base_url.replace('/v1', '')}/api/generate"
+            resp = await self._http.post(
+                url,
+                json={"model": model_name, "prompt": "", "keep_alive": keep_alive},
+                timeout=10.0,
+            )
+            return resp.status_code == 200
+        except Exception as exc:
+            log.warning("Failed to start Ollama model %s: %s", model_name, exc)
+            return False
+
+    async def stop_ollama_model(self, model_name: str) -> bool:
+        """Unload model from memory by setting keep_alive to 0."""
+        try:
+            url = f"{self.base_url.replace('/v1', '')}/api/generate"
+            resp = await self._http.post(
+                url,
+                json={"model": model_name, "prompt": "", "keep_alive": 0},
+                timeout=5.0,
+            )
+            return resp.status_code == 200
+        except Exception as exc:
+            log.warning("Failed to stop Ollama model %s: %s", model_name, exc)
+            return False
+
+    async def restart_ollama_model(self, model_name: str) -> bool:
+        await self.stop_ollama_model(model_name)
+        await asyncio.sleep(0.5)
+        return await self.start_ollama_model(model_name)
+
 
 # ---------- Mock client (tests + offline dev) ----------
 
@@ -214,6 +293,29 @@ class MockModelClient:
     """
 
     name = "mock"
+
+    async def list_ollama_models(self) -> List[Dict[str, Any]]:
+        return [
+            {
+                "model_id": "mock:qwen3:4b-q4",
+                "display_name": "mock:qwen3:4b-q4",
+                "context_window": 8192,
+                "capabilities": ["chat", "coding", "planning"],
+                "raw": {}
+            }
+        ]
+
+    async def probe_ollama_model(self, model_name: str) -> bool:
+        return True
+
+    async def start_ollama_model(self, model_name: str, keep_alive: str = "30m") -> bool:
+        return True
+
+    async def stop_ollama_model(self, model_name: str) -> bool:
+        return True
+
+    async def restart_ollama_model(self, model_name: str) -> bool:
+        return True
 
     DEFAULT_RESPONSES: Dict[str, str] = {
         # Notepad demo

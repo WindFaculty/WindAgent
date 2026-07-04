@@ -125,8 +125,9 @@ Write-Host "[dev_backend] Ctrl+C để tắt." -ForegroundColor DarkGray
 
 Push-Location $BackendDir
 try {
-    & $UvPath run uvicorn main:app --host $BindHost --port $Port 2>&1 | Tee-Object -FilePath $LogFile
+    & $UvPath run uvicorn main:app --host $BindHost --port $Port --reload 2>&1 | Tee-Object -FilePath $LogFile
 } finally {
     Pop-Location
     Write-Host "[dev_backend] Đã tắt uvicorn." -ForegroundColor DarkGray
 }
+

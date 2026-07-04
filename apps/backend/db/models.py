@@ -144,6 +144,134 @@ class ExecutionEventORM(Base):
 Index("ix_execution_events_session_id_created_at", ExecutionEventORM.session_id, ExecutionEventORM.created_at)
 
 
+# ---------- Model Registry & Management ----------
+
+class ModelProviderORM(Base):
+    __tablename__ = "model_providers"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    site_name: Mapped[str] = mapped_column(String(128), nullable=False)
+    api_source: Mapped[str] = mapped_column(String(64), nullable=False)
+    base_url: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    management_base_url: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    api_key_env: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
+    api_key: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    management_api_key_env: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
+    provider_type: Mapped[str] = mapped_column(String(32), default="cloud") # "cloud" | "local"
+    quota_mode: Mapped[str] = mapped_column(String(32), default="RPM_RPD") # "ONE_TIME_CREDIT" | "TOKEN_BUDGET" | "RPM_RPD" | "LOCAL_RESOURCE"
+    supports_openai_compatible: Mapped[bool] = mapped_column(default=True)
+    supports_model_discovery: Mapped[bool] = mapped_column(default=True)
+    models_endpoint: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
+    chat_endpoint: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
+    enabled: Mapped[bool] = mapped_column(default=False)
+    priority: Mapped[int] = mapped_column(default=50)
+    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(default=_utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(default=_utcnow, onupdate=_utcnow, nullable=False)
+
+
+class ModelCatalogORM(Base):
+    __tablename__ = "model_catalog"
+
+    id: Mapped[str] = mapped_column(String(128), primary_key=True)
+    provider_id: Mapped[str] = mapped_column(String(64), nullable=False)
+    model_id: Mapped[str] = mapped_column(String(128), nullable=False)
+    display_name: Mapped[str] = mapped_column(String(128), nullable=False)
+    type: Mapped[str] = mapped_column(String(32), nullable=False) # "API" | "Local"
+    billing_mode: Mapped[Optional[str]] = mapped_column(String(32), nullable=True)
+    context_window: Mapped[Optional[int]] = mapped_column(nullable=True)
+    max_output_tokens: Mapped[Optional[int]] = mapped_column(nullable=True)
+    capabilities_json: Mapped[str] = mapped_column(Text, default="[]") # List of capabilities
+    tags_json: Mapped[str] = mapped_column(Text, default="[]")
+    default_roles_json: Mapped[str] = mapped_column(Text, default="[]")
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    deployment: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
+    quantization: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    enabled: Mapped[bool] = mapped_column(default=False)
+    discovered: Mapped[bool] = mapped_column(default=False)
+    source: Mapped[str] = mapped_column(String(32), default="seed") # "seed" | "discovered"
+    created_at: Mapped[datetime] = mapped_column(default=_utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(default=_utcnow, onupdate=_utcnow, nullable=False)
+
+
+class ModelRuntimeStatusORM(Base):
+    __tablename__ = "model_runtime_status"
+
+    model_id: Mapped[str] = mapped_column(String(128), primary_key=True)
+    status: Mapped[str] = mapped_column(String(32), default="Offline") # "Running" | "Ready" | "Loading" | "Idle" | "Offline"
+    health: Mapped[str] = mapped_column(String(32), default="Unknown") # "Healthy" | "Unhealthy" | "Unknown"
+    latency_p50_ms: Mapped[Optional[float]] = mapped_column(nullable=True)
+    latency_p90_ms: Mapped[Optional[float]] = mapped_column(nullable=True)
+    tokens_per_sec: Mapped[Optional[float]] = mapped_column(nullable=True)
+    success_rate: Mapped[Optional[float]] = mapped_column(nullable=True)
+    uptime_seconds: Mapped[int] = mapped_column(default=0)
+    last_probe_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
+    last_error: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+
+class ProviderQuotaSnapshotORM(Base):
+    __tablename__ = "provider_quota_snapshots"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    provider_id: Mapped[str] = mapped_column(String(64), nullable=False)
+    quota_mode: Mapped[str] = mapped_column(String(32), nullable=False)
+    rpm_limit: Mapped[Optional[int]] = mapped_column(nullable=True)
+    rpd_limit: Mapped[Optional[int]] = mapped_column(nullable=True)
+    tpm_limit: Mapped[Optional[int]] = mapped_column(nullable=True)
+    daily_token_limit: Mapped[Optional[int]] = mapped_column(nullable=True)
+    monthly_token_limit: Mapped[Optional[int]] = mapped_column(nullable=True)
+    remaining_requests_today: Mapped[Optional[int]] = mapped_column(nullable=True)
+    remaining_tokens_today: Mapped[Optional[int]] = mapped_column(nullable=True)
+    remaining_tokens_month: Mapped[Optional[int]] = mapped_column(nullable=True)
+    remaining_credit: Mapped[Optional[float]] = mapped_column(nullable=True)
+    credit_currency: Mapped[Optional[str]] = mapped_column(String(16), nullable=True)
+    reset_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
+    raw_json: Mapped[str] = mapped_column(Text, default="{}")
+    source: Mapped[str] = mapped_column(String(64), default="manual")
+    created_at: Mapped[datetime] = mapped_column(default=_utcnow, nullable=False)
+
+
+class ModelRoutingRuleORM(Base):
+    __tablename__ = "model_routing_rules"
+
+    role: Mapped[str] = mapped_column(String(64), primary_key=True)
+    primary_model_id: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
+    fallback_model_id: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
+    policy_json: Mapped[str] = mapped_column(Text, default="{}")
+    updated_at: Mapped[datetime] = mapped_column(default=_utcnow, onupdate=_utcnow, nullable=False)
+
+
+class ModelActivityORM(Base):
+    __tablename__ = "model_activity"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    model_id: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
+    provider_id: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    level: Mapped[str] = mapped_column(String(16), default="info")
+    event_type: Mapped[str] = mapped_column(String(64), nullable=False)
+    message: Mapped[str] = mapped_column(Text, nullable=False)
+    metadata_json: Mapped[str] = mapped_column(Text, default="{}")
+    created_at: Mapped[datetime] = mapped_column(default=_utcnow, nullable=False)
+
+
+class ModelBenchmarkRunORM(Base):
+    __tablename__ = "model_benchmark_runs"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    model_id: Mapped[str] = mapped_column(String(128), nullable=False)
+    provider_id: Mapped[str] = mapped_column(String(64), nullable=False)
+    latency_p50_ms: Mapped[float] = mapped_column(nullable=False)
+    latency_p90_ms: Mapped[float] = mapped_column(nullable=False)
+    tokens_per_sec: Mapped[float] = mapped_column(nullable=False)
+    success_rate: Mapped[float] = mapped_column(nullable=False)
+    prompt_tokens: Mapped[int] = mapped_column(default=0)
+    completion_tokens: Mapped[int] = mapped_column(default=0)
+    total_tokens: Mapped[int] = mapped_column(default=0)
+    test_name: Mapped[str] = mapped_column(String(128), default="smoke")
+    raw_json: Mapped[str] = mapped_column(Text, default="{}")
+    created_at: Mapped[datetime] = mapped_column(default=_utcnow, nullable=False)
+
+
 __all__ = [
     "Base",
     "ChatSessionORM",
@@ -152,4 +280,12 @@ __all__ = [
     "WorkflowStepORM",
     "ToolCallORM",
     "ExecutionEventORM",
+    "ModelProviderORM",
+    "ModelCatalogORM",
+    "ModelRuntimeStatusORM",
+    "ProviderQuotaSnapshotORM",
+    "ModelRoutingRuleORM",
+    "ModelActivityORM",
+    "ModelBenchmarkRunORM",
 ]
+

@@ -1,295 +1,100 @@
-# Agent-S3 Integration
+# Hướng dẫn Tích hợp & Cấu hình Agent-S3 (Agent-S3 Integration Guide)
 
-WindAgent có thể chạy [Agent-S3](https://github.com/simular-ai/Agent-S)
-(Simular AI's screen-grounded computer-use agent) như một optional
-planner. Đây là **additive**, không thay thế mock planner / Ollama
-Qwen3 hiện có.
+Phân hệ **Agent-S3** là một bộ lập kế hoạch bổ sung (optional planner) dựa trên thư viện [Agent-S](https://github.com/simular-ai/Agent-S) của Simular AI, giúp WindAgent v1.2.0 có khả năng tự động hóa giao diện trực quan thông qua phân tích ảnh chụp màn hình desktop (screen-grounded planning).
 
-## Mục tiêu tích hợp
+---
 
-- Đa-dạng hoá planner: thêm screen-grounded LLM planner để xử lý tác vụ
-  GUI phức tạp mà rule-based mock không cover hết.
-- Tận dụng official SDK của upstream — **không vendor source**.
-- Giữ nguyên safety guarantee: mọi GUI action phải qua WindAgent tool
-  whitelist + permission gate, không thực thi raw action code.
+## 1. Trạng thái tích hợp hiện tại (Phase 12)
 
-## Trạng thái hiện tại (Phase 12)
+*   **Bộ nạp cấu hình (Config Loader)**: Đọc các cài đặt cấu hình từ biến môi trường và kiểm tra tính hợp lệ trước khi khởi chạy hệ thống.
+*   **Adapter liên kết**: Hỗ trợ nạp động (lazy import) thư viện SDK chính thức của Simular AI, giúp tránh lỗi import khi người dùng không kích hoạt phân hệ này.
+*   **Bộ dịch hành động (Action Translator)**: Lọc và dịch các hành động sinh ra bởi Agent-S thành công cụ của WindAgent, đảm bảo không thực thi các câu lệnh nguy hiểm (chặn `exec`/`eval`/`import`/`subprocess`).
+*   **Wired into WorkflowRunner**: Công cụ `agent_s3_step` đã được tích hợp đầy đủ vào runner. Mỗi bước `agent_s3_step` sẽ thực hiện quy trình: Chụp màn hình -> Gửi lên Agent-S3 đề xuất -> Dịch hành động -> Xin xác nhận quyền người dùng -> Thực thi hành động an toàn trên màn hình Windows.
 
-| Thành phần | Trạng thái | Ghi chú |
-|---|---|---|
-| Agent-S3 config loader | ✓ | `services/agent_s3_config.py` đọc env, validate. |
-| Adapter (package + external mode) | ✓ | `services/agent_s3_adapter.py` lazy-import official SDK. |
-| Action translator (safety boundary) | ✓ | `services/agent_s3_action_translator.py` reject exec/eval/subprocess/os.system/... |
-| Health endpoint `/agent-s3/health` | ✓ | `routers/agent_s3.py` — secret-scrubbed (SEC-002 fix). |
-| Setup script `scripts/setup_agent_s3.ps1` | ✓ | Cài `gui-agents==0.3.2` (package) hoặc clone external. |
-| 84 dedicated tests | ✓ | translator 31 + adapter 16 + config 27 + health 10. |
-| **Wired into WorkflowRunner** | **✓ Phase 12** | `agent_s3_step` tool mới + `services/agent_s3_step_executor.py` orchestrator. |
-| Production run with Agent-S3 → screen | **✓ Phase 12** | `agent_s3_step` chạy end-to-end qua permission gate + audit. |
+---
 
-Phase 12 đã wire `agent_s3_step` vào WorkflowRunner thật. Tool này có
-thể là một step trong workflow, planner có thể emit nó, WorkflowRunner
-sẽ gọi Agent-S3 propose → translate → execute mapped action qua tool
-whitelist hiện tại + permission gate + audit. Phase 12 KHÔNG bật
-multi-step Agent-S3 loop vô hạn — mỗi `agent_s3_step` chỉ chạy 1 action.
+## 2. Hướng dẫn cài đặt (Installation Modes)
 
-## Optional / Disabled mặc định
+Phân hệ này mặc định bị **vô hiệu hóa** (`WINDAGENT_AGENT_S3_ENABLED=0`). Để kích hoạt, trước tiên bạn cần cài đặt dependency theo một trong hai chế độ:
 
-Agent-S3 mặc định **disabled** (`WINDAGENT_AGENT_S3_ENABLED=0`). Backend
-vẫn load config (cheap env reads) và expose health endpoint, nhưng
-không construct adapter và không pull bất kỳ dependency nào vào import
-graph. Operator phải opt-in bằng cách set env vars.
-
-## Hai install mode
-
-### 1. package mode (khuyến nghị, mặc định)
-
-Cài PyPI package `gui-agents==0.3.2` vào backend venv qua uv.
-
+### Chế độ A: Cài đặt dạng thư viện (Package Mode - Khuyến nghị)
+Cài đặt trực tiếp gói `gui-agents` phiên bản `0.3.2` từ PyPI vào môi trường ảo của dự án:
 ```powershell
 cd D:\antigaravity_code\WindAgent
 powershell -ExecutionPolicy Bypass -File scripts\setup_agent_s3.ps1 -Mode package
 ```
 
-Verify import thành công:
-
-```powershell
-.apps\backend\.venv\Scripts\python.exe -c "import gui_agents; print('OK', gui_agents.__version__)"
-```
-
-### 2. external mode (clone upstream repo)
-
-Clone [https://github.com/simular-ai/Agent-S](https://github.com/simular-ai/Agent-S)
-vào `external/Agent-S/` và prepend vào `sys.path` lúc runtime.
-
+### Chế độ B: Cài đặt dạng mã nguồn ngoài (External Mode)
+Tải mã nguồn dự án Agent-S trực tiếp từ GitHub vào thư mục `external/Agent-S/` và liên kết đường dẫn hệ thống:
 ```powershell
 cd D:\antigaravity_code\WindAgent
 powershell -ExecutionPolicy Bypass -File scripts\setup_agent_s3.ps1 -Mode external
 ```
 
-Hoặc dùng git submodule (idempotent):
+---
 
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts\setup_agent_s3.ps1 -Mode external -UseSubmodule
-```
+## 3. Cấu hình biến môi trường (Environment Variables)
 
-Backend sẽ tự detect presence của `external/Agent-S/gui_agents/` (post-v0.2
-layout) hoặc `external/Agent-S/agent_s/` (older layout).
+Thiết lập các biến môi trường sau để kích hoạt và cấu hình Agent-S3:
 
-## Environment variables
-
-| Biến | Bắt buộc khi enable | Mặc định | Mục đích |
+| Tên biến | Bắt buộc | Giá trị ví dụ | Ý nghĩa |
 |---|---|---|---|
-| `WINDAGENT_AGENT_S3_ENABLED` | — | `0` | Bật/tắt toàn bộ integration. |
-| `WINDAGENT_AGENT_S3_SOURCE` | — | `package` | `package` (PyPI) hoặc `external` (clone). |
-| `WINDAGENT_AGENT_S3_EXTERNAL_PATH` | khi source=external | `external/Agent-S` | Đường dẫn tới checkout. |
-| `WINDAGENT_AGENT_S3_PROVIDER` | ✓ | `openai` | Worker LLM provider key cho Agent-S3 SDK. |
-| `WINDAGENT_AGENT_S3_MODEL` | ✓ | `gpt-5-2025-08-07` | Worker LLM model id. |
-| `WINDAGENT_AGENT_S3_MODEL_URL` | tùy provider | `""` | Base URL cho worker (trống = provider default). |
-| `WINDAGENT_AGENT_S3_MODEL_API_KEY` | tùy provider | `""` | Worker LLM API key — **không bao giờ log/return**. |
-| `WINDAGENT_AGENT_S3_GROUND_PROVIDER` | ✓ | `""` | Grounding LLM provider key. |
-| `WINDAGENT_AGENT_S3_GROUND_MODEL` | ✓ | `""` | Grounding LLM model id. |
-| `WINDAGENT_AGENT_S3_GROUND_URL` | tùy provider | `""` | Base URL cho grounding LLM. |
-| `WINDAGENT_AGENT_S3_GROUND_API_KEY` | tùy provider | `""` | Grounding LLM API key — **không bao giờ log/return**. |
-| `WINDAGENT_AGENT_S3_ENABLE_LOCAL_ENV` | — | `0` | **Bị force về `0` bởi WindAgent safety policy**, kể cả khi user set 1. |
+| `WINDAGENT_AGENT_S3_ENABLED` | Có | `1` | Kích hoạt phân hệ Agent-S3 (`1` để bật, `0` để tắt). |
+| `WINDAGENT_AGENT_S3_SOURCE` | Không | `package` | Nguồn nạp: `package` hoặc `external`. |
+| `WINDAGENT_AGENT_S3_EXTERNAL_PATH` | Chỉ khi chọn external | `external/Agent-S` | Đường dẫn thư mục mã nguồn Agent-S. |
+| `WINDAGENT_AGENT_S3_PROVIDER` | Có | `openai` | Nhà cung cấp AI chính (ví dụ: `openai`, `anthropic`, v.v.). |
+| `WINDAGENT_AGENT_S3_MODEL` | Có | `gpt-5-2025-08-07` | Tên mô hình AI chính dùng cho Agent-S3. |
+| `WINDAGENT_AGENT_S3_MODEL_API_KEY` | Có | `sk-proj-...` | API Key cho mô hình chính (sẽ được tự động lọc bỏ khỏi response). |
+| `WINDAGENT_AGENT_S3_GROUND_PROVIDER`| Có | `huggingface` | Nhà cung cấp mô hình định vị trực quan (Grounding LLM). |
+| `WINDAGENT_AGENT_S3_GROUND_MODEL` | Có | `ui-tars-1.5-7b` | Tên mô hình định vị trực quan. |
+| `WINDAGENT_AGENT_S3_GROUND_API_KEY` | Có | `hf_...` | API Key cho mô hình định vị trực quan. |
 
-## Cách bật / tắt
+---
 
-```powershell
-# Bật (package mode, OpenAI worker + HuggingFace UI-TARS ground)
-$env:WINDAGENT_AGENT_S3_ENABLED         = '1'
-$env:WINDAGENT_AGENT_S3_SOURCE          = 'package'
-$env:WINDAGENT_AGENT_S3_PROVIDER        = 'openai'
-$env:WINDAGENT_AGENT_S3_MODEL           = 'gpt-5-2025-08-07'
-$env:WINDAGENT_AGENT_S3_MODEL_API_KEY   = 'sk-...'
-$env:WINDAGENT_AGENT_S3_GROUND_PROVIDER = 'huggingface'
-$env:WINDAGENT_AGENT_S3_GROUND_MODEL    = 'ui-tars-1.5-7b'
-$env:WINDAGENT_AGENT_S3_GROUND_API_KEY  = 'hf_...'
+## 4. Công cụ `agent_s3_step` (Tool Specification)
 
-# Tắt
-$env:WINDAGENT_AGENT_S3_ENABLED = '0'
-```
+Đây là công cụ cấp độ **High-Risk**, luôn yêu cầu quyền xác nhận của người dùng.
 
-Sau đó chạy backend như thường. Healthcheck sẽ tự báo mode / config_missing
-/ last_error để debug.
-
-## Cách chạy healthcheck
-
-```powershell
-# Sau khi backend đang chạy
-curl http://127.0.0.1:8765/agent-s3/health | python -m json.tool
-```
-
-Response shape (Phase 11, sau SEC-002 fix):
-
+### Định dạng tham số đầu vào (JSON Schema)
 ```json
 {
-  "mode": "package",
-  "enabled": true,
-  "source": "package",
-  "package_available": true,
-  "external_repo_available": false,
-  "config_missing": [],
-  "last_error": null,
-  "config": {
-    "external_path": "D:\\antigaravity_code\\WindAgent\\external\\Agent-S",
-    "provider": "openai",
-    "model": "gpt-5-2025-08-07",
-    "ground_provider": "huggingface",
-    "ground_model": "ui-tars-1.5-7b",
-    "enable_local_env": false,
-    "notes": [],
-    "adapter_initialised": true,
-    "last_actions": []
-  }
+  "instruction": "Click vào nút Đăng nhập trên màn hình",
+  "screenshot": true,
+  "dry_run": false,
+  "max_retries": 0,
+  "require_permission": true,
+  "timeout_ms": 30000
 }
 ```
 
-Lưu ý: response **không bao giờ** chứa `model_api_key`, `ground_api_key`,
-`bearer`, `token`, `password`, hay bất kỳ secret nào. Nếu env đã set
-nhưng field tương ứng không xuất hiện trong response, đó là scrub layer
-hoạt động đúng. Xem `services/agent_s3_health.py::scrub_secrets()`.
+### Quy trình thực thi tuần tự
+1.  **Chụp quan sát (Observation)**: Chụp màn hình nền nếu `screenshot=true`.
+2.  **Đề xuất hành động (Propose)**: Gửi chỉ thị `instruction` cùng ảnh chụp màn hình tới SDK Agent-S3 để lấy câu lệnh hành động thô (ví dụ: `pyautogui.click(100, 200)`).
+3.  **Dịch cú pháp (Translate)**: Chạy qua bộ dịch tĩnh AST để loại bỏ các đoạn mã độc hại và trích xuất tham số.
+4.  **Kiểm tra an toàn bổ sung**: Đối chiếu công cụ dịch ra với danh sách cho phép của Agent-S3 (`click_xy`, `type_text`, `hotkey`, `press_key`, `scroll`, `wait`, `screenshot`).
+5.  **Xin quyền hạn (Permission)**: Gửi yêu cầu phê duyệt thông qua Cổng phân quyền. Nếu được cho phép, chuyển hành động xuống tầng `ToolExecutor` của WindAgent để tương tác trực tiếp lên màn hình.
 
-## Giới hạn hiện tại
+---
 
-- **Agent-S3 adapter instantiated** ✓ (khi `is_available()` pass) — adapter
-  được build khi lifespan chạy nếu config hợp lệ. `adapter_initialised=true`
-  trong health response xác nhận.
-- **Safe translator exists** ✓ — `agent_s3_action_translator.translate()`
-  nhận list raw action strings, trả về `TranslationResult(accepted, rejected)`.
-  11/11 malicious input patterns bị reject.
-- **`agent_s3_step` wired vào `WorkflowRunner`** ✓ (Phase 12) — tool mới
-  trong `tool_registry.py`, dispatch qua `ToolExecutor._execute_agent_s3_step`,
-  orchestrator `services/agent_s3_step_executor.py` xử lý
-  propose → translate → mapped tool → audit. Mỗi `agent_s3_step` chỉ
-  chạy đúng 1 action.
-- **Permission gate on `agent_s3_step`** ✓ — `requires_confirmation=True`
-  nên WorkflowRunner chờ user approve TRƯỚC khi gọi adapter. Nếu
-  deny/timeout → step cancelled, không execute mapped action.
-- **Multi-step autonomous Agent-S3 loop** ✗ — chưa bật. Mỗi
-  `agent_s3_step` chỉ chạy 1 action. Nếu cần multi-step, planner phải
-  emit nhiều `agent_s3_step` steps trong workflow. Bounded loop là
-  Phase 13 follow-up.
-- **`OSWorldACI(env=None)` dormant** — adapter gọi `OSWorldACI(env=None)`
-  khi propose() được trigger. Test runtime behaviour đã pin qua mock
-  adapter trong test suite. Production smoke với real `gui-agents`
-  SDK vẫn cần manual test trên Windows session có Accessibility.
+## 5. Bảng mã lỗi xử lý (Error Codes)
 
-## `agent_s3_step` tool (Phase 12)
+Khi bước chạy `agent_s3_step` thất bại, hệ thống sẽ trả về một trong các mã lỗi chuẩn sau:
 
-Tool mới trong tool whitelist (`risk=high`, `requires_confirmation=True`).
-
-### Schema
-
-```json
-{
-  "instruction": "string, required, 1..2000 chars",
-  "screenshot": "boolean, optional, default true",
-  "dry_run": "boolean, optional, default false",
-  "max_retries": "integer, optional, 0..2, default 0",
-  "require_permission": "boolean, optional, default true",
-  "timeout_ms": "integer, optional, 1..120000, default 30000"
-}
-```
-
-### Execution flow
-
-```
-WorkflowRunner.step (tool_name=agent_s3_step)
-  -> [runner] permission gate (if requires_confirmation=True)
-  -> ToolExecutor._execute_agent_s3_step
-    -> AgentS3StepExecutor.execute
-      1. Validate Agent-S3 enabled + adapter available
-      2. Capture screenshot via GuiAdapter.screenshot (if screenshot=true)
-      3. await adapter.propose(instruction, observation)
-      4. translator.translate(raw_actions)
-      5. Re-validate mapped tool against AGENT_S3_MAPPED_TOOL_ALLOWLIST
-         (= {click_xy, type_text, hotkey, press_key, scroll, wait, screenshot})
-      6. validate_params(mapped.tool_name, mapped.params)  (Pydantic)
-      7. emit agent_s3_action_proposed event (safety_status=accepted)
-      8. If dry_run: return translated tool + params only (no GUI)
-      9. Else: await asyncio.to_thread(self._run_mapped_tool, ...) 
-         -> ToolExecutor._run dispatch to actual gui adapter
-    -> ToolExecutor._emit_and_persist (tool_call_finished + tool_calls row)
-```
-
-### Error codes
-
-| Code | Khi nào |
+| Mã lỗi | Nguyên nhân |
 |---|---|
-| `AGENT_S3_DISABLED` | `WINDAGENT_AGENT_S3_ENABLED=0` hoặc orchestrator chưa wire |
-| `AGENT_S3_ADAPTER_NOT_READY` | adapter = None |
-| `AGENT_S3_UNAVAILABLE` | adapter.is_available() = False (no config, no package, ...) |
-| `AGENT_S3_PROPOSE_FAILED` | adapter.propose raised; last_error set |
-| `AGENT_S3_PARSE_FAILED` | translator raised |
-| `AGENT_S3_UNSAFE_ACTION` | raw action matched deny pattern (exec / os.system / ...) |
-| `AGENT_S3_UNSUPPORTED_ACTION` | translator returned no accepted action |
-| `MAPPED_TOOL_NOT_WHITELISTED` | defence-in-depth (should never happen) |
-| `MAPPED_TOOL_INVALID_PARAMS` | translated params failed Pydantic |
-| `MAPPED_TOOL_EXECUTION_FAILED` | inner mapped tool raised |
-| `AGENT_S3_ORCHESTRATOR_RAISED` | orchestrator itself raised (defensive) |
+| `AGENT_S3_DISABLED` | Phân hệ Agent-S3 chưa được bật hoặc chưa liên kết thành công. |
+| `AGENT_S3_ADAPTER_NOT_READY` | Khởi tạo SDK Agent-S3 thất bại do lỗi thư viện hoặc kết nối mạng. |
+| `AGENT_S3_UNAVAILABLE` | Cấu hình bị thiếu hoặc môi trường chạy thiếu thư viện liên quan. |
+| `AGENT_S3_PROPOSE_FAILED` | Gọi mô hình chính của Agent-S3 bị lỗi hoặc timeout. |
+| `AGENT_S3_UNSAFE_ACTION` | Hành động sinh ra chứa mã độc (như câu lệnh `import`, `subprocess`, `os.system`). |
+| `AGENT_S3_UNSUPPORTED_ACTION` | Hành động sinh ra không được hỗ trợ dịch ngược về whitelist. |
+| `MAPPED_TOOL_NOT_WHITELISTED` | Công cụ sau khi dịch nằm ngoài danh sách công cụ cho phép. |
+| `MAPPED_TOOL_INVALID_PARAMS` | Tham số công cụ sau khi dịch sai kiểu dữ liệu hoặc không vượt qua bộ kiểm tra Pydantic. |
+| `MAPPED_TOOL_EXECUTION_FAILED` | Lỗi phát sinh trong quá trình điều khiển thiết bị thực tế (ví dụ: chuột bị kẹt tọa độ). |
 
-## Safety guarantees
+---
 
-Bốn safety guarantees mà WindAgent giữ nguyên khi Agent-S3 được wire
-vào runner (Phase 12+):
+## 6. Liên kết
 
-1. **Không raw exec/eval.** `agent_s3_action_translator.translate()`
-   nhận raw action strings, parse bằng regex whitelist + AST shape check,
-   reject mọi pattern không match. Translator **không bao giờ** gọi
-   `exec()` / `eval()` / `compile()` lên raw strings — `ast.parse(line,
-   mode="exec")` chỉ inspect shape, result bị discard.
-2. **Action phải qua translator.** Adapter chỉ trả raw strings + info
-   dict; workflow runner phải gọi `translate()` trước khi map sang tool.
-3. **Action phải map sang tool whitelist.** Recognised patterns:
-   - `pyautogui.click(x, y[, button])` → `click_xy`
-   - `pyautogui.{leftClick,rightClick,middleClick,doubleClick,tripleClick}(x, y)` → `click_xy`
-   - `pyautogui.{typewrite,write}("text")` → `type_text`
-   - `pyautogui.hotkey(...)` → `hotkey`
-   - `pyautogui.press("key")` → `press_key`
-   - `pyautogui.scroll(n)` / `hscroll(n)` → `scroll`
-   - `time.sleep(n)` (0 < n ≤ 60) → `wait`
-   - `pyautogui.screenshot()` → `screenshot`
-   Reject patterns: `import` / `from x import y` / `open(` / `subprocess`
-   / `os.system` / `os.popen` / `exec(` / `eval(` / `__import__(` /
-   `requests.` / `urllib` / `socket` / multi-line statements.
-4. **Action phải qua permission gate/audit.** Mọi `TranslatedAction` rơi
-   vào `ToolExecutor.execute()`, nơi `PermissionService.request_permission()`
-   chạy trước khi thực thi. `permission_request` / `permission_granted`
-   / `permission_denied` events được mirror vào audit log (DB + JSONL).
-
-Ngoài ra: `WINDAGENT_AGENT_S3_ENABLE_LOCAL_ENV` luôn bị force về `0` ở
-config layer bất kể env — Agent-S3 không được phép exec arbitrary Python
-+ bash qua local coding sandbox.
-
-## Troubleshooting
-
-| Triệu chứng | Nguyên nhân thường gặp | Cách xử lý |
-|---|---|---|
-| `mode=disabled` | `WINDAGENT_AGENT_S3_ENABLED` không set / =0 | Set =1 trước khi start backend. |
-| `mode=misconfigured`, `config_missing` liệt kê env vars | Một số required env vars trống (provider / model / ground_*). | Set đầy đủ theo bảng env vars. |
-| `package_available=false` | `gui-agents` chưa cài trong backend venv. | Chạy `scripts\setup_agent_s3.ps1 -Mode package`. |
-| `external_repo_available=false` | `external/Agent-S/` không tồn tại hoặc không có `gui_agents/`. | Chạy `scripts\setup_agent_s3.ps1 -Mode external`. |
-| `last_error="build agent failed: ..."` | Upstream SDK raise lúc construct (network, import error). | Check log `artifacts/logs/backend.log` để biết stacktrace. |
-| `last_error="predict failed: ..."` | Worker LLM hoặc grounding LLM endpoint offline / auth fail. | Verify `WINDAGENT_AGENT_S3_MODEL_URL` và `*_API_KEY` reachable. |
-| Backend vẫn chạy nhưng Agent-S3 không xuất hiện trong workflow | **Bình thường** — Phase 11 chỉ arm scaffold. WorkflowRunner chưa gọi `propose()` (INT-001). | Đây là Phase 12 follow-up. |
-
-## Phase 13 follow-up
-
-Sau Phase 12, các bước sau sẽ được thực hiện ở Phase 13:
-
-- Bounded multi-step Agent-S3 loop (e.g. `max_propose_per_step` ở
-  workflow level, hoặc `agent_s3_session` tool cho phép nhiều action
-  liên tiếp với hard cap).
-- Frontend timeline event cho `agent_s3_action_proposed` (hiện event
-  đã wire qua EventBus; UI chỉ cần subscribe + render).
-- Real-GUI smoke test với PyAutoGUI + Windows Accessibility permission
-  (SEC-001 closure).
-- Better recovery: nếu mapped tool fail, cho phép Agent-S3 propose
-  action khác (giới hạn retry theo `max_retries` param).
-- Tích hợp `click_target` + `agent_s3_step`: dùng Agent-S3 để resolve
-  target + locate element trước khi click.
-- Tauri bundle verification (QA-001, cần Rust toolchain).
-
-Xem `artifacts/agent_s3_integration/phase11_closeout_report.md` và
-`artifacts/agent_s3_integration/phase12_workflow_wire_report.md` để
-biết chi tiết Phase 11 + Phase 12 outcomes và verification evidence.
+- [docs/safety_policy.md](file:///d:/antigaravity_code/WindAgent/docs/safety_policy.md) — Quy tắc an toàn và kiểm tra AST chi tiết.
+- [docs/api_contract.md](file:///d:/antigaravity_code/WindAgent/docs/api_contract.md) — Hợp đồng API sức khỏe `/agent-s3/health`.

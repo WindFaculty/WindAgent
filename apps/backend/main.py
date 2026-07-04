@@ -211,6 +211,10 @@ async def lifespan(app: FastAPI):
         permission_service=permission_service,
     )
 
+    from services.model_service import ModelService
+    model_service = ModelService(db=db, ollama_client=model_client)
+    await model_service.init_database_seeds()
+
     app.state.event_bus = event_bus
     app.state.db = db
     app.state.gui = gui
@@ -222,6 +226,7 @@ async def lifespan(app: FastAPI):
     app.state.session_service = session_service
     app.state.workflow_service = workflow_service
     app.state.workflow_runner = runner
+    app.state.model_service = model_service
 
     # ---------- Optional: Agent-S3 integration ----------
     # The backend always loads the Agent-S3 config (cheap; env reads

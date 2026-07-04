@@ -290,3 +290,4 @@ if ($failCount -gt 0) {
     Write-Host "  scripts/dev_desktop.ps1    # Terminal 2: frontend" -ForegroundColor DarkGray
     exit 0
 }
+

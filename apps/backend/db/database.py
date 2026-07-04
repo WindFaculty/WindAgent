@@ -56,6 +56,11 @@ class Database:
         """Create all tables that don't exist yet. Idempotent."""
         async with self.engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
+            try:
+                from sqlalchemy import text
+                await conn.execute(text("ALTER TABLE model_providers ADD COLUMN api_key VARCHAR(255)"))
+            except Exception:
+                pass
         log.info("database schema initialised (%s)", self.url)
 
     async def dispose(self) -> None:

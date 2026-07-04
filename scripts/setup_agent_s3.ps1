@@ -1,4 +1,4 @@
-<#
+﻿<#
 scripts/setup_agent_s3.ps1
 Agent-S3 installer / setup helper for WindAgent.
 

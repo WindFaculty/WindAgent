@@ -1,403 +1,365 @@
-# API Contract — Local Desktop AI Agent
+# Hợp đồng REST API & Giao tiếp Sidecar (REST API Contract)
 
-Hợp đồng REST + WebSocket giữa backend FastAPI và frontend Tauri/React.
-Mọi thay đổi shape phải cập nhật file này + `docs/event_protocol.md`
-trong cùng commit.
+Tài liệu này đặc tả toàn bộ các API HTTP REST và kết nối WebSocket được cung cấp bởi **FastAPI Sidecar Backend** để tương tác với **Tauri/React Frontend**.
 
-Trạng thái triển khai:
-- **Phase 1 (current)**: tất cả endpoint dưới đây đã chạy và có test.
-- **Phase 5**: pause/resume/stop hiện chỉ emit event echo, chưa có runner
-  thật để xử lý.
+---
 
-## Base URL
+## 1. Nguyên tắc thiết kế chung
 
-Mặc định dev: `http://127.0.0.1:8765`. Phase 9 sẽ thêm cấu hình port
-qua biến môi trường.
+*   **Base URL**: Mặc định chạy cục bộ ở địa chỉ `http://127.0.0.1:8765`.
+*   **Định dạng dữ liệu**: Mọi Request và Response đều sử dụng định dạng JSON (`application/json`).
+*   **Kiểu dữ liệu đặc biệt**:
+    *   Các trường ID sử dụng định dạng chuỗi UUID v4 chuẩn (RFC 4122).
+    *   Thời gian (Timestamp) sử dụng định dạng chuỗi ISO 8601 (múi giờ UTC, kết thúc bằng chữ `Z`).
+*   **Định dạng lỗi**: Khi gặp lỗi hệ thống, API phản hồi mã trạng thái HTTP (400, 404, 422, 500, v.v.) đi kèm body JSON dạng:
+    ```json
+    { "detail": "Thông tin chi tiết về lỗi phát sinh" }
+    ```
 
-## Content type
+---
 
-Mọi request/response JSON dùng `application/json`. UUID trả về dưới dạng
-string canonical (RFC 4122). Timestamp dùng ISO 8601 với timezone UTC.
+## 2. Đặc tả các Endpoint HTTP REST
 
-## Error format
-
-Mọi lỗi REST trả về:
-
-```json
-{ "detail": "human-readable message" }
-```
-
-Status code chuẩn:
-- `400` validation error
-- `404` session / workflow không tồn tại
-- `422` Pydantic validation
-- `501` chưa implement (Phase 5 retry)
-
-## Endpoints
-
-### GET /health
-
-Liveness probe. Không phụ thuộc Ollama.
-
-Response 200 (Phase 11 — `agent_s3` block thêm vào):
-```json
-{
-  "status": "ok",
-  "service": "windagent-backend",
-  "agent_s3": {
-    "mode": "disabled",
-    "enabled": false,
-    "package_available": true,
-    "external_repo_available": false,
-    "config_missing_count": 0
-  }
-}
-```
-
-> `agent_s3` block là summary rẻ, không chứa secret. Field đầy đủ ở
-> `GET /agent-s3/health` (xem bên dưới).
-
-### GET /agent-s3/health  *(Phase 11)*
-
-Snapshot đầy đủ của Agent-S3 integration. Trả 200 luôn — client tự check
-`mode` để biết khả dụng.
-
-Response 200 (Phase 11 — secret-scrubbed, `SEC-002` closed):
-```json
-{
-  "mode": "disabled" | "package" | "external" | "misconfigured",
-  "enabled": true | false,
-  "source": "package" | "external",
-  "package_available": true | false,
-  "external_repo_available": true | false,
-  "config_missing": ["WINDAGENT_AGENT_S3_PROVIDER", ...],
-  "last_error": null | "<reason>",
-  "config": {
-    "external_path": "D:\\antigaravity_code\\WindAgent\\external\\Agent-S",
-    "provider": "openai",
-    "model": "gpt-5-2025-08-07",
-    "ground_provider": "huggingface",
-    "ground_model": "ui-tars-1.5-7b",
-    "enable_local_env": false,
-    "notes": [],
-    "adapter_initialised": true,
-    "last_actions": []
-  }
-}
-```
-
-> **Quy tắc secret-scrubbing:** response **KHÔNG BAO GIỜ** chứa
-> `model_api_key` / `ground_api_key` / `bearer_token` / `password` /
-> `authorization`. Nếu env vars đó được set, scrub layer thay bằng
-> boolean `*_configured` field (`model_api_key_configured`,
-> `ground_api_key_configured`, ...). Xem
-> `services/agent_s3_health.py::scrub_secrets()`. Test
-> `tests/test_agent_s3_secret_scrubbing.py` pin contract này.
-
-### GET /models/health  *(Phase 4)*
-
-Probe model provider (Ollama hoặc Mock). Luôn trả 200 — frontend tự
-kiểm tra `online`.
-
-Response 200:
-```json
-{
-  "provider": "ollama",
-  "online": true,
-  "model": "qwen3:4b-q4",
-  "latency_ms": 1234,
-  "error": null
-}
-```
-
-Khi `online=false`:
-```json
-{
-  "provider": "ollama",
-  "online": false,
-  "model": "qwen3:4b-q4",
-  "latency_ms": null,
-  "error": "connection refused"
-}
-```
-
-Frontend dùng để hiển thị badge "Qwen ready" / "Qwen offline (fallback)".
-
-### GET /permissions/config  *(Phase 7)*
-
-Trả về `PermissionConfig` hiện tại.
-
-Response 200:
-```json
-{
-  "safe_mode": false,
-  "confirm_before_type": true,
-  "confirm_before_click": true,
-  "type_text_length_threshold": 20,
-  "request_timeout_s": 60.0
-}
-```
-
-### PATCH /permissions/config  *(Phase 7)*
-
-Cập nhật một hoặc nhiều field. Field nào không gửi thì giữ nguyên.
-
-Body (tất cả optional):
-```json
-{
-  "safe_mode": false,
-  "confirm_before_type": true,
-  "confirm_before_click": false,
-  "type_text_length_threshold": 20
-}
-```
-
-Response 200 = config sau update.
-
-### POST /permissions/{request_id}/decide  *(Phase 7)*
-
-Resolve một permission request đang chờ.
-
-Body:
-```json
-{ "decision": "granted" | "denied" }
-```
-
-Response 202:
-```json
-{ "request_id": "uuid", "decision": "granted", "status": "resolved" }
-```
-
-Response 404 nếu request_id không tồn tại / đã resolved / đã timeout.
-Response 422 nếu body sai schema.
-
-Side effect: emit `permission_granted` hoặc `permission_denied` event
-qua EventBus; runner unblock và tiếp tục (granted) hoặc skip step
-(denied).
-
-### POST /sessions
-
-Tạo chat session mới.
-
-Response 201:
-```json
-{
-  "session_id": "uuid",
-  "created_at": "2026-06-18T12:00:00Z",
-  "status": "idle"
-}
-```
-
-Side effect: phát event `session_created` qua WebSocket của session đó
-nếu có client subscribe. Hiện tại service không tự emit event này; nếu
-Phase 6 cần, sẽ bật lại (test cũ `test_create_session_emits_session_created`
-đã cover shape).
-
-### GET /sessions/{session_id}
-
-Lấy thông tin session.
-
-Response 200:
-```json
-{
-  "id": "uuid",
-  "created_at": "2026-06-18T12:00:00Z",
-  "updated_at": "2026-06-18T12:00:00Z",
-  "status": "idle"
-}
-```
-
-Response 404 nếu session không tồn tại.
-
-### POST /sessions/{session_id}/messages
-
-Gửi message từ user. Backend lưu message, chạy hardcoded planner,
-emit đầy đủ event planning sequence.
-
-Body:
-```json
-{ "content": "Mở Notepad và gõ Hello" }
-```
-- `content`: string 1..4000 ký tự.
-
-Response 202:
-```json
-{
-  "message_id": "uuid",
-  "workflow_id": "uuid",
-  "step_count": 2
-}
-```
-
-Response 404 nếu session không tồn tại.
-
-Events phát theo thứ tự qua WebSocket:
-1. `message_received`
-2. `planning_started`
-3. `planning_finished` (với `used_fallback=true`, model="fallback-rule-based")
-4. `workflow_created`
-
-### GET /sessions/{session_id}/workflow
-
-Đọc workflow gắn với session.
-
-Response 200: shape khớp `docs/event_protocol.md` §6
-```json
-{
-  "workflow_id": "uuid",
-  "session_id": "uuid",
-  "created_at": "2026-06-18T12:00:00Z",
-  "status": "pending",
-  "steps": [
+### Liveness Probe (Kiểm tra trạng thái hệ thống)
+*   **Phương thức**: `GET`
+*   **Đường dẫn**: `/health`
+*   **Mô tả**: Kiểm tra nhanh xem sidecar backend có đang chạy và phản hồi hay không.
+*   **Response (200 OK)**:
+    ```json
     {
-      "id": "uuid",
-      "order": 1,
-      "name": "Open Notepad",
-      "tool_name": "open_app",
-      "params": { "app": "notepad" },
-      "status": "pending"
+      "status": "ok",
+      "service": "windagent-backend",
+      "agent_s3": {
+        "mode": "disabled",
+        "enabled": false,
+        "package_available": true,
+        "external_repo_available": false,
+        "config_missing_count": 0
+      }
     }
-  ]
-}
-```
+    ```
 
-Response 404 nếu session hoặc workflow không tồn tại.
+### Agent-S3 Health (Trạng thái chi tiết phân hệ Agent-S3)
+*   **Phương thức**: `GET`
+*   **Đường dẫn**: `/agent-s3/health`
+*   **Mô tả**: Lấy trạng thái cấu hình và tích hợp của Agent-S3. Đi kèm cơ chế **Secret Scrubbing** bảo vệ API Key.
+*   **Response (200 OK)**:
+    ```json
+    {
+      "mode": "package",
+      "enabled": true,
+      "source": "package",
+      "package_available": true,
+      "external_repo_available": false,
+      "config_missing": [],
+      "last_error": null,
+      "config": {
+        "external_path": "D:\\antigaravity_code\\WindAgent\\external\\Agent-S",
+        "provider": "openai",
+        "model": "gpt-5-2025-08-07",
+        "ground_provider": "huggingface",
+        "ground_model": "ui-tars-1.5-7b",
+        "enable_local_env": false,
+        "notes": [],
+        "adapter_initialised": true,
+        "last_actions": []
+      }
+    }
+    ```
 
-### POST /sessions/{session_id}/pause  *(Phase 5)*
+### Models Health (Trạng thái mô hình Ollama)
+*   **Phương thức**: `GET`
+*   **Đường dẫn**: `/models/health`
+*   **Mô tả**: Kiểm tra kết nối tới dịch vụ Ollama cục bộ.
+*   **Response (200 OK)**:
+    ```json
+    {
+      "provider": "ollama",
+      "online": true,
+      "model": "qwen3:4b-q4",
+      "latency_ms": 250,
+      "error": null
+    }
+    ```
 
-Yêu cầu runner pause workflow. Workflow phải đang chạy (status ≠ finished).
-Nếu workflow đã xong, trả 409.
+### Quản lý danh sách mô hình (Model Registry)
+*   **Lấy danh sách các Model**: `GET /models`
+    *   *Mô tả*: Trả về danh sách tất cả các mô hình được đăng ký (cục bộ hoặc API) kèm theo trạng thái runtime và cấu hình quota.
+    *   *Response (200 OK)*:
+        ```json
+        [
+          {
+            "id": "google_gemini_2.5_flash",
+            "name": "Gemini 2.5 Flash",
+            "provider": "Google AI Studio",
+            "providerId": "google_ai_studio",
+            "apiSource": "google",
+            "modelId": "gemini-2.5-flash",
+            "baseUrl": "https://generativelanguage.googleapis.com",
+            "type": "API",
+            "billingMode": "RPM_RPD",
+            "context": "1048K",
+            "status": "Ready",
+            "hasKey": true,
+            "roles": "GUI Agent, Planner",
+            "rt": "320ms",
+            "sr": "100%",
+            "sparkPoints": "0,15 15,18 30,12 45,16 60,6 68,10",
+            "description": "Google's fast multimodal model...",
+            "deployment": "Cloud API",
+            "quantization": null,
+            "vram": "—",
+            "vramVal": "—",
+            "vramMax": "—",
+            "vramPct": 0,
+            "ramVal": "—",
+            "ramMax": "—",
+            "ramPct": 0,
+            "contextVal": "0",
+            "contextMax": "1048K",
+            "contextPct": 0,
+            "tokensPerSec": "72.5",
+            "uptime": "30d",
+            "assignedRoles": [{"name": "GUI Agent", "type": "Candidate"}],
+            "tags": ["Fast", "Multimodal", "Free Tier"],
+            "capabilities": ["chat", "vision", "tool_use", "long_context"],
+            "quota": {
+              "mode": "RPM_RPD",
+              "rpmLimit": 15,
+              "rpdLimit": 1500,
+              "tpmLimit": 1000000,
+              "remainingRequestsToday": 1490,
+              "remainingTokensToday": 980000,
+              "remainingCredit": null,
+              "resetAt": "2026-07-03T14:00:00Z",
+              "source": "provider_api"
+            }
+          }
+        ]
+        ```
 
-Response 202:
-```json
-{ "status": "paused_requested", "workflow_id": "uuid" }
-```
+*   **Thêm cấu hình Model**: `POST /models`
+    *   *Request Body*:
+        ```json
+        {
+          "name": "Gemini 2.5 Flash",
+          "provider_id": "google_ai_studio",
+          "model_id": "gemini-2.5-flash",
+          "type": "API",
+          "capabilities": ["chat", "vision"],
+          "tags": ["Cloud"],
+          "roles": ["Planner"]
+        }
+        ```
+    *   *Response (200 OK)*:
+        ```json
+        { "id": "google_ai_studio_gemini-2.5-flash", "display_name": "Gemini 2.5 Flash" }
+        ```
 
-Response 404 nếu session không có runner.
-Response 409 nếu workflow đã finished.
+*   **Nhập/Tải Model local**: `POST /models/import`
+    *   *Request Body*:
+        ```json
+        { "source": "ollama", "model_name": "qwen3.5:4b-q4" }
+        ```
+    *   *Response (200 OK)*:
+        ```json
+        { "status": "queued", "model_name": "qwen3.5:4b-q4", "message": "Import job has been queued successfully." }
+        ```
 
-Event phát: `user_paused`.
+*   **Điều khiển model**: `POST /models/{model_id}/start` | `POST /models/{model_id}/stop` | `POST /models/{model_id}/restart`
+    *   *Response (200 OK)*:
+        ```json
+        { "status": "started", "model_id": "google_gemini_2.5_flash" }
+        ```
 
-### POST /sessions/{session_id}/resume  *(Phase 5)*
+*   **Lấy quy tắc định tuyến**: `GET /models/routing`
+    *   *Response (200 OK)*:
+        ```json
+        {
+          "Planner": { "primary": "google_gemini_2.5_flash", "fallback": "openrouter_free" },
+          "Coder": { "primary": "mistral_codestral", "fallback": "qwen_coder_free" }
+        }
+        ```
 
-Resume workflow đang pause. Workflow phải đang pause.
+*   **Cập nhật quy tắc định tuyến**: `PATCH /models/routing`
+    *   *Request Body*:
+        ```json
+        {
+          "Planner": { "primary": "google_gemini_2.5_flash_lite", "fallback": "openrouter_free" }
+        }
+        ```
+    *   *Response (200 OK)*:
+        ```json
+        { "status": "success", "message": "Routing rules updated successfully." }
+        ```
 
-Response 202:
-```json
-{ "status": "resumed_requested", "workflow_id": "uuid" }
-```
+*   **Lấy log hoạt động model**: `GET /models/{model_id}/logs`
+    *   *Response (200 OK)*:
+        ```json
+        [
+          { "time": "10:21 AM", "message": "Probe complete: health=Healthy, latency=320ms" }
+        ]
+        ```
 
-Response 404/409 tương tự pause.
+*   **Xem so sánh hiệu năng (Benchmarks)**: `GET /models/benchmarks`
+*   **Chạy Benchmark**: `POST /models/benchmarks/run`
+    *   *Request Body*:
+        ```json
+        { "model_ids": ["google_gemini_2.5_flash"], "test_name": "smoke", "prompt": "Say OK in one sentence.", "max_tokens": 16 }
+        ```
+    *   *Response (200 OK)*:
+        ```json
+        { "results": [{ "model_id": "google_gemini_2.5_flash", "success": true, "latency_ms": 320 }] }
+        ```
 
-Event phát: `user_resumed`.
+*   **Lấy danh sách hoạt động gần đây**: `GET /models/activity`
+*   **Danh sách cấu hình Provider**: `GET /models/providers`
+*   **Đồng bộ hóa model của Provider**: `POST /models/providers/{provider_id}/sync`
+*   **Lấy thông tin Quota của Provider**: `GET /models/providers/{provider_id}/quota`
+*   **Chạy kiểm tra liên kết (Probe Model)**: `POST /models/{model_id}/probe`
 
-### POST /sessions/{session_id}/stop  *(Phase 5)*
+### Cấu hình Cổng phân quyền (Permission Settings)
+*   **Đọc cấu hình**: `GET /permissions/config`
+    *   **Response (200 OK)**:
+        ```json
+        {
+          "safe_mode": false,
+          "confirm_before_type": true,
+          "confirm_before_click": true,
+          "type_text_length_threshold": 20,
+          "request_timeout_s": 60.0
+        }
+        ```
+*   **Cập nhật cấu hình**: `PATCH /permissions/config`
+    *   **Request Body** (tất cả các trường là tùy chọn):
+        ```json
+        {
+          "safe_mode": true,
+          "confirm_before_click": false
+        }
+        ```
+    *   **Response (200 OK)**: Trả về đối tượng cấu hình đầy đủ sau khi đã cập nhật thành công.
 
-Stop workflow. Workflow dừng ngay trước step tiếp theo, step hiện tại
-(nếu đang chạy) vẫn chạy xong rồi mới thoát loop.
+### Phản hồi yêu cầu phê duyệt (Permission Decision)
+*   **Phương thức**: `POST`
+*   **Đường dẫn**: `/permissions/{request_id}/decide`
+*   **Mô tả**: Frontend gửi quyết định phê duyệt hoặc từ chối thực thi một công cụ bị treo bởi Permission Gate.
+*   **Request Body**:
+    ```json
+    { "decision": "granted" }
+    ```
+    *(Các giá trị được chấp nhận: `"granted"`, `"denied"`)*
+*   **Response (202 Accepted)**:
+    ```json
+    {
+      "request_id": "uuid-request-id",
+      "decision": "granted",
+      "status": "resolved"
+    }
+    ```
 
-Response 202:
-```json
-{ "status": "stopped_requested", "workflow_id": "uuid" }
-```
+### Quản lý phiên làm việc (Chat Sessions)
+*   **Tạo Session mới**: `POST /sessions`
+    *   **Response (201 Created)**:
+        ```json
+        {
+          "session_id": "uuid-session-id",
+          "created_at": "2026-07-03T12:00:00Z",
+          "status": "idle"
+        }
+        ```
+*   **Lấy chi tiết Session**: `GET /sessions/{session_id}`
+    *   **Response (200 OK)**: Trả về thông tin thời gian khởi tạo, cập nhật, và trạng thái hiện tại (`idle`, `running`, `paused`, `completed`, `failed`, `cancelled`).
 
-Event phát: `user_stopped`.
+### Gửi tin nhắn & Lập kế hoạch (Send Message)
+*   **Phương thức**: `POST`
+*   **Đường dẫn**: `/sessions/{session_id}/messages`
+*   **Mô tả**: User gửi tin nhắn yêu cầu tự động hóa. Backend sẽ tạo luồng planning và sinh ra workflow.
+*   **Request Body**:
+    ```json
+    { "content": "Mở ứng dụng Calculator trên màn hình" }
+    ```
+*   **Response (202 Accepted)**:
+    ```json
+    {
+      "message_id": "uuid-message-id",
+      "workflow_id": "uuid-workflow-id",
+      "step_count": 1
+    }
+    ```
 
-### POST /workflow/{step_id}/retry  *(Phase 5)*
+### Đọc thông tin Workflow
+*   **Phương thức**: `GET`
+*   **Đường dẫn**: `/sessions/{session_id}/workflow`
+*   **Response (200 OK)**:
+    ```json
+    {
+      "workflow_id": "uuid-workflow-id",
+      "session_id": "uuid-session-id",
+      "created_at": "2026-07-03T12:00:05Z",
+      "status": "pending",
+      "steps": [
+        {
+          "id": "uuid-step-id",
+          "order": 1,
+          "name": "Open Calculator",
+          "tool_name": "open_app",
+          "params": { "app": "calc" },
+          "status": "pending"
+        }
+      ]
+    }
+    ```
 
-Re-run workflow từ step có id này. Workflow phải đang finished.
+### Điều khiển Workflow Runner (Pause / Resume / Stop / Retry)
+*   **Pause (Tạm dừng)**: `POST /sessions/{session_id}/pause`
+    *   *Trả về*: `{"status": "paused_requested", "workflow_id": "uuid"}` (Mã 202)
+*   **Resume (Tiếp tục)**: `POST /sessions/{session_id}/resume`
+    *   *Trả về*: `{"status": "resumed_requested", "workflow_id": "uuid"}` (Mã 202)
+*   **Stop (Dừng lại)**: `POST /sessions/{session_id}/stop`
+    *   *Trả về*: `{"status": "stopped_requested", "workflow_id": "uuid"}` (Mã 202)
+*   **Retry (Chạy lại từ bước lỗi)**: `POST /workflow/{step_id}/retry`
+    *   *Trả về*: `{"status": "retry_requested", "workflow_id": "uuid", "step_id": "uuid"}` (Mã 202)
 
-Response 202:
-```json
-{
-  "status": "retry_requested",
-  "workflow_id": "uuid",
-  "step_id": "uuid"
-}
-```
+### Kiểm tra trạng thái máy chạy (Runner State)
+*   **Phương thức**: `GET`
+*   **Đường dẫn**: `/sessions/{session_id}/runner`
+*   **Mô tả**: Xem thông số hoạt động in-memory của WorkflowRunner để cập nhật trạng thái các nút bấm điều khiển trên UI.
+*   **Response (200 OK)**:
+    ```json
+    {
+      "session_id": "uuid-session-id",
+      "runner": {
+        "session_id": "uuid-session-id",
+        "workflow_id": "uuid-workflow-id",
+        "paused": false,
+        "stop_requested": false,
+        "current_step_index": 0,
+        "last_failed_step_id": null,
+        "task_done": false,
+        "final_status": "running"
+      }
+    }
+    ```
 
-Response 404 nếu step_id không tồn tại hoặc session không có runner.
-Response 409 nếu runner từ chối retry.
+---
 
-### GET /sessions/{session_id}/runner  *(Phase 5)*
+## 3. Giao tiếp Thời gian thực qua WebSocket
 
-Inspect in-memory state của WorkflowRunner cho session. Dùng cho frontend
-để biết trạng thái control buttons.
+Hệ thống cung cấp kênh WebSocket để stream toàn bộ các trạng thái chạy và cho phép gửi lệnh phản hồi nhanh.
 
-Response 200:
-```json
-{
-  "session_id": "uuid",
-  "runner": {
-    "session_id": "uuid",
-    "workflow_id": "uuid",
-    "paused": false,
-    "stop_requested": false,
-    "current_step_index": 1,
-    "last_failed_step_id": null,
-    "task_done": true,
-    "final_status": "completed"
-  }
-}
-```
+*   **Endpoint**: `ws://localhost:8765/ws/{session_id}`
+*   **Luồng gửi tin nhắn từ Client -> Server**:
+    Client có thể gửi các JSON text frame để thực hiện hành động nhanh thay vì gọi API REST:
+    *   Tạm dừng: `{"action": "pause"}`
+    *   Tiếp tục: `{"action": "resume"}`
+    *   Dừng hẳn: `{"action": "stop"}`
+    *   Cho phép cấp quyền: `{"action": "permission_granted", "request_id": "<uuid>"}`
+    *   Từ chối cấp quyền: `{"action": "permission_denied", "request_id": "<uuid>"}`
 
-`runner` là `null` nếu session chưa từng gửi message nào có workflow
-chạy được.
+---
 
-## WebSocket
+## 4. Liên kết
 
-### WS /ws/{session_id}
-
-Server → Client: stream event JSON xem `docs/event_protocol.md`.
-
-Frame shape:
-```json
-{
-  "event": "step_started",
-  "timestamp": "2026-06-18T12:00:00Z",
-  "data": { ... }
-}
-```
-
-Quy tắc:
-- Backend gửi text "ping" mỗi 20-30s nếu không có event (keepalive).
-  Frontend nên bỏ qua frame này.
-- Nếu session không tồn tại, server đóng socket với code `4404`.
-- **Phase 5**: Client có thể gửi control message text frame:
-
-  ```json
-  {"action": "pause"}
-  {"action": "resume"}
-  {"action": "stop"}
-  ```
-
-  Server echo `user_paused` / `user_resumed` / `user_stopped` qua bus
-  cho mọi subscriber. Nếu runner đã finished hoặc không tồn tại, server
-  im lặng (không echo, không crash).
-- **Phase 7**: Client cũng gửi permission decision:
-
-  ```json
-  {"action": "permission_granted", "request_id": "<uuid>"}
-  {"action": "permission_denied",  "request_id": "<uuid>"}
-  ```
-
-  Server echo `permission_granted` / `permission_denied` qua bus cho
-  mọi subscriber. Nếu request_id không pending thì server im lặng
-  (không crash, không echo).
-
-## Phase roadmap
-
-| Endpoint | Phase 1 | Phase 4 |
-|---|---|---|
-| `GET /health` | ✓ real | unchanged |
-| `GET /models/health` | — | ✓ real — Ollama / mock probe |
-| `POST /sessions` | ✓ real | + reopen session cũ (Phase 2) |
-| `GET /sessions/{id}` | ✓ real | |
-| `POST /sessions/{id}/messages` | ✓ real + fallback parser | + Qwen3 4B qua Ollama |
-| `GET /sessions/{id}/workflow` | ✓ real | |
-| `POST /sessions/{id}/pause` | echo event only (Phase 1 stub) | ✓ real — runner pause |
-| `POST /sessions/{id}/resume` | echo event only (Phase 1 stub) | ✓ real — runner resume |
-| `POST /sessions/{id}/stop` | echo event only (Phase 1 stub) | ✓ real — runner stop |
-| `POST /workflow/{step_id}/retry` | 501 (Phase 1 stub) | ✓ real — retry step |
-| `GET /sessions/{id}/runner` | — | ✓ real — runner state |
-| `WS /ws/{session_id}` | server→client | + client→server control |
+- [docs/event_protocol.md](file:///d:/antigaravity_code/WindAgent/docs/event_protocol.md) — Tài liệu chi tiết về đặc tả cấu trúc JSON của từng loại WebSocket Event.
+- [docs/safety_policy.md](file:///d:/antigaravity_code/WindAgent/docs/safety_policy.md) — Chính sách bảo mật và Cổng phân quyền.

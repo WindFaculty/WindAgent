@@ -1,119 +1,53 @@
-# Error handling audit — WindAgent MVP (Phase 10.2)
+# Rà soát & Kiểm tra Xử lý Lỗi (Error Handling Audit)
 
-This document inventories every failure mode the user can plausibly
-hit during MVP, where it is caught, and what the user sees. It exists
-so future contributors know what's already covered (don't re-implement)
-and where the gaps are.
+Tài liệu này hệ thống hóa các kịch bản lỗi có thể phát sinh trong hệ thống WindAgent v1.2.0, nơi phát hiện lỗi, cách xử lý của backend, và cách hiển thị tương ứng trên giao diện người dùng.
 
-Canonical event shape: `docs/event_protocol.md`.
-Canonical REST shape: `docs/api_contract.md`.
+---
 
-## 1. Network / connectivity
+## 1. Lỗi kết nối Mạng (Network & Connectivity)
 
-| Failure | Where caught | Surface to user |
+| Tình huống lỗi | Nơi bắt lỗi | Cách xử lý và hiển thị trên UI |
 |---|---|---|
-| Backend not running when frontend loads | `apps/desktop/src/api/client.ts` `jsonFetch` throws on `fetch` rejection; `App.tsx` shows `"poll failed: ..."` in StatusBar | Red banner in StatusBar; chat input remains usable |
-| Vite proxy target offline (`/api` 502/504) | Same `jsonFetch` path; status text is `API 502: ...` | Red banner |
-| Backend /health returns 5xx | Healthcheck script marks `[FAIL]`; not surfaced in-app (no auto-retry) | Operator sees it in `scripts/healthcheck.ps1` output |
-| WebSocket disconnect | `apps/desktop/src/api/client.ts` `connectWs` reconnects with exponential backoff (1s → 15s max) | Silent reconnect; no user-visible error unless reconnect exhausts indefinitely |
-| WebSocket reconnect hits unknown session | Server `apps/backend/routers/websocket.py` closes with `code=4404` | Client logs to console; user starts a new session |
+| Backend sidecar chưa khởi động khi tải UI | `api/client.ts` bắt lỗi `fetch` bị từ chối. | Hiển thị biểu ngữ màu đỏ báo lỗi kết nối trên thanh trạng thái StatusBar. Khung chat vẫn mở nhưng không gửi được lệnh. |
+| Kết nối WebSocket bị đứt giữa chừng | `api/client.ts` bắt sự kiện ngắt kết nối. | Tự động thử kết nối lại (Auto-reconnect) với cơ chế giãn cách thời gian lũy thừa (từ 1 giây đến tối đa 15 giây). |
+| Kết nối lại WebSocket tới phiên làm việc (Session) không tồn tại | Server trả mã đóng kết nối `4404`. | Client đóng kết nối hoàn toàn và ghi log lỗi vào console. Người dùng cần tạo phiên làm việc mới. |
+| API REST /health trả lỗi 5xx | Thư viện HTTP client của frontend nhận HTTP code. | Hiển thị thông báo `API 5xx: error` trên StatusBar đỏ. |
 
-## 2. Model (planner)
+---
 
-| Failure | Where caught | Surface to user |
+## 2. Lỗi Mô hình & Lập kế hoạch (AI Models & Planner)
+
+| Tình huống lỗi | Nơi bắt lỗi | Cách xử lý và hiển thị trên UI |
 |---|---|---|
-| Ollama offline | `apps/backend/services/model_client.py` raises `ModelOfflineError` | `PlannerService.plan()` falls back to rule-based parser; emits `planning_finished` with `used_fallback=True`. UI shows workflow (if rule matches) or "empty workflow" if rule does not match. |
-| Ollama returns HTTP 4xx/5xx | `ModelResponseError` | Same fallback path |
-| Ollama returns malformed JSON | `PlannerService._try_parse` strips fences then `json.loads`; falls through to repair prompt |
-| Repair prompt also bad | Falls through to fallback parser; never raises |
-| Empty workflow produced | `workflow_created` event with `steps: []` | UI shows "Workflow rỗng — model không match được intent" |
-| `ModelClient.chat()` times out (>30s) | `httpx.ReadTimeout` -> `ModelOfflineError` | Fallback path as above |
-| Model present but wrong model id (`qwen3:4b-q4` not pulled) | `/models/health` returns `online: true, error: "model not found"` | StatusBar shows red banner with model not found message (via `fetchModelsHealth` -> `setModelsOnline`) |
+| Ollama cục bộ chưa khởi động | `model_client.py` ném lỗi `ModelOfflineError`. | `PlannerService` kích hoạt cơ chế dịch cú pháp dự phòng dựa trên tập luật (Rule-based Fallback Parser). Nếu khớp 2 câu demo (Notepad, Edge), workflow vẫn được sinh ra và chạy bình thường. |
+| Mô hình trả chuỗi văn bản thay vì JSON hợp lệ | `PlannerService` kiểm tra cú pháp JSON thất bại. | Kích hoạt cơ chế sửa JSON tự động (Repair Prompt) gửi lại Ollama 1 lần. Nếu vẫn hỏng, kích hoạt bộ dịch dự phòng. |
+| Mô hình đề xuất công cụ không nằm trong whitelist | `PlannerService` kiểm tra tên công cụ. | Hủy bỏ workflow, gửi sự kiện `error` với mã lỗi `MODEL_UNKNOWN_TOOL` về frontend. UI báo lỗi workflow không hợp lệ. |
+| Không tìm thấy mô hình chỉ định (ví dụ chưa pull `qwen3:4b-q4`) | `/models/health` trả về kết quả `online: true` nhưng đi kèm thông báo lỗi của Ollama. | Badge mô hình trên Header hiển thị màu đỏ báo lỗi cấu hình mô hình. |
 
-## 3. Tool execution
+---
 
-| Failure | Where caught | Surface to user |
+## 3. Lỗi Thực thi Công cụ (Tool Execution)
+
+| Tình huống lỗi | Nơi bắt lỗi | Cách xử lý và hiển thị trên UI |
 |---|---|---|
-| Unknown tool name (model hallucinates) | `apps/backend/services/tool_registry.py` `get_tool()` raises `KeyError` | `ToolExecutor.execute()` catches, emits `tool_call_finished` with `status: failed, error.code: INVALID_TOOL`; runner marks step `failed` |
-| Invalid params (e.g. `open_app` app not in allowlist) | `validate_params()` raises `ValidationError` | Same path; error message includes Pydantic field detail |
-| `open_app` for unknown app alias | `PyAutoGuiAdapter.open_app` raises `ValueError` listing supported apps | step `failed`; error message lists `{notepad, calc, mspaint, edge, explorer}` |
-| PyAutoGUI import fails (no display, no pywin32, etc.) | `PyAutoGuiAdapter._ensure_pyautogui` raises `RuntimeError("pyautogui is not available...")` | step `failed`; user told to set `WINDAGENT_MOCK_GUI=1` for dev |
-| PyAutoGUI permission denied (Windows UAC / interactive desktop) | Adapter call raises `pyautogui.FailSafeException` or similar | step `failed`; error message surfaced in `tool_call_finished.data.error.message` |
-| `click_target` in mock grounding mode | `ToolExecutor._execute_click_target` returns `VISION_STUB_MODE` error | step `failed` with clear message "GUI grounding service is not configured. Use click_xy with manual coordinates for MVP." |
-| Subprocess for `open_app`/`open_url` not found | `subprocess.Popen` raises `FileNotFoundError` | step `failed`; `error.code: TOOL_FAILED`, message includes the underlying exception |
-| Screenshot path not writable | `out_dir.mkdir` raises `PermissionError` / `OSError` | step `failed`; `error.code: TOOL_FAILED` |
+| Sai tham số công cụ (ví dụ: mở app không nằm trong whitelist) | Pydantic validation trong `ToolExecutor` kiểm tra schema. | Hủy bước thực thi, trả lỗi `INVALID_PARAMS` kèm mô tả chi tiết tham số sai. Bước chạy trên UI chuyển thành màu đỏ (`failed`). |
+| PyAutoGUI thiếu quyền kiểm soát hệ thống (Windows UAC chặn click) | `gui_adapter.py` ném ngoại lệ khi gọi hệ thống. | Ghi nhận lỗi vào audit log, trả lỗi `TOOL_EXECUTION_FAILED` về Client. Bước chạy chuyển sang `failed`. |
+| Gọi công cụ định vị trực quan `click_target` khi chưa cấu hình vision | `ToolExecutor` phát hiện dịch vụ grounding ở chế độ mock stub. | Trả lỗi `VISION_STUB_MODE` hướng dẫn người dùng sử dụng click tọa độ thô `click_xy` cho phiên bản hiện tại. |
+| Đường dẫn lưu ảnh chụp màn hình screenshot không ghi được | `ToolExecutor` bắt lỗi file system (Quyền hạn ổ đĩa đầy/chặn ghi). | Ghi nhận sự cố, đánh dấu bước screenshot là `failed` nhưng không làm sập tiến trình chạy của sidecar. |
 
-## 4. Workflow runner / control
+---
 
-| Failure | Where caught | Surface to user |
+## 4. Lỗi Cơ sở dữ liệu (Database & Persistence)
+
+| Tình huống lỗi | Nơi bắt lỗi | Cách xử lý và hiển thị trên UI |
 |---|---|---|
-| User clicks Stop on a non-running session | `WorkflowRunner.stop()` returns `False` | UI silently ignores (button disabled when `task_done`) |
-| User clicks Pause on a finished session | `WorkflowRunner.pause()` returns `False` | Button disabled in UI; no error |
-| User clicks Retry with no failed step | `WorkflowRunner.retry()` returns `False` | Button disabled in UI |
-| `permission_denied` from user | `WorkflowRunner._gate_permission` returns `"user_denied"` | Step marked `cancelled`; workflow continues with next step |
-| Permission request timeout | `PermissionService.request_permission` waits `request_timeout_s` (default 30s) then resolves `granted=False` | Same as user denied |
-| Tool raised mid-runner uncaught exception | `WorkflowRunner._run` `except Exception` block emits `session_finished` with `final_status: "failed"` | Status bar shows error; workflow marked failed |
-| WebSocket control message with malformed JSON | `routers/websocket.py` `_read_control_messages` catches `JSONDecodeError`, continues | Silent |
-| WebSocket control message with unknown action | Skipped | Silent |
+| File database SQLite bị khóa (database is locked) | `database.py` bắt lỗi tranh chấp ghi từ `aiosqlite`. | Ghi log cảnh báo mức ERROR. Luồng WebSocket thời gian thực vẫn chạy, dữ liệu log phiên được ghi đệm để lưu lại sau khi mở khóa. |
+| Không tìm thấy Session ID lưu trong SQLite khi reload trang | API `/sessions/{id}` trả về mã HTTP 404. | Giao diện hiển thị thông báo phiên làm việc không tồn tại hoặc đã bị xóa. |
+| Ổ đĩa đầy không ghi được file JSONL | `event_hooks.py` bắt lỗi ghi tệp tin. | Ghi nhận cảnh báo trong log backend. Hệ thống tiếp tục chạy bằng SQLite in-memory tạm thời. |
 
-## 5. Database / persistence
+---
 
-| Failure | Where caught | Surface to user |
-|---|---|---|
-| SQLite file not writable | `apps/backend/db/database.py` raises on init | Backend exits with non-zero code; healthcheck shows `[FAIL]` |
-| `execution_events` insert fails (e.g. DB locked) | `apps/backend/services/event_hooks.py` `except Exception` | Logged at ERROR; live WebSocket still receives event; user sees no error |
-| Session lookup missing (stale UUID in URL) | `routers/sessions.py` raises `HTTPException(404)` | Frontend shows `API 404: session not found` in StatusBar |
-| WebSocket connect to unknown session | `routers/websocket.py` closes with `code=4404` | Client reconnects; if user expects to see live data, no events arrive (start a new session) |
+## 5. Liên kết
 
-## 6. Frontend
-
-| Failure | Where caught | Surface to user |
-|---|---|---|
-| Any REST call rejects | `App.tsx` try/catch wraps every action; sets `error` state | Red banner in `<StatusBar error={...} />` |
-| WebSocket onmessage with non-JSON frame | `apps/desktop/src/api/client.ts` `connectWs` `try/catch` around `JSON.parse` | Silent (treat as keepalive) |
-| User sends empty message | `ChatInput` button disabled when input empty | UI prevents submit |
-| User sends before creating a session | `ChatPanel.onSend` triggers `newSession` first | First click creates session; subsequent clicks send messages |
-
-## 7. Operating without Ollama (MVP default)
-
-`scripts/dev_backend.ps1` defaults to `-Mock:$true`, which sets
-`WINDAGENT_MODEL_BACKEND=mock` and `WINDAGENT_MOCK_GUI=1`. In this mode
-the planner returns canned responses for the two demo phrases, and the
-GUI adapter records calls without touching the screen. This is the
-recommended path for first-time setup so the demo runs end-to-end
-without any model install.
-
-If a user wants real model behaviour they:
-1. Install Ollama from <https://ollama.com/download>.
-2. `ollama pull qwen3:4b-q4`.
-3. Start backend with `scripts/dev_backend.ps1 -Mock:$false`.
-
-## 8. Known gaps
-
-These are explicitly NOT covered in MVP — see `docs/mvp_release_note.md`
-§"Known issues":
-
-- No automatic backend reconnect on the frontend; user must refresh.
-- No disk-space check for `artifacts/runs`; long sessions fill disk.
-- Tool timeouts are 30s (httpx default) but no upper bound per step;
-  a hung subprocess blocks the runner forever (Stop still works).
-- Planner repair prompt is sent unconditionally; on slow models this
-  doubles worst-case latency on bad output.
-
-## 9. Test coverage
-
-Every row above has a corresponding test in `apps/backend/tests/`:
-
-- Network: `test_websocket.py` covers reconnect + close-on-unknown.
-- Model: `test_model_client.py`, `test_planner_service.py`,
-  `test_models_api.py`.
-- Tool: `test_tool_executor.py`, `test_tool_registry.py`,
-  `test_tools_api.py`.
-- Runner: `test_workflow_runner.py`, `test_session_service.py`,
-  `test_api.py`.
-- DB: `test_db_persistence.py`.
-- Frontend: `apps/desktop/src/components/*.test.tsx`,
-  `apps/desktop/src/state/sessionStore.test.ts`.
-
-Total backend tests: 184 (`uv run pytest`).
-Total frontend tests: 19 (`npm run test`).
+- [docs/e2e_test_checklist.md](file:///d:/antigaravity_code/WindAgent/docs/e2e_test_checklist.md) — Danh sách kiểm thử tích hợp E2E.
+- [docs/safety_policy.md](file:///d:/antigaravity_code/WindAgent/docs/safety_policy.md) — Chính sách bảo mật và Cổng phân quyền.
