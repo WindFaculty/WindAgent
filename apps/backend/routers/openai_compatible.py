@@ -4,6 +4,7 @@ from __future__ import annotations
 import logging
 from typing import Any, Dict
 from fastapi import APIRouter, Request, Body, HTTPException
+from fastapi.responses import StreamingResponse
 
 from services.provider_gateway import ProviderGatewayService
 
@@ -28,12 +29,23 @@ async def list_models(request: Request) -> Dict[str, Any]:
 
 
 @router.post("/chat/completions")
-async def chat_completions(request: Request, payload: Dict[str, Any] = Body(...)) -> Dict[str, Any]:
+async def chat_completions(request: Request, payload: Dict[str, Any] = Body(...)):
     """Forward chat completions requests to resolved backend models."""
     gateway = _gateway(request)
-    try:
-        return await gateway.chat_completion(payload)
-    except NotImplementedError as e:
-        raise HTTPException(status_code=501, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    stream = payload.get("stream", False)
+    
+    if stream:
+        try:
+            return StreamingResponse(
+                gateway.chat_completion_stream(payload),
+                media_type="text/event-stream"
+            )
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=str(e))
+    else:
+        try:
+            return await gateway.chat_completion(payload)
+        except NotImplementedError as e:
+            raise HTTPException(status_code=501, detail=str(e))
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=str(e))

@@ -6,7 +6,7 @@ import json
 import time
 import math
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple, AsyncGenerator
 
 from sqlalchemy import select, delete, func
 from db.database import Database
@@ -663,3 +663,202 @@ class RouterExecutionService:
             )
             session.add(log_entry)
             await session.commit()
+
+    async def resolve_route(self, role: str, prompt: str) -> Tuple[ModelCatalogORM, ModelProviderORM, str]:
+        """Resolve the best eligible model and provider for the role, returning (catalog, provider, tier)."""
+        async with self.db.session() as session:
+            stmt = select(ModelRoutingRuleORM).where(ModelRoutingRuleORM.role == role)
+            res = await session.execute(stmt)
+            rule = res.scalar_one_or_none()
+
+            stmt_catalog = (
+                select(ModelCatalogORM, ModelProviderORM, ModelRuntimeStatusORM)
+                .join(ModelProviderORM, ModelCatalogORM.provider_id == ModelProviderORM.id)
+                .outerjoin(ModelRuntimeStatusORM, ModelCatalogORM.id == ModelRuntimeStatusORM.model_id)
+            )
+            res_catalog = await session.execute(stmt_catalog)
+            catalog_rows = res_catalog.all()
+            catalog_map = {c.id: (c, p, r) for c, p, r in catalog_rows}
+
+            if not rule or rule.status == "Disabled":
+                best_model = await self._find_best_eligible_model(catalog_map, role)
+                if best_model:
+                    row = catalog_map[best_model.id]
+                    return row[0], row[1], "auto"
+                raise ValueError(f"No routing rule found and no eligible models for role {role}")
+
+            # Primary, fallback, and final fallback
+            primary = catalog_map.get(rule.primary_model_id) if rule.primary_model_id else None
+            fallback = catalog_map.get(rule.fallback_model_id) if rule.fallback_model_id else None
+            final_fb = catalog_map.get(rule.final_fallback_model_id) if rule.final_fallback_model_id else None
+
+            # Calculate scores
+            primary_score = await self.policy.calculate_score(role, *primary) if primary else 0.0
+            fallback_score = await self.policy.calculate_score(role, *fallback) if fallback else 0.0
+            final_score = await self.policy.calculate_score(role, *final_fb) if final_fb else 0.0
+
+            if primary and primary_score > 0.4:
+                return primary[0], primary[1], "primary"
+            elif fallback and fallback_score > 0.4:
+                return fallback[0], fallback[1], "fallback"
+            elif final_fb and final_score > 0.4:
+                return final_fb[0], final_fb[1], "final_fallback"
+            else:
+                best_model = await self._find_best_eligible_model(catalog_map, role)
+                if best_model:
+                    row = catalog_map[best_model.id]
+                    return row[0], row[1], "emergency"
+                
+                # If everything fails, just return primary or fallback as default even if score <= 0.4
+                if primary:
+                    return primary[0], primary[1], "primary"
+                if fallback:
+                    return fallback[0], fallback[1], "fallback"
+                if final_fb:
+                    return final_fb[0], final_fb[1], "final_fallback"
+
+                if catalog_map:
+                    first_id = list(catalog_map.keys())[0]
+                    row = catalog_map[first_id]
+                    return row[0], row[1], "auto"
+                raise ValueError("No models available in system catalog.")
+
+    async def execute_chat(self, role: str, messages: List[Dict[str, str]], **kwargs) -> str:
+        """Resolve route, execute chat completion, log to database, and return generated content."""
+        prompt = messages[-1].get("content", "") if messages else ""
+        start_time = time.perf_counter()
+        
+        try:
+            catalog, provider, tier = await self.resolve_route(role, prompt)
+        except Exception as exc:
+            log.error("Failed to resolve route: %s", exc)
+            await self.log_execution(
+                role=role,
+                selected_model_id="unknown",
+                selection_tier="failed",
+                status="failed",
+                latency_ms=0,
+                error_message=str(exc),
+            )
+            raise exc
+
+        model_id = catalog.model_id
+        client = self.model_service.get_provider_client(provider)
+        
+        status = "success"
+        error_msg = None
+        content = ""
+        prompt_tokens = sum(len(m.get("content", "").split()) for m in messages)
+        completion_tokens = 0
+
+        try:
+            if provider.id == "ollama":
+                from services.model_client import ChatMessage
+                chat_messages = [ChatMessage(role=m.get("role", "user"), content=m.get("content", "")) for m in messages]
+                content = await client.chat(chat_messages)
+            else:
+                content = await client.chat_completion(
+                    model_id=model_id,
+                    messages=messages,
+                    max_tokens=kwargs.get("max_tokens", 1024),
+                )
+            completion_tokens = len(content.split())
+        except Exception as exc:
+            status = "failed"
+            error_msg = str(exc)
+            log.exception("Completion execution failed on provider client %s", provider.id)
+            raise exc
+        finally:
+            latency_ms = int((time.perf_counter() - start_time) * 1000)
+            cost = 0.0001 if tier != "primary" else 0.0
+            await self.log_execution(
+                role=role,
+                selected_model_id=catalog.id,
+                selection_tier=tier,
+                status=status,
+                latency_ms=latency_ms,
+                error_message=error_msg,
+                prompt_tokens=prompt_tokens,
+                completion_tokens=completion_tokens,
+                estimated_cost=cost,
+            )
+
+        return content
+
+    async def execute_chat_stream(self, role: str, messages: List[Dict[str, str]], **kwargs) -> AsyncGenerator[Dict[str, Any], None]:
+        """Resolve route, execute chat, and yield formatted OpenAI-compatible chunks."""
+        prompt = messages[-1].get("content", "") if messages else ""
+        start_time = time.perf_counter()
+
+        try:
+            catalog, provider, tier = await self.resolve_route(role, prompt)
+        except Exception as exc:
+            log.error("Failed to resolve stream route: %s", exc)
+            await self.log_execution(
+                role=role,
+                selected_model_id="unknown",
+                selection_tier="failed",
+                status="failed",
+                latency_ms=0,
+                error_message=str(exc),
+            )
+            raise exc
+
+        model_id = catalog.model_id
+        client = self.model_service.get_provider_client(provider)
+        
+        status = "success"
+        error_msg = None
+        content = ""
+        prompt_tokens = sum(len(m.get("content", "").split()) for m in messages)
+
+        try:
+            if provider.id == "ollama":
+                from services.model_client import ChatMessage
+                chat_messages = [ChatMessage(role=m.get("role", "user"), content=m.get("content", "")) for m in messages]
+                content = await client.chat(chat_messages)
+            else:
+                content = await client.chat_completion(
+                    model_id=model_id,
+                    messages=messages,
+                    max_tokens=kwargs.get("max_tokens", 1024),
+                )
+            
+            completion_tokens = len(content.split())
+            latency_ms = int((time.perf_counter() - start_time) * 1000)
+            cost = 0.0001 if tier != "primary" else 0.0
+
+            await self.log_execution(
+                role=role,
+                selected_model_id=catalog.id,
+                selection_tier=tier,
+                status=status,
+                latency_ms=latency_ms,
+                error_message=error_msg,
+                prompt_tokens=prompt_tokens,
+                completion_tokens=completion_tokens,
+                estimated_cost=cost,
+            )
+
+            # Yield parsed completion result
+            yield {
+                "id": f"chatcmpl-{int(time.time())}",
+                "model": catalog.id,
+                "content": content
+            }
+        except Exception as exc:
+            status = "failed"
+            error_msg = str(exc)
+            latency_ms = int((time.perf_counter() - start_time) * 1000)
+            await self.log_execution(
+                role=role,
+                selected_model_id=catalog.id,
+                selection_tier=tier,
+                status=status,
+                latency_ms=latency_ms,
+                error_message=error_msg,
+                prompt_tokens=prompt_tokens,
+                completion_tokens=0,
+                estimated_cost=0.0,
+            )
+            raise exc

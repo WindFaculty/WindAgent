@@ -1,8 +1,11 @@
-"""OpenAI-compatible provider gateway service phase 1."""
+"""OpenAI-compatible provider gateway service phase 2."""
 from __future__ import annotations
 
+import json
 import logging
-from typing import Any, Dict, List, Optional
+import asyncio
+import time
+from typing import Any, Dict, List, Optional, AsyncGenerator
 from sqlalchemy import select
 from db.database import Database
 from db.models import ModelCatalogORM, ModelProviderORM
@@ -40,16 +43,11 @@ class ProviderGatewayService:
             return data
 
     async def chat_completion(self, payload: Dict[str, Any]) -> Dict[str, Any]:
-        """Minimal mock/pass-through chat completions endpoint."""
+        """Forward chat completion requests using router execution."""
         model_input = payload.get("model", "Planner")
         messages = payload.get("messages", [])
-        stream = payload.get("stream", False)
 
-        if stream:
-            # We don't support streaming yet in this gateway skeletal endpoint
-            raise NotImplementedError("Streaming is not supported in the Phase 1 skeletal gateway.")
-
-        # Resolve model using simulation / routing rules if model is a role or contains prefix
+        # Resolve role
         role = "Planner"
         if model_input.startswith("role:"):
             role = model_input.split(":", 1)[1]
@@ -58,62 +56,16 @@ class ProviderGatewayService:
         elif model_input in ("Planner", "Coder", "GUI Agent", "Researcher", "Memory Agent", "Local Chat"):
             role = model_input
 
-        # Resolve via router service
-        sim = await self.router_service.simulate_route(role, messages[-1].get("content", ""))
-        selected_model_display = sim.get("selectedModel")
-        
-        # Look up selected model's details
-        async with self.db.session() as session:
-            stmt = select(ModelCatalogORM).where(ModelCatalogORM.display_name == selected_model_display)
-            res = await session.execute(stmt)
-            catalog = res.scalar_one_or_none()
-
-        if not catalog:
-            raise ValueError(f"Could not resolve model for role {role}")
-
-        # Call client via model service if available
-        model_service = self.router_service.model_service
         try:
-            # Resolve provider client
-            stmt_prov = select(ModelProviderORM).where(ModelProviderORM.id == catalog.provider_id)
-            async with self.db.session() as session:
-                res_prov = await session.execute(stmt_prov)
-                provider = res_prov.scalar_one_or_none()
-
-            if not provider:
-                raise ValueError("Provider not found")
-
-            client = model_service.get_provider_client(provider)
-            
-            # Record execution log start
-            start_time = time.perf_counter()
-            content = ""
-            
-            if provider.id == "ollama":
-                # Ollama client call
-                content = await client.chat(messages)
-            else:
-                # Cloud provider call
-                content = await client.chat_completion(
-                    model_id=catalog.model_id,
-                    messages=messages,
-                    max_tokens=payload.get("max_tokens", 1024),
-                )
-            
-            duration_ms = int((time.perf_counter() - start_time) * 1000)
-            
-            # Log success
-            await self.router_service.log_execution(
+            content = await self.router_service.execute_chat(
                 role=role,
-                selected_model_id=catalog.id,
-                selection_tier="primary" if not sim.get("fallbackNeeded") else "fallback",
-                status="success",
-                latency_ms=duration_ms,
-                prompt_tokens=sum(len(m.get("content", "").split()) for m in messages),
-                completion_tokens=len(content.split()),
+                messages=messages,
+                max_tokens=payload.get("max_tokens", 1024),
             )
-
+            
             # Map response to OpenAI format
+            prompt_tokens = sum(len(m.get("content", "").split()) for m in messages)
+            completion_tokens = len(content.split())
             return {
                 "id": f"chatcmpl-{int(time.time())}",
                 "object": "chat.completion",
@@ -130,17 +82,91 @@ class ProviderGatewayService:
                     }
                 ],
                 "usage": {
-                    "prompt_tokens": sum(len(m.get("content", "").split()) for m in messages),
-                    "completion_tokens": len(content.split()),
-                    "total_tokens": sum(len(m.get("content", "").split()) for m in messages) + len(content.split()),
+                    "prompt_tokens": prompt_tokens,
+                    "completion_tokens": completion_tokens,
+                    "total_tokens": prompt_tokens + completion_tokens,
                 }
             }
         except Exception as e:
             log.exception("Chat completion gateway error")
-            # Scrub secrets if any
             err_msg = str(e)
             if "Bearer" in err_msg or "key" in err_msg.lower():
                 err_msg = "Provider response error (secrets scrubbed)."
-            raise NotImplementedError(f"Gateway execution failed: {err_msg}")
+            raise ValueError(f"Gateway execution failed: {err_msg}")
 
-import time
+    async def chat_completion_stream(self, payload: Dict[str, Any]) -> AsyncGenerator[str, None]:
+        """Generate OpenAI-compatible SSE events stream."""
+        model_input = payload.get("model", "Planner")
+        messages = payload.get("messages", [])
+
+        # Resolve role
+        role = "Planner"
+        if model_input.startswith("role:"):
+            role = model_input.split(":", 1)[1]
+        elif model_input.startswith("auto/"):
+            role = model_input.split("/", 1)[1]
+        elif model_input in ("Planner", "Coder", "GUI Agent", "Researcher", "Memory Agent", "Local Chat"):
+            role = model_input
+
+        try:
+            generator = self.router_service.execute_chat_stream(
+                role=role,
+                messages=messages,
+                max_tokens=payload.get("max_tokens", 1024),
+            )
+            async for chunk in generator:
+                content = chunk["content"]
+                model_id = chunk["model"]
+                completion_id = chunk["id"]
+                created = int(time.time())
+
+                chunk_size = 5
+                chunks = [content[i:i+chunk_size] for i in range(0, len(content), chunk_size)]
+
+                for val in chunks:
+                    chunk_data = {
+                        "id": completion_id,
+                        "object": "chat.completion.chunk",
+                        "created": created,
+                        "model": model_id,
+                        "choices": [
+                            {
+                                "index": 0,
+                                "delta": {"content": val},
+                                "finish_reason": None
+                            }
+                        ]
+                    }
+                    yield f"data: {json.dumps(chunk_data)}\n\n"
+                    await asyncio.sleep(0.01)
+
+                # Final stop chunk
+                stop_data = {
+                    "id": completion_id,
+                    "object": "chat.completion.chunk",
+                    "created": created,
+                    "model": model_id,
+                    "choices": [
+                        {
+                            "index": 0,
+                            "delta": {},
+                            "finish_reason": "stop"
+                        }
+                    ]
+                }
+                yield f"data: {json.dumps(stop_data)}\n\n"
+                yield "data: [DONE]\n\n"
+        except Exception as e:
+            log.exception("Chat completion stream gateway error")
+            err_msg = str(e)
+            if "Bearer" in err_msg or "key" in err_msg.lower():
+                err_msg = "Provider response error (secrets scrubbed)."
+            error_data = {
+                "error": {
+                    "message": f"Gateway execution failed: {err_msg}",
+                    "type": "invalid_request_error",
+                    "code": None
+                }
+            }
+            yield f"data: {json.dumps(error_data)}\n\n"
+            yield "data: [DONE]\n\n"

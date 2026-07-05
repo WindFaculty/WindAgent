@@ -246,7 +246,7 @@ async def lifespan(app: FastAPI):
     app.state.router_service = router_service
     app.state.provider_gateway = provider_gateway
     model_service.routing_service.router_service = router_service
-
+    planner._router_service = router_service
     # ---------- Optional: Agent-S3 integration ----------
     # The backend always loads the Agent-S3 config (cheap; env reads
     # only) but only constructs the adapter when the integration is

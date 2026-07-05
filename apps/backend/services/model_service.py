@@ -26,6 +26,43 @@ from services.model_routing_service import ModelRoutingService
 
 log = logging.getLogger(__name__)
 
+class MockProviderClient:
+    """Mock client used in test environments to prevent real API calls and key errors."""
+    def __init__(self, provider_id: str) -> None:
+        self.provider_id = provider_id
+        self.api_key = "mock-key"
+
+    def has_api_key(self) -> bool:
+        return True
+
+    async def chat(self, messages: Any, **kwargs) -> str:
+        last_user = ""
+        for m in reversed(messages):
+            if isinstance(m, dict):
+                role = m.get("role")
+                content = m.get("content", "")
+            else:
+                role = getattr(m, "role", "")
+                content = getattr(m, "content", "")
+            if role == "user":
+                last_user = content
+                break
+        
+        from services.model_client import MockModelClient
+        if last_user in MockModelClient.DEFAULT_RESPONSES:
+            return MockModelClient.DEFAULT_RESPONSES[last_user]
+            
+        return json.dumps({"steps": []})
+
+    async def chat_completion(self, model_id: str, messages: Any, **kwargs) -> str:
+        return await self.chat(messages, **kwargs)
+
+    async def list_models(self) -> List[Dict[str, Any]]:
+        return []
+
+    async def get_quota(self) -> Dict[str, Any]:
+        return {}
+
 
 class ModelService:
     """Core Model Registry service coordinating all model configurations, health, and routing."""
@@ -39,6 +76,10 @@ class ModelService:
 
     def get_provider_client(self, provider: ModelProviderORM) -> Any:
         """Instantiate and cache a client for the given provider."""
+        import os
+        if os.environ.get("WINDAGENT_MODEL_BACKEND") == "mock":
+            return MockProviderClient(provider.id)
+
         client_key = provider.id
         if client_key in self._provider_clients:
             cached_client = self._provider_clients[client_key]
