@@ -138,22 +138,90 @@ class ModelService:
             existing_rules = {r.role for r in res.scalars().all()}
 
             default_rules = {
-                "Planner": {"primary": "google_gemini_2.5_flash", "fallback": "openrouter_free"},
-                "GUI Agent": {"primary": "google_gemini_2.5_flash", "fallback": "google_gemini_2.5_flash_lite"},
-                "Coder": {"primary": "mistral_codestral", "fallback": "qwen_coder_free"},
-                "Researcher": {"primary": "nvidia_nemotron_70b", "fallback": "deepseek_r1_free"},
-                "Memory Agent": {"primary": "google_gemini_2.5_flash_lite", "fallback": "openrouter_free"},
-                "Local Chat": {"primary": "ollama/qwen", "fallback": "ollama/phi"},
-                "Fallback": {"primary": "openrouter_free", "fallback": None},
+                "Planner": {
+                    "name": "Planner → Local Chat",
+                    "description": "Handles general local chat and lightweight planning requests, preferring the local model before escalating to cloud providers.",
+                    "primary": "google_gemini_2.5_flash",
+                    "fallback": "openrouter_free",
+                    "final_fallback": "ollama_qwen",
+                    "status": "Active",
+                    "tags": ["Planning", "Chat", "Local First", "Fallback Enabled", "High Priority"],
+                    "policy": {},
+                },
+                "GUI Agent": {
+                    "name": "GUI Agent → UI Route",
+                    "description": "Weighted balancing of layout validation tasks between local models.",
+                    "primary": "google_gemini_2.5_flash",
+                    "fallback": "google_gemini_2.5_flash_lite",
+                    "final_fallback": None,
+                    "status": "Active",
+                    "tags": ["GUI", "Testing", "Weighted"],
+                    "policy": {},
+                },
+                "Coder": {
+                    "name": "Coder → Code Model",
+                    "description": "Route code autocompletion and structural parsing tasks to Codestral, with Sonnet as backup.",
+                    "primary": "mistral_codestral",
+                    "fallback": "qwen_coder_free",
+                    "final_fallback": None,
+                    "status": "Active",
+                    "tags": ["Coding", "Autocomplete", "Standard"],
+                    "policy": {},
+                },
+                "Researcher": {
+                    "name": "Researcher → Web Stack",
+                    "description": "Route structural information gathering and parsing tasks to GPT-5.5.",
+                    "primary": "nvidia_nemotron_70b",
+                    "fallback": "deepseek_r1_free",
+                    "final_fallback": None,
+                    "status": "Active",
+                    "tags": ["Research", "Scraping", "Web"],
+                    "policy": {},
+                },
+                "Memory Agent": {
+                    "name": "Memory Agent → Recall",
+                    "description": "Query contextual long-term vector indexes, using Gemma 2 if local memory sizes are constrained.",
+                    "primary": "google_gemini_2.5_flash_lite",
+                    "fallback": "openrouter_free",
+                    "final_fallback": None,
+                    "status": "Active",
+                    "tags": ["Context", "Recall", "Fallback"],
+                    "policy": {},
+                },
+                "Local Chat": {
+                    "name": "Local Chat Route",
+                    "description": "Simple local chat endpoint.",
+                    "primary": "ollama/qwen",
+                    "fallback": "ollama/phi",
+                    "final_fallback": None,
+                    "status": "Active",
+                    "tags": ["Local", "Chat"],
+                    "policy": {},
+                },
+                "Fallback": {
+                    "name": "Default Fallback Route",
+                    "description": "Default routing fallback policy.",
+                    "primary": "openrouter_free",
+                    "fallback": None,
+                    "final_fallback": None,
+                    "status": "Active",
+                    "tags": ["System"],
+                    "policy": {},
+                },
             }
 
             for role, mapping in default_rules.items():
                 if role not in existing_rules:
                     rule = ModelRoutingRuleORM(
                         role=role,
+                        name=mapping["name"],
+                        description=mapping["description"],
                         primary_model_id=mapping["primary"],
                         fallback_model_id=mapping["fallback"],
-                        policy_json="{}",
+                        final_fallback_model_id=mapping["final_fallback"],
+                        status=mapping["status"],
+                        tags_json=json.dumps(mapping["tags"]),
+                        policy_json=json.dumps(mapping["policy"]),
                     )
                     session.add(rule)
                     log.info("Seeding routing rule for role: %s", role)

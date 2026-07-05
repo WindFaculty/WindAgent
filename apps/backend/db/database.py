@@ -56,11 +56,24 @@ class Database:
         """Create all tables that don't exist yet. Idempotent."""
         async with self.engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
+            from sqlalchemy import text
             try:
-                from sqlalchemy import text
                 await conn.execute(text("ALTER TABLE model_providers ADD COLUMN api_key VARCHAR(255)"))
             except Exception:
                 pass
+            
+            # Idempotent migrations for model_routing_rules columns
+            for col_def in [
+                ("name", "VARCHAR(128) DEFAULT 'Route'"),
+                ("description", "TEXT"),
+                ("final_fallback_model_id", "VARCHAR(128)"),
+                ("status", "VARCHAR(32) DEFAULT 'Active'"),
+                ("tags_json", "TEXT DEFAULT '[]'"),
+            ]:
+                try:
+                    await conn.execute(text(f"ALTER TABLE model_routing_rules ADD COLUMN {col_def[0]} {col_def[1]}"))
+                except Exception:
+                    pass
         log.info("database schema initialised (%s)", self.url)
 
     async def dispose(self) -> None:

@@ -34,9 +34,10 @@ os.environ["WINDAGENT_MOCK_GUI"] = "1"
 os.environ["WINDAGENT_MODEL_BACKEND"] = "mock"
 
 # Force every lifespan in this test session to use a temp file DB.
+import tempfile
 _DB_FD, _DB_PATH = tempfile.mkstemp(prefix="windagent-test-", suffix=".db")
 os.close(_DB_FD)
-os.environ["WINDAGENT_DB_URL"] = f"sqlite+aiosqlite:///{_DB_PATH}"
+os.environ["WINDAGENT_DB_URL"] = f"sqlite+aiosqlite:///{_DB_PATH}?timeout=30"
 
 
 @pytest.fixture

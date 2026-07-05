@@ -24,7 +24,7 @@ from pathlib import Path
 from fastapi import FastAPI
 
 from db.database import Database
-from routers import agent_s3, health, models, permissions, sessions, tools, workflow, websocket
+from routers import agent_s3, health, models, permissions, sessions, tools, workflow, websocket, model_routing, openai_compatible
 from services.agent_s3_adapter import AgentS3Adapter
 from services.agent_s3_config import (
     AgentS3Config,
@@ -228,6 +228,25 @@ async def lifespan(app: FastAPI):
     app.state.workflow_runner = runner
     app.state.model_service = model_service
 
+    from services.router_policy import RouterPolicy
+    from services.router_execution_service import RouterExecutionService
+    from services.provider_gateway import ProviderGatewayService
+
+    router_policy = RouterPolicy(quota_service=model_service.quota_service)
+    router_service = RouterExecutionService(
+        db=db,
+        quota_service=model_service.quota_service,
+        policy=router_policy,
+        model_service=model_service
+    )
+    provider_gateway = ProviderGatewayService(db=db, router_service=router_service)
+
+    # Attach to state
+    app.state.router_policy = router_policy
+    app.state.router_service = router_service
+    app.state.provider_gateway = provider_gateway
+    model_service.routing_service.router_service = router_service
+
     # ---------- Optional: Agent-S3 integration ----------
     # The backend always loads the Agent-S3 config (cheap; env reads
     # only) but only constructs the adapter when the integration is
@@ -321,6 +340,8 @@ app = FastAPI(
 app.include_router(health.router)
 app.include_router(agent_s3.router)
 app.include_router(models.router)
+app.include_router(model_routing.router)
+app.include_router(openai_compatible.router)
 app.include_router(permissions.router)
 app.include_router(sessions.router)
 app.include_router(workflow.router)
