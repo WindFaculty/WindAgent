@@ -24,7 +24,7 @@ from pathlib import Path
 from fastapi import FastAPI
 
 from db.database import Database
-from routers import agent_s3, health, models, permissions, sessions, tools, workflow, websocket, model_routing, openai_compatible
+from routers import agent_s3, health, models, permissions, sessions, tools, workflow, websocket, model_routing, openai_compatible, router_observability
 from services.agent_s3_adapter import AgentS3Adapter
 from services.agent_s3_config import (
     AgentS3Config,
@@ -347,3 +347,4 @@ app.include_router(sessions.router)
 app.include_router(workflow.router)
 app.include_router(tools.router)
 app.include_router(websocket.router)
+app.include_router(router_observability.router)

@@ -187,7 +187,7 @@ export function Router() {
   const [rules, setRules] = useState<RoutingRuleItem[]>([]);
   const [selectedRouteId, setSelectedRouteId] = useState<string>("");
   const [activeFilterTab, setActiveFilterTab] = useState<string>("all");
-  const [searchText, setSearchText] = useState<string>("");
+  const [searchText, _setSearchText] = useState<string>("");
 
   // Statistics
   const [stats, setStats] = useState({
@@ -227,12 +227,12 @@ export function Router() {
 
   // Game state
   const [isGameOpen, setIsGameOpen] = useState(false);
-  const [gameScore, setGameScore] = useState(0);
-  const [gameShrimps, setGameShrimps] = useState(0);
-  const [gameHighScore, setGameHighScore] = useState(0);
-  const [totalShrimps, setTotalShrimps] = useState(0);
-  const [selectedSkin, setSelectedSkin] = useState("classic");
-  const [ownedSkins, setOwnedSkins] = useState<string[]>(["classic"]);
+  const [_gameScore, _setGameScore] = useState(0);
+  const [_gameShrimps, _setGameShrimps] = useState(0);
+  const [_gameHighScore, _setGameHighScore] = useState(0);
+  const [_totalShrimps, _setTotalShrimps] = useState(0);
+  const [_selectedSkin, _setSelectedSkin] = useState("classic");
+  const [_ownedSkins, _setOwnedSkins] = useState<string[]>(["classic"]);
 
   const [apiError, setApiError] = useState<string | null>(null);
 
