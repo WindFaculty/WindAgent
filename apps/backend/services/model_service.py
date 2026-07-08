@@ -21,6 +21,7 @@ from db.models import (
 from services.model_catalog_seed import PROVIDERS_SEED, MODELS_SEED
 from services.provider_clients.openai_compatible import OpenAICompatibleClient
 from services.provider_clients.google_gemini import GoogleGeminiClient
+from services.provider_clients.anthropic import AnthropicClient
 from services.quota_service import QuotaService
 from services.model_routing_service import ModelRoutingService
 
@@ -58,6 +59,44 @@ class MockProviderClient:
         return await self.chat(messages, **kwargs)
 
     async def list_models(self) -> List[Dict[str, Any]]:
+        if self.provider_id == "nvidia_nim":
+            return [
+                {
+                    "model_id": "z-ai/glm-5.2",
+                    "display_name": "GLM 5.2",
+                    "context_window": 128000,
+                    "capabilities": ["chat", "coding", "planning", "reasoning"],
+                    "raw": {}
+                },
+                {
+                    "model_id": "nvidia/nemotron-3-ultra-550b-a55b:free",
+                    "display_name": "Nemotron 3 Ultra 550B Free",
+                    "context_window": 8192,
+                    "capabilities": ["chat", "general"],
+                    "raw": {}
+                },
+                {
+                    "model_id": "nvidia/llama-3.1-nemotron-70b-instruct",
+                    "display_name": "Llama 3.1 Nemotron 70B",
+                    "context_window": 128000,
+                    "capabilities": ["reasoning", "planning", "chat"],
+                    "raw": {}
+                },
+                {
+                    "model_id": "meta/llama-3.1-405b-instruct",
+                    "display_name": "Llama 3.1 405B Instruct",
+                    "context_window": 128000,
+                    "capabilities": ["reasoning", "research", "planning"],
+                    "raw": {}
+                },
+                {
+                    "model_id": "deepseek-ai/deepseek-r1",
+                    "display_name": "DeepSeek R1 (NVIDIA)",
+                    "context_window": 65536,
+                    "capabilities": ["reasoning", "math", "research"],
+                    "raw": {}
+                }
+            ]
         return []
 
     async def get_quota(self) -> Dict[str, Any]:
@@ -92,6 +131,13 @@ class ModelService:
             client = GoogleGeminiClient(
                 provider_id=provider.id,
                 base_url=provider.base_url or "https://generativelanguage.googleapis.com",
+                api_key_env=provider.api_key_env,
+                api_key=provider.api_key,
+            )
+        elif provider.api_source == "anthropic":
+            client = AnthropicClient(
+                provider_id=provider.id,
+                base_url=provider.base_url or "https://api.anthropic.com",
                 api_key_env=provider.api_key_env,
                 api_key=provider.api_key,
             )
@@ -399,6 +445,39 @@ class ModelService:
                 message=f"Model {model.display_name} registered successfully.",
             )
             return {"id": model.id, "display_name": model.display_name}
+
+    async def delete_model(self, model_id: str) -> Dict[str, Any]:
+        """Remove a model catalog entry and its runtime status row."""
+        async with self.db.session() as session:
+            # Delete runtime status first (FK constraint)
+            await session.execute(
+                delete(ModelRuntimeStatusORM).where(ModelRuntimeStatusORM.model_id == model_id)
+            )
+            result = await session.execute(
+                delete(ModelCatalogORM).where(ModelCatalogORM.id == model_id)
+            )
+            await session.commit()
+            if result.rowcount == 0:
+                return {"status": "error", "message": f"Model {model_id} not found"}
+            await self.log_activity(
+                model_id=model_id,
+                provider_id="",
+                event_type="deleted",
+                message=f"Model {model_id} removed from registry.",
+            )
+            return {"status": "success", "message": f"Model {model_id} deleted"}
+
+    async def clear_provider_api_key(self, provider_id: str) -> Dict[str, Any]:
+        """Clear the stored API key for a provider (set to None)."""
+        async with self.db.session() as session:
+            stmt = select(ModelProviderORM).where(ModelProviderORM.id == provider_id)
+            res = await session.execute(stmt)
+            provider = res.scalar_one_or_none()
+            if not provider:
+                return {"status": "error", "message": f"Provider {provider_id} not found"}
+            provider.api_key = None
+            await session.commit()
+            return {"status": "success", "message": f"API key cleared for provider {provider_id}"}
 
     async def import_model(self, config: Dict[str, Any]) -> Dict[str, Any]:
         """Stub for model import job."""

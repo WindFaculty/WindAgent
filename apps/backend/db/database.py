@@ -68,6 +68,7 @@ class Database:
                 ("description", "TEXT"),
                 ("final_fallback_model_id", "VARCHAR(128)"),
                 ("status", "VARCHAR(32) DEFAULT 'Active'"),
+                ("priority", "INTEGER DEFAULT 1"),
                 ("tags_json", "TEXT DEFAULT '[]'"),
             ]:
                 try:

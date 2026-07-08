@@ -232,3 +232,66 @@ async def test_429_updates_quota_activity(app_state):
             assert act is not None
             assert act.level == "error"
             assert "429" in act.message
+
+
+def test_create_and_update_provider(client):
+    # 1. Create a custom provider
+    payload = {
+        "id": "test_provider",
+        "name": "Test Custom Provider",
+        "api_source": "openai",
+        "base_url": "https://api.testprovider.com/v1",
+        "api_key": "test_api_key_123"
+    }
+    r = client.post("/models/providers", json=payload)
+    assert r.status_code == 200
+    assert r.json()["status"] == "success"
+
+    # 2. Get list of providers and verify it is there
+    r_list = client.get("/models/providers")
+    assert r_list.status_code == 200
+    providers = r_list.json()
+    test_p = next((p for p in providers if p["id"] == "test_provider"), None)
+    assert test_p is not None
+    assert test_p["name"] == "Test Custom Provider"
+    assert test_p["apiSource"] == "openai"
+    assert test_p["baseUrl"] == "https://api.testprovider.com/v1"
+    assert test_p["hasKey"] is True
+
+    # 3. Update the provider base URL and API key
+    update_payload = {
+        "name": "Updated Provider Name",
+        "api_source": "anthropic",
+        "base_url": "https://api.anthropic.com",
+        "api_key": "new_api_key_456"
+    }
+    r_patch = client.patch("/models/providers/test_provider", json=update_payload)
+    assert r_patch.status_code == 200
+    assert r_patch.json()["status"] == "success"
+
+    # 4. Get list again and verify updates
+    r_list2 = client.get("/models/providers")
+    providers2 = r_list2.json()
+    test_p2 = next((p for p in providers2 if p["id"] == "test_provider"), None)
+    assert test_p2 is not None
+    assert test_p2["name"] == "Updated Provider Name"
+    assert test_p2["apiSource"] == "anthropic"
+    assert test_p2["baseUrl"] == "https://api.anthropic.com"
+
+
+def test_test_provider_connection(client):
+    with patch("services.provider_clients.openai_compatible.OpenAICompatibleClient.list_models", new_callable=AsyncMock) as mock_list:
+        mock_list.return_value = [
+            {"model_id": "test_m1", "display_name": "Test Model 1", "capabilities": ["chat"]}
+        ]
+        payload = {
+            "api_source": "openai",
+            "base_url": "https://api.test.com/v1",
+            "api_key": "somekey"
+        }
+        r = client.post("/models/providers/test-connection", json=payload)
+        assert r.status_code == 200
+        data = r.json()
+        assert data["status"] == "success"
+        assert len(data["models"]) == 1
+        assert data["models"][0]["model_id"] == "test_m1"

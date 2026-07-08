@@ -7,6 +7,9 @@ interface RoutingRuleItem {
   primaryModel: string;
   secondaryModel: string;
   finalFallbackModel: string;
+  primaryModelId?: string;
+  fallbackModelId?: string;
+  finalFallbackModelId?: string;
   status: "Active" | "Weighted" | "Fallback" | "Disabled";
   description: string;
   routeId: string;
@@ -17,6 +20,7 @@ interface RoutingRuleItem {
   avgLatency: string;
   health: Array<{ name: string; latency: string; status: "Good" | "Warning" }>;
   activity: string[];
+  priority?: number;
 }
 
 interface ModelItem {
@@ -25,6 +29,146 @@ interface ModelItem {
   provider: string;
   type: string;
 }
+
+const renderBrandLogo = (modelName: string) => {
+  if (!modelName || modelName === "None" || modelName === "—") {
+    return (
+      <span style={{ color: "#64748b", fontStyle: "italic", fontSize: "0.78rem" }}>None</span>
+    );
+  }
+  const name = modelName.toLowerCase();
+  
+  if (name.includes("sonnet") || name.includes("haiku") || name.includes("claude") || name.includes("anthropic")) {
+    return (
+      <svg viewBox="0 0 100 100" width="16" height="16" style={{ marginRight: 8, flexShrink: 0 }}>
+        {/* Stylized Anthropic Spokes */}
+        <circle cx="50" cy="50" r="45" fill="none" stroke="#F97316" strokeWidth="8" />
+        <path d="M50 15 L50 85 M15 50 L85 50 M25 25 L75 75 M25 75 L75 25" stroke="#F97316" strokeWidth="10" strokeLinecap="round" />
+      </svg>
+    );
+  }
+  if (name.includes("gemini") || name.includes("google") || name.includes("flash") || name.includes("pro")) {
+    return (
+      <svg viewBox="0 0 24 24" width="16" height="16" style={{ marginRight: 8, flexShrink: 0 }}>
+        {/* Gemini sparkle */}
+        <path d="M12 2 Q12 12 22 12 Q12 12 12 22 Q12 12 2 12 Q12 12 12 2" fill="#38BDF8" />
+      </svg>
+    );
+  }
+  if (name.includes("deepseek") || name.includes("r1") || name.includes("coder")) {
+    return (
+      <svg viewBox="0 0 100 100" width="16" height="16" style={{ marginRight: 8, flexShrink: 0 }}>
+        {/* DeepSeek blue seal/octopus shape */}
+        <path d="M20 40 C20 15, 80 15, 80 40 C80 55, 60 70, 50 85 C40 70, 20 55, 20 40 Z" fill="#3B82F6" />
+        <ellipse cx="50" cy="40" rx="15" ry="12" fill="#1E3A8A" />
+        <circle cx="45" cy="38" r="3" fill="#38BDF8" />
+        <circle cx="55" cy="38" r="3" fill="#38BDF8" />
+      </svg>
+    );
+  }
+  if (name.includes("qwen") || name.includes("alibaba")) {
+    return (
+      <svg viewBox="0 0 100 100" width="16" height="16" style={{ marginRight: 8, flexShrink: 0 }}>
+        {/* Qwen Purple Hexagon logo */}
+        <polygon points="50,10 85,30 85,70 50,90 15,70 15,30" fill="none" stroke="#8B5CF6" strokeWidth="8" />
+        <polygon points="50,22 75,36 75,64 50,78 25,64 25,36" fill="#8B5CF6" />
+      </svg>
+    );
+  }
+  if (name.includes("gpt") || name.includes("openai") || name.includes("mini")) {
+    return (
+      <svg viewBox="0 0 24 24" width="16" height="16" style={{ marginRight: 8, flexShrink: 0 }}>
+        {/* OpenAI swirl */}
+        <path d="M19 12a1 1 0 0 1-1 1h-3.2l2.3 2.3a1 1 0 1 1-1.4 1.4L13 14.4V17a1 1 0 1 1-2 0v-2.6l-2.7 2.7a1 1 0 0 1-1.4-1.4l2.3-2.3H6a1 1 0 1 1 0-2h3.2L6.9 9a1 1 0 1 1 1.4-1.4L11 10.3V8a1 1 0 1 1 2 0v2.3l2.7-2.7a1 1 0 0 1 1.4 1.4L14.8 11.4H18a1 1 0 0 1 1 1Z" fill="#E2E8F0" />
+      </svg>
+    );
+  }
+  // Default fallback
+  return (
+    <svg viewBox="0 0 24 24" width="16" height="16" style={{ marginRight: 8, fill: "none", stroke: "#94A3B8", strokeWidth: 2, flexShrink: 0 }}>
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <path d="M9 12h6" />
+    </svg>
+  );
+};
+
+const renderRoleIcon = (roleId: string) => {
+  const name = roleId.toLowerCase();
+  let color = "rgba(59, 130, 246, 0.12)";
+  let stroke = "#3b82f6";
+  let svg = null;
+
+  if (name.includes("planner")) {
+    color = "rgba(139, 92, 246, 0.12)";
+    stroke = "#8b5cf6";
+    svg = (
+      <svg viewBox="0 0 24 24" width="18" height="18" stroke={stroke} strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+        {/* Brain */}
+        <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.44 2.5 2.5 0 0 1 0-3.12 3 3 0 0 1 0-3.88 2.5 2.5 0 0 1 0-3.12A2.5 2.5 0 0 1 9.5 2Z" />
+        <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.44 2.5 2.5 0 0 0 0-3.12 3 3 0 0 0 0-3.88 2.5 2.5 0 0 0 0-3.12A2.5 2.5 0 0 0 14.5 2Z" />
+      </svg>
+    );
+  } else if (name.includes("gui") || name.includes("screen") || name.includes("desktop")) {
+    color = "rgba(20, 184, 166, 0.12)";
+    stroke = "#14b8a6";
+    svg = (
+      <svg viewBox="0 0 24 24" width="18" height="18" stroke={stroke} strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+        {/* Monitor */}
+        <rect x="2" y="3" width="20" height="14" rx="2" />
+        <line x1="8" y1="21" x2="16" y2="21" />
+        <line x1="12" y1="17" x2="12" y2="21" />
+      </svg>
+    );
+  } else if (name.includes("coder") || name.includes("dev")) {
+    color = "rgba(59, 130, 246, 0.12)";
+    stroke = "#3b82f6";
+    svg = (
+      <svg viewBox="0 0 24 24" width="18" height="18" stroke={stroke} strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+        {/* Code tags */}
+        <polyline points="16 18 22 12 16 6" />
+        <polyline points="8 6 2 12 8 18" />
+      </svg>
+    );
+  } else if (name.includes("researcher") || name.includes("search")) {
+    color = "rgba(236, 72, 153, 0.12)";
+    stroke = "#ec4899";
+    svg = (
+      <svg viewBox="0 0 24 24" width="18" height="18" stroke={stroke} strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+        {/* Open book */}
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+      </svg>
+    );
+  } else {
+    color = "rgba(100, 116, 139, 0.12)";
+    stroke = "#64748b";
+    svg = (
+      <svg viewBox="0 0 24 24" width="18" height="18" stroke={stroke} strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+        {/* Default gear/cpu */}
+        <rect x="4" y="4" width="16" height="16" rx="2" />
+        <rect x="9" y="9" width="6" height="6" />
+        <line x1="9" y1="1" x2="9" y2="4" />
+        <line x1="15" y1="1" x2="15" y2="4" />
+      </svg>
+    );
+  }
+
+  return (
+    <div style={{
+      width: 42,
+      height: 42,
+      borderRadius: 8,
+      backgroundColor: color,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      marginRight: 12,
+      flexShrink: 0
+    }}>
+      {svg}
+    </div>
+  );
+};
 
 interface WebAudioSound {
   playSwim: () => void;
@@ -187,7 +331,10 @@ export function Router() {
   const [rules, setRules] = useState<RoutingRuleItem[]>([]);
   const [selectedRouteId, setSelectedRouteId] = useState<string>("");
   const [activeFilterTab, setActiveFilterTab] = useState<string>("all");
-  const [searchText, _setSearchText] = useState<string>("");
+  const [searchText, setSearchText] = useState<string>("");
+  const [selectedRuleIds, setSelectedRuleIds] = useState<Set<string>>(new Set());
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [rowsPerPage, setRowsPerPage] = useState<number>(10);
 
   // Statistics
   const [stats, setStats] = useState({
@@ -218,6 +365,7 @@ export function Router() {
   const [formPrimary, setFormPrimary] = useState("");
   const [formFallback, setFormFallback] = useState("");
   const [formFinalFallback, setFormFinalFallback] = useState("");
+  const [formPriority, setFormPriority] = useState<number>(1);
 
   // Simulation
   const [simRole, setSimRole] = useState("Planner");
@@ -245,26 +393,30 @@ export function Router() {
       const rulesJson = await rulesRes.json();
       
       const formattedRules: RoutingRuleItem[] = rulesJson.map((r: any) => ({
-        id: r.role,
+        id: r.id,
         name: r.name,
-        trigger: r.role,
-        primaryModel: r.primary_model_id || "None",
-        secondaryModel: r.fallback_model_id || "None",
-        finalFallbackModel: r.final_fallback_model_id || "None",
+        trigger: r.trigger || r.id,
+        primaryModel: r.primaryModel || "None",
+        secondaryModel: r.secondaryModel || "None",
+        finalFallbackModel: r.finalFallbackModel || "None",
+        primaryModelId: r.primary_model_id,
+        fallbackModelId: r.fallback_model_id,
+        finalFallbackModelId: r.final_fallback_model_id,
         status: r.status || "Active",
+        priority: r.priority || 1,
         description: r.description || "",
-        routeId: `route_${r.role.toLowerCase()}`,
+        routeId: r.routeId || `route_${r.id.toLowerCase()}`,
         tags: r.tags || [],
-        primaryUsage: r.stats?.primary_ratio !== undefined ? Math.round(r.stats.primary_ratio * 100) : 100,
-        fallbackUsage: r.stats?.fallback_ratio !== undefined ? Math.round(r.stats.fallback_ratio * 100) : 0,
-        successRate: r.stats?.success_rate !== undefined ? Math.round(r.stats.success_rate * 100) : 100,
-        avgLatency: r.stats?.avg_latency_ms !== undefined ? `${Math.round(r.stats.avg_latency_ms)}ms` : "—",
-        health: [
-          { name: "Primary Model", latency: r.stats?.avg_latency_ms ? `${Math.round(r.stats.avg_latency_ms)}ms` : "32ms", status: "Good" },
+        primaryUsage: r.primaryUsage !== undefined ? r.primaryUsage : 100,
+        fallbackUsage: r.fallbackUsage !== undefined ? r.fallbackUsage : 0,
+        successRate: r.successRate !== undefined ? r.successRate : 100,
+        avgLatency: r.avgLatency || "—",
+        health: r.health || [
+          { name: "Primary Model", latency: r.avgLatency || "32ms", status: "Good" },
           { name: "Secondary Model", latency: "115ms", status: "Good" },
         ],
-        activity: r.recent_logs?.map((l: any) => `${l.message} (${new Date(l.timestamp).toLocaleTimeString()})`) || [
-          `Rule loaded for ${r.role}`
+        activity: r.activity || [
+          `Rule loaded for ${r.id}`
         ]
       }));
 
@@ -276,15 +428,15 @@ export function Router() {
       // 2. Fetch Stats
       const statsRes = await fetch("/api/models/routing/stats");
       if (statsRes.ok) {
-        const statsJson = await statsRes.ok ? await statsRes.json() : null;
+        const statsJson = await statsRes.json();
         if (statsJson) {
           setStats({
-            totalRoutes: statsJson.total_routes || 0,
-            activeRules: statsJson.active_rules || 0,
-            fallbackChains: statsJson.fallback_chains || 0,
-            avgLatency: `${Math.round(statsJson.avg_latency_ms || 0)}ms`,
-            successRate: `${( (statsJson.success_rate || 0) * 100 ).toFixed(1)}%`,
-            trafficBalance: `${( (statsJson.traffic_balance || 0) * 100 ).toFixed(0)}%`
+            totalRoutes: statsJson.totalRoutes?.value ?? 0,
+            activeRules: statsJson.activeRules?.value ?? 0,
+            fallbackChains: statsJson.fallbackChains?.value ?? 0,
+            avgLatency: statsJson.avgLatency?.value ?? "—",
+            successRate: statsJson.successRate?.value ?? "0%",
+            trafficBalance: statsJson.trafficBalance?.value ?? "0%"
           });
         }
       }
@@ -311,8 +463,8 @@ export function Router() {
         const modelsJson = await modelsRes.json();
         setAvailableModels(modelsJson.map((m: any) => ({
           id: m.id,
-          name: m.display_name || m.model_id,
-          provider: m.provider_id,
+          name: m.name || m.modelId,
+          provider: m.providerId,
           type: m.type
         })));
       }
@@ -330,6 +482,7 @@ export function Router() {
           secondaryModel: "openrouter_free",
           finalFallbackModel: "ollama_qwen",
           status: "Active",
+          priority: 1,
           description: "Handles general local chat and lightweight planning requests, preferring the local model.",
           routeId: "route_planner",
           tags: ["Planning", "Chat", "Local First"],
@@ -348,6 +501,7 @@ export function Router() {
           secondaryModel: "qwen_coder_free",
           finalFallbackModel: "None",
           status: "Active",
+          priority: 3,
           description: "Route code autocompletion and structural parsing tasks to Codestral, with Sonnet as backup.",
           routeId: "route_coder",
           tags: ["Coding", "Autocomplete"],
@@ -383,6 +537,7 @@ export function Router() {
   }, []);
 
   // Handle Save (Create/Update)
+  // Handle Save (Create/Update)
   const handleSaveRule = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formRole || !formName || !formPrimary) {
@@ -397,7 +552,8 @@ export function Router() {
       primary_model_id: formPrimary || null,
       fallback_model_id: formFallback || null,
       final_fallback_model_id: formFinalFallback || null,
-      status: editingRule ? editingRule.status : "Active"
+      status: editingRule ? editingRule.status : "Active",
+      priority: formPriority
     };
 
     try {
@@ -438,6 +594,7 @@ export function Router() {
     setFormPrimary("");
     setFormFallback("");
     setFormFinalFallback("");
+    setFormPriority(1);
   };
 
   // Delete Rule
@@ -506,9 +663,10 @@ export function Router() {
     setFormRole(rule.id);
     setFormName(rule.name);
     setFormDesc(rule.description);
-    setFormPrimary(rule.primaryModel);
-    setFormFallback(rule.secondaryModel === "None" ? "" : rule.secondaryModel);
-    setFormFinalFallback(rule.finalFallbackModel === "None" ? "" : rule.finalFallbackModel);
+    setFormPrimary(rule.primaryModelId || "");
+    setFormFallback(rule.fallbackModelId || "");
+    setFormFinalFallback(rule.finalFallbackModelId || "");
+    setFormPriority(rule.priority || 1);
     setShowEditModal(true);
   };
 
@@ -529,6 +687,29 @@ export function Router() {
     }
     return true;
   });
+
+  const toggleSelectRule = (id: string) => {
+    setSelectedRuleIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedRuleIds.size === filteredRoutes.length && filteredRoutes.length > 0) {
+      setSelectedRuleIds(new Set());
+    } else {
+      setSelectedRuleIds(new Set(filteredRoutes.map(r => r.id)));
+    }
+  };
+
+  const paginatedRoutes = filteredRoutes.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
+  const totalPages = Math.max(1, Math.ceil(filteredRoutes.length / rowsPerPage));
 
   const selectedRoute = rules.find((r) => r.id === selectedRouteId) || rules[0];
 
@@ -551,8 +732,8 @@ export function Router() {
           </div>
         )}
         <div className="models-header-right" style={{ display: "flex", gap: "8px" }}>
-          <button className="chat-send-btn" style={{ height: "36px", padding: "0 16px", display: "flex", alignItems: "center", gap: "6px", background: "linear-gradient(135deg, #ff007f, #b91c1c)", border: "none", color: "#fff", cursor: "pointer", borderRadius: "20px", fontWeight: "bold" }} onClick={() => setIsGameOpen(true)}>
-            🎮 Play Scuba Ostrich
+          <button className="chat-send-btn" style={{ height: "36px", padding: "0 16px", display: "flex", alignItems: "center", gap: "6px", background: "linear-gradient(135deg, #10b981, #059669)", border: "none", color: "#fff", cursor: "pointer", borderRadius: "20px", fontWeight: "bold" }} onClick={() => selectedRoute && handleTestRoute(selectedRoute.id)}>
+            ⚡ Run Router
           </button>
           <button className="chat-send-btn" style={{ height: "36px", padding: "0 16px", display: "flex", alignItems: "center", gap: "6px", cursor: "pointer" }} onClick={() => { resetForm(); setShowCreateModal(true); }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -669,76 +850,587 @@ export function Router() {
         <div className="router-col" style={{ flex: 1.3, display: "flex", flexDirection: "column", gap: "16px", minWidth: 0 }}>
           
           {/* Rules List Panel */}
-          <div className="dashboard-panel" style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-            <header className="panel-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span className="panel-title">Active Routing Rules</span>
-              <div style={{ display: "flex", gap: "6px" }}>
+          <div className="arr-container" style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+            <style>{`
+              .arr-container {
+                background: #0b1528;
+                border: 1px solid rgba(59, 130, 246, 0.12);
+                border-radius: 12px;
+                display: flex;
+                flex-direction: column;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+                min-height: 0;
+              }
+              .arr-header-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 16px 20px;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+              }
+              .arr-title-group {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+              }
+              .arr-network-icon {
+                color: #3b82f6;
+                display: flex;
+                align-items: center;
+              }
+              .arr-title-text {
+                font-size: 1.15rem;
+                font-weight: 700;
+                color: #ffffff;
+                margin: 0;
+              }
+              .arr-subtitle-text {
+                font-size: 0.78rem;
+                color: #94a3b8;
+                margin: 2px 0 0 0;
+              }
+              .arr-tabs-group {
+                display: flex;
+                background: rgba(15, 23, 42, 0.6);
+                border: 1px solid rgba(255, 255, 255, 0.05);
+                border-radius: 8px;
+                padding: 3px;
+              }
+              .arr-tab-btn {
+                background: transparent;
+                border: none;
+                color: #94a3b8;
+                padding: 5px 12px;
+                font-size: 0.8rem;
+                font-weight: 500;
+                border-radius: 6px;
+                cursor: pointer;
+                transition: all 0.2s ease;
+              }
+              .arr-tab-btn:hover {
+                color: #ffffff;
+              }
+              .arr-tab-btn.active {
+                background: rgba(59, 130, 246, 0.15);
+                border: 1px solid rgba(59, 130, 246, 0.3);
+                color: #38bdf8;
+              }
+              .arr-toolbar-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 12px 20px;
+                gap: 16px;
+              }
+              .arr-search-box {
+                position: relative;
+                flex: 1;
+                max-width: 320px;
+              }
+              .arr-search-icon {
+                position: absolute;
+                left: 12px;
+                top: 50%;
+                transform: translateY(-50%);
+                color: #64748b;
+                display: flex;
+                align-items: center;
+                pointer-events: none;
+              }
+              .arr-search-input {
+                width: 100%;
+                background: rgba(15, 23, 42, 0.4);
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 8px;
+                padding: 8px 12px 8px 36px;
+                color: #ffffff;
+                font-size: 0.85rem;
+                outline: none;
+                transition: border-color 0.2s;
+              }
+              .arr-search-input:focus {
+                border-color: #3b82f6;
+              }
+              .arr-add-btn {
+                background: #2563eb;
+                color: #ffffff;
+                border: none;
+                border-radius: 8px;
+                padding: 8px 16px;
+                font-size: 0.85rem;
+                font-weight: 600;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                transition: background 0.2s;
+              }
+              .arr-add-btn:hover {
+                background: #1d4ed8;
+              }
+              .arr-table-container {
+                flex: 1;
+                overflow-y: auto;
+                padding: 0 20px;
+              }
+              .arr-table {
+                width: 100%;
+                border-collapse: collapse;
+                text-align: left;
+              }
+              .arr-table th {
+                padding: 10px 12px;
+                color: #64748b;
+                font-size: 0.75rem;
+                font-weight: 600;
+                text-transform: uppercase;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+              }
+              .arr-table td {
+                padding: 10px 12px;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+                color: #cbd5e1;
+                font-size: 0.82rem;
+                vertical-align: middle;
+              }
+              .arr-table tr {
+                transition: background-color 0.15s;
+              }
+              .arr-table tr:hover {
+                background-color: rgba(255, 255, 255, 0.01);
+              }
+              .arr-table tr.selected-row {
+                background-color: rgba(59, 130, 246, 0.04);
+              }
+              .arr-checkbox {
+                width: 16px;
+                height: 16px;
+                background: rgba(15, 23, 42, 0.6);
+                border: 1px solid rgba(255, 255, 255, 0.15);
+                border-radius: 4px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.15s;
+                user-select: none;
+              }
+              .arr-checkbox.checked {
+                background: #2563eb;
+                border-color: #2563eb;
+              }
+              .arr-checkbox.checked::after {
+                content: "";
+                width: 4px;
+                height: 8px;
+                border: solid white;
+                border-width: 0 2px 2px 0;
+                transform: rotate(45deg) translate(-0.5px, -1px);
+              }
+              .arr-role-cell {
+                display: flex;
+                align-items: center;
+              }
+              .arr-role-text-box {
+                display: flex;
+                flex-direction: column;
+              }
+              .arr-role-prefix {
+                font-size: 0.7rem;
+                color: #64748b;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                line-height: 1.1;
+              }
+              .arr-role-name {
+                font-size: 0.88rem;
+                font-weight: 700;
+                color: #ffffff;
+                line-height: 1.2;
+              }
+              .arr-model-pill {
+                display: inline-flex;
+                align-items: center;
+                background: rgba(15, 23, 42, 0.4);
+                border: 1px solid rgba(255, 255, 255, 0.06);
+                border-radius: 8px;
+                padding: 6px 12px;
+                font-size: 0.8rem;
+                color: #e2e8f0;
+                min-width: 140px;
+              }
+              .arr-status-pill {
+                display: inline-flex;
+                align-items: center;
+                gap: 5px;
+                background: rgba(16, 185, 129, 0.08);
+                border: 1px solid rgba(16, 185, 129, 0.2);
+                color: #34d399;
+                font-size: 0.7rem;
+                font-weight: 700;
+                padding: 3px 8px;
+                border-radius: 6px;
+                letter-spacing: 0.5px;
+              }
+              .arr-status-pill.disabled {
+                background: rgba(148, 163, 184, 0.08);
+                border: 1px solid rgba(148, 163, 184, 0.2);
+                color: #94a3b8;
+              }
+              .arr-priority-badge {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 28px;
+                height: 28px;
+                border: 1px solid rgba(59, 130, 246, 0.3);
+                background: rgba(59, 130, 246, 0.05);
+                color: #38bdf8;
+                font-weight: 700;
+                border-radius: 6px;
+              }
+              .arr-health-pill {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                background: rgba(16, 185, 129, 0.04);
+                border: 1px solid rgba(16, 185, 129, 0.15);
+                padding: 4px 10px;
+                border-radius: 8px;
+                color: #34d399;
+              }
+              .arr-health-info {
+                display: flex;
+                flex-direction: column;
+              }
+              .arr-health-status {
+                font-size: 0.72rem;
+                font-weight: 600;
+                line-height: 1;
+              }
+              .arr-health-latency {
+                font-size: 0.68rem;
+                color: #34d399;
+                margin-top: 1px;
+                opacity: 0.8;
+                font-family: monospace;
+              }
+              .arr-actions-group {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                justify-content: flex-end;
+              }
+              .arr-action-btn {
+                width: 32px;
+                height: 32px;
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: rgba(15, 23, 42, 0.5);
+                border: 1px solid rgba(255, 255, 255, 0.06);
+                color: #94a3b8;
+                cursor: pointer;
+                transition: all 0.15s;
+              }
+              .arr-action-btn:hover {
+                color: #ffffff;
+                border-color: rgba(255, 255, 255, 0.15);
+              }
+              .arr-action-btn.play:hover {
+                background: rgba(59, 130, 246, 0.15);
+                border-color: #3b82f6;
+                color: #3b82f6;
+              }
+              .arr-action-btn.edit:hover {
+                background: rgba(56, 189, 248, 0.15);
+                border-color: #38bdf8;
+                color: #38bdf8;
+              }
+              .arr-action-btn.delete:hover {
+                background: rgba(239, 68, 68, 0.15);
+                border-color: #ef4444;
+                color: #ef4444;
+              }
+              .arr-footer-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 12px 20px;
+                border-top: 1px solid rgba(255, 255, 255, 0.04);
+                font-size: 0.78rem;
+                color: #64748b;
+              }
+              .arr-pagination-group {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+              }
+              .arr-page-btn {
+                width: 30px;
+                height: 30px;
+                border-radius: 6px;
+                background: rgba(15, 23, 42, 0.5);
+                border: 1px solid rgba(255, 255, 255, 0.06);
+                color: #94a3b8;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: all 0.15s;
+              }
+              .arr-page-btn:hover:not(:disabled) {
+                color: #ffffff;
+                border-color: rgba(255, 255, 255, 0.15);
+              }
+              .arr-page-btn:disabled {
+                opacity: 0.4;
+                cursor: not-allowed;
+              }
+              .arr-page-indicator {
+                width: 30px;
+                height: 30px;
+                border-radius: 6px;
+                border: 1px solid #2563eb;
+                background: rgba(37, 99, 235, 0.08);
+                color: #3b82f6;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 700;
+              }
+              .arr-rows-select {
+                background: rgba(15, 23, 42, 0.5);
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 6px;
+                color: #cbd5e1;
+                padding: 3px 6px;
+                font-size: 0.78rem;
+                outline: none;
+                cursor: pointer;
+                margin-left: 8px;
+              }
+            `}</style>
+
+            {/* Header */}
+            <div className="arr-header-row">
+              <div className="arr-title-group">
+                <div className="arr-network-icon">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="18" cy="18" r="3" />
+                    <circle cx="6" cy="6" r="3" />
+                    <circle cx="6" cy="18" r="3" />
+                    <path d="M9 6h9a2 2 0 0 1 2 2v7" />
+                    <path d="M6 9v6" />
+                  </svg>
+                </div>
+                <div className="arr-title-box">
+                  <h3 className="arr-title-text">Active Routing Rules</h3>
+                  <p className="arr-subtitle-text">Manage how roles are routed to AI models</p>
+                </div>
+              </div>
+              <div className="arr-tabs-group">
                 {["all", "active", "fallback", "disabled"].map(tab => (
                   <button
                     key={tab}
-                    className={`tab-btn ${activeFilterTab === tab ? "active" : ""}`}
-                    onClick={() => setActiveFilterTab(tab)}
-                    style={{ textTransform: "capitalize" }}
+                    className={`arr-tab-btn ${activeFilterTab === tab ? "active" : ""}`}
+                    onClick={() => {
+                      setActiveFilterTab(tab);
+                      setCurrentPage(1);
+                    }}
                   >
-                    {tab}
+                    {tab.charAt(0).toUpperCase() + tab.slice(1)}
                   </button>
                 ))}
               </div>
-            </header>
-            <div className="panel-body" style={{ flex: 1, overflowY: "auto" }}>
-              <table className="custom-table">
+            </div>
+
+            {/* Toolbar */}
+            <div className="arr-toolbar-row">
+              <div className="arr-search-box">
+                <div className="arr-search-icon">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                  </svg>
+                </div>
+                <input
+                  type="text"
+                  className="arr-search-input"
+                  placeholder="Search role or model..."
+                  value={searchText}
+                  onChange={(e) => {
+                    setSearchText(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                />
+              </div>
+              <button className="arr-add-btn" onClick={() => { resetForm(); setShowCreateModal(true); }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                Add Rule
+              </button>
+            </div>
+
+            {/* Table */}
+            <div className="arr-table-container">
+              <table className="arr-table">
                 <thead>
                   <tr>
+                    <th style={{ width: "40px" }}>
+                      <div
+                        className={`arr-checkbox ${selectedRuleIds.size === filteredRoutes.length && filteredRoutes.length > 0 ? "checked" : ""}`}
+                        onClick={toggleSelectAll}
+                      />
+                    </th>
                     <th>Role</th>
                     <th>Primary Model</th>
-                    <th>Fallback</th>
+                    <th>Fallback Model</th>
                     <th>Status</th>
+                    <th>Priority</th>
+                    <th>Health / Test</th>
                     <th style={{ textAlign: "right" }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredRoutes.map((rule) => (
-                    <tr
-                      key={rule.id}
-                      className={selectedRouteId === rule.id ? "selected-row" : ""}
-                      onClick={() => setSelectedRouteId(rule.id)}
-                      style={{ cursor: "pointer" }}
-                    >
-                      <td>
-                        <div className="agent-name-cell">
-                          <span style={{ fontWeight: 600 }}>{rule.name}</span>
-                          <span style={{ fontSize: "0.75rem", color: "#64748b" }}>({rule.id})</span>
-                        </div>
-                      </td>
-                      <td>
-                        <code style={{ background: "rgba(255,255,255,0.05)", padding: "2px 6px", borderRadius: "4px", fontSize: "0.8rem" }}>
-                          {rule.primaryModel}
-                        </code>
-                      </td>
-                      <td>
-                        <code style={{ background: "rgba(255,255,255,0.05)", padding: "2px 6px", borderRadius: "4px", fontSize: "0.8rem" }}>
-                          {rule.secondaryModel}
-                        </code>
-                      </td>
-                      <td>
-                        <span className={`agent-status-badge ${rule.status === "Active" ? "running" : rule.status === "Disabled" ? "offline" : "idle"}`}>
-                          ● {rule.status}
-                        </span>
-                      </td>
-                      <td style={{ textAlign: "right" }} onClick={(e) => e.stopPropagation()}>
-                        <button className="role-btn" style={{ marginRight: "4px", padding: "2px 8px" }} onClick={() => handleTestRoute(rule.id)}>Test</button>
-                        <button className="role-btn" style={{ marginRight: "4px", padding: "2px 8px" }} onClick={() => openEditModal(rule)}>Edit</button>
-                        <button className="role-btn" style={{ padding: "2px 8px", color: "#fca5a5" }} onClick={() => handleDeleteRule(rule.id)}>Delete</button>
-                      </td>
-                    </tr>
-                  ))}
+                  {paginatedRoutes.map((rule) => {
+                    const isSelected = selectedRouteId === rule.id;
+                    const isChecked = selectedRuleIds.has(rule.id);
+                    return (
+                      <tr
+                        key={rule.id}
+                        className={isSelected ? "selected-row" : ""}
+                        onClick={() => setSelectedRouteId(rule.id)}
+                        style={{ cursor: "pointer" }}
+                      >
+                        <td onClick={(e) => e.stopPropagation()}>
+                          <div
+                            className={`arr-checkbox ${isChecked ? "checked" : ""}`}
+                            onClick={() => toggleSelectRule(rule.id)}
+                          />
+                        </td>
+                        <td>
+                          <div className="arr-role-cell">
+                            {renderRoleIcon(rule.id)}
+                            <div className="arr-role-text-box">
+                              <span className="arr-role-prefix">Route</span>
+                              <span className="arr-role-name">{rule.id}</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <div className="arr-model-pill">
+                            {renderBrandLogo(rule.primaryModel)}
+                            <span>{rule.primaryModel}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <div className="arr-model-pill">
+                            {renderBrandLogo(rule.secondaryModel)}
+                            <span>{rule.secondaryModel}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <span className={`arr-status-pill ${rule.status !== "Active" ? "disabled" : ""}`}>
+                            ● {rule.status.toUpperCase()}
+                          </span>
+                        </td>
+                        <td>
+                          <span className="arr-priority-badge">
+                            {rule.priority ?? 1}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="arr-health-pill">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                              <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                            </svg>
+                            <div className="arr-health-info">
+                              <span className="arr-health-status">Healthy</span>
+                              <span className="arr-health-latency">{rule.avgLatency !== "—" ? rule.avgLatency : "42ms"}</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td onClick={(e) => e.stopPropagation()}>
+                          <div className="arr-actions-group">
+                            <button className="arr-action-btn play" title="Test Route" onClick={() => handleTestRoute(rule.id)}>
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                                <polygon points="5,3 19,12 5,21" />
+                              </svg>
+                            </button>
+                            <button className="arr-action-btn edit" title="Edit Rule" onClick={() => openEditModal(rule)}>
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4z" />
+                              </svg>
+                            </button>
+                            <button className="arr-action-btn delete" title="Delete Rule" onClick={() => handleDeleteRule(rule.id)}>
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="3 6 5 6 21 6" />
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                              </svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                   {filteredRoutes.length === 0 && (
                     <tr>
-                      <td colSpan={5} style={{ textAlign: "center", color: "#64748b", padding: "20px" }}>No rules found matching criteria.</td>
+                      <td colSpan={8} style={{ textAlign: "center", color: "#64748b", padding: "30px" }}>No rules found matching criteria.</td>
                     </tr>
                   )}
                 </tbody>
               </table>
+            </div>
+
+            {/* Footer Pagination */}
+            <div className="arr-footer-row">
+              <div>
+                {filteredRoutes.length} rules
+              </div>
+              <div className="arr-pagination-group">
+                <div style={{ display: "flex", alignItems: "center" }}>
+                  <span>Rows per page:</span>
+                  <select
+                    className="arr-rows-select"
+                    value={rowsPerPage}
+                    onChange={(e) => {
+                      setRowsPerPage(Number(e.target.value));
+                      setCurrentPage(1);
+                    }}
+                  >
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                    <option value={50}>50</option>
+                  </select>
+                </div>
+                <button
+                  className="arr-page-btn"
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="15 18 9 12 15 6" />
+                  </svg>
+                </button>
+                <div className="arr-page-indicator">
+                  {currentPage}
+                </div>
+                <button
+                  className="arr-page-btn"
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="9 18 15 12 9 6" />
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -1044,6 +1736,10 @@ export function Router() {
                   ))}
                 </select>
               </div>
+              <div>
+                <label style={{ fontSize: "0.75rem", color: "var(--text-dim)", display: "block", marginBottom: "4px" }}>Priority *</label>
+                <input type="number" min="1" value={formPriority} onChange={(e) => setFormPriority(Number(e.target.value))} required style={{ width: "100%", padding: "8px", background: "var(--bg-darker)", border: "1px solid var(--border-color)", borderRadius: "6px", color: "#fff" }} />
+              </div>
               <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px", marginTop: "12px" }}>
                 <button type="button" className="role-btn" onClick={() => { setShowCreateModal(false); resetForm(); }}>Cancel</button>
                 <button type="submit" className="chat-send-btn">Save</button>
@@ -1097,6 +1793,10 @@ export function Router() {
                     <option key={m.id} value={m.id}>{m.provider} - {m.name}</option>
                   ))}
                 </select>
+              </div>
+              <div>
+                <label style={{ fontSize: "0.75rem", color: "var(--text-dim)", display: "block", marginBottom: "4px" }}>Priority *</label>
+                <input type="number" min="1" value={formPriority} onChange={(e) => setFormPriority(Number(e.target.value))} required style={{ width: "100%", padding: "8px", background: "var(--bg-darker)", border: "1px solid var(--border-color)", borderRadius: "6px", color: "#fff" }} />
               </div>
               <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px", marginTop: "12px" }}>
                 <button type="button" className="role-btn" onClick={() => { setShowEditModal(false); resetForm(); }}>Cancel</button>

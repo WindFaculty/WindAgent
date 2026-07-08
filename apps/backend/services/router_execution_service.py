@@ -51,7 +51,7 @@ class RouterExecutionService:
         """List routing rules formatted for DTO consumption."""
         async with self.db.session() as session:
             # Get all rules
-            stmt_rules = select(ModelRoutingRuleORM)
+            stmt_rules = select(ModelRoutingRuleORM).order_by(ModelRoutingRuleORM.priority.asc())
             res_rules = await session.execute(stmt_rules)
             rules = res_rules.scalars().all()
 
@@ -194,6 +194,7 @@ class RouterExecutionService:
                     "primary": primary_name,
                     "fallback": fallback_name,
                     "status": rule.status,
+                    "priority": rule.priority,
                     "success": f"{success_rate_pct}%",
                     "sparkPoints": spark_points,
                     "description": rule.description or "Handles routing configuration.",
@@ -206,6 +207,9 @@ class RouterExecutionService:
                     "primaryModel": primary_name,
                     "secondaryModel": fallback_name,
                     "finalFallbackModel": final_fallback_name,
+                    "primary_model_id": rule.primary_model_id,
+                    "fallback_model_id": rule.fallback_model_id,
+                    "final_fallback_model_id": rule.final_fallback_model_id,
                     "health": health_metrics,
                     "activity": activity_list,
                 })
@@ -228,6 +232,7 @@ class RouterExecutionService:
                 fallback_model_id=config.fallback_model_id,
                 final_fallback_model_id=config.final_fallback_model_id,
                 status=config.status,
+                priority=config.priority if config.priority is not None else 1,
                 tags_json=json.dumps(config.tags),
                 policy_json=json.dumps(config.policy),
             )
@@ -256,6 +261,8 @@ class RouterExecutionService:
                 rule.final_fallback_model_id = config.final_fallback_model_id
             if config.status is not None:
                 rule.status = config.status
+            if config.priority is not None:
+                rule.priority = config.priority
             if config.tags is not None:
                 rule.tags_json = json.dumps(config.tags)
             if config.policy is not None:
@@ -296,6 +303,7 @@ class RouterExecutionService:
                         rule.fallback_model_id = parsed.fallback_model_id
                         rule.final_fallback_model_id = parsed.final_fallback_model_id
                         rule.status = parsed.status
+                        rule.priority = parsed.priority if parsed.priority is not None else 1
                         rule.tags_json = json.dumps(parsed.tags)
                         rule.policy_json = json.dumps(parsed.policy)
                     else:
@@ -308,6 +316,7 @@ class RouterExecutionService:
                             fallback_model_id=parsed.fallback_model_id,
                             final_fallback_model_id=parsed.final_fallback_model_id,
                             status=parsed.status,
+                            priority=parsed.priority if parsed.priority is not None else 1,
                             tags_json=json.dumps(parsed.tags),
                             policy_json=json.dumps(parsed.policy),
                         )

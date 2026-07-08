@@ -241,6 +241,7 @@ class ModelRoutingRuleORM(Base):
     fallback_model_id: Mapped[Optional[str]] = mapped_column(String(128), ForeignKey("model_catalog.id"), nullable=True)
     final_fallback_model_id: Mapped[Optional[str]] = mapped_column(String(128), ForeignKey("model_catalog.id"), nullable=True)
     status: Mapped[str] = mapped_column(String(32), default="Active", nullable=False)
+    priority: Mapped[int] = mapped_column(default=1, nullable=False)
     tags_json: Mapped[str] = mapped_column(Text, default="[]", nullable=False)
     policy_json: Mapped[str] = mapped_column(Text, default="{}", nullable=False)
     updated_at: Mapped[datetime] = mapped_column(default=_utcnow, onupdate=_utcnow, nullable=False)

@@ -14,6 +14,7 @@ class RoutingRuleCreate(BaseModel):
     fallback_model_id: Optional[str] = Field(None, max_length=128)
     final_fallback_model_id: Optional[str] = Field(None, max_length=128)
     status: Literal["Active", "Weighted", "Fallback", "Disabled"] = "Active"
+    priority: Optional[int] = 1
     tags: List[str] = []
     policy: Dict[str, Any] = {}
 
@@ -25,6 +26,7 @@ class RoutingRulePatch(BaseModel):
     fallback_model_id: Optional[str] = Field(None, max_length=128)
     final_fallback_model_id: Optional[str] = Field(None, max_length=128)
     status: Optional[Literal["Active", "Weighted", "Fallback", "Disabled"]] = None
+    priority: Optional[int] = None
     tags: Optional[List[str]] = None
     policy: Optional[Dict[str, Any]] = None
 
@@ -42,6 +44,7 @@ class RoutingRuleDTO(BaseModel):
     primary: str  # display name
     fallback: str  # display name
     status: str
+    priority: int = 1
     success: str
     sparkPoints: str
     description: str
@@ -54,6 +57,9 @@ class RoutingRuleDTO(BaseModel):
     primaryModel: str
     secondaryModel: str
     finalFallbackModel: str
+    primary_model_id: Optional[str] = None
+    fallback_model_id: Optional[str] = None
+    final_fallback_model_id: Optional[str] = None
     health: List[HealthMetricItem]
     activity: List[str]
 
