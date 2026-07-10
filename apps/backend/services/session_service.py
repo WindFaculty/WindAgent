@@ -68,7 +68,45 @@ class SessionService:
 
     async def get_session(self, session_id: UUID) -> ChatSession | None:
         stored = self._sessions.get(session_id)
-        return stored.session if stored else None
+        if stored is not None:
+            return stored.session
+
+        if self._db is not None:
+            from sqlalchemy import select
+            async with self._db.session() as s:
+                row = await s.get(ChatSessionORM, str(session_id))
+                if row is not None:
+                    chat = ChatSession(
+                        id=UUID(row.id),
+                        created_at=row.created_at,
+                        updated_at=row.updated_at,
+                        status=row.status,
+                    )
+                    
+                    msg_rows = (await s.execute(
+                        select(MessageORM)
+                        .where(MessageORM.session_id == str(session_id))
+                        .order_by(MessageORM.created_at)
+                    )).scalars().all()
+                    
+                    messages = [
+                        Message(
+                            id=UUID(m.id),
+                            session_id=UUID(m.session_id),
+                            sender=m.sender,
+                            content=m.content,
+                            created_at=m.created_at,
+                        )
+                        for m in msg_rows
+                    ]
+                    
+                    self._sessions[session_id] = _StoredSession(
+                        session=chat,
+                        messages=messages,
+                    )
+                    return chat
+
+        return None
 
     async def update_status(self, session_id: UUID, status: SessionStatus) -> None:
         stored = self._sessions.get(session_id)

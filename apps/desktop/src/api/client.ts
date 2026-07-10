@@ -86,6 +86,10 @@ export async function fetchSession(sessionId: string): Promise<ChatSession> {
   return request<ChatSession>(`/api/v1/sessions/${sessionId}`);
 }
 
+export async function fetchSessionMessages(sessionId: string): Promise<any[]> {
+  return request<any[]>(`/api/v1/sessions/${sessionId}/messages`);
+}
+
 export async function sendMessage(
   sessionId: string,
   content: string,

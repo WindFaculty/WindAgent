@@ -1,7 +1,7 @@
 """Sessions router: create, fetch, send message."""
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any, Dict, List
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Request, status
@@ -50,6 +50,15 @@ async def create_session(
             res = await db_sess.execute(stmt)
             agent = res.scalar_one_or_none()
             if agent:
+                hermes_sess_id = None
+                if agent.runtime_type == "hermes":
+                    bridge = request.app.state.hermes_session_bridge
+                    hermes_sess_id = await bridge.create_session(
+                        windagent_session_id=str(chat.id),
+                        agent_id=payload.agent_id,
+                        workspace_root=payload.workspace_root or agent.workspace_root
+                    )
+
                 agent_sess = AgentSessionORM(
                     id=str(uuid.uuid4()),
                     windagent_session_id=str(chat.id),
@@ -59,6 +68,7 @@ async def create_session(
                     workspace_root=payload.workspace_root or agent.workspace_root,
                     router_role=agent.router_role,
                     started_at=chat.created_at,
+                    hermes_session_id=hermes_sess_id,
                 )
                 db_sess.add(agent_sess)
 
@@ -76,6 +86,27 @@ async def get_session(session_id: UUID, request: Request) -> ChatSession:
     if chat is None:
         raise HTTPException(status_code=404, detail="session not found")
     return chat
+
+
+@router.get("/{session_id}/messages", response_model=List[Message])
+async def list_session_messages(session_id: UUID, request: Request) -> List[Message]:
+    sessions = _session_service(request)
+    chat = await sessions.get_session(session_id)
+    if chat is None:
+        raise HTTPException(status_code=404, detail="session not found")
+
+    async with request.app.state.db.session() as db_sess:
+        stmt = select(AgentSessionORM).where(AgentSessionORM.windagent_session_id == str(session_id))
+        res = await db_sess.execute(stmt)
+        agent_sess = res.scalar_one_or_none()
+
+    if agent_sess and agent_sess.runtime_type == "hermes" and agent_sess.hermes_session_id:
+        bridge = request.app.state.hermes_session_bridge
+        await bridge.sync_messages(str(session_id), agent_sess.hermes_session_id)
+        sessions._sessions.pop(session_id, None)
+        await sessions.get_session(session_id)
+
+    return sessions.list_messages(session_id)
 
 
 @router.post(

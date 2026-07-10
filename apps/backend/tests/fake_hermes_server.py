@@ -80,6 +80,26 @@ async def skills():
     }
 
 
+_SESSIONS: Dict[str, list] = {}
+
+
+@fake_app.post("/api/sessions")
+async def create_api_session(req: Request):
+    body = await req.json()
+    sid = body.get("session_id")
+    _SESSIONS[sid] = [
+        {"sender": "user", "content": "Hello Hermes", "created_at": "2026-07-10T12:00:00Z"},
+        {"sender": "assistant", "content": "Hello! How can I help you today?", "created_at": "2026-07-10T12:01:00Z"}
+    ]
+    return {"status": "created", "session_id": sid}
+
+
+@fake_app.get("/api/sessions/{session_id}/messages")
+async def get_api_session_messages(session_id: str):
+    msgs = _SESSIONS.get(session_id, [])
+    return msgs
+
+
 @fake_app.post("/v1/runs")
 async def start_run(req: Request):
     body = await req.json()

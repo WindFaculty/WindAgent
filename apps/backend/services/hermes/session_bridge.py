@@ -10,7 +10,7 @@ from typing import Any, Dict, Optional
 from sqlalchemy import select, update
 
 from db.database import Database
-from db.models import AgentORM, AgentSessionORM, PermissionRequestORM
+from db.models import AgentORM, AgentSessionORM, PermissionRequestORM, MessageORM
 from services.event_bus import EventBus
 from services.hermes.api_client import HermesApiClient
 from services.hermes.event_mapper import HermesEventTranslator
@@ -30,6 +30,63 @@ class HermesSessionBridge:
         # Keep track of generated permission UUIDs mapping: windagent_request_id -> hermes_approval_id
         # and hermes_approval_id -> windagent_request_id per run
         self.approval_mappings: Dict[str, Dict[str, str]] = {} # run_id -> {hermes_id: windagent_id}
+
+    async def create_session(
+        self,
+        windagent_session_id: str,
+        agent_id: str,
+        workspace_root: Optional[str] = None,
+    ) -> str:
+        """Create a session mapping in Hermes server and return hermes_session_id."""
+        hermes_session_id = f"sess_{uuid.uuid4().hex}"
+        log.info("Creating session mapping: windagent=%s -> hermes=%s", windagent_session_id, hermes_session_id)
+        try:
+            await self.client.create_hermes_session(hermes_session_id)
+        except Exception:
+            log.exception("Failed to initialize remote Hermes session, continuing offline")
+        return hermes_session_id
+
+    async def sync_messages(self, windagent_session_id: str, hermes_session_id: str) -> None:
+        """Query messages from Hermes and sync them to SQLite db, avoiding duplicates."""
+        log.info("Syncing messages for windagent=%s, hermes=%s", windagent_session_id, hermes_session_id)
+        try:
+            hermes_messages = await self.client.get_hermes_session_messages(hermes_session_id)
+        except Exception:
+            log.exception("Failed to fetch messages from Hermes server")
+            return
+
+        # Fetch existing local messages to avoid duplicate insertions
+        async with self.db.session() as db_sess:
+            stmt = select(MessageORM).where(MessageORM.session_id == windagent_session_id)
+            res = await db_sess.execute(stmt)
+            local_msgs = res.scalars().all()
+            
+            local_combos = {(m.content, m.sender) for m in local_msgs}
+
+            for msg in hermes_messages:
+                content = msg.get("content")
+                sender = msg.get("sender") or "assistant"
+                if sender not in ("user", "assistant", "system"):
+                    sender = "assistant"
+                
+                if (content, sender) not in local_combos:
+                    created_at = datetime.now(timezone.utc)
+                    if msg.get("created_at"):
+                        try:
+                            created_at = datetime.fromisoformat(msg.get("created_at").replace("Z", "+00:00"))
+                        except Exception:
+                            pass
+                    
+                    new_msg = MessageORM(
+                        id=str(uuid.uuid4()),
+                        session_id=windagent_session_id,
+                        sender=sender,
+                        content=content,
+                        created_at=created_at,
+                    )
+                    db_sess.add(new_msg)
+            
+            await db_sess.commit()
 
     async def submit_message(
         self,

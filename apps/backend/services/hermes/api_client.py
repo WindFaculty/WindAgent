@@ -161,3 +161,28 @@ class HermesApiClient:
             resp.raise_for_status()
             return resp.json()
 
+    async def create_hermes_session(self, session_id: str) -> Dict[str, Any]:
+        """POST /api/sessions — Create a session in Hermes."""
+        url = f"{self.config.base_url}/api/sessions"
+        payload = {"session_id": session_id}
+        async with httpx.AsyncClient(timeout=self.config.request_timeout_s) as client:
+            resp = await client.post(url, json=payload, headers=self._get_headers())
+            resp.raise_for_status()
+            return resp.json()
+
+    async def get_hermes_session(self, session_id: str) -> Dict[str, Any]:
+        """GET /api/sessions/{id} — Retrieve a session from Hermes."""
+        url = f"{self.config.base_url}/api/sessions/{session_id}"
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            resp = await client.get(url, headers=self._get_headers())
+            resp.raise_for_status()
+            return resp.json()
+
+    async def get_hermes_session_messages(self, session_id: str) -> List[Dict[str, Any]]:
+        """GET /api/sessions/{id}/messages — Retrieve session messages from Hermes."""
+        url = f"{self.config.base_url}/api/sessions/{session_id}/messages"
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            resp = await client.get(url, headers=self._get_headers())
+            resp.raise_for_status()
+            return resp.json()
+

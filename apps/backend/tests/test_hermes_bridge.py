@@ -240,3 +240,59 @@ def test_hermes_router_endpoints(monkeypatch):
         pass
 
 
+@pytest.mark.asyncio
+async def test_hermes_session_mapping_and_sync(client, db):
+    from db.models import AgentORM, AgentSessionORM
+    from sqlalchemy import select
+    # 1. Register a hermes agent
+    async with db.session() as s:
+        agent = AgentORM(
+            id="hermes_test_agent",
+            name="Hermes Test Agent",
+            runtime_type="hermes",
+            router_role="Coder",
+            system_prompt="You are a coder.",
+            workspace_root=".",
+        )
+        s.add(agent)
+        await s.commit()
+
+    # Intercept httpx calls to point to fake_app
+    transport = httpx.ASGITransport(app=fake_app)
+    real_async_client = httpx.AsyncClient
+
+    def _make_client(*args, **kwargs):
+        return real_async_client(transport=transport, base_url="http://fake-hermes")
+
+    httpx.AsyncClient = _make_client
+    try:
+        # 2. Create session with this agent
+        resp = client.post("/api/v1/sessions", json={"agent_id": "hermes_test_agent"})
+        assert resp.status_code == 201
+        sid = resp.json()["session_id"]
+        assert sid
+
+        # Check session mapping in DB
+        async with db.session() as s:
+            stmt = select(AgentSessionORM).where(AgentSessionORM.windagent_session_id == sid)
+            res = await s.execute(stmt)
+            agent_sess = res.scalar_one_or_none()
+            assert agent_sess is not None
+            assert agent_sess.hermes_session_id is not None
+
+        # 3. Call GET /messages which should trigger sync
+        msg_resp = client.get(f"/api/v1/sessions/{sid}/messages")
+        assert msg_resp.status_code == 200
+        msgs = msg_resp.json()
+        
+        # Verify both messages from fake_hermes_server were synced
+        assert len(msgs) == 2
+        assert msgs[0]["sender"] == "user"
+        assert msgs[0]["content"] == "Hello Hermes"
+        assert msgs[1]["sender"] == "assistant"
+        assert msgs[1]["content"] == "Hello! How can I help you today?"
+
+    finally:
+        httpx.AsyncClient = real_async_client
+
+
