@@ -287,5 +287,71 @@ __all__ = [
     "ModelRoutingRuleORM",
     "ModelActivityORM",
     "ModelBenchmarkRunORM",
+    "AgentORM",
+    "AgentSessionORM",
+    "PermissionRequestORM",
 ]
+
+
+# ---------- Agent Registry ----------
+
+class AgentORM(Base):
+    __tablename__ = "agents"
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    name: Mapped[str] = mapped_column(String(128), nullable=False)
+    slug: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    runtime_type: Mapped[str] = mapped_column(String(32), default="hermes", nullable=False)
+    hermes_profile: Mapped[Optional[str]] = mapped_column(String(128), default="default", nullable=True)
+    router_role: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    status: Mapped[str] = mapped_column(String(32), default="offline", nullable=False)
+    workspace_root: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    system_prompt: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    toolsets_json: Mapped[str] = mapped_column(Text, default="[]", nullable=False)
+    skills_json: Mapped[str] = mapped_column(Text, default="[]", nullable=False)
+    memory_enabled: Mapped[bool] = mapped_column(default=False, nullable=False)
+    max_concurrent_sessions: Mapped[int] = mapped_column(default=5, nullable=False)
+    auto_start: Mapped[bool] = mapped_column(default=False, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(default=_utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(default=_utcnow, onupdate=_utcnow, nullable=False)
+
+
+# ---------- Agent Sessions ----------
+
+class AgentSessionORM(Base):
+    __tablename__ = "agent_sessions"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    windagent_session_id: Mapped[str] = mapped_column(String(36), nullable=False)
+    agent_id: Mapped[str] = mapped_column(String(64), ForeignKey("agents.id"), nullable=False)
+    runtime_type: Mapped[str] = mapped_column(String(32), nullable=False)
+    hermes_session_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    hermes_run_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    status: Mapped[str] = mapped_column(String(32), default="idle", nullable=False)
+    workspace_root: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    router_role: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    started_at: Mapped[datetime] = mapped_column(default=_utcnow, nullable=False)
+    finished_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
+    last_event_sequence: Mapped[int] = mapped_column(default=0, nullable=False)
+    error_code: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    error_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+
+# ---------- Permission Requests ----------
+
+class PermissionRequestORM(Base):
+    __tablename__ = "permission_requests"
+
+    windagent_request_id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    hermes_approval_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    session_id: Mapped[str] = mapped_column(String(36), nullable=False)
+    run_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    risk_level: Mapped[str] = mapped_column(String(32), nullable=False)
+    tool_name: Mapped[str] = mapped_column(String(64), nullable=False)
+    arguments_redacted: Mapped[str] = mapped_column(Text, default="{}", nullable=False)
+    status: Mapped[str] = mapped_column(String(32), default="pending", nullable=False)
+    expires_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
+    created_at: Mapped[datetime] = mapped_column(default=_utcnow, nullable=False)
+
 

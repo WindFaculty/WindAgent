@@ -136,6 +136,32 @@ function applyEvent(state: SessionState, env: EventEnvelope): SessionState {
         ],
       };
     }
+    case "assistant_message_delta": {
+      const data = env.data as { message_id?: string; delta: string };
+      const messages = [...state.messages];
+      const lastMsg = messages[messages.length - 1];
+      if (lastMsg && lastMsg.sender === "assistant") {
+        lastMsg.content += data.delta;
+        return { ...state, messages };
+      } else {
+        return {
+          ...state,
+          messages: [
+            ...messages,
+            {
+              id: data.message_id || "assistant_msg_" + Math.random().toString(36).substr(2, 9),
+              sender: "assistant",
+              content: data.delta,
+              createdAt: Date.parse(env.timestamp),
+            },
+          ],
+        };
+      }
+    }
+    case "reasoning_delta": {
+      // Just print reasoning to console or ignore for simple preview
+      return state;
+    }
     case "permission_request":
       return {
         ...state,
@@ -155,6 +181,21 @@ function applyEvent(state: SessionState, env: EventEnvelope): SessionState {
         ),
       };
     }
+    case "tool_call_started": {
+      const data = env.data as { tool_name: string };
+      return {
+        ...state,
+        toolCalls: [
+          ...state.toolCalls,
+          {
+            toolName: data.tool_name,
+            status: "pending" as any,
+            durationMs: 0,
+            at: Date.parse(env.timestamp),
+          },
+        ],
+      };
+    }
     case "tool_call_finished": {
       const data = env.data as {
         tool_name: string;
@@ -163,20 +204,40 @@ function applyEvent(state: SessionState, env: EventEnvelope): SessionState {
         error?: { message?: string };
         output?: { resolved_point?: { x: number; y: number; confidence: number; method: string } };
       };
-      return {
-        ...state,
-        toolCalls: [
-          ...state.toolCalls,
-          {
-            toolName: data.tool_name,
-            status: data.status,
-            durationMs: data.duration_ms,
-            at: Date.parse(env.timestamp),
-            errorMessage: data.error?.message,
-            resolvedPoint: data.output?.resolved_point,
-          },
-        ],
-      };
+      
+      const existingCall = state.toolCalls.find(c => c.toolName === data.tool_name && c.status === ("pending" as any));
+      if (existingCall) {
+        return {
+          ...state,
+          toolCalls: state.toolCalls.map(c => {
+            if (c === existingCall) {
+              return {
+                ...c,
+                status: data.status,
+                durationMs: data.duration_ms,
+                errorMessage: data.error?.message,
+                resolvedPoint: data.output?.resolved_point,
+              };
+            }
+            return c;
+          }),
+        };
+      } else {
+        return {
+          ...state,
+          toolCalls: [
+            ...state.toolCalls,
+            {
+              toolName: data.tool_name,
+              status: data.status,
+              durationMs: data.duration_ms,
+              at: Date.parse(env.timestamp),
+              errorMessage: data.error?.message,
+              resolvedPoint: data.output?.resolved_point,
+            },
+          ],
+        };
+      }
     }
     default:
       return state;

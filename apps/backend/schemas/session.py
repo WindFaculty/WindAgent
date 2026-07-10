@@ -19,6 +19,12 @@ class ChatSession(BaseModel):
     status: SessionStatus = "idle"
 
 
+class CreateSessionRequest(BaseModel):
+    agent_id: Optional[str] = None
+    workspace_root: Optional[str] = None
+    title: Optional[str] = None
+
+
 class CreateSessionResponse(BaseModel):
     session_id: UUID
     created_at: datetime

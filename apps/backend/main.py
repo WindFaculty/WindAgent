@@ -24,7 +24,7 @@ from pathlib import Path
 from fastapi import FastAPI
 
 from db.database import Database
-from routers import agent_s3, health, models, permissions, sessions, tools, workflow, websocket
+from routers import agent_s3, health, models, permissions, sessions, tools, workflow, websocket, agents, hermes, chat_completions
 from services.agent_s3_adapter import AgentS3Adapter
 from services.agent_s3_config import (
     AgentS3Config,
@@ -48,6 +48,11 @@ from services.session_service import SessionService
 from services.tool_executor import ToolExecutor
 from services.workflow_runner import WorkflowRunner
 from services.workflow_service import WorkflowService
+from services.hermes import load_hermes_config
+from services.hermes.runtime_manager import HermesRuntimeManager
+from services.hermes.api_client import HermesApiClient
+from services.hermes.session_bridge import HermesSessionBridge
+from services.agent_registry_service import AgentRegistryService
 
 
 logging.basicConfig(
@@ -215,6 +220,19 @@ async def lifespan(app: FastAPI):
     model_service = ModelService(db=db, ollama_client=model_client)
     await model_service.init_database_seeds()
 
+    # Seeding Agent registry
+    agent_registry = AgentRegistryService(db)
+    await agent_registry.init_database_seeds()
+
+    # Hermes configuration and service mapping
+    hermes_config = load_hermes_config()
+    hermes_runtime_manager = HermesRuntimeManager(hermes_config, event_bus)
+    hermes_api_client = HermesApiClient(hermes_config)
+    hermes_session_bridge = HermesSessionBridge(db, hermes_api_client, event_bus)
+
+    # Start the supervisor
+    await hermes_runtime_manager.start()
+
     app.state.event_bus = event_bus
     app.state.db = db
     app.state.gui = gui
@@ -227,6 +245,11 @@ async def lifespan(app: FastAPI):
     app.state.workflow_service = workflow_service
     app.state.workflow_runner = runner
     app.state.model_service = model_service
+    app.state.agent_registry_service = agent_registry
+    app.state.hermes_config = hermes_config
+    app.state.hermes_runtime_manager = hermes_runtime_manager
+    app.state.hermes_api_client = hermes_api_client
+    app.state.hermes_session_bridge = hermes_session_bridge
 
     # ---------- Optional: Agent-S3 integration ----------
     # The backend always loads the Agent-S3 config (cheap; env reads
@@ -297,6 +320,11 @@ async def lifespan(app: FastAPI):
         yield
     finally:
         log.info("WindAgent backend shutting down")
+        # Stop supervised Hermes process
+        try:
+            await hermes_runtime_manager.stop()
+        except Exception:
+            log.exception("error stopping hermes supervisor")
         # Close JSONL handles first so any final in-flight events are
         # flushed before we tear down the rest of the stack.
         try:
@@ -326,3 +354,16 @@ app.include_router(sessions.router)
 app.include_router(workflow.router)
 app.include_router(tools.router)
 app.include_router(websocket.router)
+
+# Versioned prefixes
+app.include_router(sessions.router, prefix="/api/v1")
+app.include_router(permissions.router, prefix="/api/v1")
+app.include_router(workflow.router, prefix="/api/v1")
+app.include_router(tools.router, prefix="/api/v1")
+
+# New versioned routers
+app.include_router(agents.router, prefix="/api/v1")
+app.include_router(hermes.router, prefix="/api/v1")
+
+# Completion router (OpenAI-compatible completions endpoint)
+app.include_router(chat_completions.router)

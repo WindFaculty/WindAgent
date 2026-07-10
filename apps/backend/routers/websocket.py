@@ -19,6 +19,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 from uuid import UUID
 
@@ -140,17 +141,68 @@ async def _read_control_messages(
                     continue
                 granted = action == "permission_granted"
                 try:
-                    await permissions.resolve_permission(
-                        request_id, granted=granted
+                    bridge = websocket.app.state.hermes_session_bridge
+                    resolved = await bridge.resolve_approval(
+                        windagent_session_id=session_id,
+                        windagent_request_id=request_id,
+                        granted=granted
                     )
+                    if not resolved:
+                        await permissions.resolve_permission(
+                            request_id, granted=granted
+                        )
                 except Exception:  # noqa: BLE001
                     logger.exception(
-                        "ws control: resolve_permission failed for %s",
+                        "ws control: resolve_permission/approval failed for %s",
                         request_id,
                     )
                 continue
 
             # ----- runner control (Phase 5) -----
+            if action == "stop":
+                try:
+                    bridge = websocket.app.state.hermes_session_bridge
+                    ok = await bridge.stop_run(session_id)
+                    if ok:
+                        # Echo user_stopped event
+                        env = EventEnvelope(
+                            event="user_stopped",
+                            data=UserControlData(
+                                session_id=sid_uuid,
+                                workflow_id=None,
+                            ).model_dump(mode="json"),
+                        )
+                        await bus.publish(session_id, env)
+                        continue
+                except Exception:
+                    logger.exception("ws control: hermes stop failed for session %s", session_id)
+
+            # Phase 8: runtime capability gate. Hermes runs have no
+            # real pause/resume — only stop/approval. Reject others.
+            if action in ("pause", "resume"):
+                from db.models import AgentSessionORM
+                try:
+                    async with websocket.app.state.db.session() as db_sess:
+                        from sqlalchemy import select
+                        stmt = select(AgentSessionORM).where(
+                            AgentSessionORM.windagent_session_id == session_id
+                        )
+                        res = await db_sess.execute(stmt)
+                        agent_sess = res.scalar_one_or_none()
+                    if agent_sess and agent_sess.runtime_type == "hermes":
+                        await websocket.send_json({
+                            "event": "error",
+                            "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+                            "data": {
+                                "session_id": session_id,
+                                "message": "Pause/resume not supported by Hermes runtime",
+                                "code": "capability_not_supported",
+                            },
+                        })
+                        continue
+                except Exception:  # noqa: BLE001
+                    logger.exception("ws control: runtime capability check failed")
+
             mapping = _ACTION_MAP.get(action or "")
             if mapping is None:
                 # Unknown action — skip.
