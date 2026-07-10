@@ -24,7 +24,7 @@ class HermesEventTranslator:
         """
         event_name = event.get("event")
         ts = event.get("timestamp", datetime.datetime.now(datetime.timezone.utc).timestamp())
-        timestamp_str = datetime.datetime.fromtimestamp(ts, datetime.timezone.utc).isoformat().replace("+00:00", "Z")
+        dt = datetime.datetime.fromtimestamp(ts, datetime.timezone.utc)
 
         mapped_event: Optional[str] = None
         data: Dict[str, Any] = {}
@@ -32,7 +32,7 @@ class HermesEventTranslator:
         if event_name == "message.delta" or event_name == "assistant.delta":
             mapped_event = "assistant_message_delta"
             data = {
-                "message_id": f"msg_{event.get('run_id')}",
+                "message_id": f"msg_{event.get('run_id') or 'default'}",
                 "delta": event.get("delta", ""),
             }
         elif event_name == "reasoning.available":
@@ -47,6 +47,14 @@ class HermesEventTranslator:
                 "step_id": event.get("tool"), # pseudo step_id
                 "tool_name": event.get("tool"),
                 "input": {"arguments": event.get("preview") or ""},
+            }
+        elif event_name == "tool.progress":
+            mapped_event = "tool_call_progress"
+            data = {
+                "session_id": windagent_session_id,
+                "step_id": event.get("tool"),
+                "tool_name": event.get("tool"),
+                "progress": event.get("progress", ""),
             }
         elif event_name == "tool.completed":
             mapped_event = "tool_call_finished"
@@ -79,10 +87,17 @@ class HermesEventTranslator:
                 "output": event.get("output", ""),
             }
         elif event_name == "run.failed":
-            mapped_event = "error"
+            mapped_event = "session_finished"
             data = {
                 "session_id": windagent_session_id,
-                "message": event.get("error", "Run failed"),
+                "workflow_id": event.get("run_id"),
+                "final_status": "failed",
+                "total_duration_ms": 0,
+                "error": {
+                    "type": "run_failed",
+                    "message": event.get("error", "Run failed"),
+                    "code": "RUN_FAILED"
+                }
             }
         elif event_name == "run.cancelled":
             mapped_event = "session_finished"
@@ -95,14 +110,8 @@ class HermesEventTranslator:
         else:
             return None
 
-        # Custom envelop matching specs in ban_ke_hoach.md Phase 6
-        # We manually construct a dict matching envelope v2 layout, or use EventEnvelope.
-        # But wait! The existing schemas.event.EventEnvelope in WindAgent has fields:
-        # event, timestamp, data.
-        # Let's inspect schemas/event.py using view_file to make sure we don't break compatibility.
-        # If we use schemas.event.EventEnvelope, let's see how it's defined.
         return EventEnvelope(
             event=mapped_event,
-            timestamp=timestamp_str,
+            timestamp=dt,
             data=data,
         )

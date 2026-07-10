@@ -49,6 +49,23 @@ async def test_event_translator_mapping():
     )
     assert env3.event == "session_finished"
 
+    env4 = HermesEventTranslator.translate(
+        {"event": "tool.progress", "tool": "terminal", "progress": "scanning"},
+        windagent_session_id="s1",
+        sequence=4,
+    )
+    assert env4.event == "tool_call_progress"
+    assert env4.data["progress"] == "scanning"
+
+    env5 = HermesEventTranslator.translate(
+        {"event": "run.failed", "run_id": "r1", "error": "Something crashed"},
+        windagent_session_id="s1",
+        sequence=5,
+    )
+    assert env5.event == "session_finished"
+    assert env5.data["final_status"] == "failed"
+    assert env5.data["error"]["message"] == "Something crashed"
+
 
 @pytest.mark.asyncio
 async def test_api_client_streams_from_fake_server():
