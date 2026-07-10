@@ -187,12 +187,32 @@ class HermesSessionBridge:
             
             run_id = agent_sess.hermes_run_id
 
+        # 1. Call stop on the remote Hermes server
+        remote_ok = False
         try:
             await self.client.stop_run(run_id)
-            return True
+            remote_ok = True
         except Exception:
             log.exception("Failed to stop Hermes run %s", run_id)
-            return False
+
+        # 2. Cancel background stream task
+        task = self.active_tasks.get(run_id)
+        if task:
+            task.cancel()
+
+        # 3. Update status in local DB to cancelled
+        async with self.db.session() as db_sess:
+            stmt_up = (
+                update(AgentSessionORM)
+                .where(AgentSessionORM.hermes_run_id == run_id)
+                .values(
+                    status="cancelled",
+                    finished_at=datetime.now(timezone.utc)
+                )
+            )
+            await db_sess.execute(stmt_up)
+
+        return remote_ok
 
     async def resolve_approval(self, windagent_session_id: str, windagent_request_id: UUID, granted: bool) -> bool:
         """Proxy decision to the corresponding Hermes approval request."""

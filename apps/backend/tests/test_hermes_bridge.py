@@ -392,9 +392,93 @@ async def test_hermes_interactive_approval(client, db):
                 row = res.scalar_one_or_none()
                 assert row.status == "granted"
 
-            # Check that fake server recorded choice 'once'
+        # Check that fake server recorded choice 'once'
+        from tests.fake_hermes_server import _RUNS
+        assert _RUNS[run_id]["approved"] == "once"
+
+    finally:
+        httpx.AsyncClient = real_async_client
+
+
+@pytest.mark.asyncio
+async def test_hermes_stop_run(client, db):
+    import asyncio
+    from db.models import AgentORM, AgentSessionORM
+    from sqlalchemy import select
+    # 1. Register hermes agent
+    async with db.session() as s:
+        agent = AgentORM(
+            id="hermes_stop_agent",
+            name="Hermes Stop Agent",
+            runtime_type="hermes",
+            router_role="Coder",
+            system_prompt="sys",
+            workspace_root=".",
+        )
+        s.add(agent)
+        await s.commit()
+
+    transport = httpx.ASGITransport(app=fake_app)
+    real_async_client = httpx.AsyncClient
+
+    def _make_client(*args, **kwargs):
+        return real_async_client(transport=transport, base_url="http://fake-hermes")
+
+    httpx.AsyncClient = _make_client
+    try:
+        # Create session
+        sess_resp = client.post("/api/v1/sessions", json={"agent_id": "hermes_stop_agent"})
+        assert sess_resp.status_code == 201
+        sid = sess_resp.json()["session_id"]
+
+        # Connect WebSocket
+        with client.websocket_connect(f"/ws/{sid}") as ws:
+            # Send message that starts a run in background
+            msg_resp = client.post(f"/api/v1/sessions/{sid}/messages", json={"content": "hello hermes"})
+            assert msg_resp.status_code == 202
+
+            # Consume 'message_received' event
+            ws.receive_json()
+
+            # Retrieve Hermes run_id from DB
+            async with db.session() as s:
+                stmt = select(AgentSessionORM).where(AgentSessionORM.windagent_session_id == sid)
+                res = await s.execute(stmt)
+                row = res.scalar_one_or_none()
+                assert row is not None
+                assert row.status == "running"
+                run_id = row.hermes_run_id
+                assert run_id
+
+            # Call /stop on backend
+            stop_resp = client.post(f"/api/v1/sessions/{sid}/stop")
+            assert stop_resp.status_code == 202
+
+            # Wait a brief moment for DB to update
+            await asyncio.sleep(0.05)
+
+            # Check that the local DB status was updated to cancelled
+            async with db.session() as s:
+                stmt = select(AgentSessionORM).where(AgentSessionORM.windagent_session_id == sid)
+                res = await s.execute(stmt)
+                row = res.scalar_one_or_none()
+                assert row.status == "cancelled"
+
+            # Check that fake server recorded run as cancelled
             from tests.fake_hermes_server import _RUNS
-            assert _RUNS[run_id]["approved"] == "once"
+            assert _RUNS[run_id]["status"] == "cancelled"
+
+            # Verify that WS received 'user_stopped' event
+            stop_event = None
+            for _ in range(10):
+                try:
+                    data = ws.receive_json()
+                    if data.get("event") == "user_stopped":
+                        stop_event = data
+                        break
+                except Exception:
+                    pass
+            assert stop_event is not None
 
     finally:
         httpx.AsyncClient = real_async_client
