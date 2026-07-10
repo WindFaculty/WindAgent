@@ -18,7 +18,7 @@ def test_health_ok(client):
 
 
 def test_create_session(client):
-    resp = client.post("/sessions")
+    resp = client.post("/api/v1/sessions")
     assert resp.status_code == 201
     body = resp.json()
     assert body["session_id"]
@@ -27,21 +27,21 @@ def test_create_session(client):
 
 
 def test_get_session_unknown_returns_404(client):
-    resp = client.get("/sessions/00000000-0000-4000-8000-000000000999")
+    resp = client.get("/api/v1/sessions/00000000-0000-4000-8000-000000000999")
     assert resp.status_code == 404
 
 
 def test_get_session_returns_existing(client):
-    sid = client.post("/sessions").json()["session_id"]
-    resp = client.get(f"/sessions/{sid}")
+    sid = client.post("/api/v1/sessions").json()["session_id"]
+    resp = client.get(f"/api/v1/sessions/{sid}")
     assert resp.status_code == 200
     assert resp.json()["id"] == sid
 
 
 def test_send_message_returns_workflow(client):
-    sid = client.post("/sessions").json()["session_id"]
+    sid = client.post("/api/v1/sessions").json()["session_id"]
     resp = client.post(
-        f"/sessions/{sid}/messages",
+        f"/api/v1/sessions/{sid}/messages",
         json={"content": "Mở Notepad và gõ Hello"},
     )
     assert resp.status_code == 202
@@ -53,23 +53,23 @@ def test_send_message_returns_workflow(client):
 
 def test_send_message_unknown_session_returns_404(client):
     resp = client.post(
-        "/sessions/00000000-0000-4000-8000-000000000999/messages",
+        "/api/v1/sessions/00000000-0000-4000-8000-000000000999/messages",
         json={"content": "hello"},
     )
     assert resp.status_code == 404
 
 
 def test_get_workflow_after_planning(client):
-    sid = client.post("/sessions").json()["session_id"]
+    sid = client.post("/api/v1/sessions").json()["session_id"]
     client.post(
-        f"/sessions/{sid}/messages",
+        f"/api/v1/sessions/{sid}/messages",
         json={"content": "Mở Notepad và gõ Hello"},
     )
     # Phase 5: the runner auto-starts on /messages. With MockGuiAdapter
     # the workflow completes almost instantly; give it a tiny window.
     import time
     time.sleep(0.2)
-    resp = client.get(f"/sessions/{sid}/workflow")
+    resp = client.get(f"/api/v1/sessions/{sid}/workflow")
     assert resp.status_code == 200
     wf = resp.json()
     # Status is whatever the runner has reached — pending/running/completed.
@@ -81,33 +81,33 @@ def test_get_workflow_after_planning(client):
 
 
 def test_pause_without_workflow_returns_404(client):
-    sid = client.post("/sessions").json()["session_id"]
-    resp = client.post(f"/sessions/{sid}/pause")
+    sid = client.post("/api/v1/sessions").json()["session_id"]
+    resp = client.post(f"/api/v1/sessions/{sid}/pause")
     assert resp.status_code == 404
 
 
 def test_pause_with_workflow_returns_202(client):
-    sid = client.post("/sessions").json()["session_id"]
+    sid = client.post("/api/v1/sessions").json()["session_id"]
     client.post(
-        f"/sessions/{sid}/messages", json={"content": "Mở Notepad và gõ Hi"}
+        f"/api/v1/sessions/{sid}/messages", json={"content": "Mở Notepad và gõ Hi"}
     )
-    resp = client.post(f"/sessions/{sid}/pause")
+    resp = client.post(f"/api/v1/sessions/{sid}/pause")
     assert resp.status_code == 202
     assert resp.json()["status"] == "paused_requested"
 
 
 def test_resume_returns_202(client):
-    sid = client.post("/sessions").json()["session_id"]
-    client.post(f"/sessions/{sid}/messages", json={"content": "Mở Edge"})
-    resp = client.post(f"/sessions/{sid}/resume")
+    sid = client.post("/api/v1/sessions").json()["session_id"]
+    client.post(f"/api/v1/sessions/{sid}/messages", json={"content": "Mở Edge"})
+    resp = client.post(f"/api/v1/sessions/{sid}/resume")
     assert resp.status_code == 202
     assert resp.json()["status"] == "resumed_requested"
 
 
 def test_stop_returns_202(client):
-    sid = client.post("/sessions").json()["session_id"]
-    client.post(f"/sessions/{sid}/messages", json={"content": "Mở Notepad"})
-    resp = client.post(f"/sessions/{sid}/stop")
+    sid = client.post("/api/v1/sessions").json()["session_id"]
+    client.post(f"/api/v1/sessions/{sid}/messages", json={"content": "Mở Notepad"})
+    resp = client.post(f"/api/v1/sessions/{sid}/stop")
     assert resp.status_code == 202
     assert resp.json()["status"] == "stopped_requested"
 
@@ -115,16 +115,16 @@ def test_stop_returns_202(client):
 def test_retry_endpoint_returns_202_in_phase5(client):
     """Phase 5: retry is implemented (returns 202 + status retry_requested)."""
     import time
-    sid = client.post("/sessions").json()["session_id"]
+    sid = client.post("/api/v1/sessions").json()["session_id"]
     client.post(
-        f"/sessions/{sid}/messages",
+        f"/api/v1/sessions/{sid}/messages",
         json={"content": "Mở Notepad và gõ Hello"},
     )
     # Wait for runner to finish so the workflow has a recorded state.
     time.sleep(0.2)
-    wf = client.get(f"/sessions/{sid}/workflow").json()
+    wf = client.get(f"/api/v1/sessions/{sid}/workflow").json()
     step_id = wf["steps"][0]["id"]
-    resp = client.post(f"/workflow/{step_id}/retry")
+    resp = client.post(f"/api/v1/workflow/{step_id}/retry")
     assert resp.status_code == 202
     body = resp.json()
     assert body["status"] == "retry_requested"
@@ -133,6 +133,6 @@ def test_retry_endpoint_returns_202_in_phase5(client):
 
 
 def test_message_validation_rejects_empty(client):
-    sid = client.post("/sessions").json()["session_id"]
-    resp = client.post(f"/sessions/{sid}/messages", json={"content": ""})
+    sid = client.post("/api/v1/sessions").json()["session_id"]
+    resp = client.post(f"/api/v1/sessions/{sid}/messages", json={"content": ""})
     assert resp.status_code == 422  # Pydantic rejects min_length=1

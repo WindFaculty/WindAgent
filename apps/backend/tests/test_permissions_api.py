@@ -17,7 +17,7 @@ import pytest
 # ---------- REST contract ----------
 
 def test_get_config_returns_current(client):
-    r = client.get("/permissions/config")
+    r = client.get("/api/v1/permissions/config")
     assert r.status_code == 200
     body = r.json()
     assert "safe_mode" in body
@@ -28,7 +28,7 @@ def test_get_config_returns_current(client):
 
 def test_patch_config_updates_one_field(client):
     r = client.patch(
-        "/permissions/config",
+        "/api/v1/permissions/config",
         json={"safe_mode": True},
     )
     assert r.status_code == 200
@@ -40,7 +40,7 @@ def test_patch_config_updates_one_field(client):
 
 def test_patch_config_multiple_fields(client):
     r = client.patch(
-        "/permissions/config",
+        "/api/v1/permissions/config",
         json={"safe_mode": True, "confirm_before_click": False},
     )
     assert r.status_code == 200
@@ -51,7 +51,7 @@ def test_patch_config_multiple_fields(client):
 
 def test_patch_config_with_invalid_value_returns_422(client):
     r = client.patch(
-        "/permissions/config",
+        "/api/v1/permissions/config",
         json={"type_text_length_threshold": 0},  # ge=1
     )
     assert r.status_code == 422
@@ -59,7 +59,7 @@ def test_patch_config_with_invalid_value_returns_422(client):
 
 def test_decide_unknown_request_returns_404(client):
     r = client.post(
-        f"/permissions/{uuid.uuid4()}/decide",
+        f"/api/v1/permissions/{uuid.uuid4()}/decide",
         json={"decision": "granted"},
     )
     assert r.status_code == 404
@@ -68,7 +68,7 @@ def test_decide_unknown_request_returns_404(client):
 def test_decide_invalid_decision_returns_422(client):
     fake_id = uuid.uuid4()
     r = client.post(
-        f"/permissions/{fake_id}/decide",
+        f"/api/v1/permissions/{fake_id}/decide",
         json={"decision": "maybe"},
     )
     assert r.status_code == 422
@@ -76,7 +76,7 @@ def test_decide_invalid_decision_returns_422(client):
 
 def test_decide_missing_decision_returns_422(client):
     r = client.post(
-        f"/permissions/{uuid.uuid4()}/decide",
+        f"/api/v1/permissions/{uuid.uuid4()}/decide",
         json={},
     )
     assert r.status_code == 422
@@ -127,7 +127,7 @@ def test_decision_via_rest_unblocks_pending_request(client, app_state):
         # REST call from a thread — sync TestClient is fine, app.state
         # is shared across loops.
         r = client.post(
-            f"/permissions/{request_id}/decide",
+            f"/api/v1/permissions/{request_id}/decide",
             json={"decision": "granted"},
         )
         assert r.status_code == 202
@@ -161,7 +161,7 @@ def test_decision_via_rest_deny_unblocks_pending_request(client, app_state):
         runner_task = asyncio.create_task(setup())
         request_id = await _wait_runner_pending(app_state.permission_service)
         r = client.post(
-            f"/permissions/{request_id}/decide",
+            f"/api/v1/permissions/{request_id}/decide",
             json={"decision": "denied"},
         )
         assert r.status_code == 202
@@ -195,7 +195,7 @@ def test_double_decide_second_call_returns_404(client, app_state):
     assert app_state.permission_service.pending_count() == 0
     # Any decision call returns 404.
     r = client.post(
-        f"/permissions/{request_id}/decide",
+        f"/api/v1/permissions/{request_id}/decide",
         json={"decision": "granted"},
     )
     assert r.status_code == 404

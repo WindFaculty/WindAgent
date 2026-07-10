@@ -21,7 +21,7 @@ import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 
 from db.database import Database
 from routers import agent_s3, health, models, permissions, sessions, tools, workflow, websocket, agents, hermes, chat_completions
@@ -346,24 +346,25 @@ app = FastAPI(
 
 
 # ---------- Routers ----------
-app.include_router(health.router)
-app.include_router(agent_s3.router)
-app.include_router(models.router)
-app.include_router(permissions.router)
-app.include_router(sessions.router)
-app.include_router(workflow.router)
-app.include_router(tools.router)
-app.include_router(websocket.router)
 
-# Versioned prefixes
+# Root aliases & unversioned routes (WebSocket, Completions, health check compatibility)
+app.include_router(health.router)
+app.include_router(websocket.router)
+app.include_router(chat_completions.router)
+
+@app.get("/models/health", tags=["compatibility"])
+async def models_health_compatibility(request: Request):
+    """Probe the configured model provider (compatibility path)."""
+    planner = request.app.state.planner_service
+    return await planner.health()
+
+# Standardized versioned routes under /api/v1 prefix
+app.include_router(health.router, prefix="/api/v1")
 app.include_router(sessions.router, prefix="/api/v1")
 app.include_router(permissions.router, prefix="/api/v1")
 app.include_router(workflow.router, prefix="/api/v1")
 app.include_router(tools.router, prefix="/api/v1")
-
-# New versioned routers
 app.include_router(agents.router, prefix="/api/v1")
 app.include_router(hermes.router, prefix="/api/v1")
-
-# Completion router (OpenAI-compatible completions endpoint)
-app.include_router(chat_completions.router)
+app.include_router(agent_s3.router, prefix="/api/v1")
+app.include_router(models.router, prefix="/api/v1")

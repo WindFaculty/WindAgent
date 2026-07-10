@@ -23,8 +23,8 @@ def test_models_health_returns_200_with_expected_shape(client):
 
 
 def test_get_models_returns_seed_and_ollama_mock(client):
-    """GET /models should return the list of seeded models and local mock Ollama."""
-    r = client.get("/models")
+    """GET /api/v1/models should return the list of seeded models and local mock Ollama."""
+    r = client.get("/api/v1/models")
     assert r.status_code == 200
     body = r.json()
     assert len(body) > 0
@@ -37,8 +37,8 @@ def test_get_models_returns_seed_and_ollama_mock(client):
 
 
 def test_provider_taxonomy(client):
-    """GET /models/providers should return the 8 providers seeded with correct quota_mode."""
-    r = client.get("/models/providers")
+    """GET /api/v1/models/providers should return the 8 providers seeded with correct quota_mode."""
+    r = client.get("/api/v1/models/providers")
     assert r.status_code == 200
     body = r.json()
     
@@ -63,10 +63,10 @@ def test_missing_api_key_does_not_crash(client):
             if k in os.environ:
                 del os.environ[k]
                 
-        r = client.get("/models")
+        r = client.get("/api/v1/models")
         assert r.status_code == 200
         
-        r_p = client.get("/models/providers")
+        r_p = client.get("/api/v1/models/providers")
         assert r_p.status_code == 200
         providers = r_p.json()
         
@@ -140,9 +140,9 @@ async def test_probe_updates_runtime_status(app_state):
 
 
 def test_routing_rules_crud(client):
-    """GET and PATCH /models/routing should update configurations."""
+    """GET and PATCH /api/v1/models/routing should update configurations."""
     # 1. Fetch current rules
-    r = client.get("/models/routing")
+    r = client.get("/api/v1/models/routing")
     assert r.status_code == 200
     body = r.json()
     assert "Planner" in body
@@ -151,11 +151,11 @@ def test_routing_rules_crud(client):
     payload = {
         "Planner": {"primary": "google_gemini_2.5_flash_lite", "fallback": "openrouter_free"}
     }
-    r_patch = client.patch("/models/routing", json=payload)
+    r_patch = client.patch("/api/v1/models/routing", json=payload)
     assert r_patch.status_code == 200
     
     # 3. Verify update
-    r_verify = client.get("/models/routing")
+    r_verify = client.get("/api/v1/models/routing")
     verify_body = r_verify.json()
     assert verify_body["Planner"]["primary"] == "google_gemini_2.5_flash_lite"
 

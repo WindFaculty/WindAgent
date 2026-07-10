@@ -134,7 +134,7 @@ async def test_permission_timeout_marks_step_cancelled_not_failed():
     async with _running_app(timeout_s=0.4) as (base, ws_base):
         async with httpx.AsyncClient() as c:
             # Create session.
-            r = await c.post(f"{base}/sessions", json={})
+            r = await c.post(f"{base}/api/v1/sessions", json={})
             sid = r.json()["session_id"]
 
             # Subscribe to WS in a background task before we send the
@@ -147,7 +147,7 @@ async def test_permission_timeout_marks_step_cancelled_not_failed():
             # produces open_app + type_text. type_text triggers the
             # permission gate.
             r = await c.post(
-                f"{base}/sessions/{sid}/messages",
+                f"{base}/api/v1/sessions/{sid}/messages",
                 json={"content": "Mở Notepad và gõ Hello from local AI agent."},
             )
             assert r.status_code == 202
@@ -193,7 +193,7 @@ async def test_permission_timeout_final_workflow_status_is_cancelled():
     'cancelled' (not 'completed', not 'failed')."""
     async with _running_app(timeout_s=0.3) as (base, ws_base):
         async with httpx.AsyncClient() as c:
-            r = await c.post(f"{base}/sessions", json={})
+            r = await c.post(f"{base}/api/v1/sessions", json={})
             sid = r.json()["session_id"]
 
             collect_task = asyncio.create_task(
@@ -201,7 +201,7 @@ async def test_permission_timeout_final_workflow_status_is_cancelled():
             )
 
             await c.post(
-                f"{base}/sessions/{sid}/messages",
+                f"{base}/api/v1/sessions/{sid}/messages",
                 json={"content": "Mở Notepad và gõ Hello from local AI agent."},
             )
             events = await collect_task
@@ -258,13 +258,13 @@ async def test_permission_timeout_does_not_emit_tool_call_started_for_gated_step
     NEVER fire after a timeout-deny."""
     async with _running_app(timeout_s=0.3) as (base, ws_base):
         async with httpx.AsyncClient() as c:
-            r = await c.post(f"{base}/sessions", json={})
+            r = await c.post(f"{base}/api/v1/sessions", json={})
             sid = r.json()["session_id"]
             collect_task = asyncio.create_task(
                 _collect_ws(ws_base, sid, seconds=4.0)
             )
             await c.post(
-                f"{base}/sessions/{sid}/messages",
+                f"{base}/api/v1/sessions/{sid}/messages",
                 json={"content": "Mở Notepad và gõ Hello from local AI agent."},
             )
             events = await collect_task
@@ -286,13 +286,13 @@ async def test_open_app_without_confirmation_runs_normally_after_timeout_window(
     permission gate. The timeout window applies to gated tools only."""
     async with _running_app(timeout_s=0.2) as (base, ws_base):
         async with httpx.AsyncClient() as c:
-            r = await c.post(f"{base}/sessions", json={})
+            r = await c.post(f"{base}/api/v1/sessions", json={})
             sid = r.json()["session_id"]
             collect_task = asyncio.create_task(
                 _collect_ws(ws_base, sid, seconds=3.0)
             )
             await c.post(
-                f"{base}/sessions/{sid}/messages",
+                f"{base}/api/v1/sessions/{sid}/messages",
                 json={"content": "Mở trang google.com trên Edge."},
             )
             events = await collect_task
