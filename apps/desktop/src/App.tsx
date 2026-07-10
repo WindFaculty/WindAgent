@@ -9,12 +9,39 @@ import { Browser } from "./pages/Browser";
 import { Files } from "./pages/Files";
 import { Router } from "./pages/Router";
 import { Settings } from "./pages/Settings";
+import { fetchHermesHealth, fetchHealth } from "./api/client";
 
 export function App() {
   // Page routing
   const [activeTab, setActiveTab] = useState<string>("dashboard");
   const [refreshInterval, setRefreshInterval] = useState<string>("10s");
   const [selectedAgentId, setSelectedAgentId] = useState<string>("coder");
+
+  const [hermesOnline, setHermesOnline] = useState<boolean | null>(null);
+  const [backendOnline, setBackendOnline] = useState<boolean | null>(null);
+
+  // Poll health status of backend and Hermes
+  useEffect(() => {
+    const checkHealth = async () => {
+      try {
+        const backendHealth = await fetchHealth();
+        setBackendOnline(backendHealth.status === "ok" || backendHealth.status === "healthy");
+      } catch (err) {
+        setBackendOnline(false);
+      }
+
+      try {
+        const hermesHealth = await fetchHermesHealth();
+        setHermesOnline(hermesHealth.reachable);
+      } catch (err) {
+        setHermesOnline(false);
+      }
+    };
+
+    checkHealth();
+    const interval = setInterval(checkHealth, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Synchronized system CPU/RAM/GPU metrics
   const [metrics, setMetrics] = useState<MetricState>({
@@ -171,12 +198,36 @@ export function App() {
           </div>
           <div className="status-badges">
             <span className="badge-localhost">Localhost</span>
-            <span className="badge-connected">
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
-              </svg>
-              Connected
-            </span>
+            {backendOnline === false ? (
+              <span className="badge-localhost" style={{ background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.2)', color: '#ef4444' }}>
+                <span style={{ display: 'inline-block', width: '6px', height: '6px', backgroundColor: '#ef4444', borderRadius: '50%', boxShadow: '0 0 8px #ef4444', marginRight: '6px' }} />
+                Backend: Offline
+              </span>
+            ) : (
+              <span className="badge-connected">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                </svg>
+                Connected
+              </span>
+            )}
+            
+            {hermesOnline === null ? (
+              <span className="badge-local-first" style={{ opacity: 0.6 }}>
+                Hermes: Checking...
+              </span>
+            ) : hermesOnline ? (
+              <span className="badge-localhost" style={{ background: 'rgba(59, 130, 246, 0.08)', border: '1px solid rgba(59, 130, 246, 0.2)', color: '#3b82f6' }}>
+                <span style={{ display: 'inline-block', width: '6px', height: '6px', backgroundColor: '#3b82f6', borderRadius: '50%', boxShadow: '0 0 8px #3b82f6', marginRight: '6px' }} />
+                Hermes: Connected
+              </span>
+            ) : (
+              <span className="badge-localhost" style={{ background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.2)', color: '#ef4444' }}>
+                <span style={{ display: 'inline-block', width: '6px', height: '6px', backgroundColor: '#ef4444', borderRadius: '50%', boxShadow: '0 0 8px #ef4444', marginRight: '6px' }} />
+                Hermes: Offline
+              </span>
+            )}
+
             <span className="badge-local-first">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" style={{ marginRight: '2px' }}>
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />

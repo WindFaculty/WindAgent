@@ -90,3 +90,153 @@ async def test_api_client_streams_from_fake_server():
     assert any(e.get("event") == "tool.started" for e in events)
     assert any(e.get("event") == "run.completed" for e in events)
 
+
+@pytest.mark.asyncio
+async def test_api_client_new_endpoints():
+    transport = httpx.ASGITransport(app=fake_app)
+    real_async_client = httpx.AsyncClient
+
+    def _make_client(*args, **kwargs):
+        return real_async_client(transport=transport, base_url="http://fake-hermes")
+
+    httpx.AsyncClient = _make_client
+    try:
+        cfg = HermesConfig(
+            enabled=True,
+            base_url="http://fake-hermes",
+            api_key="super_secret_key_123",
+            request_timeout_s=5,
+            connect_timeout_s=5,
+            auto_start=False,
+        )
+        api = HermesApiClient(cfg)
+
+        # Test health
+        health = await api.get_health()
+        assert health["status"] == "healthy"
+
+        # Test detailed health
+        detailed = await api.get_detailed_health()
+        assert detailed["status"] == "healthy"
+        assert detailed["database"] == "connected"
+
+        # Test capabilities
+        caps = await api.get_capabilities()
+        assert caps["version"] == "0.18.2"
+
+        # Test models
+        models = await api.get_models()
+        assert len(models["models"]) == 2
+
+        # Test toolsets
+        tools = await api.get_toolsets()
+        assert "terminal" in tools["toolsets"]
+
+        # Test skills
+        skills = await api.get_skills()
+        assert "python_coding" in skills["skills"]
+
+    finally:
+        httpx.AsyncClient = real_async_client
+
+
+def test_hermes_config_secret_scrubbing():
+    cfg = HermesConfig(
+        enabled=True,
+        api_key="secret-api-key-xyz",
+        base_url="http://localhost:8642"
+    )
+    # Check repr scrubs key
+    r = repr(cfg)
+    assert "secret-api-key-xyz" not in r
+    assert "[REDACTED]" in r
+
+    # Check scrubbed dict
+    d = cfg.get_scrubbed_dict()
+    assert d["api_key"] == "[REDACTED]"
+
+
+def test_hermes_router_endpoints(monkeypatch):
+    from main import app
+    from fastapi.testclient import TestClient
+    from unittest.mock import AsyncMock, MagicMock
+    from services.hermes.runtime_manager import HermesRuntimeManager
+
+    # Prevent real process manager start/probe delays during app lifespan
+    monkeypatch.setattr(HermesRuntimeManager, "start", AsyncMock())
+    monkeypatch.setattr(HermesRuntimeManager, "probe_health", AsyncMock(return_value=True))
+
+    # Create mock manager and client
+    mock_mgr = MagicMock()
+    mock_mgr.status = "healthy"
+    mock_mgr.config.enabled = True
+    mock_mgr.config.auto_start = True
+    mock_mgr.config.executable = "hermes"
+    mock_mgr.config.base_url = "http://fake-hermes"
+    mock_mgr.config.api_key = "secret_key"
+    mock_mgr.config.profile = "windagent"
+    
+    async def mock_probe_health():
+        return True
+    
+    async def mock_get_capabilities():
+        return {"version": "0.18.2", "api_server": True}
+
+    mock_mgr.probe_health = mock_probe_health
+    mock_mgr.get_capabilities = mock_get_capabilities
+
+    mock_api = MagicMock()
+    
+    async def mock_api_get_capabilities():
+        return {"version": "0.18.2", "api_server": True}
+        
+    async def mock_api_get_detailed_health():
+        return {"status": "healthy", "uptime_s": 5000}
+        
+    async def mock_api_get_toolsets():
+        return {"toolsets": ["terminal"]}
+        
+    async def mock_api_get_skills():
+        return {"skills": ["coding"]}
+
+    mock_api.get_capabilities = mock_api_get_capabilities
+    mock_api.get_detailed_health = mock_api_get_detailed_health
+    mock_api.get_toolsets = mock_api_get_toolsets
+    mock_api.get_skills = mock_api_get_skills
+
+    try:
+        with TestClient(app) as client:
+            # Overwrite after lifespan has initialized state
+            client.app.state.hermes_runtime_manager = mock_mgr
+            client.app.state.hermes_api_client = mock_api
+
+            # 1. status
+            resp = client.get("/api/v1/runtimes/hermes/status")
+            assert resp.status_code == 200
+            assert resp.json()["status"] == "healthy"
+
+            # 2. health
+            resp = client.get("/api/v1/runtimes/hermes/health")
+            assert resp.status_code == 200
+            assert resp.json()["reachable"] is True
+            assert resp.json()["api_key_scrubbed"] is True
+
+            # 3. health/detailed
+            resp = client.get("/api/v1/runtimes/hermes/health/detailed")
+            assert resp.status_code == 200
+            assert resp.json()["status"] == "healthy"
+
+            # 4. capabilities
+            resp = client.get("/api/v1/runtimes/hermes/capabilities")
+            assert resp.status_code == 200
+            assert resp.json()["version"] == "0.18.2"
+
+            # 5. tools
+            resp = client.get("/api/v1/runtimes/hermes/tools")
+            assert resp.status_code == 200
+            assert "terminal" in resp.json()["toolsets"]["toolsets"]
+            assert "coding" in resp.json()["skills"]["skills"]
+    finally:
+        pass
+
+

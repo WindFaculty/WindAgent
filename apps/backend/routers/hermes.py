@@ -8,7 +8,7 @@ from fastapi import APIRouter, Request
 
 from services.hermes.runtime_manager import HermesRuntimeManager
 
-router = APIRouter(prefix="/hermes", tags=["hermes"])
+router = APIRouter(prefix="/runtimes/hermes", tags=["hermes"])
 
 
 def _manager(request: Request) -> HermesRuntimeManager:
@@ -31,13 +31,17 @@ async def get_status(request: Request) -> Dict[str, Any]:
 async def get_health(request: Request) -> Dict[str, Any]:
     """Perform a liveness check and latency probe on the local Hermes server."""
     mgr = _manager(request)
+    api = request.app.state.hermes_api_client
     t0 = time.time()
     reachable = await mgr.probe_health()
     latency_ms = int((time.time() - t0) * 1000) if reachable else 0
 
     capabilities = {}
     if reachable:
-        capabilities = await mgr.get_capabilities()
+        try:
+            capabilities = await api.get_capabilities()
+        except Exception:
+            pass
 
     return {
         "enabled": mgr.config.enabled,
@@ -51,7 +55,71 @@ async def get_health(request: Request) -> Dict[str, Any]:
         "pause": capabilities.get("pause", False) if reachable else False,
         "profile": mgr.config.profile,
         "latency_ms": latency_ms,
+        "api_key_scrubbed": True if mgr.config.api_key else False,
     }
+
+
+@router.get("/health/detailed")
+async def get_detailed_health(request: Request) -> Dict[str, Any]:
+    """Get detailed health status from Hermes."""
+    mgr = _manager(request)
+    api = request.app.state.hermes_api_client
+    if not await mgr.probe_health():
+        return {
+            "status": "unreachable",
+            "error": "Hermes server is offline",
+        }
+    try:
+        return await api.get_detailed_health()
+    except Exception as e:
+        return {
+            "status": "error",
+            "error": str(e),
+        }
+
+
+@router.get("/capabilities")
+async def get_capabilities(request: Request) -> Dict[str, Any]:
+    """Fetch capabilities directly from supervised Hermes server or fallback."""
+    mgr = _manager(request)
+    api = request.app.state.hermes_api_client
+    if not await mgr.probe_health():
+        return await mgr.get_capabilities()
+    try:
+        return await api.get_capabilities()
+    except Exception:
+        return await mgr.get_capabilities()
+
+
+@router.get("/tools")
+async def get_tools(request: Request) -> Dict[str, Any]:
+    """Aggregate toolsets and skills discovered in Hermes."""
+    mgr = _manager(request)
+    api = request.app.state.hermes_api_client
+    if not await mgr.probe_health():
+        return {
+            "toolsets": [],
+            "skills": [],
+            "status": "offline",
+        }
+    try:
+        import asyncio
+        toolsets_task = api.get_toolsets()
+        skills_task = api.get_skills()
+        toolsets, skills = await asyncio.gather(toolsets_task, skills_task, return_exceptions=True)
+
+        return {
+            "toolsets": toolsets if not isinstance(toolsets, Exception) else [],
+            "skills": skills if not isinstance(skills, Exception) else [],
+            "status": "online",
+        }
+    except Exception as e:
+        return {
+            "toolsets": [],
+            "skills": [],
+            "status": "error",
+            "error": str(e),
+        }
 
 
 @router.post("/start")

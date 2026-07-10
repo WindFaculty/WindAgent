@@ -48,6 +48,25 @@ export async function fetchHealth(): Promise<{ status: string; phase: number }> 
   return { status: data.status, phase: 6 };
 }
 
+export interface HermesHealthResponse {
+  enabled: boolean;
+  reachable: boolean;
+  version: string;
+  api_server: boolean;
+  runs_api: boolean;
+  session_streaming: boolean;
+  approval: boolean;
+  stop: boolean;
+  pause: boolean;
+  profile: string | null;
+  latency_ms: number;
+  api_key_scrubbed: boolean;
+}
+
+export async function fetchHermesHealth(): Promise<HermesHealthResponse> {
+  return request<HermesHealthResponse>(`/api/v1/runtimes/hermes/health`);
+}
+
 export async function fetchModelsHealth(): Promise<ModelsHealthResponse> {
   return request<ModelsHealthResponse>(`/api/v1/models/health`);
 }

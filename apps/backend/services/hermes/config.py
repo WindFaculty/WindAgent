@@ -18,15 +18,39 @@ class HermesConfig:
     profile: Optional[str] = "default"
     max_concurrent_runs: int = 5
 
+    def __repr__(self) -> str:
+        key_repr = "None" if self.api_key is None else "[REDACTED]"
+        return (
+            f"HermesConfig(enabled={self.enabled}, base_url={self.base_url!r}, "
+            f"api_key={key_repr}, request_timeout_s={self.request_timeout_s}, "
+            f"connect_timeout_s={self.connect_timeout_s}, auto_start={self.auto_start}, "
+            f"executable={self.executable!r}, profile={self.profile!r}, "
+            f"max_concurrent_runs={self.max_concurrent_runs})"
+        )
+
+    def get_scrubbed_dict(self) -> dict:
+        """Return a dictionary representation of the config with secrets masked."""
+        import dataclasses
+        d = dataclasses.asdict(self)
+        if d.get("api_key") is not None:
+            d["api_key"] = "[REDACTED]"
+        return d
+
 
 def load_hermes_config() -> HermesConfig:
     """Load configuration from environment variables."""
+    import logging
+    logger = logging.getLogger(__name__)
+
     enabled = os.environ.get("WINDAGENT_HERMES_ENABLED", "true").lower() in ("1", "true", "yes")
     base_url = os.environ.get("WINDAGENT_HERMES_BASE_URL", "http://127.0.0.1:8642").rstrip("/")
     api_key = os.environ.get("WINDAGENT_HERMES_API_KEY")
     auto_start = os.environ.get("WINDAGENT_HERMES_AUTO_START", "true").lower() in ("1", "true", "yes")
     executable = os.environ.get("WINDAGENT_HERMES_EXECUTABLE", "hermes")
     profile = os.environ.get("WINDAGENT_HERMES_PROFILE", "default")
+
+    if not (base_url.startswith("http://") or base_url.startswith("https://")):
+        logger.warning("WINDAGENT_HERMES_BASE_URL is not a valid HTTP/HTTPS URL: %s", base_url)
     
     try:
         timeout = float(os.environ.get("WINDAGENT_HERMES_TIMEOUT_S", "30.0"))

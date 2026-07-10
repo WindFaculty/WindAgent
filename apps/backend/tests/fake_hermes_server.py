@@ -25,6 +25,24 @@ fake_app = FastAPI()
 _RUNS: Dict[str, dict] = {}
 
 
+@fake_app.get("/health")
+async def health():
+    return {"status": "healthy"}
+
+
+@fake_app.get("/health/detailed")
+async def health_detailed():
+    return {
+        "status": "healthy",
+        "uptime_s": 3600,
+        "database": "connected",
+        "services": {
+            "runs_api": "ok",
+            "capabilities": "ok"
+        }
+    }
+
+
 @fake_app.get("/v1/capabilities")
 async def capabilities():
     return {
@@ -35,6 +53,30 @@ async def capabilities():
         "approval": True,
         "stop": True,
         "pause": False,
+    }
+
+
+@fake_app.get("/v1/models")
+async def models():
+    return {
+        "models": [
+            {"id": "coder", "name": "Coder Model"},
+            {"id": "planner", "name": "Planner Model"}
+        ]
+    }
+
+
+@fake_app.get("/v1/toolsets")
+async def toolsets():
+    return {
+        "toolsets": ["terminal", "web_browser", "file_editor"]
+    }
+
+
+@fake_app.get("/v1/skills")
+async def skills():
+    return {
+        "skills": ["python_coding", "internet_search"]
     }
 
 

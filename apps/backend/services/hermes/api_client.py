@@ -112,3 +112,52 @@ class HermesApiClient:
                         except Exception:
                             log.exception("Failed to parse event JSON data: %s", data_str)
                         current_event = None
+
+    async def get_health(self) -> Dict[str, Any]:
+        """GET /health — Check if Hermes server is up."""
+        url = f"{self.config.base_url}/health"
+        async with httpx.AsyncClient(timeout=self.config.connect_timeout_s) as client:
+            resp = await client.get(url, headers=self._get_headers())
+            resp.raise_for_status()
+            return resp.json()
+
+    async def get_detailed_health(self) -> Dict[str, Any]:
+        """GET /health/detailed — Get detailed health status from Hermes."""
+        url = f"{self.config.base_url}/health/detailed"
+        async with httpx.AsyncClient(timeout=self.config.connect_timeout_s) as client:
+            resp = await client.get(url, headers=self._get_headers())
+            resp.raise_for_status()
+            return resp.json()
+
+    async def get_capabilities(self) -> Dict[str, Any]:
+        """GET /v1/capabilities — Get Hermes capabilities."""
+        url = f"{self.config.base_url}/v1/capabilities"
+        async with httpx.AsyncClient(timeout=self.config.connect_timeout_s) as client:
+            resp = await client.get(url, headers=self._get_headers())
+            resp.raise_for_status()
+            return resp.json()
+
+    async def get_models(self) -> Dict[str, Any]:
+        """GET /v1/models — Get models available in Hermes."""
+        url = f"{self.config.base_url}/v1/models"
+        async with httpx.AsyncClient(timeout=self.config.connect_timeout_s) as client:
+            resp = await client.get(url, headers=self._get_headers())
+            resp.raise_for_status()
+            return resp.json()
+
+    async def get_toolsets(self) -> Dict[str, Any]:
+        """GET /v1/toolsets — Get tools configured in Hermes."""
+        url = f"{self.config.base_url}/v1/toolsets"
+        async with httpx.AsyncClient(timeout=self.config.connect_timeout_s) as client:
+            resp = await client.get(url, headers=self._get_headers())
+            resp.raise_for_status()
+            return resp.json()
+
+    async def get_skills(self) -> Dict[str, Any]:
+        """GET /v1/skills — Get skills discovered in Hermes."""
+        url = f"{self.config.base_url}/v1/skills"
+        async with httpx.AsyncClient(timeout=self.config.connect_timeout_s) as client:
+            resp = await client.get(url, headers=self._get_headers())
+            resp.raise_for_status()
+            return resp.json()
+
