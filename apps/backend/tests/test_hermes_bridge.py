@@ -313,3 +313,90 @@ async def test_hermes_session_mapping_and_sync(client, db):
         httpx.AsyncClient = real_async_client
 
 
+@pytest.mark.asyncio
+async def test_hermes_interactive_approval(client, db):
+    import asyncio
+    from db.models import AgentORM, PermissionRequestORM
+    from sqlalchemy import select
+    # 1. Register hermes agent
+    async with db.session() as s:
+        agent = AgentORM(
+            id="hermes_approval_agent",
+            name="Hermes Approval Agent",
+            runtime_type="hermes",
+            router_role="Coder",
+            system_prompt="sys",
+            workspace_root=".",
+        )
+        s.add(agent)
+        await s.commit()
+
+    transport = httpx.ASGITransport(app=fake_app)
+    real_async_client = httpx.AsyncClient
+
+    def _make_client(*args, **kwargs):
+        return real_async_client(transport=transport, base_url="http://fake-hermes")
+
+    httpx.AsyncClient = _make_client
+    try:
+        # Create session
+        sess_resp = client.post("/api/v1/sessions", json={"agent_id": "hermes_approval_agent"})
+        assert sess_resp.status_code == 201
+        sid = sess_resp.json()["session_id"]
+
+        # Connect WebSocket
+        with client.websocket_connect(f"/ws/{sid}") as ws:
+            # Send message that triggers approval.request
+            msg_resp = client.post(f"/api/v1/sessions/{sid}/messages", json={"content": "delete database"})
+            assert msg_resp.status_code == 202
+            
+            # Read WebSocket events to find the permission request
+            permission_req = None
+            for i in range(10):
+                try:
+                    # Use a short timeout to prevent hanging
+                    data = ws.receive_json()
+                    print(f"WS received event {i}:", data)
+                    if data.get("event") == "permission_request":
+                        permission_req = data
+                        break
+                except Exception as ex:
+                    print(f"WS error {i}:", ex)
+            
+            assert permission_req is not None
+            req_id = permission_req["data"]["request_id"]
+            assert req_id
+
+            # Verify status is pending in DB
+            async with db.session() as s:
+                stmt = select(PermissionRequestORM).where(PermissionRequestORM.windagent_request_id == req_id)
+                res = await s.execute(stmt)
+                row = res.scalar_one_or_none()
+                assert row is not None
+                assert row.status == "pending"
+                run_id = row.run_id
+
+            # Send permission choice over websocket control message
+            ws.send_json({
+                "action": "permission_granted",
+                "request_id": req_id
+            })
+
+            # Wait a brief moment for database update
+            await asyncio.sleep(0.05)
+
+            # Verify status is granted in DB
+            async with db.session() as s:
+                stmt = select(PermissionRequestORM).where(PermissionRequestORM.windagent_request_id == req_id)
+                res = await s.execute(stmt)
+                row = res.scalar_one_or_none()
+                assert row.status == "granted"
+
+            # Check that fake server recorded choice 'once'
+            from tests.fake_hermes_server import _RUNS
+            assert _RUNS[run_id]["approved"] == "once"
+
+    finally:
+        httpx.AsyncClient = real_async_client
+
+

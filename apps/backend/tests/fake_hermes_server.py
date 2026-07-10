@@ -103,15 +103,25 @@ async def get_api_session_messages(session_id: str):
 @fake_app.post("/v1/runs")
 async def start_run(req: Request):
     body = await req.json()
+    print("Fake Hermes start_run body:", body)
+    msg = body.get("input") or body.get("message") or body.get("user_message") or ""
     run_id = f"run_{uuid.uuid4().hex[:8]}"
-    # Emit a small scripted flow: tool started -> progress -> completed -> run completed.
-    events = [
-        {"event": "tool.started", "tool": "terminal", "preview": "ls -la"},
-        {"event": "tool.progress", "tool": "terminal", "progress": "scanning"},
-        {"event": "tool.completed", "tool": "terminal", "duration": 1.2},
-        {"event": "assistant.delta", "delta": "Done."},
-        {"event": "run.completed", "run_id": run_id},
-    ]
+    
+    if "delete" in msg.lower() or "approval" in msg.lower():
+        events = [
+            {"event": "approval.request", "id": "cmd_1", "tool": "terminal", "command": "rm -rf /"},
+            {"event": "tool.started", "tool": "terminal", "preview": "rm -rf /"},
+            {"event": "tool.completed", "tool": "terminal", "duration": 0.5},
+            {"event": "run.completed", "run_id": run_id},
+        ]
+    else:
+        events = [
+            {"event": "tool.started", "tool": "terminal", "preview": "ls -la"},
+            {"event": "tool.progress", "tool": "terminal", "progress": "scanning"},
+            {"event": "tool.completed", "tool": "terminal", "duration": 1.2},
+            {"event": "assistant.delta", "delta": "Done."},
+            {"event": "run.completed", "run_id": run_id},
+        ]
     _RUNS[run_id] = {"status": "running", "events": events, "approved": None}
     return {"run_id": run_id, "status": "running"}
 
