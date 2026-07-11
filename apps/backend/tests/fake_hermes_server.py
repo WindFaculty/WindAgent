@@ -114,6 +114,12 @@ async def start_run(req: Request):
             {"event": "tool.completed", "tool": "terminal", "duration": 0.5},
             {"event": "run.completed", "run_id": run_id},
         ]
+    elif "browser" in msg.lower():
+        events = [
+            {"event": "browser_navigation_started", "url": "https://google.com"},
+            {"event": "browser_navigation_completed", "url": "https://google.com", "title": "Google", "loading": False},
+            {"event": "run.completed", "run_id": run_id},
+        ]
     else:
         events = [
             {"event": "tool.started", "tool": "terminal", "preview": "ls -la"},

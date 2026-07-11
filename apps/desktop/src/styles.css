@@ -355,6 +355,13 @@ html, body, #root {
   gap: 16px;
 }
 
+.workspace-body {
+  flex: 1;
+  display: flex;
+  gap: 16px;
+  min-height: 0;
+}
+
 .workspace-grid {
   flex: 1;
   display: grid;
@@ -504,6 +511,33 @@ html, body, #root {
 .bubble-content {
   font-size: 0.88rem;
   line-height: 1.5;
+  color: #e2e8f0;
+}
+
+.bubble-content pre {
+  background: #090d16;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 12px;
+  margin: 10px 0;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+}
+
+.bubble-content code {
+  font-family: var(--font-mono);
+  background: rgba(255, 255, 255, 0.08);
+  padding: 2px 5px;
+  border-radius: 4px;
+  font-size: 0.85em;
+  color: #38bdf8;
+}
+
+.bubble-content pre code {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
   color: #e2e8f0;
 }
 

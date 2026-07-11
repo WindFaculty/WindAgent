@@ -10,6 +10,7 @@ import {
   sendMessage,
   decidePermission,
   controlSession,
+  fetchBrowserState,
 } from "../api/client";
 import { reducer, initialState } from "./sessionStore";
 
@@ -25,6 +26,22 @@ export function useAgentSession(agentId: string) {
       onEvent: (env) => dispatch({ type: "processEvent", env }),
       onClose: () => {},
     });
+
+    // Hydrate browser state
+    fetchBrowserState(sessionId)
+      .then((br) => {
+        dispatch({
+          type: "updateBrowserState",
+          browser: {
+            url: br.url,
+            title: br.title,
+            loading: br.loading,
+            controlledBy: br.controlled_by,
+            screenshotUrl: `/api/v1/sessions/${sessionId}/browser/screenshot`,
+          },
+        });
+      })
+      .catch(console.error);
   }, []);
 
   const ensureSession = useCallback(async (): Promise<string> => {
@@ -64,6 +81,15 @@ export function useAgentSession(agentId: string) {
   const stopRun = useCallback(async () => {
     if (state.sessionId) await controlSession(state.sessionId, "stop");
   }, [state.sessionId]);
+
+  // Reset state and close WebSocket when switching agent/runtime
+  useEffect(() => {
+    dispatch({ type: "reset" });
+    if (wsRef.current) {
+      wsRef.current.close();
+      wsRef.current = null;
+    }
+  }, [agentId]);
 
   useEffect(() => {
     return () => {

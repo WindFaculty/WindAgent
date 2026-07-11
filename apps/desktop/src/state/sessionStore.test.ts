@@ -86,15 +86,116 @@ describe("sessionStore.reducer — processEvent", () => {
   it("ignores unknown events without mutating state", () => {
     const state = reducer(initialState, {
       type: "processEvent",
-      env: env("workflow_created", { workflow_id: "wf-1", steps: [] }),
+      env: env("unknown_event", {}),
     });
     expect(state).toBe(initialState); // identity preserved (no-op transition)
+  });
+
+  it("loads workflow + steps from workflow_created", () => {
+    const state = reducer(initialState, {
+      type: "processEvent",
+      env: env("workflow_created", {
+        workflow_id: "wf-1",
+        session_id: "sess-1",
+        objective: "Build the thing",
+        status: "running",
+        steps: [
+          { id: "s1", order: 1, name: "Read repo", tool_name: "read", status: "pending" },
+          { id: "s2", order: 2, name: "Edit code", tool_name: "edit", status: "pending" },
+        ],
+      }),
+    });
+    expect(state.workflow?.workflow_id).toBe("wf-1");
+    expect(state.workflow?.objective).toBe("Build the thing");
+    expect(state.workflow?.steps).toHaveLength(2);
+    expect(state.recentActions[0].kind).toBe("workflow");
+  });
+
+  it("replaces workflow on workflow_updated without duplicating steps", () => {
+    let state = reducer(initialState, {
+      type: "processEvent",
+      env: env("workflow_created", {
+        workflow_id: "wf-1",
+        session_id: "sess-1",
+        objective: "Plan",
+        status: "running",
+        steps: [{ id: "s1", order: 1, name: "One", tool_name: "t", status: "pending" }],
+      }),
+    });
+    state = reducer(state, {
+      type: "processEvent",
+      env: env("workflow_updated", {
+        workflow_id: "wf-1",
+        session_id: "sess-1",
+        objective: "Plan",
+        status: "running",
+        steps: [
+          { id: "s1", order: 1, name: "One", tool_name: "t", status: "completed" },
+          { id: "s2", order: 2, name: "Two", tool_name: "t", status: "in_progress" },
+        ],
+      }),
+    });
+    expect(state.workflow?.steps).toHaveLength(2);
+    expect(state.workflow?.steps[0].status).toBe("completed");
+    expect(state.workflow?.steps[1].status).toBe("in_progress");
+  });
+
+  it("marks step status from step_started/step_completed", () => {
+    let state = reducer(initialState, {
+      type: "processEvent",
+      env: env("workflow_created", {
+        workflow_id: "wf-1",
+        session_id: "sess-1",
+        objective: "Plan",
+        status: "running",
+        steps: [{ id: "s1", order: 1, name: "One", tool_name: "t", status: "pending" }],
+      }),
+    });
+    state = reducer(state, {
+      type: "processEvent",
+      env: env("step_started", { step_id: "s1" }),
+    });
+    expect(state.workflow?.steps[0].status).toBe("running");
+    state = reducer(state, {
+      type: "processEvent",
+      env: env("step_completed", { step_id: "s1", duration_ms: 10 }),
+    });
+    expect(state.workflow?.steps[0].status).toBe("success");
+    expect(state.recentActions.find((a) => a.kind === "step")).toBeTruthy();
+  });
+
+  it("appends recent actions for tool calls and messages", () => {
+    let state = reducer(initialState, {
+      type: "processEvent",
+      env: env("message_received", { message_id: "m1", content: "hi" }),
+    });
+    state = reducer(state, {
+      type: "processEvent",
+      env: env("tool_call_finished", {
+        tool_name: "read_file",
+        status: "success",
+        duration_ms: 5,
+      }),
+    });
+    expect(state.recentActions.some((a) => a.kind === "message")).toBe(true);
+    expect(state.recentActions.some((a) => a.kind === "tool_call")).toBe(true);
   });
 
   it("reset returns to initialState", () => {
     const populated: SessionState = {
       ...initialState,
       sessionId: "sess-1",
+      workflow: {
+        workflow_id: "wf-1",
+        session_id: "sess-1",
+        objective: "x",
+        created_at: new Date().toISOString(),
+        status: "running",
+        steps: [],
+      },
+      recentActions: [
+        { id: "a1", kind: "tool_call", label: "Ran x", timestamp: new Date().toISOString() },
+      ],
       messages: [
         {
           id: "m",

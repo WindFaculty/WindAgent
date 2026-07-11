@@ -108,7 +108,7 @@ describe("apiClient — control endpoints", () => {
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url, init] = fetchMock.mock.calls[0];
-    expect(url).toBe("/api/sessions/sess-1/pause");
+    expect(url).toBe("http://127.0.0.1:8765/api/v1/sessions/sess-1/pause");
     expect(init).toMatchObject({ method: "POST" });
   });
 
@@ -121,7 +121,7 @@ describe("apiClient — control endpoints", () => {
     await retryStep("step-7");
 
     const [url, init] = fetchMock.mock.calls[0];
-    expect(url).toBe("/api/workflow/step-7/retry");
+    expect(url).toBe("http://127.0.0.1:8765/api/v1/workflow/step-7/retry");
     expect(init).toMatchObject({ method: "POST" });
   });
 

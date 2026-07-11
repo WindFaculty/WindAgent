@@ -35,11 +35,13 @@ Hệ thống hỗ trợ 18 sự kiện phân nhóm theo các pha hoạt động:
 *   `planning_started`: Bắt đầu quá trình gọi mô hình LLM để phân tích cú pháp và lập lịch.
 *   `planning_finished`: Mô hình LLM trả về danh sách các bước workflow hợp lệ.
 *   `workflow_created`: Workflow đã được phân tích, xác thực và lưu vào cơ sở dữ liệu.
+*   `workflow_updated`: Hermes cập nhật lại toàn bộ kế hoạch todo (thay thế danh sách cũ).
 
 ### Nhóm C: Chạy Workflow (Execution Phase)
 *   `step_started`: Bắt đầu thực thi một bước trong workflow.
 *   `step_completed`: Bước chạy thành công.
 *   `step_failed`: Bước chạy thất bại (chứa chi tiết mã lỗi).
+*   `step_cancelled`: Bước bị hủy (agent bỏ qua hoặc người dùng dừng).
 
 ### Nhóm D: Gọi công cụ tương tác (Tool Call Phase)
 *   `tool_call_started`: Bắt đầu gọi một công cụ cụ thể (như gõ chữ, click chuột, chụp màn hình).
