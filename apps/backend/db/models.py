@@ -242,10 +242,36 @@ class ModelRoutingRuleORM(Base):
     __tablename__ = "model_routing_rules"
 
     role: Mapped[str] = mapped_column(String(64), primary_key=True)
-    primary_model_id: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
-    fallback_model_id: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
-    policy_json: Mapped[str] = mapped_column(Text, default="{}")
+    name: Mapped[str] = mapped_column(String(128), nullable=False)
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    primary_model_id: Mapped[Optional[str]] = mapped_column(String(128), ForeignKey("model_catalog.id"), nullable=True)
+    fallback_model_id: Mapped[Optional[str]] = mapped_column(String(128), ForeignKey("model_catalog.id"), nullable=True)
+    final_fallback_model_id: Mapped[Optional[str]] = mapped_column(String(128), ForeignKey("model_catalog.id"), nullable=True)
+    status: Mapped[str] = mapped_column(String(32), default="Active", nullable=False)
+    priority: Mapped[int] = mapped_column(default=1, nullable=False)
+    tags_json: Mapped[str] = mapped_column(Text, default="[]", nullable=False)
+    policy_json: Mapped[str] = mapped_column(Text, default="{}", nullable=False)
     updated_at: Mapped[datetime] = mapped_column(default=_utcnow, onupdate=_utcnow, nullable=False)
+
+
+class RouterExecutionLogORM(Base):
+    __tablename__ = "router_execution_logs"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    role: Mapped[str] = mapped_column(String(64), ForeignKey("model_routing_rules.role"), nullable=False)
+    selected_model_id: Mapped[str] = mapped_column(String(128), ForeignKey("model_catalog.id"), nullable=False)
+    selection_tier: Mapped[str] = mapped_column(String(32), nullable=False)  # primary, fallback, final_fallback, auto, emergency
+    status: Mapped[str] = mapped_column(String(32), nullable=False)  # success, failed
+    latency_ms: Mapped[int] = mapped_column(nullable=False)
+    error_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    prompt_tokens: Mapped[int] = mapped_column(default=0, nullable=False)
+    completion_tokens: Mapped[int] = mapped_column(default=0, nullable=False)
+    estimated_cost: Mapped[float] = mapped_column(default=0.0, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(default=_utcnow, nullable=False)
+
+
+Index("ix_router_logs_role_created", RouterExecutionLogORM.role, RouterExecutionLogORM.created_at)
+Index("ix_router_logs_model_created", RouterExecutionLogORM.selected_model_id, RouterExecutionLogORM.created_at)
 
 
 class ModelActivityORM(Base):
@@ -466,7 +492,7 @@ class TaskArtifactORM(Base):
     created_at: Mapped[datetime] = mapped_column(default=_utcnow, nullable=False)
 
 
-# ---------- Legacy Agent Registry (from Phase 1) ----------
+    # ---------- Legacy Agent Registry (from Phase 1) ----------
 
 
 class AgentORM(Base):

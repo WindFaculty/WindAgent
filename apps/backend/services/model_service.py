@@ -21,10 +21,86 @@ from db.models import (
 from services.model_catalog_seed import PROVIDERS_SEED, MODELS_SEED
 from services.provider_clients.openai_compatible import OpenAICompatibleClient
 from services.provider_clients.google_gemini import GoogleGeminiClient
+from services.provider_clients.anthropic import AnthropicClient
 from services.quota_service import QuotaService
 from services.model_routing_service import ModelRoutingService
 
 log = logging.getLogger(__name__)
+
+class MockProviderClient:
+    """Mock client used in test environments to prevent real API calls and key errors."""
+    def __init__(self, provider_id: str) -> None:
+        self.provider_id = provider_id
+        self.api_key = "mock-key"
+
+    def has_api_key(self) -> bool:
+        return True
+
+    async def chat(self, messages: Any, **kwargs) -> str:
+        last_user = ""
+        for m in reversed(messages):
+            if isinstance(m, dict):
+                role = m.get("role")
+                content = m.get("content", "")
+            else:
+                role = getattr(m, "role", "")
+                content = getattr(m, "content", "")
+            if role == "user":
+                last_user = content
+                break
+        
+        from services.model_client import MockModelClient
+        if last_user in MockModelClient.DEFAULT_RESPONSES:
+            return MockModelClient.DEFAULT_RESPONSES[last_user]
+            
+        return json.dumps({"steps": []})
+
+    async def chat_completion(self, model_id: str, messages: Any, **kwargs) -> str:
+        return await self.chat(messages, **kwargs)
+
+    async def list_models(self) -> List[Dict[str, Any]]:
+        if self.provider_id == "nvidia_nim":
+            return [
+                {
+                    "model_id": "z-ai/glm-5.2",
+                    "display_name": "GLM 5.2",
+                    "context_window": 128000,
+                    "capabilities": ["chat", "coding", "planning", "reasoning"],
+                    "raw": {}
+                },
+                {
+                    "model_id": "nvidia/nemotron-3-ultra-550b-a55b:free",
+                    "display_name": "Nemotron 3 Ultra 550B Free",
+                    "context_window": 8192,
+                    "capabilities": ["chat", "general"],
+                    "raw": {}
+                },
+                {
+                    "model_id": "nvidia/llama-3.1-nemotron-70b-instruct",
+                    "display_name": "Llama 3.1 Nemotron 70B",
+                    "context_window": 128000,
+                    "capabilities": ["reasoning", "planning", "chat"],
+                    "raw": {}
+                },
+                {
+                    "model_id": "meta/llama-3.1-405b-instruct",
+                    "display_name": "Llama 3.1 405B Instruct",
+                    "context_window": 128000,
+                    "capabilities": ["reasoning", "research", "planning"],
+                    "raw": {}
+                },
+                {
+                    "model_id": "deepseek-ai/deepseek-r1",
+                    "display_name": "DeepSeek R1 (NVIDIA)",
+                    "context_window": 65536,
+                    "capabilities": ["reasoning", "math", "research"],
+                    "raw": {}
+                }
+            ]
+        return []
+
+    async def get_quota(self) -> Dict[str, Any]:
+        return {}
 
 
 class ModelService:
@@ -39,6 +115,10 @@ class ModelService:
 
     def get_provider_client(self, provider: ModelProviderORM) -> Any:
         """Instantiate and cache a client for the given provider."""
+        import os
+        if os.environ.get("WINDAGENT_MODEL_BACKEND") == "mock":
+            return MockProviderClient(provider.id)
+
         client_key = provider.id
         if client_key in self._provider_clients:
             cached_client = self._provider_clients[client_key]
@@ -51,6 +131,13 @@ class ModelService:
             client = GoogleGeminiClient(
                 provider_id=provider.id,
                 base_url=provider.base_url or "https://generativelanguage.googleapis.com",
+                api_key_env=provider.api_key_env,
+                api_key=provider.api_key,
+            )
+        elif provider.api_source == "anthropic":
+            client = AnthropicClient(
+                provider_id=provider.id,
+                base_url=provider.base_url or "https://api.anthropic.com",
                 api_key_env=provider.api_key_env,
                 api_key=provider.api_key,
             )
@@ -138,22 +225,90 @@ class ModelService:
             existing_rules = {r.role for r in res.scalars().all()}
 
             default_rules = {
-                "Planner": {"primary": "google_gemini_2.5_flash", "fallback": "openrouter_free"},
-                "GUI Agent": {"primary": "google_gemini_2.5_flash", "fallback": "google_gemini_2.5_flash_lite"},
-                "Coder": {"primary": "mistral_codestral", "fallback": "qwen_coder_free"},
-                "Researcher": {"primary": "nvidia_nemotron_70b", "fallback": "deepseek_r1_free"},
-                "Memory Agent": {"primary": "google_gemini_2.5_flash_lite", "fallback": "openrouter_free"},
-                "Local Chat": {"primary": "ollama/qwen", "fallback": "ollama/phi"},
-                "Fallback": {"primary": "openrouter_free", "fallback": None},
+                "Planner": {
+                    "name": "Planner → Local Chat",
+                    "description": "Handles general local chat and lightweight planning requests, preferring the local model before escalating to cloud providers.",
+                    "primary": "google_gemini_2.5_flash",
+                    "fallback": "openrouter_free",
+                    "final_fallback": "ollama_qwen",
+                    "status": "Active",
+                    "tags": ["Planning", "Chat", "Local First", "Fallback Enabled", "High Priority"],
+                    "policy": {},
+                },
+                "GUI Agent": {
+                    "name": "GUI Agent → UI Route",
+                    "description": "Weighted balancing of layout validation tasks between local models.",
+                    "primary": "google_gemini_2.5_flash",
+                    "fallback": "google_gemini_2.5_flash_lite",
+                    "final_fallback": None,
+                    "status": "Active",
+                    "tags": ["GUI", "Testing", "Weighted"],
+                    "policy": {},
+                },
+                "Coder": {
+                    "name": "Coder → Code Model",
+                    "description": "Route code autocompletion and structural parsing tasks to Codestral, with Sonnet as backup.",
+                    "primary": "mistral_codestral",
+                    "fallback": "qwen_coder_free",
+                    "final_fallback": None,
+                    "status": "Active",
+                    "tags": ["Coding", "Autocomplete", "Standard"],
+                    "policy": {},
+                },
+                "Researcher": {
+                    "name": "Researcher → Web Stack",
+                    "description": "Route structural information gathering and parsing tasks to GPT-5.5.",
+                    "primary": "nvidia_nemotron_70b",
+                    "fallback": "deepseek_r1_free",
+                    "final_fallback": None,
+                    "status": "Active",
+                    "tags": ["Research", "Scraping", "Web"],
+                    "policy": {},
+                },
+                "Memory Agent": {
+                    "name": "Memory Agent → Recall",
+                    "description": "Query contextual long-term vector indexes, using Gemma 2 if local memory sizes are constrained.",
+                    "primary": "google_gemini_2.5_flash_lite",
+                    "fallback": "openrouter_free",
+                    "final_fallback": None,
+                    "status": "Active",
+                    "tags": ["Context", "Recall", "Fallback"],
+                    "policy": {},
+                },
+                "Local Chat": {
+                    "name": "Local Chat Route",
+                    "description": "Simple local chat endpoint.",
+                    "primary": "ollama/qwen",
+                    "fallback": "ollama/phi",
+                    "final_fallback": None,
+                    "status": "Active",
+                    "tags": ["Local", "Chat"],
+                    "policy": {},
+                },
+                "Fallback": {
+                    "name": "Default Fallback Route",
+                    "description": "Default routing fallback policy.",
+                    "primary": "openrouter_free",
+                    "fallback": None,
+                    "final_fallback": None,
+                    "status": "Active",
+                    "tags": ["System"],
+                    "policy": {},
+                },
             }
 
             for role, mapping in default_rules.items():
                 if role not in existing_rules:
                     rule = ModelRoutingRuleORM(
                         role=role,
+                        name=mapping["name"],
+                        description=mapping["description"],
                         primary_model_id=mapping["primary"],
                         fallback_model_id=mapping["fallback"],
-                        policy_json="{}",
+                        final_fallback_model_id=mapping["final_fallback"],
+                        status=mapping["status"],
+                        tags_json=json.dumps(mapping["tags"]),
+                        policy_json=json.dumps(mapping["policy"]),
                     )
                     session.add(rule)
                     log.info("Seeding routing rule for role: %s", role)
@@ -290,6 +445,39 @@ class ModelService:
                 message=f"Model {model.display_name} registered successfully.",
             )
             return {"id": model.id, "display_name": model.display_name}
+
+    async def delete_model(self, model_id: str) -> Dict[str, Any]:
+        """Remove a model catalog entry and its runtime status row."""
+        async with self.db.session() as session:
+            # Delete runtime status first (FK constraint)
+            await session.execute(
+                delete(ModelRuntimeStatusORM).where(ModelRuntimeStatusORM.model_id == model_id)
+            )
+            result = await session.execute(
+                delete(ModelCatalogORM).where(ModelCatalogORM.id == model_id)
+            )
+            await session.commit()
+            if result.rowcount == 0:
+                return {"status": "error", "message": f"Model {model_id} not found"}
+            await self.log_activity(
+                model_id=model_id,
+                provider_id="",
+                event_type="deleted",
+                message=f"Model {model_id} removed from registry.",
+            )
+            return {"status": "success", "message": f"Model {model_id} deleted"}
+
+    async def clear_provider_api_key(self, provider_id: str) -> Dict[str, Any]:
+        """Clear the stored API key for a provider (set to None)."""
+        async with self.db.session() as session:
+            stmt = select(ModelProviderORM).where(ModelProviderORM.id == provider_id)
+            res = await session.execute(stmt)
+            provider = res.scalar_one_or_none()
+            if not provider:
+                return {"status": "error", "message": f"Provider {provider_id} not found"}
+            provider.api_key = None
+            await session.commit()
+            return {"status": "success", "message": f"API key cleared for provider {provider_id}"}
 
     async def import_model(self, config: Dict[str, Any]) -> Dict[str, Any]:
         """Stub for model import job."""

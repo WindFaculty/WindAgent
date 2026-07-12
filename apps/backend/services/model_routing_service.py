@@ -42,7 +42,7 @@ class ModelRoutingService:
                 res = await session.execute(stmt)
                 rule = res.scalar_one_or_none()
                 if not rule:
-                    rule = ModelRoutingRuleORM(role=role)
+                    rule = ModelRoutingRuleORM(role=role, name=f"{role} Route")
                     session.add(rule)
                 rule.primary_model_id = mapping.get("primary")
                 rule.fallback_model_id = mapping.get("fallback")

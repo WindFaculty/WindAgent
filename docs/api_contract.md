@@ -359,7 +359,69 @@ Hệ thống cung cấp kênh WebSocket để stream toàn bộ các trạng th�
 
 ---
 
-## 4. Liên kết
+## 4. Đặc tả API Router v1.2 & OpenAI Compatible Gateway (OmniRoute Integrated)
+
+### 4.1. Quy tắc định tuyến nâng cao (Advanced Routing Rules)
+
+*   **Lấy danh sách quy tắc**: `GET /models/routing/rules`
+    *   *Mô tả*: Trả về danh sách toàn bộ quy tắc định tuyến kèm theo các chỉ số thống kê hiệu suất thực tế trong 24h qua (tỷ lệ thành công, độ trễ, phân bổ cuộc gọi, timeline hoạt động, trạng thái health của provider).
+    *   *Response (200 OK)*: Trả về danh sách đối tượng RuleDTO khớp với định dạng giao diện hiển thị.
+
+*   **Tạo quy tắc mới**: `POST /models/routing/rules`
+    *   *Request Body*: `RoutingRuleCreate` (chứa `role`, `name`, `description`, `primary_model_id`, `fallback_model_id`, `final_fallback_model_id`, `status`, `tags`, `policy`).
+
+*   **Cập nhật quy tắc**: `PATCH /models/routing/rules/{role}`
+    *   *Request Body*: `RoutingRulePatch` (cập nhật từng phần của quy tắc định tuyến).
+
+*   **Xóa quy tắc**: `DELETE /models/routing/rules/{role}`
+
+*   **Nhập khẩu hàng loạt**: `POST /models/routing/import`
+    *   *Request Body*: `{"rules": [...]}`. Hỗ trợ bỏ qua các quy tắc lỗi, trả về thống kê số lượng thành công/thất bại kèm danh sách lỗi chi tiết.
+
+### 4.2. Thống kê & Phân tích (Stats, Traffic & Graph)
+
+*   **Lấy chỉ số tổng hợp**: `GET /models/routing/stats`
+    *   *Mô tả*: Trả về dữ liệu cho các metric card (Total Routes, Active Rules, Fallback Chains, Avg Latency, Success Rate, Traffic Balance).
+
+*   **Phân bổ lưu lượng**: `GET /models/routing/traffic`
+    *   *Mô tả*: Lấy danh sách phân bổ phần trăm cuộc gọi tới các model LLM trong vòng 24h qua (Donut chart).
+
+*   **Bản đồ định tuyến**: `GET /models/routing/graph`
+    *   *Mô tả*: Trả về danh sách các nút và liên kết định tuyến để vẽ biểu đồ SVG kết nối giữa Agent Roles và Models.
+
+### 4.3. Mô phỏng & Kiểm thử (Simulation & Live Test)
+
+*   **Mô phỏng đường đi**: `POST /models/routing/simulate`
+    *   *Request Body*: `{"role": "Coder", "prompt": "..."}`
+    *   *Mô tả*: Chạy thử thuật toán định tuyến in-memory dựa trên chất lượng provider, quota còn lại, độ trễ và độ tương thích nghiệp vụ để đưa ra quyết định mà không gọi LLM thật.
+
+*   **Kiểm thử thực tế**: `POST /models/routing/rules/{role}/test`
+    *   *Mô tả*: Chạy thử thực tế model active của rule được chỉ định (gọi API thật), đo độ trễ và ghi log thực thi vào `router_execution_logs`.
+
+### 4.4. Cổng kết nối chuẩn OpenAI (OpenAI Compatible Gateway)
+
+*   **Danh sách model**: `GET /v1/models`
+*   **Thực thi chat completion**: `POST /v1/chat/completions`
+    *   *Mô tả*: Cổng chuyển tiếp chuẩn OpenAI. Hỗ trợ resolve trực tiếp model qua router khi truyền tham số `model` dạng `role:Planner` hoặc `auto/Planner`.
+
+---
+
+## 5. Tài liệu Tham chiếu (Upstream References)
+
+Dự án này tích hợp và port các pattern lõi từ dự án upstream:
+*   **Upstream Repository**: `https://github.com/diegosouzapw/OmniRoute.git`
+*   **Commit SHA**: `1bda6c15dc885b645243f6cc198688ba6bb7480c`
+*   **Các Pattern đã port**:
+    *   OpenAI-compatible gateway routing structure.
+    *   Multi-tier Fallback chain resolution logic (Primary -> Fallback -> Final Fallback).
+    *   Composite suitability scoring (0.25*health + 0.20*quota + 0.20*task_fit + 0.15*cost_inverse + 0.10*latency_inverse + 0.10*context_fit).
+    *   Execution logging and 24h stats/traffic/graph aggregations.
+    *   In-memory routing simulation engine.
+    *   Graceful partial failures handling during bulk rules imports.
+
+---
+
+## 6. Liên kết
 
 - [docs/event_protocol.md](file:///d:/antigaravity_code/WindAgent/docs/event_protocol.md) — Tài liệu chi tiết về đặc tả cấu trúc JSON của từng loại WebSocket Event.
 - [docs/safety_policy.md](file:///d:/antigaravity_code/WindAgent/docs/safety_policy.md) — Chính sách bảo mật và Cổng phân quyền.

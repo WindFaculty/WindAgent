@@ -1,6 +1,7 @@
 """Service to manage, track, and update provider usage quotas."""
 from __future__ import annotations
 
+import json
 import logging
 from datetime import datetime, timezone, timedelta
 from typing import Any, Dict, Optional
@@ -75,6 +76,44 @@ class QuotaService:
         # Simple heuristic
         return prompt_tokens + max_output_tokens
 
+    async def check_and_reset_provider_quota(self, provider_id: str) -> None:
+        """Check if the quota snapshot for the provider is expired or from a previous day, and reset it."""
+        snapshot = await self.get_latest_quota(provider_id)
+        if not snapshot:
+            return
+
+        now = datetime.now(timezone.utc)
+        created_at_utc = snapshot.created_at.replace(tzinfo=timezone.utc) if snapshot.created_at.tzinfo is None else snapshot.created_at
+        
+        # Check if reset conditions are met:
+        # 1. Reset time has passed
+        reset_passed = snapshot.reset_at is not None and snapshot.reset_at.replace(tzinfo=timezone.utc) < now
+        # 2. Created on a previous calendar day
+        prev_day = created_at_utc.date() < now.date()
+
+        if reset_passed or prev_day:
+            log.info("Resetting quota snapshot for provider %s: reset_passed=%s, prev_day=%s", 
+                     provider_id, reset_passed, prev_day)
+            
+            # Default limits
+            rpd = snapshot.rpd_limit if snapshot.rpd_limit is not None else 1000
+            tpm = snapshot.tpm_limit if snapshot.tpm_limit is not None else 1000000
+            
+            # Create a new snapshot with restored limits
+            await self.update_quota_snapshot(
+                provider_id=provider_id,
+                quota_mode=snapshot.quota_mode,
+                rpm_limit=snapshot.rpm_limit,
+                rpd_limit=snapshot.rpd_limit,
+                tpm_limit=snapshot.tpm_limit,
+                remaining_requests_today=rpd,
+                remaining_tokens_today=tpm,
+                remaining_credit=snapshot.remaining_credit,
+                reset_at=None, # Clear reset time
+                source="auto_reset",
+                raw_json=json.dumps({"reset_at_time": str(now)}),
+            )
+
     async def should_route(
         self,
         provider_id: str,
@@ -84,6 +123,9 @@ class QuotaService:
         # Local model is always allowed
         if provider_id == "ollama":
             return True
+
+        # Check and perform reset if needed
+        await self.check_and_reset_provider_quota(provider_id)
 
         snapshot = await self.get_latest_quota(provider_id)
         if not snapshot:

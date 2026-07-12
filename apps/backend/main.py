@@ -24,7 +24,7 @@ from pathlib import Path
 from fastapi import FastAPI, Request
 
 from db.database import Database
-from routers import agent_s3, health, models, permissions, sessions, tools, workflow, websocket, agents, hermes, chat_completions, worktrees, events, conversations
+from routers import agent_s3, health, models, permissions, sessions, tools, workflow, websocket, agents, hermes, chat_completions, worktrees, events, conversations, model_routing, openai_compatible, router_observability
 from services.agent_s3_adapter import AgentS3Adapter
 from services.agent_s3_config import (
     AgentS3Config,
@@ -294,6 +294,25 @@ async def lifespan(app: FastAPI):
     except Exception:  # noqa: BLE001
         logging.getLogger(__name__).exception("startup recovery failed")
 
+    from services.router_policy import RouterPolicy
+    from services.router_execution_service import RouterExecutionService
+    from services.provider_gateway import ProviderGatewayService
+
+    router_policy = RouterPolicy(quota_service=model_service.quota_service)
+    router_service = RouterExecutionService(
+        db=db,
+        quota_service=model_service.quota_service,
+        policy=router_policy,
+        model_service=model_service
+    )
+    provider_gateway = ProviderGatewayService(db=db, router_service=router_service)
+
+    # Attach to state
+    app.state.router_policy = router_policy
+    app.state.router_service = router_service
+    app.state.provider_gateway = provider_gateway
+    model_service.routing_service.router_service = router_service
+    planner._router_service = router_service
     # ---------- Optional: Agent-S3 integration ----------
     # The backend always loads the Agent-S3 config (cheap; env reads
     # only) but only constructs the adapter when the integration is
@@ -415,3 +434,8 @@ app.include_router(worktrees.router, prefix="/api/v1")
 app.include_router(events.router, prefix="/api/v1")
 app.include_router(events.recover_router, prefix="/api/v1")
 app.include_router(conversations.router)
+
+# Router phase routers (self-prefixed: /models/routing, /v1, /router/runtime)
+app.include_router(model_routing.router)
+app.include_router(openai_compatible.router)
+app.include_router(router_observability.router)
