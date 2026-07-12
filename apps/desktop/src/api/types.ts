@@ -107,7 +107,16 @@ export type EventName =
   | "user_paused"
   | "user_resumed"
   | "user_stopped"
-  | "error";
+  | "error"
+  | "assistant_message_started"
+  | "assistant_message_delta"
+  | "assistant_message_completed"
+  | "reasoning_delta"
+  | "tool_call_progress"
+  | "terminal_output"
+  | "artifact_created"
+  | "clarification_request"
+  | "replan_notification";
 
 export interface EventEnvelope {
   event: EventName;

@@ -1,1419 +1,1273 @@
-# Kế hoạch triển khai từng phase để đạt MVP ứng dụng Desktop AI Computer-Use Agent local-first
+Bạn đang làm việc trực tiếp trong repository:
 
-## 0. Định nghĩa MVP cần đạt
+* Repository: `WindFaculty/WindAgent`
+* Local branch được audit: `feat/phase-1-baseline`
+* Starting reference theo audit: `9205dfa111301eb65cf1963dde89778e246dae5c`
+* Commit message tại ref: `feat(hermes): implement stop run mapping and resource cleanup for Hermes sessions`
+* Trạng thái audit trước đó:
 
-MVP không phải là bản đầy đủ của toàn bộ kiến trúc. MVP chỉ cần chứng minh được vòng lặp cốt lõi:
+  * Khoảng 19 file modified và 21 file untracked.
+  * `git diff 9205dfa..HEAD` rỗng vì chưa có commit mới.
+  * Focused backend: `33 passed, 1 warning`.
+  * Backend và frontend runtime đều đang down.
+  * Các module orchestration tồn tại độc lập nhưng chưa được nối vào live path.
+  * Live path vẫn chủ yếu là Phase-1 single-agent Hermes bridge.
+  * Verdict hiện tại: `partial_foundation_implemented`.
+  * Core gates: fail.
+  * Rủi ro P0: API key provider đang được lưu plaintext.
+  * Không được tuyên bố orchestration đã hoàn thành nếu chưa có black-box runtime evidence.
 
-**Người dùng nhập lệnh tự nhiên → Qwen3 4B lập workflow đơn giản → app thực thi từng bước trên máy Windows → UI stream tiến trình → người dùng có thể Stop/Pause/Resume → hệ thống lưu log và lịch sử.**
+# NHIỆM VỤ CHÍNH
 
-Kịch bản demo bắt buộc:
+Đưa WindAgent từ trạng thái `partial_foundation_implemented` sang một vertical slice orchestration chạy thật xuyên suốt:
 
-> Người dùng gõ: “Mở Notepad và gõ Hello from local AI agent.”
-> Agent tạo workflow:
->
-> 1. Mở Notepad
-> 2. Gõ nội dung
-> 3. Báo hoàn thành
->    Executor thực thi bằng PyAutoGUI. UI hiển thị từng bước đang chạy, thành công hoặc lỗi.
-
-Kịch bản demo phụ:
-
-> Người dùng gõ: “Mở trang google.com trên Edge.”
-> Agent tạo workflow:
->
-> 1. Mở Edge
-> 2. Điều hướng tới URL
-> 3. Báo hoàn thành
-
-MVP chưa cần làm:
-
-* Chưa cần GUI-Actor vision thật.
-* Chưa cần Playwright.
-* Chưa cần model manager UI đầy đủ.
-* Chưa cần workflow drag/drop.
-* Chưa cần plugin sandbox.
-* Chưa cần multi-agent.
-* Chưa cần auto-update.
-* Chưa cần context 64k/vLLM/llama.cpp nâng cao.
-
----
-
-# Phase 0 — Chốt scope, repo skeleton và chuẩn giao tiếp nội bộ
-
-## Mục tiêu
-
-Tạo nền móng dự án rõ ràng, tránh over-engineering. Sau phase này phải có cấu trúc thư mục, chuẩn API nội bộ, chuẩn event streaming và dữ liệu mẫu để các phase sau phát triển không bị lệch hướng.
-
-## Việc cần làm
-
-### 0.1. Tạo cấu trúc repository
-
-Cấu trúc đề xuất:
-
-```txt
-desktop-ai-agent/
-├── apps/
-│   ├── desktop/                 # Tauri + React + TypeScript
-│   └── backend/                 # Python FastAPI sidecar
-├── docs/
-│   ├── mvp_scope.md
-│   ├── event_protocol.md
-│   ├── api_contract.md
-│   └── safety_policy.md
-├── models/
-│   └── README.md
-├── scripts/
-│   ├── dev_backend.ps1
-│   ├── dev_desktop.ps1
-│   └── healthcheck.ps1
-├── artifacts/
-│   └── runs/
-└── README.md
+```text
+chat request
+→ create conversation turn
+→ supervisor spawn
+→ build/persist DAG
+→ acquire route lock
+→ execute run_plan
+→ persist incremental/partial state
+→ publish events
+→ finish/cancel/fail deterministically
+→ release lock
+→ recover state after restart
 ```
 
-### 0.2. Viết tài liệu MVP scope
+Phạm vi bắt buộc của lần triển khai này:
 
-File: `docs/mvp_scope.md`
+1. Bảo toàn và chuẩn hóa toàn bộ worktree hiện tại.
+2. Loại bỏ rủi ro API key plaintext.
+3. Thêm Alembic/database migration cần thiết.
+4. Thêm workspace/path traversal protection.
+5. Nối `chat → supervisor → DAG → route lock → run_plan`.
+6. Thực thi idempotency, partial persistence và state transitions.
+7. Chứng minh vertical slice bằng E2E với fake Hermes.
+8. Khởi động backend thật và chạy black-box runtime test.
+9. Commit, push và xác minh remote SHA.
+10. Viết báo cáo evidence-first, không phóng đại kết quả.
 
-Nội dung cần có:
+Không thực hiện frontend cosmetics hoặc refactor lớn trước khi vertical slice backend đạt gate.
 
-* MVP làm gì.
-* MVP không làm gì.
-* Demo bắt buộc.
-* Demo phụ.
-* Acceptance criteria.
-* Các rủi ro kỹ thuật đã biết.
+# NGUYÊN TẮC KHÔNG ĐƯỢC VI PHẠM
 
-### 0.3. Định nghĩa event protocol
+## 1. Không làm mất worktree
 
-File: `docs/event_protocol.md`
+Tuyệt đối không chạy các lệnh có thể phá hủy thay đổi hiện có như:
 
-Các event tối thiểu:
-
-```json
-{
-  "event": "step_started",
-  "timestamp": "2026-06-18T00:00:00+07:00",
-  "data": {
-    "session_id": "string",
-    "step_id": "string",
-    "step_name": "string"
-  }
-}
+```bash
+git reset --hard
+git clean -fd
+git checkout -- .
+git restore .
+git stash drop
 ```
 
-Event MVP cần có:
+Không ghi đè hoặc xóa bất kỳ file modified/untracked nào trước khi đã phân loại và lưu provenance.
 
-* `session_created`
-* `message_received`
-* `planning_started`
-* `planning_finished`
-* `workflow_created`
-* `step_started`
-* `step_completed`
-* `step_failed`
-* `tool_call_started`
-* `tool_call_finished`
-* `permission_request`
-* `permission_granted`
-* `permission_denied`
-* `user_paused`
-* `user_resumed`
-* `user_stopped`
-* `error`
-* `session_finished`
+## 2. Không commit mù toàn bộ working tree
 
-### 0.4. Định nghĩa workflow schema tối thiểu
+Không dùng:
 
-Workflow MVP chỉ cần dạng tuần tự:
-
-```json
-{
-  "workflow_id": "uuid",
-  "session_id": "uuid",
-  "steps": [
-    {
-      "id": "uuid",
-      "order": 1,
-      "name": "Open Notepad",
-      "tool_name": "open_app",
-      "params": {
-        "app": "notepad"
-      },
-      "status": "pending"
-    }
-  ]
-}
+```bash
+git add .
+git add -A
 ```
 
-## Đầu ra của phase
+trước khi kiểm tra từng file.
 
-* Repo chạy được skeleton.
-* Có thư mục `apps/desktop`.
-* Có thư mục `apps/backend`.
-* Có tài liệu MVP scope.
-* Có tài liệu event protocol.
-* Có schema workflow mẫu.
+Phải phân loại file thành:
 
-## Acceptance criteria
+* Source orchestration liên quan.
+* Test liên quan.
+* Migration/schema.
+* Frontend liên quan.
+* Report/artifact.
+* Generated/cache/runtime DB.
+* File chứa secret hoặc dữ liệu local.
+* Thay đổi không liên quan.
 
-* Developer mới mở repo có thể hiểu MVP cần làm gì trong 10 phút.
-* Không có module thừa như plugin system, Playwright, multi-agent trong phase này.
-* Tất cả phase sau phải bám theo `docs/mvp_scope.md`.
+Chỉ stage từng file hoặc từng hunk có chủ đích.
 
----
+## 3. Không tiết lộ secret
 
-# Phase 1 — Backend FastAPI sidecar tối thiểu
+Không in API key, token, encryption key hoặc credential vào:
 
-## Mục tiêu
+* Terminal output.
+* Test logs.
+* Exception.
+* HTTP response.
+* WebSocket payload.
+* Report.
+* Artifact.
+* Git diff.
+* Commit.
+* Fixture snapshot.
 
-Tạo backend local chạy được độc lập, có API tạo session, nhận message, tạo workflow giả lập, stream event qua WebSocket.
+Mọi secret trong báo cáo phải được thay bằng dạng mask, ví dụ:
 
-## Việc cần làm
-
-### 1.1. Khởi tạo FastAPI app
-
-Thư mục:
-
-```txt
-apps/backend/
-├── main.py
-├── routers/
-│   ├── sessions.py
-│   ├── workflow.py
-│   └── websocket.py
-├── services/
-│   ├── session_service.py
-│   ├── workflow_service.py
-│   └── event_bus.py
-├── schemas/
-│   ├── session.py
-│   ├── workflow.py
-│   └── event.py
-└── tests/
+```text
+sk-****abcd
 ```
 
-### 1.2. API tối thiểu
+## 4. Không tự nhận test đã chạy
 
-Cần có:
+Chỉ báo cáo test pass khi lệnh thực sự đã được chạy và exit code bằng 0.
 
-```txt
-POST /sessions
-GET  /sessions/{session_id}
-POST /sessions/{session_id}/messages
-GET  /sessions/{session_id}/workflow
-WS   /ws/{session_id}
-GET  /health
+Phân biệt rõ:
+
+* Unit test.
+* Integration test.
+* Fake-Hermes E2E.
+* Backend black-box runtime.
+* Frontend test.
+* Real-Hermes integration.
+
+Không dùng unit test để đại diện cho runtime integration.
+
+## 5. Không dừng toàn bộ audit vì một test thất bại
+
+Khi một test thất bại:
+
+1. Ghi lệnh, exit code và lỗi.
+2. Xác định các phần còn độc lập.
+3. Tiếp tục hoàn thành các phần độc lập.
+4. Sau đó quay lại sửa root cause.
+5. Không che giấu hoặc xóa evidence thất bại.
+
+Không chạy đồng thời nhiều full backend test suite dùng chung SQLite database.
+
+## 6. Không refactor core trên diện rộng
+
+Ưu tiên tái sử dụng và nối các module hiện có, bao gồm những module tương đương với:
+
+* `dag_scheduler`
+* `route_lock_service`
+* `worktree_service`
+* `supervisor`
+* `recovery_service`
+* `permission_profile`
+* Hermes session bridge
+* Provider gateway/router runtime
+* Existing event bus/WebSocket infrastructure
+
+Nếu tên hoặc vị trí file khác, phải tìm implementation thực tế trước khi sửa.
+
+# PHASE 0 — PROVENANCE VÀ WORKTREE PRESERVATION
+
+## 0.1. Ghi trạng thái ban đầu
+
+Chạy và lưu toàn bộ output:
+
+```bash
+git status --short
+git status --porcelain=v2
+git branch --show-current
+git rev-parse HEAD
+git rev-parse --show-toplevel
+git worktree list --porcelain
+git diff --stat
+git diff --name-status
+git diff --cached --stat
+git ls-files --others --exclude-standard
+git log -10 --oneline --decorate
+git remote -v
 ```
 
-### 1.3. Event bus nội bộ
+Xác minh:
 
-Implement `EventBus` để backend có thể phát event:
+```bash
+git cat-file -t 9205dfa111301eb65cf1963dde89778e246dae5c
+git merge-base --is-ancestor 9205dfa111301eb65cf1963dde89778e246dae5c HEAD
+```
+
+Nếu HEAD không còn bằng `9205dfa`, không reset. Ghi nhận actual HEAD và tiếp tục trên trạng thái thực tế.
+
+## 0.2. Tạo artifact provenance
+
+Tạo thư mục:
+
+```text
+artifacts/agent_workspace_orchestration_phase2/<UTC_TIMESTAMP>/
+```
+
+Tối thiểu gồm:
+
+```text
+commands.log
+git_status_before.txt
+git_porcelain_v2_before.txt
+git_diff_stat_before.txt
+tracked_changes_manifest.txt
+untracked_files_manifest.txt
+worktree_manifest.txt
+starting_head.txt
+environment.txt
+```
+
+Lưu patch local để phòng mất dữ liệu:
+
+```bash
+git diff --binary > artifacts/.../tracked_worktree_before.patch
+git diff --cached --binary > artifacts/.../staged_worktree_before.patch
+```
+
+Không copy nội dung file nghi chứa secret vào artifact. Với file nghi chứa secret, chỉ ghi đường dẫn và trạng thái `REDACTED_SENSITIVE_FILE`.
+
+## 0.3. Phân loại 19 modified và 21 untracked
+
+Kiểm tra từng file và tạo bảng:
+
+| Path | Git state | Category | Relevant | Secret risk | Generated | Action |
+| ---- | --------- | -------- | -------: | ----------: | --------: | ------ |
+
+Không được giả định tất cả file untracked đều là source.
+
+Kiểm tra `.gitignore` và bổ sung rule cho:
+
+* Runtime DB.
+* SQLite WAL/SHM.
+* Cache.
+* Temporary worktree.
+* Logs.
+* Local `.env`.
+* Secret material.
+* Generated frontend artifacts.
+* Python cache.
+* Test output không cần version control.
+
+Không ignore source, migration, test hoặc report cần theo dõi.
+
+## 0.4. Secret scan
+
+Tìm kiếm tối thiểu các pattern:
+
+```text
+api_key
+secret
+token
+authorization
+bearer
+sk-
+AIza
+nvapi-
+OPENAI_API_KEY
+ANTHROPIC_API_KEY
+GOOGLE_API_KEY
+NVIDIA_API_KEY
+OPENROUTER_API_KEY
+```
+
+Phân biệt:
+
+* Field name hợp lệ.
+* Placeholder.
+* Test dummy.
+* Secret thật.
+* Plaintext persistence logic.
+
+Không đưa giá trị tìm thấy vào báo cáo.
+
+# PHASE A — SECURITY, MIGRATION VÀ PATH SAFETY
+
+Phase A là gate bắt buộc. Không chạy live provider bằng credential thật trước khi Phase A pass.
+
+## A1. API key encryption at rest
+
+Hiện tại phải coi việc gán trực tiếp dạng sau là không đạt:
 
 ```python
-await event_bus.publish(session_id, {
-    "event": "planning_started",
-    "data": {...}
-})
+provider.api_key = payload.api_key
 ```
 
-Ban đầu có thể dùng in-memory pub/sub. Chưa cần Redis.
+Thiết kế một secret storage abstraction có versioning.
 
-### 1.4. Workflow giả lập
+Yêu cầu:
 
-Khi user gửi message:
+1. Encryption key lấy từ environment hoặc secret store, không lưu trong cùng database.
+2. Tên environment variable rõ ràng, ví dụ:
 
-```txt
-Mở Notepad và gõ Hello
+```text
+WINDAGENT_SECRET_ENCRYPTION_KEY
 ```
 
-Backend chưa cần gọi model thật. Có thể hardcode parser tạm:
+3. Ciphertext có marker/version, ví dụ:
+
+```text
+enc:v1:<encoded-payload>
+```
+
+4. Dùng authenticated encryption.
+5. Không tự viết thuật toán crypto.
+6. Ưu tiên dependency crypto đáng tin cậy đã có trong project.
+7. Nếu cần thêm dependency, cập nhật dependency lock/requirements đúng chuẩn dự án.
+8. Hỗ trợ:
+
+   * encrypt
+   * decrypt
+   * detect encrypted value
+   * mask
+   * key validation
+9. Không bao giờ trả API key plaintext qua list/get/update response.
+10. API update có thể nhận key mới nhưng response chỉ trả trạng thái và masked metadata.
+11. Không log payload chứa API key.
+12. Exception phải được redacted.
+13. Test sử dụng deterministic test key hoặc fixture key riêng.
+14. Production không được silently dùng hardcoded fallback key.
+15. Khi encryption key thiếu:
+
+* Không được lưu plaintext.
+* Trả lỗi cấu hình rõ ràng cho thao tác cần secret.
+* Các endpoint không cần secret vẫn có thể hoạt động khi hợp lý.
+
+## A2. Migration dữ liệu hiện có
+
+Dùng Alembic hoặc migration mechanism thực tế của repository.
+
+Migration phải:
+
+* Không phá dữ liệu.
+* Nhận diện `NULL`, empty và already-encrypted values.
+* Idempotent khi chạy lại ở mức application migration logic.
+* Không ghi plaintext vào migration log.
+* Có backup/rollback strategy.
+* Không commit database local.
+* Không tự động xóa key không giải mã được.
+* Ghi lỗi theo provider ID đã mask, không ghi secret.
+
+Nếu việc mã hóa dữ liệu cũ cần encryption key runtime, xây một safe migration command hoặc application migration step được document rõ ràng thay vì nhúng secret vào revision file.
+
+## A3. Response masking
+
+Audit mọi endpoint provider/model.
+
+Bảo đảm API response không chứa:
+
+```text
+api_key
+raw_secret
+authorization header
+encryption key
+decrypted credential
+```
+
+Có thể trả:
 
 ```json
-[
-  {
-    "name": "Open Notepad",
-    "tool_name": "open_app",
-    "params": {"app": "notepad"}
-  },
-  {
-    "name": "Type text",
-    "tool_name": "type_text",
-    "params": {"text": "Hello"}
-  }
-]
+{
+  "has_api_key": true,
+  "api_key_masked": "****abcd"
+}
 ```
 
-## Đầu ra của phase
+Không trả encrypted ciphertext cho frontend.
 
-* Backend chạy bằng lệnh PowerShell.
-* Gọi API tạo session được.
-* Gửi message tạo workflow giả lập được.
-* WebSocket nhận event được.
+## A4. Log redaction
 
-## Acceptance criteria
+Thêm redaction tập trung cho:
 
-* `GET /health` trả về OK.
-* `POST /sessions` tạo session ID.
-* `POST /sessions/{id}/messages` phát event `planning_started`, `planning_finished`, `workflow_created`.
-* Có unit test cho session service, workflow service, event bus.
+* HTTP request logging.
+* Provider gateway errors.
+* Router execution logs.
+* Hermes bridge errors.
+* Pydantic validation errors.
+* Traceback context.
+* Audit artifacts.
 
----
+Test phải kiểm tra cả plaintext secret và ciphertext không xuất hiện trong user-facing response.
 
-# Phase 2 — SQLite persistence và audit log
+## A5. Workspace/path traversal guard
 
-## Mục tiêu
+Tất cả đường dẫn do request, agent, plan hoặc tool cung cấp phải được resolve bên trong workspace root được phép.
 
-MVP phải local-first, vì vậy cần lưu session, message, workflow, step, tool call và event vào SQLite. Sau phase này, đóng/mở lại backend vẫn thấy lịch sử cơ bản.
+Chặn:
 
-## Việc cần làm
+* `../`
+* Absolute path ngoài root.
+* Windows drive escape.
+* UNC path.
+* Mixed slash.
+* URL-encoded traversal.
+* Symlink/junction escape.
+* Case-normalization issue trên Windows.
+* Empty root hoặc ambiguous root.
+* Delete/cleanup ngoài managed worktree.
 
-### 2.1. Thêm SQLAlchemy hoặc SQLModel
+Tạo helper dùng chung thay vì kiểm tra rải rác.
 
-Cấu trúc:
+Bổ sung test cho Windows và POSIX semantics ở mức có thể chạy trên CI.
 
-```txt
-apps/backend/db/
-├── database.py
-├── models.py
-└── migrations/
+## Phase A acceptance gate
+
+Phase A chỉ pass khi:
+
+* API key mới không xuất hiện plaintext trong DB.
+* API key không xuất hiện trong response/log/artifact.
+* Missing encryption key không dẫn tới plaintext fallback.
+* Migration test pass.
+* Traversal test pass.
+* Existing provider/model contract không bị phá ngoài thay đổi có chủ đích.
+* Focused security tests pass.
+
+Nếu fail, verdict tối thiểu phải là:
+
+```text
+rejected_security_gate
 ```
 
-### 2.2. Bảng tối thiểu
+# PHASE B — ROUTE LOCK VÀ FAILOVER THEO TURN
 
-MVP cần 6 bảng:
+## B1. Route lock lifecycle
 
-```txt
-chat_sessions
-messages
-workflows
-workflow_steps
-tool_calls
-execution_events
-```
+Mỗi conversation turn phải có route decision ổn định.
 
-### 2.3. Schema tối thiểu
+Khóa phải gắn tối thiểu với:
 
-`chat_sessions`:
-
-```txt
-id
+```text
+conversation_id
+turn_id
+run_id
+route_lock_id
+selected_provider
+selected_model
 created_at
-updated_at
+released_at
 status
+version
 ```
 
-`messages`:
+Luồng:
 
-```txt
-id
-session_id
-sender
-content
-created_at
+```text
+turn accepted
+→ acquire route lock
+→ persist selected route
+→ execute
+→ failover theo policy được phép
+→ finish/cancel/fail
+→ release/finalize lock
 ```
 
-`workflows`:
+Không giữ lock chỉ trong process memory nếu cần recovery.
 
-```txt
-id
-session_id
-status
-created_at
-updated_at
+## B2. Concurrency safety
+
+Hai request đồng thời cho cùng conversation không được:
+
+* Cùng sở hữu active turn lock.
+* Tạo duplicate run.
+* Ghi đè route decision.
+* Chạy cùng plan hai lần ngoài chủ đích.
+
+Dùng transaction, unique constraint, compare-and-set hoặc optimistic versioning phù hợp với schema hiện tại.
+
+Không dùng check-then-insert không nguyên tử.
+
+## B3. Same-model failover
+
+Khi provider endpoint lỗi nhưng policy cho phép, thử failover sang route khác vẫn phục vụ cùng logical model hoặc equivalent deployment theo catalog.
+
+Phải ghi:
+
+```text
+attempt
+provider
+model
+error_class
+retryable
+latency
+fallback_reason
+result
 ```
 
-`workflow_steps`:
+Retry/failover phải có cap.
 
-```txt
-id
-workflow_id
-order_index
-name
-tool_name
-params_json
-status
-created_at
-updated_at
+Không retry:
+
+* Authentication failure.
+* Invalid request.
+* Safety/policy rejection.
+* Missing model configuration.
+* Non-retryable 4xx.
+
+Không để failover làm thay đổi model giữa turn mà không ghi route transition.
+
+## B4. Route lock tests
+
+Tối thiểu:
+
+* Acquire thành công.
+* Duplicate acquire bị chặn.
+* Release idempotent.
+* Cancel giải phóng/finalize.
+* Process restart đọc được persisted lock.
+* Stale lock reconciliation.
+* Same-model retry thành công.
+* Non-retryable error không retry.
+* Retry cap được tôn trọng.
+* Hai concurrent requests không cùng execute.
+
+# PHASE C — SUPERVISOR SPAWN VÀ CHAT → DAG
+
+## C1. Xác định live entry point
+
+Tìm endpoint thực tế nhận chat/message.
+
+Không tạo endpoint song song nếu endpoint hiện có có thể mở rộng an toàn.
+
+Trace live path hiện tại:
+
+```text
+HTTP message request
+→ router/controller
+→ Hermes/single-agent bridge
+→ event bus/WebSocket
+→ persistence
 ```
 
-`tool_calls`:
-
-```txt
-id
-session_id
-step_id
-tool_name
-input_json
-output_json
-status
-created_at
-```
-
-`execution_events`:
-
-```txt
-id
-session_id
-event_type
-data_json
-created_at
-```
-
-### 2.4. Lưu tất cả event vào DB
-
-Mỗi khi `event_bus.publish()` được gọi, event cũng phải được ghi vào bảng `execution_events`.
-
-## Đầu ra của phase
-
-* SQLite DB tự tạo khi backend khởi động.
-* Session/message/workflow/event được lưu.
-* Có thể xem lại workflow của session cũ.
-
-## Acceptance criteria
-
-* Tạo session → DB có row.
-* Gửi message → DB có message.
-* Workflow được tạo → DB có workflow + steps.
-* Event được stream và cũng được lưu vào DB.
-* Có test xác nhận event không bị mất khi workflow chạy.
-
----
-
-# Phase 3 — Tool Executor desktop cơ bản bằng PyAutoGUI
-
-## Mục tiêu
-
-Biến workflow từ dữ liệu tĩnh thành hành động thật trên Windows.
-
-## Tool MVP cần có
-
-```txt
-open_app
-open_url
-type_text
-hotkey
-press_key
-click_xy
-scroll
-screenshot
-wait
-```
-
-## Việc cần làm
-
-### 3.1. Tạo Tool Registry
-
-File:
-
-```txt
-apps/backend/services/tool_registry.py
-apps/backend/services/tool_executor.py
-```
-
-Mỗi tool có metadata:
-
-```python
-{
-    "name": "open_app",
-    "description": "Open a Windows application",
-    "risk_level": "medium",
-    "requires_confirmation": False
-}
-```
-
-### 3.2. Implement tool `open_app`
-
-Ban đầu hỗ trợ:
-
-```txt
-notepad
-calc
-mspaint
-edge
-explorer
-```
-
-Ví dụ:
-
-```python
-subprocess.Popen(["notepad.exe"])
-```
-
-### 3.3. Implement tool `type_text`
-
-Dùng PyAutoGUI:
-
-```python
-pyautogui.write(text, interval=0.01)
-```
-
-Với tiếng Việt có dấu, fallback sang clipboard paste:
-
-```python
-pyperclip.copy(text)
-pyautogui.hotkey("ctrl", "v")
-```
-
-### 3.4. Implement tool `open_url`
-
-Cách MVP đơn giản:
-
-```python
-subprocess.Popen(["cmd", "/c", "start", "msedge", url])
-```
-
-### 3.5. Implement screenshot artifact
-
-`screenshot()` lưu ảnh vào:
-
-```txt
-artifacts/runs/{session_id}/screenshots/{timestamp}.png
-```
-
-Return:
-
-```json
-{
-  "path": "...",
-  "width": 1920,
-  "height": 1080
-}
-```
-
-### 3.6. Ghi tool call log
-
-Mỗi tool call phải ghi:
-
-* tool name
-* input
-* output
-* status
-* error nếu có
-
-## Đầu ra của phase
-
-* Backend có thể mở Notepad thật.
-* Backend có thể gõ text thật.
-* Backend có thể mở Edge với URL thật.
-* Tool call được stream về UI/console.
-* Tool call được lưu DB.
-
-## Acceptance criteria
-
-* Chạy workflow `open_app notepad → type_text Hello` thành công.
-* Nếu tool lỗi, step chuyển sang `failed`.
-* Nếu user stop, tool executor không chạy step tiếp theo.
-* Screenshot được lưu thành artifact.
-
----
-
-# Phase 4 — Planner Qwen3 4B Q4 qua Ollama
-
-## Mục tiêu
-
-Thay hardcoded parser bằng model planner local. Qwen3 4B Q4 sẽ nhận lệnh người dùng và trả về workflow JSON hợp lệ.
-
-## Việc cần làm
-
-### 4.1. Tạo Model Client
-
-File:
-
-```txt
-apps/backend/services/model_client.py
-apps/backend/services/planner_service.py
-```
-
-Interface:
-
-```python
-class ModelClient:
-    async def chat(self, messages, stream=False) -> str:
-        ...
-```
-
-Provider MVP:
-
-```txt
-ollama_openai_compatible
-```
-
-Endpoint mặc định:
-
-```txt
-http://localhost:11434/v1/chat/completions
-```
-
-### 4.2. Health check Ollama
-
-Endpoint:
-
-```txt
-GET /models/health
-```
-
-Trả về:
-
-```json
-{
-  "provider": "ollama",
-  "online": true,
-  "model": "qwen3:4b-q4",
-  "latency_ms": 1234
-}
-```
-
-### 4.3. Prompt planner MVP
-
-Planner phải trả JSON, không trả văn xuôi.
-
-System prompt cần ép schema:
-
-```txt
-You are a local desktop workflow planner.
-Convert the user's instruction into a sequential workflow.
-Only use these tools:
-- open_app
-- open_url
-- type_text
-- hotkey
-- press_key
-- click_xy
-- scroll
-- screenshot
-- wait
-
-Return valid JSON only.
-
-Schema:
-{
-  "steps": [
-    {
-      "name": "string",
-      "tool_name": "string",
-      "params": {}
-    }
-  ]
-}
-```
-
-### 4.4. JSON validation
-
-Không tin output model trực tiếp.
-
-Cần có:
-
-* JSON parse.
-* Validate tool_name thuộc whitelist.
-* Validate params đúng schema.
-* Nếu invalid, gọi repair prompt một lần.
-* Nếu vẫn invalid, trả lỗi rõ ràng về UI.
-
-### 4.5. Fallback parser
-
-Để MVP ổn định, giữ fallback rule-based cho 2 demo:
-
-* Mở Notepad và gõ X.
-* Mở URL X trên Edge.
-
-Nếu Qwen lỗi, fallback vẫn giúp demo chạy được.
-
-## Đầu ra của phase
-
-* User nhập lệnh tự nhiên.
-* Qwen tạo workflow.
-* Backend validate workflow.
-* Workflow chạy sequential.
-
-## Acceptance criteria
-
-* Lệnh “Mở Notepad và gõ Hello” tạo đúng 2 step.
-* Lệnh “Mở google.com trên Edge” tạo đúng step mở URL.
-* Nếu Qwen trả JSON lỗi, backend không crash.
-* Nếu Ollama offline, UI nhận lỗi `model_offline`.
-
----
-
-# Phase 5 — Workflow Engine sequential + control Pause/Resume/Stop
-
-## Mục tiêu
-
-Có engine chạy workflow thật, từng step một, có trạng thái rõ ràng, có thể dừng/tạm dừng/tiếp tục.
-
-## State machine MVP
-
-Step status:
-
-```txt
-pending
+Ghi call graph trước và sau vào report.
+
+## C2. Supervisor integration
+
+Thay vì mọi message luôn đi thẳng vào single-agent bridge, thêm orchestration decision:
+
+* Single-agent request vẫn có thể dùng fast path.
+* Multi-step/multi-agent request tạo supervisor run.
+* Supervisor tạo agent instances có ID ổn định.
+* Supervisor tạo DAG hoặc execution plan.
+* DAG được persist trước khi execution.
+* Mỗi node liên kết được với:
+
+  * conversation
+  * turn
+  * run
+  * agent instance
+  * parent node
+  * dependency
+  * status
+  * timestamps
+  * retry count
+  * output/error reference
+
+Không dùng heuristic khó kiểm thử để quyết định multi-agent trong giai đoạn đầu. Có thể dùng explicit request mode hoặc deterministic planner fixture cho E2E.
+
+## C3. State machine
+
+Định nghĩa trạng thái hợp lệ, ví dụ:
+
+```text
+created
+queued
 running
-success
+waiting_dependency
+waiting_approval
+succeeded
 failed
-skipped
+cancel_requested
 cancelled
+recovering
+orphaned
 ```
 
-Session/workflow status:
+Kiểm soát transition. Không cho phép:
 
-```txt
-idle
-planning
-running
-paused
-completed
-failed
-cancelled
+```text
+succeeded → running
+cancelled → running
+failed → succeeded
 ```
 
-## Việc cần làm
+trừ khi tạo retry attempt/run mới rõ ràng.
 
-### 5.1. Workflow runner
+## C4. Event contract
 
-File:
-
-```txt
-apps/backend/services/workflow_runner.py
-```
-
-Logic:
-
-```txt
-for step in steps:
-    if stop_requested:
-        mark cancelled
-        break
-
-    while paused:
-        wait
-
-    mark step running
-    execute tool
-    mark success/failed
-```
-
-### 5.2. Control API
-
-```txt
-POST /sessions/{session_id}/pause
-POST /sessions/{session_id}/resume
-POST /sessions/{session_id}/stop
-POST /workflow/{step_id}/retry
-```
-
-### 5.3. WebSocket control message
-
-Frontend có thể gửi:
-
-```json
-{"action": "pause"}
-{"action": "resume"}
-{"action": "stop"}
-```
-
-### 5.4. Error policy
-
-MVP xử lý lỗi đơn giản:
-
-* Tool lỗi → step failed.
-* Workflow dừng.
-* UI hiện lỗi.
-* User có thể retry step hoặc stop.
-
-Chưa cần auto-recovery phức tạp.
-
-## Đầu ra của phase
-
-* Workflow chạy tuần tự ổn định.
-* Pause dừng trước step tiếp theo.
-* Resume tiếp tục.
-* Stop hủy workflow.
-* Retry chạy lại step lỗi.
-
-## Acceptance criteria
-
-* Step không chạy song song.
-* Stop không làm chạy tiếp step sau.
-* Pause không giết app, chỉ tạm ngừng workflow.
-* Mọi transition được stream và lưu DB.
-
----
-
-# Phase 6 — Frontend Tauri + React MVP UI
-
-## Mục tiêu
-
-Tạo giao diện desktop tối thiểu nhưng đủ dùng: chat, workflow progress, log event, nút control.
-
-## Layout MVP
-
-```txt
-┌───────────────────────────────────────────────┐
-│ Header: Local Desktop AI Agent                │
-├───────────────────────────────┬───────────────┤
-│ Chat Panel                    │ Workflow Panel │
-│                               │               │
-│ User messages                 │ Step 1 ✅      │
-│ Assistant/status messages     │ Step 2 ⏳      │
-│ Tool events                   │ Step 3 ❌      │
-│                               │               │
-├───────────────────────────────┴───────────────┤
-│ Input box + Send + Stop + Pause + Resume       │
-└───────────────────────────────────────────────┘
-```
-
-## Việc cần làm
-
-### 6.1. Tauri shell
-
-Tạo app desktop:
-
-```txt
-apps/desktop/
-├── src-tauri/
-└── src/
-```
-
-Trong MVP, Tauri chỉ cần mở React app và gọi backend local.
-
-### 6.2. Backend launcher
-
-Có 2 lựa chọn:
-
-Cách A cho dev MVP:
-
-* User chạy backend bằng script riêng.
-* Tauri frontend connect tới `localhost`.
-
-Cách B cho MVP đóng gói:
-
-* Tauri start Python sidecar.
-
-Khuyến nghị MVP nội bộ: làm Cách A trước, sau đó mới Cách B ở Phase 9.
-
-### 6.3. Chat UI
-
-Component:
-
-```txt
-ChatPanel.tsx
-MessageList.tsx
-ChatInput.tsx
-```
-
-Chức năng:
-
-* Nhập lệnh.
-* Gửi message tới backend.
-* Hiển thị message user.
-* Hiển thị assistant status.
-* Hiển thị lỗi.
-
-### 6.4. Workflow panel
-
-Component:
-
-```txt
-WorkflowPanel.tsx
-WorkflowStepItem.tsx
-```
-
-Hiển thị:
-
-* Step order.
-* Step name.
-* Tool name.
-* Status.
-* Error nếu có.
-
-Chưa cần drag/drop.
-
-### 6.5. Event stream client
-
-Hook:
-
-```txt
-useSessionEvents.ts
-```
-
-Nhận event WebSocket và update UI realtime.
-
-### 6.6. Control buttons
-
-Nút:
-
-```txt
-Stop
-Pause
-Resume
-Retry failed step
-```
-
-## Đầu ra của phase
-
-* Mở app desktop thấy UI.
-* Gửi lệnh từ UI được.
-* UI nhận event realtime.
-* UI hiển thị workflow progress.
-* UI điều khiển Stop/Pause/Resume được.
-
-## Acceptance criteria
-
-* Không cần mở Swagger/Postman để demo.
-* Demo Notepad chạy hoàn toàn từ UI.
-* Khi step chạy, status đổi `pending → running → success`.
-* Khi lỗi, UI hiện lỗi rõ ràng.
-* WebSocket reconnect nếu refresh UI.
-
----
-
-# Phase 7 — Safe Mode và permission gate tối thiểu
-
-## Mục tiêu
-
-MVP có khả năng điều khiển máy tính nên bắt buộc phải có lớp an toàn tối thiểu. Không cần hệ thống permission quá phức tạp, nhưng phải chặn các hành động nguy hiểm.
-
-## Tool risk level MVP
-
-```txt
-safe:
-- screenshot
-- wait
-- scroll
-
-medium:
-- open_app
-- open_url
-- type_text
-- hotkey
-- press_key
-- click_xy
-
-high:
-- delete_file
-- shell_command
-- send_email
-- payment
-```
-
-Trong MVP chưa implement high-risk tools, nhưng policy phải có.
-
-## Việc cần làm
-
-### 7.1. Tool whitelist
-
-Agent chỉ được gọi tool nằm trong whitelist.
-
-Nếu model tạo tool lạ:
-
-```json
-{"tool_name": "delete_all_files"}
-```
-
-Backend reject ngay.
-
-### 7.2. Confirmation cho medium risk tùy cấu hình
-
-MVP nên có setting:
+Mọi event orchestration phải có envelope nhất quán:
 
 ```json
 {
-  "safe_mode": true,
-  "confirm_before_type": true,
-  "confirm_before_click": true
+  "event_id": "...",
+  "sequence": 1,
+  "conversation_id": "...",
+  "turn_id": "...",
+  "run_id": "...",
+  "agent_instance_id": "...",
+  "event": "...",
+  "timestamp": "...",
+  "data": {}
 }
 ```
 
-Để demo mượt, có thể mặc định:
+Không bắt buộc `agent_instance_id` cho event cấp conversation, nhưng field/schema phải xử lý rõ.
 
-* `open_app`: không cần confirm.
-* `open_url`: không cần confirm.
-* `type_text`: confirm nếu text dài hoặc chứa dữ liệu nhạy cảm.
-* `click_xy`: confirm nếu dùng tọa độ manual.
+Event sequence phải hỗ trợ recovery/deduplication sau này.
 
-### 7.3. Permission request event
+# PHASE D — RUN_PLAN, IDEMPOTENCY VÀ PARTIAL PERSISTENCE
 
-Backend gửi:
+## D1. Wire run_plan vào live supervisor path
 
-```json
-{
-  "event": "permission_request",
-  "data": {
-    "tool_name": "type_text",
-    "summary": "Type text into active window",
-    "params": {
-      "text": "Hello"
-    }
-  }
-}
+Không chỉ unit-call `run_plan`.
+
+Phải chứng minh request từ HTTP entry point thực sự đi đến:
+
+```text
+supervisor.spawn
+→ DAG creation
+→ run_plan
+→ node execution
 ```
 
-Frontend hiện dialog:
+Dùng spy/instrumentation/test assertion để xác nhận.
 
-```txt
-Agent muốn gõ nội dung vào cửa sổ hiện tại.
-[Confirm] [Cancel]
+## D2. concurrency_group
+
+Các node cùng `concurrency_group` phải tuân thủ policy đã định nghĩa.
+
+Xác định rõ semantics:
+
+* Cùng group chạy tuần tự hay bị giới hạn concurrency.
+* Khác group được chạy song song đến mức nào.
+* Global cap.
+* Per-conversation cap.
+* Per-provider cap nếu liên quan quota.
+
+Test phải deterministic, không phụ thuộc timing mong manh.
+
+## D3. Idempotency
+
+Mỗi message/turn cần idempotency key.
+
+Các request duplicate phải:
+
+* Trả về run hiện có, hoặc
+* Bị reject có chủ đích.
+
+Không tạo duplicate:
+
+* Conversation turn.
+* DAG.
+* Node run.
+* Hermes run.
+* Worktree.
+* Usage/quota accounting.
+
+Idempotency phải được enforce ở persistence layer, không chỉ dictionary memory.
+
+## D4. Partial persistence
+
+Sau mỗi node hoặc meaningful event:
+
+* Persist status.
+* Persist partial output/reference.
+* Persist timestamps.
+* Persist retry attempt.
+* Persist error class đã sanitize.
+* Commit transaction hợp lý.
+
+Khi process chết giữa run, recovery phải biết:
+
+* Node nào hoàn tất.
+* Node nào đang chạy.
+* Node nào chưa chạy.
+* Node nào có thể retry.
+* Lock nào còn active.
+* Hermes run mapping nào còn tồn tại.
+
+## D5. Failure semantics
+
+Phân biệt:
+
+* Node failure.
+* Provider failure.
+* Hermes failure.
+* Planner failure.
+* Persistence failure.
+* User cancel.
+* Process crash.
+* Dependency failure.
+* Permission denial.
+
+DAG có thể `partial_success` nếu policy cho phép, nhưng phải deterministic và được test.
+
+# SQLITE VÀ TEST ISOLATION
+
+Không tiếp tục bỏ full backend suite chỉ vì SQLite lock mà không sửa test infrastructure.
+
+Thực hiện một trong các chiến lược phù hợp:
+
+* DB tạm riêng theo test session.
+* DB riêng theo pytest worker.
+* Unique DB path bằng UUID.
+* Correct in-memory shared connection.
+* WAL và busy timeout cho test contention có chủ đích.
+* Explicit connection cleanup.
+
+Không cho hai background suites dùng chung `_DB_PATH`.
+
+Bổ sung test chứng minh:
+
+* Hai test process/session không tranh cùng DB ngoài chủ đích.
+* Transaction rollback/cleanup đúng.
+* Temporary DB được xóa sau test.
+* WAL/SHM không bị commit.
+
+# E2E VỚI FAKE HERMES
+
+Fake Hermes phải deterministic và hỗ trợ ít nhất:
+
+* Start run.
+* Stream event.
+* Complete run.
+* Fail retryable.
+* Fail non-retryable.
+* Delay.
+* Cancel.
+* Approval.
+* Disconnect/reconnect simulation nếu infrastructure hiện có hỗ trợ.
+* Duplicate response/idempotency scenario.
+
+Tạo E2E bắt đầu từ HTTP/WebSocket public interface, không gọi trực tiếp service nội bộ để thay thế E2E.
+
+Kịch bản bắt buộc:
+
+## Scenario 1 — Successful orchestration
+
+```text
+create conversation/session
+→ send orchestration message
+→ supervisor spawned
+→ DAG persisted
+→ route lock acquired
+→ planner node succeeds
+→ worker node succeeds
+→ partial events received
+→ run succeeds
+→ lock finalized/released
 ```
 
-### 7.4. Không chạy shell tùy ý trong MVP
+Assert database và event sequence.
 
-MVP không cho planner tạo shell command. `open_app` phải là danh sách app được hỗ trợ, không truyền command tự do.
+## Scenario 2 — Retryable provider failure
 
-## Đầu ra của phase
-
-* Tool whitelist hoạt động.
-* Permission dialog hoạt động.
-* User cancel thì step bị `cancelled`.
-* Audit log lưu quyết định confirm/cancel.
-
-## Acceptance criteria
-
-* Model không thể gọi tool ngoài whitelist.
-* User có thể cancel hành động nhập text.
-* Permission event được lưu DB.
-* Không có API chạy shell tự do.
-
----
-
-# Phase 8 — GUI grounding stub cho MVP
-
-## Mục tiêu
-
-Vì MVP chưa cần GUI-Actor vision thật, nhưng kiến trúc phải chuẩn bị sẵn interface để sau này cắm Qwen2.5-VL GUI Actor. Phase này tạo “stub” để không phá kiến trúc sau này.
-
-## Việc cần làm
-
-### 8.1. Tạo interface GUI grounding
-
-File:
-
-```txt
-apps/backend/services/gui_grounding.py
+```text
+first route fails retryably
+→ same-model failover
+→ second route succeeds
+→ one logical turn
+→ no duplicate DAG
+→ attempts persisted
 ```
 
-Interface:
+## Scenario 3 — Duplicate request
 
-```python
-class GuiGroundingService:
-    async def locate(self, screenshot_path: str, target: str) -> GuiPoint:
-        ...
+Gửi cùng idempotency key hai lần.
+
+Assert chỉ có:
+
+* Một turn.
+* Một run.
+* Một DAG.
+* Một logical Hermes execution.
+
+## Scenario 4 — Cancel during execution
+
+```text
+run active
+→ user cancel
+→ Hermes stop requested
+→ task cancelled
+→ partial state retained
+→ run cancelled
+→ route lock finalized
 ```
 
-Return:
+Không chấp nhận chỉ đổi status mà background execution vẫn tiếp tục.
 
-```json
-{
-  "x": 100,
-  "y": 200,
-  "confidence": 0.8,
-  "method": "manual_stub"
-}
+## Scenario 5 — Process/recovery simulation
+
+Persist run ở trạng thái active, recreate application/service container, chạy recovery.
+
+Assert:
+
+* Completed node không chạy lại.
+* Retryable in-flight node được reconcile.
+* Stale lock được xử lý.
+* Duplicate external run không được tạo.
+
+## Scenario 6 — Secret redaction
+
+Dùng dummy API key có chuỗi dễ nhận diện.
+
+Assert dummy secret không xuất hiện trong:
+
+* DB plaintext query.
+* HTTP response.
+* WebSocket event.
+* Logs.
+* Exception.
+* Report artifact.
+
+# BLACK-BOX RUNTIME
+
+Sau khi focused tests pass, khởi động backend bằng entry command thực tế của repository.
+
+Không giả định script; đọc README/package config/task runner trước.
+
+Kiểm tra các port audit đã nhắc:
+
+```text
+backend: 8765
+frontend/dev server: 1420
 ```
 
-### 8.2. Manual coordinate mode
+Nếu cấu hình thực tế khác, dùng cấu hình repository và ghi rõ.
 
-Trong MVP, nếu user yêu cầu click theo tên nút nhưng chưa có vision model:
+Black-box backend test phải dùng HTTP/WebSocket qua socket thật, không dùng TestClient.
 
-* Backend chụp screenshot.
-* UI hiển thị message: “MVP chưa hỗ trợ nhận diện nút bằng vision. Hãy nhập tọa độ hoặc dùng click_xy.”
-* Cho phép user nhập x/y.
+Tối thiểu kiểm tra:
 
-### 8.3. Chuẩn bị model role
-
-Định nghĩa sẵn role:
-
-```txt
-planner
-gui_grounding
-verifier
-fallback
+```text
+health
+create session/conversation
+send message
+observe orchestration events
+read persisted run/DAG state qua API phù hợp
+cancel hoặc complete
+verify final state
 ```
 
-Nhưng MVP chỉ dùng `planner`.
+Ưu tiên fake Hermes server chạy thật trên local socket cho deterministic E2E.
 
-## Đầu ra của phase
+Real Hermes chỉ là supplemental test khi:
 
-* Có interface để sau này thay stub bằng Qwen2.5-VL.
-* Không hardcode GUI actor vào workflow runner.
-* MVP vẫn chạy được với click_xy/manual.
+* Service được cấu hình.
+* Credential an toàn.
+* Không ghi secret vào log.
+* Không phát sinh chi phí ngoài kiểm soát.
 
-## Acceptance criteria
+Nếu real Hermes không khả dụng, verdict có thể pass fake-Hermes vertical slice nhưng phải ghi:
 
-* Code không phụ thuộc trực tiếp vào implementation vision.
-* Có test cho `GuiGroundingServiceStub`.
-* Khi gặp step `click_target`, hệ thống báo rõ chưa hỗ trợ vision thật thay vì click bừa.
-
----
-
-# Phase 9 — Packaging nội bộ và developer runbook
-
-## Mục tiêu
-
-MVP phải dễ chạy trên máy Windows của bạn. Chưa cần installer hoàn chỉnh, nhưng phải có script khởi động rõ ràng.
-
-## Việc cần làm
-
-### 9.1. Script chạy backend
-
-File:
-
-```txt
-scripts/dev_backend.ps1
+```text
+real_hermes_integration_unverified
 ```
 
-Làm:
+Không được ghi `fully production verified`.
 
-* Tạo venv nếu chưa có.
-* Cài requirements.
-* Chạy FastAPI.
+# FRONTEND SCOPE
 
-### 9.2. Script chạy desktop
+Không thực hiện redesign lớn trong lần này.
 
-File:
+Chỉ sửa frontend khi cần để:
 
-```txt
-scripts/dev_desktop.ps1
+* Không bị phá bởi schema mới.
+* Truyền/nhận `agent_instance_id`.
+* Hiển thị trạng thái orchestration cơ bản.
+* Giữ compatibility với single-agent session.
+
+Chạy focused frontend tests cho file bị ảnh hưởng.
+
+Nếu frontend không thay đổi, vẫn chạy typecheck/build hoặc test phù hợp khi môi trường cho phép.
+
+Không xóa `AgentWorkspace` hoặc làm UI browser/inspector toàn phần trong sprint này trừ khi nó trực tiếp block vertical slice.
+
+Các nhóm frontend browser, inspector, i18n và dead workspace cleanup phải được để lại trong roadmap tiếp theo nếu core runtime chưa pass.
+
+# TEST ORDER
+
+Chạy tuần tự, tránh SQLite contention:
+
+1. Static/import/compile checks.
+2. Security and migration focused tests.
+3. Route-lock tests.
+4. Supervisor/DAG tests.
+5. Run-plan/idempotency tests.
+6. Fake-Hermes E2E.
+7. Existing Phase 2–9 focused tests.
+8. Full backend test suite với DB isolation đã sửa.
+9. Frontend focused tests.
+10. Frontend typecheck/build.
+11. Backend black-box runtime.
+12. Optional real-Hermes smoke test.
+
+Mỗi lệnh phải được append vào:
+
+```text
+artifacts/.../commands.log
 ```
 
-Làm:
+Ghi:
 
-* Cài npm package nếu thiếu.
-* Chạy Tauri dev.
-
-### 9.3. Script healthcheck
-
-File:
-
-```txt
-scripts/healthcheck.ps1
+```text
+command
+working directory
+start timestamp
+end timestamp
+exit code
+summary
 ```
 
-Kiểm tra:
+Không chạy hai full test suite đồng thời.
 
-* Python version.
-* Node version.
-* Rust/Tauri CLI.
-* Ollama running.
-* Qwen model available.
-* Backend health OK.
-* SQLite writable.
-* PyAutoGUI import OK.
+# GIT STRATEGY
 
-### 9.4. README chạy MVP
+## 1. Branch
 
-README cần có:
+Xác minh branch hiện tại.
 
-```txt
-1. Cài Ollama
-2. Pull Qwen3 4B Q4
-3. Chạy backend
-4. Chạy desktop
-5. Test lệnh demo
+Nếu `feat/phase-1-baseline` chỉ tồn tại local, push branch sau khi có commit sạch và an toàn.
+
+Sau khi checkpoint các standalone orchestration components hiện có, tạo hoặc chuyển sang:
+
+```text
+feat/phase-2-runtime-orchestration
 ```
 
-### 9.5. Build Tauri dev package
+Không force push.
 
-Tạo build local:
+Không rewrite lịch sử remote.
 
-```txt
-npm run tauri build
+## 2. Commit structure
+
+Ưu tiên các commit nhỏ, audit được:
+
+```text
+chore(orchestration): checkpoint audited standalone foundation
+fix(security): encrypt provider credentials and redact secrets
+feat(orchestration): wire chat supervisor dag and route lock
+feat(orchestration): add idempotent run plan persistence
+test(orchestration): add fake hermes vertical slice e2e
+docs(orchestration): add phase 2 runtime evidence report
 ```
 
-Nếu chưa bundle Python sidecar được, ghi rõ MVP hiện cần chạy backend bằng script riêng.
+Chỉ tạo checkpoint commit đầu tiên nếu:
 
-## Đầu ra của phase
+* Đã phân loại file.
+* Không có generated noise.
+* Không có secret thật.
+* Code liên quan có thể import.
+* Commit message không tuyên bố live integration đã hoạt động.
 
-* Có hướng dẫn chạy từ máy sạch.
-* Có script kiểm tra lỗi môi trường.
-* Có build desktop cơ bản.
+Có thể gộp commit nếu thay đổi phụ thuộc chặt, nhưng không tạo một commit khổng lồ không thể review.
 
-## Acceptance criteria
+## 3. Push verification
 
-* Clone repo → chạy healthcheck → biết thiếu gì.
-* Chạy backend bằng 1 script.
-* Chạy desktop bằng 1 script.
-* Demo MVP không cần sửa code thủ công.
+Sau mỗi push cuối:
 
----
-
-# Phase 10 — MVP hardening, test và release candidate
-
-## Mục tiêu
-
-Biến prototype thành MVP đủ ổn để dùng thử nhiều lần, không chỉ chạy demo một lần.
-
-## Việc cần làm
-
-### 10.1. Test suite tối thiểu
-
-Backend tests:
-
-```txt
-test_session_api.py
-test_workflow_creation.py
-test_workflow_runner.py
-test_tool_executor.py
-test_permission_gate.py
-test_model_planner_validation.py
-test_event_stream.py
+```bash
+git rev-parse HEAD
+git status --short
+git ls-remote origin refs/heads/feat/phase-2-runtime-orchestration
 ```
 
-Frontend tests tối thiểu:
+Remote SHA phải bằng local SHA.
 
-```txt
-ChatPanel render
-WorkflowPanel render
-Event reducer update status
-Control buttons call API
+Không báo `pushed: yes` nếu chưa xác minh.
+
+# REQUIRED ARTIFACTS
+
+Trong:
+
+```text
+artifacts/agent_workspace_orchestration_phase2/<UTC_TIMESTAMP>/
 ```
 
-E2E manual test checklist:
+phải có tối thiểu:
 
-```txt
-[ ] Mở app
-[ ] Tạo session
-[ ] Gửi lệnh mở Notepad
-[ ] Workflow xuất hiện
-[ ] Notepad mở
-[ ] Text được gõ
-[ ] Event stream đúng thứ tự
-[ ] Stop hoạt động
-[ ] Pause/Resume hoạt động
-[ ] Log được lưu
-[ ] Restart backend vẫn thấy session cũ
+```text
+commands.log
+environment.txt
+starting_head.txt
+final_head.txt
+git_status_before.txt
+git_status_after.txt
+tracked_changes_manifest.txt
+untracked_files_manifest.txt
+changed_files_final.txt
+migration_test.log
+security_test.log
+route_lock_test.log
+supervisor_dag_test.log
+run_plan_test.log
+fake_hermes_e2e.log
+full_backend_test.log
+frontend_test.log
+frontend_build.log
+black_box_runtime.log
+runtime_event_trace.jsonl
+database_state_summary.json
+secret_redaction_audit.txt
+vertical_slice_manifest.json
+final_verdict.json
 ```
 
-### 10.2. Error handling
+Không commit artifact dung lượng lớn, runtime DB hoặc secret-bearing logs. Chỉ commit report và artifact nhỏ/an toàn phù hợp policy repository.
 
-Các lỗi phải có thông báo rõ:
+# REQUIRED REPORT
 
-* Ollama chưa chạy.
-* Model chưa tải.
-* Backend offline.
-* WebSocket mất kết nối.
-* PyAutoGUI không có quyền điều khiển.
-* Tool execution failed.
-* Planner trả JSON sai.
+Tạo:
 
-### 10.3. Log file
-
-Lưu log vào:
-
-```txt
-artifacts/logs/backend.log
-artifacts/runs/{session_id}/events.jsonl
+```text
+reports/agent_workspace_orchestration_phase2_runtime.md
 ```
 
-### 10.4. MVP release note
+Report phải evidence-first và có các phần:
 
-File:
+1. Final verdict.
+2. Git provenance.
+3. Starting and final HEAD.
+4. Branch and remote verification.
+5. Worktree before/after.
+6. File classification.
+7. Architecture before.
+8. Architecture after.
+9. Security implementation.
+10. Migration design.
+11. Route lock lifecycle.
+12. Supervisor and DAG integration.
+13. Run-plan integration.
+14. Idempotency.
+15. Partial persistence.
+16. Fake-Hermes E2E evidence.
+17. Black-box runtime evidence.
+18. Full backend results.
+19. Frontend results.
+20. Failures and unresolved issues.
+21. Remaining roadmap E–I.
+22. Production-readiness assessment.
+23. Exact acceptance gate table.
 
-```txt
-docs/mvp_release_note.md
+Không đưa secret vào report.
+
+# ACCEPTANCE GATES
+
+## Gate 1 — Provenance
+
+Pass khi:
+
+* Worktree ban đầu được ghi nhận.
+* Modified/untracked files được phân loại.
+* Không mất thay đổi.
+* Final commits có thể truy vết.
+* Remote SHA bằng local SHA.
+
+## Gate 2 — Security
+
+Pass khi:
+
+* Provider secret được encrypted at rest.
+* Không có plaintext fallback.
+* Không leak qua API/log/event/artifact.
+* Traversal guard pass.
+* Migration pass.
+
+## Gate 3 — Runtime wiring
+
+Pass khi public chat/message entry point thực sự gọi:
+
+```text
+supervisor
+→ DAG
+→ route lock
+→ run_plan
 ```
 
-Nội dung:
+Unit test gọi service trực tiếp không đủ.
 
-* Tính năng đã có.
-* Tính năng chưa có.
-* Known issues.
-* Cách chạy demo.
-* Cách báo lỗi.
+## Gate 4 — Persistence and concurrency
 
-## Đầu ra của phase
+Pass khi:
 
-* MVP release candidate.
-* Test suite xanh.
-* Demo ổn định.
-* Có release note.
+* Idempotency được enforce.
+* Duplicate request không duplicate run.
+* Partial state survive service recreation.
+* Concurrent turn bị serialize hoặc reject đúng policy.
+* Lock lifecycle deterministic.
 
-## Acceptance criteria cuối cùng cho MVP
+## Gate 5 — Fake-Hermes E2E
 
-MVP được xem là đạt khi toàn bộ tiêu chí sau pass:
+Pass khi sáu scenario bắt buộc pass qua public HTTP/WebSocket interface.
 
-### Core agent loop
+## Gate 6 — Black-box runtime
 
-* User nhập lệnh tự nhiên từ UI.
-* Planner local Qwen3 4B tạo workflow JSON.
-* Workflow được validate.
-* Workflow chạy sequential.
-* Step status stream realtime.
+Pass khi backend chạy trên socket thật và một orchestration flow hoàn tất hoặc cancel đúng.
 
-### Desktop control
+Nếu service không thể khởi động do lỗi code/config thuộc repository, gate fail.
 
-* Mở Notepad được.
-* Gõ text được.
-* Mở Edge với URL được.
-* Screenshot artifact tạo được.
+Nếu external real Hermes không khả dụng nhưng fake-Hermes socket runtime pass, ghi rõ giới hạn nhưng không tự động fail Gate 6.
 
-### User control
+## Gate 7 — Regression
 
-* Stop hoạt động.
-* Pause hoạt động.
-* Resume hoạt động.
-* Lỗi không làm app crash.
+Pass khi:
 
-### Local-first
+* Focused tests pass.
+* Full backend suite được chạy với DB isolation.
+* Không có regression nghiêm trọng trong live single-agent Hermes path.
+* Frontend typecheck/build hoặc focused tests pass nếu bị ảnh hưởng.
 
-* Backend chạy local.
-* SQLite lưu local.
-* Qwen chạy qua Ollama local.
-* Không gọi API cloud mặc định.
+## Gate 8 — Git completion
 
-### Safety
+Pass khi:
 
-* Tool whitelist hoạt động.
-* Không có shell command tự do.
-* Permission event hoạt động.
-* Audit log lưu tool call.
+* Commit được tạo.
+* Push thành công.
+* Remote SHA xác minh.
+* Worktree sạch, ngoại trừ thay đổi unrelated đã được ghi nhận từ đầu và cố ý giữ nguyên.
 
-### Persistence
+# VERDICT RULES
 
-* Session được lưu.
-* Message được lưu.
-* Workflow step được lưu.
-* Tool call được lưu.
-* Event được lưu.
+Chỉ dùng một trong các verdict sau:
 
-### Packaging/dev experience
+## `accepted_phase2_runtime_vertical_slice`
 
-* Có script chạy backend.
-* Có script chạy desktop.
-* Có healthcheck.
-* Có README MVP.
+Chỉ được dùng khi:
 
----
+* Gate 1–8 đều pass.
+* Fake-Hermes E2E pass.
+* Black-box socket runtime pass.
+* Changes committed and pushed.
+* Remote SHA verified.
 
-# Thứ tự ưu tiên thực hiện
+## `partial_phase2_runtime_vertical_slice`
 
-## Nhóm bắt buộc làm trước
+Dùng khi:
 
-1. Phase 0 — Scope + protocol.
-2. Phase 1 — Backend skeleton + WebSocket.
-3. Phase 2 — SQLite persistence.
-4. Phase 3 — PyAutoGUI Tool Executor.
-5. Phase 5 — Workflow Runner sequential.
+* Một phần wiring chạy.
+* Một hoặc nhiều core gate fail.
+* Không được gọi là accepted.
 
-Lý do: đây là lõi runtime. Nếu chưa có các phần này, frontend đẹp hay model mạnh cũng chưa tạo ra sản phẩm.
+## `blocked_environment_runtime`
 
-## Nhóm làm tiếp để thành agent thật
+Chỉ dùng khi code/tests cần thiết pass nhưng black-box runtime bị block bởi dependency môi trường thực sự nằm ngoài repository.
 
-6. Phase 4 — Qwen planner qua Ollama.
-7. Phase 6 — Tauri React UI.
-8. Phase 7 — Safe mode.
+Phải có evidence chứng minh đây không phải lỗi code/config của WindAgent.
 
-Lý do: khi runtime đã chắc, Qwen và UI mới có đất để chạy ổn định.
+## `rejected_security_gate`
 
-## Nhóm hoàn thiện MVP
+Dùng khi secret encryption/redaction/traversal chưa đạt.
 
-9. Phase 8 — GUI grounding stub.
-10. Phase 9 — Script/dev packaging.
-11. Phase 10 — Hardening/test/release candidate.
+## `rejected_integration_gate`
 
----
+Dùng khi modules vẫn chỉ standalone hoặc public live path chưa đi qua orchestration.
 
-# Worktree/task breakdown đề xuất
+## `rejected_regression_gate`
 
-## Backend
+Dùng khi implementation mới phá existing runtime hoặc full regression suite.
 
-```txt
-apps/backend/main.py
-apps/backend/routers/sessions.py
-apps/backend/routers/workflow.py
-apps/backend/routers/websocket.py
-apps/backend/routers/models.py
-apps/backend/services/event_bus.py
-apps/backend/services/session_service.py
-apps/backend/services/workflow_service.py
-apps/backend/services/workflow_runner.py
-apps/backend/services/tool_registry.py
-apps/backend/services/tool_executor.py
-apps/backend/services/model_client.py
-apps/backend/services/planner_service.py
-apps/backend/services/permission_service.py
-apps/backend/services/gui_grounding.py
-apps/backend/db/database.py
-apps/backend/db/models.py
-apps/backend/schemas/*.py
+Không được dùng verdict accepted nếu chỉ có 33 focused tests hoặc TestClient tests.
+
+# FINAL RESPONSE FORMAT
+
+Kết thúc bằng đúng cấu trúc sau:
+
+```text
+FINAL VERDICT:
+<one allowed verdict>
+
+PRIMARY CONCLUSION:
+<one concise paragraph>
+
+GIT:
+repository:
+starting branch:
+final branch:
+starting HEAD:
+final HEAD:
+commit(s):
+pushed:
+remote SHA == local:
+worktree clean:
+unrelated pre-existing changes preserved:
+
+PROVENANCE:
+modified files before:
+untracked files before:
+files classified:
+secret-bearing files found:
+data loss:
+checkpoint created:
+
+SECURITY:
+api_key encrypted at rest:
+encryption scheme/version:
+plaintext fallback:
+response masking:
+log redaction:
+migration:
+traversal guard:
+security gate:
+
+RUNTIME WIRING:
+public entry point:
+supervisor invoked:
+DAG persisted:
+route lock acquired:
+run_plan invoked:
+partial persistence:
+idempotency:
+recovery:
+runtime gate:
+
+E2E:
+fake Hermes:
+black-box socket runtime:
+real Hermes:
+successful orchestration:
+retryable failover:
+duplicate request:
+cancel:
+recovery simulation:
+secret redaction scenario:
+
+TESTS:
+security:
+migration:
+route lock:
+supervisor/DAG:
+run_plan:
+fake-Hermes E2E:
+focused backend:
+full backend:
+frontend focused:
+frontend build/typecheck:
+black-box:
+failed tests:
+
+ARTIFACTS:
+artifact directory:
+report:
+runtime trace:
+final manifest:
+
+CHANGED FILES:
+<complete list>
+
+REMAINING RISKS:
+<numbered, evidence-based list>
+
+NEXT ROADMAP:
+E worktree lifecycle
+F WebSocket multiplex and recovery
+G normalized frontend state
+H browser/inspector/i18n/dead UI cleanup
+I chaos and production hardening
 ```
 
-## Frontend
+# EXECUTION PRIORITY
 
-```txt
-apps/desktop/src/components/chat/ChatPanel.tsx
-apps/desktop/src/components/chat/MessageList.tsx
-apps/desktop/src/components/chat/ChatInput.tsx
-apps/desktop/src/components/workflow/WorkflowPanel.tsx
-apps/desktop/src/components/workflow/WorkflowStepItem.tsx
-apps/desktop/src/components/controls/RunControls.tsx
-apps/desktop/src/hooks/useSessionEvents.ts
-apps/desktop/src/api/client.ts
-apps/desktop/src/state/sessionStore.ts
+Thứ tự ưu tiên tuyệt đối:
+
+```text
+Preserve worktree
+→ remove plaintext secret risk
+→ migrations/path safety
+→ chat-supervisor-DAG-route-lock-run_plan vertical slice
+→ idempotency/partial persistence
+→ fake-Hermes E2E
+→ black-box runtime
+→ regression
+→ commit/push/report
 ```
 
-## Docs/scripts
+Không ưu tiên UI, code cleanup hoặc architecture redesign trước core vertical slice.
 
-```txt
-docs/mvp_scope.md
-docs/event_protocol.md
-docs/api_contract.md
-docs/safety_policy.md
-docs/mvp_release_note.md
-scripts/dev_backend.ps1
-scripts/dev_desktop.ps1
-scripts/healthcheck.ps1
-```
-
----
-
-# Backlog sau MVP
-
-Sau khi MVP pass, mới mở các phase nâng cấp:
-
-## Post-MVP P1 — Workflow editor đầy đủ
-
-* Reorder step bằng drag/drop.
-* Toggle step.
-* Edit params.
-* Save template.
-* Load template.
-
-## Post-MVP P2 — Model manager UI
-
-* Add local model.
-* Add API model.
-* Assign role.
-* Test latency.
-* Fallback model.
-
-## Post-MVP P3 — GUI Actor thật
-
-* Qwen2.5-VL GUI Actor.
-* Screenshot → element target → coordinate.
-* Highlight trước khi click.
-* Confirm nếu confidence thấp.
-
-## Post-MVP P4 — Playwright browser automation
-
-* Open Edge controlled context.
-* DOM-based click.
-* Form filling.
-* Download file.
-* Scrape table.
-
-## Post-MVP P5 — Plugin/tool system
-
-* Custom Python tool.
-* Tool permission manifest.
-* Sandbox.
-* Import/export workflow.
-
----
-
-# Kết luận
-
-Để đạt MVP nhanh và chắc, không nên triển khai ngay toàn bộ kiến trúc lớn. Trọng tâm phải là một “vertical slice” hoàn chỉnh:
-
-**Tauri UI → FastAPI backend → Qwen planner → workflow runner → PyAutoGUI executor → streaming events → SQLite log → safe control.**
-
-Khi vertical slice này chạy ổn với demo Notepad và Edge, sản phẩm đã chứng minh được năng lực cốt lõi của desktop AI computer-use agent local-first. Các phần như GUI-Actor vision, Playwright, model manager UI, template workflow và plugin system nên được đưa vào sau MVP để tránh làm chậm bản đầu tiên.
+Mục tiêu của lần thực hiện này không phải “có thêm nhiều module”, mà là chứng minh bằng evidence rằng các module orchestration hiện có đã được nối vào một live request path hoạt động end-to-end.

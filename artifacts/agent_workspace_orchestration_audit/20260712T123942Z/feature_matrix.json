@@ -1,0 +1,51 @@
+{
+  "legend": "IMPLEMENTED | PARTIAL | STUB_OR_MOCK | ABSENT | BROKEN | UNVERIFIED_RUNTIME",
+  "matrix": [
+    {"id":1,"req":"User only chats with one Hermes Orchestrator","status":"PARTIAL","evidence":"MultiAgentWorkspace col1 Orchestrator Chat (MultiAgentWorkspace.tsx:333-387); useOrchestratorChat sendMessage(conversationId). But orchestrator has no tool schema to spawn DAG; dead AgentWorkspace.tsx lets user pick Coder/Planner directly (violates).","conf":0.85,"sev":"HIGH"},
+    {"id":2,"req":"Orchestrator creates parent task + DAG subtasks from NL","status":"ABSENT","evidence":"spawn_subagent/ensure_orchestrator/ParentTaskORM()/TaskPlanORM() only in tests. No router calls. Live path chat->start_run only.","conf":0.9,"sev":"HIGH"},
+    {"id":3,"req":"Each sub-agent independent Hermes session/run","status":"PARTIAL","evidence":"AgentInstanceORM + AgentRunORM schema supports N:N. supervisor.spawn_subagent persists both (supervisor.py:79-173). Unwired live. session_bridge assumes 1 AgentSession per windagent session.","conf":0.8,"sev":"HIGH"},
+    {"id":4,"req":"Parallel + dependency + fan-out/fan-in","status":"PARTIAL","evidence":"dag_scheduler.py real DAG: 3-color cycle DFS, dep resolve, asyncio fan-out, fan-in gate, retry/timeout. test_phase5 passes. Unwired (no run_plan caller).","conf":0.85,"sev":"HIGH"},
+    {"id":5,"req":"Coding agent own Git worktree","status":"PARTIAL","evidence":"worktree_service.create coding-only, branch windagent/<conv>/<task>/<inst>, cwd=worktree. test_phase6 passes. Unwired (spawn_subagent not live).","conf":0.8,"sev":"MEDIUM"},
+    {"id":6,"req":"Research/browser no worktree required","status":"IMPLEMENTED","evidence":"worktree_service.create returns None for non-coding agent_type (CODING_AGENT_TYPES).","conf":0.85,"sev":"LOW"},
+    {"id":7,"req":"Model pinned 3 tiers (conversation/parent task/agent session)","status":"PARTIAL","evidence":"RouteLockORM.scope_type accepts 3 (models.py:327). AgentInstanceORM has route_lock_id. No live acquire per turn; session_bridge passes role string (131,208).","conf":0.8,"sev":"HIGH"},
+    {"id":8,"req":"Router only navigates provider, keeps canonical model","status":"PARTIAL","evidence":"Canonical/provider split (models.py:282-318); select_binding same-canonical only (route_lock_service.py:178-221). Unwired live.","conf":0.8,"sev":"HIGH"},
+    {"id":9,"req":"429/provider failover to same canonical model","status":"PARTIAL","evidence":"acquire_lock raises on different canonical (route_lock_service.py:138-143); classify_error; should_switch_provider; cooldown. test_phase3 passes. Unwired live.","conf":0.8,"sev":"HIGH"},
+    {"id":10,"req":"Partial stream kept for audit, hidden from transcript","status":"BROKEN","evidence":"PartialArtifactORM + save_partial_artifact exist default audit_only, but session_bridge._stream_run has 0 calls; crash emits generic error only.","conf":0.8,"sev":"HIGH"},
+    {"id":11,"req":"Tool call idempotency (retry no double side-effect)","status":"PARTIAL","evidence":"ToolCallORM.idempotency_key column (models.py:128). 0 writes/reads in live code. No dedup/suppression.","conf":0.8,"sev":"HIGH"},
+    {"id":12,"req":"Task plan editable, versioned, cycle-checked","status":"PARTIAL","evidence":"conversations.py CRUD + optimistic lock via plan.version 409 + cycle detect on edge add. UI editor. Version = single counter, not immutable snapshots. No live scheduler coord.","conf":0.8,"sev":"MEDIUM"},
+    {"id":13,"req":"Default permission profile Standard","status":"IMPLEMENTED","evidence":"permission_profile.py PROFILES default Standard on unknown (74). AgentInstanceORM.permission_profile default Standard (models.py:473). Applied per call (session_bridge.py:296-320).","conf":0.8,"sev":"LOW"},
+    {"id":14,"req":"Conversation/task/agent/route-lock/events recoverable after restart","status":"PARTIAL","evidence":"recovery.recover() rebuilds agent_runs (running->interrupted) + events. NOT: scheduler DAG, route locks, worktrees, pending approvals.","conf":0.78,"sev":"HIGH"},
+    {"id":15,"req":"WS per conversation, multiplex all sub-agents","status":"ABSENT","evidence":"websocket.py /ws/{session_id} per-session. Frontend opens N sockets per sub-agent (multiAgentStore.syncWebSockets:165-252).","conf":0.85,"sev":"HIGH"},
+    {"id":16,"req":"WS sequence, reconnect, replay","status":"PARTIAL","evidence":"event_bus persist-then-broadcast (58-95); replay_after (websocket.py:75-88); client dedup by seq (multiAgentStore:127). Fixed 1500ms backoff not exponential. Per-session seq not per-conversation.","conf":0.8,"sev":"HIGH"},
+    {"id":17,"req":"3-column UI (Orchestrator / Sub-agents / Current Task)","status":"PARTIAL","evidence":"3 cols present (MultiAgentWorkspace:333,389,813) but English labels not Vietnamese; Current Task = Task Graph DAG.","conf":0.8,"sev":"MEDIUM"},
+    {"id":18,"req":"Terminal + Browser/App Preview per selected sub-agent","status":"PARTIAL","evidence":"Terminal real (terminal_output WS). Browser hardcoded mock Awesome App (MultiAgentWorkspace:899-1003) not per-agent.","conf":0.85,"sev":"MEDIUM"},
+    {"id":19,"req":"Inspector shows state/model/provider/task/tool/permission per sub-agent","status":"PARTIAL","evidence":"Inspector switches with selected (276) but shows only Status + Run (853-867). Missing model/provider/task/permission/tool.","conf":0.8,"sev":"MEDIUM"},
+    {"id":20,"req":"No mock task / hardcoded progress / terminal from chat","status":"BROKEN","evidence":"Browser mock (Awesome App). App.tsx random metrics fallback (135-157). Dead AgentWorkspace.tsx builds terminal from chat split (35-37). Live MultiAgentWorkspace terminal real.","conf":0.8,"sev":"MEDIUM"}
+  ],
+  "ui_claims_checked": {
+    "edit_retry_pause_resume_backend_contract":"EXISTS conversations.py:447-557 + client.ts:406-419. But DAG scheduler unwired -> buttons flag node status only.",
+    "status_card_hardcoded":"FALSE. Card reads DB fields (MultiAgentWorkspace:429-437). Only chat header 'Active' badge static (342).",
+    "agent_selector_switches_session":"FALSE live (select()). TRUE only dead AgentWorkspace.tsx unmounted (dropdown=agent_type->createSession). Delete dead file."
+  },
+  "security_findings": [
+    {"id":"S1","title":"api_key stored plaintext","sev":"HIGH","evidence":"models.py:269 provider.api_key=payload.api_key; column models.py:163. No encryption/redaction."},
+    {"id":"S2","title":"raw command in arguments_redacted column","sev":"MEDIUM","evidence":"session_bridge.py:377 arguments_redacted=str(event.get('command')); no scrub. UI prints raw (1038-1056)."},
+    {"id":"S3","title":"workspace_root path traversal unsanitized","sev":"MEDIUM","evidence":"sessions.py payload.workspace_root -> AgentSessionORM + bridge.create_session; no is_relative_to check."},
+    {"id":"S4","title":"permission bypass","sev":"LOW","evidence":"classify_command per-call; blind approval.request -> pending (304-305). No silent allow."},
+    {"id":"S5","title":"command injection","sev":"LOW","evidence":"classify_command inspects only; never shells out."}
+  ],
+  "concurrency_findings": [
+    {"id":"C1","title":"stop vs completion TOCTOU","sev":"MEDIUM","evidence":"stop_run sets cancelled (283-292); _stream_run completion overwrite (409-428) no row version."},
+    {"id":"C2","title":"two events same sequence","sev":"LOW","evidence":"event_bus single event-loop seq assign (66-75); client dedup."},
+    {"id":"C3","title":"two tasks same agent + single worktree cwd","sev":"MEDIUM","evidence":"dag_scheduler launches all ready; concurrency_group unused; one worktree cwd collision."},
+    {"id":"C4","title":"two runs update AgentSessionORM","sev":"LOW","evidence":"1:1 windagent_session_id scalar_one_or_none; sub-agent path uses AgentRunORM per run_id."},
+    {"id":"C5","title":"SQLite lock under fan-out","sev":"MEDIUM","evidence":"DB_URL env main.py:67; no WAL set. N writers contend. Unverified runtime."},
+    {"id":"C6","title":"unbounded queue","sev":"LOW","evidence":"event_bus queue maxsize=256 bounded."},
+    {"id":"C7","title":"dropped WS event","sev":"LOW","evidence":"drop on full; persisted -> replay_after recovers."},
+    {"id":"C8","title":"orphan Hermes run after restart","sev":"MEDIUM","evidence":"recovery.recover reattached if Hermes alive, never cancels; dead->interrupted only."},
+    {"id":"C9","title":"orphan worktree+branch after cancel","sev":"MEDIUM","evidence":"cancel_task calls stop_subagent only; no worktree_service.remove (test_phase6 removes explicitly)."},
+    {"id":"C10","title":"stale provider cooldown","sev":"NOT_VERIFIABLE","evidence":"route_lock cooldown exists unwired; no live run."},
+    {"id":"C11","title":"retry storm","sev":"MEDIUM","evidence":"dag_scheduler retry no backoff cap/jitter; route_lock unwired."}
+  ],
+  "test_results": {"command":"pytest test_phase2..9 -q","passed":33,"failed":0,"warning":1,"exit":0,"time_s":"5.92","runtime_verified":false}
+}

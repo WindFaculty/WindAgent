@@ -46,7 +46,7 @@ async def _reset_db_file(url: str) -> None:
 
 @pytest.mark.asyncio
 async def test_create_session_writes_to_chat_sessions_table(client, app_state, db):
-    sess = client.post("/sessions").json()
+    sess = client.post("/api/v1/sessions").json()
     sid = sess["session_id"]
 
     async with db.session() as s:
@@ -60,9 +60,9 @@ async def test_create_session_writes_to_chat_sessions_table(client, app_state, d
 
 @pytest.mark.asyncio
 async def test_update_status_writes_to_db(client, app_state, db):
-    sid = client.post("/sessions").json()["session_id"]
+    sid = client.post("/api/v1/sessions").json()["session_id"]
     # Drive a message to flip status -> planning -> pending -> running -> completed
-    client.post(f"/sessions/{sid}/messages", json={"content": "Mở Notepad và gõ Hi"})
+    client.post(f"/api/v1/sessions/{sid}/messages", json={"content": "Mở Notepad và gõ Hi"})
 
     async with db.session() as s:
         row = await s.get(ChatSessionORM, sid)
@@ -77,9 +77,9 @@ async def test_update_status_writes_to_db(client, app_state, db):
 
 @pytest.mark.asyncio
 async def test_user_message_persisted(client, app_state, db):
-    sid = client.post("/sessions").json()["session_id"]
+    sid = client.post("/api/v1/sessions").json()["session_id"]
     resp = client.post(
-        f"/sessions/{sid}/messages",
+        f"/api/v1/sessions/{sid}/messages",
         json={"content": "Mở Notepad và gõ Hello"},
     )
     body = resp.json()
@@ -97,9 +97,9 @@ async def test_user_message_persisted(client, app_state, db):
 
 @pytest.mark.asyncio
 async def test_workflow_and_steps_persisted(client, app_state, db):
-    sid = client.post("/sessions").json()["session_id"]
+    sid = client.post("/api/v1/sessions").json()["session_id"]
     body = client.post(
-        f"/sessions/{sid}/messages",
+        f"/api/v1/sessions/{sid}/messages",
         json={"content": "Mở Notepad và gõ Hello from local AI agent."},
     ).json()
     wf_id = body["workflow_id"]
@@ -134,9 +134,9 @@ async def test_workflow_and_steps_persisted(client, app_state, db):
 
 @pytest.mark.asyncio
 async def test_events_mirrored_into_execution_events(client, app_state, db):
-    sid = client.post("/sessions").json()["session_id"]
+    sid = client.post("/api/v1/sessions").json()["session_id"]
     client.post(
-        f"/sessions/{sid}/messages",
+        f"/api/v1/sessions/{sid}/messages",
         json={"content": "Mở Notepad và gõ Hi"},
     )
 
@@ -163,9 +163,9 @@ async def test_events_mirrored_into_execution_events(client, app_state, db):
 
 @pytest.mark.asyncio
 async def test_pause_emits_user_paused_event_in_db(client, app_state, db):
-    sid = client.post("/sessions").json()["session_id"]
-    client.post(f"/sessions/{sid}/messages", json={"content": "Mở Notepad và gõ Hi"})
-    client.post(f"/sessions/{sid}/pause")
+    sid = client.post("/api/v1/sessions").json()["session_id"]
+    client.post(f"/api/v1/sessions/{sid}/messages", json={"content": "Mở Notepad và gõ Hi"})
+    client.post(f"/api/v1/sessions/{sid}/pause")
 
     async with db.session() as s:
         row = (await s.execute(
@@ -188,9 +188,9 @@ async def test_data_survives_app_restart(client, app_state, db):
     """Create a session + message + workflow, then re-open the same DB
     file and verify the rows are still there."""
     # Use the live fixture DB (WINDAGENT_DB_URL env var).
-    sid = client.post("/sessions").json()["session_id"]
+    sid = client.post("/api/v1/sessions").json()["session_id"]
     msg = client.post(
-        f"/sessions/{sid}/messages",
+        f"/api/v1/sessions/{sid}/messages",
         json={"content": "Mở Notepad và gõ Restart test"},
     ).json()
     wf_id = msg["workflow_id"]

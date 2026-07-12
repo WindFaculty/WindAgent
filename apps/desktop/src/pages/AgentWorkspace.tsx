@@ -1,51 +1,44 @@
-import React, { useRef, useEffect } from "react";
-
-interface ChecklistState {
-  repoDiscovered: "success" | "pending" | "running";
-  scanningStructure: "success" | "pending" | "running";
-  runningTests: "success" | "pending" | "running";
-  summarizingResults: "success" | "pending" | "running";
-  summarizingProgress: number;
-}
-
-interface CurrentTaskStep {
-  name: string;
-  status: "success" | "pending" | "running";
-  duration: string;
-}
+import { useRef, useEffect, useState } from "react";
+import { useAgentSession } from "../state/useAgentSession";
 
 interface AgentWorkspaceProps {
-  chatMessages: Array<{
-    sender: "user" | "assistant";
-    time: string;
-    text: string;
-    checklist?: ChecklistState;
-  }>;
-  currentTaskSteps: CurrentTaskStep[];
-  terminalLines: string[];
-  setTerminalLines: React.Dispatch<React.SetStateAction<string[]>>;
+  selectedAgentId: string;
+  setSelectedAgentId: (id: string) => void;
   browserUrl: string;
   setBrowserUrl: (url: string) => void;
   browserTab: string;
   setBrowserTab: (tab: string) => void;
-  chatInput: string;
-  setChatInput: (val: string) => void;
-  handleSend: (e: React.FormEvent) => void;
 }
 
 export function AgentWorkspace({
-  chatMessages,
-  currentTaskSteps,
-  terminalLines,
-  setTerminalLines,
+  selectedAgentId,
+  setSelectedAgentId,
   browserUrl,
   setBrowserUrl,
   browserTab,
   setBrowserTab,
-  chatInput,
-  setChatInput,
-  handleSend,
 }: AgentWorkspaceProps) {
+  const { state, handleSend, resolvePermission } = useAgentSession(selectedAgentId);
+
+  // Derive view models from the store (single source of truth).
+  const chatMessages = state.messages.map((m) => ({
+    sender: m.sender,
+    time: new Date(m.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+    text: m.content,
+  }));
+  const currentTaskSteps = state.toolCalls.map((c) => ({
+    name: c.toolName,
+    status: (c.status === "success" ? "success" : c.status === "failed" ? "pending" : "running") as
+      | "success" | "pending" | "running",
+    duration: c.durationMs ? `${(c.durationMs / 1000).toFixed(1)}s` : "--:--",
+  }));
+  const terminalLines = state.messages.flatMap((m) =>
+    m.content.split("\n").filter(Boolean),
+  );
+  const permissionQueue = state.permissionQueue;
+
+  const [chatInput, setChatInput] = useState<string>("");
+
   const terminalEndRef = useRef<HTMLDivElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
@@ -63,17 +56,37 @@ export function AgentWorkspace({
       <div className="workspace-grid">
         {/* Top Left Panel: Agent Chat */}
         <section className="dashboard-panel">
-          <header className="panel-header">
+          <header className="panel-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div className="panel-title">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
               </svg>
               Agent Workspace / Chat
             </div>
-            <span className="live-indicator">
-              <span className="live-dot" />
-              LIVE
-            </span>
+            
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '0.72rem', color: 'var(--text-dim)' }}>Runtime:</span>
+              <select
+                value={selectedAgentId}
+                onChange={(e) => setSelectedAgentId(e.target.value)}
+                style={{
+                  backgroundColor: 'rgba(30, 41, 59, 0.6)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  color: 'var(--text-main)',
+                  borderRadius: '4px',
+                  fontSize: '0.72rem',
+                  padding: '2px 6px',
+                  outline: 'none',
+                  cursor: 'pointer',
+                }}
+              >
+                <option value="coder">Coder (Hermes)</option>
+                <option value="planner">Planner (Hermes)</option>
+                <option value="researcher">Researcher (Hermes)</option>
+                <option value="browser">Browser Agent (Hermes)</option>
+                <option value="gui">GUI Agent (Native)</option>
+              </select>
+            </div>
           </header>
           <div className="panel-body chat-container">
             {chatMessages.map((msg, idx) => (
@@ -89,96 +102,6 @@ export function AgentWorkspace({
                 </div>
                 <div className="bubble-content" style={{ whiteSpace: "pre-line" }}>
                   {msg.text}
-
-                  {/* Checklist structure */}
-                  {msg.checklist && (
-                    <div className="chat-checklist">
-                      <div className="checklist-item">
-                        <div className="checklist-left">
-                          {msg.checklist.repoDiscovered === "success" ? (
-                            <svg className="check-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
-                            </svg>
-                          ) : (
-                            <div className="check-spinner" />
-                          )}
-                          Repository discovered
-                        </div>
-                        <span className="checklist-time">1.2s</span>
-                      </div>
-                      <div className="checklist-item">
-                        <div className="checklist-left">
-                          {msg.checklist.scanningStructure === "success" ? (
-                            <svg className="check-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
-                            </svg>
-                          ) : msg.checklist.scanningStructure === "running" ? (
-                            <div className="check-spinner" />
-                          ) : (
-                            <svg className="check-icon pending" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                          )}
-                          Scanning file structure
-                        </div>
-                        <span className="checklist-time">
-                          {msg.checklist.scanningStructure === "pending" ? "--" : "2.1s"}
-                        </span>
-                      </div>
-                      <div className="checklist-item">
-                        <div className="checklist-left">
-                          {msg.checklist.runningTests === "success" ? (
-                            <svg className="check-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
-                            </svg>
-                          ) : msg.checklist.runningTests === "running" ? (
-                            <div className="check-spinner" />
-                          ) : (
-                            <svg className="check-icon pending" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                          )}
-                          Running tests
-                        </div>
-                        <span className="checklist-time">
-                          {msg.checklist.runningTests === "pending" ? "--" : "4.8s"}
-                        </span>
-                      </div>
-                      <div className="checklist-item">
-                        <div className="checklist-left">
-                          {msg.checklist.summarizingResults === "success" ? (
-                            <svg className="check-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
-                            </svg>
-                          ) : msg.checklist.summarizingResults === "running" ? (
-                            <div className="check-spinner" />
-                          ) : (
-                            <svg className="check-icon pending" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                          )}
-                          Summarizing results
-                        </div>
-                        <span className="checklist-time">
-                          {msg.checklist.summarizingResults === "running"
-                            ? `Streaming... ${msg.checklist.summarizingProgress}%`
-                            : msg.checklist.summarizingResults === "success"
-                            ? "100%"
-                            : "--"}
-                        </span>
-                      </div>
-
-                      {/* Blue Glowing Progress bar */}
-                      <div className="chat-progress-container">
-                        <div className="progress-bar-bg">
-                          <div
-                            className="progress-bar-fill"
-                            style={{ width: `${msg.checklist.summarizingProgress}%` }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
             ))}
@@ -279,7 +202,9 @@ export function AgentWorkspace({
               </button>
               <button
                 className="terminal-control-btn"
-                onClick={() => setTerminalLines([])}
+                onClick={() => {
+                  // ponytail: terminal view derived from messages; no-op clear
+                }}
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -344,7 +269,7 @@ export function AgentWorkspace({
               <button
                 className="browser-nav-btn"
                 onClick={() => {
-                  setTerminalLines((prev) => [...prev, "Reloading App Preview viewport..."]);
+                  // ponytail: reload is preview-only; terminal derives from messages
                 }}
               >
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -555,8 +480,79 @@ export function AgentWorkspace({
         </section>
       </div>
 
+      {/* Floating Permission Gating Overlay */}
+      {permissionQueue && permissionQueue.length > 0 && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: '80px',
+            right: '24px',
+            width: '360px',
+            backgroundColor: 'rgba(30, 41, 59, 0.95)',
+            backdropFilter: 'blur(16px)',
+            border: '1px solid rgba(255, 255, 255, 0.15)',
+            borderRadius: '12px',
+            padding: '16px',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 10px 10px -5px rgba(0, 0, 0, 0.6)',
+            zIndex: 1000,
+            animation: 'slideUp 0.3s ease',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+            <svg width="20" height="20" fill="none" stroke="#f59e0b" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <span style={{ fontWeight: '600', color: 'var(--text-main)', fontSize: '0.9rem' }}>Permission Required</span>
+          </div>
+          <div style={{ fontSize: '0.8rem', color: 'var(--text-dim)', marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <div>The agent is requesting permission to execute:</div>
+            <div style={{ color: 'var(--text-main)', fontWeight: 'bold', fontSize: '0.85rem' }}>{String(permissionQueue[0].tool_name)}</div>
+            
+            {permissionQueue[0].params && (permissionQueue[0].params as Record<string, unknown>).command ? (
+              <pre
+                style={{
+                  backgroundColor: 'rgba(0,0,0,0.4)',
+                  padding: '8px',
+                  borderRadius: '6px',
+                  fontFamily: 'monospace',
+                  fontSize: '0.72rem',
+                  color: '#34d399',
+                  overflowX: 'auto',
+                  whiteSpace: 'pre-wrap',
+                  maxHeight: '100px',
+                  border: '1px solid rgba(255,255,255,0.05)',
+                  margin: '4px 0',
+                }}
+              >
+                {String((permissionQueue[0].params as Record<string, unknown>).command)}
+              </pre>
+            ) : null}
+            
+            <div style={{ marginTop: '4px', fontSize: '0.74rem' }}>
+              Risk Level: <span style={{ color: permissionQueue[0].risk_level === 'high' ? '#ef4444' : '#f59e0b', fontWeight: '600' }}>{String(permissionQueue[0].risk_level).toUpperCase()}</span>
+            </div>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+            <button
+              className="role-btn"
+              style={{ padding: '6px 12px', fontSize: '0.75rem', height: 'auto', backgroundColor: 'rgba(255,255,255,0.05)', color: 'var(--text-main)' }}
+              onClick={() => resolvePermission(permissionQueue[0].request_id, "denied")}
+            >
+              Deny
+            </button>
+            <button
+              className="chat-send-btn"
+              style={{ padding: '6px 16px', fontSize: '0.75rem', height: 'auto', background: 'linear-gradient(135deg, #f59e0b, #d97706)', border: 'none', color: '#fff' }}
+              onClick={() => resolvePermission(permissionQueue[0].request_id, "granted")}
+            >
+              Approve
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Interactive Bottom Chat Input inside workspace */}
-      <form className="chat-input-bar" onSubmit={handleSend}>
+      <form className="chat-input-bar" onSubmit={(e) => { e.preventDefault(); handleSend(chatInput); setChatInput(""); }}>
         <input
           type="text"
           className="chat-input-field"

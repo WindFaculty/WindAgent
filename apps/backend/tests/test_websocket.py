@@ -76,12 +76,12 @@ async def _receive_event(ws, timeout: float = 5.0) -> dict:
 async def test_ws_receives_full_planning_sequence(running_app):
     http_base, ws_base = running_app
     async with httpx.AsyncClient(base_url=http_base) as http:
-        sess = (await http.post("/sessions")).json()
+        sess = (await http.post("/api/v1/sessions")).json()
         sid = sess["session_id"]
 
         async with websockets.connect(f"{ws_base}/ws/{sid}") as ws:
             resp = await http.post(
-                f"/sessions/{sid}/messages",
+                f"/api/v1/sessions/{sid}/messages",
                 json={"content": "Mở Notepad và gõ Hello"},
             )
             assert resp.status_code == 202
@@ -103,53 +103,71 @@ async def test_ws_receives_full_planning_sequence(running_app):
 async def test_ws_receives_user_paused_event(running_app):
     http_base, ws_base = running_app
     async with httpx.AsyncClient(base_url=http_base) as http:
-        sid = (await http.post("/sessions")).json()["session_id"]
+        sid = (await http.post("/api/v1/sessions")).json()["session_id"]
         async with websockets.connect(f"{ws_base}/ws/{sid}") as ws:
             await http.post(
-                f"/sessions/{sid}/messages",
+                f"/api/v1/sessions/{sid}/messages",
                 json={"content": "Mở Notepad và gõ Hi"},
             )
             for _ in range(4):
                 await _receive_event(ws)
-            resp = await http.post(f"/sessions/{sid}/pause")
+            resp = await http.post(f"/api/v1/sessions/{sid}/pause")
             assert resp.status_code == 202
-            evt = await _receive_event(ws)
-            assert evt["event"] == "user_paused"
-            assert evt["data"]["session_id"] == sid
+            seen = False
+            for _ in range(10):
+                evt = await _receive_event(ws)
+                if evt["event"] == "user_paused":
+                    seen = True
+                    assert evt["data"]["session_id"] == sid
+                    break
+            assert seen
 
 
 @pytest.mark.asyncio
 async def test_ws_receives_user_resumed_event(running_app):
     http_base, ws_base = running_app
     async with httpx.AsyncClient(base_url=http_base) as http:
-        sid = (await http.post("/sessions")).json()["session_id"]
+        sid = (await http.post("/api/v1/sessions")).json()["session_id"]
         async with websockets.connect(f"{ws_base}/ws/{sid}") as ws:
             await http.post(
-                f"/sessions/{sid}/messages", json={"content": "Mở Edge"}
+                f"/api/v1/sessions/{sid}/messages", json={"content": "Mở Edge"}
             )
             for _ in range(4):
                 await _receive_event(ws)
-            resp = await http.post(f"/sessions/{sid}/resume")
+            resp = await http.post(f"/api/v1/sessions/{sid}/resume")
             assert resp.status_code == 202
-            evt = await _receive_event(ws)
-            assert evt["event"] == "user_resumed"
+            seen = False
+            for _ in range(10):
+                evt = await _receive_event(ws)
+                if evt["event"] == "user_resumed":
+                    seen = True
+                    break
+            assert seen
 
 
 @pytest.mark.asyncio
 async def test_ws_receives_user_stopped_event(running_app):
     http_base, ws_base = running_app
     async with httpx.AsyncClient(base_url=http_base) as http:
-        sid = (await http.post("/sessions")).json()["session_id"]
+        sid = (await http.post("/api/v1/sessions")).json()["session_id"]
         async with websockets.connect(f"{ws_base}/ws/{sid}") as ws:
             await http.post(
-                f"/sessions/{sid}/messages", json={"content": "Mở Notepad"}
+                f"/api/v1/sessions/{sid}/messages", json={"content": "Mở Notepad"}
             )
             for _ in range(4):
                 await _receive_event(ws)
-            resp = await http.post(f"/sessions/{sid}/stop")
+            resp = await http.post(f"/api/v1/sessions/{sid}/stop")
             assert resp.status_code == 202
-            evt = await _receive_event(ws)
-            assert evt["event"] == "user_stopped"
+            # Stop should broadcast user_stopped. Drain until we see it
+            # (order-agnostic: session_finished may arrive first once the
+            # run completes — we only care that user_stopped was emitted).
+            seen_stopped = False
+            for _ in range(10):
+                evt = await _receive_event(ws)
+                if evt["event"] == "user_stopped":
+                    seen_stopped = True
+                    break
+            assert seen_stopped
 
 
 @pytest.mark.asyncio

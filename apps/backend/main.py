@@ -21,10 +21,10 @@ import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 
 from db.database import Database
-from routers import agent_s3, health, models, permissions, sessions, tools, workflow, websocket
+from routers import agent_s3, health, models, permissions, sessions, tools, workflow, websocket, agents, hermes, chat_completions, worktrees, events, conversations
 from services.agent_s3_adapter import AgentS3Adapter
 from services.agent_s3_config import (
     AgentS3Config,
@@ -48,6 +48,11 @@ from services.session_service import SessionService
 from services.tool_executor import ToolExecutor
 from services.workflow_runner import WorkflowRunner
 from services.workflow_service import WorkflowService
+from services.hermes import load_hermes_config
+from services.hermes.runtime_manager import HermesRuntimeManager
+from services.hermes.api_client import HermesApiClient
+from services.hermes.session_bridge import HermesSessionBridge
+from services.agent_registry_service import AgentRegistryService
 
 
 logging.basicConfig(
@@ -215,6 +220,51 @@ async def lifespan(app: FastAPI):
     model_service = ModelService(db=db, ollama_client=model_client)
     await model_service.init_database_seeds()
 
+    # Phase 3: route lock service (canonical model pinning + same-model failover).
+    from services.route_lock_service import RouteLockService
+    route_lock_service = RouteLockService(db)
+
+    # Seeding Agent registry
+    agent_registry = AgentRegistryService(db)
+    await agent_registry.init_database_seeds()
+
+    # Hermes configuration and service mapping
+    hermes_config = load_hermes_config()
+    hermes_runtime_manager = HermesRuntimeManager(hermes_config, event_bus)
+    hermes_api_client = HermesApiClient(hermes_config)
+    hermes_session_bridge = HermesSessionBridge(db, hermes_api_client, event_bus)
+
+    # Phase 5: DAG scheduler (orchestration engine).
+    from services.dag_scheduler import DAGScheduler
+    dag_scheduler = DAGScheduler(db, event_bus=event_bus)
+
+    # Phase 4: multi-session supervisor (orchestrator + sub-agents).
+    from services.hermes.supervisor import HermesSupervisor
+    hermes_supervisor = HermesSupervisor(db, hermes_session_bridge)
+
+    # Phase 6: per-agent Git worktree isolation + permission profile.
+    from services.worktree_service import WorktreeService
+    # ponytail: repo root = first ancestor with .git; backend runs from
+    # apps/backend, so repo root is two levels up. Fall back to cwd.
+    import os as _os
+    _repo_root = _os.path.dirname(_os.path.dirname(_os.path.abspath(".")))
+    if not _os.path.isdir(_os.path.join(_repo_root, ".git")):
+        _repo_root = _os.path.abspath(".")
+    worktree_service = WorktreeService(db, repo_root=_repo_root)
+    hermes_supervisor = HermesSupervisor(
+        db, hermes_session_bridge,
+        event_bus=event_bus,
+        worktree_service=worktree_service,
+    )
+
+    # Phase 7: durable event replay + restart recovery.
+    from services.recovery_service import RecoveryManager
+    recovery_manager = RecoveryManager(db, hermes_api_client=hermes_api_client)
+    event_bus.set_seq_seed(recovery_manager.seed_seq)
+
+    # Start the supervisor
+    await hermes_runtime_manager.start()
+
     app.state.event_bus = event_bus
     app.state.db = db
     app.state.gui = gui
@@ -227,6 +277,22 @@ async def lifespan(app: FastAPI):
     app.state.workflow_service = workflow_service
     app.state.workflow_runner = runner
     app.state.model_service = model_service
+    app.state.route_lock_service = route_lock_service
+    app.state.agent_registry_service = agent_registry
+    app.state.hermes_config = hermes_config
+    app.state.hermes_runtime_manager = hermes_runtime_manager
+    app.state.hermes_api_client = hermes_api_client
+    app.state.hermes_session_bridge = hermes_session_bridge
+    app.state.hermes_supervisor = hermes_supervisor
+    app.state.dag_scheduler = dag_scheduler
+    app.state.worktree_service = worktree_service
+    app.state.recovery_manager = recovery_manager
+
+    # Phase 7 gate: on boot, reconcile any runs left in-flight by a crash.
+    try:
+        await recovery_manager.recover()
+    except Exception:  # noqa: BLE001
+        logging.getLogger(__name__).exception("startup recovery failed")
 
     # ---------- Optional: Agent-S3 integration ----------
     # The backend always loads the Agent-S3 config (cheap; env reads
@@ -297,6 +363,11 @@ async def lifespan(app: FastAPI):
         yield
     finally:
         log.info("WindAgent backend shutting down")
+        # Stop supervised Hermes process
+        try:
+            await hermes_runtime_manager.stop()
+        except Exception:
+            log.exception("error stopping hermes supervisor")
         # Close JSONL handles first so any final in-flight events are
         # flushed before we tear down the rest of the stack.
         try:
@@ -318,11 +389,29 @@ app = FastAPI(
 
 
 # ---------- Routers ----------
+
+# Root aliases & unversioned routes (WebSocket, Completions, health check compatibility)
 app.include_router(health.router)
-app.include_router(agent_s3.router)
-app.include_router(models.router)
-app.include_router(permissions.router)
-app.include_router(sessions.router)
-app.include_router(workflow.router)
-app.include_router(tools.router)
 app.include_router(websocket.router)
+app.include_router(chat_completions.router)
+
+@app.get("/models/health", tags=["compatibility"])
+async def models_health_compatibility(request: Request):
+    """Probe the configured model provider (compatibility path)."""
+    planner = request.app.state.planner_service
+    return await planner.health()
+
+# Standardized versioned routes under /api/v1 prefix
+app.include_router(health.router, prefix="/api/v1")
+app.include_router(sessions.router, prefix="/api/v1")
+app.include_router(permissions.router, prefix="/api/v1")
+app.include_router(workflow.router, prefix="/api/v1")
+app.include_router(tools.router, prefix="/api/v1")
+app.include_router(agents.router, prefix="/api/v1")
+app.include_router(hermes.router, prefix="/api/v1")
+app.include_router(agent_s3.router, prefix="/api/v1")
+app.include_router(models.router, prefix="/api/v1")
+app.include_router(worktrees.router, prefix="/api/v1")
+app.include_router(events.router, prefix="/api/v1")
+app.include_router(events.recover_router, prefix="/api/v1")
+app.include_router(conversations.router)

@@ -1,0 +1,6 @@
+===== starting_head.txt =====
+9205dfa111301eb65cf1963dde89778e246dae5c
+---subject---
+feat(hermes): implement stop run mapping and resource cleanup for Hermes sessions
+---timestamp---
+2026-07-11T02:52:53+07:00

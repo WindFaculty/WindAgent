@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Dashboard, type MetricState } from "./pages/Dashboard";
-import { AgentWorkspace } from "./pages/AgentWorkspace";
+import { MultiAgentWorkspace } from "./pages/MultiAgentWorkspace";
+import { MultiAgentProvider } from "./state/multiAgentStore";
 import { Agents } from "./pages/Agents";
 import { Models } from "./pages/Models";
 import { Memory } from "./pages/Memory";
@@ -9,25 +10,46 @@ import { Browser } from "./pages/Browser";
 import { Files } from "./pages/Files";
 import { Router } from "./pages/Router";
 import { Settings } from "./pages/Settings";
-
-interface ChecklistState {
-  repoDiscovered: "success" | "pending" | "running";
-  scanningStructure: "success" | "pending" | "running";
-  runningTests: "success" | "pending" | "running";
-  summarizingResults: "success" | "pending" | "running";
-  summarizingProgress: number;
-}
-
-interface CurrentTaskStep {
-  name: string;
-  status: "success" | "pending" | "running";
-  duration: string;
-}
+import { fetchHermesHealth, fetchHealth } from "./api/client";
 
 export function App() {
   // Page routing
   const [activeTab, setActiveTab] = useState<string>("dashboard");
   const [refreshInterval, setRefreshInterval] = useState<string>("10s");
+  const [conversationId] = useState<string>(() => {
+    const key = "wa_conversation_id";
+    const existing = sessionStorage.getItem(key);
+    if (existing) return existing;
+    const id = (crypto as any).randomUUID();
+    sessionStorage.setItem(key, id);
+    return id;
+  });
+
+  const [hermesOnline, setHermesOnline] = useState<boolean | null>(null);
+  const [backendOnline, setBackendOnline] = useState<boolean | null>(null);
+
+  // Poll health status of backend and Hermes
+  useEffect(() => {
+    const checkHealth = async () => {
+      try {
+        const backendHealth = await fetchHealth();
+        setBackendOnline(backendHealth.status === "ok" || backendHealth.status === "healthy");
+      } catch (err) {
+        setBackendOnline(false);
+      }
+
+      try {
+        const hermesHealth = await fetchHermesHealth();
+        setHermesOnline(hermesHealth.reachable);
+      } catch (err) {
+        setHermesOnline(false);
+      }
+    };
+
+    checkHealth();
+    const interval = setInterval(checkHealth, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Synchronized system CPU/RAM/GPU metrics
   const [metrics, setMetrics] = useState<MetricState>({
@@ -65,78 +87,6 @@ export function App() {
       href: window.location.href
     });
   }, []);
-
-  // Workspace simulation flow variables
-  const [simulationStatus, setSimulationStatus] = useState<
-    "idle" | "running" | "paused" | "completed"
-  >("running");
-  const [simStep, setSimStep] = useState<number>(4);
-
-  // Chat stream list
-  const [chatMessages, setChatMessages] = useState<Array<{
-    sender: "user" | "assistant";
-    time: string;
-    text: string;
-    checklist?: ChecklistState;
-  }>>([
-    {
-      sender: "user",
-      time: "10:21 AM",
-      text: "Please analyze this project and give me a summary of its structure, tests, and code quality.",
-    },
-    {
-      sender: "assistant",
-      time: "10:21 AM",
-      text: "Analyzing repository...",
-      checklist: {
-        repoDiscovered: "success",
-        scanningStructure: "success",
-        runningTests: "success",
-        summarizingResults: "running",
-        summarizingProgress: 72,
-      },
-    },
-  ]);
-
-  // Current task panels sub-task list
-  const [currentTaskSteps, setCurrentTaskSteps] = useState<CurrentTaskStep[]>([
-    { name: "Clone / Open Repository", status: "success", duration: "00:01" },
-    { name: "Scan Codebase", status: "success", duration: "00:03" },
-    { name: "Run Tests", status: "success", duration: "00:08" },
-    { name: "Analyze & Summarize", status: "running", duration: "--:--" },
-    { name: "Generate Report", status: "pending", duration: "--:--" },
-  ]);
-
-  // Command-line logs
-  const [terminalLines, setTerminalLines] = useState<string[]>([
-    "git clone https://github.com/example/awesome-app.git",
-    "Cloning into 'awesome-app'...",
-    "remote: Enumerating objects: 1247, done.",
-    "remote: Counting objects: 100% (1247/1247), done.",
-    "remote: Compressing objects: 100% (812/812), done.",
-    "remote: Total 1247 (delta 523), reused 1123 (delta 435), pack-reused 0",
-    "Receiving objects: 100% (1247/1247), 2.34 MiB | 3.21 MiB/s, done.",
-    "Resolving deltas: 100% (523/523), done.",
-    "",
-    "cd awesome-app",
-    "npm install",
-    "added 612 packages, and audited 613 packages in 2s",
-    "120 packages are looking for funding",
-    "run `npm fund` for details",
-    "found 0 vulnerabilities",
-    "",
-    "npm test",
-    "awesome-app@1.0.0 test",
-    "jest --coverage",
-    "",
-    "PASS  src/utils/date.test.ts",
-    "PASS  src/services/api.test.ts",
-  ]);
-
-  // Browser url & tab
-  const [browserUrl, setBrowserUrl] = useState<string>("http://localhost:3000");
-  const [browserTab, setBrowserTab] = useState<string>("overview");
-  const [chatInput, setChatInput] = useState<string>("");
 
   // Sync metrics changes on interval
   useEffect(() => {
@@ -214,179 +164,8 @@ export function App() {
     return () => clearInterval(interval);
   }, []);
 
-  // Workspace simulation flow management
-  useEffect(() => {
-    if (simulationStatus !== "running") return;
+  // Workspace streaming now handled inside AgentWorkspace via useAgentSession.
 
-    if (simStep === 4) {
-      const interval = setInterval(() => {
-        setChatMessages((prev) => {
-          const updated = [...prev];
-          const assistantMsg = updated[1];
-          if (assistantMsg && assistantMsg.checklist) {
-            const nextProgress = Math.min(100, assistantMsg.checklist.summarizingProgress + 2);
-            assistantMsg.checklist.summarizingProgress = nextProgress;
-
-            if (nextProgress === 100) {
-              assistantMsg.checklist.summarizingResults = "success";
-              setSimStep(5);
-              clearInterval(interval);
-            }
-          }
-          return updated;
-        });
-      }, 500);
-      return () => clearInterval(interval);
-    }
-
-    if (simStep === 5) {
-      setSimulationStatus("completed");
-      setCurrentTaskSteps((prev) =>
-        prev.map((step) => {
-          if (step.name === "Analyze & Summarize") {
-            return { ...step, status: "success", duration: "00:15" };
-          }
-          if (step.name === "Generate Report") {
-            return { ...step, status: "success", duration: "00:02" };
-          }
-          return step;
-        })
-      );
-      setChatMessages((prev) => [
-        ...prev,
-        {
-          sender: "assistant",
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          text: `Analysis complete! 🚀\n\nI have successfully scanned the codebase and run tests. Here's a brief summary:\n\n1. **Structure**: Standard React + Vite structure in \`apps/desktop\`.\n2. **Tests**: All tests passed (PASS \`date.test.ts\`, \`api.test.ts\`).\n3. **Code Quality**: High adherence to local styling and hooks conventions. No major errors.`,
-        },
-      ]);
-      setTerminalLines((prev) => [
-        ...prev,
-        "",
-        "Done! Analysis results saved to artifacts/report.json",
-        "Vite server running at http://localhost:3000",
-      ]);
-    }
-  }, [simStep, simulationStatus]);
-
-  // Setup dynamic analysis flow
-  const startNewAnalysis = (userQuery: string) => {
-    setSimulationStatus("running");
-    setSimStep(1);
-    setChatMessages([
-      {
-        sender: "user",
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        text: userQuery,
-      },
-      {
-        sender: "assistant",
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        text: "Initiating analysis flow for your request...",
-        checklist: {
-          repoDiscovered: "running",
-          scanningStructure: "pending",
-          runningTests: "pending",
-          summarizingResults: "pending",
-          summarizingProgress: 0,
-        },
-      },
-    ]);
-
-    setCurrentTaskSteps([
-      { name: "Clone / Open Repository", status: "running", duration: "--:--" },
-      { name: "Scan Codebase", status: "pending", duration: "--:--" },
-      { name: "Run Tests", status: "pending", duration: "--:--" },
-      { name: "Analyze & Summarize", status: "pending", duration: "--:--" },
-      { name: "Generate Report", status: "pending", duration: "--:--" },
-    ]);
-
-    setTerminalLines([
-      `Initialising request: "${userQuery}"`,
-      "Loading local workspaces...",
-    ]);
-
-    setTimeout(() => {
-      setChatMessages((prev) => {
-        const next = [...prev];
-        if (next[1] && next[1].checklist) {
-          next[1].checklist.repoDiscovered = "success";
-          next[1].checklist.scanningStructure = "running";
-        }
-        return next;
-      });
-      setCurrentTaskSteps((prev) => {
-        const next = [...prev];
-        next[0] = { name: "Clone / Open Repository", status: "success", duration: "00:02" };
-        next[1] = { name: "Scan Codebase", status: "running", duration: "--:--" };
-        return next;
-      });
-      setTerminalLines((prev) => [
-        ...prev,
-        "Workspace matched: d:\\antigaravity_code\\WindAgent",
-        "Loading project files configurations...",
-        "Resolving codebase structure...",
-      ]);
-    }, 2000);
-
-    setTimeout(() => {
-      setChatMessages((prev) => {
-        const next = [...prev];
-        if (next[1] && next[1].checklist) {
-          next[1].checklist.scanningStructure = "success";
-          next[1].checklist.runningTests = "running";
-        }
-        return next;
-      });
-      setCurrentTaskSteps((prev) => {
-        const next = [...prev];
-        next[1] = { name: "Scan Codebase", status: "success", duration: "00:03" };
-        next[2] = { name: "Run Tests", status: "running", duration: "--:--" };
-        return next;
-      });
-      setTerminalLines((prev) => [
-        ...prev,
-        "Found vite.config.ts, package.json, src/",
-        "Total files analyzed: 42 files inside apps/desktop",
-        "Starting Vitest Runner...",
-      ]);
-    }, 4500);
-
-    setTimeout(() => {
-      setChatMessages((prev) => {
-        const next = [...prev];
-        if (next[1] && next[1].checklist) {
-          next[1].checklist.runningTests = "success";
-          next[1].checklist.summarizingResults = "running";
-          next[1].checklist.summarizingProgress = 20;
-        }
-        return next;
-      });
-      setCurrentTaskSteps((prev) => {
-        const next = [...prev];
-        next[2] = { name: "Run Tests", status: "success", duration: "00:05" };
-        next[3] = { name: "Analyze & Summarize", status: "running", duration: "--:--" };
-        return next;
-      });
-      setTerminalLines((prev) => [
-        ...prev,
-        "PASS  src/state/sessionStore.test.ts (1.2s)",
-        "PASS  src/components/ControlBar.test.ts (2.1s)",
-        "PASS  src/components/WorkflowPanel.test.ts (0.8s)",
-        "All test files passed. 3 test suites, 12 tests passed.",
-      ]);
-      setSimStep(4);
-    }, 7500);
-  };
-
-  const handleSend = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!chatInput.trim()) return;
-    startNewAnalysis(chatInput);
-    setChatInput("");
-  };
-
-  // Sparkline coordinates calculator
   const renderSparkline = (points: number[], maxVal: number) => {
     const width = 50;
     const height = 14;
@@ -424,12 +203,36 @@ export function App() {
           </div>
           <div className="status-badges">
             <span className="badge-localhost">Localhost</span>
-            <span className="badge-connected">
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
-              </svg>
-              Connected
-            </span>
+            {backendOnline === false ? (
+              <span className="badge-localhost" style={{ background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.2)', color: '#ef4444' }}>
+                <span style={{ display: 'inline-block', width: '6px', height: '6px', backgroundColor: '#ef4444', borderRadius: '50%', boxShadow: '0 0 8px #ef4444', marginRight: '6px' }} />
+                Backend: Offline
+              </span>
+            ) : (
+              <span className="badge-connected">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                </svg>
+                Connected
+              </span>
+            )}
+            
+            {hermesOnline === null ? (
+              <span className="badge-local-first" style={{ opacity: 0.6 }}>
+                Hermes: Checking...
+              </span>
+            ) : hermesOnline ? (
+              <span className="badge-localhost" style={{ background: 'rgba(59, 130, 246, 0.08)', border: '1px solid rgba(59, 130, 246, 0.2)', color: '#3b82f6' }}>
+                <span style={{ display: 'inline-block', width: '6px', height: '6px', backgroundColor: '#3b82f6', borderRadius: '50%', boxShadow: '0 0 8px #3b82f6', marginRight: '6px' }} />
+                Hermes: Connected
+              </span>
+            ) : (
+              <span className="badge-localhost" style={{ background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.2)', color: '#ef4444' }}>
+                <span style={{ display: 'inline-block', width: '6px', height: '6px', backgroundColor: '#ef4444', borderRadius: '50%', boxShadow: '0 0 8px #ef4444', marginRight: '6px' }} />
+                Hermes: Offline
+              </span>
+            )}
+
             <span className="badge-local-first">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" style={{ marginRight: '2px' }}>
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
@@ -511,6 +314,7 @@ export function App() {
               </svg>
               Agent Workspace
             </div>
+
             <div
               className={`nav-item ${activeTab === "workflows" ? "active" : ""}`}
               onClick={() => setActiveTab("workflows")}
@@ -609,7 +413,6 @@ export function App() {
             setActiveTab={setActiveTab}
             refreshInterval={refreshInterval}
             setRefreshInterval={setRefreshInterval}
-            startNewAnalysis={startNewAnalysis}
           />
         ) : activeTab === "agents" ? (
           <Agents
@@ -634,19 +437,9 @@ export function App() {
         ) : activeTab === "settings" ? (
           <Settings />
         ) : activeTab === "workspace" ? (
-          <AgentWorkspace
-            chatMessages={chatMessages}
-            currentTaskSteps={currentTaskSteps}
-            terminalLines={terminalLines}
-            setTerminalLines={setTerminalLines}
-            browserUrl={browserUrl}
-            setBrowserUrl={setBrowserUrl}
-            browserTab={browserTab}
-            setBrowserTab={setBrowserTab}
-            chatInput={chatInput}
-            setChatInput={setChatInput}
-            handleSend={handleSend}
-          />
+          <MultiAgentProvider conversationId={conversationId}>
+            <MultiAgentWorkspace conversationId={conversationId} />
+          </MultiAgentProvider>
         ) : (
           /* Placeholder views for settings and other navigation tabs */
           <main className="central-workspace" style={{ justifyContent: 'center', alignItems: 'center' }}>
@@ -667,185 +460,7 @@ export function App() {
           </main>
         )}
 
-        {/* Far Right Sidebar: Metadata Panels (only shown on Workspace view) */}
-        {activeTab === "workspace" && (
-          <aside className="right-sidebar">
-            {/* Agent State */}
-            <div className="agent-state-box">
-              <div className="agent-state-circle">
-                <svg>
-                  <circle className="state-ring-bg" cx="16" cy="16" r="13" />
-                  {simulationStatus === "running" && (
-                    <circle className="state-ring-fill" cx="16" cy="16" r="13" />
-                  )}
-                </svg>
-              </div>
-              <div className="agent-state-right">
-                <span className="state-title">Agent State</span>
-                <span className="state-desc" style={{ color: simulationStatus === "running" ? "#60a5fa" : "var(--color-success)" }}>
-                  {simulationStatus === "running" ? "Working on current objective" : "Task fully completed"}
-                </span>
-              </div>
-            </div>
 
-            {/* Current Goal */}
-            <div className="goal-box">
-              <div className="section-label">Current Goal</div>
-              <div className="goal-content">
-                {simStep < 5
-                  ? "Analyze the project repository to understand its structure, test coverage, and code quality."
-                  : "Deliver repository review summaries and ensure continuous integration health status."}
-              </div>
-              <div className="chat-progress-container" style={{ marginTop: '4px' }}>
-                <div className="chat-progress-header" style={{ fontSize: '0.72rem' }}>
-                  <span>Progress</span>
-                  <span>{simStep === 4 ? "72%" : simStep === 5 ? "100%" : "35%"}</span>
-                </div>
-                <div className="progress-bar-bg" style={{ height: '4px' }}>
-                  <div
-                    className="progress-bar-fill"
-                    style={{
-                      width: simStep === 4 ? "72%" : simStep === 5 ? "100%" : "35%",
-                      transition: 'width 0.5s ease'
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Tools in Use */}
-            <div className="goal-box">
-              <div className="section-label">
-                Tools in Use
-                <span style={{ fontSize: '0.72rem', background: '#1e293b', padding: '2px 6px', borderRadius: '4px' }}>
-                  {simulationStatus === "running" ? "4 active" : "0 active"}
-                </span>
-              </div>
-              <div className="tools-in-use-list">
-                <div className="tool-in-use-item">
-                  <div className="tool-in-use-left">
-                    <span className={`tool-use-dot ${simulationStatus === "running" && simStep < 5 ? "active" : ""}`} />
-                    <span className="tool-use-label">File System</span>
-                  </div>
-                  <span className={`tool-use-state ${simulationStatus === "running" && simStep < 5 ? "active" : "inactive"}`}>
-                    {simulationStatus === "running" && simStep < 5 ? "Reading" : "Idle"}
-                  </span>
-                </div>
-                <div className="tool-in-use-item">
-                  <div className="tool-in-use-left">
-                    <span className={`tool-use-dot ${simulationStatus === "running" && simStep < 4 ? "active" : ""}`} />
-                    <span className="tool-use-label">Terminal</span>
-                  </div>
-                  <span className={`tool-use-state ${simulationStatus === "running" && simStep < 4 ? "active" : "inactive"}`}>
-                    {simulationStatus === "running" && simStep < 4 ? "Running" : "Idle"}
-                  </span>
-                </div>
-                <div className="tool-in-use-item">
-                  <div className="tool-in-use-left">
-                    <span className={`tool-use-dot ${simulationStatus === "completed" ? "active" : ""}`} />
-                    <span className="tool-use-label">Browser</span>
-                  </div>
-                  <span className={`tool-use-state ${simulationStatus === "completed" ? "active" : "inactive"}`}>
-                    {simulationStatus === "completed" ? "Inspecting" : "Idle"}
-                  </span>
-                </div>
-                <div className="tool-in-use-item">
-                  <div className="tool-in-use-left">
-                    <span className={`tool-use-dot ${simulationStatus === "running" && simStep === 4 ? "active" : ""}`} />
-                    <span className="tool-use-label">Code Analyzer</span>
-                  </div>
-                  <span className={`tool-use-state ${simulationStatus === "running" && simStep === 4 ? "active" : "inactive"}`}>
-                    {simulationStatus === "running" && simStep === 4 ? "Processing" : "Idle"}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Permissions */}
-            <div className="goal-box">
-              <div className="section-label">Permissions</div>
-              <div className="permissions-summary-box">
-                <span>No permissions blocked</span>
-                <span className="perms-badge">All Allowed ›</span>
-              </div>
-            </div>
-
-            {/* Memory Summary */}
-            <div className="goal-box">
-              <div className="section-label">
-                Memory Summary
-                <span style={{ fontSize: '0.72rem', color: 'var(--text-dim)' }}>8,192 tokens ›</span>
-              </div>
-              <div className="memory-bars-container">
-                <div className="memory-bar-item">
-                  <div className="mem-bar-header">
-                    <span>Working Memory</span>
-                    <span>72%</span>
-                  </div>
-                  <div className="mem-bar-bg">
-                    <div className="mem-bar-fill working" />
-                  </div>
-                </div>
-                <div className="memory-bar-item">
-                  <div className="mem-bar-header">
-                    <span>Long-term Memory</span>
-                    <span>24%</span>
-                  </div>
-                  <div className="mem-bar-bg">
-                    <div className="mem-bar-fill longterm" />
-                  </div>
-                </div>
-                <div className="memory-bar-item">
-                  <div className="mem-bar-header">
-                    <span>Context Window</span>
-                    <span>68%</span>
-                  </div>
-                  <div className="mem-bar-bg">
-                    <div className="mem-bar-fill context" />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Recent Actions */}
-            <div className="goal-box">
-              <div className="section-label">Recent Actions</div>
-              <div className="recent-actions-list">
-                <div className="action-row active">
-                  <span className="action-time">10:21</span>
-                  <span className="action-dot active" />
-                  <span className="action-text">Analyzing code quality</span>
-                </div>
-                <div className="action-row">
-                  <span className="action-time">10:21</span>
-                  <span className="action-dot" />
-                  <span className="action-text">Running tests</span>
-                </div>
-                <div className="action-row">
-                  <span className="action-time">10:21</span>
-                  <span className="action-dot" />
-                  <span className="action-text">Installed dependencies</span>
-                </div>
-                <div className="action-row">
-                  <span className="action-time">10:21</span>
-                  <span className="action-dot" />
-                  <span className="action-text">Cloned repository</span>
-                </div>
-                <div className="action-row">
-                  <span className="action-time">10:21</span>
-                  <span className="action-dot" />
-                  <span className="action-text">Started project analysis</span>
-                </div>
-              </div>
-              <a href="#timeline" className="view-timeline-link" onClick={(e) => { e.preventDefault(); alert("Timeline details panel."); }}>
-                View full timeline
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
-                </svg>
-              </a>
-            </div>
-          </aside>
-        )}
       </div>
     </div>
   );

@@ -33,10 +33,13 @@ os.environ["WINDAGENT_MOCK_GUI"] = "1"
 # not depend on a running Ollama daemon.
 os.environ["WINDAGENT_MODEL_BACKEND"] = "mock"
 
+# Phase 1: disable Hermes runtime by default for all tests to speed up startup
+os.environ["WINDAGENT_HERMES_ENABLED"] = "false"
+
 # Force every lifespan in this test session to use a temp file DB.
 _DB_FD, _DB_PATH = tempfile.mkstemp(prefix="windagent-test-", suffix=".db")
 os.close(_DB_FD)
-os.environ["WINDAGENT_DB_URL"] = f"sqlite+aiosqlite:///{_DB_PATH}"
+os.environ["WINDAGENT_DB_URL"] = f"sqlite+aiosqlite:///{_DB_PATH}?timeout=30"
 
 
 @pytest.fixture
