@@ -267,6 +267,81 @@ export async function fetchAgentActivity(agentId: string): Promise<any[]> {
   return request<any[]>(`/api/v1/agents/${agentId}/activity`);
 }
 
+// ---------- Browser API ----------
+
+export interface BrowserState {
+  session_id: string;
+  url: string;
+  title: string;
+  loading: boolean;
+  screenshot_path: string;
+  controlled_by: "agent" | "user";
+  console_logs: string[];
+  errors: string[];
+}
+
+export async function fetchBrowserState(sessionId: string): Promise<BrowserState> {
+  return request<BrowserState>(`/api/v1/sessions/${sessionId}/browser`);
+}
+
+export async function navigateBrowser(sessionId: string, url: string): Promise<BrowserState> {
+  return request<BrowserState>(`/api/v1/sessions/${sessionId}/browser/navigate`, {
+    method: "POST",
+    body: JSON.stringify({ url }),
+  });
+}
+
+export async function clickBrowser(
+  sessionId: string,
+  x: number,
+  y: number,
+  selector?: string,
+): Promise<BrowserState> {
+  return request<BrowserState>(`/api/v1/sessions/${sessionId}/browser/click`, {
+    method: "POST",
+    body: JSON.stringify({ x, y, selector }),
+  });
+}
+
+export async function typeBrowser(
+  sessionId: string,
+  text: string,
+  selector?: string,
+): Promise<BrowserState> {
+  return request<BrowserState>(`/api/v1/sessions/${sessionId}/browser/type`, {
+    method: "POST",
+    body: JSON.stringify({ text, selector }),
+  });
+}
+
+export async function controlBrowser(
+  sessionId: string,
+  control: "agent" | "user",
+): Promise<BrowserState> {
+  return request<BrowserState>(`/api/v1/sessions/${sessionId}/browser/control`, {
+    method: "POST",
+    body: JSON.stringify({ control }),
+  });
+}
+
+export async function goBackBrowser(sessionId: string): Promise<BrowserState> {
+  return request<BrowserState>(`/api/v1/sessions/${sessionId}/browser/back`, {
+    method: "POST",
+  });
+}
+
+export async function goForwardBrowser(sessionId: string): Promise<BrowserState> {
+  return request<BrowserState>(`/api/v1/sessions/${sessionId}/browser/forward`, {
+    method: "POST",
+  });
+}
+
+export async function reloadBrowser(sessionId: string): Promise<BrowserState> {
+  return request<BrowserState>(`/api/v1/sessions/${sessionId}/browser/reload`, {
+    method: "POST",
+  });
+}
+
 // ---------- WebSocket Client ----------
 
 export type WsListener = (env: EventEnvelope) => void;

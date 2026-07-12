@@ -29,10 +29,11 @@ log = logging.getLogger(__name__)
 class HermesSessionBridge:
     """Manages active runs, pulls SSE streams, translates, and publishes events."""
 
-    def __init__(self, db: Database, client: HermesApiClient, event_bus: EventBus) -> None:
+    def __init__(self, db: Database, client: HermesApiClient, event_bus: EventBus, browser_service: Optional[Any] = None) -> None:
         self.db = db
         self.client = client
         self.event_bus = event_bus
+        self.browser_service = browser_service
         self.active_tasks: Dict[str, asyncio.Task] = {}
         
         # Keep track of generated permission UUIDs mapping: windagent_request_id -> hermes_approval_id
@@ -354,6 +355,7 @@ class HermesSessionBridge:
         sequence = 1
         
         self.approval_mappings[run_id] = {}
+        workflow_emitted = False
         
         try:
             async for event in self.client.stream_run_events(run_id):
@@ -397,12 +399,15 @@ class HermesSessionBridge:
                     windagent_session_id=windagent_session_id,
                     sequence=sequence,
                     windagent_request_id=windagent_req_id,
+                    first_workflow=not workflow_emitted,
                 )
                 
                 if env:
                     sequence += 1
                     # Publish event on the WebSocket bus for the session
                     await self.event_bus.publish(windagent_session_id, env)
+                    if env.event in ("workflow_created", "workflow_updated"):
+                        workflow_emitted = True
 
                 # Update session final status
                 event_name = event.get("event")

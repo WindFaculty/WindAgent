@@ -124,22 +124,45 @@ class HermesRuntimeManager:
     async def _spawn_process(self) -> bool:
         """Launch the hermes serve subprocess."""
         self.status = "starting"
-        cmd = [self.config.executable, "serve", "--port", "8642", "--host", "127.0.0.1", "--skip-build"]
+        
+        # Ensure we have an API key configured so the client can authenticate.
+        # If the key is not set, we generate a default fallback key.
+        if not self.config.api_key:
+            self.config.api_key = "my-secret-key-16-chars"
+            log.info("No API key configured for Hermes; generated default fallback key.")
+
+        # Extract port from base_url (default to 8642)
+        from urllib.parse import urlparse
+        try:
+            parsed = urlparse(self.config.base_url)
+            port = str(parsed.port) if parsed.port else "8642"
+        except Exception:
+            port = "8642"
+
+        # Use 'gateway run' to start the Hermes gateway (which exposes Platform.API_SERVER)
+        cmd = [self.config.executable, "gateway", "run"]
         
         # Ensure log dir exists
         log_dir = Path("artifacts/logs")
         log_dir.mkdir(parents=True, exist_ok=True)
         log_file = log_dir / "hermes_stdout.log"
         
-        log.info("Spawning Hermes server: %s (logs redirected to %s)", " ".join(cmd), log_file)
+        log.info("Spawning Hermes gateway: %s (logs redirected to %s)", " ".join(cmd), log_file)
         
         try:
+            # Inject required environment variables to activate and authorize api_server
+            env = os.environ.copy()
+            env["API_SERVER_ENABLED"] = "1"
+            env["API_SERVER_KEY"] = self.config.api_key
+            env["API_SERVER_PORT"] = port
+            
             # We open stdout/stderr in append/write mode
             stdout_handle = open(log_file, "a", encoding="utf-8")
             self.process = subprocess.Popen(
                 cmd,
                 stdout=stdout_handle,
                 stderr=subprocess.STDOUT,
+                env=env,
                 creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
             )
         except Exception as e:

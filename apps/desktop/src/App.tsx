@@ -9,6 +9,7 @@ import { Workflows } from "./pages/Workflows";
 import { Browser } from "./pages/Browser";
 import { Files } from "./pages/Files";
 import { Router } from "./pages/Router";
+import { AgentWorkspace } from "./pages/AgentWorkspace";
 import { Settings } from "./pages/Settings";
 import { fetchHermesHealth, fetchHealth } from "./api/client";
 
@@ -27,6 +28,9 @@ export function App() {
 
   const [hermesOnline, setHermesOnline] = useState<boolean | null>(null);
   const [backendOnline, setBackendOnline] = useState<boolean | null>(null);
+  const [selectedAgentId, setSelectedAgentId] = useState<string>("");
+  const [browserUrl, setBrowserUrl] = useState<string>("");
+  const [browserTab, setBrowserTab] = useState<string>("url");
 
   // Poll health status of backend and Hermes
   useEffect(() => {
@@ -437,31 +441,36 @@ export function App() {
         ) : activeTab === "settings" ? (
           <Settings />
         ) : activeTab === "workspace" ? (
-          <MultiAgentProvider conversationId={conversationId}>
-            <MultiAgentWorkspace conversationId={conversationId} />
-          </MultiAgentProvider>
-        ) : (
-          /* Placeholder views for settings and other navigation tabs */
-          <main className="central-workspace" style={{ justifyContent: 'center', alignItems: 'center' }}>
-            <div className="dashboard-panel" style={{ width: '400px', padding: '24px', textAlign: 'center', gap: '16px' }}>
-              <div className="brand-icon" style={{ width: '48px', height: '48px', margin: '0 auto' }}>
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
+                  <AgentWorkspace
+                    selectedAgentId={selectedAgentId}
+                    setSelectedAgentId={setSelectedAgentId}
+                    browserUrl={browserUrl}
+                    setBrowserUrl={setBrowserUrl}
+                    browserTab={browserTab}
+                    setBrowserTab={setBrowserTab}
+                    hermesOnline={hermesOnline}
+                    backendOnline={backendOnline}
+                  />
+                ) : (
+                  /* Placeholder views for settings and other navigation tabs */
+                  <main className="central-workspace" style={{ justifyContent: 'center', alignItems: 'center' }}>
+                    <div className="dashboard-panel" style={{ width: '400px', padding: '24px', textAlign: 'center', gap: '16px' }}>
+                      <div className="brand-icon" style={{ width: '48px', height: '48px', margin: '0 auto' }}>
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                      </div>
+                      <h2 style={{ fontSize: '1.25rem' }}>{activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Pane</h2>
+                      <p style={{ color: 'var(--text-muted)' }}>
+                        This is a visual preview node. Return to <strong>Dashboard</strong> to inspect the system health.
+                      </p>
+                      <button className="chat-send-btn" onClick={() => setActiveTab("dashboard")} style={{ margin: '0 auto' }}>
+                        Back to Dashboard
+                      </button>
+                    </div>
+                  </main>
+                )}
               </div>
-              <h2 style={{ fontSize: '1.25rem' }}>{activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Pane</h2>
-              <p style={{ color: 'var(--text-muted)' }}>
-                This is a visual preview node. Return to <strong>Dashboard</strong> to inspect the system health.
-              </p>
-              <button className="chat-send-btn" onClick={() => setActiveTab("dashboard")} style={{ margin: '0 auto' }}>
-                Back to Dashboard
-              </button>
             </div>
-          </main>
-        )}
-
-
-      </div>
-    </div>
-  );
-}
+          );
+        }

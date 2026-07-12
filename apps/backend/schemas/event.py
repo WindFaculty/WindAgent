@@ -21,9 +21,11 @@ EventName = Literal[
     "planning_started",
     "planning_finished",
     "workflow_created",
+    "workflow_updated",
     "step_started",
     "step_completed",
     "step_failed",
+    "step_cancelled",
     "tool_call_started",
     "tool_call_finished",
     "permission_request",
@@ -49,6 +51,14 @@ EventName = Literal[
     "worktree_conflict",
     "worktree_removed",
     "replan_notification",
+    "browser_session_started",
+    "browser_navigation_started",
+    "browser_navigation_completed",
+    "browser_screenshot_updated",
+    "browser_action_started",
+    "browser_action_completed",
+    "browser_console",
+    "browser_error",
 ]
 
 

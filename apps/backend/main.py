@@ -24,7 +24,7 @@ from pathlib import Path
 from fastapi import FastAPI, Request
 
 from db.database import Database
-from routers import agent_s3, health, models, permissions, sessions, tools, workflow, websocket, agents, hermes, chat_completions, worktrees, events, conversations, model_routing, openai_compatible, router_observability
+from routers import agent_s3, health, models, permissions, sessions, tools, workflow, websocket, agents, hermes, chat_completions, worktrees, events, conversations, model_routing, openai_compatible, router_observability, browser
 from services.agent_s3_adapter import AgentS3Adapter
 from services.agent_s3_config import (
     AgentS3Config,
@@ -228,11 +228,15 @@ async def lifespan(app: FastAPI):
     agent_registry = AgentRegistryService(db)
     await agent_registry.init_database_seeds()
 
+    from services.browser_service import BrowserService
+    browser_service = BrowserService(event_bus, artifacts_root)
+    await browser_service.start()
+
     # Hermes configuration and service mapping
     hermes_config = load_hermes_config()
     hermes_runtime_manager = HermesRuntimeManager(hermes_config, event_bus)
     hermes_api_client = HermesApiClient(hermes_config)
-    hermes_session_bridge = HermesSessionBridge(db, hermes_api_client, event_bus)
+    hermes_session_bridge = HermesSessionBridge(db, hermes_api_client, event_bus, browser_service)
 
     # Phase 5: DAG scheduler (orchestration engine).
     from services.dag_scheduler import DAGScheduler
@@ -287,6 +291,7 @@ async def lifespan(app: FastAPI):
     app.state.dag_scheduler = dag_scheduler
     app.state.worktree_service = worktree_service
     app.state.recovery_manager = recovery_manager
+    app.state.browser_service = browser_service
 
     # Phase 7 gate: on boot, reconcile any runs left in-flight by a crash.
     try:
@@ -382,6 +387,11 @@ async def lifespan(app: FastAPI):
         yield
     finally:
         log.info("WindAgent backend shutting down")
+        # Stop Browser sessions
+        try:
+            await browser_service.close_all()
+        except Exception:
+            log.exception("error closing browser service")
         # Stop supervised Hermes process
         try:
             await hermes_runtime_manager.stop()
@@ -399,11 +409,22 @@ async def lifespan(app: FastAPI):
         await db.dispose()
 
 
+from fastapi.middleware.cors import CORSMiddleware
+
 app = FastAPI(
     title="WindAgent Backend",
     version="0.8.0",
     description="Local Desktop AI Agent — FastAPI sidecar (Phase 8).",
     lifespan=lifespan,
+)
+
+# Configure CORS to support requests from the React dev server and Tauri
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
@@ -433,6 +454,7 @@ app.include_router(models.router, prefix="/api/v1")
 app.include_router(worktrees.router, prefix="/api/v1")
 app.include_router(events.router, prefix="/api/v1")
 app.include_router(events.recover_router, prefix="/api/v1")
+app.include_router(browser.router, prefix="/api/v1")
 app.include_router(conversations.router)
 
 # Router phase routers (self-prefixed: /models/routing, /v1, /router/runtime)

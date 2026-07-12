@@ -68,6 +68,59 @@ async def test_event_translator_mapping():
 
 
 @pytest.mark.asyncio
+async def test_todo_tool_maps_to_workflow_events():
+    # First todo call => workflow_created with full ordered steps.
+    env = HermesEventTranslator.translate(
+        {
+            "event": "tool.completed",
+            "tool": "todo",
+            "run_id": "r1",
+            "output": {
+                "items": [
+                    {"id": "1", "content": "Read repo", "status": "in_progress"},
+                    {"id": "2", "content": "Fix bug", "status": "pending"},
+                ]
+            },
+        },
+        windagent_session_id="s1",
+        sequence=1,
+        first_workflow=True,
+    )
+    assert env.event == "workflow_created"
+    assert env.data["workflow_id"] == "wf_r1"
+    assert [s["status"] for s in env.data["steps"]] == ["in_progress", "pending"]
+    assert [s["name"] for s in env.data["steps"]] == ["Read repo", "Fix bug"]
+
+    # Later todo call => workflow_updated, replaces (no duplicate steps).
+    env2 = HermesEventTranslator.translate(
+        {
+            "event": "tool.completed",
+            "tool": "todo",
+            "run_id": "r1",
+            "output": {
+                "items": [
+                    {"id": "1", "content": "Read repo", "status": "completed"},
+                    {"id": "2", "content": "Fix bug", "status": "in_progress"},
+                ]
+            },
+        },
+        windagent_session_id="s1",
+        sequence=2,
+        first_workflow=False,
+    )
+    assert env2.event == "workflow_updated"
+    assert [s["status"] for s in env2.data["steps"]] == ["completed", "in_progress"]
+
+    # Non-todo tool.completed stays a plain tool_call_finished.
+    env3 = HermesEventTranslator.translate(
+        {"event": "tool.completed", "tool": "terminal", "run_id": "r1", "output": {"exit_code": 0}},
+        windagent_session_id="s1",
+        sequence=3,
+    )
+    assert env3.event == "tool_call_finished"
+
+
+@pytest.mark.asyncio
 async def test_api_client_streams_from_fake_server():
     transport = httpx.ASGITransport(app=fake_app)
     real_async_client = httpx.AsyncClient
