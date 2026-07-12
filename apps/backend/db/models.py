@@ -85,6 +85,8 @@ class WorkflowORM(Base):
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     session_id: Mapped[str] = mapped_column(String(36), nullable=False)
     status: Mapped[str] = mapped_column(String(32), default="pending")
+    created_at: Mapped[datetime] = mapped_column(default=_utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(default=_utcnow, nullable=False)
 
     steps: Mapped[list["WorkflowStepORM"]] = relationship(back_populates="workflow")
 
@@ -97,9 +99,14 @@ class WorkflowStepORM(Base):
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     workflow_id: Mapped[str] = mapped_column(String(36), ForeignKey("workflows.id"), nullable=False)
-    step_type: Mapped[str] = mapped_column(String(64), nullable=False)
+    step_type: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    tool_name: Mapped[str] = mapped_column(String(64), nullable=False)
+    params_json: Mapped[str] = mapped_column(Text, default="{}", nullable=False)
     status: Mapped[str] = mapped_column(String(32), default="pending")
     order_index: Mapped[int] = mapped_column(Integer, default=0)
+    created_at: Mapped[datetime] = mapped_column(default=_utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(default=_utcnow, nullable=False)
 
     workflow: Mapped[WorkflowORM] = relationship(back_populates="steps")
 
@@ -226,16 +233,23 @@ class ModelRuntimeStatusORM(Base):
 class ProviderQuotaSnapshotORM(Base):
     __tablename__ = "provider_quota_snapshots"
 
-    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     provider_id: Mapped[str] = mapped_column(String(64), nullable=False)
-    rpm_used: Mapped[int] = mapped_column(Integer, default=0)
-    rpm_limit: Mapped[int] = mapped_column(Integer, default=0)
-    rpd_used: Mapped[int] = mapped_column(Integer, default=0)
-    rpd_limit: Mapped[int] = mapped_column(Integer, default=0)
-    tokens_in: Mapped[int] = mapped_column(Integer, default=0)
-    tokens_out: Mapped[int] = mapped_column(Integer, default=0)
-    cost_usd: Mapped[float] = mapped_column(Float, default=0.0)
-    snapshot_at: Mapped[datetime] = mapped_column(default=_utcnow, nullable=False)
+    quota_mode: Mapped[str] = mapped_column(String(32), nullable=False)
+    rpm_limit: Mapped[Optional[int]] = mapped_column(nullable=True)
+    rpd_limit: Mapped[Optional[int]] = mapped_column(nullable=True)
+    tpm_limit: Mapped[Optional[int]] = mapped_column(nullable=True)
+    daily_token_limit: Mapped[Optional[int]] = mapped_column(nullable=True)
+    monthly_token_limit: Mapped[Optional[int]] = mapped_column(nullable=True)
+    remaining_requests_today: Mapped[Optional[int]] = mapped_column(nullable=True)
+    remaining_tokens_today: Mapped[Optional[int]] = mapped_column(nullable=True)
+    remaining_tokens_month: Mapped[Optional[int]] = mapped_column(nullable=True)
+    remaining_credit: Mapped[Optional[float]] = mapped_column(nullable=True)
+    credit_currency: Mapped[Optional[str]] = mapped_column(String(16), nullable=True)
+    reset_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
+    raw_json: Mapped[str] = mapped_column(Text, default="{}")
+    source: Mapped[str] = mapped_column(String(64), default="manual")
+    created_at: Mapped[datetime] = mapped_column(default=_utcnow, nullable=False)
 
 
 class ModelRoutingRuleORM(Base):
@@ -277,17 +291,13 @@ Index("ix_router_logs_model_created", RouterExecutionLogORM.selected_model_id, R
 class ModelActivityORM(Base):
     __tablename__ = "model_activity"
 
-    id: Mapped[str] = mapped_column(String(36), primary_key=True)
-    provider_id: Mapped[str] = mapped_column(String(64), nullable=False)
-    model_id: Mapped[str] = mapped_column(String(128), nullable=False)
-    source: Mapped[str] = mapped_column(String(32), default="test")
-    prompt: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    completion: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    tokens_in: Mapped[int] = mapped_column(Integer, default=0)
-    tokens_out: Mapped[int] = mapped_column(Integer, default=0)
-    latency_ms: Mapped[int] = mapped_column(Integer, default=0)
-    status: Mapped[str] = mapped_column(String(32), default="success")
-    error: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    model_id: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
+    provider_id: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    level: Mapped[str] = mapped_column(String(16), default="info")
+    event_type: Mapped[str] = mapped_column(String(64), nullable=False)
+    message: Mapped[str] = mapped_column(Text, nullable=False)
+    metadata_json: Mapped[str] = mapped_column(Text, default="{}")
     created_at: Mapped[datetime] = mapped_column(default=_utcnow, nullable=False)
 
 
@@ -492,7 +502,7 @@ class TaskArtifactORM(Base):
     created_at: Mapped[datetime] = mapped_column(default=_utcnow, nullable=False)
 
 
-    # ---------- Legacy Agent Registry (from Phase 1) ----------
+# ---------- Legacy Agent Registry (from Phase 1) ----------
 
 
 class AgentORM(Base):

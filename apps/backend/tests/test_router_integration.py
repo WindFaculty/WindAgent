@@ -244,9 +244,9 @@ async def test_live_route_test_probe(client, app_state):
 
 
 def test_backward_compatibility_endpoints(client):
-    """GET and PATCH /models/routing compatibility paths should work identically to old API."""
+    """GET and PATCH /api/v1/models/routing compatibility paths should work identically to old API."""
     # 1. GET compatibility
-    r_get = client.get("/models/routing")
+    r_get = client.get("/api/v1/models/routing")
     assert r_get.status_code == 200
     body_get = r_get.json()
     assert "Planner" in body_get
@@ -256,7 +256,7 @@ def test_backward_compatibility_endpoints(client):
     payload = {
         "Planner": {"primary": "google_gemini_2.5_flash_lite", "fallback": "openrouter_free"}
     }
-    r_patch = client.patch("/models/routing", json=payload)
+    r_patch = client.patch("/api/v1/models/routing", json=payload)
     assert r_patch.status_code == 200
     assert r_patch.json()["status"] == "success"
     

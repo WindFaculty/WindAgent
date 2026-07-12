@@ -243,12 +243,12 @@ def test_create_and_update_provider(client):
         "base_url": "https://api.testprovider.com/v1",
         "api_key": "test_api_key_123"
     }
-    r = client.post("/models/providers", json=payload)
+    r = client.post("/api/v1/models/providers", json=payload)
     assert r.status_code == 200
     assert r.json()["status"] == "success"
 
     # 2. Get list of providers and verify it is there
-    r_list = client.get("/models/providers")
+    r_list = client.get("/api/v1/models/providers")
     assert r_list.status_code == 200
     providers = r_list.json()
     test_p = next((p for p in providers if p["id"] == "test_provider"), None)
@@ -265,12 +265,12 @@ def test_create_and_update_provider(client):
         "base_url": "https://api.anthropic.com",
         "api_key": "new_api_key_456"
     }
-    r_patch = client.patch("/models/providers/test_provider", json=update_payload)
+    r_patch = client.patch("/api/v1/models/providers/test_provider", json=update_payload)
     assert r_patch.status_code == 200
     assert r_patch.json()["status"] == "success"
 
     # 4. Get list again and verify updates
-    r_list2 = client.get("/models/providers")
+    r_list2 = client.get("/api/v1/models/providers")
     providers2 = r_list2.json()
     test_p2 = next((p for p in providers2 if p["id"] == "test_provider"), None)
     assert test_p2 is not None
@@ -289,7 +289,7 @@ def test_test_provider_connection(client):
             "base_url": "https://api.test.com/v1",
             "api_key": "somekey"
         }
-        r = client.post("/models/providers/test-connection", json=payload)
+        r = client.post("/api/v1/models/providers/test-connection", json=payload)
         assert r.status_code == 200
         data = r.json()
         assert data["status"] == "success"
