@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Dashboard, type MetricState } from "./pages/Dashboard";
-import { AgentWorkspace } from "./pages/AgentWorkspace";
+import { MultiAgentWorkspace } from "./pages/MultiAgentWorkspace";
+import { MultiAgentProvider } from "./state/multiAgentStore";
 import { Agents } from "./pages/Agents";
 import { Models } from "./pages/Models";
 import { Memory } from "./pages/Memory";
@@ -15,7 +16,14 @@ export function App() {
   // Page routing
   const [activeTab, setActiveTab] = useState<string>("dashboard");
   const [refreshInterval, setRefreshInterval] = useState<string>("10s");
-  const [selectedAgentId, setSelectedAgentId] = useState<string>("coder");
+  const [conversationId] = useState<string>(() => {
+    const key = "wa_conversation_id";
+    const existing = sessionStorage.getItem(key);
+    if (existing) return existing;
+    const id = (crypto as any).randomUUID();
+    sessionStorage.setItem(key, id);
+    return id;
+  });
 
   const [hermesOnline, setHermesOnline] = useState<boolean | null>(null);
   const [backendOnline, setBackendOnline] = useState<boolean | null>(null);
@@ -79,9 +87,6 @@ export function App() {
       href: window.location.href
     });
   }, []);
-  // Browser url & tab
-  const [browserUrl, setBrowserUrl] = useState<string>("http://localhost:3000");
-  const [browserTab, setBrowserTab] = useState<string>("overview");
 
   // Sync metrics changes on interval
   useEffect(() => {
@@ -309,6 +314,7 @@ export function App() {
               </svg>
               Agent Workspace
             </div>
+
             <div
               className={`nav-item ${activeTab === "workflows" ? "active" : ""}`}
               onClick={() => setActiveTab("workflows")}
@@ -431,14 +437,9 @@ export function App() {
         ) : activeTab === "settings" ? (
           <Settings />
         ) : activeTab === "workspace" ? (
-          <AgentWorkspace
-            selectedAgentId={selectedAgentId}
-            setSelectedAgentId={setSelectedAgentId}
-            browserUrl={browserUrl}
-            setBrowserUrl={setBrowserUrl}
-            browserTab={browserTab}
-            setBrowserTab={setBrowserTab}
-          />
+          <MultiAgentProvider conversationId={conversationId}>
+            <MultiAgentWorkspace conversationId={conversationId} />
+          </MultiAgentProvider>
         ) : (
           /* Placeholder views for settings and other navigation tabs */
           <main className="central-workspace" style={{ justifyContent: 'center', alignItems: 'center' }}>
@@ -459,157 +460,7 @@ export function App() {
           </main>
         )}
 
-        {/* Far Right Sidebar: Metadata Panels (only shown on Workspace view) */}
-        {activeTab === "workspace" && (
-          <aside className="right-sidebar">
-            {/* Agent State */}
-            <div className="agent-state-box">
-              <div className="agent-state-circle">
-                <svg>
-                  <circle className="state-ring-bg" cx="16" cy="16" r="13" />
-                </svg>
-              </div>
-              <div className="agent-state-right">
-                <span className="state-title">Agent State</span>
-                <span className="state-desc" style={{ color: "var(--color-success)" }}>
-                  Connected — live session
-                </span>
-              </div>
-            </div>
 
-            {/* Current Goal */}
-            <div className="goal-box">
-              <div className="section-label">Current Goal</div>
-              <div className="goal-content">
-                Select an agent and send a prompt to start a live task.
-              </div>
-            </div>
-
-            {/* Tools in Use */}
-            <div className="goal-box">
-              <div className="section-label">
-                Tools in Use
-                <span style={{ fontSize: '0.72rem', background: '#1e293b', padding: '2px 6px', borderRadius: '4px' }}>
-                  live
-                </span>
-              </div>
-              <div className="tools-in-use-list">
-                <div className="tool-in-use-item">
-                  <div className="tool-in-use-left">
-                    <span className="tool-use-dot" />
-                    <span className="tool-use-label">File System</span>
-                  </div>
-                  <span className="tool-use-state inactive">Idle</span>
-                </div>
-                <div className="tool-in-use-item">
-                  <div className="tool-in-use-left">
-                    <span className="tool-use-dot" />
-                    <span className="tool-use-label">Terminal</span>
-                  </div>
-                  <span className="tool-use-state inactive">Idle</span>
-                </div>
-                <div className="tool-in-use-item">
-                  <div className="tool-in-use-left">
-                    <span className="tool-use-dot" />
-                    <span className="tool-use-label">Browser</span>
-                  </div>
-                  <span className="tool-use-state inactive">Idle</span>
-                </div>
-                <div className="tool-in-use-item">
-                  <div className="tool-in-use-left">
-                    <span className="tool-use-dot" />
-                    <span className="tool-use-label">Code Analyzer</span>
-                  </div>
-                  <span className="tool-use-state inactive">Idle</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Permissions */}
-            <div className="goal-box">
-              <div className="section-label">Permissions</div>
-              <div className="permissions-summary-box">
-                <span>No permissions blocked</span>
-                <span className="perms-badge">All Allowed ›</span>
-              </div>
-            </div>
-
-            {/* Memory Summary */}
-            <div className="goal-box">
-              <div className="section-label">
-                Memory Summary
-                <span style={{ fontSize: '0.72rem', color: 'var(--text-dim)' }}>8,192 tokens ›</span>
-              </div>
-              <div className="memory-bars-container">
-                <div className="memory-bar-item">
-                  <div className="mem-bar-header">
-                    <span>Working Memory</span>
-                    <span>72%</span>
-                  </div>
-                  <div className="mem-bar-bg">
-                    <div className="mem-bar-fill working" />
-                  </div>
-                </div>
-                <div className="memory-bar-item">
-                  <div className="mem-bar-header">
-                    <span>Long-term Memory</span>
-                    <span>24%</span>
-                  </div>
-                  <div className="mem-bar-bg">
-                    <div className="mem-bar-fill longterm" />
-                  </div>
-                </div>
-                <div className="memory-bar-item">
-                  <div className="mem-bar-header">
-                    <span>Context Window</span>
-                    <span>68%</span>
-                  </div>
-                  <div className="mem-bar-bg">
-                    <div className="mem-bar-fill context" />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Recent Actions */}
-            <div className="goal-box">
-              <div className="section-label">Recent Actions</div>
-              <div className="recent-actions-list">
-                <div className="action-row active">
-                  <span className="action-time">10:21</span>
-                  <span className="action-dot active" />
-                  <span className="action-text">Analyzing code quality</span>
-                </div>
-                <div className="action-row">
-                  <span className="action-time">10:21</span>
-                  <span className="action-dot" />
-                  <span className="action-text">Running tests</span>
-                </div>
-                <div className="action-row">
-                  <span className="action-time">10:21</span>
-                  <span className="action-dot" />
-                  <span className="action-text">Installed dependencies</span>
-                </div>
-                <div className="action-row">
-                  <span className="action-time">10:21</span>
-                  <span className="action-dot" />
-                  <span className="action-text">Cloned repository</span>
-                </div>
-                <div className="action-row">
-                  <span className="action-time">10:21</span>
-                  <span className="action-dot" />
-                  <span className="action-text">Started project analysis</span>
-                </div>
-              </div>
-              <a href="#timeline" className="view-timeline-link" onClick={(e) => { e.preventDefault(); alert("Timeline details panel."); }}>
-                View full timeline
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
-                </svg>
-              </a>
-            </div>
-          </aside>
-        )}
       </div>
     </div>
   );

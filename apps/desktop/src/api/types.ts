@@ -115,7 +115,8 @@ export type EventName =
   | "tool_call_progress"
   | "terminal_output"
   | "artifact_created"
-  | "clarification_request";
+  | "clarification_request"
+  | "replan_notification";
 
 export interface EventEnvelope {
   event: EventName;

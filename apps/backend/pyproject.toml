@@ -12,6 +12,7 @@ dependencies = [
     "pyautogui>=0.9.54",
     "pyperclip>=1.11.0",
     "pillow>=12.2.0",
+    "alembic>=1.13.0",
 ]
 
 [project.optional-dependencies]

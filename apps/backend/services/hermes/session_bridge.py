@@ -10,10 +10,18 @@ from typing import Any, Dict, Optional
 from sqlalchemy import select, update
 
 from db.database import Database
-from db.models import AgentORM, AgentSessionORM, PermissionRequestORM, MessageORM
+from db.models import (
+    AgentInstanceORM,
+    AgentORM,
+    AgentRunORM,
+    AgentSessionORM,
+    PermissionRequestORM,
+    MessageORM,
+)
 from services.event_bus import EventBus
 from services.hermes.api_client import HermesApiClient
 from services.hermes.event_mapper import HermesEventTranslator
+from services.permission_profile import classify_command
 
 log = logging.getLogger(__name__)
 
@@ -174,6 +182,77 @@ class HermesSessionBridge:
             "status": "running"
         }
 
+    async def submit_run(
+        self,
+        *,
+        hermes_session_id: str,
+        agent_id: str,
+        content: str,
+        conversation_id: str,
+        workspace_root: Optional[str] = None,
+        model: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """Start a run on an existing Hermes session (sub-agent path).
+
+        Differs from submit_message: does NOT touch AgentSessionORM (sub-agents
+        live in agent_instances/agent_runs per ban_ke_hoach §7.2). Streams
+        events into the conversation bus so the WebSocket multiplexes them.
+        """
+        async with self.db.session() as session:
+            stmt = select(AgentORM).where(AgentORM.id == agent_id)
+            res = await session.execute(stmt)
+            agent = res.scalar_one_or_none()
+            if not agent:
+                raise ValueError(f"Agent '{agent_id}' not found in registry")
+
+        model_role = model or (f"role:{agent.router_role}" if agent.router_role else "role:Coder")
+        resp = await self.client.start_run(
+            user_message=content,
+            session_id=hermes_session_id,
+            instructions=agent.system_prompt,
+            model=model_role,
+        )
+        run_id = resp["run_id"]
+
+        task = asyncio.create_task(
+            self._stream_run(conversation_id, run_id),
+            name=f"hermes-stream-{run_id}"
+        )
+        self.active_tasks[run_id] = task
+
+        return {
+            "run_id": run_id,
+            "session_id": hermes_session_id,
+            "status": "running"
+        }
+
+    async def stop_run_by_run_id(self, run_id: str) -> bool:
+        """Call stop on a run identified directly by its Hermes run_id.
+
+        Used by the supervisor for sub-agent runs (no windagent_session_id).
+        """
+        async with self.db.session() as session:
+            stmt = select(AgentSessionORM).where(AgentSessionORM.hermes_run_id == run_id)
+            res = await session.execute(stmt)
+            agent_sess = res.scalar_one_or_none()
+            if agent_sess:
+                windagent_session_id = agent_sess.windagent_session_id
+            else:
+                windagent_session_id = run_id  # stream keys off run_id in sub-agent path
+
+        remote_ok = False
+        try:
+            await self.client.stop_run(run_id)
+            remote_ok = True
+        except Exception:
+            log.exception("Failed to stop Hermes run %s", run_id)
+
+        task = self.active_tasks.get(run_id)
+        if task:
+            task.cancel()
+
+        return remote_ok
+
     async def stop_run(self, windagent_session_id: str) -> bool:
         """Call stop on the active run for the session."""
         async with self.db.session() as session:
@@ -213,6 +292,32 @@ class HermesSessionBridge:
             await db_sess.execute(stmt_up)
 
         return remote_ok
+
+    async def _profile_decision(self, run_id: str, event: Dict[str, Any]) -> str:
+        """Return 'allow' | 'blocked' | 'pending' for an approval.request.
+
+        Looks up the owning agent instance's permission_profile and
+        classifies the shell command. Returns 'pending' when the profile
+        is Standard (handler waits for the user) or no command present.
+        """
+        command = event.get("command") or ""
+        if not command:
+            return "pending"
+        profile = "Standard"
+        async with self.db.session() as s:
+            run = (await s.execute(
+                select(AgentRunORM).where(AgentRunORM.hermes_run_id == run_id)
+            )).scalar_one_or_none()
+            if run and run.agent_instance_id:
+                inst = await s.get(AgentInstanceORM, run.agent_instance_id)
+                if inst:
+                    profile = inst.permission_profile or "Standard"
+        decision = classify_command(profile, command)
+        if decision.action == "allow":
+            return "allow"
+        if decision.action == "blocked":
+            return "blocked"
+        return "pending"
 
     async def resolve_approval(self, windagent_session_id: str, windagent_request_id: UUID, granted: bool) -> bool:
         """Proxy decision to the corresponding Hermes approval request."""
@@ -273,6 +378,18 @@ class HermesSessionBridge:
                             status="pending",
                         )
                         db_sess.add(req_orm)
+
+                    # Phase 6: apply the agent instance's permission
+                    # profile to the shell command. Autonomous auto-grants,
+                    # Safe auto-denies destructive/risky commands, Standard
+                    # leaves the request pending for the user (default).
+                    decision = await self._profile_decision(run_id, event)
+                    if decision == "allow":
+                        await self.client.submit_approval(run_id, "once")
+                        req_orm.status = "granted"
+                    elif decision == "blocked":
+                        await self.client.submit_approval(run_id, "deny")
+                        req_orm.status = "denied"
 
                 # Translate
                 env = HermesEventTranslator.translate(

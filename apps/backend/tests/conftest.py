@@ -39,7 +39,7 @@ os.environ["WINDAGENT_HERMES_ENABLED"] = "false"
 # Force every lifespan in this test session to use a temp file DB.
 _DB_FD, _DB_PATH = tempfile.mkstemp(prefix="windagent-test-", suffix=".db")
 os.close(_DB_FD)
-os.environ["WINDAGENT_DB_URL"] = f"sqlite+aiosqlite:///{_DB_PATH}"
+os.environ["WINDAGENT_DB_URL"] = f"sqlite+aiosqlite:///{_DB_PATH}?timeout=30"
 
 
 @pytest.fixture

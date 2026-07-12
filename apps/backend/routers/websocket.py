@@ -67,7 +67,26 @@ async def websocket_endpoint(websocket: WebSocket, session_id: UUID) -> None:
         return
 
     await websocket.accept()
+
+    # Phase 7: replay events the client missed (reconnect via ?after_seq=N).
+    # Subscribe FIRST so no live event slips between replay and stream, then
+    # dedupe by seq on the client side (envelope carries seq).
     queue = await bus.subscribe(sid)
+    after_seq_raw = websocket.query_params.get("after_seq")
+    if after_seq_raw is not None:
+        try:
+            after_seq = int(after_seq_raw)
+        except (TypeError, ValueError):
+            after_seq = 0
+        recovery = getattr(websocket.app.state, "recovery_manager", None)
+        if recovery is not None and after_seq >= 0:
+            try:
+                missed = await recovery.replay_after(sid, after_seq)
+                for env in missed:
+                    await websocket.send_json(env.model_dump(mode="json"))
+            except Exception:  # noqa: BLE001
+                logger.exception("ws replay failed for %s", sid)
+
     logger.info("ws accepted session=%s subscribers=%d", sid, bus.subscriber_count(sid))
 
     reader_task = asyncio.create_task(

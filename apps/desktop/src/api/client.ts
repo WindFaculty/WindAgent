@@ -117,6 +117,67 @@ export async function controlSession(
   });
 }
 
+// ---------- Phase 8: multi-agent workspace ----------
+
+export interface AgentBoardRow {
+  id: string;
+  agent_type: string;
+  status: string;
+  permission_profile: string;
+  task_id: string | null;
+  run_status: string | null;
+  session_id: string | null;
+  created_at: string | null;
+}
+
+export interface TaskGraphNode {
+  id: string;
+  title: string;
+  description?: string | null;
+  agent_type?: string | null;
+  status: string;
+  assigned_agent: string | null;
+}
+
+export interface TaskGraphEdge {
+  id?: string;
+  from: string;
+  to: string;
+  kind: string;
+}
+
+export interface TaskGraph {
+  plan_id: string | null;
+  version: number;
+  nodes: TaskGraphNode[];
+  edges: TaskGraphEdge[];
+}
+
+export async function fetchConversationAgents(
+  conversationId: string,
+): Promise<AgentBoardRow[]> {
+  return request<AgentBoardRow[]>(
+    `/api/v1/conversations/${conversationId}/agents`,
+  );
+}
+
+export async function fetchConversationTasks(
+  conversationId: string,
+): Promise<TaskGraph> {
+  return request<TaskGraph>(
+    `/api/v1/conversations/${conversationId}/tasks`,
+  );
+}
+
+export async function fetchAgentEvents(
+  agentInstanceId: string,
+  afterSeq = 0,
+): Promise<{ agent_instance_id: string; session_id: string | null; events: any[] }> {
+  return request(
+    `/api/v1/agents/${agentInstanceId}/events?after_seq=${afterSeq}`,
+  );
+}
+
 export async function retryStep(stepId: string): Promise<void> {
   await request<void>(`/api/v1/workflow/${stepId}/retry`, {
     method: "POST",
@@ -219,8 +280,10 @@ export interface WsHandle {
 export function connectWs(
   sessionId: string,
   listeners: { onEvent?: WsListener; onClose?: WsCloseListener } = {},
+  afterSeq?: number
 ): WsHandle {
-  const wsUrl = `${WS_URL}/ws/${sessionId}`;
+  const query = afterSeq !== undefined ? `?after_seq=${afterSeq}` : "";
+  const wsUrl = `${WS_URL}/ws/${sessionId}${query}`;
   logDebug(`WebSocket connecting to ${wsUrl}`);
   
   const ws = new WebSocket(wsUrl);
@@ -259,4 +322,99 @@ export function connectWs(
 
 function logDebug(msg: string) {
   console.log(`[WebSocket] ${msg}`);
+}
+
+// ---------- Giai đoạn 9 - Task editing and Control API ----------
+
+export async function updateTaskNode(
+  conversationId: string,
+  nodeId: string,
+  data: {
+    title?: string;
+    description?: string | null;
+    agent_type?: string;
+    status?: string;
+    assigned_agent_instance_id?: string | null;
+    version: number;
+  }
+): Promise<TaskGraph> {
+  return request<TaskGraph>(`/api/v1/conversations/${conversationId}/tasks/nodes/${nodeId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+}
+
+export async function createTaskNode(
+  conversationId: string,
+  data: {
+    title: string;
+    description?: string | null;
+    agent_type: string;
+    status?: string;
+    assigned_agent_instance_id?: string | null;
+    version: number;
+  }
+): Promise<TaskGraph> {
+  return request<TaskGraph>(`/api/v1/conversations/${conversationId}/tasks/nodes`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteTaskNode(
+  conversationId: string,
+  nodeId: string,
+  version: number
+): Promise<TaskGraph> {
+  return request<TaskGraph>(`/api/v1/conversations/${conversationId}/tasks/nodes/${nodeId}?version=${version}`, {
+    method: "DELETE",
+  });
+}
+
+export async function createTaskEdge(
+  conversationId: string,
+  data: {
+    from_task_id: string;
+    to_task_id: string;
+    edge_type?: string;
+    version: number;
+  }
+): Promise<TaskGraph> {
+  return request<TaskGraph>(`/api/v1/conversations/${conversationId}/tasks/edges`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteTaskEdge(
+  conversationId: string,
+  fromTaskId: string,
+  toTaskId: string,
+  version: number
+): Promise<TaskGraph> {
+  return request<TaskGraph>(
+    `/api/v1/conversations/${conversationId}/tasks/edges?from_task_id=${fromTaskId}&to_task_id=${toTaskId}&version=${version}`,
+    {
+      method: "DELETE",
+    }
+  );
+}
+
+export async function pauseTask(nodeId: string): Promise<any> {
+  return request<any>(`/api/v1/tasks/${nodeId}/pause`, { method: "POST" });
+}
+
+export async function resumeTask(nodeId: string): Promise<any> {
+  return request<any>(`/api/v1/tasks/${nodeId}/resume`, { method: "POST" });
+}
+
+export async function cancelTask(nodeId: string): Promise<any> {
+  return request<any>(`/api/v1/tasks/${nodeId}/cancel`, { method: "POST" });
+}
+
+export async function retryTask(nodeId: string): Promise<any> {
+  return request<any>(`/api/v1/tasks/${nodeId}/retry`, { method: "POST" });
 }

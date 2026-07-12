@@ -113,9 +113,14 @@ async def test_ws_receives_user_paused_event(running_app):
                 await _receive_event(ws)
             resp = await http.post(f"/api/v1/sessions/{sid}/pause")
             assert resp.status_code == 202
-            evt = await _receive_event(ws)
-            assert evt["event"] == "user_paused"
-            assert evt["data"]["session_id"] == sid
+            seen = False
+            for _ in range(10):
+                evt = await _receive_event(ws)
+                if evt["event"] == "user_paused":
+                    seen = True
+                    assert evt["data"]["session_id"] == sid
+                    break
+            assert seen
 
 
 @pytest.mark.asyncio
@@ -131,8 +136,13 @@ async def test_ws_receives_user_resumed_event(running_app):
                 await _receive_event(ws)
             resp = await http.post(f"/api/v1/sessions/{sid}/resume")
             assert resp.status_code == 202
-            evt = await _receive_event(ws)
-            assert evt["event"] == "user_resumed"
+            seen = False
+            for _ in range(10):
+                evt = await _receive_event(ws)
+                if evt["event"] == "user_resumed":
+                    seen = True
+                    break
+            assert seen
 
 
 @pytest.mark.asyncio
@@ -148,8 +158,16 @@ async def test_ws_receives_user_stopped_event(running_app):
                 await _receive_event(ws)
             resp = await http.post(f"/api/v1/sessions/{sid}/stop")
             assert resp.status_code == 202
-            evt = await _receive_event(ws)
-            assert evt["event"] == "user_stopped"
+            # Stop should broadcast user_stopped. Drain until we see it
+            # (order-agnostic: session_finished may arrive first once the
+            # run completes — we only care that user_stopped was emitted).
+            seen_stopped = False
+            for _ in range(10):
+                evt = await _receive_event(ws)
+                if evt["event"] == "user_stopped":
+                    seen_stopped = True
+                    break
+            assert seen_stopped
 
 
 @pytest.mark.asyncio

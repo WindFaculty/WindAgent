@@ -1,859 +1,1273 @@
-# Kế hoạch tích hợp Hermes vào Agent Workspace của WindAgent
+Bạn đang làm việc trực tiếp trong repository:
 
-## 1. Kết luận kiến trúc
+* Repository: `WindFaculty/WindAgent`
+* Local branch được audit: `feat/phase-1-baseline`
+* Starting reference theo audit: `9205dfa111301eb65cf1963dde89778e246dae5c`
+* Commit message tại ref: `feat(hermes): implement stop run mapping and resource cleanup for Hermes sessions`
+* Trạng thái audit trước đó:
 
-Nên tích hợp theo mô hình **hai sidecar độc lập**, không import trực tiếp mã nguồn Hermes vào FastAPI của WindAgent:
+  * Khoảng 19 file modified và 21 file untracked.
+  * `git diff 9205dfa..HEAD` rỗng vì chưa có commit mới.
+  * Focused backend: `33 passed, 1 warning`.
+  * Backend và frontend runtime đều đang down.
+  * Các module orchestration tồn tại độc lập nhưng chưa được nối vào live path.
+  * Live path vẫn chủ yếu là Phase-1 single-agent Hermes bridge.
+  * Verdict hiện tại: `partial_foundation_implemented`.
+  * Core gates: fail.
+  * Rủi ro P0: API key provider đang được lưu plaintext.
+  * Không được tuyên bố orchestration đã hoàn thành nếu chưa có black-box runtime evidence.
 
-```text
-React / Tauri Workspace
-        │
-        │ REST + WebSocket
-        ▼
-WindAgent FastAPI :8765
-  ├─ Session facade
-  ├─ Event bridge
-  ├─ Permission gateway
-  ├─ Model Router
-  ├─ SQLite audit
-  └─ Browser / Terminal bridge
-        │
-        │ HTTP + SSE, Bearer auth
-        ▼
-Hermes Gateway :8642
-  ├─ Agent loop
-  ├─ Todo planning
-  ├─ Terminal / Files / Web / Memory / Skills
-  ├─ Subagents
-  └─ Persistent Hermes sessions
-        │
-        │ OpenAI-compatible API
-        ▼
-WindAgent Router :8765/v1
-        │
-        ▼
-NVIDIA / Gemini / OpenRouter / Ollama / provider khác
-```
+# NHIỆM VỤ CHÍNH
 
-Vai trò được tách rõ:
-
-* **Hermes** là agent runtime: suy luận, gọi tool, todo planning, memory, skills, subagent.
-* **WindAgent** là control plane: giao diện, session facade, quyền, audit, browser preview, model router, quota và trạng thái.
-* Frontend chỉ kết nối với WindAgent. Không để React gọi thẳng Hermes vì Hermes API có quyền sử dụng terminal và yêu cầu API key cho mọi deployment.
-
-Hermes đã có API server phù hợp cho kiến trúc này: session API, chat streaming, Runs API, SSE event stream, stop, approval, health, capabilities, skills và toolsets.
-
----
-
-## 2. Việc cần xử lý trước khi tích hợp
-
-GitHub hiện tại chưa hoàn toàn trùng với bản local bạn vừa probe.
-
-Trên branch `feat/router-phase6-memory-a2a`:
-
-* `apps/desktop/src/api/client.ts` vẫn là mock client, trả session, workflow, health và WebSocket giả.
-* `App.tsx` vẫn chạy luồng mô phỏng bằng state, timer, task và terminal hardcoded.
-* Thanh trạng thái bên phải cũng đang dùng dữ liệu mô phỏng cho Tools, Memory và Recent Actions.
-* Backend trong GitHub vẫn mount router ở root, chưa thấy prefix `/api/v1`.
-
-Do đó, bước đầu tiên phải là đẩy phiên bản local đã probe lên một branch cố định, sau đó mới tích hợp Hermes trên branch đó. Nếu không, Codex hoặc Hermes có thể vô tình thay đổi lại client mock.
-
-### Chuẩn hóa route
-
-Đề xuất chọn chuẩn chính thức:
+Đưa WindAgent từ trạng thái `partial_foundation_implemented` sang một vertical slice orchestration chạy thật xuyên suốt:
 
 ```text
-REST:      /api/v1/*
-WebSocket: /ws/{session_id}
-Compatibility:
-  /health
-  /models/health
+chat request
+→ create conversation turn
+→ supervisor spawn
+→ build/persist DAG
+→ acquire route lock
+→ execute run_plan
+→ persist incremental/partial state
+→ publish events
+→ finish/cancel/fail deterministically
+→ release lock
+→ recover state after restart
 ```
 
-Backend mount toàn bộ session, permissions và runtime API dưới `/api/v1`. Hai route `/health` và `/models/health` được giữ làm alias để không phá script healthcheck cũ.
+Phạm vi bắt buộc của lần triển khai này:
 
----
+1. Bảo toàn và chuẩn hóa toàn bộ worktree hiện tại.
+2. Loại bỏ rủi ro API key plaintext.
+3. Thêm Alembic/database migration cần thiết.
+4. Thêm workspace/path traversal protection.
+5. Nối `chat → supervisor → DAG → route lock → run_plan`.
+6. Thực thi idempotency, partial persistence và state transitions.
+7. Chứng minh vertical slice bằng E2E với fake Hermes.
+8. Khởi động backend thật và chạy black-box runtime test.
+9. Commit, push và xác minh remote SHA.
+10. Viết báo cáo evidence-first, không phóng đại kết quả.
 
-## 3. Chiến lược sử dụng Hermes
+Không thực hiện frontend cosmetics hoặc refactor lớn trước khi vertical slice backend đạt gate.
 
-### 3.1 Chạy Hermes như dịch vụ local
+# NGUYÊN TẮC KHÔNG ĐƯỢC VI PHẠM
 
-Tạo một Hermes profile riêng cho WindAgent:
+## 1. Không làm mất worktree
+
+Tuyệt đối không chạy các lệnh có thể phá hủy thay đổi hiện có như:
+
+```bash
+git reset --hard
+git clean -fd
+git checkout -- .
+git restore .
+git stash drop
+```
+
+Không ghi đè hoặc xóa bất kỳ file modified/untracked nào trước khi đã phân loại và lưu provenance.
+
+## 2. Không commit mù toàn bộ working tree
+
+Không dùng:
+
+```bash
+git add .
+git add -A
+```
+
+trước khi kiểm tra từng file.
+
+Phải phân loại file thành:
+
+* Source orchestration liên quan.
+* Test liên quan.
+* Migration/schema.
+* Frontend liên quan.
+* Report/artifact.
+* Generated/cache/runtime DB.
+* File chứa secret hoặc dữ liệu local.
+* Thay đổi không liên quan.
+
+Chỉ stage từng file hoặc từng hunk có chủ đích.
+
+## 3. Không tiết lộ secret
+
+Không in API key, token, encryption key hoặc credential vào:
+
+* Terminal output.
+* Test logs.
+* Exception.
+* HTTP response.
+* WebSocket payload.
+* Report.
+* Artifact.
+* Git diff.
+* Commit.
+* Fixture snapshot.
+
+Mọi secret trong báo cáo phải được thay bằng dạng mask, ví dụ:
 
 ```text
-Profile: windagent
-Host:    127.0.0.1
-Port:    8642
+sk-****abcd
 ```
 
-Biến môi trường phía WindAgent:
+## 4. Không tự nhận test đã chạy
 
-```env
-WINDAGENT_HERMES_ENABLED=true
-WINDAGENT_HERMES_MODE=external
-WINDAGENT_HERMES_URL=http://127.0.0.1:8642
-WINDAGENT_HERMES_API_KEY=***
-WINDAGENT_HERMES_PROFILE=windagent
-WINDAGENT_HERMES_TIMEOUT_SECONDS=120
+Chỉ báo cáo test pass khi lệnh thực sự đã được chạy và exit code bằng 0.
+
+Phân biệt rõ:
+
+* Unit test.
+* Integration test.
+* Fake-Hermes E2E.
+* Backend black-box runtime.
+* Frontend test.
+* Real-Hermes integration.
+
+Không dùng unit test để đại diện cho runtime integration.
+
+## 5. Không dừng toàn bộ audit vì một test thất bại
+
+Khi một test thất bại:
+
+1. Ghi lệnh, exit code và lỗi.
+2. Xác định các phần còn độc lập.
+3. Tiếp tục hoàn thành các phần độc lập.
+4. Sau đó quay lại sửa root cause.
+5. Không che giấu hoặc xóa evidence thất bại.
+
+Không chạy đồng thời nhiều full backend test suite dùng chung SQLite database.
+
+## 6. Không refactor core trên diện rộng
+
+Ưu tiên tái sử dụng và nối các module hiện có, bao gồm những module tương đương với:
+
+* `dag_scheduler`
+* `route_lock_service`
+* `worktree_service`
+* `supervisor`
+* `recovery_service`
+* `permission_profile`
+* Hermes session bridge
+* Provider gateway/router runtime
+* Existing event bus/WebSocket infrastructure
+
+Nếu tên hoặc vị trí file khác, phải tìm implementation thực tế trước khi sửa.
+
+# PHASE 0 — PROVENANCE VÀ WORKTREE PRESERVATION
+
+## 0.1. Ghi trạng thái ban đầu
+
+Chạy và lưu toàn bộ output:
+
+```bash
+git status --short
+git status --porcelain=v2
+git branch --show-current
+git rev-parse HEAD
+git rev-parse --show-toplevel
+git worktree list --porcelain
+git diff --stat
+git diff --name-status
+git diff --cached --stat
+git ls-files --others --exclude-standard
+git log -10 --oneline --decorate
+git remote -v
 ```
 
-Hermes được cấu hình:
+Xác minh:
 
-```env
-API_SERVER_ENABLED=true
-API_SERVER_HOST=127.0.0.1
-API_SERVER_PORT=8642
-API_SERVER_KEY=***
+```bash
+git cat-file -t 9205dfa111301eb65cf1963dde89778e246dae5c
+git merge-base --is-ancestor 9205dfa111301eb65cf1963dde89778e246dae5c HEAD
 ```
 
-Hermes native Windows hỗ trợ CLI, gateway và tools; shell mặc định có thể sử dụng Git Bash được cài kèm.
+Nếu HEAD không còn bằng `9205dfa`, không reset. Ghi nhận actual HEAD và tiếp tục trên trạng thái thực tế.
 
-Không tự động tải hoặc cài Hermes từ backend. `HermesProcessManager` chỉ:
+## 0.2. Tạo artifact provenance
 
-1. Probe gateway.
-2. Báo trạng thái chưa cài/chưa chạy.
-3. Tùy chọn khởi động `hermes -p windagent gateway` khi người dùng bật chế độ managed.
-
-### 3.2 Hermes gọi model qua WindAgent Router
-
-Hermes nên gọi LLM thông qua OpenAI-compatible gateway hiện có của WindAgent:
+Tạo thư mục:
 
 ```text
-Hermes provider base URL:
-http://127.0.0.1:8765/v1
-
-Hermes model:
-auto/Coder
+artifacts/agent_workspace_orchestration_phase2/<UTC_TIMESTAMP>/
 ```
 
-Gateway WindAgent đã hiểu các định danh `role:*` và `auto/*`, sau đó resolve sang role của router.
-
-Luồng hoàn chỉnh:
+Tối thiểu gồm:
 
 ```text
-Hermes agent loop
-  → POST WindAgent /v1/chat/completions model=auto/Coder
-  → Router chọn model
-  → ProviderGateway gọi provider
-  → fallback khi lỗi/quota
-  → trả kết quả cho Hermes
+commands.log
+git_status_before.txt
+git_porcelain_v2_before.txt
+git_diff_stat_before.txt
+tracked_changes_manifest.txt
+untracked_files_manifest.txt
+worktree_manifest.txt
+starting_head.txt
+environment.txt
 ```
 
-Nhờ vậy Hermes không tự cạnh tranh với Router của WindAgent.
+Lưu patch local để phòng mất dữ liệu:
 
-### 3.3 Khoảng trống phải sửa trong Router
+```bash
+git diff --binary > artifacts/.../tracked_worktree_before.patch
+git diff --cached --binary > artifacts/.../staged_worktree_before.patch
+```
 
-Streaming hiện tại của WindAgent chưa phải streaming thực. Backend đợi nội dung hoàn chỉnh rồi cắt chuỗi thành các đoạn 5 ký tự và phát SSE. Token usage cũng đang được ước lượng bằng số từ.
+Không copy nội dung file nghi chứa secret vào artifact. Với file nghi chứa secret, chỉ ghi đường dẫn và trạng thái `REDACTED_SENSITIVE_FILE`.
 
-Trước khi đánh dấu tích hợp production-ready cần:
+## 0.3. Phân loại 19 modified và 21 untracked
 
-* Stream trực tiếp từng delta từ provider.
-* Truyền nguyên `usage` do provider trả về.
-* Truyền model/provider thực tế được chọn.
-* Phát sự kiện fallback.
-* Hỗ trợ cancellation khi Hermes dừng run.
-* Không tạo stream giả từ kết quả hoàn chỉnh.
+Kiểm tra từng file và tạo bảng:
 
----
+| Path | Git state | Category | Relevant | Secret risk | Generated | Action |
+| ---- | --------- | -------- | -------: | ----------: | --------: | ------ |
 
-## 4. Backend Hermes Bridge
+Không được giả định tất cả file untracked đều là source.
 
-Tạo package mới:
+Kiểm tra `.gitignore` và bổ sung rule cho:
+
+* Runtime DB.
+* SQLite WAL/SHM.
+* Cache.
+* Temporary worktree.
+* Logs.
+* Local `.env`.
+* Secret material.
+* Generated frontend artifacts.
+* Python cache.
+* Test output không cần version control.
+
+Không ignore source, migration, test hoặc report cần theo dõi.
+
+## 0.4. Secret scan
+
+Tìm kiếm tối thiểu các pattern:
 
 ```text
-apps/backend/services/hermes/
-  client.py
-  process_manager.py
-  session_bridge.py
-  run_bridge.py
-  event_mapper.py
-  event_reconciler.py
-  tool_catalog.py
-  browser_bridge.py
-  terminal_bridge.py
-  schemas.py
+api_key
+secret
+token
+authorization
+bearer
+sk-
+AIza
+nvapi-
+OPENAI_API_KEY
+ANTHROPIC_API_KEY
+GOOGLE_API_KEY
+NVIDIA_API_KEY
+OPENROUTER_API_KEY
 ```
 
-### `HermesClient`
+Phân biệt:
 
-Đóng gói các API:
+* Field name hợp lệ.
+* Placeholder.
+* Test dummy.
+* Secret thật.
+* Plaintext persistence logic.
+
+Không đưa giá trị tìm thấy vào báo cáo.
+
+# PHASE A — SECURITY, MIGRATION VÀ PATH SAFETY
+
+Phase A là gate bắt buộc. Không chạy live provider bằng credential thật trước khi Phase A pass.
+
+## A1. API key encryption at rest
+
+Hiện tại phải coi việc gán trực tiếp dạng sau là không đạt:
+
+```python
+provider.api_key = payload.api_key
+```
+
+Thiết kế một secret storage abstraction có versioning.
+
+Yêu cầu:
+
+1. Encryption key lấy từ environment hoặc secret store, không lưu trong cùng database.
+2. Tên environment variable rõ ràng, ví dụ:
 
 ```text
-GET  /health
-GET  /health/detailed
-GET  /v1/capabilities
-GET  /v1/models
-GET  /v1/toolsets
-GET  /v1/skills
-
-POST /api/sessions
-GET  /api/sessions/{id}
-GET  /api/sessions/{id}/messages
-POST /api/sessions/{id}/chat/stream
-
-POST /v1/runs
-GET  /v1/runs/{run_id}
-GET  /v1/runs/{run_id}/events
-POST /v1/runs/{run_id}/stop
-POST /v1/runs/{run_id}/approval
+WINDAGENT_SECRET_ENCRYPTION_KEY
 ```
 
-Hermes session stream đã định nghĩa các sự kiện như `assistant.delta`, `tool.started`, `tool.completed`, `run.completed`.
-
-### `HermesRunBridge`
-
-Mỗi lần người dùng gửi prompt:
-
-1. Kiểm tra WindAgent session.
-2. Resolve hoặc tạo Hermes session.
-3. Gửi `POST /v1/runs`.
-4. Lưu `run_id`.
-5. Mở SSE `/v1/runs/{run_id}/events`.
-6. Chuyển Hermes events thành WindAgent events.
-7. Ghi raw event và normalized event vào SQLite.
-8. Broadcast qua `/ws/{windagent_session_id}`.
-
-Runs API được thiết kế chính xác cho dashboard có thể attach/detach, poll lại trạng thái và theo dõi tiến trình dài.
-
-### Đồng bộ session
-
-Tạo bảng:
+3. Ciphertext có marker/version, ví dụ:
 
 ```text
-SessionRuntimeLinkORM
-  id
-  windagent_session_id
-  runtime_type              # hermes
-  hermes_session_id
-  hermes_run_id
-  agent_role                # Coder, Researcher...
-  workspace_root
-  status
-  last_event_sequence
-  created_at
-  updated_at
+enc:v1:<encoded-payload>
 ```
 
-Không lưu Hermes API key trong database.
+4. Dùng authenticated encryption.
+5. Không tự viết thuật toán crypto.
+6. Ưu tiên dependency crypto đáng tin cậy đã có trong project.
+7. Nếu cần thêm dependency, cập nhật dependency lock/requirements đúng chuẩn dự án.
+8. Hỗ trợ:
 
----
+   * encrypt
+   * decrypt
+   * detect encrypted value
+   * mask
+   * key validation
+9. Không bao giờ trả API key plaintext qua list/get/update response.
+10. API update có thể nhận key mới nhưng response chỉ trả trạng thái và masked metadata.
+11. Không log payload chứa API key.
+12. Exception phải được redacted.
+13. Test sử dụng deterministic test key hoặc fixture key riêng.
+14. Production không được silently dùng hardcoded fallback key.
+15. Khi encryption key thiếu:
 
-## 5. Giao thức sự kiện thống nhất
+* Không được lưu plaintext.
+* Trả lỗi cấu hình rõ ràng cho thao tác cần secret.
+* Các endpoint không cần secret vẫn có thể hoạt động khi hợp lý.
 
-Giữ envelope hiện tại:
+## A2. Migration dữ liệu hiện có
+
+Dùng Alembic hoặc migration mechanism thực tế của repository.
+
+Migration phải:
+
+* Không phá dữ liệu.
+* Nhận diện `NULL`, empty và already-encrypted values.
+* Idempotent khi chạy lại ở mức application migration logic.
+* Không ghi plaintext vào migration log.
+* Có backup/rollback strategy.
+* Không commit database local.
+* Không tự động xóa key không giải mã được.
+* Ghi lỗi theo provider ID đã mask, không ghi secret.
+
+Nếu việc mã hóa dữ liệu cũ cần encryption key runtime, xây một safe migration command hoặc application migration step được document rõ ràng thay vì nhúng secret vào revision file.
+
+## A3. Response masking
+
+Audit mọi endpoint provider/model.
+
+Bảo đảm API response không chứa:
+
+```text
+api_key
+raw_secret
+authorization header
+encryption key
+decrypted credential
+```
+
+Có thể trả:
 
 ```json
 {
-  "event": "assistant_delta",
-  "timestamp": "2026-07-11T00:00:00Z",
-  "sequence": 143,
+  "has_api_key": true,
+  "api_key_masked": "****abcd"
+}
+```
+
+Không trả encrypted ciphertext cho frontend.
+
+## A4. Log redaction
+
+Thêm redaction tập trung cho:
+
+* HTTP request logging.
+* Provider gateway errors.
+* Router execution logs.
+* Hermes bridge errors.
+* Pydantic validation errors.
+* Traceback context.
+* Audit artifacts.
+
+Test phải kiểm tra cả plaintext secret và ciphertext không xuất hiện trong user-facing response.
+
+## A5. Workspace/path traversal guard
+
+Tất cả đường dẫn do request, agent, plan hoặc tool cung cấp phải được resolve bên trong workspace root được phép.
+
+Chặn:
+
+* `../`
+* Absolute path ngoài root.
+* Windows drive escape.
+* UNC path.
+* Mixed slash.
+* URL-encoded traversal.
+* Symlink/junction escape.
+* Case-normalization issue trên Windows.
+* Empty root hoặc ambiguous root.
+* Delete/cleanup ngoài managed worktree.
+
+Tạo helper dùng chung thay vì kiểm tra rải rác.
+
+Bổ sung test cho Windows và POSIX semantics ở mức có thể chạy trên CI.
+
+## Phase A acceptance gate
+
+Phase A chỉ pass khi:
+
+* API key mới không xuất hiện plaintext trong DB.
+* API key không xuất hiện trong response/log/artifact.
+* Missing encryption key không dẫn tới plaintext fallback.
+* Migration test pass.
+* Traversal test pass.
+* Existing provider/model contract không bị phá ngoài thay đổi có chủ đích.
+* Focused security tests pass.
+
+Nếu fail, verdict tối thiểu phải là:
+
+```text
+rejected_security_gate
+```
+
+# PHASE B — ROUTE LOCK VÀ FAILOVER THEO TURN
+
+## B1. Route lock lifecycle
+
+Mỗi conversation turn phải có route decision ổn định.
+
+Khóa phải gắn tối thiểu với:
+
+```text
+conversation_id
+turn_id
+run_id
+route_lock_id
+selected_provider
+selected_model
+created_at
+released_at
+status
+version
+```
+
+Luồng:
+
+```text
+turn accepted
+→ acquire route lock
+→ persist selected route
+→ execute
+→ failover theo policy được phép
+→ finish/cancel/fail
+→ release/finalize lock
+```
+
+Không giữ lock chỉ trong process memory nếu cần recovery.
+
+## B2. Concurrency safety
+
+Hai request đồng thời cho cùng conversation không được:
+
+* Cùng sở hữu active turn lock.
+* Tạo duplicate run.
+* Ghi đè route decision.
+* Chạy cùng plan hai lần ngoài chủ đích.
+
+Dùng transaction, unique constraint, compare-and-set hoặc optimistic versioning phù hợp với schema hiện tại.
+
+Không dùng check-then-insert không nguyên tử.
+
+## B3. Same-model failover
+
+Khi provider endpoint lỗi nhưng policy cho phép, thử failover sang route khác vẫn phục vụ cùng logical model hoặc equivalent deployment theo catalog.
+
+Phải ghi:
+
+```text
+attempt
+provider
+model
+error_class
+retryable
+latency
+fallback_reason
+result
+```
+
+Retry/failover phải có cap.
+
+Không retry:
+
+* Authentication failure.
+* Invalid request.
+* Safety/policy rejection.
+* Missing model configuration.
+* Non-retryable 4xx.
+
+Không để failover làm thay đổi model giữa turn mà không ghi route transition.
+
+## B4. Route lock tests
+
+Tối thiểu:
+
+* Acquire thành công.
+* Duplicate acquire bị chặn.
+* Release idempotent.
+* Cancel giải phóng/finalize.
+* Process restart đọc được persisted lock.
+* Stale lock reconciliation.
+* Same-model retry thành công.
+* Non-retryable error không retry.
+* Retry cap được tôn trọng.
+* Hai concurrent requests không cùng execute.
+
+# PHASE C — SUPERVISOR SPAWN VÀ CHAT → DAG
+
+## C1. Xác định live entry point
+
+Tìm endpoint thực tế nhận chat/message.
+
+Không tạo endpoint song song nếu endpoint hiện có có thể mở rộng an toàn.
+
+Trace live path hiện tại:
+
+```text
+HTTP message request
+→ router/controller
+→ Hermes/single-agent bridge
+→ event bus/WebSocket
+→ persistence
+```
+
+Ghi call graph trước và sau vào report.
+
+## C2. Supervisor integration
+
+Thay vì mọi message luôn đi thẳng vào single-agent bridge, thêm orchestration decision:
+
+* Single-agent request vẫn có thể dùng fast path.
+* Multi-step/multi-agent request tạo supervisor run.
+* Supervisor tạo agent instances có ID ổn định.
+* Supervisor tạo DAG hoặc execution plan.
+* DAG được persist trước khi execution.
+* Mỗi node liên kết được với:
+
+  * conversation
+  * turn
+  * run
+  * agent instance
+  * parent node
+  * dependency
+  * status
+  * timestamps
+  * retry count
+  * output/error reference
+
+Không dùng heuristic khó kiểm thử để quyết định multi-agent trong giai đoạn đầu. Có thể dùng explicit request mode hoặc deterministic planner fixture cho E2E.
+
+## C3. State machine
+
+Định nghĩa trạng thái hợp lệ, ví dụ:
+
+```text
+created
+queued
+running
+waiting_dependency
+waiting_approval
+succeeded
+failed
+cancel_requested
+cancelled
+recovering
+orphaned
+```
+
+Kiểm soát transition. Không cho phép:
+
+```text
+succeeded → running
+cancelled → running
+failed → succeeded
+```
+
+trừ khi tạo retry attempt/run mới rõ ràng.
+
+## C4. Event contract
+
+Mọi event orchestration phải có envelope nhất quán:
+
+```json
+{
+  "event_id": "...",
+  "sequence": 1,
+  "conversation_id": "...",
+  "turn_id": "...",
+  "run_id": "...",
+  "agent_instance_id": "...",
+  "event": "...",
+  "timestamp": "...",
   "data": {}
 }
 ```
 
-Thêm `sequence` để reconnect không bị trùng hoặc mất event.
+Không bắt buộc `agent_instance_id` cho event cấp conversation, nhưng field/schema phải xử lý rõ.
 
-### Mapping đề xuất
+Event sequence phải hỗ trợ recovery/deduplication sau này.
 
-| Hermes event       | WindAgent event               | Panel sử dụng         |
-| ------------------ | ----------------------------- | --------------------- |
-| Run bắt đầu        | `agent_state_changed`         | Agent State           |
-| `assistant.delta`  | `assistant_delta`             | Chat                  |
-| Assistant hoàn tất | `assistant_message_completed` | Chat                  |
-| `tool.started`     | `tool_call_started`           | Tools, Recent Actions |
-| `tool.completed`   | `tool_call_finished`          | Tools, Terminal       |
-| Todo write/read    | `workflow_updated`            | Current Task          |
-| Approval pending   | `permission_request`          | Permissions           |
-| Approval resolved  | `permission_granted/denied`   | Permissions           |
-| Run completed      | `session_finished`            | Toàn trang            |
-| Usage update       | `runtime_usage_updated`       | Model/Usage/Context   |
-| Router fallback    | `model_route_changed`         | Model status          |
-| Browser action     | `browser_state_updated`       | Browser Preview       |
-| Terminal stdout    | `terminal_output_delta`       | Terminal              |
-| Runtime error      | `error`                       | Chat, status          |
+# PHASE D — RUN_PLAN, IDEMPOTENCY VÀ PARTIAL PERSISTENCE
 
-Frontend không nên tự diễn giải raw Hermes event. Việc chuẩn hóa phải được thực hiện tại backend để Hermes có thể nâng version mà không phá UI.
+## D1. Wire run_plan vào live supervisor path
 
----
+Không chỉ unit-call `run_plan`.
 
-## 6. Giao diện chat streaming
-
-Tách `AgentWorkspace` khỏi `App.tsx`. Trang này không tiếp tục nhận hàng loạt state mock qua props.
-
-Cấu trúc đề xuất:
+Phải chứng minh request từ HTTP entry point thực sự đi đến:
 
 ```text
-pages/AgentWorkspace/
-  AgentWorkspacePage.tsx
-  components/
-    ChatPanel.tsx
-    TaskPanel.tsx
-    TerminalPanel.tsx
-    AgentBrowserPanel.tsx
-    RuntimeSidebar.tsx
-    PermissionDialog.tsx
-  hooks/
-    useAgentSession.ts
-    useAgentEventStream.ts
-    useWorkspaceSnapshot.ts
-    useRunControls.ts
-  store/
-    agentWorkspaceStore.ts
-  reducers/
-    agentEventReducer.ts
+supervisor.spawn
+→ DAG creation
+→ run_plan
+→ node execution
 ```
 
-### Luồng chat
+Dùng spy/instrumentation/test assertion để xác nhận.
 
-Khi mount:
+## D2. concurrency_group
 
-1. Đọc session gần nhất từ local storage hoặc URL.
-2. Tạo session nếu chưa có.
-3. Hydrate bằng `GET /api/v1/sessions/{id}/snapshot`.
-4. Kết nối WebSocket.
-5. Reconcile các event sau `last_sequence`.
+Các node cùng `concurrency_group` phải tuân thủ policy đã định nghĩa.
 
-Khi gửi:
+Xác định rõ semantics:
 
-1. Thêm user message theo optimistic update.
-2. Gọi `POST /api/v1/sessions/{id}/messages`.
-3. Tạo một assistant message rỗng.
-4. Nối từng `assistant_delta` vào đúng `message_id`.
-5. Khi hoàn tất, khóa nội dung và lưu usage.
+* Cùng group chạy tuần tự hay bị giới hạn concurrency.
+* Khác group được chạy song song đến mức nào.
+* Global cap.
+* Per-conversation cap.
+* Per-provider cap nếu liên quan quota.
 
-Không dùng `setInterval`, timeout giả hoặc checklist hardcoded.
+Test phải deterministic, không phụ thuộc timing mong manh.
 
----
+## D3. Idempotency
 
-## 7. Current Task theo todo của Hermes
+Mỗi message/turn cần idempotency key.
 
-Hermes có tool `todo` riêng để agent phân rã nhiệm vụ. Mỗi task có:
+Các request duplicate phải:
 
-```json
-{
-  "id": "1",
-  "content": "Đọc cấu trúc repository",
-  "status": "in_progress"
-}
-```
+* Trả về run hiện có, hoặc
+* Bị reject có chủ đích.
 
-Các status hợp lệ:
+Không tạo duplicate:
+
+* Conversation turn.
+* DAG.
+* Node run.
+* Hermes run.
+* Worktree.
+* Usage/quota accounting.
+
+Idempotency phải được enforce ở persistence layer, không chỉ dictionary memory.
+
+## D4. Partial persistence
+
+Sau mỗi node hoặc meaningful event:
+
+* Persist status.
+* Persist partial output/reference.
+* Persist timestamps.
+* Persist retry attempt.
+* Persist error class đã sanitize.
+* Commit transaction hợp lý.
+
+Khi process chết giữa run, recovery phải biết:
+
+* Node nào hoàn tất.
+* Node nào đang chạy.
+* Node nào chưa chạy.
+* Node nào có thể retry.
+* Lock nào còn active.
+* Hermes run mapping nào còn tồn tại.
+
+## D5. Failure semantics
+
+Phân biệt:
+
+* Node failure.
+* Provider failure.
+* Hermes failure.
+* Planner failure.
+* Persistence failure.
+* User cancel.
+* Process crash.
+* Dependency failure.
+* Permission denial.
+
+DAG có thể `partial_success` nếu policy cho phép, nhưng phải deterministic và được test.
+
+# SQLITE VÀ TEST ISOLATION
+
+Không tiếp tục bỏ full backend suite chỉ vì SQLite lock mà không sửa test infrastructure.
+
+Thực hiện một trong các chiến lược phù hợp:
+
+* DB tạm riêng theo test session.
+* DB riêng theo pytest worker.
+* Unique DB path bằng UUID.
+* Correct in-memory shared connection.
+* WAL và busy timeout cho test contention có chủ đích.
+* Explicit connection cleanup.
+
+Không cho hai background suites dùng chung `_DB_PATH`.
+
+Bổ sung test chứng minh:
+
+* Hai test process/session không tranh cùng DB ngoài chủ đích.
+* Transaction rollback/cleanup đúng.
+* Temporary DB được xóa sau test.
+* WAL/SHM không bị commit.
+
+# E2E VỚI FAKE HERMES
+
+Fake Hermes phải deterministic và hỗ trợ ít nhất:
+
+* Start run.
+* Stream event.
+* Complete run.
+* Fail retryable.
+* Fail non-retryable.
+* Delay.
+* Cancel.
+* Approval.
+* Disconnect/reconnect simulation nếu infrastructure hiện có hỗ trợ.
+* Duplicate response/idempotency scenario.
+
+Tạo E2E bắt đầu từ HTTP/WebSocket public interface, không gọi trực tiếp service nội bộ để thay thế E2E.
+
+Kịch bản bắt buộc:
+
+## Scenario 1 — Successful orchestration
 
 ```text
-pending
-in_progress
-completed
-cancelled
+create conversation/session
+→ send orchestration message
+→ supervisor spawned
+→ DAG persisted
+→ route lock acquired
+→ planner node succeeds
+→ worker node succeeds
+→ partial events received
+→ run succeeds
+→ lock finalized/released
 ```
 
-Todo có thứ tự ưu tiên, và hướng dẫn của Hermes quy định chỉ một item ở trạng thái `in_progress` tại một thời điểm. Mỗi lần gọi tool đều trả toàn bộ danh sách hiện tại.
+Assert database và event sequence.
 
-### Mapping vào WindAgent Workflow
-
-Lần đầu Hermes gọi `todo`:
+## Scenario 2 — Retryable provider failure
 
 ```text
-workflow_created
+first route fails retryably
+→ same-model failover
+→ second route succeeds
+→ one logical turn
+→ no duplicate DAG
+→ attempts persisted
 ```
 
-Những lần sau:
+## Scenario 3 — Duplicate request
+
+Gửi cùng idempotency key hai lần.
+
+Assert chỉ có:
+
+* Một turn.
+* Một run.
+* Một DAG.
+* Một logical Hermes execution.
+
+## Scenario 4 — Cancel during execution
 
 ```text
-workflow_updated
-step_started
-step_completed
-step_cancelled
+run active
+→ user cancel
+→ Hermes stop requested
+→ task cancelled
+→ partial state retained
+→ run cancelled
+→ route lock finalized
 ```
 
-Backend upsert theo:
+Không chấp nhận chỉ đổi status mà background execution vẫn tiếp tục.
+
+## Scenario 5 — Process/recovery simulation
+
+Persist run ở trạng thái active, recreate application/service container, chạy recovery.
+
+Assert:
+
+* Completed node không chạy lại.
+* Retryable in-flight node được reconcile.
+* Stale lock được xử lý.
+* Duplicate external run không được tạo.
+
+## Scenario 6 — Secret redaction
+
+Dùng dummy API key có chuỗi dễ nhận diện.
+
+Assert dummy secret không xuất hiện trong:
+
+* DB plaintext query.
+* HTTP response.
+* WebSocket event.
+* Logs.
+* Exception.
+* Report artifact.
+
+# BLACK-BOX RUNTIME
+
+Sau khi focused tests pass, khởi động backend bằng entry command thực tế của repository.
+
+Không giả định script; đọc README/package config/task runner trước.
+
+Kiểm tra các port audit đã nhắc:
 
 ```text
-windagent_session_id + hermes_todo_id
+backend: 8765
+frontend/dev server: 1420
 ```
 
-Task panel hiển thị:
+Nếu cấu hình thực tế khác, dùng cấu hình repository và ghi rõ.
 
-* Objective.
-* Danh sách task theo đúng thứ tự Hermes.
-* Pending, In progress, Completed, Cancelled.
-* Thời gian bắt đầu và thời lượng.
-* Tool đang được task hiện tại sử dụng.
-* Lỗi gần nhất.
-* Nút xem input/output của từng bước.
+Black-box backend test phải dùng HTTP/WebSocket qua socket thật, không dùng TestClient.
 
-Không để frontend tự suy đoán task từ văn bản chat.
-
----
-
-## 8. Terminal / PowerShell / Logs
-
-Cần phân biệt hai chế độ:
-
-### Agent Logs
-
-Đây là chế độ mặc định và an toàn hơn:
+Tối thiểu kiểm tra:
 
 ```text
-> pytest tests -q
-[stdout] 387 passed
-[exit] 0
-[duration] 42.5s
+health
+create session/conversation
+send message
+observe orchestration events
+read persisted run/DAG state qua API phù hợp
+cancel hoặc complete
+verify final state
 ```
 
-Dữ liệu lấy từ `tool.started` và `tool.completed`:
+Ưu tiên fake Hermes server chạy thật trên local socket cho deterministic E2E.
 
-* Command.
-* Working directory.
-* Tool name.
-* Stdout/stderr.
-* Exit code.
-* Duration.
-* Trạng thái approval.
-* Agent/subagent đã gọi.
+Real Hermes chỉ là supplemental test khi:
 
-### Interactive Terminal
+* Service được cấu hình.
+* Credential an toàn.
+* Không ghi secret vào log.
+* Không phát sinh chi phí ngoài kiểm soát.
 
-Đây là terminal riêng do người dùng điều khiển, không phải agent log:
-
-* PowerShell qua Windows ConPTY.
-* Tabs.
-* Resize.
-* Kill process.
-* Read-only mode khi agent đang chạy.
-
-MVP nên hoàn thành Agent Logs trước. Chỉ xây interactive PTY sau khi event bridge ổn định.
-
-Hermes API cần được probe để xác định có phát stdout theo chunk hay chỉ trả output cuối. Nếu chỉ có output cuối, MVP hiển thị command ngay khi bắt đầu và output khi kết thúc. Muốn stdout thực sự live thì bổ sung một Hermes plugin hoặc custom MCP terminal tool gọi `WindAgentTerminalService`.
-
-### Bảo mật terminal
-
-* Che API key, bearer token và biến môi trường nhạy cảm.
-* Không trả toàn bộ environment.
-* Giới hạn workspace root.
-* Lệnh nguy hiểm phải yêu cầu approval.
-* Output có giới hạn kích thước và hỗ trợ tải artifact riêng.
-
----
-
-## 9. Browser / App Preview
-
-Iframe thông thường không đủ tin cậy vì nhiều trang chặn iframe và không cho frontend quan sát hành động agent.
-
-Đề xuất `BrowserBridge`:
+Nếu real Hermes không khả dụng, verdict có thể pass fake-Hermes vertical slice nhưng phải ghi:
 
 ```text
-Hermes
-  → custom MCP/browser tool
-  → WindAgent BrowserService
-  → Playwright hoặc Chrome DevTools Protocol
-  → screenshot + URL + title + action events
-  → WebSocket
-  → AgentBrowserPanel
+real_hermes_integration_unverified
 ```
 
-Panel hiển thị:
+Không được ghi `fully production verified`.
 
-* Screenshot hiện tại.
-* URL.
-* Title.
-* Loading state.
-* Vị trí click gần nhất.
-* Tool đang thao tác.
-* Back, Forward, Reload.
-* Open externally.
-* Take control / Return control.
+# FRONTEND SCOPE
 
-Các event:
+Không thực hiện redesign lớn trong lần này.
+
+Chỉ sửa frontend khi cần để:
+
+* Không bị phá bởi schema mới.
+* Truyền/nhận `agent_instance_id`.
+* Hiển thị trạng thái orchestration cơ bản.
+* Giữ compatibility với single-agent session.
+
+Chạy focused frontend tests cho file bị ảnh hưởng.
+
+Nếu frontend không thay đổi, vẫn chạy typecheck/build hoặc test phù hợp khi môi trường cho phép.
+
+Không xóa `AgentWorkspace` hoặc làm UI browser/inspector toàn phần trong sprint này trừ khi nó trực tiếp block vertical slice.
+
+Các nhóm frontend browser, inspector, i18n và dead workspace cleanup phải được để lại trong roadmap tiếp theo nếu core runtime chưa pass.
+
+# TEST ORDER
+
+Chạy tuần tự, tránh SQLite contention:
+
+1. Static/import/compile checks.
+2. Security and migration focused tests.
+3. Route-lock tests.
+4. Supervisor/DAG tests.
+5. Run-plan/idempotency tests.
+6. Fake-Hermes E2E.
+7. Existing Phase 2–9 focused tests.
+8. Full backend test suite với DB isolation đã sửa.
+9. Frontend focused tests.
+10. Frontend typecheck/build.
+11. Backend black-box runtime.
+12. Optional real-Hermes smoke test.
+
+Mỗi lệnh phải được append vào:
 
 ```text
-browser_session_started
-browser_navigation_started
-browser_navigation_completed
-browser_screenshot_updated
-browser_action_started
-browser_action_completed
-browser_console
-browser_error
+artifacts/.../commands.log
 ```
 
-Ảnh chỉ lưu đường dẫn artifact trong database; không lưu base64 lớn vào SQLite.
-
-MVP có thể phát screenshot sau mỗi browser action. Sau đó mới tăng lên stream định kỳ khoảng 1–2 FPS.
-
----
-
-## 10. Thanh trạng thái bên phải
-
-### Agent State
-
-Nguồn dữ liệu:
+Ghi:
 
 ```text
-Hermes run status + WindAgent connection status
+command
+working directory
+start timestamp
+end timestamp
+exit code
+summary
 ```
 
-Các trạng thái:
+Không chạy hai full test suite đồng thời.
+
+# GIT STRATEGY
+
+## 1. Branch
+
+Xác minh branch hiện tại.
+
+Nếu `feat/phase-1-baseline` chỉ tồn tại local, push branch sau khi có commit sạch và an toàn.
+
+Sau khi checkpoint các standalone orchestration components hiện có, tạo hoặc chuyển sang:
 
 ```text
-Disconnected
-Ready
-Planning
-Thinking
-Executing tool
-Waiting approval
-Paused
-Stopping
-Completed
-Failed
+feat/phase-2-runtime-orchestration
 ```
 
-### Model
+Không force push.
 
-Hiển thị:
+Không rewrite lịch sử remote.
+
+## 2. Commit structure
+
+Ưu tiên các commit nhỏ, audit được:
 
 ```text
-Agent runtime: Hermes
-Role: Coder
-Provider: NVIDIA / Gemini / OpenRouter / Ollama
-Model: model thực tế được router chọn
-Route tier: Primary / Fallback / Final fallback
-Latency
+chore(orchestration): checkpoint audited standalone foundation
+fix(security): encrypt provider credentials and redact secrets
+feat(orchestration): wire chat supervisor dag and route lock
+feat(orchestration): add idempotent run plan persistence
+test(orchestration): add fake hermes vertical slice e2e
+docs(orchestration): add phase 2 runtime evidence report
 ```
 
-Không dùng trường `model` mà frontend gửi tới Hermes làm nguồn sự thật. Hermes ghi rõ model request có thể chỉ mang tính hiển thị, còn model thật được cấu hình phía server.
+Chỉ tạo checkpoint commit đầu tiên nếu:
 
-Nguồn chính xác phải là Router execution result của WindAgent.
+* Đã phân loại file.
+* Không có generated noise.
+* Không có secret thật.
+* Code liên quan có thể import.
+* Commit message không tuyên bố live integration đã hoạt động.
 
-### Usage Token
+Có thể gộp commit nếu thay đổi phụ thuộc chặt, nhưng không tạo một commit khổng lồ không thể review.
 
-Nên tách:
+## 3. Push verification
+
+Sau mỗi push cuối:
+
+```bash
+git rev-parse HEAD
+git status --short
+git ls-remote origin refs/heads/feat/phase-2-runtime-orchestration
+```
+
+Remote SHA phải bằng local SHA.
+
+Không báo `pushed: yes` nếu chưa xác minh.
+
+# REQUIRED ARTIFACTS
+
+Trong:
 
 ```text
-Current turn
-  Input
-  Output
-  Total
-
-Session cumulative
-  Input
-  Output
-  Total
+artifacts/agent_workspace_orchestration_phase2/<UTC_TIMESTAMP>/
 ```
 
-### Context Window
-
-Hiển thị:
+phải có tối thiểu:
 
 ```text
-Latest prompt tokens / selected model context window
+commands.log
+environment.txt
+starting_head.txt
+final_head.txt
+git_status_before.txt
+git_status_after.txt
+tracked_changes_manifest.txt
+untracked_files_manifest.txt
+changed_files_final.txt
+migration_test.log
+security_test.log
+route_lock_test.log
+supervisor_dag_test.log
+run_plan_test.log
+fake_hermes_e2e.log
+full_backend_test.log
+frontend_test.log
+frontend_build.log
+black_box_runtime.log
+runtime_event_trace.jsonl
+database_state_summary.json
+secret_redaction_audit.txt
+vertical_slice_manifest.json
+final_verdict.json
 ```
 
-Ví dụ:
+Không commit artifact dung lượng lớn, runtime DB hoặc secret-bearing logs. Chỉ commit report và artifact nhỏ/an toàn phù hợp policy repository.
+
+# REQUIRED REPORT
+
+Tạo:
 
 ```text
-62,380 / 131,072
-47.6%
+reports/agent_workspace_orchestration_phase2_runtime.md
 ```
 
-Không lấy tổng token toàn session chia context window vì đó là hai khái niệm khác nhau.
+Report phải evidence-first và có các phần:
 
-`context_window` lấy từ Model Catalog của WindAgent. `latest prompt tokens` lấy từ provider usage của lần gọi gần nhất.
+1. Final verdict.
+2. Git provenance.
+3. Starting and final HEAD.
+4. Branch and remote verification.
+5. Worktree before/after.
+6. File classification.
+7. Architecture before.
+8. Architecture after.
+9. Security implementation.
+10. Migration design.
+11. Route lock lifecycle.
+12. Supervisor and DAG integration.
+13. Run-plan integration.
+14. Idempotency.
+15. Partial persistence.
+16. Fake-Hermes E2E evidence.
+17. Black-box runtime evidence.
+18. Full backend results.
+19. Frontend results.
+20. Failures and unresolved issues.
+21. Remaining roadmap E–I.
+22. Production-readiness assessment.
+23. Exact acceptance gate table.
 
-### Tools in Use
+Không đưa secret vào report.
 
-Tách thành hai nhóm:
+# ACCEPTANCE GATES
+
+## Gate 1 — Provenance
+
+Pass khi:
+
+* Worktree ban đầu được ghi nhận.
+* Modified/untracked files được phân loại.
+* Không mất thay đổi.
+* Final commits có thể truy vết.
+* Remote SHA bằng local SHA.
+
+## Gate 2 — Security
+
+Pass khi:
+
+* Provider secret được encrypted at rest.
+* Không có plaintext fallback.
+* Không leak qua API/log/event/artifact.
+* Traversal guard pass.
+* Migration pass.
+
+## Gate 3 — Runtime wiring
+
+Pass khi public chat/message entry point thực sự gọi:
 
 ```text
-Active now
-  Terminal — Running
-  File System — Reading
-
-Available integrations
-  Terminal
-  Files
-  Browser
-  Web Search
-  Memory
-  Skills
-  Todo
-  Delegation
-  MCP
+supervisor
+→ DAG
+→ route lock
+→ run_plan
 ```
 
-Hermes có endpoint `/v1/toolsets` và `/v1/skills` để frontend/control plane khám phá tool một cách xác định thay vì hỏi model.
+Unit test gọi service trực tiếp không đủ.
 
-### Recent Actions
+## Gate 4 — Persistence and concurrency
 
-Không hardcode. Lấy 20–50 normalized events gần nhất:
+Pass khi:
+
+* Idempotency được enforce.
+* Duplicate request không duplicate run.
+* Partial state survive service recreation.
+* Concurrent turn bị serialize hoặc reject đúng policy.
+* Lock lifecycle deterministic.
+
+## Gate 5 — Fake-Hermes E2E
+
+Pass khi sáu scenario bắt buộc pass qua public HTTP/WebSocket interface.
+
+## Gate 6 — Black-box runtime
+
+Pass khi backend chạy trên socket thật và một orchestration flow hoàn tất hoặc cancel đúng.
+
+Nếu service không thể khởi động do lỗi code/config thuộc repository, gate fail.
+
+Nếu external real Hermes không khả dụng nhưng fake-Hermes socket runtime pass, ghi rõ giới hạn nhưng không tự động fail Gate 6.
+
+## Gate 7 — Regression
+
+Pass khi:
+
+* Focused tests pass.
+* Full backend suite được chạy với DB isolation.
+* Không có regression nghiêm trọng trong live single-agent Hermes path.
+* Frontend typecheck/build hoặc focused tests pass nếu bị ảnh hưởng.
+
+## Gate 8 — Git completion
+
+Pass khi:
+
+* Commit được tạo.
+* Push thành công.
+* Remote SHA xác minh.
+* Worktree sạch, ngoại trừ thay đổi unrelated đã được ghi nhận từ đầu và cố ý giữ nguyên.
+
+# VERDICT RULES
+
+Chỉ dùng một trong các verdict sau:
+
+## `accepted_phase2_runtime_vertical_slice`
+
+Chỉ được dùng khi:
+
+* Gate 1–8 đều pass.
+* Fake-Hermes E2E pass.
+* Black-box socket runtime pass.
+* Changes committed and pushed.
+* Remote SHA verified.
+
+## `partial_phase2_runtime_vertical_slice`
+
+Dùng khi:
+
+* Một phần wiring chạy.
+* Một hoặc nhiều core gate fail.
+* Không được gọi là accepted.
+
+## `blocked_environment_runtime`
+
+Chỉ dùng khi code/tests cần thiết pass nhưng black-box runtime bị block bởi dependency môi trường thực sự nằm ngoài repository.
+
+Phải có evidence chứng minh đây không phải lỗi code/config của WindAgent.
+
+## `rejected_security_gate`
+
+Dùng khi secret encryption/redaction/traversal chưa đạt.
+
+## `rejected_integration_gate`
+
+Dùng khi modules vẫn chỉ standalone hoặc public live path chưa đi qua orchestration.
+
+## `rejected_regression_gate`
+
+Dùng khi implementation mới phá existing runtime hoặc full regression suite.
+
+Không được dùng verdict accepted nếu chỉ có 33 focused tests hoặc TestClient tests.
+
+# FINAL RESPONSE FORMAT
+
+Kết thúc bằng đúng cấu trúc sau:
 
 ```text
-00:12:31  Read apps/backend/main.py
-00:12:34  Updated task 2 → completed
-00:12:35  Ran pytest tests/router
-00:12:48  24 tests passed
-00:12:49  Switched to task 3
+FINAL VERDICT:
+<one allowed verdict>
+
+PRIMARY CONCLUSION:
+<one concise paragraph>
+
+GIT:
+repository:
+starting branch:
+final branch:
+starting HEAD:
+final HEAD:
+commit(s):
+pushed:
+remote SHA == local:
+worktree clean:
+unrelated pre-existing changes preserved:
+
+PROVENANCE:
+modified files before:
+untracked files before:
+files classified:
+secret-bearing files found:
+data loss:
+checkpoint created:
+
+SECURITY:
+api_key encrypted at rest:
+encryption scheme/version:
+plaintext fallback:
+response masking:
+log redaction:
+migration:
+traversal guard:
+security gate:
+
+RUNTIME WIRING:
+public entry point:
+supervisor invoked:
+DAG persisted:
+route lock acquired:
+run_plan invoked:
+partial persistence:
+idempotency:
+recovery:
+runtime gate:
+
+E2E:
+fake Hermes:
+black-box socket runtime:
+real Hermes:
+successful orchestration:
+retryable failover:
+duplicate request:
+cancel:
+recovery simulation:
+secret redaction scenario:
+
+TESTS:
+security:
+migration:
+route lock:
+supervisor/DAG:
+run_plan:
+fake-Hermes E2E:
+focused backend:
+full backend:
+frontend focused:
+frontend build/typecheck:
+black-box:
+failed tests:
+
+ARTIFACTS:
+artifact directory:
+report:
+runtime trace:
+final manifest:
+
+CHANGED FILES:
+<complete list>
+
+REMAINING RISKS:
+<numbered, evidence-based list>
+
+NEXT ROADMAP:
+E worktree lifecycle
+F WebSocket multiplex and recovery
+G normalized frontend state
+H browser/inspector/i18n/dead UI cleanup
+I chaos and production hardening
 ```
 
-Mỗi action có thể click để mở:
+# EXECUTION PRIORITY
 
-* Tool input.
-* Output.
-* Artifact.
-* Task liên quan.
-* Model execution.
-* Error stack đã scrub secret.
-
----
-
-## 11. API WindAgent đề xuất
-
-### Session API giữ tương thích
-
-```http
-POST /api/v1/sessions
-```
-
-Request mới:
-
-```json
-{
-  "runtime": "hermes",
-  "agent_role": "Coder",
-  "workspace_path": "D:\\code\\WindAgent",
-  "model_policy": "auto/Coder"
-}
-```
-
-```http
-POST /api/v1/sessions/{id}/messages
-GET  /api/v1/sessions/{id}
-GET  /api/v1/sessions/{id}/workflow
-GET  /api/v1/sessions/{id}/runner
-POST /api/v1/sessions/{id}/pause
-POST /api/v1/sessions/{id}/resume
-POST /api/v1/sessions/{id}/stop
-```
-
-### API bổ sung
-
-```http
-GET /api/v1/runtimes/hermes/health
-GET /api/v1/runtimes/hermes/capabilities
-GET /api/v1/runtimes/hermes/tools
-
-GET /api/v1/sessions/{id}/snapshot
-GET /api/v1/sessions/{id}/events?after_sequence=123
-GET /api/v1/sessions/{id}/usage
-GET /api/v1/sessions/{id}/actions
-GET /api/v1/sessions/{id}/terminal
-GET /api/v1/sessions/{id}/browser
-```
-
-`snapshot` là endpoint quan trọng nhất khi refresh hoặc WebSocket reconnect:
-
-```json
-{
-  "session": {},
-  "run": {},
-  "messages": [],
-  "workflow": {},
-  "terminal": [],
-  "browser": {},
-  "tools": {},
-  "usage": {},
-  "model": {},
-  "recent_actions": [],
-  "pending_permission": null,
-  "last_sequence": 143
-}
-```
-
-### Permission
-
-Giữ API hiện tại:
-
-```http
-POST /api/v1/permissions/{request_id}/decide
-```
-
-Backend chuyển tiếp sang:
+Thứ tự ưu tiên tuyệt đối:
 
 ```text
-POST Hermes /v1/runs/{run_id}/approval
+Preserve worktree
+→ remove plaintext secret risk
+→ migrations/path safety
+→ chat-supervisor-DAG-route-lock-run_plan vertical slice
+→ idempotency/partial persistence
+→ fake-Hermes E2E
+→ black-box runtime
+→ regression
+→ commit/push/report
 ```
 
----
+Không ưu tiên UI, code cleanup hoặc architecture redesign trước core vertical slice.
 
-## 12. Điều khiển Pause / Resume / Stop
-
-Hermes Runs API hỗ trợ stop nhưng không nên giả định hỗ trợ pause/resume hoàn chỉnh như WorkflowRunner hiện tại.
-
-Chính sách:
-
-* **Stop:** chuyển thẳng tới Hermes `/stop`.
-* **Pause:** dừng nhận task mới và chờ tool hiện tại đạt safe point.
-* **Resume:** nếu Hermes run còn sống thì tiếp tục; nếu đã bị cancel thì tạo run mới với cùng Hermes session và todo/history cũ.
-* **New message while running:** giai đoạn đầu disable send và yêu cầu Stop; giai đoạn sau hỗ trợ interrupt-and-redirect.
-
-Hermes agent loop có cancellation và interruptible API calls, đồng thời hỗ trợ callback cho stream delta, tool progress và status.
-
----
-
-## 13. Các giai đoạn triển khai
-
-### Giai đoạn 0 — Đóng băng baseline
-
-* Push code local vừa probe.
-* Xác nhận branch và commit.
-* Loại bỏ client mock.
-* Chuẩn hóa `/api/v1`.
-* Thêm contract test cho toàn bộ route.
-* Không thay đổi UI trong giai đoạn này.
-
-**Gate:** curl và frontend đều dùng cùng contract; không còn 404 health/models.
-
-### Giai đoạn 1 — Hermes connectivity
-
-* `HermesClient`.
-* Health, detailed health, capabilities.
-* Tools và skills discovery.
-* Config/env validation.
-* Secret scrubbing.
-* UI hiển thị Hermes Connected/Disconnected.
-
-**Gate:** WindAgent nhận diện đúng Hermes version và capabilities; API key không xuất hiện trong log.
-
-### Giai đoạn 2 — Session và streaming chat
-
-* Mapping WindAgent session ↔ Hermes session.
-* Tạo run.
-* SSE consumer.
-* WebSocket event bridge.
-* Assistant token streaming.
-* Stop.
-* Reconnect và snapshot hydration.
-
-**Gate:** refresh trang giữa lúc run không làm mất session hoặc nhân đôi message.
-
-### Giai đoạn 3 — Task và Recent Actions
-
-* Parse Hermes `todo`.
-* Upsert workflow/steps.
-* Task panel dùng dữ liệu thật.
-* Tool lifecycle.
-* Recent action timeline.
-* Permission mapping.
-
-**Gate:** task thay đổi trên UI ngay sau mỗi todo update; đúng thứ tự và đúng trạng thái.
-
-### Giai đoạn 4 — Terminal logs
-
-* Hiển thị command.
-* Output, exit code, duration.
-* Filter stdout/stderr.
-* Artifact cho output dài.
-* Secret redaction.
-* Optional terminal PTY để sau.
-
-**Gate:** mọi command Hermes gọi đều xuất hiện trong audit và panel.
-
-### Giai đoạn 5 — Router, model và usage
-
-* Hermes dùng WindAgent `/v1`.
-* Real streaming từ provider.
-* Accurate usage passthrough.
-* Selected model/provider/fallback events.
-* Context calculation.
-* Sidebar model/usage/context thật.
-
-**Gate:** model hiển thị khớp RouterExecutionLog; token không còn tính bằng số từ.
-
-### Giai đoạn 6 — Browser Bridge
-
-* Playwright/CDP service.
-* Custom Hermes MCP/browser tool.
-* URL/title/screenshot events.
-* Browser ownership controls.
-* Artifact screenshots.
-
-**Gate:** khi Hermes navigate/click, UI cập nhật preview và recent actions tương ứng.
-
-### Giai đoạn 7 — UI hardening
-
-* Tách AgentWorkspace khỏi `App.tsx`.
-* Zustand hoặc reducer event-driven.
-* Virtualized terminal/action list.
-* Markdown/code rendering.
-* Loading/error/empty states.
-* Responsive layout.
-* Không còn nội dung demo hardcoded.
-
-**Gate:** disable Hermes vẫn mở trang được với trạng thái cấu hình rõ ràng, không crash.
-
-### Giai đoạn 8 — Test và production hardening
-
-* Unit test event mapper.
-* Fake Hermes server cho integration tests.
-* SSE reconnect/backpressure tests.
-* Permission timeout tests.
-* Hermes crash/restart reconciliation.
-* WebSocket duplicate/out-of-order tests.
-* Windows path và process tests.
-* Frontend Playwright E2E.
-* Full backend regression.
-
-**Gate:** toàn bộ suite cũ pass; test mới chạy không cần provider thật.
-
----
-
-## 14. Acceptance criteria cuối cùng
-
-Tích hợp chỉ được xem là hoàn thành khi đạt đồng thời:
-
-1. Người dùng gửi yêu cầu bằng ngôn ngữ tự nhiên và thấy câu trả lời stream dần.
-2. Task panel phản ánh chính xác todo list của Hermes.
-3. Chỉ một task `in_progress`, trừ trường hợp subagent được thể hiện riêng.
-4. Terminal hiển thị command, output, exit code và duration thật.
-5. Browser preview theo dõi browser do agent điều khiển.
-6. Tools in Use phân biệt tool đang hoạt động và tool đã tích hợp.
-7. Model, provider, route tier và fallback lấy từ Router thật.
-8. Usage token lấy từ provider/Hermes, không ước lượng bằng word count.
-9. Context hiển thị latest input tokens trên context window của model.
-10. Stop và permission hoạt động end-to-end.
-11. Refresh/reconnect không mất trạng thái.
-12. Không có API key trong browser, log, WebSocket hoặc SQLite.
-13. Hermes ngừng chạy không làm WindAgent backend crash.
-14. Không còn dữ liệu hardcoded trên Agent Workspace.
-
----
-
-## 15. Chiến lược branch và commit
-
-Branch đề xuất:
-
-```text
-feat/hermes-agent-workspace-integration
-```
-
-Base:
-
-```text
-branch chứa bản local đã probe
-```
-
-Thứ tự commit:
-
-```text
-chore(api): normalize v1 routes and remove workspace mocks
-feat(hermes): add runtime client and capability probing
-feat(hermes): bridge sessions runs and SSE events
-feat(workspace): stream chat from normalized agent events
-feat(workspace): map Hermes todo state to task workflow
-feat(workspace): add terminal tool activity and audit
-feat(router): route Hermes model calls through provider gateway
-feat(workspace): expose model usage and context metrics
-feat(browser): add controlled agent browser bridge
-test(hermes): add contract integration and reconnect coverage
-docs(hermes): document architecture setup and operations
-```
-
-Ưu tiên triển khai ngay **Giai đoạn 0 → 3**. Sau bốn giai đoạn này, trang đã có chat streaming, agent thật, task thật, tool state và Recent Actions; terminal/browser/model telemetry có thể được hoàn thiện tuần tự mà không phải viết lại kiến trúc.
+Mục tiêu của lần thực hiện này không phải “có thêm nhiều module”, mà là chứng minh bằng evidence rằng các module orchestration hiện có đã được nối vào một live request path hoạt động end-to-end.
