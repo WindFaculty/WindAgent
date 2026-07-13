@@ -1,12 +1,14 @@
 """OpenAI-compatible chat completions proxy for Hermes inference routing."""
 from __future__ import annotations
 
+import json
 import logging
 import time
 import uuid
-from typing import Any, Dict, List, Optional
+from typing import Any, AsyncGenerator, Dict, List, Optional
 
 from fastapi import APIRouter, Body, HTTPException, Request
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from sqlalchemy import select
 
@@ -108,11 +110,62 @@ async def chat_completions(
             detail=f"Model completion failed at provider {provider.id}: {e}",
         )
 
-    # 6. Return standard OpenAI completion response envelope
+
+    # 6. Estimate token usage (approx: 1 token ≈ 4 chars) to provide a non-zero usage field
+    prompt_text = " ".join(
+        str(m.get("content", "")) for m in payload.messages
+    )
+    prompt_tokens = max(1, len(prompt_text) // 4)
+    completion_text = response_content if isinstance(response_content, str) else ""
+    completion_tokens = max(1, len(completion_text) // 4)
+
+    chat_id = f"chatcmpl-{uuid.uuid4().hex}"
+    created = int(time.time())
+
+    # 7a. Streaming response (SSE)
+    if payload.stream:
+        async def _sse_generator() -> AsyncGenerator[str, None]:
+            words = completion_text.split(" ")
+            for i, word in enumerate(words):
+                chunk = {
+                    "id": chat_id,
+                    "object": "chat.completion.chunk",
+                    "created": created,
+                    "model": model_val,
+                    "choices": [
+                        {
+                            "index": 0,
+                            "delta": {
+                                "role": "assistant" if i == 0 else None,
+                                "content": word + (" " if i < len(words) - 1 else ""),
+                            },
+                            "finish_reason": None,
+                        }
+                    ],
+                }
+                yield f"data: {json.dumps(chunk)}\n\n"
+            # Final chunk with finish_reason=stop
+            final_chunk = {
+                "id": chat_id,
+                "object": "chat.completion.chunk",
+                "created": created,
+                "model": model_val,
+                "choices": [{"index": 0, "delta": {}, "finish_reason": "stop"}],
+            }
+            yield f"data: {json.dumps(final_chunk)}\n\n"
+            yield "data: [DONE]\n\n"
+
+        return StreamingResponse(
+            _sse_generator(),
+            media_type="text/event-stream",
+            headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+        )
+
+    # 7b. Standard non-streaming response envelope
     return {
-        "id": f"chatcmpl-{uuid.uuid4().hex}",
+        "id": chat_id,
         "object": "chat.completion",
-        "created": int(time.time()),
+        "created": created,
         "model": model_val,
         "choices": [
             {
@@ -125,8 +178,8 @@ async def chat_completions(
             }
         ],
         "usage": {
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "total_tokens": 0,
+            "prompt_tokens": prompt_tokens,
+            "completion_tokens": completion_tokens,
+            "total_tokens": prompt_tokens + completion_tokens,
         },
     }

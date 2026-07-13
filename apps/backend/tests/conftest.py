@@ -42,10 +42,12 @@ _DB_FD, _DB_PATH = tempfile.mkstemp(prefix="windagent-test-", suffix=".db")
 os.close(_DB_FD)
 os.environ["WINDAGENT_DB_URL"] = f"sqlite+aiosqlite:///{_DB_PATH}?timeout=30"
 
-# Ensure encryption key is available for tests that write to api_key
+# Ensure encryption key is available for tests that write to api_key.
+# Must be a valid Fernet key (32 url-safe base64-encoded bytes).
 _enc_key = os.environ.get("WINDAGENT_SECRET_ENCRYPTION_KEY")
 if not _enc_key:
-    os.environ["WINDAGENT_SECRET_ENCRYPTION_KEY"] = "test-encryption-key-for-ci"
+    from cryptography.fernet import Fernet
+    os.environ["WINDAGENT_SECRET_ENCRYPTION_KEY"] = Fernet.generate_key().decode()
 
 
 @pytest.fixture
