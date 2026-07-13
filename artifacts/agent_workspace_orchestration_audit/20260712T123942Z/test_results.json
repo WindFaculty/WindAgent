@@ -1,0 +1,26 @@
+{
+  "command": "pytest tests/test_phase2_migration.py tests/test_phase3_route_lock.py tests/test_phase4_supervisor.py tests/test_phase5_dag_scheduler.py tests/test_phase6_worktree_permission.py tests/test_phase7_durable_recovery.py tests/test_phase8_conversations.py tests/test_phase9_task_editing.py -q",
+  "working_dir": "D:/code_ca_nhan/WindAgent/apps/backend",
+  "start_utc": "2026-07-12T12:39:42Z",
+  "end_utc": "2026-07-12T12:39:48Z",
+  "exit_code": 0,
+  "passed": 33,
+  "failed": 0,
+  "skipped": 0,
+  "warnings": 1,
+  "duration_s": 5.92,
+  "warning_detail": "StarletteDeprecationWarning Using httpx with starlette.testclient; install httpx2",
+  "runtime_verified": false,
+  "reason_not_runtime": "backend:8765 DOWN, frontend:1420 DOWN. Only pytest/TestClient harness. Fake/unit evidence only.",
+  "files": [
+    {"file":"test_phase2_migration.py","covers":"DB create_all + seed_canonical_models"},
+    {"file":"test_phase3_route_lock.py","covers":"canonical/provider lock, same-model failover, 429/5xx, cooldown"},
+    {"file":"test_phase4_supervisor.py","covers":"ensure_orchestrator + spawn_subagent (fake bridge)"},
+    {"file":"test_phase5_dag_scheduler.py","covers":"fan-out/fan-in + retry via run_plan"},
+    {"file":"test_phase6_worktree_permission.py","covers":"worktree create/remove + permission profile"},
+    {"file":"test_phase7_durable_recovery.py","covers":"replay_after + recover runs+events"},
+    {"file":"test_phase8_conversations.py","covers":"task graph CRUD + agents/tasks API"},
+    {"file":"test_phase9_task_editing.py","covers":"edit/edge/cycle/version conflict"}
+  ],
+  "note": "Tests validate standalone modules. They do NOT prove modules invoked by live request path (Phase 1 integration gap)."
+}

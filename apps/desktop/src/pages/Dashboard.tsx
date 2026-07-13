@@ -25,7 +25,7 @@ interface DashboardProps {
   setActiveTab: (tab: string) => void;
   refreshInterval: string;
   setRefreshInterval: (interval: string) => void;
-  startNewAnalysis: (userQuery: string) => void;
+  startNewAnalysis?: (userQuery: string) => void;
 }
 
 export function Dashboard({
@@ -34,7 +34,7 @@ export function Dashboard({
   setActiveTab,
   refreshInterval,
   setRefreshInterval,
-  startNewAnalysis,
+  startNewAnalysis = () => {},
 }: DashboardProps) {
   // Chart filter tab clicks (local state to the dashboard page)
   const [activityFilter, setActivityFilter] = useState<string>("24h");

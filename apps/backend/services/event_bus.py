@@ -34,6 +34,15 @@ class EventBus:
         self._subscribers: Dict[str, List[asyncio.Queue]] = {}
         self._lock = asyncio.Lock()
         self._hooks: List[PublisherHook] = []
+        # ponytail: per-session monotonic seq for durable replay (Phase 7).
+        # Seeded lazily from DB max on first publish via _seq_seed.
+        self._seq: Dict[str, int] = {}
+        self._seq_seed: Optional[Callable[[str], Awaitable[int]]] = None
+
+    def set_seq_seed(self, seed: "Callable[[str], Awaitable[int]]") -> None:
+        """Register an async fn returning the last persisted seq for a
+        session, so counters resume correctly after a restart."""
+        self._seq_seed = seed
 
     # ---------- Publisher hook (Phase 2) ----------
 
@@ -47,7 +56,32 @@ class EventBus:
     # ---------- Core pub/sub ----------
 
     async def publish(self, session_id: str, envelope: EventEnvelope) -> int:
-        """Deliver envelope to every subscriber of session_id. Returns count."""
+        """Persist-then-broadcast (Phase 7).
+
+        1. Stamp a per-session monotonic seq.
+        2. Run publisher hooks (durable DB/JSONL write) BEFORE fan-out,
+           so a subscriber can never see an event that isn't persisted.
+        3. Deliver to live subscribers.
+        """
+        # 1: assign monotonic seq (seed from DB on first use per session).
+        if session_id not in self._seq and self._seq_seed is not None:
+            try:
+                self._seq[session_id] = await self._seq_seed(session_id)
+            except Exception:  # noqa: BLE001
+                log.exception("seq seed failed for %s", session_id)
+                self._seq[session_id] = 0
+        nxt = self._seq.get(session_id, 0) + 1
+        self._seq[session_id] = nxt
+        envelope.seq = nxt
+
+        # 2: persist first — hooks must complete before any broadcast.
+        for hook in list(self._hooks):
+            try:
+                await hook(session_id, envelope)
+            except Exception:  # noqa: BLE001
+                log.exception("publisher hook %r failed", hook)
+
+        # 3: broadcast to live subscribers.
         async with self._lock:
             queues = list(self._subscribers.get(session_id, []))
         delivered = 0
@@ -56,17 +90,8 @@ class EventBus:
                 q.put_nowait(envelope)
                 delivered += 1
             except asyncio.QueueFull:
-                # Slow subscriber. MVP policy: drop and continue.
+                # Slow subscriber. MVP policy: drop; client replays via seq.
                 continue
-
-        # Fire publisher hooks (DB mirror). Do not let one bad hook block others.
-        if self._hooks:
-            for hook in list(self._hooks):
-                try:
-                    await hook(session_id, envelope)
-                except Exception:  # noqa: BLE001
-                    log.exception("publisher hook %r failed", hook)
-
         return delivered
 
     async def subscribe(self, session_id: str, maxsize: int = 256) -> asyncio.Queue:

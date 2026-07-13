@@ -291,7 +291,7 @@ class TestLiveEndpointScrubbing:
 
     def test_live_endpoint_does_not_leak_secrets(self, client, _fake_secrets):
         """The agent-s3 health endpoint must not leak any env-set secret."""
-        resp = client.get("/agent-s3/health")
+        resp = client.get("/api/v1/agent-s3/health")
         assert resp.status_code == 200
         body = resp.json()
         raw = json.dumps(body)
@@ -307,7 +307,7 @@ class TestLiveEndpointScrubbing:
 
     def test_live_endpoint_does_not_leak_partial_secrets(self, client, _fake_secrets):
         """Even partial leaks (e.g. first 8 chars) must not appear."""
-        resp = client.get("/agent-s3/health")
+        resp = client.get("/api/v1/agent-s3/health")
         body = resp.json()
         raw = json.dumps(body)
 
@@ -336,7 +336,7 @@ class TestLiveEndpointScrubbing:
         # boolean presence. Instead, verify the contract via the unit
         # tests above (which inject directly). Here we just verify the
         # endpoint still returns 200 and contains no secret.
-        resp = client.get("/agent-s3/health")
+        resp = client.get("/api/v1/agent-s3/health")
         body = resp.json()
         # The endpoint must remain reachable + well-formed.
         assert "mode" in body
@@ -465,7 +465,7 @@ class TestUserSpecSecretsAreScrubbed:
     def test_live_endpoint_does_not_leak_user_spec_secrets(
         self, client, _user_spec_secrets
     ):
-        resp = client.get("/agent-s3/health")
+        resp = client.get("/api/v1/agent-s3/health")
         assert resp.status_code == 200
         body = resp.json()
         raw = json.dumps(body)
@@ -503,7 +503,7 @@ class TestUserSpecSecretsAreScrubbed:
         """Whatever the response contains for API-key-shaped keys must
         be a boolean or a non-secret masked placeholder. No raw string,
         no numeric, no list, no dict."""
-        resp = client.get("/agent-s3/health")
+        resp = client.get("/api/v1/agent-s3/health")
         body = resp.json()
         cfg_block = body.get("config", {})
         for key, val in cfg_block.items():

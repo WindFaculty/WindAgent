@@ -122,7 +122,7 @@ async def test_click_target_vision_model_calls_gui_click():
         )
         try:
             resp = c.post(
-                "/sessions/00000000-0000-4000-8000-000000000000/tools/click_target",  # session id doesn't matter for this check
+                "/api/v1/sessions/00000000-0000-4000-8000-000000000000/tools/click_target",  # session id doesn't matter for this check
                 json={"params": {"target": "Submit"}},
             )
             # 404 because session doesn't exist — that's the session
@@ -139,14 +139,14 @@ async def test_click_target_vision_model_calls_gui_click():
 
     with TestClient(_app) as c:
         # Create a real session.
-        sid = c.post("/sessions").json()["session_id"]
+        sid = c.post("/api/v1/sessions").json()["session_id"]
         # Swap grounding.
         app.state.tool_executor._grounding = VisionGroundingStub(
             x=200, y=400, confidence=0.93
         )
         try:
             resp = c.post(
-                f"/sessions/{sid}/tools/click_target",
+                f"/api/v1/sessions/{sid}/tools/click_target",
                 json={"params": {"target": "Submit"}},
             )
             assert resp.status_code == 200

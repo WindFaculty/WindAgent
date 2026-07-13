@@ -44,6 +44,7 @@ def make_execution_event_hook(db: Database):
                     session_id=session_id,
                     event_type=envelope.event,
                     data_json=json.dumps(envelope.data, ensure_ascii=False),
+                    event_seq=envelope.seq,
                     created_at=envelope.timestamp or datetime.now(timezone.utc),
                 ))
         except Exception:  # noqa: BLE001

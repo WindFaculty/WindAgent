@@ -145,8 +145,8 @@ def test_health_summary_reports_missing_count():
 # ---------- End-to-end with FastAPI ----------
 
 def test_agent_s3_health_endpoint_disabled(client):
-    """GET /agent-s3/health works even when integration is off."""
-    resp = client.get("/agent-s3/health")
+    """GET /api/v1/agent-s3/health works even when integration is off."""
+    resp = client.get("/api/v1/agent-s3/health")
     assert resp.status_code == 200
     body = resp.json()
     assert body["mode"] == "disabled"

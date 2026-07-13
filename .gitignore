@@ -81,3 +81,4 @@ external/Agent-S/pyproject.toml
 external/Agent-S/README.md
 external/Agent-S/LICENSE*
 external/Agent-S/.gitignore
+external/omniroute_ref/

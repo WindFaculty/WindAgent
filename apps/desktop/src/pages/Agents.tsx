@@ -1,4 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import {
+  fetchAgents,
+  fetchAgentSummary,
+  startAgent,
+  stopAgent,
+  restartAgent,
+  fetchAgentActivity,
+} from "../api/client";
 
 interface AgentItem {
   id: string;
@@ -27,159 +35,82 @@ export function Agents({ setActiveTab }: AgentsProps) {
   const [selectedAgentId, setSelectedAgentId] = useState<string>("coder");
   const [activeFilterTab, setActiveFilterTab] = useState<string>("all");
   const [searchText, setSearchText] = useState<string>("");
+  const [agents, setAgents] = useState<AgentItem[]>([]);
+  const [summary, setSummary] = useState({
+    total: 0,
+    running: 0,
+    idle: 0,
+    tasks_running: 0,
+  });
+  const [recentActions, setRecentActions] = useState<string[]>([]);
 
-  // Agent Directory dataset
-  const agentsData: AgentItem[] = [
-    {
-      id: "planner",
-      name: "Planner",
-      subName: "Task Planning",
-      status: "Running",
-      model: "Llama 3 70B",
-      currentTask: "Decomposing project requirements",
-      uptime: "2h 14m",
-      rt: "1.12s",
-      sr: "96%",
-      sparkPoints: "0,20 15,18 30,22 45,12 60,6 68,14",
-      description: "Decomposes complex requests into structured sub-tasks. Guides execution and verifies outcomes.",
-      tools: ["File System", "Code Analyzer", "Docs"],
-      memoryVal: "4.2 GB",
-      memoryMax: "16 GB",
-      memoryPct: 26,
-      recentActions: [
-        "Created execution plan",
-        "Decomposed workspace requirements",
-        "Read local README.md",
-      ],
-    },
-    {
-      id: "gui",
-      name: "GUI Agent",
-      subName: "UI/UX Automation",
-      status: "Running",
-      model: "Mixtral 8x7B Instruct",
-      currentTask: "Building user interface components",
-      uptime: "1h 42m",
-      rt: "1.36s",
-      sr: "94%",
-      sparkPoints: "0,22 15,18 30,12 45,20 60,10 68,4",
-      description: "Automates browser previews and compiles React UI layouts. Tests UI rendering against specifications.",
-      tools: ["Browser", "File System", "Terminal"],
-      memoryVal: "5.1 GB",
-      memoryMax: "12 GB",
-      memoryPct: 42,
-      recentActions: [
-        "Compiled LoginForm component",
-        "Rendered browser overview card",
-        "Fetched Google fonts bundle",
-      ],
-    },
-    {
-      id: "coder",
-      name: "Coder",
-      subName: "Code Generation",
-      status: "Busy",
-      model: "Codestral 22B",
-      currentTask: "Implementing authentication module",
-      uptime: "38m",
-      rt: "1.78s",
-      sr: "91%",
-      sparkPoints: "0,20 15,22 30,14 45,18 60,8 68,10",
-      description: "Generates, refactors, and debugs code. Writes clean, testable, and well-documented solutions.",
-      tools: ["File System", "Terminal", "Git", "Code Analyzer", "Docs", "Tests"],
-      memoryVal: "6.2 GB",
-      memoryMax: "10 GB",
-      memoryPct: 62,
-      recentActions: [
-        "Updated auth_service.ts",
-        "Ran unit tests (auth module)",
-        "Created jwt_utils.ts",
-        "Read requirements.md",
-      ],
-    },
-    {
-      id: "researcher",
-      name: "Researcher",
-      subName: "Web Research",
-      status: "Running",
-      model: "Perplexity Sonar Large",
-      currentTask: "Ready for new research task",
-      uptime: "45m",
-      rt: "1.25s",
-      sr: "95%",
-      sparkPoints: "0,18 15,10 30,12 45,8 60,10 68,4",
-      description: "Conducts web search and retrieves documentation. Synthesizes codebase context and external assets.",
-      tools: ["Web Search", "Docs", "File System"],
-      memoryVal: "3.8 GB",
-      memoryMax: "8 GB",
-      memoryPct: 47,
-      recentActions: [
-        "Completed web search for auth libraries",
-        "Extracted JWT token guidelines",
-        "Summarized oauth patterns",
-      ],
-    },
-    {
-      id: "browser",
-      name: "Browser Agent",
-      subName: "Web Automation",
-      status: "Idle",
-      model: "GPT-4o Mini",
-      currentTask: "Waiting for tasks",
-      uptime: "18m",
-      rt: "0.98s",
-      sr: "98%",
-      sparkPoints: "0,22 15,14 30,18 45,8 60,12 68,6",
-      description: "Controls active browser sessions, capturing logs, screenshots, and DOM states for visual validation.",
-      tools: ["Browser", "File System", "Terminal"],
-      memoryVal: "2.4 GB",
-      memoryMax: "8 GB",
-      memoryPct: 30,
-      recentActions: [
-        "Captured preview page screenshot",
-        "Loaded localhost:3000 console logs",
-        "Verified CSS styling compliance",
-      ],
-    },
-    {
-      id: "memory",
-      name: "Memory Agent",
-      subName: "Knowledge Manager",
-      status: "Offline",
-      model: "Phi-3 Medium 4K",
-      currentTask: "—",
-      uptime: "—",
-      rt: "—",
-      sr: "—",
-      sparkPoints: "0,20 15,20 30,20 45,20 60,20 68,20",
-      description: "Manages contextual memory vector graphs. Prunes stale dependencies and saves session states.",
-      tools: ["Vector DB", "File System"],
-      memoryVal: "0 GB",
-      memoryMax: "8 GB",
-      memoryPct: 0,
-      recentActions: [
-        "Indexed repository files structure",
-        "Cleared temporary task buffer nodes",
-        "Persisted local memory vectors",
-      ],
-    },
-  ];
+  const loadData = async () => {
+    try {
+      const data = await fetchAgents();
+      const mapped: AgentItem[] = data.map((a: any) => {
+        let statusStr: "Running" | "Busy" | "Idle" | "Offline" = "Offline";
+        const rawStatus = String(a.status).toLowerCase();
+        if (rawStatus === "running") statusStr = "Running";
+        else if (rawStatus === "busy") statusStr = "Busy";
+        else if (rawStatus === "idle") statusStr = "Idle";
 
-  // Helper counts
-  const countRunning = agentsData.filter((a) => a.status === "Running").length;
-  const countIdle = agentsData.filter((a) => a.status === "Idle").length;
-  const countBusy = agentsData.filter((a) => a.status === "Busy").length;
-  const countOffline = agentsData.filter((a) => a.status === "Offline").length;
+        return {
+          id: a.id,
+          name: a.name,
+          subName: a.slug || a.name,
+          status: statusStr,
+          model: a.router_role || "Default Role",
+          currentTask: a.status === "Offline" || a.status === "offline" ? "—" : "Ready for instructions",
+          uptime: a.status === "Offline" || a.status === "offline" ? "—" : "1h 14m",
+          rt: "1.25s",
+          sr: "95%",
+          sparkPoints: "0,20 15,18 30,22 45,12 60,6 68,14",
+          description: a.description || "",
+          tools: a.toolsets || [],
+          memoryVal: a.memory_enabled ? "Enabled" : "Disabled",
+          memoryMax: "System Vector",
+          memoryPct: a.memory_enabled ? 100 : 0,
+          recentActions: [],
+        };
+      });
+      setAgents(mapped);
 
-  // Filter list
-  const filteredAgents = agentsData.filter((agent) => {
-    // Status filter
+      const sumData = await fetchAgentSummary();
+      setSummary(sumData);
+    } catch (e) {
+      console.error("Failed to load agents list:", e);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+    const interval = setInterval(loadData, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const loadActions = async () => {
+      try {
+        const act = await fetchAgentActivity(selectedAgentId);
+        setRecentActions(act.map((item: any) => item.message));
+      } catch (e) {
+        console.error("Failed to load agent activity:", e);
+      }
+    };
+    loadActions();
+  }, [selectedAgentId]);
+
+  const countRunning = agents.filter((a) => a.status === "Running").length;
+  const countIdle = agents.filter((a) => a.status === "Idle").length;
+  const countBusy = agents.filter((a) => a.status === "Busy").length;
+  const countOffline = agents.filter((a) => a.status === "Offline").length;
+
+  const filteredAgents = agents.filter((agent) => {
     if (activeFilterTab === "running" && agent.status !== "Running") return false;
     if (activeFilterTab === "idle" && agent.status !== "Idle") return false;
     if (activeFilterTab === "busy" && agent.status !== "Busy") return false;
     if (activeFilterTab === "offline" && agent.status !== "Offline") return false;
 
-    // Search filter
     if (searchText.trim()) {
       const q = searchText.toLowerCase();
       return (
@@ -191,7 +122,18 @@ export function Agents({ setActiveTab }: AgentsProps) {
     return true;
   });
 
-  const selectedAgent = agentsData.find((a) => a.id === selectedAgentId) || agentsData[2];
+  const selectedAgent = agents.find((a) => a.id === selectedAgentId) || agents[0] || {
+    id: "coder",
+    name: "Coder",
+    description: "",
+    status: "Offline",
+    model: "Coder",
+    tools: [],
+    memoryVal: "Disabled",
+    memoryMax: "System Vector",
+    memoryPct: 0,
+    currentTask: "—",
+  };
 
   return (
     <main className="agents-view">
@@ -235,7 +177,7 @@ export function Agents({ setActiveTab }: AgentsProps) {
           </div>
           <div className="m-card-body">
             <div className="m-card-value-container">
-              <div className="m-card-value">{agentsData.length}</div>
+              <div className="m-card-value">{agents.length}</div>
               <div className="m-card-subtext">All registered agents</div>
             </div>
             <svg className="m-card-sparkline-svg blue" viewBox="0 0 68 24">
@@ -243,7 +185,7 @@ export function Agents({ setActiveTab }: AgentsProps) {
             </svg>
           </div>
         </div>
-
+ 
         <div className="metric-card-box">
           <div className="m-card-header">
             <div className="m-card-header-left">
@@ -256,14 +198,14 @@ export function Agents({ setActiveTab }: AgentsProps) {
           <div className="m-card-body">
             <div className="m-card-value-container">
               <div className="m-card-value">{countRunning}</div>
-              <div className="m-card-subtext">{((countRunning / agentsData.length) * 100).toFixed(1)}% of total</div>
+              <div className="m-card-subtext">{((countRunning / (agents.length || 1)) * 100).toFixed(1)}% of total</div>
             </div>
             <svg className="m-card-sparkline-svg green" viewBox="0 0 68 24">
               <polyline points="0,22 15,18 30,12 45,20 60,10 68,4" />
             </svg>
           </div>
         </div>
-
+ 
         <div className="metric-card-box">
           <div className="m-card-header">
             <div className="m-card-header-left">
@@ -283,7 +225,7 @@ export function Agents({ setActiveTab }: AgentsProps) {
             </svg>
           </div>
         </div>
-
+ 
         <div className="metric-card-box">
           <div className="m-card-header">
             <div className="m-card-header-left">
@@ -295,7 +237,7 @@ export function Agents({ setActiveTab }: AgentsProps) {
           </div>
           <div className="m-card-body">
             <div className="m-card-value-container">
-              <div className="m-card-value">3</div>
+              <div className="m-card-value">{summary.tasks_running}</div>
               <div className="m-card-subtext">Currently executing</div>
             </div>
             <svg className="m-card-sparkline-svg purple" viewBox="0 0 68 24">
@@ -388,7 +330,7 @@ export function Agents({ setActiveTab }: AgentsProps) {
                   className={`tab-btn ${activeFilterTab === "all" ? "active" : ""}`}
                   onClick={() => setActiveFilterTab("all")}
                 >
-                  All <span style={{ color: 'var(--text-dim)', marginLeft: '2px' }}>{agentsData.length}</span>
+                  All <span style={{ color: 'var(--text-dim)', marginLeft: '2px' }}>{agents.length}</span>
                 </button>
                 <button
                   className={`tab-btn ${activeFilterTab === "running" ? "active" : ""}`}
@@ -754,9 +696,9 @@ export function Agents({ setActiveTab }: AgentsProps) {
               <div className="details-section-box">
                 <span className="details-section-title">Recent Actions</span>
                 <div className="recent-actions-list">
-                  {selectedAgent.recentActions.map((action, idx) => (
+                  {recentActions.map((action, idx) => (
                     <div key={idx} className="action-row" style={{ alignItems: 'center' }}>
-                      <span className="action-time">10:21</span>
+                      <span className="action-time">Log</span>
                       <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--color-success)', flexShrink: 0 }}>
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3.5" d="M5 13l4 4L19 7" />
                       </svg>
@@ -768,25 +710,60 @@ export function Agents({ setActiveTab }: AgentsProps) {
             </div>
 
             <footer className="agent-details-footer">
-              <button className="details-footer-btn start" onClick={() => alert(`${selectedAgent.name} started.`)}>
+              <button
+                className="details-footer-btn start"
+                onClick={async () => {
+                  try {
+                    await startAgent(selectedAgent.id);
+                    loadData();
+                  } catch (e) {
+                    alert(`Failed to start agent: ${e}`);
+                  }
+                }}
+              >
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                 </svg>
                 <span>Start</span>
               </button>
-              <button className="details-footer-btn pause" onClick={() => alert(`${selectedAgent.name} paused.`)}>
+              <button
+                className="details-footer-btn pause"
+                onClick={async () => {
+                  try {
+                    await stopAgent(selectedAgent.id);
+                    loadData();
+                  } catch (e) {
+                    alert(`Failed to stop agent: ${e}`);
+                  }
+                }}
+              >
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span>Pause</span>
+                <span>Offline</span>
               </button>
-              <button className="details-footer-btn restart" onClick={() => alert(`${selectedAgent.name} restarted.`)}>
+              <button
+                className="details-footer-btn restart"
+                onClick={async () => {
+                  try {
+                    await restartAgent(selectedAgent.id);
+                    loadData();
+                  } catch (e) {
+                    alert(`Failed to restart agent: ${e}`);
+                  }
+                }}
+              >
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M9 11l3-3-3-3" />
                 </svg>
                 <span>Restart</span>
               </button>
-              <button className="details-footer-btn logs" onClick={() => { setActiveTab("workspace"); alert(`Switched to workspace terminal logs for ${selectedAgent.name}.`); }}>
+              <button
+                className="details-footer-btn logs"
+                onClick={() => {
+                  setActiveTab("workspace");
+                }}
+              >
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>

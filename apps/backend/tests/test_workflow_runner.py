@@ -65,10 +65,10 @@ async def _running_app(monkeypatch_env=None):
 
 
 async def _wait_runner_done(http: httpx.AsyncClient, sid: str, timeout: float = 5.0) -> Dict[str, Any]:
-    """Poll GET /sessions/{id}/runner until task_done or timeout."""
+    """Poll GET /api/v1/sessions/{id}/runner until task_done or timeout."""
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
-        r = await http.get(f"/sessions/{sid}/runner")
+        r = await http.get(f"/api/v1/sessions/{sid}/runner")
         data = r.json()
         runner = data.get("runner")
         if runner is None:
@@ -120,11 +120,11 @@ async def test_runner_executes_steps_sequentially_in_order():
     order matches the workflow step order."""
     async with _running_app() as (http_base, _):
         async with httpx.AsyncClient(base_url=http_base) as http:
-            sess = (await http.post("/sessions")).json()
+            sess = (await http.post("/api/v1/sessions")).json()
             sid = sess["session_id"]
 
             await http.post(
-                f"/sessions/{sid}/messages",
+                f"/api/v1/sessions/{sid}/messages",
                 json={"content": "Mở Notepad và gõ Hello"},
             )
             await _wait_runner_done(http, sid)
@@ -146,7 +146,7 @@ async def test_stop_does_not_run_subsequent_steps():
     """
     async with _running_app() as (http_base, ws_base):
         async with httpx.AsyncClient(base_url=http_base) as http:
-            sess = (await http.post("/sessions")).json()
+            sess = (await http.post("/api/v1/sessions")).json()
             sid = sess["session_id"]
             async with websockets.connect(f"{ws_base}/ws/{sid}") as ws:
                 # Drain pre-message events.
@@ -157,21 +157,21 @@ async def test_stop_does_not_run_subsequent_steps():
                 # state is consistent with the rule "stop halts before
                 # next step".
                 resp = await http.post(
-                    f"/sessions/{sid}/messages",
+                    f"/api/v1/sessions/{sid}/messages",
                     json={"content": "Mở Notepad và gõ Hello"},
                 )
                 assert resp.status_code == 202
                 # Wait for runner state to be present.
                 deadline = time.monotonic() + 2.0
                 while time.monotonic() < deadline:
-                    r = await http.get(f"/sessions/{sid}/runner")
+                    r = await http.get(f"/api/v1/sessions/{sid}/runner")
                     if r.json().get("runner") is not None:
                         break
                     await asyncio.sleep(0.01)
                 # Fire stop immediately. With MockGuiAdapter (instant)
                 # the runner may already be finished; both outcomes are
                 # valid for the rule.
-                stop_resp = await http.post(f"/sessions/{sid}/stop")
+                stop_resp = await http.post(f"/api/v1/sessions/{sid}/stop")
                 assert stop_resp.status_code in (202, 409)
                 # Drain remaining WS events.
                 events: List[str] = []
@@ -192,18 +192,18 @@ async def test_pause_then_resume_completes_workflow():
     """Acceptance: pause không giết app, chỉ tạm ngừng workflow."""
     async with _running_app() as (http_base, _):
         async with httpx.AsyncClient(base_url=http_base) as http:
-            sess = (await http.post("/sessions")).json()
+            sess = (await http.post("/api/v1/sessions")).json()
             sid = sess["session_id"]
             # Send a 2-step workflow. With MockGuiAdapter the runner
             # finishes almost immediately, so pausing AFTER the runner
             # has completed should return 409.
             await http.post(
-                f"/sessions/{sid}/messages",
+                f"/api/v1/sessions/{sid}/messages",
                 json={"content": "Mở Notepad và gõ Hello"},
             )
             await _wait_runner_done(http, sid)
             # Pause after completion should be rejected.
-            r = await http.post(f"/sessions/{sid}/pause")
+            r = await http.post(f"/api/v1/sessions/{sid}/pause")
             assert r.status_code == 409
 
 
@@ -212,12 +212,12 @@ async def test_ws_pause_action_echoes_user_paused_event():
     """Acceptance: WebSocket control message sends back the user_* event."""
     async with _running_app() as (http_base, ws_base):
         async with httpx.AsyncClient(base_url=http_base) as http:
-            sess = (await http.post("/sessions")).json()
+            sess = (await http.post("/api/v1/sessions")).json()
             sid = sess["session_id"]
             # Need a live runner. The auto-start is fast with MockGuiAdapter
             # so we send a 2-step workflow and immediately open WS + pause.
             await http.post(
-                f"/sessions/{sid}/messages",
+                f"/api/v1/sessions/{sid}/messages",
                 json={"content": "Mở Notepad và gõ Hello"},
             )
             # Race against the runner: open WS + send pause ASAP.
@@ -262,14 +262,14 @@ async def test_ws_pause_action_echoes_user_paused_event():
 async def test_runner_state_endpoint_reports_final_status():
     async with _running_app() as (http_base, _):
         async with httpx.AsyncClient(base_url=http_base) as http:
-            sess = (await http.post("/sessions")).json()
+            sess = (await http.post("/api/v1/sessions")).json()
             sid = sess["session_id"]
             await http.post(
-                f"/sessions/{sid}/messages",
+                f"/api/v1/sessions/{sid}/messages",
                 json={"content": "Mở Notepad và gõ Hello"},
             )
             await _wait_runner_done(http, sid)
-            r = await http.get(f"/sessions/{sid}/runner")
+            r = await http.get(f"/api/v1/sessions/{sid}/runner")
             data = r.json()
             assert data["runner"] is not None
             assert data["runner"]["task_done"] is True
@@ -281,10 +281,10 @@ async def test_session_finished_event_emitted_on_completion():
     """Acceptance: every transition is streamed and persisted."""
     async with _running_app() as (http_base, _):
         async with httpx.AsyncClient(base_url=http_base) as http:
-            sess = (await http.post("/sessions")).json()
+            sess = (await http.post("/api/v1/sessions")).json()
             sid = sess["session_id"]
             await http.post(
-                f"/sessions/{sid}/messages",
+                f"/api/v1/sessions/{sid}/messages",
                 json={"content": "Mở Notepad và gõ Hello"},
             )
             await _wait_runner_done(http, sid)
@@ -299,14 +299,14 @@ async def test_unknown_intent_emits_session_finished_with_zero_steps():
     """Workflow with 0 steps (unknown intent) still emits session_finished."""
     async with _running_app() as (http_base, _):
         async with httpx.AsyncClient(base_url=http_base) as http:
-            sess = (await http.post("/sessions")).json()
+            sess = (await http.post("/api/v1/sessions")).json()
             sid = sess["session_id"]
             await http.post(
-                f"/sessions/{sid}/messages",
+                f"/api/v1/sessions/{sid}/messages",
                 json={"content": "Đặt lịch họp lúc 9h sáng mai"},
             )
             await _wait_runner_done(http, sid)
-            r = await http.get(f"/sessions/{sid}/workflow")
+            r = await http.get(f"/api/v1/sessions/{sid}/workflow")
             wf = r.json()
             assert wf["steps"] == []
             events = await _events_for(http, sid)
@@ -320,16 +320,16 @@ async def test_retry_after_workflow_completes():
     """Retry endpoint accepts a step_id and restarts the runner."""
     async with _running_app() as (http_base, _):
         async with httpx.AsyncClient(base_url=http_base) as http:
-            sess = (await http.post("/sessions")).json()
+            sess = (await http.post("/api/v1/sessions")).json()
             sid = sess["session_id"]
             await http.post(
-                f"/sessions/{sid}/messages",
+                f"/api/v1/sessions/{sid}/messages",
                 json={"content": "Mở Notepad và gõ Hello"},
             )
             await _wait_runner_done(http, sid)
-            wf = (await http.get(f"/sessions/{sid}/workflow")).json()
+            wf = (await http.get(f"/api/v1/sessions/{sid}/workflow")).json()
             step_id = wf["steps"][0]["id"]
-            r = await http.post(f"/workflow/{step_id}/retry")
+            r = await http.post(f"/api/v1/workflow/{step_id}/retry")
             assert r.status_code == 202
             assert r.json()["status"] == "retry_requested"
             # Wait for the retry to complete.
@@ -345,7 +345,7 @@ async def test_pause_endpoint_404_when_no_runner():
     """Pause before any /messages returns 404 (no runner tracking session)."""
     async with _running_app() as (http_base, _):
         async with httpx.AsyncClient(base_url=http_base) as http:
-            sess = (await http.post("/sessions")).json()
+            sess = (await http.post("/api/v1/sessions")).json()
             sid = sess["session_id"]
-            r = await http.post(f"/sessions/{sid}/pause")
+            r = await http.post(f"/api/v1/sessions/{sid}/pause")
             assert r.status_code == 404

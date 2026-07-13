@@ -42,7 +42,7 @@ class ModelRoutingService:
                 res = await session.execute(stmt)
                 rule = res.scalar_one_or_none()
                 if not rule:
-                    rule = ModelRoutingRuleORM(role=role)
+                    rule = ModelRoutingRuleORM(role=role, name=f"{role} Route")
                     session.add(rule)
                 rule.primary_model_id = mapping.get("primary")
                 rule.fallback_model_id = mapping.get("fallback")
@@ -90,6 +90,9 @@ class ModelRoutingService:
         estimated_tokens: int,
     ) -> Optional[ModelCatalogORM]:
         """Fetch model and verify if it's healthy, enabled, has key, and has quota."""
+        import os
+        _mock_mode = os.environ.get("WINDAGENT_MODEL_BACKEND") == "mock"
+
         async with self.db.session() as session:
             # Query catalog, provider, and runtime status
             stmt = (
@@ -104,7 +107,11 @@ class ModelRoutingService:
                 return None
 
             catalog, provider, runtime = row
-            
+
+            # In mock mode, skip all status/key/quota checks — MockProviderClient always works.
+            if _mock_mode:
+                return catalog
+
             # 1. Check if model is enabled in database
             if not catalog.enabled:
                 return None
@@ -113,9 +120,8 @@ class ModelRoutingService:
             if not provider.enabled:
                 return None
 
-            # 3. Check if provider API key exists (for cloud models)
+            # 3. Check if provider API key exists (for cloud models).
             if provider.provider_type == "cloud" and provider.api_key_env:
-                import os
                 if not os.environ.get(provider.api_key_env):
                     log.warning("API key missing for provider %s", provider.id)
                     return None
@@ -142,26 +148,33 @@ class ModelRoutingService:
         estimated_tokens: int,
     ) -> Optional[ModelCatalogORM]:
         """Find the best available model prioritizing Local -> Free cloud -> Paid cloud."""
+        import os
+        _mock_mode = os.environ.get("WINDAGENT_MODEL_BACKEND") == "mock"
+
         async with self.db.session() as session:
             stmt = (
                 select(ModelCatalogORM, ModelProviderORM, ModelRuntimeStatusORM)
                 .join(ModelProviderORM, ModelCatalogORM.provider_id == ModelProviderORM.id)
                 .outerjoin(ModelRuntimeStatusORM, ModelCatalogORM.id == ModelRuntimeStatusORM.model_id)
-                .where(ModelCatalogORM.enabled == True)
-                .where(ModelProviderORM.enabled == True)
-                .order_by(ModelProviderORM.priority.desc()) # Local has 100, others 80, 70, etc.
+                .order_by(ModelProviderORM.priority.desc())  # Local has 100, others 80, 70, etc.
             )
+            if not _mock_mode:
+                # In production, only consider enabled models from enabled providers
+                stmt = stmt.where(ModelCatalogORM.enabled == True).where(ModelProviderORM.enabled == True)
             res = await session.execute(stmt)
             rows = res.all()
 
             for catalog, provider, runtime in rows:
+                # In mock mode, skip all checks — return first model found.
+                if _mock_mode:
+                    return catalog
+
                 # Filter offline
                 if runtime and runtime.status == "Offline":
                     continue
 
                 # Check API Key
                 if provider.provider_type == "cloud" and provider.api_key_env:
-                    import os
                     if not os.environ.get(provider.api_key_env):
                         continue
 

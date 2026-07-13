@@ -1,0 +1,57 @@
+1 .M N... 100644 100644 100644 23919d9a3afb1631fe1bb80b26dc972a9812c69a 23919d9a3afb1631fe1bb80b26dc972a9812c69a db/database.py
+1 .M N... 100644 100644 100644 a31b448d95f7a5f81f3bf57061b02933ec714f8e a31b448d95f7a5f81f3bf57061b02933ec714f8e db/models.py
+1 .M N... 100644 100644 100644 7da67ce38666b8ac3138ffa5b524076e1a992a77 7da67ce38666b8ac3138ffa5b524076e1a992a77 main.py
+1 .M N... 100644 100644 100644 990e6a1a71aa9c4fc3c8fae77e044804a70f3da4 990e6a1a71aa9c4fc3c8fae77e044804a70f3da4 pyproject.toml
+1 .M N... 100644 100644 100644 e1f4397f8f22d015fd8c54cd711202e8f7efa9c2 e1f4397f8f22d015fd8c54cd711202e8f7efa9c2 routers/websocket.py
+1 .M N... 100644 100644 100644 8769efc4c7cea92a6928ba4bfc6d3898df1c4952 8769efc4c7cea92a6928ba4bfc6d3898df1c4952 schemas/event.py
+1 .M N... 100644 100644 100644 6118ad2ccb9faecb1ef1be0f99fd2fb19a722bf9 6118ad2ccb9faecb1ef1be0f99fd2fb19a722bf9 services/event_bus.py
+1 .M N... 100644 100644 100644 d3b5535fbd248ce68dcee25d49a439aa130dc1b6 d3b5535fbd248ce68dcee25d49a439aa130dc1b6 services/event_hooks.py
+1 .M N... 100644 100644 100644 a0b7b8f0e834689713e881206d47755da263e08d a0b7b8f0e834689713e881206d47755da263e08d services/hermes/session_bridge.py
+1 .M N... 100644 100644 100644 f0465a464a05ba42bacfe9e170546d75b8581faf f0465a464a05ba42bacfe9e170546d75b8581faf tests/conftest.py
+1 .M N... 100644 100644 100644 e9978a779a6a2210bb4843214b758bfed61ae2f3 e9978a779a6a2210bb4843214b758bfed61ae2f3 tests/test_websocket.py
+1 .M N... 100644 100644 100644 824ba358dc3ea5ccb13507d337e8d738fdd2ff1e 824ba358dc3ea5ccb13507d337e8d738fdd2ff1e ../desktop/package-lock.json
+1 .M N... 100644 100644 100644 b371828a43d897b57a5391ac4271d76334db5a53 b371828a43d897b57a5391ac4271d76334db5a53 ../desktop/package.json
+1 .M N... 100644 100644 100644 0d0cf42970ae2d0919212634438c3224ce689e97 0d0cf42970ae2d0919212634438c3224ce689e97 ../desktop/src/App.tsx
+1 .M N... 100644 100644 100644 655841e7d8a23be7827a9518a664415d8bda616f 655841e7d8a23be7827a9518a664415d8bda616f ../desktop/src/api/client.ts
+1 .M N... 100644 100644 100644 91ce1d50cc23244544be1c57b580df4531e37ae8 91ce1d50cc23244544be1c57b580df4531e37ae8 ../desktop/src/api/types.ts
+1 .M N... 100644 100644 100644 cb37c40bc3c7322d53b9106a423426793471e520 cb37c40bc3c7322d53b9106a423426793471e520 ../desktop/src/components/ControlBar.test.tsx
+1 .M N... 100644 100644 100644 8ba359c0577c86e1ae7ef6be7c4afb3151020590 8ba359c0577c86e1ae7ef6be7c4afb3151020590 ../desktop/src/styles.css
+1 .M N... 100644 100644 100644 5ac1a88e814c1e0fca5a44b65f55b8f1aaaeeedc 5ac1a88e814c1e0fca5a44b65f55b8f1aaaeeedc ../../ban_ke_hoach.md
+1 .M N... 100644 100644 100644 f044523501fb41046e3290fd17b026128955045b f044523501fb41046e3290fd17b026128955045b ../../docs/event_protocol.md
+? alembic.ini
+? alembic/
+? artifacts/
+? key.txt
+? pyproject.toml.bak
+? routers/conversations.py
+? routers/events.py
+? routers/worktrees.py
+? services/dag_scheduler.py
+? services/hermes/supervisor.py
+? services/partial_audit.py
+? services/permission_profile.py
+? services/recovery_service.py
+? services/route_lock_service.py
+? services/worktree_service.py
+? test_encryption.py
+? test_encryption_clean.py
+? test_encryption_correct.py
+? test_encryption_final.py
+? test_encryption_fixed.py
+? test_final.py
+? tests/test_phase2_migration.py
+? tests/test_phase3_route_lock.py
+? tests/test_phase4_supervisor.py
+? tests/test_phase5_dag_scheduler.py
+? tests/test_phase6_worktree_permission.py
+? tests/test_phase7_durable_recovery.py
+? tests/test_phase8_conversations.py
+? tests/test_phase9_task_editing.py
+? utils/
+? windagent.db.backup
+? ../desktop/src/pages/MultiAgentWorkspace.tsx
+? ../desktop/src/state/multiAgentStore.tsx
+? ../../artifacts/agent_workspace_orchestration_audit/
+? ../../artifacts/agent_workspace_orchestration_phase2/
+? ../../audit_report/
+? ../../docs/adr/

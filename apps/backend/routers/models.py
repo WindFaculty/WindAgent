@@ -67,6 +67,26 @@ async def import_model(request: Request, config: ImportRequest) -> Dict[str, Any
     return await service.import_model(config.model_dump())
 
 
+@router.delete("/{model_id}")
+async def delete_model(request: Request, model_id: str) -> Dict[str, Any]:
+    """Remove a model from the registry entirely."""
+    service = _service(request)
+    res = await service.delete_model(model_id)
+    if res.get("status") == "error":
+        raise HTTPException(status_code=404, detail=res.get("message"))
+    return res
+
+
+@router.delete("/providers/{provider_id}/api-key")
+async def clear_provider_api_key(request: Request, provider_id: str) -> Dict[str, Any]:
+    """Clear the API key stored for a provider."""
+    service = _service(request)
+    res = await service.clear_provider_api_key(provider_id)
+    if res.get("status") == "error":
+        raise HTTPException(status_code=404, detail=res.get("message"))
+    return res
+
+
 @router.post("/{model_id}/start")
 async def start_model(request: Request, model_id: str) -> Dict[str, Any]:
     """Load/start running the model."""
@@ -164,8 +184,11 @@ async def list_providers(request: Request) -> List[Dict[str, Any]]:
         result = []
         for p in providers:
             has_key = False
-            if p.provider_type == "cloud" and p.api_key_env:
-                has_key = bool(os.environ.get(p.api_key_env))
+            if p.provider_type == "cloud":
+                if p.api_key:
+                    has_key = True
+                elif p.api_key_env:
+                    has_key = bool(os.environ.get(p.api_key_env))
             elif p.provider_type == "local":
                 has_key = True
 
@@ -177,6 +200,7 @@ async def list_providers(request: Request) -> List[Dict[str, Any]]:
                 "quotaMode": p.quota_mode,
                 "enabled": p.enabled,
                 "hasKey": has_key,
+                "baseUrl": p.base_url,
                 "notes": p.notes,
             })
         return result
@@ -225,7 +249,18 @@ class ModelUpdate(BaseModel):
     display_name: Optional[str] = None
 
 
+class ProviderCreate(BaseModel):
+    id: str
+    name: str
+    api_source: str  # "openai" or "anthropic" or "google" etc.
+    base_url: str
+    api_key: Optional[str] = None
+
+
 class ProviderUpdate(BaseModel):
+    name: Optional[str] = None
+    api_source: Optional[str] = None
+    base_url: Optional[str] = None
     api_key: Optional[str] = None
 
 
@@ -252,6 +287,36 @@ async def update_model_catalog(request: Request, id: str, payload: ModelUpdate) 
         return {"status": "success", "message": "Model updated successfully."}
 
 
+@router.post("/providers")
+async def create_provider(request: Request, payload: ProviderCreate) -> Dict[str, Any]:
+    """Create a new custom provider configuration."""
+    service = _service(request)
+    async with service.db.session() as session:
+        from sqlalchemy import select
+        from db.models import ModelProviderORM
+        stmt = select(ModelProviderORM).where(ModelProviderORM.id == payload.id)
+        res = await session.execute(stmt)
+        existing = res.scalar_one_or_none()
+        if existing:
+            raise HTTPException(status_code=400, detail="Provider with this ID already exists.")
+        
+        provider = ModelProviderORM(
+            id=payload.id,
+            site_name=payload.name,
+            api_source=payload.api_source,
+            base_url=payload.base_url,
+            api_key=payload.api_key,
+            provider_type="cloud",
+            quota_mode="RPM_RPD",
+            supports_openai_compatible=True if payload.api_source != "google" else False,
+            supports_model_discovery=True,
+            enabled=True,
+        )
+        session.add(provider)
+        await session.commit()
+        return {"status": "success", "message": f"Provider {provider.site_name} created successfully."}
+
+
 @router.patch("/providers/{provider_id}")
 async def update_provider(request: Request, provider_id: str, payload: ProviderUpdate) -> Dict[str, Any]:
     """Update provider configuration details."""
@@ -265,8 +330,67 @@ async def update_provider(request: Request, provider_id: str, payload: ProviderU
         if not provider:
             raise HTTPException(status_code=404, detail="Provider not found")
         
+        if payload.name is not None:
+            provider.site_name = payload.name
+        if payload.api_source is not None:
+            provider.api_source = payload.api_source
+        if payload.base_url is not None:
+            provider.base_url = payload.base_url
         if payload.api_key is not None:
             provider.api_key = payload.api_key
             
         await session.commit()
         return {"status": "success", "message": "Provider updated successfully."}
+
+
+class ProviderTestRequest(BaseModel):
+    api_source: str
+    base_url: str
+    api_key: Optional[str] = None
+
+
+@router.post("/providers/test-connection")
+async def test_provider_connection(request: Request, payload: ProviderTestRequest) -> Dict[str, Any]:
+    """Test connection to a provider and retrieve available models."""
+    service = _service(request)
+    
+    # Determine api_source format
+    if payload.api_source == "google":
+        from services.provider_clients.google_gemini import GoogleGeminiClient
+        client = GoogleGeminiClient(
+            provider_id="temp_test",
+            base_url=payload.base_url,
+            api_key=payload.api_key,
+        )
+    elif payload.api_source == "anthropic":
+        from services.provider_clients.anthropic import AnthropicClient
+        client = AnthropicClient(
+            provider_id="temp_test",
+            base_url=payload.base_url,
+            api_key=payload.api_key,
+        )
+    else:
+        from services.provider_clients.openai_compatible import OpenAICompatibleClient
+        client = OpenAICompatibleClient(
+            provider_id="temp_test",
+            base_url=payload.base_url,
+            api_key=payload.api_key,
+        )
+        
+    try:
+        models_list = await client.list_models()
+        # Format list for frontend
+        formatted_models = []
+        for m in models_list:
+            formatted_models.append({
+                "model_id": m["model_id"],
+                "display_name": m["display_name"],
+                "capabilities": m["capabilities"],
+            })
+        return {
+            "status": "success",
+            "message": f"Endpoint OK - Đã lấy {len(formatted_models)} models từ endpoint",
+            "models": formatted_models
+        }
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=f"Connection failed: {str(exc)}")

@@ -19,6 +19,7 @@ Tất cả các tin nhắn gửi qua WebSocket đều là đối tượng JSON c
 *   `event` (string): Tên định danh của sự kiện (dạng `snake_case`).
 *   `timestamp` (string): Thời gian phát sinh sự kiện theo định dạng ISO 8601 UTC.
 *   `data` (object): Nội dung payload riêng của từng sự kiện cụ thể.
+*   `seq` (int, Giai đoạn 7): Số thứ tự tăng đơn điệu theo session, gán khi publish (persist-before-broadcast). Client lưu `seq` cuối, reconnect bằng `/ws/{session_id}?after_seq=N` hoặc `GET /api/v1/events/{session_id}?after_seq=N` để replay event bị mất; dedupe theo `seq`.
 
 ---
 
@@ -35,11 +36,13 @@ Hệ thống hỗ trợ 18 sự kiện phân nhóm theo các pha hoạt động:
 *   `planning_started`: Bắt đầu quá trình gọi mô hình LLM để phân tích cú pháp và lập lịch.
 *   `planning_finished`: Mô hình LLM trả về danh sách các bước workflow hợp lệ.
 *   `workflow_created`: Workflow đã được phân tích, xác thực và lưu vào cơ sở dữ liệu.
+*   `workflow_updated`: Hermes cập nhật lại toàn bộ kế hoạch todo (thay thế danh sách cũ).
 
 ### Nhóm C: Chạy Workflow (Execution Phase)
 *   `step_started`: Bắt đầu thực thi một bước trong workflow.
 *   `step_completed`: Bước chạy thành công.
 *   `step_failed`: Bước chạy thất bại (chứa chi tiết mã lỗi).
+*   `step_cancelled`: Bước bị hủy (agent bỏ qua hoặc người dùng dừng).
 
 ### Nhóm D: Gọi công cụ tương tác (Tool Call Phase)
 *   `tool_call_started`: Bắt đầu gọi một công cụ cụ thể (như gõ chữ, click chuột, chụp màn hình).
@@ -60,6 +63,14 @@ Hệ thống hỗ trợ 18 sự kiện phân nhóm theo các pha hoạt động:
 
 ### Nhóm H: Lỗi chung (Global Errors)
 *   `error`: Báo lỗi hệ thống chung không thuộc các nhóm trên.
+
+### Nhóm I: Worktree (Giai đoạn 6)
+*   `worktree_created`: Tạo worktree cô lập cho coding agent thành công.
+*   `worktree_changed`: Agent thay đổi nội dung worktree (optional diff).
+*   `worktree_committed`: Agent tạo local commit trong worktree.
+*   `worktree_merged`: Integration agent merge/cherry-pick nhánh vào main thành công.
+*   `worktree_conflict`: Merge conflict — cần can thiệp người dùng.
+*   `worktree_removed`: Worktree bị gỡ (quarantine hoặc xoá).
 
 ---
 

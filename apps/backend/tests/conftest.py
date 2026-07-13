@@ -33,10 +33,21 @@ os.environ["WINDAGENT_MOCK_GUI"] = "1"
 # not depend on a running Ollama daemon.
 os.environ["WINDAGENT_MODEL_BACKEND"] = "mock"
 
+# Phase 1: disable Hermes runtime by default for all tests to speed up startup
+os.environ["WINDAGENT_HERMES_ENABLED"] = "false"
+
 # Force every lifespan in this test session to use a temp file DB.
+import tempfile
 _DB_FD, _DB_PATH = tempfile.mkstemp(prefix="windagent-test-", suffix=".db")
 os.close(_DB_FD)
-os.environ["WINDAGENT_DB_URL"] = f"sqlite+aiosqlite:///{_DB_PATH}"
+os.environ["WINDAGENT_DB_URL"] = f"sqlite+aiosqlite:///{_DB_PATH}?timeout=30"
+
+# Ensure encryption key is available for tests that write to api_key.
+# Must be a valid Fernet key (32 url-safe base64-encoded bytes).
+_enc_key = os.environ.get("WINDAGENT_SECRET_ENCRYPTION_KEY")
+if not _enc_key:
+    from cryptography.fernet import Fernet
+    os.environ["WINDAGENT_SECRET_ENCRYPTION_KEY"] = Fernet.generate_key().decode()
 
 
 @pytest.fixture
@@ -44,15 +55,30 @@ def lifespan_client():
     """A TestClient whose __enter__ has fired the FastAPI lifespan.
 
     Also resets the SQLite DB before yielding so tests don't see each
-    other's data.
+    other's data. Hardens SQLite database isolation per test.
     """
     from fastapi.testclient import TestClient
+    import main
     from main import app
     from db.models import Base
     import sqlalchemy.ext.asyncio as sa_asyncio
+    import tempfile
+
+    # Generate a unique temp database file for this test
+    db_fd, db_path = tempfile.mkstemp(prefix="windagent-test-isolated-", suffix=".db")
+    os.close(db_fd)
+    
+    # Store old values to restore later if needed
+    old_env_url = os.environ.get("WINDAGENT_DB_URL")
+    old_main_url = getattr(main, "DB_URL", None)
+
+    # Override urls
+    test_db_url = f"sqlite+aiosqlite:///{db_path}?timeout=30"
+    os.environ["WINDAGENT_DB_URL"] = test_db_url
+    main.DB_URL = test_db_url
 
     async def _reset_db() -> None:
-        engine = sa_asyncio.create_async_engine(os.environ["WINDAGENT_DB_URL"])
+        engine = sa_asyncio.create_async_engine(test_db_url)
         try:
             async with engine.begin() as conn:
                 await conn.run_sync(Base.metadata.drop_all)
@@ -63,8 +89,22 @@ def lifespan_client():
     import anyio
     anyio.run(_reset_db)
 
-    with TestClient(app) as client:
-        yield client
+    try:
+        with TestClient(app) as client:
+            yield client
+    finally:
+        # Restore environment/main variables
+        if old_env_url is not None:
+            os.environ["WINDAGENT_DB_URL"] = old_env_url
+        if old_main_url is not None:
+            main.DB_URL = old_main_url
+        
+        # Safely clean up the temp database file
+        try:
+            if os.path.exists(db_path):
+                os.remove(db_path)
+        except Exception:
+            pass
 
 
 @pytest.fixture

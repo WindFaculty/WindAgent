@@ -46,6 +46,9 @@ export type StepStatus =
   | "skipped"
   | "cancelled";
 
+// Tool names come from both the native GUI runner (open_app, type_text, ...)
+// and the Hermes runtime (terminal, read_file, todo, ...). Keep open + alias
+// the native set rather than enumerating every possible Hermes tool.
 export type ToolName =
   | "open_app"
   | "open_url"
@@ -55,7 +58,8 @@ export type ToolName =
   | "click_xy"
   | "scroll"
   | "screenshot"
-  | "wait";
+  | "wait"
+  | string;
 
 export interface WorkflowStep {
   id: string;
@@ -69,9 +73,28 @@ export interface WorkflowStep {
 export interface Workflow {
   workflow_id: string;
   session_id: string;
+  objective: string;
   created_at: string;
   status: WorkflowStatus;
   steps: WorkflowStep[];
+}
+
+// Recent Actions timeline (docs ban_ke_hoach.md §10). Derived from normalized
+// events so the UI never hardcodes a fake activity feed.
+export type RecentActionKind =
+  | "tool_call"
+  | "step"
+  | "message"
+  | "permission"
+  | "workflow"
+  | "error";
+
+export interface RecentAction {
+  id: string;
+  kind: RecentActionKind;
+  label: string;
+  detail?: string;
+  timestamp: string;
 }
 
 // ---------- Runner ----------
@@ -96,9 +119,11 @@ export type EventName =
   | "planning_started"
   | "planning_finished"
   | "workflow_created"
+  | "workflow_updated"
   | "step_started"
   | "step_completed"
   | "step_failed"
+  | "step_cancelled"
   | "tool_call_started"
   | "tool_call_finished"
   | "permission_request"
@@ -107,7 +132,24 @@ export type EventName =
   | "user_paused"
   | "user_resumed"
   | "user_stopped"
-  | "error";
+  | "error"
+  | "assistant_message_started"
+  | "assistant_message_delta"
+  | "assistant_message_completed"
+  | "reasoning_delta"
+  | "tool_call_progress"
+  | "terminal_output"
+  | "artifact_created"
+  | "clarification_request"
+    | "replan_notification"
+    | "browser_session_started"
+    | "browser_navigation_started"
+    | "browser_navigation_completed"
+    | "browser_screenshot_updated"
+    | "browser_action_started"
+    | "browser_action_completed"
+    | "browser_console"
+    | "browser_error";
 
 export interface EventEnvelope {
   event: EventName;

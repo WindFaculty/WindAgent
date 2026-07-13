@@ -11,7 +11,7 @@ from db.models import ExecutionEventORM, ToolCallORM
 
 
 def test_list_tools_returns_mvp_whitelisted(client):
-    resp = client.get("/tools")
+    resp = client.get("/api/v1/tools")
     assert resp.status_code == 200
     names = resp.json()
     # Phase 8 added click_target (vision-grounded click); Phase 12
@@ -25,16 +25,16 @@ def test_list_tools_returns_mvp_whitelisted(client):
 
 def test_run_tool_unknown_session_returns_404(client):
     resp = client.post(
-        "/sessions/00000000-0000-4000-8000-000000000999/tools/open_app",
+        "/api/v1/sessions/00000000-0000-4000-8000-000000000999/tools/open_app",
         json={"params": {"app": "notepad"}},
     )
     assert resp.status_code == 404
 
 
 def test_run_tool_unknown_tool_returns_failed(client):
-    sid = client.post("/sessions").json()["session_id"]
+    sid = client.post("/api/v1/sessions").json()["session_id"]
     resp = client.post(
-        f"/sessions/{sid}/tools/no_such_tool",
+        f"/api/v1/sessions/{sid}/tools/no_such_tool",
         json={"params": {}},
     )
     assert resp.status_code == 200
@@ -44,9 +44,9 @@ def test_run_tool_unknown_tool_returns_failed(client):
 
 
 def test_run_tool_bad_params_returns_failed(client):
-    sid = client.post("/sessions").json()["session_id"]
+    sid = client.post("/api/v1/sessions").json()["session_id"]
     resp = client.post(
-        f"/sessions/{sid}/tools/open_app",
+        f"/api/v1/sessions/{sid}/tools/open_app",
         json={"params": {"app": "photoshop"}},
     )
     assert resp.status_code == 200
@@ -56,9 +56,9 @@ def test_run_tool_bad_params_returns_failed(client):
 
 
 def test_run_open_app_success(client, gui):
-    sid = client.post("/sessions").json()["session_id"]
+    sid = client.post("/api/v1/sessions").json()["session_id"]
     resp = client.post(
-        f"/sessions/{sid}/tools/open_app",
+        f"/api/v1/sessions/{sid}/tools/open_app",
         json={"params": {"app": "notepad"}},
     )
     assert resp.status_code == 200
@@ -71,9 +71,9 @@ def test_run_open_app_success(client, gui):
 
 
 def test_run_type_text_persists_vietnamese(client, db):
-    sid = client.post("/sessions").json()["session_id"]
+    sid = client.post("/api/v1/sessions").json()["session_id"]
     resp = client.post(
-        f"/sessions/{sid}/tools/type_text",
+        f"/api/v1/sessions/{sid}/tools/type_text",
         json={"params": {"text": "Xin chào bạn", "method": "paste"}},
     )
     assert resp.status_code == 200
@@ -95,13 +95,13 @@ def test_run_type_text_persists_vietnamese(client, db):
 
 def test_run_workflow_executes_all_steps(client, gui):
     """End-to-end: send message -> run workflow -> see all steps executed."""
-    sid = client.post("/sessions").json()["session_id"]
+    sid = client.post("/api/v1/sessions").json()["session_id"]
     client.post(
-        f"/sessions/{sid}/messages",
+        f"/api/v1/sessions/{sid}/messages",
         json={"content": "Mở Notepad và gõ Hello"},
     )
 
-    resp = client.post(f"/sessions/{sid}/workflow/run")
+    resp = client.post(f"/api/v1/sessions/{sid}/workflow/run")
     assert resp.status_code == 200
     body = resp.json()
     assert body["step_count"] == 2
@@ -111,11 +111,13 @@ def test_run_workflow_executes_all_steps(client, gui):
     tools_called = [c["tool"] for c in gui.calls]
     assert "open_app" in tools_called
     assert "type_text" in tools_called
+    import time
+    time.sleep(0.3)
 
 
 def test_run_workflow_without_workflow_returns_404(client):
-    sid = client.post("/sessions").json()["session_id"]
-    resp = client.post(f"/sessions/{sid}/workflow/run")
+    sid = client.post("/api/v1/sessions").json()["session_id"]
+    resp = client.post(f"/api/v1/sessions/{sid}/workflow/run")
     assert resp.status_code == 404
 
 
@@ -127,9 +129,9 @@ def test_run_workflow_emits_full_event_sequence(client):
     runner is already executing the workflow in the background.
     """
     import time
-    sid = client.post("/sessions").json()["session_id"]
+    sid = client.post("/api/v1/sessions").json()["session_id"]
     client.post(
-        f"/sessions/{sid}/messages",
+        f"/api/v1/sessions/{sid}/messages",
         json={"content": "Mở Notepad và gõ Hi"},
     )
     # Let the runner finish (MockGuiAdapter is instant).

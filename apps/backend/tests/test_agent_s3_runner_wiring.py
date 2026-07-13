@@ -128,7 +128,7 @@ def installed_agent_s3(app_state):
 # ---------- /tools listing ----------
 
 def test_tools_endpoint_includes_agent_s3_step(client):
-    resp = client.get("/tools")
+    resp = client.get("/api/v1/tools")
     assert resp.status_code == 200
     assert "agent_s3_step" in resp.json()
 
@@ -147,9 +147,9 @@ def test_agent_s3_step_in_registry():
 
 def test_direct_run_agent_s3_step_dry_run_succeeds(client, installed_agent_s3, app_state):
     installed_agent_s3(app_state, actions=["pyautogui.click(123, 456)"])
-    sid = client.post("/sessions").json()["session_id"]
+    sid = client.post("/api/v1/sessions").json()["session_id"]
     resp = client.post(
-        f"/sessions/{sid}/tools/agent_s3_step",
+        f"/api/v1/sessions/{sid}/tools/agent_s3_step",
         json={"params": {
             "instruction": "Click the OK button",
             "dry_run": True,
@@ -176,9 +176,9 @@ def test_direct_run_agent_s3_step_full_execute(
         app_state,
         actions=["pyautogui.click(100, 200)"],
     )
-    sid = client.post("/sessions").json()["session_id"]
+    sid = client.post("/api/v1/sessions").json()["session_id"]
     resp = client.post(
-        f"/sessions/{sid}/tools/agent_s3_step",
+        f"/api/v1/sessions/{sid}/tools/agent_s3_step",
         json={"params": {
             "instruction": "Click submit",
             "dry_run": False,
@@ -206,9 +206,9 @@ def test_direct_run_agent_s3_step_unsafe_action_rejected(
     runner = installed_agent_s3(
         app_state, actions=['os.system("calc")'],
     )
-    sid = client.post("/sessions").json()["session_id"]
+    sid = client.post("/api/v1/sessions").json()["session_id"]
     resp = client.post(
-        f"/sessions/{sid}/tools/agent_s3_step",
+        f"/api/v1/sessions/{sid}/tools/agent_s3_step",
         json={"params": {
             "instruction": "Open calc (via os.system!)",
             "dry_run": True,
@@ -229,9 +229,9 @@ def test_direct_run_agent_s3_step_unsafe_action_rejected(
 def test_direct_run_agent_s3_step_disabled_returns_disabled(client, app_state):
     """Without ``installed_agent_s3``, the orchestrator is None and the
     executor reports AGENT_S3_DISABLED."""
-    sid = client.post("/sessions").json()["session_id"]
+    sid = client.post("/api/v1/sessions").json()["session_id"]
     resp = client.post(
-        f"/sessions/{sid}/tools/agent_s3_step",
+        f"/api/v1/sessions/{sid}/tools/agent_s3_step",
         json={"params": {"instruction": "Anything", "dry_run": True}},
     )
     assert resp.status_code == 200
@@ -243,10 +243,10 @@ def test_direct_run_agent_s3_step_disabled_returns_disabled(client, app_state):
 # ---------- Validation: bad params ----------
 
 def test_direct_run_agent_s3_step_rejects_invalid_params(client):
-    sid = client.post("/sessions").json()["session_id"]
+    sid = client.post("/api/v1/sessions").json()["session_id"]
     # Empty instruction (min_length=1 enforced by Pydantic).
     resp = client.post(
-        f"/sessions/{sid}/tools/agent_s3_step",
+        f"/api/v1/sessions/{sid}/tools/agent_s3_step",
         json={"params": {"instruction": ""}},
     )
     assert resp.status_code == 200
@@ -258,9 +258,9 @@ def test_direct_run_agent_s3_step_rejects_invalid_params(client):
 # ---------- Validation: max_retries out of range ----------
 
 def test_direct_run_agent_s3_step_rejects_max_retries_out_of_range(client):
-    sid = client.post("/sessions").json()["session_id"]
+    sid = client.post("/api/v1/sessions").json()["session_id"]
     resp = client.post(
-        f"/sessions/{sid}/tools/agent_s3_step",
+        f"/api/v1/sessions/{sid}/tools/agent_s3_step",
         json={"params": {"instruction": "test", "max_retries": 99}},
     )
     assert resp.status_code == 200
@@ -282,10 +282,10 @@ def test_workflow_with_agent_s3_step_dry_run(
         app_state,
         actions=["pyautogui.click(50, 50)"],
     )
-    sid = client.post("/sessions").json()["session_id"]
+    sid = client.post("/api/v1/sessions").json()["session_id"]
     # Run via the direct tools endpoint — same path the runner uses.
     resp = client.post(
-        f"/sessions/{sid}/tools/agent_s3_step",
+        f"/api/v1/sessions/{sid}/tools/agent_s3_step",
         json={"params": {
             "instruction": "Click OK",
             "dry_run": True,
@@ -306,9 +306,9 @@ def test_agent_s3_step_creates_tool_call_row(
     installed_agent_s3(
         app_state, actions=["pyautogui.click(10, 20)"],
     )
-    sid = client.post("/sessions").json()["session_id"]
+    sid = client.post("/api/v1/sessions").json()["session_id"]
     client.post(
-        f"/sessions/{sid}/tools/agent_s3_step",
+        f"/api/v1/sessions/{sid}/tools/agent_s3_step",
         json={"params": {
             "instruction": "Click OK",
             "dry_run": True,
@@ -351,9 +351,9 @@ def test_agent_s3_step_when_orchestrator_none_returns_disabled(client, app_state
     """Tear down: explicitly null out the orchestrator."""
     app_state.agent_s3_step_executor = None
     app_state.tool_executor._agent_s3_step_executor = None  # type: ignore[attr-defined]
-    sid = client.post("/sessions").json()["session_id"]
+    sid = client.post("/api/v1/sessions").json()["session_id"]
     resp = client.post(
-        f"/sessions/{sid}/tools/agent_s3_step",
+        f"/api/v1/sessions/{sid}/tools/agent_s3_step",
         json={"params": {"instruction": "Click", "dry_run": True}},
     )
     body = resp.json()
@@ -375,9 +375,9 @@ def test_agent_s3_step_endpoint_returns_success_with_proposal_event_marker(
     installed_agent_s3(
         app_state, actions=["pyautogui.click(100, 200)"],
     )
-    sid = client.post("/sessions").json()["session_id"]
+    sid = client.post("/api/v1/sessions").json()["session_id"]
     resp = client.post(
-        f"/sessions/{sid}/tools/agent_s3_step",
+        f"/api/v1/sessions/{sid}/tools/agent_s3_step",
         json={"params": {
             "instruction": "Click OK",
             "dry_run": True,

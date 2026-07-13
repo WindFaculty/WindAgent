@@ -23,8 +23,8 @@ def test_models_health_returns_200_with_expected_shape(client):
 
 
 def test_get_models_returns_seed_and_ollama_mock(client):
-    """GET /models should return the list of seeded models and local mock Ollama."""
-    r = client.get("/models")
+    """GET /api/v1/models should return the list of seeded models and local mock Ollama."""
+    r = client.get("/api/v1/models")
     assert r.status_code == 200
     body = r.json()
     assert len(body) > 0
@@ -37,8 +37,8 @@ def test_get_models_returns_seed_and_ollama_mock(client):
 
 
 def test_provider_taxonomy(client):
-    """GET /models/providers should return the 8 providers seeded with correct quota_mode."""
-    r = client.get("/models/providers")
+    """GET /api/v1/models/providers should return the 8 providers seeded with correct quota_mode."""
+    r = client.get("/api/v1/models/providers")
     assert r.status_code == 200
     body = r.json()
     
@@ -63,10 +63,10 @@ def test_missing_api_key_does_not_crash(client):
             if k in os.environ:
                 del os.environ[k]
                 
-        r = client.get("/models")
+        r = client.get("/api/v1/models")
         assert r.status_code == 200
         
-        r_p = client.get("/models/providers")
+        r_p = client.get("/api/v1/models/providers")
         assert r_p.status_code == 200
         providers = r_p.json()
         
@@ -140,9 +140,9 @@ async def test_probe_updates_runtime_status(app_state):
 
 
 def test_routing_rules_crud(client):
-    """GET and PATCH /models/routing should update configurations."""
+    """GET and PATCH /api/v1/models/routing should update configurations."""
     # 1. Fetch current rules
-    r = client.get("/models/routing")
+    r = client.get("/api/v1/models/routing")
     assert r.status_code == 200
     body = r.json()
     assert "Planner" in body
@@ -151,11 +151,11 @@ def test_routing_rules_crud(client):
     payload = {
         "Planner": {"primary": "google_gemini_2.5_flash_lite", "fallback": "openrouter_free"}
     }
-    r_patch = client.patch("/models/routing", json=payload)
+    r_patch = client.patch("/api/v1/models/routing", json=payload)
     assert r_patch.status_code == 200
     
     # 3. Verify update
-    r_verify = client.get("/models/routing")
+    r_verify = client.get("/api/v1/models/routing")
     verify_body = r_verify.json()
     assert verify_body["Planner"]["primary"] == "google_gemini_2.5_flash_lite"
 
@@ -232,3 +232,66 @@ async def test_429_updates_quota_activity(app_state):
             assert act is not None
             assert act.level == "error"
             assert "429" in act.message
+
+
+def test_create_and_update_provider(client):
+    # 1. Create a custom provider
+    payload = {
+        "id": "test_provider",
+        "name": "Test Custom Provider",
+        "api_source": "openai",
+        "base_url": "https://api.testprovider.com/v1",
+        "api_key": "test_api_key_123"
+    }
+    r = client.post("/api/v1/models/providers", json=payload)
+    assert r.status_code == 200
+    assert r.json()["status"] == "success"
+
+    # 2. Get list of providers and verify it is there
+    r_list = client.get("/api/v1/models/providers")
+    assert r_list.status_code == 200
+    providers = r_list.json()
+    test_p = next((p for p in providers if p["id"] == "test_provider"), None)
+    assert test_p is not None
+    assert test_p["name"] == "Test Custom Provider"
+    assert test_p["apiSource"] == "openai"
+    assert test_p["baseUrl"] == "https://api.testprovider.com/v1"
+    assert test_p["hasKey"] is True
+
+    # 3. Update the provider base URL and API key
+    update_payload = {
+        "name": "Updated Provider Name",
+        "api_source": "anthropic",
+        "base_url": "https://api.anthropic.com",
+        "api_key": "new_api_key_456"
+    }
+    r_patch = client.patch("/api/v1/models/providers/test_provider", json=update_payload)
+    assert r_patch.status_code == 200
+    assert r_patch.json()["status"] == "success"
+
+    # 4. Get list again and verify updates
+    r_list2 = client.get("/api/v1/models/providers")
+    providers2 = r_list2.json()
+    test_p2 = next((p for p in providers2 if p["id"] == "test_provider"), None)
+    assert test_p2 is not None
+    assert test_p2["name"] == "Updated Provider Name"
+    assert test_p2["apiSource"] == "anthropic"
+    assert test_p2["baseUrl"] == "https://api.anthropic.com"
+
+
+def test_test_provider_connection(client):
+    with patch("services.provider_clients.openai_compatible.OpenAICompatibleClient.list_models", new_callable=AsyncMock) as mock_list:
+        mock_list.return_value = [
+            {"model_id": "test_m1", "display_name": "Test Model 1", "capabilities": ["chat"]}
+        ]
+        payload = {
+            "api_source": "openai",
+            "base_url": "https://api.test.com/v1",
+            "api_key": "somekey"
+        }
+        r = client.post("/api/v1/models/providers/test-connection", json=payload)
+        assert r.status_code == 200
+        data = r.json()
+        assert data["status"] == "success"
+        assert len(data["models"]) == 1
+        assert data["models"][0]["model_id"] == "test_m1"

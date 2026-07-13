@@ -78,11 +78,47 @@ async def _emit_user_event(
     """
     runner = _runner(request)
     state = runner.get_state(session_id)
+    
     if state is None:
+        # Check if session is run by Hermes
+        from db.models import AgentSessionORM
+        from sqlalchemy import select
+        async with request.app.state.db.session() as db_sess:
+            stmt = select(AgentSessionORM).where(AgentSessionORM.windagent_session_id == str(session_id))
+            res = await db_sess.execute(stmt)
+            agent_sess = res.scalar_one_or_none()
+
+        if agent_sess and agent_sess.runtime_type == "hermes":
+            if event_name == "user_stopped":
+                bridge = request.app.state.hermes_session_bridge
+                await bridge.stop_run(str(session_id))
+                
+                # Publish user_stopped event
+                bus = _bus(request)
+                env = EventEnvelope(
+                    event="user_stopped",
+                    data=UserControlData(
+                        session_id=session_id,
+                        workflow_id=None,
+                    ).model_dump(mode="json"),
+                )
+                await bus.publish(str(session_id), env)
+                
+                return {
+                    "status": "stopped_requested",
+                    "workflow_id": None,
+                }
+            else:
+                raise HTTPException(
+                    status_code=409,
+                    detail="Pause/resume not supported by Hermes runtime",
+                )
+        
         raise HTTPException(
             status_code=404,
             detail="no active runner for this session",
         )
+
     if state["task_done"]:
         raise HTTPException(
             status_code=409,

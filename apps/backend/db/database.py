@@ -27,7 +27,7 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
-from db.models import Base
+from db.models import Base, seed_canonical_models
 
 
 log = logging.getLogger(__name__)
@@ -53,14 +53,51 @@ class Database:
         )
 
     async def init_models(self) -> None:
-        """Create all tables that don't exist yet. Idempotent."""
+        """Create all tables that don't exist yet. Idempotent.
+
+        Phase 2: also backfill canonical_models/bindings from the legacy
+        catalog, and add an event sequence column for durable replay.
+        All steps are non-destructive on an existing database.
+        """
+        from sqlalchemy import text
+
         async with self.engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
+# Legacy column addition (idempotent).
             try:
-                from sqlalchemy import text
-                await conn.execute(text("ALTER TABLE model_providers ADD COLUMN api_key VARCHAR(255)"))
+                await conn.execute(
+                    text("ALTER TABLE model_providers ADD COLUMN api_key VARCHAR(255)")
+                )
             except Exception:
                 pass
+            # Event sequence for WebSocket replay (ban_ke_hoach §6.1).
+            try:
+                await conn.execute(
+                    text("ALTER TABLE execution_events ADD COLUMN event_seq INTEGER")
+                )
+            except Exception:
+                pass
+            # Idempotent migrations for model_routing_rules columns
+            for col_def in [
+                ("name", "VARCHAR(128) DEFAULT 'Route'"),
+                ("description", "TEXT"),
+                ("final_fallback_model_id", "VARCHAR(128)"),
+                ("status", "VARCHAR(32) DEFAULT 'Active'"),
+                ("priority", "INTEGER DEFAULT 1"),
+                ("tags_json", "TEXT DEFAULT '[]'"),
+            ]:
+                try:
+                    await conn.execute(text(f"ALTER TABLE model_routing_rules ADD COLUMN {col_def[0]} {col_def[1]}"))
+                except Exception:
+                    pass
+
+        # Backfill canonical model registry from existing catalog rows.
+        try:
+            created = await seed_canonical_models(self)
+            if created:
+                log.info("seeded %d canonical model(s) from existing catalog", created)
+        except Exception:
+            log.exception("canonical model seed failed (non-fatal)")
         log.info("database schema initialised (%s)", self.url)
 
     async def dispose(self) -> None:

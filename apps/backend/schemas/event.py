@@ -21,9 +21,11 @@ EventName = Literal[
     "planning_started",
     "planning_finished",
     "workflow_created",
+    "workflow_updated",
     "step_started",
     "step_completed",
     "step_failed",
+    "step_cancelled",
     "tool_call_started",
     "tool_call_finished",
     "permission_request",
@@ -34,6 +36,29 @@ EventName = Literal[
     "user_resumed",
     "user_stopped",
     "error",
+    "assistant_message_started",
+    "assistant_message_delta",
+    "assistant_message_completed",
+    "reasoning_delta",
+    "tool_call_progress",
+    "terminal_output",
+    "artifact_created",
+    "clarification_request",
+    "worktree_created",
+    "worktree_changed",
+    "worktree_committed",
+    "worktree_merged",
+    "worktree_conflict",
+    "worktree_removed",
+    "replan_notification",
+    "browser_session_started",
+    "browser_navigation_started",
+    "browser_navigation_completed",
+    "browser_screenshot_updated",
+    "browser_action_started",
+    "browser_action_completed",
+    "browser_console",
+    "browser_error",
 ]
 
 
@@ -46,6 +71,9 @@ class EventEnvelope(BaseModel):
     event: EventName
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     data: Dict[str, Any]
+    # ponytail: per-session monotonic sequence, assigned at publish time
+    # for durable replay (Phase 7). None until the DB hook stamps it.
+    seq: Optional[int] = None
 
     def model_dump_json_compatible(self) -> Dict[str, Any]:
         """Serialize with ISO 8601 timestamp including timezone offset."""
