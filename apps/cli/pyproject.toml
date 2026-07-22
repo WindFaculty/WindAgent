@@ -1,0 +1,16 @@
+[project]
+name = "windagent_cli"
+version = "0.3.0"
+description = "WindAgent CLI entrypoint (doctor, architecture check, workflow run)"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "click>=8.0.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["windagent_cli"]
