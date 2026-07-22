@@ -27,6 +27,11 @@ def load_config() -> dict:
 
 
 def generate_package_pyproject(pkg_name: str, pkg_info: dict) -> str:
+    pkg_rel_path = pkg_info["path"]
+    pyproject_file = ROOT_DIR / pkg_rel_path / "pyproject.toml"
+    if pyproject_file.exists():
+        return pyproject_file.read_text(encoding="utf-8")
+
     namespace = pkg_info["namespace"]
     desc = pkg_info["description"]
     
@@ -36,9 +41,13 @@ def generate_package_pyproject(pkg_name: str, pkg_info: dict) -> str:
         deps = ['"fastapi>=0.115.0"', '"uvicorn[standard]>=0.30.0"', '"pydantic>=2.7.0"']
     elif pkg_name == "cli":
         deps = ['"click>=8.0.0"']
+    elif pkg_name == "storage":
+        deps = ['"sqlalchemy>=2.0.0"', '"aiosqlite>=0.20.0"', '"windagent-core"']
     
     deps_str = "\n".join([f"    {d}," for d in deps])
     deps_block = f"dependencies = [\n{deps_str}\n]" if deps else "dependencies = []"
+
+    sources_block = "\n[tool.uv.sources]\nwindagent-core = { workspace = true }\n" if pkg_name == "storage" else ""
 
     return f"""[project]
 name = "{namespace}"
@@ -47,7 +56,7 @@ description = "{desc}"
 readme = "README.md"
 requires-python = ">=3.10"
 {deps_block}
-
+{sources_block}
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
@@ -101,17 +110,13 @@ def generate_package_readme(pkg_name: str, pkg_info: dict) -> str:
 
 
 def generate_package_init(pkg_name: str, pkg_info: dict) -> str:
+    pkg_rel_path = pkg_info["path"]
+    namespace = pkg_info["namespace"]
+    init_file = ROOT_DIR / pkg_rel_path / namespace / "__init__.py"
+    if init_file.exists():
+        return init_file.read_text(encoding="utf-8")
+
     desc = pkg_info["description"]
-    if pkg_name == "api":
-        return '"""\nFastAPI REST & WebSocket entrypoint for Architecture V2\n"""\n\nfrom windagent_api.main import app\n\n__version__ = "0.3.0"\n__all__ = ["app"]\n'
-    elif pkg_name == "cli":
-        return '"""\nWindAgent CLI entrypoint (doctor, architecture check, workflow run)\n"""\n\nfrom windagent_cli.main import main, doctor, architecture_check\n\n__version__ = "0.3.0"\n__all__ = ["main", "doctor", "architecture_check"]\n'
-    elif pkg_name == "worker":
-        return '"""\nBackground worker process for asynchronous task execution\n"""\n\nfrom windagent_worker.runner import WorkerRunner\n\n__version__ = "0.3.0"\n__all__ = ["WorkerRunner"]\n'
-    elif pkg_name == "core":
-        init_file = ROOT_DIR / "core" / "windagent_core" / "__init__.py"
-        if init_file.exists():
-            return init_file.read_text(encoding="utf-8")
     return f'"""\n{desc}\n"""\n\n__version__ = "0.3.0"\n'
 
 
