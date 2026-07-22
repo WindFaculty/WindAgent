@@ -4,7 +4,14 @@ version = "0.3.0"
 description = "Task classifier, planner, context builder, model router, summarizer, reviewer, reporter"
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = []
+dependencies = [
+    "windagent-core",
+    "windagent-providers",
+]
+
+[tool.uv.sources]
+windagent-core = { workspace = true }
+windagent-providers = { workspace = true }
 
 [build-system]
 requires = ["hatchling"]

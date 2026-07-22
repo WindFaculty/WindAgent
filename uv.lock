@@ -1065,6 +1065,16 @@ source = { editable = "execution" }
 name = "windagent-intelligence"
 version = "0.3.0"
 source = { editable = "intelligence" }
+dependencies = [
+    { name = "windagent-core" },
+    { name = "windagent-providers" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "windagent-core", editable = "core" },
+    { name = "windagent-providers", editable = "providers" },
+]
 
 [[package]]
 name = "windagent-memory"
@@ -1085,6 +1095,16 @@ source = { editable = "orchestration" }
 name = "windagent-providers"
 version = "0.3.0"
 source = { editable = "providers" }
+dependencies = [
+    { name = "httpx" },
+    { name = "windagent-core" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "httpx", specifier = ">=0.27.0" },
+    { name = "windagent-core", editable = "core" },
+]
 
 [[package]]
 name = "windagent-storage"
