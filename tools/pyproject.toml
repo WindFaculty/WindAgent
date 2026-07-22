@@ -4,7 +4,12 @@ version = "0.3.0"
 description = "Tool registry, filesystem, shell, git, code_search, AST, LSP, browser, database, MCP"
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = []
+dependencies = [
+    "windagent-core",
+]
+
+[tool.uv.sources]
+windagent-core = { workspace = true }
 
 [build-system]
 requires = ["hatchling"]

@@ -1,0 +1,37 @@
+{
+  "phase": "06",
+  "name": "TOOL PLATFORM, EXECUTION AND PERMISSION ENGINE",
+  "status": "PASSED",
+  "timestamp": "2026-07-23T05:26:35+07:00",
+  "package": "tools/windagent_tools",
+  "components": {
+    "base": "tools/windagent_tools/base.py",
+    "registry": "tools/windagent_tools/registry.py",
+    "permission_engine": "tools/windagent_tools/security/permission_engine.py",
+    "path_sandbox": "tools/windagent_tools/filesystem/sandbox.py",
+    "safe_shell_runner": "tools/windagent_tools/shell/runner.py",
+    "legacy_adapters": "tools/windagent_tools/adapters/legacy_tools.py"
+  },
+  "risk_levels": [
+    "READ_ONLY",
+    "WORKSPACE_WRITE",
+    "EXTERNAL_NETWORK",
+    "SECRET_ACCESS",
+    "PROCESS_EXECUTION",
+    "DESTRUCTIVE",
+    "PRIVILEGED"
+  ],
+  "security_features": [
+    "PermissionEngine fail-closed policy enforcement",
+    "PathSandbox traversal prevention (../../)",
+    "Symlink escape prevention outside workspace_root",
+    "SafeShellRunner command allow/deny policies",
+    "Process timeout & process tree cleanup",
+    "Secret masking in stdout/stderr and audit logs"
+  ],
+  "acceptance_gates": {
+    "scaffold_check": "PASSED",
+    "import_boundary_check": "PASSED (51 files scanned)",
+    "unit_tests": "48/48 PASSED (47 passed, 1 skipped)"
+  }
+}
