@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+from pathlib import Path
 from typing import Optional
 
 from cryptography.fernet import Fernet, InvalidToken
@@ -21,15 +22,36 @@ def _get_encryption_key() -> str:
         ValueError: If the environment variable is not set or invalid.
     """
     key_b64 = os.environ.get("WINDAGENT_SECRET_ENCRYPTION_KEY")
-    if not key_b64:
+    
+    # Check if the environment variable key is valid
+    is_valid = False
+    if key_b64 and key_b64 != "%KEY%":
+        try:
+            Fernet(key_b64)
+            is_valid = True
+        except Exception:
+            pass
+
+    # If not valid, attempt to read from key.txt
+    if not is_valid:
+        key_path = Path(__file__).resolve().parent.parent / "key.txt"
+        if key_path.exists():
+            try:
+                fallback_key = key_path.read_text(encoding="utf-8").strip()
+                if fallback_key:
+                    # Validate fallback key
+                    Fernet(fallback_key)
+                    key_b64 = fallback_key
+                    os.environ["WINDAGENT_SECRET_ENCRYPTION_KEY"] = key_b64
+                    is_valid = True
+            except Exception:
+                pass
+
+    if not is_valid or not key_b64:
         raise ValueError(
-            "Encryption key not set. Set WINDAGENT_SECRET_ENCRYPTION_KEY environment variable."
+            "Encryption key not set or invalid. Set WINDAGENT_SECRET_ENCRYPTION_KEY environment variable."
         )
-    # Validate that it is a valid Fernet key (i.e., base64-encoded 32 bytes)
-    try:
-        Fernet(key_b64)
-    except Exception as exc:
-        raise ValueError(f"Invalid encryption key: {exc}") from exc
+        
     return key_b64
 
 

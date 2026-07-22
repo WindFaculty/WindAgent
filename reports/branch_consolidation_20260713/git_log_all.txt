@@ -1,0 +1,25 @@
+* 2d4c6dc (HEAD -> feat/phase-1-baseline) WIP: pre-consolidation snapshot — frontend, backend, event bus, encryption, alembic, artifacts
+* a8d9276 feat(orchestration): phase 2-9 orchestration foundation + phase C execute endpoint
+| * 3b2888a (origin/feat/hermes-agent-workspace-integration, feat/hermes-agent-workspace-integration) feat: implement full-stack browser automation and interaction system with Hermes bridge integration
+|/  
+* 9205dfa feat(hermes): implement stop run mapping and resource cleanup for Hermes sessions
+* 61dfa29 feat(hermes): implement interactive permission requests and approval mappings
+* 5a40968 feat(hermes): implement tool progress and run failure translations
+* a96dd78 feat(hermes): implement session mapping and history sync
+* cee4d45 feat(hermes): implement connectivity endpoints, secret scrubbing, and UI status indicator
+* 54f8046 chore(api): standardize business routes under /api/v1 prefix and update tests
+* 25cbd80 chore(baseline): freeze local changes as integration baseline
+| * 9d0260f (origin/feat/router-phase6-memory-a2a) feat: implement comprehensive model registry, lifecycle management, and provider routing system with database persistence and health monitoring
+| * f80e822 feat(router): add phase 6 memory and agent delegation routing
+| * 9da9a0b (origin/feat/router-runtime-ui-integration) feat(router-runtime): integrate router into agents + complete Router UI with Scuba Ostrich game
+| * b9a6552 (origin/feat/router-omniroute-integration) feat(router): integrate OmniRoute-inspired routing backend
+|/  
+* 98cf5c3 (origin/main, origin/HEAD, main) feat: implement core backend services and model provider registry to support Agent-S3 integration and model orchestration
+* 4a5fb31 (origin/plan/cloud-router-priority) feat: remove empty files, add Settings page and update desktop application features
+* 4099d11 feat: implement desktop application frontend structure with core pages, routing, and file management components
+* bdc1bb2 feat(agent-s3): wire safe agent_s3_step into workflow runner
+* 9795b0f chore(agent-s3): close out safe optional integration scaffold
+*   a1fb5e3 Merge branch 'main' of https://github.com/WindFaculty/WindAgent
+|\  
+| * 0b772da Initial commit
+* 21be6cf feat: MVP release v0.10.0 — WindAgent local desktop AI agent

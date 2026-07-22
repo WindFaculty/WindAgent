@@ -17,7 +17,8 @@ export type SessionStatus =
   | "paused"
   | "completed"
   | "failed"
-  | "cancelled";
+  | "cancelled"
+  | "reconnecting";
 
 export type Sender = "user" | "assistant" | "system";
 
@@ -154,6 +155,7 @@ export type EventName =
 export interface EventEnvelope {
   event: EventName;
   timestamp: string;
+  seq?: number;
   data: Record<string, unknown>;
 }
 

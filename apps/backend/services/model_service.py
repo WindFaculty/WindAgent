@@ -29,11 +29,19 @@ log = logging.getLogger(__name__)
 
 class MockProviderClient:
     """Mock client used in test environments to prevent real API calls and key errors."""
-    def __init__(self, provider_id: str) -> None:
-        self.provider_id = provider_id
-        self.api_key = "mock-key"
+    def __init__(self, provider: ModelProviderORM) -> None:
+        self.provider = provider
+        self.provider_id = provider.id
+        from utils.encryption import decrypt
+        self.api_key = decrypt(provider.api_key) if provider.api_key else "mock-key"
 
     def has_api_key(self) -> bool:
+        if self.provider.provider_type == "cloud":
+            if self.api_key != "mock-key" and self.api_key:
+                return True
+            if self.provider.api_key_env and os.environ.get(self.provider.api_key_env):
+                return True
+            return False
         return True
 
     async def chat(self, messages: Any, **kwargs) -> str:
@@ -59,6 +67,55 @@ class MockProviderClient:
         return await self.chat(messages, **kwargs)
 
     async def list_models(self) -> List[Dict[str, Any]]:
+        # If real API key is configured, use the real client to fetch the model list
+        if self.provider.provider_type == "cloud" and self.api_key != "mock-key" and self.api_key:
+            try:
+                if self.provider.api_source == "google":
+                    client = GoogleGeminiClient(
+                        provider_id=self.provider_id,
+                        base_url=self.provider.base_url,
+                        api_key=self.api_key,
+                    )
+                elif self.provider.api_source == "anthropic":
+                    client = AnthropicClient(
+                        provider_id=self.provider_id,
+                        base_url=self.provider.base_url,
+                        api_key=self.api_key,
+                    )
+                else:
+                    client = OpenAICompatibleClient(
+                        provider_id=self.provider_id,
+                        base_url=self.provider.base_url,
+                        api_key=self.api_key,
+                    )
+                return await client.list_models()
+            except Exception as exc:
+                log.warning("MockProviderClient real fallback list_models failed: %s", exc)
+
+        # Fallback to seeded models for this provider
+        try:
+            from services.model_catalog_seed import MODELS_SEED
+            import json
+            fallback_models = []
+            for m in MODELS_SEED:
+                if m.get("provider_id") == self.provider_id:
+                    # Strip provider prefix from seed model ID to get API model ID if present
+                    m_id = m["id"]
+                    prefix = f"{self.provider_id}_"
+                    if m_id.startswith(prefix):
+                        m_id = m_id[len(prefix):]
+                    fallback_models.append({
+                        "model_id": m_id,
+                        "display_name": m["display_name"],
+                        "capabilities": json.loads(m["capabilities_json"]) if isinstance(m.get("capabilities_json"), str) else (m.get("capabilities") or ["chat"]),
+                        "context_window": m.get("context_window", 8192),
+                        "raw": {}
+                    })
+            if fallback_models:
+                return fallback_models
+        except Exception as exc:
+            log.warning("MockProviderClient fallback to seeds failed: %s", exc)
+
         if self.provider_id == "nvidia_nim":
             return [
                 {
@@ -115,14 +172,17 @@ class ModelService:
 
     def get_provider_client(self, provider: ModelProviderORM) -> Any:
         """Instantiate and cache a client for the given provider."""
+        from utils.encryption import decrypt
+        decrypted_key = decrypt(provider.api_key) if provider.api_key else None
+
         import os
         if os.environ.get("WINDAGENT_MODEL_BACKEND") == "mock":
-            return MockProviderClient(provider.id)
+            return MockProviderClient(provider)
 
         client_key = provider.id
         if client_key in self._provider_clients:
             cached_client = self._provider_clients[client_key]
-            if getattr(cached_client, "api_key", None) == provider.api_key:
+            if getattr(cached_client, "api_key", None) == decrypted_key:
                 return cached_client
 
         if provider.id == "ollama":
@@ -132,21 +192,21 @@ class ModelService:
                 provider_id=provider.id,
                 base_url=provider.base_url or "https://generativelanguage.googleapis.com",
                 api_key_env=provider.api_key_env,
-                api_key=provider.api_key,
+                api_key=decrypted_key,
             )
         elif provider.api_source == "anthropic":
             client = AnthropicClient(
                 provider_id=provider.id,
                 base_url=provider.base_url or "https://api.anthropic.com",
                 api_key_env=provider.api_key_env,
-                api_key=provider.api_key,
+                api_key=decrypted_key,
             )
         else:
             client = OpenAICompatibleClient(
                 provider_id=provider.id,
                 base_url=provider.base_url or "",
                 api_key_env=provider.api_key_env,
-                api_key=provider.api_key,
+                api_key=decrypted_key,
             )
         self._provider_clients[client_key] = client
         return client
@@ -374,6 +434,7 @@ class ModelService:
                     "billingMode": provider.quota_mode,
                     "context": f"{catalog.context_window // 1000}K" if catalog.context_window else "Unknown",
                     "status": status_val,
+                    "enabled": catalog.enabled,
                     "hasKey": has_key,
                     "roles": ", ".join(roles) if roles else "—",
                     "rt": f"{int(runtime.latency_p50_ms)}ms" if runtime and runtime.latency_p50_ms else "—",
@@ -825,8 +886,8 @@ class ModelService:
 
         return {"success": success, "latency_ms": latency_ms, "error": error_msg}
 
-    async def sync_provider_models(self, provider_id: str) -> Dict[str, Any]:
-        """Sync model catalog from provider API."""
+    async def sync_provider_models(self, provider_id: str, selected_model_ids: Optional[List[str]] = None) -> Dict[str, Any]:
+        """Sync model catalog from provider API, saving only the selected models if specified."""
         async with self.db.session() as session:
             stmt = select(ModelProviderORM).where(ModelProviderORM.id == provider_id)
             res = await session.execute(stmt)
@@ -847,14 +908,28 @@ class ModelService:
             existing_models = {m.model_id: m for m in res_cat.scalars().all()}
 
             new_count = 0
+            updated_count = 0
+            
+            selected_set = set(selected_model_ids) if selected_model_ids is not None else None
+            seen_model_ids = set()
+
             for m in models:
                 m_id = m["model_id"]
+                if m_id in seen_model_ids:
+                    continue
+                seen_model_ids.add(m_id)
+
+                # Skip if we specified a selection and this model is not in it
+                if selected_set is not None and m_id not in selected_set:
+                    continue
+
                 if m_id in existing_models:
                     model = existing_models[m_id]
                     model.display_name = m["display_name"]
                     model.context_window = m.get("context_window")
                     model.capabilities_json = json.dumps(m["capabilities"])
                     model.enabled = True
+                    updated_count += 1
                 else:
                     model = ModelCatalogORM(
                         id=f"{provider_id}_{m_id.replace('/', '_').replace(':', '_')}",
@@ -882,14 +957,69 @@ class ModelService:
                     )
                     session.add(status)
 
+            # If selected_model_ids is specified, delete any existing models not in it
+            deleted_count = 0
+            if selected_set is not None:
+                for db_m_id, model in existing_models.items():
+                    if db_m_id not in selected_set:
+                        await session.execute(
+                            delete(ModelRuntimeStatusORM).where(ModelRuntimeStatusORM.model_id == model.id)
+                        )
+                        await session.delete(model)
+                        deleted_count += 1
+
             await session.commit()
+            
+            total_saved = new_count + updated_count
             await self.log_activity(
                 model_id=None,
                 provider_id=provider_id,
                 event_type="sync_completed",
-                message=f"Sync completed. Added {new_count} new models, updated {len(models) - new_count} models.",
+                message=f"Sync completed. Saved {total_saved} models (added {new_count}, updated {updated_count}, deleted {deleted_count}).",
             )
-            return {"status": "success", "added": new_count, "synced": len(models)}
+            return {"status": "success", "added": new_count, "synced": total_saved}
+
+    async def update_model_selection(self, provider_id: str, selected_model_ids: List[str]) -> Dict[str, Any]:
+        """Update enabled/disabled state for existing models in DB, removing any that are no longer selected."""
+        async with self.db.session() as session:
+            stmt = select(ModelCatalogORM).where(ModelCatalogORM.provider_id == provider_id)
+            res = await session.execute(stmt)
+            existing_models = res.scalars().all()
+
+            if not existing_models:
+                return {"status": "error", "message": "No models found for this provider. Please sync first."}
+
+            selected_set = set(selected_model_ids)
+            deleted_count = 0
+            updated_count = 0
+            
+            for model in existing_models:
+                if model.model_id not in selected_set:
+                    await session.execute(
+                        delete(ModelRuntimeStatusORM).where(ModelRuntimeStatusORM.model_id == model.id)
+                    )
+                    await session.delete(model)
+                    deleted_count += 1
+                else:
+                    if not model.enabled:
+                        model.enabled = True
+                        updated_count += 1
+
+            await session.commit()
+            await self.log_activity(
+                model_id=None,
+                provider_id=provider_id,
+                event_type="selection_updated",
+                message=f"Model selection updated: {len(selected_set)} models enabled, deleted {deleted_count} unselected models.",
+            )
+            return {
+                "status": "success",
+                "enabled": len(selected_set),
+                "deleted": deleted_count,
+                "updated": updated_count,
+            }
+
+
 
     async def log_activity(
         self,

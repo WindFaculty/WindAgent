@@ -184,11 +184,22 @@ async def list_providers(request: Request) -> List[Dict[str, Any]]:
         result = []
         for p in providers:
             has_key = False
+            masked_key = ""
             if p.provider_type == "cloud":
                 if p.api_key:
                     has_key = True
+                    from utils.encryption import decrypt, mask_api_key
+                    try:
+                        dec_key = decrypt(p.api_key)
+                        masked_key = mask_api_key(dec_key)
+                    except Exception:
+                        masked_key = "••••••••••••"
                 elif p.api_key_env:
-                    has_key = bool(os.environ.get(p.api_key_env))
+                    val = os.environ.get(p.api_key_env)
+                    has_key = bool(val)
+                    if val:
+                        from utils.encryption import mask_api_key
+                        masked_key = mask_api_key(val)
             elif p.provider_type == "local":
                 has_key = True
 
@@ -200,17 +211,72 @@ async def list_providers(request: Request) -> List[Dict[str, Any]]:
                 "quotaMode": p.quota_mode,
                 "enabled": p.enabled,
                 "hasKey": has_key,
+                "apiKey": masked_key,
                 "baseUrl": p.base_url,
                 "notes": p.notes,
             })
         return result
 
 
-@router.post("/providers/{provider_id}/sync")
-async def sync_provider(request: Request, provider_id: str) -> Dict[str, Any]:
-    """Sync model catalog from the target provider."""
+@router.get("/providers/{provider_id}/api-key")
+async def get_provider_api_key(request: Request, provider_id: str) -> Dict[str, Any]:
+    """Retrieve the decrypted API key for a provider."""
     service = _service(request)
-    res = await service.sync_provider_models(provider_id)
+    async with service.db.session() as session:
+        from sqlalchemy import select
+        from db.models import ModelProviderORM
+        stmt = select(ModelProviderORM).where(ModelProviderORM.id == provider_id)
+        res = await session.execute(stmt)
+        provider = res.scalar_one_or_none()
+        if not provider:
+            raise HTTPException(status_code=404, detail="Provider not found")
+        
+        decrypted_key = ""
+        if provider.api_key:
+            from utils.encryption import decrypt
+            try:
+                decrypted_key = decrypt(provider.api_key)
+            except Exception as exc:
+                raise HTTPException(status_code=500, detail=f"Failed to decrypt key: {exc}")
+        elif provider.api_key_env:
+            decrypted_key = os.environ.get(provider.api_key_env, "")
+            
+        return {"api_key": decrypted_key}
+
+
+
+@router.post("/providers/{provider_id}/sync")
+async def sync_provider(
+    request: Request,
+    provider_id: str,
+    payload: Optional[Dict[str, Any]] = Body(None)
+) -> Dict[str, Any]:
+    """Sync model catalog from the target provider, optionally enabling only selected model IDs."""
+    service = _service(request)
+    selected_model_ids = None
+    if payload and "selected_models" in payload:
+        selected_model_ids = payload["selected_models"]
+        
+    res = await service.sync_provider_models(provider_id, selected_model_ids)
+    if res.get("status") == "error":
+        raise HTTPException(status_code=400, detail=res.get("message"))
+    return res
+
+
+@router.patch("/providers/{provider_id}/models/selection")
+async def update_model_selection(
+    request: Request,
+    provider_id: str,
+    payload: Dict[str, Any] = Body(...)
+) -> Dict[str, Any]:
+    """Update which models are enabled/disabled for a provider without re-fetching from API.
+    
+    Body: { "selected_models": ["model-id-1", "model-id-2", ...] }
+    All models in the list are enabled; all others are disabled.
+    """
+    service = _service(request)
+    selected_model_ids: List[str] = payload.get("selected_models", [])
+    res = await service.update_model_selection(provider_id, selected_model_ids)
     if res.get("status") == "error":
         raise HTTPException(status_code=400, detail=res.get("message"))
     return res
@@ -394,3 +460,45 @@ async def test_provider_connection(request: Request, payload: ProviderTestReques
         }
     except Exception as exc:
         raise HTTPException(status_code=400, detail=f"Connection failed: {str(exc)}")
+
+
+@router.delete("/providers/{provider_id}")
+async def delete_provider(request: Request, provider_id: str) -> Dict[str, Any]:
+    """Delete a provider entirely from database along with its registered models."""
+    service = _service(request)
+    async with service.db.session() as session:
+        from sqlalchemy import select, delete
+        from db.models import ModelProviderORM, ModelCatalogORM, ModelRuntimeStatusORM
+        # 1. Fetch provider
+        stmt = select(ModelProviderORM).where(ModelProviderORM.id == provider_id)
+        res = await session.execute(stmt)
+        provider = res.scalar_one_or_none()
+        if not provider:
+            raise HTTPException(status_code=404, detail="Provider not found")
+        
+        # 2. Find and delete its models' runtime status first
+        stmt_models = select(ModelCatalogORM.id).where(ModelCatalogORM.provider_id == provider_id)
+        res_models = await session.execute(stmt_models)
+        model_ids = res_models.scalars().all()
+        
+        if model_ids:
+            await session.execute(
+                delete(ModelRuntimeStatusORM).where(ModelRuntimeStatusORM.model_id.in_(model_ids))
+            )
+            await session.execute(
+                delete(ModelCatalogORM).where(ModelCatalogORM.provider_id == provider_id)
+            )
+            
+        # 3. Delete provider
+        await session.execute(
+            delete(ModelProviderORM).where(ModelProviderORM.id == provider_id)
+        )
+        await session.commit()
+        
+        await service.log_activity(
+            model_id=None,
+            provider_id=provider_id,
+            event_type="deleted",
+            message=f"Provider {provider.site_name} deleted.",
+        )
+        return {"status": "success", "message": f"Provider {provider_id} deleted successfully."}

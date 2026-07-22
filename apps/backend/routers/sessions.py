@@ -15,7 +15,14 @@ from schemas.session import (
 )
 from services.session_service import SessionService
 from services.workflow_service import WorkflowService
-from db.models import AgentSessionORM, AgentORM
+from db.models import (
+    AgentORM,
+    AgentSessionORM,
+    ParentTaskORM,
+    TaskPlanORM,
+    TaskNodeORM,
+    TaskEdgeORM,
+)
 from sqlalchemy import select
 import uuid
 
@@ -132,21 +139,88 @@ async def send_message(
 
     if agent_sess and agent_sess.runtime_type == "hermes":
         bridge = request.app.state.hermes_session_bridge
+        supervisor = request.app.state.hermes_supervisor
+        route_lock_service = request.app.state.route_lock_service
+        dag_scheduler = request.app.state.dag_scheduler
+        worktree_service = request.app.state.worktree_service
+        db = request.app.state.db
+
         msg = await sessions.add_user_message(session_id, payload.content)
         await sessions.update_status(session_id, "running")
-        
-        # Start Hermes run in background
+
+        # 1) Validate workspace root before anything else.
+        agent = None
+        async with db.session() as db_sess:
+            stmt_agent = select(AgentORM).where(AgentORM.id == agent_sess.agent_id)
+            agent = (await db_sess.execute(stmt_agent)).scalar_one_or_none()
+        base_root = agent_sess.workspace_root or (agent.workspace_root if agent else None)
+        safe_workspace_root = base_root
+        if safe_workspace_root and worktree_service is not None:
+            try:
+                safe_workspace_root = worktree_service.safe_workspace_root(base_root)
+            except Exception:
+                safe_workspace_root = None
+
+        # 2) Ensure orchestrator for this conversation.
+        await supervisor.ensure_orchestrator(conversation_id=str(session_id), agent_id=agent_sess.agent_id)
+
+        # 3) Acquire route lock for this session.
+        canonical_model_id = agent.router_role or "Coder"
+        lock = await route_lock_service.acquire_lock(
+            scope_type="conversation",
+            scope_id=str(session_id),
+            canonical_model_id=canonical_model_id,
+        )
+
         run_info = await bridge.submit_message(
             windagent_session_id=str(session_id),
             agent_id=agent_sess.agent_id,
             content=payload.content,
-            workspace_root=agent_sess.workspace_root,
+            workspace_root=safe_workspace_root,
         )
+
+        # 4) Persist minimal orchestration artifacts around this turn.
+        parent_task_id = f"parent:{session_id}"
+        plan_id = f"plan:{session_id}:{msg.id}"
+        async with db.session() as db_sess:
+            parent = await db_sess.get(ParentTaskORM, parent_task_id)
+            if parent is None:
+                db_sess.add(ParentTaskORM(
+                    id=parent_task_id,
+                    conversation_id=str(session_id),
+                    title="Live chat orchestration",
+                    status="active",
+                ))
+                plan = TaskPlanORM(
+                    id=plan_id,
+                    parent_task_id=parent_task_id,
+                    version=1,
+                    status="active",
+                )
+                db_sess.add(plan)
+                node = TaskNodeORM(
+                    id=f"node:{session_id}:{msg.id}",
+                    plan_id=plan_id,
+                    title="User turn",
+                    status="assigned",
+                    agent_type="hermes_chat",
+                    max_retries=0,
+                    retry_count=0,
+                )
+                db_sess.add(node)
+                await db_sess.commit()
+
+        # 5) Run the single-node plan.
+        try:
+            await dag_scheduler.run_plan(plan_id)
+        except Exception:
+            pass
+
         return {
             "message_id": str(msg.id),
             "hermes_run_id": run_info["run_id"],
             "hermes_session_id": run_info["session_id"],
-            "step_count": 0,
+            "step_count": 1,
         }
 
     # Fallback to native workflow dispatching

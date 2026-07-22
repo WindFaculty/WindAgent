@@ -8,7 +8,7 @@ from uuid import UUID
 from pydantic import BaseModel, Field
 
 
-SessionStatus = Literal["idle", "planning", "running", "paused", "completed", "failed", "cancelled"]
+SessionStatus = Literal["idle", "planning", "pending", "running", "paused", "completed", "failed", "cancelled", "interrupted"]
 MessageSender = Literal["user", "assistant", "system"]
 
 

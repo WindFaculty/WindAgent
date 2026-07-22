@@ -1,4 +1,4 @@
-import type { ToolCallLog } from "../../../state/sessionStore";
+import type { ToolCallLog } from "../../../state/agentSessionStore";
 import type { PermissionRequestPayload, RecentAction } from "../../../api/types";
 
 interface Props {

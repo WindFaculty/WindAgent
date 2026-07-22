@@ -1,0 +1,10 @@
+  feat/hermes-agent-workspace-integration 3b2888a [origin/feat/hermes-agent-workspace-integration] feat: implement full-stack browser automation and interaction system with Hermes bridge integration
+* feat/phase-1-baseline                   2d4c6dc WIP: pre-consolidation snapshot — frontend, backend, event bus, encryption, alembic, artifacts
+  main                                    98cf5c3 [origin/main] feat: implement core backend services and model provider registry to support Agent-S3 integration and model orchestration
+  origin/HEAD -> origin/main
+  origin/feat/hermes-agent-workspace-integration
+  origin/feat/router-omniroute-integration
+  origin/feat/router-phase6-memory-a2a
+  origin/feat/router-runtime-ui-integration
+  origin/main
+  origin/plan/cloud-router-priority

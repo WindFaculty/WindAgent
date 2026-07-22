@@ -51,6 +51,25 @@ class WorktreeService:
         self.db = db
         self.repo_root = os.path.abspath(repo_root)
 
+    def safe_workspace_root(self, raw: str) -> str:
+        """Resolve `raw` under `repo_root` and reject traversal.
+
+        Raises ValueError if resolved path escapes repo_root.
+        Returns absolute path when safe.
+        """
+        candidate = os.path.abspath(os.path.join(self.repo_root, raw))
+        try:
+            os.path.relpath(candidate, self.repo_root)
+        except ValueError:
+            raise ValueError(f"workspace_root escapes repo_root: {raw}")
+
+        # relpath can still yield '..' segments on case-insensitive/
+        # symlinked filesystems; verify prefix.
+        repo_prefix = os.path.abspath(self.repo_root)
+        if not candidate.startswith(repo_prefix + os.sep) and candidate != repo_prefix:
+            raise ValueError(f"workspace_root escapes repo_root: {raw}")
+        return candidate
+
     # ---------- helpers ----------
 
     def _assert_git_repo(self) -> None:

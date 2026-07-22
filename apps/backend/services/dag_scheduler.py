@@ -127,6 +127,21 @@ class DAGScheduler:
                     n.status = "blocked"
             await s.commit()
 
+        # Auto-promote nodes with no incoming edges to ready so single-node
+        # plans can run without a fake `__root__` edge.
+        async with self.db.session() as s:
+            edges = (await s.execute(
+                select(TaskEdgeORM).where(TaskEdgeORM.plan_id == plan_id)
+            )).scalars().all()
+            by_to: Dict[str, int] = {}
+            for e in edges:
+                by_to[e.to_task_id] = by_to.get(e.to_task_id, 0) + 1
+            for n in nodes:
+                if by_to.get(n.id, 0) == 0 and n.status == "blocked":
+                    n.status = "ready"
+                    await s.merge(n)
+            await s.commit()
+
         running: Dict[str, asyncio.Task] = {}
 
         async def _terminal_nodes():

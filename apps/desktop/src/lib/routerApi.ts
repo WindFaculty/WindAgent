@@ -189,7 +189,7 @@ export async function fetchRoutingGraph(): Promise<GraphData> {
 
 /** Fetch available models. */
 export async function fetchModels(): Promise<ModelItem[]> {
-  return apiFetch<ModelItem[]>("/api/models");
+  return apiFetch<ModelItem[]>("/api/v1/models");
 }
 
 /** Fetch router runtime summary (Phase 6 observability). */

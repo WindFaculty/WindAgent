@@ -18,12 +18,50 @@ from db.models import (
     PermissionRequestORM,
     MessageORM,
 )
+from schemas.event import EventEnvelope
 from services.event_bus import EventBus
 from services.hermes.api_client import HermesApiClient
 from services.hermes.event_mapper import HermesEventTranslator
 from services.permission_profile import classify_command
 
 log = logging.getLogger(__name__)
+
+
+async def _publish_run_failed(
+    event_bus: EventBus,
+    windagent_session_id: str,
+    run_id: str,
+    *,
+    error_code: str = "RUN_FAILED",
+    error_message: str = "Run failed",
+) -> None:
+    env = HermesEventTranslator.translate(
+        {
+            "event": "run.failed",
+            "run_id": run_id,
+            "error": error_message,
+            "code": error_code,
+        },
+        windagent_session_id=windagent_session_id,
+        sequence=1,
+    )
+    if env is None:
+        env = EventEnvelope(
+            event="session_finished",
+            timestamp=datetime.now(timezone.utc),
+            data={
+                "session_id": windagent_session_id,
+                "workflow_id": run_id,
+                "final_status": "failed",
+                "total_duration_ms": 0,
+                "error": {
+                    "type": "run_failed",
+                    "message": error_message,
+                    "code": error_code,
+                },
+            },
+        )
+    await event_bus.publish(windagent_session_id, env)
 
 
 class HermesSessionBridge:
@@ -128,57 +166,95 @@ class HermesSessionBridge:
             if not hermes_session_id:
                 hermes_session_id = f"sess_{uuid.uuid4().hex}"
 
-        # 3. Call start_run in Hermes API
-        model_role = f"role:{agent.router_role}" if agent.router_role else "role:Coder"
-        resp = await self.client.start_run(
-            user_message=content,
-            session_id=hermes_session_id,
-            instructions=agent.system_prompt,
-            model=model_role,
-        )
+        # 3. Persist pending run record BEFORE external Hermes call
+        run_id = f"run_{uuid.uuid4().hex}"
 
-        run_id = resp["run_id"]
-        
-        # 4. Save/update session bridge mapping
-        async with self.db.session() as db_sess:
-            if agent_sess:
-                # Update current run_id and status
-                stmt_up = (
-                    update(AgentSessionORM)
-                    .where(AgentSessionORM.windagent_session_id == windagent_session_id)
-                    .values(
-                        hermes_run_id=run_id,
-                        hermes_session_id=hermes_session_id,
-                        status="running",
-                        workspace_root=workspace_root or agent.workspace_root,
-                        router_role=agent.router_role,
+        async def _mark_failed_and_emit(reason: str) -> None:
+            try:
+                async with self.db.session() as db_sess:
+                    stmt_up = (
+                        update(AgentSessionORM)
+                        .where(AgentSessionORM.hermes_run_id == run_id)
+                        .values(status="failed", finished_at=datetime.now(timezone.utc))
                     )
-                )
-                await db_sess.execute(stmt_up)
-            else:
-                agent_sess = AgentSessionORM(
-                    id=str(uuid.uuid4()),
-                    windagent_session_id=windagent_session_id,
-                    agent_id=agent_id,
-                    runtime_type="hermes",
-                    hermes_session_id=hermes_session_id,
-                    hermes_run_id=run_id,
-                    status="running",
-                    workspace_root=workspace_root or agent.workspace_root,
-                    router_role=agent.router_role,
-                    started_at=datetime.now(timezone.utc),
-                )
-                db_sess.add(agent_sess)
+                    await db_sess.execute(stmt_up)
+            except Exception:  # noqa: BLE001
+                log.exception("Hermes submit_message failed to mark run failed run_id=%s", run_id)
+            await _publish_run_failed(
+                self.event_bus, windagent_session_id, run_id,
+                error_code="HERMES_START_FAILED", error_message=reason,
+            )
+
+        try:
+            async with self.db.session() as db_sess:
+                if agent_sess:
+                    stmt_up = (
+                        update(AgentSessionORM)
+                        .where(AgentSessionORM.windagent_session_id == windagent_session_id)
+                        .values(
+                            hermes_run_id=run_id,
+                            hermes_session_id=hermes_session_id,
+                            status="running",
+                            workspace_root=workspace_root or agent.workspace_root,
+                            router_role=agent.router_role,
+                        )
+                    )
+                    await db_sess.execute(stmt_up)
+                else:
+                    db_sess.add(
+                        AgentSessionORM(
+                            id=str(uuid.uuid4()),
+                            windagent_session_id=windagent_session_id,
+                            agent_id=agent_id,
+                            runtime_type="hermes",
+                            hermes_session_id=hermes_session_id,
+                            hermes_run_id=run_id,
+                            status="running",
+                            workspace_root=workspace_root or agent.workspace_root,
+                            router_role=agent.router_role,
+                            started_at=datetime.now(timezone.utc),
+                        )
+                    )
+
+            # Call Hermes start_run AFTER local pending record is committed.
+            model_role = f"role:{agent.router_role}" if agent.router_role else "role:Coder"
+            resp = await self.client.start_run(
+                user_message=content,
+                session_id=hermes_session_id,
+                instructions=agent.system_prompt,
+                model=model_role,
+            )
+        except asyncio.CancelledError:
+            raise
+        except Exception as exc:  # noqa: BLE001
+            log.exception("Hermes start_run failed session=%s run=%s", windagent_session_id, run_id)
+            await _mark_failed_and_emit(str(exc))
+            return {
+                "run_id": run_id,
+                "session_id": hermes_session_id,
+                "status": "failed",
+            }
+
+        # 4. Map actual run id when Hermes server reassigns it
+        actual_run_id = resp.get("run_id", run_id)
+        async with self.db.session() as db_sess:
+            stmt_up = (
+                update(AgentSessionORM)
+                .where(AgentSessionORM.hermes_run_id == run_id)
+                .values(hermes_run_id=actual_run_id)
+            )
+            await db_sess.execute(stmt_up)
+            await db_sess.commit()
 
         # 5. Spawn background task to stream events
         task = asyncio.create_task(
-            self._stream_run(windagent_session_id, run_id),
-            name=f"hermes-stream-{run_id}"
+            self._stream_run(windagent_session_id, actual_run_id),
+            name=f"hermes-stream-{actual_run_id}"
         )
-        self.active_tasks[run_id] = task
+        self.active_tasks[actual_run_id] = task
 
         return {
-            "run_id": run_id,
+            "run_id": actual_run_id,
             "session_id": hermes_session_id,
             "status": "running"
         }
@@ -434,6 +510,17 @@ class HermesSessionBridge:
 
         except Exception as e:
             log.exception("Error in SSE streaming task for run_id=%s", run_id)
+            try:
+                from services.partial_audit import save_partial_artifact
+                await save_partial_artifact(
+                    self.db,
+                    content_text=str(e),
+                    agent_session_id=windagent_session_id,
+                    turn_id=run_id,
+                    error_class="stream_interrupted",
+                )
+            except Exception:
+                log.exception("Failed to save partial artifact for run_id=%s", run_id)
             # Emit error to client
             from schemas.event import EventEnvelope
             error_env = EventEnvelope(

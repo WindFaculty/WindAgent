@@ -1,1 +1,2 @@
-export { AgentWorkspace } from "./AgentWorkspace/AgentWorkspacePage";
+export { AgentWorkspacePage } from "./AgentWorkspace/AgentWorkspacePage";
+export type { } from "./AgentWorkspace/AgentWorkspacePage"; 

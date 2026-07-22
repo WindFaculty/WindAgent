@@ -1,7 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 import { Dashboard, type MetricState } from "./pages/Dashboard";
-import { MultiAgentWorkspace } from "./pages/MultiAgentWorkspace";
-import { MultiAgentProvider } from "./state/multiAgentStore";
 import { Agents } from "./pages/Agents";
 import { Models } from "./pages/Models";
 import { Memory } from "./pages/Memory";
@@ -9,28 +7,25 @@ import { Workflows } from "./pages/Workflows";
 import { Browser } from "./pages/Browser";
 import { Files } from "./pages/Files";
 import { Router } from "./pages/Router";
-import { AgentWorkspace } from "./pages/AgentWorkspace";
 import { Settings } from "./pages/Settings";
+import { AgentWorkspacePage } from "./pages/AgentWorkspace";
 import { fetchHermesHealth, fetchHealth } from "./api/client";
+import { Endpoints } from "./pages/Endpoints";
 
 export function App() {
   // Page routing
   const [activeTab, setActiveTab] = useState<string>("dashboard");
+  const [isModelsExpanded, setIsModelsExpanded] = useState<boolean>(false);
   const [refreshInterval, setRefreshInterval] = useState<string>("10s");
-  const [conversationId] = useState<string>(() => {
-    const key = "wa_conversation_id";
-    const existing = sessionStorage.getItem(key);
-    if (existing) return existing;
-    const id = (crypto as any).randomUUID();
-    sessionStorage.setItem(key, id);
-    return id;
-  });
+
+  useEffect(() => {
+    if (activeTab === "models-library" || activeTab === "models-endpoints") {
+      setIsModelsExpanded(true);
+    }
+  }, [activeTab]);
 
   const [hermesOnline, setHermesOnline] = useState<boolean | null>(null);
   const [backendOnline, setBackendOnline] = useState<boolean | null>(null);
-  const [selectedAgentId, setSelectedAgentId] = useState<string>("");
-  const [browserUrl, setBrowserUrl] = useState<string>("");
-  const [browserTab, setBrowserTab] = useState<string>("url");
 
   // Poll health status of backend and Hermes
   useEffect(() => {
@@ -78,19 +73,6 @@ export function App() {
     typeof (window as any).__TAURI_INTERNALS__ !== "undefined" ||
     (window as any).navigator?.userAgent?.includes("Tauri")
   );
-  
-  // Debug: log Tauri detection
-  useEffect(() => {
-    console.log('[App] Tauri detection:', {
-      hasTauri: typeof (window as any).__TAURI__ !== "undefined",
-      hasTauriInternals: typeof (window as any).__TAURI_INTERNALS__ !== "undefined",
-      tauriObj: (window as any).__TAURI__,
-      tauriInternals: (window as any).__TAURI_INTERNALS__,
-      isTauriRef: isTauri.current,
-      userAgent: navigator.userAgent,
-      href: window.location.href
-    });
-  }, []);
 
   // Sync metrics changes on interval
   useEffect(() => {
@@ -100,7 +82,7 @@ export function App() {
 
     const fetchMetrics = async () => {
       if (isTauri.current) {
-        // ── Real metrics from Tauri / Rust backend ────────────────────────
+        // Real metrics from Tauri / Rust backend
         try {
           const { invoke } = await import("@tauri-apps/api/core");
           const m = await invoke<{
@@ -134,7 +116,7 @@ export function App() {
           console.warn("[metrics] Tauri invoke failed:", err);
         }
       } else {
-        // ── Fallback: random mock (plain browser / Vite dev) ──────────────
+        // Fallback: random mock (plain browser / Vite dev)
         setMetrics((prev) => {
           const nextCpu = Math.max(10, Math.min(90, Math.round(prev.cpu + (Math.random() * 6 - 3))));
           const nextRam = Math.max(50, Math.min(85, Math.round(prev.ram + (Math.random() * 2 - 1))));
@@ -220,7 +202,7 @@ export function App() {
                 Connected
               </span>
             )}
-            
+
             {hermesOnline === null ? (
               <span className="badge-local-first" style={{ opacity: 0.6 }}>
                 Hermes: Checking...
@@ -351,18 +333,62 @@ export function App() {
               onClick={() => setActiveTab("memory")}
             >
               <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
               Memory
             </div>
-            <div
-              className={`nav-item ${activeTab === "models" ? "active" : ""}`}
-              onClick={() => setActiveTab("models")}
-            >
-              <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-              </svg>
-              Models
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              <div
+                className={`nav-item ${(activeTab === "models-library" || activeTab === "models-endpoints") ? "active" : ""}`}
+                onClick={() => {
+                  setIsModelsExpanded(!isModelsExpanded);
+                  if (activeTab !== "models-library" && activeTab !== "models-endpoints") {
+                    setActiveTab("models-library");
+                  }
+                }}
+                style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                  <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                  </svg>
+                  Models
+                </div>
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  style={{
+                    transform: isModelsExpanded ? "rotate(180deg)" : "rotate(0deg)",
+                    transition: "transform 0.2s",
+                    opacity: 0.6
+                  }}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+
+              {isModelsExpanded && (
+                <div style={{ paddingLeft: "24px", display: "flex", flexDirection: "column", gap: "2px", marginTop: "2px" }}>
+                  <div
+                    className={`nav-item ${activeTab === "models-library" ? "active" : ""}`}
+                    onClick={() => setActiveTab("models-library")}
+                    style={{ padding: "8px 12px", fontSize: "0.85rem" }}
+                  >
+                    Model Library
+                  </div>
+                  <div
+                    className={`nav-item ${activeTab === "models-endpoints" ? "active" : ""}`}
+                    onClick={() => setActiveTab("models-endpoints")}
+                    style={{ padding: "8px 12px", fontSize: "0.85rem" }}
+                  >
+                    Endpoints
+                  </div>
+                </div>
+              )}
             </div>
             <div
               className={`nav-item ${activeTab === "router" ? "active" : ""}`}
@@ -379,7 +405,7 @@ export function App() {
             >
               <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
               Settings
             </div>
@@ -410,67 +436,44 @@ export function App() {
         </aside>
 
         {/* Dynamic page content router */}
-        {activeTab === "dashboard" ? (
-          <Dashboard
-            metrics={metrics}
-            setMetrics={setMetrics}
-            setActiveTab={setActiveTab}
-            refreshInterval={refreshInterval}
-            setRefreshInterval={setRefreshInterval}
-          />
-        ) : activeTab === "agents" ? (
-          <Agents
-            setActiveTab={setActiveTab}
-          />
-        ) : activeTab === "models" ? (
-          <Models
-            setActiveTab={setActiveTab}
-          />
-        ) : activeTab === "memory" ? (
-          <Memory
-            setActiveTab={setActiveTab}
-          />
-        ) : activeTab === "workflows" ? (
-          <Workflows />
-        ) : activeTab === "browser" ? (
-          <Browser />
-        ) : activeTab === "files" ? (
-          <Files />
-        ) : activeTab === "router" ? (
-          <Router />
-        ) : activeTab === "settings" ? (
-          <Settings />
-        ) : activeTab === "workspace" ? (
-                  <AgentWorkspace
-                    selectedAgentId={selectedAgentId}
-                    setSelectedAgentId={setSelectedAgentId}
-                    browserUrl={browserUrl}
-                    setBrowserUrl={setBrowserUrl}
-                    browserTab={browserTab}
-                    setBrowserTab={setBrowserTab}
-                    hermesOnline={hermesOnline}
-                    backendOnline={backendOnline}
-                  />
-                ) : (
-                  /* Placeholder views for settings and other navigation tabs */
-                  <main className="central-workspace" style={{ justifyContent: 'center', alignItems: 'center' }}>
-                    <div className="dashboard-panel" style={{ width: '400px', padding: '24px', textAlign: 'center', gap: '16px' }}>
-                      <div className="brand-icon" style={{ width: '48px', height: '48px', margin: '0 auto' }}>
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                        </svg>
-                      </div>
-                      <h2 style={{ fontSize: '1.25rem' }}>{activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Pane</h2>
-                      <p style={{ color: 'var(--text-muted)' }}>
-                        This is a visual preview node. Return to <strong>Dashboard</strong> to inspect the system health.
-                      </p>
-                      <button className="chat-send-btn" onClick={() => setActiveTab("dashboard")} style={{ margin: '0 auto' }}>
-                        Back to Dashboard
-                      </button>
-                    </div>
-                  </main>
-                )}
-              </div>
-            </div>
-          );
-        }
+        <div className="main-content">
+          {activeTab === "dashboard" && (
+            <Dashboard
+              metrics={metrics}
+              setMetrics={setMetrics}
+              setActiveTab={setActiveTab}
+              refreshInterval={refreshInterval}
+              setRefreshInterval={setRefreshInterval}
+            />
+          )}
+          {activeTab === "agents" && (
+            <Agents
+              setActiveTab={setActiveTab}
+            />
+          )}
+          {activeTab === "models-library" && (
+            <Models
+              setActiveTab={setActiveTab}
+            />
+          )}
+          {activeTab === "models-endpoints" && (
+            <Endpoints />
+          )}
+          {activeTab === "memory" && (
+            <Memory
+              setActiveTab={setActiveTab}
+            />
+          )}
+          {activeTab === "workflows" && <Workflows />}
+          {activeTab === "browser" && <Browser />}
+          {activeTab === "files" && <Files />}
+          {activeTab === "workspace" && (
+            <AgentWorkspacePage />
+          )}
+          {activeTab === "router" && <Router />}
+          {activeTab === "settings" && <Settings />}
+        </div>
+      </div>
+    </div>
+  );
+}

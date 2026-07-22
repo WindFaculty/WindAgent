@@ -86,9 +86,54 @@ export async function fetchSession(sessionId: string): Promise<ChatSession> {
   return request<ChatSession>(`/api/v1/sessions/${sessionId}`);
 }
 
+export async function fetchSessions(
+  limit = 50,
+  offset = 0,
+  excludeArchived = true,
+  statusFilter?: string,
+): Promise<any[]> {
+  const params = new URLSearchParams({
+    limit: String(limit),
+    offset: String(offset),
+    exclude_archived: String(excludeArchived),
+  });
+  if (statusFilter) params.set("status", statusFilter);
+  return request<any[]>(`/api/v1/sessions?${params}`);
+}
+
+export async function fetchSessionSnapshot(sessionId: string): Promise<{
+  session: any;
+  messages: any[];
+  tool_calls: any[];
+  workflow: any | null;
+  last_event_sequence: number;
+}> {
+  return request(`/api/v1/sessions/${sessionId}/snapshot`);
+}
+
+export async function fetchSessionEvents(
+  sessionId: string,
+  afterSeq = 0,
+): Promise<{ session_id: string; events: any[]; after_seq: number; count: number }> {
+  return request(`/api/v1/sessions/${sessionId}/events?after_seq=${afterSeq}`);
+}
+
+export async function cancelSessionApi(sessionId: string): Promise<void> {
+  await request<void>(`/api/v1/sessions/${sessionId}/cancel`, { method: "POST" });
+}
+
+export async function archiveSessionApi(sessionId: string): Promise<void> {
+  await request<void>(`/api/v1/sessions/${sessionId}/archive`, { method: "POST" });
+}
+
+export async function deleteSessionApi(sessionId: string): Promise<void> {
+  await request<void>(`/api/v1/sessions/${sessionId}`, { method: "DELETE" });
+}
+
 export async function fetchSessionMessages(sessionId: string): Promise<any[]> {
   return request<any[]>(`/api/v1/sessions/${sessionId}/messages`);
 }
+
 
 export async function sendMessage(
   sessionId: string,

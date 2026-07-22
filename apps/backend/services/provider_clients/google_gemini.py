@@ -25,6 +25,8 @@ class GoogleGeminiClient:
     ) -> None:
         self.provider_id = provider_id
         self.base_url = base_url.rstrip("/")
+        if self.base_url.endswith("/v1beta"):
+            self.base_url = self.base_url[:-7]
         self.api_key_env = api_key_env
         self.api_key = api_key
         self.timeout = timeout

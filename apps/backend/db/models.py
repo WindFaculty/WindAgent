@@ -47,9 +47,17 @@ class ChatSessionORM(Base):
     __tablename__ = "chat_sessions"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
-    title: Mapped[str] = mapped_column(String(255), default="New Session")
+    title: Mapped[Optional[str]] = mapped_column(String(255), nullable=True, default="New Session")
     status: Mapped[str] = mapped_column(String(32), default="idle")
     model: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+
+    # Phase recovery columns
+    agent_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True)
+    last_event_sequence: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    archived_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
+    completed_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
+    error_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
     created_at: Mapped[datetime] = mapped_column(default=_utcnow, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(default=_utcnow, onupdate=_utcnow, nullable=False)
 

@@ -81,7 +81,7 @@ export function Models({ setActiveTab: _ }: ModelsProps) {
 
   const handleSaveModelId = async (id: string, newId: string) => {
     try {
-      const res = await fetch(`/api/models/${id}`, {
+      const res = await fetch(`/api/v1/models/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ model_id: newId }),
@@ -100,7 +100,7 @@ export function Models({ setActiveTab: _ }: ModelsProps) {
 
   const handleSaveApiKey = async (providerId: string, newKey: string) => {
     try {
-      const res = await fetch(`/api/models/providers/${providerId}`, {
+      const res = await fetch(`/api/v1/models/providers/${providerId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ api_key: newKey }),
@@ -171,10 +171,10 @@ export function Models({ setActiveTab: _ }: ModelsProps) {
   const fetchAllData = async () => {
     try {
       const [modelsRes, rulesData, activityRes, providersRes, statsData] = await Promise.all([
-        fetch("/api/models"),
+        fetch("/api/v1/models"),
         fetchRoutingRulesApi(),
-        fetch("/api/models/activity"),
-        fetch("/api/models/providers"),
+        fetch("/api/v1/models/activity"),
+        fetch("/api/v1/models/providers"),
         fetchRoutingStats().catch(() => null),
       ]);
 
@@ -223,12 +223,12 @@ export function Models({ setActiveTab: _ }: ModelsProps) {
 
     // Set polling interval for updates
     const timer = setInterval(() => {
-      fetch("/api/models")
+      fetch("/api/v1/models")
         .then((res) => res.json())
         .then((data) => setModels(data))
         .catch(console.error);
 
-      fetch("/api/models/activity")
+      fetch("/api/v1/models/activity")
         .then((res) => res.json())
         .then((data) => setActivities(data))
         .catch(console.error);
@@ -239,7 +239,7 @@ export function Models({ setActiveTab: _ }: ModelsProps) {
 
   const handleStart = async (modelId: string) => {
     try {
-      const res = await fetch(`/api/models/${modelId}/start`, { method: "POST" });
+      const res = await fetch(`/api/v1/models/${modelId}/start`, { method: "POST" });
       if (res.ok) await fetchAllData();
     } catch (err) {
       alert("Failed to start model: " + err);
@@ -248,7 +248,7 @@ export function Models({ setActiveTab: _ }: ModelsProps) {
 
   const handleStop = async (modelId: string) => {
     try {
-      const res = await fetch(`/api/models/${modelId}/stop`, { method: "POST" });
+      const res = await fetch(`/api/v1/models/${modelId}/stop`, { method: "POST" });
       if (res.ok) await fetchAllData();
     } catch (err) {
       alert("Failed to stop model: " + err);
@@ -257,7 +257,7 @@ export function Models({ setActiveTab: _ }: ModelsProps) {
 
   const handleRestart = async (modelId: string) => {
     try {
-      const res = await fetch(`/api/models/${modelId}/restart`, { method: "POST" });
+      const res = await fetch(`/api/v1/models/${modelId}/restart`, { method: "POST" });
       if (res.ok) await fetchAllData();
     } catch (err) {
       alert("Failed to restart model: " + err);
@@ -268,7 +268,7 @@ export function Models({ setActiveTab: _ }: ModelsProps) {
     if (selectedModelIds.length === 0) return;
     if (!window.confirm(`Xóa ${selectedModelIds.length} model đã chọn?`)) return;
     for (const id of selectedModelIds) {
-      await fetch(`/api/models/${encodeURIComponent(id)}`, { method: 'DELETE' });
+      await fetch(`/api/v1/models/${encodeURIComponent(id)}`, { method: 'DELETE' });
     }
     setSelectedModelIds([]);
     await fetchAllData();
@@ -277,7 +277,7 @@ export function Models({ setActiveTab: _ }: ModelsProps) {
   const handleDeleteAll = async () => {
     if (!window.confirm(`Xóa toàn bộ ${filteredModels.length} model hiện tại? Hành động không thể hoàn tác!`)) return;
     for (const m of filteredModels) {
-      await fetch(`/api/models/${encodeURIComponent(m.id)}`, { method: 'DELETE' });
+      await fetch(`/api/v1/models/${encodeURIComponent(m.id)}`, { method: 'DELETE' });
     }
     setSelectedModelIds([]);
     await fetchAllData();
@@ -288,7 +288,7 @@ export function Models({ setActiveTab: _ }: ModelsProps) {
     if (toDelete.length === 0) return;
     if (!window.confirm(`Xóa ${toDelete.length} model của provider "${providerId}"?`)) return;
     for (const m of toDelete) {
-      await fetch(`/api/models/${encodeURIComponent(m.id)}`, { method: 'DELETE' });
+      await fetch(`/api/v1/models/${encodeURIComponent(m.id)}`, { method: 'DELETE' });
     }
     setSelectedModelIds([]);
     setShowProviderDrop(false);
@@ -310,7 +310,7 @@ export function Models({ setActiveTab: _ }: ModelsProps) {
   const handleDeleteModel = async (modelId: string) => {
     if (!window.confirm(`Xóa model "${modelId}" khỏi registry? Hành động này không thể hoàn tác.`)) return;
     try {
-      const res = await fetch(`/api/models/${encodeURIComponent(modelId)}`, { method: "DELETE" });
+      const res = await fetch(`/api/v1/models/${encodeURIComponent(modelId)}`, { method: "DELETE" });
       if (res.ok) {
         await fetchAllData();
         setSelectedModelId("");
@@ -326,7 +326,7 @@ export function Models({ setActiveTab: _ }: ModelsProps) {
   const handleClearApiKey = async (providerId: string) => {
     if (!window.confirm(`Xóa API Key của provider "${providerId}"? Sau đó các model thuộc provider này sẽ không hoạt động.`)) return;
     try {
-      const res = await fetch(`/api/models/providers/${encodeURIComponent(providerId)}/api-key`, { method: "DELETE" });
+      const res = await fetch(`/api/v1/models/providers/${encodeURIComponent(providerId)}/api-key`, { method: "DELETE" });
       if (res.ok) {
         await fetchAllData();
       } else {
@@ -340,7 +340,7 @@ export function Models({ setActiveTab: _ }: ModelsProps) {
 
   const handleSetDefault = async (modelId: string) => {
     try {
-      const res = await fetch(`/api/models/${modelId}/set-default`, { method: "POST" });
+      const res = await fetch(`/api/v1/models/${modelId}/set-default`, { method: "POST" });
       if (res.ok) {
         alert("Set default model fallback successfully!");
         await fetchAllData();
@@ -389,7 +389,7 @@ export function Models({ setActiveTab: _ }: ModelsProps) {
     }
     
     try {
-      const res = await fetch("/api/models/providers/test-connection", {
+      const res = await fetch("/api/v1/models/providers/test-connection", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -438,7 +438,7 @@ export function Models({ setActiveTab: _ }: ModelsProps) {
     }
     
     try {
-      const res = await fetch("/api/models/providers/test-connection", {
+      const res = await fetch("/api/v1/models/providers/test-connection", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -489,7 +489,7 @@ export function Models({ setActiveTab: _ }: ModelsProps) {
 
     try {
       // 1. Create provider
-      const provRes = await fetch("/api/models/providers", {
+      const provRes = await fetch("/api/v1/models/providers", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -511,7 +511,7 @@ export function Models({ setActiveTab: _ }: ModelsProps) {
       const selectedModels = fetchedModels.filter(m => checkedModelIds.includes(m.model_id));
       if (selectedModels.length > 0) {
         const promises = selectedModels.map(m => {
-          return fetch("/api/models", {
+          return fetch("/api/v1/models", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -555,7 +555,7 @@ export function Models({ setActiveTab: _ }: ModelsProps) {
     }
 
     try {
-      const res = await fetch(`/api/models/providers/${editProviderForm.provider_id}`, {
+      const res = await fetch(`/api/v1/models/providers/${editProviderForm.provider_id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -576,7 +576,7 @@ export function Models({ setActiveTab: _ }: ModelsProps) {
       const selectedModels = fetchedModels.filter(m => checkedModelIds.includes(m.model_id));
       if (selectedModels.length > 0) {
         const promises = selectedModels.map(m => {
-          return fetch("/api/models", {
+          return fetch("/api/v1/models", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -655,7 +655,7 @@ export function Models({ setActiveTab: _ }: ModelsProps) {
 
   const _handleSyncProvider = async (providerId: string) => {
     try {
-      const res = await fetch(`/api/models/providers/${providerId}/sync`, { method: "POST" });
+      const res = await fetch(`/api/v1/models/providers/${providerId}/sync`, { method: "POST" });
       if (res.ok) {
         alert(`Synchronized provider ${providerId} successfully!`);
         await fetchAllData();
@@ -676,7 +676,7 @@ export function Models({ setActiveTab: _ }: ModelsProps) {
         return;
       }
       alert(`Running quick latency benchmark on ${modelIds.length} models in the background.`);
-      const res = await fetch("/api/models/benchmarks/run", {
+      const res = await fetch("/api/v1/models/benchmarks/run", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
