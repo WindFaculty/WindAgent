@@ -1,0 +1,92 @@
+{
+  "phase": "02",
+  "name": "CORE DOMAIN, CONTRACTS, ERRORS, CONFIG AND SECURITY TYPES",
+  "status": "PASSED",
+  "timestamp": "2026-07-23T05:19:30+07:00",
+  "package": "core/windagent_core",
+  "domain_models": [
+    "Task",
+    "TaskRequest",
+    "TaskRun",
+    "Session",
+    "WorkflowDefinition",
+    "WorkflowRun",
+    "WorkflowStep",
+    "ToolInvocation",
+    "ToolResult",
+    "ModelRequest",
+    "ModelResponse",
+    "ArtifactRef",
+    "PermissionRequest",
+    "VerificationResult"
+  ],
+  "typed_identifiers": [
+    "TaskId",
+    "RunId",
+    "SessionId",
+    "WorkflowId",
+    "StepId",
+    "ToolCallId",
+    "ModelCallId",
+    "EventId",
+    "ArtifactId"
+  ],
+  "contract_ports": [
+    "Clock",
+    "IdGenerator",
+    "TaskRepository",
+    "SessionRepository",
+    "WorkflowRepository",
+    "EventStore",
+    "EventPublisher",
+    "ArtifactRepository",
+    "UnitOfWork",
+    "SecretStore",
+    "PermissionEvaluator"
+  ],
+  "error_hierarchy": [
+    "WindAgentError",
+    "DomainError",
+    "ValidationError",
+    "ConflictError",
+    "NotFoundError",
+    "PermissionDeniedError",
+    "RetryableError",
+    "NonRetryableError",
+    "ProviderError",
+    "ToolError",
+    "IntegrityError"
+  ],
+  "typed_settings": [
+    "CoreSettings",
+    "DatabaseSettings",
+    "ProviderSettings",
+    "ExecutionSettings",
+    "SecuritySettings",
+    "ObservabilitySettings"
+  ],
+  "security_types": [
+    "Principal",
+    "Permission",
+    "ResourceScope",
+    "RiskLevel",
+    "ApprovalRequirement",
+    "SecretRef",
+    "RedactedValue"
+  ],
+  "legacy_mappers": [
+    "legacy_session_dict_to_domain",
+    "domain_session_to_legacy_dict",
+    "legacy_step_dict_to_domain",
+    "domain_step_to_legacy_dict",
+    "legacy_workflow_dict_to_domain",
+    "domain_workflow_to_legacy_dict"
+  ],
+  "acceptance_gates": {
+    "zero_framework_dependencies": "PASSED (0 FastAPI/SQLAlchemy imports in core)",
+    "unit_tests": "27/27 PASSED",
+    "secret_redaction": "PASSED",
+    "scaffold_check": "PASSED",
+    "import_boundary_check": "PASSED"
+  }
+}

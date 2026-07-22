@@ -108,6 +108,10 @@ def generate_package_init(pkg_name: str, pkg_info: dict) -> str:
         return '"""\nWindAgent CLI entrypoint (doctor, architecture check, workflow run)\n"""\n\nfrom windagent_cli.main import main, doctor, architecture_check\n\n__version__ = "0.3.0"\n__all__ = ["main", "doctor", "architecture_check"]\n'
     elif pkg_name == "worker":
         return '"""\nBackground worker process for asynchronous task execution\n"""\n\nfrom windagent_worker.runner import WorkerRunner\n\n__version__ = "0.3.0"\n__all__ = ["WorkerRunner"]\n'
+    elif pkg_name == "core":
+        init_file = ROOT_DIR / "core" / "windagent_core" / "__init__.py"
+        if init_file.exists():
+            return init_file.read_text(encoding="utf-8")
     return f'"""\n{desc}\n"""\n\n__version__ = "0.3.0"\n'
 
 
