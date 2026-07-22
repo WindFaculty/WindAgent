@@ -1,0 +1,45 @@
+{
+  "phase": "0",
+  "repository": "D:\\code_ca_nhan\\WindAgent",
+  "branch_start": "refactor/architecture-v2-phase-00-baseline",
+  "sha_start": "7e1cd9fa1ed38f33edc68f323df45c3b9d1fc28e",
+  "sha_remote": null,
+  "timestamp": "2026-07-22T21:41:03.021848+00:00",
+  "environment": {
+    "python": "3.11.15",
+    "node": "v22.23.1",
+    "npm": "10.9.8",
+    "uv": "uv 0.11.28 (ebf0f43d7 2026-07-07 x86_64-pc-windows-msvc)",
+    "cargo": "1.97.1",
+    "tauri_cli": "^2.0.0"
+  },
+  "database": {
+    "engine": "SQLite + aiosqlite",
+    "migration_head": "2222ab020b94 (head)",
+    "tables": 31
+  },
+  "api": {
+    "routes_count": 119,
+    "event_types_count": 44
+  },
+  "tests": {
+    "backend_focused_28": "28 passed",
+    "backend_full": "463 passed, 11 failed",
+    "frontend_type_check": "pass",
+    "frontend_unit": "85 passed, 4 failed",
+    "frontend_build": "pass"
+  },
+  "artifacts": [
+    "artifacts/architecture_v2/baseline/api_inventory.json",
+    "artifacts/architecture_v2/baseline/event_inventory.json",
+    "artifacts/architecture_v2/baseline/database_inventory.json",
+    "artifacts/architecture_v2/baseline/dependency_graph.json",
+    "docs/architecture/current-system.md",
+    "docs/architecture/legacy-dependency-map.md"
+  ],
+  "notes": [
+    "Worktree had pre-existing modifications: ban_ke_hoach.md, deleted windagent.db-shm/wal.",
+    "Backend and frontend test failures are pre-existing and not fixed in Phase 0.",
+    "No source behavior changes made."
+  ]
+}
