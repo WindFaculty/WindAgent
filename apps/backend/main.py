@@ -365,7 +365,20 @@ async def lifespan(app: FastAPI):
             agent_s3_config.source,
             agent_s3_config.provider,
         )
-    app.state.agent_s3_step_executor = agent_s3_step_executor
+    # Execute Orchestration V2 startup recovery
+    try:
+        recovery_report = await orchestration_container.recovery_manager.recover_all_in_flight()
+        app.state.recovery_report = recovery_report
+        log.info(
+            "orchestration v2 startup recovery completed (leader=%s, scanned=%d, reconciled=%d, reattached=%d, blocked=%d)",
+            recovery_report.leader_acquired,
+            recovery_report.tasks_scanned,
+            recovery_report.runs_reconciled,
+            recovery_report.reattached_count,
+            recovery_report.destructive_blocked_count,
+        )
+    except Exception as ex:
+        log.exception("startup recovery failed: %s", ex)
 
     log.info("backend ready — db=%s model=%s", DB_URL, MODEL_BACKEND)
     try:

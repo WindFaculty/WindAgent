@@ -11,7 +11,7 @@ from typing import Any, Dict, Set
 logger = logging.getLogger("windagent.orchestration.recovery.destructive_guard")
 
 DESTRUCTIVE_TOOLS: Set[str] = {
-    "write_file", "exec_shell", "git_commit", "git_push",
+    "write_file", "exec_shell", "run_command", "git_commit", "git_push",
     "delete_file", "drop_table", "deploy_release"
 }
 
