@@ -1,0 +1,67 @@
+{
+  "phase": "01",
+  "name": "PROVIDER CONTRACT FOUNDATION AND ERROR MODEL",
+  "status": "PASSED",
+  "timestamp": "2026-07-23T20:48:00+07:00",
+  "branch": "feat/provider-routing-v3",
+  "test_session": {
+    "total_tests": 111,
+    "passed": 110,
+    "skipped": 1,
+    "failed": 0,
+    "phase_1_new_tests": 7,
+    "duration_seconds": 2.38
+  },
+  "contracts_created": [
+    "ProviderRequest",
+    "ProviderResponse",
+    "ProviderStreamEvent",
+    "ProviderUsage",
+    "ProviderHealth",
+    "QuotaState",
+    "RateLimitState",
+    "ConnectionTestResult",
+    "ProtocolDetectionResult",
+    "ProviderCapabilities",
+    "ModelDescriptor",
+    "DiscoveredModel",
+    "CacheDirective"
+  ],
+  "error_taxonomy_created": [
+    "ProviderFailure",
+    "AuthenticationFailure",
+    "PermissionFailure",
+    "RateLimitFailure",
+    "QuotaExhaustedFailure",
+    "ModelNotFoundFailure",
+    "InvalidRequestFailure",
+    "ContextOverflowFailure",
+    "ContentPolicyFailure",
+    "ProviderUnavailableFailure",
+    "NetworkFailure",
+    "TimeoutFailure",
+    "ProtocolMismatchFailure",
+    "MalformedResponseFailure",
+    "CancellationFailure",
+    "SameModelEndpointExhausted"
+  ],
+  "abstract_ports_created": [
+    "EndpointRegistryPort",
+    "CanonicalModelRegistryPort",
+    "RouteLockPort",
+    "RouteAttemptPort",
+    "QuotaStatePort",
+    "EndpointStatePort",
+    "CachePort",
+    "UsageLedgerPort"
+  ],
+  "acceptance_gates": {
+    "contracts_100_percent_type_annotated": true,
+    "pytest_clean": true,
+    "provider_package_pure_boundary": true,
+    "string_free_error_taxonomy": true,
+    "public_exports_declared": true,
+    "contract_tests_passed": true,
+    "architecture_import_check_passed": true
+  }
+}

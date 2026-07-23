@@ -1,26 +1,17 @@
 """
-Abstract Base Model Provider Contract for WindAgent Architecture V2.
-Declares mandatory methods for model provider integration adapters.
+Legacy V2 Abstract Base Model Provider Contract for WindAgent.
+Maintained for backward compatibility during V3 migration.
 """
 
 from __future__ import annotations
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Any, AsyncIterator, Dict, List, Optional
+from dataclasses import dataclass
+from typing import Any, AsyncIterator, List, Optional
 
 from windagent_core.domain.types import ModelCallId
 from windagent_core.domain.models import ModelRequest, ModelResponse
-from windagent_providers.capabilities import ModelCapabilityProfile
-
-
-@dataclass
-class ProviderHealth:
-    provider_name: str
-    healthy: bool
-    latency_ms: float = 0.0
-    error_message: Optional[str] = None
-    last_check_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+from windagent_providers.base.capabilities import ModelCapabilityProfile
+from windagent_providers.base.contracts import ProviderHealth, QuotaState
 
 
 @dataclass
@@ -29,7 +20,7 @@ class QuotaSnapshot:
     has_quota: bool = True
     remaining_tokens: Optional[int] = None
     remaining_requests: Optional[int] = None
-    reset_at: Optional[datetime] = None
+    reset_at: Optional[Any] = None
 
 
 @dataclass
