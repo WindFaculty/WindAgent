@@ -46,6 +46,19 @@ from windagent_providers.google import GoogleGeminiProviderAdapter
 from windagent_providers.ollama import OllamaProviderAdapter
 from windagent_providers.local import LocalOllamaManager
 
+# V3 Provider Caches & Singleflight
+from windagent_providers.cache import (
+    InMemoryCacheBackend,
+    InMemorySingleFlight,
+    ResponseCacheService,
+    DiscoveryCacheService,
+    HealthCacheService,
+    RouteLockCacheService,
+    CachePort as CachePortAlias,
+    CacheNamespace,
+    CacheTags,
+)
+
 # Legacy V2 Adapters
 from windagent_providers.adapters.mock import MockProviderAdapter
 from windagent_providers.adapters.openai_compatible import OpenAICompatibleProviderAdapter
@@ -82,6 +95,14 @@ __all__ = [
     "GoogleGeminiProviderAdapter",
     "OllamaProviderAdapter",
     "LocalOllamaManager",
+    "InMemoryCacheBackend",
+    "InMemorySingleFlight",
+    "ResponseCacheService",
+    "DiscoveryCacheService",
+    "HealthCacheService",
+    "RouteLockCacheService",
+    "CacheNamespace",
+    "CacheTags",
     "MockProviderAdapter",
     "OpenAICompatibleProviderAdapter",
     "LegacyAnthropicAdapter",

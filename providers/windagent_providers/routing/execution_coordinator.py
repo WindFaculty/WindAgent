@@ -26,6 +26,9 @@ from windagent_providers.base.errors import (
     SameModelEndpointExhausted,
 )
 from windagent_providers.base.ports import EndpointRegistryPort, EndpointStatePort, QuotaStatePort, RouteAttemptPort
+from windagent_providers.cache.contracts import CacheNamespace
+from windagent_providers.cache.response_cache import ResponseCacheService
+from windagent_providers.cache.singleflight import InMemorySingleFlight
 from windagent_providers.routing.cooldown import apply_rate_limit_cooldown
 from windagent_providers.routing.endpoint_selector import EndpointCandidate, EndpointSelector
 from windagent_providers.routing.failover_policy import FailoverDecision, SameModelFailoverPolicy
@@ -45,6 +48,8 @@ class EndpointExecutionCoordinator:
         quota_state: QuotaStatePort,
         attempt_log: RouteAttemptPort,
         failover_policy: Optional[SameModelFailoverPolicy] = None,
+        response_cache: Optional[ResponseCacheService] = None,
+        singleflight: Optional[InMemorySingleFlight] = None,
     ):
         self._adapter_resolver = adapter_resolver
         self._registry = endpoint_registry
@@ -53,6 +58,8 @@ class EndpointExecutionCoordinator:
         self._attempts = attempt_log
         self._selector = EndpointSelector(endpoint_state, quota_state)
         self._policy = failover_policy or SameModelFailoverPolicy()
+        self._response_cache = response_cache
+        self._singleflight = singleflight
 
     async def execute(
         self,
@@ -60,15 +67,67 @@ class EndpointExecutionCoordinator:
         route_lock: Any,
         turn_id: Optional[str] = None,
         *,
+        namespace: Optional[CacheNamespace] = None,
         max_attempts: int = 5,
     ) -> ProviderResponse:
         """
         Execute request on the canonical model of route_lock, failing over only
         to exact-equivalent endpoints.
+
+        If a response_cache is configured and the request is cacheable, a cache
+        hit short-circuits execution.  Otherwise a singleflight keyed by the
+        cache key collapses concurrent identical requests.
         """
         canonical_model_id = _canonical_model_id(route_lock)
         route_lock_id = _route_lock_id(route_lock)
+        cache_key: Optional[str] = None
 
+        # Phase 9: response cache short-circuit.
+        if self._response_cache is not None and namespace is not None:
+            cache_result = await self._response_cache.get(
+                request,
+                namespace,
+                canonical_model_id,
+                explicit_opt_in=False,
+            )
+            cache_key = cache_result.cache_key
+            if cache_result.hit and cache_result.response is not None:
+                return cache_result.response
+
+        if self._singleflight is not None and cache_key is not None:
+            return await self._singleflight.do(
+                cache_key,
+                lambda: self._execute_once(
+                    request,
+                    canonical_model_id,
+                    route_lock_id,
+                    turn_id,
+                    namespace,
+                    cache_key,
+                    max_attempts,
+                ),
+            )
+
+        return await self._execute_once(
+            request,
+            canonical_model_id,
+            route_lock_id,
+            turn_id,
+            namespace,
+            cache_key,
+            max_attempts,
+        )
+
+    async def _execute_once(
+        self,
+        request: ProviderRequest,
+        canonical_model_id: str,
+        route_lock_id: str,
+        turn_id: Optional[str],
+        namespace: Optional[CacheNamespace],
+        cache_key: Optional[str],
+        max_attempts: int,
+    ) -> ProviderResponse:
         for attempt_index in range(max_attempts):
             try:
                 candidates = await self._selector.select_candidates(
@@ -99,6 +158,14 @@ class EndpointExecutionCoordinator:
                     completion_tokens=response.usage.completion_tokens,
                     endpoint_id=candidate.endpoint_id,
                 )
+                # Phase 9: write through to response cache.
+                if self._response_cache is not None and namespace is not None and cache_key is not None:
+                    await self._response_cache.set(
+                        request,
+                        namespace,
+                        canonical_model_id,
+                        response,
+                    )
                 return response
 
             except ProviderFailure as exc:
