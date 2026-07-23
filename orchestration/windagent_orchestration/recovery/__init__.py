@@ -1,5 +1,5 @@
 """
-Top-level recovery module adapter re-exporting from recovery subpackage.
+Recovery Subpackage Export for Orchestration V2.
 """
 
 from windagent_orchestration.recovery.destructive_guard import DESTRUCTIVE_TOOLS, DestructiveReplayGuard
