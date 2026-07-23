@@ -1,11 +1,12 @@
 """
 Durable Repositories for Orchestration V2 Storage Layer.
-Implements SQL repositories with optimistic concurrency, atomic lease acquisition, checkpoints, worker registries, and outbox records.
+Implements SQL repositories with atomic conditional updates, optimistic concurrency, lease acquisition with fencing tokens, runtime executions, recovery leader lease, checkpoints, and outbox records.
 """
 
 from __future__ import annotations
 
 import json
+import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 from sqlalchemy import select, update, delete
@@ -14,10 +15,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from windagent_storage.orm.v2_orchestration_models import (
     TaskRunORM, WorkflowRunV2ORM, WorkflowStepRunORM,
     ExecutionLeaseORM, ExecutionAttemptORM, WorkflowCheckpointORM,
-    CancellationRequestORM, WorkerRegistrationORM
+    CancellationRequestORM, WorkerRegistrationORM, RuntimeExecutionORM, RecoveryLeaderLeaseORM
 )
 from windagent_storage.orm.models import OutboxRecordORM
 from windagent_core.errors.exceptions import DomainError
+
+
+def _ensure_naive_utc(dt: datetime) -> datetime:
+    if dt.tzinfo is not None:
+        return dt.astimezone(timezone.utc).replace(tzinfo=None)
+    return dt
 
 
 class SqlTaskRunRepository:
@@ -77,27 +84,32 @@ class SqlTaskRunRepository:
             self._session.add(new_orm)
             return 1
 
-        # Optimistic concurrency check
-        if orm.version != version:
-            raise DomainError(
-                message=f"Optimistic concurrency violation for task [{task_id}]: expected version {version}, found {orm.version}",
-                code="WINDAGENT_ERR_OPTIMISTIC_CONCURRENCY_VIOLATION",
-                details={"task_id": task_id, "expected_version": version, "actual_version": orm.version},
-            )
-
+        # Atomic conditional UPDATE check
         new_version = version + 1
         facts["version"] = new_version
-
-        orm.state = state
-        orm.version = new_version
-        orm.priority = facts.get("priority", orm.priority)
-        orm.current_step = facts.get("current_step", orm.current_step)
-        orm.total_steps = facts.get("total_steps", orm.total_steps)
-        orm.pending_permission = facts.get("pending_permission", orm.pending_permission)
-        orm.retry_count = facts.get("retry_count", orm.retry_count)
-        orm.last_error = facts.get("last_error", orm.last_error)
-        orm.facts_json = json.dumps(facts)
-        orm.updated_at = now
+        update_stmt = (
+            update(TaskRunORM)
+            .where(TaskRunORM.id == task_id, TaskRunORM.version == version)
+            .values(
+                state=state,
+                version=new_version,
+                priority=facts.get("priority", orm.priority),
+                current_step=facts.get("current_step", orm.current_step),
+                total_steps=facts.get("total_steps", orm.total_steps),
+                pending_permission=facts.get("pending_permission", orm.pending_permission),
+                retry_count=facts.get("retry_count", orm.retry_count),
+                last_error=facts.get("last_error", orm.last_error),
+                facts_json=json.dumps(facts),
+                updated_at=now,
+            )
+        )
+        result = await self._session.execute(update_stmt)
+        if result.rowcount == 0:
+            raise DomainError(
+                message=f"Optimistic concurrency violation for task [{task_id}]: expected version {version}",
+                code="WINDAGENT_ERR_OPTIMISTIC_CONCURRENCY_VIOLATION",
+                details={"task_id": task_id, "expected_version": version},
+            )
 
         return new_version
 
@@ -131,25 +143,41 @@ class SqlExecutionLeaseRepository:
         worker_id: str,
         ttl_seconds: float,
         idempotency_key: str,
-    ) -> bool:
+    ) -> Optional[Dict[str, Any]]:
         now = datetime.now(timezone.utc)
         expires_at = datetime.fromtimestamp(now.timestamp() + ttl_seconds, tz=timezone.utc)
 
-        # Deduplication / Idempotency check
         stmt = select(ExecutionLeaseORM).where(ExecutionLeaseORM.idempotency_key == idempotency_key)
         res = await self._session.execute(stmt)
         existing = res.scalar_one_or_none()
 
         if existing:
-            if existing.status == "active" and existing.expires_at > now:
-                return existing.lease_id == lease_id
-            # Lease expired -> update lease to new worker
+            existing_exp = _ensure_naive_utc(existing.expires_at)
+            now_naive = _ensure_naive_utc(now)
+            if existing.status == "active" and existing_exp > now_naive:
+                if existing.lease_id == lease_id:
+                    return {
+                        "lease_id": existing.lease_id,
+                        "lease_generation": existing.lease_generation,
+                        "fencing_token": existing.fencing_token,
+                    }
+                return None
+            # Lease expired -> takeover by new worker, bump generation
+            new_gen = (existing.lease_generation or 1) + 1
+            fencing_token = f"fence_{existing.step_run_id}_gen_{new_gen}_{uuid.uuid4().hex[:6]}"
             existing.worker_id = worker_id
             existing.status = "active"
             existing.expires_at = expires_at
+            existing.lease_generation = new_gen
+            existing.fencing_token = fencing_token
             existing.updated_at = now
-            return True
+            return {
+                "lease_id": existing.lease_id,
+                "lease_generation": new_gen,
+                "fencing_token": fencing_token,
+            }
 
+        fencing_token = f"fence_{step_run_id}_gen_1_{uuid.uuid4().hex[:6]}"
         new_lease = ExecutionLeaseORM(
             lease_id=lease_id,
             step_run_id=step_run_id,
@@ -158,11 +186,17 @@ class SqlExecutionLeaseRepository:
             status="active",
             expires_at=expires_at,
             idempotency_key=idempotency_key,
+            lease_generation=1,
+            fencing_token=fencing_token,
             created_at=now,
             updated_at=now,
         )
         self._session.add(new_lease)
-        return True
+        return {
+            "lease_id": lease_id,
+            "lease_generation": 1,
+            "fencing_token": fencing_token,
+        }
 
     async def release_lease(self, lease_id: str, worker_id: str) -> bool:
         stmt = select(ExecutionLeaseORM).where(
@@ -179,20 +213,116 @@ class SqlExecutionLeaseRepository:
 
     async def reclaim_expired_leases(self) -> List[str]:
         now = datetime.now(timezone.utc)
+        now_naive = _ensure_naive_utc(now)
         stmt = select(ExecutionLeaseORM).where(
             ExecutionLeaseORM.status == "active",
-            ExecutionLeaseORM.expires_at <= now,
         )
         res = await self._session.execute(stmt)
-        expired_leases = res.scalars().all()
+        active_leases = res.scalars().all()
         reclaimed_ids = []
 
-        for lease in expired_leases:
-            lease.status = "expired"
-            lease.updated_at = now
-            reclaimed_ids.append(lease.lease_id)
+        for lease in active_leases:
+            if _ensure_naive_utc(lease.expires_at) <= now_naive:
+                lease.status = "expired"
+                lease.updated_at = now
+                reclaimed_ids.append(lease.lease_id)
 
         return reclaimed_ids
+
+
+class SqlRuntimeExecutionRepository:
+    def __init__(self, session: AsyncSession):
+        self._session = session
+
+    async def create_execution(
+        self,
+        execution_id: str,
+        runtime_run_id: str,
+        attempt_id: str,
+        step_run_id: str,
+        lease_generation: int,
+        fencing_token: str,
+        runtime_session_id: Optional[str] = None,
+    ) -> RuntimeExecutionORM:
+        now = datetime.now(timezone.utc)
+        orm = RuntimeExecutionORM(
+            id=execution_id,
+            runtime_run_id=runtime_run_id,
+            runtime_session_id=runtime_session_id,
+            attempt_id=attempt_id,
+            step_run_id=step_run_id,
+            lease_generation=lease_generation,
+            fencing_token=fencing_token,
+            status="dispatched",
+            heartbeat_at=now,
+            created_at=now,
+            updated_at=now,
+        )
+        self._session.add(orm)
+        return orm
+
+    async def update_status_by_fencing_token(
+        self,
+        step_run_id: str,
+        fencing_token: str,
+        status: str,
+        result_ref: Optional[str] = None,
+        error_metadata: Optional[Dict[str, Any]] = None,
+    ) -> bool:
+        now = datetime.now(timezone.utc)
+        error_json = json.dumps(error_metadata) if error_metadata else None
+        stmt = (
+            update(RuntimeExecutionORM)
+            .where(
+                RuntimeExecutionORM.step_run_id == step_run_id,
+                RuntimeExecutionORM.fencing_token == fencing_token,
+            )
+            .values(
+                status=status,
+                result_ref=result_ref,
+                error_metadata_json=error_json,
+                updated_at=now,
+            )
+        )
+        res = await self._session.execute(stmt)
+        return res.rowcount > 0
+
+    async def get_by_step_run_id(self, step_run_id: str) -> Optional[RuntimeExecutionORM]:
+        stmt = select(RuntimeExecutionORM).where(RuntimeExecutionORM.step_run_id == step_run_id).order_by(RuntimeExecutionORM.created_at.desc())
+        res = await self._session.execute(stmt)
+        return res.scalars().first()
+
+
+class SqlRecoveryLeaderLeaseRepository:
+    def __init__(self, session: AsyncSession):
+        self._session = session
+
+    async def acquire_leader_lease(self, leader_id: str, ttl_seconds: float = 30.0) -> bool:
+        now = datetime.now(timezone.utc)
+        now_naive = _ensure_naive_utc(now)
+        expires_at = datetime.fromtimestamp(now.timestamp() + ttl_seconds, tz=timezone.utc)
+
+        stmt = select(RecoveryLeaderLeaseORM).where(RecoveryLeaderLeaseORM.lease_name == "recovery_leader")
+        res = await self._session.execute(stmt)
+        existing = res.scalar_one_or_none()
+
+        if existing:
+            if _ensure_naive_utc(existing.expires_at) > now_naive:
+                return existing.leader_id == leader_id
+            existing.leader_id = leader_id
+            existing.expires_at = expires_at
+            existing.updated_at = now
+            return True
+
+        new_lease = RecoveryLeaderLeaseORM(
+            lease_name="recovery_leader",
+            leader_id=leader_id,
+            expires_at=expires_at,
+            created_at=now,
+            updated_at=now,
+        )
+        self._session.add(new_lease)
+        return True
 
 
 class SqlWorkflowCheckpointRepository:

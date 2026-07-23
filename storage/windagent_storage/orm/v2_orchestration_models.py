@@ -1,6 +1,6 @@
 """
 SQLAlchemy ORM Models for Orchestration Subsystem V2.
-Additive durable storage tables for task runs, workflow runs, leases, checkpoints, workers, outbox, and cancellations.
+Additive durable storage tables for task runs, workflow runs, leases, checkpoints, workers, outbox, cancellations, runtime executions, and recovery leader lease.
 """
 
 from __future__ import annotations
@@ -88,6 +88,8 @@ class ExecutionLeaseORM(BaseORM):
     status = Column(String(32), nullable=False, default="active")  # active | expired | released
     expires_at = Column(DateTime, nullable=False)
     idempotency_key = Column(String(128), nullable=False, unique=True)
+    lease_generation = Column(Integer, nullable=False, default=1)
+    fencing_token = Column(String(128), nullable=True)
     created_at = Column(DateTime, nullable=False, default=default_utc_now)
     updated_at = Column(DateTime, nullable=False, default=default_utc_now)
 
@@ -95,6 +97,39 @@ class ExecutionLeaseORM(BaseORM):
         Index("ix_execution_leases_status_expires", "status", "expires_at"),
         Index("ix_execution_leases_step_status", "step_run_id", "status"),
     )
+
+
+class RuntimeExecutionORM(BaseORM):
+    __tablename__ = "runtime_executions"
+
+    id = Column(String(64), primary_key=True)
+    runtime_run_id = Column(String(64), nullable=False, index=True)
+    runtime_session_id = Column(String(64), nullable=True)
+    attempt_id = Column(String(64), nullable=False)
+    step_run_id = Column(String(36), ForeignKey("workflow_step_runs.id"), nullable=False, index=True)
+    lease_generation = Column(Integer, nullable=False, default=1)
+    fencing_token = Column(String(128), nullable=False, index=True)
+    status = Column(String(32), nullable=False, default="dispatched")  # dispatched | running | completed | failed | cancelled | timeout | lost | unknown
+    heartbeat_at = Column(DateTime, nullable=True)
+    result_ref = Column(String(256), nullable=True)
+    error_metadata_json = Column(Text, nullable=True)
+    created_at = Column(DateTime, nullable=False, default=default_utc_now)
+    updated_at = Column(DateTime, nullable=False, default=default_utc_now)
+
+    __table_args__ = (
+        Index("ix_runtime_executions_status_heartbeat", "status", "heartbeat_at"),
+        Index("ix_runtime_executions_step_fencing", "step_run_id", "fencing_token"),
+    )
+
+
+class RecoveryLeaderLeaseORM(BaseORM):
+    __tablename__ = "recovery_leader_leases"
+
+    lease_name = Column(String(64), primary_key=True, default="recovery_leader")
+    leader_id = Column(String(64), nullable=False)
+    expires_at = Column(DateTime, nullable=False)
+    created_at = Column(DateTime, nullable=False, default=default_utc_now)
+    updated_at = Column(DateTime, nullable=False, default=default_utc_now)
 
 
 class ExecutionAttemptORM(BaseORM):
