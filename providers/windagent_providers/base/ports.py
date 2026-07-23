@@ -8,10 +8,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from windagent_providers.base.contracts import (
-    CacheDirective, ConnectionTestResult, DiscoveredModel, ModelDescriptor,
-    ProviderHealth, QuotaState, RateLimitState
-)
+from windagent_providers.base.contracts import ModelDescriptor, QuotaState
 
 
 class EndpointRegistryPort(ABC):
@@ -23,7 +20,9 @@ class EndpointRegistryPort(ABC):
         pass
 
     @abstractmethod
-    async def list_endpoints_for_canonical_model(self, canonical_model_id: str) -> List[Dict[str, Any]]:
+    async def list_endpoints_for_canonical_model(
+        self, canonical_model_id: str
+    ) -> List[Dict[str, Any]]:
         """Lists active endpoint bindings matching exact canonical model ID."""
         pass
 
@@ -32,7 +31,9 @@ class CanonicalModelRegistryPort(ABC):
     """Port for querying canonical model catalog and capabilities."""
 
     @abstractmethod
-    async def get_canonical_model(self, canonical_model_id: str) -> Optional[ModelDescriptor]:
+    async def get_canonical_model(
+        self, canonical_model_id: str
+    ) -> Optional[ModelDescriptor]:
         """Retrieves canonical model descriptor."""
         pass
 
@@ -46,7 +47,9 @@ class RouteLockPort(ABC):
     """Port for creating, reading, and releasing scope-based persistent route locks."""
 
     @abstractmethod
-    async def get_lock(self, scope_type: str, scope_id: str) -> Optional[Dict[str, Any]]:
+    async def get_lock(
+        self, scope_type: str, scope_id: str
+    ) -> Optional[Dict[str, Any]]:
         """Reads active route lock for the scope (session/task/workflow)."""
         pass
 
@@ -111,7 +114,9 @@ class EndpointStatePort(ABC):
         pass
 
     @abstractmethod
-    async def record_failure(self, endpoint_id: str, error_class: str, status_code: Optional[int]) -> None:
+    async def record_failure(
+        self, endpoint_id: str, error_class: str, status_code: Optional[int]
+    ) -> None:
         """Records invocation failure for health scoring and circuit breaker."""
         pass
 
@@ -135,7 +140,9 @@ class CachePort(ABC):
         pass
 
     @abstractmethod
-    async def set(self, key: str, value: Any, ttl_seconds: Optional[int] = None) -> None:
+    async def set(
+        self, key: str, value: Any, ttl_seconds: Optional[int] = None
+    ) -> None:
         """Stores value in cache with optional TTL."""
         pass
 

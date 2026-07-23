@@ -12,11 +12,10 @@ import pytest
 
 from windagent_core.domain.types import SessionId, ToolCallId
 from windagent_core.domain.models import ToolInvocation
-from windagent_core.errors.exceptions import PermissionDeniedError, ToolError
-from windagent_core.security.types import Principal, Permission
+from windagent_core.errors.exceptions import PermissionDeniedError
 from windagent_tools import (
     ToolRegistry, PermissionEngine, PathSandbox, SafeShellRunner,
-    ToolExecutionContext, ReadFileTool, WriteFileTool, ExecShellTool, ToolRiskLevel
+    ToolExecutionContext, ReadFileTool, WriteFileTool, ExecShellTool
 )
 
 

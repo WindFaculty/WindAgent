@@ -10,14 +10,13 @@ import pytest
 from windagent_core.domain.types import SessionId, ToolCallId
 from windagent_core.domain.models import ToolInvocation
 from windagent_core.errors.exceptions import (
-    ConflictError, NotFoundError, PermissionDeniedError, ValidationError
+    ConflictError, PermissionDeniedError, ValidationError
 )
-from windagent_core.security.types import Principal, Permission
 from windagent_tools import (
     PluginManifest, PluginLoader,
     SkillManifest, SkillManager,
     MCPClientPort, MCPServerConfig, MCPTransportType, MCPToolInfo,
-    MCPToolAdapter, register_mcp_server_tools,
+    register_mcp_server_tools,
     ToolRegistry, PermissionEngine, ToolExecutionContext, ToolRiskLevel
 )
 

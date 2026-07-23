@@ -5,7 +5,6 @@ Manages lifecycle of API sidecar and Worker sidecar background processes.
 
 from __future__ import annotations
 import os
-import time
 import subprocess
 from dataclasses import dataclass
 from typing import Dict, Optional

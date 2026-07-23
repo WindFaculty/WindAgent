@@ -4,7 +4,6 @@ Protects against path traversal attacks, symlink escapes outside workspace root,
 """
 
 from __future__ import annotations
-import os
 from pathlib import Path
 from typing import Union
 

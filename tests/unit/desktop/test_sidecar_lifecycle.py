@@ -9,7 +9,7 @@ desktop_dir = root_dir / "apps" / "desktop"
 if str(desktop_dir) not in sys.path:
     sys.path.insert(0, str(desktop_dir))
 
-from sidecar_manager import SidecarManager, SidecarStatus
+from sidecar_manager import SidecarManager
 
 
 def test_sidecar_manager_spawns_and_health_checks():

@@ -7,8 +7,7 @@ Unit tests for WindAgent Verification subsystem (Phase 11):
 
 import pytest
 from windagent_verification import (
-    VerificationStatus, VerificationEvidence, VerificationResult,
-    TestRunnerGate, PolicyEngineGate, IntegrityGate, QualityGates,
+    VerificationStatus, TestRunnerGate, PolicyEngineGate, IntegrityGate, QualityGates,
     RegressionGate, SecurityGate, AcceptanceGate, ReportValidator
 )
 

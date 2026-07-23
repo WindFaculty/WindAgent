@@ -18,11 +18,9 @@ import os
 import pytest
 import uuid
 
-from sqlalchemy import select
 
 from db.database import Database
 from db.models import (
-    Base,
     CanonicalModelORM,
     ModelProviderORM,
     ModelRoutingRuleORM,

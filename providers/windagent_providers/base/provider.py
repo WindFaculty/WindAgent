@@ -11,7 +11,7 @@ from typing import Any, AsyncIterator, List, Optional
 from windagent_core.domain.types import ModelCallId
 from windagent_core.domain.models import ModelRequest, ModelResponse
 from windagent_providers.base.capabilities import ModelCapabilityProfile
-from windagent_providers.base.contracts import ProviderHealth, QuotaState
+from windagent_providers.base.contracts import ProviderHealth
 
 
 @dataclass

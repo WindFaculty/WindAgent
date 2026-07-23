@@ -12,16 +12,28 @@ from typing import Any, AsyncIterator, Dict, List, Optional
 import httpx
 
 from windagent_providers.base.contracts import (
-    DiscoveredModel, FinishReason, ProviderCapabilities, ProviderHealth,
-    ProviderRequest, ProviderResponse, ProviderStreamEvent, ProviderUsage
+    DiscoveredModel,
+    FinishReason,
+    ProviderHealth,
+    ProviderRequest,
+    ProviderResponse,
+    ProviderStreamEvent,
+    ProviderUsage,
 )
 from windagent_providers.base.errors import (
-    AuthenticationFailure, CancellationFailure, ContextOverflowFailure,
-    InvalidRequestFailure, ModelNotFoundFailure, NetworkFailure,
-    PermissionFailure, ProviderFailure, ProviderUnavailableFailure, RateLimitFailure,
-    TimeoutFailure
+    AuthenticationFailure,
+    CancellationFailure,
+    ContextOverflowFailure,
+    InvalidRequestFailure,
+    ModelNotFoundFailure,
+    NetworkFailure,
+    PermissionFailure,
+    ProviderFailure,
+    ProviderUnavailableFailure,
+    RateLimitFailure,
+    TimeoutFailure,
 )
-from windagent_providers.base.secret_redaction import redact_text, redact_dict
+from windagent_providers.base.secret_redaction import redact_text
 
 
 class AnthropicProviderAdapter:
@@ -60,7 +72,9 @@ class AnthropicProviderAdapter:
             timeout=httpx.Timeout(self.timeout_seconds),
         )
 
-    def _build_messages_payload(self, request: ProviderRequest, model_id: str, stream: bool = False) -> Dict[str, Any]:
+    def _build_messages_payload(
+        self, request: ProviderRequest, model_id: str, stream: bool = False
+    ) -> Dict[str, Any]:
         messages = []
         for msg in request.messages:
             role = msg.get("role")
@@ -90,11 +104,15 @@ class AnthropicProviderAdapter:
             anthropic_tools = []
             for t in request.tools:
                 fn = t.get("function", t)
-                anthropic_tools.append({
-                    "name": fn.get("name"),
-                    "description": fn.get("description", ""),
-                    "input_schema": fn.get("parameters", {"type": "object", "properties": {}})
-                })
+                anthropic_tools.append(
+                    {
+                        "name": fn.get("name"),
+                        "description": fn.get("description", ""),
+                        "input_schema": fn.get(
+                            "parameters", {"type": "object", "properties": {}}
+                        ),
+                    }
+                )
             payload["tools"] = anthropic_tools
 
         return payload
@@ -108,23 +126,44 @@ class AnthropicProviderAdapter:
             err_msg = clean_text
 
         if status_code == 401:
-            return AuthenticationFailure(err_msg, provider_id=self.provider_name, status_code=status_code)
+            return AuthenticationFailure(
+                err_msg, provider_id=self.provider_name, status_code=status_code
+            )
         elif status_code == 403:
-            return PermissionFailure(err_msg, provider_id=self.provider_name, status_code=status_code)
+            return PermissionFailure(
+                err_msg, provider_id=self.provider_name, status_code=status_code
+            )
         elif status_code == 404:
-            return ModelNotFoundFailure(err_msg, provider_id=self.provider_name, status_code=status_code)
+            return ModelNotFoundFailure(
+                err_msg, provider_id=self.provider_name, status_code=status_code
+            )
         elif status_code == 429:
-            return RateLimitFailure(err_msg, provider_id=self.provider_name, status_code=status_code)
+            return RateLimitFailure(
+                err_msg, provider_id=self.provider_name, status_code=status_code
+            )
         elif status_code == 400:
-            if "prompt is too long" in err_msg.lower() or "maximum context" in err_msg.lower():
-                return ContextOverflowFailure(err_msg, provider_id=self.provider_name, status_code=status_code)
-            return InvalidRequestFailure(err_msg, provider_id=self.provider_name, status_code=status_code)
+            if (
+                "prompt is too long" in err_msg.lower()
+                or "maximum context" in err_msg.lower()
+            ):
+                return ContextOverflowFailure(
+                    err_msg, provider_id=self.provider_name, status_code=status_code
+                )
+            return InvalidRequestFailure(
+                err_msg, provider_id=self.provider_name, status_code=status_code
+            )
         elif status_code >= 500:
-            return ProviderUnavailableFailure(err_msg, provider_id=self.provider_name, status_code=status_code)
+            return ProviderUnavailableFailure(
+                err_msg, provider_id=self.provider_name, status_code=status_code
+            )
 
-        return ProviderFailure(err_msg, provider_id=self.provider_name, status_code=status_code)
+        return ProviderFailure(
+            err_msg, provider_id=self.provider_name, status_code=status_code
+        )
 
-    async def generate(self, request: ProviderRequest, model_id: str = "claude-3-5-sonnet-20241022") -> ProviderResponse:
+    async def generate(
+        self, request: ProviderRequest, model_id: str = "claude-3-5-sonnet-20241022"
+    ) -> ProviderResponse:
         """Executes a synchronous completion call using Anthropic Messages API."""
         start_time = time.perf_counter()
         url = f"{self.base_url}/messages"
@@ -151,14 +190,16 @@ class AnthropicProviderAdapter:
                 if b_type == "text":
                     text_parts.append(block.get("text", ""))
                 elif b_type == "tool_use":
-                    tool_calls.append({
-                        "id": block.get("id"),
-                        "type": "function",
-                        "function": {
-                            "name": block.get("name"),
-                            "arguments": json.dumps(block.get("input", {}))
+                    tool_calls.append(
+                        {
+                            "id": block.get("id"),
+                            "type": "function",
+                            "function": {
+                                "name": block.get("name"),
+                                "arguments": json.dumps(block.get("input", {})),
+                            },
                         }
-                    })
+                    )
 
             usage_raw = data.get("usage", {})
             input_tokens = usage_raw.get("input_tokens", 0)
@@ -191,17 +232,24 @@ class AnthropicProviderAdapter:
                     "id": data.get("id"),
                     "cache_creation_input_tokens": cache_creation,
                     "cache_read_input_tokens": cache_read,
-                }
+                },
             )
         except httpx.TimeoutException as exc:
-            raise TimeoutFailure(f"Timeout connecting to Anthropic API", provider_id=self.provider_name) from exc
+            raise TimeoutFailure(
+                "Timeout connecting to Anthropic API", provider_id=self.provider_name
+            ) from exc
         except httpx.RequestError as exc:
-            raise NetworkFailure(f"Network error connecting to Anthropic API: {str(exc)}", provider_id=self.provider_name) from exc
+            raise NetworkFailure(
+                f"Network error connecting to Anthropic API: {str(exc)}",
+                provider_id=self.provider_name,
+            ) from exc
         finally:
             if should_close:
                 await client.aclose()
 
-    async def stream(self, request: ProviderRequest, model_id: str = "claude-3-5-sonnet-20241022") -> AsyncIterator[ProviderStreamEvent]:
+    async def stream(
+        self, request: ProviderRequest, model_id: str = "claude-3-5-sonnet-20241022"
+    ) -> AsyncIterator[ProviderStreamEvent]:
         """Executes a streaming completion call using Anthropic native SSE events."""
         url = f"{self.base_url}/messages"
         payload = self._build_messages_payload(request, model_id, stream=True)
@@ -211,14 +259,18 @@ class AnthropicProviderAdapter:
         seq_num = 0
 
         try:
-            async with client.stream("POST", url, json=payload, headers=self._build_headers()) as resp:
+            async with client.stream(
+                "POST", url, json=payload, headers=self._build_headers()
+            ) as resp:
                 if resp.status_code != 200:
                     err_text = await resp.aread()
-                    raise self._map_http_error(resp.status_code, err_text.decode("utf-8", errors="replace"))
+                    raise self._map_http_error(
+                        resp.status_code, err_text.decode("utf-8", errors="replace")
+                    )
 
                 buffer = ""
                 event_type = ""
-                
+
                 async for chunk_bytes in resp.aiter_bytes():
                     buffer += chunk_bytes.decode("utf-8", errors="replace")
 
@@ -247,13 +299,19 @@ class AnthropicProviderAdapter:
                                     yield ProviderStreamEvent(
                                         event_type="token",
                                         sequence_number=seq_num,
-                                        delta=delta_data.get("text", "")
+                                        delta=delta_data.get("text", ""),
                                     )
                                 elif d_type == "input_json_delta":
                                     yield ProviderStreamEvent(
                                         event_type="tool_call_delta",
                                         sequence_number=seq_num,
-                                        tool_call_delta={"function": {"arguments": delta_data.get("partial_json", "")}}
+                                        tool_call_delta={
+                                            "function": {
+                                                "arguments": delta_data.get(
+                                                    "partial_json", ""
+                                                )
+                                            }
+                                        },
                                     )
                             elif event_type == "message_stop":
                                 yield ProviderStreamEvent(
@@ -264,11 +322,18 @@ class AnthropicProviderAdapter:
                                 return
 
         except asyncio.CancelledError:
-            raise CancellationFailure("Anthropic stream was cancelled", provider_id=self.provider_name)
+            raise CancellationFailure(
+                "Anthropic stream was cancelled", provider_id=self.provider_name
+            )
         except httpx.TimeoutException as exc:
-            raise TimeoutFailure("Timeout streaming from Anthropic API", provider_id=self.provider_name) from exc
+            raise TimeoutFailure(
+                "Timeout streaming from Anthropic API", provider_id=self.provider_name
+            ) from exc
         except httpx.RequestError as exc:
-            raise NetworkFailure(f"Network error streaming from Anthropic API: {str(exc)}", provider_id=self.provider_name) from exc
+            raise NetworkFailure(
+                f"Network error streaming from Anthropic API: {str(exc)}",
+                provider_id=self.provider_name,
+            ) from exc
         finally:
             if should_close:
                 await client.aclose()
@@ -294,14 +359,26 @@ class AnthropicProviderAdapter:
                         raw_model_id=m_id,
                         canonical_name=item.get("display_name", m_id),
                         provider_id=self.provider_name,
-                        capabilities=["chat", "streaming", "tool_use", "vision", "prompt_caching"]
+                        capabilities=[
+                            "chat",
+                            "streaming",
+                            "tool_use",
+                            "vision",
+                            "prompt_caching",
+                        ],
                     )
                 )
             return results
         except httpx.TimeoutException as exc:
-            raise TimeoutFailure("Timeout discovering models from Anthropic API", provider_id=self.provider_name) from exc
+            raise TimeoutFailure(
+                "Timeout discovering models from Anthropic API",
+                provider_id=self.provider_name,
+            ) from exc
         except httpx.RequestError as exc:
-            raise NetworkFailure(f"Network error discovering models from Anthropic API: {str(exc)}", provider_id=self.provider_name) from exc
+            raise NetworkFailure(
+                f"Network error discovering models from Anthropic API: {str(exc)}",
+                provider_id=self.provider_name,
+            ) from exc
         finally:
             if should_close:
                 await client.aclose()
@@ -310,7 +387,7 @@ class AnthropicProviderAdapter:
         """Executes real diagnostic health probe call."""
         start_time = time.perf_counter()
         try:
-            models = await self.list_models()
+            await self.list_models()
             latency_ms = (time.perf_counter() - start_time) * 1000.0
             return ProviderHealth(
                 provider_name=self.provider_name,

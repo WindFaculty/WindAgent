@@ -11,17 +11,16 @@ from typing import Any, Dict, List, Optional
 from sqlalchemy.orm import Session
 
 from windagent_providers.base.contracts import (
-    ModelDescriptor, ProviderCapabilities, ProviderHealth, QuotaState
+    ModelDescriptor, ProviderCapabilities, QuotaState
 )
 from windagent_providers.base.ports import (
     CanonicalModelRegistryPort, EndpointRegistryPort, EndpointStatePort,
     QuotaStatePort, RouteAttemptPort, RouteLockPort, UsageLedgerPort
 )
 from storage.windagent_storage.orm.v3_models import (
-    CanonicalModelV3ORM, EndpointHealthSampleORM, EndpointModelBindingORM,
-    EndpointRuntimeStateORM, ProviderCredentialORM, ProviderEndpointORM,
-    ProviderQuotaSnapshotV3ORM, ProviderUsageLedgerORM, ProviderVendorORM,
-    RouteAttemptV3ORM, RouteLockV3ORM
+    CanonicalModelV3ORM, EndpointModelBindingORM,
+    EndpointRuntimeStateORM, ProviderEndpointORM,
+    ProviderQuotaSnapshotV3ORM, ProviderUsageLedgerORM, RouteAttemptV3ORM, RouteLockV3ORM
 )
 
 

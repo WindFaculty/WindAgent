@@ -5,7 +5,7 @@ Enforces typed settings structures and secret redaction in string representation
 
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 
 
 def redact_value(val: Optional[str]) -> str:

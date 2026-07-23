@@ -11,9 +11,7 @@ Verifies the new `click_target` tool:
 """
 from __future__ import annotations
 
-import json
 import uuid
-from typing import Any, Dict, List
 
 import pytest
 
@@ -114,7 +112,6 @@ async def test_click_target_vision_model_calls_gui_click():
 
     with TestClient(app) as c:
         # Swap the grounding service on the live tool_executor.
-        from services.tool_executor import ToolExecutor
         # app.state.tool_executor is the instance created in lifespan.
         saved = app.state.tool_executor._grounding
         app.state.tool_executor._grounding = VisionGroundingStub(

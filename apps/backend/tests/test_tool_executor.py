@@ -17,7 +17,6 @@ from db.models import ExecutionEventORM, ToolCallORM
 from services.event_bus import drain
 from services.gui_adapter import MockGuiAdapter
 from services.tool_executor import ToolExecutor
-from services.tool_registry import TOOL_REGISTRY
 
 
 # ---------- Helpers ----------

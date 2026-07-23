@@ -1,7 +1,6 @@
 """Unit tests for the new Agents Registry API endpoints."""
 from __future__ import annotations
 
-import pytest
 
 
 def test_list_agents(client):

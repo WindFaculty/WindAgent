@@ -4,13 +4,11 @@ Manages run slots, priority ordering, and per-project/worktree concurrency locks
 """
 
 from __future__ import annotations
-import asyncio
 import logging
 from dataclasses import dataclass, field
 from enum import IntEnum
-from typing import Dict, List, Optional, Set
+from typing import List, Optional, Set
 
-from windagent_core.errors.exceptions import ConflictError
 
 logger = logging.getLogger("windagent.orchestration.scheduler")
 

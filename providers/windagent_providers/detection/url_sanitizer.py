@@ -5,9 +5,7 @@ Prevents SSRF attacks, cloud metadata scraping, and malicious protocol redirects
 
 from __future__ import annotations
 import ipaddress
-import re
 from urllib.parse import urlparse
-from typing import Tuple
 
 _METADATA_HOSTS = {
     "169.254.169.254",
@@ -29,18 +27,22 @@ def sanitize_url(raw_url: str, allow_lan: bool = True) -> str:
         raise ValueError("URL cannot be empty")
 
     url_str = raw_url.strip()
-    
+
     # Check scheme if explicitly present
     if "://" in url_str:
         scheme_prefix = url_str.split("://")[0].lower()
         if scheme_prefix not in _ALLOWED_SCHEMES:
-            raise ValueError(f"Prohibited URL scheme '{scheme_prefix}'. Only HTTP and HTTPS are permitted.")
+            raise ValueError(
+                f"Prohibited URL scheme '{scheme_prefix}'. Only HTTP and HTTPS are permitted."
+            )
     else:
         url_str = f"http://{url_str}"
 
     parsed = urlparse(url_str)
     if parsed.scheme not in _ALLOWED_SCHEMES:
-        raise ValueError(f"Prohibited URL scheme '{parsed.scheme}'. Only HTTP and HTTPS are permitted.")
+        raise ValueError(
+            f"Prohibited URL scheme '{parsed.scheme}'. Only HTTP and HTTPS are permitted."
+        )
 
     hostname = (parsed.hostname or "").lower()
     if not hostname:
@@ -48,17 +50,25 @@ def sanitize_url(raw_url: str, allow_lan: bool = True) -> str:
 
     # Check cloud metadata hosts
     if hostname in _METADATA_HOSTS:
-        raise ValueError(f"SSRF Security Block: Access to metadata host '{hostname}' is forbidden.")
+        raise ValueError(
+            f"SSRF Security Block: Access to metadata host '{hostname}' is forbidden."
+        )
 
     # Check IP addresses
     try:
         ip = ipaddress.ip_address(hostname)
         if ip.is_link_local:
-            raise ValueError(f"SSRF Security Block: Access to link-local IP '{hostname}' is forbidden.")
+            raise ValueError(
+                f"SSRF Security Block: Access to link-local IP '{hostname}' is forbidden."
+            )
         if ip.is_multicast:
-            raise ValueError(f"SSRF Security Block: Access to multicast IP '{hostname}' is forbidden.")
+            raise ValueError(
+                f"SSRF Security Block: Access to multicast IP '{hostname}' is forbidden."
+            )
         if not allow_lan and (ip.is_private or ip.is_loopback):
-            raise ValueError(f"LAN/Private IP '{hostname}' is disabled by security policy.")
+            raise ValueError(
+                f"LAN/Private IP '{hostname}' is disabled by security policy."
+            )
     except ValueError:
         pass
 

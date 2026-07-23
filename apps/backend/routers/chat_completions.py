@@ -1,4 +1,5 @@
 """OpenAI-compatible chat completions proxy for Hermes inference routing."""
+
 from __future__ import annotations
 
 import json
@@ -54,12 +55,12 @@ async def chat_completions(
         return await gateway.chat_completion(payload_dict)
 
     model_service = request.app.state.model_service
-    
+
     # 1. Parse model parameter (which carries the role name)
     model_val = payload.model
     role = model_val
     if model_val.startswith("role:"):
-        role = model_val[len("role:"):]
+        role = model_val[len("role:") :]
 
     log.info("Completions request model=%s resolved role=%s", model_val, role)
 
@@ -68,7 +69,7 @@ async def chat_completions(
     if not catalog:
         # Try resolving fallback chain
         catalog = await model_service.routing_service._resolve_fallback_chain([], 1000)
-    
+
     if not catalog:
         raise HTTPException(
             status_code=400,
@@ -77,7 +78,9 @@ async def chat_completions(
 
     # 3. Retrieve model provider
     async with model_service.db.session() as session:
-        stmt = select(ModelProviderORM).where(ModelProviderORM.id == catalog.provider_id)
+        stmt = select(ModelProviderORM).where(
+            ModelProviderORM.id == catalog.provider_id
+        )
         res = await session.execute(stmt)
         provider = res.scalar_one_or_none()
         if not provider:
@@ -90,7 +93,7 @@ async def chat_completions(
 
     # 4. Get the active LLM client
     client = model_service.get_provider_client(provider)
-    
+
     # 5. Call completions depending on provider type
     try:
         if provider.id == "ollama":
@@ -100,13 +103,14 @@ async def chat_completions(
                 if isinstance(content, list):
                     # Flatten multi-part content
                     content = " ".join(
-                        part.get("text", "") for part in content
+                        part.get("text", "")
+                        for part in content
                         if isinstance(part, dict) and part.get("type") == "text"
                     )
                 client_messages.append(
                     ClientChatMessage(role=m.get("role", "user"), content=str(content))
                 )
-            
+
             # Call Ollama
             response_content = await client.chat(client_messages, stream=False)
         else:
@@ -124,11 +128,8 @@ async def chat_completions(
             detail=f"Model completion failed at provider {provider.id}: {e}",
         )
 
-
     # 6. Estimate token usage (approx: 1 token ≈ 4 chars) to provide a non-zero usage field
-    prompt_text = " ".join(
-        str(m.get("content", "")) for m in payload.messages
-    )
+    prompt_text = " ".join(str(m.get("content", "")) for m in payload.messages)
     prompt_tokens = max(1, len(prompt_text) // 4)
     completion_text = response_content if isinstance(response_content, str) else ""
     completion_tokens = max(1, len(completion_text) // 4)
@@ -138,6 +139,7 @@ async def chat_completions(
 
     # 7a. Streaming response (SSE)
     if payload.stream:
+
         async def _sse_generator() -> AsyncGenerator[str, None]:
             words = completion_text.split(" ")
             for i, word in enumerate(words):

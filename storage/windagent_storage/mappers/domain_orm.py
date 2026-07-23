@@ -5,7 +5,6 @@ Bi-directional Mappers between windagent_core Domain Objects and windagent_stora
 from __future__ import annotations
 import json
 from datetime import datetime, timezone
-from typing import Any, Dict
 
 from windagent_core.domain.types import (
     SessionId, TaskId, WorkflowId, StepId, RunId, EventId, ArtifactId

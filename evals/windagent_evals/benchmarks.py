@@ -6,7 +6,7 @@ Executes test cases against configured graders.
 from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
-from windagent_evals.datasets import BenchmarkDataset, EvalTestCase, get_default_benchmark_datasets
+from windagent_evals.datasets import BenchmarkDataset, EvalTestCase
 from windagent_evals.graders import (
     Grader, GradingResult, AccuracyGrader, ToolSelectionGrader,
     CostEfficiencyGrader, SafetyGrader, ModelRoutingGrader

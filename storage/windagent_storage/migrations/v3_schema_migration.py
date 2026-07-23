@@ -5,14 +5,10 @@ Preserves legacy tables untouched for rollback and parity.
 """
 
 from __future__ import annotations
-import json
 import sys
-import uuid
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 
 root_dir = Path(__file__).resolve().parents[3]
@@ -22,15 +18,14 @@ if str(root_dir) not in sys.path:
 if backend_dir.exists() and str(backend_dir) not in sys.path:
     sys.path.append(str(backend_dir))
 
-from utils.encryption import encrypt, decrypt
+from utils.encryption import encrypt
 from db.models import (
-    ModelProviderORM, ModelCatalogORM, CanonicalModelORM, ProviderModelBindingORM, ModelRoutingRuleORM
+    ModelProviderORM, CanonicalModelORM, ProviderModelBindingORM
 )
 from storage.windagent_storage.orm.models import BaseORM
 from storage.windagent_storage.orm.v3_models import (
     ProviderVendorORM, ProviderCredentialORM, ProviderEndpointORM,
-    CanonicalModelV3ORM, EndpointModelBindingORM, ModelRoutingRuleV3ORM,
-    RouteLockV3ORM, RouteAttemptV3ORM, EndpointRuntimeStateORM
+    CanonicalModelV3ORM, EndpointModelBindingORM, RouteLockV3ORM
 )
 
 

@@ -5,7 +5,6 @@ Summarizes long conversation logs and tool outputs while preserving critical dec
 
 from __future__ import annotations
 import logging
-import re
 from typing import Any, Dict, List, Tuple
 
 logger = logging.getLogger("windagent.context.compaction")

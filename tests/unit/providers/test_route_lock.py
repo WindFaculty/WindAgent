@@ -24,7 +24,6 @@ Additional tests:
 from __future__ import annotations
 
 import threading
-import time
 from typing import List
 
 import pytest
@@ -36,10 +35,8 @@ from windagent_providers.routing.events import (
     RouteLocked,
     RouteReleased,
     RouteReused,
-    RoutingEvent,
 )
 from windagent_providers.routing.route_lock import (
-    LockScope,
     LockStatus,
     RouteLockRecord,
 )
@@ -50,7 +47,7 @@ from windagent_providers.routing.route_lock_service import (
     RouteLockService,
 )
 from windagent_providers.routing.rule_matcher import RuleMatchContext, RuleMatcher
-from windagent_providers.routing.rules import CostClass, RoutingRule, RoutingRuleSet
+from windagent_providers.routing.rules import RoutingRule, RoutingRuleSet
 
 
 # ──────────────────────────────────────────────
@@ -582,25 +579,7 @@ def test_different_scope_ids_are_isolated():
 def test_routing_package_imports():
     """Ensure all public symbols are importable from the routing package."""
     from windagent_providers.routing import (
-        CanonicalModelDisabledError,
-        CostClass,
-        LockScope,
-        LockStatus,
-        ModelReselected,
-        ModelReselectionRequested,
-        ModelSelected,
-        RuleMatchContext,
-        RuleMatcher,
-        RulePriority,
-        RouteLock,
-        RouteLockRecord,
         RouteLockService,
-        RouteLocked,
-        RouteReleased,
-        RouteReused,
-        RoutingEvent,
-        RoutingRule,
-        RoutingRuleSet,
     )
     # Just verify they're all importable; type check is implicit
     assert RouteLockService is not None

@@ -3,9 +3,21 @@ Canonical Model Registry & Equivalence Package for WindAgent Provider Subsystem 
 Exports normalize_model_id, classify_equivalence, EquivalenceLevel, and CanonicalModelRegistryService.
 """
 
-from windagent_providers.registry.model_normalizer import normalize_model_id, NormalizedModelInfo
-from windagent_providers.registry.equivalence import classify_equivalence, EquivalenceLevel, EquivalenceAssessment
-from windagent_providers.registry.canonical_registry import CanonicalModelRegistryService, CanonicalModelRecord, EndpointBindingRecord, AuditTrailRecord
+from windagent_providers.registry.model_normalizer import (
+    normalize_model_id,
+    NormalizedModelInfo,
+)
+from windagent_providers.registry.equivalence import (
+    classify_equivalence,
+    EquivalenceLevel,
+    EquivalenceAssessment,
+)
+from windagent_providers.registry.canonical_registry import (
+    CanonicalModelRegistryService,
+    CanonicalModelRecord,
+    EndpointBindingRecord,
+    AuditTrailRecord,
+)
 
 __all__ = [
     "normalize_model_id",

@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import logging
 import json
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 from sqlalchemy import select
 from db.database import Database
 from db.models import ModelRoutingRuleORM, ModelCatalogORM, ModelRuntimeStatusORM, ModelProviderORM

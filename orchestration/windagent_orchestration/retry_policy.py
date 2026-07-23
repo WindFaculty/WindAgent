@@ -6,9 +6,8 @@ Calculates backoff delays and evaluates error retryability.
 from __future__ import annotations
 import logging
 from dataclasses import dataclass
-from typing import Optional
 
-from windagent_core.errors.exceptions import WindAgentError, RetryableError, NonRetryableError
+from windagent_core.errors.exceptions import WindAgentError, NonRetryableError
 
 logger = logging.getLogger("windagent.orchestration.retry")
 

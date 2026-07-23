@@ -6,9 +6,8 @@ Declares WorkflowPackDefinition and BaseWorkflowPack interface.
 from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
-from windagent_core.domain.types import StepId
 from windagent_core.domain.models import WorkflowStep
 from windagent_core.errors.exceptions import ValidationError
 

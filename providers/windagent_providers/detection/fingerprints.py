@@ -4,7 +4,7 @@ Protocol and Vendor Fingerprint Definitions for WindAgent Provider Subsystem V3.
 
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple
+from typing import List, Optional, Tuple
 
 
 @dataclass
@@ -15,7 +15,9 @@ class ProtocolFingerprint:
     evidence: List[str] = field(default_factory=list)
 
 
-def detect_vendor_from_url_or_key(url: str, api_key: Optional[str] = None) -> Tuple[str, float]:
+def detect_vendor_from_url_or_key(
+    url: str, api_key: Optional[str] = None
+) -> Tuple[str, float]:
     """Matches URL patterns or API key prefixes to known vendors."""
     url_lower = url.lower()
     key_str = (api_key or "").lower()

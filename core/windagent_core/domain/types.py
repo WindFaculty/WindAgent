@@ -5,7 +5,7 @@ Enforces type safety across entity IDs without raw string/UUID passing.
 
 from __future__ import annotations
 import uuid
-from typing import Generic, TypeVar, Any
+from typing import TypeVar, Any
 
 
 T = TypeVar("T", bound="BaseEntityId")

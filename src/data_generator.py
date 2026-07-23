@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-from typing import Tuple
 
 def generate_synthetic_data(num_users: int = 5000, random_state: int = 42) -> pd.DataFrame:
     """

@@ -2,9 +2,7 @@
 from __future__ import annotations
 
 import json
-import uuid
 
-import pytest
 from sqlalchemy import select
 
 from db.models import ExecutionEventORM, ToolCallORM
@@ -139,7 +137,6 @@ def test_run_workflow_emits_full_event_sequence(client):
 
     # Inspect execution_events DB for the session.
     import asyncio
-    from db.models import ExecutionEventORM
 
     async def _check():
         from db.database import Database

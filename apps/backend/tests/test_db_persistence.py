@@ -9,10 +9,7 @@ Plus a restart-cycle test: data survives app restart.
 """
 from __future__ import annotations
 
-import asyncio
 import os
-import uuid
-from pathlib import Path
 
 import pytest
 from sqlalchemy import select

@@ -10,14 +10,12 @@ Unit Tests for WindAgent Event Model V2 (Phase 3):
 
 import json
 from pathlib import Path
-from datetime import datetime, timezone
-import pytest
 
 from windagent_core.domain.types import EventId, SessionId
 from windagent_core.events.envelope import EventEnvelope
 from windagent_core.events.catalog import EventCatalog
 from windagent_core.events.compatibility import (
-    LEGACY_TO_V2_MAP, v2_event_to_legacy_dict, legacy_dict_to_v2_event
+    v2_event_to_legacy_dict, legacy_dict_to_v2_event
 )
 from windagent_core.events.processor import (
     redact_event_payload, EventDeduplicator, ReplayFilter

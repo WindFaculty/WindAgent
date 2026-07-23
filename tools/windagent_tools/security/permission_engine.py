@@ -6,11 +6,9 @@ Enforces fail-closed security.
 
 from __future__ import annotations
 import logging
-from typing import Optional
 
 from windagent_core.domain.models import ToolInvocation
 from windagent_core.errors.exceptions import PermissionDeniedError
-from windagent_core.security.types import Principal, RiskLevel
 from windagent_tools.base import ToolDefinition, ToolExecutionContext, ToolRiskLevel
 
 logger = logging.getLogger("windagent.tools.permission")

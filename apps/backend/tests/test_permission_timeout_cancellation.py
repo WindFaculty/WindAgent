@@ -28,7 +28,6 @@ import contextlib
 import json
 import socket
 import time
-import uuid
 
 import httpx
 import pytest

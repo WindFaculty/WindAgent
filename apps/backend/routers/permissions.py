@@ -22,7 +22,7 @@ from __future__ import annotations
 from typing import Any, Dict, Literal
 from uuid import UUID
 
-from fastapi import APIRouter, Body, HTTPException, Request, status
+from fastapi import APIRouter, HTTPException, Request, status
 from pydantic import BaseModel, Field
 
 from services.permission_service import PermissionService

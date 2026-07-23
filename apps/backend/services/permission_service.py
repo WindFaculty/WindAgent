@@ -26,8 +26,8 @@ import asyncio
 import logging
 import threading
 import uuid
-from dataclasses import dataclass, field
-from typing import Any, Awaitable, Callable, Dict, Optional, Tuple
+from dataclasses import dataclass
+from typing import Any, Dict, Optional, Tuple
 from uuid import UUID
 
 from schemas.event import (

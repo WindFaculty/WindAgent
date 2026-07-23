@@ -9,11 +9,10 @@ and returns an ordered candidate list for the execution coordinator.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime, timezone
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
-from windagent_providers.base.contracts import ProviderCapabilities, QuotaState
+from windagent_providers.base.contracts import ProviderCapabilities
 from windagent_providers.base.errors import SameModelEndpointExhausted
 from windagent_providers.base.ports import EndpointStatePort, QuotaStatePort
 
@@ -91,7 +90,7 @@ class EndpointSelector:
         survivors: List[EndpointCandidate] = []
 
         for binding in bindings:
-            candidate = maybe_candidate = await self._evaluate_binding(binding)
+            maybe_candidate = await self._evaluate_binding(binding)
             if maybe_candidate is None:
                 continue
             score, components = await self._score_candidate(maybe_candidate)
@@ -107,7 +106,9 @@ class EndpointSelector:
         survivors.sort(key=lambda c: c.score, reverse=True)
         return survivors
 
-    async def _evaluate_binding(self, binding: Dict[str, Any]) -> Optional[EndpointCandidate]:
+    async def _evaluate_binding(
+        self, binding: Dict[str, Any]
+    ) -> Optional[EndpointCandidate]:
         endpoint_id = binding.get("endpoint_id")
         binding_id = binding.get("binding_id")
         provider_model_id = binding.get("provider_model_id")
@@ -117,7 +118,9 @@ class EndpointSelector:
         enabled = binding.get("is_active", True)
         credential_ciphertext = binding.get("credential_ciphertext")
 
-        if not all([endpoint_id, binding_id, provider_model_id, provider_name, base_url]):
+        if not all(
+            [endpoint_id, binding_id, provider_model_id, provider_name, base_url]
+        ):
             return None
 
         if not enabled:
@@ -145,7 +148,9 @@ class EndpointSelector:
             is_exact_revision=True,
         )
 
-    async def _score_candidate(self, candidate: EndpointCandidate) -> tuple[float, Dict[str, float]]:
+    async def _score_candidate(
+        self, candidate: EndpointCandidate
+    ) -> tuple[float, Dict[str, float]]:
         """
         Compute endpoint score.
 

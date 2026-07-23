@@ -5,9 +5,8 @@ import json
 import logging
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
-from uuid import UUID
 
-from sqlalchemy import delete, select, update
+from sqlalchemy import select, update
 
 from db.database import Database
 from db.models import AgentORM, AgentSessionORM

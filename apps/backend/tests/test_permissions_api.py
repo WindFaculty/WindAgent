@@ -7,11 +7,9 @@ service from the same event loop the TestClient uses via anyio.run.
 from __future__ import annotations
 
 import asyncio
-import json
 import uuid
 
 import anyio
-import pytest
 
 
 # ---------- REST contract ----------

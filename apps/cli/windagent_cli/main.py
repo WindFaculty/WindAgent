@@ -20,11 +20,11 @@ def doctor() -> int:
 
 
 def run_task(prompt: str, workflow: str = "bugfix") -> int:
-    print(f"=== WindAgent Run Task ===")
+    print("=== WindAgent Run Task ===")
     print(f"Prompt: {prompt}")
     print(f"Workflow: {workflow}")
-    print(f"Status: QUEUED -> CLAIMED -> EXECUTED")
-    print(f"Task ID: task_cli_demo")
+    print("Status: QUEUED -> CLAIMED -> EXECUTED")
+    print("Task ID: task_cli_demo")
     return 0
 
 
@@ -49,18 +49,18 @@ def task_list() -> int:
 def task_inspect(task_id: str) -> int:
     print(f"=== Inspecting Task [{task_id}] ===")
     print(f"Task ID: {task_id}")
-    print(f"Workflow: bugfix")
-    print(f"State: COMPLETED")
-    print(f"Steps Completed: 7/7")
-    print(f"Duration: 3.2s")
+    print("Workflow: bugfix")
+    print("State: COMPLETED")
+    print("Steps Completed: 7/7")
+    print("Duration: 3.2s")
     return 0
 
 
 def replay_trace(trace_id: str) -> int:
     print(f"=== Replaying Trace [{trace_id}] ===")
-    print(f"Replay Status: SUCCESSFUL")
-    print(f"Step Sequence: reproduce -> diagnose -> patch -> focused_test -> regression -> review -> report")
-    print(f"Deterministic Parity: 100%")
+    print("Replay Status: SUCCESSFUL")
+    print("Step Sequence: reproduce -> diagnose -> patch -> focused_test -> regression -> review -> report")
+    print("Deterministic Parity: 100%")
     return 0
 
 

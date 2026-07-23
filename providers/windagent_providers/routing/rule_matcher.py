@@ -20,7 +20,7 @@ None if no rule matches.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import List, Optional, Set
+from typing import List, Optional
 
 from windagent_providers.routing.rules import RoutingRule, RoutingRuleSet
 

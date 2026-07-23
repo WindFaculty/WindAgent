@@ -5,7 +5,7 @@ Implements the UnitOfWork contract port for atomic transactions, repository grou
 
 from __future__ import annotations
 import json
-from typing import Any, Dict, List, Optional
+from typing import Any, List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from windagent_core.domain.types import EventId

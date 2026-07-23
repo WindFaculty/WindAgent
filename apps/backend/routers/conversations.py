@@ -8,7 +8,6 @@ from sqlalchemy import select
 
 from db.models import (
     AgentInstanceORM,
-    AgentORM,
     AgentRunORM,
     ParentTaskORM,
     TaskEdgeORM,
@@ -138,8 +137,7 @@ import uuid
 from datetime import datetime, timezone
 from pydantic import BaseModel
 
-from services.dag_scheduler import DAGScheduler, detect_cycle
-from schemas.event import EventEnvelope
+from services.dag_scheduler import detect_cycle
 
 logger = logging.getLogger(__name__)
 

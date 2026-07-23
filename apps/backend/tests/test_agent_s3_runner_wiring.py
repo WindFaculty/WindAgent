@@ -16,7 +16,6 @@ This keeps tests hermetic — no real Agent-S3 SDK + no real model API.
 from __future__ import annotations
 
 import os
-import uuid
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -25,7 +24,6 @@ import pytest
 from services.agent_s3_adapter import MockAgentS3Adapter
 from services.agent_s3_config import AgentS3Config
 from services.agent_s3_step_executor import AgentS3StepExecutor
-from services.event_bus import EventBus
 
 
 # ---------- Helpers ----------

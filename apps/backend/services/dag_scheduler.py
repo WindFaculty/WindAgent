@@ -13,10 +13,9 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Awaitable, Callable, Dict, List, Optional, Set
+from typing import Awaitable, Callable, Dict, List, Optional
 
 from sqlalchemy import select
 

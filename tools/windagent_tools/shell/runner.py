@@ -8,9 +8,8 @@ from __future__ import annotations
 import asyncio
 import os
 import re
-import sys
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Optional, Tuple
 
 from windagent_core.errors.exceptions import PermissionDeniedError, ToolError
 

@@ -3,10 +3,9 @@ Background Production Worker for WindAgent Architecture V2 (Phase 12).
 Handles task claims, heartbeat lease renewal, workflow execution, cancellation, and crash recovery.
 """
 
-import asyncio
 import logging
 from typing import Any, Dict, List, Optional
-from windagent_worker.lease import TaskLeaseManager, TaskLease
+from windagent_worker.lease import TaskLeaseManager
 
 logger = logging.getLogger("windagent.worker")
 

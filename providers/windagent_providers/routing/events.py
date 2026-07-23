@@ -20,6 +20,7 @@ from typing import Optional
 @dataclass
 class RoutingEvent:
     """Base class for all routing events."""
+
     event_type: str
     scope_id: str
     scope_type: str
@@ -30,6 +31,7 @@ class RoutingEvent:
 @dataclass
 class ModelSelected(RoutingEvent):
     """Emitted when the rule matcher selects a canonical model for the first time."""
+
     canonical_model_id: str = ""
     rule_id: str = ""
     rule_version: int = 0
@@ -60,6 +62,7 @@ class ModelSelected(RoutingEvent):
 @dataclass
 class RouteLocked(RoutingEvent):
     """Emitted when the route lock record is atomically committed."""
+
     canonical_model_id: str = ""
 
     def __init__(
@@ -81,6 +84,7 @@ class RouteLocked(RoutingEvent):
 @dataclass
 class RouteReused(RoutingEvent):
     """Emitted on every subsequent turn that reads an existing lock."""
+
     canonical_model_id: str = ""
     turn_number: int = 0
 
@@ -105,6 +109,7 @@ class RouteReused(RoutingEvent):
 @dataclass
 class RouteReleased(RoutingEvent):
     """Emitted when a lock is explicitly unlocked."""
+
     canonical_model_id: str = ""
 
     def __init__(
@@ -126,6 +131,7 @@ class RouteReleased(RoutingEvent):
 @dataclass
 class ModelReselectionRequested(RoutingEvent):
     """Emitted when caller requests an explicit model reselection."""
+
     previous_canonical_model_id: str = ""
     reason: str = ""
 
@@ -150,6 +156,7 @@ class ModelReselectionRequested(RoutingEvent):
 @dataclass
 class ModelReselected(RoutingEvent):
     """Emitted when reselection completes and a new lock is committed."""
+
     previous_canonical_model_id: str = ""
     new_canonical_model_id: str = ""
     rule_id: str = ""

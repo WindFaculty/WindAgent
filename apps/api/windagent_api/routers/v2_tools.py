@@ -3,7 +3,7 @@ API V2 Tools endpoints for WindAgent (Phase 12).
 """
 
 from __future__ import annotations
-from typing import Any, Dict, List
+from typing import List
 from fastapi import APIRouter
 from pydantic import BaseModel
 

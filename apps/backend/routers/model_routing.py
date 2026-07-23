@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import logging
 from typing import Any, Dict, List, Optional
-from fastapi import APIRouter, Request, Body, HTTPException, Query
+from fastapi import APIRouter, Request, HTTPException, Query
 from pydantic import BaseModel
 
 from schemas.router import (

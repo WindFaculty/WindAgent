@@ -21,16 +21,6 @@ from db.models import (
 from schemas.router import (
     RoutingRuleCreate,
     RoutingRulePatch,
-    RoutingRuleDTO,
-    RoutingStatsDTO,
-    StatValueDTO,
-    TrafficDistributionDTO,
-    TrafficItemDTO,
-    RoutingGraphDTO,
-    GraphLinkDTO,
-    RouteSimulationResponse,
-    RouteTestResponse,
-    HealthMetricItem,
 )
 from services.quota_service import QuotaService
 from services.router_policy import RouterPolicy

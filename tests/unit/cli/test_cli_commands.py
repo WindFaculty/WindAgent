@@ -2,7 +2,6 @@
 Unit and E2E tests for WindAgent Production CLI subcommands (Phase 12).
 """
 
-import pytest
 from windagent_cli.main import main
 
 

@@ -3,13 +3,11 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import os
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, Optional, List
-from uuid import UUID
+from typing import Any, Dict, Optional
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw
 
 from schemas.event import EventEnvelope
 from services.event_bus import EventBus

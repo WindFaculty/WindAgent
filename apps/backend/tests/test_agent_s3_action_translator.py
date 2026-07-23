@@ -14,7 +14,6 @@ import pytest
 from services.agent_s3_action_translator import (
     RejectedAction,
     TranslatedAction,
-    TranslationResult,
     translate,
 )
 

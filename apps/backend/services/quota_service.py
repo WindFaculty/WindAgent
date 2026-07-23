@@ -4,7 +4,7 @@ from __future__ import annotations
 import json
 import logging
 from datetime import datetime, timezone, timedelta
-from typing import Any, Dict, Optional
+from typing import Dict, Optional
 from sqlalchemy import select
 from db.database import Database
 from db.models import ProviderQuotaSnapshotORM

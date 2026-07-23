@@ -7,7 +7,7 @@ audited and tested independently of backend adapters.
 
 from __future__ import annotations
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 from windagent_providers.base.contracts import ProviderRequest
 
@@ -32,9 +32,9 @@ def response_cache_eligible(
         return False
 
     enabled = (
-        explicit_opt_in or
-        (directive is not None and directive.enable_response_cache is True) or
-        (equivalence_level == "exact_revision")
+        explicit_opt_in
+        or (directive is not None and directive.enable_response_cache is True)
+        or (equivalence_level == "exact_revision")
     )
     if not enabled:
         return False
@@ -74,9 +74,26 @@ def _tool_has_side_effects(tool: Dict[str, Any]) -> bool:
     description = str(metadata.get("description", "")).lower()
 
     side_effect_hints = (
-        "send", "write", "create", "delete", "update", "post", "publish",
-        "buy", "sell", "transfer", "execute", "run", "deploy", "commit",
-        "upload", "download", "shell", "browser", "computer", "file",
+        "send",
+        "write",
+        "create",
+        "delete",
+        "update",
+        "post",
+        "publish",
+        "buy",
+        "sell",
+        "transfer",
+        "execute",
+        "run",
+        "deploy",
+        "commit",
+        "upload",
+        "download",
+        "shell",
+        "browser",
+        "computer",
+        "file",
     )
     if any(hint in name or hint in description for hint in side_effect_hints):
         return True

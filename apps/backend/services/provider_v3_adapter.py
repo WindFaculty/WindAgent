@@ -6,7 +6,7 @@ This adapter maps that to windagent_providers V3 ProviderRequest/ProviderRespons
 
 from __future__ import annotations
 
-from typing import Any, AsyncIterator, Dict, List, Optional
+from typing import Any, AsyncIterator, Dict, List
 
 from windagent_providers.base.contracts import (
     ProviderRequest,
@@ -24,7 +24,9 @@ class LegacyClientV3Adapter:
         self._client = client
         self._model_id = model_id
 
-    async def generate(self, request: ProviderRequest, model_id: str) -> ProviderResponse:
+    async def generate(
+        self, request: ProviderRequest, model_id: str
+    ) -> ProviderResponse:
         messages: List[Dict[str, Any]] = []
         if request.system_instruction:
             messages.append({"role": "system", "content": request.system_instruction})
@@ -35,9 +37,11 @@ class LegacyClientV3Adapter:
                 model_id=model_id,
                 messages=messages,
                 max_tokens=request.max_output_tokens,
-                temperature=request.temperature if request.temperature is not None else 1.0,
+                temperature=request.temperature
+                if request.temperature is not None
+                else 1.0,
             )
-        except Exception as exc:
+        except Exception:
             # Let execution coordinator's error classification deal with it.
             raise
 
@@ -51,9 +55,13 @@ class LegacyClientV3Adapter:
             ),
         )
 
-    async def stream(self, request: ProviderRequest, model_id: str) -> AsyncIterator[ProviderStreamEvent]:
+    async def stream(
+        self, request: ProviderRequest, model_id: str
+    ) -> AsyncIterator[ProviderStreamEvent]:
         # Stream with legacy client: generate full text, then emit as one token chunk.
         response = await self.generate(request, model_id)
         text = response.text or ""
         yield ProviderStreamEvent(event_type="token", sequence_number=1, delta=text)
-        yield ProviderStreamEvent(event_type="done", sequence_number=2, finish_reason="stop")
+        yield ProviderStreamEvent(
+            event_type="done", sequence_number=2, finish_reason="stop"
+        )

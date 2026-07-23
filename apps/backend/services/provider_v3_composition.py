@@ -6,7 +6,6 @@ Lives in apps/backend so provider package stays free of ORM/FastAPI.
 from __future__ import annotations
 
 import json
-import time
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
@@ -15,17 +14,14 @@ from sqlalchemy import select
 
 from db.database import Database
 from db.models import (
-    CanonicalModelORM,
     ModelProviderORM,
     ProviderModelBindingORM,
-    ProviderQuotaSnapshotORM,
     RouteAttemptORM,
     RouteLockORM,
 )
 from services.quota_service import QuotaService
-from windagent_providers.base.contracts import ProviderHealth, QuotaState
+from windagent_providers.base.contracts import QuotaState
 from windagent_providers.base.ports import (
-    CachePort,
     EndpointRegistryPort,
     QuotaStatePort,
     RouteAttemptPort,
@@ -41,20 +37,29 @@ class DbEndpointRegistry(EndpointRegistryPort):
 
     async def get_endpoint(self, endpoint_id: str) -> Optional[Dict[str, Any]]:
         async with self.db.session() as session:
-            stmt = select(ProviderModelBindingORM, ModelProviderORM).join(
-                ModelProviderORM,
-                ProviderModelBindingORM.provider_id == ModelProviderORM.id,
-            ).where(ProviderModelBindingORM.id == endpoint_id)
+            stmt = (
+                select(ProviderModelBindingORM, ModelProviderORM)
+                .join(
+                    ModelProviderORM,
+                    ProviderModelBindingORM.provider_id == ModelProviderORM.id,
+                )
+                .where(ProviderModelBindingORM.id == endpoint_id)
+            )
             row = (await session.execute(stmt)).first()
             if not row:
                 return None
             return self._to_dict(*row)
 
-    async def list_endpoints_for_canonical_model(self, canonical_model_id: str) -> List[Dict[str, Any]]:
+    async def list_endpoints_for_canonical_model(
+        self, canonical_model_id: str
+    ) -> List[Dict[str, Any]]:
         async with self.db.session() as session:
             stmt = (
                 select(ProviderModelBindingORM, ModelProviderORM)
-                .join(ModelProviderORM, ProviderModelBindingORM.provider_id == ModelProviderORM.id)
+                .join(
+                    ModelProviderORM,
+                    ProviderModelBindingORM.provider_id == ModelProviderORM.id,
+                )
                 .where(ProviderModelBindingORM.canonical_model_id == canonical_model_id)
                 .where(ProviderModelBindingORM.enabled.is_(True))
                 .where(ModelProviderORM.enabled.is_(True))
@@ -63,7 +68,9 @@ class DbEndpointRegistry(EndpointRegistryPort):
             rows = (await session.execute(stmt)).all()
             return [self._to_dict(binding, provider) for binding, provider in rows]
 
-    def _to_dict(self, binding: ProviderModelBindingORM, provider: ModelProviderORM) -> Dict[str, Any]:
+    def _to_dict(
+        self, binding: ProviderModelBindingORM, provider: ModelProviderORM
+    ) -> Dict[str, Any]:
         return {
             "endpoint_id": binding.id,
             "binding_id": binding.id,
@@ -73,7 +80,9 @@ class DbEndpointRegistry(EndpointRegistryPort):
             "base_url": provider.base_url or "",
             # Store encrypted key reference; adapter resolver will decrypt.
             "credential_ciphertext": provider.api_key or "",
-            "equivalence_level": "exact_revision" if binding.equivalence_level == "exact_revision" else "approximate",
+            "equivalence_level": "exact_revision"
+            if binding.equivalence_level == "exact_revision"
+            else "approximate",
             "is_active": binding.enabled and provider.enabled,
             "_provider_id": provider.id,
             "_api_key_env": provider.api_key_env,
@@ -92,8 +101,14 @@ class DbQuotaStatePort(QuotaStatePort):
             return None
         return QuotaState(
             provider_id=snapshot.provider_id,
-            has_quota=(snapshot.remaining_requests_today is None or snapshot.remaining_requests_today > 0)
-                      and (snapshot.remaining_tokens_today is None or snapshot.remaining_tokens_today > 0),
+            has_quota=(
+                snapshot.remaining_requests_today is None
+                or snapshot.remaining_requests_today > 0
+            )
+            and (
+                snapshot.remaining_tokens_today is None
+                or snapshot.remaining_tokens_today > 0
+            ),
             remaining_requests_today=snapshot.remaining_requests_today,
             remaining_tokens_today=snapshot.remaining_tokens_today,
             remaining_credit=snapshot.remaining_credit,
@@ -118,7 +133,9 @@ class DbRouteLockPort(RouteLockPort):
     def __init__(self, db: Database):
         self.db = db
 
-    async def get_lock(self, scope_type: str, scope_id: str) -> Optional[Dict[str, Any]]:
+    async def get_lock(
+        self, scope_type: str, scope_id: str
+    ) -> Optional[Dict[str, Any]]:
         async with self.db.session() as session:
             stmt = (
                 select(RouteLockORM)

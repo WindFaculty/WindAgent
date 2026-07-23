@@ -5,21 +5,20 @@ Implements TaskRepository, SessionRepository, WorkflowRepository, EventStore, Ar
 
 from __future__ import annotations
 import json
-import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from windagent_core.domain.types import (
-    TaskId, SessionId, RunId, StepId, ArtifactId
+    TaskId, SessionId, RunId, ArtifactId
 )
 from windagent_core.domain.models import (
     Task, Session, WorkflowRun, ArtifactRef
 )
 from windagent_core.events.envelope import EventEnvelope
 from windagent_storage.orm.models import (
-    SessionORM, TaskORM, WorkflowRunORM, WorkflowStepORM, ExecutionEventORM, ArtifactRefORM, ProviderConfigORM
+    SessionORM, TaskORM, WorkflowRunORM, ExecutionEventORM, ArtifactRefORM, ProviderConfigORM
 )
 from windagent_storage.mappers.domain_orm import (
     orm_to_domain_session, domain_to_orm_session,

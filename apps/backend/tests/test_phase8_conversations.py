@@ -1,7 +1,6 @@
 """Phase 8 backend surface (ban_ke_hoan §13): list conversation agents,
 task graph, per-agent event replay.
 """
-import pytest
 
 from db.models import (
     AgentInstanceORM, AgentRunORM, ParentTaskORM, TaskPlanORM,
@@ -37,7 +36,7 @@ async def test_conversation_agents_and_tasks(client, db):
     assert {n["id"] for n in g["nodes"]} == {"T1", "T2"}
     assert g["edges"][0]["to"] == "T2"
 
-    ev = client.get(f"/api/v1/agents/a1/events?after_seq=0")
+    ev = client.get("/api/v1/agents/a1/events?after_seq=0")
     assert ev.status_code == 200
     assert ev.json()["session_id"] == "sess_a1"
 

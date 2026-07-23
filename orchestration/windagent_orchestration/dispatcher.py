@@ -5,7 +5,7 @@ Dispatches workflow steps to workers while preventing duplicate execution.
 
 from __future__ import annotations
 import logging
-from typing import Dict, Set, Tuple
+from typing import Set, Tuple
 
 from windagent_core.domain.models import WorkflowStep
 

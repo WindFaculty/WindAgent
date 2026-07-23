@@ -5,33 +5,71 @@ Modular model provider contracts, adapters, error taxonomy, and ports.
 
 from windagent_providers.base import (
     # Errors
-    ProviderFailure, AuthenticationFailure, PermissionFailure, RateLimitFailure,
-    QuotaExhaustedFailure, ModelNotFoundFailure, InvalidRequestFailure,
-    ContextOverflowFailure, ContentPolicyFailure, ProviderUnavailableFailure,
-    NetworkFailure, TimeoutFailure, ProtocolMismatchFailure, MalformedResponseFailure,
-    CancellationFailure, SameModelEndpointExhausted,
+    ProviderFailure,
+    AuthenticationFailure,
+    PermissionFailure,
+    RateLimitFailure,
+    QuotaExhaustedFailure,
+    ModelNotFoundFailure,
+    InvalidRequestFailure,
+    ContextOverflowFailure,
+    ContentPolicyFailure,
+    ProviderUnavailableFailure,
+    NetworkFailure,
+    TimeoutFailure,
+    ProtocolMismatchFailure,
+    MalformedResponseFailure,
+    CancellationFailure,
+    SameModelEndpointExhausted,
     # Contracts
-    FinishReason, CacheDirective, ProviderUsage, ProviderHealth, QuotaState,
-    RateLimitState, ProviderCapabilities, ModelDescriptor, DiscoveredModel,
-    ConnectionTestResult, ProtocolDetectionResult, ProviderRequest, ProviderResponse,
+    FinishReason,
+    CacheDirective,
+    ProviderUsage,
+    ProviderHealth,
+    QuotaState,
+    RateLimitState,
+    ProviderCapabilities,
+    ModelDescriptor,
+    DiscoveredModel,
+    ConnectionTestResult,
+    ProtocolDetectionResult,
+    ProviderRequest,
+    ProviderResponse,
     ProviderStreamEvent,
     # Ports
-    EndpointRegistryPort, CanonicalModelRegistryPort, RouteLockPort, RouteAttemptPort,
-    QuotaStatePort, EndpointStatePort, CachePort, UsageLedgerPort,
+    EndpointRegistryPort,
+    CanonicalModelRegistryPort,
+    RouteLockPort,
+    RouteAttemptPort,
+    QuotaStatePort,
+    EndpointStatePort,
+    CachePort,
+    UsageLedgerPort,
     # Capabilities & Redaction
-    ModelCapability, ModelCapabilityProfile, KNOWN_MODEL_PROFILES,
-    redact_text, redact_dict
+    ModelCapability,
+    ModelCapabilityProfile,
+    KNOWN_MODEL_PROFILES,
+    redact_text,
+    redact_dict,
 )
 from windagent_providers.base import BaseModelProvider, QuotaSnapshot, ModelChunk
 
 # V3 Canonical Model Registry & Equivalence Engine
 from windagent_providers.registry import (
-    normalize_model_id, NormalizedModelInfo, classify_equivalence,
-    EquivalenceLevel, EquivalenceAssessment, CanonicalModelRegistryService
+    normalize_model_id,
+    NormalizedModelInfo,
+    classify_equivalence,
+    EquivalenceLevel,
+    EquivalenceAssessment,
+    CanonicalModelRegistryService,
 )
 
 # V3 Protocol Detection & Test Connect
-from windagent_providers.detection import EndpointDetector, ProbePlanRunner, sanitize_url
+from windagent_providers.detection import (
+    EndpointDetector,
+    ProbePlanRunner,
+    sanitize_url,
+)
 
 # V3 OpenAI Compatible Transports and Vendor Adapters
 from windagent_providers.openai_compatible import OpenAICompatibleTransport
@@ -54,38 +92,83 @@ from windagent_providers.cache import (
     DiscoveryCacheService,
     HealthCacheService,
     RouteLockCacheService,
-    CachePort as CachePortAlias,
     CacheNamespace,
     CacheTags,
 )
 
 # Legacy V2 Adapters
 from windagent_providers.adapters.mock import MockProviderAdapter
-from windagent_providers.adapters.openai_compatible import OpenAICompatibleProviderAdapter
-from windagent_providers.adapters.anthropic import AnthropicProviderAdapter as LegacyAnthropicAdapter
-from windagent_providers.adapters.google_gemini import GoogleGeminiProviderAdapter as LegacyGoogleAdapter
-from windagent_providers.adapters.ollama import OllamaProviderAdapter as LegacyOllamaAdapter
+from windagent_providers.adapters.openai_compatible import (
+    OpenAICompatibleProviderAdapter,
+)
+from windagent_providers.adapters.anthropic import (
+    AnthropicProviderAdapter as LegacyAnthropicAdapter,
+)
+from windagent_providers.adapters.google_gemini import (
+    GoogleGeminiProviderAdapter as LegacyGoogleAdapter,
+)
+from windagent_providers.adapters.ollama import (
+    OllamaProviderAdapter as LegacyOllamaAdapter,
+)
 
 __version__ = "3.0.0"
 
 __all__ = [
-    "ProviderFailure", "AuthenticationFailure", "PermissionFailure", "RateLimitFailure",
-    "QuotaExhaustedFailure", "ModelNotFoundFailure", "InvalidRequestFailure",
-    "ContextOverflowFailure", "ContentPolicyFailure", "ProviderUnavailableFailure",
-    "NetworkFailure", "TimeoutFailure", "ProtocolMismatchFailure", "MalformedResponseFailure",
-    "CancellationFailure", "SameModelEndpointExhausted",
-    "FinishReason", "CacheDirective", "ProviderUsage", "ProviderHealth", "QuotaState",
-    "RateLimitState", "ProviderCapabilities", "ModelDescriptor", "DiscoveredModel",
-    "ConnectionTestResult", "ProtocolDetectionResult", "ProviderRequest", "ProviderResponse",
+    "ProviderFailure",
+    "AuthenticationFailure",
+    "PermissionFailure",
+    "RateLimitFailure",
+    "QuotaExhaustedFailure",
+    "ModelNotFoundFailure",
+    "InvalidRequestFailure",
+    "ContextOverflowFailure",
+    "ContentPolicyFailure",
+    "ProviderUnavailableFailure",
+    "NetworkFailure",
+    "TimeoutFailure",
+    "ProtocolMismatchFailure",
+    "MalformedResponseFailure",
+    "CancellationFailure",
+    "SameModelEndpointExhausted",
+    "FinishReason",
+    "CacheDirective",
+    "ProviderUsage",
+    "ProviderHealth",
+    "QuotaState",
+    "RateLimitState",
+    "ProviderCapabilities",
+    "ModelDescriptor",
+    "DiscoveredModel",
+    "ConnectionTestResult",
+    "ProtocolDetectionResult",
+    "ProviderRequest",
+    "ProviderResponse",
     "ProviderStreamEvent",
-    "EndpointRegistryPort", "CanonicalModelRegistryPort", "RouteLockPort", "RouteAttemptPort",
-    "QuotaStatePort", "EndpointStatePort", "CachePort", "UsageLedgerPort",
-    "ModelCapability", "ModelCapabilityProfile", "KNOWN_MODEL_PROFILES",
-    "redact_text", "redact_dict",
-    "BaseModelProvider", "QuotaSnapshot", "ModelChunk",
-    "normalize_model_id", "NormalizedModelInfo", "classify_equivalence",
-    "EquivalenceLevel", "EquivalenceAssessment", "CanonicalModelRegistryService",
-    "EndpointDetector", "ProbePlanRunner", "sanitize_url",
+    "EndpointRegistryPort",
+    "CanonicalModelRegistryPort",
+    "RouteLockPort",
+    "RouteAttemptPort",
+    "QuotaStatePort",
+    "EndpointStatePort",
+    "CachePort",
+    "UsageLedgerPort",
+    "ModelCapability",
+    "ModelCapabilityProfile",
+    "KNOWN_MODEL_PROFILES",
+    "redact_text",
+    "redact_dict",
+    "BaseModelProvider",
+    "QuotaSnapshot",
+    "ModelChunk",
+    "normalize_model_id",
+    "NormalizedModelInfo",
+    "classify_equivalence",
+    "EquivalenceLevel",
+    "EquivalenceAssessment",
+    "CanonicalModelRegistryService",
+    "EndpointDetector",
+    "ProbePlanRunner",
+    "sanitize_url",
     "OpenAICompatibleTransport",
     "OpenAIProviderAdapter",
     "OpenRouterAdapter",

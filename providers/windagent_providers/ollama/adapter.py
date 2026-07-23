@@ -12,16 +12,24 @@ from typing import Any, AsyncIterator, Dict, List, Optional
 import httpx
 
 from windagent_providers.base.contracts import (
-    DiscoveredModel, FinishReason, ProviderCapabilities, ProviderHealth,
-    ProviderRequest, ProviderResponse, ProviderStreamEvent, ProviderUsage
+    DiscoveredModel,
+    FinishReason,
+    ProviderHealth,
+    ProviderRequest,
+    ProviderResponse,
+    ProviderStreamEvent,
+    ProviderUsage,
 )
 from windagent_providers.base.errors import (
-    AuthenticationFailure, CancellationFailure, ContextOverflowFailure,
-    InvalidRequestFailure, ModelNotFoundFailure, NetworkFailure,
-    PermissionFailure, ProviderFailure, ProviderUnavailableFailure, RateLimitFailure,
-    TimeoutFailure
+    CancellationFailure,
+    InvalidRequestFailure,
+    ModelNotFoundFailure,
+    NetworkFailure,
+    ProviderFailure,
+    ProviderUnavailableFailure,
+    TimeoutFailure,
 )
-from windagent_providers.base.secret_redaction import redact_text, redact_dict
+from windagent_providers.base.secret_redaction import redact_text
 
 
 class OllamaProviderAdapter:
@@ -56,13 +64,17 @@ class OllamaProviderAdapter:
             timeout=httpx.Timeout(self.timeout_seconds),
         )
 
-    def _build_ollama_payload(self, request: ProviderRequest, model_id: str, stream: bool = False) -> Dict[str, Any]:
+    def _build_ollama_payload(
+        self, request: ProviderRequest, model_id: str, stream: bool = False
+    ) -> Dict[str, Any]:
         messages = []
         if request.system_instruction:
             messages.append({"role": "system", "content": request.system_instruction})
 
         for msg in request.messages:
-            messages.append({"role": msg.get("role", "user"), "content": msg.get("content", "")})
+            messages.append(
+                {"role": msg.get("role", "user"), "content": msg.get("content", "")}
+            )
 
         options: Dict[str, Any] = {}
         if request.temperature is not None:
@@ -100,15 +112,25 @@ class OllamaProviderAdapter:
             err_msg = clean_text
 
         if status_code == 404:
-            return ModelNotFoundFailure(err_msg, provider_id=self.provider_name, status_code=status_code)
+            return ModelNotFoundFailure(
+                err_msg, provider_id=self.provider_name, status_code=status_code
+            )
         elif status_code == 400:
-            return InvalidRequestFailure(err_msg, provider_id=self.provider_name, status_code=status_code)
+            return InvalidRequestFailure(
+                err_msg, provider_id=self.provider_name, status_code=status_code
+            )
         elif status_code >= 500:
-            return ProviderUnavailableFailure(err_msg, provider_id=self.provider_name, status_code=status_code)
+            return ProviderUnavailableFailure(
+                err_msg, provider_id=self.provider_name, status_code=status_code
+            )
 
-        return ProviderFailure(err_msg, provider_id=self.provider_name, status_code=status_code)
+        return ProviderFailure(
+            err_msg, provider_id=self.provider_name, status_code=status_code
+        )
 
-    async def generate(self, request: ProviderRequest, model_id: str = "llama3.1") -> ProviderResponse:
+    async def generate(
+        self, request: ProviderRequest, model_id: str = "llama3.1"
+    ) -> ProviderResponse:
         """Executes a synchronous completion call using Ollama /api/chat."""
         start_time = time.perf_counter()
         url = f"{self.base_url}/api/chat"
@@ -133,7 +155,7 @@ class OllamaProviderAdapter:
                 {
                     "id": f"call-ollama-{idx}",
                     "type": "function",
-                    "function": tc.get("function", {})
+                    "function": tc.get("function", {}),
                 }
                 for idx, tc in enumerate(raw_tools)
             ]
@@ -141,7 +163,11 @@ class OllamaProviderAdapter:
             prompt_tokens = data.get("prompt_eval_count", 0)
             completion_tokens = data.get("eval_count", 0)
             eval_duration = data.get("eval_duration", 0)
-            tokens_per_sec = (completion_tokens / (eval_duration / 1e9)) if eval_duration > 0 else 0.0
+            tokens_per_sec = (
+                (completion_tokens / (eval_duration / 1e9))
+                if eval_duration > 0
+                else 0.0
+            )
 
             return ProviderResponse(
                 canonical_model_id=model_id,
@@ -149,7 +175,9 @@ class OllamaProviderAdapter:
                 endpoint_id=f"ep-{self.provider_name}",
                 text=text_content,
                 tool_calls=tool_calls,
-                finish_reason=FinishReason.TOOL_CALLS.value if tool_calls else FinishReason.STOP.value,
+                finish_reason=FinishReason.TOOL_CALLS.value
+                if tool_calls
+                else FinishReason.STOP.value,
                 usage=ProviderUsage(
                     prompt_tokens=prompt_tokens,
                     completion_tokens=completion_tokens,
@@ -159,17 +187,25 @@ class OllamaProviderAdapter:
                     "done_reason": data.get("done_reason"),
                     "eval_duration_ns": eval_duration,
                     "tokens_per_sec": round(tokens_per_sec, 2),
-                }
+                },
             )
         except httpx.TimeoutException as exc:
-            raise TimeoutFailure(f"Timeout connecting to Ollama server at {self.base_url}", provider_id=self.provider_name) from exc
+            raise TimeoutFailure(
+                f"Timeout connecting to Ollama server at {self.base_url}",
+                provider_id=self.provider_name,
+            ) from exc
         except httpx.RequestError as exc:
-            raise NetworkFailure(f"Network error connecting to Ollama server at {self.base_url}: {str(exc)}", provider_id=self.provider_name) from exc
+            raise NetworkFailure(
+                f"Network error connecting to Ollama server at {self.base_url}: {str(exc)}",
+                provider_id=self.provider_name,
+            ) from exc
         finally:
             if should_close:
                 await client.aclose()
 
-    async def stream(self, request: ProviderRequest, model_id: str = "llama3.1") -> AsyncIterator[ProviderStreamEvent]:
+    async def stream(
+        self, request: ProviderRequest, model_id: str = "llama3.1"
+    ) -> AsyncIterator[ProviderStreamEvent]:
         """Executes a streaming completion call using Ollama /api/chat stream."""
         url = f"{self.base_url}/api/chat"
         payload = self._build_ollama_payload(request, model_id, stream=True)
@@ -179,10 +215,14 @@ class OllamaProviderAdapter:
         seq_num = 0
 
         try:
-            async with client.stream("POST", url, json=payload, headers=self._build_headers()) as resp:
+            async with client.stream(
+                "POST", url, json=payload, headers=self._build_headers()
+            ) as resp:
                 if resp.status_code != 200:
                     err_text = await resp.aread()
-                    raise self._map_http_error(resp.status_code, err_text.decode("utf-8", errors="replace"))
+                    raise self._map_http_error(
+                        resp.status_code, err_text.decode("utf-8", errors="replace")
+                    )
 
                 buffer = ""
                 async for chunk_bytes in resp.aiter_bytes():
@@ -212,22 +252,32 @@ class OllamaProviderAdapter:
                                 event_type="done",
                                 sequence_number=seq_num,
                                 finish_reason=FinishReason.STOP.value,
-                                usage=ProviderUsage(prompt_tokens=prompt_count, completion_tokens=eval_count)
+                                usage=ProviderUsage(
+                                    prompt_tokens=prompt_count,
+                                    completion_tokens=eval_count,
+                                ),
                             )
                             return
                         else:
                             yield ProviderStreamEvent(
                                 event_type="token",
                                 sequence_number=seq_num,
-                                delta=delta_text
+                                delta=delta_text,
                             )
 
         except asyncio.CancelledError:
-            raise CancellationFailure("Ollama stream was cancelled", provider_id=self.provider_name)
+            raise CancellationFailure(
+                "Ollama stream was cancelled", provider_id=self.provider_name
+            )
         except httpx.TimeoutException as exc:
-            raise TimeoutFailure("Timeout streaming from Ollama server", provider_id=self.provider_name) from exc
+            raise TimeoutFailure(
+                "Timeout streaming from Ollama server", provider_id=self.provider_name
+            ) from exc
         except httpx.RequestError as exc:
-            raise NetworkFailure(f"Network error streaming from Ollama server: {str(exc)}", provider_id=self.provider_name) from exc
+            raise NetworkFailure(
+                f"Network error streaming from Ollama server: {str(exc)}",
+                provider_id=self.provider_name,
+            ) from exc
         finally:
             if should_close:
                 await client.aclose()
@@ -253,14 +303,20 @@ class OllamaProviderAdapter:
                         raw_model_id=name,
                         canonical_name=name,
                         provider_id=self.provider_name,
-                        capabilities=["chat", "streaming", "tool_use"]
+                        capabilities=["chat", "streaming", "tool_use"],
                     )
                 )
             return results
         except httpx.TimeoutException as exc:
-            raise TimeoutFailure(f"Timeout discovering models from Ollama at {self.base_url}", provider_id=self.provider_name) from exc
+            raise TimeoutFailure(
+                f"Timeout discovering models from Ollama at {self.base_url}",
+                provider_id=self.provider_name,
+            ) from exc
         except httpx.RequestError as exc:
-            raise NetworkFailure(f"Network error discovering models from Ollama at {self.base_url}: {str(exc)}", provider_id=self.provider_name) from exc
+            raise NetworkFailure(
+                f"Network error discovering models from Ollama at {self.base_url}: {str(exc)}",
+                provider_id=self.provider_name,
+            ) from exc
         finally:
             if should_close:
                 await client.aclose()
@@ -269,7 +325,7 @@ class OllamaProviderAdapter:
         """Executes diagnostic health probe network call."""
         start_time = time.perf_counter()
         try:
-            models = await self.list_models()
+            await self.list_models()
             latency_ms = (time.perf_counter() - start_time) * 1000.0
             return ProviderHealth(
                 provider_name=self.provider_name,

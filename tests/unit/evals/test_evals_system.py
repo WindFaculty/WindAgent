@@ -7,7 +7,6 @@ Unit tests for WindAgent Evals subsystem (Phase 11):
 - EvalReportGenerator score aggregation
 """
 
-import pytest
 from windagent_evals import (
     get_default_benchmark_datasets, EvalTestCase,
     AccuracyGrader, ToolSelectionGrader, CostEfficiencyGrader, SafetyGrader, ModelRoutingGrader,

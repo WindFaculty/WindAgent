@@ -5,15 +5,20 @@ Mock Provider Adapter for WindAgent Architecture V2.
 
 from __future__ import annotations
 import asyncio
-from datetime import datetime, timezone
-from typing import AsyncIterator, List, Optional
+from typing import AsyncIterator, List
 
 from windagent_core.domain.types import ModelCallId
 from windagent_core.domain.models import ModelRequest, ModelResponse
 from windagent_providers.base import (
-    BaseModelProvider, ProviderHealth, QuotaSnapshot, ModelChunk
+    BaseModelProvider,
+    ProviderHealth,
+    QuotaSnapshot,
+    ModelChunk,
 )
-from windagent_providers.capabilities import KNOWN_MODEL_PROFILES, ModelCapabilityProfile
+from windagent_providers.capabilities import (
+    KNOWN_MODEL_PROFILES,
+    ModelCapabilityProfile,
+)
 
 
 class MockProviderAdapter(BaseModelProvider):
@@ -42,7 +47,11 @@ class MockProviderAdapter(BaseModelProvider):
                 model=request.model,
                 content=content,
                 finish_reason="stop",
-                usage={"prompt_tokens": 10, "completion_tokens": 20, "total_tokens": 30},
+                usage={
+                    "prompt_tokens": 10,
+                    "completion_tokens": 20,
+                    "total_tokens": 30,
+                },
             )
         finally:
             self._active_calls.discard(str(request.id))

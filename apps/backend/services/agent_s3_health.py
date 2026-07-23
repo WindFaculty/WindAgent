@@ -34,8 +34,6 @@ from services.agent_s3_adapter import AgentS3Adapter
 from services.agent_s3_config import (
     AgentS3Config,
     AgentS3ConfigStatus,
-    external_repo_available,
-    package_available,
     status_from_config,
 )
 

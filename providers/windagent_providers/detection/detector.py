@@ -13,8 +13,14 @@ from windagent_providers.detection.probe_plan import ProbePlanRunner
 class EndpointDetector:
     """High-level detector interface for Test Connect workflows."""
 
-    def __init__(self, http_client: Optional[httpx.AsyncClient] = None, timeout_seconds: float = 5.0):
-        self.runner = ProbePlanRunner(http_client=http_client, timeout_seconds=timeout_seconds)
+    def __init__(
+        self,
+        http_client: Optional[httpx.AsyncClient] = None,
+        timeout_seconds: float = 5.0,
+    ):
+        self.runner = ProbePlanRunner(
+            http_client=http_client, timeout_seconds=timeout_seconds
+        )
 
     async def test_connection(
         self,

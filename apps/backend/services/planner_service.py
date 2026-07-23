@@ -22,13 +22,11 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from services.model_client import (
     ChatMessage,
     ModelClient,
-    ModelOfflineError,
-    ModelResponseError,
 )
 from services.tool_registry import list_tool_names
 
 if TYPE_CHECKING:
-    from services.workflow_service import IntentDraft
+    pass
 
 
 log = logging.getLogger(__name__)

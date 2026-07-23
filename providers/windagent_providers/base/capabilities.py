@@ -5,7 +5,7 @@ Model Capabilities Matrix and Matching Engine for WindAgent Provider Subsystem V
 from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 
 class ModelCapability(str, Enum):
@@ -44,8 +44,12 @@ KNOWN_MODEL_PROFILES: Dict[str, ModelCapabilityProfile] = {
         model_id="mock-gpt-4o",
         provider_name="mock",
         capabilities=[
-            ModelCapability.CHAT, ModelCapability.REASONING, ModelCapability.CODING,
-            ModelCapability.TOOL_USE, ModelCapability.VISION, ModelCapability.STREAMING
+            ModelCapability.CHAT,
+            ModelCapability.REASONING,
+            ModelCapability.CODING,
+            ModelCapability.TOOL_USE,
+            ModelCapability.VISION,
+            ModelCapability.STREAMING,
         ],
         context_window=128000,
         cost_per_1k_prompt_tokens=0.0025,
@@ -56,9 +60,15 @@ KNOWN_MODEL_PROFILES: Dict[str, ModelCapabilityProfile] = {
         model_id="gpt-4o",
         provider_name="openai",
         capabilities=[
-            ModelCapability.CHAT, ModelCapability.REASONING, ModelCapability.CODING,
-            ModelCapability.TOOL_USE, ModelCapability.VISION, ModelCapability.STRUCTURED_OUTPUT,
-            ModelCapability.LONG_CONTEXT, ModelCapability.STREAMING, ModelCapability.PROMPT_CACHING
+            ModelCapability.CHAT,
+            ModelCapability.REASONING,
+            ModelCapability.CODING,
+            ModelCapability.TOOL_USE,
+            ModelCapability.VISION,
+            ModelCapability.STRUCTURED_OUTPUT,
+            ModelCapability.LONG_CONTEXT,
+            ModelCapability.STREAMING,
+            ModelCapability.PROMPT_CACHING,
         ],
         context_window=128000,
         cost_per_1k_prompt_tokens=0.0025,
@@ -69,9 +79,15 @@ KNOWN_MODEL_PROFILES: Dict[str, ModelCapabilityProfile] = {
         model_id="claude-3-5-sonnet",
         provider_name="anthropic",
         capabilities=[
-            ModelCapability.CHAT, ModelCapability.REASONING, ModelCapability.CODING,
-            ModelCapability.TOOL_USE, ModelCapability.VISION, ModelCapability.LONG_CONTEXT,
-            ModelCapability.STREAMING, ModelCapability.COMPUTER_USE, ModelCapability.PROMPT_CACHING
+            ModelCapability.CHAT,
+            ModelCapability.REASONING,
+            ModelCapability.CODING,
+            ModelCapability.TOOL_USE,
+            ModelCapability.VISION,
+            ModelCapability.LONG_CONTEXT,
+            ModelCapability.STREAMING,
+            ModelCapability.COMPUTER_USE,
+            ModelCapability.PROMPT_CACHING,
         ],
         context_window=200000,
         cost_per_1k_prompt_tokens=0.0030,
@@ -82,9 +98,13 @@ KNOWN_MODEL_PROFILES: Dict[str, ModelCapabilityProfile] = {
         model_id="gemini-1.5-pro",
         provider_name="google",
         capabilities=[
-            ModelCapability.CHAT, ModelCapability.REASONING, ModelCapability.CODING,
-            ModelCapability.TOOL_USE, ModelCapability.VISION, ModelCapability.LONG_CONTEXT,
-            ModelCapability.STREAMING
+            ModelCapability.CHAT,
+            ModelCapability.REASONING,
+            ModelCapability.CODING,
+            ModelCapability.TOOL_USE,
+            ModelCapability.VISION,
+            ModelCapability.LONG_CONTEXT,
+            ModelCapability.STREAMING,
         ],
         context_window=2000000,
         cost_per_1k_prompt_tokens=0.00125,
@@ -95,8 +115,10 @@ KNOWN_MODEL_PROFILES: Dict[str, ModelCapabilityProfile] = {
         model_id="ollama/llama3.1",
         provider_name="ollama",
         capabilities=[
-            ModelCapability.CHAT, ModelCapability.CODING, ModelCapability.TOOL_USE,
-            ModelCapability.STREAMING
+            ModelCapability.CHAT,
+            ModelCapability.CODING,
+            ModelCapability.TOOL_USE,
+            ModelCapability.STREAMING,
         ],
         context_window=128000,
         cost_per_1k_prompt_tokens=0.0,

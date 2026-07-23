@@ -42,6 +42,7 @@ pythonpath = [
     "apps/api",
     "apps/cli",
     "apps/worker",
+    "apps/backend",
     "core",
     "orchestration",
     "intelligence",

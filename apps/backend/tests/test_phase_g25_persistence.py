@@ -11,16 +11,15 @@ import asyncio
 import os
 import socket
 import uuid
-from contextlib import asynccontextmanager
 
 import httpx
 import pytest
 import uvicorn
 from sqlalchemy import text
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
+from sqlalchemy.ext.asyncio import create_async_engine
 
 from db.database import Base
-from db.models import ChatSessionORM, MessageORM, ToolCallORM, WorkflowORM, WorkflowStepORM
+from db.models import ToolCallORM, WorkflowORM, WorkflowStepORM
 from services.session_service import SessionService
 
 API = "/api/v1"

@@ -5,9 +5,8 @@ Consolidates benchmark suite results into structured evaluation reports.
 
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
-from windagent_evals.benchmarks import BenchmarkResult, BenchmarkRunner
-from windagent_evals.datasets import get_default_benchmark_datasets
+from typing import Any, Dict, List
+from windagent_evals.benchmarks import BenchmarkResult
 
 
 @dataclass

@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import datetime
 import uuid
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional
 
 from schemas.event import EventEnvelope
 

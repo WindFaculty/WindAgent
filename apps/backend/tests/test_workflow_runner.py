@@ -16,8 +16,6 @@ import contextlib
 import json
 import socket
 import time
-import uuid
-from pathlib import Path
 from typing import Any, Dict, List
 
 import httpx

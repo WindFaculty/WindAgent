@@ -5,7 +5,7 @@ Contains TestRunnerGate, PolicyEngineGate, IntegrityGate, QualityGates, Regressi
 
 from __future__ import annotations
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict
 from windagent_verification.domain import (
     VerificationGate, VerificationResult, VerificationStatus, VerificationEvidence
 )

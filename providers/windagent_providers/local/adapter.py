@@ -5,8 +5,7 @@ Strictly adheres to ADR-05 (No in-process transformers or llama.cpp execution).
 """
 
 from __future__ import annotations
-import time
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 import httpx
 
 from windagent_providers.base.contracts import ProviderHealth
@@ -16,13 +15,19 @@ from windagent_providers.ollama.adapter import OllamaProviderAdapter
 class LocalOllamaManager:
     """Manager and Probe Controller for Localhost and LAN Ollama Endpoints."""
 
-    def __init__(self, endpoints: Optional[List[str]] = None, http_client: Optional[httpx.AsyncClient] = None):
+    def __init__(
+        self,
+        endpoints: Optional[List[str]] = None,
+        http_client: Optional[httpx.AsyncClient] = None,
+    ):
         self.endpoints = endpoints or ["http://localhost:11434"]
         self._http_client = http_client
 
     async def probe_endpoint(self, base_url: str) -> ProviderHealth:
         """Probes a specific local or LAN Ollama endpoint for reachability and model tags."""
-        adapter = OllamaProviderAdapter(base_url=base_url, http_client=self._http_client)
+        adapter = OllamaProviderAdapter(
+            base_url=base_url, http_client=self._http_client
+        )
         return await adapter.health()
 
     async def probe_all(self) -> Dict[str, ProviderHealth]:

@@ -4,13 +4,12 @@ Delegates all V1 API requests to V2 application services to ensure zero business
 """
 
 from __future__ import annotations
-from typing import Any, Dict, List
-from fastapi import APIRouter, Request, status
+from typing import List
+from fastapi import APIRouter, status
 from pydantic import BaseModel
 
 from windagent_api.routers.v2_tasks import create_task, list_tasks, get_task, CreateTaskRequest, TaskResponse
 from windagent_api.routers.v2_runs import list_runs, RunResponse
-from windagent_api.routers.v2_providers import list_providers, ModelProviderInfo
 
 v1_router = APIRouter(prefix="/api/v1", tags=["Legacy V1 Compatibility"])
 parity_router = APIRouter(prefix="/api/v2/parity-matrix", tags=["Parity Matrix"])

@@ -11,11 +11,15 @@ from __future__ import annotations
 import threading
 import time
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
 from windagent_providers.base.contracts import QuotaState
-from windagent_providers.base.ports import EndpointRegistryPort, QuotaStatePort, RouteAttemptPort
+from windagent_providers.base.ports import (
+    EndpointRegistryPort,
+    QuotaStatePort,
+    RouteAttemptPort,
+)
 
 
 @dataclass
@@ -51,7 +55,9 @@ class InMemoryEndpointRegistry(EndpointRegistryPort):
                     provider_name=binding["provider_name"],
                     base_url=binding["base_url"],
                     credential_ciphertext=binding.get("credential_ciphertext"),
-                    equivalence_level=binding.get("equivalence_level", "exact_revision"),
+                    equivalence_level=binding.get(
+                        "equivalence_level", "exact_revision"
+                    ),
                     is_active=binding.get("is_active", True),
                 )
             )
@@ -63,7 +69,9 @@ class InMemoryEndpointRegistry(EndpointRegistryPort):
                     return self._binding_to_dict(b)
         return None
 
-    async def list_endpoints_for_canonical_model(self, canonical_model_id: str) -> List[Dict[str, Any]]:
+    async def list_endpoints_for_canonical_model(
+        self, canonical_model_id: str
+    ) -> List[Dict[str, Any]]:
         with self._mutex:
             return [
                 self._binding_to_dict(b)

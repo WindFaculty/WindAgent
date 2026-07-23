@@ -5,8 +5,7 @@ Enables seamless conversion across V1 <-> V2 architecture boundaries.
 
 from __future__ import annotations
 from datetime import datetime, timezone
-from typing import Any, Dict, List
-from uuid import UUID
+from typing import Any, Dict
 
 from windagent_core.domain.types import (
     SessionId, WorkflowId, StepId, RunId

@@ -37,7 +37,7 @@ from __future__ import annotations
 import threading
 import time
 import uuid
-from typing import Any, Callable, Dict, List, Optional
+from typing import Callable, Dict, List, Optional
 
 from windagent_providers.routing.events import (
     ModelReselected,
@@ -49,7 +49,6 @@ from windagent_providers.routing.events import (
     RoutingEvent,
 )
 from windagent_providers.routing.route_lock import (
-    LockScope,
     LockStatus,
     RouteLockRecord,
     RoutingSnapshot,
@@ -62,9 +61,7 @@ class NoMatchingRuleError(Exception):
     """Raised when no enabled rule matches the given context."""
 
     def __init__(self, scope_id: str, scope_type: str):
-        super().__init__(
-            f"No routing rule matched for scope={scope_type}:{scope_id}"
-        )
+        super().__init__(f"No routing rule matched for scope={scope_type}:{scope_id}")
         self.scope_id = scope_id
         self.scope_type = scope_type
 
@@ -245,14 +242,18 @@ class RouteLockService:
         scope_lock = self._get_scope_creation_lock(scope_key)
         with scope_lock:
             new_record = self._create_new_lock(
-                new_context, scope_key, reselection=True,
+                new_context,
+                scope_key,
+                reselection=True,
                 previous_model_id=prev_model,
                 reselect_reason=reason,
             )
 
         return new_record
 
-    def get_active_lock(self, scope_type: str, scope_id: str) -> Optional[RouteLockRecord]:
+    def get_active_lock(
+        self, scope_type: str, scope_id: str
+    ) -> Optional[RouteLockRecord]:
         """Return the active lock for a scope, or None."""
         scope_key = self._scope_key(scope_type, scope_id)
         return self._get_active_lock_by_key(scope_key)
@@ -420,7 +421,9 @@ class RouteLockService:
 
         return record
 
-    def _emit_reuse_event(self, record: RouteLockRecord, context: RuleMatchContext) -> None:
+    def _emit_reuse_event(
+        self, record: RouteLockRecord, context: RuleMatchContext
+    ) -> None:
         event = RouteReused(
             scope_id=record.scope_id,
             scope_type=record.scope,

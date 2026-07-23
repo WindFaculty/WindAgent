@@ -10,7 +10,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, TypeVar
+from typing import Any, List, Optional, TypeVar
 
 from windagent_providers.base.contracts import ProviderResponse
 

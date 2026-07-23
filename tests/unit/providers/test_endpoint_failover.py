@@ -25,18 +25,12 @@ import pytest
 
 from windagent_providers.base.contracts import (
     ProviderRequest,
-    ProviderResponse,
     ProviderStreamEvent,
-    ProviderUsage,
 )
 from windagent_providers.base.errors import (
-    AuthenticationFailure,
     InvalidRequestFailure,
-    ModelNotFoundFailure,
     ProviderUnavailableFailure,
-    RateLimitFailure,
     SameModelEndpointExhausted,
-    TimeoutFailure,
 )
 from windagent_providers.openai_compatible.transport import OpenAICompatibleTransport
 from windagent_providers.routing.circuit_breaker import InMemoryEndpointStateManager

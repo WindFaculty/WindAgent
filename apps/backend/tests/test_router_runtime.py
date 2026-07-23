@@ -1,16 +1,13 @@
 """Backend unit and integration tests for Router Runtime, Streaming, Quota Reset, and Adapters."""
 from __future__ import annotations
 
-import os
 import json
-import pytest
 import asyncio
 from datetime import datetime, timezone, timedelta
 from sqlalchemy import select
 
 from db.models import ProviderQuotaSnapshotORM, RouterExecutionLogORM
 from services.agent_runtime_adapters import CodingAgent, GUIAgent, WorkflowAgent, ResearchAgent
-from services.model_client import MockModelClient
 
 
 def test_openai_compatible_stream_completion(client):

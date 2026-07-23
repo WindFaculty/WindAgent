@@ -11,9 +11,15 @@ from windagent_core.domain.types import ModelCallId
 from windagent_core.domain.models import ModelRequest, ModelResponse
 from windagent_core.errors.exceptions import ProviderError
 from windagent_providers.base import (
-    BaseModelProvider, ProviderHealth, QuotaSnapshot, ModelChunk
+    BaseModelProvider,
+    ProviderHealth,
+    QuotaSnapshot,
+    ModelChunk,
 )
-from windagent_providers.capabilities import KNOWN_MODEL_PROFILES, ModelCapabilityProfile
+from windagent_providers.capabilities import (
+    KNOWN_MODEL_PROFILES,
+    ModelCapabilityProfile,
+)
 
 
 class GoogleGeminiProviderAdapter(BaseModelProvider):
@@ -48,7 +54,11 @@ class GoogleGeminiProviderAdapter(BaseModelProvider):
         )
 
     async def stream(self, request: ModelRequest) -> AsyncIterator[ModelChunk]:
-        yield ModelChunk(call_id=request.id, delta=f"Gemini stream from {request.model}", finish_reason="STOP")
+        yield ModelChunk(
+            call_id=request.id,
+            delta=f"Gemini stream from {request.model}",
+            finish_reason="STOP",
+        )
 
     def estimate_cost(self, request: ModelRequest) -> float:
         return 0.001
@@ -60,4 +70,8 @@ class GoogleGeminiProviderAdapter(BaseModelProvider):
         return True
 
     def capabilities(self) -> List[ModelCapabilityProfile]:
-        return [KNOWN_MODEL_PROFILES.get("gemini-1.5-pro", KNOWN_MODEL_PROFILES["mock-gpt-4o"])]
+        return [
+            KNOWN_MODEL_PROFILES.get(
+                "gemini-1.5-pro", KNOWN_MODEL_PROFILES["mock-gpt-4o"]
+            )
+        ]

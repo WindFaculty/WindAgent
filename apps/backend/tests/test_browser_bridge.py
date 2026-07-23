@@ -1,16 +1,13 @@
 """Tests for the Browser Bridge (Phase 6)."""
 from __future__ import annotations
 
-import asyncio
 import os
 from pathlib import Path
 from uuid import uuid4
 
 import pytest
-import httpx
 from fastapi.testclient import TestClient
 
-from db.database import Database
 from services.browser_service import BrowserService
 from services.event_bus import EventBus
 from main import app

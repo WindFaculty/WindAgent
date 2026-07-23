@@ -12,16 +12,27 @@ from typing import Any, AsyncIterator, Dict, List, Optional
 import httpx
 
 from windagent_providers.base.contracts import (
-    DiscoveredModel, FinishReason, ProviderCapabilities, ProviderHealth,
-    ProviderRequest, ProviderResponse, ProviderStreamEvent, ProviderUsage
+    DiscoveredModel,
+    FinishReason,
+    ProviderHealth,
+    ProviderRequest,
+    ProviderResponse,
+    ProviderStreamEvent,
+    ProviderUsage,
 )
 from windagent_providers.base.errors import (
-    AuthenticationFailure, CancellationFailure, ContentPolicyFailure,
-    ContextOverflowFailure, InvalidRequestFailure, ModelNotFoundFailure,
-    NetworkFailure, PermissionFailure, ProviderFailure, ProviderUnavailableFailure,
-    RateLimitFailure, TimeoutFailure
+    AuthenticationFailure,
+    CancellationFailure,
+    ContentPolicyFailure,
+    InvalidRequestFailure,
+    ModelNotFoundFailure,
+    NetworkFailure,
+    ProviderFailure,
+    ProviderUnavailableFailure,
+    RateLimitFailure,
+    TimeoutFailure,
 )
-from windagent_providers.base.secret_redaction import redact_text, redact_dict
+from windagent_providers.base.secret_redaction import redact_text
 
 
 class GoogleGeminiProviderAdapter:
@@ -59,23 +70,26 @@ class GoogleGeminiProviderAdapter:
                 continue
             gemini_role = "user" if role in ("user", "human") else "model"
             content_str = msg.get("content", "")
-            contents.append({
-                "role": gemini_role,
-                "parts": [{"text": str(content_str)}]
-            })
+            contents.append(
+                {"role": gemini_role, "parts": [{"text": str(content_str)}]}
+            )
 
         # Add image parts if provided
         if request.image_parts:
             for img in request.image_parts:
-                contents.append({
-                    "role": "user",
-                    "parts": [{
-                        "inlineData": {
-                            "mimeType": img.get("mime_type", "image/png"),
-                            "data": img.get("data", "")
-                        }
-                    }]
-                })
+                contents.append(
+                    {
+                        "role": "user",
+                        "parts": [
+                            {
+                                "inlineData": {
+                                    "mimeType": img.get("mime_type", "image/png"),
+                                    "data": img.get("data", ""),
+                                }
+                            }
+                        ],
+                    }
+                )
 
         payload: Dict[str, Any] = {"contents": contents}
 
@@ -100,11 +114,15 @@ class GoogleGeminiProviderAdapter:
             func_decls = []
             for t in request.tools:
                 fn = t.get("function", t)
-                func_decls.append({
-                    "name": fn.get("name"),
-                    "description": fn.get("description", ""),
-                    "parameters": fn.get("parameters", {"type": "OBJECT", "properties": {}})
-                })
+                func_decls.append(
+                    {
+                        "name": fn.get("name"),
+                        "description": fn.get("description", ""),
+                        "parameters": fn.get(
+                            "parameters", {"type": "OBJECT", "properties": {}}
+                        ),
+                    }
+                )
             payload["tools"] = [{"functionDeclarations": func_decls}]
 
         return payload
@@ -118,21 +136,37 @@ class GoogleGeminiProviderAdapter:
             err_msg = clean_text
 
         if status_code in (401, 403):
-            return AuthenticationFailure(err_msg, provider_id=self.provider_name, status_code=status_code)
+            return AuthenticationFailure(
+                err_msg, provider_id=self.provider_name, status_code=status_code
+            )
         elif status_code == 404:
-            return ModelNotFoundFailure(err_msg, provider_id=self.provider_name, status_code=status_code)
+            return ModelNotFoundFailure(
+                err_msg, provider_id=self.provider_name, status_code=status_code
+            )
         elif status_code == 429:
-            return RateLimitFailure(err_msg, provider_id=self.provider_name, status_code=status_code)
+            return RateLimitFailure(
+                err_msg, provider_id=self.provider_name, status_code=status_code
+            )
         elif status_code == 400:
             if "safety" in err_msg.lower() or "blocked" in err_msg.lower():
-                return ContentPolicyFailure(err_msg, provider_id=self.provider_name, status_code=status_code)
-            return InvalidRequestFailure(err_msg, provider_id=self.provider_name, status_code=status_code)
+                return ContentPolicyFailure(
+                    err_msg, provider_id=self.provider_name, status_code=status_code
+                )
+            return InvalidRequestFailure(
+                err_msg, provider_id=self.provider_name, status_code=status_code
+            )
         elif status_code >= 500:
-            return ProviderUnavailableFailure(err_msg, provider_id=self.provider_name, status_code=status_code)
+            return ProviderUnavailableFailure(
+                err_msg, provider_id=self.provider_name, status_code=status_code
+            )
 
-        return ProviderFailure(err_msg, provider_id=self.provider_name, status_code=status_code)
+        return ProviderFailure(
+            err_msg, provider_id=self.provider_name, status_code=status_code
+        )
 
-    async def generate(self, request: ProviderRequest, model_id: str = "gemini-1.5-pro") -> ProviderResponse:
+    async def generate(
+        self, request: ProviderRequest, model_id: str = "gemini-1.5-pro"
+    ) -> ProviderResponse:
         """Executes a synchronous completion call using Gemini generateContent API."""
         start_time = time.perf_counter()
         clean_model = model_id.replace("models/", "")
@@ -162,14 +196,16 @@ class GoogleGeminiProviderAdapter:
                     text_parts.append(pt["text"])
                 elif "functionCall" in pt:
                     fc = pt["functionCall"]
-                    tool_calls.append({
-                        "id": f"call-{fc.get('name')}",
-                        "type": "function",
-                        "function": {
-                            "name": fc.get("name"),
-                            "arguments": json.dumps(fc.get("args", {}))
+                    tool_calls.append(
+                        {
+                            "id": f"call-{fc.get('name')}",
+                            "type": "function",
+                            "function": {
+                                "name": fc.get("name"),
+                                "arguments": json.dumps(fc.get("args", {})),
+                            },
                         }
-                    })
+                    )
 
             finish_reason_raw = first_cand.get("finishReason", "STOP")
             finish_val = FinishReason.STOP.value
@@ -199,17 +235,25 @@ class GoogleGeminiProviderAdapter:
                 raw_metadata={
                     "safetyRatings": first_cand.get("safetyRatings", []),
                     "finishReason": finish_reason_raw,
-                }
+                },
             )
         except httpx.TimeoutException as exc:
-            raise TimeoutFailure("Timeout connecting to Google Gemini API", provider_id=self.provider_name) from exc
+            raise TimeoutFailure(
+                "Timeout connecting to Google Gemini API",
+                provider_id=self.provider_name,
+            ) from exc
         except httpx.RequestError as exc:
-            raise NetworkFailure(f"Network error connecting to Google Gemini API: {str(exc)}", provider_id=self.provider_name) from exc
+            raise NetworkFailure(
+                f"Network error connecting to Google Gemini API: {str(exc)}",
+                provider_id=self.provider_name,
+            ) from exc
         finally:
             if should_close:
                 await client.aclose()
 
-    async def stream(self, request: ProviderRequest, model_id: str = "gemini-1.5-pro") -> AsyncIterator[ProviderStreamEvent]:
+    async def stream(
+        self, request: ProviderRequest, model_id: str = "gemini-1.5-pro"
+    ) -> AsyncIterator[ProviderStreamEvent]:
         """Executes a streaming completion call using Gemini streamGenerateContent API."""
         clean_model = model_id.replace("models/", "")
         url = f"{self.base_url}/models/{clean_model}:streamGenerateContent?key={self.api_key or ''}"
@@ -220,10 +264,14 @@ class GoogleGeminiProviderAdapter:
         seq_num = 0
 
         try:
-            async with client.stream("POST", url, json=payload, headers=self._build_headers()) as resp:
+            async with client.stream(
+                "POST", url, json=payload, headers=self._build_headers()
+            ) as resp:
                 if resp.status_code != 200:
                     err_text = await resp.aread()
-                    raise self._map_http_error(resp.status_code, err_text.decode("utf-8", errors="replace"))
+                    raise self._map_http_error(
+                        resp.status_code, err_text.decode("utf-8", errors="replace")
+                    )
 
                 buffer = ""
                 async for chunk_bytes in resp.aiter_bytes():
@@ -245,21 +293,29 @@ class GoogleGeminiProviderAdapter:
                             yield ProviderStreamEvent(
                                 event_type="token",
                                 sequence_number=seq_num,
-                                delta=pt["text"]
+                                delta=pt["text"],
                             )
 
                 seq_num += 1
                 yield ProviderStreamEvent(
                     event_type="done",
                     sequence_number=seq_num,
-                    finish_reason=FinishReason.STOP.value
+                    finish_reason=FinishReason.STOP.value,
                 )
         except asyncio.CancelledError:
-            raise CancellationFailure("Gemini stream was cancelled", provider_id=self.provider_name)
+            raise CancellationFailure(
+                "Gemini stream was cancelled", provider_id=self.provider_name
+            )
         except httpx.TimeoutException as exc:
-            raise TimeoutFailure("Timeout streaming from Google Gemini API", provider_id=self.provider_name) from exc
+            raise TimeoutFailure(
+                "Timeout streaming from Google Gemini API",
+                provider_id=self.provider_name,
+            ) from exc
         except httpx.RequestError as exc:
-            raise NetworkFailure(f"Network error streaming from Google Gemini API: {str(exc)}", provider_id=self.provider_name) from exc
+            raise NetworkFailure(
+                f"Network error streaming from Google Gemini API: {str(exc)}",
+                provider_id=self.provider_name,
+            ) from exc
         finally:
             if should_close:
                 await client.aclose()
@@ -286,14 +342,20 @@ class GoogleGeminiProviderAdapter:
                         canonical_name=item.get("displayName", m_name),
                         provider_id=self.provider_name,
                         context_window=item.get("inputTokenLimit", 1000000),
-                        capabilities=["chat", "streaming", "tool_use", "vision"]
+                        capabilities=["chat", "streaming", "tool_use", "vision"],
                     )
                 )
             return results
         except httpx.TimeoutException as exc:
-            raise TimeoutFailure("Timeout discovering models from Google Gemini API", provider_id=self.provider_name) from exc
+            raise TimeoutFailure(
+                "Timeout discovering models from Google Gemini API",
+                provider_id=self.provider_name,
+            ) from exc
         except httpx.RequestError as exc:
-            raise NetworkFailure(f"Network error discovering models from Google Gemini API: {str(exc)}", provider_id=self.provider_name) from exc
+            raise NetworkFailure(
+                f"Network error discovering models from Google Gemini API: {str(exc)}",
+                provider_id=self.provider_name,
+            ) from exc
         finally:
             if should_close:
                 await client.aclose()
@@ -302,7 +364,7 @@ class GoogleGeminiProviderAdapter:
         """Executes real diagnostic health probe call."""
         start_time = time.perf_counter()
         try:
-            models = await self.list_models()
+            await self.list_models()
             latency_ms = (time.perf_counter() - start_time) * 1000.0
             return ProviderHealth(
                 provider_name=self.provider_name,

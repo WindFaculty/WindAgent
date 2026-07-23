@@ -5,13 +5,12 @@ Adheres strictly to ban_ke_hoach.md §PHASE 3 requirements using httpx.MockTrans
 
 import pytest
 import json
-import asyncio
 import httpx
 
-from windagent_providers.base.contracts import ProviderRequest, FinishReason
+from windagent_providers.base.contracts import ProviderRequest
 from windagent_providers.base.errors import (
-    AuthenticationFailure, PermissionFailure, RateLimitFailure,
-    ModelNotFoundFailure, ProviderUnavailableFailure, TimeoutFailure, CancellationFailure
+    AuthenticationFailure, RateLimitFailure,
+    ModelNotFoundFailure, ProviderUnavailableFailure
 )
 from windagent_providers.openai_compatible import OpenAICompatibleTransport
 from windagent_providers.openai import OpenAIProviderAdapter

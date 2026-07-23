@@ -16,22 +16,33 @@ from __future__ import annotations
 
 import time
 import uuid
-from typing import Any, AsyncIterator, Callable, Dict, List, Optional
+from typing import Any, AsyncIterator, Callable, Optional
 
-from windagent_providers.base.contracts import ProviderRequest, ProviderResponse, ProviderStreamEvent
+from windagent_providers.base.contracts import (
+    ProviderRequest,
+    ProviderResponse,
+    ProviderStreamEvent,
+)
 from windagent_providers.base.errors import (
-    AuthenticationFailure,
     ProviderFailure,
     RateLimitFailure,
     SameModelEndpointExhausted,
 )
-from windagent_providers.base.ports import EndpointRegistryPort, EndpointStatePort, QuotaStatePort, RouteAttemptPort
+from windagent_providers.base.ports import (
+    EndpointRegistryPort,
+    EndpointStatePort,
+    QuotaStatePort,
+    RouteAttemptPort,
+)
 from windagent_providers.cache.contracts import CacheNamespace
 from windagent_providers.cache.response_cache import ResponseCacheService
 from windagent_providers.cache.singleflight import InMemorySingleFlight
 from windagent_providers.routing.cooldown import apply_rate_limit_cooldown
-from windagent_providers.routing.endpoint_selector import EndpointCandidate, EndpointSelector
-from windagent_providers.routing.failover_policy import FailoverDecision, SameModelFailoverPolicy
+from windagent_providers.routing.endpoint_selector import EndpointSelector
+from windagent_providers.routing.failover_policy import (
+    FailoverDecision,
+    SameModelFailoverPolicy,
+)
 
 
 AdapterResolver = Callable[[str], Any]
@@ -131,7 +142,9 @@ class EndpointExecutionCoordinator:
         for attempt_index in range(max_attempts):
             try:
                 candidates = await self._selector.select_candidates(
-                    await self._registry.list_endpoints_for_canonical_model(canonical_model_id)
+                    await self._registry.list_endpoints_for_canonical_model(
+                        canonical_model_id
+                    )
                 )
             except SameModelEndpointExhausted:
                 raise
@@ -141,7 +154,9 @@ class EndpointExecutionCoordinator:
 
             start = time.perf_counter()
             try:
-                response = await adapter.generate(request, model_id=candidate.provider_model_id)
+                response = await adapter.generate(
+                    request, model_id=candidate.provider_model_id
+                )
                 # Normalize canonical_model_id to the locked model.
                 response.canonical_model_id = canonical_model_id
                 response.endpoint_id = candidate.endpoint_id
@@ -159,7 +174,11 @@ class EndpointExecutionCoordinator:
                     endpoint_id=candidate.endpoint_id,
                 )
                 # Phase 9: write through to response cache.
-                if self._response_cache is not None and namespace is not None and cache_key is not None:
+                if (
+                    self._response_cache is not None
+                    and namespace is not None
+                    and cache_key is not None
+                ):
                     await self._response_cache.set(
                         request,
                         namespace,
@@ -179,14 +198,18 @@ class EndpointExecutionCoordinator:
                 )
 
                 if isinstance(exc, RateLimitFailure):
-                    await apply_rate_limit_cooldown(self._state, candidate.endpoint_id, exc)
+                    await apply_rate_limit_cooldown(
+                        self._state, candidate.endpoint_id, exc
+                    )
 
                 await self._record_attempt(
                     route_lock_id=route_lock_id,
                     turn_id=turn_id,
                     attempt_index=attempt_index,
                     binding_id=candidate.binding_id,
-                    status="rate_limited" if isinstance(exc, RateLimitFailure) else "failed",
+                    status="rate_limited"
+                    if isinstance(exc, RateLimitFailure)
+                    else "failed",
                     http_status=getattr(exc, "status_code", None),
                     error_class=exc.__class__.__name__,
                     endpoint_id=candidate.endpoint_id,
@@ -224,7 +247,9 @@ class EndpointExecutionCoordinator:
         for attempt_index in range(max_attempts):
             try:
                 candidates = await self._selector.select_candidates(
-                    await self._registry.list_endpoints_for_canonical_model(canonical_model_id)
+                    await self._registry.list_endpoints_for_canonical_model(
+                        canonical_model_id
+                    )
                 )
             except SameModelEndpointExhausted:
                 yield _error_event("SameModelEndpointExhausted")
@@ -236,7 +261,9 @@ class EndpointExecutionCoordinator:
             emitted = False
             start = time.perf_counter()
             try:
-                async for event in adapter.stream(request, model_id=candidate.provider_model_id):
+                async for event in adapter.stream(
+                    request, model_id=candidate.provider_model_id
+                ):
                     emitted = True
                     yield event
 
@@ -263,14 +290,18 @@ class EndpointExecutionCoordinator:
                 )
 
                 if isinstance(exc, RateLimitFailure):
-                    await apply_rate_limit_cooldown(self._state, candidate.endpoint_id, exc)
+                    await apply_rate_limit_cooldown(
+                        self._state, candidate.endpoint_id, exc
+                    )
 
                 await self._record_attempt(
                     route_lock_id=route_lock_id,
                     turn_id=turn_id,
                     attempt_index=attempt_index,
                     binding_id=candidate.binding_id,
-                    status="rate_limited" if isinstance(exc, RateLimitFailure) else "failed",
+                    status="rate_limited"
+                    if isinstance(exc, RateLimitFailure)
+                    else "failed",
                     http_status=getattr(exc, "status_code", None),
                     error_class=exc.__class__.__name__,
                     endpoint_id=candidate.endpoint_id,

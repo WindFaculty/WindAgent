@@ -7,8 +7,8 @@ from __future__ import annotations
 import logging
 from typing import Any, Dict, List, Tuple
 
-from windagent_context.provenance import ContextItem, ContextItemProvenance
-from windagent_context.budget import TokenBudgetManager, estimate_tokens
+from windagent_context.provenance import ContextItem
+from windagent_context.budget import TokenBudgetManager
 from windagent_context.compaction import ContextCompactor
 from windagent_context.repository.index import RepositoryIndex
 

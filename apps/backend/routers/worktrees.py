@@ -6,7 +6,7 @@ Control: trigger the integration-agent merge flow for a coding agent.
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 from fastapi import APIRouter, HTTPException, Query, Request
 

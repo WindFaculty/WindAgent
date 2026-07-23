@@ -1,16 +1,15 @@
 """Phase C — execute plan E2E test."""
 import pytest
-import os, sys
+import os
+import sys
 sys.path.insert(0, r"D:\code_ca_nhan\WindAgent\apps\backend")
 os.chdir(r"D:\code_ca_nhan\WindAgent\apps\backend")
 
 from db.database import Database
 from db.models import (
-    Base, ParentTaskORM, TaskPlanORM, TaskNodeORM, TaskEdgeORM,
-    AgentORM, ChatSessionORM, MessageORM,
+    ParentTaskORM, TaskPlanORM, TaskNodeORM, TaskEdgeORM,
 )
 import uuid
-from datetime import datetime, timezone
 
 
 @pytest.fixture
@@ -145,7 +144,6 @@ async def test_execute_plan_cycle_rejected(db):
 async def test_execute_empty_plan_rejected(db):
     """Empty plan fails validation."""
     from sqlalchemy import select
-    from services.dag_scheduler import DAGScheduler, detect_cycle
 
     async with db.session() as s:
         pt = ParentTaskORM(

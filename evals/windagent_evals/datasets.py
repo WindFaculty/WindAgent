@@ -5,7 +5,7 @@ Defines dataset structures and pre-packaged benchmarks for 10 core domains.
 
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 
 @dataclass

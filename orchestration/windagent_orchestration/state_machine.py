@@ -8,7 +8,7 @@ import logging
 from enum import Enum
 from typing import Dict, Set
 
-from windagent_core.errors.exceptions import DomainError, ValidationError
+from windagent_core.errors.exceptions import DomainError
 
 logger = logging.getLogger("windagent.orchestration.state_machine")
 

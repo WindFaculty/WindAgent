@@ -3,7 +3,6 @@ Unit tests for Provider Routing V3 Canonical Model Registry and Equivalence Clas
 Adheres strictly to ban_ke_hoach.md §PHASE 6 requirements.
 """
 
-import pytest
 from windagent_providers.base.contracts import DiscoveredModel
 from windagent_providers.registry.model_normalizer import normalize_model_id
 from windagent_providers.registry.equivalence import classify_equivalence, EquivalenceLevel

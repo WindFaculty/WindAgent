@@ -5,9 +5,8 @@ Fully decoupled from windagent_core domain entities.
 
 from __future__ import annotations
 from datetime import datetime, timezone
-from typing import Any, Dict, Optional
 from sqlalchemy import (
-    Boolean, Column, DateTime, Float, ForeignKey, Integer, String, Text
+    Boolean, Column, DateTime, ForeignKey, Integer, String, Text
 )
 from sqlalchemy.orm import DeclarativeBase, relationship
 

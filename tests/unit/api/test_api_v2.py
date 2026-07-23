@@ -2,7 +2,6 @@
 Unit and contract tests for WindAgent API V2 and V1 compatibility adapter (Phase 12).
 """
 
-import pytest
 from fastapi.testclient import TestClient
 from windagent_api.main import app
 

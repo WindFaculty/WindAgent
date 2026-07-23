@@ -5,8 +5,8 @@ Classifies model equivalence levels and enforces strict failover compatibility r
 
 from __future__ import annotations
 from enum import Enum
-from typing import NamedTuple, Optional
-from windagent_providers.registry.model_normalizer import NormalizedModelInfo, normalize_model_id
+from typing import NamedTuple
+from windagent_providers.registry.model_normalizer import NormalizedModelInfo
 
 
 class EquivalenceLevel(str, Enum):
@@ -25,8 +25,7 @@ class EquivalenceAssessment(NamedTuple):
 
 
 def classify_equivalence(
-    model_a: NormalizedModelInfo,
-    model_b: NormalizedModelInfo
+    model_a: NormalizedModelInfo, model_b: NormalizedModelInfo
 ) -> EquivalenceAssessment:
     """Classifies equivalence between two normalized model definitions."""
     # 1. Exact Fingerprint Match -> exact_revision
@@ -39,7 +38,11 @@ def classify_equivalence(
         )
 
     # 2. Same family, same revision, different quantization -> exact_family_floating_revision (NOT exact failover eligible!)
-    if model_a.family == model_b.family and model_a.revision == model_b.revision and model_a.quantization != model_b.quantization:
+    if (
+        model_a.family == model_b.family
+        and model_a.revision == model_b.revision
+        and model_a.quantization != model_b.quantization
+    ):
         return EquivalenceAssessment(
             level=EquivalenceLevel.EXACT_FAMILY_FLOATING_REVISION,
             confidence=0.85,

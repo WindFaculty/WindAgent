@@ -1,7 +1,6 @@
 """Phase 6 — Tests for memory-aware routing service."""
 from __future__ import annotations
 
-import pytest
 
 from schemas.router_memory import MemoryRoutingContext
 from services.memory_routing_service import MemoryRoutingService

@@ -5,13 +5,9 @@ Adheres strictly to ban_ke_hoach.md §PHASE 4 requirements using httpx.MockTrans
 
 import pytest
 import json
-import asyncio
 import httpx
 
-from windagent_providers.base.contracts import ProviderRequest, FinishReason
-from windagent_providers.base.errors import (
-    AuthenticationFailure, ModelNotFoundFailure, ProviderUnavailableFailure, RateLimitFailure
-)
+from windagent_providers.base.contracts import ProviderRequest
 from windagent_providers.anthropic import AnthropicProviderAdapter
 from windagent_providers.google import GoogleGeminiProviderAdapter
 from windagent_providers.ollama import OllamaProviderAdapter

@@ -22,10 +22,8 @@ import httpx
 import pytest
 
 from windagent_providers.base.contracts import (
-    CacheDirective,
     ProviderRequest,
     ProviderResponse,
-    ProviderUsage,
 )
 from windagent_providers.base.ports import CachePort
 from windagent_providers.cache import (
@@ -34,10 +32,8 @@ from windagent_providers.cache import (
     InMemorySingleFlight,
     ResponseCacheService,
     DiscoveryCacheService,
-    HealthCacheService,
     RouteLockCacheService,
     response_cache_eligible,
-    build_response_cache_key,
 )
 from windagent_providers.openai_compatible.transport import OpenAICompatibleTransport
 from windagent_providers.routing.circuit_breaker import InMemoryEndpointStateManager

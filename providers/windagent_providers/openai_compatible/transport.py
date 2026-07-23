@@ -8,21 +8,33 @@ from __future__ import annotations
 import json
 import time
 import asyncio
-from typing import Any, AsyncIterator, Dict, List, Optional, Tuple, Union
+from typing import Any, AsyncIterator, Dict, List, Optional
 import httpx
 
 from windagent_providers.base.contracts import (
-    DiscoveredModel, FinishReason, ModelDescriptor, ProviderCapabilities,
-    ProviderHealth, ProviderRequest, ProviderResponse, ProviderStreamEvent,
-    ProviderUsage
+    DiscoveredModel,
+    FinishReason,
+    ProviderHealth,
+    ProviderRequest,
+    ProviderResponse,
+    ProviderStreamEvent,
+    ProviderUsage,
 )
 from windagent_providers.base.errors import (
-    AuthenticationFailure, CancellationFailure, ContentPolicyFailure,
-    ContextOverflowFailure, InvalidRequestFailure, MalformedResponseFailure,
-    ModelNotFoundFailure, NetworkFailure, PermissionFailure, ProtocolMismatchFailure,
-    ProviderFailure, ProviderUnavailableFailure, RateLimitFailure, TimeoutFailure
+    AuthenticationFailure,
+    CancellationFailure,
+    ContentPolicyFailure,
+    ContextOverflowFailure,
+    InvalidRequestFailure,
+    ModelNotFoundFailure,
+    NetworkFailure,
+    PermissionFailure,
+    ProviderFailure,
+    ProviderUnavailableFailure,
+    RateLimitFailure,
+    TimeoutFailure,
 )
-from windagent_providers.base.secret_redaction import redact_dict, redact_text
+from windagent_providers.base.secret_redaction import redact_text
 
 
 class OpenAICompatibleTransport:
@@ -58,7 +70,9 @@ class OpenAICompatibleTransport:
             timeout=httpx.Timeout(self.timeout_seconds),
         )
 
-    def _build_payload(self, request: ProviderRequest, model_id: str, stream: bool = False) -> Dict[str, Any]:
+    def _build_payload(
+        self, request: ProviderRequest, model_id: str, stream: bool = False
+    ) -> Dict[str, Any]:
         payload: Dict[str, Any] = {
             "model": model_id,
             "messages": request.messages.copy(),
@@ -66,7 +80,9 @@ class OpenAICompatibleTransport:
         }
 
         if request.system_instruction:
-            payload["messages"].insert(0, {"role": "system", "content": request.system_instruction})
+            payload["messages"].insert(
+                0, {"role": "system", "content": request.system_instruction}
+            )
 
         if request.temperature is not None:
             payload["temperature"] = request.temperature
@@ -85,7 +101,10 @@ class OpenAICompatibleTransport:
         if request.structured_output_schema:
             payload["response_format"] = {
                 "type": "json_schema",
-                "json_schema": {"name": "structured_output", "schema": request.structured_output_schema}
+                "json_schema": {
+                    "name": "structured_output",
+                    "schema": request.structured_output_schema,
+                },
             }
 
         # Extra provider extensions
@@ -94,9 +113,11 @@ class OpenAICompatibleTransport:
 
         return payload
 
-    def _map_http_error(self, status_code: int, body_text: str, response_headers: httpx.Headers) -> ProviderFailure:
+    def _map_http_error(
+        self, status_code: int, body_text: str, response_headers: httpx.Headers
+    ) -> ProviderFailure:
         clean_text = redact_text(body_text)
-        
+
         try:
             err_json = json.loads(body_text)
             raw_msg = err_json.get("error", {}).get("message", clean_text)
@@ -105,25 +126,48 @@ class OpenAICompatibleTransport:
             err_msg = clean_text
 
         if status_code == 401:
-            return AuthenticationFailure(err_msg, provider_id=self.provider_name, status_code=status_code)
+            return AuthenticationFailure(
+                err_msg, provider_id=self.provider_name, status_code=status_code
+            )
         elif status_code == 403:
-            return PermissionFailure(err_msg, provider_id=self.provider_name, status_code=status_code)
+            return PermissionFailure(
+                err_msg, provider_id=self.provider_name, status_code=status_code
+            )
         elif status_code == 404:
-            return ModelNotFoundFailure(err_msg, provider_id=self.provider_name, status_code=status_code)
+            return ModelNotFoundFailure(
+                err_msg, provider_id=self.provider_name, status_code=status_code
+            )
         elif status_code == 429:
-            return RateLimitFailure(err_msg, provider_id=self.provider_name, status_code=status_code)
+            return RateLimitFailure(
+                err_msg, provider_id=self.provider_name, status_code=status_code
+            )
         elif status_code == 400:
-            if "context" in err_msg.lower() or "maximum context length" in err_msg.lower():
-                return ContextOverflowFailure(err_msg, provider_id=self.provider_name, status_code=status_code)
+            if (
+                "context" in err_msg.lower()
+                or "maximum context length" in err_msg.lower()
+            ):
+                return ContextOverflowFailure(
+                    err_msg, provider_id=self.provider_name, status_code=status_code
+                )
             if "safety" in err_msg.lower() or "content filter" in err_msg.lower():
-                return ContentPolicyFailure(err_msg, provider_id=self.provider_name, status_code=status_code)
-            return InvalidRequestFailure(err_msg, provider_id=self.provider_name, status_code=status_code)
+                return ContentPolicyFailure(
+                    err_msg, provider_id=self.provider_name, status_code=status_code
+                )
+            return InvalidRequestFailure(
+                err_msg, provider_id=self.provider_name, status_code=status_code
+            )
         elif status_code >= 500:
-            return ProviderUnavailableFailure(err_msg, provider_id=self.provider_name, status_code=status_code)
-        
-        return ProviderFailure(err_msg, provider_id=self.provider_name, status_code=status_code)
+            return ProviderUnavailableFailure(
+                err_msg, provider_id=self.provider_name, status_code=status_code
+            )
 
-    async def generate(self, request: ProviderRequest, model_id: str) -> ProviderResponse:
+        return ProviderFailure(
+            err_msg, provider_id=self.provider_name, status_code=status_code
+        )
+
+    async def generate(
+        self, request: ProviderRequest, model_id: str
+    ) -> ProviderResponse:
         """Executes a synchronous completion call."""
         start_time = time.perf_counter()
         url = f"{self.base_url}/chat/completions"
@@ -150,7 +194,7 @@ class OpenAICompatibleTransport:
                 {
                     "id": tc.get("id"),
                     "type": tc.get("type", "function"),
-                    "function": tc.get("function", {})
+                    "function": tc.get("function", {}),
                 }
                 for tc in raw_tools
             ]
@@ -168,7 +212,9 @@ class OpenAICompatibleTransport:
             completion_tokens = usage_data.get("completion_tokens", 0)
             details = usage_data.get("completion_tokens_details", {})
             reasoning_tokens = details.get("reasoning_tokens", 0)
-            cached_tokens = usage_data.get("prompt_tokens_details", {}).get("cached_tokens", 0)
+            cached_tokens = usage_data.get("prompt_tokens_details", {}).get(
+                "cached_tokens", 0
+            )
 
             finish_reason_str = choice.get("finish_reason", FinishReason.STOP.value)
             if raw_tools:
@@ -193,18 +239,25 @@ class OpenAICompatibleTransport:
                 raw_metadata={
                     "status_code": resp.status_code,
                     "headers": dict(resp.headers),
-                    "response_id": data.get("id")
-                }
+                    "response_id": data.get("id"),
+                },
             )
         except httpx.TimeoutException as exc:
-            raise TimeoutFailure(f"Timeout connecting to {self.base_url}", provider_id=self.provider_name) from exc
+            raise TimeoutFailure(
+                f"Timeout connecting to {self.base_url}", provider_id=self.provider_name
+            ) from exc
         except httpx.RequestError as exc:
-            raise NetworkFailure(f"Network error connecting to {self.base_url}: {str(exc)}", provider_id=self.provider_name) from exc
+            raise NetworkFailure(
+                f"Network error connecting to {self.base_url}: {str(exc)}",
+                provider_id=self.provider_name,
+            ) from exc
         finally:
             if should_close:
                 await client.aclose()
 
-    async def stream(self, request: ProviderRequest, model_id: str) -> AsyncIterator[ProviderStreamEvent]:
+    async def stream(
+        self, request: ProviderRequest, model_id: str
+    ) -> AsyncIterator[ProviderStreamEvent]:
         """Executes a streaming completion call with fragmented SSE parser & tool accumulation."""
         url = f"{self.base_url}/chat/completions"
         payload = self._build_payload(request, model_id, stream=True)
@@ -216,10 +269,16 @@ class OpenAICompatibleTransport:
         accumulated_tool_calls: Dict[int, Dict[str, Any]] = {}
 
         try:
-            async with client.stream("POST", url, json=payload, headers=self._build_headers()) as resp:
+            async with client.stream(
+                "POST", url, json=payload, headers=self._build_headers()
+            ) as resp:
                 if resp.status_code != 200:
                     error_text = await resp.aread()
-                    raise self._map_http_error(resp.status_code, error_text.decode("utf-8", errors="replace"), resp.headers)
+                    raise self._map_http_error(
+                        resp.status_code,
+                        error_text.decode("utf-8", errors="replace"),
+                        resp.headers,
+                    )
 
                 buffer = ""
                 async for chunk_bytes in resp.aiter_bytes():
@@ -254,7 +313,9 @@ class OpenAICompatibleTransport:
                             delta = choice.get("delta", {})
 
                             text_delta = delta.get("content")
-                            reasoning_delta = delta.get("reasoning_content") or delta.get("reasoning")
+                            reasoning_delta = delta.get(
+                                "reasoning_content"
+                            ) or delta.get("reasoning")
                             raw_tool_deltas = delta.get("tool_calls", [])
                             finish_reason = choice.get("finish_reason")
 
@@ -265,32 +326,52 @@ class OpenAICompatibleTransport:
                                     accumulated_tool_calls[idx] = {
                                         "id": tc_delta.get("id", ""),
                                         "type": "function",
-                                        "function": {"name": "", "arguments": ""}
+                                        "function": {"name": "", "arguments": ""},
                                     }
                                 if tc_delta.get("id"):
                                     accumulated_tool_calls[idx]["id"] = tc_delta["id"]
                                 func_delta = tc_delta.get("function", {})
                                 if func_delta.get("name"):
-                                    accumulated_tool_calls[idx]["function"]["name"] += func_delta["name"]
+                                    accumulated_tool_calls[idx]["function"]["name"] += (
+                                        func_delta["name"]
+                                    )
                                 if func_delta.get("arguments"):
-                                    accumulated_tool_calls[idx]["function"]["arguments"] += func_delta["arguments"]
+                                    accumulated_tool_calls[idx]["function"][
+                                        "arguments"
+                                    ] += func_delta["arguments"]
 
                             seq_num += 1
                             yield ProviderStreamEvent(
-                                event_type="token" if text_delta else ("thinking_delta" if reasoning_delta else "tool_call_delta"),
+                                event_type="token"
+                                if text_delta
+                                else (
+                                    "thinking_delta"
+                                    if reasoning_delta
+                                    else "tool_call_delta"
+                                ),
                                 sequence_number=seq_num,
                                 delta=text_delta,
                                 reasoning_delta=reasoning_delta,
-                                tool_call_delta=accumulated_tool_calls.get(0) if raw_tool_deltas else None,
+                                tool_call_delta=accumulated_tool_calls.get(0)
+                                if raw_tool_deltas
+                                else None,
                                 finish_reason=finish_reason,
                             )
 
         except asyncio.CancelledError:
-            raise CancellationFailure("Streaming request was cancelled", provider_id=self.provider_name)
+            raise CancellationFailure(
+                "Streaming request was cancelled", provider_id=self.provider_name
+            )
         except httpx.TimeoutException as exc:
-            raise TimeoutFailure(f"Timeout streaming from {self.base_url}", provider_id=self.provider_name) from exc
+            raise TimeoutFailure(
+                f"Timeout streaming from {self.base_url}",
+                provider_id=self.provider_name,
+            ) from exc
         except httpx.RequestError as exc:
-            raise NetworkFailure(f"Network error streaming from {self.base_url}: {str(exc)}", provider_id=self.provider_name) from exc
+            raise NetworkFailure(
+                f"Network error streaming from {self.base_url}: {str(exc)}",
+                provider_id=self.provider_name,
+            ) from exc
         finally:
             if should_close:
                 await client.aclose()
@@ -316,14 +397,20 @@ class OpenAICompatibleTransport:
                         raw_model_id=m_id,
                         canonical_name=m_id,
                         provider_id=self.provider_name,
-                        capabilities=["chat", "streaming", "tool_use"]
+                        capabilities=["chat", "streaming", "tool_use"],
                     )
                 )
             return results
         except httpx.TimeoutException as exc:
-            raise TimeoutFailure(f"Timeout querying models from {self.base_url}", provider_id=self.provider_name) from exc
+            raise TimeoutFailure(
+                f"Timeout querying models from {self.base_url}",
+                provider_id=self.provider_name,
+            ) from exc
         except httpx.RequestError as exc:
-            raise NetworkFailure(f"Network error querying models from {self.base_url}: {str(exc)}", provider_id=self.provider_name) from exc
+            raise NetworkFailure(
+                f"Network error querying models from {self.base_url}: {str(exc)}",
+                provider_id=self.provider_name,
+            ) from exc
         finally:
             if should_close:
                 await client.aclose()
@@ -332,7 +419,7 @@ class OpenAICompatibleTransport:
         """Executes a diagnostic health probe network call."""
         start_time = time.perf_counter()
         try:
-            models = await self.list_models()
+            await self.list_models()
             latency_ms = (time.perf_counter() - start_time) * 1000.0
             return ProviderHealth(
                 provider_name=self.provider_name,

@@ -6,10 +6,13 @@ exceptions, traces, or metadata payloads.
 
 from __future__ import annotations
 import re
-from typing import Any, Dict, List, Union
+from typing import Any, Dict
 
 _SECRET_PATTERNS = [
-    re.compile(r"(api[_-]?key|secret|token|authorization|password)[\s=:]+['\"]?([a-zA-Z0-9_\-\.]{6,})['\"]?", re.IGNORECASE),
+    re.compile(
+        r"(api[_-]?key|secret|token|authorization|password)[\s=:]+['\"]?([a-zA-Z0-9_\-\.]{6,})['\"]?",
+        re.IGNORECASE,
+    ),
     re.compile(r"(Bearer\s+)([a-zA-Z0-9_\-\.]{6,})", re.IGNORECASE),
     re.compile(r"(sk-[a-zA-Z0-9_-]{8,})"),  # OpenAI style key
     re.compile(r"(nvapi-[a-zA-Z0-9_-]{8,})"),  # NVIDIA style key
@@ -22,17 +25,26 @@ def redact_text(text: str) -> str:
     """Redacts known key patterns from raw text string."""
     if not text:
         return text
-    
+
     redacted = text
     for pattern in _SECRET_PATTERNS:
+
         def _replace_match(match: re.Match[str]) -> str:
             groups = match.groups()
             if len(groups) == 1:
                 val = groups[0]
-                return f"{val[:3]}***[REDACTED]***{val[-3:]}" if len(val) >= 8 else "***[REDACTED]***"
+                return (
+                    f"{val[:3]}***[REDACTED]***{val[-3:]}"
+                    if len(val) >= 8
+                    else "***[REDACTED]***"
+                )
             elif len(groups) == 2:
                 prefix, val = groups[0], groups[1]
-                masked = f"{val[:3]}***[REDACTED]***{val[-3:]}" if len(val) >= 8 else "***[REDACTED]***"
+                masked = (
+                    f"{val[:3]}***[REDACTED]***{val[-3:]}"
+                    if len(val) >= 8
+                    else "***[REDACTED]***"
+                )
                 return f"{prefix}{masked}"
             return "***[REDACTED]***"
 
@@ -47,17 +59,38 @@ def redact_dict(data: Dict[str, Any]) -> Dict[str, Any]:
 
     sanitized: Dict[str, Any] = {}
     sensitive_key_terms = {
-        "api_key", "apikey", "secret", "password", "authorization", "bearer", "cred",
-        "auth_token", "access_token", "private_key"
+        "api_key",
+        "apikey",
+        "secret",
+        "password",
+        "authorization",
+        "bearer",
+        "cred",
+        "auth_token",
+        "access_token",
+        "private_key",
     }
-    non_secret_token_terms = {"tokens", "tokens_per_sec", "input_tokens", "output_tokens", "prompt_tokens", "completion_tokens", "cached_tokens", "reasoning_tokens"}
+    non_secret_token_terms = {
+        "tokens",
+        "tokens_per_sec",
+        "input_tokens",
+        "output_tokens",
+        "prompt_tokens",
+        "completion_tokens",
+        "cached_tokens",
+        "reasoning_tokens",
+    }
 
     for key, value in data.items():
         key_lower = str(key).lower()
-        
+
         # Check if key is a known non-secret token metric
         is_secret_key = any(term in key_lower for term in sensitive_key_terms)
-        if "token" in key_lower and not any(ns in key_lower for ns in non_secret_token_terms) and not is_secret_key:
+        if (
+            "token" in key_lower
+            and not any(ns in key_lower for ns in non_secret_token_terms)
+            and not is_secret_key
+        ):
             is_secret_key = True
 
         if is_secret_key:
@@ -70,7 +103,12 @@ def redact_dict(data: Dict[str, Any]) -> Dict[str, Any]:
         elif isinstance(value, dict):
             sanitized[key] = redact_dict(value)
         elif isinstance(value, list):
-            sanitized[key] = [redact_dict(v) if isinstance(v, dict) else (redact_text(v) if isinstance(v, str) else v) for v in value]
+            sanitized[key] = [
+                redact_dict(v)
+                if isinstance(v, dict)
+                else (redact_text(v) if isinstance(v, str) else v)
+                for v in value
+            ]
         elif isinstance(value, str):
             sanitized[key] = redact_text(value)
         else:

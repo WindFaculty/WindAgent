@@ -21,7 +21,6 @@ from db.models import (
     ParentTaskORM,
     TaskPlanORM,
     TaskNodeORM,
-    TaskEdgeORM,
 )
 from sqlalchemy import select
 import uuid

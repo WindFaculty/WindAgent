@@ -33,7 +33,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 from uuid import UUID
 
@@ -45,7 +45,7 @@ from schemas.event import (
     StepFailedData,
     StepStartedData,
 )
-from schemas.workflow import Workflow, WorkflowStep
+from schemas.workflow import WorkflowStep
 from services.event_bus import EventBus
 from services.permission_service import PermissionService
 from services.session_service import SessionService
@@ -338,7 +338,7 @@ class WorkflowRunner:
         except asyncio.CancelledError:
             final_status = "cancelled"
             raise
-        except Exception as exc:  # noqa: BLE001
+        except Exception:  # noqa: BLE001
             log.exception("runner: unhandled exception for session %s", session_id)
             final_status = "failed"
         finally:

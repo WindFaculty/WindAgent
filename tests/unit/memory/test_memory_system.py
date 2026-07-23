@@ -8,7 +8,7 @@ Unit Tests for WindAgent Memory System (Phase 9):
 
 import pytest
 from windagent_core.errors.exceptions import PermissionDeniedError, ValidationError
-from windagent_memory import MemoryStore, MemoryRecord, MemoryScope, MemoryWritePolicy
+from windagent_memory import MemoryStore, MemoryRecord, MemoryScope
 
 
 def test_memory_store_crud_and_scopes():

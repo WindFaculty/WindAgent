@@ -34,7 +34,9 @@ class RouteLockCacheService:
     def _key(self, scope_type: str, scope_id: str) -> str:
         return f"route-lock:{scope_type}:{scope_id}"
 
-    async def get_lock(self, scope_type: str, scope_id: str) -> Optional[Dict[str, Any]]:
+    async def get_lock(
+        self, scope_type: str, scope_id: str
+    ) -> Optional[Dict[str, Any]]:
         key = self._key(scope_type, scope_id)
 
         try:

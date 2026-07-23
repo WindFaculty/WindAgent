@@ -5,7 +5,7 @@ Manages graceful and immediate cancellation tokens for running tasks and workflo
 
 from __future__ import annotations
 import logging
-from typing import Dict, Set
+from typing import Set
 
 from windagent_core.errors.exceptions import DomainError
 

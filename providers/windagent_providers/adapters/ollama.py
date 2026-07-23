@@ -10,9 +10,15 @@ import httpx
 from windagent_core.domain.types import ModelCallId
 from windagent_core.domain.models import ModelRequest, ModelResponse
 from windagent_providers.base import (
-    BaseModelProvider, ProviderHealth, QuotaSnapshot, ModelChunk
+    BaseModelProvider,
+    ProviderHealth,
+    QuotaSnapshot,
+    ModelChunk,
 )
-from windagent_providers.capabilities import KNOWN_MODEL_PROFILES, ModelCapabilityProfile
+from windagent_providers.capabilities import (
+    KNOWN_MODEL_PROFILES,
+    ModelCapabilityProfile,
+)
 
 
 class OllamaProviderAdapter(BaseModelProvider):
@@ -40,7 +46,11 @@ class OllamaProviderAdapter(BaseModelProvider):
         )
 
     async def stream(self, request: ModelRequest) -> AsyncIterator[ModelChunk]:
-        yield ModelChunk(call_id=request.id, delta=f"Ollama stream from {request.model}", finish_reason="stop")
+        yield ModelChunk(
+            call_id=request.id,
+            delta=f"Ollama stream from {request.model}",
+            finish_reason="stop",
+        )
 
     def estimate_cost(self, request: ModelRequest) -> float:
         return 0.0
@@ -52,4 +62,8 @@ class OllamaProviderAdapter(BaseModelProvider):
         return True
 
     def capabilities(self) -> List[ModelCapabilityProfile]:
-        return [KNOWN_MODEL_PROFILES.get("ollama/llama3.1", KNOWN_MODEL_PROFILES["mock-gpt-4o"])]
+        return [
+            KNOWN_MODEL_PROFILES.get(
+                "ollama/llama3.1", KNOWN_MODEL_PROFILES["mock-gpt-4o"]
+            )
+        ]

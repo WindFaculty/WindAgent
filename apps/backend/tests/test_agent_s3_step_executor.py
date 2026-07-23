@@ -26,20 +26,13 @@ from typing import Any, Dict, List, Optional
 
 import pytest
 
-from services.agent_s3_action_translator import (
-    RejectedAction,
-    TranslatedAction,
-)
-from services.agent_s3_adapter import AgentS3Adapter, AgentS3Proposal, MockAgentS3Adapter
+from services.agent_s3_adapter import AgentS3Adapter, MockAgentS3Adapter
 from services.agent_s3_config import (
     AgentS3Config,
-    AgentS3ConfigStatus,
-    load_agent_s3_config,
 )
 from services.agent_s3_step_executor import (
     AGENT_S3_MAPPED_TOOL_ALLOWLIST,
     AgentS3StepExecutor,
-    AgentS3StepResult,
 )
 from services.event_bus import EventBus
 from services.tool_registry import AgentS3StepParams

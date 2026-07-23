@@ -6,7 +6,7 @@ import uuid
 import pytest
 
 from services.event_bus import drain
-from services.workflow_service import WorkflowService, parse_intent
+from services.workflow_service import parse_intent
 
 
 # ---------- Pure parser tests ----------

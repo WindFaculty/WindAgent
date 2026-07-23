@@ -7,12 +7,15 @@ discovery snapshot reconciliation, and audit trails.
 from __future__ import annotations
 import uuid
 import time
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 from dataclasses import dataclass, field
 
 from windagent_providers.base.contracts import DiscoveredModel
-from windagent_providers.registry.model_normalizer import normalize_model_id, NormalizedModelInfo
-from windagent_providers.registry.equivalence import classify_equivalence, EquivalenceLevel, EquivalenceAssessment
+from windagent_providers.registry.model_normalizer import normalize_model_id
+from windagent_providers.registry.equivalence import (
+    classify_equivalence,
+    EquivalenceLevel,
+)
 
 
 @dataclass
@@ -67,8 +70,10 @@ class CanonicalModelRegistryService:
         results: List[EndpointBindingRecord] = []
 
         for disc in discovered_models:
-            norm = normalize_model_id(disc.raw_model_id, default_vendor=disc.provider_id)
-            
+            norm = normalize_model_id(
+                disc.raw_model_id, default_vendor=disc.provider_id
+            )
+
             # Find or create canonical model
             canonical_id = None
             for c_id, c_rec in self._canonical_models.items():
@@ -94,7 +99,11 @@ class CanonicalModelRegistryService:
             # Check if binding already exists for this endpoint + canonical model
             existing_binding = None
             for b in self._bindings.values():
-                if b.endpoint_id == endpoint_id and b.canonical_model_id == canonical_id and b.provider_model_id == disc.raw_model_id:
+                if (
+                    b.endpoint_id == endpoint_id
+                    and b.canonical_model_id == canonical_id
+                    and b.provider_model_id == disc.raw_model_id
+                ):
                     existing_binding = b
                     break
 
@@ -118,21 +127,29 @@ class CanonicalModelRegistryService:
 
         return results
 
-    def get_exact_equivalent_endpoints(self, canonical_model_id: str) -> List[EndpointBindingRecord]:
+    def get_exact_equivalent_endpoints(
+        self, canonical_model_id: str
+    ) -> List[EndpointBindingRecord]:
         """
         Returns binding records strictly with equivalence_level == 'exact_revision'.
         Used exclusively for automatic failover candidate querying.
         """
         return [
-            b for b in self._bindings.values()
+            b
+            for b in self._bindings.values()
             if b.canonical_model_id == canonical_model_id
             and b.is_active
             and b.equivalence_level == EquivalenceLevel.EXACT_REVISION.value
         ]
 
-    def merge_canonical_models(self, source_canonical_id: str, target_canonical_id: str, actor: str = "system") -> bool:
+    def merge_canonical_models(
+        self, source_canonical_id: str, target_canonical_id: str, actor: str = "system"
+    ) -> bool:
         """Merges source canonical model into target canonical model with audit tracking."""
-        if source_canonical_id not in self._canonical_models or target_canonical_id not in self._canonical_models:
+        if (
+            source_canonical_id not in self._canonical_models
+            or target_canonical_id not in self._canonical_models
+        ):
             return False
 
         # Re-point bindings
@@ -156,7 +173,9 @@ class CanonicalModelRegistryService:
         )
         return True
 
-    def split_binding(self, binding_id: str, new_canonical_name: str, actor: str = "system") -> Optional[EndpointBindingRecord]:
+    def split_binding(
+        self, binding_id: str, new_canonical_name: str, actor: str = "system"
+    ) -> Optional[EndpointBindingRecord]:
         """Splits an endpoint model binding into a newly created canonical model with audit tracking."""
         if binding_id not in self._bindings:
             return None

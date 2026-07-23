@@ -6,7 +6,6 @@ uses httpx.AsyncClient instead.
 """
 from __future__ import annotations
 
-import pytest
 
 
 def test_health_ok(client):

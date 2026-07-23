@@ -13,7 +13,6 @@ them on the next read.
 from __future__ import annotations
 
 import time
-import uuid
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Dict, Optional
@@ -21,6 +20,7 @@ from typing import Any, Dict, Optional
 
 class LockScope(str, Enum):
     """Granularity of the route lock."""
+
     SESSION = "session"
     TASK = "task"
     WORKFLOW = "workflow"
@@ -28,6 +28,7 @@ class LockScope(str, Enum):
 
 class LockStatus(str, Enum):
     """Lifecycle state of a route lock."""
+
     ACTIVE = "active"
     RELEASED = "released"
 
@@ -38,6 +39,7 @@ class RoutingSnapshot:
     Captures which rule produced the canonical model selection.
     Stored inside the lock so that later rule updates do not confuse callers.
     """
+
     rule_id: str
     rule_version: int
     canonical_model_id: str

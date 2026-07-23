@@ -5,14 +5,13 @@ Evaluates capabilities, provider health, quota, latency, and cost to lock routes
 
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Set
+from typing import Dict, List, Optional
 
 from windagent_core.domain.types import TaskId, SessionId
-from windagent_core.domain.models import TaskRequest
 from windagent_providers.capabilities import (
     ModelCapability, ModelCapabilityProfile, KNOWN_MODEL_PROFILES
 )
-from windagent_providers.base import BaseModelProvider, ProviderHealth, QuotaSnapshot
+from windagent_providers.base import BaseModelProvider
 from windagent_intelligence.model_router.route_lock import RouteLock
 
 

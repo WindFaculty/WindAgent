@@ -23,6 +23,7 @@ class FinishReason(str, Enum):
 @dataclass
 class CacheDirective:
     """Caching instructions for prompt caching & response caching."""
+
     enable_prompt_cache: bool = False
     enable_response_cache: bool = False
     ttl_seconds: Optional[int] = None
@@ -32,6 +33,7 @@ class CacheDirective:
 @dataclass
 class ProviderUsage:
     """Standardized Token Usage and Cost Metrics."""
+
     prompt_tokens: int = 0
     completion_tokens: int = 0
     cached_tokens: int = 0
@@ -47,6 +49,7 @@ class ProviderUsage:
 @dataclass
 class ProviderHealth:
     """Endpoint / Adapter Diagnostic Health Record."""
+
     provider_name: str
     healthy: bool
     latency_ms: float = 0.0
@@ -58,6 +61,7 @@ class ProviderHealth:
 @dataclass
 class QuotaState:
     """Snapshot of Provider Quota Balance."""
+
     provider_id: str
     has_quota: bool = True
     remaining_requests_today: Optional[int] = None
@@ -70,6 +74,7 @@ class QuotaState:
 @dataclass
 class RateLimitState:
     """Current Rate Limit Status (RPM / TPM)."""
+
     rpm_limit: Optional[int] = None
     rpm_remaining: Optional[int] = None
     tpm_limit: Optional[int] = None
@@ -80,6 +85,7 @@ class RateLimitState:
 @dataclass
 class ProviderCapabilities:
     """Capability Descriptor for Model Capabilities."""
+
     supports_chat: bool = True
     supports_streaming: bool = True
     supports_tools: bool = True
@@ -93,6 +99,7 @@ class ProviderCapabilities:
 @dataclass
 class ModelDescriptor:
     """Canonical or Provider Model Descriptor."""
+
     model_id: str
     provider_id: str
     display_name: str
@@ -105,6 +112,7 @@ class ModelDescriptor:
 @dataclass
 class DiscoveredModel:
     """Dynamically Discovered Model Information."""
+
     raw_model_id: str
     canonical_name: str
     provider_id: str
@@ -115,6 +123,7 @@ class DiscoveredModel:
 @dataclass
 class ConnectionTestResult:
     """Result payload for Test Connect interactions."""
+
     success: bool
     provider_id: str
     endpoint_url: Optional[str] = None
@@ -129,6 +138,7 @@ class ConnectionTestResult:
 @dataclass
 class ProtocolDetectionResult:
     """Fingerprint match result during Test Connect probe."""
+
     protocol_type: str  # "openai", "anthropic", "gemini", "ollama"
     vendor: str
     confidence: float
@@ -138,6 +148,7 @@ class ProtocolDetectionResult:
 @dataclass
 class ProviderRequest:
     """Unified Request Contract for Model Execution."""
+
     messages: List[Dict[str, Any]] = field(default_factory=list)
     system_instruction: Optional[str] = None
     temperature: Optional[float] = None
@@ -160,6 +171,7 @@ class ProviderRequest:
 @dataclass
 class ProviderResponse:
     """Unified Response Contract for Synchronous Model Execution."""
+
     canonical_model_id: str
     provider_model_id: str
     endpoint_id: Optional[str] = None
@@ -183,7 +195,10 @@ class ProviderResponse:
 @dataclass
 class ProviderStreamEvent:
     """Structured Event Emission for Streaming Calls."""
-    event_type: str  # "token", "thinking_delta", "tool_call_delta", "metadata", "error", "done"
+
+    event_type: (
+        str  # "token", "thinking_delta", "tool_call_delta", "metadata", "error", "done"
+    )
     sequence_number: int
     delta: Optional[str] = None
     reasoning_delta: Optional[str] = None

@@ -13,10 +13,7 @@ import json
 import pytest
 
 from services.model_client import (
-    ChatMessage,
     MockModelClient,
-    ModelOfflineError,
-    ModelResponseError,
 )
 from services.planner_service import (
     SYSTEM_PROMPT,

@@ -10,7 +10,7 @@ Unit Tests for WindAgent Orchestration Engine (Phase 8):
 
 import pytest
 import pytest_asyncio
-from windagent_core.domain.types import TaskId, SessionId, RunId, StepId, EventId
+from windagent_core.domain.types import TaskId, SessionId, StepId, EventId
 from windagent_core.domain.models import WorkflowStep
 from windagent_core.events.envelope import EventEnvelope
 from windagent_core.errors.exceptions import DomainError, RetryableError, NonRetryableError
@@ -20,7 +20,7 @@ from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork
 from windagent_orchestration import (
     TaskState, TaskStateMachine, RetryPolicy,
     TaskScheduler, TaskPriority, StepDispatcher, CancellationManager,
-    RecoveryManager, TaskManager, DurableExecutionFacts
+    RecoveryManager, TaskManager
 )
 
 

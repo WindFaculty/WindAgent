@@ -7,7 +7,7 @@ from __future__ import annotations
 import logging
 from typing import Any, Dict, List, Optional
 
-from windagent_core.errors.exceptions import ConflictError, NotFoundError, ValidationError
+from windagent_core.errors.exceptions import ConflictError, NotFoundError
 from windagent_tools.skills.manifest import SkillManifest
 
 logger = logging.getLogger("windagent.tools.skills")

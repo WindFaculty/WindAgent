@@ -25,16 +25,13 @@ from __future__ import annotations
 
 import json
 import os
-from pathlib import Path
 
 import pytest
 
 from services.agent_s3_config import (
-    AgentS3Config,
     load_agent_s3_config,
 )
 from services.agent_s3_health import (
-    build_status,
     health_summary,
     scrub_secrets,
     status_to_dict,
@@ -234,7 +231,7 @@ class TestStatusToDictScrubbing:
         accidentally puts the secrets into the extra dict. The scrub
         layer MUST still strip them out."""
         cfg = load_agent_s3_config()
-        from services.agent_s3_config import status_from_config, AgentS3ConfigStatus
+        from services.agent_s3_config import status_from_config
         status = status_from_config(cfg)
         # Inject fake secrets directly into extra — simulates regression.
         from dataclasses import replace

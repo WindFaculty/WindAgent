@@ -6,16 +6,22 @@ Supports OpenAI, OpenRouter, DeepSeek, and local VLLM endpoints via httpx.
 from __future__ import annotations
 import json
 import logging
-from typing import Any, AsyncIterator, Dict, List, Optional
+from typing import AsyncIterator, Dict, List, Optional
 import httpx
 
 from windagent_core.domain.types import ModelCallId
 from windagent_core.domain.models import ModelRequest, ModelResponse
 from windagent_core.errors.exceptions import ProviderError
 from windagent_providers.base import (
-    BaseModelProvider, ProviderHealth, QuotaSnapshot, ModelChunk
+    BaseModelProvider,
+    ProviderHealth,
+    QuotaSnapshot,
+    ModelChunk,
 )
-from windagent_providers.capabilities import KNOWN_MODEL_PROFILES, ModelCapabilityProfile
+from windagent_providers.capabilities import (
+    KNOWN_MODEL_PROFILES,
+    ModelCapabilityProfile,
+)
 
 logger = logging.getLogger("windagent.providers.openai")
 
@@ -65,14 +71,18 @@ class OpenAICompatibleProviderAdapter(BaseModelProvider):
             payload["max_tokens"] = request.max_tokens
 
         headers = self._get_headers()
-        
+
         try:
             if self._client:
-                resp = await self._client.post(url, json=payload, headers=headers, timeout=30.0)
+                resp = await self._client.post(
+                    url, json=payload, headers=headers, timeout=30.0
+                )
             else:
                 async with httpx.AsyncClient() as client:
-                    resp = await client.post(url, json=payload, headers=headers, timeout=30.0)
-            
+                    resp = await client.post(
+                        url, json=payload, headers=headers, timeout=30.0
+                    )
+
             if resp.status_code != 200:
                 raise ProviderError(
                     message=f"OpenAI API returned status {resp.status_code}: {resp.text}",
@@ -80,7 +90,7 @@ class OpenAICompatibleProviderAdapter(BaseModelProvider):
                     status_code=resp.status_code,
                     retryable=(resp.status_code in (429, 500, 502, 503, 504)),
                 )
-            
+
             data = resp.json()
             choice = data["choices"][0]
             content = choice["message"]["content"] or ""
@@ -112,7 +122,9 @@ class OpenAICompatibleProviderAdapter(BaseModelProvider):
         headers = self._get_headers()
 
         async with httpx.AsyncClient() as client:
-            async with client.stream("POST", url, json=payload, headers=headers, timeout=60.0) as response:
+            async with client.stream(
+                "POST", url, json=payload, headers=headers, timeout=60.0
+            ) as response:
                 if response.status_code != 200:
                     raise ProviderError(
                         message=f"OpenAI streaming status {response.status_code}",
@@ -130,20 +142,25 @@ class OpenAICompatibleProviderAdapter(BaseModelProvider):
                             delta = chunk_json["choices"][0]["delta"].get("content", "")
                             finish = chunk_json["choices"][0].get("finish_reason")
                             if delta or finish:
-                                yield ModelChunk(call_id=request.id, delta=delta, finish_reason=finish)
+                                yield ModelChunk(
+                                    call_id=request.id,
+                                    delta=delta,
+                                    finish_reason=finish,
+                                )
                         except json.JSONDecodeError:
                             continue
 
     def estimate_cost(self, request: ModelRequest) -> float:
-        profile = KNOWN_MODEL_PROFILES.get(request.model, KNOWN_MODEL_PROFILES["gpt-4o"])
+        profile = KNOWN_MODEL_PROFILES.get(
+            request.model, KNOWN_MODEL_PROFILES["gpt-4o"]
+        )
         # Estimate ~4 chars per token
         prompt_len = sum(len(str(m.get("content", ""))) for m in request.messages)
         prompt_tokens = max(1, prompt_len // 4)
         completion_tokens = request.max_tokens or 500
-        return (
-            (prompt_tokens / 1000.0) * profile.cost_per_1k_prompt_tokens +
-            (completion_tokens / 1000.0) * profile.cost_per_1k_completion_tokens
-        )
+        return (prompt_tokens / 1000.0) * profile.cost_per_1k_prompt_tokens + (
+            completion_tokens / 1000.0
+        ) * profile.cost_per_1k_completion_tokens
 
     async def get_quota(self) -> QuotaSnapshot:
         return QuotaSnapshot(

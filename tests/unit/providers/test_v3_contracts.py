@@ -4,24 +4,16 @@ Adheres strictly to ban_ke_hoach.md §PHASE 1 requirements.
 """
 
 import sys
-import pytest
-from datetime import datetime, timezone
 
 from windagent_providers.base.contracts import (
-    CacheDirective, ConnectionTestResult, DiscoveredModel, FinishReason,
-    ModelDescriptor, ProtocolDetectionResult, ProviderCapabilities, ProviderHealth,
-    ProviderRequest, ProviderResponse, ProviderStreamEvent, ProviderUsage, QuotaState,
-    RateLimitState
+    FinishReason,
+    ProviderRequest, ProviderResponse, ProviderStreamEvent, ProviderUsage
 )
 from windagent_providers.base.errors import (
     AuthenticationFailure, CancellationFailure, ContentPolicyFailure, ContextOverflowFailure,
     InvalidRequestFailure, MalformedResponseFailure, ModelNotFoundFailure, NetworkFailure,
     PermissionFailure, ProtocolMismatchFailure, ProviderFailure, ProviderUnavailableFailure,
     QuotaExhaustedFailure, RateLimitFailure, SameModelEndpointExhausted, TimeoutFailure
-)
-from windagent_providers.base.ports import (
-    CachePort, CanonicalModelRegistryPort, EndpointRegistryPort, EndpointStatePort,
-    QuotaStatePort, RouteAttemptPort, RouteLockPort, UsageLedgerPort
 )
 from windagent_providers.base.secret_redaction import redact_dict, redact_text
 from windagent_providers.base.capabilities import ModelCapability, ModelCapabilityProfile
@@ -151,8 +143,6 @@ def test_import_boundary_isolation():
     Architecture Acceptance Gate:
     windagent_providers package MUST NOT import SQLAlchemy, FastAPI, Starlette, or apps backend.
     """
-    import windagent_providers
-    import windagent_providers.base
 
     provider_modules = [
         mod_name for mod_name in sys.modules

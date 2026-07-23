@@ -5,7 +5,7 @@ Tests task claims, heartbeat lease renewal, multi-worker lock safety, task cance
 
 import time
 import pytest
-from windagent_worker import TaskLeaseManager, ProductionWorker, WorkerRunner
+from windagent_worker import TaskLeaseManager, ProductionWorker
 
 
 def test_task_lease_manager_claims_and_renewals():

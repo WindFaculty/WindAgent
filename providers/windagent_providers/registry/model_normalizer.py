@@ -6,7 +6,7 @@ Extracts vendor, family, revision, quantization, and context limits from raw mod
 from __future__ import annotations
 import re
 from dataclasses import dataclass
-from typing import Optional, Tuple
+from typing import Optional
 
 
 @dataclass(frozen=True)
@@ -22,9 +22,9 @@ class NormalizedModelInfo:
 
 
 _REVISION_PATTERNS = [
-    re.compile(r"(\d{4}-\d{2}-\d{2})"),       # e.g. 2024-05-13
-    re.compile(r"(\d{8})"),                   # e.g. 20241022
-    re.compile(r"v(\d+\.\d+(\.\d+)?)"),      # e.g. v1.5, v0.2
+    re.compile(r"(\d{4}-\d{2}-\d{2})"),  # e.g. 2024-05-13
+    re.compile(r"(\d{8})"),  # e.g. 20241022
+    re.compile(r"v(\d+\.\d+(\.\d+)?)"),  # e.g. v1.5, v0.2
     re.compile(r":(latest|turbo|mini|preview|exp)"),
 ]
 
@@ -39,7 +39,9 @@ _SIZE_PATTERNS = [
 ]
 
 
-def normalize_model_id(raw_model_id: str, default_vendor: str = "generic") -> NormalizedModelInfo:
+def normalize_model_id(
+    raw_model_id: str, default_vendor: str = "generic"
+) -> NormalizedModelInfo:
     """Normalizes raw model ID into structured info with deterministic equivalence fingerprint."""
     if not raw_model_id:
         raw_model_id = "unknown-model"
@@ -51,7 +53,16 @@ def normalize_model_id(raw_model_id: str, default_vendor: str = "generic") -> No
     vendor = default_vendor
     if len(parts) >= 2:
         vendor_candidate = parts[0].lower()
-        if vendor_candidate in ("openai", "anthropic", "google", "meta-llama", "mistralai", "openrouter", "ollama", "nvidia"):
+        if vendor_candidate in (
+            "openai",
+            "anthropic",
+            "google",
+            "meta-llama",
+            "mistralai",
+            "openrouter",
+            "ollama",
+            "nvidia",
+        ):
             vendor = vendor_candidate
             clean_id = "/".join(parts[1:])
 

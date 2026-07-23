@@ -16,7 +16,6 @@ from db.database import Database
 from db.models import (
     CanonicalModelORM,
     ProviderModelBindingORM,
-    RouteLockORM,
     PartialArtifactORM,
     ToolCallORM,
 )

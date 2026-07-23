@@ -3,7 +3,7 @@ API V2 Model Providers endpoints for WindAgent (Phase 12).
 """
 
 from __future__ import annotations
-from typing import Any, Dict, List
+from typing import Dict, List
 from fastapi import APIRouter
 from pydantic import BaseModel
 

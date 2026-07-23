@@ -8,10 +8,8 @@ import logging
 from typing import List, Tuple
 
 from windagent_core.domain.types import SessionId, RunId
-from windagent_core.domain.models import WorkflowRun, WorkflowStatus, StepStatus
-from windagent_core.errors.exceptions import DomainError
 from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork
-from windagent_orchestration.state_machine import TaskState, TaskStateMachine
+from windagent_orchestration.state_machine import TaskState
 
 logger = logging.getLogger("windagent.orchestration.recovery")
 

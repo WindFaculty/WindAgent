@@ -38,7 +38,7 @@ class MemoryWritePolicy:
         if self.contains_secrets(val_str):
             logger.warning(f"Memory write denied for key [{record.key}]: Value contains detected secret credentials.")
             raise PermissionDeniedError(
-                message=f"Memory write denied: Storing API keys, tokens, or passwords in persistent memory is forbidden.",
+                message="Memory write denied: Storing API keys, tokens, or passwords in persistent memory is forbidden.",
                 code="WINDAGENT_ERR_MEMORY_SECRET_FORBIDDEN",
                 details={"key": record.key, "scope": record.scope.value},
             )

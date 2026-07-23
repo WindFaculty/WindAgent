@@ -6,10 +6,9 @@ Unit tests for WindAgent Observability subsystem (Phase 11):
 - AuditLogger correlated event logging and ordering verification
 """
 
-import pytest
 from windagent_observability import (
-    MetricsCollector, SpanKind, Span, TraceChain,
-    SecretSanitizer, AuditEvent, AuditLogger
+    MetricsCollector, SpanKind, TraceChain,
+    SecretSanitizer, AuditLogger
 )
 
 

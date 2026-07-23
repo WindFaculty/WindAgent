@@ -1,7 +1,7 @@
 """Phase 2 — Agent runtime adapters routing requests through the central router service."""
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Optional
 from services.router_execution_service import RouterExecutionService
 
 class CodingAgent:

@@ -11,8 +11,9 @@ from typing import Any, Dict, List, Optional
 
 from windagent_providers.base.contracts import ProviderRequest
 from windagent_providers.routing.circuit_breaker import InMemoryEndpointStateManager
-from windagent_providers.routing.endpoint_selector import EndpointSelector
-from windagent_providers.routing.execution_coordinator import EndpointExecutionCoordinator
+from windagent_providers.routing.execution_coordinator import (
+    EndpointExecutionCoordinator,
+)
 from windagent_providers.routing.rules import RoutingRuleSet
 
 from db.database import Database
@@ -54,6 +55,7 @@ class ProviderV3Coordinator:
     def _resolve_adapter(self, candidate: Any) -> LegacyClientV3Adapter:
         class _FakeProvider:
             pass
+
         fake = _FakeProvider()
         fake.id = getattr(candidate, "_provider_id", candidate.provider_name)
         fake.api_source = candidate.provider_name
@@ -136,5 +138,7 @@ class ProviderV3Coordinator:
             "scope": "role",
             "scope_id": scope,
         }
-        async for event in self._coordinator.execute_stream(request, lock_dict, turn_id=scope):
+        async for event in self._coordinator.execute_stream(
+            request, lock_dict, turn_id=scope
+        ):
             yield event

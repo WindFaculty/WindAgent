@@ -12,7 +12,7 @@ Short TTL because these values change quickly.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Any, Dict, Optional
 
 from windagent_providers.base.contracts import ProviderHealth, QuotaState

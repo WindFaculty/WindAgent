@@ -5,7 +5,7 @@ Replays recorded trace events and step sequences for offline benchmark evaluatio
 
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 
 @dataclass

@@ -7,7 +7,6 @@ and retry backoff semantics.
 
 from __future__ import annotations
 
-import time
 from datetime import datetime, timezone, timedelta
 from typing import Optional
 
@@ -59,4 +58,4 @@ async def apply_rate_limit_cooldown(
 
 def calculate_backoff_cooldown_seconds(attempt_index: int, base: float = 1.0) -> float:
     """Exponential backoff capped at ceiling."""
-    return min(base * (2 ** attempt_index), _COOLDOWN_CEILING_SECONDS)
+    return min(base * (2**attempt_index), _COOLDOWN_CEILING_SECONDS)

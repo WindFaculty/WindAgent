@@ -22,7 +22,6 @@ from db.models import (
     AgentInstanceORM,
     AgentORM,
     AgentRunORM,
-    AgentSessionORM,
     WorktreeORM,
 )
 from schemas.event import EventEnvelope

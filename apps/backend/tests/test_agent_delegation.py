@@ -2,10 +2,9 @@
 from __future__ import annotations
 
 import asyncio
-import pytest
 from unittest.mock import AsyncMock, MagicMock
 
-from schemas.agent_routing import AgentRole, DelegationRequest
+from schemas.agent_routing import DelegationRequest
 from services.agent_capability_registry import AgentCapabilityRegistry
 from services.agent_delegation_service import (
     AgentDelegationService,

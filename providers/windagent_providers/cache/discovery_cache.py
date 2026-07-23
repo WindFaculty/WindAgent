@@ -9,7 +9,7 @@ Invalidated on credential rotation or protocol bump.
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 
 from windagent_providers.base.contracts import DiscoveredModel
 from windagent_providers.base.ports import CachePort

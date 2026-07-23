@@ -8,12 +8,11 @@ provider-behavior-version tagging.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime, timezone
-from typing import Any, Dict, Optional
+from typing import Optional
 
 from windagent_providers.base.contracts import ProviderRequest, ProviderResponse
 from windagent_providers.base.ports import CachePort
-from windagent_providers.cache.contracts import CacheEntry, CacheNamespace, CacheTags, ResponseCacheHit
+from windagent_providers.cache.contracts import CacheEntry, CacheNamespace, CacheTags
 from windagent_providers.cache.eligibility import response_cache_eligible
 from windagent_providers.cache.keys import build_response_cache_key
 
@@ -131,7 +130,9 @@ class ResponseCacheService:
         )
 
         try:
-            await self._cache.set(key, entry, ttl_seconds=ttl_seconds or self._default_ttl_seconds)
+            await self._cache.set(
+                key, entry, ttl_seconds=ttl_seconds or self._default_ttl_seconds
+            )
             return True
         except Exception:
             return False

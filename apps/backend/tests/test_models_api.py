@@ -2,13 +2,11 @@
 from __future__ import annotations
 
 import os
-import json
 import pytest
 from unittest.mock import AsyncMock, patch
-import httpx
 
 from sqlalchemy import select
-from db.models import ModelProviderORM, ModelCatalogORM, ModelRuntimeStatusORM, ProviderQuotaSnapshotORM, ModelActivityORM
+from db.models import ModelCatalogORM, ModelRuntimeStatusORM, ModelActivityORM
 
 
 def test_models_health_returns_200_with_expected_shape(client):

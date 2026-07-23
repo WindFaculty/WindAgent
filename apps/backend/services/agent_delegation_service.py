@@ -9,7 +9,7 @@ Manages agent-to-agent task delegation with:
 from __future__ import annotations
 
 import logging
-from typing import List, Optional, Set
+from typing import Optional, Set
 
 from schemas.agent_routing import (
     AgentRole,

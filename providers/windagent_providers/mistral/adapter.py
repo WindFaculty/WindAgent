@@ -4,7 +4,7 @@ Overrides Mistral OpenAI-compatible base URL and headers.
 """
 
 from __future__ import annotations
-from typing import Dict, Optional
+from typing import Optional
 import httpx
 
 from windagent_providers.openai_compatible.transport import OpenAICompatibleTransport

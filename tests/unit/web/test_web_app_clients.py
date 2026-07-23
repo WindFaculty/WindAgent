@@ -2,8 +2,6 @@
 Unit tests for WindAgent Web Application state recovery and event deduplication (Phase 13).
 """
 
-import pytest
-from unittest.mock import MagicMock
 
 
 def test_state_recovery_default_fallback():

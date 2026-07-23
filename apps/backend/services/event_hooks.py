@@ -15,12 +15,11 @@ from __future__ import annotations
 
 import json
 import logging
-import os
 import threading
 from collections import OrderedDict
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import IO, Dict, Optional, Union
+from typing import IO, Union
 from uuid import uuid4
 
 from db.database import Database

@@ -7,7 +7,6 @@ from __future__ import annotations
 import logging
 from typing import Dict, List, Optional, Tuple
 
-from windagent_core.errors.exceptions import NotFoundError, ValidationError
 from windagent_memory.models import MemoryRecord, MemoryScope
 from windagent_memory.write_policy import MemoryWritePolicy
 

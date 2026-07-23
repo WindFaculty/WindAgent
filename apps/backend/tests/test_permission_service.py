@@ -11,15 +11,10 @@ Covers:
 from __future__ import annotations
 
 import asyncio
-import json
 import uuid
 
 import pytest
 
-from schemas.event import (
-    EventEnvelope,
-    PermissionRequestData,
-)
 from services.event_bus import EventBus, drain
 from services.permission_service import PermissionConfig, PermissionService
 from services.tool_registry import get_tool

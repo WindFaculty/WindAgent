@@ -4,7 +4,6 @@ Ensures that all routing rules defined in main.py are correctly resolved.
 """
 from __future__ import annotations
 
-import pytest
 
 
 def test_compatibility_health_ok(client):

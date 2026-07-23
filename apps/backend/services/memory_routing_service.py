@@ -14,7 +14,6 @@ Usage example::
 from __future__ import annotations
 
 import logging
-from typing import Optional
 
 from schemas.router_memory import MemoryRoutingContext, MemoryRoutingDecision
 

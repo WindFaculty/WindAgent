@@ -13,7 +13,6 @@ from db.models import (
     ModelProviderORM,
     ModelCatalogORM,
     ModelRuntimeStatusORM,
-    ProviderQuotaSnapshotORM,
     ModelRoutingRuleORM,
     ModelActivityORM,
     ModelBenchmarkRunORM,

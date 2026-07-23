@@ -4,7 +4,7 @@ Delegates legacy backend requests to Architecture V2 application core without co
 """
 
 from __future__ import annotations
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 from windagent_core.config.feature_flags import FeatureFlagsManager
 
 flags_manager = FeatureFlagsManager()

@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 from windagent_providers.base.contracts import ProviderRequest
 from windagent_providers.cache.contracts import CacheNamespace, ResponseCacheKey

@@ -152,7 +152,7 @@ class GoogleGeminiClient:
             raise ProviderOfflineError(f"Gemini API unreachable: {exc}") from exc
 
         if resp.status_code == 429:
-            raise ProviderResponseError(f"Google Gemini Rate limit exceeded (HTTP 429)")
+            raise ProviderResponseError("Google Gemini Rate limit exceeded (HTTP 429)")
 
         if resp.status_code != 200:
             raise ProviderResponseError(

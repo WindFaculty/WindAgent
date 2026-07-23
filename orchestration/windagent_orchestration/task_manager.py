@@ -8,12 +8,11 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Any, Dict, Optional
+from typing import Dict, Optional
 
-from windagent_core.domain.types import TaskId, SessionId, RunId
-from windagent_core.domain.models import Task, SessionStatus
+from windagent_core.domain.types import TaskId, SessionId
 from windagent_orchestration.state_machine import TaskState, TaskStateMachine
-from windagent_orchestration.scheduler import TaskScheduler, TaskPriority
+from windagent_orchestration.scheduler import TaskScheduler
 from windagent_orchestration.dispatcher import StepDispatcher
 from windagent_orchestration.retry_policy import RetryPolicy
 from windagent_orchestration.cancellation import CancellationManager

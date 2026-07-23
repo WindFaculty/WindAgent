@@ -11,8 +11,6 @@ from pathlib import Path
 import pytest
 
 from services.agent_s3_config import (
-    AgentS3Config,
-    AgentS3Source,
     _find_repo_root,
     config_missing_fields,
     external_repo_available,

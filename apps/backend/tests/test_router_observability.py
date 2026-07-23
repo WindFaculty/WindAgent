@@ -1,7 +1,6 @@
 """Phase 6 — Tests for router runtime observability endpoints."""
 from __future__ import annotations
 
-import pytest
 
 
 class TestRuntimeSummary:

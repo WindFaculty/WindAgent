@@ -5,8 +5,6 @@ Adheres strictly to ban_ke_hoach.md §PHASE 2 requirements.
 
 import sys
 import pytest
-import asyncio
-from datetime import datetime, timezone
 from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -23,15 +21,14 @@ from db.models import Base as LegacyBase, ModelProviderORM, CanonicalModelORM, P
 from storage.windagent_storage.orm.models import BaseORM
 from storage.windagent_storage.orm.v3_models import (
     ProviderVendorORM, ProviderCredentialORM, ProviderEndpointORM,
-    CanonicalModelV3ORM, EndpointModelBindingORM, RouteLockV3ORM, RouteAttemptV3ORM
+    CanonicalModelV3ORM, EndpointModelBindingORM
 )
 from storage.windagent_storage.migrations.v3_schema_migration import (
-    create_v3_tables, backfill_legacy_providers, audit_v3_migration
+    backfill_legacy_providers, audit_v3_migration
 )
 from storage.windagent_storage.repositories.v3_repositories import (
     SQLEndpointRegistryRepository, SQLCanonicalModelRegistryRepository,
-    SQLRouteLockRepository, SQLRouteAttemptRepository, SQLQuotaStateRepository,
-    SQLEndpointStateRepository, SQLUsageLedgerRepository
+    SQLRouteLockRepository, SQLEndpointStateRepository
 )
 
 

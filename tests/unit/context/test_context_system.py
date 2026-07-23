@@ -7,10 +7,9 @@ Unit Tests for WindAgent Context System (Phase 9):
 - ContextBuilder prompt context assembly
 """
 
-import pytest
 from windagent_context import (
     ContextItemProvenance, ContextItem, TokenBudgetManager, estimate_tokens,
-    RepositoryIndex, ContextCompactor, ContextBuilder
+    RepositoryIndex, ContextCompactor
 )
 
 

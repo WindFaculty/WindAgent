@@ -48,7 +48,10 @@ class InMemoryCacheBackend(CachePort):
                 tags = [raw_tags]
             elif hasattr(raw_tags, "__dataclass_fields__"):
                 # Tags stored as a dataclass (e.g. CacheTags) -> collapse to strings.
-                tags = [f"{k}:{getattr(raw_tags, k, None) or 'none'}" for k in raw_tags.__dict__]
+                tags = [
+                    f"{k}:{getattr(raw_tags, k, None) or 'none'}"
+                    for k in raw_tags.__dict__
+                ]
             else:
                 tags = [str(t) for t in raw_tags]
             self._data[key] = {"value": value, "expires_at": expires_at, "tags": tags}

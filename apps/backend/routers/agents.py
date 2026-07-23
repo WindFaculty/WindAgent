@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, Body, HTTPException, Request, status
+from fastapi import APIRouter, HTTPException, Request, status
 from pydantic import BaseModel
 
 from services.agent_registry_service import AgentRegistryService
@@ -172,6 +172,6 @@ async def get_agent_activity(agent_id: str, request: Request) -> List[Dict[str, 
     # Default fallback if no runs yet
     if not activities:
         activities = [
-            {"time": agent["created_at"], "message": f"Agent registered in registry"}
+            {"time": agent["created_at"], "message": "Agent registered in registry"}
         ]
     return activities

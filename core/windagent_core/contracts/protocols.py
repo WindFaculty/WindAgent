@@ -9,7 +9,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, Protocol, runtime_checkable
 
 from windagent_core.domain.types import (
-    TaskId, RunId, SessionId, WorkflowId, StepId, ArtifactId
+    TaskId, RunId, SessionId, ArtifactId
 )
 from windagent_core.domain.models import (
     Task, Session, WorkflowRun, ArtifactRef, PermissionRequest

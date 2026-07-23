@@ -165,7 +165,7 @@ class HermesRuntimeManager:
                 env=env,
                 creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
             )
-        except Exception as e:
+        except Exception:
             log.exception("Failed to launch Hermes subprocess")
             self.status = "failed"
             return False

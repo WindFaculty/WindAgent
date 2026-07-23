@@ -8,7 +8,7 @@ be imported cheaply in tests.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Dict, List, Literal, Optional, Type
 
 from pydantic import BaseModel, Field, HttpUrl

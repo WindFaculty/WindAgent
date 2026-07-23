@@ -16,7 +16,7 @@ import pytest
 from sqlalchemy import select
 
 from db.database import Database
-from db.models import AgentInstanceORM, AgentRunORM, AgentORM
+from db.models import AgentRunORM, AgentORM
 from services.hermes.session_bridge import HermesSessionBridge
 from services.hermes.supervisor import HermesSupervisor
 from services.hermes.config import HermesConfig

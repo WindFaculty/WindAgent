@@ -10,11 +10,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import List, Optional, Set
+from typing import List, Optional
 
 
 class RulePriority(int, Enum):
     """Evaluation priority (lower number = evaluated first)."""
+
     CRITICAL = 0
     HIGH = 10
     NORMAL = 50
@@ -23,6 +24,7 @@ class RulePriority(int, Enum):
 
 class CostClass(str, Enum):
     """Budget classification for cost-aware routing."""
+
     ECONOMY = "economy"
     STANDARD = "standard"
     PREMIUM = "premium"
@@ -102,7 +104,9 @@ class RoutingRule:
 
         # required_capabilities: all must be present
         if self.required_capabilities:
-            if not all(cap in ctx.available_capabilities for cap in self.required_capabilities):
+            if not all(
+                cap in ctx.available_capabilities for cap in self.required_capabilities
+            ):
                 return False
 
         # min context size

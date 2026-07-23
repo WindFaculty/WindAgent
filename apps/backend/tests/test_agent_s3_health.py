@@ -13,9 +13,7 @@ import pytest
 from services.agent_s3_adapter import MockAgentS3Adapter
 from services.agent_s3_config import (
     AgentS3Config,
-    AgentS3ConfigStatus,
     load_agent_s3_config,
-    status_from_config,
 )
 from services.agent_s3_health import (
     build_status,

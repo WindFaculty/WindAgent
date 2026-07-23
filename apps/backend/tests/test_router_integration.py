@@ -1,14 +1,10 @@
 """Comprehensive integration tests for the new OmniRoute-inspired Router module."""
 from __future__ import annotations
 
-import json
 import pytest
-from uuid import UUID
-from datetime import datetime, timezone
 from sqlalchemy import select
 
 from db.models import ModelRoutingRuleORM, RouterExecutionLogORM, ModelCatalogORM
-from schemas.router import RoutingRuleCreate, RoutingRulePatch
 
 
 def test_orm_routing_rule_new_fields(client, app_state):
