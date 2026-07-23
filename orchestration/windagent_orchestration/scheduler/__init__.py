@@ -1,5 +1,5 @@
 """
-Top-level scheduler module adapter re-exporting from scheduler subpackage.
+Scheduler Subpackage Export for Orchestration V2.
 """
 
 from windagent_orchestration.scheduler.priority_queue import TaskPriorityHeap, TaskPriority, ScheduledTaskItem
