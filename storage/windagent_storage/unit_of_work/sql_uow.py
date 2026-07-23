@@ -17,7 +17,8 @@ from windagent_storage.repositories.sql_repositories import (
 )
 from windagent_storage.repositories.v2_orchestration_repositories import (
     SqlTaskRunRepository, SqlExecutionLeaseRepository,
-    SqlWorkflowCheckpointRepository, SqlCancellationRepository
+    SqlWorkflowCheckpointRepository, SqlCancellationRepository,
+    SqlRuntimeExecutionRepository, SqlRecoveryLeaderLeaseRepository
 )
 
 
@@ -37,6 +38,8 @@ class SqlUnitOfWork:
         self.leases: SqlExecutionLeaseRepository = None  # type: ignore
         self.checkpoints: SqlWorkflowCheckpointRepository = None  # type: ignore
         self.cancellations: SqlCancellationRepository = None  # type: ignore
+        self.runtime_executions: SqlRuntimeExecutionRepository = None  # type: ignore
+        self.recovery_leader_leases: SqlRecoveryLeaderLeaseRepository = None  # type: ignore
 
         self._pending_outbox_records: List[OutboxRecordORM] = []
 
@@ -53,6 +56,8 @@ class SqlUnitOfWork:
         self.leases = SqlExecutionLeaseRepository(self.session)
         self.checkpoints = SqlWorkflowCheckpointRepository(self.session)
         self.cancellations = SqlCancellationRepository(self.session)
+        self.runtime_executions = SqlRuntimeExecutionRepository(self.session)
+        self.recovery_leader_leases = SqlRecoveryLeaderLeaseRepository(self.session)
 
         self._pending_outbox_records = []
         return self

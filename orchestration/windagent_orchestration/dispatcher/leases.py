@@ -1,10 +1,11 @@
 """
 Durable Execution Lease Data Model & Manager for Orchestration V2 Dispatcher.
-Enforces atomic lease acquisition, idempotency keys, and TTL expiration.
+Enforces atomic lease acquisition, idempotency keys, fencing tokens, and TTL expiration.
 """
 
 from __future__ import annotations
 
+import logging
 import time
 import uuid
 from dataclasses import dataclass, field
@@ -13,6 +14,8 @@ from typing import Optional, Dict, Any, List
 
 from windagent_orchestration.metrics import metrics
 from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork
+
+logger = logging.getLogger("windagent.orchestration.dispatcher.leases")
 
 
 @dataclass
@@ -24,6 +27,8 @@ class ExecutionLease:
     status: str  # active | expired | released
     expires_at: datetime
     idempotency_key: str
+    lease_generation: int = 1
+    fencing_token: str = ""
     created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
 
@@ -49,30 +54,19 @@ class LeaseManager:
         # In-memory deduplication check
         existing = self._idempotency_index.get(key)
         if existing and existing.status == "active" and existing.expires_at > now:
-            logger_msg = f"Duplicate lease claim prevented for idempotency key [{key}]"
+            logger.warning(f"Duplicate lease claim prevented for idempotency key [{key}]")
             duration_ms = (time.perf_counter() - t0) * 1000.0
             metrics.record_dispatch_claim(duration_ms)
             metrics.duplicate_executions += 1
             return None
 
         lease_id = str(uuid.uuid4())
-        lease = ExecutionLease(
-            lease_id=lease_id,
-            step_run_id=step_run_id,
-            run_id=run_id,
-            worker_id=worker_id,
-            status="active",
-            expires_at=expires_at,
-            idempotency_key=key,
-            created_at=now,
-        )
-
-        self._in_memory_leases[lease_id] = lease
-        self._idempotency_index[key] = lease
+        lease_gen = 1
+        fencing_token = f"fence_{step_run_id}_gen_1_{uuid.uuid4().hex[:6]}"
 
         if self.uow_factory:
             async with SqlUnitOfWork(self.uow_factory) as uow:
-                acquired = await uow.leases.acquire_lease(
+                acquired_dict = await uow.leases.acquire_lease(
                     lease_id=lease_id,
                     step_run_id=step_run_id,
                     run_id=run_id,
@@ -81,9 +75,29 @@ class LeaseManager:
                     idempotency_key=key,
                 )
                 await uow.commit()
-                if not acquired:
+                if not acquired_dict:
                     metrics.duplicate_executions += 1
                     return None
+                if isinstance(acquired_dict, dict):
+                    lease_id = acquired_dict.get("lease_id", lease_id)
+                    lease_gen = acquired_dict.get("lease_generation", 1)
+                    fencing_token = acquired_dict.get("fencing_token", fencing_token)
+
+        lease = ExecutionLease(
+            lease_id=lease_id,
+            step_run_id=step_run_id,
+            run_id=run_id,
+            worker_id=worker_id,
+            status="active",
+            expires_at=expires_at,
+            idempotency_key=key,
+            lease_generation=lease_gen,
+            fencing_token=fencing_token,
+            created_at=now,
+        )
+
+        self._in_memory_leases[lease_id] = lease
+        self._idempotency_index[key] = lease
 
         duration_ms = (time.perf_counter() - t0) * 1000.0
         metrics.record_dispatch_claim(duration_ms)
