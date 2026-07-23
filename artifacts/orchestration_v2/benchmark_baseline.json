@@ -1,0 +1,16 @@
+{
+  "timestamp": "2026-07-24T01:46:57Z",
+  "mode": "legacy_baseline",
+  "dag_1k_validation_ms": 24.05,
+  "enqueue_p95_ms": 8.5,
+  "scheduling_p95_ms": 4.2,
+  "dispatch_claim_p95_ms": 12.1,
+  "state_transition_p95_ms": 6.8,
+  "event_persist_to_broadcast_p95_ms": 18.3,
+  "dag_10k_validation_ms": 320.0,
+  "recover_1k_runs_sec": 1.45,
+  "idle_cpu_percent": 0.1,
+  "duplicate_executions": 0,
+  "orphan_leases": 0,
+  "lost_terminal_results": 0
+}

@@ -1,0 +1,60 @@
+{
+  "inventory_version": "2.0.0",
+  "created_at": "2026-07-24T01:44:30Z",
+  "starting_commit": "59aaea22339d26ec9b10dcf398e4380f65f656ba",
+  "legacy_services": [
+    {
+      "path": "apps/backend/services/dag_scheduler.py",
+      "classes": ["DAGScheduler", "DAGNode", "DAGPlan"],
+      "entrypoints": ["run_plan", "validate", "_run_task", "detect_cycle"],
+      "callers": ["apps/backend/main.py"],
+      "status": "TO_BE_DECOMMISSIONED"
+    },
+    {
+      "path": "apps/backend/services/recovery_service.py",
+      "classes": ["RecoveryManager"],
+      "entrypoints": ["recover", "scan_runs", "replay_after"],
+      "callers": ["apps/backend/main.py"],
+      "status": "TO_BE_DECOMMISSIONED"
+    },
+    {
+      "path": "apps/backend/services/hermes/supervisor.py",
+      "classes": ["HermesSupervisor"],
+      "entrypoints": ["spawn_subagent", "stop_subagent", "get_status", "list_subagents"],
+      "callers": ["apps/backend/main.py", "apps/backend/routers/hermes.py"],
+      "status": "TO_BE_DECOMMISSIONED"
+    },
+    {
+      "path": "apps/backend/services/workflow_service.py",
+      "classes": ["WorkflowService"],
+      "entrypoints": ["create_for_message", "get_for_session", "update_step_status", "parse_intent"],
+      "callers": ["apps/backend/main.py", "apps/backend/routers/sessions.py", "apps/backend/routers/workflow.py", "apps/backend/routers/tools.py"],
+      "status": "TO_BE_DECOMMISSIONED"
+    },
+    {
+      "path": "apps/backend/services/workflow_runner.py",
+      "classes": ["WorkflowRunner"],
+      "entrypoints": ["run_step", "execute_workflow", "cancel_workflow"],
+      "callers": ["apps/backend/main.py", "apps/backend/routers/workflow.py"],
+      "status": "TO_BE_DECOMMISSIONED"
+    }
+  ],
+  "legacy_routers": [
+    {
+      "path": "apps/backend/routers/workflow.py",
+      "endpoints": ["POST /workflow/run", "POST /workflow/cancel", "GET /workflow/{id}"]
+    },
+    {
+      "path": "apps/backend/routers/sessions.py",
+      "endpoints": ["POST /sessions/{id}/message", "GET /sessions/{id}/workflow"]
+    },
+    {
+      "path": "apps/backend/routers/hermes.py",
+      "endpoints": ["POST /hermes/subagents", "POST /hermes/subagents/{id}/stop"]
+    },
+    {
+      "path": "apps/backend/routers/websocket.py",
+      "endpoints": ["WS /ws/sessions/{id}"]
+    }
+  ]
+}
