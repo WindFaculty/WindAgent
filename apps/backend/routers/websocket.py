@@ -26,9 +26,7 @@ from uuid import UUID
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 from schemas.event import EventEnvelope, UserControlData
-from services.event_bus import EventBus
 from services.permission_service import PermissionService
-from services.workflow_runner import WorkflowRunner
 
 
 logger = logging.getLogger(__name__)

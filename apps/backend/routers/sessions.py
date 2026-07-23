@@ -14,7 +14,6 @@ from schemas.session import (
     SendMessageRequest,
 )
 from services.session_service import SessionService
-from services.workflow_service import WorkflowService
 from db.models import (
     AgentORM,
     AgentSessionORM,
@@ -31,10 +30,6 @@ router = APIRouter(prefix="/sessions", tags=["sessions"])
 
 def _session_service(request: Request) -> SessionService:
     return request.app.state.session_service
-
-
-def _workflow_service(request: Request) -> WorkflowService:
-    return request.app.state.workflow_service
 
 
 @router.post(

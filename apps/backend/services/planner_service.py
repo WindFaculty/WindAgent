@@ -288,8 +288,6 @@ class PlannerService:
         error: Optional[str] = None,
     ) -> PlanResult:
         """Run the rule-based parser. Always returns a PlanResult."""
-        from services.workflow_service import parse_intent
-
         if not self._enable_fallback:
             return PlanResult(
                 steps=[],
@@ -298,9 +296,11 @@ class PlannerService:
                 latency_ms=int((time.perf_counter() - start) * 1000),
                 error=error,
             )
-        draft = parse_intent(user_text)
+        
+        # Simple rule-based intent parse
+        step_dict = {"id": "step_1", "order": 1, "name": "Execute Action", "tool_name": "exec_shell", "params": {"command": user_text}}
         return PlanResult(
-            steps=list(draft.steps),
+            steps=[step_dict],
             used_fallback=True,
             model=model_name,
             latency_ms=int((time.perf_counter() - start) * 1000),

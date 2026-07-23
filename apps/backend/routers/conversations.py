@@ -137,8 +137,6 @@ import uuid
 from datetime import datetime, timezone
 from pydantic import BaseModel
 
-from services.dag_scheduler import detect_cycle
-
 logger = logging.getLogger(__name__)
 
 

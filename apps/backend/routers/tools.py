@@ -20,7 +20,6 @@ from pydantic import BaseModel, Field
 
 from services.tool_executor import ToolExecutor
 from services.tool_registry import list_tool_names
-from services.workflow_service import WorkflowService
 
 
 log = logging.getLogger(__name__)
@@ -54,10 +53,6 @@ def _executor(request: Request) -> ToolExecutor:
 
 def _sessions_svc(request: Request):
     return request.app.state.session_service
-
-
-def _workflows_svc(request: Request) -> WorkflowService:
-    return request.app.state.workflow_service
 
 
 @router.get("/tools", response_model=List[str])

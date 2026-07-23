@@ -45,8 +45,6 @@ from services.permission_service import PermissionService
 from services.planner_service import PlannerService
 from services.session_service import SessionService
 from services.tool_executor import ToolExecutor
-from services.workflow_runner import WorkflowRunner
-from services.workflow_service import WorkflowService
 from services.hermes import load_hermes_config
 from services.hermes.runtime_manager import HermesRuntimeManager
 from services.hermes.api_client import HermesApiClient
@@ -203,17 +201,7 @@ async def lifespan(app: FastAPI):
     planner = PlannerService(client=model_client)
 
     session_service = SessionService(event_bus=event_bus, db=db)
-    workflow_service = WorkflowService(
-        event_bus=event_bus, db=db, planner=planner
-    )
     permission_service = PermissionService(event_bus=event_bus)
-    runner = WorkflowRunner(
-        event_bus=event_bus,
-        executor=executor,
-        session_service=session_service,
-        workflow_service=workflow_service,
-        permission_service=permission_service,
-    )
 
     from services.model_service import ModelService
     model_service = ModelService(db=db, ollama_client=model_client)
@@ -241,14 +229,6 @@ async def lifespan(app: FastAPI):
     from windagent_orchestration import OrchestrationV2Container
     orchestration_container = OrchestrationV2Container(uow_factory=db.session_factory)
 
-    # Phase 5: DAG scheduler (orchestration engine).
-    from services.dag_scheduler import DAGScheduler
-    dag_scheduler = DAGScheduler(db, event_bus=event_bus)
-
-    # Phase 4: multi-session supervisor (orchestrator + sub-agents).
-    from services.hermes.supervisor import HermesSupervisor
-    hermes_supervisor = HermesSupervisor(db, hermes_session_bridge)
-
     # Phase 6: per-agent Git worktree isolation + permission profile.
     from services.worktree_service import WorktreeService
     # ponytail: repo root = first ancestor with .git; backend runs from
@@ -258,18 +238,8 @@ async def lifespan(app: FastAPI):
     if not _os.path.isdir(_os.path.join(_repo_root, ".git")):
         _repo_root = _os.path.abspath(".")
     worktree_service = WorktreeService(db, repo_root=_repo_root)
-    hermes_supervisor = HermesSupervisor(
-        db, hermes_session_bridge,
-        event_bus=event_bus,
-        worktree_service=worktree_service,
-    )
 
-    # Phase 7: durable event replay + restart recovery.
-    from services.recovery_service import RecoveryManager
-    recovery_manager = RecoveryManager(db, hermes_api_client=hermes_api_client)
-    event_bus.set_seq_seed(recovery_manager.seed_seq)
-
-    # Start the supervisor
+    # Start the hermes runtime manager
     await hermes_runtime_manager.start()
 
     app.state.event_bus = event_bus
@@ -281,8 +251,6 @@ async def lifespan(app: FastAPI):
     app.state.permission_service = permission_service
     app.state.tool_executor = executor
     app.state.session_service = session_service
-    app.state.workflow_service = workflow_service
-    app.state.workflow_runner = runner
     app.state.model_service = model_service
     app.state.route_lock_service = route_lock_service
     app.state.agent_registry_service = agent_registry
@@ -290,10 +258,7 @@ async def lifespan(app: FastAPI):
     app.state.hermes_runtime_manager = hermes_runtime_manager
     app.state.hermes_api_client = hermes_api_client
     app.state.hermes_session_bridge = hermes_session_bridge
-    app.state.hermes_supervisor = hermes_supervisor
-    app.state.dag_scheduler = dag_scheduler
     app.state.worktree_service = worktree_service
-    app.state.recovery_manager = recovery_manager
     app.state.browser_service = browser_service
     app.state.orchestration_container = orchestration_container
     app.state.task_manager = orchestration_container.task_manager
@@ -301,12 +266,6 @@ async def lifespan(app: FastAPI):
     app.state.orchestration_scheduler = orchestration_container.scheduler
     app.state.orchestration_dispatcher = orchestration_container.dispatcher
     app.state.orchestration_recovery = orchestration_container.recovery_manager
-
-    # Phase 7 gate: on boot, reconcile any runs left in-flight by a crash.
-    try:
-        await recovery_manager.recover()
-    except Exception:  # noqa: BLE001
-        logging.getLogger(__name__).exception("startup recovery failed")
 
     from services.router_policy import RouterPolicy
     from services.router_execution_service import RouterExecutionService

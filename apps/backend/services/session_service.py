@@ -278,11 +278,13 @@ class SessionService:
                     # reports the cursor (stays 0). The authoritative replay
                     # source is execution_events, whose max seq we use instead.
                     try:
-                        from services.recovery_service import RecoveryManager
-
-                        last_event_sequence = await RecoveryManager(self._db).seed_seq(
-                            str(session_id)
+                        from sqlalchemy import func
+                        from windagent_storage.orm.models import ExecutionEventORM
+                        max_seq_res = await s.execute(
+                            select(func.max(ExecutionEventORM.event_seq)).where(ExecutionEventORM.session_id == str(session_id))
                         )
+                        max_seq = max_seq_res.scalar()
+                        last_event_sequence = max_seq if max_seq is not None else (row.last_event_sequence or 0)
                     except Exception:  # noqa: BLE001
                         last_event_sequence = row.last_event_sequence or 0
 
