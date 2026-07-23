@@ -24,6 +24,12 @@ from windagent_providers.base import (
 )
 from windagent_providers.base import BaseModelProvider, QuotaSnapshot, ModelChunk
 
+# V3 Canonical Model Registry & Equivalence Engine
+from windagent_providers.registry import (
+    normalize_model_id, NormalizedModelInfo, classify_equivalence,
+    EquivalenceLevel, EquivalenceAssessment, CanonicalModelRegistryService
+)
+
 # V3 Protocol Detection & Test Connect
 from windagent_providers.detection import EndpointDetector, ProbePlanRunner, sanitize_url
 
@@ -64,6 +70,8 @@ __all__ = [
     "ModelCapability", "ModelCapabilityProfile", "KNOWN_MODEL_PROFILES",
     "redact_text", "redact_dict",
     "BaseModelProvider", "QuotaSnapshot", "ModelChunk",
+    "normalize_model_id", "NormalizedModelInfo", "classify_equivalence",
+    "EquivalenceLevel", "EquivalenceAssessment", "CanonicalModelRegistryService",
     "EndpointDetector", "ProbePlanRunner", "sanitize_url",
     "OpenAICompatibleTransport",
     "OpenAIProviderAdapter",
