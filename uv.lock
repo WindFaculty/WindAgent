@@ -1174,6 +1174,18 @@ source = { editable = "apps/worker" }
 name = "windagent-workflows"
 version = "0.3.0"
 source = { editable = "workflows" }
+dependencies = [
+    { name = "windagent-core" },
+    { name = "windagent-orchestration" },
+    { name = "windagent-tools" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "windagent-core", editable = "core" },
+    { name = "windagent-orchestration", editable = "orchestration" },
+    { name = "windagent-tools", editable = "tools" },
+]
 
 [[package]]
 name = "windagent-workspace"

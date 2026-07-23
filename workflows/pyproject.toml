@@ -4,7 +4,16 @@ version = "0.3.0"
 description = "Predefined workflow definitions and step implementations"
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = []
+dependencies = [
+    "windagent-core",
+    "windagent-orchestration",
+    "windagent-tools",
+]
+
+[tool.uv.sources]
+windagent-core = { workspace = true }
+windagent-orchestration = { workspace = true }
+windagent-tools = { workspace = true }
 
 [build-system]
 requires = ["hatchling"]
