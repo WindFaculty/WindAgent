@@ -4,7 +4,14 @@ version = "0.3.0"
 description = "Task manager, workflow engine, state machine, scheduler, dispatcher, retry, recovery"
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = []
+dependencies = [
+    "windagent-core",
+    "windagent-storage",
+]
+
+[tool.uv.sources]
+windagent-core = { workspace = true }
+windagent-storage = { workspace = true }
 
 [build-system]
 requires = ["hatchling"]

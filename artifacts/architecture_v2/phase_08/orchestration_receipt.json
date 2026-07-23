@@ -1,0 +1,31 @@
+{
+  "phase": "08",
+  "name": "ORCHESTRATION ENGINE, STATE MACHINE, RETRY AND RECOVERY",
+  "status": "PASSED",
+  "timestamp": "2026-07-23T18:55:00+07:00",
+  "package": "orchestration/windagent_orchestration",
+  "components": {
+    "state_machine": "orchestration/windagent_orchestration/state_machine.py",
+    "task_manager": "orchestration/windagent_orchestration/task_manager.py",
+    "retry_policy": "orchestration/windagent_orchestration/retry_policy.py",
+    "scheduler": "orchestration/windagent_orchestration/scheduler.py",
+    "cancellation": "orchestration/windagent_orchestration/cancellation.py",
+    "dispatcher": "orchestration/windagent_orchestration/dispatcher.py",
+    "recovery": "orchestration/windagent_orchestration/recovery.py"
+  },
+  "state_machine_states": 15,
+  "features": [
+    "Explicit 15-state TaskStateMachine with strict transition validation",
+    "RetryPolicy with exponential backoff and error classification checking",
+    "TaskScheduler bounded concurrency slots, priority queue, and project lock",
+    "CancellationManager for graceful and immediate token cancellation",
+    "StepDispatcher duplicate step dispatch prevention",
+    "RecoveryManager crash reconciliation protecting against automatic destructive tool re-execution",
+    "DurableExecutionFacts storage and derived UI status computation"
+  ],
+  "acceptance_gates": {
+    "scaffold_check": "PASSED",
+    "import_boundary_check": "PASSED (64 files scanned)",
+    "unit_tests": "59/59 PASSED (58 passed, 1 skipped)"
+  }
+}

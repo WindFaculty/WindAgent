@@ -1090,6 +1090,16 @@ source = { editable = "observability" }
 name = "windagent-orchestration"
 version = "0.3.0"
 source = { editable = "orchestration" }
+dependencies = [
+    { name = "windagent-core" },
+    { name = "windagent-storage" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "windagent-core", editable = "core" },
+    { name = "windagent-storage", editable = "storage" },
+]
 
 [[package]]
 name = "windagent-providers"
