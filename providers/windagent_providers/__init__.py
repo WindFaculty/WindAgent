@@ -24,6 +24,9 @@ from windagent_providers.base import (
 )
 from windagent_providers.base import BaseModelProvider, QuotaSnapshot, ModelChunk
 
+# V3 Protocol Detection & Test Connect
+from windagent_providers.detection import EndpointDetector, ProbePlanRunner, sanitize_url
+
 # V3 OpenAI Compatible Transports and Vendor Adapters
 from windagent_providers.openai_compatible import OpenAICompatibleTransport
 from windagent_providers.openai import OpenAIProviderAdapter
@@ -61,6 +64,7 @@ __all__ = [
     "ModelCapability", "ModelCapabilityProfile", "KNOWN_MODEL_PROFILES",
     "redact_text", "redact_dict",
     "BaseModelProvider", "QuotaSnapshot", "ModelChunk",
+    "EndpointDetector", "ProbePlanRunner", "sanitize_url",
     "OpenAICompatibleTransport",
     "OpenAIProviderAdapter",
     "OpenRouterAdapter",
