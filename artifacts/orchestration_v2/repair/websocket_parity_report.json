@@ -1,0 +1,16 @@
+{
+  "timestamp": "2026-07-24T02:29:26Z",
+  "status": "PASSED",
+  "events_verified": [
+    "task.received",
+    "workflow.started",
+    "step.ready",
+    "step.dispatched",
+    "step.started",
+    "step.completed",
+    "workflow.completed"
+  ],
+  "transactional_outbox": true,
+  "monotonic_sequence": true,
+  "replay_supported": true
+}
