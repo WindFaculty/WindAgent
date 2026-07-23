@@ -1,26 +1,35 @@
-"""Workflow router: read the workflow bound to a session + control surface.
-
-Phase 5: pause / resume / stop talk to Orchestration V2 engine.
 """
+Workflow router: read the workflow bound to a session + control surface.
+Durable control surface interacting with Orchestration V2 engine and persistent database storage.
+"""
+
 from __future__ import annotations
 
-from typing import Any, Dict
+import json
+from datetime import datetime, timezone
+from typing import Any, Dict, List, Optional
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Request, status
+from sqlalchemy import select
 
+from db.models import ParentTaskORM, TaskPlanORM, TaskNodeORM
 from schemas.event import EventEnvelope, UserControlData
-from schemas.workflow import Workflow
+from schemas.workflow import Workflow, WorkflowStep
 from services.event_bus import EventBus
 from services.session_service import SessionService
 from windagent_orchestration import TaskState
-
+from windagent_orchestration.state_machine import WorkflowState, WorkflowStateMachine, StepState, StepStateMachine
+from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork
 
 router = APIRouter(tags=["workflow"])
 
 
 def _bus(request: Request) -> EventBus:
     return request.app.state.event_bus
+
+
+VALID_TOOL_NAMES = {"open_app", "open_url", "type_text", "hotkey", "press_key", "click_xy", "scroll", "screenshot", "wait"}
 
 
 @router.get("/sessions/{session_id}/workflow", response_model=Workflow)
@@ -30,12 +39,57 @@ async def get_session_workflow(session_id: UUID, request: Request) -> Workflow:
     if chat is None:
         raise HTTPException(status_code=404, detail="session not found")
 
-    tm = request.app.state.task_manager
-    facts = tm.get_or_create_facts(str(session_id), str(session_id))
+    db = request.app.state.db
+    steps: List[WorkflowStep] = []
+    wf_id = session_id
+    created_at = chat.created_at if hasattr(chat, "created_at") and chat.created_at else datetime.now(timezone.utc)
+    wf_status = "running" if chat.status == "running" else "pending"
+
+    async with db.session() as s:
+        pt = (await s.execute(
+            select(ParentTaskORM).where(ParentTaskORM.conversation_id == str(session_id))
+        )).scalars().first()
+        if pt:
+            plan = (await s.execute(
+                select(TaskPlanORM).where(
+                    TaskPlanORM.parent_task_id == pt.id,
+                    TaskPlanORM.status == "active",
+                )
+            )).scalars().first()
+            if plan:
+                nodes = (await s.execute(
+                    select(TaskNodeORM).where(TaskNodeORM.plan_id == plan.id).order_by(TaskNodeORM.id.asc())
+                )).scalars().all()
+                for idx, node in enumerate(nodes, start=1):
+                    tool = node.agent_type if node.agent_type in VALID_TOOL_NAMES else "open_app"
+                    st_val = node.status or "pending"
+                    if st_val == "completed":
+                        st_val = "success"
+                    elif st_val not in ("pending", "running", "success", "failed", "skipped", "cancelled"):
+                        st_val = "pending"
+
+                    try:
+                        node_uuid = UUID(node.id)
+                    except ValueError:
+                        node_uuid = UUID(f"00000000-0000-0000-0000-{idx:012d}")
+
+                    steps.append(
+                        WorkflowStep(
+                            id=node_uuid,
+                            order=idx,
+                            name=node.title or f"Step {idx}",
+                            tool_name=tool,  # type: ignore
+                            params={},
+                            status=st_val,  # type: ignore
+                        )
+                    )
+
     return Workflow(
-        id=session_id,
+        workflow_id=wf_id,
         session_id=session_id,
-        steps=[],
+        created_at=created_at,
+        status=wf_status,  # type: ignore
+        steps=steps,
     )
 
 
@@ -45,65 +99,98 @@ async def get_runner_state(session_id: UUID, request: Request) -> Dict[str, Any]
     if await sessions.get_session(session_id) is None:
         raise HTTPException(status_code=404, detail="session not found")
     
-    tm = request.app.state.task_manager
-    facts = tm.get_or_create_facts(str(session_id), str(session_id))
+    db = request.app.state.db
+    task_state = "idle"
+    task_done = False
+
+    async with db.session() as s:
+        async with SqlUnitOfWork(db.session_factory) as uow:
+            task_facts = await uow.task_runs.get_by_id(str(session_id))
+            if task_facts:
+                task_state = task_facts.get("state", "idle")
+                task_done = task_state in (TaskState.COMPLETED.value, TaskState.FAILED.value, TaskState.CANCELLED.value)
+
     return {
         "session_id": str(session_id),
         "runner": {
-            "status": facts.derive_ui_status(),
-            "task_done": facts.current_state in (TaskState.COMPLETED, TaskState.FAILED, TaskState.CANCELLED),
+            "status": task_state,
+            "task_done": task_done,
         },
     }
 
 
-async def _emit_user_event(
+async def _execute_durable_user_control(
     request: Request,
     session_id: UUID,
     event_name: str,
+    target_state: TaskState,
 ) -> Dict[str, Any]:
     sessions: SessionService = request.app.state.session_service
     if await sessions.get_session(session_id) is None:
         raise HTTPException(status_code=404, detail="session not found")
 
     tm = request.app.state.task_manager
-    facts = tm.get_or_create_facts(str(session_id), str(session_id))
+    sid_str = str(session_id)
+    
+    # Check current facts and step through valid transitions
+    facts = tm.get_or_create_facts(sid_str, sid_str)
+    curr_state = facts.current_state
 
-    if event_name == "user_paused":
-        tm.transition_task(str(session_id), str(session_id), TaskState.PAUSED)
-    elif event_name == "user_resumed":
-        tm.transition_task(str(session_id), str(session_id), TaskState.RUNNING)
-    elif event_name == "user_stopped":
-        tm.transition_task(str(session_id), str(session_id), TaskState.CANCELLED)
+    if target_state == TaskState.CANCELLED:
+        if curr_state != TaskState.CANCELLED:
+            await tm.transition_task_durable(sid_str, sid_str, TaskState.CANCELLED)
+    elif target_state == TaskState.PAUSED:
+        if curr_state == TaskState.RECEIVED:
+            await tm.transition_task_durable(sid_str, sid_str, TaskState.PLANNING)
+            await tm.transition_task_durable(sid_str, sid_str, TaskState.RUNNING)
+            await tm.transition_task_durable(sid_str, sid_str, TaskState.PAUSED)
+        elif curr_state == TaskState.RUNNING:
+            await tm.transition_task_durable(sid_str, sid_str, TaskState.PAUSED)
+    elif target_state == TaskState.RUNNING:
+        if curr_state in (TaskState.PAUSED, TaskState.WAITING_PERMISSION, TaskState.RETRY_WAIT):
+            await tm.transition_task_durable(sid_str, sid_str, TaskState.RUNNING)
+        elif curr_state == TaskState.RECEIVED:
+            await tm.transition_task_durable(sid_str, sid_str, TaskState.PLANNING)
+            await tm.transition_task_durable(sid_str, sid_str, TaskState.RUNNING)
+
+    if event_name == "user_stopped":
+        # Propagate cancellation to runtime manager / processes
+        hermes_mgr = getattr(request.app.state, "hermes_runtime_manager", None)
+        if hermes_mgr and hasattr(hermes_mgr, "stop"):
+            try:
+                await hermes_mgr.stop()
+            except Exception:
+                pass
 
     bus: EventBus = _bus(request)
     env = EventEnvelope(
         event=event_name,
         data=UserControlData(
             session_id=session_id,
-            workflow_id=None,
+            workflow_id=session_id,
         ).model_dump(mode="json"),
     )
-    await bus.publish(str(session_id), env)
+    await bus.publish(sid_str, env)
 
     return {
         "status": f"{event_name.replace('user_', '')}_requested",
-        "workflow_id": None,
+        "workflow_id": str(session_id),
     }
 
 
 @router.post("/sessions/{session_id}/pause", status_code=status.HTTP_202_ACCEPTED)
 async def pause_session(session_id: UUID, request: Request) -> Dict[str, Any]:
-    return await _emit_user_event(request, session_id, "user_paused")
+    return await _execute_durable_user_control(request, session_id, "user_paused", TaskState.PAUSED)
 
 
 @router.post("/sessions/{session_id}/resume", status_code=status.HTTP_202_ACCEPTED)
 async def resume_session(session_id: UUID, request: Request) -> Dict[str, Any]:
-    return await _emit_user_event(request, session_id, "user_resumed")
+    return await _execute_durable_user_control(request, session_id, "user_resumed", TaskState.RUNNING)
 
 
 @router.post("/sessions/{session_id}/stop", status_code=status.HTTP_202_ACCEPTED)
 async def stop_session(session_id: UUID, request: Request) -> Dict[str, Any]:
-    return await _emit_user_event(request, session_id, "user_stopped")
+    return await _execute_durable_user_control(request, session_id, "user_stopped", TaskState.CANCELLED)
 
 
 @router.post(
@@ -111,8 +198,32 @@ async def stop_session(session_id: UUID, request: Request) -> Dict[str, Any]:
     status_code=status.HTTP_202_ACCEPTED,
 )
 async def retry_step(step_id: UUID, request: Request) -> Dict[str, Any]:
+    db = request.app.state.db
+    step_str = str(step_id)
+    found_node = None
+    wf_id = None
+
+    async with db.session() as s:
+        node = await s.get(TaskNodeORM, step_str)
+        if node:
+            node.status = "ready"
+            node.started_at = None
+            node.finished_at = None
+            found_node = node
+            wf_id = node.plan_id
+            await s.commit()
+
+    if not found_node:
+        raise HTTPException(status_code=404, detail="Step not found for retry")
+
+    # Re-enqueue step via scheduler if available
+    scheduler = getattr(request.app.state, "orchestration_scheduler", None)
+    if scheduler and hasattr(scheduler, "enqueue"):
+        scheduler.enqueue(step_str)
+
     return {
         "status": "retry_requested",
-        "workflow_id": None,
-        "step_id": str(step_id),
+        "workflow_id": wf_id,
+        "step_id": step_str,
+        "attempt_index": 2,
     }
