@@ -82,6 +82,7 @@ class RouteAttemptPort(ABC):
         error_class: Optional[str] = None,
         prompt_tokens: int = 0,
         completion_tokens: int = 0,
+        endpoint_id: Optional[str] = None,
     ) -> str:
         """Persists a route attempt record and returns attempt ID."""
         pass

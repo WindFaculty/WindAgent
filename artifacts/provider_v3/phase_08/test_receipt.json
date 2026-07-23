@@ -1,0 +1,8 @@
+{
+  "command": "uv run pytest tests/unit/providers -q",
+  "result": "ok",
+  "test_count": 62,
+  "failed": 0,
+  "passed": 62,
+  "skipped": 0
+}

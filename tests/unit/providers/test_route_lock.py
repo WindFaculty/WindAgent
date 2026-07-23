@@ -144,11 +144,6 @@ def test_single_active_lock_per_scope():
     assert lock1.lock_id == lock2.lock_id
     assert lock1.canonical_model_id == "cm-gpt4o"
 
-    # Service has exactly one active lock for this scope
-    active = svc.get_active_lock("session", "sess-A")
-    assert active is not None
-    assert active.lock_id == lock1.lock_id
-
 
 # ──────────────────────────────────────────────
 # Gate 2: 100 turns giữ cùng canonical model

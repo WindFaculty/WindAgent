@@ -1,2209 +1,1867 @@
-# MASTER PLAN
+# KẾ HOẠCH TRIỂN KHAI PROVIDER ROUTING V3 CHO WINDAGENT
 
-# Tái thiết WindAgent theo Architecture V2
+## 0. Nhiệm vụ tổng quát
 
-## 1. Mục tiêu tổng thể
+Tiếp tục phát triển repository:
 
-Tái cấu trúc WindAgent từ backend monolith hiện tại thành một **modular monolith có ranh giới package rõ ràng**, hỗ trợ:
+```text
+WindFaculty/WindAgent
+```
 
-* Nhiều giao diện: API, CLI, Web, Worker và Desktop.
-* Nhiều model provider.
-* Model routing theo năng lực, chi phí, quota và độ ổn định.
-* Workflow dài hạn có state machine, retry, recovery và resume.
-* Tool execution an toàn.
-* Git worktree isolation cho coding agents.
-* Context retrieval và memory nhiều lớp.
-* Verification, quality gate và evaluation.
-* Plugin, skill và MCP.
-* Observability, audit và cost tracking.
-* Khả năng tách process hoặc microservice về sau mà không phải viết lại domain core.
+Bắt đầu chính xác từ commit:
 
-Không thực hiện big-bang rewrite. Kiến trúc mới phải chạy song song với backend hiện tại trong giai đoạn chuyển đổi.
+```text
+59aaea22339d26ec9b10dcf398e4380f65f656ba
+```
+
+Xây dựng lại provider subsystem bằng cách:
+
+1. Khai thác phần router/provider đang tồn tại trong `apps/backend`.
+2. Di chuyển và chuẩn hóa logic vào package `providers/windagent_providers`.
+3. Thiết kế lại schema provider/model/routing.
+4. Hoàn thiện adapter thật cho:
+
+   * OpenAI;
+   * Anthropic;
+   * Google;
+   * NVIDIA;
+   * OpenRouter;
+   * Mistral;
+   * Ollama;
+   * local Ollama servers.
+5. Bổ sung nhận diện endpoint và protocol khi người dùng nhấn **Test Connect**.
+6. Chọn canonical model theo rule ở lượt đầu.
+7. Khóa model cho toàn bộ session/task/workflow.
+8. Khi endpoint gặp 429 hoặc lỗi khả dụng, chuyển sang endpoint khác cung cấp đúng cùng canonical model.
+9. Không âm thầm đổi model.
+10. Quản lý route cache, endpoint state cache, discovery cache và response cache an toàn.
 
 ---
 
-# 2. Kiến trúc mục tiêu
+# 1. Các quyết định kiến trúc đã khóa
+
+Không thay đổi các quyết định sau nếu chưa có bằng chứng kỹ thuật rõ ràng và chưa ghi chúng vào báo cáo:
+
+## 1.1 Model selection
+
+Ở lần gọi đầu tiên của một scope:
 
 ```text
-wind-agent/
-├── apps/
-│   ├── api/
-│   ├── cli/
-│   ├── web/
-│   ├── worker/
-│   ├── desktop/
-│   └── backend/                 # legacy trong thời gian migration
-│
-├── core/
-│   ├── domain/
-│   ├── contracts/
-│   ├── events/
-│   ├── errors/
-│   ├── config/
-│   └── security/
-│
-├── orchestration/
-│   ├── task_manager/
-│   ├── workflow_engine/
-│   ├── state_machine/
-│   ├── scheduler/
-│   ├── dispatcher/
-│   ├── retry/
-│   └── recovery/
-│
-├── intelligence/
-│   ├── task_classifier/
-│   ├── planner/
-│   ├── context_builder/
-│   ├── model_router/
-│   ├── summarizer/
-│   ├── reviewer/
-│   └── reporter/
-│
-├── providers/
-│   ├── base/
-│   ├── openai/
-│   ├── anthropic/
-│   ├── google/
-│   ├── nvidia/
-│   ├── openrouter/
-│   ├── mistral/
-│   ├── ollama/
-│   └── local/
-│
-├── tools/
-│   ├── registry/
-│   ├── filesystem/
-│   ├── shell/
-│   ├── git/
-│   ├── code_search/
-│   ├── ast/
-│   ├── lsp/
-│   ├── testing/
-│   ├── browser/
-│   ├── database/
-│   ├── github/
-│   └── mcp/
-│
-├── workflows/
-├── verification/
-├── context/
-├── memory/
-├── execution/
-├── storage/
-├── observability/
-├── evals/
-├── plugins/
-├── skills/
-├── scripts/
-├── tests/
-├── configs/
-└── docs/
+task/session/workflow label
+    → routing rule
+    → canonical model
+    → persistent route lock
 ```
+
+Các lượt sau phải đọc `route_lock`.
+
+Không chạy lại model selection ở mỗi lượt.
+
+## 1.2 Endpoint selection
+
+Sau khi canonical model đã khóa:
+
+```text
+canonical model
+    → exact-equivalent endpoint bindings
+    → endpoint health/quota/circuit filtering
+    → endpoint scoring
+    → execute
+```
+
+Endpoint được phép thay đổi.
+
+Canonical model không được thay đổi chỉ vì endpoint lỗi.
+
+## 1.3 Failover
+
+Failover tự động chỉ hợp lệ khi:
+
+```text
+binding.canonical_model_id giống nhau
+binding.model_revision giống nhau
+binding.equivalence_level == exact_revision
+binding.enabled == true
+endpoint không bị cooldown/open circuit
+```
+
+Khi toàn bộ endpoint của model đã khóa không dùng được, trả lỗi:
+
+```text
+SameModelEndpointExhausted
+```
+
+Không silent fallback sang model khác hoặc mock model.
+
+## 1.4 Test Connect
+
+Khi người dùng nhấn Test Connect:
+
+* dùng provider do người dùng chọn làm hint;
+* tự nhận diện protocol và vendor;
+* cho phép manual override;
+* trả confidence và evidence;
+* không lưu credential trước khi người dùng xác nhận lưu;
+* không thay đổi route lock hoặc runtime routing state.
+
+## 1.5 Local provider
+
+`local/` chỉ quản lý server Ollama local hoặc LAN.
+
+Không triển khai:
+
+* Transformers inference trực tiếp;
+* llama.cpp trực tiếp trong process;
+* GGUF loader trực tiếp;
+* vLLM lifecycle trong phase này.
+
+## 1.6 Storage boundary
+
+`windagent_providers` không được import:
+
+* SQLAlchemy ORM;
+* FastAPI;
+* `apps`;
+* orchestration;
+* intelligence;
+* storage implementations.
+
+Provider package chỉ khai báo contract/port và thực hiện protocol transport.
+
+ORM, repository, Redis và transaction implementation phải nằm trong storage hoặc application composition layer.
 
 ---
 
-# 3. Quy tắc bắt buộc cho toàn bộ chương trình tái thiết
+# 2. Quy tắc thực hiện toàn cục
 
-## 3.1 Không big-bang rewrite
+## 2.1 Git
 
-Không được:
+Trước khi sửa mã:
 
-* Xóa `apps/backend` trước khi có parity test.
-* Di chuyển hàng loạt service trong một commit.
-* Thay đổi đồng thời API, database và event protocol.
-* Đưa framework bên ngoài vào domain core.
-* Rewrite frontend và backend trong cùng một phase.
-* Tự động chuyển sang phase tiếp theo.
-
-## 3.2 Mỗi phase là một đơn vị độc lập
-
-Mỗi phase phải có:
-
-* Branch riêng.
-* Starting SHA.
-* Scope rõ ràng.
-* Test gate.
-* Báo cáo cuối.
-* Commit logic.
-* Push remote.
-* Draft PR.
-* Worktree sạch.
-
-Tên branch:
-
-```text
-refactor/architecture-v2-phase-00-baseline
-refactor/architecture-v2-phase-01-scaffold
-refactor/architecture-v2-phase-02-core-contracts
-...
+```bash
+git status --short
+git branch --show-current
+git rev-parse HEAD
+git show --stat --oneline 59aaea22339d26ec9b10dcf398e4380f65f656ba
 ```
-
-## 3.3 Quy tắc dependency
-
-```text
-apps
-  ↓
-workflows / orchestration / intelligence
-  ↓
-core contracts
-  ↑
-providers / tools / storage / execution / memory / context
-```
-
-Bắt buộc:
-
-* `core` không import `apps`.
-* `core/domain` không import FastAPI, SQLAlchemy, MCP, LangGraph hoặc provider SDK.
-* `orchestration` không import provider implementation cụ thể.
-* `intelligence/model_router` không trực tiếp gọi HTTP API provider.
-* `tools` không tự bypass permission.
-* `storage` không chứa business rule.
-* `apps` chịu trách nhiệm composition và dependency injection.
-* `plugins` không được import ngược vào domain core.
-
-## 3.4 Fail-closed
-
-Nếu gặp:
-
-* Test regression.
-* Migration không an toàn.
-* API contract thay đổi ngoài dự kiến.
-* Event incompatibility.
-* Secret leak.
-* Dependency cycle.
-* Không thể chứng minh parity.
-
-Antigravity phải dừng phase với verdict `blocked` hoặc `failed`, không tự giảm acceptance gate.
-
----
-
-# 4. Luồng làm việc chuẩn cho mỗi phase
-
-Antigravity phải thực hiện theo thứ tự:
-
-```text
-1. Kiểm tra repository và branch
-2. Ghi baseline
-3. Đọc tài liệu liên quan
-4. Lập inventory phạm vi
-5. Triển khai thay đổi nhỏ theo commit logic
-6. Chạy focused tests
-7. Chạy regression tests
-8. Chạy architecture/integrity checks
-9. Cập nhật tài liệu
-10. Commit
-11. Push
-12. Tạo draft PR
-13. Xuất báo cáo
-14. Dừng
-```
-
-Không chạy nhiều full test suite đồng thời trên cùng database SQLite.
-
----
-
-# PHASE 0 — BASELINE, INVENTORY VÀ FREEZE CONTRACT
-
-## Mục tiêu
-
-Chụp chính xác trạng thái hiện tại của WindAgent trước khi tái cấu trúc.
-
-Không thay đổi behavior.
-
-## Phạm vi
-
-Chỉ:
-
-* Inventory.
-* Script audit.
-* Tài liệu.
-* Artifact baseline.
-* Contract snapshot.
-
-Không sửa business logic.
-
-## Công việc
-
-### 0.1 Repository baseline
-
-Ghi nhận:
-
-* Repository.
-* Current branch.
-* Starting SHA.
-* Remote SHA.
-* Worktree status.
-* Python version.
-* Node version.
-* npm version.
-* Rust và Tauri version nếu có.
-* Database migration head.
-* Test command hiện tại.
-
-### 0.2 API inventory
-
-Liệt kê toàn bộ:
-
-* REST route.
-* HTTP method.
-* Request schema.
-* Response schema.
-* Status code.
-* Router source.
-* Service dependency.
-* Authentication/permission requirement.
-
-Xuất:
-
-```text
-artifacts/architecture_v2/baseline/api_inventory.json
-```
-
-### 0.3 Event inventory
-
-Liệt kê:
-
-* Event name.
-* Payload.
-* Sequence semantics.
-* Producer.
-* Consumer.
-* Persistence.
-* Replay behavior.
-* WebSocket compatibility.
-
-Xuất:
-
-```text
-artifacts/architecture_v2/baseline/event_inventory.json
-```
-
-### 0.4 Database inventory
-
-Liệt kê:
-
-* Table.
-* Column.
-* Index.
-* Foreign key.
-* Migration revision.
-* ORM source.
-* Service sử dụng.
-
-### 0.5 Service dependency graph
-
-Phân tích import và construction trong backend:
-
-```text
-main
-→ database
-→ event bus
-→ model service
-→ router
-→ workflow
-→ Hermes
-→ browser
-→ worktree
-→ recovery
-```
-
-Xuất Mermaid hoặc JSON graph.
-
-### 0.6 Test baseline
-
-Chạy tuần tự:
-
-* Focused backend.
-* Full backend.
-* Frontend unit.
-* Frontend type-check.
-* Frontend production build.
-* Migration check.
-* `git diff --check`.
-
-Không sửa test để làm xanh.
-
-## Đầu ra
-
-```text
-docs/architecture/current-system.md
-docs/architecture/legacy-dependency-map.md
-artifacts/architecture_v2/baseline/baseline_receipt.json
-artifacts/architecture_v2/baseline/api_inventory.json
-artifacts/architecture_v2/baseline/event_inventory.json
-artifacts/architecture_v2/baseline/database_inventory.json
-artifacts/architecture_v2/baseline/dependency_graph.json
-```
-
-## Acceptance gate
-
-* Không có source behavior change.
-* Baseline có thể tái tạo.
-* API, event và database inventory đầy đủ.
-* Test result được ghi chính xác.
-* Worktree sạch sau commit.
-
-## Prompt cho Antigravity
-
-```text
-Thực hiện PHASE 0 của chương trình Architecture V2 cho repository WindFaculty/WindAgent.
-
-Mục tiêu duy nhất là chụp baseline và inventory. Không sửa business logic, API behavior, database schema hoặc event protocol.
-
-Hãy:
-1. Xác nhận branch, starting SHA, remote SHA và worktree.
-2. Inventory toàn bộ REST, WebSocket, event, ORM table, migration, service và dependency.
-3. Chạy tuần tự các test hiện có; không chạy nhiều full suite đồng thời.
-4. Tạo baseline receipt và các artifact theo master plan.
-5. Viết docs/architecture/current-system.md và legacy-dependency-map.md.
-6. Commit, push và tạo draft PR.
-7. Báo cáo đúng template cuối chương trình.
-8. Dừng hoàn toàn sau PHASE 0. Không thực hiện PHASE 1.
-```
-
----
-
-# PHASE 1 — ARCHITECTURE SCAFFOLD VÀ UV WORKSPACE
-
-## Mục tiêu
-
-Dựng bộ khung Architecture V2 mà chưa di chuyển production logic.
-
-## Công việc
-
-### 1.1 Tạo root workspace
-
-Tạo root `pyproject.toml` với `uv workspace`.
-
-Các member ban đầu:
-
-```text
-apps/api
-apps/cli
-apps/worker
-core
-orchestration
-intelligence
-providers
-tools
-workflows
-verification
-context
-memory
-execution
-storage
-observability
-evals
-```
-
-Không xóa `apps/backend/pyproject.toml`.
-
-### 1.2 Namespace package
-
-Dùng package rõ ràng:
-
-```text
-windagent_core
-windagent_orchestration
-windagent_intelligence
-windagent_providers
-windagent_tools
-windagent_storage
-windagent_execution
-```
-
-Không import kiểu:
-
-```python
-from core import ...
-from tools import ...
-```
-
-### 1.3 Scaffold generator
-
-Tạo:
-
-```text
-scripts/scaffold_architecture_v2.py
-configs/architecture/scaffold_v2.yaml
-```
-
-Script phải hỗ trợ:
-
-```text
---dry-run
---check
---create
-```
-
-Chạy lần hai phải tạo zero diff.
-
-### 1.4 README cho bounded context
-
-Mỗi top-level module phải có:
-
-* Responsibility.
-* Public API dự kiến.
-* Allowed dependencies.
-* Forbidden dependencies.
-* Legacy migration source.
-* Out-of-scope.
-* Acceptance criteria.
-
-### 1.5 API skeleton
-
-Tạo API V2 độc lập:
-
-```text
-GET /health/live
-GET /health/ready
-GET /internal/architecture
-```
-
-Không mount `/api/v1` legacy.
-
-### 1.6 Worker skeleton
-
-Có:
-
-* Startup.
-* Shutdown.
-* Cancellation.
-* Readiness.
-* Structured logging.
-* No-op consumer.
-
-### 1.7 CLI skeleton
-
-Có:
-
-```text
-windagent doctor
-windagent architecture check
-```
-
-### 1.8 Architecture import checker
-
-Cấm dependency sai chiều.
-
-## Acceptance gate
-
-* Root `uv sync --all-packages` pass.
-* Mỗi package import được.
-* API skeleton smoke pass.
-* Worker startup/shutdown pass.
-* CLI doctor pass.
-* Scaffold idempotent.
-* Legacy regression không đổi.
-* Không có migration mới.
-* Không đổi API/event contract.
-
-## Prompt cho Antigravity
-
-```text
-Thực hiện PHASE 1 Architecture V2: scaffold và uv workspace.
-
-Dựa trên artifact PHASE 0. Chỉ dựng cấu trúc mới chạy song song; không di chuyển production services khỏi apps/backend.
-
-Hãy:
-1. Tạo branch refactor/architecture-v2-phase-01-scaffold từ main mới nhất đã chứa PHASE 0.
-2. Tạo uv workspace và các namespace packages.
-3. Tạo scaffold generator idempotent.
-4. Tạo README boundary cho từng module.
-5. Tạo API, Worker và CLI skeleton tối thiểu.
-6. Thêm import-boundary checker và CI gate.
-7. Chứng minh không thay đổi API, event và database legacy.
-8. Chạy toàn bộ acceptance gate.
-9. Commit theo nhóm logic, push, tạo draft PR và dừng.
-Không di chuyển service legacy và không thực hiện PHASE 2.
-```
-
----
-
-# PHASE 2 — CORE DOMAIN, CONTRACTS, ERRORS, CONFIG VÀ SECURITY TYPES
-
-## Mục tiêu
-
-Xây domain vocabulary và contracts thuần Python.
-
-## Domain objects tối thiểu
-
-```text
-Task
-TaskRequest
-TaskRun
-Session
-WorkflowDefinition
-WorkflowRun
-WorkflowStep
-ToolInvocation
-ToolResult
-ModelRequest
-ModelResponse
-ArtifactRef
-PermissionRequest
-VerificationResult
-```
-
-## Typed identifiers
-
-```text
-TaskId
-RunId
-SessionId
-WorkflowId
-StepId
-ToolCallId
-ModelCallId
-EventId
-ArtifactId
-```
-
-Không truyền UUID bằng string khắp domain.
-
-## Contract ports
-
-```text
-Clock
-IdGenerator
-TaskRepository
-SessionRepository
-WorkflowRepository
-EventStore
-EventPublisher
-ArtifactRepository
-UnitOfWork
-SecretStore
-PermissionEvaluator
-```
-
-## Error hierarchy
-
-```text
-WindAgentError
-DomainError
-ValidationError
-ConflictError
-NotFoundError
-PermissionDeniedError
-RetryableError
-NonRetryableError
-ProviderError
-ToolError
-IntegrityError
-```
-
-Error phải có:
-
-* Stable code.
-* Human message.
-* Retryability.
-* Metadata an toàn.
-* Không chứa secret.
-
-## Configuration
-
-Tạo typed settings:
-
-```text
-CoreSettings
-DatabaseSettings
-ProviderSettings
-ExecutionSettings
-SecuritySettings
-ObservabilitySettings
-```
-
-Không đọc `os.environ` trực tiếp trong domain hoặc use case.
-
-## Security types
-
-```text
-Principal
-Permission
-ResourceScope
-RiskLevel
-ApprovalRequirement
-SecretRef
-RedactedValue
-```
-
-## Adapter compatibility
-
-Tạo mapper giữa:
-
-* Legacy Pydantic schema.
-* Domain objects mới.
-
-Không thay endpoint.
-
-## Acceptance gate
-
-* `core` không có dependency FastAPI/SQLAlchemy.
-* Domain test thuần, không cần database.
-* Invalid state bị chặn tại construction.
-* Error codes ổn định.
-* Config secret không xuất hiện trong repr/log.
-* Legacy compatibility mapper pass.
-
-## Prompt cho Antigravity
-
-```text
-Thực hiện PHASE 2 Architecture V2: Core Domain và Contracts.
-
-Chỉ xây các package thuần Python trong core. Không thay runtime production.
 
 Yêu cầu:
-1. Tạo typed identifiers và domain objects tối thiểu.
-2. Tạo contracts dưới dạng Protocol/ABC phù hợp.
-3. Tạo error hierarchy với stable error code và retry classification.
-4. Tạo typed configuration và security primitives.
-5. Tạo compatibility mappers với schema legacy.
-6. Viết unit tests cho invariant, serialization và secret redaction.
-7. Chứng minh core không import FastAPI, SQLAlchemy, MCP, LangGraph hay provider SDK.
-8. Chạy regression legacy, commit, push, draft PR và dừng.
-Không thực hiện storage implementation hoặc PHASE 3.
+
+```text
+STARTING_SHA == 59aaea22339d26ec9b10dcf398e4380f65f656ba
 ```
+
+Tạo branch mới:
+
+```text
+feat/provider-routing-v3
+```
+
+Không force-push.
+
+Không rewrite commit nền.
+
+Không merge vào `main` trong quá trình thực hiện.
+
+Mỗi phase phải có ít nhất một commit logic riêng.
+
+## 2.2 Thứ tự phase
+
+Không được làm nhiều phase trong một commit lớn.
+
+Không sang phase sau khi acceptance gate của phase hiện tại chưa pass.
+
+Trạng thái phase chỉ có thể là:
+
+```text
+PASSED
+FAILED
+BLOCKED
+PARTIAL_NOT_ELIGIBLE_FOR_PROMOTION
+```
+
+Không dùng từ “completed” nếu mới chỉ scaffold.
+
+## 2.3 Không tạo implementation giả
+
+Production adapter không được:
+
+* trả response hard-coded;
+* trả danh sách model tĩnh như dữ liệu runtime;
+* đánh dấu health dựa trên `bool(api_key)`;
+* trả `cancel=True` khi không thực sự hỗ trợ;
+* mặc định quota còn đủ khi không biết;
+* silent fallback sang mock;
+* giả lập stream bằng cách chia response hoàn chỉnh thành các đoạn ký tự;
+* tạo latency giả;
+* tạo evaluation score giả.
+
+Mock adapter chỉ được dùng trong test hoặc development fixture, phải có tên và namespace rõ ràng.
+
+## 2.4 Kiểm thử
+
+Dùng HTTP mock server hoặc `httpx.MockTransport` để test protocol.
+
+Không gọi API trả phí trong unit test.
+
+Live smoke test phải:
+
+* bị skip mặc định;
+* yêu cầu explicit environment flag;
+* không ghi secret vào log;
+* không phải acceptance gate bắt buộc cho CI thông thường.
+
+## 2.5 Secret
+
+Không đưa API key vào:
+
+* exception;
+* log;
+* snapshot;
+* fixture;
+* report;
+* Git diff;
+* response body;
+* artifact JSON.
+
+API key phải được mã hóa at rest và được scrub khỏi URL/header/raw payload.
+
+## 2.6 Migration
+
+Schema migration phải có:
+
+* upgrade;
+* dữ liệu backfill;
+* validation;
+* rollback hoặc downgrade strategy;
+* migration receipt;
+* orphan audit;
+* duplicate audit;
+* secret audit.
+
+Không xóa bảng cũ trước khi parity và cutover pass.
 
 ---
 
-# PHASE 3 — EVENT MODEL V2 VÀ COMPATIBILITY PROTOCOL
-
-## Mục tiêu
-
-Chuẩn hóa event nội bộ nhưng giữ tương thích WebSocket hiện tại.
-
-## Event envelope V2
+# 3. Cấu trúc mục tiêu
 
 ```text
-event_id
-event_type
-schema_version
-occurred_at
-session_id
-aggregate_id
-sequence
-correlation_id
-causation_id
-trace_id
-payload
-metadata
+providers/
+├── pyproject.toml
+├── README.md
+└── windagent_providers/
+    ├── __init__.py
+    ├── base/
+    │   ├── contracts.py
+    │   ├── requests.py
+    │   ├── responses.py
+    │   ├── streaming.py
+    │   ├── capabilities.py
+    │   ├── protocols.py
+    │   ├── errors.py
+    │   ├── auth.py
+    │   ├── rate_limits.py
+    │   ├── usage.py
+    │   ├── cache_directives.py
+    │   └── transport.py
+    ├── detection/
+    │   ├── detector.py
+    │   ├── probe_plan.py
+    │   ├── fingerprints.py
+    │   ├── evidence.py
+    │   └── test_connection.py
+    ├── registry/
+    │   ├── provider_registry.py
+    │   ├── endpoint_registry.py
+    │   ├── adapter_factory.py
+    │   ├── model_normalizer.py
+    │   └── binding_resolver.py
+    ├── routing/
+    │   ├── endpoint_candidate.py
+    │   ├── endpoint_selector.py
+    │   ├── failover_policy.py
+    │   ├── circuit_breaker.py
+    │   ├── cooldown.py
+    │   └── execution_coordinator.py
+    ├── cache/
+    │   ├── contracts.py
+    │   ├── keys.py
+    │   ├── discovery_cache.py
+    │   ├── health_cache.py
+    │   ├── route_cache.py
+    │   ├── response_cache.py
+    │   └── singleflight.py
+    ├── openai/
+    ├── anthropic/
+    ├── google/
+    ├── nvidia/
+    ├── openrouter/
+    ├── mistral/
+    ├── ollama/
+    └── local/
 ```
 
-## Event semantics
-
-Phải hỗ trợ:
-
-* Monotonic sequence theo session.
-* Persist-before-broadcast.
-* Idempotency.
-* Replay after sequence.
-* Deduplication.
-* Versioning.
-* Correlation.
-* Causation.
-* Redaction.
-* Unknown event tolerance.
-
-## Compatibility serializer
-
-Vẫn sinh được:
-
-```json
-{
-  "event": "step_started",
-  "timestamp": "...",
-  "seq": 123,
-  "data": {}
-}
-```
-
-## Event catalog
-
-Tạo registry cho:
-
-```text
-task.*
-session.*
-planning.*
-workflow.*
-step.*
-tool.*
-model.*
-permission.*
-verification.*
-recovery.*
-worktree.*
-provider.*
-system.*
-```
-
-## Không full Event Sourcing
-
-Phase này không thay current-state database bằng event reconstruction.
-
-Chỉ xây:
-
-```text
-durable execution event
-+ compatibility
-+ versioning
-+ replay contract
-```
-
-## Acceptance gate
-
-* Legacy event fixtures serialize giống trước.
-* Replay after sequence pass.
-* Duplicate event không tạo duplicate state.
-* Event schema version được validate.
-* Secret redaction pass.
-* Unknown future event không crash UI consumer.
-* Không thay route WebSocket ngoài dự kiến.
-
-## Prompt cho Antigravity
-
-```text
-Thực hiện PHASE 3 Architecture V2: Event Model và Compatibility Protocol.
-
-Không triển khai full Event Sourcing.
-
-Hãy:
-1. Tạo EventEnvelope V2, event catalog và schema versioning.
-2. Giữ tương thích byte/shape cần thiết với legacy WebSocket events.
-3. Tạo serializer, deserializer, redaction và idempotency helpers.
-4. Tạo replay contract theo after_seq.
-5. Viết fixture parity cho toàn bộ event inventory PHASE 0.
-6. Không sửa UI protocol nếu chưa có compatibility adapter.
-7. Chạy event regression, backend regression, commit, push, draft PR và dừng.
-Không thực hiện PHASE 4.
-```
+Không bắt buộc tạo mọi file ngay từ Phase 1. Chỉ tạo file khi có contract hoặc implementation thực.
 
 ---
 
-# PHASE 4 — STORAGE, REPOSITORIES, UNIT OF WORK VÀ OUTBOX
+# PHASE 0 — BASELINE, INVENTORY VÀ MIGRATION MAP
 
 ## Mục tiêu
 
-Tách persistence khỏi domain và service.
+Xác định chính xác phần nào của router/provider cũ sẽ được:
+
+* tái sử dụng;
+* di chuyển;
+* viết lại;
+* loại bỏ sau cutover.
+
+Không thay đổi production behavior trong phase này.
+
+## Phạm vi cần đọc
+
+Tối thiểu:
+
+```text
+providers/windagent_providers/
+apps/backend/services/provider_gateway.py
+apps/backend/services/router_execution_service.py
+apps/backend/services/router_policy.py
+apps/backend/services/quota_service.py
+apps/backend/services/model_service.py
+apps/backend/db/models.py
+apps/backend/routers/
+apps/api/
+storage/
+tests/
+pyproject.toml
+```
+
+Tìm thêm các file liên quan bằng `rg`:
+
+```bash
+rg -n "ModelProvider|ModelCatalog|CanonicalModel|ProviderModelBinding"
+rg -n "RouteLock|RouteAttempt|RoutingRule"
+rg -n "provider_gateway|router_policy|quota_service"
+rg -n "OpenAICompatible|AnthropicProvider|GeminiProvider|OllamaProvider"
+rg -n "WINDAGENT_V2_PROVIDERS"
+```
 
 ## Công việc
 
-### 4.1 Storage package
+1. Lập inventory toàn bộ:
+
+   * schema;
+   * endpoint CRUD;
+   * provider adapters;
+   * quota;
+   * health;
+   * discovery;
+   * routing rules;
+   * execution logs;
+   * API key handling;
+   * public API.
+2. Tạo migration map:
 
 ```text
-storage/database
-storage/repositories
-storage/artifacts
-storage/logs
-storage/cache
-storage/migrations
+old component
+new component
+reuse/migrate/replace/delete
+reason
+dependency
+risk
+test coverage
 ```
 
-### 4.2 ORM tách khỏi domain
-
-Domain objects không kế thừa ORM.
-
-Tạo mapper:
+3. Ghi baseline test hiện tại.
+4. Xác định test nào chỉ đang kiểm tra scaffold/mock.
+5. Xác định toàn bộ API provider/router hiện có.
+6. Tạo tài liệu:
 
 ```text
-Domain ↔ ORM
-Domain ↔ persistence DTO
+docs/providers/provider_v3_inventory.md
+docs/providers/provider_v3_migration_map.md
+docs/providers/provider_v3_architecture_decisions.md
 ```
 
-### 4.3 Repository implementations
+7. Sửa receipt Phase 14 nếu receipt đang tuyên bố cutover hoàn tất nhưng execution path chưa thật sự được cutover. Không xóa lịch sử; tạo correction receipt mới.
+
+## Không được làm
+
+* Không đổi schema.
+* Không đổi execution path.
+* Không tạo adapter mới.
+* Không xóa legacy code.
+* Không bật provider V3 flag.
+
+## Acceptance gate
+
+```text
+[ ] Starting SHA được xác minh
+[ ] Worktree ban đầu sạch hoặc thay đổi có sẵn được ghi nhận
+[ ] Inventory provider/router đầy đủ
+[ ] Có old-to-new migration map
+[ ] Có API parity inventory
+[ ] Có baseline test receipt
+[ ] Không thay đổi runtime behavior
+[ ] Không có secret trong artifact
+```
+
+## Commit
+
+```text
+docs(providers): inventory legacy router and define provider v3 migration map
+```
+
+---
+
+# PHASE 1 — PROVIDER CONTRACT FOUNDATION
+
+## Mục tiêu
+
+Hoàn thiện contract chung trước khi triển khai adapter.
+
+## Công việc
+
+Tạo hoặc chuẩn hóa:
+
+```text
+ProviderRequest
+ProviderResponse
+ProviderStreamEvent
+ProviderUsage
+ProviderHealth
+QuotaState
+RateLimitState
+ConnectionTestResult
+ProtocolDetectionResult
+ProviderCapabilities
+ModelDescriptor
+DiscoveredModel
+CacheDirective
+ProviderFailure
+```
+
+## Request contract phải hỗ trợ
+
+* messages;
+* system instruction;
+* temperature;
+* top-p;
+* seed;
+* max output tokens;
+* stop sequences;
+* tools;
+* tool choice;
+* structured output;
+* image/multimodal parts;
+* provider extensions;
+* request ID;
+* idempotency key;
+* timeout/deadline;
+* cache directive;
+* cancellation.
+
+## Response contract phải hỗ trợ
+
+* canonical model ID;
+* provider model ID;
+* endpoint ID;
+* text;
+* tool calls;
+* structured output;
+* finish reason;
+* prompt tokens;
+* completion tokens;
+* cached tokens;
+* reasoning tokens;
+* provider request ID;
+* first-token latency;
+* total latency;
+* cost metadata;
+* scrubbed raw metadata.
+
+## Error taxonomy bắt buộc
+
+```text
+AuthenticationFailure
+PermissionFailure
+RateLimitFailure
+QuotaExhaustedFailure
+ModelNotFoundFailure
+InvalidRequestFailure
+ContextOverflowFailure
+ContentPolicyFailure
+ProviderUnavailableFailure
+NetworkFailure
+TimeoutFailure
+ProtocolMismatchFailure
+MalformedResponseFailure
+CancellationFailure
+SameModelEndpointExhausted
+```
+
+## Port interfaces
+
+Khai báo interface cho:
+
+```text
+EndpointRegistryPort
+CanonicalModelRegistryPort
+RouteLockPort
+RouteAttemptPort
+QuotaStatePort
+EndpointStatePort
+CachePort
+UsageLedgerPort
+```
+
+Không viết SQL implementation trong package provider.
+
+## Tests
+
+* request validation;
+* response normalization;
+* error serialization;
+* secret redaction;
+* stream event ordering;
+* finish reason normalization;
+* capability matching;
+* dependency/import boundary.
+
+## Acceptance gate
+
+```text
+[ ] Contract 100% type-annotated
+[ ] mypy/pyright hoặc project typecheck pass
+[ ] Provider package không import ORM/FastAPI/apps
+[ ] Error taxonomy không dựa vào string matching ở application layer
+[ ] Public exports rõ ràng
+[ ] Contract test pass
+[ ] Architecture import check pass
+```
+
+## Commit
+
+```text
+feat(providers): establish provider v3 contracts and normalized error model
+```
+
+---
+
+# PHASE 2 — SCHEMA V3 VÀ REPOSITORY LAYER
+
+## Mục tiêu
+
+Thiết kế lại schema mà không làm mất provider configuration hiện có.
+
+## Schema mới
+
+Tạo các bảng:
+
+```text
+provider_vendors
+provider_credentials
+provider_endpoints
+canonical_models
+endpoint_model_bindings
+model_routing_rules_v3
+route_locks
+route_attempts
+endpoint_runtime_state
+endpoint_health_samples
+endpoint_rate_limit_windows
+provider_quota_snapshots_v3
+provider_usage_ledger
+model_discovery_snapshots
+response_cache_entries
+```
+
+## Yêu cầu quan trọng
+
+### `provider_credentials`
+
+* tách credential khỏi endpoint;
+* mã hóa at rest;
+* có secret version;
+* hỗ trợ env reference;
+* hỗ trợ nhiều key cho một vendor;
+* không trả ciphertext ra API.
+
+### `provider_endpoints`
+
+Phải chứa tối thiểu:
+
+```text
+vendor_id
+credential_id
+base_url
+protocol_mode
+configured_protocol
+detected_protocol
+protocol_confidence
+region
+priority
+weight
+enabled
+test_status
+last_tested_at
+```
+
+### `canonical_models`
+
+Đại diện model logic mà session khóa.
+
+### `endpoint_model_bindings`
+
+Phải có:
+
+```text
+endpoint_id
+canonical_model_id
+provider_model_id
+model_revision
+equivalence_level
+equivalence_fingerprint
+capabilities
+pricing overrides
+enabled
+priority
+```
+
+### `route_locks`
+
+Phải có unique active lock cho:
+
+```text
+scope_type + scope_id
+```
+
+Việc tạo lock phải atomic.
+
+## Migration
+
+1. Tạo migration mới, không sửa migration cũ đã chạy.
+2. Backfill provider cũ.
+3. Backfill model catalog.
+4. Backfill canonical model và bindings.
+5. Backfill routing rules nếu ánh xạ được.
+6. Ghi các record không ánh xạ được vào migration report.
+7. Không tự động gộp model khi confidence thấp.
+8. Giữ bảng cũ phục vụ rollback/parity.
+
+## Repository
+
+Triển khai repository SQL trong storage/application layer, không trong providers package.
+
+## Tests
+
+* empty database upgrade;
+* populated legacy database upgrade;
+* duplicate endpoint;
+* duplicate binding;
+* encrypted credential;
+* one active lock constraint;
+* concurrent lock creation;
+* downgrade hoặc documented rollback;
+* deterministic backfill;
+* orphan audit.
+
+## Acceptance gate
+
+```text
+[ ] Migration upgrade pass
+[ ] Legacy populated DB migration pass
+[ ] Credential plaintext count == 0
+[ ] Orphan endpoint bindings == 0
+[ ] Duplicate active route locks == 0
+[ ] Backfill deterministic
+[ ] Legacy tables chưa bị xóa
+[ ] Repository contract tests pass
+```
+
+## Commit
+
+```text
+feat(storage): add provider v3 schema repositories and legacy backfill
+```
+
+---
+
+# PHASE 3 — OPENAI-COMPATIBLE TRANSPORT CORE
+
+## Mục tiêu
+
+Tạo transport thật dùng chung cho:
+
+* OpenAI;
+* OpenRouter;
+* NVIDIA NIM;
+* Mistral OpenAI-compatible;
+* custom OpenAI-compatible endpoint.
+
+## Công việc
 
 Triển khai:
 
+* shared `httpx.AsyncClient` lifecycle;
+* connection pooling;
+* connect/read/write/total timeout;
+* request codec;
+* response codec;
+* SSE parser;
+* fragmented SSE handling;
+* multiline data event;
+* tool-call delta accumulation;
+* structured output;
+* usage metadata;
+* rate-limit headers;
+* request ID extraction;
+* error normalization;
+* secret scrubber;
+* model discovery;
+* health probe;
+* cancellation semantics;
+* retry-safe execution.
+
+## Adapter riêng
+
+Tạo thin adapter cho:
+
 ```text
-SqlTaskRepository
-SqlSessionRepository
-SqlWorkflowRepository
-SqlEventStore
-FileArtifactRepository
-SqlProviderConfigurationRepository
+openai/
+openrouter/
+nvidia/
+mistral/
 ```
 
-### 4.4 Unit of Work
+Mỗi adapter override đúng phần vendor-specific:
 
-Bảo đảm atomic transaction cho:
+* header;
+* auth;
+* model endpoint;
+* completion endpoint;
+* provider metadata;
+* error shape;
+* rate-limit headers;
+* extra request fields.
 
-```text
-state update
-+ append event
-+ outbox record
-```
+Không copy toàn bộ transport vào từng adapter.
 
-### 4.5 Transactional outbox
+## Tests
 
-Không publish event trực tiếp trước khi transaction commit.
+Dùng mock HTTP server để kiểm tra:
 
-Flow:
-
-```text
-BEGIN
-update current state
-append event
-append outbox
-COMMIT
-outbox publisher gửi event
-```
-
-### 4.6 Migration safety
-
-* Không destructive migration.
-* Có upgrade/downgrade.
-* Có migration test trên database copy.
-* Có schema checksum.
-* Không sửa migration cũ đã áp dụng.
+* non-stream success;
+* stream success;
+* fragmented chunks;
+* tool calls;
+* structured output;
+* 401;
+* 403;
+* 404 model;
+* 429 + Retry-After;
+* 500/502/503/504;
+* malformed JSON;
+* malformed SSE;
+* timeout;
+* cancellation;
+* secret redaction.
 
 ## Acceptance gate
 
-* Repository contract tests pass.
-* Rollback transaction pass.
-* Outbox retry không duplicate.
-* Migration upgrade/downgrade pass.
-* Legacy DB đọc được.
-* Không mất dữ liệu fixture.
-* Concurrent update có conflict handling.
-* Event và state atomic.
+```text
+[ ] Bốn provider adapter dùng shared transport
+[ ] Không có production response hard-coded
+[ ] Streaming parser chịu được chunk fragmentation
+[ ] Tool calls normalize chính xác
+[ ] 429 normalize thành RateLimitFailure
+[ ] Health probe thực hiện network call thật
+[ ] Model discovery dùng endpoint thật
+[ ] Không silent mock fallback
+[ ] Contract suite pass cho từng adapter
+```
 
-## Prompt cho Antigravity
+## Commit
 
 ```text
-Thực hiện PHASE 4 Architecture V2: Storage, Repository, Unit of Work và Transactional Outbox.
-
-Yêu cầu:
-1. Tách ORM khỏi domain.
-2. Implement repository ports từ PHASE 2.
-3. Implement Unit of Work và transactional outbox.
-4. Duy trì tương thích database legacy.
-5. Chỉ thêm migration additive, không destructive.
-6. Viết repository contract tests, rollback tests, concurrency tests và migration tests.
-7. Không chuyển toàn bộ service production sang repository mới trong một lần.
-8. Thêm adapter song song và parity tests.
-9. Commit, push, draft PR và dừng.
-Không thực hiện PHASE 5.
+feat(providers): implement openai-compatible transport and vendor adapters
 ```
 
 ---
 
-# PHASE 5 — PROVIDER PLATFORM VÀ MODEL ROUTER
+# PHASE 4 — NATIVE ANTHROPIC, GOOGLE VÀ OLLAMA ADAPTERS
 
 ## Mục tiêu
 
-Tách provider implementation khỏi routing policy.
+Triển khai native protocol thay vì ép toàn bộ qua OpenAI-compatible.
 
-## Provider contract
+## Anthropic
+
+Triển khai:
+
+* Messages API mapping;
+* system instruction;
+* content blocks;
+* tool use;
+* tool result;
+* stream events;
+* usage;
+* prompt cache metadata;
+* rate-limit headers;
+* normalized errors;
+* model discovery phù hợp API hiện tại.
+
+## Google
+
+Triển khai:
+
+* Generate Content mapping;
+* content/parts;
+* system instruction;
+* function declarations;
+* function calls;
+* multimodal parts;
+* streaming;
+* usage;
+* safety metadata;
+* model discovery;
+* normalized errors.
+
+## Ollama
+
+Triển khai:
+
+* `/api/tags`;
+* `/api/chat`;
+* native streaming;
+* keep-alive;
+* model availability;
+* health;
+* local latency;
+* tokens/sec nếu tính được;
+* timeout/cancellation;
+* tool support theo capability thực tế.
+
+## `local/`
+
+Triển khai:
+
+* localhost Ollama endpoint;
+* LAN Ollama endpoint;
+* reachability probe;
+* endpoint resource metadata;
+* nhiều Ollama server;
+* không khởi chạy model bằng Python.
+
+## Tests
+
+* native request shape;
+* native streaming event;
+* tool-call conversion;
+* model discovery;
+* unavailable Ollama;
+* malformed Ollama stream;
+* Google safety response;
+* Anthropic tool-use sequence;
+* cancellation;
+* timeouts.
+
+## Acceptance gate
+
+```text
+[ ] Anthropic generate/stream thật
+[ ] Google generate/stream thật
+[ ] Ollama generate/stream thật
+[ ] Ollama health fail khi server không tồn tại
+[ ] Model list không hard-coded
+[ ] Tool calls normalize về contract chung
+[ ] Native usage metadata được giữ
+[ ] Contract suite pass cho từng adapter
+```
+
+## Commit
+
+```text
+feat(providers): implement native anthropic google and ollama adapters
+```
+
+---
+
+# PHASE 5 — TEST CONNECT VÀ PROTOCOL DETECTION
+
+## Mục tiêu
+
+Nhận diện endpoint khi người dùng nhấn Test Connect.
+
+## Input
+
+```text
+base_url
+credential tạm thời
+selected provider hoặc Auto
+manual protocol override tùy chọn
+```
+
+## Probe plan
+
+Thực hiện theo giới hạn và ưu tiên:
+
+1. URL normalization.
+2. DNS/TCP/TLS reachability.
+3. Ollama fingerprint.
+4. Anthropic native fingerprint.
+5. Google native fingerprint.
+6. OpenAI-compatible models endpoint.
+7. OpenRouter/NVIDIA/Mistral vendor fingerprint.
+8. Minimal completion chỉ khi cần và được phép.
+
+## Output
+
+```json
+{
+  "connected": true,
+  "detected_vendor": "openrouter",
+  "detected_protocol": "openai_chat_completions",
+  "confidence": 0.96,
+  "auth_valid": true,
+  "model_discovery_supported": true,
+  "models_found": 100,
+  "evidence": [],
+  "warnings": []
+}
+```
+
+## API/application use cases
+
+Triển khai use case và API cho:
+
+```text
+test connection
+preview detected configuration
+save provider endpoint
+refresh discovered models
+manual protocol override
+```
+
+Không để FastAPI router chứa business logic detection.
+
+## Security
+
+* credential test chỉ tồn tại trong memory;
+* không persist trước Save;
+* không echo secret;
+* giới hạn redirect;
+* chống SSRF;
+* chặn metadata endpoints;
+* chặn file URL;
+* cấu hình rõ chính sách localhost/LAN;
+* timeout cứng;
+* giới hạn response body.
+
+## Acceptance gate
+
+```text
+[ ] Nhận diện được Ollama
+[ ] Nhận diện được Anthropic native
+[ ] Nhận diện được Google native
+[ ] Nhận diện được OpenAI-compatible
+[ ] Có vendor fingerprint cho OpenRouter/NVIDIA/Mistral
+[ ] Manual override hoạt động
+[ ] Protocol mismatch trả warning
+[ ] SSRF test pass
+[ ] Credential không được persist khi chỉ Test Connect
+[ ] Timeout và body limit hoạt động
+```
+
+## Commit
+
+```text
+feat(providers): add safe endpoint detection and test-connect workflow
+```
+
+---
+
+# PHASE 6 — CANONICAL MODEL REGISTRY VÀ EQUIVALENCE
+
+## Mục tiêu
+
+Định nghĩa chính xác điều kiện “cùng model” trước khi endpoint failover.
+
+## Công việc
+
+* model ID normalization;
+* alias handling;
+* vendor/family/revision extraction;
+* canonical matching;
+* equivalence fingerprint;
+* discovery snapshot;
+* merge/split binding workflow;
+* manual review khi confidence thấp;
+* capability reconciliation;
+* pricing reconciliation;
+* context window validation;
+* tool protocol validation.
+
+## Equivalence levels
+
+```text
+exact_revision
+exact_family_floating_revision
+compatible_alias
+approximate
+unknown
+```
+
+Automatic failover chỉ dùng:
+
+```text
+exact_revision
+```
+
+Không tự động gộp:
+
+* model khác revision;
+* model quantization khác;
+* model distillation khác;
+* model context configuration khác khi ảnh hưởng hành vi;
+* alias không đủ bằng chứng.
+
+## Tests
+
+* same model via two endpoints;
+* same family but different revision;
+* aliases;
+* discovery rerun;
+* duplicate prevention;
+* manual split;
+* manual merge;
+* fingerprint stability;
+* unsupported capability mismatch.
+
+## Acceptance gate
+
+```text
+[ ] Exact-equivalent bindings được nhận diện
+[ ] Different revision không được đánh dấu exact
+[ ] Discovery rerun không tạo duplicate
+[ ] Có audit trail merge/split
+[ ] Binding confidence thấp không auto-merge
+[ ] Failover candidate query chỉ trả exact bindings
+```
+
+## Commit
+
+```text
+feat(providers): add canonical model registry and binding equivalence
+```
+
+---
+
+# PHASE 7 — RULE SELECTION VÀ STICKY ROUTE LOCK
+
+## Mục tiêu
+
+Rule chọn model một lần, sau đó duy trì model trong toàn scope.
+
+## Input cho rule matcher
+
+* task label;
+* agent type;
+* workflow type;
+* required capabilities;
+* estimated context;
+* tool requirement;
+* vision requirement;
+* user-selected preference;
+* cost class;
+* privacy/local requirement.
+
+## Luồng
+
+```text
+request
+    → lookup active route lock
+        → found: reuse canonical model
+        → not found:
+            evaluate enabled rules
+            choose canonical model
+            atomically create route lock
+```
+
+## Yêu cầu
+
+* rule có version;
+* route lock lưu routing snapshot;
+* sửa rule không tác động lock cũ;
+* process restart vẫn đọc được lock;
+* concurrency-safe;
+* explicit unlock;
+* explicit model reselection;
+* không fallback sang model khác khi endpoint lỗi.
+
+## Events
+
+Ghi tối thiểu:
+
+```text
+ModelSelected
+RouteLocked
+RouteReused
+RouteReleased
+ModelReselectionRequested
+ModelReselected
+```
+
+## Tests
+
+* 100 turns cùng session;
+* concurrent first requests;
+* restart simulation;
+* rule update during active session;
+* explicit unlock;
+* explicit reselect;
+* missing matching rule;
+* disabled canonical model;
+* insufficient capability.
+
+## Acceptance gate
+
+```text
+[ ] Một scope chỉ có một active lock
+[ ] 100 turns giữ cùng canonical model
+[ ] Concurrent first calls không tạo hai model locks
+[ ] Restart không làm mất affinity
+[ ] Rule update không đổi lock hiện tại
+[ ] Không silent model fallback
+[ ] Reselection có event và reason
+```
+
+## Commit
+
+```text
+feat(routing): implement first-turn model selection and persistent route locks
+```
+
+---
+
+# PHASE 8 — ENDPOINT FAILOVER, QUOTA VÀ CIRCUIT BREAKER
+
+## Mục tiêu
+
+Chuyển endpoint khi 429/lỗi khả dụng nhưng giữ nguyên canonical model.
+
+## Candidate pipeline
+
+```text
+bindings của canonical model
+    → exact revision only
+    → enabled
+    → capability-compatible
+    → credential valid
+    → health acceptable
+    → quota available
+    → not in cooldown
+    → circuit not open
+    → endpoint score
+```
+
+## Endpoint score
+
+Cân nhắc:
+
+* health;
+* quota;
+* configured priority;
+* configured weight;
+* latency;
+* recent success rate;
+* cost;
+* region;
+* recent 429;
+* circuit state.
+
+Điểm endpoint không được dùng để chọn model khác.
+
+## Retry policy
+
+### 429
+
+* parse `Retry-After`;
+* parse provider rate-limit headers;
+* cập nhật cooldown;
+* ghi route attempt;
+* chuyển endpoint exact-equivalent.
+
+### 5xx
+
+* tăng failure count;
+* circuit breaker;
+* chuyển endpoint khi retry policy cho phép.
+
+### 401/403
+
+* credential invalid;
+* không retry vô hạn;
+* có thể thử binding dùng credential khác nếu cùng model.
+
+### 404 model
+
+* đánh dấu binding stale/unavailable;
+* yêu cầu rediscovery.
+
+### 400/422
+
+* mặc định không failover;
+* phân loại lỗi request.
+
+### Context overflow
+
+* trả về orchestration để compact/truncate theo policy;
+* không chuyển endpoint mù.
+
+### Partial streaming
+
+Nếu đã phát token ra client:
+
+* không nối stream endpoint B vào endpoint A một cách im lặng;
+* ghi partial failure;
+* kết thúc stream bằng error event;
+* retry chỉ được tạo generation mới với attempt ID mới và contract rõ ràng.
+
+## Distributed state
+
+Cooldown, quota reservation và circuit state phải có backend hỗ trợ nhiều process.
+
+Development có memory implementation.
+
+Production dùng Redis hoặc storage atomic tương đương.
+
+## Tests bắt buộc
+
+### Kịch bản chính
+
+```text
+Endpoint A → HTTP 429
+Endpoint B → success
+Canonical model → unchanged
+Route lock → unchanged
+Attempt 1 → rate_limited
+Attempt 2 → success
+Endpoint A → cooldown
+```
+
+### Kịch bản bổ sung
+
+* endpoint A timeout, B success;
+* endpoint A 503, B success;
+* all endpoints exhausted;
+* 401 key A, credential B success;
+* 400 no failover;
+* partial stream failure;
+* circuit open;
+* half-open recovery;
+* quota race;
+* multi-process cooldown visibility.
+
+## Acceptance gate
+
+```text
+[ ] 429 failover cùng model pass
+[ ] Canonical model không đổi
+[ ] Route lock không đổi
+[ ] Attempt audit đầy đủ
+[ ] Không duplicate billing ngoài retry contract
+[ ] Circuit breaker pass
+[ ] Distributed cooldown pass
+[ ] 400 không bị retry mù
+[ ] Partial streaming policy pass
+[ ] All exhausted trả SameModelEndpointExhausted
+```
+
+## Commit
+
+```text
+feat(routing): add same-model endpoint failover quota and circuit breaker
+```
+
+---
+
+# PHASE 9 — CACHE VÀ SINGLEFLIGHT
+
+## Mục tiêu
+
+Thêm cache mà không phá model affinity hoặc cô lập dữ liệu.
+
+## Cache layers
+
+### Route lock cache
+
+```text
+route-lock:{scope_type}:{scope_id}
+```
+
+Database là source of truth.
+
+Cache miss phải đọc database trước khi tạo model selection mới.
+
+### Endpoint state cache
+
+```text
+endpoint-health:{endpoint_id}
+endpoint-cooldown:{endpoint_id}
+endpoint-circuit:{endpoint_id}
+endpoint-quota:{endpoint_id}
+```
+
+### Discovery cache
+
+```text
+models:{endpoint_id}:{credential_version}:{protocol_version}
+```
+
+### Response cache
+
+Chỉ opt-in.
+
+Key phải chứa:
+
+```text
+tenant/user namespace
+canonical model
+revision
+normalized messages hash
+system hash
+tool schema hash
+structured output hash
+temperature
+top_p
+seed
+max output tokens
+provider behavior version
+```
+
+### Provider-native cache
+
+Dùng `CacheDirective` để adapter tự ánh xạ.
+
+## Không response-cache mặc định
+
+* browser/computer use;
+* tool có side effect;
+* realtime research;
+* file tạm;
+* high-temperature without seed;
+* approximate model binding;
+* request chứa secret;
+* request phụ thuộc mutable external state.
+
+## Singleflight
+
+Áp dụng cho:
+
+* model discovery;
+* health probes;
+* identical cacheable requests;
+* quota refresh.
+
+Không dùng singleflight cho side-effecting tool flows.
+
+## Tests
+
+* cache isolation giữa user;
+* credential rotation invalidation;
+* model revision invalidation;
+* tool schema invalidation;
+* system prompt invalidation;
+* cache backend unavailable;
+* Redis concurrency;
+* singleflight collapse;
+* route cache stale recovery;
+* no caching side-effect tool request.
+
+## Acceptance gate
+
+```text
+[ ] Không cache chéo tenant/user
+[ ] DB vẫn là source of truth cho route lock
+[ ] Credential rotation invalidates discovery cache
+[ ] Model revision change causes miss
+[ ] Tool schema change causes miss
+[ ] Side-effect requests không response-cache
+[ ] Cache backend down không làm provider execution down
+[ ] Singleflight concurrency test pass
+```
+
+## Commit
+
+```text
+feat(providers): add safe provider caches and distributed singleflight
+```
+
+---
+
+# PHASE 10 — TÍCH HỢP PROVIDER V3 VÀO ROUTER/GATEWAY
+
+## Mục tiêu
+
+Thay execution path cũ bằng provider V3 theo strangler pattern có rollback.
+
+## Execution path mục tiêu
+
+```text
+ProviderGateway
+    → ModelRouteCoordinator
+        → read/create route lock
+        → canonical model
+    → EndpointExecutionCoordinator
+        → resolve exact bindings
+        → filter health/quota/circuit
+        → choose endpoint
+        → adapter factory
+        → execute
+        → same-model failover
+    → normalized response/stream
+```
+
+## Công việc
+
+1. Provider gateway không truy vấn ORM trực tiếp.
+2. Router policy cũ không còn là production model selector.
+3. OpenAI-compatible public API dùng coordinator mới.
+4. Agent runtime adapters dùng coordinator mới.
+5. Provider/model CRUD dùng schema V3.
+6. Test Connect dùng detection service mới.
+7. Giữ compatibility API khi cần.
+8. Tạo feature flags độc lập:
+
+```text
+WINDAGENT_PROVIDER_V3_READ
+WINDAGENT_PROVIDER_V3_WRITE
+WINDAGENT_PROVIDER_V3_TEST_CONNECT
+WINDAGENT_PROVIDER_V3_EXECUTE
+WINDAGENT_PROVIDER_V3_ROUTE_LOCK
+WINDAGENT_PROVIDER_V3_CACHE
+```
+
+Mặc định flag mới phải `false` cho đến khi gate pass.
+
+Không chỉ kiểm tra master `WINDAGENT_ARCH_V2`.
+
+## Rollout
+
+```text
+read V3
+→ write V3
+→ Test Connect V3
+→ route lock V3
+→ execution V3
+→ cache V3
+```
+
+Mỗi bước có rollback riêng.
+
+## Shadow/parity
+
+* shadow read-only CRUD/list operations;
+* không shadow request trả phí;
+* destructive skip không được tính là parity pass;
+* async comparator phải hỗ trợ awaitable;
+* parity report phải phân biệt:
+
+  * matched;
+  * mismatched;
+  * skipped;
+  * not tested.
+
+## Tests
+
+* non-stream chat;
+* streaming;
+* tool use;
+* structured output;
+* coding agent;
+* research agent;
+* Ollama local;
+* 429 failover;
+* restart recovery;
+* API compatibility;
+* flags rollback;
+* DB parity;
+* no direct legacy ORM execution path.
+
+## Acceptance gate
+
+```text
+[ ] Public gateway dùng provider V3 khi flag bật
+[ ] Rollback về legacy hoạt động
+[ ] Non-stream pass
+[ ] Streaming pass
+[ ] Tool call pass
+[ ] Ollama pass
+[ ] 429 same-model failover pass
+[ ] Route lock restart recovery pass
+[ ] Skipped shadow operation không tính parity pass
+[ ] Provider V3 flags hoạt động độc lập
+```
+
+## Commit
+
+```text
+feat(migration): integrate provider v3 routing behind granular cutover flags
+```
+
+---
+
+# PHASE 11 — HARDENING, CI, CUTOVER VÀ LEGACY DECOMMISSION
+
+## Mục tiêu
+
+Chứng minh subsystem đủ điều kiện production cutover.
+
+## Fault injection
+
+Tạo test cho:
+
+* 429;
+* timeout;
+* DNS failure;
+* TLS failure;
+* malformed JSON;
+* malformed SSE;
+* truncated stream;
+* 401/403;
+* 404 model;
+* 500/502/503/504;
+* quota exhaustion;
+* circuit open;
+* cache backend down;
+* database restart;
+* process restart;
+* concurrent route creation;
+* credential rotation;
+* partial stream failure.
+
+## Observability
+
+Metrics tối thiểu:
+
+```text
+provider requests
+route attempts
+endpoint selection
+endpoint failover
+model reselection
+429 count
+circuit state
+quota usage
+cache hit/miss
+first-token latency
+total latency
+token usage
+estimated cost
+provider errors by class
+```
+
+Không đưa secret hoặc full prompt vào metric label.
+
+## CI
+
+Tạo CI thực sự chạy:
+
+* formatting;
+* lint;
+* typing;
+* architecture boundaries;
+* provider contract tests;
+* adapter tests;
+* migration tests;
+* security tests;
+* integration tests;
+* root test suite;
+* legacy regression;
+* build nếu bị ảnh hưởng.
+
+Root test configuration không được bỏ qua legacy/provider integration một cách âm thầm.
+
+## Cutover
+
+Chỉ thực hiện khi toàn bộ gate pass:
+
+1. Bật provider V3 read.
+2. Bật provider V3 write.
+3. Bật route lock.
+4. Bật execution cho canary.
+5. Theo dõi error/failover/cache.
+6. Mở rộng rollout.
+7. Giữ rollback trong ít nhất một migration release boundary.
+8. Sau parity mới xóa hoặc archive legacy provider execution code.
+
+Không xóa encryption compatibility trước khi credential migration được xác minh.
+
+## Final acceptance matrix
+
+```text
+PROVIDER_V3_CONTRACTS_PASS
+SCHEMA_MIGRATION_PASS
+LEGACY_BACKFILL_PASS
+REAL_ADAPTERS_PASS
+TEST_CONNECT_PASS
+PROTOCOL_DETECTION_PASS
+CANONICAL_MODEL_EQUIVALENCE_PASS
+MODEL_AFFINITY_PASS
+CONCURRENT_ROUTE_LOCK_PASS
+SAME_MODEL_429_FAILOVER_PASS
+CIRCUIT_BREAKER_PASS
+QUOTA_RESERVATION_PASS
+CACHE_ISOLATION_PASS
+STREAMING_PASS
+TOOL_USE_PASS
+OLLAMA_LOCAL_PASS
+RESTART_RECOVERY_PASS
+NO_SECRET_LEAK_PASS
+LEGACY_API_PARITY_PASS
+ROLLBACK_PASS
+FULL_CI_PASS
+```
+
+Nếu bất kỳ gate nào chưa pass, verdict không được là accepted/cutover complete.
+
+## Commit
+
+```text
+feat(providers): harden provider v3 and complete verified cutover
+```
+
+---
+
+# 4. Test strategy tổng thể
+
+## Unit tests
+
+* codecs;
+* error normalization;
+* capability matching;
+* endpoint scoring;
+* retry policy;
+* cache key;
+* fingerprint;
+* equivalence;
+* circuit state.
+
+## Contract tests
+
+Một bộ contract suite dùng lại cho mọi adapter:
 
 ```text
 list_models
 health
 generate
 stream
-estimate_cost
-get_quota
-cancel
-capabilities
-```
-
-## Provider adapters
-
-Từng adapter riêng:
-
-```text
-OpenAI-compatible
-Anthropic
-Google
-NVIDIA
-OpenRouter
-Mistral
-Ollama
-Local
-```
-
-Không triển khai tất cả logic trong một gateway file.
-
-## Capability model
-
-```text
-chat
-reasoning
-coding
-tool_use
-vision
-embedding
-structured_output
-long_context
-streaming
-computer_use
-```
-
-## Router input
-
-```text
-task type
-required capabilities
-context size
-privacy requirement
-latency target
-budget
-quota
-provider health
-historical eval
-failure history
-fallback policy
-```
-
-## Router output
-
-```text
-selected provider
-selected model
-selection reasons
-fallback chain
-estimated cost
-route lock
-policy version
-```
-
-## Route lock
-
-Một task/run phải có:
-
-* Canonical model selection.
-* Same-model retry.
-* Compatible fallback.
-* Explicit escalation.
-* Route audit.
-
-## Không dùng keyword router đơn giản
-
-Không được chỉ dựa vào:
-
-* Prompt length.
-* Một vài từ khóa.
-* Provider order cố định.
-
-## Acceptance gate
-
-* Adapter contract tests.
-* Mock provider tests.
-* Timeout tests.
-* Rate-limit tests.
-* Quota exhaustion.
-* Fallback.
-* Route lock.
-* Streaming cancellation.
-* Cost accounting.
-* Secret redaction.
-* Không gửi request thật trong unit tests.
-
-## Prompt cho Antigravity
-
-```text
-Thực hiện PHASE 5 Architecture V2: Provider Platform và Model Router.
-
-Hãy:
-1. Tạo provider base contracts và capability model.
-2. Tách từng provider thành adapter độc lập.
-3. Tạo router policy dựa trên capability, health, quota, latency, cost và eval evidence.
-4. Tạo route lock, fallback chain và escalation.
-5. Giữ compatibility với provider/model registry legacy.
-6. Viết contract tests bằng mock/fake transport.
-7. Không hard-code model mặc định vào domain.
-8. Không gọi API thật trong test.
-9. Chạy regression, commit, push, draft PR và dừng.
-Không thực hiện PHASE 6.
-```
-
----
-
-# PHASE 6 — TOOL PLATFORM, EXECUTION VÀ PERMISSION ENGINE
-
-## Mục tiêu
-
-Xây tool runtime thống nhất và an toàn.
-
-## Tool contract
-
-```text
-ToolDefinition
-ToolInvocation
-ToolExecutionContext
-ToolResult
-ToolError
-```
-
-## Tool registry
-
-Hỗ trợ:
-
-* Registration.
-* Version.
-* Schema.
-* Capability.
-* Risk.
-* Permission.
-* Timeout.
-* Resource requirements.
-* Deterministic audit.
-
-## Tool groups
-
-```text
-filesystem
-shell
-git
-code_search
-ast
-lsp
-testing
-browser
-database
-github
-mcp
-```
-
-## Execution
-
-```text
-sandbox
-worktree
-process_manager
-resource_limits
-permissions
-environments
-```
-
-## Permission engine
-
-Phân loại:
-
-```text
-read-only
-workspace-write
-external-network
-secret-access
-process-execution
-destructive
-privileged
-```
-
-Mọi tool call phải được policy engine đánh giá trước.
-
-## Shell safety
-
-Có:
-
-* Working directory boundary.
-* Command allow/deny policy.
-* Timeout.
-* Output limit.
-* Process tree termination.
-* Secret masking.
-* No shell interpolation không kiểm soát.
-* Audit log.
-
-## Filesystem safety
-
-* Path traversal protection.
-* Symlink escape protection.
-* Workspace root enforcement.
-* Atomic write.
-* Backup hoặc patch artifact.
-* File size limit.
-
-## Acceptance gate
-
-* Tool schema validation.
-* Path traversal tests.
-* Symlink escape tests.
-* Timeout and cancellation.
-* Process cleanup.
-* Permission approval/denial.
-* Audit completeness.
-* No secret in logs.
-* Existing tools chạy qua compatibility adapter.
-
-## Prompt cho Antigravity
-
-```text
-Thực hiện PHASE 6 Architecture V2: Tool Platform, Execution và Permission Engine.
-
-Yêu cầu:
-1. Tạo tool contracts và registry có version/schema/risk.
-2. Tạo process manager, resource limits và workspace boundary.
-3. Tạo permission policy bắt buộc trước mọi tool call.
-4. Adapter các tool legacy vào registry mới, không rewrite đồng thời.
-5. Thêm traversal, symlink, timeout, cancellation và secret-redaction tests.
-6. Không cho agent tự bypass approval.
-7. Không thêm unrestricted shell mode mặc định.
-8. Chạy security regression, commit, push, draft PR và dừng.
-Không thực hiện PHASE 7.
-```
-
----
-
-# PHASE 7 — PLUGINS, SKILLS VÀ MCP
-
-## Mục tiêu
-
-Xây extension platform nhưng không để plugin phá vỡ core.
-
-## Plugin manifest
-
-```text
-id
-name
-version
-entrypoint
-capabilities
-required_permissions
-required_tools
-config_schema
-compatibility
-signature/hash
-```
-
-## Skill manifest
-
-```text
-id
-version
-description
-activation_rules
-required_tools
-required_permissions
-token_budget
-prompt_template
-verification_policy
-```
-
-## MCP architecture
-
-MCP là adapter của WindAgent tool system:
-
-```text
-MCP server
-→ MCP client adapter
-→ WindAgent ToolDefinition
-→ Permission engine
-→ Tool registry
-```
-
-Không để MCP tool gọi trực tiếp execution layer ngoài policy.
-
-## MCP support
-
-* `stdio`.
-* Streamable HTTP.
-* Tool listing.
-* Tool calling.
-* Resources.
-* Prompts.
-* Cancellation.
-* Timeout.
-* Server lifecycle.
-* Permission scope.
-
-Dùng SDK chính thức được pin version.
-
-## Plugin security
-
-* Disabled by default.
-* Allowlist.
-* Version pin.
-* Hash verification.
-* Static manifest validation.
-* No arbitrary auto-install.
-* No implicit secret access.
-* No unrestricted subprocess.
-
-## Acceptance gate
-
-* Invalid manifest bị reject.
-* Duplicate plugin/skill ID bị reject.
-* MCP disconnect recovery.
-* Malicious tool schema bị reject.
-* Permission enforcement.
-* Skill lazy loading.
-* Token budget.
-* Plugin failure không làm crash core.
-
-## Prompt cho Antigravity
-
-```text
-Thực hiện PHASE 7 Architecture V2: Plugins, Skills và MCP.
-
-Hãy:
-1. Tạo plugin và skill manifests có version, permission và compatibility.
-2. Tạo internal MCPClientPort và adapter bằng SDK MCP chính thức.
-3. Map MCP tools vào WindAgent ToolDefinition.
-4. Bắt buộc mọi MCP call đi qua permission engine.
-5. Plugin/skill disabled by default và không auto-install.
-6. Viết security, lifecycle, timeout và compatibility tests.
-7. Không dùng mcp2py làm dependency lõi.
-8. Commit, push, draft PR và dừng.
-Không thực hiện PHASE 8.
-```
-
----
-
-# PHASE 8 — ORCHESTRATION ENGINE, STATE MACHINE, RETRY VÀ RECOVERY
-
-## Mục tiêu
-
-Xây runtime điều phối deterministic.
-
-## Task state machine
-
-```text
-RECEIVED
-CLASSIFYING
-CONTEXT_BUILDING
-PLANNING
-READY
-RUNNING
-WAITING_PERMISSION
-PAUSED
-RETRY_WAIT
-RECOVERING
-VERIFYING
-REVIEWING
-COMPLETED
-FAILED
-CANCELLED
-```
-
-Mọi transition phải được validate.
-
-## Components
-
-```text
-TaskManager
-WorkflowEngine
-StateMachine
-Scheduler
-Dispatcher
-RetryPolicy
-RecoveryManager
-CancellationManager
-```
-
-## Durable facts, derived status
-
-Lưu fact:
-
-```text
-current step
-last sequence
-runtime alive
-pending permission
-retry count
-last error
-verification state
-```
-
-UI status được derive, không lưu nhiều status trùng nhau.
-
-## Retry policy
-
-Dựa trên:
-
-* Error classification.
-* Attempt.
-* Tool/provider.
-* Idempotency.
-* Backoff.
-* Budget.
-* Deadline.
-
-Không retry lỗi non-retryable.
-
-## Recovery
-
-Khi restart:
-
-* Tìm run in-flight.
-* Kiểm tra runtime.
-* Reconcile state.
-* Resume hoặc fail rõ ràng.
-* Không chạy lại tool destructive nếu chưa chứng minh idempotent.
-
-## Scheduler
-
-* Bounded concurrency.
-* Priority.
-* Resource limits.
-* Per-project lock.
-* Per-worktree ownership.
-* Cancellation.
-* Fairness.
-
-## Acceptance gate
-
-* State transition table tests.
-* Invalid transition rejected.
-* Pause/resume.
-* Cancel.
-* Crash recovery.
-* Duplicate dispatch.
-* Retry exhaustion.
-* Idempotent resume.
-* Concurrent task isolation.
-* No destructive replay.
-
-## Prompt cho Antigravity
-
-```text
-Thực hiện PHASE 8 Architecture V2: Orchestration Engine và State Machine.
-
-Yêu cầu:
-1. Tạo explicit state machine và transition table.
-2. Tách TaskManager, Scheduler, Dispatcher, Retry và Recovery.
-3. Dùng durable facts và derived status.
-4. Bảo đảm idempotency, bounded concurrency và cancellation.
-5. Adapter workflow runner/DAG scheduler legacy từng phần.
-6. Viết crash/restart, duplicate dispatch, pause/resume và retry tests.
-7. Không tự động chạy lại destructive tool.
-8. Chạy regression, commit, push, draft PR và dừng.
-Không thực hiện PHASE 9.
-```
-
----
-
-# PHASE 9 — CONTEXT, REPOSITORY INTELLIGENCE VÀ MEMORY
-
-## Mục tiêu
-
-Tạo context system có ngân sách và provenance rõ ràng.
-
-## Repository intelligence
-
-```text
-repository_index
-retrieval
-dependency_graph
-symbol_graph
-code_search
-AST index
-LSP integration
-change index
-```
-
-## Context builder
-
-Context phải ghi:
-
-* Source.
-* File.
-* Line.
-* Retrieval reason.
-* Token cost.
-* Freshness.
-* Confidence.
-* Truncation.
-* Access permission.
-
-## Compaction
-
-* Conversation compaction.
-* Tool result compaction.
-* Repository context compaction.
-* Preserve decisions and errors.
-* Không làm mất acceptance criteria.
-* Có reversible reference tới artifact gốc.
-
-## Memory layers
-
-```text
-session
-project
-user
-episodic
-vector_store
-```
-
-Không ghi mọi thứ vào vector store.
-
-## Memory write policy
-
-Chỉ ghi khi:
-
-* Có giá trị tái sử dụng.
-* Không chứa secret.
-* Có provenance.
-* Có scope.
-* Có retention policy.
-* Có conflict handling.
-
-## Acceptance gate
-
-* Retrieval precision fixture.
-* Token budget enforcement.
-* Stale context detection.
-* Secret exclusion.
-* Cross-project isolation.
-* Compaction retention.
-* Memory delete/update.
-* No vector-only source of truth.
-
-## Prompt cho Antigravity
-
-```text
-Thực hiện PHASE 9 Architecture V2: Context và Memory.
-
-Hãy:
-1. Tạo repository index, symbol/dependency graph và retrieval ports.
-2. Tạo context builder có provenance, freshness và token budget.
-3. Tạo compaction giữ lại decision, blocker và acceptance criteria.
-4. Tạo session/project/user/episodic memory với scope rõ ràng.
-5. Không đưa mọi dữ liệu vào vector store.
-6. Viết retrieval, isolation, stale-data, secret và token-budget tests.
-7. Không thay orchestration behavior ngoài integration adapter.
-8. Commit, push, draft PR và dừng.
-Không thực hiện PHASE 10.
-```
-
----
-
-# PHASE 10 — WORKFLOW PACKS
-
-## Mục tiêu
-
-Chuẩn hóa từng loại nhiệm vụ thành workflow package.
-
-## Workflow package contract
-
-Mỗi workflow có:
-
-```text
-metadata
-input schema
-classification rule
-planning policy
-allowed tools
-model requirements
-permission policy
-retry policy
-verification policy
-acceptance criteria
-report format
-```
-
-## Thứ tự triển khai
-
-### 10.1 Bugfix
-
-Flow:
-
-```text
-reproduce
-diagnose
-patch
-focused test
-regression
-review
-report
-```
-
-### 10.2 CI fix
-
-```text
-inspect checks
-read logs
-identify root cause
-patch
-rerun focused CI
-report
-```
-
-### 10.3 Code review
-
-```text
-diff inventory
-risk classification
-correctness
-security
-tests
-review report
-```
-
-### 10.4 Feature
-
-```text
-requirements
-design
-implementation
-tests
-acceptance
-report
-```
-
-### 10.5 Refactor
-
-```text
-baseline behavior
-dependency map
-incremental change
-parity test
-regression
-```
-
-### 10.6 Research
-
-```text
-question decomposition
-source collection
-source quality
-synthesis
-citation
-artifact
-```
-
-### 10.7 Scientific evaluation
-
-```text
-protocol freeze
-data integrity
-leakage checks
-execution
-metrics
-reproduction
-verdict
-```
-
-### 10.8 Release
-
-```text
-version
-changelog
-build
-security scan
-artifact checksum
-smoke
-rollback plan
-```
-
-## Acceptance gate
-
-* Workflow schema validation.
-* Tool policy enforcement.
-* Deterministic state progression.
-* Acceptance criteria machine-readable.
-* Failure path tests.
-* Golden workflow replay.
-* Không workflow nào tự merge hoặc release nếu chưa được cấp quyền.
-
-## Prompt cho Antigravity
-
-```text
-Thực hiện PHASE 10 Architecture V2: Workflow Packs.
-
-Hãy:
-1. Tạo workflow package contract.
-2. Implement lần lượt bugfix, ci_fix, code_review, feature, refactor, research, scientific_eval và release.
-3. Mỗi workflow phải khai báo tool, model, permission, retry, verification và acceptance.
-4. Dùng orchestrator PHASE 8; không tạo runtime riêng trong từng workflow.
-5. Tạo golden fixtures và failure-path tests.
-6. Không auto-merge hoặc auto-release mặc định.
-7. Commit, push, draft PR và dừng.
-Không thực hiện PHASE 11.
-```
-
----
-
-# PHASE 11 — VERIFICATION, EVALS VÀ OBSERVABILITY
-
-## Mục tiêu
-
-Đo được hệ thống có thực sự hoạt động hay chỉ chạy không lỗi.
-
-## Verification
-
-```text
-test_runner
-policy_engine
-integrity
-quality_gates
-regression
-security
-acceptance
-```
-
-## Verification result
-
-```text
-gate
-status
-evidence
-command
-exit code
-artifact
-duration
-blocking
-```
-
-## Evals
-
-```text
-datasets
-graders
-benchmarks
-replay
-reports
-```
-
-Benchmark tối thiểu:
-
-* Bugfix.
-* Feature.
-* CI repair.
-* Code review.
-* Research.
-* Tool selection.
-* Model routing.
-* Recovery.
-* Permission safety.
-* Cost.
-
-## Metrics
-
-```text
-task success rate
-accepted task rate
-first-pass success
-recovery success
-tool failure
-provider failure
-tokens
-cost
-latency
-human intervention
-retry count
-context size
-verification failure
-```
-
-## Tracing
-
-Trace chain:
-
-```text
-task
-→ plan
-→ workflow
-→ step
-→ model call
-→ tool call
-→ verification
-```
-
-## Audit
-
-Audit event phải chứa:
-
-* Actor.
-* Action.
-* Resource.
-* Decision.
-* Policy.
-* Correlation.
-* Result.
-* Timestamp.
-
-Không chứa secret hoặc raw sensitive data.
-
-## Acceptance gate
-
-* Trace completeness.
-* Cost reconciliation.
-* Audit ordering.
-* Eval deterministic fixture.
-* Replay.
-* Security gate.
-* Report validation.
-* Dashboard không phụ thuộc trực tiếp vào provider implementation.
-
-## Prompt cho Antigravity
-
-```text
-Thực hiện PHASE 11 Architecture V2: Verification, Evals và Observability.
-
-Hãy:
-1. Tạo verification contracts và quality gates.
-2. Tạo benchmark/eval datasets và graders tối thiểu.
-3. Tạo trace task→workflow→model/tool→verification.
-4. Tạo cost, latency, retry và intervention metrics.
-5. Tạo audit log có correlation nhưng không chứa secret.
-6. Tạo replay và report validator.
-7. Không coi test pass là bằng chứng duy nhất của agent quality.
-8. Commit, push, draft PR và dừng.
-Không thực hiện PHASE 12.
-```
-
----
-
-# PHASE 12 — API V2, WORKER VÀ CLI PRODUCTION INTEGRATION
-
-## Mục tiêu
-
-Đưa Architecture V2 vào các process thật nhưng vẫn giữ legacy fallback.
-
-## API V2
-
-Tạo:
-
-```text
-/api/v2/tasks
-/api/v2/runs
-/api/v2/workflows
-/api/v2/events
-/api/v2/providers
-/api/v2/tools
-/api/v2/permissions
-/api/v2/artifacts
-/api/v2/evals
-```
-
-## Worker
-
-Worker chịu trách nhiệm:
-
-* Claim task.
-* Heartbeat.
-* Execute workflow.
-* Renew lease.
-* Handle cancellation.
-* Emit events.
-* Recover abandoned task.
-
-## CLI
-
-Các lệnh:
-
-```text
-windagent doctor
-windagent run
-windagent status
-windagent task list
-windagent task inspect
-windagent replay
-windagent providers
-windagent tools
-windagent eval
-windagent architecture check
-```
-
-## Compatibility
-
-* `/api/v1` vẫn hoạt động.
-* V1 có thể gọi V2 application service qua adapter.
-* Không duplicate business rule trong V1 và V2.
-* Có route parity matrix.
-
-## Acceptance gate
-
-* API contract tests.
-* Worker lease tests.
-* Multi-worker claim safety.
-* Cancellation.
-* Event stream.
-* CLI E2E.
-* V1/V2 compatibility.
-* Recovery after worker crash.
-* No duplicate execution.
-
-## Prompt cho Antigravity
-
-```text
-Thực hiện PHASE 12 Architecture V2: API V2, Worker và CLI integration.
-
-Yêu cầu:
-1. Tạo API V2 trên application services mới.
-2. Tạo production worker có lease, heartbeat, cancellation và recovery.
-3. Hoàn thiện CLI.
-4. Giữ /api/v1 hoạt động qua compatibility adapter.
-5. Không duplicate business logic giữa V1 và V2.
-6. Tạo parity matrix và E2E tests.
-7. Chạy legacy regression và V2 E2E.
-8. Commit, push, draft PR và dừng.
-Không thực hiện PHASE 13.
-```
-
----
-
-# PHASE 13 — TÁCH WEB APP VÀ DESKTOP SHELL
-
-## Mục tiêu
-
-Tách React application khỏi Tauri shell mà không tạo hai frontend độc lập.
-
-## Cấu trúc
-
-```text
-apps/web
-├── src
-├── tests
-└── package.json
-
-apps/desktop
-├── src-tauri
-├── desktop bootstrap
-└── packaging
-```
-
-Desktop dùng build artifact của `apps/web`.
-
-## Frontend architecture
-
-```text
-features/
-entities/
-shared/
-app/
-```
-
-Các client:
-
-```text
-api client
-event stream client
-artifact client
-permission client
-provider client
-```
-
-## State recovery
-
-UI phải hỗ trợ:
-
-* Refresh recovery.
-* Tab switch.
-* Event replay.
-* Reconnect.
-* Deduplication.
-* Pending permission restoration.
-* Task/run history.
-* Worker disconnected state.
-
-## Desktop shell
-
-Chịu trách nhiệm:
-
-* Spawn API sidecar.
-* Spawn worker.
-* Health monitoring.
-* Shutdown.
-* Log location.
-* Update.
-* Native permission.
-* File dialog.
-* Packaging.
-
-Không chứa business logic orchestration.
-
-## Acceptance gate
-
-* Web chạy độc lập.
-* Desktop dùng cùng web build.
-* No duplicated UI.
-* Refresh recovery.
-* Offline/error state.
-* Event reconnect.
-* Production web build.
-* Tauri build khi môi trường hỗ trợ.
-* Sidecar lifecycle test.
-
-## Prompt cho Antigravity
-
-```text
-Thực hiện PHASE 13 Architecture V2: tách Web App và Desktop Shell.
-
-Hãy:
-1. Di chuyển React app vào apps/web theo từng bước có compatibility.
-2. Giữ Tauri shell trong apps/desktop.
-3. Desktop phải dùng cùng web build, không fork UI.
-4. Tách API/event clients khỏi component.
-5. Implement refresh recovery, reconnect và dedupe.
-6. Tạo sidecar lifecycle và packaging tests.
-7. Không sửa backend domain trong phase này trừ compatibility cần thiết.
-8. Commit, push, draft PR và dừng.
-Không thực hiện PHASE 14.
-```
-
----
-
-# PHASE 14 — MIGRATION LEGACY, CUTOVER VÀ DECOMMISSION
-
-## Mục tiêu
-
-Chuyển production traffic sang V2 và loại bỏ legacy có kiểm soát.
-
-## Điều kiện trước khi bắt đầu
-
-Bắt buộc:
-
-* API parity.
-* Event parity.
-* Database parity.
-* Workflow parity.
-* Provider parity.
-* Tool parity.
-* Recovery parity.
-* Desktop E2E.
-* Evaluation baseline.
-* Rollback plan.
-
-Nếu thiếu bất kỳ gate nào, phase bị block.
-
-## Migration strategy
-
-### 14.1 Strangler cutover
-
-Chuyển từng capability:
-
-```text
-health
-sessions
-tasks
-events
-providers
 tools
-workflows
-browser
-Hermes
-worktrees
+usage
+rate limits
+errors
+cancellation
+secret redaction
 ```
 
-### 14.2 Feature flags
+## Integration tests
+
+* mock HTTP providers;
+* real database;
+* Redis-compatible test backend;
+* API → coordinator → adapter → normalized response;
+* restart recovery.
+
+## Optional live tests
+
+Chỉ chạy khi:
 
 ```text
-WINDAGENT_ARCH_V2
-WINDAGENT_V2_TASKS
-WINDAGENT_V2_PROVIDERS
-WINDAGENT_V2_TOOLS
-WINDAGENT_V2_WORKFLOWS
+WINDAGENT_RUN_LIVE_PROVIDER_TESTS=1
 ```
 
-### 14.3 Shadow execution
+Từng provider yêu cầu secret riêng.
 
-Với operation read-only:
+Không fail CI mặc định vì thiếu live credentials.
 
-* Chạy V1 và V2.
-* So sánh kết quả.
-* Không trả V2 nếu chưa đạt parity.
+## Regression tests
 
-Không shadow destructive tool.
+Chạy cả:
 
-### 14.4 Legacy deletion
-
-Chỉ xóa file khi:
-
-* Không còn import.
-* Không còn route.
-* Không còn test dependency.
-* Không còn database ownership.
-* Có replacement mapping.
-* Có rollback tag trước deletion.
-
-## Acceptance gate
-
-* Full repository tests.
-* Clean clone.
-* Fresh database.
-* Upgraded database.
-* Desktop E2E.
-* Worker crash recovery.
-* Provider fallback.
-* Tool security.
-* API compatibility.
-* Rollback rehearsal.
-* No legacy import.
-
-## Prompt cho Antigravity
-
-```text
-Thực hiện PHASE 14 Architecture V2: Legacy Migration, Cutover và Decommission.
-
-Trước tiên kiểm tra toàn bộ prerequisite gate. Nếu thiếu bất kỳ parity hoặc rollback gate nào, dừng với verdict blocked.
-
-Nếu đủ điều kiện:
-1. Chuyển từng capability bằng feature flag.
-2. Dùng shadow comparison cho read-only operation.
-3. Không shadow destructive tool.
-4. Xóa legacy theo dependency order, không xóa hàng loạt.
-5. Tạo rollback tag và rollback procedure.
-6. Chạy clean-clone, fresh-db, upgraded-db, desktop E2E và full regression.
-7. Chứng minh zero legacy import.
-8. Commit, push, draft PR và dừng.
-Không tự merge vào main.
-```
+* V2 root tests;
+* provider V3 tests;
+* legacy backend focused tests;
+* router tests;
+* API compatibility tests.
 
 ---
 
-# 5. Template báo cáo bắt buộc sau mỗi phase
+# 5. Báo cáo bắt buộc sau mỗi phase
+
+Sau mỗi phase, Antigravity phải xuất báo cáo theo mẫu:
 
 ```text
-FINAL VERDICT:
 PHASE:
+VERDICT:
+
 REPOSITORY:
-STARTING BRANCH:
-STARTING SHA:
-FINAL BRANCH:
-FINAL SHA:
-REMOTE SHA == LOCAL:
-WORKTREE CLEAN:
+STARTING_BRANCH:
+STARTING_SHA:
+FINAL_BRANCH:
+FINAL_SHA:
+REMOTE_SHA_MATCH:
+WORKTREE_CLEAN:
 
 OBJECTIVE:
-SCOPE COMPLETED:
-OUT OF SCOPE:
-FILES CREATED:
-FILES MODIFIED:
-FILES MOVED:
-FILES DELETED:
-
-ARCHITECTURE CHANGES:
-DEPENDENCY CHANGES:
-API CONTRACT CHANGES:
-EVENT CONTRACT CHANGES:
-DATABASE CHANGES:
-MIGRATION STATUS:
-SECURITY IMPACT:
-COMPATIBILITY IMPACT:
-
-FOCUSED TESTS:
-REGRESSION TESTS:
-ARCHITECTURE TESTS:
-INTEGRATION TESTS:
-E2E TESTS:
-BUILD RESULTS:
-GIT DIFF CHECK:
-
-ACCEPTANCE GATES:
-- gate:
-  status:
-  evidence:
-
-KNOWN LIMITATIONS:
+COMPLETED:
+NOT_COMPLETED:
 BLOCKERS:
+
+FILES_ADDED:
+FILES_MODIFIED:
+FILES_DELETED:
+
+SCHEMA_CHANGES:
+MIGRATION_RESULT:
+
+TEST_COMMANDS:
+TEST_RESULTS:
+TYPECHECK:
+LINT:
+ARCHITECTURE_CHECK:
+SECURITY_CHECK:
+
+ACCEPTANCE_GATES:
+- gate: PASS/FAIL/BLOCKED
+- gate: PASS/FAIL/BLOCKED
+
+KNOWN_LIMITATIONS:
 RISKS:
-ROLLBACK PROCEDURE:
-NEXT RECOMMENDED PHASE:
+ROLLBACK_PATH:
 
 COMMITS:
-DRAFT PR:
+PR:
+NEXT_PHASE_ELIGIBLE: YES/NO
 ```
+
+Không được chỉ báo cáo tổng số test.
+
+Phải ghi chính xác lệnh đã chạy, số pass/fail/skip và test nào chưa chạy.
 
 ---
 
-# 6. Verdict hợp lệ
+# 6. Artifact bắt buộc
 
-Antigravity chỉ được dùng các verdict sau:
+Lưu artifact theo phase:
 
 ```text
-accepted
-accepted_with_non_blocking_warnings
-blocked_missing_dependency
-blocked_environment
-blocked_legacy_regression
-blocked_contract_incompatibility
-blocked_migration_risk
-failed_acceptance_gate
-invalid_run
+artifacts/provider_v3/phase_00/
+artifacts/provider_v3/phase_01/
+...
+artifacts/provider_v3/phase_11/
 ```
 
-Không sử dụng từ chung chung như:
+Mỗi phase tối thiểu có:
 
 ```text
-mostly done
-looks good
-probably works
-production ready
+phase_receipt.json
+test_receipt.json
+changed_files.json
+acceptance_matrix.json
+known_limitations.md
+commands.log
 ```
 
-nếu chưa có evidence.
-
----
-
-# 7. Thứ tự merge
+Phase schema phải thêm:
 
 ```text
-PHASE 0
-  ↓
-PHASE 1
-  ↓
-PHASE 2
-  ↓
-PHASE 3
-  ↓
-PHASE 4
-  ↓
-PHASE 5 và PHASE 6
-  ↓
-PHASE 7
-  ↓
-PHASE 8
-  ↓
-PHASE 9
-  ↓
-PHASE 10
-  ↓
-PHASE 11
-  ↓
-PHASE 12
-  ↓
-PHASE 13
-  ↓
-PHASE 14
+migration_receipt.json
+backfill_audit.json
+secret_audit.json
 ```
 
-Phase 5 và 6 có thể phát triển trên các branch riêng sau Phase 4, nhưng không được merge nếu contract chung chưa ổn định.
+Phase routing phải thêm:
+
+```text
+route_lock_audit.json
+failover_scenario_matrix.json
+```
+
+Phase cache phải thêm:
+
+```text
+cache_isolation_audit.json
+```
+
+Final phase phải thêm:
+
+```text
+final_audited_report.md
+final_verdict.json
+cutover_receipt.json
+rollback_receipt.json
+```
 
 ---
 
-# 8. Các quyết định kiến trúc không được tự ý thay đổi
+# 7. Stop conditions
 
-Antigravity không được tự ý:
+Dừng phase hiện tại và báo `BLOCKED` khi:
 
-* Chuyển sang microservices.
-* Áp dụng full Event Sourcing.
-* Áp dụng full CQRS cho mọi operation.
-* Thay SQLite bằng PostgreSQL trong scaffold phase.
-* Đưa LangGraph thành domain kernel.
-* Dùng CrewAI hoặc framework khác làm orchestration core.
-* Cho MCP bypass tool registry.
-* Cho plugin tự cài package.
-* Cho LLM tự merge hoặc release.
-* Xóa V1 trước parity.
-* Hạ test gate để hoàn thành phase.
-* Rewrite cả frontend và backend cùng lúc.
+* starting SHA sai;
+* repository có thay đổi không rõ nguồn;
+* migration có nguy cơ mất dữ liệu;
+* phát hiện plaintext secret;
+* cần gọi API trả phí nhưng không có test double;
+* architecture boundary buộc provider package import ORM;
+* không thể chứng minh hai binding là cùng revision;
+* route lock có race condition chưa xử lý;
+* failover có thể đổi model im lặng;
+* cache có nguy cơ chéo user;
+* full test suite bị loại trừ bằng cách thay config thay vì sửa lỗi.
 
-Mọi thay đổi các quyết định trên phải có ADR riêng và được người dùng phê duyệt.
+Không tự hạ acceptance gate để đạt PASS.
+
+Không sửa test chỉ để phù hợp implementation sai.
+
+Không tạo receipt “passed” khi test chưa chạy.
 
 ---
 
-# 9. Definition of Done toàn chương trình
+# 8. Definition of Done
 
-Architecture V2 chỉ được coi là hoàn thành khi:
+Provider Routing V3 chỉ hoàn tất khi WindAgent có thể thực hiện luồng sau bằng implementation thật:
 
-* Domain core không phụ thuộc framework.
-* Package boundaries được CI cưỡng chế.
-* API, CLI, Worker, Web và Desktop dùng chung application core.
-* Provider adapter độc lập.
-* Model router có evidence và cost tracking.
-* Tool call luôn qua permission engine.
-* Workflow có state machine, retry và recovery.
-* Event có persistence, replay và versioning.
-* Context có provenance và token budget.
-* Memory có scope và retention.
-* Verification gate có artifact.
-* Eval đo success, cost và reliability.
-* Observability trace xuyên suốt task.
-* Desktop recovery sau refresh/restart.
-* Legacy backend được loại bỏ hoặc chỉ còn compatibility shim có lịch xóa.
-* Clean clone E2E pass.
-* Rollback procedure được kiểm chứng.
-* Không có secret trong repository, log hoặc artifact.
+```text
+1. Người dùng thêm endpoint.
+2. Nhấn Test Connect.
+3. Hệ thống nhận diện protocol/vendor và lấy model thật.
+4. Model được chuẩn hóa thành canonical model.
+5. Task đầu tiên khớp rule.
+6. Canonical model được khóa vào session.
+7. Endpoint A được chọn và thực hiện request.
+8. Endpoint A trả 429.
+9. Endpoint A được cooldown.
+10. Endpoint B cung cấp đúng cùng revision được chọn.
+11. Request thành công.
+12. Route lock vẫn giữ nguyên canonical model.
+13. Lượt tiếp theo tiếp tục dùng model đã khóa.
+14. Mọi attempt, quota, health, cache và usage đều có audit.
+15. Restart backend không làm mất route affinity.
+16. Không có secret leak.
+17. Có rollback về legacy execution path.
+```
+
+Final verdict hợp lệ:
+
+```text
+ACCEPTED_PROVIDER_V3_CUTOVER_VERIFIED
+```
+
+Nếu chưa đạt toàn bộ:
+
+```text
+PARTIAL_PROVIDER_V3_NOT_ELIGIBLE_FOR_CUTOVER
+```

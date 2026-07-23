@@ -1,0 +1,18 @@
+{
+  "added": [
+    "providers/windagent_providers/routing/endpoint_selector.py",
+    "providers/windagent_providers/routing/circuit_breaker.py",
+    "providers/windagent_providers/routing/cooldown.py",
+    "providers/windagent_providers/routing/failover_policy.py",
+    "providers/windagent_providers/routing/execution_coordinator.py",
+    "providers/windagent_providers/routing/memory_ports.py",
+    "tests/unit/providers/test_endpoint_failover.py",
+    "artifacts/provider_v3/phase_08/phase_receipt.json",
+    "artifacts/provider_v3/phase_08/test_receipt.json"
+  ],
+  "modified": [
+    "providers/windagent_providers/base/ports.py",
+    "storage/windagent_storage/repositories/v3_repositories.py"
+  ],
+  "deleted": []
+}

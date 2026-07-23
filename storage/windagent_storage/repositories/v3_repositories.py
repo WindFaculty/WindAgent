@@ -197,6 +197,7 @@ class SQLRouteAttemptRepository(RouteAttemptPort):
         error_class: Optional[str] = None,
         prompt_tokens: int = 0,
         completion_tokens: int = 0,
+        endpoint_id: Optional[str] = None,
     ) -> str:
         attempt = RouteAttemptV3ORM(
             route_lock_id=route_lock_id,
