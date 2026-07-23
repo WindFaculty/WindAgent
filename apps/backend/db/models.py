@@ -352,6 +352,9 @@ class ProviderModelBindingORM(Base):
     endpoint: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     priority: Mapped[int] = mapped_column(Integer, default=50, nullable=False)
     enabled: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    equivalence_level: Mapped[str] = mapped_column(
+        String(32), default="exact_revision", nullable=False
+    )
     health: Mapped[str] = mapped_column(String(32), default="unknown", nullable=False)
     supports_streaming: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     supports_tools: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
@@ -682,6 +685,7 @@ async def seed_canonical_models(db: "Database") -> int:
                 provider_model_id=row.model_id,
                 priority=int(row.id.count(":")),
                 enabled=True,
+                equivalence_level="exact_revision",
             )
             session.add(binding)
             created += 1

@@ -14,6 +14,7 @@ from sqlalchemy import select
 
 from db.models import ModelProviderORM
 from services.model_client import ChatMessage as ClientChatMessage
+from services.provider_v3_flags import v3_execute_enabled
 
 log = logging.getLogger(__name__)
 
@@ -39,6 +40,19 @@ async def chat_completions(
     payload: ChatCompletionRequest = Body(...),
 ) -> Dict[str, Any]:
     """OpenAI-compatible completions endpoint. Maps roles to LLM clients."""
+    payload_dict = payload.model_dump()
+
+    # Phase 10: use Provider V3 gateway if enabled.
+    if v3_execute_enabled():
+        gateway = request.app.state.provider_gateway
+        if payload.stream:
+            return StreamingResponse(
+                gateway.chat_completion_stream(payload_dict),
+                media_type="text/event-stream",
+                headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+            )
+        return await gateway.chat_completion(payload_dict)
+
     model_service = request.app.state.model_service
     
     # 1. Parse model parameter (which carries the role name)

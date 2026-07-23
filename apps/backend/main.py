@@ -310,7 +310,24 @@ async def lifespan(app: FastAPI):
         policy=router_policy,
         model_service=model_service
     )
-    provider_gateway = ProviderGatewayService(db=db, router_service=router_service)
+
+    # Phase 10: build V3 coordinator behind feature flags.
+    from services.provider_v3_flags import v3_execute_enabled
+    provider_v3_coordinator = None
+    if v3_execute_enabled():
+        from services.provider_v3_coordinator import ProviderV3Coordinator
+        provider_v3_coordinator = ProviderV3Coordinator(
+            db=db,
+            quota_service=model_service.quota_service,
+            model_service=model_service,
+        )
+        log.info("provider v3 coordinator enabled")
+
+    provider_gateway = ProviderGatewayService(
+        db=db,
+        router_service=router_service,
+        v3_coordinator=provider_v3_coordinator,
+    )
 
     # Attach to state
     app.state.router_policy = router_policy

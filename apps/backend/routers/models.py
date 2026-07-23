@@ -7,6 +7,7 @@ from fastapi import APIRouter, Request, Body, HTTPException
 from pydantic import BaseModel
 
 from services.model_service import ModelService
+from services.provider_v3_flags import v3_test_connect_enabled
 
 router = APIRouter(prefix="/models", tags=["models"])
 
@@ -418,6 +419,30 @@ class ProviderTestRequest(BaseModel):
 @router.post("/providers/test-connection")
 async def test_provider_connection(request: Request, payload: ProviderTestRequest) -> Dict[str, Any]:
     """Test connection to a provider and retrieve available models."""
+
+    # Phase 10: V3 safe endpoint detection.
+    if v3_test_connect_enabled():
+        from windagent_providers.detection.detector import EndpointDetector
+        detector = EndpointDetector()
+        result = await detector.test_connection(
+            base_url=payload.base_url,
+            credential=payload.api_key,
+            selected_provider_hint=payload.api_source,
+        )
+        status_code = result.get("status_code")
+        if result.get("success"):
+            models = result.get("models", [])
+            return {
+                "status": "success",
+                "message": f"Endpoint OK - Đã lấy {len(models)} models từ endpoint",
+                "models": [
+                    {"model_id": m.get("model_id"), "display_name": m.get("display_name", m.get("model_id")), "capabilities": m.get("capabilities", [])}
+                    for m in models
+                ],
+                "detection": result,
+            }
+        raise HTTPException(status_code=400, detail=f"Connection failed: {result.get('error', 'unknown')}")
+
     service = _service(request)
     
     # Determine api_source format
@@ -501,4 +526,4 @@ async def delete_provider(request: Request, provider_id: str) -> Dict[str, Any]:
             event_type="deleted",
             message=f"Provider {provider.site_name} deleted.",
         )
-        return {"status": "success", "message": f"Provider {provider_id} deleted successfully."}
+        return {"status": "success", "message": f"Provider {provider_id} deleted successfully."}

@@ -90,6 +90,13 @@ class Database:
                     await conn.execute(text(f"ALTER TABLE model_routing_rules ADD COLUMN {col_def[0]} {col_def[1]}"))
                 except Exception:
                     pass
+            # Phase 10: provider_model_bindings.equivalence_level (default exact_revision).
+            try:
+                await conn.execute(
+                    text("ALTER TABLE provider_model_bindings ADD COLUMN equivalence_level VARCHAR(32) DEFAULT 'exact_revision' NOT NULL")
+                )
+            except Exception:
+                pass
 
         # Backfill canonical model registry from existing catalog rows.
         try:
