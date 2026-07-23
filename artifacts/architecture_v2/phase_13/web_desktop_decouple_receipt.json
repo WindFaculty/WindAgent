@@ -1,0 +1,40 @@
+{
+  "phase": "13",
+  "name": "TÁCH WEB APP VÀ DESKTOP SHELL",
+  "status": "PASSED",
+  "timestamp": "2026-07-23T19:11:00+07:00",
+  "packages": [
+    "apps/web",
+    "apps/desktop"
+  ],
+  "components": {
+    "web_app": {
+      "package": "apps/web",
+      "architecture": ["features/", "entities/", "shared/", "app/", "clients/", "state/"],
+      "clients": [
+        "api_client.ts",
+        "event_stream_client.ts",
+        "artifact_client.ts",
+        "permission_client.ts",
+        "provider_client.ts"
+      ],
+      "state_recovery": "apps/web/src/state/state_recovery.ts (Refresh recovery, Event dedupe, Tab switch sync, Permission restoration)",
+      "standalone_build": true
+    },
+    "desktop_shell": {
+      "package": "apps/desktop",
+      "tauri_shell": "apps/desktop/src-tauri",
+      "sidecar_manager": "apps/desktop/sidecar_manager.py (API & Worker process spawning, health polling, graceful shutdown)",
+      "reuses_web_build": true,
+      "duplicated_ui": false
+    }
+  },
+  "acceptance_gates": {
+    "scaffold_check": "PASSED",
+    "import_boundary_check": "PASSED",
+    "standalone_web_app": "PASSED",
+    "desktop_shared_build": "PASSED",
+    "sidecar_lifecycle": "PASSED",
+    "unit_tests": "101/101 PASSED (100 passed, 1 skipped)"
+  }
+}
