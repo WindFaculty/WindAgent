@@ -1,7 +1,7 @@
 """
-Unit Tests for WindAgent Provider Adapters (Phase 5):
+Unit Tests for WindAgent Provider Adapters (Phase 5 Legacy):
 - MockProviderAdapter generation, streaming, cancellation, and cost estimation
-- OpenAI, Anthropic, Gemini, Ollama adapter health & capabilities
+- Legacy OpenAI, Anthropic, Gemini, Ollama adapter health & capabilities
 - Secret key redaction & offline test execution (zero real network calls)
 """
 
@@ -10,7 +10,9 @@ from windagent_core.domain.types import ModelCallId
 from windagent_core.domain.models import ModelRequest
 from windagent_providers import (
     MockProviderAdapter, OpenAICompatibleProviderAdapter,
-    AnthropicProviderAdapter, GoogleGeminiProviderAdapter, OllamaProviderAdapter
+    LegacyAnthropicAdapter as AnthropicProviderAdapter,
+    LegacyGoogleAdapter as GoogleGeminiProviderAdapter,
+    LegacyOllamaAdapter as OllamaProviderAdapter
 )
 
 

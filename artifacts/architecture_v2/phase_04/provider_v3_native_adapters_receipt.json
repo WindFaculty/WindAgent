@@ -1,0 +1,31 @@
+{
+  "phase": "04",
+  "name": "NATIVE ANTHROPIC, GOOGLE VÀ OLLAMA ADAPTERS",
+  "status": "PASSED",
+  "timestamp": "2026-07-23T20:58:00+07:00",
+  "branch": "feat/provider-routing-v3",
+  "test_session": {
+    "total_tests": 126,
+    "passed": 125,
+    "skipped": 1,
+    "failed": 0,
+    "phase_4_new_tests": 5,
+    "duration_seconds": 2.77
+  },
+  "native_adapters_created": [
+    "AnthropicProviderAdapter (providers/windagent_providers/anthropic/adapter.py)",
+    "GoogleGeminiProviderAdapter (providers/windagent_providers/google/adapter.py)",
+    "OllamaProviderAdapter (providers/windagent_providers/ollama/adapter.py)",
+    "LocalOllamaManager (providers/windagent_providers/local/adapter.py)"
+  ],
+  "acceptance_gates": {
+    "anthropic_generate_stream_real": true,
+    "google_generate_stream_real": true,
+    "ollama_generate_stream_real": true,
+    "ollama_health_fail_when_server_non_existent": true,
+    "model_list_not_hardcoded": true,
+    "tool_calls_normalized_to_common_contract": true,
+    "native_usage_metadata_preserved": true,
+    "contract_suite_passed": true
+  }
+}

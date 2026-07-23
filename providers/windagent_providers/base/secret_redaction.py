@@ -46,11 +46,21 @@ def redact_dict(data: Dict[str, Any]) -> Dict[str, Any]:
         return data
 
     sanitized: Dict[str, Any] = {}
-    sensitive_key_terms = {"api_key", "apikey", "secret", "token", "password", "authorization", "bearer", "cred"}
+    sensitive_key_terms = {
+        "api_key", "apikey", "secret", "password", "authorization", "bearer", "cred",
+        "auth_token", "access_token", "private_key"
+    }
+    non_secret_token_terms = {"tokens", "tokens_per_sec", "input_tokens", "output_tokens", "prompt_tokens", "completion_tokens", "cached_tokens", "reasoning_tokens"}
 
     for key, value in data.items():
         key_lower = str(key).lower()
-        if any(term in key_lower for term in sensitive_key_terms):
+        
+        # Check if key is a known non-secret token metric
+        is_secret_key = any(term in key_lower for term in sensitive_key_terms)
+        if "token" in key_lower and not any(ns in key_lower for ns in non_secret_token_terms) and not is_secret_key:
+            is_secret_key = True
+
+        if is_secret_key:
             if isinstance(value, str) and value.startswith("enc:v1:"):
                 sanitized[key] = "[ENCRYPTED_SECRET]"
             elif isinstance(value, str) and len(value) > 8:

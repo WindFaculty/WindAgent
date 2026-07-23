@@ -31,12 +31,18 @@ from windagent_providers.openrouter import OpenRouterAdapter
 from windagent_providers.nvidia import NvidiaNimAdapter
 from windagent_providers.mistral import MistralProviderAdapter
 
+# V3 Native Vendor Adapters
+from windagent_providers.anthropic import AnthropicProviderAdapter
+from windagent_providers.google import GoogleGeminiProviderAdapter
+from windagent_providers.ollama import OllamaProviderAdapter
+from windagent_providers.local import LocalOllamaManager
+
 # Legacy V2 Adapters
 from windagent_providers.adapters.mock import MockProviderAdapter
 from windagent_providers.adapters.openai_compatible import OpenAICompatibleProviderAdapter
-from windagent_providers.adapters.anthropic import AnthropicProviderAdapter
-from windagent_providers.adapters.google_gemini import GoogleGeminiProviderAdapter
-from windagent_providers.adapters.ollama import OllamaProviderAdapter
+from windagent_providers.adapters.anthropic import AnthropicProviderAdapter as LegacyAnthropicAdapter
+from windagent_providers.adapters.google_gemini import GoogleGeminiProviderAdapter as LegacyGoogleAdapter
+from windagent_providers.adapters.ollama import OllamaProviderAdapter as LegacyOllamaAdapter
 
 __version__ = "3.0.0"
 
@@ -60,6 +66,13 @@ __all__ = [
     "OpenRouterAdapter",
     "NvidiaNimAdapter",
     "MistralProviderAdapter",
-    "MockProviderAdapter", "OpenAICompatibleProviderAdapter",
-    "AnthropicProviderAdapter", "GoogleGeminiProviderAdapter", "OllamaProviderAdapter",
+    "AnthropicProviderAdapter",
+    "GoogleGeminiProviderAdapter",
+    "OllamaProviderAdapter",
+    "LocalOllamaManager",
+    "MockProviderAdapter",
+    "OpenAICompatibleProviderAdapter",
+    "LegacyAnthropicAdapter",
+    "LegacyGoogleAdapter",
+    "LegacyOllamaAdapter",
 ]
