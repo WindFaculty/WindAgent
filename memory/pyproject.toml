@@ -4,7 +4,14 @@ version = "0.3.0"
 description = "Multi-layered memory, working memory, long-term memory, semantic store"
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = []
+dependencies = [
+    "windagent-core",
+    "windagent-storage",
+]
+
+[tool.uv.sources]
+windagent-core = { workspace = true }
+windagent-storage = { workspace = true }
 
 [build-system]
 requires = ["hatchling"]

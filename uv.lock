@@ -1045,6 +1045,12 @@ requires-dist = [{ name = "click", specifier = ">=8.0.0" }]
 name = "windagent-context"
 version = "0.3.0"
 source = { editable = "context" }
+dependencies = [
+    { name = "windagent-core" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "windagent-core", editable = "core" }]
 
 [[package]]
 name = "windagent-core"
@@ -1080,6 +1086,16 @@ requires-dist = [
 name = "windagent-memory"
 version = "0.3.0"
 source = { editable = "memory" }
+dependencies = [
+    { name = "windagent-core" },
+    { name = "windagent-storage" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "windagent-core", editable = "core" },
+    { name = "windagent-storage", editable = "storage" },
+]
 
 [[package]]
 name = "windagent-observability"

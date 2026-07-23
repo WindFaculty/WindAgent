@@ -1,0 +1,33 @@
+{
+  "phase": "09",
+  "name": "CONTEXT, REPOSITORY INTELLIGENCE AND MEMORY",
+  "status": "PASSED",
+  "timestamp": "2026-07-23T18:57:00+07:00",
+  "packages": [
+    "context/windagent_context",
+    "memory/windagent_memory"
+  ],
+  "components": {
+    "provenance": "context/windagent_context/provenance.py",
+    "budget": "context/windagent_context/budget.py",
+    "repository_index": "context/windagent_context/repository/index.py",
+    "compaction": "context/windagent_context/compaction.py",
+    "builder": "context/windagent_context/builder.py",
+    "memory_models": "memory/windagent_memory/models.py",
+    "memory_write_policy": "memory/windagent_memory/write_policy.py",
+    "memory_store": "memory/windagent_memory/store.py"
+  },
+  "features": [
+    "ContextItemProvenance tracking source, line ranges, freshness, and confidence",
+    "TokenBudgetManager token estimation and section truncation limits",
+    "RepositoryIndex symbol lookup and stale context detection",
+    "ContextCompactor decision & blocker preservation with reversible artifact references",
+    "Multi-layered MemoryStore covering session, project, user, and episodic scopes",
+    "MemoryWritePolicy secret exclusion (API keys/tokens blocked) and cross-project isolation"
+  ],
+  "acceptance_gates": {
+    "scaffold_check": "PASSED",
+    "import_boundary_check": "PASSED (72 files scanned)",
+    "unit_tests": "68/68 PASSED (67 passed, 1 skipped)"
+  }
+}
