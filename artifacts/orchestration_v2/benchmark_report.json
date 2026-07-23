@@ -1,0 +1,16 @@
+{
+  "timestamp": "2026-07-24T02:00:34Z",
+  "mode": "orchestration_v2",
+  "enqueue_p95_ms": 0.01,
+  "scheduling_p95_ms": 2.1,
+  "dispatch_claim_p95_ms": 1.88,
+  "state_transition_p95_ms": 2.64,
+  "event_persist_to_broadcast_p95_ms": 8.4,
+  "dag_1k_validation_ms": 1.44,
+  "dag_10k_validation_ms": 27.61,
+  "recover_1k_runs_sec": 0.003,
+  "idle_cpu_percent": 0.05,
+  "duplicate_executions": 0,
+  "orphan_leases": 0,
+  "lost_terminal_results": 0
+}
