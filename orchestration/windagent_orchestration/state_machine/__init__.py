@@ -1,5 +1,5 @@
 """
-Top-level state_machine module adapter re-exporting from state_machine subpackage.
+State Machine Subpackage Export for Orchestration V2.
 """
 
 from windagent_orchestration.state_machine.task import TaskState

@@ -1,5 +1,5 @@
 """
-Top-level task_manager module adapter re-exporting from task_manager subpackage.
+Task Manager Subpackage Export for Orchestration V2.
 """
 
 from windagent_orchestration.task_manager.facts import DurableExecutionFacts
