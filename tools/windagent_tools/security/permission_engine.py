@@ -16,6 +16,7 @@ from windagent_tools.base import ToolDefinition, ToolExecutionContext, ToolRiskL
 logger = logging.getLogger("windagent.tools.permission")
 
 HIGH_RISK_LEVELS = {
+    ToolRiskLevel.EXTERNAL_NETWORK,
     ToolRiskLevel.SECRET_ACCESS,
     ToolRiskLevel.PROCESS_EXECUTION,
     ToolRiskLevel.DESTRUCTIVE,
