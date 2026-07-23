@@ -86,22 +86,22 @@ class RouterExecutionService:
                 rule_logs = res_logs.scalars().all()
 
                 total_count = len(rule_logs)
-                success_count = sum(1 for l in rule_logs if l.status == "success")
+                success_count = sum(1 for log_entry in rule_logs if log_entry.status == "success")
                 success_rate_pct = int((success_count / total_count * 100)) if total_count > 0 else 100
 
-                primary_count = sum(1 for l in rule_logs if l.selection_tier == "primary")
-                fallback_count = sum(1 for l in rule_logs if l.selection_tier in ("fallback", "final_fallback"))
+                primary_count = sum(1 for log_entry in rule_logs if log_entry.selection_tier == "primary")
+                fallback_count = sum(1 for log_entry in rule_logs if log_entry.selection_tier in ("fallback", "final_fallback"))
 
                 primary_pct = int((primary_count / total_count * 100)) if total_count > 0 else 100
                 fallback_pct = int((fallback_count / total_count * 100)) if total_count > 0 else 0
 
                 avg_lat = "—"
                 if total_count > 0:
-                    avg_lat_ms = sum(l.latency_ms for l in rule_logs) / total_count
+                    avg_lat_ms = sum(log_entry.latency_ms for log_entry in rule_logs) / total_count
                     avg_lat = f"{int(avg_lat_ms)}ms"
 
                 # Sparkline points logic (latencies of last 5 executions)
-                last_5_logs = sorted(rule_logs, key=lambda l: l.created_at)[-5:]
+                last_5_logs = sorted(rule_logs, key=lambda log_entry: log_entry.created_at)[-5:]
                 spark_points = "0,15 15,18 30,12 45,16 60,6 68,10"
                 if last_5_logs:
                     points = []
@@ -341,22 +341,22 @@ class RouterExecutionService:
             logs = res_logs.scalars().all()
 
             total_requests = len(logs)
-            success_count = sum(1 for l in logs if l.status == "success")
+            success_count = sum(1 for log_entry in logs if log_entry.status == "success")
             success_rate = 96.8
             if total_requests > 0:
                 success_rate = (success_count / total_requests) * 100
 
             avg_latency_ms = 0.0
             if total_requests > 0:
-                avg_latency_ms = sum(l.latency_ms for l in logs) / total_requests
+                avg_latency_ms = sum(log_entry.latency_ms for log_entry in logs) / total_requests
 
             # Traffic balance score
             traffic_balance = 88.0
             if total_requests > 5:
                 # Compute balance using simple entropy representation of selected models
                 model_counts = {}
-                for l in logs:
-                    model_counts[l.selected_model_id] = model_counts.get(l.selected_model_id, 0) + 1
+                for log_entry in logs:
+                    model_counts[log_entry.selected_model_id] = model_counts.get(log_entry.selected_model_id, 0) + 1
                 probs = [count / total_requests for count in model_counts.values()]
                 entropy = -sum(p * math.log2(p) for p in probs)
                 max_entropy = math.log2(max(2, len(model_counts)))

@@ -1,5 +1,4 @@
 """OpenAI-compatible provider gateway service phase 2."""
-
 from __future__ import annotations
 
 import asyncio
@@ -60,20 +59,33 @@ class ProviderGatewayService:
     async def chat_completion(self, payload: Dict[str, Any]) -> Dict[str, Any]:
         """Forward chat completion requests using router execution."""
         model_input, role, messages = self._resolve_payload(payload)
+        max_tokens = payload.get("max_tokens", 1024)
+        tools = payload.get("tools", [])
+        tool_choice = payload.get("tool_choice", "auto")
 
         try:
             if v3_execute_enabled() and self.v3_coordinator is not None:
+                if tools:
+                    v3_response = await self.v3_coordinator.execute_chat_with_tools(
+                        role=role,
+                        messages=messages,
+                        tools=tools,
+                        tool_choice=tool_choice,
+                        max_tokens=max_tokens,
+                        scope_id=payload.get("scope_id"),
+                    )
+                    return self._map_v3_response_to_openai(model_input, v3_response, messages)
                 content = await self.v3_coordinator.execute_chat(
                     role=role,
                     messages=messages,
-                    max_tokens=payload.get("max_tokens", 1024),
+                    max_tokens=max_tokens,
                     scope_id=payload.get("scope_id"),
                 )
             else:
                 content = await self.router_service.execute_chat(
                     role=role,
                     messages=messages,
-                    max_tokens=payload.get("max_tokens", 1024),
+                    max_tokens=max_tokens,
                 )
 
             # Map response to OpenAI format
@@ -114,10 +126,13 @@ class ProviderGatewayService:
         model_input, role, messages = self._resolve_payload(payload)
         max_tokens = payload.get("max_tokens", 1024)
         scope_id = payload.get("scope_id")
+        tools = payload.get("tools", [])
 
         try:
             if v3_execute_enabled() and self.v3_coordinator is not None:
                 content = ""
+                tool_calls: List[Dict[str, Any]] = []
+                finish_reason = "stop"
                 async for event in self.v3_coordinator.execute_chat_stream(
                     role=role,
                     messages=messages,
@@ -126,7 +141,12 @@ class ProviderGatewayService:
                 ):
                     if event.event_type == "token":
                         content += event.delta or ""
+                    elif event.event_type == "tool_call_delta":
+                        tc = event.tool_call_delta
+                        if tc:
+                            tool_calls.append(tc)
                     elif event.event_type == "done":
+                        finish_reason = event.finish_reason or "stop"
                         break
                     elif event.event_type == "error":
                         raise ValueError(event.error or "V3 stream error")
@@ -140,8 +160,10 @@ class ProviderGatewayService:
                 async for chunk in generator:
                     parts.append(chunk["content"])
                 content = "".join(parts)
+                tool_calls = []
+                finish_reason = "stop"
 
-            async for sse in self._sse_chunks(model_input, content):
+            async for sse in self._sse_chunks(model_input, content, tool_calls=tool_calls or None, finish_reason=finish_reason):
                 yield sse
         except Exception as e:
             log.exception("Chat completion stream gateway error")
@@ -157,6 +179,33 @@ class ProviderGatewayService:
             }
             yield f"data: {json.dumps(error_data)}\n\n"
             yield "data: [DONE]\n\n"
+
+    def _map_v3_response_to_openai(
+        self, model_input: str, response: Any, messages: List[Dict[str, Any]]
+    ) -> Dict[str, Any]:
+        prompt_tokens = sum(len(m.get("content", "").split()) for m in messages)
+        completion_tokens = len((response.text or "").split()) + len(response.tool_calls)
+        message: Dict[str, Any] = {"role": "assistant", "content": response.text}
+        if response.tool_calls:
+            message["tool_calls"] = response.tool_calls
+        return {
+            "id": f"chatcmpl-{int(time.time())}",
+            "object": "chat.completion",
+            "created": int(time.time()),
+            "model": model_input,
+            "choices": [
+                {
+                    "index": 0,
+                    "message": message,
+                    "finish_reason": response.finish_reason or "stop",
+                }
+            ],
+            "usage": {
+                "prompt_tokens": prompt_tokens,
+                "completion_tokens": completion_tokens,
+                "total_tokens": prompt_tokens + completion_tokens,
+            },
+        }
 
     def _resolve_payload(
         self, payload: Dict[str, Any]
@@ -182,14 +231,35 @@ class ProviderGatewayService:
         return model_input, role, messages
 
     async def _sse_chunks(
-        self, model_input: str, content: str
+        self,
+        model_input: str,
+        content: str,
+        tool_calls: Optional[List[Dict[str, Any]]] = None,
+        finish_reason: str = "stop",
     ) -> AsyncGenerator[str, None]:
         completion_id = f"chatcmpl-{int(time.time())}"
         created = int(time.time())
+
+        if tool_calls:
+            chunk_data = {
+                "id": completion_id,
+                "object": "chat.completion.chunk",
+                "created": created,
+                "model": model_input,
+                "choices": [
+                    {
+                        "index": 0,
+                        "delta": {"role": "assistant", "tool_calls": tool_calls},
+                        "finish_reason": None,
+                    }
+                ],
+            }
+            yield f"data: {json.dumps(chunk_data)}\n\n"
+
         chunk_size = 5
         chunks = [
             content[i : i + chunk_size] for i in range(0, len(content), chunk_size)
-        ]
+        ] or [""]
 
         for val in chunks:
             chunk_data = {
@@ -200,7 +270,7 @@ class ProviderGatewayService:
                 "choices": [
                     {
                         "index": 0,
-                        "delta": {"content": val},
+                        "delta": {"content": val} if val else {},
                         "finish_reason": None,
                     }
                 ],
@@ -217,7 +287,7 @@ class ProviderGatewayService:
                 {
                     "index": 0,
                     "delta": {},
-                    "finish_reason": "stop",
+                    "finish_reason": finish_reason,
                 }
             ],
         }

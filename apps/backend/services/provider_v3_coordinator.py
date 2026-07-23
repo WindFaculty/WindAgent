@@ -7,7 +7,7 @@ execute flag is off.
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from windagent_providers.base.contracts import ProviderRequest
 from windagent_providers.routing.circuit_breaker import InMemoryEndpointStateManager
@@ -146,3 +146,31 @@ class ProviderV3Coordinator:
             request, lock_dict, turn_id=scope
         ):
             yield event
+
+    @with_metrics("provider_v3_execute_chat_with_tools")
+    async def execute_chat_with_tools(
+        self,
+        role: str,
+        messages: List[Dict[str, Any]],
+        tools: List[Dict[str, Any]],
+        *,
+        max_tokens: int = 1024,
+        tool_choice: Optional[Union[str, Dict[str, Any]]] = None,
+        scope_id: Optional[str] = None,
+    ):
+        scope = scope_id or "_global_"
+        canonical_model_id, lock = await self._resolve_canonical_and_lock(role, scope)
+        request = ProviderRequest(
+            messages=messages,
+            tools=tools,
+            tool_choice=tool_choice or "auto",
+            max_output_tokens=max_tokens,
+        )
+        lock_dict = {
+            "lock_id": lock.get("lock_id", ""),
+            "canonical_model_id": canonical_model_id,
+            "scope": "role",
+            "scope_id": scope,
+        }
+        response = await self._coordinator.execute(request, lock_dict, turn_id=scope)
+        return response

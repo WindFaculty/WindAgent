@@ -27,6 +27,7 @@ from db.models import (
     ProviderModelBindingORM,
 )
 from services.model_service import ModelService
+from services.provider_v3_adapter import LegacyClientV3Adapter
 from services.provider_v3_coordinator import ProviderV3Coordinator
 from services.provider_v3_flags import v3_execute_enabled
 
@@ -136,3 +137,52 @@ async def test_v3_execute_chat_mock_backend(seeded_coordinator):
 @pytest.mark.asyncio
 async def test_feature_flag_off_by_default():
     assert v3_execute_enabled() is False
+
+
+class _ToolLegacyClient:
+    async def chat_completion(self, **kwargs):
+        assert "tools" in kwargs
+        return {
+            "content": "",
+            "tool_calls": [
+                {
+                    "id": "call_1",
+                    "type": "function",
+                    "function": {
+                        "name": "get_weather",
+                        "arguments": '{"location":"Hanoi"}',
+                    },
+                }
+            ],
+        }
+
+
+@pytest.mark.asyncio
+async def test_v3_coordinator_tool_use(seeded_coordinator):
+    coordinator = seeded_coordinator
+
+    # Inject a fake client that returns tool calls instead of the mock backend.
+    adapter = LegacyClientV3Adapter("openai", _ToolLegacyClient(), "mock-model")
+    coordinator._coordinator._adapter_resolver = lambda _candidate: adapter
+
+    response = await coordinator.execute_chat_with_tools(
+        role="TestRole",
+        messages=[{"role": "user", "content": "weather?"}],
+        tools=[
+            {
+                "type": "function",
+                "function": {
+                    "name": "get_weather",
+                    "description": "...",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {"location": {"type": "string"}},
+                    },
+                },
+            }
+        ],
+        max_tokens=32,
+    )
+    assert not response.text
+    assert len(response.tool_calls) == 1
+    assert response.tool_calls[0]["function"]["name"] == "get_weather"
