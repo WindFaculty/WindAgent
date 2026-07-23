@@ -4,7 +4,9 @@ version = "0.3.0"
 description = "WindAgent Modular Monolith Architecture V2 Root Workspace"
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = []
+dependencies = [
+    "pillow>=12.3.0",
+]
 
 [dependency-groups]
 dev = [

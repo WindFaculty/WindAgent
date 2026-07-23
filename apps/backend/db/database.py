@@ -61,8 +61,13 @@ class Database:
         """
         from sqlalchemy import text
 
+        from windagent_storage.orm.v2_orchestration_models import BaseORM as V2BaseORM
+        from windagent_storage.orm.models import BaseORM as RootBaseORM
+
         async with self.engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
+            await conn.run_sync(V2BaseORM.metadata.create_all)
+            await conn.run_sync(RootBaseORM.metadata.create_all)
 # Legacy column addition (idempotent).
             try:
                 await conn.execute(

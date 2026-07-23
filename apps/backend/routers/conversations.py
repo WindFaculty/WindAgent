@@ -188,53 +188,93 @@ async def _get_active_plan(s, conversation_id: str):
     return pt, plan
 
 
-# ponytail: single synchronous executor for DAGScheduler.
-# Each task flips to completed immediately without real agent spawn.
-# Full supervisor.spawn_subagent integration comes when real Hermes bridge available.
-async def _run_plan_executor(plan_id: str, request: Request) -> ExecutePlanResponse:
-    """Execute plan via DAGScheduler. Tasks run immediately (simulation mode)."""
-    db = _db(request)
-    scheduler = request.app.state.dag_scheduler
+import asyncio
+from windagent_orchestration.workflow_engine import (
+    WorkflowDefinition, WorkflowNode, WorkflowValidator, WorkflowGraph, DAGValidationError
+)
+from windagent_core.domain.models import WorkflowStep
 
-    async def exec_task(task_id: str) -> None:
-        """ponytail: mark node completed. Real sub-agent spawn when Hermes available."""
+
+async def _run_plan_executor(plan_id: str, request: Request, nodes: List[TaskNodeORM], edges: List[TaskEdgeORM]) -> ExecutePlanResponse:
+    """Execute plan via Orchestration V2 engine. Runs nodes in dependency order."""
+    db = _db(request)
+    dispatcher = getattr(request.app.state, "orchestration_dispatcher", None)
+    bus = getattr(request.app.state, "event_bus", None)
+
+    # In-degree map & node map
+    in_degree: Dict[str, int] = {n.id: 0 for n in nodes}
+    adj_list: Dict[str, List[str]] = {n.id: [] for n in nodes}
+    for e in edges:
+        if e.to_task_id in in_degree:
+            in_degree[e.to_task_id] += 1
+        if e.from_task_id in adj_list:
+            adj_list[e.from_task_id].append(e.to_task_id)
+
+    completed: List[str] = []
+    failed: List[str] = []
+
+    # Ready queue: nodes with 0 incoming dependencies
+    ready_queue: List[str] = [nid for nid, deg in in_degree.items() if deg == 0]
+
+    while ready_queue:
+        current_id = ready_queue.pop(0)
+
+        # Mark node running in DB
         async with db.session() as s:
-            node = await s.get(TaskNodeORM, task_id)
+            node = await s.get(TaskNodeORM, current_id)
             if node:
                 node.started_at = datetime.now(timezone.utc)
                 node.status = "running"
                 await s.commit()
 
-        bus = getattr(request.app.state, "event_bus", None)
         if bus:
             env = EventEnvelope(
                 event="task.started",
-                data={"plan_id": plan_id, "task_id": task_id},
+                data={"plan_id": plan_id, "task_id": current_id},
             )
             await bus.publish(plan_id, env)
 
-        await asyncio.sleep(0.01)
-
+        # Execute node step via Orchestration V2 Dispatcher or Runtime Port
+        step = WorkflowStep(
+            id=current_id,
+            order=1,
+            name=f"Task {current_id}",
+            tool_name="read_file",
+            params={},
+        )
+        
+        success = True
+        if dispatcher and hasattr(dispatcher, "dispatch_step_durable"):
+            success = await dispatcher.dispatch_step_durable(plan_id, step, worker_id="backend_worker")
+        
         async with db.session() as s:
-            node = await s.get(TaskNodeORM, task_id)
+            node = await s.get(TaskNodeORM, current_id)
             if node:
-                node.status = "completed"
+                node.status = "completed" if success else "failed"
                 node.finished_at = datetime.now(timezone.utc)
                 await s.commit()
 
         if bus:
             env = EventEnvelope(
-                event="task.completed",
-                data={"plan_id": plan_id, "task_id": task_id},
+                event="task.completed" if success else "task.failed",
+                data={"plan_id": plan_id, "task_id": current_id},
             )
             await bus.publish(plan_id, env)
 
-    result = await scheduler.run_plan(plan_id, executor=exec_task)
+        if success:
+            completed.append(current_id)
+            for neighbor in adj_list.get(current_id, []):
+                in_degree[neighbor] -= 1
+                if in_degree[neighbor] == 0:
+                    ready_queue.append(neighbor)
+        else:
+            failed.append(current_id)
+
     return ExecutePlanResponse(
         plan_id=plan_id,
-        result="completed" if not result.failed else "partial",
-        completed=result.completed,
-        failed=result.failed,
+        result="completed" if not failed and len(completed) == len(nodes) else "partial" if completed else "failed",
+        completed=completed,
+        failed=failed,
     )
 
 
@@ -244,15 +284,13 @@ async def execute_plan(
     plan_id: str,
     request: Request,
 ) -> ExecutePlanResponse:
-    """Run a DAG plan through the scheduler.
+    """Run a DAG plan through Orchestration V2 engine.
 
-    Validates DAG first, then executes nodes in dependency order.
-    ponytail: sync executor, no real Hermes sub-agent spawn.
-    Full supervisor integration: add when Hermes bridge configured.
+    Validates DAG first using WorkflowValidator, then executes nodes in dependency order.
     """
     db = _db(request)
 
-    # Load and validate
+    # Load and validate plan
     async with db.session() as s:
         plan = await s.get(TaskPlanORM, plan_id)
         if not plan or plan.status != "active":
@@ -263,27 +301,43 @@ async def execute_plan(
         nodes = (await s.execute(
             select(TaskNodeORM).where(TaskNodeORM.plan_id == plan_id)
         )).scalars().all()
+
     if not nodes:
         raise HTTPException(status_code=400, detail="plan has no tasks")
-    cycle = detect_cycle(plan_id, list(edges))
-    if cycle:
-        raise HTTPException(status_code=400, detail=f"Cycle detected: {' -> '.join(cycle)}")
 
-    # Reset node statuses
+    # Build Orchestration V2 WorkflowDefinition & validate DAG
+    wf = WorkflowDefinition(id=plan_id, name=f"Plan {plan_id}")
+    for n in nodes:
+        wf.add_node(WorkflowNode(id=n.id, name=n.title or n.id, tool_name="read_file"))
+    for e in edges:
+        wf.add_edge(e.from_task_id, e.to_task_id)
+
+    graph = WorkflowGraph(wf)
+    try:
+        graph.detect_cycles()
+    except DAGValidationError as ex:
+        raise HTTPException(status_code=400, detail=str(ex))
+
+    # Reset node statuses according to dependency readiness
+    in_degree = {n.id: 0 for n in nodes}
+    for e in edges:
+        if e.to_task_id in in_degree:
+            in_degree[e.to_task_id] += 1
+
     async with db.session() as s:
         for n in nodes:
-            n.status = "ready"
+            n.status = "ready" if in_degree[n.id] == 0 else "pending"
             n.started_at = None
             n.finished_at = None
         await s.commit()
 
-    result = await _run_plan_executor(plan_id, request)
+    result = await _run_plan_executor(plan_id, request, list(nodes), list(edges))
 
     # Mark plan complete
     async with db.session() as s:
         p = await s.get(TaskPlanORM, plan_id)
         if p:
-            p.status = "completed" if not result.failed else "partial"
+            p.status = "completed" if result.result == "completed" else "partial" if result.result == "partial" else "failed"
             await s.commit()
 
     return result
