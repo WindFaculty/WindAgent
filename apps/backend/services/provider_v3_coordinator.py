@@ -24,6 +24,7 @@ from services.provider_v3_composition import (
     DbRouteAttemptPort,
     DbRouteLockPort,
 )
+from services.provider_v3_metrics import ProviderV3Metrics, with_metrics
 from services.quota_service import QuotaService
 
 
@@ -44,6 +45,7 @@ class ProviderV3Coordinator:
         self._state = InMemoryEndpointStateManager()
         self._attempts = DbRouteAttemptPort(db)
         self._route_lock_port = DbRouteLockPort(db)
+        self._metrics = ProviderV3Metrics()
         self._coordinator = EndpointExecutionCoordinator(
             adapter_resolver=self._resolve_adapter,
             endpoint_registry=self._registry,
@@ -95,6 +97,7 @@ class ProviderV3Coordinator:
         )
         return canonical_model_id, lock
 
+    @with_metrics("provider_v3_execute_chat")
     async def execute_chat(
         self,
         role: str,
@@ -118,6 +121,7 @@ class ProviderV3Coordinator:
         response = await self._coordinator.execute(request, lock_dict, turn_id=scope)
         return response.text or ""
 
+    @with_metrics("provider_v3_execute_chat_stream")
     async def execute_chat_stream(
         self,
         role: str,

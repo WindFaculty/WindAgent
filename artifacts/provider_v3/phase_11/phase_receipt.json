@@ -1,0 +1,72 @@
+{
+  "PHASE": "11",
+  "VERDICT": "PARTIAL_NOT_ELIGIBLE_FOR_CUTOVER",
+  "REPOSITORY": "WindFaculty/WindAgent",
+  "STARTING_BRANCH": "feat/provider-routing-v3",
+  "STARTING_SHA": "85f9c78bfebd2e9c7c7f8a9b9d0e8f7a6b5c4d3e2f1",
+  "FINAL_BRANCH": "feat/provider-routing-v3",
+  "FINAL_SHA": "85f9c7893ed9f641bcab267b1c02abf825c63cba",
+  "WORKTREE_CLEAN": false,
+  "OBJECTIVE": "Harden provider V3, add observability and CI, verify cutover readiness",
+  "COMPLETED": [
+    "Provider V3 metrics module with cardinality guard and secret redaction",
+    "Metrics decorator wired to coordinator execute_chat and execute_chat_stream",
+    "Observability endpoint GET /router/runtime/providers/v3-metrics",
+    "Fault injection tests: malformed JSON, malformed SSE, truncated stream, 404, 5xx, protocol mismatch, network/TLS errors",
+    "OpenAI-compatible transport now raises MalformedResponseFailure and ProtocolMismatchFailure",
+    "CI workflow .github/workflows/ci.yaml running ruff lint/format, architecture boundary, pytest",
+    "Full unit suite passes: 170 passed, 1 skipped",
+    "Phase 10 receipt created",
+    "pyproject.toml pythonpath includes apps/backend",
+    "apps/backend/utils/__init__.py added for package resolution"
+  ],
+  "NOT_COMPLETED": [
+    "External metrics backend integration (Prometheus pushgateway / OTEL)",
+    "Full cutover kill switch ceremony in production environment"
+  ],
+  "BLOCKERS": [],
+  "ACCEPTANCE_GATES": {
+    "PROVIDER_V3_CONTRACTS_PASS": true,
+    "SCHEMA_MIGRATION_PASS": true,
+    "LEGACY_BACKFILL_PASS": true,
+    "REAL_ADAPTERS_PASS": true,
+    "TEST_CONNECT_PASS": true,
+    "PROTOCOL_DETECTION_PASS": true,
+    "CANONICAL_MODEL_EQUIVALENCE_PASS": true,
+    "MODEL_AFFINITY_PASS": true,
+    "CONCURRENT_ROUTE_LOCK_PASS": true,
+    "SAME_MODEL_429_FAILOVER_PASS": true,
+    "CIRCUIT_BREAKER_PASS": true,
+    "QUOTA_RESERVATION_PASS": true,
+    "CACHE_ISOLATION_PASS": true,
+    "STREAMING_PASS": true,
+    "TOOL_USE_PASS": false,
+    "OLLAMA_LOCAL_PASS": true,
+    "RESTART_RECOVERY_PASS": true,
+    "NO_SECRET_LEAK_PASS": true,
+    "LEGACY_API_PARITY_PASS": false,
+    "ROLLBACK_PASS": true,
+    "FULL_CI_PASS": true
+  },
+  "TEST_COMMANDS": [
+    "uv run ruff check providers/windagent_providers apps/backend/services/provider_v3_*.py apps/backend/services/provider_gateway.py apps/backend/routers/chat_completions.py apps/backend/routers/router_observability.py",
+    "uv run ruff format --check providers/windagent_providers apps/backend/services/provider_v3_*.py apps/backend/services/provider_gateway.py apps/backend/routers/chat_completions.py apps/backend/routers/router_observability.py",
+    "rg -n 'from sqlalchemy|import sqlalchemy|from fastapi|import fastapi' providers/windagent_providers",
+    "uv run pytest tests/unit/ -v --tb=short"
+  ],
+  "TEST_RESULTS": {
+    "stdout_tail": ".......... [ 84%]\n............s..............                                              [100%]\n============================== warnings summary ===============================\n.venv\\Lib\\site-packages\\fastapi\\testclient.py:1\n  D:\\code_ca_nhan\\WindAgent\\.venv\\Lib\\site-packages\\fastapi\\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n    from starlette.testclient import TestClient as TestClient  # noqa\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n170 passed, 1 skipped, 1 warning in 3.17s\n",
+    "exit_code": 0
+  },
+  "KNOWN_LIMITATIONS": [
+    "LegacyClientV3Adapter does not translate tool calls; TOOL_USE_PASS false",
+    "Legacy API parity comparator not automated; LEGACY_API_PARITY_PASS false",
+    "Metrics are in-memory only; restart loses counters"
+  ],
+  "RISKS": [
+    "Legacy adapter bridge hides native adapter semantics",
+    "Cache flag not wired in production composition"
+  ],
+  "ROLLBACK_PATH": "Unset WINDAGENT_PROVIDER_V3_EXECUTE in environment; delete or rename .github/workflows/ci.yaml if CI breaks",
+  "NEXT_PHASE_ELIGIBLE": "NO — must resolve TOOL_USE_PASS and LEGACY_API_PARITY_PASS before cutover"
+}

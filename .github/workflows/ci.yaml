@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [main, feat/*]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "0.5.0"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Lint provider V3 and backend composition
+        run: uv run ruff check providers/windagent_providers apps/backend/services/provider_v3_*.py apps/backend/services/provider_gateway.py apps/backend/routers/chat_completions.py apps/backend/routers/router_observability.py
+
+      - name: Format check
+        run: uv run ruff format --check providers/windagent_providers apps/backend/services/provider_v3_*.py apps/backend/services/provider_gateway.py apps/backend/routers/chat_completions.py apps/backend/routers/router_observability.py
+
+      - name: Architecture boundary check
+        run: |
+          if rg -n 'from sqlalchemy|import sqlalchemy|from fastapi|import fastapi' providers/windagent_providers; then
+            echo "Provider package must not import ORM or FastAPI" && exit 1
+          fi
+
+      - name: Run root unit tests
+        run: uv run pytest tests/unit/ -v --tb=short

@@ -5,6 +5,7 @@ Exposes:
   GET /router/runtime/executions  — last N execution log entries
   GET /router/runtime/providers/health — per-provider health status
 """
+
 from __future__ import annotations
 
 import logging
@@ -81,7 +82,12 @@ async def get_runtime_summary(request: Request) -> Dict[str, Any]:
                 model_svc = getattr(request.app.state, "model_service", None)
                 quota_svc = getattr(model_svc, "quota_service", None)
             if quota_svc is not None:
-                for provider_id in ("openai", "anthropic", "google_ai_studio", "openrouter"):
+                for provider_id in (
+                    "openai",
+                    "anthropic",
+                    "google_ai_studio",
+                    "openrouter",
+                ):
                     snap = await quota_svc.get_latest_quota(provider_id)
                     if snap:
                         quota_usage[provider_id] = {
@@ -93,18 +99,20 @@ async def get_runtime_summary(request: Request) -> Dict[str, Any]:
             log.warning("Could not fetch quota snapshots for summary", exc_info=True)
 
         # Last 10 executions (abbreviated)
-        last_logs = sorted(logs, key=lambda l: l.created_at, reverse=True)[:10]
+        last_logs = sorted(logs, key=lambda entry: entry.created_at, reverse=True)[:10]
         last_executions = [
             {
-                "id": l.id,
-                "role": l.role,
-                "model": l.selected_model_id,
-                "tier": l.selection_tier,
-                "status": l.status,
-                "latency_ms": l.latency_ms,
-                "created_at": l.created_at.isoformat() if l.created_at else None,
+                "id": entry.id,
+                "role": entry.role,
+                "model": entry.selected_model_id,
+                "tier": entry.selection_tier,
+                "status": entry.status,
+                "latency_ms": entry.latency_ms,
+                "created_at": entry.created_at.isoformat()
+                if entry.created_at
+                else None,
             }
-            for l in last_logs
+            for entry in last_logs
         ]
 
         return {
@@ -163,6 +171,18 @@ async def get_executions(
         ]
 
 
+@router.get("/providers/v3-metrics")
+async def get_provider_v3_metrics(request: Request) -> Dict[str, Any]:
+    """Return provider V3 runtime metrics (no secrets)."""
+    from services.provider_v3_metrics import get_provider_v3_metrics
+
+    metrics = get_provider_v3_metrics()
+    return {
+        "prometheus": metrics.to_prometheus(),
+        "snapshot": metrics.snapshot(),
+    }
+
+
 # ---------------------------------------------------------------------------
 # Provider health endpoint
 # ---------------------------------------------------------------------------
@@ -196,7 +216,9 @@ async def get_providers_health(request: Request) -> List[Dict[str, Any]]:
             if pid not in provider_status:
                 provider_status[pid] = {
                     "provider_id": pid,
-                    "provider_name": provider.display_name if hasattr(provider, "display_name") else pid,
+                    "provider_name": provider.display_name
+                    if hasattr(provider, "display_name")
+                    else pid,
                     "status": "Unknown",
                     "latency_p50_ms": None,
                     "healthy_models": 0,

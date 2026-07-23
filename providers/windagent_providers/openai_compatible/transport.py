@@ -26,9 +26,11 @@ from windagent_providers.base.errors import (
     ContentPolicyFailure,
     ContextOverflowFailure,
     InvalidRequestFailure,
+    MalformedResponseFailure,
     ModelNotFoundFailure,
     NetworkFailure,
     PermissionFailure,
+    ProtocolMismatchFailure,
     ProviderFailure,
     ProviderUnavailableFailure,
     RateLimitFailure,
@@ -183,7 +185,23 @@ class OpenAICompatibleTransport:
             if resp.status_code != 200:
                 raise self._map_http_error(resp.status_code, resp.text, resp.headers)
 
-            data = resp.json()
+            content_type = resp.headers.get("content-type", "")
+            if (
+                "application/json" not in content_type
+                and "text/event-stream" not in content_type
+            ):
+                raise ProtocolMismatchFailure(
+                    f"Unexpected content-type from provider: {content_type}",
+                    provider_id=self.provider_name,
+                )
+
+            try:
+                data = resp.json()
+            except Exception as exc:
+                raise MalformedResponseFailure(
+                    "Provider returned non-JSON response",
+                    provider_id=self.provider_name,
+                ) from exc
             choice = data.get("choices", [{}])[0]
             message = choice.get("message", {})
 
