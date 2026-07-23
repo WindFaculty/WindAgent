@@ -9,12 +9,12 @@ import re
 from typing import Any, Dict, List, Union
 
 _SECRET_PATTERNS = [
-    re.compile(r"(api[_-]?key|secret|token|authorization|password)=['\"]?([a-zA-Z0-9_\-\.]{8,})['\"]?", re.IGNORECASE),
-    re.compile(r"(Bearer\s+)([a-zA-Z0-9_\-\.]{8,})", re.IGNORECASE),
-    re.compile(r"(sk-[a-zA-Z0-9_-]{20,})"),  # OpenAI style key
-    re.compile(r"(nvapi-[a-zA-Z0-9_-]{20,})"),  # NVIDIA style key
-    re.compile(r"(gsk_[a-zA-Z0-9_-]{20,})"),  # Groq/OpenRouter key pattern
-    re.compile(r"(AIzaSy[a-zA-Z0-9_-]{33})"),  # Google API key pattern
+    re.compile(r"(api[_-]?key|secret|token|authorization|password)[\s=:]+['\"]?([a-zA-Z0-9_\-\.]{6,})['\"]?", re.IGNORECASE),
+    re.compile(r"(Bearer\s+)([a-zA-Z0-9_\-\.]{6,})", re.IGNORECASE),
+    re.compile(r"(sk-[a-zA-Z0-9_-]{8,})"),  # OpenAI style key
+    re.compile(r"(nvapi-[a-zA-Z0-9_-]{8,})"),  # NVIDIA style key
+    re.compile(r"(gsk_[a-zA-Z0-9_-]{8,})"),  # Groq/OpenRouter key pattern
+    re.compile(r"(AIzaSy[a-zA-Z0-9_-]{20,})"),  # Google API key pattern
 ]
 
 
@@ -29,10 +29,10 @@ def redact_text(text: str) -> str:
             groups = match.groups()
             if len(groups) == 1:
                 val = groups[0]
-                return f"{val[:4]}***[REDACTED]***{val[-4:]}" if len(val) >= 12 else "***[REDACTED]***"
+                return f"{val[:3]}***[REDACTED]***{val[-3:]}" if len(val) >= 8 else "***[REDACTED]***"
             elif len(groups) == 2:
                 prefix, val = groups[0], groups[1]
-                masked = f"{val[:4]}***[REDACTED]***{val[-4:]}" if len(val) >= 12 else "***[REDACTED]***"
+                masked = f"{val[:3]}***[REDACTED]***{val[-3:]}" if len(val) >= 8 else "***[REDACTED]***"
                 return f"{prefix}{masked}"
             return "***[REDACTED]***"
 
