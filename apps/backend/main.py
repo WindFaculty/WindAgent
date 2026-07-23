@@ -237,6 +237,10 @@ async def lifespan(app: FastAPI):
     hermes_api_client = HermesApiClient(hermes_config)
     hermes_session_bridge = HermesSessionBridge(db, hermes_api_client, event_bus, browser_service)
 
+    # Orchestration V2 Container (WindAgent Architecture V2 Cutover)
+    from windagent_orchestration import OrchestrationV2Container
+    orchestration_container = OrchestrationV2Container(uow_factory=db.session_factory)
+
     # Phase 5: DAG scheduler (orchestration engine).
     from services.dag_scheduler import DAGScheduler
     dag_scheduler = DAGScheduler(db, event_bus=event_bus)
@@ -291,6 +295,12 @@ async def lifespan(app: FastAPI):
     app.state.worktree_service = worktree_service
     app.state.recovery_manager = recovery_manager
     app.state.browser_service = browser_service
+    app.state.orchestration_container = orchestration_container
+    app.state.task_manager = orchestration_container.task_manager
+    app.state.workflow_engine = orchestration_container.workflow_engine
+    app.state.orchestration_scheduler = orchestration_container.scheduler
+    app.state.orchestration_dispatcher = orchestration_container.dispatcher
+    app.state.orchestration_recovery = orchestration_container.recovery_manager
 
     # Phase 7 gate: on boot, reconcile any runs left in-flight by a crash.
     try:
