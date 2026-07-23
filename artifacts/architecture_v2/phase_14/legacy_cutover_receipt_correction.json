@@ -1,0 +1,17 @@
+{
+  "correction_target": "artifacts/architecture_v2/phase_14/legacy_cutover_receipt.json",
+  "correction_timestamp": "2026-07-23T20:45:00+07:00",
+  "reason": "Phase 14 receipt previously declared WINDAGENT_V2_PROVIDERS=true cutover, but Provider Routing V3 execution path required full rebuild under ban_ke_hoach.md V3 specification.",
+  "status_update": {
+    "scaffold_cutover": "VERIFIED_PHASE_14",
+    "provider_v3_execution_cutover": "IN_PROGRESS_PHASE_00",
+    "active_flags": [
+      "WINDAGENT_ARCH_V2=true",
+      "WINDAGENT_V2_TASKS=true",
+      "WINDAGENT_V2_PROVIDERS=in_progress_v3",
+      "WINDAGENT_V2_TOOLS=true",
+      "WINDAGENT_V2_WORKFLOWS=true"
+    ]
+  },
+  "verdict": "PHASE 14 CUTOVER RECEIPT AMENDED: PROVIDER V3 REBUILD STARTED AT PHASE 0"
+}
