@@ -126,7 +126,6 @@ class ProviderGatewayService:
         model_input, role, messages = self._resolve_payload(payload)
         max_tokens = payload.get("max_tokens", 1024)
         scope_id = payload.get("scope_id")
-        tools = payload.get("tools", [])
 
         try:
             if v3_execute_enabled() and self.v3_coordinator is not None:

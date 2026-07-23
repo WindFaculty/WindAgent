@@ -5,7 +5,6 @@ This adapter maps that to windagent_providers V3 ProviderRequest/ProviderRespons
 """
 from __future__ import annotations
 
-import json
 from typing import Any, AsyncIterator, Dict, List
 
 from windagent_providers.base.contracts import (
