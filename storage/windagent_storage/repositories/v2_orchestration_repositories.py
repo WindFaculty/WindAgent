@@ -162,6 +162,10 @@ class SqlExecutionLeaseRepository:
                         "fencing_token": existing.fencing_token,
                     }
                 return None
+            elif existing.status in ("released", "completed"):
+                # Already finalized lease -> reject duplicate claim
+                return None
+
             # Lease expired -> takeover by new worker, bump generation
             new_gen = (existing.lease_generation or 1) + 1
             fencing_token = f"fence_{existing.step_run_id}_gen_{new_gen}_{uuid.uuid4().hex[:6]}"
@@ -191,7 +195,15 @@ class SqlExecutionLeaseRepository:
             created_at=now,
             updated_at=now,
         )
-        self._session.add(new_lease)
+        try:
+            self._session.add(new_lease)
+            await self._session.flush()
+        except Exception:
+            try:
+                await self._session.rollback()
+            except Exception:
+                pass
+            return None
         return {
             "lease_id": lease_id,
             "lease_generation": 1,

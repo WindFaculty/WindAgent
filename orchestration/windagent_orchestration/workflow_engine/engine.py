@@ -17,8 +17,9 @@ logger = logging.getLogger("windagent.orchestration.workflow_engine")
 
 
 class WorkflowEngine:
-    def __init__(self, checkpoint_manager: Optional[CheckpointManager] = None):
+    def __init__(self, checkpoint_manager: Optional[CheckpointManager] = None, uow_factory: Optional[Any] = None):
         self.checkpoint_manager = checkpoint_manager or CheckpointManager()
+        self.uow_factory = uow_factory or getattr(self.checkpoint_manager, "uow_factory", None)
         self._active_runs: Dict[str, Dict[str, Any]] = {}
 
     def initialize_run(self, run_id: str, definition: WorkflowDefinition) -> Dict[str, Any]:

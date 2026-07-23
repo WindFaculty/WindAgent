@@ -91,3 +91,43 @@ class InFlightReconciler:
             await uow.commit()
 
         return report
+
+    async def reconcile_session_runs(self, session_id: str) -> List[Tuple[str, TaskState, str]]:
+        """Scans session event stream for interrupted destructive steps and preserves original run ID."""
+        results: List[Tuple[str, TaskState, str]] = []
+        if not self.uow_factory:
+            return results
+
+        async with SqlUnitOfWork(self.uow_factory) as uow:
+            events = await uow.events.get_events(session_id)
+            if not events:
+                return results
+
+            target_run_id = f"run_{session_id}"
+            interrupted_destructive = False
+
+            for evt in events:
+                payload = evt.payload or {}
+                if evt.event_type in ("step.started", "tool.started"):
+                    tool_name = str(payload.get("tool_name", payload.get("tool", "")))
+                    if tool_name in DESTRUCTIVE_TOOLS:
+                        interrupted_destructive = True
+                    if "run_id" in payload:
+                        target_run_id = str(payload["run_id"])
+
+            if interrupted_destructive:
+                logger.warning(f"In-flight recovery for session [{session_id}] detected interrupted destructive tool.")
+                results.append((
+                    target_run_id,
+                    TaskState.FAILED,
+                    "Recovery blocked: Interrupted destructive tool cannot be automatically re-executed."
+                ))
+            else:
+                logger.info(f"In-flight recovery for session [{session_id}] safe to reconcile.")
+                results.append((
+                    target_run_id,
+                    TaskState.READY,
+                    "Recovery successful: Safe to resume."
+                ))
+
+        return results

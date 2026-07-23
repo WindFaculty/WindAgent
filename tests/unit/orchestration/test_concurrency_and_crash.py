@@ -16,8 +16,10 @@ from windagent_orchestration import (
 
 @pytest_asyncio.fixture
 async def in_memory_db():
+    from windagent_storage.orm.v2_orchestration_models import BaseORM as V2BaseORM
     db_manager = DatabaseManager(db_url="sqlite+aiosqlite:///:memory:")
     await db_manager.create_tables(BaseORM.metadata)
+    await db_manager.create_tables(V2BaseORM.metadata)
     yield db_manager
     await db_manager.close()
 

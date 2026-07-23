@@ -88,3 +88,20 @@ class StepDispatcher:
         )
 
         return is_success
+
+    async def dispatch_step(
+        self,
+        run_id: str,
+        step: WorkflowStep,
+        worker_id: str = "default_worker",
+        ttl_seconds: float = 30.0,
+        workflow_engine: Optional[Any] = None,
+    ) -> bool:
+        """Alias for dispatch_step_durable."""
+        return await self.dispatch_step_durable(
+            run_id=run_id,
+            step=step,
+            worker_id=worker_id,
+            ttl_seconds=ttl_seconds,
+            workflow_engine=workflow_engine,
+        )

@@ -57,3 +57,7 @@ class RecoveryManager:
 
         logger.info(f"Instance [{self.instance_id}] acquired leader lease. Executing in-flight recovery...")
         return await self.reconciler.reconcile_all_in_flight(batch_size=batch_size)
+
+    async def scan_and_reconcile_in_flight_runs(self, session_id: str) -> List[Tuple[str, TaskState, str]]:
+        """Adapter method for session-specific event stream recovery compatibility."""
+        return await self.reconciler.reconcile_session_runs(str(session_id))

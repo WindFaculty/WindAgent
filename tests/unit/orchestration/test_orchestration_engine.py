@@ -22,12 +22,15 @@ from windagent_orchestration import (
     TaskScheduler, TaskPriority, StepDispatcher, CancellationManager,
     RecoveryManager, TaskManager
 )
+from windagent_orchestration.dispatcher import LeaseManager
 
 
 @pytest_asyncio.fixture
 async def in_memory_db():
+    from windagent_storage.orm.v2_orchestration_models import BaseORM as V2BaseORM
     db_manager = DatabaseManager(db_url="sqlite+aiosqlite:///:memory:")
     await db_manager.create_tables(BaseORM.metadata)
+    await db_manager.create_tables(V2BaseORM.metadata)
     yield db_manager
     await db_manager.close()
 
@@ -85,16 +88,16 @@ def test_task_scheduler_concurrency_and_priority_locks():
     assert scheduler._queue[0].task_id == "task_high"
 
 
-def test_step_dispatcher_duplicate_prevention():
-    dispatcher = StepDispatcher()
+@pytest.mark.asyncio
+async def test_step_dispatcher_duplicate_prevention(in_memory_db):
+    lease_mgr = LeaseManager(uow_factory=in_memory_db.session_factory)
+    dispatcher = StepDispatcher(lease_manager=lease_mgr)
     step = WorkflowStep(id=StepId.generate(), order=1, name="Step 1", tool_name="read_file")
     run_id = "run_100"
 
-    # First dispatch allowed
-    assert dispatcher.dispatch_step(run_id, step)
-
-    # Duplicate dispatch blocked
-    assert not dispatcher.dispatch_step(run_id, step)
+    assert await dispatcher.dispatch_step(run_id, step)
+    # Second dispatch with identical idempotency key is rejected
+    assert not await dispatcher.dispatch_step(run_id, step)
 
 
 def test_cancellation_manager():
