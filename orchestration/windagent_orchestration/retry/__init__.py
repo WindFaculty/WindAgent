@@ -1,5 +1,5 @@
 """
-Top-level retry_policy module adapter re-exporting from retry subpackage.
+Retry Subpackage Export for Orchestration V2.
 """
 
 from windagent_orchestration.retry.classifier import ErrorClassifier
