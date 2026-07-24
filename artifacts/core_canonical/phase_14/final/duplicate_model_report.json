@@ -1,0 +1,7 @@
+{
+  "script": "scripts\\check_phase12_duplicates.py",
+  "returncode": 0,
+  "stdout": "Phase 12 AST Duplicate Scan Results across 319 Python files:\n  duplicate_canonical_models = 0\n  duplicate_lifecycle_enums = 0\n  duplicate_event_envelopes = 0\n  duplicate_root_errors = 0\n  internal_legacy_event_imports = 0\n[PASS] Phase 12 Gate Check: ZERO duplicate definitions & legacy imports found!",
+  "stderr": "",
+  "passed": true
+}

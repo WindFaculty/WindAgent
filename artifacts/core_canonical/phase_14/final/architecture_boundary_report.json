@@ -1,0 +1,7 @@
+{
+  "script": "scripts\\check_architecture_imports.py",
+  "returncode": 0,
+  "stdout": "Scanned 226 Python files across V2 architecture packages.\n[PASS] Architecture import check passed: Zero boundary violations detected.",
+  "stderr": "",
+  "passed": true
+}
