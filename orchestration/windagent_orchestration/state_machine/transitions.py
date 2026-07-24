@@ -1,90 +1,48 @@
 """
-Explicit 15-State Task Transition Matrix & Validator for WindAgent Architecture V2.
-Validates state transitions and prevents illegal task lifecycle movements.
+Task Transition Matrix & Validator for WindAgent Orchestration V2 (Phase 8 Adoption).
+Delegates state transition enforcement to canonical windagent_core.domain.lifecycle.TaskLifecycle.
 """
 
 from __future__ import annotations
 import logging
-from typing import Dict, Set
+from typing import Dict, Set, Any
 
-from windagent_core.errors.exceptions import DomainError
-from windagent_orchestration.state_machine.task import TaskState
+from windagent_core.domain.lifecycle import TaskState, TaskLifecycle
+from windagent_core.errors.exceptions import InvalidStateTransitionError, TerminalStateMutationError, DomainError
 
 logger = logging.getLogger("windagent.orchestration.state_machine")
 
-# Explicit transition matrix mapping allowed from_state -> set(to_states)
-ALLOWED_TRANSITIONS: Dict[TaskState, Set[TaskState]] = {
-    TaskState.RECEIVED: {
-        TaskState.CLASSIFYING, TaskState.CONTEXT_BUILDING, TaskState.PLANNING,
-        TaskState.FAILED, TaskState.CANCELLED
-    },
-    TaskState.CLASSIFYING: {
-        TaskState.CONTEXT_BUILDING, TaskState.PLANNING, TaskState.FAILED, TaskState.CANCELLED
-    },
-    TaskState.CONTEXT_BUILDING: {
-        TaskState.PLANNING, TaskState.READY, TaskState.FAILED, TaskState.CANCELLED
-    },
-    TaskState.PLANNING: {
-        TaskState.READY, TaskState.RUNNING, TaskState.FAILED, TaskState.CANCELLED
-    },
-    TaskState.READY: {
-        TaskState.RUNNING, TaskState.FAILED, TaskState.CANCELLED
-    },
-    TaskState.RUNNING: {
-        TaskState.WAITING_PERMISSION, TaskState.PAUSED, TaskState.RETRY_WAIT,
-        TaskState.VERIFYING, TaskState.REVIEWING, TaskState.COMPLETED,
-        TaskState.FAILED, TaskState.CANCELLED
-    },
-    TaskState.WAITING_PERMISSION: {
-        TaskState.RUNNING, TaskState.PAUSED, TaskState.CANCELLED, TaskState.FAILED
-    },
-    TaskState.PAUSED: {
-        TaskState.RUNNING, TaskState.CANCELLED, TaskState.FAILED
-    },
-    TaskState.RETRY_WAIT: {
-        TaskState.RUNNING, TaskState.RECOVERING, TaskState.FAILED, TaskState.CANCELLED
-    },
-    TaskState.RECOVERING: {
-        TaskState.RUNNING, TaskState.FAILED, TaskState.CANCELLED
-    },
-    TaskState.VERIFYING: {
-        TaskState.REVIEWING, TaskState.COMPLETED, TaskState.RETRY_WAIT,
-        TaskState.FAILED, TaskState.CANCELLED
-    },
-    TaskState.REVIEWING: {
-        TaskState.COMPLETED, TaskState.RETRY_WAIT, TaskState.FAILED, TaskState.CANCELLED
-    },
-    # Terminal States - no outgoing transitions allowed
-    TaskState.COMPLETED: set(),
-    TaskState.FAILED: set(),
-    TaskState.CANCELLED: set(),
-}
+ALLOWED_TRANSITIONS: Dict[TaskState, Set[TaskState]] = TaskLifecycle.LEGAL_TRANSITIONS
+
+
+def parse_task_state(val: Any) -> TaskState:
+    if isinstance(val, TaskState):
+        return val
+    raw = val.value if hasattr(val, "value") else str(val)
+    raw_str = str(raw).upper()
+    try:
+        return TaskState[raw_str]
+    except KeyError:
+        return TaskState(raw_str.lower())
 
 
 class TaskStateMachine:
-    @staticmethod
-    def is_terminal(state: TaskState) -> bool:
-        return state in (TaskState.COMPLETED, TaskState.FAILED, TaskState.CANCELLED)
+    """Delegates task lifecycle transitions to core TaskLifecycle."""
 
     @staticmethod
-    def can_transition(current: TaskState, target: TaskState) -> bool:
-        if current == target:
-            return True
-        allowed = ALLOWED_TRANSITIONS.get(current, set())
-        return target in allowed
+    def is_terminal(state: TaskState | str) -> bool:
+        st = parse_task_state(state)
+        return TaskLifecycle.is_terminal(st)
 
     @staticmethod
-    def transition(current: TaskState, target: TaskState) -> TaskState:
-        if current == target:
-            return current
+    def can_transition(current: TaskState | str, target: TaskState | str) -> bool:
+        curr_st = parse_task_state(current)
+        targ_st = parse_task_state(target)
+        return TaskLifecycle.can_transition(curr_st, targ_st)
 
-        if not TaskStateMachine.can_transition(current, target):
-            logger.error(f"Illegal state transition requested: [{current.value}] -> [{target.value}]")
-            raise DomainError(
-                message=f"Illegal state transition from [{current.value}] to [{target.value}].",
-                code="WINDAGENT_ERR_ILLEGAL_STATE_TRANSITION",
-                details={"current_state": current.value, "target_state": target.value},
-            )
-
-        logger.info(f"Task state transitioned: [{current.value}] -> [{target.value}]")
-        return target
+    @staticmethod
+    def transition(current: TaskState | str, target: TaskState | str) -> TaskState:
+        curr_st = parse_task_state(current)
+        targ_st = parse_task_state(target)
+        res = TaskLifecycle.transition(curr_st, targ_st)
+        return parse_task_state(res.to_state)

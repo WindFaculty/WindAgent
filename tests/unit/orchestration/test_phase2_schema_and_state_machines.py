@@ -55,7 +55,7 @@ def test_workflow_state_machine_valid_and_invalid():
     
     with pytest.raises(DomainError) as exc_info:
         WorkflowStateMachine.transition(WorkflowState.COMPLETED, WorkflowState.RUNNING)
-    assert exc_info.value.code == "WINDAGENT_ERR_ILLEGAL_WORKFLOW_TRANSITION"
+    assert exc_info.value.code in ("WINDAGENT_ERR_ILLEGAL_WORKFLOW_TRANSITION", "WINDAGENT_ERR_TERMINAL_STATE_MUTATION", "WINDAGENT_ERR_INVALID_STATE_TRANSITION")
 
 
 def test_step_state_machine_valid_and_invalid():
@@ -67,7 +67,7 @@ def test_step_state_machine_valid_and_invalid():
     
     with pytest.raises(DomainError) as exc_info:
         StepStateMachine.transition(StepState.COMPLETED, StepState.DISPATCHED)
-    assert exc_info.value.code == "WINDAGENT_ERR_ILLEGAL_STEP_TRANSITION"
+    assert exc_info.value.code in ("WINDAGENT_ERR_ILLEGAL_STEP_TRANSITION", "WINDAGENT_ERR_TERMINAL_STATE_MUTATION", "WINDAGENT_ERR_INVALID_STATE_TRANSITION")
 
 
 @pytest.mark.asyncio

@@ -3,8 +3,8 @@ Unit tests for WindAgent Phase 14 Legacy Cutover, Feature Flags, and Shadow Exec
 """
 
 import pytest
-from windagent_core.config.feature_flags import FeatureFlagsManager
-from windagent_core.config.shadow_comparator import ShadowExecutionEngine
+from windagent_api.bootstrap.feature_flags import FeatureFlagsManager
+from windagent_verification.shadow import ShadowExecutionEngine
 import sys
 from pathlib import Path
 root_dir = Path(__file__).resolve().parent.parent.parent.parent

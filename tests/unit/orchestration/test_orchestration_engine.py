@@ -50,7 +50,7 @@ def test_state_machine_transitions():
         sm.transition(TaskState.RECEIVED, TaskState.COMPLETED)
 
     # Terminal state cannot transition to anything
-    with pytest.raises(DomainError, match="Illegal state transition"):
+    with pytest.raises(DomainError, match=r"(Illegal state transition|Cannot transition terminal)"):
         sm.transition(TaskState.COMPLETED, TaskState.RUNNING)
 
 

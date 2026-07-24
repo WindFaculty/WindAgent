@@ -15,15 +15,14 @@ from pathlib import Path
 import pytest
 
 from windagent_core.domain.types import (
-    BaseEntityId, SessionId, StepId
+    SessionId, StepId, ToolCallId
 )
 from windagent_core.domain.models import (
     Session, SessionStatus, TaskRequest, WorkflowStep, ToolInvocation,
     WorkflowStatus
 )
 from windagent_core.errors.exceptions import (
-    NotFoundError,
-    ProviderError, ToolError
+    NotFoundError, ProviderError, ToolError, IdentityValidationError
 )
 from windagent_core.config.settings import (
     ProviderSettings, SecuritySettings
@@ -45,10 +44,10 @@ def test_typed_identifiers():
     assert sid1.to_uuid() == sid2.to_uuid()
     assert hash(sid1) == hash(sid2)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(IdentityValidationError):
         SessionId("")
 
-    with pytest.raises(TypeError):
+    with pytest.raises(IdentityValidationError):
         SessionId(12345)  # type: ignore
 
 
@@ -63,7 +62,7 @@ def test_domain_model_invariants():
 
     # Tool invocation name cannot be empty
     with pytest.raises(ValueError, match="tool_name cannot be empty"):
-        ToolInvocation(id=BaseEntityId.generate(), tool_name="")
+        ToolInvocation(id=ToolCallId.generate(), tool_name="")
 
     # Session status transition
     session = Session(id=SessionId.generate())

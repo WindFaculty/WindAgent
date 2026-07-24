@@ -413,6 +413,7 @@ class HermesSessionBridge:
             
             # Update status in db
             req.status = "granted" if granted else "denied"
+            await session.commit()
 
         if not run_id or not hermes_approval_id:
             return False
@@ -495,6 +496,10 @@ class HermesSessionBridge:
                         final_status = "cancelled"
 
                     async with self.db.session() as db_sess:
+                        stmt_check = select(AgentSessionORM).where(AgentSessionORM.hermes_run_id == run_id)
+                        row = (await db_sess.execute(stmt_check)).scalar_one_or_none()
+                        if row and row.status == "cancelled":
+                            break
                         stmt_up = (
                             update(AgentSessionORM)
                             .where(AgentSessionORM.hermes_run_id == run_id)
@@ -506,6 +511,7 @@ class HermesSessionBridge:
                             )
                         )
                         await db_sess.execute(stmt_up)
+                        await db_sess.commit()
                     break
 
         except Exception as e:

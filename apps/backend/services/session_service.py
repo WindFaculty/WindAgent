@@ -279,7 +279,7 @@ class SessionService:
                     # source is execution_events, whose max seq we use instead.
                     try:
                         from sqlalchemy import func
-                        from windagent_storage.orm.models import ExecutionEventORM
+                        from db.models import ExecutionEventORM
                         max_seq_res = await s.execute(
                             select(func.max(ExecutionEventORM.event_seq)).where(ExecutionEventORM.session_id == str(session_id))
                         )
@@ -287,6 +287,9 @@ class SessionService:
                         last_event_sequence = max_seq if max_seq is not None else (row.last_event_sequence or 0)
                     except Exception:  # noqa: BLE001
                         last_event_sequence = row.last_event_sequence or 0
+
+                if last_event_sequence == 0 and hasattr(self._bus, "_seq"):
+                    last_event_sequence = self._bus._seq.get(str(session_id), self._bus._seq.get(session_id, 0))
 
                 # Get tool calls
                 from db.models import ToolCallORM

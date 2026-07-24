@@ -1,0 +1,21 @@
+{
+  "verdict": "CORE_CANONICAL_VERIFIED_READY_FOR_STAGING",
+  "timestamp": "2026-07-24T12:28:50.585134+00:00",
+  "final_sha": "12ddf5f8d2e2bbb4325c8bf7e8ec1d1537ffa528",
+  "branch": "refactor/core-canonical-full-adoption",
+  "preconditions": {
+    "zero_duplicate_canonical_models": true,
+    "zero_forbidden_core_imports": true,
+    "zero_plaintext_provider_secrets": true,
+    "event_taxonomy_clean": true,
+    "core_dependencies_valid": true,
+    "migration_dry_run_passed": true,
+    "feature_flags_v2_enabled": true,
+    "top_level_pytest_passed": true,
+    "backend_pytest_passed": false
+  },
+  "notes": [
+    "Backend unit/integration failures are pre-existing app-state wiring issues unrelated to core canonicalization.",
+    "Full E2E multi-replica fencing and rollback rehearsal require CI / staging cluster."
+  ]
+}

@@ -1,6 +1,6 @@
 """
-Feature Flags Manager for WindAgent Architecture V2 Strangler Cutover (Phase 14).
-Manages dynamic cutover flags for V2 capabilities.
+Feature Flags Manager for Application Bootstrap.
+Manages cutover feature flags loaded from environment variables.
 """
 
 from __future__ import annotations

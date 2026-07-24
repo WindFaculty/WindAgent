@@ -1,0 +1,521 @@
+tests/test_agent_delegation.py::TestAgentCapabilityRegistry::test_all_roles_present
+tests/test_agent_delegation.py::TestAgentCapabilityRegistry::test_get_planner_capability
+tests/test_agent_delegation.py::TestAgentCapabilityRegistry::test_gui_does_not_support_delegation
+tests/test_agent_delegation.py::TestAgentCapabilityRegistry::test_find_capable_agents_for_research
+tests/test_agent_delegation.py::TestAgentCapabilityRegistry::test_find_capable_agents_for_code_generation
+tests/test_agent_delegation.py::TestAgentCapabilityRegistry::test_cannot_delegate_to_gui
+tests/test_agent_delegation.py::TestAgentCapabilityRegistry::test_can_delegate_planner_to_research
+tests/test_agent_delegation.py::TestAgentCapabilityRegistry::test_can_delegate_planner_to_coder
+tests/test_agent_delegation.py::TestAgentCapabilityRegistry::test_unknown_roles_return_false
+tests/test_agent_delegation.py::TestAgentDelegationService::test_planner_delegates_research_task_to_research_agent
+tests/test_agent_delegation.py::TestAgentDelegationService::test_planner_delegates_coding_task_to_coder
+tests/test_agent_delegation.py::TestAgentDelegationService::test_delegation_to_gui_requires_explicit_permission
+tests/test_agent_delegation.py::TestAgentDelegationService::test_delegation_depth_guard_blocks_at_max_depth
+tests/test_agent_delegation.py::TestAgentDelegationService::test_delegation_loop_guard_blocks_cycle
+tests/test_agent_delegation.py::TestAgentDelegationService::test_auto_delegate_finds_research_agent
+tests/test_agent_delegation.py::TestAgentDelegationService::test_auto_delegate_finds_coder_for_code_generation
+tests/test_agent_delegation.py::TestAgentDelegationService::test_auto_delegate_fails_gracefully_for_unknown_task_type
+tests/test_agent_s3_action_translator.py::test_translate_pyautogui_click_xy
+tests/test_agent_s3_action_translator.py::test_translate_pyautogui_click_with_button
+tests/test_agent_s3_action_translator.py::test_translate_right_click
+tests/test_agent_s3_action_translator.py::test_translate_double_click_is_left
+tests/test_agent_s3_action_translator.py::test_translate_middle_click
+tests/test_agent_s3_action_translator.py::test_translate_typewrite_ascii_uses_type_method
+tests/test_agent_s3_action_translator.py::test_translate_typewrite_double_quoted
+tests/test_agent_s3_action_translator.py::test_translate_typewrite_non_ascii_uses_paste_method
+tests/test_agent_s3_action_translator.py::test_translate_typewrite_with_interval_ignored_but_still_maps
+tests/test_agent_s3_action_translator.py::test_translate_hotkey_single_string
+tests/test_agent_s3_action_translator.py::test_translate_hotkey_three_keys
+tests/test_agent_s3_action_translator.py::test_translate_press
+tests/test_agent_s3_action_translator.py::test_translate_scroll_positive_is_up
+tests/test_agent_s3_action_translator.py::test_translate_scroll_negative_is_down
+tests/test_agent_s3_action_translator.py::test_translate_hscroll_positive_is_right
+tests/test_agent_s3_action_translator.py::test_translate_hscroll_negative_is_left
+tests/test_agent_s3_action_translator.py::test_translate_sleep
+tests/test_agent_s3_action_translator.py::test_translate_screenshot
+tests/test_agent_s3_action_translator.py::test_translate_screenshot_no_arg
+tests/test_agent_s3_action_translator.py::test_translate_denies_dangerous_calls[import os]
+tests/test_agent_s3_action_translator.py::test_translate_denies_dangerous_calls[from subprocess import call]
+tests/test_agent_s3_action_translator.py::test_translate_denies_dangerous_calls[open('/etc/passwd')]
+tests/test_agent_s3_action_translator.py::test_translate_denies_dangerous_calls[subprocess.Popen(['ls'])]
+tests/test_agent_s3_action_translator.py::test_translate_denies_dangerous_calls[os.system('rm -rf /')]
+tests/test_agent_s3_action_translator.py::test_translate_denies_dangerous_calls[os.popen('ls')]
+tests/test_agent_s3_action_translator.py::test_translate_denies_dangerous_calls[exec('print(1)')]
+tests/test_agent_s3_action_translator.py::test_translate_denies_dangerous_calls[eval('1+1')]
+tests/test_agent_s3_action_translator.py::test_translate_denies_dangerous_calls[__import__('os')]
+tests/test_agent_s3_action_translator.py::test_translate_denies_dangerous_calls[requests.get('http://evil')]
+tests/test_agent_s3_action_translator.py::test_translate_denies_dangerous_calls[urllib.request.urlopen('http://evil')]
+tests/test_agent_s3_action_translator.py::test_translate_denies_dangerous_calls[socket.socket()]
+tests/test_agent_s3_action_translator.py::test_translate_rejects_unrecognised_pyautogui
+tests/test_agent_s3_action_translator.py::test_translate_rejects_random_python
+tests/test_agent_s3_action_translator.py::test_translate_rejects_arbitrary_function_call
+tests/test_agent_s3_action_translator.py::test_translate_sleep_too_long_is_rejected
+tests/test_agent_s3_action_translator.py::test_translate_sleep_zero_or_negative_is_rejected
+tests/test_agent_s3_action_translator.py::test_translate_mixed_batch
+tests/test_agent_s3_action_translator.py::test_translate_empty_input_returns_empty_lists
+tests/test_agent_s3_action_translator.py::test_translation_result_to_dict
+tests/test_agent_s3_action_translator.py::test_translated_action_to_dict
+tests/test_agent_s3_action_translator.py::test_rejected_action_to_dict
+tests/test_agent_s3_action_translator.py::test_translator_does_not_call_exec
+tests/test_agent_s3_adapter_mock.py::test_has_gui_agents_package_returns_bool
+tests/test_agent_s3_adapter_mock.py::test_detect_platform_recognises_windows_or_linux
+tests/test_agent_s3_adapter_mock.py::test_adapter_unavailable_when_disabled
+tests/test_agent_s3_adapter_mock.py::test_adapter_unavailable_when_missing_fields
+tests/test_agent_s3_adapter_mock.py::test_adapter_unavailable_when_package_missing
+tests/test_agent_s3_adapter_mock.py::test_adapter_available_when_checked_out
+tests/test_agent_s3_adapter_mock.py::test_adapter_unavailable_when_external_path_empty
+tests/test_agent_s3_adapter_mock.py::test_propose_returns_none_when_disabled
+tests/test_agent_s3_adapter_mock.py::test_propose_returns_proposal_when_mock_available
+tests/test_agent_s3_adapter_mock.py::test_propose_records_error_on_predict_failure
+tests/test_agent_s3_adapter_mock.py::test_propose_handles_empty_actions
+tests/test_agent_s3_adapter_mock.py::test_proposal_to_dict_round_trip
+tests/test_agent_s3_adapter_mock.py::test_mock_unavailable_when_flag_false
+tests/test_agent_s3_adapter_mock.py::test_mock_unavailable_when_disabled
+tests/test_agent_s3_adapter_mock.py::test_real_adapter_construction_does_not_import
+tests/test_agent_s3_config.py::test_package_available_reflects_import
+tests/test_agent_s3_config.py::test_external_repo_available_false_for_missing
+tests/test_agent_s3_config.py::test_external_repo_available_true_when_gui_agents_subdir
+tests/test_agent_s3_config.py::test_external_repo_available_true_when_legacy_agent_s_subdir
+tests/test_agent_s3_config.py::test_external_repo_available_false_when_dir_exists_but_empty
+tests/test_agent_s3_config.py::test_resolve_external_path_default
+tests/test_agent_s3_config.py::test_resolve_external_path_absolute
+tests/test_agent_s3_config.py::test_resolve_external_path_relative_anchored_to_repo_root
+tests/test_agent_s3_config.py::test_resolve_external_path_relative_any_subdir
+tests/test_agent_s3_config.py::test_load_disabled_by_default
+tests/test_agent_s3_config.py::test_load_enabled_with_all_required
+tests/test_agent_s3_config.py::test_load_source_external
+tests/test_agent_s3_config.py::test_enable_local_env_always_forced_false
+tests/test_agent_s3_config.py::test_load_unknown_source_defaults_to_package
+tests/test_agent_s3_config.py::test_missing_fields_when_disabled
+tests/test_agent_s3_config.py::test_missing_fields_when_enabled_minimal
+tests/test_agent_s3_config.py::test_missing_fields_external_requires_checkout
+tests/test_agent_s3_config.py::test_validate_or_raise_disabled_is_noop
+tests/test_agent_s3_config.py::test_validate_or_raise_missing_required
+tests/test_agent_s3_config.py::test_validate_or_raise_external_no_checkout
+tests/test_agent_s3_config.py::test_validate_or_raise_external_with_checkout
+tests/test_agent_s3_config.py::test_validate_or_raise_package_without_install
+tests/test_agent_s3_config.py::test_status_disabled
+tests/test_agent_s3_config.py::test_status_misconfigured_when_enabled_but_missing
+tests/test_agent_s3_config.py::test_status_records_last_error
+tests/test_agent_s3_health.py::test_build_status_disabled_no_adapter
+tests/test_agent_s3_health.py::test_build_status_records_adapter_last_error
+tests/test_agent_s3_health.py::test_build_status_records_adapter_actions
+tests/test_agent_s3_health.py::test_status_to_dict_shape
+tests/test_agent_s3_health.py::test_status_to_dict_surfaces_missing_config
+tests/test_agent_s3_health.py::test_health_summary_keys
+tests/test_agent_s3_health.py::test_health_summary_reports_missing_count
+tests/test_agent_s3_health.py::test_agent_s3_health_endpoint_disabled
+tests/test_agent_s3_health.py::test_root_health_includes_agent_s3_block
+tests/test_agent_s3_secret_scrubbing.py::TestScrubSecretsUnit::test_replaces_api_key_with_boolean_placeholder
+tests/test_agent_s3_secret_scrubbing.py::TestScrubSecretsUnit::test_replaces_empty_api_key_with_false
+tests/test_agent_s3_secret_scrubbing.py::TestScrubSecretsUnit::test_replaces_ground_api_key
+tests/test_agent_s3_secret_scrubbing.py::TestScrubSecretsUnit::test_replaces_case_insensitive_apikey
+tests/test_agent_s3_secret_scrubbing.py::TestScrubSecretsUnit::test_replaces_token_password_bearer_auth
+tests/test_agent_s3_secret_scrubbing.py::TestScrubSecretsUnit::test_scrubs_nested_dicts
+tests/test_agent_s3_secret_scrubbing.py::TestScrubSecretsUnit::test_scrubs_lists
+tests/test_agent_s3_secret_scrubbing.py::TestScrubSecretsUnit::test_passes_through_safe_keys
+tests/test_agent_s3_secret_scrubbing.py::TestScrubSecretsUnit::test_does_not_match_substring_unrelated
+tests/test_agent_s3_secret_scrubbing.py::TestScrubSecretsUnit::test_does_not_echo_value
+tests/test_agent_s3_secret_scrubbing.py::TestStatusToDictScrubbing::test_status_to_dict_no_secret_when_env_keys_set
+tests/test_agent_s3_secret_scrubbing.py::TestStatusToDictScrubbing::test_status_to_dict_when_secrets_added_to_extra
+tests/test_agent_s3_secret_scrubbing.py::TestStatusToDictScrubbing::test_health_summary_no_secrets_when_env_keys_set
+tests/test_agent_s3_secret_scrubbing.py::TestStatusToDictScrubbing::test_health_summary_with_poisoned_extra
+tests/test_agent_s3_secret_scrubbing.py::TestLiveEndpointScrubbing::test_live_endpoint_does_not_leak_secrets
+tests/test_agent_s3_secret_scrubbing.py::TestLiveEndpointScrubbing::test_live_endpoint_does_not_leak_partial_secrets
+tests/test_agent_s3_secret_scrubbing.py::TestLiveEndpointScrubbing::test_root_health_endpoint_no_secrets
+tests/test_agent_s3_secret_scrubbing.py::TestLiveEndpointScrubbing::test_health_response_contains_configured_booleans_when_set
+tests/test_agent_s3_secret_scrubbing.py::TestUserSpecSecretsAreScrubbed::test_scrub_strips_exact_user_spec_model_key
+tests/test_agent_s3_secret_scrubbing.py::TestUserSpecSecretsAreScrubbed::test_scrub_strips_exact_user_spec_ground_key
+tests/test_agent_s3_secret_scrubbing.py::TestUserSpecSecretsAreScrubbed::test_scrub_strips_both_substrings_secret_123456_and_secret_abcdef
+tests/test_agent_s3_secret_scrubbing.py::TestUserSpecSecretsAreScrubbed::test_status_to_dict_scrubs_user_spec_secrets
+tests/test_agent_s3_secret_scrubbing.py::TestUserSpecSecretsAreScrubbed::test_scrub_strips_user_spec_values_even_when_injected_via_extra
+tests/test_agent_s3_secret_scrubbing.py::TestUserSpecSecretsAreScrubbed::test_live_endpoint_does_not_leak_user_spec_secrets
+tests/test_agent_s3_secret_scrubbing.py::TestUserSpecSecretsAreScrubbed::test_live_root_health_does_not_leak_user_spec_secrets
+tests/test_agent_s3_secret_scrubbing.py::TestUserSpecSecretsAreScrubbed::test_health_returns_only_boolean_or_safe_placeholder
+tests/test_agents_api.py::test_list_agents
+tests/test_agents_api.py::test_get_agent
+tests/test_agents_api.py::test_get_agent_unknown
+tests/test_agents_api.py::test_agent_summary
+tests/test_agents_api.py::test_agent_control_endpoints
+tests/test_agents_api.py::test_agent_sessions_list
+tests/test_agents_api.py::test_agent_activity_list
+tests/test_api.py::test_health_ok
+tests/test_api.py::test_create_session
+tests/test_api.py::test_get_session_unknown_returns_404
+tests/test_api.py::test_get_session_returns_existing
+tests/test_api.py::test_send_message_returns_workflow
+tests/test_api.py::test_send_message_unknown_session_returns_404
+tests/test_api.py::test_get_workflow_after_planning
+tests/test_api.py::test_pause_without_workflow_returns_404
+tests/test_api.py::test_pause_with_workflow_returns_202
+tests/test_api.py::test_resume_returns_202
+tests/test_api.py::test_stop_returns_202
+tests/test_api.py::test_retry_endpoint_returns_202_in_phase5
+tests/test_api.py::test_message_validation_rejects_empty
+tests/test_click_target.py::test_click_target_in_registry
+tests/test_click_target.py::test_click_target_with_mock_grounding_returns_stub_mode_error
+tests/test_click_target.py::test_click_target_no_grounding_returns_not_configured
+tests/test_click_target.py::test_click_target_vision_model_calls_gui_click
+tests/test_click_target.py::test_click_target_grounding_exception_returns_grounding_failed
+tests/test_contract.py::test_compatibility_health_ok
+tests/test_contract.py::test_compatibility_models_health_ok
+tests/test_contract.py::test_versioned_health_ok
+tests/test_contract.py::test_versioned_models_health_ok
+tests/test_contract.py::test_unversioned_business_routes_return_404
+tests/test_contract.py::test_versioned_business_routes_resolve_correctly
+tests/test_db_persistence.py::test_create_session_writes_to_chat_sessions_table
+tests/test_db_persistence.py::test_update_status_writes_to_db
+tests/test_db_persistence.py::test_user_message_persisted
+tests/test_db_persistence.py::test_workflow_and_steps_persisted
+tests/test_db_persistence.py::test_events_mirrored_into_execution_events
+tests/test_db_persistence.py::test_pause_emits_user_paused_event_in_db
+tests/test_db_persistence.py::test_data_survives_app_restart
+tests/test_db_persistence.py::test_tool_calls_table_exists
+tests/test_db_persistence.py::test_all_six_tables_created_on_startup
+tests/test_gui_grounding.py::test_mock_locate_returns_gui_point
+tests/test_gui_grounding.py::test_mock_locate_deterministic_for_same_target
+tests/test_gui_grounding.py::test_mock_locate_different_for_different_targets
+tests/test_gui_grounding.py::test_mock_records_calls
+tests/test_gui_grounding.py::test_mock_fail_on_raises
+tests/test_gui_grounding.py::test_mock_health_online
+tests/test_gui_grounding.py::test_mock_health_offline
+tests/test_gui_grounding.py::test_screenshot_path_ignored_by_mock
+tests/test_gui_grounding.py::test_vision_stub_raises_not_implemented
+tests/test_gui_grounding.py::test_mock_satisfies_protocol
+tests/test_gui_grounding.py::test_grounding_service_wired_via_lifespan
+tests/test_gui_grounding.py::test_grounding_service_default_is_mock
+tests/test_memory_routing.py::TestMemoryRoutingServiceNoBackend::test_no_memory_required_returns_primary
+tests/test_memory_routing.py::TestMemoryRoutingServiceNoBackend::test_memory_required_backend_down_returns_degraded
+tests/test_memory_routing.py::TestMemoryRoutingServiceNoBackend::test_degraded_mode_does_not_raise
+tests/test_memory_routing.py::TestMemoryRoutingServiceNoBackend::test_is_ready_returns_false
+tests/test_memory_routing.py::TestMemoryRoutingServiceWithBackend::test_session_scope_small_budget_returns_lightweight
+tests/test_memory_routing.py::TestMemoryRoutingServiceWithBackend::test_session_scope_large_budget_returns_enhanced_session
+tests/test_memory_routing.py::TestMemoryRoutingServiceWithBackend::test_project_scope_returns_enhanced_project
+tests/test_memory_routing.py::TestMemoryRoutingServiceWithBackend::test_global_scope_returns_enhanced_global
+tests/test_memory_routing.py::TestMemoryRoutingServiceWithBackend::test_is_ready_returns_true
+tests/test_model_client.py::test_mock_client_returns_default_response_for_known_phrase
+tests/test_model_client.py::test_mock_client_returns_empty_for_unknown_phrase
+tests/test_model_client.py::test_mock_client_offline_raises
+tests/test_model_client.py::test_mock_client_response_error_raises
+tests/test_model_client.py::test_mock_client_records_calls
+tests/test_model_client.py::test_mock_client_health_online
+tests/test_model_client.py::test_mock_client_health_offline
+tests/test_model_client.py::test_ollama_client_chat_returns_message_content
+tests/test_model_client.py::test_ollama_client_chat_offline_raises
+tests/test_model_client.py::test_ollama_client_chat_http_error_raises
+tests/test_model_client.py::test_ollama_client_chat_malformed_envelope_raises
+tests/test_model_client.py::test_ollama_client_health_online_with_model_present
+tests/test_model_client.py::test_ollama_client_health_online_but_model_missing
+tests/test_model_client.py::test_ollama_client_health_offline
+tests/test_model_client.py::test_ollama_client_health_http_error
+tests/test_models_api.py::test_models_health_returns_200_with_expected_shape
+tests/test_models_api.py::test_get_models_returns_seed_and_ollama_mock
+tests/test_models_api.py::test_provider_taxonomy
+tests/test_models_api.py::test_missing_api_key_does_not_crash
+tests/test_models_api.py::test_openai_compatible_sync_models[asyncio]
+tests/test_models_api.py::test_probe_updates_runtime_status[asyncio]
+tests/test_models_api.py::test_start_stop_ollama_keep_alive[asyncio]
+tests/test_models_api.py::test_429_updates_quota_activity[asyncio]
+tests/test_models_api.py::test_routing_rules_crud
+tests/test_models_api.py::test_create_and_update_provider
+tests/test_models_api.py::test_test_provider_connection
+tests/test_permission_timeout_cancellation.py::test_permission_timeout_marks_step_cancelled_not_failed
+tests/test_permission_timeout_cancellation.py::test_permission_timeout_final_workflow_status_is_cancelled
+tests/test_permission_timeout_cancellation.py::test_permission_timeout_does_not_emit_tool_call_started_for_gated_step
+tests/test_permission_timeout_cancellation.py::test_open_app_without_confirmation_runs_normally_after_timeout_window
+tests/test_permissions_api.py::test_get_config_returns_current
+tests/test_permissions_api.py::test_patch_config_updates_one_field
+tests/test_permissions_api.py::test_patch_config_multiple_fields
+tests/test_permissions_api.py::test_patch_config_with_invalid_value_returns_422
+tests/test_permissions_api.py::test_decide_unknown_request_returns_404
+tests/test_permissions_api.py::test_decide_invalid_decision_returns_422
+tests/test_permissions_api.py::test_decide_missing_decision_returns_422
+tests/test_permissions_api.py::test_decision_via_rest_unblocks_pending_request
+tests/test_permissions_api.py::test_decision_via_rest_deny_unblocks_pending_request
+tests/test_permissions_api.py::test_double_decide_second_call_returns_404
+tests/test_phase2_migration.py::test_new_db_has_phase2_tables
+tests/test_phase2_migration.py::test_migration_preserves_legacy_data_and_seeds
+tests/test_phase2_migration.py::test_seed_idempotent_when_empty
+tests/test_phase3_route_lock.py::test_lock_pins_canonical_and_blocks_switch
+tests/test_phase3_route_lock.py::test_same_model_failover_on_429
+tests/test_phase3_route_lock.py::test_error_classifier_and_policy
+tests/test_phase3_route_lock.py::test_partial_audit_not_transcript
+tests/test_phase3_route_lock.py::test_tool_call_idempotency_key
+tests/test_phase6_worktree_permission.py::test_two_coding_agents_isolated
+tests/test_phase6_worktree_permission.py::test_non_coding_agent_no_worktree
+tests/test_phase6_worktree_permission.py::test_not_a_git_repo
+tests/test_phase6_worktree_permission.py::test_permission_standard_needs_approval
+tests/test_phase6_worktree_permission.py::test_permission_autonomous_allows
+tests/test_phase6_worktree_permission.py::test_permission_safe_blocks_risky
+tests/test_phase6_worktree_permission.py::test_permission_force_push_always_blocked
+tests/test_phase8_conversations.py::test_conversation_agents_and_tasks
+tests/test_phase8_conversations.py::test_agent_events_404
+tests/test_phase9_task_editing.py::test_get_task_graph
+tests/test_phase9_task_editing.py::test_patch_task_node_success_and_conflict
+tests/test_phase9_task_editing.py::test_create_and_delete_node
+tests/test_phase9_task_editing.py::test_create_edge_success_and_cycle
+tests/test_phase9_task_editing.py::test_control_endpoints
+tests/test_phase_g25_session_recovery.py::test_snapshot_returns_messages_and_sequence
+tests/test_phase_g25_session_recovery.py::test_reconnect_replays_missed_events_by_cursor
+tests/test_phase_g25_session_recovery.py::test_multi_session_isolation
+tests/test_phase_g25_session_recovery.py::test_cancel_archive_delete_have_distinct_semantics
+tests/test_planner_service.py::test_try_parse_strips_markdown_fence
+tests/test_planner_service.py::test_try_parse_handles_plain_json
+tests/test_planner_service.py::test_try_parse_returns_none_on_garbage
+tests/test_planner_service.py::test_validate_rejects_unknown_tool
+tests/test_planner_service.py::test_validate_rejects_non_dict_step
+tests/test_planner_service.py::test_validate_accepts_valid_step
+tests/test_planner_service.py::test_validate_accepts_empty_steps_list
+tests/test_planner_service.py::test_validate_rejects_non_dict_root
+tests/test_planner_service.py::test_planner_uses_model_when_response_valid
+tests/test_planner_service.py::test_planner_falls_back_when_model_offline
+tests/test_planner_service.py::test_planner_falls_back_on_empty_steps_from_model
+tests/test_planner_service.py::test_planner_repairs_invalid_json_then_succeeds
+tests/test_planner_service.py::test_planner_falls_back_when_repair_also_fails
+tests/test_planner_service.py::test_planner_rejects_unknown_tool_in_model_output_then_repairs
+tests/test_planner_service.py::test_planner_health_passthrough
+tests/test_planner_service.py::test_system_prompt_lists_all_9_tools
+tests/test_router_integration.py::test_orm_routing_rule_new_fields
+tests/test_router_integration.py::test_router_execution_log_orm_insert_and_query
+tests/test_router_integration.py::test_list_rules_api
+tests/test_router_integration.py::test_routing_rules_crud_endpoints
+tests/test_router_integration.py::test_bulk_import_rules
+tests/test_router_integration.py::test_router_stats_api
+tests/test_router_integration.py::test_traffic_distribution_api
+tests/test_router_integration.py::test_routing_graph_api
+tests/test_router_integration.py::test_route_simulation_api
+tests/test_router_integration.py::test_live_route_test_probe[asyncio]
+tests/test_router_integration.py::test_backward_compatibility_endpoints
+tests/test_router_integration.py::test_openai_compatible_gateway_endpoints
+tests/test_router_observability.py::TestRuntimeSummary::test_summary_returns_200_with_empty_db
+tests/test_router_observability.py::TestRuntimeSummary::test_summary_does_not_expose_secrets
+tests/test_router_observability.py::TestRuntimeSummary::test_summary_empty_db_has_zero_counts
+tests/test_router_observability.py::TestRuntimeExecutions::test_executions_returns_200_with_empty_db
+tests/test_router_observability.py::TestRuntimeExecutions::test_executions_limit_param_respected
+tests/test_router_observability.py::TestRuntimeExecutions::test_executions_rejects_invalid_limit
+tests/test_router_observability.py::TestProvidersHealth::test_providers_health_returns_200
+tests/test_router_runtime.py::test_openai_compatible_stream_completion
+tests/test_router_runtime.py::test_openai_compatible_non_stream_completion
+tests/test_router_runtime.py::test_quota_automatic_daily_reset
+tests/test_router_runtime.py::test_agent_runtime_adapters
+tests/test_tool_registry.py::test_registry_has_all_mvp_tools
+tests/test_tool_registry.py::test_list_tool_names_returns_sorted_unique
+tests/test_tool_registry.py::test_get_tool_known_returns_metadata
+tests/test_tool_registry.py::test_get_tool_unknown_raises_keyerror
+tests/test_tool_registry.py::test_open_app_accepts_known_app
+tests/test_tool_registry.py::test_open_app_rejects_unknown_app
+tests/test_tool_registry.py::test_open_url_requires_http_scheme
+tests/test_tool_registry.py::test_type_text_defaults_to_paste_method
+tests/test_tool_registry.py::test_type_text_accepts_vietnamese
+tests/test_tool_registry.py::test_type_text_rejects_empty
+tests/test_tool_registry.py::test_hotkey_requires_at_least_one_key
+tests/test_tool_registry.py::test_click_xy_default_button_is_left
+tests/test_tool_registry.py::test_click_xy_rejects_unknown_button
+tests/test_tool_registry.py::test_scroll_direction_enum
+tests/test_tool_registry.py::test_wait_requires_positive_seconds
+tests/test_tool_registry.py::test_screenshot_name_optional
+tests/test_tool_registry.py::test_click_xy_is_high_risk
+tests/test_tool_registry.py::test_type_text_is_medium_risk
+tests/test_tool_registry.py::test_screenshot_and_wait_are_safe
+tests/test_tools_api.py::test_list_tools_returns_mvp_whitelisted
+tests/test_tools_api.py::test_run_tool_unknown_session_returns_404
+tests/test_tools_api.py::test_run_tool_unknown_tool_returns_failed
+tests/test_tools_api.py::test_run_tool_bad_params_returns_failed
+tests/test_tools_api.py::test_run_open_app_success
+tests/test_tools_api.py::test_run_type_text_persists_vietnamese
+tests/test_tools_api.py::test_run_workflow_executes_all_steps
+tests/test_tools_api.py::test_run_workflow_without_workflow_returns_404
+tests/test_tools_api.py::test_run_workflow_emits_full_event_sequence
+tests/test_websocket.py::test_ws_receives_full_planning_sequence
+tests/test_websocket.py::test_ws_receives_user_paused_event
+tests/test_websocket.py::test_ws_receives_user_resumed_event
+tests/test_websocket.py::test_ws_receives_user_stopped_event
+tests/test_websocket.py::test_ws_unknown_session_closes
+
+=================================== ERRORS ====================================
+____________ ERROR collecting tests/test_agent_s3_runner_wiring.py ____________
+ImportError while importing test module 'D:\code_ca_nhan\WindAgent\apps\backend\tests\test_agent_s3_runner_wiring.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\Users\Admin\AppData\Roaming\uv\python\cpython-3.11-windows-x86_64-none\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_agent_s3_runner_wiring.py:26: in <module>
+    from services.agent_s3_step_executor import AgentS3StepExecutor
+services\agent_s3_step_executor.py:64: in <module>
+    from services.event_bus import EventBus
+services\event_bus.py:15: in <module>
+    from schemas.event import EventEnvelope
+schemas\event.py:65: in <module>
+    from windagent_core.events.envelope import EventEnvelope
+E   ModuleNotFoundError: No module named 'windagent_core'
+____________ ERROR collecting tests/test_agent_s3_step_executor.py ____________
+ImportError while importing test module 'D:\code_ca_nhan\WindAgent\apps\backend\tests\test_agent_s3_step_executor.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\Users\Admin\AppData\Roaming\uv\python\cpython-3.11-windows-x86_64-none\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_agent_s3_step_executor.py:33: in <module>
+    from services.agent_s3_step_executor import (
+services\agent_s3_step_executor.py:64: in <module>
+    from services.event_bus import EventBus
+services\event_bus.py:15: in <module>
+    from schemas.event import EventEnvelope
+schemas\event.py:65: in <module>
+    from windagent_core.events.envelope import EventEnvelope
+E   ModuleNotFoundError: No module named 'windagent_core'
+________________ ERROR collecting tests/test_browser_bridge.py ________________
+ImportError while importing test module 'D:\code_ca_nhan\WindAgent\apps\backend\tests\test_browser_bridge.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\Users\Admin\AppData\Roaming\uv\python\cpython-3.11-windows-x86_64-none\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_browser_bridge.py:11: in <module>
+    from services.browser_service import BrowserService
+services\browser_service.py:12: in <module>
+    from schemas.event import EventEnvelope
+schemas\event.py:65: in <module>
+    from windagent_core.events.envelope import EventEnvelope
+E   ModuleNotFoundError: No module named 'windagent_core'
+__________________ ERROR collecting tests/test_event_bus.py ___________________
+ImportError while importing test module 'D:\code_ca_nhan\WindAgent\apps\backend\tests\test_event_bus.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\Users\Admin\AppData\Roaming\uv\python\cpython-3.11-windows-x86_64-none\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_event_bus.py:8: in <module>
+    from schemas.event import EventEnvelope
+schemas\event.py:65: in <module>
+    from windagent_core.events.envelope import EventEnvelope
+E   ModuleNotFoundError: No module named 'windagent_core'
+_________________ ERROR collecting tests/test_event_jsonl.py __________________
+ImportError while importing test module 'D:\code_ca_nhan\WindAgent\apps\backend\tests\test_event_jsonl.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\Users\Admin\AppData\Roaming\uv\python\cpython-3.11-windows-x86_64-none\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_event_jsonl.py:18: in <module>
+    from schemas.event import EventEnvelope
+schemas\event.py:65: in <module>
+    from windagent_core.events.envelope import EventEnvelope
+E   ModuleNotFoundError: No module named 'windagent_core'
+________________ ERROR collecting tests/test_hermes_bridge.py _________________
+ImportError while importing test module 'D:\code_ca_nhan\WindAgent\apps\backend\tests\test_hermes_bridge.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\Users\Admin\AppData\Roaming\uv\python\cpython-3.11-windows-x86_64-none\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_hermes_bridge.py:21: in <module>
+    from services.hermes.event_mapper import HermesEventTranslator  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+services\hermes\event_mapper.py:8: in <module>
+    from schemas.event import EventEnvelope
+schemas\event.py:65: in <module>
+    from windagent_core.events.envelope import EventEnvelope
+E   ModuleNotFoundError: No module named 'windagent_core'
+_______________ ERROR collecting tests/test_hermes_hardening.py _______________
+ImportError while importing test module 'D:\code_ca_nhan\WindAgent\apps\backend\tests\test_hermes_hardening.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\Users\Admin\AppData\Roaming\uv\python\cpython-3.11-windows-x86_64-none\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_hermes_hardening.py:12: in <module>
+    from services.hermes.event_mapper import HermesEventTranslator
+services\hermes\event_mapper.py:8: in <module>
+    from schemas.event import EventEnvelope
+schemas\event.py:65: in <module>
+    from windagent_core.events.envelope import EventEnvelope
+E   ModuleNotFoundError: No module named 'windagent_core'
+______________ ERROR collecting tests/test_permission_service.py ______________
+ImportError while importing test module 'D:\code_ca_nhan\WindAgent\apps\backend\tests\test_permission_service.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\Users\Admin\AppData\Roaming\uv\python\cpython-3.11-windows-x86_64-none\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_permission_service.py:18: in <module>
+    from services.event_bus import EventBus, drain
+services\event_bus.py:15: in <module>
+    from schemas.event import EventEnvelope
+schemas\event.py:65: in <module>
+    from windagent_core.events.envelope import EventEnvelope
+E   ModuleNotFoundError: No module named 'windagent_core'
+________________ ERROR collecting tests/test_phaseC_execute.py ________________
+ImportError while importing test module 'D:\code_ca_nhan\WindAgent\apps\backend\tests\test_phaseC_execute.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\Users\Admin\AppData\Roaming\uv\python\cpython-3.11-windows-x86_64-none\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_phaseC_execute.py:9: in <module>
+    from windagent_orchestration.workflow_engine import (
+E   ModuleNotFoundError: No module named 'windagent_orchestration'
+____________ ERROR collecting tests/test_phase_g25_persistence.py _____________
+ImportError while importing test module 'D:\code_ca_nhan\WindAgent\apps\backend\tests\test_phase_g25_persistence.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\Users\Admin\AppData\Roaming\uv\python\cpython-3.11-windows-x86_64-none\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_phase_g25_persistence.py:23: in <module>
+    from services.session_service import SessionService
+services\session_service.py:16: in <module>
+    from schemas.event import EventEnvelope, MessageReceivedData
+schemas\event.py:65: in <module>
+    from windagent_core.events.envelope import EventEnvelope
+E   ModuleNotFoundError: No module named 'windagent_core'
+_______________ ERROR collecting tests/test_session_service.py ________________
+ImportError while importing test module 'D:\code_ca_nhan\WindAgent\apps\backend\tests\test_session_service.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\Users\Admin\AppData\Roaming\uv\python\cpython-3.11-windows-x86_64-none\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_session_service.py:6: in <module>
+    from services.event_bus import drain
+services\event_bus.py:15: in <module>
+    from schemas.event import EventEnvelope
+schemas\event.py:65: in <module>
+    from windagent_core.events.envelope import EventEnvelope
+E   ModuleNotFoundError: No module named 'windagent_core'
+________________ ERROR collecting tests/test_tool_executor.py _________________
+ImportError while importing test module 'D:\code_ca_nhan\WindAgent\apps\backend\tests\test_tool_executor.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\Users\Admin\AppData\Roaming\uv\python\cpython-3.11-windows-x86_64-none\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_tool_executor.py:17: in <module>
+    from services.event_bus import drain
+services\event_bus.py:15: in <module>
+    from schemas.event import EventEnvelope
+schemas\event.py:65: in <module>
+    from windagent_core.events.envelope import EventEnvelope
+E   ModuleNotFoundError: No module named 'windagent_core'
+============================== warnings summary ===============================
+.venv\Lib\site-packages\fastapi\testclient.py:1
+  D:\code_ca_nhan\WindAgent\apps\backend\.venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+ERROR tests/test_agent_s3_runner_wiring.py
+ERROR tests/test_agent_s3_step_executor.py
+ERROR tests/test_browser_bridge.py
+ERROR tests/test_event_bus.py
+ERROR tests/test_event_jsonl.py
+ERROR tests/test_hermes_bridge.py
+ERROR tests/test_hermes_hardening.py
+ERROR tests/test_permission_service.py
+ERROR tests/test_phaseC_execute.py
+ERROR tests/test_phase_g25_persistence.py
+ERROR tests/test_session_service.py
+ERROR tests/test_tool_executor.py
+!!!!!!!!!!!!!!!!!! Interrupted: 12 errors during collection !!!!!!!!!!!!!!!!!!!
+333 tests collected, 12 errors in 2.09s

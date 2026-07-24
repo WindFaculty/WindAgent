@@ -30,20 +30,7 @@ class CacheDirective:
     cache_key_override: Optional[str] = None
 
 
-@dataclass
-class ProviderUsage:
-    """Standardized Token Usage and Cost Metrics."""
 
-    prompt_tokens: int = 0
-    completion_tokens: int = 0
-    cached_tokens: int = 0
-    reasoning_tokens: int = 0
-    total_tokens: int = 0
-    estimated_cost_usd: float = 0.0
-
-    def __post_init__(self) -> None:
-        if self.total_tokens == 0:
-            self.total_tokens = self.prompt_tokens + self.completion_tokens
 
 
 @dataclass
@@ -145,51 +132,7 @@ class ProtocolDetectionResult:
     evidence: List[str]
 
 
-@dataclass
-class ProviderRequest:
-    """Unified Request Contract for Model Execution."""
-
-    messages: List[Dict[str, Any]] = field(default_factory=list)
-    system_instruction: Optional[str] = None
-    temperature: Optional[float] = None
-    top_p: Optional[float] = None
-    seed: Optional[int] = None
-    max_output_tokens: Optional[int] = None
-    stop_sequences: List[str] = field(default_factory=list)
-    tools: List[Dict[str, Any]] = field(default_factory=list)
-    tool_choice: Optional[Union[str, Dict[str, Any]]] = None
-    structured_output_schema: Optional[Dict[str, Any]] = None
-    image_parts: List[Dict[str, Any]] = field(default_factory=list)
-    provider_extensions: Dict[str, Any] = field(default_factory=dict)
-    request_id: str = field(default_factory=str)
-    idempotency_key: Optional[str] = None
-    timeout_seconds: Optional[float] = 30.0
-    cache_directive: Optional[CacheDirective] = None
-    is_cancelled: Optional[Callable[[], bool]] = None
-
-
-@dataclass
-class ProviderResponse:
-    """Unified Response Contract for Synchronous Model Execution."""
-
-    canonical_model_id: str
-    provider_model_id: str
-    endpoint_id: Optional[str] = None
-    text: Optional[str] = None
-    tool_calls: List[Dict[str, Any]] = field(default_factory=list)
-    structured_output: Optional[Dict[str, Any]] = None
-    finish_reason: str = FinishReason.STOP.value
-    usage: ProviderUsage = field(default_factory=ProviderUsage)
-    provider_request_id: Optional[str] = None
-    first_token_latency_ms: Optional[float] = None
-    total_latency_ms: float = 0.0
-    cost_usd: float = 0.0
-    raw_metadata: Dict[str, Any] = field(default_factory=dict)
-
-    def __post_init__(self) -> None:
-        # Automatically redact raw metadata upon creation
-        if self.raw_metadata:
-            self.raw_metadata = redact_dict(self.raw_metadata)
+from windagent_core.providers.models import ProviderRequest, ProviderResponse, ProviderUsage
 
 
 @dataclass

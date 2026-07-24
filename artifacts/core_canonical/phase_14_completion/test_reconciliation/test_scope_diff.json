@@ -1,0 +1,6 @@
+{
+  "total_root_tests_collected": 300,
+  "total_backend_tests_collected": 442,
+  "collection_diff_reason": "Root test suite selects tests matching tests/unit/*, while backend suite collects tests in apps/backend/tests/.",
+  "scope_mismatch": true
+}

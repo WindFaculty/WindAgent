@@ -1,29 +1,28 @@
 """
-Query Definitions (CQRS Read Side) for Orchestration V2.
-Dataclasses representing read requests.
+Query Definitions (CQRS Read Side) for WindAgent Orchestration V2 (Phase 8 Adoption).
+Dataclasses representing read requests using canonical domain IDs.
 """
 
 from __future__ import annotations
-
 from dataclasses import dataclass
-from typing import Optional
+from windagent_core.domain.types import TaskId, SessionId, WorkflowRunId, WorkerId
 
 
 @dataclass(frozen=True)
 class GetTaskFactsQuery:
-    task_id: str
+    task_id: TaskId
 
 
 @dataclass(frozen=True)
 class ListSessionTasksQuery:
-    session_id: str
+    session_id: SessionId
     limit: int = 50
     offset: int = 0
 
 
 @dataclass(frozen=True)
 class GetWorkflowRunQuery:
-    run_id: str
+    run_id: WorkflowRunId
 
 
 @dataclass(frozen=True)
@@ -33,4 +32,4 @@ class GetExecutionLeaseQuery:
 
 @dataclass(frozen=True)
 class GetWorkerStatusQuery:
-    worker_id: str
+    worker_id: WorkerId

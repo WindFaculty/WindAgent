@@ -1,0 +1,72 @@
+{
+  "core_config_location": "core/windagent_core/config/settings.py",
+  "models": [
+    "CoreSettings",
+    "DatabaseSettings",
+    "ProviderSettings",
+    "ExecutionSettings",
+    "SecuritySettings",
+    "ObservabilitySettings"
+  ],
+  "getenv_calls_count": 93,
+  "sample_getenv_calls": [
+    {
+      "file": "apps/backend/main.py",
+      "line": 64,
+      "content": "DB_URL = os.environ.get("
+    },
+    {
+      "file": "apps/backend/main.py",
+      "line": 71,
+      "content": "USE_MOCK_GUI = os.environ.get(\"WINDAGENT_MOCK_GUI\", \"\").lower() in ("
+    },
+    {
+      "file": "apps/backend/main.py",
+      "line": 79,
+      "content": "GROUNDING_BACKEND = os.environ.get(\"WINDAGENT_GROUNDING_BACKEND\", \"mock\").lower()"
+    },
+    {
+      "file": "apps/backend/main.py",
+      "line": 87,
+      "content": "MODEL_BACKEND = os.environ.get(\"WINDAGENT_MODEL_BACKEND\", \"ollama\").lower()"
+    },
+    {
+      "file": "apps/backend/main.py",
+      "line": 88,
+      "content": "OLLAMA_BASE_URL = os.environ.get("
+    },
+    {
+      "file": "apps/backend/main.py",
+      "line": 92,
+      "content": "OLLAMA_MODEL = os.environ.get("
+    },
+    {
+      "file": "apps/backend/main.py",
+      "line": 156,
+      "content": "artifacts_root = Path(os.environ.get("
+    },
+    {
+      "file": "apps/backend/test_encryption.py",
+      "line": 10,
+      "content": "os.environ['WINDAGENT_SECRET_ENCRYPTION_KEY'] = key.decode()  # This is a base64 string"
+    },
+    {
+      "file": "apps/backend/test_encryption.py",
+      "line": 46,
+      "content": "if 'WINDAGENT_SECRET_ENCRYPTION_KEY' in os.environ:"
+    },
+    {
+      "file": "apps/backend/test_encryption.py",
+      "line": 47,
+      "content": "del os.environ['WINDAGENT_SECRET_ENCRYPTION_KEY']"
+    }
+  ],
+  "feature_flags_manager": {
+    "location": "core/windagent_core/config/feature_flags.py",
+    "action": "Move FeatureFlagsManager out of core to application bootstrap layer (apps/api, apps/worker, apps/cli)"
+  },
+  "shadow_comparator": {
+    "location": "core/windagent_core/config/shadow_comparator.py",
+    "action": "Move ShadowExecutionEngine to windagent_verification"
+  }
+}

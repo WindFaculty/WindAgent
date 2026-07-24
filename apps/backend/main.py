@@ -43,6 +43,12 @@ from services.gui_grounding import (
 from services.model_client import ModelClient, OllamaModelClient
 from services.permission_service import PermissionService
 from services.planner_service import PlannerService
+from services.phase14_compatibility import (
+    DAGScheduler,
+    HermesSupervisor,
+    WorkflowRunner,
+    WorkflowService,
+)
 from services.session_service import SessionService
 from services.tool_executor import ToolExecutor
 from services.hermes import load_hermes_config
@@ -242,6 +248,18 @@ async def lifespan(app: FastAPI):
     # Start the hermes runtime manager
     await hermes_runtime_manager.start()
 
+    app.state.workflow_service = WorkflowService(db=db, event_bus=event_bus)
+    app.state.workflow_runner = WorkflowRunner(
+        container=orchestration_container,
+        db=db,
+        session_service=session_service,
+        event_bus=event_bus,
+        permission_service=permission_service,
+        tool_executor=executor,
+    )
+    app.state.hermes_supervisor = HermesSupervisor()
+    app.state.dag_scheduler = DAGScheduler()
+
     app.state.event_bus = event_bus
     app.state.db = db
     app.state.gui = gui
@@ -401,7 +419,14 @@ async def lifespan(app: FastAPI):
             jsonl_hook.close()  # type: ignore[attr-defined]
         except Exception:  # noqa: BLE001
             log.exception("error closing jsonl hook")
-        await runner.shutdown()
+        # ponytail: legacy WorkflowRunner wrapper holds no resources, but
+        # shutdown orchestration container owned by lifespan to keep lifecycle
+        # in one place.
+        if hasattr(orchestration_container, "shutdown"):
+            try:
+                await orchestration_container.shutdown()
+            except Exception:
+                log.exception("error shutting down orchestration container")
         if hasattr(model_client, "aclose"):
             await model_client.aclose()  # type: ignore[attr-defined]
         await db.dispose()

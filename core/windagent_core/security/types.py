@@ -67,6 +67,26 @@ class RedactedValue:
     def __repr__(self) -> str:
         return "RedactedValue(***REDACTED***)"
 
+    @classmethod
+    def __get_pydantic_core_schema__(
+        cls, _source_type: Any, _handler: Any
+    ) -> Any:
+        from pydantic_core import core_schema
+
+        def validate(val: Any) -> RedactedValue:
+            if isinstance(val, RedactedValue):
+                return val
+            if isinstance(val, str):
+                return RedactedValue(val)
+            raise ValueError(f"Invalid RedactedValue: {val}")
+
+        return core_schema.no_info_plain_validator_function(
+            validate,
+            serialization=core_schema.plain_serializer_function_ser_schema(
+                lambda instance: str(instance)
+            ),
+        )
+
     def __eq__(self, other: Any) -> bool:
         if isinstance(other, RedactedValue):
             return self._raw_value == other._raw_value
@@ -89,3 +109,51 @@ class SecretRef:
 
     def __repr__(self) -> str:
         return f"SecretRef(name={self.name!r}, value=***REDACTED***)"
+
+
+# Alias types for security
+Role = str
+SecretName = str
+SecretValue = RedactedValue
+
+
+from windagent_core.domain.types import DecisionId
+
+
+@dataclass(frozen=True)
+class PermissionEvaluationRequest:
+    principal: Principal
+    action: str
+    target: str
+    risk_level: RiskLevel = RiskLevel.LOW
+    context: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
+class PermissionDecision:
+    decision_id: DecisionId = field(default_factory=DecisionId.generate)
+    outcome: str = "DENY"  # ALLOW, REQUIRE_APPROVAL, DENY
+    risk_level: RiskLevel = RiskLevel.LOW
+    reason_code: str = "DEFAULT_DENY"
+    human_reason: str = "Unknown or unhandled action defaults to DENY."
+    policy_version: str = "v1"
+    matched_rule: str | None = None
+    audit_metadata: dict[str, Any] = field(default_factory=dict)
+
+    @property
+    def is_allowed(self) -> bool:
+        return self.outcome == "ALLOW"
+
+
+@dataclass(frozen=True)
+class SecurityAuditContext:
+    audit_id: str
+    principal_id: str
+    action: str
+    resource: str
+    decision_outcome: str
+    timestamp_utc: str
+    decision_id: Optional[DecisionId] = None
+    metadata: dict[str, Any] = field(default_factory=dict)
+
+

@@ -109,7 +109,7 @@ async def _collect_ws(ws_url: str, session_id: str, *, seconds: float):
     events = []
     deadline = time.time() + seconds
     try:
-        async with websockets.connect(ws_url + f"/ws/{session_id}") as ws:
+        async with websockets.connect(ws_url + f"/ws/{session_id}?after_seq=0") as ws:
             while time.time() < deadline:
                 try:
                     msg = await asyncio.wait_for(ws.recv(), timeout=0.5)

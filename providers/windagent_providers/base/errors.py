@@ -6,11 +6,12 @@ Eliminates string-matching error classification in application layers.
 from __future__ import annotations
 from typing import Any, Dict, Optional
 
+from windagent_core.errors.exceptions import ProviderError, WindAgentError
 from windagent_providers.base.secret_redaction import redact_text
 
 
-class ProviderFailure(Exception):
-    """Root Exception for all Provider Subsystem V3 failures."""
+class ProviderFailure(ProviderError):
+    """Root Exception for all Provider Subsystem V3 failures, extending windagent_core ProviderError."""
 
     def __init__(
         self,
@@ -24,14 +25,22 @@ class ProviderFailure(Exception):
         retryable: bool = False,
     ):
         clean_msg = redact_text(message)
-        super().__init__(clean_msg)
-        self.message = clean_msg
         self.provider_id = provider_id
         self.model_id = model_id
         self.endpoint_id = endpoint_id
         self.status_code = status_code
         self.raw_error = raw_error
-        self.retryable = retryable
+        super().__init__(
+            message=clean_msg,
+            provider_name=provider_id or "unknown",
+            status_code=status_code,
+            retryable=retryable,
+            details={
+                "model_id": model_id,
+                "endpoint_id": endpoint_id,
+                "status_code": status_code,
+            }
+        )
 
     def to_dict(self) -> Dict[str, Any]:
         return {

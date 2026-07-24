@@ -4,7 +4,7 @@ from __future__ import annotations
 from typing import Any, Dict, List
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, Request, status
+from fastapi import APIRouter, HTTPException, Query, Request, status
 
 from schemas.session import (
     ChatSession,
@@ -13,7 +13,9 @@ from schemas.session import (
     Message,
     SendMessageRequest,
 )
+from schemas.event import EventEnvelope
 from services.session_service import SessionService
+from services.phase14_compatibility import WorkflowRunner, WorkflowService
 from db.models import (
     AgentORM,
     AgentSessionORM,
@@ -30,6 +32,10 @@ router = APIRouter(prefix="/sessions", tags=["sessions"])
 
 def _session_service(request: Request) -> SessionService:
     return request.app.state.session_service
+
+
+def _workflow_service(request: Request) -> WorkflowService:
+    return request.app.state.workflow_service
 
 
 @router.post(
@@ -80,6 +86,19 @@ async def create_session(
     )
 
 
+@router.get("", response_model=List[Dict[str, Any]])
+async def list_sessions(
+    request: Request,
+    limit: int = Query(50, ge=1),
+    offset: int = Query(0, ge=0),
+    exclude_archived: bool = True,
+) -> List[Dict[str, Any]]:
+    svc = _session_service(request)
+    return await svc.list_sessions(
+        limit=limit, offset=offset, exclude_archived=exclude_archived
+    )
+
+
 @router.get("/{session_id}", response_model=ChatSession)
 async def get_session(session_id: UUID, request: Request) -> ChatSession:
     svc = _session_service(request)
@@ -87,6 +106,123 @@ async def get_session(session_id: UUID, request: Request) -> ChatSession:
     if chat is None:
         raise HTTPException(status_code=404, detail="session not found")
     return chat
+
+
+@router.get("/{session_id}/snapshot")
+async def get_session_snapshot(session_id: UUID, request: Request) -> Dict[str, Any]:
+    svc = _session_service(request)
+    snap = await svc.get_session_snapshot(session_id)
+    if snap is None:
+        raise HTTPException(status_code=404, detail="session not found")
+    return snap
+
+
+@router.get("/{session_id}/events")
+async def get_session_events(
+    session_id: UUID,
+    request: Request,
+    after_seq: int = Query(0, ge=0),
+) -> Dict[str, Any]:
+    svc = _session_service(request)
+    chat = await svc.get_session(session_id)
+    if chat is None:
+        raise HTTPException(status_code=404, detail="session not found")
+
+    events: List[Dict[str, Any]] = []
+    if request.app.state.db is not None:
+        async with request.app.state.db.session() as s:
+            from db.models import ExecutionEventORM
+            from sqlalchemy import select
+            import json
+            rows = (await s.execute(
+                select(ExecutionEventORM)
+                .where(
+                    ExecutionEventORM.session_id == str(session_id),
+                    ExecutionEventORM.event_seq > after_seq,
+                )
+                .order_by(ExecutionEventORM.event_seq)
+            )).scalars().all()
+            for r in rows:
+                data = json.loads(r.data_json or "{}")
+                events.append({
+                    "seq": r.event_seq,
+                    "event": r.event_type,
+                    "event_type": r.event_type,
+                    "data": data,
+                    "created_at": r.created_at.isoformat() if r.created_at else None,
+                })
+    return {
+        "session_id": str(session_id),
+        "events": events,
+    }
+
+
+@router.post("/{session_id}/cancel", status_code=status.HTTP_204_NO_CONTENT)
+async def cancel_session(session_id: UUID, request: Request):
+    svc = _session_service(request)
+    chat = await svc.get_session(session_id)
+    if chat is None:
+        raise HTTPException(status_code=404, detail="session not found")
+    await svc.update_status(session_id, "cancelled")
+
+
+@router.post("/{session_id}/stop", status_code=status.HTTP_202_ACCEPTED)
+async def stop_session(session_id: UUID, request: Request):
+    svc = _session_service(request)
+    chat = await svc.get_session(session_id)
+    if chat is None:
+        raise HTTPException(status_code=404, detail="session not found")
+
+    runner = getattr(request.app.state, "workflow_runner", None)
+    if runner:
+        runner.stop(session_id)
+
+    bridge = getattr(request.app.state, "hermes_session_bridge", None)
+    if bridge and hasattr(bridge, "stop_run"):
+        try:
+            await bridge.stop_run(str(session_id))
+        except Exception:
+            pass
+
+    if request.app.state.db is not None:
+        async with request.app.state.db.session() as s:
+            stmt = select(AgentSessionORM).where(AgentSessionORM.windagent_session_id == str(session_id))
+            res = await s.execute(stmt)
+            agent_sess = res.scalar_one_or_none()
+            if agent_sess:
+                agent_sess.status = "cancelled"
+                await s.commit()
+
+    bus = getattr(request.app.state, "event_bus", None)
+    if bus is not None:
+        await bus.publish(
+            str(session_id),
+            EventEnvelope(
+                event="user_stopped",
+                data={"session_id": str(session_id)},
+            ),
+        )
+
+    await svc.update_status(session_id, "cancelled")
+    return {"session_id": str(session_id), "status": "stopped_requested"}
+
+
+@router.post("/{session_id}/archive", status_code=status.HTTP_204_NO_CONTENT)
+async def archive_session(session_id: UUID, request: Request):
+    svc = _session_service(request)
+    chat = await svc.get_session(session_id)
+    if chat is None:
+        raise HTTPException(status_code=404, detail="session not found")
+    await svc.archive_session(session_id)
+
+
+@router.delete("/{session_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_session(session_id: UUID, request: Request):
+    svc = _session_service(request)
+    chat = await svc.get_session(session_id)
+    if chat is None:
+        raise HTTPException(status_code=404, detail="session not found")
+    await svc.delete_session(session_id)
 
 
 @router.get("/{session_id}/messages", response_model=List[Message])

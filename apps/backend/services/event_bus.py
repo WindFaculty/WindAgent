@@ -72,7 +72,8 @@ class EventBus:
                 self._seq[session_id] = 0
         nxt = self._seq.get(session_id, 0) + 1
         self._seq[session_id] = nxt
-        envelope.seq = nxt
+        if envelope.sequence == 0 or envelope.seq == 0:
+            envelope = envelope.model_copy(update={"sequence": nxt, "seq": nxt})
 
         # 2: persist first — hooks must complete before any broadcast.
         for hook in list(self._hooks):

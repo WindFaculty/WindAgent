@@ -1,25 +1,8 @@
 """
-TaskState Enumeration for WindAgent Architecture V2.
-15 explicit lifecycle states.
+TaskState Canonical Alias for WindAgent Orchestration (Phase 8 Adoption).
+Re-exports canonical TaskState and TaskLifecycle directly from windagent_core.domain.lifecycle.
 """
 
-from __future__ import annotations
-from enum import Enum
+from windagent_core.domain.lifecycle import TaskState, TaskLifecycle
 
-
-class TaskState(str, Enum):
-    RECEIVED = "received"
-    CLASSIFYING = "classifying"
-    CONTEXT_BUILDING = "context_building"
-    PLANNING = "planning"
-    READY = "ready"
-    RUNNING = "running"
-    WAITING_PERMISSION = "waiting_permission"
-    PAUSED = "paused"
-    RETRY_WAIT = "retry_wait"
-    RECOVERING = "recovering"
-    VERIFYING = "verifying"
-    REVIEWING = "reviewing"
-    COMPLETED = "completed"
-    FAILED = "failed"
-    CANCELLED = "cancelled"
+__all__ = ["TaskState", "TaskLifecycle"]

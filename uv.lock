@@ -1326,6 +1326,16 @@ requires-dist = [{ name = "windagent-core", editable = "core" }]
 name = "windagent-core"
 version = "0.3.0"
 source = { editable = "core" }
+dependencies = [
+    { name = "pydantic" },
+    { name = "typing-extensions" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "pydantic", specifier = ">=2.7" },
+    { name = "typing-extensions" },
+]
 
 [[package]]
 name = "windagent-evals"

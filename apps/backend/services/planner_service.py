@@ -297,10 +297,22 @@ class PlannerService:
                 error=error,
             )
         
-        # Simple rule-based intent parse
-        step_dict = {"id": "step_1", "order": 1, "name": "Execute Action", "tool_name": "exec_shell", "params": {"command": user_text}}
+        # Rule-based fallback parser
+        lower = user_text.lower()
+        if "notepad" in lower:
+            text_val = "Hello"
+            match = re.search(r'(?:gõ|type)\s+(.+)', user_text, re.IGNORECASE)
+            if match:
+                text_val = match.group(1).strip()
+            steps = [
+                {"name": "Open Notepad", "tool_name": "open_app", "params": {"app": "notepad"}},
+                {"name": "Type text", "tool_name": "type_text", "params": {"text": text_val, "method": "type"}},
+            ]
+        else:
+            steps = [{"id": "step_1", "order": 1, "name": "Execute Action", "tool_name": "exec_shell", "params": {"command": user_text}}]
+
         return PlanResult(
-            steps=[step_dict],
+            steps=steps,
             used_fallback=True,
             model=model_name,
             latency_ms=int((time.perf_counter() - start) * 1000),

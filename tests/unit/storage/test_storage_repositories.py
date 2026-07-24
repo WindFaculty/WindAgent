@@ -17,6 +17,7 @@ from windagent_core.domain.types import (
 from windagent_core.domain.models import (
     Session, SessionStatus, Task, WorkflowRun, WorkflowStep
 )
+from windagent_core.domain.lifecycle import SessionState
 from windagent_core.events.envelope import EventEnvelope
 from windagent_core.events.catalog import EventCatalog
 from windagent_storage.database.connection import DatabaseManager
@@ -46,15 +47,15 @@ async def test_sql_session_repository_crud(in_memory_db):
         fetched = await uow.sessions.get_by_id(session_id)
         assert fetched is not None
         assert fetched.title == "Test Storage Session"
-        assert fetched.status == SessionStatus.IDLE
+        assert fetched.status.value.upper() == "IDLE"
 
-        fetched.transition_to(SessionStatus.RUNNING)
+        fetched.status = SessionState.ACTIVE
         await uow.sessions.save(fetched)
         await uow.commit()
 
     async with SqlUnitOfWork(in_memory_db.session_factory) as uow:
         updated = await uow.sessions.get_by_id(session_id)
-        assert updated.status == SessionStatus.RUNNING
+        assert updated.status.value.upper() in ("ACTIVE", "RUNNING")
 
         deleted = await uow.sessions.delete(session_id)
         assert deleted

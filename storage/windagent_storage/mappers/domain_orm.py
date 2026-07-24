@@ -1,5 +1,6 @@
 """
-Bi-directional Mappers between windagent_core Domain Objects and windagent_storage ORM Models.
+Bi-directional Mappers between windagent_core Domain Objects and windagent_storage ORM Models (Phase 7).
+Converts ORM models directly to/from canonical Pydantic v2 domain objects without intermediary dicts.
 """
 
 from __future__ import annotations
@@ -7,10 +8,13 @@ import json
 from datetime import datetime, timezone
 
 from windagent_core.domain.types import (
-    SessionId, TaskId, WorkflowId, StepId, RunId, EventId, ArtifactId
+    SessionId, TaskId, WorkflowId, StepId, RunId, TaskRunId, WorkflowRunId, EventId, ArtifactId
 )
 from windagent_core.domain.models import (
-    Session, SessionStatus, Task, WorkflowRun, WorkflowStep, WorkflowStatus, StepStatus, ArtifactRef
+    Session, Task, WorkflowRun, WorkflowStep, ArtifactRef
+)
+from windagent_core.domain.lifecycle import (
+    SessionState, TaskState, WorkflowState, StepState
 )
 from windagent_core.events.envelope import EventEnvelope
 from windagent_storage.orm.models import (
@@ -20,11 +24,11 @@ from windagent_storage.orm.models import (
 
 def orm_to_domain_session(orm: SessionORM) -> Session:
     meta = json.loads(orm.metadata_json) if orm.metadata_json else {}
-    status_str = str(orm.status).lower()
+    status_raw = str(orm.status).upper()
     try:
-        status = SessionStatus(status_str)
-    except ValueError:
-        status = SessionStatus.IDLE
+        status = SessionState[status_raw]
+    except KeyError:
+        status = SessionState.IDLE
 
     return Session(
         id=SessionId(orm.id),
@@ -40,10 +44,11 @@ def orm_to_domain_session(orm: SessionORM) -> Session:
 
 def domain_to_orm_session(domain: Session) -> SessionORM:
     meta_json = json.dumps(domain.metadata) if domain.metadata else None
+    status_str = domain.status.value if hasattr(domain.status, "value") else str(domain.status)
     return SessionORM(
         id=str(domain.id),
         title=domain.title,
-        status=domain.status.value,
+        status=status_str,
         agent_id=domain.agent_id,
         workspace_root=domain.workspace_root,
         created_at=domain.created_at,
@@ -54,11 +59,11 @@ def domain_to_orm_session(domain: Session) -> SessionORM:
 
 def orm_to_domain_task(orm: TaskORM) -> Task:
     tags = json.loads(orm.tags_json) if orm.tags_json else []
-    status_str = str(orm.status).lower()
+    status_raw = str(orm.status).upper()
     try:
-        status = SessionStatus(status_str)
-    except ValueError:
-        status = SessionStatus.PENDING
+        status = TaskState[status_raw]
+    except KeyError:
+        status = TaskState.RECEIVED
 
     return Task(
         id=TaskId(orm.id),
@@ -72,11 +77,12 @@ def orm_to_domain_task(orm: TaskORM) -> Task:
 
 def domain_to_orm_task(domain: Task) -> TaskORM:
     tags_json = json.dumps(domain.tags) if domain.tags else None
+    status_str = domain.status.value if hasattr(domain.status, "value") else str(domain.status)
     return TaskORM(
         id=str(domain.id),
         prompt=domain.prompt,
         session_id=str(domain.session_id),
-        status=domain.status.value,
+        status=status_str,
         tags_json=tags_json,
         created_at=domain.created_at,
     )
@@ -85,11 +91,11 @@ def domain_to_orm_task(domain: Task) -> TaskORM:
 def orm_to_domain_step(orm: WorkflowStepORM) -> WorkflowStep:
     params = json.loads(orm.params_json) if orm.params_json else {}
     result = json.loads(orm.result_json) if orm.result_json else None
-    status_str = str(orm.status).lower()
+    status_raw = str(orm.status).upper()
     try:
-        status = StepStatus(status_str)
-    except ValueError:
-        status = StepStatus.PENDING
+        status = StepState[status_raw]
+    except KeyError:
+        status = StepState.BLOCKED
 
     return WorkflowStep(
         id=StepId(orm.id),
@@ -106,6 +112,7 @@ def orm_to_domain_step(orm: WorkflowStepORM) -> WorkflowStep:
 def domain_to_orm_step(domain: WorkflowStep, run_id: RunId) -> WorkflowStepORM:
     params_json = json.dumps(domain.params) if domain.params else None
     result_json = json.dumps(domain.result) if domain.result is not None else None
+    status_str = domain.status.value if hasattr(domain.status, "value") else str(domain.status)
     return WorkflowStepORM(
         id=str(domain.id),
         run_id=str(run_id),
@@ -113,18 +120,18 @@ def domain_to_orm_step(domain: WorkflowStep, run_id: RunId) -> WorkflowStepORM:
         name=domain.name,
         tool_name=domain.tool_name,
         params_json=params_json,
-        status=domain.status.value,
+        status=status_str,
         result_json=result_json,
         error=domain.error,
     )
 
 
 def orm_to_domain_workflow(orm: WorkflowRunORM) -> WorkflowRun:
-    status_str = str(orm.status).lower()
+    status_raw = str(orm.status).upper()
     try:
-        status = WorkflowStatus(status_str)
-    except ValueError:
-        status = WorkflowStatus.PENDING
+        status = WorkflowState[status_raw]
+    except KeyError:
+        status = WorkflowState.DRAFT
 
     steps = [orm_to_domain_step(s) for s in (orm.steps or [])]
     steps.sort(key=lambda s: s.order)
@@ -141,11 +148,12 @@ def orm_to_domain_workflow(orm: WorkflowRunORM) -> WorkflowRun:
 
 def domain_to_orm_workflow(domain: WorkflowRun) -> WorkflowRunORM:
     orm_steps = [domain_to_orm_step(s, domain.run_id) for s in domain.steps]
+    status_str = domain.status.value if hasattr(domain.status, "value") else str(domain.status)
     return WorkflowRunORM(
         run_id=str(domain.run_id),
         workflow_id=str(domain.workflow_id),
         session_id=str(domain.session_id),
-        status=domain.status.value,
+        status=status_str,
         created_at=domain.created_at,
         steps=orm_steps,
     )
@@ -168,7 +176,7 @@ def domain_to_orm_event(domain: EventEnvelope) -> ExecutionEventORM:
     data_json = json.dumps(domain.payload) if domain.payload else "{}"
     return ExecutionEventORM(
         id=str(domain.event_id),
-        session_id=str(domain.session_id),
+        session_id=str(domain.session_id) if domain.session_id else None,
         event_type=domain.event_type,
         data_json=data_json,
         event_seq=domain.sequence,

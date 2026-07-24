@@ -1,24 +1,26 @@
 """
-Concrete Repository Implementations for WindAgent Storage Layer.
-Implements TaskRepository, SessionRepository, WorkflowRepository, EventStore, ArtifactRepository.
+Concrete Repository Implementations for WindAgent Storage Layer (Phase 7).
+Implements TaskRepository, TaskRunRepository, SessionRepository, WorkflowRepository, WorkflowRunRepository,
+EventStore, OutboxWriter, ArtifactRepository conforming to core contracts.
 """
 
 from __future__ import annotations
 import json
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-from sqlalchemy import select, delete
+from sqlalchemy import select, delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from windagent_core.domain.types import (
-    TaskId, SessionId, RunId, ArtifactId
+    TaskId, TaskRunId, SessionId, WorkflowId, WorkflowRunId, RunId, ArtifactId, EventId
 )
 from windagent_core.domain.models import (
-    Task, Session, WorkflowRun, ArtifactRef
+    Task, TaskRun, Session, WorkflowDefinition, WorkflowRun, ArtifactRef
 )
 from windagent_core.events.envelope import EventEnvelope
+from windagent_core.errors.exceptions import ConcurrentStateConflictError
 from windagent_storage.orm.models import (
-    SessionORM, TaskORM, WorkflowRunORM, ExecutionEventORM, ArtifactRefORM, ProviderConfigORM
+    SessionORM, TaskORM, WorkflowRunORM, ExecutionEventORM, OutboxRecordORM, ArtifactRefORM, ProviderConfigORM
 )
 from windagent_storage.mappers.domain_orm import (
     orm_to_domain_session, domain_to_orm_session,
@@ -30,6 +32,7 @@ from windagent_storage.mappers.domain_orm import (
 
 
 class SqlSessionRepository:
+    """SQL Implementation for SessionRepository core contract."""
     def __init__(self, session: AsyncSession):
         self._session = session
 
@@ -56,6 +59,7 @@ class SqlSessionRepository:
 
 
 class SqlTaskRepository:
+    """SQL Implementation for TaskRepository core contract."""
     def __init__(self, session: AsyncSession):
         self._session = session
 
@@ -65,7 +69,7 @@ class SqlTaskRepository:
         orm = res.scalar_one_or_none()
         return orm_to_domain_task(orm) if orm else None
 
-    async def save(self, task: Task) -> None:
+    async def save(self, task: Task, expected_version: Optional[int] = None) -> None:
         orm = domain_to_orm_task(task)
         await self._session.merge(orm)
 
@@ -77,6 +81,7 @@ class SqlTaskRepository:
 
 
 class SqlWorkflowRepository:
+    """SQL Implementation for WorkflowRepository core contract."""
     def __init__(self, session: AsyncSession):
         self._session = session
 
@@ -91,18 +96,38 @@ class SqlWorkflowRepository:
         await self._session.merge(orm)
 
 
-class SqlEventStore:
+class SqlWorkflowRunRepository:
+    """SQL Implementation for WorkflowRunRepository core contract."""
     def __init__(self, session: AsyncSession):
         self._session = session
 
-    async def append_event(self, event: EventEnvelope) -> None:
+    async def get_by_id(self, run_id: WorkflowRunId) -> Optional[WorkflowRun]:
+        stmt = select(WorkflowRunORM).where(WorkflowRunORM.run_id == str(run_id))
+        res = await self._session.execute(stmt)
+        orm = res.scalar_one_or_none()
+        return orm_to_domain_workflow(orm) if orm else None
+
+    async def save(self, workflow_run: WorkflowRun) -> None:
+        orm = domain_to_orm_workflow(workflow_run)
+        await self._session.merge(orm)
+
+
+class SqlEventStore:
+    """SQL Implementation for EventStore core contract."""
+    def __init__(self, session: AsyncSession):
+        self._session = session
+
+    async def append(self, event: EventEnvelope) -> None:
         orm = domain_to_orm_event(event)
         self._session.add(orm)
 
-    async def get_events(self, session_id: SessionId, after_sequence: int = 0, limit: int = 100) -> List[EventEnvelope]:
+    async def append_event(self, event: EventEnvelope) -> None:
+        await self.append(event)
+
+    async def get_events(self, stream_id: Any, after_sequence: int = 0, limit: int = 100) -> List[EventEnvelope]:
         stmt = (
             select(ExecutionEventORM)
-            .where(ExecutionEventORM.session_id == str(session_id))
+            .where(ExecutionEventORM.session_id == str(stream_id))
             .where(ExecutionEventORM.event_seq > after_sequence)
             .order_by(ExecutionEventORM.event_seq.asc())
             .limit(limit)
@@ -112,7 +137,27 @@ class SqlEventStore:
         return [orm_to_domain_event(o) for o in orms]
 
 
+class SqlOutboxWriter:
+    """SQL Implementation for OutboxWriter core contract."""
+    def __init__(self, session: AsyncSession):
+        self._session = session
+
+    async def write(self, event: EventEnvelope) -> None:
+        outbox_orm = OutboxRecordORM(
+            id=str(EventId.generate()),
+            event_id=str(event.event_id),
+            event_type=event.event_type,
+            session_id=str(event.session_id) if event.session_id else str(event.event_id),
+            sequence=event.sequence,
+            payload_json=json.dumps(event.payload),
+            status="pending",
+            created_at=event.occurred_at,
+        )
+        self._session.add(outbox_orm)
+
+
 class FileArtifactRepository:
+    """Implementation for ArtifactRepository core contract."""
     def __init__(self, session: AsyncSession, storage_dir: str = "artifacts"):
         self._session = session
         self.storage_dir = Path(storage_dir)

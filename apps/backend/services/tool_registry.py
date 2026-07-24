@@ -21,7 +21,7 @@ RiskLevel = Literal["safe", "medium", "high"]
 # ---------- Per-tool param models ----------
 
 class OpenAppParams(BaseModel):
-    app: Literal["notepad", "calc", "mspaint", "edge", "explorer"]
+    app: Literal["notepad", "calc", "mspaint", "edge", "msedge", "explorer", "winword", "excel"]
 
 
 class OpenUrlParams(BaseModel):

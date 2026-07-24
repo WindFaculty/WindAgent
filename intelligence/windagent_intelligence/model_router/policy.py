@@ -7,7 +7,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
-from windagent_core.domain.types import TaskId, SessionId
+from windagent_core.domain.types import TaskId, SessionId, CanonicalModelId, ProviderId, RouteLockId
 from windagent_providers.capabilities import (
     ModelCapability, ModelCapabilityProfile, KNOWN_MODEL_PROFILES
 )
@@ -86,10 +86,11 @@ class ModelRouterPolicy:
             # Fallback to mock provider if no candidate matches criteria
             reasons.append("No candidate matched strict filters; assigned emergency mock fallback.")
             return RouteLock(
+                lock_id=RouteLockId.generate(),
                 session_id=ctx.session_id,
                 task_id=ctx.task_id,
-                canonical_model="mock-gpt-4o",
-                provider_name="mock",
+                canonical_model=CanonicalModelId("mock-gpt-4o"),
+                provider_name=ProviderId("mock"),
                 fallback_chain=[],
                 selection_reasons=reasons,
                 estimated_cost=0.0,
@@ -106,10 +107,11 @@ class ModelRouterPolicy:
         fallback_chain = [c[0] for c in candidates[1:4]]
 
         return RouteLock(
+            lock_id=RouteLockId.generate(),
             session_id=ctx.session_id,
             task_id=ctx.task_id,
-            canonical_model=selected_model,
-            provider_name=selected_profile.provider_name,
+            canonical_model=CanonicalModelId(selected_model),
+            provider_name=ProviderId(selected_profile.provider_name),
             fallback_chain=fallback_chain,
             selection_reasons=reasons,
             estimated_cost=0.002,

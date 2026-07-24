@@ -27,6 +27,7 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 from schemas.event import EventEnvelope, UserControlData
 from services.permission_service import PermissionService
+from services.phase14_compatibility import WorkflowRunner
 
 
 logger = logging.getLogger(__name__)
@@ -76,12 +77,39 @@ async def websocket_endpoint(websocket: WebSocket, session_id: UUID) -> None:
             after_seq = int(after_seq_raw)
         except (TypeError, ValueError):
             after_seq = 0
-        recovery = getattr(websocket.app.state, "recovery_manager", None)
-        if recovery is not None and after_seq >= 0:
+        recovery = getattr(websocket.app.state, "recovery_manager", getattr(websocket.app.state, "orchestration_recovery", None))
+        if recovery is not None or getattr(websocket.app.state, "db", None) is not None:
             try:
-                missed = await recovery.replay_after(sid, after_seq)
+                missed = []
+                if recovery is not None and hasattr(recovery, "replay_after"):
+                    missed = await recovery.replay_after(sid, after_seq)
+                elif recovery is not None and hasattr(recovery, "replay_events_after"):
+                    missed = await recovery.replay_events_after(sid, after_seq)
+                else:
+                    db = getattr(websocket.app.state, "db", None)
+                    if db:
+                        async with db.session() as s:
+                            from db.models import ExecutionEventORM
+                            from sqlalchemy import select
+                            rows = (await s.execute(
+                                select(ExecutionEventORM)
+                                .where(ExecutionEventORM.session_id == sid, ExecutionEventORM.event_seq > after_seq)
+                                .order_by(ExecutionEventORM.event_seq)
+                            )).scalars().all()
+                            missed = [
+                                EventEnvelope(
+                                    event=r.event_type,
+                                    data=json.loads(r.data_json or "{}"),
+                                    sequence=r.event_seq,
+                                    seq=r.event_seq,
+                                )
+                                for r in rows
+                            ]
                 for env in missed:
-                    await websocket.send_json(env.model_dump(mode="json"))
+                    if hasattr(env, "model_dump"):
+                        await websocket.send_json(env.model_dump(mode="json"))
+                    else:
+                        await websocket.send_json(env)
             except Exception:  # noqa: BLE001
                 logger.exception("ws replay failed for %s", sid)
 

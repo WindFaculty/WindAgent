@@ -1,6 +1,6 @@
 """
-Shadow Execution Comparator for WindAgent Read-Only Operations (Phase 14).
-Executes V1 and V2 operations in shadow mode to verify output parity before cutover.
+Shadow Execution Comparator for WindAgent Read-Only Operations.
+Executes operations in shadow mode to verify output parity.
 """
 
 from __future__ import annotations
@@ -19,6 +19,7 @@ class ParityComparisonResult:
     v2_result: Any
     parity_matched: bool
     diff_details: Optional[str] = None
+    status: str = "COMPARED"
 
 
 class ShadowExecutionEngine:
@@ -43,8 +44,9 @@ class ShadowExecutionEngine:
                 operation_name=op_name,
                 v1_result=None,
                 v2_result=None,
-                parity_matched=True,
-                diff_details="Skipped destructive operation"
+                parity_matched=False,  # Destructive skipped is NOT parity matched success
+                diff_details="Skipped destructive operation",
+                status="SKIPPED"
             )
 
         v1_res = v1_fn(*args, **kwargs)
@@ -58,7 +60,8 @@ class ShadowExecutionEngine:
             v1_result=v1_res,
             v2_result=v2_res,
             parity_matched=matched,
-            diff_details=diff
+            diff_details=diff,
+            status="COMPARED" if matched else "MISMATCH"
         )
         self.comparison_history[op_name] = result
         return result

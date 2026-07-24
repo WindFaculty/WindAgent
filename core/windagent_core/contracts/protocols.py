@@ -1,6 +1,7 @@
 """
-Contract Ports (Protocols) for WindAgent Architecture V2.
-Defines abstract interfaces for storage, eventing, repositories, security, and time.
+Contract Ports (Protocols) for WindAgent Architecture V2 (Phase 4 Canonical Contracts).
+Defines abstract interfaces for storage, transactional unit of work, execution runtimes,
+model gateways, security, secret management, auditing, and time abstractions.
 Pure Python protocols with zero framework dependencies.
 """
 
@@ -9,10 +10,15 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, Protocol, runtime_checkable
 
 from windagent_core.domain.types import (
-    TaskId, RunId, SessionId, ArtifactId
+    TaskId, TaskRunId, SessionId, WorkflowId, WorkflowRunId, StepId, StepRunId, ArtifactId
 )
 from windagent_core.domain.models import (
-    Task, Session, WorkflowRun, ArtifactRef, PermissionRequest
+    Task, TaskRun, Session, WorkflowDefinition, WorkflowRun, WorkflowStep, ArtifactRef,
+    ModelRequest, ModelResponse
+)
+from windagent_core.events.envelope import EventEnvelope
+from windagent_core.security.types import (
+    PermissionEvaluationRequest, PermissionDecision, SecretRef, SecretName, SecretValue
 )
 
 
@@ -32,7 +38,7 @@ class IdGenerator(Protocol):
 
 @runtime_checkable
 class TaskRepository(Protocol):
-    """Protocol for persisting and retrieving Task entities."""
+    """Protocol for persisting and retrieving Task domain entities."""
     async def get_by_id(self, task_id: TaskId) -> Optional[Task]:
         ...
 
@@ -44,8 +50,18 @@ class TaskRepository(Protocol):
 
 
 @runtime_checkable
+class TaskRunRepository(Protocol):
+    """Protocol for persisting and retrieving TaskRun execution instances."""
+    async def get_by_id(self, run_id: TaskRunId) -> Optional[TaskRun]:
+        ...
+
+    async def save(self, task_run: TaskRun) -> None:
+        ...
+
+
+@runtime_checkable
 class SessionRepository(Protocol):
-    """Protocol for persisting and retrieving Session entities."""
+    """Protocol for persisting and retrieving Session domain entities."""
     async def get_by_id(self, session_id: SessionId) -> Optional[Session]:
         ...
 
@@ -61,28 +77,45 @@ class SessionRepository(Protocol):
 
 @runtime_checkable
 class WorkflowRepository(Protocol):
-    """Protocol for persisting and retrieving Workflow runs."""
-    async def get_by_id(self, run_id: RunId) -> Optional[WorkflowRun]:
+    """Protocol for persisting and retrieving Workflow definitions."""
+    async def get_by_id(self, workflow_id: WorkflowId) -> Optional[WorkflowDefinition]:
         ...
 
-    async def save(self, run: WorkflowRun) -> None:
+    async def save(self, workflow: WorkflowDefinition) -> None:
+        ...
+
+
+@runtime_checkable
+class WorkflowRunRepository(Protocol):
+    """Protocol for persisting and retrieving WorkflowRun execution instances."""
+    async def get_by_id(self, run_id: WorkflowRunId) -> Optional[WorkflowRun]:
+        ...
+
+    async def save(self, workflow_run: WorkflowRun) -> None:
         ...
 
 
 @runtime_checkable
 class EventStore(Protocol):
     """Protocol for append-only domain event persistence."""
-    async def append_event(self, event_type: str, payload: Dict[str, Any], sequence: Optional[int] = None) -> int:
+    async def append(self, event: EventEnvelope) -> None:
         ...
 
-    async def get_events(self, after_sequence: int = 0, limit: int = 100) -> List[Dict[str, Any]]:
+    async def get_events(self, stream_id: str, after_sequence: int = 0, limit: int = 100) -> List[EventEnvelope]:
+        ...
+
+
+@runtime_checkable
+class OutboxWriter(Protocol):
+    """Protocol for transactional outbox event storage."""
+    async def write(self, event: EventEnvelope) -> None:
         ...
 
 
 @runtime_checkable
 class EventPublisher(Protocol):
-    """Protocol for publishing domain events."""
-    async def publish(self, event_type: str, payload: Dict[str, Any]) -> None:
+    """Protocol for publishing domain events to message buses / subscribers."""
+    async def publish(self, event: EventEnvelope) -> None:
         ...
 
 
@@ -98,12 +131,13 @@ class ArtifactRepository(Protocol):
 
 @runtime_checkable
 class UnitOfWork(Protocol):
-    """Protocol for transactional atomicity across repositories."""
-    async def __aenter__(self) -> UnitOfWork:
-        ...
-
-    async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
-        ...
+    """Protocol for transactional atomicity across domain repositories."""
+    tasks: TaskRepository
+    task_runs: TaskRunRepository
+    workflows: WorkflowRepository
+    workflow_runs: WorkflowRunRepository
+    events: EventStore
+    outbox: OutboxWriter
 
     async def commit(self) -> None:
         ...
@@ -111,19 +145,55 @@ class UnitOfWork(Protocol):
     async def rollback(self) -> None:
         ...
 
+    async def __aenter__(self) -> UnitOfWork:
+        ...
+
+    async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
+        ...
+
+
+@runtime_checkable
+class ExecutionRuntimePort(Protocol):
+    """Abstraction for execution runtime engines (Hermes, workers, local agents)."""
+    async def dispatch(self, step_run_id: StepRunId, payload: Dict[str, Any]) -> None:
+        ...
+
+    async def cancel(self, step_run_id: StepRunId) -> None:
+        ...
+
+    async def heartbeat(self, step_run_id: StepRunId) -> None:
+        ...
+
+
+@runtime_checkable
+class ModelGatewayPort(Protocol):
+    """Abstraction for LLM model provider execution and streaming."""
+    async def execute(self, request: ModelRequest) -> ModelResponse:
+        ...
+
 
 @runtime_checkable
 class SecretStore(Protocol):
-    """Protocol for secure secret storage and retrieval."""
-    async def get_secret(self, key: str) -> Optional[str]:
+    """Protocol for secure secret storage and resolution."""
+    async def resolve(self, ref: SecretRef) -> SecretValue:
         ...
 
-    async def set_secret(self, key: str, value: str) -> None:
+    async def store(self, name: SecretName, value: SecretValue) -> SecretRef:
+        ...
+
+    async def delete(self, ref: SecretRef) -> None:
         ...
 
 
 @runtime_checkable
 class PermissionEvaluator(Protocol):
-    """Protocol for evaluating tool and action permissions."""
-    async def evaluate(self, request: PermissionRequest) -> bool:
+    """Protocol for evaluating security policies and permission requests."""
+    async def evaluate(self, request: PermissionEvaluationRequest) -> PermissionDecision:
+        ...
+
+
+@runtime_checkable
+class AuditSink(Protocol):
+    """Protocol for logging security and operational audit records."""
+    async def record_audit(self, event_type: str, details: Dict[str, Any]) -> None:
         ...

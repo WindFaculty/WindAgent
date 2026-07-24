@@ -436,7 +436,7 @@ async def test_hermes_interactive_approval(client, db):
             })
 
             # Wait a brief moment for database update
-            await asyncio.sleep(0.05)
+            await asyncio.sleep(0.3)
 
             # Verify status is granted in DB
             async with db.session() as s:

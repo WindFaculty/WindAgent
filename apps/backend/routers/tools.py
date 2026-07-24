@@ -55,6 +55,10 @@ def _sessions_svc(request: Request):
     return request.app.state.session_service
 
 
+def _workflows_svc(request: Request):
+    return request.app.state.workflow_service
+
+
 @router.get("/tools", response_model=List[str])
 async def list_tools() -> List[str]:
     """Return the whitelist of tool names (MVP)."""

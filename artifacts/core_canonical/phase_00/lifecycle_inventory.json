@@ -1,0 +1,129 @@
+{
+  "task_lifecycle": {
+    "canonical_states_15": [
+      "RECEIVED",
+      "CLASSIFYING",
+      "CONTEXT_BUILDING",
+      "PLANNING",
+      "READY",
+      "RUNNING",
+      "WAITING_PERMISSION",
+      "PAUSED",
+      "RETRY_WAIT",
+      "RECOVERING",
+      "VERIFYING",
+      "REVIEWING",
+      "COMPLETED",
+      "FAILED",
+      "CANCELLED"
+    ],
+    "occurrences": [
+      {
+        "package": "windagent_orchestration",
+        "file": "orchestration/windagent_orchestration/state_machine/task.py",
+        "enum": "TaskState"
+      },
+      {
+        "package": "windagent_core",
+        "file": "core/windagent_core/domain/models.py",
+        "enum": "TaskStatus (legacy subset: PENDING, RUNNING, COMPLETED, FAILED, PAUSED, CANCELLED)"
+      },
+      {
+        "package": "apps/backend",
+        "file": "apps/backend/models/task.py",
+        "enum": "TaskStatus (backend legacy)"
+      }
+    ],
+    "terminal_states": [
+      "COMPLETED",
+      "FAILED",
+      "CANCELLED"
+    ],
+    "action": "Migrate 15-state TaskState from orchestration into windagent_core/domain/lifecycle.py as canonical TaskState."
+  },
+  "workflow_lifecycle": {
+    "canonical_states": [
+      "DRAFT",
+      "READY",
+      "RUNNING",
+      "PAUSED",
+      "COMPLETED",
+      "FAILED",
+      "CANCELLED"
+    ],
+    "occurrences": [
+      {
+        "package": "windagent_core",
+        "file": "core/windagent_core/domain/models.py",
+        "enum": "WorkflowStatus"
+      },
+      {
+        "package": "windagent_orchestration",
+        "file": "orchestration/windagent_orchestration/state_machine/workflow.py",
+        "enum": "WorkflowState"
+      }
+    ],
+    "terminal_states": [
+      "COMPLETED",
+      "FAILED",
+      "CANCELLED"
+    ]
+  },
+  "step_lifecycle": {
+    "canonical_states": [
+      "BLOCKED",
+      "READY",
+      "CLAIMED",
+      "DISPATCHED",
+      "RUNNING",
+      "WAITING_PERMISSION",
+      "RETRY_WAIT",
+      "COMPLETED",
+      "FAILED",
+      "SKIPPED",
+      "CANCELLED"
+    ],
+    "occurrences": [
+      {
+        "package": "windagent_core",
+        "file": "core/windagent_core/domain/models.py",
+        "enum": "StepStatus"
+      },
+      {
+        "package": "windagent_orchestration",
+        "file": "orchestration/windagent_orchestration/state_machine/step.py",
+        "enum": "StepState"
+      }
+    ],
+    "terminal_states": [
+      "COMPLETED",
+      "FAILED",
+      "SKIPPED",
+      "CANCELLED"
+    ]
+  },
+  "session_lifecycle": {
+    "canonical_states": [
+      "IDLE",
+      "ACTIVE",
+      "PAUSED",
+      "COMPLETED",
+      "FAILED",
+      "CANCELLED",
+      "ARCHIVED"
+    ],
+    "occurrences": [
+      {
+        "package": "windagent_core",
+        "file": "core/windagent_core/domain/models.py",
+        "enum": "SessionStatus"
+      }
+    ],
+    "terminal_states": [
+      "COMPLETED",
+      "FAILED",
+      "CANCELLED",
+      "ARCHIVED"
+    ]
+  }
+}

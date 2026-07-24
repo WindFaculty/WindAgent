@@ -29,7 +29,9 @@ class DurableExecutionFacts:
     priority: int = 2
     project_id: Optional[str] = None
     worktree_id: Optional[str] = None
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    metadata: Dict[str, Any] = field(default_factory=dict)
 
     def derive_ui_status(self) -> str:
         """Derives UI display status deterministically from durable execution facts."""
@@ -52,7 +54,8 @@ class DurableExecutionFacts:
         d["task_id"] = str(self.task_id)
         d["session_id"] = str(self.session_id)
         d["current_state"] = self.current_state.value if isinstance(self.current_state, TaskState) else str(self.current_state)
-        d["updated_at"] = self.updated_at.isoformat()
+        d["created_at"] = self.created_at.isoformat() if isinstance(self.created_at, datetime) else str(self.created_at)
+        d["updated_at"] = self.updated_at.isoformat() if isinstance(self.updated_at, datetime) else str(self.updated_at)
         return d
 
     @classmethod
@@ -62,6 +65,12 @@ class DurableExecutionFacts:
             state_enum = TaskState(state_val)
         except ValueError:
             state_enum = TaskState.RECEIVED
+
+        created_at = data.get("created_at")
+        if isinstance(created_at, str):
+            dt_created = datetime.fromisoformat(created_at)
+        else:
+            dt_created = datetime.now(timezone.utc)
 
         updated_at = data.get("updated_at")
         if isinstance(updated_at, str):
@@ -84,5 +93,7 @@ class DurableExecutionFacts:
             priority=data.get("priority", 2),
             project_id=data.get("project_id"),
             worktree_id=data.get("worktree_id"),
+            created_at=dt_created,
             updated_at=dt,
+            metadata=data.get("metadata", {}) or {},
         )

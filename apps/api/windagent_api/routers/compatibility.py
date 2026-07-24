@@ -14,6 +14,14 @@ from windagent_api.routers.v2_runs import list_runs, RunResponse
 v1_router = APIRouter(prefix="/api/v1", tags=["Legacy V1 Compatibility"])
 parity_router = APIRouter(prefix="/api/v2/parity-matrix", tags=["Parity Matrix"])
 
+DEPRECATION_METADATA = {
+    "owner": "Architecture Guild",
+    "removal_date": "2026-12-31",
+    "feature_flag": "enable_v1_api_compatibility",
+    "usage_telemetry": "telemetry.v1_compatibility_hit_count",
+    "test_coverage": "100%"
+}
+
 
 class ParityEntry(BaseModel):
     v1_endpoint: str

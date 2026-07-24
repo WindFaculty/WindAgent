@@ -431,6 +431,17 @@ class ParentTaskORM(Base):
         back_populates="parent_task", cascade="all, delete-orphan"
     )
 
+    def __init__(self, **kwargs: Any) -> None:
+        if "prompt" in kwargs and "title" not in kwargs:
+            kwargs["title"] = kwargs.pop("prompt")
+        elif "prompt" in kwargs:
+            kwargs.pop("prompt")
+        if "session_id" in kwargs and "conversation_id" not in kwargs:
+            kwargs["conversation_id"] = kwargs.pop("session_id")
+        elif "session_id" in kwargs:
+            kwargs.pop("session_id")
+        super().__init__(**kwargs)
+
 
 class TaskPlanORM(Base):
     __tablename__ = "task_plans"

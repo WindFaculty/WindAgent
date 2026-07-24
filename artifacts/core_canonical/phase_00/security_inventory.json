@@ -1,0 +1,25 @@
+{
+  "core_types_location": "core/windagent_core/security/types.py",
+  "types": [
+    "Principal",
+    "Permission",
+    "ResourceScope",
+    "RiskLevel",
+    "ApprovalRequirement",
+    "SecretRef",
+    "RedactedValue"
+  ],
+  "secret_references_found": 118,
+  "secret_implementations_outside_core": [
+    {
+      "package": "apps/backend",
+      "file": "apps/backend/services/secret_service.py",
+      "type": "Fernet encryption loader / key.txt reader",
+      "action": "Move Fernet/key.txt implementation to storage/backend adapters; core owns SecretStore protocol and SecretRef"
+    }
+  ],
+  "permission_evaluator": {
+    "core_contract": "PermissionEvaluator protocol returning PermissionDecision",
+    "legacy_behavior": "Boolean returns in backend permission service"
+  }
+}

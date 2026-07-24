@@ -1,62 +1,43 @@
 """
-WorkflowState enum and explicit transition matrix for WindAgent Orchestration V2.
+WorkflowState Canonical Alias & StateMachine for WindAgent Orchestration (Phase 8 Adoption).
+Re-exports canonical WorkflowState and delegates transitions to WorkflowLifecycle.
 """
 
 from __future__ import annotations
+from typing import Any
+from windagent_core.domain.lifecycle import WorkflowState, WorkflowLifecycle
 
-from enum import Enum
-from typing import Dict, Set
-from windagent_core.errors.exceptions import DomainError
-
-
-class WorkflowState(str, Enum):
-    PENDING = "pending"
-    RUNNING = "running"
-    PAUSED = "paused"
-    COMPLETED = "completed"
-    FAILED = "failed"
-    CANCELLED = "cancelled"
+__all__ = ["WorkflowState", "WorkflowLifecycle", "WorkflowStateMachine"]
 
 
-ALLOWED_WORKFLOW_TRANSITIONS: Dict[WorkflowState, Set[WorkflowState]] = {
-    WorkflowState.PENDING: {
-        WorkflowState.RUNNING, WorkflowState.PAUSED, WorkflowState.FAILED, WorkflowState.CANCELLED
-    },
-    WorkflowState.RUNNING: {
-        WorkflowState.PAUSED, WorkflowState.COMPLETED, WorkflowState.FAILED, WorkflowState.CANCELLED
-    },
-    WorkflowState.PAUSED: {
-        WorkflowState.RUNNING, WorkflowState.CANCELLED, WorkflowState.FAILED
-    },
-    WorkflowState.COMPLETED: set(),
-    WorkflowState.FAILED: set(),
-    WorkflowState.CANCELLED: set(),
-}
+def parse_workflow_state(val: Any) -> WorkflowState:
+    if isinstance(val, WorkflowState):
+        return val
+    raw = val.value if hasattr(val, "value") else str(val)
+    raw_str = str(raw).upper()
+    try:
+        return WorkflowState[raw_str]
+    except KeyError:
+        return WorkflowState(raw_str.lower())
 
 
 class WorkflowStateMachine:
+    """Delegates workflow state transitions to canonical core WorkflowLifecycle."""
+
     @staticmethod
     def is_terminal(state: WorkflowState | str) -> bool:
-        val = state.value if isinstance(state, Enum) else str(state)
-        return val in ("completed", "failed", "cancelled")
+        st = parse_workflow_state(state)
+        return WorkflowLifecycle.is_terminal(st)
 
     @staticmethod
     def can_transition(current: WorkflowState | str, target: WorkflowState | str) -> bool:
-        curr_val = WorkflowState(current) if isinstance(current, str) else current
-        targ_val = WorkflowState(target) if isinstance(target, str) else target
-        if curr_val == targ_val:
-            return True
-        return targ_val in ALLOWED_WORKFLOW_TRANSITIONS.get(curr_val, set())
+        curr_st = parse_workflow_state(current)
+        targ_st = parse_workflow_state(target)
+        return WorkflowLifecycle.can_transition(curr_st, targ_st)
 
     @staticmethod
     def transition(current: WorkflowState | str, target: WorkflowState | str) -> WorkflowState:
-        curr_val = WorkflowState(current) if isinstance(current, str) else current
-        targ_val = WorkflowState(target) if isinstance(target, str) else target
-
-        if not WorkflowStateMachine.can_transition(curr_val, targ_val):
-            raise DomainError(
-                message=f"Illegal workflow state transition from [{curr_val.value}] to [{targ_val.value}].",
-                code="WINDAGENT_ERR_ILLEGAL_WORKFLOW_TRANSITION",
-                details={"current_state": curr_val.value, "target_state": targ_val.value},
-            )
-        return targ_val
+        curr_st = parse_workflow_state(current)
+        targ_st = parse_workflow_state(target)
+        res = WorkflowLifecycle.transition(curr_st, targ_st)
+        return parse_workflow_state(res.new_state)

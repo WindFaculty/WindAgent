@@ -69,6 +69,7 @@ class EventCatalog:
 
     # Permission Namespace
     PERMISSION_REQUEST = "permission.request"
+    PERMISSION_REQUESTED = "permission.requested"
     PERMISSION_GRANTED = "permission.granted"
     PERMISSION_DENIED = "permission.denied"
 

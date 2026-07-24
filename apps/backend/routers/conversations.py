@@ -109,7 +109,7 @@ async def agent_events(
     after_seq: int = Query(0, ge=0),
 ) -> Dict[str, Any]:
     db = _db(request)
-    rec = request.app.state.recovery_manager
+    rec = getattr(request.app.state, "recovery_manager", getattr(request.app.state, "orchestration_recovery", None))
     async with db.session() as s:
         inst = await s.get(AgentInstanceORM, agent_instance_id)
         if inst is None:
@@ -120,13 +120,37 @@ async def agent_events(
             ).order_by(AgentRunORM.started_at.desc())
         )).scalars().first()
     session_id = run.hermes_session_id if run else None
-    if not session_id:
-        return {"agent_instance_id": agent_instance_id, "session_id": None, "events": []}
-    events = await rec.replay_after(session_id, after_seq)
+    events = []
+    if rec is not None and hasattr(rec, "replay_after"):
+        events = await rec.replay_after(session_id, after_seq)
+    elif rec is not None and hasattr(rec, "replay_events_after"):
+        events = await rec.replay_events_after(session_id, after_seq)
+    else:
+        async with db.session() as s:
+            from db.models import ExecutionEventORM
+            import json
+            rows = (await s.execute(
+                select(ExecutionEventORM)
+                .where(
+                    ExecutionEventORM.session_id == session_id,
+                    ExecutionEventORM.event_seq > after_seq,
+                )
+                .order_by(ExecutionEventORM.event_seq)
+            )).scalars().all()
+            events = [
+                {
+                    "event": r.event_type,
+                    "event_type": r.event_type,
+                    "seq": r.event_seq,
+                    "data": json.loads(r.data_json or "{}"),
+                    "created_at": r.created_at.isoformat() if r.created_at else None,
+                }
+                for r in rows
+            ]
     return {
         "agent_instance_id": agent_instance_id,
         "session_id": session_id,
-        "events": [e.model_dump(mode="json") for e in events],
+        "events": [e.model_dump(mode="json") if hasattr(e, "model_dump") else e for e in events],
     }
 
 
@@ -483,6 +507,40 @@ async def delete_task_node(
         graph = await _get_current_graph(s, plan.id)
     await _notify_replan(request, conversation_id, plan.id, new_ver)
     return {"plan_id": plan.id, "version": new_ver, **graph}
+
+
+def detect_cycle(plan_id: str, edges: List[TaskEdgeORM]) -> Optional[List[str]]:
+    adj: Dict[str, List[str]] = {}
+    nodes_set = set()
+    for e in edges:
+        nodes_set.add(e.from_task_id)
+        nodes_set.add(e.to_task_id)
+        adj.setdefault(e.from_task_id, []).append(e.to_task_id)
+
+    visited: Dict[str, int] = {n: 0 for n in nodes_set}
+    path: List[str] = []
+
+    def dfs(node: str) -> Optional[List[str]]:
+        visited[node] = 1
+        path.append(node)
+        for nxt in adj.get(node, []):
+            if visited.get(nxt, 0) == 1:
+                idx = path.index(nxt)
+                return path[idx:] + [nxt]
+            if visited.get(nxt, 0) == 0:
+                c = dfs(nxt)
+                if c:
+                    return c
+        path.pop()
+        visited[node] = 2
+        return None
+
+    for node in list(nodes_set):
+        if visited.get(node, 0) == 0:
+            c = dfs(node)
+            if c:
+                return c
+    return None
 
 
 @router.post("/conversations/{conversation_id}/tasks/edges")
