@@ -1,0 +1,19 @@
+{
+  "core": "PASS",
+  "providers": "PASS",
+  "tools": "PASS",
+  "orchestration": "PASS",
+  "intelligence": "PASS",
+  "storage": "PASS",
+  "observability": "PASS",
+  "evals": "PASS",
+  "context": "PASS",
+  "memory": "PASS",
+  "execution": "PASS",
+  "verification": "PASS",
+  "workflows": "PASS",
+  "apps.api": "PASS",
+  "apps.cli": "PASS",
+  "apps.worker": "PASS",
+  "apps.backend": "PASS"
+}
