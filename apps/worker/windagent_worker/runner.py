@@ -86,6 +86,9 @@ class ProductionWorker:
 
     async def start(self) -> None:
         logger.info(f"Starting Production Worker [{self.worker_id}] (runtime: {self.runtime_run_id})...")
+        if self.worker_container and self.worker_container.outbox_publisher:
+            if not self.worker_container.outbox_publisher.is_running:
+                raise RuntimeError("Outbox publisher must be running before worker becomes ready.")
         self._running = True
         self._ready = True
         self._cancellation_requested = False

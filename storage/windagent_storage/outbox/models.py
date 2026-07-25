@@ -27,5 +27,8 @@ class OutboxRecord(BaseModel):
     last_error: Optional[str] = None
     status: str = "pending"  # pending, published, failed, dead_letter
     deduplication_key: Optional[str] = None
+    claimed_by: Optional[str] = None
+    claim_token: Optional[str] = None
+    claim_expires_at: Optional[datetime] = None
 
     model_config = ConfigDict(frozen=False)

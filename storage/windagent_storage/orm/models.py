@@ -99,8 +99,24 @@ class OutboxRecordORM(BaseORM):
     published_at = Column(DateTime, nullable=True)
     attempt_count = Column(Integer, nullable=False, default=0)
     last_error = Column(Text, nullable=True)
-    status = Column(String(32), nullable=False, default="pending")  # pending, published, failed, dead_letter
+    status = Column(String(32), nullable=False, default="pending")  # pending, publishing, published, dead_letter
     deduplication_key = Column(String(128), nullable=True, unique=True)
+    claimed_by = Column(String(64), nullable=True)
+    claim_token = Column(String(64), nullable=True)
+    claim_expires_at = Column(DateTime, nullable=True)
+
+
+class OutboxReplayAuditORM(BaseORM):
+    __tablename__ = "v2_outbox_replay_audit"
+
+    id = Column(String(36), primary_key=True)
+    outbox_record_id = Column(String(36), nullable=False, index=True)
+    event_id = Column(String(36), nullable=False, index=True)
+    replay_attempt_id = Column(String(64), nullable=False)
+    operator = Column(String(128), nullable=True)
+    previous_status = Column(String(32), nullable=False)
+    previous_attempt_count = Column(Integer, nullable=False, default=0)
+    created_at = Column(DateTime, nullable=False, default=default_utc_now)
 
 
 class ArtifactRefORM(BaseORM):

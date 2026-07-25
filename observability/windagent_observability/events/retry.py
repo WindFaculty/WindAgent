@@ -1,8 +1,35 @@
-"""Retry utilities for WindAgent Observability Layer (Phase 3)."""
+"""Retry utilities for WindAgent Observability Layer (Phase 3 / Phase 6)."""
 
 from __future__ import annotations
 import random
 from datetime import datetime, timezone, timedelta
+
+
+DEFAULT_MAX_ATTEMPTS = 5
+
+
+class NonRetryablePublicationError(Exception):
+    """Publication failure that must not be retried (validation, schema, auth)."""
+
+
+def is_retryable_error(exc: BaseException) -> bool:
+    """Classify whether a publish failure should be retried."""
+    if isinstance(exc, NonRetryablePublicationError):
+        return False
+    if isinstance(exc, (ValueError, TypeError, KeyError)):
+        return False
+    message = str(exc).lower()
+    non_retryable_markers = (
+        "invalid payload",
+        "schema validation",
+        "unauthorized",
+        "forbidden",
+        "not found",
+        "malformed",
+    )
+    if any(marker in message for marker in non_retryable_markers):
+        return False
+    return True
 
 
 def compute_backoff_seconds(

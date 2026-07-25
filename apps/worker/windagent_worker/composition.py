@@ -151,6 +151,7 @@ class WorkerContainer:
             outbox_repo=SqlOutboxRepository(self.uow_factory),
             dispatcher=self.event_dispatcher.dispatch,
         )
+        await self.outbox_publisher.start()
         
         self.is_initialized = True
         logger.info("WorkerContainer successfully bootstrapped (PHASE 7 - Process-specific composition).")
@@ -162,10 +163,10 @@ class WorkerContainer:
 
         logger.info("Shutting down WorkerContainer...")
         
-        # 1. Stop outbox publisher
+        # 1. Stop outbox publisher (drain pending claimed batch)
         if self.outbox_publisher and hasattr(self.outbox_publisher, "stop"):
             try:
-                await self.outbox_publisher.stop()
+                await self.outbox_publisher.stop(drain=True)
             except Exception as ex:
                 logger.warning(f"Error stopping worker outbox publisher: {ex}")
         

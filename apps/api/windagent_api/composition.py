@@ -17,7 +17,7 @@ API Composition Root (PHASE 7):
 - Memory query services
 - Verification query services
 - Observability
-- Outbox submission
+- Outbox submission (via Unit of Work)
 - Worker status query
 
 NOT composed (separate process):
@@ -50,9 +50,7 @@ from windagent_storage.repositories.worker_status import (
     SqlWorkerHeartbeatRepository,
     SqlWorkerStatusQuery,
 )
-from windagent_storage.outbox.sql_repository import SqlOutboxRepository
 from windagent_observability.events.dispatcher import EventDispatcher
-from windagent_observability.events.publisher import OutboxEventPublisher
 
 logger = logging.getLogger("windagent.api.composition")
 
@@ -66,7 +64,7 @@ class ApplicationContainer:
     - Registries for discovery (providers, tools, plugins, skills, workflows)
     - Context, Memory, Verification for query services
     - Observability for monitoring
-    - Outbox for event submission
+    - Outbox submission via Unit of Work (no publisher loop)
     - Worker status query for health checks
     
     Does NOT compose:
@@ -81,7 +79,6 @@ class ApplicationContainer:
         self.db: Optional[DatabaseManager] = None
         self.task_manager: Optional[TaskManager] = None
         self.event_dispatcher: Optional[EventDispatcher] = None
-        self.outbox_publisher: Optional[OutboxEventPublisher] = None
         self.provider_registry: Optional[CanonicalModelRegistryService] = None
         self.route_lock_service: Optional[RouteLockService] = None
         self.tool_registry: Optional[ToolRegistry] = None
@@ -134,12 +131,8 @@ class ApplicationContainer:
             SqlWorkerHeartbeatRepository(self.db.session_factory)
         )
 
-        # Outbox: API process only SUBMITS events to outbox via repository
-        # Actual PUBLISHING is owned by Worker process
-        self.outbox_publisher = OutboxEventPublisher(
-            outbox_repo=SqlOutboxRepository(self.db.session_factory),
-            dispatcher=self.event_dispatcher.dispatch,
-        )
+        # Outbox: API submits events via get_uow().record_outbox_event() only.
+        # Publishing loop is owned exclusively by the Worker process (Phase 6).
 
         self.is_initialized = True
         logger.info("ApplicationContainer successfully bootstrapped (PHASE 7 - Process-specific composition).")
@@ -150,14 +143,7 @@ class ApplicationContainer:
             return
 
         logger.info("Shutting down ApplicationContainer...")
-        # 1. Stop background processes owned by API
-        if self.outbox_publisher and hasattr(self.outbox_publisher, "stop"):
-            try:
-                await self.outbox_publisher.stop()
-            except Exception as ex:
-                logger.warning(f"Error stopping outbox publisher during shutdown: {ex}")
-
-        # 2. Clean up registries and query services
+        # 1. Clean up registries and query services
         for name, service in [
             ("workflow_registry", self.workflow_registry),
             ("tool_registry", self.tool_registry),
@@ -175,7 +161,7 @@ class ApplicationContainer:
                 except Exception as ex:
                     logger.warning(f"Error closing {name}: {ex}")
 
-        # 3. Close database connection LAST
+        # 2. Close database connection LAST
         if self.db and hasattr(self.db, "close"):
             try:
                 await self.db.close()

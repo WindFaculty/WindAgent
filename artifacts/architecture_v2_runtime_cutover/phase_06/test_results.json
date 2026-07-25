@@ -1,0 +1,7 @@
+{
+  "total": 5,
+  "passed": 5,
+  "failed": 0,
+  "test_file": "tests/unit/observability/test_phase6_outbox_runtime.py",
+  "verdict": "PASS"
+}
