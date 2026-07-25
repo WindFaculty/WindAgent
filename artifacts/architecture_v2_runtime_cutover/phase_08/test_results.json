@@ -1,0 +1,7 @@
+{
+  "total": 3,
+  "passed": 3,
+  "failed": 0,
+  "test_file": "tests/unit/storage/migrations/test_phase8_data_migration.py",
+  "verdict": "PASS"
+}
