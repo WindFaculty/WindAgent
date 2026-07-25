@@ -96,22 +96,19 @@ from windagent_providers.cache import (
     CacheTags,
 )
 
-# Legacy V2 Adapters
-from windagent_providers.adapters.mock import MockProviderAdapter
-from windagent_providers.adapters.openai_compatible import (
-    OpenAICompatibleProviderAdapter,
-)
-from windagent_providers.adapters.anthropic import (
-    AnthropicProviderAdapter as LegacyAnthropicAdapter,
-)
-from windagent_providers.adapters.google_gemini import (
-    GoogleGeminiProviderAdapter as LegacyGoogleAdapter,
-)
-from windagent_providers.adapters.ollama import (
-    OllamaProviderAdapter as LegacyOllamaAdapter,
-)
+# Legacy V2 Adapters - REMOVED as part of PHASE 6 canonicalization
+# These legacy adapters have been removed to enforce canonical provider implementations
+# Use V3 native adapters instead:
+# - anthropic: AnthropicProviderAdapter
+# - google: GoogleGeminiProviderAdapter  
+# - ollama: OllamaProviderAdapter
 
-__version__ = "3.0.0"
+# Mock adapter for testing
+from windagent_providers.mock import MockProviderAdapter
+
+__version__ = "2.0.0"
+__architecture_version__ = "v2"
+__provider_protocol_version__ = "1.0.0"
 
 __all__ = [
     "ProviderFailure",
@@ -187,8 +184,8 @@ __all__ = [
     "CacheNamespace",
     "CacheTags",
     "MockProviderAdapter",
-    "OpenAICompatibleProviderAdapter",
-    "LegacyAnthropicAdapter",
-    "LegacyGoogleAdapter",
-    "LegacyOllamaAdapter",
+    # Version metadata
+    "__version__",
+    "__architecture_version__",
+    "__provider_protocol_version__",
 ]

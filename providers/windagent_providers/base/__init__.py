@@ -1,6 +1,8 @@
-"""
-Base Package for WindAgent Provider Subsystem V3.
-Exports contracts, errors, ports, capabilities, and secret redaction.
+"""Base Package for WindAgent Provider Subsystem V3.
+
+Errors and capability profiles are owned here (implementation concern).
+Canonical contracts (request/response/usage/capabilities/ports) live in
+``windagent_core.contracts.providers`` and are re-exported for convenience.
 """
 
 from windagent_providers.base.secret_redaction import redact_text, redact_dict
@@ -22,30 +24,28 @@ from windagent_providers.base.errors import (
     CancellationFailure,
     SameModelEndpointExhausted,
 )
-from windagent_providers.base.contracts import (
-    FinishReason,
+from windagent_core.contracts.providers import (
     CacheDirective,
-    ProviderUsage,
-    ProviderHealth,
-    QuotaState,
-    RateLimitState,
-    ProviderCapabilities,
-    ModelDescriptor,
-    DiscoveredModel,
+    CachePort,
+    CanonicalModelRegistryPort,
     ConnectionTestResult,
+    DiscoveredModel,
+    EndpointRegistryPort,
+    EndpointStatePort,
+    FinishReason,
+    ModelDescriptor,
     ProtocolDetectionResult,
+    ProviderCapabilities,
+    ProviderHealth,
     ProviderRequest,
     ProviderResponse,
     ProviderStreamEvent,
-)
-from windagent_providers.base.ports import (
-    EndpointRegistryPort,
-    CanonicalModelRegistryPort,
-    RouteLockPort,
-    RouteAttemptPort,
+    ProviderUsage,
+    QuotaState,
     QuotaStatePort,
-    EndpointStatePort,
-    CachePort,
+    RateLimitState,
+    RouteAttemptPort,
+    RouteLockPort,
     UsageLedgerPort,
 )
 from windagent_providers.base.capabilities import (

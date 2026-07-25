@@ -8,7 +8,7 @@ and shared decision_id in permission events & audit records.
 import pytest
 import os
 from windagent_core.domain.types import ToolInvocationId, SessionId, TaskId, DecisionId
-from windagent_core.tools.models import ToolInvocation, ToolResult
+from windagent_core.contracts.tools import ToolInvocation, ToolResult
 from windagent_core.security.types import (
     PermissionEvaluationRequest, PermissionDecision, SecurityAuditContext, Principal, RiskLevel
 )
@@ -23,22 +23,21 @@ def test_canonical_tool_models():
     task_id = TaskId.generate()
 
     inv = ToolInvocation(
-        invocation_id=inv_id,
+        id=inv_id,
         tool_name="view_file",
-        arguments={"path": "src/main.py"},
-        session_id=sess_id,
-        task_id=task_id
+        params={"path": "src/main.py"},
     )
-    assert inv.invocation_id == inv_id
+    assert inv.id == inv_id
     assert inv.tool_name == "view_file"
+    assert inv.arguments == {"path": "src/main.py"}
 
     res = ToolResult(
-        invocation_id=inv_id,
+        call_id=inv_id,
         success=True,
-        output="file content",
+        data="file content",
         execution_time_ms=42.5
     )
-    assert res.invocation_id == inv_id
+    assert res.call_id == inv_id
     assert res.success is True
     assert res.execution_time_ms == 42.5
 

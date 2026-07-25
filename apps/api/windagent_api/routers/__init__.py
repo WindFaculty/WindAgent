@@ -1,3 +1,3 @@
 """
-API V2 and V1 compatibility routers for WindAgent (Phase 12).
+API V2 canonical routers for WindAgent. V1 compatibility has been removed.
 """

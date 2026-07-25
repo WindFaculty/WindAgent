@@ -1,5 +1,5 @@
 """
-Unit and contract tests for WindAgent API V2 and V1 compatibility adapter (Phase 12).
+Unit and contract tests for WindAgent API V2. V1 compatibility has been removed (Phase 8).
 """
 
 from fastapi.testclient import TestClient
@@ -81,15 +81,19 @@ def test_api_v2_all_resources_endpoints():
     assert r_eval.json()["passed"] is True
 
 
-def test_v1_compatibility_and_parity_matrix():
-    # V1 tasks delegate to V2
-    r_v1_create = client.post("/api/v1/tasks", json={"prompt": "V1 Task test", "workflow_name": "feature"})
-    assert r_v1_create.status_code == 201
-    assert r_v1_create.json()["workflow_name"] == "feature"
+def test_api_v1_tombstone_returns_410():
+    """Test that all V1 endpoints return 410 Gone after removal."""
+    # Test GET /api/v1/tasks
+    r_v1_get = client.get("/api/v1/tasks")
+    assert r_v1_get.status_code == 410
+    assert r_v1_get.json()["title"] == "API V1 Removed"
+    assert r_v1_get.json()["detail"] == "API V1 has been permanently removed. Please migrate to API V2."
 
-    # Parity matrix check
+    # Test POST /api/v1/tasks
+    r_v1_post = client.post("/api/v1/tasks", json={"prompt": "test"})
+    assert r_v1_post.status_code == 410
+    assert r_v1_post.json()["status"] == 410
+
+    # Test parity matrix endpoint is removed
     r_parity = client.get("/api/v2/parity-matrix")
-    assert r_parity.status_code == 200
-    matrix = r_parity.json()
-    assert len(matrix) >= 5
-    assert all(entry["status"] == "PARITY_OK" for entry in matrix)
+    assert r_parity.status_code == 404

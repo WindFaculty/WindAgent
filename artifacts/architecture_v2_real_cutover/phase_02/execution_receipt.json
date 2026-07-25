@@ -1,0 +1,12 @@
+{
+  "phase": 2,
+  "gate": "API_WORKER_PROCESS_BOUNDARY_ENFORCED",
+  "executed_at_utc": "2026-07-25T10:54:57.081299+00:00",
+  "commands": [
+    "uv run pytest tests/architecture/test_phase02_api_worker_boundary.py tests/unit/api/test_phase25_api_cutover.py tests/architecture/test_scaffold_v2.py tests/unit/worker/test_production_worker.py -q",
+    "uv run python scripts/check_architecture_imports.py",
+    "uv run pytest -q"
+  ],
+  "full_pytest_exit_code": 1,
+  "verdict": "FAILED"
+}

@@ -137,28 +137,6 @@ class WorkflowRun:
 
 
 @dataclass
-class ToolInvocation:
-    id: ToolCallId
-    tool_name: str
-    params: Dict[str, Any] = field(default_factory=dict)
-    requested_at: datetime = field(default_factory=default_utc_now)
-    timeout_seconds: Optional[float] = 30.0
-
-    def __post_init__(self) -> None:
-        if not self.tool_name or not self.tool_name.strip():
-            raise ValueError("ToolInvocation tool_name cannot be empty.")
-
-
-@dataclass
-class ToolResult:
-    call_id: ToolCallId
-    success: bool
-    data: Optional[Any] = None
-    error: Optional[str] = None
-    execution_time_ms: float = 0.0
-
-
-@dataclass
 class ModelRequest:
     id: ModelCallId
     model: str

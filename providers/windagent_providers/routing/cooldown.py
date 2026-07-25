@@ -11,7 +11,7 @@ from datetime import datetime, timezone, timedelta
 from typing import Optional
 
 from windagent_providers.base.errors import RateLimitFailure
-from windagent_providers.base.ports import EndpointStatePort
+from windagent_core.contracts.providers.ports import EndpointStatePort
 
 
 _COOLDOWN_CEILING_SECONDS: float = 300.0

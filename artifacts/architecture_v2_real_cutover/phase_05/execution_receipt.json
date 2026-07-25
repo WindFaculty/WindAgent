@@ -1,0 +1,9 @@
+{
+  "phase": "phase_05",
+  "name": "Canonical Provider/Tool contracts moved into core contracts",
+  "gate": "CANONICAL_CONTRACT_OWNERSHIP_UNIFIED",
+  "verdict": "PASS",
+  "commit_base": "5233206",
+  "pre_existing_failures": 9,
+  "notes": "No compatibility re-export; all imports updated in-phase. ToolInvocation/ToolResult unified to single dataclass contract (previously duplicated pydantic vs dataclass)."
+}

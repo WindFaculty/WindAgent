@@ -15,10 +15,7 @@ from windagent_core.domain.lifecycle import (
     TaskLifecycle, WorkflowLifecycle, StepLifecycle, SessionLifecycle, utc_now
 )
 from windagent_core.domain.models import (
-    Session, SessionStatus, Task, TaskRequest, TaskRun,
-    WorkflowDefinition, WorkflowRun, WorkflowStep, WorkflowStatus, StepStatus,
-    ModelRequest, ModelResponse,
-    ArtifactRef, PermissionRequest, VerificationResult
+    Session, SessionStatus, Task, TaskRequest, TaskRun, WorkflowDefinition, WorkflowRun, WorkflowStep, WorkflowStatus, StepStatus, ModelRequest, ModelResponse, ArtifactRef, PermissionRequest, VerificationResult,
 )
 from windagent_core.errors.exceptions import (
     WindAgentError, DomainError, ValidationError, IdentityValidationError, ConflictError,
@@ -37,10 +34,16 @@ from windagent_core.security.types import (
     ApprovalRequirement, PermissionEvaluationRequest, PermissionDecision,
     SecretRef, SecretName, SecretValue, RedactedValue, SecurityAuditContext
 )
-from windagent_core.providers.models import (
+from windagent_core.contracts.providers import (
     ProviderRequest, ProviderResponse, ProviderUsage, ProviderToolCall, ProviderStreamChunk
 )
-from windagent_core.tools.models import ToolInvocation, ToolResult
+from windagent_core.contracts.tools import ToolInvocation, ToolResult
+from windagent_core.contracts.health import (
+    HealthStatus, HealthProfile, HealthCheckResult, ReadinessStatus,
+    HealthCheckPort, DatabaseHealthPort, SchemaHealthPort, OutboxHealthPort,
+    WorkerHealthPort, QueueHealthPort, RegistryHealthPort, EventHealthPort,
+    FilesystemHealthPort, ConfigurationHealthPort,
+)
 from windagent_core.events.envelope import EventEnvelope
 from windagent_core.events.catalog import EventCatalog
 from windagent_core.events.registry import EventRegistry, BaseEventPayload
@@ -81,7 +84,12 @@ __all__ = [
     # Events
     "EventEnvelope", "EventCatalog",
     "redact_event_payload", "EventDeduplicator", "ReplayFilter",
-    # Contracts
+    # Health Contracts
+    "HealthStatus", "HealthProfile", "HealthCheckResult", "ReadinessStatus",
+    "HealthCheckPort", "DatabaseHealthPort", "SchemaHealthPort", "OutboxHealthPort",
+    "WorkerHealthPort", "QueueHealthPort", "RegistryHealthPort", "EventHealthPort",
+    "FilesystemHealthPort", "ConfigurationHealthPort",
+    # Other Contracts
     "Clock", "IdGenerator", "TaskRepository", "TaskRunRepository", "SessionRepository",
     "WorkflowRepository", "WorkflowRunRepository", "EventStore", "OutboxWriter", "EventPublisher",
     "ArtifactRepository", "UnitOfWork", "ExecutionRuntimePort", "ModelGatewayPort", "SecretStore",

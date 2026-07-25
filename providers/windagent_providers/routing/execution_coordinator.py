@@ -28,7 +28,7 @@ from windagent_providers.base.errors import (
     RateLimitFailure,
     SameModelEndpointExhausted,
 )
-from windagent_providers.base.ports import (
+from windagent_core.contracts.providers.ports import (
     EndpointRegistryPort,
     EndpointStatePort,
     QuotaStatePort,

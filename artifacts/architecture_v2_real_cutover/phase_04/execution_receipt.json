@@ -1,0 +1,72 @@
+{
+  "phase": "PHASE 4",
+  "name": "Tách Plugins và Skills thành package top-level",
+  "executed_at": "2026-07-25T19:30:00+07:00",
+  "execution_summary": {
+    "status": "COMPLETED",
+    "actions_performed": [
+      "Tạo cấu trúc directory plugins/ và skills/ top-level",
+      "Di chuyển windagent_tools/plugins -> plugins/windagent_plugins/",
+      "Di chuyển windagent_tools/skills -> skills/windagent_skills/",
+      "Tạo pyproject.toml cho plugins package",
+      "Tạo pyproject.toml cho skills package",
+      "Cập nhật import từ tools/windagent_tools/plugins sang windagent_plugins",
+      "Cập nhật import từ tools/windagent_tools/skills sang windagent_skills",
+      "Xóa compatibility re-export khỏi windagent_tools/__init__.py",
+      "Xóa thư mục plugins và skills cũ khỏi tools/windagent_tools/",
+      "Cập nhật workspace members trong pyproject.toml",
+      "Cập nhật pythonpath trong pytest config"
+    ],
+    "files_created": [
+      "plugins/__init__.py",
+      "plugins/pyproject.toml",
+      "plugins/windagent_plugins/__init__.py",
+      "plugins/windagent_plugins/contracts/__init__.py",
+      "plugins/windagent_plugins/loader/__init__.py",
+      "plugins/windagent_plugins/loader/loader.py",
+      "plugins/windagent_plugins/manifest/__init__.py",
+      "plugins/windagent_plugins/manifest/manifest.py",
+      "plugins/windagent_plugins/registry/__init__.py",
+      "plugins/windagent_plugins/lifecycle/__init__.py",
+      "plugins/windagent_plugins/isolation/__init__.py",
+      "plugins/windagent_plugins/security/__init__.py",
+      "skills/__init__.py",
+      "skills/pyproject.toml",
+      "skills/windagent_skills/__init__.py",
+      "skills/windagent_skills/contracts/__init__.py",
+      "skills/windagent_skills/loader/__init__.py",
+      "skills/windagent_skills/loader/manager.py",
+      "skills/windagent_skills/manifest/__init__.py",
+      "skills/windagent_skills/manifest/manifest.py",
+      "skills/windagent_skills/registry/__init__.py",
+      "skills/windagent_skills/versioning/__init__.py",
+      "skills/windagent_skills/execution/__init__.py"
+    ],
+    "files_modified": [
+      "tools/windagent_tools/__init__.py",
+      "tests/unit/tools/test_plugins_skills_mcp.py",
+      "pyproject.toml"
+    ],
+    "files_deleted": [
+      "tools/windagent_tools/plugins/loader.py",
+      "tools/windagent_tools/plugins/manifest.py",
+      "tools/windagent_tools/skills/manager.py",
+      "tools/windagent_tools/skills/manifest.py"
+    ]
+  },
+  "test_results": {
+    "total_tests": 30,
+    "passed": 30,
+    "failed": 0,
+    "skipped": 0,
+    "test_file": "tests/unit/tools/test_plugins_skills_mcp.py",
+    "execution_time_seconds": 0.76
+  },
+  "boundary_verification": {
+    "plugins_package_independent": true,
+    "skills_package_independent": true,
+    "no_compatibility_reexport": true,
+    "import_paths_updated": true,
+    "workspace_members_added": ["plugins", "skills"]
+  }
+}

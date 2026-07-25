@@ -14,7 +14,9 @@ members = [
     "windagent-memory",
     "windagent-observability",
     "windagent-orchestration",
+    "windagent-plugins",
     "windagent-providers",
+    "windagent-skills",
     "windagent-storage",
     "windagent-tools",
     "windagent-verification",
@@ -1291,6 +1293,14 @@ dependencies = [
     { name = "fastapi" },
     { name = "pydantic" },
     { name = "uvicorn", extra = ["standard"] },
+    { name = "windagent-core" },
+    { name = "windagent-execution" },
+    { name = "windagent-intelligence" },
+    { name = "windagent-observability" },
+    { name = "windagent-orchestration" },
+    { name = "windagent-providers" },
+    { name = "windagent-storage" },
+    { name = "windagent-tools" },
 ]
 
 [package.metadata]
@@ -1298,6 +1308,14 @@ requires-dist = [
     { name = "fastapi", specifier = ">=0.115.0" },
     { name = "pydantic", specifier = ">=2.7.0" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.30.0" },
+    { name = "windagent-core", editable = "core" },
+    { name = "windagent-execution", editable = "execution" },
+    { name = "windagent-intelligence", editable = "intelligence" },
+    { name = "windagent-observability", editable = "observability" },
+    { name = "windagent-orchestration", editable = "orchestration" },
+    { name = "windagent-providers", editable = "providers" },
+    { name = "windagent-storage", editable = "storage" },
+    { name = "windagent-tools", editable = "tools" },
 ]
 
 [[package]]
@@ -1306,10 +1324,24 @@ version = "0.3.0"
 source = { editable = "apps/cli" }
 dependencies = [
     { name = "click" },
+    { name = "windagent-core" },
+    { name = "windagent-intelligence" },
+    { name = "windagent-orchestration" },
+    { name = "windagent-providers" },
+    { name = "windagent-storage" },
+    { name = "windagent-tools" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "click", specifier = ">=8.0.0" }]
+requires-dist = [
+    { name = "click", specifier = ">=8.0.0" },
+    { name = "windagent-core", editable = "core" },
+    { name = "windagent-intelligence", editable = "intelligence" },
+    { name = "windagent-orchestration", editable = "orchestration" },
+    { name = "windagent-providers", editable = "providers" },
+    { name = "windagent-storage", editable = "storage" },
+    { name = "windagent-tools", editable = "tools" },
+]
 
 [[package]]
 name = "windagent-context"
@@ -1341,23 +1373,37 @@ requires-dist = [
 name = "windagent-evals"
 version = "0.3.0"
 source = { editable = "evals" }
+dependencies = [
+    { name = "windagent-core" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "windagent-core", editable = "core" }]
 
 [[package]]
 name = "windagent-execution"
 version = "0.3.0"
 source = { editable = "execution" }
+dependencies = [
+    { name = "windagent-core" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "windagent-core", editable = "core" }]
 
 [[package]]
 name = "windagent-intelligence"
 version = "0.3.0"
 source = { editable = "intelligence" }
 dependencies = [
+    { name = "windagent-context" },
     { name = "windagent-core" },
     { name = "windagent-providers" },
 ]
 
 [package.metadata]
 requires-dist = [
+    { name = "windagent-context", editable = "context" },
     { name = "windagent-core", editable = "core" },
     { name = "windagent-providers", editable = "providers" },
 ]
@@ -1381,6 +1427,16 @@ requires-dist = [
 name = "windagent-observability"
 version = "0.3.0"
 source = { editable = "observability" }
+dependencies = [
+    { name = "windagent-core" },
+    { name = "windagent-storage" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "windagent-core", editable = "core" },
+    { name = "windagent-storage", editable = "storage" },
+]
 
 [[package]]
 name = "windagent-orchestration"
@@ -1398,6 +1454,17 @@ requires-dist = [
 ]
 
 [[package]]
+name = "windagent-plugins"
+version = "0.3.0"
+source = { editable = "plugins" }
+dependencies = [
+    { name = "windagent-core" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "windagent-core", editable = "core" }]
+
+[[package]]
 name = "windagent-providers"
 version = "0.3.0"
 source = { editable = "providers" }
@@ -1413,6 +1480,17 @@ requires-dist = [
 ]
 
 [[package]]
+name = "windagent-skills"
+version = "0.3.0"
+source = { editable = "skills" }
+dependencies = [
+    { name = "windagent-core" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "windagent-core", editable = "core" }]
+
+[[package]]
 name = "windagent-storage"
 version = "0.3.0"
 source = { editable = "storage" }
@@ -1421,6 +1499,7 @@ dependencies = [
     { name = "cryptography" },
     { name = "sqlalchemy" },
     { name = "windagent-core" },
+    { name = "windagent-providers" },
 ]
 
 [package.metadata]
@@ -1429,6 +1508,7 @@ requires-dist = [
     { name = "cryptography", specifier = ">=42.0.0" },
     { name = "sqlalchemy", specifier = ">=2.0.0" },
     { name = "windagent-core", editable = "core" },
+    { name = "windagent-providers", editable = "providers" },
 ]
 
 [[package]]
@@ -1451,6 +1531,22 @@ source = { editable = "verification" }
 name = "windagent-worker"
 version = "0.3.0"
 source = { editable = "apps/worker" }
+dependencies = [
+    { name = "windagent-core" },
+    { name = "windagent-execution" },
+    { name = "windagent-observability" },
+    { name = "windagent-orchestration" },
+    { name = "windagent-storage" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "windagent-core", editable = "core" },
+    { name = "windagent-execution", editable = "execution" },
+    { name = "windagent-observability", editable = "observability" },
+    { name = "windagent-orchestration", editable = "orchestration" },
+    { name = "windagent-storage", editable = "storage" },
+]
 
 [[package]]
 name = "windagent-workflows"

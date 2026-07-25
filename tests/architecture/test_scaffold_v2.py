@@ -53,7 +53,8 @@ async def test_api_v2_skeleton_endpoints():
 
         res_ready = await client.get("/health/ready")
         assert res_ready.status_code == 200
-        assert res_ready.json()["status"] == "ready"
+        assert res_ready.json()["status"] == "DEGRADED"
+        assert res_ready.json()["checks"]["worker"]["status"] == "DOWN"
         assert res_ready.json()["service"] == "windagent-api"
 
         res_arch = await client.get("/internal/architecture")

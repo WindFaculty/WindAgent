@@ -1,0 +1,72 @@
+{
+  "phase": "8",
+  "phase_name": "Loai bo API V1 ngay",
+  "phase_title": "API V1 Removal",
+  "gate": "API_V1_REMOVED",
+  "execution_timestamp": "2026-07-25T20:45:00Z",
+  "executor": "Mistral Vibe CLI Agent",
+  "status": "COMPLETED",
+  "work_performed": [
+    {
+      "task": "Remove V1 compatibility router",
+      "action": "Deleted apps/api/windagent_api/routers/compatibility.py",
+      "status": "SUCCESS"
+    },
+    {
+      "task": "Remove V1 imports from main.py",
+      "action": "Removed v1_router and parity_router imports from apps/api/windagent_api/main.py",
+      "status": "SUCCESS"
+    },
+    {
+      "task": "Unregister V1 routers",
+      "action": "Removed app.include_router(v1_router) and app.include_router(parity_router) from main.py",
+      "status": "SUCCESS"
+    },
+    {
+      "task": "Create API V1 tombstone handler",
+      "action": "Added @app.api_route('/api/v1/{path:path}') returning 410 Gone in main.py",
+      "status": "SUCCESS"
+    },
+    {
+      "task": "Update routers __init__.py",
+      "action": "Updated docstring to reflect V1 compatibility removal",
+      "status": "SUCCESS"
+    },
+    {
+      "task": "Update desktop vite.config.ts",
+      "action": "Removed /api/v1 proxy configuration",
+      "status": "SUCCESS"
+    },
+    {
+      "task": "Update desktop routerApi.ts",
+      "action": "Changed fetchModels() from /api/v1/models to /api/v2/providers",
+      "status": "SUCCESS"
+    },
+    {
+      "task": "Update desktop Router.tsx",
+      "action": "Changed /api/v1/models to /api/v2/providers in fetch call",
+      "status": "SUCCESS"
+    },
+    {
+      "task": "Update test_api_v2.py",
+      "action": "Replaced test_v1_compatibility_and_parity_matrix with test_api_v1_tombstone_returns_410",
+      "status": "SUCCESS"
+    },
+    {
+      "task": "Create Phase 8 test suite",
+      "action": "Created tests/unit/test_phase8_api_v1_removal.py with comprehensive tests",
+      "status": "SUCCESS"
+    }
+  ],
+  "files_changed": 8,
+  "files_deleted": 1,
+  "files_created": 1,
+  "files_modified": 6,
+  "verification_required": [
+    "Run test_phase8_api_v1_removal.py",
+    "Verify API starts without errors",
+    "Verify desktop builds successfully",
+    "Verify all V2 endpoints still work",
+    "Verify /api/v1/* returns 410"
+  ]
+}

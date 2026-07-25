@@ -14,7 +14,7 @@ import os
 from typing import Optional, Dict, Any
 
 from windagent_core.domain.types import DecisionId
-from windagent_core.tools.models import ToolInvocation
+from windagent_core.contracts.tools import ToolInvocation
 from windagent_core.errors.exceptions import PermissionDeniedError, ToolExecutionError
 from windagent_core.security.types import (
     PermissionEvaluationRequest,

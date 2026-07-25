@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm --version)",
+      "Bash(rustc --version)",
+      "Bash(tauri --version)",
+      "Bash(uv --version)",
+      "Bash(cargo tauri *)",
+      "Bash(git checkout *)",
+      "Bash(uv run *)"
+    ]
+  }
+}

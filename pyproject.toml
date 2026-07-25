@@ -34,6 +34,8 @@ members = [
     "storage",
     "observability",
     "evals",
+    "plugins",
+    "skills",
 ]
 
 [tool.pytest.ini_options]
@@ -58,4 +60,6 @@ pythonpath = [
     "storage",
     "observability",
     "evals",
+    "plugins",
+    "skills",
 ]

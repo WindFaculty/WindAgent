@@ -1,271 +1,207 @@
 #!/usr/bin/env python3
-"""
-Architecture Import Boundary & Dependency Graph Linter for WindAgent V2 (Phase 16).
-Analyzes Python imports, workspace dependency declarations, package cycles, public API leakage,
-and composition roots across V2 packages.
-"""
+"""Fail-closed Architecture V2 policy checker."""
 
+import argparse
 import ast
 import json
 import sys
+import tomllib
+from collections import defaultdict
 from pathlib import Path
-from typing import Dict, List, Set, Tuple, Any
+
 import yaml
 
-ROOT_DIR = Path(__file__).resolve().parent.parent
-CONFIG_PATH = ROOT_DIR / "configs" / "architecture" / "scaffold_v2.yaml"
-ARTIFACT_DIR = ROOT_DIR / "artifacts" / "architecture_v2_completion" / "phase_16"
-ARTIFACT_DIR.mkdir(parents=True, exist_ok=True)
 
-FORBIDDEN_FRAMEWORKS_IN_CORE = {"fastapi", "starlette", "sqlalchemy", "aiosqlite", "mcp", "langgraph"}
-
-MODULE_TO_PKG_MAP = {
-    "windagent_core": "core",
-    "windagent_orchestration": "orchestration",
-    "windagent_intelligence": "intelligence",
-    "windagent_providers": "providers",
-    "windagent_tools": "tools",
-    "windagent_workflows": "workflows",
-    "windagent_verification": "verification",
-    "windagent_context": "context",
-    "windagent_memory": "memory",
-    "windagent_execution": "execution",
-    "windagent_storage": "storage",
-    "windagent_observability": "observability",
-    "windagent_evals": "evals",
-    "windagent_api": "api",
-    "windagent_cli": "cli",
-    "windagent_worker": "worker",
-}
+DEFAULT_ROOT = Path(__file__).resolve().parent.parent
+DEFAULT_CONFIG = DEFAULT_ROOT / "configs" / "architecture" / "scaffold_v2.yaml"
+DEFAULT_REPORT = DEFAULT_ROOT / "artifacts" / "architecture_v2_completion" / "phase_16" / "dependency_boundary_report.json"
+FORBIDDEN_CORE_IMPORTS = {"aiosqlite", "fastapi", "langgraph", "mcp", "sqlalchemy", "starlette"}
+APP_PACKAGES = {"api", "cli", "worker"}
 
 
-def load_config() -> dict:
-    if not CONFIG_PATH.exists():
-        raise FileNotFoundError(f"Config path {CONFIG_PATH} not found.")
-    with open(CONFIG_PATH, "r", encoding="utf-8") as f:
-        return yaml.safe_load(f)
+def normalize_dependency(value: str) -> str:
+    value = value.split("[", 1)[0].split(";", 1)[0].strip().lower().replace("_", "-")
+    for marker in (">", "<", "=", "!", "~"):
+        value = value.split(marker, 1)[0]
+    return value
 
 
-class ImportVisitor(ast.NodeVisitor):
-    def __init__(self, file_path: Path):
-        self.file_path = file_path
-        self.imports = []
-
-    def visit_Import(self, node: ast.Import):
-        for alias in node.names:
-            self.imports.append((node.lineno, alias.name))
-        self.generic_visit(node)
-
-    def visit_ImportFrom(self, node: ast.ImportFrom):
-        if node.module:
-            self.imports.append((node.lineno, node.module))
-        self.generic_visit(node)
+def read_pyproject(path: Path) -> dict:
+    if not path.exists():
+        return {}
+    with path.open("rb") as stream:
+        return tomllib.load(stream)
 
 
-def parse_pyproject_deps(pkg_dir: Path) -> Set[str]:
-    pyproject_file = pkg_dir / "pyproject.toml"
-    if not pyproject_file.exists():
-        return set()
-    text = pyproject_file.read_text(encoding="utf-8")
-    deps = set()
-    in_deps = False
-    for line in text.splitlines():
-        line_s = line.strip()
-        if line_s == "dependencies = [":
-            in_deps = True
+def package_dependencies(path: Path) -> set[str]:
+    project = read_pyproject(path / "pyproject.toml").get("project", {})
+    return {normalize_dependency(item) for item in project.get("dependencies", [])}
+
+
+def imports_and_classes(path: Path):
+    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    imports = []
+    classes = []
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            imports.extend((node.lineno, item.name) for item in node.names)
+        elif isinstance(node, ast.ImportFrom) and node.module:
+            imports.append((node.lineno, node.module))
+        elif isinstance(node, ast.ClassDef):
+            fields = sorted(
+                child.target.id
+                for child in node.body
+                if isinstance(child, ast.AnnAssign) and isinstance(child.target, ast.Name)
+            )
+            classes.append((node.lineno, node.name, fields))
+    return imports, classes
+
+
+def cycles(graph: dict[str, set[str]]) -> list[list[str]]:
+    found = []
+    active = []
+    done = set()
+
+    def visit(node: str):
+        if node in active:
+            found.append(active[active.index(node):] + [node])
+            return
+        if node in done:
+            return
+        active.append(node)
+        for child in graph.get(node, set()):
+            visit(child)
+        active.pop()
+        done.add(node)
+
+    for node in graph:
+        visit(node)
+    return found
+
+
+def check(root: Path, config: dict) -> tuple[dict, dict]:
+    packages = config.get("packages", {})
+    rules = config.get("global_rules", {})
+    canonical = set(config.get("canonical_models", []))
+    namespaces = {info["namespace"]: name for name, info in packages.items()}
+    violations = []
+    graph = {name: set() for name in packages}
+    edges = []
+    versions = defaultdict(list)
+    definitions = defaultdict(list)
+
+    def add(rule: str, file: str, line: int, message: str):
+        violations.append({"rule": rule, "file": file, "line": line, "message": message})
+
+    for required in config.get("required_top_level_packages", []):
+        if not (root / required).is_dir():
+            add("missing_top_level_package", required, 1, f"Top-level package missing: {required}")
+
+    configured_members = set(config.get("workspace", {}).get("members", []))
+    root_project = read_pyproject(root / "pyproject.toml")
+    actual_members = set(root_project.get("tool", {}).get("uv", {}).get("workspace", {}).get("members", configured_members))
+    expected_members = {info["path"] for info in packages.values()}
+    for member in sorted(expected_members - actual_members):
+        add("workspace_member_missing", "pyproject.toml", 1, f"Workspace member not declared: {member}")
+
+    for name, info in packages.items():
+        package_path = root / info["path"]
+        namespace_path = package_path / info["namespace"]
+        if not package_path.is_dir():
+            add("missing_package", info["path"], 1, f"Package path missing: {info['path']}")
             continue
-        if in_deps:
-            if line_s == "]":
-                in_deps = False
-                continue
-            dep_name = line_s.strip('",\'')
-            if dep_name:
-                deps.add(dep_name.replace("-", "_"))
-    return deps
-
-
-def check_circular_dependencies(dep_graph: Dict[str, Set[str]]) -> List[List[str]]:
-    cycles = []
-    visited = set()
-    rec_stack = set()
-
-    def dfs(node: str, path: List[str]):
-        visited.add(node)
-        rec_stack.add(node)
-        path.append(node)
-
-        for neighbor in dep_graph.get(node, set()):
-            if neighbor not in visited:
-                dfs(neighbor, path)
-            elif neighbor in rec_stack:
-                cycle_start = path.index(neighbor)
-                cycles.append(path[cycle_start:] + [neighbor])
-
-        path.pop()
-        rec_stack.remove(node)
-
-    for pkg in dep_graph:
-        if pkg not in visited:
-            dfs(pkg, [])
-
-    return cycles
-
-
-def main() -> int:
-    config = load_config()
-    packages_config = config.get("packages", {})
-    
-    all_violations: List[Dict[str, Any]] = []
-    scanned_files = 0
-    package_deps: Dict[str, Set[str]] = {pkg: set() for pkg in packages_config}
-    graph_nodes = []
-    graph_edges = []
-
-    # Map pyproject dependencies per package
-    pyproject_deps_map: Dict[str, Set[str]] = {}
-    for pkg_name, pkg_info in packages_config.items():
-        pkg_dir = ROOT_DIR / pkg_info["path"]
-        pyproject_deps_map[pkg_name] = parse_pyproject_deps(pkg_dir)
-
-    for pkg_name, pkg_info in packages_config.items():
-        pkg_path = ROOT_DIR / pkg_info["path"]
-        if not pkg_path.exists():
+        if not namespace_path.is_dir():
+            add("namespace_path_mismatch", info["path"], 1, f"Namespace path missing: {info['namespace']}")
             continue
 
-        allowed_deps = set(pkg_info.get("allowed_dependencies", []))
-        forbidden_deps = set(pkg_info.get("forbidden_dependencies", []))
-        declared_deps = pyproject_deps_map.get(pkg_name, set())
+        metadata = read_pyproject(package_path / "pyproject.toml").get("project", {})
+        version = metadata.get("version")
+        if version:
+            versions[version].append(name)
+        declared = package_dependencies(package_path)
+        allowed = {item.removeprefix("windagent_").removeprefix("windagent-") for item in info.get("allowed_dependencies", [])}
 
-        for py_file in pkg_path.rglob("*.py"):
-            scanned_files += 1
-            rel_file_path = str(py_file.relative_to(ROOT_DIR))
-
+        for source in namespace_path.rglob("*.py"):
+            relative = source.relative_to(root).as_posix()
             try:
-                content = py_file.read_text(encoding="utf-8")
-                tree = ast.parse(content, filename=str(py_file))
-            except SyntaxError as e:
-                all_violations.append({
-                    "rule": "syntax_error",
-                    "file": rel_file_path,
-                    "line": 1,
-                    "message": f"Syntax error: {e}"
-                })
+                imports, classes = imports_and_classes(source)
+            except SyntaxError as error:
+                add("syntax_error", relative, error.lineno or 1, str(error))
                 continue
 
-            visitor = ImportVisitor(py_file)
-            visitor.visit(tree)
+            for line, class_name, fields in classes:
+                if class_name in canonical:
+                    definitions[class_name].append((relative, line, fields))
 
-            for line_no, imported_module in visitor.imports:
-                root_imported = imported_module.split(".")[0]
+            for line, module in imports:
+                root_module = module.split(".")[0]
+                target = namespaces.get(root_module)
+                if module.startswith("apps.backend") or module.startswith("backend"):
+                    if rules.get("forbid_legacy_backend_imports", True):
+                        add("legacy_backend_import", relative, line, f"Legacy backend import: {module}")
+                if name == "core" and root_module in FORBIDDEN_CORE_IMPORTS and rules.get("forbid_core_framework_imports", True):
+                    add("core_framework_import", relative, line, f"Core imports framework: {module}")
+                if target is None or target == name:
+                    continue
+                graph[name].add(target)
+                edges.append({"from": name, "to": target, "file": relative, "line": line})
+                if name in APP_PACKAGES and target in APP_PACKAGES and rules.get("forbid_cross_app_imports", True):
+                    add("cross_app_dependency", relative, line, f"Cross-app import: {name} imports {target}")
+                if target not in allowed:
+                    add("disallowed_dependency", relative, line, f"{name} cannot depend on {target}")
+                expected = normalize_dependency(packages[target].get("distribution", packages[target]["namespace"]))
+                if rules.get("require_declared_workspace_dependencies", True) and expected not in declared:
+                    add("undeclared_workspace_dependency", relative, line, f"Missing declared dependency: {expected}")
+                if rules.get("forbid_public_api_leakage", True) and any(part.startswith("_") for part in module.split(".")[1:]):
+                    add("public_api_leakage", relative, line, f"Private module import: {module}")
 
-                # Identify imported package
-                target_pkg = MODULE_TO_PKG_MAP.get(root_imported)
-                if target_pkg and target_pkg != pkg_name:
-                    package_deps[pkg_name].add(target_pkg)
-                    graph_edges.append({
-                        "from": pkg_name,
-                        "to": target_pkg,
-                        "file": rel_file_path,
-                        "line": line_no
-                    })
+    if rules.get("forbid_dependency_cycles", True):
+        for cycle in cycles(graph):
+            add("dependency_cycle", "workspace", 1, "Dependency cycle: " + " -> ".join(cycle))
 
-                    # Check 1: Allowed dependencies check from scaffold_v2.yaml
-                    target_pkg_mod = f"windagent_{target_pkg}" if target_pkg not in ("api", "cli", "worker") else f"windagent_{target_pkg}"
-                    if allowed_deps and target_pkg_mod not in allowed_deps and f"windagent_{target_pkg}" not in allowed_deps:
-                        # Allow apps to import packages specified in allowed_dependencies
-                        pass
+    for model, locations in definitions.items():
+        if len(locations) > 1:
+            signatures = {tuple(item[2]) for item in locations}
+            detail = ", ".join(f"{file}:{line}" for file, line, _ in locations)
+            add("duplicate_canonical_model", detail, 1, f"Duplicate {model}; field signatures: {len(signatures)}")
 
-                    # Check 2: Undeclared workspace dependency in pyproject.toml
-                    expected_dep_name = f"windagent_{target_pkg}".replace("_", "-")
-                    if target_pkg not in ("api", "cli", "worker") and expected_dep_name not in pyproject_deps_map[pkg_name] and expected_dep_name.replace("-", "_") not in pyproject_deps_map[pkg_name]:
-                        # Exception: core has no workspace deps
-                        if pkg_name != "core":
-                            all_violations.append({
-                                "rule": "undeclared_workspace_dependency",
-                                "file": rel_file_path,
-                                "line": line_no,
-                                "message": f"Package '{pkg_name}' imports '{imported_module}' but does not declare '{expected_dep_name}' in pyproject.toml"
-                            })
+    if len(versions) > 1:
+        add("package_version_mismatch", "workspace", 1, f"Package versions differ: {sorted(versions)}")
 
-                # Check 3: Layer violation - non-apps importing apps
-                if pkg_name not in ("api", "cli", "worker") and root_imported in ("apps", "windagent_api", "windagent_cli", "windagent_worker"):
-                    all_violations.append({
-                        "rule": "layer_violation",
-                        "file": rel_file_path,
-                        "line": line_no,
-                        "message": f"Layer Violation - '{pkg_name}' cannot import application layer '{imported_module}'"
-                    })
-
-                # Check 4: Core framework boundary violation
-                if pkg_name == "core" and root_imported in FORBIDDEN_FRAMEWORKS_IN_CORE:
-                    all_violations.append({
-                        "rule": "framework_boundary_violation",
-                        "file": rel_file_path,
-                        "line": line_no,
-                        "message": f"Framework Boundary Violation - 'core' domain layer cannot import '{imported_module}'"
-                    })
-
-                # Check 5: Configured forbidden dependencies
-                for forbidden in forbidden_deps:
-                    if root_imported == forbidden or imported_module == forbidden or imported_module.startswith(f"{forbidden}."):
-                        all_violations.append({
-                            "rule": "forbidden_dependency",
-                            "file": rel_file_path,
-                            "line": line_no,
-                            "message": f"Forbidden Dependency - '{pkg_name}' cannot import '{imported_module}' (forbidden: {forbidden})"
-                        })
-
-    # Check 6: Circular Dependencies
-    cycles = check_circular_dependencies(package_deps)
-    for cycle in cycles:
-        all_violations.append({
-            "rule": "circular_dependency",
-            "file": "workspace",
-            "line": 1,
-            "message": f"Circular dependency cycle detected: {' -> '.join(cycle)}"
-        })
-
-    # Generate Import Graph Artifact
-    for pkg in packages_config:
-        graph_nodes.append({
-            "id": pkg,
-            "path": packages_config[pkg]["path"],
-            "namespace": packages_config[pkg]["namespace"]
-        })
-
-    import_graph = {
-        "nodes": graph_nodes,
-        "edges": graph_edges,
-        "adjacency_list": {pkg: sorted(list(deps)) for pkg, deps in package_deps.items()}
+    graph_report = {
+        "nodes": [{"id": name, "path": info["path"], "namespace": info["namespace"]} for name, info in packages.items()],
+        "edges": edges,
+        "adjacency_list": {name: sorted(targets) for name, targets in graph.items()},
     }
-
-    with open(ARTIFACT_DIR / "import_graph.json", "w", encoding="utf-8") as f:
-        json.dump(import_graph, f, indent=2, ensure_ascii=False)
-
-    # Generate Dependency Boundary Report Artifact
-    boundary_report = {
-        "scanned_files": scanned_files,
-        "total_violations": len(all_violations),
-        "violations": all_violations,
-        "circular_dependency_cycles": len(cycles),
-        "status": "PASS" if len(all_violations) == 0 else "FAIL"
+    report = {
+        "status": "PASS" if not violations else "FAIL",
+        "total_violations": len(violations),
+        "violations": violations,
+        "circular_dependency_cycles": sum(item["rule"] == "dependency_cycle" for item in violations),
     }
+    return report, graph_report
 
-    with open(ARTIFACT_DIR / "dependency_boundary_report.json", "w", encoding="utf-8") as f:
-        json.dump(boundary_report, f, indent=2, ensure_ascii=False)
 
-    print(f"Scanned {scanned_files} Python files across V2 architecture packages.")
-    print(f"Import graph written to: artifacts/architecture_v2_completion/phase_16/import_graph.json")
-    print(f"Dependency boundary report written to: artifacts/architecture_v2_completion/phase_16/dependency_boundary_report.json")
-
-    if all_violations:
-        print(f"\nFOUND {len(all_violations)} ARCHITECTURE IMPORT VIOLATIONS:")
-        for v in all_violations:
-            print(f"  [FAIL] ({v['rule']}) {v['file']}:{v['line']} - {v['message']}")
-        return 1
-
-    print("[PASS] Architecture import & dependency graph check passed: Zero boundary violations detected.")
-    return 0
+def main(argv=None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--root", type=Path, default=DEFAULT_ROOT)
+    parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
+    parser.add_argument("--report", type=Path, default=DEFAULT_REPORT)
+    parser.add_argument("--graph", type=Path)
+    args = parser.parse_args(argv)
+    config = yaml.safe_load(args.config.read_text(encoding="utf-8"))
+    report, graph = check(args.root.resolve(), config)
+    args.report.parent.mkdir(parents=True, exist_ok=True)
+    args.report.write_text(json.dumps(report, indent=2), encoding="utf-8")
+    graph_path = args.graph or args.report.with_name("import_graph.json")
+    graph_path.parent.mkdir(parents=True, exist_ok=True)
+    graph_path.write_text(json.dumps(graph, indent=2), encoding="utf-8")
+    print(f"Architecture policy: {report['status']} ({report['total_violations']} violations)")
+    for item in report["violations"]:
+        print(f"[{item['rule']}] {item['file']}:{item['line']} {item['message']}")
+    if report["status"] == "PASS":
+        print("Zero boundary violations detected")
+    return 0 if report["status"] == "PASS" else 1
 
 
 if __name__ == "__main__":

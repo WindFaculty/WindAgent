@@ -1,8 +1,24 @@
 {
-  "total": 483,
-  "passed": 473,
-  "failed": 9,
-  "skipped": 1,
-  "summary": "Unknown",
-  "returncode": 1
+  "phase": "00",
+  "overall_status": "FAIL",
+  "checks": [
+    {"name": "python_package_imports", "status": "PASS", "exit_code": 0},
+    {"name": "all_tests", "status": "FAIL", "exit_code": 1, "summary": "9 failed, 473 passed, 1 skipped, 2 warnings"},
+    {"name": "backend_tests", "status": "FAIL", "exit_code": 1, "summary": "107 failed, 290 passed, 51 errors, 2 warnings"},
+    {"name": "api_tests", "status": "PASS", "exit_code": 0, "summary": "20 passed, 6 deselected, 1 warning"},
+    {"name": "worker_tests", "status": "PASS", "exit_code": 0},
+    {"name": "cli_tests", "status": "PASS", "exit_code": 0},
+    {"name": "desktop_typecheck", "status": "PASS", "exit_code": 0},
+    {"name": "web_typecheck", "status": "PASS", "exit_code": 0},
+    {"name": "desktop_build", "status": "PASS", "exit_code": 0, "warning": "Vite chunk larger than 500 kB"},
+    {"name": "web_build", "status": "PASS", "exit_code": 0},
+    {"name": "architecture_dependency_graph", "status": "PASS", "exit_code": 0}
+  ],
+  "preexisting_failures": [
+    "Integration execute/workflow endpoints return 404 instead of expected 200/202/400.",
+    "Startup recovery wiring assertion fails.",
+    "Intelligence forbidden-import rule finds 43 orchestration imports.",
+    "Legacy compatibility shim raises AttributeError on Depends object.",
+    "Legacy backend suite has broad route/fixture failures: 107 failed and 51 errors."
+  ]
 }

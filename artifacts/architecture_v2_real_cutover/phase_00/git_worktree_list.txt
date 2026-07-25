@@ -1,0 +1,4 @@
+worktree D:/code_ca_nhan/WindAgent
+HEAD 28d7fa1be11bbea954ee0977ee0252e2faabd1c7
+branch refs/heads/refactor/architecture-v2-full-completion
+

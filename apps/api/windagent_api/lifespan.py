@@ -19,6 +19,7 @@ logger = logging.getLogger("windagent.api.lifespan")
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """FastAPI async contextmanager managing container lifecycle."""
     bootstrap_config = initialize_bootstrap()
+    app.state.bootstrap_config = bootstrap_config
     container = ApplicationContainer(db_url=bootstrap_config.db_url)
     
     await container.bootstrap()
@@ -26,11 +27,12 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     # Store container in app state
     app.state.container = container
     app.state.db = container.db
-    app.state.event_bus = container.event_bus
+    app.state.event_bus = container.event_dispatcher
     app.state.task_manager = container.task_manager
     app.state.orchestration_container = container.orchestration_container
     app.state.provider_registry = container.provider_registry
     app.state.tool_registry = container.tool_registry
+    app.state.worker_status_query = container.worker_status_query
 
     logger.info("FastAPI lifespan startup complete.")
     try:

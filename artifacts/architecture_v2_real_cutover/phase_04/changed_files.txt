@@ -1,0 +1,44 @@
+ M apps/api/windagent_api/composition.py
+ M apps/api/windagent_api/health.py
+ M apps/api/windagent_api/lifespan.py
+ M apps/worker/windagent_worker/runner.py
+ M artifacts/architecture_v2_completion/phase_16/dependency_boundary_report.json
+ M artifacts/architecture_v2_completion/phase_16/import_graph.json
+ M ban_ke_hoach.md
+ M configs/architecture/scaffold_v2.yaml
+ M core/windagent_core/contracts/__init__.py
+ M observability/README.md
+ M observability/pyproject.toml
+ M pyproject.toml
+ M scripts/check_architecture_imports.py
+ M scripts/scaffold_architecture_v2.py
+ M storage/windagent_storage/__init__.py
+ M storage/windagent_storage/orm/models.py
+ M storage/windagent_storage/outbox/processor.py
+ M storage/windagent_storage/repositories/sql_repositories.py
+ M tests/architecture/test_scaffold_v2.py
+ M tests/unit/api/test_phase25_api_cutover.py
+ M tests/unit/tools/test_plugins_skills_mcp.py
+ M tools/windagent_tools/__init__.py
+ D tools/windagent_tools/plugins/loader.py
+ D tools/windagent_tools/plugins/manifest.py
+ D tools/windagent_tools/skills/manager.py
+ D tools/windagent_tools/skills/manifest.py
+ M uv.lock
+?? .claude/
+?? apps/worker/windagent_worker/__main__.py
+?? artifacts/architecture_v2_real_cutover/
+?? core/windagent_core/contracts/workers/
+?? observability/windagent_observability/events/
+?? plugins/pyproject.toml
+?? plugins/windagent_plugins/
+?? skills/pyproject.toml
+?? skills/windagent_skills/
+?? storage/windagent_storage/outbox/models.py
+?? storage/windagent_storage/outbox/repository.py
+?? storage/windagent_storage/outbox/sql_repository.py
+?? storage/windagent_storage/repositories/worker_status.py
+?? tests/architecture/test_architecture_policy.py
+?? tests/architecture/test_phase02_api_worker_boundary.py
+?? tests/architecture/test_scaffold_generator_policy.py
+?? tests/unit/storage/test_phase3_outbox.py

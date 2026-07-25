@@ -88,14 +88,19 @@ class OutboxRecordORM(BaseORM):
 
     id = Column(String(36), primary_key=True)
     event_id = Column(String(36), nullable=False, index=True)
+    aggregate_id = Column(String(36), nullable=True, index=True)
+    aggregate_type = Column(String(64), nullable=True)
     event_type = Column(String(64), nullable=False)
-    session_id = Column(String(36), nullable=False)
-    sequence = Column(Integer, nullable=False, default=0)
     payload_json = Column(Text, nullable=False)
-    status = Column(String(32), nullable=False, default="pending")  # pending, published, failed
+    schema_version = Column(Integer, nullable=False, default=1)
+    sequence_number = Column(Integer, nullable=False, default=0)
     created_at = Column(DateTime, nullable=False, default=default_utc_now)
+    available_at = Column(DateTime, nullable=False, default=default_utc_now)
     published_at = Column(DateTime, nullable=True)
-    retry_count = Column(Integer, nullable=False, default=0)
+    attempt_count = Column(Integer, nullable=False, default=0)
+    last_error = Column(Text, nullable=True)
+    status = Column(String(32), nullable=False, default="pending")  # pending, published, failed, dead_letter
+    deduplication_key = Column(String(128), nullable=True, unique=True)
 
 
 class ArtifactRefORM(BaseORM):

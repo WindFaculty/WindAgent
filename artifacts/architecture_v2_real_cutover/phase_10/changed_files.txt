@@ -1,0 +1,147 @@
+# PHASE 10 - Changed Files
+
+## New Files Created
+
+### Health Check Contracts
+- `core/windagent_core/contracts/health.py` (143 lines)
+  - HealthStatus enum (UP, DEGRADED, DOWN, NOT_REQUIRED)
+  - HealthProfile enum (PRODUCTION, DEVELOPMENT, TEST)
+  - HealthCheckResult dataclass
+  - ReadinessStatus dataclass
+  - Health check ports (Protocol definitions)
+
+### Health Check Implementation
+- `observability/windagent_observability/health/__init__.py` (18 lines)
+  - Module exports for health package
+
+- `observability/windagent_observability/health/contracts.py` (50 lines)
+  - Mirror of core health contracts for observability module
+
+- `observability/windagent_observability/health/checker.py` (650 lines)
+  - HealthChecker service class
+  - Liveness check implementation
+  - All 13 readiness checks:
+    * _check_database_connection
+    * _check_schema_migration
+    * _check_outbox_publisher
+    * _check_queue_access
+    * _check_worker_heartbeat
+    * _check_provider_registry
+    * _check_tool_registry
+    * _check_plugin_registry
+    * _check_skill_registry
+    * _check_workflow_registry
+    * _check_event_dispatcher
+    * _check_required_filesystem_paths
+    * _check_configuration
+  - Profile-based status calculation
+  - Concurrent check execution with asyncio.gather
+
+### Test Files
+- `tests/unit/observability/__init__.py` (3 lines)
+  - Test package initialization
+
+- `tests/unit/observability/test_phase10_health.py` (450 lines)
+  - HealthChecker initialization tests
+  - Liveness check tests
+  - Individual readiness check tests (database, schema, worker, registries)
+  - Overall status calculation tests
+  - Full readiness check integration tests
+  - Serialization tests
+  - Profile-based behavior tests
+
+- `tests/unit/api/test_phase10_health_endpoints.py` (180 lines)
+  - API /health/live endpoint tests
+  - API /health/ready endpoint tests
+  - Response structure validation tests
+  - No hardcoded values verification tests
+  - Profile-based behavior tests
+
+- `tests/unit/cli/test_phase10_doctor.py` (120 lines)
+  - CLI doctor command tests
+  - Runtime health check verification tests
+  - Script check verification tests
+  - Exit code tests
+  - Profile consistency tests
+
+## Modified Files
+
+### API Health Endpoints
+- `apps/api/windagent_api/health.py`
+  - **Before**: Hardcoded values, limited checks
+  - **After**: Uses HealthChecker service, all real checks, profile-based behavior
+  - **Lines changed**: +85, -71
+  - **Changes**:
+    - Added get_health_checker() dependency function
+    - Updated /health/live to use checker.check_liveness()
+    - Updated /health/ready to use checker.check_readiness()
+    - Added profile detection from bootstrap config
+    - Removed all hardcoded values (schema version, outbox count, event bus)
+    - Added all 13 required readiness checks
+    - Implemented fail-closed behavior (503 on non-UP status)
+
+### CLI Doctor Command
+- `apps/cli/windagent_cli/main.py`
+  - **Before**: Only checked architecture scripts
+  - **After**: Uses HealthChecker service for runtime checks
+  - **Lines changed**: +5, -3
+  - **Changes**:
+    - Updated doctor() function to use DoctorCommandComposer.run_checks_sync()
+    - Updated docstring to reference Phase 10
+    - Updated output header to show "Phase 10 - Real Health Checks"
+    - Added profile display in output
+
+- `apps/cli/windagent_cli/composition.py`
+  - **Before**: Simple script-based checks only
+  - **After**: Full HealthChecker integration
+  - **Lines changed**: +180, -45
+  - **Changes**:
+    - Added db_url parameter to DoctorCommandComposer
+    - Added _health_checker attribute
+    - Added initialize() method to create HealthChecker with real services
+    - Added run_checks() method for async execution
+    - Added run_checks_sync() method for synchronous execution
+    - Integrated all 13 health checks from HealthChecker
+    - Combined script checks with runtime checks
+    - Added proper status aggregation
+
+### Module Exports
+- `observability/windagent_observability/__init__.py`
+  - **Before**: No health exports
+  - **After**: Exports health module components
+  - **Lines changed**: +10, -0
+  - **Changes**:
+    - Added imports from health module
+    - Added HealthChecker, HealthStatus, HealthProfile, etc. to __all__
+
+- `core/windagent_core/__init__.py`
+  - **Before**: No health exports
+  - **After**: Exports health contracts
+  - **Lines changed**: +15, -0
+  - **Changes**:
+    - Added imports from contracts.health
+    - Added all health contract classes to __all__
+
+## Files Not Modified
+
+The following files were considered but NOT modified:
+- `apps/api/windagent_api/main.py` - No changes needed, health router already registered
+- `apps/api/windagent_api/lifespan.py` - No changes needed, container already has required services
+- `apps/api/windagent_api/composition.py` - No changes needed, already composes required services
+
+## Summary
+
+- **New files**: 8
+- **Modified files**: 5
+- **Deleted files**: 0
+- **Total lines added**: ~1,649
+- **Total lines removed**: ~116
+- **Net change**: ~1,533 lines
+
+## Artifacts Created
+
+- `artifacts/architecture_v2_real_cutover/phase_10/execution_receipt.json`
+- `artifacts/architecture_v2_real_cutover/phase_10/risk_register.md`
+- `artifacts/architecture_v2_real_cutover/phase_10/changed_files.txt`
+- `artifacts/architecture_v2_real_cutover/phase_10/test_results.json` (to be generated)
+- `artifacts/architecture_v2_real_cutover/phase_10/phase_verdict.md` (to be generated)

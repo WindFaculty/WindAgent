@@ -1,0 +1,114 @@
+ M apps/backend/services/provider_v3_composition.py
+ M artifacts/architecture_v2_completion/phase_16/import_graph.json
+ M configs/architecture/scaffold_v2.yaml
+ M core/windagent_core/__init__.py
+ M core/windagent_core/contracts/__init__.py
+ M core/windagent_core/domain/models.py
+ D core/windagent_core/providers/__init__.py
+ D core/windagent_core/providers/models.py
+ D core/windagent_core/tools/__init__.py
+ D core/windagent_core/tools/models.py
+ M plugins/pyproject.toml
+ M providers/pyproject.toml
+ M providers/windagent_providers/base/__init__.py
+ M providers/windagent_providers/base/contracts.py
+ D providers/windagent_providers/base/ports.py
+ M providers/windagent_providers/cache/__init__.py
+ M providers/windagent_providers/cache/backends.py
+ M providers/windagent_providers/cache/discovery_cache.py
+ M providers/windagent_providers/cache/health_cache.py
+ M providers/windagent_providers/cache/response_cache.py
+ M providers/windagent_providers/cache/route_cache.py
+ M providers/windagent_providers/routing/circuit_breaker.py
+ M providers/windagent_providers/routing/cooldown.py
+ M providers/windagent_providers/routing/endpoint_selector.py
+ M providers/windagent_providers/routing/execution_coordinator.py
+ M providers/windagent_providers/routing/memory_ports.py
+ M scripts/check_phase12_duplicates.py
+ M skills/pyproject.toml
+ M storage/windagent_storage/repositories/v3_repositories.py
+ D test_phase6_import.py
+ M tests/unit/core/test_domain_core.py
+ M tests/unit/intelligence/test_model_router.py
+ M tests/unit/providers/test_cache_singleflight.py
+ M tests/unit/providers/test_phase9_providers_and_intelligence.py
+ M tests/unit/tools/test_phase10_tools_and_security.py
+ M tests/unit/tools/test_phase19_tool_platform.py
+ M tests/unit/tools/test_plugins_skills_mcp.py
+ M tests/unit/tools/test_tool_platform.py
+ M tools/windagent_tools/adapters/legacy_tools.py
+ M tools/windagent_tools/ast/tool.py
+ M tools/windagent_tools/base.py
+ M tools/windagent_tools/browser/tool.py
+ M tools/windagent_tools/code_search/tool.py
+ M tools/windagent_tools/database/tool.py
+ M tools/windagent_tools/filesystem/canonical.py
+ M tools/windagent_tools/git/tool.py
+ M tools/windagent_tools/github/tool.py
+ M tools/windagent_tools/lsp/tool.py
+ M tools/windagent_tools/mcp/adapter.py
+ M tools/windagent_tools/registry/registry.py
+ M tools/windagent_tools/security/permission_engine.py
+ M tools/windagent_tools/shell/tool.py
+ M tools/windagent_tools/testing/tool.py
+ M uv.lock
+?? artifacts/architecture_v2_real_cutover/phase_05/
+?? core/windagent_core/contracts/providers/
+?? core/windagent_core/contracts/tools/
+?? scripts/check_duplicate_canonical_models.py
+?? tests/unit/core/test_phase5_canonical_contracts.py
+?? tests/unit/providers/mock_adapter.py
+apps/backend/services/provider_v3_composition.py
+artifacts/architecture_v2_completion/phase_16/import_graph.json
+configs/architecture/scaffold_v2.yaml
+core/windagent_core/__init__.py
+core/windagent_core/contracts/__init__.py
+core/windagent_core/domain/models.py
+core/windagent_core/providers/__init__.py
+core/windagent_core/providers/models.py
+core/windagent_core/tools/__init__.py
+core/windagent_core/tools/models.py
+plugins/pyproject.toml
+providers/pyproject.toml
+providers/windagent_providers/base/__init__.py
+providers/windagent_providers/base/contracts.py
+providers/windagent_providers/base/ports.py
+providers/windagent_providers/cache/__init__.py
+providers/windagent_providers/cache/backends.py
+providers/windagent_providers/cache/discovery_cache.py
+providers/windagent_providers/cache/health_cache.py
+providers/windagent_providers/cache/response_cache.py
+providers/windagent_providers/cache/route_cache.py
+providers/windagent_providers/routing/circuit_breaker.py
+providers/windagent_providers/routing/cooldown.py
+providers/windagent_providers/routing/endpoint_selector.py
+providers/windagent_providers/routing/execution_coordinator.py
+providers/windagent_providers/routing/memory_ports.py
+scripts/check_phase12_duplicates.py
+skills/pyproject.toml
+storage/windagent_storage/repositories/v3_repositories.py
+test_phase6_import.py
+tests/unit/core/test_domain_core.py
+tests/unit/intelligence/test_model_router.py
+tests/unit/providers/test_cache_singleflight.py
+tests/unit/providers/test_phase9_providers_and_intelligence.py
+tests/unit/tools/test_phase10_tools_and_security.py
+tests/unit/tools/test_phase19_tool_platform.py
+tests/unit/tools/test_plugins_skills_mcp.py
+tests/unit/tools/test_tool_platform.py
+tools/windagent_tools/adapters/legacy_tools.py
+tools/windagent_tools/ast/tool.py
+tools/windagent_tools/base.py
+tools/windagent_tools/browser/tool.py
+tools/windagent_tools/code_search/tool.py
+tools/windagent_tools/database/tool.py
+tools/windagent_tools/filesystem/canonical.py
+tools/windagent_tools/git/tool.py
+tools/windagent_tools/github/tool.py
+tools/windagent_tools/lsp/tool.py
+tools/windagent_tools/mcp/adapter.py
+tools/windagent_tools/registry/registry.py
+tools/windagent_tools/security/permission_engine.py
+tools/windagent_tools/shell/tool.py
+tools/windagent_tools/testing/tool.py
+uv.lock

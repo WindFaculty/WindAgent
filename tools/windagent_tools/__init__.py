@@ -19,10 +19,6 @@ from windagent_tools.testing import TestRunnerTool
 from windagent_tools.browser import OpenURLTool, ClickXYTool
 from windagent_tools.database import DatabaseQueryTool
 from windagent_tools.github import GitHubTool
-from windagent_tools.plugins.manifest import PluginManifest
-from windagent_tools.plugins.loader import PluginLoader
-from windagent_tools.skills.manifest import SkillManifest
-from windagent_tools.skills.manager import SkillManager
 from windagent_tools.mcp.client import (
     MCPClientPort, MCPServerConfig, MCPTransportType, MCPToolInfo
 )
@@ -44,8 +40,6 @@ __all__ = [
     "OpenURLTool", "ClickXYTool",
     "DatabaseQueryTool",
     "GitHubTool",
-    "PluginManifest", "PluginLoader",
-    "SkillManifest", "SkillManager",
     "MCPClientPort", "MCPServerConfig", "MCPTransportType", "MCPToolInfo",
     "MCPToolAdapter", "register_mcp_server_tools",
 ]

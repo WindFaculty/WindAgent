@@ -458,7 +458,7 @@ export function Router() {
       }
 
       // 5. Fetch Available Models
-      const modelsRes = await fetch("/api/v1/models");
+      const modelsRes = await fetch("/api/v2/providers");
       if (modelsRes.ok) {
         const modelsJson = await modelsRes.json();
         setAvailableModels(modelsJson.map((m: any) => ({

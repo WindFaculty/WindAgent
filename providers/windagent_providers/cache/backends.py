@@ -10,7 +10,7 @@ import threading
 import time
 from typing import Any, Dict, List, Optional
 
-from windagent_providers.base.ports import CachePort
+from windagent_core.contracts.providers.ports import CachePort
 
 
 class InMemoryCacheBackend(CachePort):
