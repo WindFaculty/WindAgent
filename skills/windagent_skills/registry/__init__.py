@@ -26,5 +26,11 @@ class SkillRegistry:
     async def uninstall(self, skill_id: str) -> bool:
         return self._manager.uninstall(skill_id)
 
+    async def close(self) -> None:
+        """Closes the skill registry facade."""
+        if hasattr(self._manager, "close") and callable(getattr(self._manager, "close")):
+            await self._manager.close()  # type: ignore[misc]
+
+
 
 __all__ = ["SkillRegistry"]

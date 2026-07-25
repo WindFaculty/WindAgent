@@ -71,3 +71,12 @@ class ToolRegistry:
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }
         self._audit_log.append(audit_entry)
+
+    async def close(self) -> None:
+        """Closes registered tools and releases any active resources."""
+        for tool in self._tools.values():
+            if hasattr(tool, "close") and callable(getattr(tool, "close")):
+                res = tool.close()
+                if hasattr(res, "__await__"):
+                    await res  # type: ignore[misc]
+

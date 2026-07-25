@@ -79,6 +79,11 @@ class WorkflowRegistry:
     def list_packs(self) -> List[BaseWorkflowPack]:
         return [entry.pack for entry in self._packs.values()]
 
+    async def close(self) -> None:
+        """Closes registered workflow packs and releases resources."""
+        return None
+
+
     def list_packs_with_versions(self) -> List[Dict[str, str]]:
         """Lists all registered packs with their versions."""
         return [

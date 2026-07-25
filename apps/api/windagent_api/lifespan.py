@@ -28,8 +28,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     app.state.container = container
     app.state.db = container.db
     app.state.event_bus = container.event_dispatcher
+    app.state.event_dispatcher = container.event_dispatcher
     app.state.task_manager = container.task_manager
-    app.state.orchestration_container = container.orchestration_container
     app.state.provider_registry = container.provider_registry
     app.state.tool_registry = container.tool_registry
     app.state.worker_status_query = container.worker_status_query

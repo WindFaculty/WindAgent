@@ -5,6 +5,7 @@ Exports all canonical protocols for repositories, unit of work, execution runtim
 
 from windagent_core.contracts.protocols import (
     Clock,
+    AsyncCloseablePort,
     IdGenerator,
     TaskRepository,
     TaskRunRepository,

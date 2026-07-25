@@ -30,6 +30,13 @@ class Clock(Protocol):
 
 
 @runtime_checkable
+class AsyncCloseablePort(Protocol):
+    """Lifecycle protocol for services requiring asynchronous resource cleanup."""
+    async def close(self) -> None:
+        ...
+
+
+@runtime_checkable
 class IdGenerator(Protocol):
     """Protocol for generating entity identifiers."""
     def generate_id(self) -> str:

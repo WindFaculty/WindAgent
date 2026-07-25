@@ -25,5 +25,11 @@ class PluginRegistry:
     async def uninstall(self, plugin_id: str) -> bool:
         return self._loader.uninstall(plugin_id)
 
+    async def close(self) -> None:
+        """Closes the plugin registry facade."""
+        if hasattr(self._loader, "close") and callable(getattr(self._loader, "close")):
+            await self._loader.close()  # type: ignore[misc]
+
+
 
 __all__ = ["PluginRegistry"]

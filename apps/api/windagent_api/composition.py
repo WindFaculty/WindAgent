@@ -145,26 +145,43 @@ class ApplicationContainer:
         logger.info("ApplicationContainer successfully bootstrapped (PHASE 7 - Process-specific composition).")
 
     async def shutdown(self) -> None:
-        """Gracefully disposes database connections and resources."""
+        """Gracefully disposes database connections and resources in canonical shutdown order."""
         if not self.is_initialized:
             return
 
         logger.info("Shutting down ApplicationContainer...")
-        if self.outbox_publisher:
-            await self.outbox_publisher.stop()
-        if self.db:
-            await self.db.close()
-        # Clean up registries
-        if self.tool_registry:
-            await self.tool_registry.close()
-        if self.plugin_registry:
-            await self.plugin_registry.close()
-        if self.skill_registry:
-            await self.skill_registry.close()
-        if self.context_service:
-            await self.context_service.close()
-        if self.memory_query_service:
-            await self.memory_query_service.close()
+        # 1. Stop background processes owned by API
+        if self.outbox_publisher and hasattr(self.outbox_publisher, "stop"):
+            try:
+                await self.outbox_publisher.stop()
+            except Exception as ex:
+                logger.warning(f"Error stopping outbox publisher during shutdown: {ex}")
+
+        # 2. Clean up registries and query services
+        for name, service in [
+            ("workflow_registry", self.workflow_registry),
+            ("tool_registry", self.tool_registry),
+            ("plugin_registry", self.plugin_registry),
+            ("skill_registry", self.skill_registry),
+            ("context_service", self.context_service),
+            ("memory_query_service", self.memory_query_service),
+            ("verification_query_service", self.verification_query_service),
+        ]:
+            if service is not None and hasattr(service, "close"):
+                try:
+                    res = service.close()
+                    if hasattr(res, "__await__"):
+                        await res
+                except Exception as ex:
+                    logger.warning(f"Error closing {name}: {ex}")
+
+        # 3. Close database connection LAST
+        if self.db and hasattr(self.db, "close"):
+            try:
+                await self.db.close()
+            except Exception as ex:
+                logger.warning(f"Error closing database: {ex}")
+
         self.is_initialized = False
         logger.info("ApplicationContainer shutdown complete.")
 
