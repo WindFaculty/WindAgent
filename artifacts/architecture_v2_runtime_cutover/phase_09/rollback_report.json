@@ -1,0 +1,13 @@
+{
+  "rehearsal_sequence": "legacy_db -> backup -> migrate_v2 -> restore_backup -> baseline_legacy_db -> re_migrate_v2",
+  "rehearsal_result": "PASS",
+  "checksum_verification": {
+    "file_checksum": "verified",
+    "schema_checksum": "verified",
+    "table_row_counts": "verified"
+  },
+  "failure_injections_tested": [
+    "tampered_backup_file_checksum_mismatch",
+    "missing_backup_metadata"
+  ]
+}

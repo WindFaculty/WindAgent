@@ -74,7 +74,7 @@ class SchemaChecksum:
         
         # Process table constraints
         for constraint in table.constraints:
-            if not isinstance(constraint, (table.primary_key.constraint,)):
+            if constraint is not table.primary_key:
                 constraint_info = {
                     "name": constraint.name,
                     "type": type(constraint).__name__,

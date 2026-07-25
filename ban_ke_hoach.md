@@ -1709,8 +1709,8 @@ ci(windows): verify architecture v2 runtime cutover
 * [x] Source và target độc lập.
 * [x] Integrity verification fail-closed.
 * [x] Backup verified.
-* [ ] Rollback rehearsal pass.
-* [ ] Restore rehearsal pass.
+* [x] Rollback rehearsal pass.
+* [x] Restore rehearsal pass.
 * [x] Migration rerun pass.
 
 ### Health
