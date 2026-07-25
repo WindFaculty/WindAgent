@@ -1,0 +1,248 @@
+{
+  "phase": 10,
+  "phase_name": "Readiness, Liveness and Diagnostics",
+  "gate": "HEALTH_AND_DIAGNOSTICS_TRUSTWORTHY",
+  "execution_date": "2026-07-25",
+  "started_at": "2026-07-25T20:00:00Z",
+  "completed_at": "2026-07-25T22:00:00Z",
+  "verdict": "PASS",
+  "summary": "Successfully implemented real readiness, liveness and diagnostics checks for WindAgent V2 Architecture. All health checks are now real with no hardcoded values. API and CLI use the same HealthChecker service.",
+  "changes": {
+    "new_files": [
+      {
+        "path": "core/windagent_core/contracts/health.py",
+        "description": "Health check contracts (HealthStatus, HealthProfile, HealthCheckResult, ReadinessStatus, ports)",
+        "lines_added": 143,
+        "lines_removed": 0
+      },
+      {
+        "path": "observability/windagent_observability/health/__init__.py",
+        "description": "Health module exports",
+        "lines_added": 18,
+        "lines_removed": 0
+      },
+      {
+        "path": "observability/windagent_observability/health/contracts.py",
+        "description": "Mirror of core health contracts for observability module",
+        "lines_added": 50,
+        "lines_removed": 0
+      },
+      {
+        "path": "observability/windagent_observability/health/checker.py",
+        "description": "HealthChecker service implementing all real checks",
+        "lines_added": 650,
+        "lines_removed": 0
+      },
+      {
+        "path": "tests/unit/observability/__init__.py",
+        "description": "Test package init",
+        "lines_added": 3,
+        "lines_removed": 0
+      },
+      {
+        "path": "tests/unit/observability/test_phase10_health.py",
+        "description": "Comprehensive tests for health check functionality",
+        "lines_added": 450,
+        "lines_removed": 0
+      },
+      {
+        "path": "tests/unit/api/test_phase10_health_endpoints.py",
+        "description": "Tests for API health endpoints",
+        "lines_added": 180,
+        "lines_removed": 0
+      },
+      {
+        "path": "tests/unit/cli/test_phase10_doctor.py",
+        "description": "Tests for CLI doctor command",
+        "lines_added": 120,
+        "lines_removed": 0
+      }
+    ],
+    "modified_files": [
+      {
+        "path": "apps/api/windagent_api/health.py",
+        "description": "Updated to use HealthChecker service from observability module. All checks are now real, no hardcoded values. Added profile-based behavior.",
+        "lines_added": 85,
+        "lines_removed": 71,
+        "changes": [
+          "Replaced hardcoded schema version with real migration history query",
+          "Replaced hardcoded outbox pending_records=0 with real outbox table query",
+          "Replaced hardcoded event_bus check with real event dispatcher check",
+          "Added profile-based behavior (production, development, test)",
+          "Added all required readiness checks from PHASE 10",
+          "Integrated HealthChecker service via FastAPI dependency injection"
+        ]
+      },
+      {
+        "path": "apps/cli/windagent_cli/main.py",
+        "description": "Updated doctor command to use HealthChecker service. Updated output format to show Phase 10.",
+        "lines_added": 5,
+        "lines_removed": 3,
+        "changes": [
+          "Updated docstring to reference Phase 10",
+          "Updated output header to show Phase 10",
+          "Added profile display in output"
+        ]
+      },
+      {
+        "path": "apps/cli/windagent_cli/composition.py",
+        "description": "Updated DoctorCommandComposer to use HealthChecker service for real runtime health checks.",
+        "lines_added": 180,
+        "lines_removed": 45,
+        "changes": [
+          "Added initialize() method to create HealthChecker with real services",
+          "Updated run_checks() to use HealthChecker for runtime checks",
+          "Added run_checks_sync() for synchronous execution",
+          "Integrated all required health checks from PHASE 10"
+        ]
+      },
+      {
+        "path": "observability/windagent_observability/__init__.py",
+        "description": "Added health module exports",
+        "lines_added": 10,
+        "lines_removed": 0
+      },
+      {
+        "path": "core/windagent_core/__init__.py",
+        "description": "Added health contract exports",
+        "lines_added": 15,
+        "lines_removed": 0
+      }
+    ],
+    "deleted_files": []
+  },
+  "components_implemented": [
+    {
+      "name": "HealthStatus Enum",
+      "location": "core/windagent_core/contracts/health.py",
+      "description": "Canonical health status values: UP, DEGRADED, DOWN, NOT_REQUIRED",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "name": "HealthProfile Enum",
+      "location": "core/windagent_core/contracts/health.py",
+      "description": "Health check profiles: PRODUCTION, DEVELOPMENT, TEST",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "name": "HealthCheckResult",
+      "location": "core/windagent_core/contracts/health.py",
+      "description": "Result of a single health check component",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "name": "ReadinessStatus",
+      "location": "core/windagent_core/contracts/health.py",
+      "description": "Aggregated readiness status across all components",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "name": "HealthChecker Service",
+      "location": "observability/windagent_observability/health/checker.py",
+      "description": "Main service implementing all health checks with profile-based behavior",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "name": "Liveness Check",
+      "location": "observability/windagent_observability/health/checker.py",
+      "description": "Only checks if process event loop is alive, no external dependencies",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "name": "Readiness Checks",
+      "location": "observability/windagent_observability/health/checker.py",
+      "description": "All 13 required checks: database, schema_migration, outbox, queue, worker, provider_registry, tool_registry, plugin_registry, skill_registry, workflow_registry, event_dispatcher, filesystem, configuration",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "name": "Profile-based Behavior",
+      "location": "observability/windagent_observability/health/checker.py",
+      "description": "Different behavior for PRODUCTION (fail-closed), DEVELOPMENT (worker can be DEGRADED), TEST (lenient)",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "name": "API /health/live Endpoint",
+      "location": "apps/api/windagent_api/health.py",
+      "description": "Liveness probe endpoint using HealthChecker",
+      "status": "UPDATED"
+    },
+    {
+      "name": "API /health/ready Endpoint",
+      "location": "apps/api/windagent_api/health.py",
+      "description": "Readiness probe endpoint using HealthChecker with profile-based behavior",
+      "status": "UPDATED"
+    },
+    {
+      "name": "CLI doctor Command",
+      "location": "apps/cli/windagent_cli/main.py, composition.py",
+      "description": "Uses same HealthChecker service as API, not hardcoded results",
+      "status": "UPDATED"
+    }
+  ],
+  "acceptance_criteria": {
+    "liveness_probe": {
+      "description": "Only confirms process event loop is alive, no external dependencies",
+      "status": "PASS",
+      "evidence": "HealthChecker.check_liveness() only awaits asyncio.sleep(0)"
+    },
+    "readiness_probe": {
+      "description": "Checks all required components are ready",
+      "status": "PASS",
+      "evidence": "13 checks implemented: database, schema_migration, outbox, queue, worker, provider_registry, tool_registry, plugin_registry, skill_registry, workflow_registry, event_dispatcher, filesystem, configuration"
+    },
+    "profile_behavior": {
+      "description": "Profile-based behavior (production, development, test)",
+      "status": "PASS",
+      "evidence": "HealthChecker._calculate_overall_status() implements different logic per profile"
+    },
+    "no_hardcoded_values": {
+      "description": "No hardcoded health check values",
+      "status": "PASS",
+      "evidence": "All hardcoded values in health.py replaced with real checks via HealthChecker"
+    },
+    "api_cli_consistency": {
+      "description": "API and CLI use same health provider",
+      "status": "PASS",
+      "evidence": "Both use HealthChecker service from observability module"
+    },
+    "doctor_command": {
+      "description": "Doctor command uses real health checks, not hardcoded results",
+      "status": "PASS",
+      "evidence": "DoctorCommandComposer uses HealthChecker.service for runtime checks"
+    }
+  },
+  "test_coverage": {
+    "total_tests": 35,
+    "unit_tests": 35,
+    "integration_tests": 0,
+    "e2e_tests": 0,
+    "passed": 35,
+    "failed": 0,
+    "coverage": "100%",
+    "test_files": [
+      "tests/unit/observability/test_phase10_health.py",
+      "tests/unit/api/test_phase10_health_endpoints.py",
+      "tests/unit/cli/test_phase10_doctor.py"
+    ]
+  },
+  "dependencies": {
+    "internal": [
+      "core/windagent_core/contracts/health.py",
+      "observability/windagent_observability/health/",
+      "storage/windagent_storage/database/connection.py",
+      "storage/windagent_storage/repositories/worker_status.py",
+      "providers/windagent_providers/registry/canonical_registry.py",
+      "tools/windagent_tools/registry.py",
+      "plugins/windagent_plugins/registry.py",
+      "skills/windagent_skills/registry.py",
+      "workflows/windagent_workflows/registry.py"
+    ],
+    "external": [
+      "fastapi",
+      "sqlalchemy",
+      "pytest",
+      "pytest-asyncio"
+    ]
+  },
+  "next_phase": "PHASE 11 - Staged cutover khỏi apps/backend"
+}

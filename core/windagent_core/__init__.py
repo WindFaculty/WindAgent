@@ -38,6 +38,12 @@ from windagent_core.contracts.providers import (
     ProviderRequest, ProviderResponse, ProviderUsage, ProviderToolCall, ProviderStreamChunk
 )
 from windagent_core.contracts.tools import ToolInvocation, ToolResult
+from windagent_core.contracts.health import (
+    HealthStatus, HealthProfile, HealthCheckResult, ReadinessStatus,
+    HealthCheckPort, DatabaseHealthPort, SchemaHealthPort, OutboxHealthPort,
+    WorkerHealthPort, QueueHealthPort, RegistryHealthPort, EventHealthPort,
+    FilesystemHealthPort, ConfigurationHealthPort,
+)
 from windagent_core.events.envelope import EventEnvelope
 from windagent_core.events.catalog import EventCatalog
 from windagent_core.events.registry import EventRegistry, BaseEventPayload
@@ -78,7 +84,12 @@ __all__ = [
     # Events
     "EventEnvelope", "EventCatalog",
     "redact_event_payload", "EventDeduplicator", "ReplayFilter",
-    # Contracts
+    # Health Contracts
+    "HealthStatus", "HealthProfile", "HealthCheckResult", "ReadinessStatus",
+    "HealthCheckPort", "DatabaseHealthPort", "SchemaHealthPort", "OutboxHealthPort",
+    "WorkerHealthPort", "QueueHealthPort", "RegistryHealthPort", "EventHealthPort",
+    "FilesystemHealthPort", "ConfigurationHealthPort",
+    # Other Contracts
     "Clock", "IdGenerator", "TaskRepository", "TaskRunRepository", "SessionRepository",
     "WorkflowRepository", "WorkflowRunRepository", "EventStore", "OutboxWriter", "EventPublisher",
     "ArtifactRepository", "UnitOfWork", "ExecutionRuntimePort", "ModelGatewayPort", "SecretStore",

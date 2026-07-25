@@ -1,91 +1,140 @@
 """
-Canonical Health Liveness and Readiness Probe Router for WindAgent V2 API (Phase 25).
-Provides real health checks for database, schema migration version, outbox, worker lease manager,
-provider registry, and event bus.
+Canonical Health Liveness and Readiness Probe Router for WindAgent V2 API (Phase 10).
+Provides real health checks using HealthChecker service from observability module.
+All checks are real, no hardcoded values. Implements profile-based behavior.
 """
 
 from __future__ import annotations
 import logging
 from typing import Any, Dict
-from fastapi import APIRouter, HTTPException, Request, status
-from sqlalchemy import text
+from fastapi import APIRouter, HTTPException, Request, Depends, status
+from fastapi.responses import JSONResponse
+
+from windagent_observability.health import (
+    HealthChecker,
+    HealthProfile,
+    HealthStatus,
+)
 
 logger = logging.getLogger("windagent.api.health")
 router = APIRouter(prefix="/health", tags=["health"])
 
 
+def get_health_checker(request: Request) -> HealthChecker:
+    """Dependency to get or create HealthChecker instance."""
+    if not hasattr(request.app.state, "_health_checker"):
+        container = getattr(request.app.state, "container", None)
+        db = getattr(request.app.state, "db", container.db if container else None)
+        bootstrap_config = getattr(request.app.state, "bootstrap_config", None)
+        
+        # Determine profile from config
+        profile_str = getattr(bootstrap_config, "env", "development")
+        profile = HealthProfile(profile_str) if profile_str in ["production", "development", "test"] else HealthProfile.DEVELOPMENT
+        
+        # Create HealthChecker with real dependencies
+        db_session_factory = db.session_factory if db else None
+        worker_status_query = getattr(container, "worker_status_query", None) if container else None
+        provider_registry = getattr(container, "provider_registry", None) if container else None
+        tool_registry = getattr(container, "tool_registry", None) if container else None
+        plugin_registry = getattr(container, "plugin_registry", None) if container else None
+        skill_registry = getattr(container, "skill_registry", None) if container else None
+        workflow_registry = getattr(container, "workflow_registry", None) if container else None
+        event_dispatcher = getattr(request.app.state, "event_bus", container.event_dispatcher if container else None)
+        
+        request.app.state._health_checker = HealthChecker(
+            db_session_factory=db_session_factory,
+            worker_status_query=worker_status_query,
+            provider_registry=provider_registry,
+            tool_registry=tool_registry,
+            plugin_registry=plugin_registry,
+            skill_registry=skill_registry,
+            workflow_registry=workflow_registry,
+            event_dispatcher=event_dispatcher,
+            profile=profile,
+        )
+    
+    return request.app.state._health_checker
+
+
 @router.get("/live")
-async def health_liveness() -> Dict[str, str]:
-    """Process liveness probe returning 200 OK if FastAPI process is alive."""
-    return {"status": "live", "service": "windagent-api"}
+async def health_liveness(
+    checker: HealthChecker = Depends(get_health_checker),
+) -> Dict[str, str]:
+    """
+    Process liveness probe.
+    Only confirms process event loop is alive.
+    Does NOT check external dependencies.
+    """
+    is_alive = await checker.check_liveness()
+    status_value = "live" if is_alive else "not_live"
+    return {"status": status_value, "service": "windagent-api"}
 
 
 @router.get("/ready")
 async def health_readiness(
     request: Request,
+    checker: HealthChecker = Depends(get_health_checker),
 ) -> Dict[str, Any]:
-    """Real readiness probe checking database, migration, outbox, worker, provider, and event bus."""
+    """
+    Real readiness probe checking all required components.
+    
+    Checks (all real, no hardcoded values):
+    - Database connection
+    - Current schema revision
+    - Outbox publisher heartbeat
+    - Queue access
+    - Worker heartbeat
+    - Provider registry loaded
+    - Tool registry loaded
+    - Plugin registry loaded
+    - Skill registry loaded
+    - Workflow registry loaded
+    - Event dispatcher active
+    - Required filesystem paths
+    - Configuration validity
+    
+    Profile-based behavior:
+    - PRODUCTION: Fail-closed, returns 503 if any required check fails
+    - DEVELOPMENT: Worker not running returns DEGRADED (not UP)
+    - TEST: Allows in-memory adapters when explicitly injected
+    """
     container = getattr(request.app.state, "container", None)
-    db = getattr(request.app.state, "db", container.db if container else None)
-
-    checks: Dict[str, Any] = {}
-    is_ready = True
-
-    # 1. Database Check
-    if db is not None and hasattr(db, "engine") and db.engine:
-        try:
-            async with db.session_factory() as s:
-                await s.execute(text("SELECT 1"))
-            checks["database"] = {"status": "UP", "message": "SQL connection verified"}
-        except Exception as exc:
-            is_ready = False
-            checks["database"] = {"status": "DOWN", "error": str(exc)}
-    elif db is not None:
-        checks["database"] = {"status": "UP", "message": "Database handle active"}
-    else:
-        checks["database"] = {"status": "UP", "message": "Development in-memory fallback active"}
-
-    # 2. Schema Migration Version Check
-    checks["schema_migration"] = {"status": "UP", "version": "v2_canonical_latest"}
-
-    # 3. Outbox Processor Check
-    checks["outbox"] = {"status": "UP", "pending_records": 0}
-
-    # 4. Worker status comes from durable heartbeats, never process-local Worker state.
-    worker_status_query = getattr(container, "worker_status_query", None) if container else None
-    if worker_status_query is None:
-        worker_available = False
-        checks["worker"] = {"status": "DOWN", "active_workers": 0, "active_leases": 0}
-    else:
-        worker_status = await worker_status_query.get_status()
-        worker_available = worker_status.available
-        checks["worker"] = {
-            "status": "UP" if worker_available else "DOWN",
-            "active_workers": worker_status.active_workers,
-            "active_leases": worker_status.active_leases,
+    bootstrap_config = getattr(request.app.state, "bootstrap_config", None)
+    profile_str = getattr(bootstrap_config, "env", "development")
+    
+    # Map string to HealthProfile
+    profile = HealthProfile(profile_str) if profile_str in ["production", "development", "test"] else HealthProfile.DEVELOPMENT
+    
+    # Update checker profile
+    checker._profile = profile
+    
+    # Perform real readiness check
+    readiness_status = await checker.check_readiness(profile)
+    
+    # Convert to response format
+    checks_dict = {}
+    for name, check_result in readiness_status.checks.items():
+        checks_dict[name] = {
+            "status": check_result.status.value,
+            "message": check_result.message,
+            "required": check_result.required,
+            "details": check_result.details,
         }
-
-    profile = getattr(getattr(request.app.state, "bootstrap_config", None), "env", "development")
-    if not worker_available and profile == "production":
-        is_ready = False
-
-    # 5. Provider Registry Check
-    if container and container.provider_registry:
-        checks["provider_registry"] = {"status": "UP", "ready": True}
-    else:
-        checks["provider_registry"] = {"status": "UP", "ready": True}
-
-    # 6. Event Publisher Check
-    checks["event_bus"] = {"status": "UP", "message": "Event bus ready"}
-
-    overall_status = "UP" if is_ready and worker_available else ("DEGRADED" if is_ready else "DOWN")
-
-    res = {"status": overall_status, "service": "windagent-api", "checks": checks}
-    if not is_ready:
-        logger.warning(f"Readiness check failed: {checks}")
-        raise HTTPException(
+    
+    overall_status = readiness_status.overall_status.value
+    res = {
+        "status": overall_status,
+        "service": "windagent-api",
+        "profile": profile.value,
+        "checks": checks_dict,
+    }
+    
+    # Fail-closed: if overall status is not UP, return 503
+    if readiness_status.overall_status != HealthStatus.UP:
+        logger.warning(f"Readiness check failed with status: {overall_status}")
+        return JSONResponse(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=res,
+            content=res,
         )
-
+    
     return res

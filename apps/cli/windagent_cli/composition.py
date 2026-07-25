@@ -29,32 +29,90 @@ logger = logging.getLogger("windagent.cli.composition")
 
 
 class DoctorCommandComposer:
-    """Composes services for 'doctor' command."""
+    """Composes services for 'doctor' command using real HealthChecker service."""
     
-    def __init__(self):
+    def __init__(self, db_url: str = "sqlite+aiosqlite:///windagent.db"):
+        self.db_url = db_url
         self._checker_scripts = []
+        self._health_checker = None
     
     def add_checker_script(self, script_path: str) -> None:
         self._checker_scripts.append(script_path)
     
-    def run_checks(self) -> dict:
-        """Runs all diagnostic checks."""
+    async def initialize(self):
+        """Initialize HealthChecker with real services."""
+        import asyncio
+        from pathlib import Path
+        from windagent_storage.database.connection import DatabaseManager
+        from windagent_storage.repositories.worker_status import (
+            SqlWorkerHeartbeatRepository,
+            SqlWorkerStatusQuery,
+        )
+        from windagent_providers.registry.canonical_registry import CanonicalModelRegistryService
+        from windagent_tools.registry import ToolRegistry
+        from windagent_plugins.registry import PluginRegistry
+        from windagent_skills.registry import SkillRegistry
+        from windagent_workflows.registry import WorkflowRegistry
+        from windagent_observability.events.dispatcher import EventDispatcher
+        from windagent_observability.health import HealthChecker, HealthProfile
+        
+        # Initialize database
+        db = DatabaseManager(self.db_url)
+        try:
+            await db.create_tables()
+        except Exception:
+            pass  # Tables may already exist
+        
+        # Initialize registries
+        provider_registry = CanonicalModelRegistryService()
+        tool_registry = ToolRegistry()
+        plugin_registry = PluginRegistry()
+        skill_registry = SkillRegistry()
+        workflow_registry = WorkflowRegistry()
+        event_dispatcher = EventDispatcher()
+        
+        # Initialize worker status query
+        worker_status_query = SqlWorkerStatusQuery(
+            SqlWorkerHeartbeatRepository(db.session_factory)
+        )
+        
+        # Determine profile from environment
+        import os
+        env = os.environ.get("WINDAGENT_ENV", "development")
+        profile = HealthProfile(env) if env in ["production", "development", "test"] else HealthProfile.DEVELOPMENT
+        
+        # Create HealthChecker
+        self._health_checker = HealthChecker(
+            db_session_factory=db.session_factory,
+            worker_status_query=worker_status_query,
+            provider_registry=provider_registry,
+            tool_registry=tool_registry,
+            plugin_registry=plugin_registry,
+            skill_registry=skill_registry,
+            workflow_registry=workflow_registry,
+            event_dispatcher=event_dispatcher,
+            profile=profile,
+        )
+        
+        return db
+    
+    async def run_checks(self) -> dict:
+        """Runs all diagnostic checks using HealthChecker service."""
         import subprocess
         import sys
         from pathlib import Path
+        from windagent_observability.health import HealthStatus
         
-        results = {
-            "status": "ALL_SYSTEMS_OPERATIONAL",
-            "checks": {}
-        }
+        # First run architecture script checks
+        script_results = {}
+        root_dir = Path(__file__).resolve().parent.parent.parent.parent
         
         # Check architecture imports
-        root_dir = Path(__file__).resolve().parent.parent.parent.parent
         checker_script = root_dir / "scripts" / "check_architecture_imports.py"
         if checker_script.exists():
             res = subprocess.run([sys.executable, str(checker_script)], 
                                capture_output=True, text=True)
-            results["checks"]["import_boundary_check"] = {
+            script_results["import_boundary_check"] = {
                 "passed": res.returncode == 0,
                 "details": res.stdout + res.stderr if res.returncode != 0 else "Zero import boundary violations"
             }
@@ -64,7 +122,7 @@ class DoctorCommandComposer:
         if scaffold_script.exists():
             res = subprocess.run([sys.executable, str(scaffold_script), "--check"],
                                capture_output=True, text=True)
-            results["checks"]["scaffold_structure_check"] = {
+            script_results["scaffold_structure_check"] = {
                 "passed": res.returncode == 0,
                 "details": res.stdout + res.stderr if res.returncode != 0 else "Scaffold structure OK"
             }
@@ -74,15 +132,64 @@ class DoctorCommandComposer:
         if dup_script.exists():
             res = subprocess.run([sys.executable, str(dup_script)],
                                capture_output=True, text=True)
-            results["checks"]["duplicate_model_check"] = {
+            script_results["duplicate_model_check"] = {
                 "passed": res.returncode == 0,
                 "details": res.stdout + res.stderr if res.returncode != 0 else "ZERO duplicate models found"
             }
         
-        if any(not chk["passed"] for chk in results["checks"].values()):
-            results["status"] = "SYSTEM_HEALTH_WARNING"
-        
-        return results
+        # Now run real health checks
+        db = None
+        try:
+            db = await self.initialize()
+            readiness_status = await self._health_checker.check_readiness()
+            is_alive = await self._health_checker.check_liveness()
+            
+            # Convert health check results
+            health_checks = {}
+            for name, check_result in readiness_status.checks.items():
+                health_checks[name] = {
+                    "passed": check_result.status == HealthStatus.UP,
+                    "details": check_result.message,
+                    "status": check_result.status.value,
+                    "required": check_result.required,
+                }
+            
+            # Add liveness check
+            health_checks["liveness"] = {
+                "passed": is_alive,
+                "details": "Process event loop alive" if is_alive else "Process not responsive",
+                "status": "UP" if is_alive else "DOWN",
+                "required": True,
+            }
+            
+            # Combine results
+            all_checks = {**script_results, **health_checks}
+            
+            # Determine overall status
+            all_passed = all(chk.get("passed", False) for chk in all_checks.values())
+            any_failed = any(not chk.get("passed", True) and chk.get("required", True) for chk in all_checks.values())
+            
+            if any_failed:
+                status = "SYSTEM_HEALTH_WARNING"
+            elif all_passed:
+                status = "ALL_SYSTEMS_OPERATIONAL"
+            else:
+                status = "SYSTEM_HEALTH_DEGRADED"
+            
+            return {
+                "status": status,
+                "profile": readiness_status.profile.value,
+                "checks": all_checks,
+            }
+            
+        finally:
+            if db:
+                await db.close()
+    
+    def run_checks_sync(self) -> dict:
+        """Synchronous wrapper for run_checks."""
+        import asyncio
+        return asyncio.run(self.run_checks())
 
 
 class RunCommandComposer:

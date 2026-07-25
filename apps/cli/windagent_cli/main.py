@@ -40,20 +40,26 @@ def get_logger():
 def doctor(json_mode: bool = False) -> int:
     """Run real system diagnostic health check across V2 architecture components.
     
-    Uses DoctorCommandComposer for process-specific composition (PHASE 7).
+    Uses DoctorCommandComposer with HealthChecker service for real runtime health checks (PHASE 10).
+    Uses same health provider as API, not hardcoded results.
     """
     composer = DoctorCommandComposer()
-    results = composer.run_checks()
+    results = composer.run_checks_sync()
 
     if json_mode:
         print(json.dumps(results, indent=2))
     else:
-        print("=== WindAgent Doctor (V2 Architecture Phase 7) ===")
+        print("=== WindAgent Doctor (V2 Architecture Phase 10 - Real Health Checks) ===")
+        print(f"Profile: {results.get('profile', 'unknown')}")
+        print()
+        
         for name, chk in results["checks"].items():
-            st = "PASS" if chk["passed"] else "FAIL"
+            st = "PASS" if chk.get("passed", False) else "FAIL"
+            status = chk.get("status", "UNKNOWN")
             title_name = name.replace("_", " ").title()
-            print(f"[{st}] {title_name}: {chk['details']}")
-        print(f"\nSystem health status: {results['status']}")
+            print(f"[{st}] {title_name}: {chk.get('details', chk.get('message', 'No details'))}")
+        print()
+        print(f"System health status: {results['status']}")
 
     return 0 if results["status"] == "ALL_SYSTEMS_OPERATIONAL" else 1
 
