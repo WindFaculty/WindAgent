@@ -34,6 +34,24 @@ class HealthCheckResult:
     required: bool = True
 
 
+@dataclass(frozen=True)
+class HealthDependencyBundle:
+    """Typed bundle of runtime dependencies for HealthChecker (Phase 10)."""
+    database: Optional[Any] = None
+    schema: Optional[Any] = None
+    outbox: Optional[Any] = None
+    queue: Optional[Any] = None
+    worker: Optional[Any] = None
+    providers: Optional[Any] = None
+    tools: Optional[Any] = None
+    plugins: Optional[Any] = None
+    skills: Optional[Any] = None
+    workflows: Optional[Any] = None
+    events: Optional[Any] = None
+    configuration: Optional[Any] = None
+    filesystem: Optional[Any] = None
+
+
 @dataclass
 class ReadinessStatus:
     """Aggregated readiness status across all components."""

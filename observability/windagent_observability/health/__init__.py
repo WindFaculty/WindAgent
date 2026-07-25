@@ -9,6 +9,7 @@ from windagent_observability.health.contracts import (
     HealthProfile,
     HealthCheckResult,
     ReadinessStatus,
+    HealthDependencyBundle,
 )
 
 __all__ = [
@@ -17,4 +18,5 @@ __all__ = [
     "HealthProfile",
     "HealthCheckResult",
     "ReadinessStatus",
+    "HealthDependencyBundle",
 ]

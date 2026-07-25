@@ -1715,9 +1715,9 @@ ci(windows): verify architecture v2 runtime cutover
 
 ### Health
 
-* [ ] Production thiếu required dependency trả DOWN.
-* [ ] Worker heartbeat thật.
-* [ ] Publisher heartbeat thật.
+* [x] Production thiếu required dependency trả DOWN.
+* [x] Worker heartbeat thật.
+* [x] Publisher heartbeat thật.
 * [ ] Schema head được kiểm tra.
 * [ ] Config validation thật.
 * [ ] Event dispatcher capability được kiểm tra.

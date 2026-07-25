@@ -16,6 +16,7 @@ from windagent_observability.health.contracts import (
     HealthProfile,
     HealthCheckResult,
     ReadinessStatus,
+    HealthDependencyBundle,
 )
 
 logger = logging.getLogger("windagent.observability.health")
@@ -48,33 +49,34 @@ class HealthChecker:
         outbox_repository: Optional[Any] = None,
         required_paths: Optional[List[Path]] = None,
         profile: HealthProfile = HealthProfile.DEVELOPMENT,
+        bundle: Optional[HealthDependencyBundle] = None,
     ):
         """
-        Initialize HealthChecker with required dependencies.
-        
-        Args:
-            db_session_factory: Factory for creating async database sessions
-            worker_status_query: Port for querying worker status
-            provider_registry: Provider registry to check
-            tool_registry: Tool registry to check
-            plugin_registry: Plugin registry to check
-            skill_registry: Skill registry to check
-            workflow_registry: Workflow registry to check
-            event_dispatcher: Event dispatcher to check
-            outbox_repository: Outbox repository to check
-            required_paths: List of required filesystem paths
-            profile: Health check profile (production, development, test)
+        Initialize HealthChecker with required dependencies or a typed HealthDependencyBundle.
         """
-        self._db_session_factory = db_session_factory
-        self._worker_status_query = worker_status_query
-        self._provider_registry = provider_registry
-        self._tool_registry = tool_registry
-        self._plugin_registry = plugin_registry
-        self._skill_registry = skill_registry
-        self._workflow_registry = workflow_registry
-        self._event_dispatcher = event_dispatcher
-        self._outbox_repository = outbox_repository
-        self._required_paths = required_paths or []
+        if bundle is not None:
+            self._db_session_factory = db_session_factory or bundle.database
+            self._worker_status_query = worker_status_query or bundle.worker
+            self._provider_registry = provider_registry or bundle.providers
+            self._tool_registry = tool_registry or bundle.tools
+            self._plugin_registry = plugin_registry or bundle.plugins
+            self._skill_registry = skill_registry or bundle.skills
+            self._workflow_registry = workflow_registry or bundle.workflows
+            self._event_dispatcher = event_dispatcher or bundle.events
+            self._outbox_repository = outbox_repository or bundle.outbox
+            self._required_paths = required_paths or (bundle.filesystem if isinstance(bundle.filesystem, list) else [])
+        else:
+            self._db_session_factory = db_session_factory
+            self._worker_status_query = worker_status_query
+            self._provider_registry = provider_registry
+            self._tool_registry = tool_registry
+            self._plugin_registry = plugin_registry
+            self._skill_registry = skill_registry
+            self._workflow_registry = workflow_registry
+            self._event_dispatcher = event_dispatcher
+            self._outbox_repository = outbox_repository
+            self._required_paths = required_paths or []
+
         self._profile = profile
         
         # Default required paths
@@ -318,11 +320,12 @@ class HealthChecker:
     async def _check_outbox_publisher(self) -> HealthCheckResult:
         """Check outbox publisher heartbeat."""
         if self._outbox_repository is None:
+            is_prod = self._profile == HealthProfile.PRODUCTION
             return HealthCheckResult(
                 name="outbox",
-                status=HealthStatus.NOT_REQUIRED,
-                message="Outbox repository not configured",
-                required=False
+                status=HealthStatus.DOWN if is_prod else HealthStatus.NOT_REQUIRED,
+                message="Outbox repository missing or not configured",
+                required=is_prod
             )
         
         try:
@@ -362,11 +365,12 @@ class HealthChecker:
     async def _check_queue_access(self) -> HealthCheckResult:
         """Check queue access (durable queue table)."""
         if self._db_session_factory is None:
+            is_prod = self._profile == HealthProfile.PRODUCTION
             return HealthCheckResult(
                 name="queue",
-                status=HealthStatus.NOT_REQUIRED,
+                status=HealthStatus.DOWN if is_prod else HealthStatus.NOT_REQUIRED,
                 message="Cannot check queue without database",
-                required=False
+                required=is_prod
             )
         
         try:
@@ -404,9 +408,15 @@ class HealthChecker:
     async def _check_worker_heartbeat(self) -> HealthCheckResult:
         """Check worker process heartbeat via status query."""
         if self._worker_status_query is None:
+            if self._profile == HealthProfile.PRODUCTION:
+                status = HealthStatus.DOWN
+            elif self._profile == HealthProfile.DEVELOPMENT:
+                status = HealthStatus.DEGRADED
+            else:
+                status = HealthStatus.NOT_REQUIRED
             return HealthCheckResult(
                 name="worker",
-                status=HealthStatus.NOT_REQUIRED,
+                status=status,
                 message="Worker status query not configured",
                 required=self._profile == HealthProfile.PRODUCTION
             )
@@ -448,11 +458,12 @@ class HealthChecker:
     async def _check_provider_registry(self) -> HealthCheckResult:
         """Check provider registry is loaded."""
         if self._provider_registry is None:
+            is_prod = self._profile == HealthProfile.PRODUCTION
             return HealthCheckResult(
                 name="provider_registry",
-                status=HealthStatus.NOT_REQUIRED,
-                message="Provider registry not configured",
-                required=False
+                status=HealthStatus.DOWN if is_prod else HealthStatus.NOT_REQUIRED,
+                message="Provider registry missing or not configured",
+                required=is_prod
             )
         
         try:
@@ -478,11 +489,12 @@ class HealthChecker:
     async def _check_tool_registry(self) -> HealthCheckResult:
         """Check tool registry is loaded."""
         if self._tool_registry is None:
+            is_prod = self._profile == HealthProfile.PRODUCTION
             return HealthCheckResult(
                 name="tool_registry",
-                status=HealthStatus.NOT_REQUIRED,
-                message="Tool registry not configured",
-                required=False
+                status=HealthStatus.DOWN if is_prod else HealthStatus.NOT_REQUIRED,
+                message="Tool registry missing or not configured",
+                required=is_prod
             )
         
         try:
@@ -568,11 +580,12 @@ class HealthChecker:
     async def _check_workflow_registry(self) -> HealthCheckResult:
         """Check workflow registry is loaded."""
         if self._workflow_registry is None:
+            is_prod = self._profile == HealthProfile.PRODUCTION
             return HealthCheckResult(
                 name="workflow_registry",
-                status=HealthStatus.NOT_REQUIRED,
-                message="Workflow registry not configured",
-                required=False
+                status=HealthStatus.DOWN if is_prod else HealthStatus.NOT_REQUIRED,
+                message="Workflow registry missing or not configured",
+                required=is_prod
             )
         
         try:
@@ -598,11 +611,12 @@ class HealthChecker:
     async def _check_event_dispatcher(self) -> HealthCheckResult:
         """Check event dispatcher is active."""
         if self._event_dispatcher is None:
+            is_prod = self._profile == HealthProfile.PRODUCTION
             return HealthCheckResult(
                 name="event_dispatcher",
-                status=HealthStatus.NOT_REQUIRED,
+                status=HealthStatus.DOWN if is_prod else HealthStatus.NOT_REQUIRED,
                 message="Event dispatcher not configured",
-                required=True
+                required=is_prod
             )
         
         try:
