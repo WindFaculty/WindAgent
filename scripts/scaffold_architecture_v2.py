@@ -12,6 +12,8 @@ Supports:
 
 import sys
 import argparse
+import re
+import tomllib
 from pathlib import Path
 import yaml
 
@@ -27,31 +29,22 @@ def load_config() -> dict:
 
 
 def generate_package_pyproject(pkg_name: str, pkg_info: dict) -> str:
-    pkg_rel_path = pkg_info["path"]
-    pyproject_file = ROOT_DIR / pkg_rel_path / "pyproject.toml"
-    if pyproject_file.exists():
-        return pyproject_file.read_text(encoding="utf-8")
-
     namespace = pkg_info["namespace"]
     desc = pkg_info["description"]
-    
-    # Optional dependencies per package skeleton
-    deps = []
-    if pkg_name == "api":
-        deps = ['"fastapi>=0.115.0"', '"uvicorn[standard]>=0.30.0"', '"pydantic>=2.7.0"']
-    elif pkg_name == "cli":
-        deps = ['"click>=8.0.0"']
-    elif pkg_name == "storage":
-        deps = ['"sqlalchemy>=2.0.0"', '"aiosqlite>=0.20.0"', '"windagent-core"']
-    
-    deps_str = "\n".join([f"    {d}," for d in deps])
+    version = pkg_info.get("version", "0.3.0")
+    workspace_deps = [
+        f"windagent-{dep.removeprefix('windagent_').removeprefix('windagent-').replace('_', '-')}"
+        for dep in pkg_info.get("allowed_dependencies", [])
+    ]
+    deps = [*pkg_info.get("external_dependencies", []), *workspace_deps]
+    deps_str = "\n".join(f'    "{dep}",' for dep in deps)
     deps_block = f"dependencies = [\n{deps_str}\n]" if deps else "dependencies = []"
-
-    sources_block = "\n[tool.uv.sources]\nwindagent-core = { workspace = true }\n" if pkg_name == "storage" else ""
+    sources = "\n".join(f"{dep} = {{ workspace = true }}" for dep in workspace_deps)
+    sources_block = f"\n[tool.uv.sources]\n{sources}\n" if sources else ""
 
     return f"""[project]
 name = "{namespace}"
-version = "0.3.0"
+version = "{version}"
 description = "{desc}"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -110,14 +103,18 @@ def generate_package_readme(pkg_name: str, pkg_info: dict) -> str:
 
 
 def generate_package_init(pkg_name: str, pkg_info: dict) -> str:
-    pkg_rel_path = pkg_info["path"]
-    namespace = pkg_info["namespace"]
-    init_file = ROOT_DIR / pkg_rel_path / namespace / "__init__.py"
-    if init_file.exists():
-        return init_file.read_text(encoding="utf-8")
-
     desc = pkg_info["description"]
-    return f'"""\n{desc}\n"""\n\n__version__ = "0.3.0"\n'
+    version = pkg_info.get("version", "0.3.0")
+    return f'"""\n{desc}\n"""\n\n__version__ = "{version}"\n'
+
+
+def scaffold_matches(file_path: Path, current: str, expected: str, pkg_info: dict) -> bool:
+    if file_path.name == "pyproject.toml":
+        project = tomllib.loads(current).get("project", {})
+        return project.get("name") == pkg_info["namespace"] and project.get("version") == pkg_info.get("version", "0.3.0")
+    if file_path.name == "__init__.py":
+        return bool(re.search(r'^__version__\s*=\s*["\'][^"\']+["\']', current, re.MULTILINE))
+    return current.strip() == expected.strip()
 
 
 def main():
@@ -168,7 +165,7 @@ def main():
                     print(f"[DRY-RUN] Would create: {rel_file_path}")
             else:
                 current_content = file_path.read_text(encoding="utf-8")
-                if current_content.strip() != expected_content.strip():
+                if not scaffold_matches(file_path, current_content, expected_content, pkg_info):
                     diffs.append(f"MISMATCH: {rel_file_path}")
                     if args.create:
                         file_path.write_text(expected_content, encoding="utf-8")

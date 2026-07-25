@@ -8,6 +8,7 @@ Logging, tracing, metrics, audit trail, cost tracking
 
 ## Allowed Dependencies
 - `windagent_core`
+- `windagent_storage`
 
 ## Forbidden Dependencies
 - `apps`

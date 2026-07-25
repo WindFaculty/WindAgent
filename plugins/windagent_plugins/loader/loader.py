@@ -14,9 +14,9 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Set
 
 from windagent_core.errors.exceptions import ConflictError, NotFoundError, PermissionDeniedError, ValidationError
-from windagent_tools.plugins.manifest import PluginDependency, PluginManifest
+from windagent_plugins.manifest.manifest import PluginDependency, PluginManifest
 
-logger = logging.getLogger("windagent.tools.plugins")
+logger = logging.getLogger("windagent.plugins")
 
 # Default content root paths (relative to workspace)
 DEFAULT_PLUGINS_ROOT = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))), "plugins")

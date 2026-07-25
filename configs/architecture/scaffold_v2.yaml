@@ -19,16 +19,42 @@ workspace:
     - observability
     - evals
 
+global_rules:
+  forbid_cross_app_imports: true
+  forbid_core_framework_imports: true
+  require_declared_workspace_dependencies: true
+  forbid_dependency_cycles: true
+  forbid_public_api_leakage: true
+  forbid_legacy_backend_imports: true
+
+canonical_models:
+  - EventEnvelope
+  - TaskState
+  - WorkflowState
+  - StepState
+  - SessionState
+  - WindAgentError
+  - ProviderRequest
+  - ProviderResponse
+  - ProviderUsage
+
+required_top_level_packages:
+  - plugins
+  - skills
+
 packages:
   core:
+    layer: domain
     namespace: windagent_core
     path: core
     description: "Core domain models, contracts, domain events, errors, config, security types"
     allowed_dependencies: []
+    external_dependencies: ["pydantic>=2.7", "typing-extensions"]
     forbidden_dependencies: ["apps", "fastapi", "sqlalchemy", "mcp", "langgraph", "providers"]
     legacy_source: "apps/backend/models, apps/backend/config.py"
   
   orchestration:
+    layer: application
     namespace: windagent_orchestration
     path: orchestration
     description: "Task manager, workflow engine, state machine, scheduler, dispatcher, retry, recovery"
@@ -37,6 +63,7 @@ packages:
     legacy_source: "apps/backend/services/workflow_service.py, recovery.py"
 
   intelligence:
+    layer: application
     namespace: windagent_intelligence
     path: intelligence
     description: "Task classifier, planner, context builder, model router, summarizer, reviewer, reporter"
@@ -45,6 +72,7 @@ packages:
     legacy_source: "apps/backend/services/model_routing_service.py, agent_service.py"
 
   providers:
+    layer: infrastructure
     namespace: windagent_providers
     path: providers
     description: "Model provider integrations (OpenAI, Anthropic, Google, Ollama, etc.)"
@@ -53,6 +81,7 @@ packages:
     legacy_source: "apps/backend/services/model_service.py"
 
   tools:
+    layer: infrastructure
     namespace: windagent_tools
     path: tools
     description: "Tool registry, filesystem, shell, git, code_search, AST, LSP, browser, database, MCP"
@@ -61,6 +90,7 @@ packages:
     legacy_source: "apps/backend/services/tool_execution_service.py, tools/"
 
   workflows:
+    layer: application
     namespace: windagent_workflows
     path: workflows
     description: "Predefined workflow definitions and step implementations"
@@ -69,6 +99,7 @@ packages:
     legacy_source: "apps/backend/workflows/"
 
   verification:
+    layer: application
     namespace: windagent_verification
     path: verification
     description: "Quality gates, verification runners, test assertion helpers"
@@ -77,6 +108,7 @@ packages:
     legacy_source: "apps/backend/verification/"
 
   context:
+    layer: application
     namespace: windagent_context
     path: context
     description: "Context assembly, token budgeting, prompt formatting"
@@ -85,6 +117,7 @@ packages:
     legacy_source: "apps/backend/services/context_service.py"
 
   memory:
+    layer: application
     namespace: windagent_memory
     path: memory
     description: "Multi-layered memory, working memory, long-term memory, semantic store"
@@ -93,6 +126,7 @@ packages:
     legacy_source: "apps/backend/services/memory_service.py"
 
   execution:
+    layer: infrastructure
     namespace: windagent_execution
     path: execution
     description: "Git worktree isolation, sandbox runtime, subprocess execution"
@@ -101,6 +135,7 @@ packages:
     legacy_source: "apps/backend/services/worktree_service.py"
 
   storage:
+    layer: infrastructure
     namespace: windagent_storage
     path: storage
     description: "Database repositories, ORM mappings, migration adapters, persistent artifact storage"
@@ -109,14 +144,16 @@ packages:
     legacy_source: "apps/backend/db/"
 
   observability:
+    layer: infrastructure
     namespace: windagent_observability
     path: observability
     description: "Logging, tracing, metrics, audit trail, cost tracking"
-    allowed_dependencies: ["windagent_core"]
+    allowed_dependencies: ["windagent_core", "windagent_storage"]
     forbidden_dependencies: ["apps"]
     legacy_source: "apps/backend/observability/"
 
   evals:
+    layer: application
     namespace: windagent_evals
     path: evals
     description: "Evaluation benchmarks, model output scoring, regression suites"
@@ -125,6 +162,7 @@ packages:
     legacy_source: "apps/backend/evals/"
 
   api:
+    layer: app
     namespace: windagent_api
     path: apps/api
     description: "FastAPI REST & WebSocket entrypoint for Architecture V2"
@@ -133,6 +171,7 @@ packages:
     legacy_source: "apps/backend/main.py"
 
   cli:
+    layer: app
     namespace: windagent_cli
     path: apps/cli
     description: "WindAgent CLI entrypoint (doctor, architecture check, workflow run)"
@@ -141,6 +180,7 @@ packages:
     legacy_source: "apps/backend/cli.py"
 
   worker:
+    layer: app
     namespace: windagent_worker
     path: apps/worker
     description: "Background worker process for asynchronous task execution"

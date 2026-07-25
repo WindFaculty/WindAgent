@@ -18,23 +18,16 @@ from windagent_providers.registry.canonical_registry import CanonicalModelRegist
 from windagent_providers.routing.route_lock_service import RouteLockService
 from windagent_tools.registry import ToolRegistry
 from windagent_execution.registry import ExecutionRuntimeRegistry
-from windagent_worker.runner import ProductionWorker
+from windagent_core.contracts.workers import WorkerStatusQueryPort
+from windagent_storage.repositories.worker_status import (
+    SqlWorkerHeartbeatRepository,
+    SqlWorkerStatusQuery,
+)
+from windagent_storage.outbox.sql_repository import SqlOutboxRepository
+from windagent_observability.events.dispatcher import EventDispatcher
+from windagent_observability.events.publisher import OutboxEventPublisher
 
 logger = logging.getLogger("windagent.api.composition")
-
-
-class MockEventBus:
-    """Canonical event bus interface placeholder for V2 composition root."""
-    def __init__(self):
-        self._handlers: Dict[str, list] = {}
-
-    async def publish(self, topic: str, event: Any) -> None:
-        pass
-
-    async def subscribe(self, topic: str, handler: Any) -> None:
-        if topic not in self._handlers:
-            self._handlers[topic] = []
-        self._handlers[topic].append(handler)
 
 
 class ApplicationContainer:
@@ -46,10 +39,12 @@ class ApplicationContainer:
         self.orchestration_container: Optional[OrchestrationV2Container] = None
         self.task_manager: Optional[TaskManager] = None
         self.execution_registry: Optional[ExecutionRuntimeRegistry] = None
-        self.event_bus: Optional[MockEventBus] = None
+        self.event_dispatcher: Optional[EventDispatcher] = None
+        self.outbox_publisher: Optional[OutboxEventPublisher] = None
         self.provider_registry: Optional[CanonicalModelRegistryService] = None
         self.route_lock_service: Optional[RouteLockService] = None
         self.tool_registry: Optional[ToolRegistry] = None
+        self.worker_status_query: Optional[WorkerStatusQueryPort] = None
         self.is_initialized: bool = False
 
     async def bootstrap(self) -> None:
@@ -64,13 +59,24 @@ class ApplicationContainer:
         except Exception as ex:
             logger.warning(f"Database table creation warning: {ex}")
 
-        self.event_bus = MockEventBus()
+        self.event_dispatcher = EventDispatcher()
         self.orchestration_container = OrchestrationV2Container(uow_factory=self.db.session_factory)
         self.task_manager = self.orchestration_container.task_manager
         self.execution_registry = ExecutionRuntimeRegistry()
         self.provider_registry = CanonicalModelRegistryService()
         self.route_lock_service = RouteLockService()
         self.tool_registry = ToolRegistry()
+        self.worker_status_query = SqlWorkerStatusQuery(
+            SqlWorkerHeartbeatRepository(self.db.session_factory)
+        )
+
+        # Outbox publisher: API process only submits events to outbox;
+        # actual publishing is owned by Worker process. Dispatcher registered
+        # here so health/diagnostics can verify wiring.
+        self.outbox_publisher = OutboxEventPublisher(
+            outbox_repo=None,  # ponytail: API does not publish; repo injected in Worker
+            dispatcher=self.event_dispatcher.dispatch,
+        )
 
         self.is_initialized = True
         logger.info("ApplicationContainer successfully bootstrapped.")
@@ -81,6 +87,8 @@ class ApplicationContainer:
             return
 
         logger.info("Shutting down ApplicationContainer...")
+        if self.outbox_publisher:
+            await self.outbox_publisher.stop()
         if self.db:
             await self.db.close()
         self.is_initialized = False

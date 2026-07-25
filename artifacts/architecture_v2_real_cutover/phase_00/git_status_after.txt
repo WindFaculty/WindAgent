@@ -1,0 +1,12 @@
+[rtk] /!\ No hook installed — run `rtk init -g` for automatic token savings
+ M ban_ke_hoach.md
+ M uv.lock
+?? artifacts/architecture_v2_real_cutover/
+---DIFFSTAT---
+[rtk] /!\ No hook installed — run `rtk init -g` for automatic token savings
+ban_ke_hoach.md | 2149 +++++++++++++++++++++++++++++++++++--------------------
+ uv.lock         |   64 +-
+ 2 files changed, 1451 insertions(+), 762 deletions(-)
+
+---REMOTE---
+fatal: no upstream configured for branch 'fix/architecture-v2-real-cutover'

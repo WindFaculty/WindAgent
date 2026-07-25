@@ -15,9 +15,9 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Set
 
 from windagent_core.errors.exceptions import ConflictError, NotFoundError, PermissionDeniedError, ValidationError
-from windagent_tools.skills.manifest import SkillManifest
+from windagent_skills.manifest.manifest import SkillManifest
 
-logger = logging.getLogger("windagent.tools.skills")
+logger = logging.getLogger("windagent.skills")
 
 # Default content root paths
 DEFAULT_SKILLS_ROOT = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))), "skills")

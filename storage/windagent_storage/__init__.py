@@ -22,6 +22,9 @@ from windagent_storage.repositories.sql_repositories import (
 )
 from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork
 from windagent_storage.outbox.processor import TransactionalOutboxManager
+from windagent_storage.outbox.models import OutboxRecord
+from windagent_storage.outbox.repository import OutboxRepository
+from windagent_storage.outbox.sql_repository import SqlOutboxRepository
 
 __version__ = "0.3.0"
 
@@ -38,4 +41,5 @@ __all__ = [
     "SqlSessionRepository", "SqlTaskRepository", "SqlWorkflowRepository",
     "SqlEventStore", "FileArtifactRepository", "SqlProviderConfigurationRepository",
     "SqlUnitOfWork", "TransactionalOutboxManager",
+    "OutboxRecord", "OutboxRepository", "SqlOutboxRepository",
 ]

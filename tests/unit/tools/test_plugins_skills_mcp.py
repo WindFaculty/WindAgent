@@ -21,15 +21,19 @@ from windagent_core.domain.models import ToolInvocation
 from windagent_core.errors.exceptions import (
     ConflictError, PermissionDeniedError, ValidationError, NotFoundError
 )
-from windagent_tools import (
+from windagent_plugins import (
     PluginManifest, PluginLoader,
+)
+from windagent_skills import (
     SkillManifest, SkillManager,
+)
+from windagent_tools import (
     MCPClientPort, MCPServerConfig, MCPTransportType, MCPToolInfo,
     register_mcp_server_tools,
     ToolRegistry, PermissionEngine, ToolExecutionContext, ToolRiskLevel
 )
-from windagent_tools.plugins.manifest import PluginDependency, MANIFEST_SCHEMA_VERSION as PLUGIN_SCHEMA_VERSION
-from windagent_tools.skills.manifest import MANIFEST_SCHEMA_VERSION as SKILL_SCHEMA_VERSION
+from windagent_plugins.manifest.manifest import PluginDependency, MANIFEST_SCHEMA_VERSION as PLUGIN_SCHEMA_VERSION
+from windagent_skills.manifest.manifest import MANIFEST_SCHEMA_VERSION as SKILL_SCHEMA_VERSION
 
 
 # ====================================================================

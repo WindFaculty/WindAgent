@@ -22,6 +22,15 @@ from windagent_core.contracts.protocols import (
     PermissionEvaluator,
     AuditSink,
 )
+from windagent_core.contracts.workers import (
+    WorkerHealth,
+    WorkerHeartbeat,
+    WorkerHeartbeatRepository,
+    WorkerStatus,
+    WorkerStatusQueryPort,
+    WorkSubmission,
+    WorkSubmissionPort,
+)
 
 __all__ = [
     "Clock",
@@ -41,4 +50,11 @@ __all__ = [
     "SecretStore",
     "PermissionEvaluator",
     "AuditSink",
+    "WorkerHealth",
+    "WorkerHeartbeat",
+    "WorkerHeartbeatRepository",
+    "WorkerStatus",
+    "WorkerStatusQueryPort",
+    "WorkSubmission",
+    "WorkSubmissionPort",
 ]

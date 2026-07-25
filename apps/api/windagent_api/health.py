@@ -7,10 +7,8 @@ provider registry, and event bus.
 from __future__ import annotations
 import logging
 from typing import Any, Dict
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, HTTPException, Request, status
 from sqlalchemy import text
-
-from windagent_api.composition import ApplicationContainer
 
 logger = logging.getLogger("windagent.api.health")
 router = APIRouter(prefix="/health", tags=["health"])
@@ -53,8 +51,23 @@ async def health_readiness(
     # 3. Outbox Processor Check
     checks["outbox"] = {"status": "UP", "pending_records": 0}
 
-    # 4. Worker Heartbeat & Lease Manager Check
-    checks["worker_lease_manager"] = {"status": "UP", "active_leases": 0}
+    # 4. Worker status comes from durable heartbeats, never process-local Worker state.
+    worker_status_query = getattr(container, "worker_status_query", None) if container else None
+    if worker_status_query is None:
+        worker_available = False
+        checks["worker"] = {"status": "DOWN", "active_workers": 0, "active_leases": 0}
+    else:
+        worker_status = await worker_status_query.get_status()
+        worker_available = worker_status.available
+        checks["worker"] = {
+            "status": "UP" if worker_available else "DOWN",
+            "active_workers": worker_status.active_workers,
+            "active_leases": worker_status.active_leases,
+        }
+
+    profile = getattr(getattr(request.app.state, "bootstrap_config", None), "env", "development")
+    if not worker_available and profile == "production":
+        is_ready = False
 
     # 5. Provider Registry Check
     if container and container.provider_registry:
@@ -65,7 +78,7 @@ async def health_readiness(
     # 6. Event Publisher Check
     checks["event_bus"] = {"status": "UP", "message": "Event bus ready"}
 
-    overall_status = "ready" if is_ready else "DOWN"
+    overall_status = "UP" if is_ready and worker_available else ("DEGRADED" if is_ready else "DOWN")
 
     res = {"status": overall_status, "service": "windagent-api", "checks": checks}
     if not is_ready:

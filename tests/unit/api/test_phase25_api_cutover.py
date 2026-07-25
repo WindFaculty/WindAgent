@@ -40,7 +40,8 @@ def test_health_liveness_and_readiness_probes(client):
 
     res_ready = client.get("/health/ready")
     assert res_ready.status_code == 200
-    assert res_ready.json()["status"] == "ready"
+    assert res_ready.json()["status"] == "DEGRADED"
+    assert res_ready.json()["checks"]["worker"]["status"] == "DOWN"
     assert "checks" in res_ready.json()
 
 
