@@ -1,0 +1,8 @@
+storage/windagent_storage/outbox/repository.py
+storage/windagent_storage/outbox/sql_repository.py
+tests/unit/storage/test_phase05_outbox_repository.py
+artifacts/architecture_v2_runtime_cutover/phase_05/execution_receipt.json
+artifacts/architecture_v2_runtime_cutover/phase_05/changed_files.txt
+artifacts/architecture_v2_runtime_cutover/phase_05/test_results.json
+artifacts/architecture_v2_runtime_cutover/phase_05/risk_register.md
+artifacts/architecture_v2_runtime_cutover/phase_05/phase_verdict.md

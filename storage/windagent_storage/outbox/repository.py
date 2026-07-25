@@ -34,3 +34,7 @@ class OutboxRepository(Protocol):
 
     async def get_by_aggregate(self, aggregate_id: str, limit: int = 100) -> List[OutboxRecord]:
         ...
+
+
+OutboxRepositoryPort = OutboxRepository
+__all__ = ["OutboxRepository", "OutboxRepositoryPort"]
