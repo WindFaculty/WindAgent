@@ -1,7 +1,7 @@
 """
 FastAPI entrypoint for WindAgent Architecture V2 API (Phase 25 Cutover).
 Uses canonical lifespan manager, ApplicationContainer composition root, RFC 7807 exception mapping for WindAgentError,
-and registers all 14 canonical V2 routers.
+and registers all 14 canonical V2 routers. API V1 has been permanently removed - returns 410 Gone.
 """
 
 from __future__ import annotations
@@ -30,7 +30,6 @@ from windagent_api.routers.v2_plugins import router as v2_plugins_router
 from windagent_api.routers.v2_skills import router as v2_skills_router
 from windagent_api.routers.v2_evals import router as v2_evals_router
 from windagent_api.routers.v2_observability import router as v2_observability_router
-from windagent_api.routers.compatibility import v1_router, parity_router
 
 logger = logging.getLogger("windagent.api.main")
 
@@ -135,9 +134,26 @@ app.include_router(v2_skills_router)
 app.include_router(v2_evals_router)
 app.include_router(v2_observability_router)
 
-# Register V1 Compatibility and Parity Matrix Routers
-app.include_router(v1_router)
-app.include_router(parity_router)
+
+# API V1 Tombstone Handler - Returns 410 Gone for all /api/v1/* requests
+@app.api_route("/api/v1/{path:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"])
+async def api_v1_tombstone(request: Request, path: str):
+    """
+    API V1 has been permanently removed as per Architecture V2 cutover.
+    This tombstone handler returns 410 Gone to indicate the resource is no longer available.
+    """
+    return JSONResponse(
+        status_code=status.HTTP_410_GONE,
+        content={
+            "type": "https://windagent.io/errors/api-v1-removed",
+            "title": "API V1 Removed",
+            "status": 410,
+            "detail": "API V1 has been permanently removed. Please migrate to API V2.",
+            "removal_date": "2026-07-25",
+            "migration_guide": "https://windagent.io/docs/architecture-v2-migration",
+            "available_endpoints": "/api/v2/*",
+        },
+    )
 
 
 class ArchitectureResponse(BaseModel):
