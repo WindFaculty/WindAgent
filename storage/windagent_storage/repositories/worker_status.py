@@ -65,9 +65,28 @@ class SqlWorkerStatusQuery:
 
     async def get_status(self, stale_after_seconds: int = 30) -> WorkerStatus:
         workers = tuple(await self._repository.get_active_workers(stale_after_seconds))
+        active_leases_count = sum(worker.active_leases for worker in workers)
+
+        if hasattr(self._repository, "_session_factory") and self._repository._session_factory:
+            now_naive = datetime.now(timezone.utc).replace(tzinfo=None)
+            try:
+                async with self._repository._session_factory() as session:
+                    from sqlalchemy import func
+                    from windagent_storage.orm.v2_orchestration_models import ExecutionLeaseORM
+                    stmt = select(func.count(ExecutionLeaseORM.lease_id)).where(
+                        ExecutionLeaseORM.status == "active",
+                        ExecutionLeaseORM.expires_at >= now_naive,
+                    )
+                    res = await session.execute(stmt)
+                    sql_lease_count = res.scalar() or 0
+                    if sql_lease_count > 0:
+                        active_leases_count = sql_lease_count
+            except Exception:
+                pass
+
         return WorkerStatus(
             available=bool(workers),
             active_workers=len(workers),
-            active_leases=sum(worker.active_leases for worker in workers),
+            active_leases=active_leases_count,
             workers=workers,
         )

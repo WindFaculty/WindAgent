@@ -1,0 +1,29 @@
+{
+  "phase": "04",
+  "gate": "WORKER_HEARTBEAT_OPERATIONAL",
+  "total_unit_tests": 4,
+  "passed_unit_tests": 4,
+  "failed_unit_tests": 0,
+  "test_details": [
+    {
+      "name": "test_worker_heartbeat_periodically_recorded_in_sql",
+      "status": "PASSED",
+      "outcome": "Worker background heartbeat task periodically records WorkerHeartbeat into SqlWorkerHeartbeatRepository."
+    },
+    {
+      "name": "test_heartbeat_renews_active_lease",
+      "status": "PASSED",
+      "outcome": "Active task lease is periodically renewed during worker heartbeat loop."
+    },
+    {
+      "name": "test_fencing_token_mismatch_during_heartbeat_cancels_task",
+      "status": "PASSED",
+      "outcome": "Mismatched fencing token causes heartbeat renewal failure and signals task cancellation."
+    },
+    {
+      "name": "test_worker_status_query_reflects_active_workers_and_leases",
+      "status": "PASSED",
+      "outcome": "SqlWorkerStatusQuery accurate reports active worker count and active SQL leases count."
+    }
+  ]
+}

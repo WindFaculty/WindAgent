@@ -13,6 +13,8 @@ import logging
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
+import asyncio
+from windagent_core.contracts.workers import WorkerHeartbeat, WorkerHealth
 from windagent_core.domain.types import WorkerId, RuntimeRunId, TaskId, EventId
 from windagent_core.domain.lifecycle import TaskState, TaskLifecycle, utc_now
 from windagent_core.events.envelope import EventEnvelope
@@ -41,8 +43,10 @@ class ProductionWorker:
         worker_container: Optional[WorkerContainer] = None,
         lease_manager: Optional[DurableTaskLeaseManager] = None,
         task_queue: Optional[Any] = None,
+        heartbeat_repo: Optional[Any] = None,
         execution_registry: Optional[ExecutionRuntimeRegistry] = None,
         uow_factory: Optional[Any] = None,
+        heartbeat_interval_sec: float = 5.0,
     ):
         self.name = name
         self.worker_id = WorkerId(f"wkr_{name}")
@@ -50,11 +54,14 @@ class ProductionWorker:
         self.worker_container = worker_container
         self.task_queue = task_queue or (worker_container.task_queue if worker_container else None)
         self.lease_manager = lease_manager or (worker_container.lease_manager if worker_container else DurableTaskLeaseManager())
+        self.heartbeat_repo = heartbeat_repo or (worker_container.heartbeat_repo if worker_container else None)
         self.execution_registry = execution_registry or (worker_container.execution_registry if worker_container else ExecutionRuntimeRegistry())
         self.cancellation_broadcaster = CancellationBroadcaster()
         self.uow_factory = uow_factory or (worker_container.uow_factory if worker_container else None)
+        self.heartbeat_interval_sec = heartbeat_interval_sec
         self._running = False
         self._ready = False
+        self._heartbeat_task: Optional[asyncio.Task] = None
         self._current_task_id: Optional[TaskId] = None
         self._current_fencing_token: Optional[str] = None
         self._cancellation_requested = False
@@ -82,21 +89,87 @@ class ProductionWorker:
         self._running = True
         self._ready = True
         self._cancellation_requested = False
+        await self.record_heartbeat()
+        self._heartbeat_task = asyncio.create_task(self._heartbeat_loop())
         logger.info(f"Production Worker [{self.worker_id}] ready.")
 
     async def stop(self) -> None:
         logger.info(f"Stopping Production Worker [{self.worker_id}]...")
         self._ready = False
         self._running = False
+        if self._heartbeat_task and not self._heartbeat_task.done():
+            self._heartbeat_task.cancel()
+            try:
+                await self._heartbeat_task
+            except asyncio.CancelledError:
+                pass
+            self._heartbeat_task = None
+
         if self._current_task_id:
-            self.lease_manager.release_lease(
-                str(self._current_task_id),
-                str(self.worker_id),
-                fencing_token=self._current_fencing_token,
-            )
+            if self.task_queue is not None and hasattr(self.task_queue, "release"):
+                await self.task_queue.release(str(self._current_task_id), str(self.worker_id), self._current_fencing_token)
+            elif self.lease_manager is not None:
+                self.lease_manager.release_lease(
+                    str(self._current_task_id),
+                    str(self.worker_id),
+                    fencing_token=self._current_fencing_token,
+                )
             self._current_task_id = None
             self._current_fencing_token = None
         logger.info(f"Production Worker [{self.worker_id}] stopped.")
+
+    async def record_heartbeat(self) -> None:
+        """Records worker heartbeat into SQL repository and renews active task lease."""
+        active_leases = 1 if self._current_task_id else 0
+        hb = WorkerHeartbeat(
+            worker_id=str(self.worker_id),
+            runtime_type="production_worker",
+            health=WorkerHealth.HEALTHY,
+            active_leases=active_leases,
+            last_heartbeat_at=datetime.now(timezone.utc),
+            metadata={"runtime_run_id": str(self.runtime_run_id)},
+        )
+        if self.heartbeat_repo is not None and hasattr(self.heartbeat_repo, "record_heartbeat"):
+            try:
+                await self.heartbeat_repo.record_heartbeat(hb)
+            except Exception as ex:
+                logger.warning(f"Error recording worker heartbeat: {ex}")
+
+        if self._current_task_id and self._current_fencing_token:
+            renewed = False
+            if self.task_queue is not None and hasattr(self.task_queue, "renew"):
+                renewed = await self.task_queue.renew(
+                    str(self._current_task_id),
+                    str(self.worker_id),
+                    self._current_fencing_token,
+                )
+            elif self.lease_manager is not None:
+                renewed = self.lease_manager.renew_lease(
+                    str(self._current_task_id),
+                    str(self.worker_id),
+                    fencing_token=self._current_fencing_token,
+                )
+
+            if not renewed:
+                logger.warning(
+                    f"Heartbeat lease renewal failed for task [{self._current_task_id}]: "
+                    "fencing token mismatch or takeover. Cancelling task execution."
+                )
+                await self.cancel()
+
+    async def _heartbeat_loop(self) -> None:
+        """Background periodic heartbeat execution loop."""
+        while self._running:
+            try:
+                await self.record_heartbeat()
+            except asyncio.CancelledError:
+                break
+            except Exception as ex:
+                logger.warning(f"Error in worker heartbeat loop: {ex}")
+            try:
+                await asyncio.sleep(self.heartbeat_interval_sec)
+            except asyncio.CancelledError:
+                break
 
     async def cancel(self) -> None:
         """Triggers cancellation signal for current executing task."""
