@@ -14,6 +14,12 @@ dependencies = [
     "windagent-intelligence",
     "windagent-providers",
     "windagent-tools",
+    "windagent-workflows",
+    "windagent-verification",
+    "windagent-context",
+    "windagent-memory",
+    "windagent-plugins",
+    "windagent-skills",
     "windagent-storage",
     "windagent-observability",
 ]
@@ -25,6 +31,12 @@ windagent-execution = { workspace = true }
 windagent-intelligence = { workspace = true }
 windagent-providers = { workspace = true }
 windagent-tools = { workspace = true }
+windagent-workflows = { workspace = true }
+windagent-verification = { workspace = true }
+windagent-context = { workspace = true }
+windagent-memory = { workspace = true }
+windagent-plugins = { workspace = true }
+windagent-skills = { workspace = true }
 windagent-storage = { workspace = true }
 windagent-observability = { workspace = true }
 

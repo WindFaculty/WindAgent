@@ -22,6 +22,9 @@ ROOT = Path(__file__).parents[2]
 API_ROOT = ROOT / "apps" / "api"
 
 
+WORKER_ROOT = ROOT / "apps" / "worker"
+
+
 def test_api_has_no_worker_import_or_declared_dependency():
     violations = []
     for path in (API_ROOT / "windagent_api").rglob("*.py"):
@@ -33,6 +36,20 @@ def test_api_has_no_worker_import_or_declared_dependency():
                 violations.append(node.module)
     assert not violations
     assert "windagent-worker" not in (API_ROOT / "pyproject.toml").read_text(encoding="utf-8")
+
+
+def test_worker_has_no_api_import_or_declared_dependency():
+    violations = []
+    for path in (WORKER_ROOT / "windagent_worker").rglob("*.py"):
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                violations.extend(alias.name for alias in node.names if alias.name.startswith("windagent_api"))
+            elif isinstance(node, ast.ImportFrom) and (node.module or "").startswith("windagent_api"):
+                violations.append(node.module)
+    assert not violations
+    assert "windagent-api" not in (WORKER_ROOT / "pyproject.toml").read_text(encoding="utf-8")
+
 
 
 def test_api_import_succeeds_when_worker_import_is_blocked(monkeypatch):
@@ -114,6 +131,5 @@ async def test_production_readiness_fails_when_worker_unavailable():
             )
         )
     )
-    with pytest.raises(Exception) as exc_info:
-        await health_readiness(request)
-    assert getattr(exc_info.value, "status_code", None) == 503
+    res = await health_readiness(request)
+    assert getattr(res, "status_code", None) == 503

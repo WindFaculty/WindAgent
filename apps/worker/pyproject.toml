@@ -8,6 +8,13 @@ dependencies = [
     "windagent-core",
     "windagent-orchestration",
     "windagent-execution",
+    "windagent-providers",
+    "windagent-tools",
+    "windagent-intelligence",
+    "windagent-context",
+    "windagent-memory",
+    "windagent-workflows",
+    "windagent-verification",
     "windagent-storage",
     "windagent-observability",
 ]
@@ -16,6 +23,13 @@ dependencies = [
 windagent-core = { workspace = true }
 windagent-orchestration = { workspace = true }
 windagent-execution = { workspace = true }
+windagent-providers = { workspace = true }
+windagent-tools = { workspace = true }
+windagent-intelligence = { workspace = true }
+windagent-context = { workspace = true }
+windagent-memory = { workspace = true }
+windagent-workflows = { workspace = true }
+windagent-verification = { workspace = true }
 windagent-storage = { workspace = true }
 windagent-observability = { workspace = true }
 

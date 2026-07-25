@@ -42,9 +42,9 @@ from windagent_tools.registry import ToolRegistry
 from windagent_execution.registry import ExecutionRuntimeRegistry
 from windagent_intelligence.pipeline import IntelligencePipeline
 from windagent_context.services import ContextService
-from windagent_memory.services import MemoryService
+from windagent_memory.query import MemoryQueryService
 from windagent_workflows.registry import WorkflowRegistry
-from windagent_verification.services import VerificationService
+from windagent_verification.query import VerificationQueryService
 from windagent_storage.outbox.sql_repository import SqlOutboxRepository
 from windagent_observability.events.dispatcher import EventDispatcher
 from windagent_observability.events.publisher import OutboxEventPublisher
@@ -114,7 +114,7 @@ class WorkerContainer:
         self.event_dispatcher = EventDispatcher()
         
         # Durable queue and lease management (Worker-specific)
-        self.lease_manager = DurableTaskLeaseManager(uow_factory=self.uow_factory)
+        self.lease_manager = DurableTaskLeaseManager(session_factory=self.db.session_factory if self.db else None)
         
         # Orchestration engine (Worker needs full orchestration for execution)
         self.orchestration_container = OrchestrationV2Container(uow_factory=self.uow_factory)
@@ -136,8 +136,8 @@ class WorkerContainer:
         
         # Context, Memory, Verification services
         self.context_service = ContextService()
-        self.memory_service = MemoryService()
-        self.verification_service = VerificationService()
+        self.memory_service = MemoryQueryService()
+        self.verification_service = VerificationQueryService()
         
         # Routing
         self.route_lock_service = RouteLockService()
@@ -158,25 +158,37 @@ class WorkerContainer:
 
         logger.info("Shutting down WorkerContainer...")
         
-        if self.outbox_publisher:
-            await self.outbox_publisher.stop()
+        # 1. Stop outbox publisher
+        if self.outbox_publisher and hasattr(self.outbox_publisher, "stop"):
+            try:
+                await self.outbox_publisher.stop()
+            except Exception as ex:
+                logger.warning(f"Error stopping worker outbox publisher: {ex}")
         
-        if self.db:
-            await self.db.close()
+        # 2. Clean up registries and services
+        for name, service in [
+            ("tool_registry", self.tool_registry),
+            ("provider_registry", self.provider_registry),
+            ("workflow_registry", self.workflow_registry),
+            ("intelligence_pipeline", self.intelligence_pipeline),
+            ("context_service", self.context_service),
+            ("memory_service", self.memory_service),
+            ("verification_service", self.verification_service),
+        ]:
+            if service is not None and hasattr(service, "close"):
+                try:
+                    res = service.close()
+                    if hasattr(res, "__await__"):
+                        await res
+                except Exception as ex:
+                    logger.warning(f"Error closing worker service {name}: {ex}")
         
-        # Clean up registries
-        if self.tool_registry:
-            await self.tool_registry.close()
-        if self.provider_registry:
-            await self.provider_registry.close()
-        if self.intelligence_pipeline:
-            await self.intelligence_pipeline.close()
-        if self.context_service:
-            await self.context_service.close()
-        if self.memory_service:
-            await self.memory_service.close()
-        if self.verification_service:
-            await self.verification_service.close()
+        # 3. Close database connection last
+        if self.db and hasattr(self.db, "close"):
+            try:
+                await self.db.close()
+            except Exception as ex:
+                logger.warning(f"Error closing worker db: {ex}")
         
         self.is_initialized = False
         logger.info("WorkerContainer shutdown complete.")

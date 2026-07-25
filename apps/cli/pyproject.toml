@@ -11,7 +11,9 @@ dependencies = [
     "windagent-intelligence",
     "windagent-providers",
     "windagent-tools",
+    "windagent-workflows",
     "windagent-storage",
+    "windagent-observability",
 ]
 
 [tool.uv.sources]
@@ -20,7 +22,9 @@ windagent-orchestration = { workspace = true }
 windagent-intelligence = { workspace = true }
 windagent-providers = { workspace = true }
 windagent-tools = { workspace = true }
+windagent-workflows = { workspace = true }
 windagent-storage = { workspace = true }
+windagent-observability = { workspace = true }
 
 [build-system]
 requires = ["hatchling"]

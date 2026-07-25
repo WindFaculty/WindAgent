@@ -39,7 +39,7 @@ def get_health_checker(request: Request) -> HealthChecker:
         plugin_registry = getattr(container, "plugin_registry", None) if container else None
         skill_registry = getattr(container, "skill_registry", None) if container else None
         workflow_registry = getattr(container, "workflow_registry", None) if container else None
-        event_dispatcher = getattr(request.app.state, "event_bus", container.event_dispatcher if container else None)
+        event_dispatcher = getattr(request.app.state, "event_bus", getattr(container, "event_dispatcher", None) if container else None)
         
         request.app.state._health_checker = HealthChecker(
             db_session_factory=db_session_factory,
@@ -105,10 +105,10 @@ async def health_readiness(
     # Map string to HealthProfile
     profile = HealthProfile(profile_str) if profile_str in ["production", "development", "test"] else HealthProfile.DEVELOPMENT
     
-    # Update checker profile
-    checker._profile = profile
-    
-    # Perform real readiness check
+    if not isinstance(checker, HealthChecker):
+        checker = get_health_checker(request)
+
+    # Profile-based readiness check
     readiness_status = await checker.check_readiness(profile)
     
     # Convert to response format

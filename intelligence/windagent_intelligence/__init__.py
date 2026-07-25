@@ -11,6 +11,7 @@ from windagent_intelligence.model_router import RouteLock, ModelRouterPolicy, Ro
 from windagent_intelligence.summarizer import ContextSummarizer, SummarizationResult, SummarizationStrategy
 from windagent_intelligence.reviewer import TaskReviewer, ReviewResult, ReviewVerdict, ReviewCheck
 from windagent_intelligence.reporter import TaskReporter, ReportFormat, ReportSection, IntelligenceReport
+from windagent_intelligence.pipeline import IntelligencePipeline
 
 __version__ = "0.4.0"
 
@@ -29,4 +30,6 @@ __all__ = [
     "TaskReviewer", "ReviewResult", "ReviewVerdict", "ReviewCheck",
     # reporter
     "TaskReporter", "ReportFormat", "ReportSection", "IntelligenceReport",
+    # pipeline
+    "IntelligencePipeline",
 ]
