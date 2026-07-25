@@ -1,8 +1,10 @@
 """
-Background Production Worker for WindAgent Architecture V2 (Phase 18 Implementation).
+Background Production Worker for WindAgent Architecture V2 (Phase 7 - Process-specific composition).
 Handles task claims, heartbeat lease renewal with fencing tokens, execution dispatch via ExecutionRuntimeRegistry,
 cancellation propagation, step checkpointing, and deterministic crash recovery.
 Uses canonical WorkerId, RuntimeRunId, TaskState, TaskLifecycle, and EventEnvelope.
+
+Worker runs as INDEPENDENT process with its own composition root.
 """
 
 from __future__ import annotations
@@ -17,6 +19,7 @@ from windagent_core.events.envelope import EventEnvelope
 from windagent_core.events.catalog import EventCatalog
 from windagent_core.contracts.execution import ExecutionRequest, RuntimeStatusEnum
 from windagent_core.errors.exceptions import DomainError
+from windagent_worker.composition import WorkerContainer
 from windagent_worker.lease import DurableTaskLeaseManager, TaskLeaseManager
 from windagent_execution.registry import ExecutionRuntimeRegistry
 from windagent_execution.results import ExecutionResultHandler
@@ -26,11 +29,16 @@ logger = logging.getLogger("windagent.worker")
 
 
 class ProductionWorker:
-    """Production Worker handling durable task claim, lease heartbeat, execution dispatch, fencing, and cancellation."""
+    """Production Worker handling durable task claim, lease heartbeat, execution dispatch, fencing, and cancellation.
+    
+    Uses WorkerContainer for process-specific composition (PHASE 7).
+    Worker runs INDEPENDENTLY from API and Desktop processes.
+    """
 
     def __init__(
         self,
         name: str = "default-worker",
+        worker_container: Optional[WorkerContainer] = None,
         lease_manager: Optional[DurableTaskLeaseManager] = None,
         execution_registry: Optional[ExecutionRuntimeRegistry] = None,
         uow_factory: Optional[Any] = None,
@@ -38,10 +46,11 @@ class ProductionWorker:
         self.name = name
         self.worker_id = WorkerId(f"wkr_{name}")
         self.runtime_run_id = RuntimeRunId.generate()
-        self.lease_manager = lease_manager or DurableTaskLeaseManager()
-        self.execution_registry = execution_registry or ExecutionRuntimeRegistry()
+        self.worker_container = worker_container
+        self.lease_manager = lease_manager or (worker_container.lease_manager if worker_container else DurableTaskLeaseManager())
+        self.execution_registry = execution_registry or (worker_container.execution_registry if worker_container else ExecutionRuntimeRegistry())
         self.cancellation_broadcaster = CancellationBroadcaster()
-        self.uow_factory = uow_factory
+        self.uow_factory = uow_factory or (worker_container.uow_factory if worker_container else None)
         self._running = False
         self._ready = False
         self._current_task_id: Optional[TaskId] = None

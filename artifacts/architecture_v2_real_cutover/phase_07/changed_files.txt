@@ -1,0 +1,89 @@
+# PHASE 7 - PROCESS_SPECIFIC_COMPOSITION_COMPLETE
+# Files changed, created, or modified during this phase
+
+## CREATED FILES
+
+### 1. apps/worker/windagent_worker/composition.py
+- Worker-specific composition root (PHASE 7)
+- Composes: Database, Durable queue, Lease manager, Orchestration engine, Execution runtime
+- Composes: Tools, Providers, Intelligence pipeline, Context, Memory, Workflows, Verification
+- Composes: Outbox publisher, Observability
+- Does NOT compose: API, Web, Desktop services
+
+### 2. apps/cli/windagent_cli/composition.py
+- CLI per-command composition root (PHASE 7)
+- Per-command composers:
+  - DoctorCommandComposer
+  - RunCommandComposer
+  - EvalCommandComposer
+  - ProviderTestCommandComposer
+  - WorkerStatusCommandComposer
+  - ArchitectureCheckCommandComposer
+- No global "god container"
+- Each command composes only what it needs
+
+### 3. tests/unit/test_phase7_composition.py
+- Complete test suite for PHASE 7 (22 tests)
+- Tests API composition, Worker composition, CLI composition, Desktop supervisor
+- Tests no god container, no cross-process imports
+- Tests version metadata
+
+## MODIFIED FILES
+
+### 1. apps/api/windagent_api/composition.py
+- Updated to PHASE 7 requirements
+- Removed: OrchestrationV2Container from bootstrap (contains worker-specific services)
+- Removed: execution_registry from bootstrap
+- Added: PluginRegistry, SkillRegistry, WorkflowRegistry
+- Added: ContextService, MemoryQueryService, VerificationQueryService
+- Updated: OutboxEventPublisher to use SqlOutboxRepository
+- Added: PHASE 7 documentation comments
+- Added: Cleanup for registries in shutdown
+
+### 2. apps/worker/windagent_worker/runner.py
+- Updated to use WorkerContainer
+- Added: worker_container parameter to ProductionWorker
+- Updated: ProductionWorker uses WorkerContainer services
+- Added: PHASE 7 documentation comments
+
+### 3. apps/worker/windagent_worker/__main__.py
+- Updated to bootstrap WorkerContainer
+- Added: WorkerContainer initialization
+- Added: Graceful shutdown with container cleanup
+- Added: PHASE 7 documentation comments
+- Added: Error handling and logging
+
+### 4. apps/cli/windagent_cli/main.py
+- Updated to use per-command composition
+- Removed: Top-level imports of TaskManager, ToolRegistry, CanonicalModelRegistryService
+- Added: Import from composition module
+- Updated: doctor() to use DoctorCommandComposer
+- Updated: run_task() to be async and use RunCommandComposer
+- Added: New commands: worker-status, provider-test
+- Added: Async command wrappers (_async_worker_status, _async_provider_test)
+- Added: PHASE 7 documentation comments
+
+### 5. apps/desktop/sidecar_manager.py
+- Updated to PHASE 7 requirements
+- Added: Restart policy configuration (max_restarts, restart_delay)
+- Added: Restart count tracking
+- Added: SidecarStatus now includes process reference
+- Added: New methods: monitor_lifecycle(), restart_sidecar(), _stop_sidecar()
+- Added: collect_logs() method
+- Added: monitor_health_async() for Tauri integration
+- Updated: spawn_api_sidecar() to use windagent_api.main
+- Updated: spawn_worker_sidecar() to use windagent_worker.__main__
+- Added: PHASE 7 documentation comments
+- Added: Logging throughout
+
+## ARTIFACTS
+
+### artifacts/architecture_v2_real_cutover/phase_07/
+- execution_receipt.json - Execution details and verdict
+- changed_files.txt - List of all modified, created files
+- test_results.json - Test execution results
+- risk_register.md - Risk assessment
+- phase_verdict.md - Final verdict document
+
+## REMOVED FILES
+None - PHASE 7 only adds and modifies files, no deletions.

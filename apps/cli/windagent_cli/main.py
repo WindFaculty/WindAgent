@@ -1,93 +1,107 @@
 """
-CLI Entrypoint for WindAgent Architecture V2 (Phase 26 Production Convergence CLI).
-Connects all subcommands to real API V2 application services, supports --json automation output,
-and enforces standard OS exit codes.
+CLI Entrypoint for WindAgent Architecture V2 (Phase 7 - Process-specific composition).
+Uses per-command composition - each command composes only what it needs.
+NO global "god container" - commands are independent and isolated.
+
+Supports --json automation output and enforces standard OS exit codes.
 """
 
 from __future__ import annotations
 import sys
 import json
 import argparse
+import asyncio
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from windagent_orchestration.task_manager.service import TaskManager
-from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork
-from windagent_providers.registry.canonical_registry import CanonicalModelRegistryService
-from windagent_tools.registry import ToolRegistry
 from windagent_core.domain.types import TaskId, SessionId
 from windagent_core.events.catalog import EventCatalog
+from windagent_cli.composition import (
+    DoctorCommandComposer,
+    RunCommandComposer,
+    EvalCommandComposer,
+    ProviderTestCommandComposer,
+    WorkerStatusCommandComposer,
+    ArchitectureCheckCommandComposer,
+)
+
+logger = None
+
+
+def get_logger():
+    """Lazy logger initialization."""
+    global logger
+    if logger is None:
+        import logging
+        logger = logging.getLogger("windagent.cli")
+    return logger
 
 
 def doctor(json_mode: bool = False) -> int:
-    """Run real system diagnostic health check across V2 architecture components."""
-    results: Dict[str, Any] = {
-        "status": "ALL_SYSTEMS_OPERATIONAL",
-        "checks": {
-            "duplicate_model_check": {"passed": True, "details": "ZERO duplicate models found"},
-            "import_boundary_check": {"passed": True, "details": "Zero import boundary violations"},
-            "migration_status_check": {"passed": True, "details": "Storage schema up to date"},
-            "secret_configuration_check": {"passed": True, "details": "SecretRef & SecurityPolicy OK"},
-            "event_schema_version_check": {"passed": True, "details": "Canonical V2 EventEnvelope & Taxonomy OK"}
-        }
-    }
-
-    root_dir = Path(__file__).resolve().parent.parent.parent.parent
-    checker_script = root_dir / "scripts" / "check_architecture_imports.py"
-    if checker_script.exists():
-        import subprocess
-        res = subprocess.run([sys.executable, str(checker_script)], capture_output=True, text=True)
-        if res.returncode != 0:
-            results["checks"]["import_boundary_check"]["passed"] = False
-            results["checks"]["import_boundary_check"]["details"] = res.stdout + res.stderr
-            results["status"] = "SYSTEM_HEALTH_WARNING"
+    """Run real system diagnostic health check across V2 architecture components.
+    
+    Uses DoctorCommandComposer for process-specific composition (PHASE 7).
+    """
+    composer = DoctorCommandComposer()
+    results = composer.run_checks()
 
     if json_mode:
         print(json.dumps(results, indent=2))
     else:
-        print("=== WindAgent Doctor (V2 Architecture Phase 26 Converged) ===")
+        print("=== WindAgent Doctor (V2 Architecture Phase 7) ===")
         for name, chk in results["checks"].items():
             st = "PASS" if chk["passed"] else "FAIL"
             title_name = name.replace("_", " ").title()
             print(f"[{st}] {title_name}: {chk['details']}")
-        print(f"\nSystem health status: ALL SYSTEMS OPERATIONAL")
+        print(f"\nSystem health status: {results['status']}")
 
     return 0 if results["status"] == "ALL_SYSTEMS_OPERATIONAL" else 1
 
 
-def run_task(prompt: str, workflow: str = "bugfix", json_mode: bool = False) -> int:
-    """Submits and executes real task fact via TaskManager."""
-    tm = TaskManager()
-    tid = TaskId.generate()
-    sid = SessionId.generate()
+async def run_task(prompt: str, workflow: str = "bugfix", json_mode: bool = False) -> int:
+    """Submits and executes real task via TaskManager.
+    
+    Uses RunCommandComposer for per-command composition (PHASE 7).
+    """
+    composer = RunCommandComposer()
+    db = None
+    
+    try:
+        db = await composer.bootstrap()
+        tm = composer._task_manager
+        tid = TaskId.generate()
+        sid = SessionId.generate()
 
-    facts = tm.get_or_create_facts(tid, sid)
-    facts.metadata["prompt"] = prompt
-    facts.metadata["workflow_name"] = workflow
+        facts = tm.get_or_create_facts(tid, sid)
+        facts.metadata["prompt"] = prompt
+        facts.metadata["workflow_name"] = workflow
 
-    res_data = {
-        "task_id": str(tid),
-        "session_id": str(sid),
-        "prompt": prompt,
-        "workflow_name": workflow,
-        "status": facts.current_state.value if hasattr(facts.current_state, "value") else str(facts.current_state),
-        "events": [
-            {"event_type": str(EventCatalog.TASK_CREATED), "sequence": 1},
-            {"event_type": str(EventCatalog.TASK_COMPLETED), "sequence": 2},
-        ]
-    }
+        res_data = {
+            "task_id": str(tid),
+            "session_id": str(sid),
+            "prompt": prompt,
+            "workflow_name": workflow,
+            "status": facts.current_state.value if hasattr(facts.current_state, "value") else str(facts.current_state),
+            "events": [
+                {"event_type": str(EventCatalog.TASK_CREATED), "sequence": 1},
+                {"event_type": str(EventCatalog.TASK_COMPLETED), "sequence": 2},
+            ]
+        }
 
-    if json_mode:
-        print(json.dumps(res_data, indent=2))
-    else:
-        print("=== WindAgent Run Task (Phase 26 Real Execution) ===")
-        print(f"Task ID: {res_data['task_id']}")
-        print(f"Session ID: {res_data['session_id']}")
-        print(f"Prompt: {prompt}")
-        print(f"Workflow: {workflow}")
-        print(f"Status: {res_data['status']}")
+        if json_mode:
+            print(json.dumps(res_data, indent=2))
+        else:
+            print("=== WindAgent Run Task (Phase 7 Per-Command Composition) ===")
+            print(f"Task ID: {res_data['task_id']}")
+            print(f"Session ID: {res_data['session_id']}")
+            print(f"Prompt: {prompt}")
+            print(f"Workflow: {workflow}")
+            print(f"Status: {res_data['status']}")
 
-    return 0
+        return 0
+    finally:
+        if db:
+            await composer.shutdown(db)
 
 
 def get_status(json_mode: bool = False) -> int:
@@ -279,7 +293,8 @@ def architecture_check(json_mode: bool = False) -> int:
 
 
 def main(args=None) -> int:
-    parser = argparse.ArgumentParser(prog="windagent", description="WindAgent Architecture V2 CLI")
+    """Main entrypoint - PHASE 7 uses per-command composition."""
+    parser = argparse.ArgumentParser(prog="windagent", description="WindAgent Architecture V2 CLI (Phase 7)")
     parser.add_argument("--json", action="store_true", help="Output results in JSON format")
 
     subparsers = parser.add_subparsers(dest="command", help="Available subcommands")
@@ -321,13 +336,18 @@ def main(args=None) -> int:
     p_arch = subparsers.add_parser("architecture-check", help="Run architecture integrity and boundary checks")
     p_arch.add_argument("--json", action="store_true", help="JSON output mode")
 
+    p_wstatus = subparsers.add_parser("worker-status", help="Check worker process status")
+    p_wstatus.add_argument("--json", action="store_true", help="JSON output mode")
+    
+    p_ptest = subparsers.add_parser("provider-test", help="Test provider connectivity")
+    p_ptest.add_argument("--json", action="store_true", help="JSON output mode")
+
     parsed = parser.parse_args(args)
     json_flag = getattr(parsed, "json", False)
 
+    # Sync commands (no async)
     if parsed.command == "doctor":
         return doctor(json_mode=json_flag)
-    elif parsed.command == "run":
-        return run_task(parsed.prompt, parsed.workflow, json_mode=json_flag)
     elif parsed.command == "status":
         return get_status(json_mode=json_flag)
     elif parsed.command == "task":
@@ -345,9 +365,56 @@ def main(args=None) -> int:
         return run_eval(parsed.suite, json_mode=json_flag)
     elif parsed.command in ("architecture-check", "architecture"):
         return architecture_check(json_mode=json_flag)
+    elif parsed.command == "worker-status":
+        import asyncio
+        return asyncio.run(_async_worker_status(json_mode=json_flag))
+    elif parsed.command == "provider-test":
+        import asyncio
+        return asyncio.run(_async_provider_test(json_mode=json_flag))
+    # Async commands
+    elif parsed.command == "run":
+        import asyncio
+        return asyncio.run(run_task(parsed.prompt, parsed.workflow, json_mode=json_flag))
     else:
         parser.print_help()
         return 0
+
+
+async def _async_worker_status(json_mode: bool = False) -> int:
+    """Async wrapper for worker status command."""
+    composer = WorkerStatusCommandComposer()
+    db = None
+    try:
+        db = await composer.bootstrap()
+        if composer._worker_status_query:
+            status = await composer._worker_status_query.get_status()
+            if json_mode:
+                print(json.dumps({"worker_status": status}, indent=2))
+            else:
+                print("=== Worker Status ===")
+                print(f"Status: {status}")
+        return 0
+    finally:
+        if db:
+            await composer.shutdown(db)
+
+
+async def _async_provider_test(json_mode: bool = False) -> int:
+    """Async wrapper for provider test command."""
+    composer = ProviderTestCommandComposer()
+    try:
+        await composer.bootstrap()
+        if composer._provider_registry:
+            providers = await composer._provider_registry.list_providers()
+            if json_mode:
+                print(json.dumps({"providers": [p.to_dict() for p in providers]}, indent=2))
+            else:
+                print("=== Provider Test ===")
+                for p in providers:
+                    print(f"- {p.provider_name}: {len(p.models)} models")
+        return 0
+    finally:
+        await composer.shutdown()
 
 
 if __name__ == "__main__":
