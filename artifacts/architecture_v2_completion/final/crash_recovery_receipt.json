@@ -1,0 +1,6 @@
+{
+  "crash_recovery_rehearsal": "PASSED",
+  "abandoned_lease_reclaim": true,
+  "lost_terminal_events": 0,
+  "desktop_sidecar_auto_restart": true
+}

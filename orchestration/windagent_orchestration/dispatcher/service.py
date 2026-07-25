@@ -17,7 +17,6 @@ from windagent_orchestration.dispatcher.dispatch import StepDispatchService
 from windagent_orchestration.dispatcher.monitor import ExecutionMonitorService
 from windagent_orchestration.dispatcher.result_ingestion import ResultIngestionService
 from windagent_orchestration.dispatcher.finalizer import LeaseFinalizerService
-from windagent_execution.adapters.fake_runtime_adapter import FakeRuntimeAdapter
 
 logger = logging.getLogger("windagent.orchestration.dispatcher")
 
@@ -32,7 +31,14 @@ class StepDispatcher:
     ):
         self.lease_manager = lease_manager or LeaseManager(uow_factory=uow_factory)
         self.worker_registry = worker_registry or WorkerRegistry()
-        self.runtime_port = runtime_port or FakeRuntimeAdapter()
+        if runtime_port is None:
+            try:
+                import importlib
+                fake_mod = importlib.import_module("windagent_execution.adapters.fake_runtime_adapter")
+                runtime_port = fake_mod.FakeRuntimeAdapter()
+            except ImportError:
+                runtime_port = None
+        self.runtime_port = runtime_port
         self.uow_factory = uow_factory
 
         self.claim_service = StepClaimService(self.lease_manager)

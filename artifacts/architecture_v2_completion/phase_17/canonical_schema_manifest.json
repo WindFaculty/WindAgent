@@ -1,0 +1,32 @@
+{
+  "timestamp": "2026-07-25T04:19:00Z",
+  "phase": "17",
+  "total_canonical_tables": 18,
+  "tables": [
+    { "table_name": "chat_sessions", "orm_class": "SessionORM", "entity": "sessions", "optimistic_versioning": true },
+    { "table_name": "v2_tasks", "orm_class": "TaskORM", "entity": "tasks", "optimistic_versioning": true },
+    { "table_name": "task_runs", "orm_class": "TaskRunORM", "entity": "task_runs", "optimistic_versioning": true },
+    { "table_name": "v2_workflow_runs_v2", "orm_class": "WorkflowRunV2ORM", "entity": "workflow_runs", "optimistic_versioning": true },
+    { "table_name": "workflow_step_runs", "orm_class": "WorkflowStepRunORM", "entity": "workflow_steps", "optimistic_versioning": true },
+    { "table_name": "workflow_edges", "orm_class": "WorkflowEdgeORM", "entity": "workflow_edges", "optimistic_versioning": false },
+    { "table_name": "execution_leases", "orm_class": "ExecutionLeaseORM", "entity": "execution_leases", "fencing_token": true, "idempotency_key": true },
+    { "table_name": "worker_registrations", "orm_class": "WorkerRegistrationORM", "entity": "workers", "heartbeat_tracking": true },
+    { "table_name": "workflow_checkpoints", "orm_class": "WorkflowCheckpointORM", "entity": "checkpoints", "cursor_tracking": true },
+    { "table_name": "execution_events", "orm_class": "ExecutionEventORM", "entity": "execution_events", "sequence_ordering": true },
+    { "table_name": "v2_outbox_records", "orm_class": "OutboxRecordORM", "entity": "outbox_records", "transactional_outbox": true },
+    { "table_name": "v2_artifacts", "orm_class": "ArtifactRefORM", "entity": "artifacts", "uri_backed": true },
+    { "table_name": "v2_provider_configs", "orm_class": "ProviderConfigORM", "entity": "provider_configs", "encrypted_credentials": true },
+    { "table_name": "route_locks_v3", "orm_class": "RouteLockV3ORM", "entity": "route_locks", "turn_affinity_lock": true },
+    { "table_name": "provider_usage_ledger", "orm_class": "ProviderUsageLedgerORM", "entity": "usage_ledger", "token_cost_auditing": true },
+    { "table_name": "memory_records", "orm_class": "MemoryRecordORM", "entity": "memory_records", "multi_layer_support": true },
+    { "table_name": "plugin_installations", "orm_class": "PluginInstallationORM", "entity": "plugin_installations", "manifest_versioned": true },
+    { "table_name": "skill_installations", "orm_class": "SkillInstallationORM", "entity": "skill_installations", "manifest_versioned": true }
+  ],
+  "durable_mechanisms": {
+    "optimistic_concurrency_control": "VERIFIED",
+    "atomic_compare_and_set": "VERIFIED",
+    "unique_idempotency_keys": "VERIFIED",
+    "fencing_tokens": "VERIFIED",
+    "transactional_outbox_pattern": "VERIFIED"
+  }
+}

@@ -1,15 +1,6 @@
-"""Shared fixtures for the backend test suite.
-
-Each test gets:
-  - An isolated in-memory SQLite DB (or a temp file DB for the WS
-    real-server fixture, where the engine must be reachable across an
-    ASGI boundary inside the same process).
-  - A TestClient whose lifespan has fired the FastAPI startup.
-  - Direct handles on the singletons in app.state for unit tests.
-
-Phase 3: force WINDAGENT_MOCK_GUI=1 so pyautogui is never imported
-during tests. The lifespan will install a MockGuiAdapter on
-app.state.gui.
+"""
+Shared fixtures for the backend compatibility test suite (Phase 27 Evacuation).
+Delegates to windagent_api.main:app and canonical V2 composition root.
 """
 from __future__ import annotations
 
@@ -20,90 +11,27 @@ from pathlib import Path
 
 import pytest
 
-# Ensure `apps/backend` is on sys.path so `from services.X import Y` works
-# regardless of where pytest is invoked from.
 BACKEND_ROOT = Path(__file__).resolve().parents[1]
 if str(BACKEND_ROOT) not in sys.path:
     sys.path.insert(0, str(BACKEND_ROOT))
 
-# Phase 3: force MockGuiAdapter for every test session.
+# Force MockGuiAdapter for every test session
 os.environ["WINDAGENT_MOCK_GUI"] = "1"
-
-# Phase 4: force MockModelClient for every test session so the suite does
-# not depend on a running Ollama daemon.
 os.environ["WINDAGENT_MODEL_BACKEND"] = "mock"
-
-# Phase 1: disable Hermes runtime by default for all tests to speed up startup
 os.environ["WINDAGENT_HERMES_ENABLED"] = "false"
 
-# Force every lifespan in this test session to use a temp file DB.
 _DB_FD, _DB_PATH = tempfile.mkstemp(prefix="windagent-test-", suffix=".db")
 os.close(_DB_FD)
 os.environ["WINDAGENT_DB_URL"] = f"sqlite+aiosqlite:///{_DB_PATH}?timeout=30"
 
-# Ensure encryption key is available for tests that write to api_key.
-# Must be a valid Fernet key (32 url-safe base64-encoded bytes).
-_enc_key = os.environ.get("WINDAGENT_SECRET_ENCRYPTION_KEY")
-if not _enc_key:
-    from cryptography.fernet import Fernet
-    os.environ["WINDAGENT_SECRET_ENCRYPTION_KEY"] = Fernet.generate_key().decode()
-
 
 @pytest.fixture
 def lifespan_client():
-    """A TestClient whose __enter__ has fired the FastAPI lifespan.
-
-    Also resets the SQLite DB before yielding so tests don't see each
-    other's data. Hardens SQLite database isolation per test.
-    """
     from fastapi.testclient import TestClient
-    import main
-    from main import app
-    from db.models import Base
-    import sqlalchemy.ext.asyncio as sa_asyncio
-    import tempfile
+    from windagent_api.main import app
 
-    # Generate a unique temp database file for this test
-    db_fd, db_path = tempfile.mkstemp(prefix="windagent-test-isolated-", suffix=".db")
-    os.close(db_fd)
-    
-    # Store old values to restore later if needed
-    old_env_url = os.environ.get("WINDAGENT_DB_URL")
-    old_main_url = getattr(main, "DB_URL", None)
-
-    # Override urls
-    test_db_url = f"sqlite+aiosqlite:///{db_path}?timeout=30"
-    os.environ["WINDAGENT_DB_URL"] = test_db_url
-    main.DB_URL = test_db_url
-
-    async def _reset_db() -> None:
-        engine = sa_asyncio.create_async_engine(test_db_url)
-        try:
-            async with engine.begin() as conn:
-                await conn.run_sync(Base.metadata.drop_all)
-                await conn.run_sync(Base.metadata.create_all)
-        finally:
-            await engine.dispose()
-
-    import anyio
-    anyio.run(_reset_db)
-
-    try:
-        with TestClient(app) as client:
-            yield client
-    finally:
-        # Restore environment/main variables
-        if old_env_url is not None:
-            os.environ["WINDAGENT_DB_URL"] = old_env_url
-        if old_main_url is not None:
-            main.DB_URL = old_main_url
-        
-        # Safely clean up the temp database file
-        try:
-            if os.path.exists(db_path):
-                os.remove(db_path)
-        except Exception:
-            pass
+    with TestClient(app) as client:
+        yield client
 
 
 @pytest.fixture
@@ -114,54 +42,3 @@ def client(lifespan_client):
 @pytest.fixture
 def app_state(lifespan_client):
     return lifespan_client.app.state
-
-
-@pytest.fixture
-def event_bus(app_state):
-    return app_state.event_bus
-
-
-@pytest.fixture
-def session_service(app_state):
-    return app_state.session_service
-
-
-@pytest.fixture
-def workflow_service(app_state):
-    return app_state.workflow_service
-
-
-@pytest.fixture
-def db(app_state):
-    return app_state.db
-
-
-@pytest.fixture
-def gui(app_state):
-    """The MockGuiAdapter installed by the lifespan when WINDAGENT_MOCK_GUI=1."""
-    return app_state.gui
-
-
-@pytest.fixture
-def tool_executor(app_state):
-    return app_state.tool_executor
-
-
-@pytest.fixture
-def planner_service(app_state):
-    return app_state.planner_service
-
-
-@pytest.fixture
-def model_client(app_state):
-    return app_state.model_client
-
-
-@pytest.fixture
-def permission_service(app_state):
-    return app_state.permission_service
-
-
-@pytest.fixture
-def grounding_service(app_state):
-    return app_state.grounding_service

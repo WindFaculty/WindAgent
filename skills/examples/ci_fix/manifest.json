@@ -1,0 +1,34 @@
+{
+  "id": "ci_fix",
+  "description": "Diagnoses and fixes CI pipeline failures",
+  "version": "1.0.0",
+  "schema_version": "2.0.0",
+  "windagent_version": ">=0.3.0",
+  "activation_rules": [
+    "ci fix",
+    "ci failure",
+    "ci pipeline",
+    "github actions fix"
+  ],
+  "required_tools": [
+    "read_file",
+    "write_file",
+    "git_tool",
+    "exec_shell",
+    "github_tool"
+  ],
+  "required_workflows": [
+    "ci_fix"
+  ],
+  "required_permissions": [
+    "read_only",
+    "workspace_write",
+    "external_network"
+  ],
+  "token_budget": 6000,
+  "prompt_template": "Diagnose and fix the CI pipeline failure.\n\nCI log: {ci_log}\n\nRepository: {repo_url}\nBranch: {branch}\n\nSteps:\n1. Analyze the CI failure log\n2. Identify the root cause\n3. Propose and apply a fix\n4. Verify the fix",
+  "verification_policy": {
+    "require_tests_pass": true,
+    "require_ci_reenabled": true
+  }
+}

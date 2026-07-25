@@ -1,0 +1,8 @@
+{
+  "script": "scripts/verify_phase24_verification_evals.py",
+  "returncode": 0,
+  "gates": 7,
+  "verification_tests_passed": true,
+  "evals_tests_passed": true,
+  "passed": true
+}

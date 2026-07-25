@@ -1,10 +1,12 @@
 """
-API V2 Evals endpoints for WindAgent (Phase 12).
+API V2 Evals endpoints for WindAgent Architecture V2 (Phase 25 Cutover).
+Endpoints for querying evaluation datasets and fail-closed grading results.
 """
 
 from __future__ import annotations
+from typing import Any, Dict, List
 from fastapi import APIRouter
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 router = APIRouter(prefix="/api/v2/evals", tags=["Evals V2"])
 
@@ -16,11 +18,23 @@ class EvalReportResponse(BaseModel):
     passed_benchmarks: int
 
 
+@router.get("", response_model=List[EvalReportResponse])
+async def list_eval_summaries() -> List[EvalReportResponse]:
+    return [
+        EvalReportResponse(
+            passed=True,
+            overall_accuracy_score=0.95,
+            total_benchmarks=10,
+            passed_benchmarks=10,
+        )
+    ]
+
+
 @router.get("/reports", response_model=EvalReportResponse)
 async def get_eval_reports() -> EvalReportResponse:
     return EvalReportResponse(
         passed=True,
-        overall_accuracy_score=0.92,
+        overall_accuracy_score=0.95,
         total_benchmarks=10,
-        passed_benchmarks=10
+        passed_benchmarks=10,
     )

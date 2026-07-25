@@ -1,0 +1,35 @@
+{
+  "id": "code_linter",
+  "name": "Code Linter Plugin",
+  "version": "1.0.0",
+  "schema_version": "2.0.0",
+  "windagent_version": ">=0.3.0",
+  "entrypoint": "code_linter:CodeLinterPlugin",
+  "capabilities": ["code_analysis", "linting", "static_analysis"],
+  "required_permissions": ["workspace_write", "read_only"],
+  "required_tools": ["read_file", "write_file", "exec_shell"],
+  "required_workflows": ["code_review"],
+  "dependencies": [
+    {
+      "plugin_id": "hello_world",
+      "version": ">=1.0.0",
+      "optional": true
+    }
+  ],
+  "config_schema": {
+    "type": "object",
+    "properties": {
+      "linter": {
+        "type": "string",
+        "enum": ["flake8", "pylint", "eslint"],
+        "default": "flake8"
+      },
+      "auto_fix": {
+        "type": "boolean",
+        "default": false
+      }
+    }
+  },
+  "compatibility": ">=0.3.0",
+  "signature_hash": "sha256-demo-signature-hash-123"
+}

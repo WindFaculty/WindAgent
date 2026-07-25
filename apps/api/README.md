@@ -9,6 +9,7 @@ FastAPI REST & WebSocket entrypoint for Architecture V2
 ## Allowed Dependencies
 - `windagent_core`
 - `windagent_orchestration`
+- `windagent_execution`
 - `windagent_intelligence`
 - `windagent_providers`
 - `windagent_tools`

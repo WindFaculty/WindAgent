@@ -9,6 +9,7 @@ Background worker process for asynchronous task execution
 ## Allowed Dependencies
 - `windagent_core`
 - `windagent_orchestration`
+- `windagent_execution`
 - `windagent_storage`
 - `windagent_observability`
 

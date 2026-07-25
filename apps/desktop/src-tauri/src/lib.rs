@@ -1,12 +1,8 @@
-// Phase 6 — Tauri runtime library.
+// Phase 26 — Tauri runtime library (Rust).
 //
 // Provides native system-metrics commands via Tauri IPC so the frontend
-// can display real CPU / RAM / GPU numbers instead of random mock data.
-//
-// GPU strategy:
-//   1. Try NVML (NVIDIA Management Library) for discrete GPU usage + VRAM.
-//   2. If NVML is unavailable (no NVIDIA driver), fall back to zeros so the
-//      UI still works gracefully.
+// can display real CPU / RAM / GPU numbers.
+// All hardcoded absolute paths have been eliminated for 100% OS path portability.
 
 use once_cell::sync::Lazy;
 use serde::Serialize;
@@ -15,30 +11,15 @@ use std::io::Write;
 use std::sync::Mutex;
 use sysinfo::System;
 
-/// Simple file logger for NVML debug output
+/// Simple file logger for NVML debug output without hardcoded absolute paths
 fn log_to_file(msg: &str) {
-    // Also write a test file on first call to verify file creation works
-    static INIT: std::sync::Once = std::sync::Once::new();
-    INIT.call_once(|| {
-        let _ = std::fs::write(r"D:\antigaravity_code\WindAgent\apps\desktop\src-tauri\nvml_debug.log", "NVML debug log started\n");
-        let _ = std::fs::write(r"nvml_debug.log", "NVML debug log started\n");
-        let _ = std::fs::write(r".\nvml_debug.log", "NVML debug log started\n");
-    });
-    
-    let paths = [
-        r"D:\antigaravity_code\WindAgent\apps\desktop\src-tauri\nvml_debug.log",
-        r"nvml_debug.log",
-        r".\nvml_debug.log",
-    ];
-    for path in paths {
-        if let Ok(mut file) = OpenOptions::new()
-            .create(true)
-            .append(true)
-            .open(path)
-        {
-            let _ = writeln!(file, "{}", msg);
-            break;
-        }
+    let log_path = std::env::temp_dir().join("windagent_nvml_debug.log");
+    if let Ok(mut file) = OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(&log_path)
+    {
+        let _ = writeln!(file, "{}", msg);
     }
 }
 
@@ -46,8 +27,8 @@ fn log_to_file(msg: &str) {
 static STARTUP_MARKER: once_cell::sync::OnceCell<()> = once_cell::sync::OnceCell::new();
 fn ensure_startup_marker() {
     STARTUP_MARKER.get_or_init(|| {
-        let _ = std::fs::write(r"D:\antigaravity_code\WindAgent\apps\desktop\src-tauri\startup_marker.log", "Lib loaded\n");
-        let _ = std::fs::write(r"startup_marker.log", "Lib loaded\n");
+        let log_path = std::env::temp_dir().join("windagent_startup_marker.log");
+        let _ = std::fs::write(&log_path, "Desktop Lib loaded\n");
     });
 }
 
@@ -160,12 +141,6 @@ fn read_nvidia_gpu() -> (f32, String, f32, f32, f32) {
         }
     };
 
-    // Pick the *first discrete* GPU (index 0 is almost always the primary
-    // dedicated card on a laptop/desktop with an iGPU).
-    // To target a specific GPU, we skip any device whose name contains
-    // "Intel" or "Microsoft" (software / integrated adapters that show up
-    // as NVML devices in some edge cases are extremely rare, but we guard
-    // anyway by iterating).
     let device_count = match nvml.device_count() {
         Ok(n) => n,
         Err(e) => {

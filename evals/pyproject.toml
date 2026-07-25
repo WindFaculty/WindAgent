@@ -4,7 +4,12 @@ version = "0.3.0"
 description = "Evaluation benchmarks, model output scoring, regression suites"
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = []
+dependencies = [
+    "windagent-core",
+]
+
+[tool.uv.sources]
+windagent-core = { workspace = true }
 
 [build-system]
 requires = ["hatchling"]

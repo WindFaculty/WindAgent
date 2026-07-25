@@ -89,11 +89,8 @@ class ProviderResponse(BaseModel):
 
     def model_post_init(self, __context: Any) -> None:
         if self.raw_metadata:
-            try:
-                from windagent_providers.base.secret_redaction import redact_dict
-                object.__setattr__(self, "raw_metadata", redact_dict(self.raw_metadata))
-            except ImportError:
-                pass
+            from windagent_core.security.redaction import redact_dict
+            object.__setattr__(self, "raw_metadata", redact_dict(self.raw_metadata))
 
 
 class ProviderStreamChunk(BaseModel):

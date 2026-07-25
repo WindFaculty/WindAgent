@@ -1,0 +1,33 @@
+{
+  "id": "code_refactor",
+  "description": "Refactors Python code with type annotations and modern patterns",
+  "version": "1.0.0",
+  "schema_version": "2.0.0",
+  "windagent_version": ">=0.3.0",
+  "activation_rules": [
+    "refactor",
+    "refactor python",
+    "modernize",
+    "type annotation"
+  ],
+  "required_tools": [
+    "read_file",
+    "write_file",
+    "ast_extract_symbols",
+    "lsp_tool"
+  ],
+  "required_workflows": [
+    "code_review"
+  ],
+  "required_permissions": [
+    "read_only",
+    "workspace_write"
+  ],
+  "token_budget": 4000,
+  "prompt_template": "Refactor the following Python code to use modern patterns, type annotations, and best practices.\n\nSource file: {file_path}\n\n```python\n{code}\n```\n\nPlease focus on:\n1. Type annotations\n2. Modern language features\n3. Performance improvements\n4. Readability\n5. Best practices",
+  "verification_policy": {
+    "require_type_check": true,
+    "require_lint_pass": true,
+    "max_iterations": 3
+  }
+}

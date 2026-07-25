@@ -6,7 +6,21 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "click>=8.0.0",
+    "windagent-core",
+    "windagent-orchestration",
+    "windagent-intelligence",
+    "windagent-providers",
+    "windagent-tools",
+    "windagent-storage",
 ]
+
+[tool.uv.sources]
+windagent-core = { workspace = true }
+windagent-orchestration = { workspace = true }
+windagent-intelligence = { workspace = true }
+windagent-providers = { workspace = true }
+windagent-tools = { workspace = true }
+windagent-storage = { workspace = true }
 
 [build-system]
 requires = ["hatchling"]

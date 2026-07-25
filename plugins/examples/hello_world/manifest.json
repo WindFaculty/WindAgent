@@ -1,0 +1,24 @@
+{
+  "id": "hello_world",
+  "name": "Hello World Plugin",
+  "version": "1.0.0",
+  "schema_version": "2.0.0",
+  "windagent_version": ">=0.3.0",
+  "entrypoint": "hello_world:HelloWorldPlugin",
+  "capabilities": ["greeting", "demo"],
+  "required_permissions": ["read_only"],
+  "required_tools": [],
+  "required_workflows": [],
+  "dependencies": [],
+  "config_schema": {
+    "type": "object",
+    "properties": {
+      "greeting": {
+        "type": "string",
+        "default": "Hello from WindAgent Plugin!"
+      }
+    }
+  },
+  "compatibility": ">=0.3.0",
+  "signature_hash": null
+}

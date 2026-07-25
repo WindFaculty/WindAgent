@@ -1,0 +1,28 @@
+{
+  "repository_name": "WindAgent",
+  "architecture_version": "V2",
+  "phase": "15",
+  "timestamp": "2026-07-25T02:47:00Z",
+  "workspace_packages": [
+    { "name": "windagent_core", "path": "core/windagent_core" },
+    { "name": "windagent_orchestration", "path": "orchestration/windagent_orchestration" },
+    { "name": "windagent_providers", "path": "providers/windagent_providers" },
+    { "name": "windagent_intelligence", "path": "intelligence/windagent_intelligence" },
+    { "name": "windagent_tools", "path": "tools/windagent_tools" },
+    { "name": "windagent_workflows", "path": "workflows/windagent_workflows" },
+    { "name": "windagent_verification", "path": "verification/windagent_verification" },
+    { "name": "windagent_context", "path": "context/windagent_context" },
+    { "name": "windagent_memory", "path": "memory/windagent_memory" },
+    { "name": "windagent_execution", "path": "execution/windagent_execution" },
+    { "name": "windagent_storage", "path": "storage/windagent_storage" },
+    { "name": "windagent_observability", "path": "observability/windagent_observability" },
+    { "name": "windagent_evals", "path": "evals/windagent_evals" }
+  ],
+  "applications": [
+    { "name": "windagent_api", "path": "apps/api", "type": "canonical_api" },
+    { "name": "windagent_worker", "path": "apps/worker", "type": "production_worker" },
+    { "name": "windagent_cli", "path": "apps/cli", "type": "cli_surface" },
+    { "name": "windagent_web", "path": "apps/web", "type": "decoupled_web_frontend" },
+    { "name": "windagent_backend", "path": "apps/backend", "type": "legacy_sidecar" }
+  ]
+}

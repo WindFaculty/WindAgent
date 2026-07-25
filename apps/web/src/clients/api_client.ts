@@ -14,7 +14,7 @@ export interface TaskRecord {
   task_id: string;
   prompt: string;
   status: string;
-  workflow_name: str;
+  workflow_name: string;
   session_id: string;
   created_at: string;
   result?: Record<string, any>;

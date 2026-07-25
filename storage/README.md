@@ -8,6 +8,7 @@ Database repositories, ORM mappings, migration adapters, persistent artifact sto
 
 ## Allowed Dependencies
 - `windagent_core`
+- `windagent_providers`
 
 ## Forbidden Dependencies
 - `apps`

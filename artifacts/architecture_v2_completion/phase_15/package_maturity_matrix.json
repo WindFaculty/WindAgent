@@ -1,0 +1,23 @@
+{
+  "timestamp": "2026-07-25T02:47:00Z",
+  "phase": "15",
+  "maturity_matrix": [
+    { "package": "core", "maturity": "HIGH", "notes": "Canonical domain types, events, errors, boundaries verified." },
+    { "package": "orchestration", "maturity": "MEDIUM-HIGH", "notes": "V2 state machine, DAG scheduler, UoW, and task dispatcher functional." },
+    { "package": "providers", "maturity": "HIGH", "notes": "V3 provider adapters, discovery, route lock, and cost estimation verified." },
+    { "package": "intelligence", "maturity": "MEDIUM", "notes": "Model router, policy router, route lock active." },
+    { "package": "tools", "maturity": "MEDIUM-HIGH", "notes": "Canonical tool registry, sandbox traversal, security policies, MCP." },
+    { "package": "workflows", "maturity": "MEDIUM", "notes": "Workflow packs registered and DAG sequences tested." },
+    { "package": "verification", "maturity": "MEDIUM", "notes": "Quality gates and report validator operational." },
+    { "package": "context", "maturity": "MEDIUM", "notes": "Context builder, compactor, and repository index." },
+    { "package": "memory", "maturity": "MEDIUM", "notes": "Memory models and store active." },
+    { "package": "execution", "maturity": "MEDIUM", "notes": "Fake runtime and Hermes runtime adapters." },
+    { "package": "storage", "maturity": "HIGH", "notes": "SQL UoW, repositories, outbox, migration schema verified." },
+    { "package": "observability", "maturity": "MEDIUM", "notes": "Metrics, trace, and audit contracts." },
+    { "package": "apps/api", "maturity": "MEDIUM", "notes": "FastAPI V2 application endpoints and bootstrap." },
+    { "package": "apps/worker", "maturity": "MEDIUM-HIGH", "notes": "Durable task lease manager and recovery worker." },
+    { "package": "apps/cli", "maturity": "MEDIUM", "notes": "CLI surface commands functional." },
+    { "package": "apps/web", "maturity": "MEDIUM-HIGH", "notes": "Decoupled web frontend, clean TypeScript build." },
+    { "package": "apps/backend", "maturity": "MEDIUM", "notes": "Legacy sidecar updated to support durable control surface." }
+  ]
+}

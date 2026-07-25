@@ -1,15 +1,18 @@
 """
-Legacy API V1 compatibility adapter and Route Parity Matrix for WindAgent (Phase 12).
+Legacy API V1 compatibility adapter and Route Parity Matrix for WindAgent (Phase 25 Cutover).
 Delegates all V1 API requests to V2 application services to ensure zero business logic duplication.
 """
 
 from __future__ import annotations
-from typing import List
-from fastapi import APIRouter, status
+from typing import List, Optional
+from fastapi import APIRouter, Depends, Header, status
 from pydantic import BaseModel
 
 from windagent_api.routers.v2_tasks import create_task, list_tasks, get_task, CreateTaskRequest, TaskResponse
 from windagent_api.routers.v2_runs import list_runs, RunResponse
+from windagent_api.dependencies import get_task_manager, get_uow
+from windagent_orchestration.task_manager.service import TaskManager
+from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork
 
 v1_router = APIRouter(prefix="/api/v1", tags=["Legacy V1 Compatibility"])
 parity_router = APIRouter(prefix="/api/v2/parity-matrix", tags=["Parity Matrix"])
@@ -65,27 +68,41 @@ PARITY_MATRIX = [
 
 
 @v1_router.post("/tasks", response_model=TaskResponse, status_code=status.HTTP_201_CREATED)
-async def v1_create_task(req: CreateTaskRequest) -> TaskResponse:
+async def v1_create_task(
+    req: CreateTaskRequest,
+    x_idempotency_key: Optional[str] = Header(None, alias="X-Idempotency-Key"),
+    tm: TaskManager = Depends(get_task_manager),
+    uow: SqlUnitOfWork = Depends(get_uow),
+) -> TaskResponse:
     """V1 Task Creation compatibility wrapper."""
-    return await create_task(req)
+    return await create_task(req, x_idempotency_key=x_idempotency_key, tm=tm, uow=uow)
 
 
 @v1_router.get("/tasks", response_model=List[TaskResponse])
-async def v1_list_tasks() -> List[TaskResponse]:
+async def v1_list_tasks(
+    tm: TaskManager = Depends(get_task_manager),
+    uow: SqlUnitOfWork = Depends(get_uow),
+) -> List[TaskResponse]:
     """V1 Task List compatibility wrapper."""
-    return await list_tasks()
+    return await list_tasks(tm=tm, uow=uow)
 
 
 @v1_router.get("/tasks/{task_id}", response_model=TaskResponse)
-async def v1_get_task(task_id: str) -> TaskResponse:
+async def v1_get_task(
+    task_id: str,
+    tm: TaskManager = Depends(get_task_manager),
+    uow: SqlUnitOfWork = Depends(get_uow),
+) -> TaskResponse:
     """V1 Task Get compatibility wrapper."""
-    return await get_task(task_id)
+    return await get_task(task_id, tm=tm, uow=uow)
 
 
 @v1_router.get("/runs", response_model=List[RunResponse])
-async def v1_list_runs() -> List[RunResponse]:
+async def v1_list_runs(
+    uow: SqlUnitOfWork = Depends(get_uow),
+) -> List[RunResponse]:
     """V1 Runs compatibility wrapper."""
-    return await list_runs()
+    return await list_runs(uow=uow)
 
 
 @parity_router.get("", response_model=List[ParityEntry])

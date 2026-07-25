@@ -1,0 +1,15 @@
+{
+  "phase": "19",
+  "component": "windagent_tools.security",
+  "timestamp": "2026-07-25T09:46:00Z",
+  "security_enforcement": {
+    "path_sandbox_traversal_protection": true,
+    "path_sandbox_symlink_escape_protection": true,
+    "shell_runner_forbidden_pattern_check": true,
+    "shell_runner_secret_redaction": true,
+    "destructive_tool_user_approval_required": true,
+    "database_write_query_user_approval_required": true
+  },
+  "metadata_contract_attributes_count": 12,
+  "permission_engine_enforced": true
+}

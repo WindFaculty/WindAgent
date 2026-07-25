@@ -8,7 +8,25 @@ dependencies = [
     "fastapi>=0.115.0",
     "uvicorn[standard]>=0.30.0",
     "pydantic>=2.7.0",
+    "windagent-core",
+    "windagent-orchestration",
+    "windagent-execution",
+    "windagent-intelligence",
+    "windagent-providers",
+    "windagent-tools",
+    "windagent-storage",
+    "windagent-observability",
 ]
+
+[tool.uv.sources]
+windagent-core = { workspace = true }
+windagent-orchestration = { workspace = true }
+windagent-execution = { workspace = true }
+windagent-intelligence = { workspace = true }
+windagent-providers = { workspace = true }
+windagent-tools = { workspace = true }
+windagent-storage = { workspace = true }
+windagent-observability = { workspace = true }
 
 [build-system]
 requires = ["hatchling"]

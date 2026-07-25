@@ -1,6 +1,6 @@
 """
-MCP Tool Adapter for WindAgent Architecture V2.
-Wraps MCP server tools into WindAgent V2 BaseTool implementations.
+MCP Tool Adapter for WindAgent Architecture V2 (Phase 19).
+Wraps MCP server tools into WindAgent V2 BaseTool implementations with server trust policy evaluation.
 Mandates that every MCP tool execution is evaluated and enforced by PermissionEngine.
 """
 
@@ -22,20 +22,31 @@ class MCPToolAdapter(BaseTool):
         tool_info: MCPToolInfo,
         permission_engine: PermissionEngine,
         risk_level: ToolRiskLevel = ToolRiskLevel.EXTERNAL_NETWORK,
+        is_trusted_server: bool = True,
     ):
         prefixed_name = f"mcp_{client.config.server_id}_{tool_info.name}"
         definition = ToolDefinition(
             name=prefixed_name,
             description=f"MCP Tool [{tool_info.name}] on server [{client.config.server_id}]: {tool_info.description}",
-            risk_level=risk_level,
-            required_permissions=[f"mcp:{client.config.server_id}:{tool_info.name}"],
+            risk_level=risk_level if is_trusted_server else ToolRiskLevel.DESTRUCTIVE,
+            capability="mcp",
+            side_effect_class="network",
+            is_idempotent=False,
+            is_destructive=not is_trusted_server,
+            is_reversible=False,
             timeout_seconds=client.config.timeout_seconds,
+            required_permissions=[f"mcp:{client.config.server_id}:{tool_info.name}"],
+            sandbox_requirement="none",
+            artifact_outputs=["mcp_response"],
+            retry_eligible=is_trusted_server,
+            redaction_policy="secrets_only",
             parameters_schema=tool_info.input_schema,
         )
         super().__init__(definition=definition)
         self.client = client
         self.tool_info = tool_info
         self.permission_engine = permission_engine
+        self.is_trusted_server = is_trusted_server
 
     async def execute(self, invocation: ToolInvocation, ctx: ToolExecutionContext) -> ToolResult:
         start_t = time.perf_counter()
@@ -74,16 +85,19 @@ async def register_mcp_server_tools(
     client: MCPClientPort,
     registry: ToolRegistry,
     permission_engine: PermissionEngine,
+    trusted_servers: List[str] = None,
 ) -> List[str]:
-    """Queries an MCP client and registers all its tools as MCPToolAdapters in ToolRegistry."""
+    """Queries an MCP client and registers all its tools as MCPToolAdapters in ToolRegistry with trust policy."""
     mcp_tools = await client.list_tools()
     registered_names = []
+    is_trusted = (trusted_servers is None) or (client.config.server_id in trusted_servers)
 
     for tool_info in mcp_tools:
         adapter = MCPToolAdapter(
             client=client,
             tool_info=tool_info,
             permission_engine=permission_engine,
+            is_trusted_server=is_trusted,
         )
         registry.register_tool(adapter)
         registered_names.append(adapter.name)

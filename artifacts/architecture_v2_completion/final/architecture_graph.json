@@ -1,0 +1,11 @@
+{
+  "version": "2.0",
+  "workspace_packages": [
+    "core", "storage", "orchestration", "intelligence", "providers",
+    "tools", "workflows", "verification", "context", "memory",
+    "execution", "observability", "evals", "apps/api", "apps/cli", "apps/worker"
+  ],
+  "bounded_contexts_count": 16,
+  "import_boundary_violations": 0,
+  "duplicate_models": 0
+}

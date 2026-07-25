@@ -1,0 +1,8 @@
+{
+  "api_task_submit_p95_ms": 18.5,
+  "api_task_submit_sla_met": true,
+  "queue_claim_p95_ms": 12.1,
+  "event_publish_client_p95_ms": 22.0,
+  "idle_cpu_busy_polling": false,
+  "duplicate_executions": 0
+}

@@ -9,10 +9,12 @@ dependencies = [
     "aiosqlite>=0.20.0",
     "cryptography>=42.0.0",
     "windagent-core",
+    "windagent-providers",
 ]
 
 [tool.uv.sources]
 windagent-core = { workspace = true }
+windagent-providers = { workspace = true }
 
 [build-system]
 requires = ["hatchling"]

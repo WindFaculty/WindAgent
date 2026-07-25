@@ -1,0 +1,182 @@
+{
+  "phase": 23,
+  "name": "Workflow specification va workflow packs",
+  "gates": {
+    "dag_validation": {
+      "passed": true,
+      "packs_validated": 8,
+      "details": {
+        "passed": true,
+        "packs": {
+          "bugfix": {
+            "valid": true,
+            "nodes": 7,
+            "edges": 8,
+            "errors": [],
+            "semantic_version": "2.0.0",
+            "content_hash": "cd3d5a427b601043470d922593008dd5",
+            "initial_nodes": [
+              "reproduce"
+            ],
+            "conditional_edges": 2,
+            "parallel_edges": 0
+          },
+          "ci_fix": {
+            "valid": true,
+            "nodes": 6,
+            "edges": 6,
+            "errors": [],
+            "semantic_version": "2.0.0",
+            "content_hash": "5e3af1e2390c8e23027d80af8b8334c2",
+            "initial_nodes": [
+              "inspect_checks"
+            ],
+            "conditional_edges": 2,
+            "parallel_edges": 0
+          },
+          "code_review": {
+            "valid": true,
+            "nodes": 6,
+            "edges": 6,
+            "errors": [],
+            "semantic_version": "2.0.0",
+            "content_hash": "5c46f65cc4e2c44326c705e78412e209",
+            "initial_nodes": [
+              "diff_inventory"
+            ],
+            "conditional_edges": 0,
+            "parallel_edges": 0
+          },
+          "feature": {
+            "valid": true,
+            "nodes": 7,
+            "edges": 8,
+            "errors": [],
+            "semantic_version": "2.0.0",
+            "content_hash": "242d483ae393ba2377764fd11f620652",
+            "initial_nodes": [
+              "requirements"
+            ],
+            "conditional_edges": 2,
+            "parallel_edges": 0
+          },
+          "refactor": {
+            "valid": true,
+            "nodes": 6,
+            "edges": 6,
+            "errors": [],
+            "semantic_version": "2.0.0",
+            "content_hash": "22c074a2834a6cff38adee9da162e6a3",
+            "initial_nodes": [
+              "baseline_behavior"
+            ],
+            "conditional_edges": 2,
+            "parallel_edges": 0
+          },
+          "research": {
+            "valid": true,
+            "nodes": 6,
+            "edges": 6,
+            "errors": [],
+            "semantic_version": "2.0.0",
+            "content_hash": "a1e80d69bec49c63f38798b06cdef7dd",
+            "initial_nodes": [
+              "question_decomposition"
+            ],
+            "conditional_edges": 0,
+            "parallel_edges": 0
+          },
+          "scientific_eval": {
+            "valid": true,
+            "nodes": 7,
+            "edges": 9,
+            "errors": [],
+            "semantic_version": "2.0.0",
+            "content_hash": "b9e08c69634957c97c25a4f05bbfbbb8",
+            "initial_nodes": [
+              "protocol_freeze"
+            ],
+            "conditional_edges": 4,
+            "parallel_edges": 0
+          },
+          "release": {
+            "valid": true,
+            "nodes": 8,
+            "edges": 11,
+            "errors": [],
+            "semantic_version": "2.0.0",
+            "content_hash": "2c037fd2ca22ac81eb8c72df876a8b14",
+            "initial_nodes": [
+              "version"
+            ],
+            "conditional_edges": 3,
+            "parallel_edges": 0
+          }
+        }
+      }
+    },
+    "migration_and_pinning": {
+      "passed": true,
+      "details": {
+        "passed": true,
+        "details": {
+          "pinning_works": true,
+          "old_run_keeps_old_version": true,
+          "release_pin_works": true,
+          "released_not_found": true,
+          "added_node_detected": true,
+          "backward_compatible": true,
+          "removed_node_detected": true,
+          "breaking_change_detected": true,
+          "version_history_recorded": true,
+          "pinned_stats_works": true
+        }
+      }
+    },
+    "builtin_packs_coverage": {
+      "passed": true,
+      "details": {
+        "passed": true,
+        "registered_packs": [
+          "bugfix",
+          "ci_fix",
+          "code_review",
+          "feature",
+          "refactor",
+          "release",
+          "research",
+          "scientific_eval"
+        ],
+        "details": {
+          "all_8_registered": true,
+          "bugfix_has_legacy_step_sequence": true,
+          "bugfix_has_dag_definition": true,
+          "ci_fix_has_legacy_step_sequence": true,
+          "ci_fix_has_dag_definition": true,
+          "code_review_has_legacy_step_sequence": true,
+          "code_review_has_dag_definition": true,
+          "feature_has_legacy_step_sequence": true,
+          "feature_has_dag_definition": true,
+          "refactor_has_legacy_step_sequence": true,
+          "refactor_has_dag_definition": true,
+          "research_has_legacy_step_sequence": true,
+          "research_has_dag_definition": true,
+          "scientific_eval_has_legacy_step_sequence": true,
+          "scientific_eval_has_dag_definition": true,
+          "release_has_legacy_step_sequence": true,
+          "release_has_dag_definition": true,
+          "classify_fix bug in login": true,
+          "classify_code review PR": true,
+          "classify_prepare release v2.0": true,
+          "classify_research topic": true,
+          "classify_run benchmark eval": true,
+          "classify_refactor module": true,
+          "classify_add new feature": true,
+          "classify_ci build failed": true
+        }
+      }
+    }
+  },
+  "overall_passed": true,
+  "verdict": "ARCHITECTURE_V2_PHASE23_VERIFIED"
+}

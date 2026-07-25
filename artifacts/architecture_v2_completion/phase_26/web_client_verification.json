@@ -1,0 +1,16 @@
+{
+  "phase": "26",
+  "component": "windagent_web",
+  "timestamp": "2026-07-25T15:27:15Z",
+  "scripts": {
+    "test_script_added": true,
+    "test_command": "vitest run"
+  },
+  "client_modules": [
+    {"module": "api_client.ts", "typed": true},
+    {"module": "event_stream_client.ts", "websocket_resume": true, "last_sequence": true},
+    {"module": "permission_client.ts", "policy_eval": true},
+    {"module": "artifact_client.ts", "download_support": true},
+    {"module": "provider_client.ts", "catalog_query": true}
+  ]
+}

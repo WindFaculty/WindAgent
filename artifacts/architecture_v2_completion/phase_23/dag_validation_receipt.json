@@ -1,0 +1,71 @@
+{
+  "script": "scripts/verify_phase23_workflows.py",
+  "returncode": 0,
+  "packs": {
+    "bugfix": {
+      "valid": true,
+      "nodes": 7,
+      "edges": 8,
+      "version": "2.0.0",
+      "content_hash": "cd3d5a427b601043470d922593008dd5",
+      "errors": []
+    },
+    "ci_fix": {
+      "valid": true,
+      "nodes": 6,
+      "edges": 6,
+      "version": "2.0.0",
+      "content_hash": "5e3af1e2390c8e23027d80af8b8334c2",
+      "errors": []
+    },
+    "code_review": {
+      "valid": true,
+      "nodes": 6,
+      "edges": 6,
+      "version": "2.0.0",
+      "content_hash": "5c46f65cc4e2c44326c705e78412e209",
+      "errors": []
+    },
+    "feature": {
+      "valid": true,
+      "nodes": 7,
+      "edges": 8,
+      "version": "2.0.0",
+      "content_hash": "242d483ae393ba2377764fd11f620652",
+      "errors": []
+    },
+    "refactor": {
+      "valid": true,
+      "nodes": 6,
+      "edges": 6,
+      "version": "2.0.0",
+      "content_hash": "22c074a2834a6cff38adee9da162e6a3",
+      "errors": []
+    },
+    "research": {
+      "valid": true,
+      "nodes": 6,
+      "edges": 6,
+      "version": "2.0.0",
+      "content_hash": "a1e80d69bec49c63f38798b06cdef7dd",
+      "errors": []
+    },
+    "scientific_eval": {
+      "valid": true,
+      "nodes": 7,
+      "edges": 9,
+      "version": "2.0.0",
+      "content_hash": "b9e08c69634957c97c25a4f05bbfbbb8",
+      "errors": []
+    },
+    "release": {
+      "valid": true,
+      "nodes": 8,
+      "edges": 11,
+      "version": "2.0.0",
+      "content_hash": "2c037fd2ca22ac81eb8c72df876a8b14",
+      "errors": []
+    }
+  },
+  "passed": true
+}

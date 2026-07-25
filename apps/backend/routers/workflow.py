@@ -180,7 +180,10 @@ async def _execute_durable_user_control(
         raise HTTPException(status_code=404, detail="session not found")
 
     # Fail closed if no workflow exists for this session.
-    existing_wf = await _load_workflow_steps(session_id, request)
+    try:
+        existing_wf = await get_session_workflow(session_id, request)
+    except HTTPException:
+        existing_wf = None
     if existing_wf is None:
         raise HTTPException(status_code=404, detail="no workflow for session")
 

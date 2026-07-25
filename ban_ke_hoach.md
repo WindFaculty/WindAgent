@@ -1,1441 +1,982 @@
-# IMPLEMENTATION PLAN — WINDAGENT CORE CANONICALIZATION AND FULL ADOPTION
+# Đánh giá commit `8c2058bca187957c07f702984770fed136056cdf`
 
-## 1. Thông tin thực hiện
+Commit này **chưa phải mốc hoàn thiện toàn bộ Architecture V2**. Nó là một commit bổ sung evidence, migration script, compatibility adapter và test lên trên commit `12ddf5f8...`. Artifact bên trong vẫn ghi `final_sha = 12ddf5f8...`, verdict chỉ là `CORE_CANONICAL_VERIFIED_READY_FOR_STAGING`, backend còn `112 failed` và `142 errors`; CI cũng chưa được đính kèm, rollback chưa rehearsal.
 
-**Repository:** `WindFaculty/WindAgent`
-**Starting commit:** `12ddf5f8d2e2bbb4325c8bf7e8ec1d1537ffa528`
-**Nhánh đề xuất:** `refactor/core-canonical-full-adoption`
-**Mục tiêu:** Hoàn thiện và đưa `windagent_core` thành shared kernel canonical thực sự cho toàn bộ WindAgent.
+Không có GitHub Actions workflow run gắn với commit `8c2058b...`.
 
-Cấu trúc đích:
+## 1. Hiện trạng thực tế
 
-```text
-core/
-└── windagent_core/
-    ├── domain/
-    ├── contracts/
-    ├── events/
-    ├── errors/
-    ├── config/
-    └── security/
-```
+| Khu vực          |  Mức hoàn thiện | Nhận định                                                                                                      |
+| ---------------- | --------------: | -------------------------------------------------------------------------------------------------------------- |
+| `core/`          |         Khá cao | Canonical model, event, error và boundary đã hình thành; chưa đạt full-adoption do backend và staging gate     |
+| `orchestration/` |      Trung bình | Cấu trúc đầy đủ nhưng scheduler, concurrency và một số lock vẫn giữ trạng thái trong RAM                       |
+| `providers/`     |         Khá cao | Có adapter, registry, detection, cache, route lock; vẫn export legacy adapter                                  |
+| `intelligence/`  |            Thấp | Public API mới có model router và route lock; thiếu 6 năng lực chính                                           |
+| `tools/`         | Trung bình-thấp | Có registry, filesystem, shell, MCP; nhiều nhóm tool mục tiêu chưa được đưa vào public API, còn `legacy_tools` |
+| `workflows/`     | Trung bình-thấp | Có workflow pack nhưng mới tạo step sequence tuần tự                                                           |
+| `verification/`  |            Thấp | Nhiều gate nhận kết quả từ context và mặc định pass                                                            |
+| `evals/`         |            Thấp | Có grader/runner nhưng có thể tự dùng expected output khi thiếu execution thật                                 |
+| `context/`       |      Trung bình | Có provenance, budget, repository index, compactor và builder                                                  |
+| `memory/`        | Trung bình-thấp | Có model, write policy và store; chưa thấy durable multi-layer integration                                     |
+| `execution/`     |            Thấp | Public API chỉ export fake runtime và Hermes runtime                                                           |
+| `storage/`       |             Khá | ORM, mapper, repository, UoW và outbox đã có                                                                   |
+| `observability/` |      Trung bình | Có metrics, trace và audit contracts; chưa được nối toàn bộ runtime                                            |
+| `apps/api`       |            Thấp | Vẫn là scaffold, task route dùng dictionary trong RAM                                                          |
+| `apps/worker`    |            Thấp | Queue và lease nằm trong RAM, workflow execution đang mô phỏng                                                 |
+| `apps/cli`       |            Thấp | Health, task, provider và eval là dữ liệu demo cố định                                                         |
+| `apps/web`       |      Trung bình | Có build/lint, nhưng `package.json` chưa có test script                                                        |
+| `apps/desktop`   | Thấp-trung bình | Có system metrics nhưng còn hard-code đường dẫn máy phát triển                                                 |
+| `apps/backend`   | Legacy monolith | Vẫn tự composition database, model, tools, Hermes, browser, orchestration và provider routing                  |
 
-## 2. Các quyết định kiến trúc đã khóa
+### Các bằng chứng quan trọng
 
-1. Tiếp tục chính xác từ commit `12ddf5f8d2e2bbb4325c8bf7e8ec1d1537ffa528`.
-2. Core là **shared kernel**, chỉ sở hữu các khái niệm đi qua ranh giới package.
-3. Canonical model trong core sử dụng **Pydantic v2**.
-4. ID sử dụng chiến lược hybrid:
+`apps/api` tự báo trạng thái `"scaffold"`; route task dùng `IN_MEMORY_TASKS` và timestamp hard-code.
 
-   * Domain entity ID: UUID typed ID.
-   * Provider, endpoint, runtime và external ID: opaque typed ID.
-5. Core sở hữu:
+Worker gọi bước thực thi mô phỏng; lease manager dùng `_leases` và `_pending_tasks` trong tiến trình, dù docstring tuyên bố distributed và zero duplicate.
 
-   * Lifecycle state.
-   * Legal transition matrix.
-   * Domain invariant.
-6. Event canonical sử dụng dotted taxonomy:
+CLI chỉ in dữ liệu giả, bao gồm cả tuyên bố “ALL SYSTEMS OPERATIONAL” và điểm eval 92.5%.
 
-   * `task.created`
-   * `workflow.started`
-   * `step.completed`
-   * `provider.request.failed`
-7. Legacy event name chỉ được chuyển đổi tại API/WebSocket edge.
-8. `core/config` chỉ chứa immutable typed schema và validation.
-9. `core/security` chứa policy types, decision model và ports; không chứa Fernet, environment loader hoặc OS keychain implementation.
-10. Toàn bộ orchestration, providers, storage, tools, API, worker và intelligence phải chuyển sang canonical core model.
-11. Kết thúc chương trình không được còn duplicate canonical model.
+`intelligence` khai báo bảy thành phần nhưng chỉ export `RouteLock`, `ModelRouterPolicy`, `RoutingContext`.
+
+Workflow hiện trả về danh sách step tuần tự; chưa thể hiện edge, condition, fan-out/fan-in hoặc artifact contract.
+
+Verification mặc định `passed=True` khi context không có test result; eval dùng expected output nếu không tìm thấy execution. Đây là nguồn false-green nghiêm trọng.
 
 ---
 
-# 3. Hiện trạng cần sửa
+# 2. Quyết định kiến trúc đề xuất
 
-Core hiện được khai báo là package không có dependency, nhưng lựa chọn Pydantic v2 yêu cầu cập nhật quy tắc package để cho phép duy nhất dependency modeling đã phê duyệt. Hiện `core/pyproject.toml` đang có `dependencies = []`.
+## Canonical application topology
 
-Core hiện đã chứa model, event, error, config và security sơ bộ, nhưng public API chưa export các protocol trong `contracts/protocols.py`.
+```text
+Web / Desktop / CLI
+        │
+        ▼
+apps/api                    ← API server canonical duy nhất
+        │
+        ▼
+ApplicationContainer
+        │
+        ├── intelligence
+        ├── orchestration
+        ├── workflows
+        ├── tools
+        ├── verification
+        ├── execution
+        ├── context / memory
+        └── storage / observability
+                │
+                ▼
+           apps/worker
+```
 
-Các duplicate lớn hiện tồn tại:
+### Vai trò cuối cùng của `apps/backend`
 
-* Core và orchestration có hai `WorkflowDefinition` không tương thích. Core dùng ordered steps, trong khi orchestration dùng graph nodes và edges.
-* Core và providers có hai hệ request/response model riêng.
-* Core, orchestration và backend có các lifecycle enum riêng.
-* Core, orchestration và backend có ba event envelope khác nhau.
-* Provider subsystem có error hierarchy độc lập với `WindAgentError`.
-* API V2 vẫn sử dụng mock/in-memory state và hard-coded timestamp.
-* Security policy, secret encryption và permission evaluation vẫn phân tán giữa core và backend.
+Vì cấu trúc mục tiêu vẫn giữ `apps/backend`, package này nên trở thành:
+
+* Thin compatibility sidecar cho desktop hoặc deployment cũ.
+* Import và khởi chạy application từ `apps/api`.
+* Chứa migration-only router hoặc legacy API adapter có thời hạn.
+* Không được sở hữu `services/`, domain model, scheduler, provider gateway, event bus hoặc tool executor riêng.
+
+Không nên giữ cả `apps/api` và `apps/backend` như hai backend độc lập.
 
 ---
 
-# 4. Kiến trúc đích
+# 3. Roadmap hoàn thiện Architecture V2
 
-## 4.1 Cấu trúc package
-
-```text
-core/windagent_core/
-├── __init__.py
-│
-├── domain/
-│   ├── __init__.py
-│   ├── ids.py
-│   ├── lifecycle.py
-│   ├── session.py
-│   ├── task.py
-│   ├── workflow.py
-│   ├── execution.py
-│   ├── model.py
-│   ├── artifact.py
-│   ├── permission.py
-│   └── invariants.py
-│
-├── contracts/
-│   ├── __init__.py
-│   ├── clock.py
-│   ├── repositories.py
-│   ├── unit_of_work.py
-│   ├── eventing.py
-│   ├── execution.py
-│   ├── providers.py
-│   ├── security.py
-│   └── observability.py
-│
-├── events/
-│   ├── __init__.py
-│   ├── names.py
-│   ├── envelope.py
-│   ├── registry.py
-│   ├── payloads/
-│   │   ├── task.py
-│   │   ├── workflow.py
-│   │   ├── execution.py
-│   │   ├── provider.py
-│   │   ├── permission.py
-│   │   └── system.py
-│   └── serialization.py
-│
-├── errors/
-│   ├── __init__.py
-│   ├── codes.py
-│   ├── base.py
-│   ├── domain.py
-│   ├── concurrency.py
-│   ├── execution.py
-│   ├── provider.py
-│   ├── security.py
-│   └── serialization.py
-│
-├── config/
-│   ├── __init__.py
-│   ├── application.py
-│   ├── database.py
-│   ├── execution.py
-│   ├── providers.py
-│   ├── security.py
-│   └── observability.py
-│
-└── security/
-    ├── __init__.py
-    ├── principal.py
-    ├── permissions.py
-    ├── decisions.py
-    ├── scopes.py
-    ├── secrets.py
-    └── audit.py
-```
-
-## 4.2 Quy tắc dependency
-
-Core được phép phụ thuộc:
-
-```text
-pydantic>=2.7
-typing-extensions
-```
-
-Core bị cấm import:
-
-```text
-fastapi
-sqlalchemy
-aiosqlite
-cryptography
-httpx
-apps.*
-windagent_storage
-windagent_orchestration
-windagent_providers
-windagent_tools
-windagent_intelligence
-```
-
-`core/config` không được:
-
-* Gọi `os.getenv`.
-* Đọc file.
-* Truy cập database.
-* Mutate feature flag runtime.
-* Thực thi shadow comparison.
-* Khởi tạo secret implementation.
-
----
-
-# 5. Canonical model specification
-
-## 5.1 Typed IDs
-
-Tách base ID hiện tại thành hai hệ riêng.
-
-```python
-class UUIDEntityId(RootModel[UUID]):
-    ...
-
-class OpaqueId(RootModel[str]):
-    ...
-```
-
-### UUID domain IDs
-
-```text
-TaskId
-TaskRunId
-SessionId
-WorkflowId
-WorkflowRunId
-StepId
-StepRunId
-EventId
-ArtifactId
-PermissionRequestId
-ToolCallId
-ModelCallId
-```
-
-### Opaque external/runtime IDs
-
-```text
-ProviderId
-EndpointId
-CanonicalModelId
-ProviderModelId
-RuntimeRunId
-RuntimeSessionId
-WorkerId
-RouteLockId
-RouteAttemptId
-ExternalRequestId
-```
-
-Không giữ `to_uuid()` trên base class chung. Base ID hiện tại chấp nhận mọi string nhưng lại giả định có thể chuyển sang UUID, đây là invariant không an toàn.
-
-### Quy tắc mapper
-
-* Không tự sinh ID khi dữ liệu persisted bị thiếu ID.
-* Không đổi ID lỗi thành ID mới.
-* Không dùng workflow ID thay run ID.
-* Dữ liệu không hợp lệ phải trả `IdentityValidationError`.
-* ID chỉ được generate trong create command hoặc aggregate factory.
-
----
-
-## 5.2 Lifecycle canonical
-
-### TaskState
-
-Sử dụng lifecycle 15 trạng thái hiện có của orchestration làm nền:
-
-```text
-RECEIVED
-CLASSIFYING
-CONTEXT_BUILDING
-PLANNING
-READY
-RUNNING
-WAITING_PERMISSION
-PAUSED
-RETRY_WAIT
-RECOVERING
-VERIFYING
-REVIEWING
-COMPLETED
-FAILED
-CANCELLED
-```
-
-Danh sách này hiện đang nằm trong orchestration.
-
-Chuyển vào:
-
-```text
-core/domain/lifecycle.py
-```
-
-### WorkflowState
-
-```text
-DRAFT
-READY
-RUNNING
-PAUSED
-COMPLETED
-FAILED
-CANCELLED
-```
-
-### StepState
-
-```text
-BLOCKED
-READY
-CLAIMED
-DISPATCHED
-RUNNING
-WAITING_PERMISSION
-RETRY_WAIT
-COMPLETED
-FAILED
-SKIPPED
-CANCELLED
-```
-
-### SessionState
-
-```text
-IDLE
-ACTIVE
-PAUSED
-COMPLETED
-FAILED
-CANCELLED
-ARCHIVED
-```
-
-### Transition ownership
-
-Core phải cung cấp:
-
-```python
-TaskLifecycle.transition(current, target)
-WorkflowLifecycle.transition(current, target)
-StepLifecycle.transition(current, target)
-SessionLifecycle.transition(current, target)
-```
-
-Mỗi transition trả canonical transition result hoặc raise:
-
-```text
-InvalidStateTransitionError
-TerminalStateMutationError
-ConcurrentStateConflictError
-```
-
-Orchestration không được tự định nghĩa transition matrix riêng sau cutover.
-
----
-
-## 5.3 Workflow canonical
-
-Canonical workflow cần hỗ trợ graph, không sử dụng ordered list đơn giản làm representation chính.
-
-```python
-class WorkflowDefinition(BaseModel):
-    id: WorkflowId
-    name: str
-    version: int
-    nodes: dict[StepId, WorkflowNode]
-    edges: list[WorkflowEdge]
-```
-
-```python
-class WorkflowNode(BaseModel):
-    id: StepId
-    name: str
-    tool_name: str
-    parameters: dict[str, JsonValue]
-    priority: int
-    timeout_seconds: float | None
-    max_attempts: int
-```
-
-```python
-class WorkflowEdge(BaseModel):
-    source_step_id: StepId
-    target_step_id: StepId
-    condition: str | None
-    edge_type: EdgeType
-```
-
-`order` chỉ là derived projection cho UI và legacy compatibility, không phải canonical execution invariant.
-
----
-
-## 5.4 Provider shared contracts
-
-Chỉ đưa vào core các model đi qua ranh giới providers ↔ intelligence ↔ orchestration:
-
-```text
-ModelRequest
-ModelResponse
-ModelStreamEvent
-ModelUsage
-ModelCapability
-CanonicalModelRef
-ProviderEndpointRef
-ProviderFailureInfo
-```
-
-Giữ ngoài core:
-
-```text
-HTTP transport internals
-Vendor response shapes
-Protocol detection evidence
-Cache backend records
-Quota polling implementation
-Endpoint health implementation
-Provider-specific extension payloads
-```
-
-`ProviderRequest` và `ProviderResponse` hiện nằm trong providers phải được chuyển sang hoặc map trực tiếp vào canonical core model.
-
----
-
-# 6. Canonical contracts
-
-## Shared contracts bắt buộc
-
-```text
-Clock
-IdGenerator
-TaskRepository
-TaskRunRepository
-SessionRepository
-WorkflowRepository
-WorkflowRunRepository
-EventStore
-OutboxWriter
-UnitOfWork
-ExecutionRuntimePort
-ModelGatewayPort
-PermissionEvaluator
-SecretStore
-ArtifactRepository
-AuditSink
-```
-
-## UnitOfWork canonical
-
-```python
-class UnitOfWork(Protocol):
-    tasks: TaskRepository
-    task_runs: TaskRunRepository
-    workflows: WorkflowRepository
-    workflow_runs: WorkflowRunRepository
-    events: EventStore
-    outbox: OutboxWriter
-
-    async def commit(self) -> None: ...
-    async def rollback(self) -> None: ...
-```
-
-Không tiếp tục sử dụng UoW không expose repository như contract hiện tại.
-
-## PermissionEvaluator canonical
-
-Không trả `bool`.
-
-```python
-class PermissionEvaluator(Protocol):
-    async def evaluate(
-        self,
-        request: PermissionEvaluationRequest,
-    ) -> PermissionDecision:
-        ...
-```
-
-`PermissionDecision` gồm:
-
-```text
-outcome: ALLOW | REQUIRE_APPROVAL | DENY
-risk_level
-reason_code
-human_reason
-policy_version
-matched_rule
-audit_metadata
-```
-
-## SecretStore canonical
-
-Không trả plaintext `str` qua public API.
-
-```python
-class SecretStore(Protocol):
-    async def resolve(self, ref: SecretRef) -> SecretValue: ...
-    async def store(self, name: SecretName, value: SecretValue) -> SecretRef: ...
-    async def delete(self, ref: SecretRef) -> None: ...
-```
-
----
-
-# 7. Canonical event model
-
-## 7.1 Event naming
-
-Dotted names là canonical duy nhất.
-
-Ví dụ:
-
-```text
-task.created
-task.transitioned
-task.completed
-task.failed
-workflow.created
-workflow.started
-workflow.completed
-step.ready
-step.claimed
-step.dispatched
-step.started
-step.completed
-step.failed
-execution.heartbeat
-execution.lost
-permission.requested
-permission.granted
-permission.denied
-provider.request.started
-provider.response.delta
-provider.response.completed
-provider.request.failed
-artifact.created
-system.error
-```
-
-Loại bỏ namespace trùng như:
-
-```text
-orchestration.task.created
-TaskCreatedDomainEvent
-task_created
-```
-
-## 7.2 Event envelope
-
-```python
-class EventEnvelope(BaseModel):
-    event_id: EventId
-    event_type: EventName
-    schema_version: int
-    stream_id: str
-    aggregate_id: str | None
-    aggregate_type: str | None
-    sequence: int
-    occurred_at: datetime
-    recorded_at: datetime | None
-    session_id: SessionId | None
-    correlation_id: str | None
-    causation_id: EventId | None
-    trace_id: str | None
-    payload: EventPayload
-    metadata: EventMetadata
-```
-
-## 7.3 Sequence semantics
-
-* Sequence được cấp bởi durable event store.
-* Unique constraint:
-
-```text
-UNIQUE(stream_id, sequence)
-UNIQUE(event_id)
-```
-
-* Không dùng dictionary RAM làm authoritative counter.
-* Không broadcast nếu persistence hoặc outbox commit thất bại.
-* Multi-replica phải cho cùng một stream sequence nhất quán.
-
-Event bus legacy hiện vẫn broadcast sau khi persistence hook lỗi, vì exception chỉ được log.
-
-## 7.4 Compatibility
-
-Legacy conversion chỉ được đặt tại:
-
-```text
-apps/api/windagent_api/adapters/
-apps/backend/compatibility/
-apps/web event client boundary
-```
-
-Không giữ compatibility mapper trong `windagent_core`.
-
-Sau cutover:
-
-```text
-core/windagent_core/adapters/legacy_mappers.py
-core/windagent_core/events/compatibility.py
-```
-
-phải được xóa hoặc chuyển ra edge adapter.
-
----
-
-# 8. Error architecture
-
-## 8.1 Canonical base error
-
-```python
-class WindAgentError(Exception):
-    code: ErrorCode
-    category: ErrorCategory
-    retryable: bool
-    safe_message: str
-    details: ErrorDetails
-    cause_type: str | None
-```
-
-## 8.2 Error groups
-
-```text
-DomainError
-ValidationError
-IdentityValidationError
-InvalidStateTransitionError
-ConcurrencyConflictError
-NotFoundError
-PermissionDeniedError
-ApprovalRequiredError
-ExecutionError
-RuntimeLostError
-ProviderError
-RateLimitError
-QuotaExhaustedError
-AuthenticationError
-TimeoutError
-ToolError
-SerializationError
-IntegrityError
-ConfigurationError
-```
-
-## 8.3 Provider migration
-
-`ProviderFailure` không còn là root exception độc lập.
-
-Các provider-specific error có thể tiếp tục tồn tại, nhưng phải kế thừa canonical core error:
-
-```python
-class RateLimitFailure(core.RateLimitError):
-    ...
-```
-
-Retry policy chỉ được đọc:
-
-```text
-error.retryable
-error.code
-error.category
-```
-
-Không string-match message và không phụ thuộc trực tiếp vào provider package.
-
----
-
-# 9. Config architecture
-
-## 9.1 Immutable models
-
-Tất cả config model:
-
-```python
-model_config = ConfigDict(
-    frozen=True,
-    extra="forbid",
-    validate_assignment=True,
-)
-```
-
-Các config chính:
-
-```text
-ApplicationConfig
-DatabaseConfig
-ExecutionConfig
-ProviderRoutingConfig
-SecurityConfig
-ObservabilityConfig
-FeatureGateConfig
-```
-
-## 9.2 Loader placement
-
-Environment/file loading chuyển tới:
-
-```text
-apps/api/windagent_api/bootstrap/config_loader.py
-apps/worker/windagent_worker/bootstrap/config_loader.py
-apps/cli/windagent_cli/bootstrap/config_loader.py
-```
-
-Không đặt loader trong core.
-
-## 9.3 Di chuyển code hiện tại
-
-* `FeatureFlagsManager` chuyển khỏi core sang application bootstrap.
-* `ShadowExecutionEngine` chuyển sang `verification`.
-* Core chỉ chứa `FeatureGateConfig`.
-* Destructive operation bị bỏ qua trong shadow mode phải trả `SKIPPED`, không được trả parity success.
-
-Hiện comparator trả `parity_matched=True` khi bỏ qua destructive operation, có thể tạo false-pass.
-
----
-
-# 10. Security architecture
-
-## Core sở hữu
-
-```text
-Principal
-Role
-Permission
-ResourceScope
-RiskLevel
-ApprovalRequirement
-PermissionEvaluationRequest
-PermissionDecision
-SecretRef
-SecretName
-SecretValue
-SecurityAuditContext
-```
-
-## Ngoài core
-
-```text
-Fernet encryption
-OS keychain
-Windows Credential Manager
-environment secret loader
-database encryption adapter
-command regex policy implementation
-provider secret resolver
-key rotation job
-```
-
-## Bắt buộc sửa
-
-1. Loại bỏ production fallback đọc `key.txt`.
-2. Không tự động coi giá trị không có `enc:v1:` là plaintext hợp lệ.
-3. Tạo migration command riêng:
-
-```text
-windagent security migrate-plaintext-secrets
-```
-
-4. Migration phải:
-
-   * Dry-run mặc định.
-   * Ghi audit receipt.
-   * Không log plaintext.
-   * Hỗ trợ rollback metadata.
-   * Fail nếu encryption key không hợp lệ.
-5. API không bao giờ trả secret hoặc ciphertext.
-6. Secret phải được redacted trong:
-
-   * Event payload.
-   * Error details.
-   * Logs.
-   * Provider raw metadata.
-   * Audit record.
-
----
-
-# 11. Kế hoạch thực hiện theo phase
-
-## Phase 0 — Baseline, inventory và architecture freeze
+## Phase 15 — Trusted Baseline và đóng Phase 14
 
 ### Mục tiêu
 
-Tạo bằng chứng đầy đủ trước khi sửa.
+Biến commit `8c2058b...` thành baseline có evidence đáng tin cậy trước khi tiếp tục mở rộng.
 
 ### Công việc
 
-* Checkout commit `12ddf5f8`.
-* Tạo nhánh `refactor/core-canonical-full-adoption`.
-* Chạy:
+1. Tạo branch:
 
-  * Full Python tests.
-  * Backend tests.
-  * Frontend typecheck/build.
-  * Architecture import checker.
-* Inventory toàn repository:
+```text
+refactor/architecture-v2-full-completion
+```
 
-  * Class model.
-  * Enum trạng thái.
-  * Event name.
-  * Event envelope.
-  * Error hierarchy.
-  * Config loader.
-  * Secret access.
-  * Repository protocol.
-* Tạo duplicate semantic map.
+từ chính xác:
+
+```text
+8c2058bca187957c07f702984770fed136056cdf
+```
+
+2. Tạo lại toàn bộ receipt với `final_sha` đúng HEAD.
+3. Loại bỏ đường dẫn tuyệt đối như `D:\code_ca_nhan\...` khỏi artifact.
+4. Phân loại toàn bộ `112 failed` và `142 errors`:
+
+   * app-state wiring;
+   * import/package resolution;
+   * fixture lifecycle;
+   * database isolation;
+   * duplicated service construction;
+   * event loop/session leakage.
+5. Chạy riêng:
+
+   * workspace package tests;
+   * `apps/backend`;
+   * `apps/api`;
+   * `apps/worker`;
+   * frontend build/lint;
+   * Rust checks;
+   * migration tests.
+6. Gắn CI trên Windows và Linux.
+7. Sửa migration event log để không `except Exception: continue` một cách im lặng; record lỗi phải được quarantine và đếm.
+
+### Gate
+
+* Không còn backend collection error.
+* Không có test mặc định bị bỏ qua vì import hoặc fixture lỗi.
+* Receipt ghi đúng SHA hiện tại.
+* CI run được gắn trực tiếp vào commit.
+* Verdict:
+
+```text
+ARCHITECTURE_V2_BASELINE_TRUSTED
+```
 
 ### Artifact
 
 ```text
-artifacts/core_canonical/phase_00/
-├── baseline_receipt.json
-├── duplicate_model_inventory.json
-├── lifecycle_inventory.json
-├── event_inventory.json
-├── error_inventory.json
-├── config_inventory.json
-├── security_inventory.json
-└── dependency_graph.json
+artifacts/architecture_v2_completion/phase_15/
+├── repository_inventory.json
+├── package_maturity_matrix.json
+├── backend_failure_classification.json
+├── test_receipt.json
+├── ci_receipt.json
+└── baseline_verdict.json
 ```
-
-### Gate
-
-Không sửa source trước khi inventory hoàn tất.
 
 ---
 
-## Phase 1 — Canonical specification freeze
+## Phase 16 — Dependency Graph và canonical composition root
 
 ### Mục tiêu
 
-Đóng băng schema và ownership trước implementation.
+Chấm dứt manual service wiring và biến package boundary thành quy tắc có thể kiểm chứng.
 
 ### Công việc
 
-Tạo:
+1. Mở rộng architecture linter. Checker hiện chỉ kiểm tra dependency bị cấm, chưa kiểm tra:
+
+   * import ngoài `allowed_dependencies`;
+   * dependency có import nhưng không khai báo trong `pyproject.toml`;
+   * circular dependency;
+   * public API leakage;
+   * duplicate composition root.
+2. Đồng bộ `scaffold_v2.yaml`, package README và `pyproject.toml`.
+3. Sửa ngay mismatch:
+
+   * `intelligence` được phép dùng `windagent_context`;
+   * nhưng chưa khai báo dependency này trong `pyproject.toml`.
+4. Tạo canonical composition:
 
 ```text
-docs/architecture/core-canonical-model.md
-docs/architecture/core-lifecycle.md
-docs/architecture/core-event-model.md
-docs/architecture/core-contracts.md
-docs/architecture/core-security-boundary.md
-docs/architecture/core-migration-map.md
+apps/api/windagent_api/
+├── bootstrap.py
+├── composition.py
+├── lifespan.py
+├── dependencies.py
+└── health.py
 ```
 
-Mỗi duplicate model phải được gán một disposition:
+5. Dùng typed `ApplicationContainer`, không gắn hàng chục object tùy ý vào `app.state`.
+6. Tách interface và implementation:
+
+   * package nghiệp vụ nhận port;
+   * composition root chọn SQL, Hermes, browser hoặc local adapter.
+7. Health readiness phải kiểm tra thật:
+
+   * database;
+   * migration version;
+   * outbox;
+   * worker heartbeat;
+   * provider registry;
+   * event publisher.
+
+### Gate
+
+* Không circular import.
+* Không undeclared workspace dependency.
+* Chỉ có một composition root production.
+* `apps/backend` không còn tự tạo service graph độc lập.
+* Import graph được xuất thành artifact.
+
+---
+
+## Phase 17 — Storage, migrations và observability foundation
+
+### Mục tiêu
+
+Cung cấp nền durable chung trước khi xây worker, memory và execution.
+
+### Storage cần hoàn thiện
+
+Schema canonical:
 
 ```text
-MOVE_TO_CORE
-MAP_TO_CORE
-KEEP_CONTEXT_LOCAL
-REMOVE
-DEPRECATE_TEMPORARILY
+sessions
+tasks
+task_runs
+workflow_runs
+workflow_steps
+workflow_edges
+execution_leases
+workers
+checkpoints
+execution_events
+outbox_records
+artifacts
+provider_configs
+route_locks
+usage_ledger
+memory_records
+plugin_installations
+skill_installations
 ```
 
+Cơ chế bắt buộc:
+
+* optimistic version;
+* atomic compare-and-set;
+* unique idempotency key;
+* fencing token;
+* transaction task mutation + event + outbox;
+* schema migration version;
+* forward migration và rollback rehearsal;
+* SQLite cho local;
+* PostgreSQL-compatible repository contract cho multi-replica.
+
+### Observability cần hoàn thiện
+
+* `trace_id`, `task_id`, `run_id`, `step_id`, `session_id`.
+* Structured logs.
+* Span xuyên API → orchestration → provider/tool → worker.
+* Metrics:
+
+  * queue latency;
+  * claim latency;
+  * provider latency;
+  * token/cost;
+  * retries;
+  * lease expiry;
+  * tool failure;
+  * recovery duration.
+* Secret redaction trước khi ghi log/event.
+* Audit event bất biến cho permission, destructive tool và secret access.
+
 ### Gate
 
-Không có model “chưa quyết định ownership”.
+* Restart không mất task, lease, event hoặc checkpoint.
+* Outbox replay idempotent.
+* Concurrent mutation test không tạo state conflict âm thầm.
+* Trace của một task nối được xuyên toàn hệ thống.
 
 ---
 
-## Phase 2 — Rebuild typed IDs và domain primitives
+## Phase 18 — Execution runtime và production worker
+
+### Mục tiêu
+
+Thay toàn bộ execution và worker mô phỏng bằng durable execution plane.
+
+### Cấu trúc
+
+```text
+execution/
+└── windagent_execution/
+    ├── registry.py
+    ├── runtime.py
+    ├── requests.py
+    ├── results.py
+    ├── cancellation.py
+    ├── streaming.py
+    ├── sandbox/
+    ├── worktree/
+    └── adapters/
+        ├── hermes.py
+        ├── tool_runtime.py
+        ├── browser_runtime.py
+        ├── local_agent.py
+        └── subprocess_runtime.py
+```
 
 ### Công việc
 
-* Thay `BaseEntityId`.
-* Tạo UUID ID và opaque ID riêng.
-* Không cho phép invalid UUID domain ID.
-* Không auto-generate trong deserializer.
-* Thêm canonical JSON serialization.
-* Thêm equality/hash behavior rõ ràng.
-* Thêm migration identity classifier.
+1. `ExecutionRuntimeRegistry` chọn adapter theo capability.
+2. Mỗi dispatch chứa:
 
-### Tests
+   * run ID;
+   * step ID;
+   * attempt;
+   * idempotency key;
+   * lease generation;
+   * fencing token;
+   * deadline;
+   * permission context.
+3. Worker đăng ký capability và heartbeat durable.
+4. Claim bằng atomic transaction, không dùng list/dict.
+5. Heartbeat không được renew lease với fencing token cũ.
+6. Result handler từ chối late result của worker đã mất lease.
+7. Cancellation lan truyền đến Hermes, subprocess, browser và tool runtime.
+8. Checkpoint/resume theo step.
+9. Crash giữa:
 
-* UUID round-trip.
-* Opaque ID round-trip.
-* Invalid UUID rejection.
-* Prefix ID không được gọi UUID method.
-* Missing persisted ID fail-closed.
-* JSON serialization ổn định.
+   * tool execution;
+   * result persistence;
+   * event publish;
+   * lease release
+     phải phục hồi deterministic.
+10. Xóa `FakeRuntimeAdapter` khỏi production composition; chỉ giữ trong test package.
 
 ### Gate
 
-100% public ID tests pass.
+* Hai worker không thực thi cùng một step.
+* Worker cũ không thể commit result sau khi lease bị reclaim.
+* Multi-process và multi-replica fencing pass.
+* Kill worker giữa step rồi restart có recovery receipt chính xác.
+* Không polling vòng lặp 5 ms.
 
 ---
 
-## Phase 3 — Canonical lifecycle và domain aggregate
+## Phase 19 — Tool platform hoàn chỉnh
+
+### Mục tiêu
+
+Hoàn thiện toàn bộ các nhóm trong kiến trúc mục tiêu và loại bỏ legacy tool adapter.
+
+### Cấu trúc
+
+```text
+tools/windagent_tools/
+├── registry/
+├── filesystem/
+├── shell/
+├── git/
+├── code_search/
+├── ast/
+├── lsp/
+├── testing/
+├── browser/
+├── database/
+├── github/
+└── mcp/
+```
+
+### Contract chung
+
+Mỗi tool phải khai báo:
+
+* input/output schema;
+* capability;
+* risk level;
+* side-effect class;
+* idempotent hay non-idempotent;
+* destructive hay reversible;
+* timeout;
+* required permission;
+* sandbox requirement;
+* artifact outputs;
+* retry eligibility;
+* redaction policy.
+
+### Công việc chính
+
+* Filesystem: canonical path, symlink escape protection, atomic write.
+* Shell: allow/deny policy, process group cancellation, output limit.
+* Git: worktree ownership, branch lock, dirty-state protection.
+* Code search: grep/ripgrep abstraction, bounded output.
+* AST: language-aware symbol extraction.
+* LSP: lifecycle và timeout isolation.
+* Testing: command runner và normalized test result.
+* Browser: session ownership, navigation policy, screenshot artifact.
+* Database: read-only mặc định, explicit write permission.
+* GitHub: API port tách khỏi provider/model code.
+* MCP: server trust policy, namespace collision handling.
+
+### Gate
+
+* Không export `windagent_tools.adapters.legacy_tools` ở top-level.
+* Destructive tool không chạy khi thiếu explicit permission.
+* Path sandbox, command injection và symlink escape tests pass.
+* Tool result luôn có artifact/evidence hoặc structured failure.
+
+---
+
+## Phase 20 — Top-level plugins và skills
+
+### Mục tiêu
+
+Tách distribution content khỏi implementation package.
+
+### Vai trò đề xuất
+
+```text
+plugins/
+├── registry/
+├── installed/
+├── manifests/
+└── examples/
+
+skills/
+├── catalog/
+├── installed/
+├── manifests/
+└── examples/
+```
+
+* `plugins/` và `skills/` là content roots.
+* Loader/runtime code vẫn thuộc `windagent_tools` hoặc một package plugin-runtime rõ ràng.
+* Không đặt executable arbitrary Python vào plugin mà chạy trực tiếp trong API process.
 
 ### Công việc
 
-* Chuyển `TaskState` vào core.
-* Tạo Session, Workflow và Step lifecycle.
-* Tạo transition matrix.
-* Tạo aggregate invariants.
-* Loại bỏ việc dùng `SessionStatus` cho Task/TaskRun.
-* Chuẩn hóa terminal state.
-* Chuẩn hóa timestamps UTC.
-* Chuẩn hóa order/index semantics.
-
-### Tests
-
-* Mọi legal transition.
-* Mọi illegal transition.
-* Terminal-state immutability.
-* Pause/resume.
-* Retry transition.
-* Recovery transition.
-* Permission transition.
-* Concurrent expected-version conflict.
+* Manifest schema có version.
+* Compatibility range với WindAgent.
+* Hash/signature.
+* Capability và permission declaration.
+* Dependency resolution.
+* Install, update, disable, uninstall.
+* Plugin namespace isolation.
+* Skill prompt/tool/workflow dependency validation.
+* Hot reload chỉ cho development; production dùng version pin.
+* Quarantine plugin lỗi.
 
 ### Gate
 
-Transition coverage 100%.
+* Plugin không thể bypass PermissionEngine.
+* Skill không thể gọi tool ngoài manifest.
+* Collision tên tool/workflow được phát hiện.
+* Reinstall cùng version idempotent.
 
 ---
 
-## Phase 4 — Canonical contracts
+## Phase 21 — Context và memory productionization
+
+### Context
+
+Hoàn thiện pipeline:
+
+```text
+Task
+ → repository discovery
+ → relevant files/symbols
+ → recent tool outputs
+ → session context
+ → project memory
+ → token allocation
+ → deduplication
+ → compaction
+ → provenance manifest
+```
+
+Yêu cầu:
+
+* Mỗi context item có source, timestamp, hash, sensitivity và token count.
+* Phân bổ budget theo task type.
+* Không để một file lớn chiếm toàn bộ context.
+* Compaction phải giữ requirement, error, decision và unresolved item.
+* Prompt-injection marker cho external/browser content.
+
+### Memory
+
+Các scope:
+
+```text
+working
+session
+project
+user
+episodic
+```
+
+Cần có:
+
+* project isolation;
+* retention policy;
+* consent/write policy;
+* provenance;
+* update/forget;
+* deduplication;
+* TTL;
+* semantic retrieval optional;
+* secret và credential exclusion;
+* transactional write qua storage.
+
+### Gate
+
+* Không rò memory giữa project/session.
+* Memory write bị từ chối khi thiếu policy.
+* Context manifest tái tạo được.
+* Token budget không vượt model context limit.
+* Compaction regression tests pass.
+
+---
+
+## Phase 22 — Intelligence full implementation
+
+### Mục tiêu
+
+Hoàn thiện bảy bounded components đã định nghĩa.
+
+```text
+intelligence/
+├── task_classifier/
+├── planner/
+├── context_builder/
+├── model_router/
+├── summarizer/
+├── reviewer/
+└── reporter/
+```
+
+### `task_classifier`
+
+* Deterministic rule trước.
+* Model fallback khi confidence thấp.
+* Multi-label capability.
+* Trả workflow candidates và risk classification.
+
+### `planner`
+
+* Nhận task + context + workflow catalog.
+* Trả `WorkflowDefinition` có version.
+* Không trực tiếp chạy tool.
+* Validate:
+
+  * DAG;
+  * tool availability;
+  * permission;
+  * acceptance criteria;
+  * cost/deadline.
+
+### `context_builder`
+
+* Là intelligence facade gọi `windagent_context`.
+* Không tự tạo repository index hoặc memory store riêng.
+
+### `model_router`
+
+* Chọn model ban đầu bằng rule.
+* Duy trì model identity xuyên luồng.
+* Khi 429 hoặc endpoint lỗi:
+
+  * chỉ đổi endpoint tương đương;
+  * giữ cùng canonical model;
+  * không đổi model âm thầm.
+* Route lock durable và có expiration.
+* Cache key phải chứa model, provider compatibility, prompt hash và tool schema hash.
+
+### `summarizer`
+
+* Tóm tắt theo provenance.
+* Không biến summary thành source of truth duy nhất.
+
+### `reviewer`
+
+* Kiểm tra patch, evidence và acceptance criteria.
+* Không tự tuyên bố pass nếu thiếu verification result.
+
+### `reporter`
+
+* Sinh machine-readable report trước.
+* Markdown/HTML chỉ là render layer.
+
+### Gate
+
+* Public API export đầy đủ bảy thành phần.
+* Planner output luôn validate được.
+* Route-lock failover tests pass.
+* Reviewer không thể pass khi thiếu test evidence.
+* Intelligence không import orchestration hoặc apps.
+
+---
+
+## Phase 23 — Workflow specification và workflow packs
+
+### Mục tiêu
+
+Chuyển workflow pack từ step sequence thành versioned executable DAG.
+
+### Cấu trúc dữ liệu
+
+Mỗi workflow cần:
+
+* workflow ID và semantic version;
+* input schema;
+* node definitions;
+* edges;
+* conditional edges;
+* fan-out/fan-in;
+* artifact contracts;
+* model requirement;
+* tool requirement;
+* retry policy;
+* permission policy;
+* checkpoint policy;
+* verification gate;
+* acceptance criteria;
+* report schema.
+
+### Built-in packs
+
+* bugfix;
+* CI fix;
+* code review;
+* feature;
+* refactor;
+* research;
+* scientific evaluation;
+* release.
 
 ### Công việc
 
-* Tách contracts theo bounded interface.
-* Chuyển cross-package port vào core.
-* Thêm typed UoW.
-* Thêm outbox contract.
-* Thêm execution runtime contract.
-* Thêm model gateway contract.
-* Thêm permission evaluator contract.
-* Loại bỏ duplicate port giữa core và orchestration.
+* Dùng immutable workflow definition.
+* Tách logical step khỏi concrete tool invocation.
+* Planner có thể parameterize nhưng không sửa workflow pack gốc.
+* Mỗi step có expected artifacts và completion predicate.
+* Workflow registry hỗ trợ version pin.
+* Workflow migration khi definition đổi giữa lúc run đang tồn tại.
 
 ### Gate
 
-* Orchestration ports không định nghĩa lại shared contract.
-* Storage implementation pass protocol conformance tests.
-* Providers implementation pass model gateway conformance tests.
+* DAG validation pass.
+* Conditional/fan-in/retry/recovery tests pass.
+* Run cũ tiếp tục dùng definition version cũ.
+* Mỗi workflow có ít nhất một E2E real-runtime test.
 
 ---
 
-## Phase 5 — Canonical events
+## Phase 24 — Verification và evals fail-closed
+
+### Verification
+
+Thay toàn bộ context-default gate bằng runner thực:
+
+* command execution;
+* exit code thật;
+* stdout/stderr thật;
+* artifact hash;
+* timeout;
+* environment snapshot;
+* test count parser;
+* linter/type checker parser;
+* security scanner;
+* acceptance evaluator.
+
+Nguyên tắc:
+
+```text
+missing evidence = BLOCKED
+không phải PASSED
+```
+
+### Evals
+
+* Mỗi eval case bắt buộc có `execution_id`.
+* Không tự thay bằng expected output.
+* Dataset version và checksum.
+* Seed và runtime configuration.
+* Model/provider/endpoint metadata.
+* Tool call trace.
+* Cost/token/latency.
+* Replay result.
+* Confidence interval cho suite lớn.
+* Baseline comparison.
+* Regression threshold.
+
+### Gate
+
+* Không có default-pass path.
+* Không có synthetic execution fallback trong production eval.
+* Replay và original execution parity được đo.
+* Eval report chỉ pass khi evidence đầy đủ.
+* False-green regression test bắt buộc.
+
+---
+
+## Phase 25 — Canonical API V2 cutover
+
+### Mục tiêu
+
+Biến `apps/api` từ scaffold thành API thật.
 
 ### Công việc
 
-* Tạo canonical event name enum.
-* Tạo typed payload registry.
-* Chuyển event envelope sang Pydantic.
-* Thêm strict deserialization.
-* Không tự tạo session/event identity khi persisted input thiếu.
-* Di chuyển compatibility mapper ra API edge.
-* Chuyển orchestration event constants sang canonical names.
-* Thêm event schema versioning.
+1. Xóa toàn bộ `IN_MEMORY_*`.
+2. Route gọi application services qua typed dependency injection.
+3. Các nhóm route:
 
-### Migration
+   * sessions;
+   * tasks;
+   * runs;
+   * workflows;
+   * events;
+   * providers;
+   * tools;
+   * permissions;
+   * artifacts;
+   * memory;
+   * plugins;
+   * skills;
+   * evals;
+   * observability.
+4. WebSocket/SSE đọc canonical event stream.
+5. Hỗ trợ:
 
-* Inventory tất cả historical event names.
-* Tạo deterministic mapping.
-* Migrate DB event rows.
-* Với JSONL:
-
-  * Không sửa file audit gốc.
-  * Tạo canonical migrated copy.
-  * Ghi manifest checksum.
-  * Runtime không đọc legacy JSONL sau cutover.
-
-### Gate
-
-* Không có legacy event name trong internal publish path.
-* Không có duplicate event envelope trong backend packages.
-* Event replay pass với canonical copy.
-
----
-
-## Phase 6 — Errors, config và security types
-
-### Errors
-
-* Chuyển base error sang core.
-* Map provider errors.
-* Map tool errors.
-* Map orchestration concurrency errors.
-* Chuẩn hóa safe serialization.
-
-### Config
-
-* Chuyển settings sang frozen Pydantic.
-* Xóa environment access khỏi core.
-* Chuyển feature flags ra composition root.
-* Chuyển shadow comparator sang verification.
-
-### Security
-
-* Tạo canonical permission decision.
-* Tạo secret types và secret-store contract.
-* Chuyển backend permission profile result sang canonical decision.
-* Giữ regex command policy ngoài core.
+   * reconnect;
+   * `last_sequence`;
+   * replay;
+   * backpressure;
+   * terminal event;
+   * heartbeat.
+6. Idempotency key cho POST task và destructive action.
+7. Pagination và filtering.
+8. OpenAPI canonical schema.
+9. Error mapping từ `WindAgentError`.
+10. V1 compatibility chỉ nằm ở edge adapter.
+11. `/health/ready` không được trả ready nếu DB, migration hoặc worker chưa sẵn sàng.
 
 ### Gate
 
-* Core không import `os`, `cryptography`, `fastapi`, `sqlalchemy`.
-* Error details không chứa secret.
-* Permission evaluator không trả bool.
+* API E2E chạy task thật tới terminal state.
+* Restart API không mất task.
+* WebSocket reconnect nhận đúng event còn thiếu.
+* Contract test V1/V2 pass.
+* Không còn hard-coded timestamp hoặc demo object.
 
 ---
 
-## Phase 7 — Storage migration
-
-### Công việc
-
-* Tạo mapper ORM ↔ canonical domain.
-* Repository trả canonical object thay vì dictionary.
-* UoW implement canonical contracts.
-* Event store cấp durable sequence.
-* Transactional outbox dùng canonical event envelope.
-* Thêm optimistic concurrency bằng typed expected version.
-* Thêm ID and state migration.
-
-### Database migration
-
-Tạo Alembic migration gồm:
-
-* Canonical status constraints hoặc validation.
-* Event schema version.
-* Stream ID.
-* Aggregate type.
-* Correlation/causation fields.
-* Unique event stream sequence.
-* Legacy identity mapping table nếu cần.
-* Secret migration metadata.
-* Index cho event replay và aggregate query.
-
-### Migration policy
-
-* Dry-run trước.
-* Backup database.
-* Validate row count trước/sau.
-* Unknown state fail migration.
-* Unknown event type fail migration.
-* Không fallback về `IDLE` hoặc `PENDING`.
-
-### Gate
-
-* Upgrade pass.
-* Downgrade pass khi khả thi.
-* Clean database bootstrap pass.
-* Existing database migration pass.
-* Row count và checksum khớp.
-
----
-
-## Phase 8 — Orchestration adoption
-
-### Công việc
-
-* Xóa orchestration `TaskState`.
-* Xóa orchestration workflow definition duplicate.
-* Dùng core lifecycle.
-* Dùng core workflow graph.
-* Dùng core execution request/handle/result.
-* Dùng core errors.
-* Dùng core events.
-* Dùng canonical repositories.
-* Cập nhật dispatcher, scheduler, recovery và cancellation.
-* Chuyển commands sang typed IDs và typed states.
-
-Hiện orchestration đang định nghĩa commands bằng raw string.
-
-### Tests
-
-* Durable execution E2E.
-* Duplicate claim.
-* Stale fencing token.
-* Pause versus completion race.
-* Retry versus old callback race.
-* Crash and restart.
-* Destructive replay protection.
-* Two-replica lease test.
-* Transactional outbox fault injection.
-
-### Gate
-
-Không còn import model duplicate từ orchestration.
-
----
-
-## Phase 9 — Providers và intelligence adoption
-
-### Providers
-
-* Chuyển request/response/stream/usage shared model sang core.
-* Provider adapters nhận và trả core model.
-* Provider-specific payload chỉ tồn tại trong adapter.
-* Provider errors kế thừa core error.
-* Secret input dùng `SecretRef`.
-* Redaction dùng canonical security policy.
-
-### Intelligence
-
-* Model router sử dụng `CanonicalModelId`.
-* Route lock sử dụng typed IDs.
-* Planner trả canonical workflow definition.
-* Không xây workflow schema riêng.
-* Retry classification dựa trên canonical error metadata.
-
-### Gate
-
-* Không còn independent provider request/response root model.
-* Không còn independent provider root exception.
-* Tool-call and streaming parity pass trên OpenAI, Anthropic, Google và Ollama adapters.
-
----
-
-## Phase 10 — Tools và security policy adoption
-
-### Công việc
-
-* Tool invocation/result dùng canonical model.
-* Permission request dùng canonical security request.
-* Command classifier trả canonical `PermissionDecision`.
-* Tool error kế thừa canonical error.
-* Audit metadata dùng canonical security context.
-* Path scope kiểm tra bằng normalized absolute path.
-* Tách policy evaluation khỏi API route.
-
-### Gate
-
-* Unknown action mặc định DENY.
-* Destructive action không được auto-approve do missing profile.
-* Autonomous profile vẫn không được vượt hard-deny rules.
-* Permission event và audit record có cùng decision ID.
-
----
-
-## Phase 11 — API, worker, CLI và WebSocket adoption
-
-### API
-
-* Pydantic request DTO ở API map vào core command/domain model.
-* API không dùng core domain model trực tiếp làm transport model nếu làm lộ internal field.
-* Xóa in-memory task store.
-* Xóa mock event endpoint khỏi production route.
-* Không hard-code timestamp.
-* Domain error map ổn định sang HTTP response.
-
-### Worker
-
-* Dùng canonical execution contracts.
-* Dùng typed worker/runtime IDs.
-* Dùng canonical lifecycle transition.
-* Dùng canonical event publishing.
+## Phase 26 — CLI, Web và Desktop convergence
 
 ### CLI
 
-* Doctor command kiểm tra:
+* Chuyển thành API client hoặc local composition client.
+* `doctor` kiểm tra thật.
+* `run` stream event thật.
+* `task inspect` đọc snapshot và event trace thật.
+* `eval` chạy eval service thật.
+* JSON output mode cho automation.
+* Exit code chuẩn.
 
-  * Duplicate model.
-  * Import boundary.
-  * Migration status.
-  * Secret configuration.
-  * Event schema version.
+### Web
 
-### WebSocket
+`package.json` hiện chỉ có dev/build/lint, chưa có test script.
 
-* Internal event canonical.
-* Chỉ serializer edge chuyển thành legacy shape khi compatibility flag còn bật.
-* Client mới dùng canonical V2 event shape.
-* Sequence đến từ durable store.
+Cần bổ sung:
 
-### Gate
+* generated TypeScript API client;
+* query cache;
+* WebSocket resume;
+* optimistic UI có reconciliation;
+* task/workflow/event/provider/tool pages;
+* permission dialog;
+* artifact viewer;
+* eval report;
+* component/integration/E2E test;
+* accessibility và error boundary.
 
-* API contract tests pass.
-* WebSocket reconnect/replay pass.
-* Worker restart pass.
-* CLI smoke pass.
-* Không còn `IN_MEMORY_TASKS` hoặc `MOCK_DOMAIN_EVENTS` trong production code.
+### Desktop
 
----
+Desktop hiện hard-code các đường dẫn `D:\antigaravity_code\...` trong logger/startup marker và mới đăng ký hai Tauri command.
 
-## Phase 12 — Compatibility removal và duplicate deletion
+Cần:
 
-### Công việc
-
-Chạy AST-based duplicate checker và xóa:
-
-* Duplicate workflow definition.
-* Duplicate lifecycle enums.
-* Duplicate event envelope.
-* Duplicate event catalog.
-* Duplicate provider request/response.
-* Duplicate permission decision.
-* Duplicate error root.
-* Legacy core adapters.
-* Legacy config behavior.
-* Legacy security plaintext fallback.
-
-Compatibility code chỉ được tồn tại tại API edge và phải có:
-
-```text
-owner
-removal date
-feature flag
-usage telemetry
-test coverage
-```
+* loại bỏ toàn bộ absolute development path;
+* app data directory chuẩn theo OS;
+* sidecar supervisor cho API và worker;
+* dynamic port reservation;
+* process health/restart;
+* graceful shutdown;
+* log rotation;
+* credential storage bằng OS keychain;
+* update/migration lifecycle;
+* installer smoke test;
+* frontend dùng cùng API contract với web.
 
 ### Gate
 
+* CLI/Web/Desktop cùng quan sát một task và cùng event sequence.
+* Không còn demo output.
+* Desktop restart sidecar an toàn.
+* Frontend unit, integration và E2E pass.
+* Windows path portability tests pass.
+
+---
+
+## Phase 27 — Legacy backend evacuation
+
+### Mục tiêu
+
+Loại bỏ business logic trùng lặp khỏi `apps/backend`.
+
+### Di chuyển
+
+| Legacy source                 | Đích                                           |
+| ----------------------------- | ---------------------------------------------- |
+| `services/planner_service.py` | `intelligence/planner`                         |
+| model routing services        | `intelligence/model_router` + `providers`      |
+| `tool_executor.py`            | `tools` + `execution`                          |
+| Hermes runtime/session bridge | `execution/adapters/hermes`                    |
+| browser service               | `tools/browser` + execution adapter            |
+| worktree service              | `execution/worktree`                           |
+| event bus/hooks               | `core/events` + storage outbox + observability |
+| permission service            | `core/security` + `tools/security`             |
+| workflow services             | `orchestration` + `workflows`                  |
+| DB models/repositories        | `storage`                                      |
+| eval/verification             | `evals` + `verification`                       |
+
+### Trạng thái cuối của `apps/backend`
+
+Chỉ còn:
+
 ```text
-duplicate_canonical_models = 0
-duplicate_lifecycle_enums = 0
-duplicate_event_envelopes = 0
-duplicate_root_errors = 0
-internal_legacy_event_imports = 0
+apps/backend/
+├── main.py              # compatibility bootstrap
+├── compatibility/
+├── migrations/
+└── README.md
+```
+
+Không còn:
+
+```text
+services/
+db/models.py
+planner riêng
+scheduler riêng
+event bus riêng
+provider gateway riêng
+tool executor riêng
+```
+
+### Gate
+
+* AST scan không còn import legacy service từ production path.
+* Không có duplicate model, event, lifecycle, provider contract.
+* Backend compatibility tests pass.
+* V1 API adapter gọi canonical services.
+* Có deadline rõ ràng để xóa compatibility layer sau release ổn định.
+
+---
+
+## Phase 28 — Production verification và full-adoption verdict
+
+### Kiểm thử bắt buộc
+
+1. Unit toàn workspace.
+2. Contract tests giữa bounded contexts.
+3. API integration.
+4. Worker multi-process.
+5. Multi-replica fencing.
+6. Outbox replay.
+7. Crash/restart matrix.
+8. Database migration với dữ liệu thật.
+9. Event migration với quarantine.
+10. WebSocket disconnect/reconnect.
+11. Provider 429 same-model endpoint failover.
+12. Tool destructive replay guard.
+13. Plugin/skill permission isolation.
+14. Context/memory project isolation.
+15. Eval false-green tests.
+16. Desktop sidecar crash recovery.
+17. Performance and soak tests.
+18. Security and secret scanning.
+19. Rollback rehearsal.
+20. Clean-clone build trên Windows và Linux.
+
+### Performance gate đề xuất
+
+* API task submit p95 ≤ 100 ms, không tính model latency.
+* Durable queue claim p95 ≤ 50 ms.
+* Event publish-to-client p95 ≤ 250 ms.
+* Idle CPU không có busy polling.
+* Duplicate execution = 0.
+* Stale fencing result accepted = 0.
+* Lost terminal events = 0.
+* Recovery hoàn tất trong giới hạn cấu hình.
+* Không có plaintext secret trong DB, log hoặc artifact.
+
+### Final artifact
+
+```text
+artifacts/architecture_v2_completion/final/
+├── commit_receipt.json
+├── architecture_graph.json
+├── package_maturity_matrix.json
+├── legacy_removal_report.json
+├── test_matrix.json
+├── ci_receipt.json
+├── migration_receipt.json
+├── multi_replica_fencing_receipt.json
+├── crash_recovery_receipt.json
+├── rollback_receipt.json
+├── security_report.json
+├── performance_report.json
+└── final_verdict.json
+```
+
+Verdict duy nhất được chấp nhận:
+
+```text
+ARCHITECTURE_V2_FULL_ADOPTION_VERIFIED
 ```
 
 ---
 
-## Phase 13 — Full verification
-
-### Test matrix
-
-#### Core
-
-* Unit tests.
-* Serialization.
-* Invariants.
-* Transition coverage.
-* Protocol conformance.
-* Secret redaction.
-
-#### Storage
-
-* Migration.
-* Repository mappings.
-* Optimistic concurrency.
-* Outbox atomicity.
-* Event sequencing.
-
-#### Orchestration
-
-* Dispatch.
-* Retry.
-* Cancellation.
-* Recovery.
-* Multi-process fencing.
-* Crash/resume.
-
-#### Providers
-
-* Sync completion.
-* Streaming.
-* Tool calls.
-* Failover.
-* 429 handling.
-* Timeout.
-* Secret redaction.
-
-#### API/Worker
-
-* REST.
-* WebSocket.
-* Worker lifecycle.
-* Clean startup.
-* Restart recovery.
-
-#### Cross-platform
+# 4. Thứ tự dependency bắt buộc
 
 ```text
-ubuntu-latest
-windows-latest
+Phase 15  Trusted baseline
+    ↓
+Phase 16  Dependency graph + composition root
+    ↓
+Phase 17  Storage + observability
+    ↓
+Phase 18  Execution + worker
+    ↓
+Phase 19  Tools
+    ↓
+Phase 20  Plugins + skills
+    ↓
+Phase 21  Context + memory
+    ↓
+Phase 22  Intelligence
+    ↓
+Phase 23  Workflows
+    ↓
+Phase 24  Verification + evals
+    ↓
+Phase 25  API cutover
+    ↓
+Phase 26  CLI + Web + Desktop
+    ↓
+Phase 27  Legacy backend evacuation
+    ↓
+Phase 28  Staging + production verification
 ```
 
-### Required commands
+Không nên triển khai đồng thời API, worker, intelligence và workflow trên các contract chưa khóa. Làm như vậy sẽ tái tạo đúng vấn đề hiện tại: nhiều package có tên và public class nhưng không có một vertical slice chạy thật.
 
-```text
-uv sync --all-packages
-uv run pytest
-uv run pytest apps/backend/tests
-uv run python scripts/check_architecture_boundaries.py
-uv run python scripts/check_duplicate_canonical_models.py
-uv run python scripts/check_event_taxonomy.py
-uv run python scripts/check_secret_exposure.py
-npm run typecheck
-npm run build
-```
+# 5. Definition of Done toàn chương trình
 
----
+Kiến trúc chỉ được xem là hoàn thiện khi:
 
-## Phase 14 — Production cutover
-
-### Preconditions
-
-* Final SHA clean.
-* CI gắn trực tiếp với final SHA.
-* Database backup verified.
-* Migration rehearsal pass trên production-like copy.
-* Rollback rehearsed.
-* Full E2E live Hermes execution pass.
-* Event replay pass.
-* Zero duplicate canonical model.
-* Zero forbidden core import.
-* Zero plaintext provider secret.
-* No compatibility traffic ngoài API edge.
-
-### Cutover process
-
-1. Disable write traffic.
-2. Backup database và event artifacts.
-3. Chạy migration dry-run.
-4. Chạy migration thực.
-5. Start một backend replica.
-6. Chạy smoke test.
-7. Start worker.
-8. Chạy execution E2E.
-9. Start các replica còn lại.
-10. Mở write traffic.
-11. Theo dõi:
-
-    * Event sequence conflict.
-    * Optimistic concurrency conflict.
-    * Runtime lost.
-    * Provider error rate.
-    * Permission decision mismatch.
-    * Secret redaction failure.
-12. Rollback ngay khi vi phạm invariant.
-
----
-
-# 12. Commit strategy
-
-Mỗi phase phải có commit riêng:
-
-```text
-chore(core): capture canonicalization baseline
-docs(core): freeze canonical shared-kernel specification
-refactor(core): introduce hybrid typed identifiers
-refactor(core): centralize lifecycle and invariants
-refactor(core): consolidate shared contracts
-refactor(core): establish canonical event model
-refactor(core): unify errors config and security types
-refactor(storage): adopt canonical core contracts
-refactor(orchestration): adopt canonical domain and lifecycle
-refactor(providers): adopt canonical model contracts
-refactor(tools): adopt canonical security decisions
-refactor(apps): migrate api worker cli and websocket
-refactor(core): remove duplicate and legacy models
-test(core): add full canonical adoption verification
-chore(core): finalize production cutover artifacts
-```
-
-Không squash trong khi triển khai. Chỉ squash khi merge nếu toàn bộ phase receipt đã được lưu.
-
----
-
-# 13. Artifact bắt buộc
-
-```text
-artifacts/core_canonical/
-├── phase_00/
-├── phase_01/
-├── phase_02/
-├── phase_03/
-├── phase_04/
-├── phase_05/
-├── phase_06/
-├── phase_07/
-├── phase_08/
-├── phase_09/
-├── phase_10/
-├── phase_11/
-├── phase_12/
-├── phase_13/
-├── phase_14/
-└── final/
-    ├── final_verdict.json
-    ├── changed_files.json
-    ├── migration_report.json
-    ├── duplicate_model_report.json
-    ├── architecture_boundary_report.json
-    ├── event_taxonomy_report.json
-    ├── lifecycle_coverage_report.json
-    ├── secret_security_report.json
-    ├── test_receipt.json
-    ├── ci_receipt.json
-    └── rollback_receipt.json
-```
-
----
-
-# 14. Final acceptance criteria
-
-Chỉ được công nhận hoàn tất khi tất cả điều kiện sau đạt:
-
-## Core
-
-* Core chỉ phụ thuộc Pydantic và typing support đã phê duyệt.
-* Không có framework hoặc infrastructure import.
-* 100% public model type-annotated.
-* Config immutable.
-* Security không chứa encryption implementation.
-* Lifecycle và transition matrix có một nguồn duy nhất.
-
-## Repository
-
-* Orchestration dùng canonical lifecycle.
-* Providers dùng canonical request/response.
-* Storage trả canonical domain object.
-* Tools dùng canonical permission decision.
-* API và worker không giữ canonical duplicate.
-* Không còn runtime mapper fail-open.
-* Không còn tự sinh ID khi deserializing persisted input.
-* Không còn unknown status fallback.
-* Không còn legacy event name trong internal event path.
-
-## Data
-
-* Database migration pass.
-* Event migration pass.
-* Identity migration pass.
-* Không mất row.
-* Không mất event.
-* Sequence nhất quán.
-* Rollback rehearsal pass.
-
-## Security
-
-* Không đọc production secret từ `key.txt`.
-* Không tự động chấp nhận plaintext legacy.
-* Không log plaintext, ciphertext hoặc raw provider token.
-* Secret migration có audit receipt.
-
-## Verification
-
-* Full Python tests pass.
-* Backend tests pass.
-* Frontend typecheck và build pass.
-* Windows và Ubuntu CI pass.
-* Clean-clone E2E pass.
-* Live runtime execution pass.
-* Crash/recovery pass.
-* Multi-replica fencing pass.
-
----
-
-# 15. Final verdict policy
-
-Không được phát hành verdict `CORE_CANONICAL_FULL_ADOPTION_VERIFIED` nếu chỉ package core pass test.
-
-Các verdict hợp lệ:
-
-```text
-CORE_CANONICAL_IMPLEMENTATION_IN_PROGRESS
-CORE_CANONICAL_MIGRATION_BLOCKED
-CORE_CANONICAL_ADOPTION_PARTIAL
-CORE_CANONICAL_VERIFIED_READY_FOR_STAGING
-CORE_CANONICAL_FULL_ADOPTION_VERIFIED
-```
-
-Verdict cuối chỉ được dùng khi:
-
-```text
-duplicate canonical model count = 0
-migration gates = passed
-consumer adoption gates = passed
-live runtime gates = passed
-CI attached to final SHA = passed
-```
+* Không còn production store hoặc lease nằm trong dictionary/list.
+* Không còn demo response, timestamp hoặc health result hard-code.
+* `apps/api` là API canonical duy nhất.
+* `apps/backend` không còn business logic độc lập.
+* Worker sử dụng durable claim và fencing.
+* Intelligence có đủ bảy component.
+* Workflow là versioned DAG, không chỉ là step list.
+* Tool legacy adapter bị loại khỏi production exports.
+* Verification fail-closed.
+* Eval không thể chạy nếu thiếu execution thật.
+* Web, desktop và CLI dùng chung API contract.
+* Mọi state mutation có event, outbox và trace.
+* Backend, workspace, frontend và desktop test đều xanh.
+* CI, multi-replica fencing và rollback rehearsal được thực hiện tại đúng final SHA.

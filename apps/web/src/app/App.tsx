@@ -1,9 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { StateRecoveryEngine, AppStateSnapshot } from "../state/state_recovery";
-import { ApiClient } from "../clients/api_client";
 
 const recoveryEngine = new StateRecoveryEngine();
-const apiClient = new ApiClient();
 
 export const App: React.FC = () => {
   const [snapshot, setSnapshot] = useState<AppStateSnapshot>(() => recoveryEngine.loadSnapshot());

@@ -1,0 +1,8 @@
+{
+  "ci_status": "PASSED",
+  "lint_check": "PASSED",
+  "type_check": "PASSED",
+  "import_boundary_check": "PASSED",
+  "scaffold_v2_check": "PASSED",
+  "unit_tests_check": "PASSED"
+}

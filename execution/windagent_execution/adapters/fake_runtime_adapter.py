@@ -9,7 +9,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import Dict, Optional, Any
 
-from windagent_orchestration.ports import (
+from windagent_core.contracts.execution import (
     ExecutionRuntimePort, ExecutionRequest, ExecutionHandle,
     RuntimeStatus, RuntimeStatusEnum, ExecutionResult
 )

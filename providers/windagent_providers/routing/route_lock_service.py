@@ -100,12 +100,12 @@ class RouteLockService:
 
     def __init__(
         self,
-        ruleset: RoutingRuleSet,
+        ruleset: Optional[RoutingRuleSet] = None,
         matcher: Optional[RuleMatcher] = None,
         disabled_models: Optional[set] = None,
         event_handler: Optional[Callable[[RoutingEvent], None]] = None,
     ):
-        self._ruleset = ruleset
+        self._ruleset = ruleset or RoutingRuleSet()
         self._matcher: RuleMatcher = matcher or RuleMatcher()
         self._disabled_models: set = disabled_models or set()
         self._event_handler = event_handler

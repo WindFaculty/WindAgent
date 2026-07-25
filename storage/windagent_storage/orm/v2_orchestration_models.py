@@ -189,3 +189,47 @@ class WorkerRegistrationORM(BaseORM):
     __table_args__ = (
         Index("ix_worker_registrations_type_health", "runtime_type", "health"),
     )
+
+
+class WorkflowEdgeORM(BaseORM):
+    __tablename__ = "workflow_edges"
+
+    id = Column(String(64), primary_key=True)
+    workflow_id = Column(String(36), nullable=False, index=True)
+    source_step_id = Column(String(36), nullable=False)
+    target_step_id = Column(String(36), nullable=False)
+    condition_json = Column(Text, nullable=True)
+    created_at = Column(DateTime, nullable=False, default=default_utc_now)
+
+
+class MemoryRecordORM(BaseORM):
+    __tablename__ = "memory_records"
+
+    id = Column(String(64), primary_key=True)
+    session_id = Column(String(36), nullable=True, index=True)
+    memory_type = Column(String(32), nullable=False, default="short_term")  # short_term | long_term | working
+    key = Column(String(128), nullable=False)
+    value_json = Column(Text, nullable=False)
+    created_at = Column(DateTime, nullable=False, default=default_utc_now)
+    updated_at = Column(DateTime, nullable=False, default=default_utc_now)
+
+
+class PluginInstallationORM(BaseORM):
+    __tablename__ = "plugin_installations"
+
+    plugin_id = Column(String(64), primary_key=True)
+    version = Column(String(32), nullable=False)
+    status = Column(String(32), nullable=False, default="active")  # active | disabled | quarantined
+    manifest_json = Column(Text, nullable=False, default="{}")
+    installed_at = Column(DateTime, nullable=False, default=default_utc_now)
+
+
+class SkillInstallationORM(BaseORM):
+    __tablename__ = "skill_installations"
+
+    skill_id = Column(String(64), primary_key=True)
+    version = Column(String(32), nullable=False)
+    status = Column(String(32), nullable=False, default="active")
+    manifest_json = Column(Text, nullable=False, default="{}")
+    installed_at = Column(DateTime, nullable=False, default=default_utc_now)
+

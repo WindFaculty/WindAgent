@@ -10,6 +10,8 @@ WindAgent CLI entrypoint (doctor, architecture check, workflow run)
 - `windagent_core`
 - `windagent_orchestration`
 - `windagent_intelligence`
+- `windagent_providers`
+- `windagent_tools`
 - `windagent_storage`
 
 ## Forbidden Dependencies

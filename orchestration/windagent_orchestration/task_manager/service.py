@@ -41,6 +41,24 @@ class TaskManager:
             self._in_memory_facts[tid_str] = DurableExecutionFacts(task_id=task_id, session_id=session_id)
         return self._in_memory_facts[tid_str]
 
+    async def save_durable_facts(self, facts: DurableExecutionFacts) -> int:
+        if self.uow_factory:
+            try:
+                async with SqlUnitOfWork(self.uow_factory) as uow:
+                    new_version = await uow.task_runs.save_facts(
+                        task_id=str(facts.task_id),
+                        session_id=str(facts.session_id),
+                        state=facts.current_state.value,
+                        version=facts.version,
+                        facts=facts.to_dict(),
+                    )
+                    await uow.commit()
+                    facts.version = new_version
+                    return new_version
+            except Exception as ex:
+                logger.warning(f"Durable facts save fallback to in-memory facts: {ex}")
+        return facts.version
+
     async def load_durable_facts(self, task_id: TaskId) -> Optional[DurableExecutionFacts]:
         if not self.uow_factory:
             return self._in_memory_facts.get(str(task_id))

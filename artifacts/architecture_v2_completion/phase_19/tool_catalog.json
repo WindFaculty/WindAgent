@@ -1,0 +1,35 @@
+{
+  "phase": "19",
+  "component": "windagent_tools",
+  "timestamp": "2026-07-25T09:46:00Z",
+  "total_tools": 12,
+  "canonical_modules": [
+    "registry",
+    "filesystem",
+    "shell",
+    "git",
+    "code_search",
+    "ast",
+    "lsp",
+    "testing",
+    "browser",
+    "database",
+    "github",
+    "mcp"
+  ],
+  "tools": [
+    {"name": "read_file", "module": "filesystem", "capability": "filesystem", "risk_level": "read_only"},
+    {"name": "write_file", "module": "filesystem", "capability": "filesystem", "risk_level": "workspace_write"},
+    {"name": "exec_shell", "module": "shell", "capability": "shell", "risk_level": "process_execution"},
+    {"name": "git_operation", "module": "git", "capability": "git", "risk_level": "workspace_write"},
+    {"name": "code_search", "module": "code_search", "capability": "code_search", "risk_level": "read_only"},
+    {"name": "ast_extract_symbols", "module": "ast", "capability": "ast", "risk_level": "read_only"},
+    {"name": "lsp_query", "module": "lsp", "capability": "lsp", "risk_level": "read_only"},
+    {"name": "run_tests", "module": "testing", "capability": "testing", "risk_level": "process_execution"},
+    {"name": "open_url", "module": "browser", "capability": "browser", "risk_level": "external_network"},
+    {"name": "click_xy", "module": "browser", "capability": "browser", "risk_level": "workspace_write"},
+    {"name": "database_query", "module": "database", "capability": "database", "risk_level": "read_only"},
+    {"name": "github_api", "module": "github", "capability": "github", "risk_level": "external_network"}
+  ],
+  "legacy_adapter_exported_at_top_level": false
+}

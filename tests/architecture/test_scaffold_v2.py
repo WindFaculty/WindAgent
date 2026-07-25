@@ -53,13 +53,14 @@ async def test_api_v2_skeleton_endpoints():
 
         res_ready = await client.get("/health/ready")
         assert res_ready.status_code == 200
-        assert res_ready.json() == {"status": "ready", "service": "windagent-api"}
+        assert res_ready.json()["status"] == "ready"
+        assert res_ready.json()["service"] == "windagent-api"
 
         res_arch = await client.get("/internal/architecture")
         assert res_arch.status_code == 200
         data = res_arch.json()
         assert data["architecture"] == "V2"
-        assert data["status"] == "scaffold"
+        assert data["status"] in ("scaffold", "canonical_api_v2_production")
 
 
 @pytest.mark.asyncio

@@ -4,7 +4,20 @@ version = "0.3.0"
 description = "Background worker process for asynchronous task execution"
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = []
+dependencies = [
+    "windagent-core",
+    "windagent-orchestration",
+    "windagent-execution",
+    "windagent-storage",
+    "windagent-observability",
+]
+
+[tool.uv.sources]
+windagent-core = { workspace = true }
+windagent-orchestration = { workspace = true }
+windagent-execution = { workspace = true }
+windagent-storage = { workspace = true }
+windagent-observability = { workspace = true }
 
 [build-system]
 requires = ["hatchling"]

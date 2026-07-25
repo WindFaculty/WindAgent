@@ -1,0 +1,91 @@
+{
+  "phase": 24,
+  "name": "Verification va Evals fail-closed",
+  "gates": {
+    "gate_1": {
+      "name": "Verification Domain - Fail-Closed",
+      "passed": true,
+      "checks": {
+        "missing_evidence_detected": true,
+        "auto_blocked_on_missing_evidence": true,
+        "valid_evidence_not_blocked": true,
+        "blocked_status_exists": true,
+        "evidence_sources_complete": true
+      }
+    },
+    "gate_2": {
+      "name": "Verification Runners - Real Execution",
+      "passed": true,
+      "checks": {
+        "command_runner_has_timeout": true,
+        "test_runner_configured": true,
+        "linter_runner_configured": true,
+        "security_scanner_has_patterns": true,
+        "secret_patterns_complete": true,
+        "environment_snapshot_available": true
+      }
+    },
+    "gate_3": {
+      "name": "Quality Gates - Fail-Closed",
+      "passed": true,
+      "checks": {
+        "acceptance_gate_exists": true,
+        "regression_gate_exists": true,
+        "policy_gate_exists": true,
+        "security_gate_exists": true,
+        "test_runner_gate_exists": true,
+        "quality_gate_exists": true,
+        "integrity_gate_exists": true
+      }
+    },
+    "gate_4": {
+      "name": "Report Validator - BLOCKED Verdict",
+      "passed": true,
+      "checks": {
+        "report_validator_has_gates": true,
+        "verification_summary_has_verdict": true
+      }
+    },
+    "gate_5": {
+      "name": "Evals - execution_id Required",
+      "passed": true,
+      "checks": {
+        "execution_id_detected_missing": true,
+        "validation_raised_for_missing_exec_id": true,
+        "valid_execution_id_works": true,
+        "dataset_checksum_works": true,
+        "dataset_version_exists": true
+      }
+    },
+    "gate_6": {
+      "name": "Evals Graders - Fail-Closed",
+      "passed": true,
+      "checks": {
+        "accuracy_blocks_missing_execution": true,
+        "accuracy_grades_valid_execution": true,
+        "tool_selection_blocks_missing_execution": true,
+        "tool_selection_grades_valid_execution": true,
+        "cost_efficiency_blocks_missing_execution": true,
+        "cost_efficiency_grades_valid_execution": true,
+        "safety_blocks_missing_execution": true,
+        "safety_grades_valid_execution": true,
+        "model_routing_blocks_missing_execution": true,
+        "model_routing_grades_valid_execution": true,
+        "all_5_graders_exist": true
+      }
+    },
+    "gate_7": {
+      "name": "Benchmark Runner - No Synthetic Fallback",
+      "passed": true,
+      "checks": {
+        "missing_exec_id_blocks": true,
+        "synthetic_output_blocks": true,
+        "real_output_passes_through": true,
+        "regression_detection_works": true,
+        "confidence_interval_works": true
+      }
+    }
+  },
+  "overall_passed": true,
+  "verdict": "ARCHITECTURE_V2_PHASE24_VERIFIED"
+}

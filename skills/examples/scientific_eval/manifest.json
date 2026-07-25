@@ -1,0 +1,32 @@
+{
+  "id": "scientific_eval",
+  "description": "Runs scientific evaluation benchmarks and generates reports",
+  "version": "1.0.0",
+  "schema_version": "2.0.0",
+  "windagent_version": ">=0.3.0",
+  "activation_rules": [
+    "scientific eval",
+    "benchmark",
+    "evaluation",
+    "eval suite"
+  ],
+  "required_tools": [
+    "exec_shell",
+    "read_file",
+    "write_file"
+  ],
+  "required_workflows": [
+    "scientific_eval"
+  ],
+  "required_permissions": [
+    "process_execution",
+    "read_only",
+    "workspace_write"
+  ],
+  "token_budget": 8000,
+  "prompt_template": "Run scientific evaluation for the following: {eval_description}\n\nDataset: {dataset_name}\nMetrics: {metrics}\n\nEnsure all results are reproducible and evidence-backed.",
+  "verification_policy": {
+    "require_reproducible": true,
+    "require_evidence": true
+  }
+}

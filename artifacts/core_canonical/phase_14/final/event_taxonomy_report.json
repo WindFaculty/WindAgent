@@ -1,7 +1,7 @@
 {
   "script": "scripts\\check_event_taxonomy.py",
   "returncode": 0,
-  "stdout": "Scanned 436 Python files for Event Taxonomy.\nCanonical Event Catalog contains 67 registered event types.\n[PASS] Event Taxonomy Check PASSED: 100% events match EventCatalog.",
+  "stdout": "Scanned 443 Python files for Event Taxonomy.\nCanonical Event Catalog contains 68 registered event types.\n[PASS] Event Taxonomy Check PASSED: 100% events match EventCatalog.",
   "stderr": "",
   "passed": true
 }

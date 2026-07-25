@@ -1,20 +1,29 @@
 """
-WindAgent Context Package (V2 Architecture).
-Context assembly, provenance tracking, token budgeting, repository intelligence, and compaction.
+WindAgent Context Package (V2 Architecture — Phase 21).
+Context assembly pipeline, provenance tracking, token budgeting,
+repository intelligence, compaction, and provenance manifest.
 """
 
-from windagent_context.provenance import ContextItemProvenance, ContextItem
-from windagent_context.budget import TokenBudgetManager, estimate_tokens
+from windagent_context.provenance import (
+    ContextItemProvenance, ContextItem,
+    SensitivityLevel, SourceType,
+    ProvenanceManifest, ProvenanceManifestEntry,
+)
+from windagent_context.budget import TokenBudgetManager, estimate_tokens, TASK_TYPE_BUDGET_PROFILES
 from windagent_context.repository.index import RepositoryIndex
 from windagent_context.compaction import ContextCompactor
 from windagent_context.builder import ContextBuilder
+from windagent_context.pipeline import ContextPipeline, ContextPipelineConfig
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 __all__ = [
     "ContextItemProvenance", "ContextItem",
-    "TokenBudgetManager", "estimate_tokens",
+    "SensitivityLevel", "SourceType",
+    "ProvenanceManifest", "ProvenanceManifestEntry",
+    "TokenBudgetManager", "estimate_tokens", "TASK_TYPE_BUDGET_PROFILES",
     "RepositoryIndex",
     "ContextCompactor",
     "ContextBuilder",
+    "ContextPipeline", "ContextPipelineConfig",
 ]

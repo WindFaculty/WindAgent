@@ -1,0 +1,23 @@
+{
+  "phase": "25",
+  "component": "windagent_api",
+  "timestamp": "2026-07-25T15:23:45Z",
+  "total_v2_routes": 14,
+  "in_memory_fallbacks_eliminated": true,
+  "canonical_routes": [
+    {"prefix": "/api/v2/sessions", "router": "v2_sessions"},
+    {"prefix": "/api/v2/tasks", "router": "v2_tasks"},
+    {"prefix": "/api/v2/runs", "router": "v2_runs"},
+    {"prefix": "/api/v2/workflows", "router": "v2_workflows"},
+    {"prefix": "/api/v2/events", "router": "v2_events"},
+    {"prefix": "/api/v2/providers", "router": "v2_providers"},
+    {"prefix": "/api/v2/tools", "router": "v2_tools"},
+    {"prefix": "/api/v2/permissions", "router": "v2_permissions"},
+    {"prefix": "/api/v2/artifacts", "router": "v2_artifacts"},
+    {"prefix": "/api/v2/memory", "router": "v2_memory"},
+    {"prefix": "/api/v2/plugins", "router": "v2_plugins"},
+    {"prefix": "/api/v2/skills", "router": "v2_skills"},
+    {"prefix": "/api/v2/evals", "router": "v2_evals"},
+    {"prefix": "/api/v2/observability", "router": "v2_observability"}
+  ]
+}

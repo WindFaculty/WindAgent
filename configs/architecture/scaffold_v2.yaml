@@ -104,7 +104,7 @@ packages:
     namespace: windagent_storage
     path: storage
     description: "Database repositories, ORM mappings, migration adapters, persistent artifact storage"
-    allowed_dependencies: ["windagent_core"]
+    allowed_dependencies: ["windagent_core", "windagent_providers"]
     forbidden_dependencies: ["apps", "windagent_orchestration", "windagent_intelligence"]
     legacy_source: "apps/backend/db/"
 
@@ -128,7 +128,7 @@ packages:
     namespace: windagent_api
     path: apps/api
     description: "FastAPI REST & WebSocket entrypoint for Architecture V2"
-    allowed_dependencies: ["windagent_core", "windagent_orchestration", "windagent_intelligence", "windagent_providers", "windagent_tools", "windagent_storage", "windagent_observability"]
+    allowed_dependencies: ["windagent_core", "windagent_orchestration", "windagent_execution", "windagent_intelligence", "windagent_providers", "windagent_tools", "windagent_storage", "windagent_observability"]
     forbidden_dependencies: []
     legacy_source: "apps/backend/main.py"
 
@@ -136,7 +136,7 @@ packages:
     namespace: windagent_cli
     path: apps/cli
     description: "WindAgent CLI entrypoint (doctor, architecture check, workflow run)"
-    allowed_dependencies: ["windagent_core", "windagent_orchestration", "windagent_intelligence", "windagent_storage"]
+    allowed_dependencies: ["windagent_core", "windagent_orchestration", "windagent_intelligence", "windagent_providers", "windagent_tools", "windagent_storage"]
     forbidden_dependencies: []
     legacy_source: "apps/backend/cli.py"
 
@@ -144,6 +144,6 @@ packages:
     namespace: windagent_worker
     path: apps/worker
     description: "Background worker process for asynchronous task execution"
-    allowed_dependencies: ["windagent_core", "windagent_orchestration", "windagent_storage", "windagent_observability"]
+    allowed_dependencies: ["windagent_core", "windagent_orchestration", "windagent_execution", "windagent_storage", "windagent_observability"]
     forbidden_dependencies: []
     legacy_source: "apps/backend/worker.py"

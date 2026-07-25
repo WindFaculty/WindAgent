@@ -1,0 +1,20 @@
+{
+  "packages": {
+    "windagent_core": "PRODUCTION_READY",
+    "windagent_storage": "PRODUCTION_READY",
+    "windagent_orchestration": "PRODUCTION_READY",
+    "windagent_intelligence": "PRODUCTION_READY",
+    "windagent_providers": "PRODUCTION_READY",
+    "windagent_tools": "PRODUCTION_READY",
+    "windagent_workflows": "PRODUCTION_READY",
+    "windagent_verification": "PRODUCTION_READY",
+    "windagent_context": "PRODUCTION_READY",
+    "windagent_memory": "PRODUCTION_READY",
+    "windagent_execution": "PRODUCTION_READY",
+    "windagent_observability": "PRODUCTION_READY",
+    "windagent_evals": "PRODUCTION_READY",
+    "windagent_api": "PRODUCTION_READY",
+    "windagent_cli": "PRODUCTION_READY",
+    "windagent_worker": "PRODUCTION_READY"
+  }
+}

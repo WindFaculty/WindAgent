@@ -1,6 +1,6 @@
 {
   "status": "MIGRATION_SUCCESS",
-  "database_file": "D:\\code_ca_nhan\\WindAgent\\tmph4_t84wd.db",
+  "database_file": "D:\\code_ca_nhan\\WindAgent\\tmpijt_24_e.db",
   "session_count": 0,
   "task_count": 0,
   "event_count": 0,
@@ -11,7 +11,7 @@
   ],
   "dry_run": true,
   "source_database": "D:\\code_ca_nhan\\WindAgent\\windagent.db",
-  "temporary_database": "D:\\code_ca_nhan\\WindAgent\\tmph4_t84wd.db",
+  "temporary_database": "D:\\code_ca_nhan\\WindAgent\\tmpijt_24_e.db",
   "returncode": 0,
   "passed": true
 }
