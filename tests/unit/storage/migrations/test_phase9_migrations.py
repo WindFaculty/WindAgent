@@ -17,15 +17,15 @@ from pathlib import Path
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import Session
 
-from storage.windagent_storage.migrations.schema_checksum import SchemaChecksum
-from storage.windagent_storage.migrations.migration_lock import MigrationLock, LockType, LockStatus
-from storage.windagent_storage.migrations.backup_manager import BackupManager, BackupInfo
-from storage.windagent_storage.migrations.migration_registry import (
+from windagent_storage.migrations.schema_checksum import SchemaChecksum
+from windagent_storage.migrations.migration_lock import MigrationLock, LockType, LockStatus
+from windagent_storage.migrations.backup_manager import BackupManager, BackupInfo
+from windagent_storage.migrations.migration_registry import (
     migration_registry,
     MigrationDirection,
     MigrationStatus,
 )
-from storage.windagent_storage.orm.models import BaseORM
+from windagent_storage.orm.models import BaseORM
 
 
 @pytest.fixture
@@ -395,7 +395,7 @@ class TestMigrationExecution:
         """Test migration 001 upgrade."""
         engine, db_path = temp_db
         
-        from storage.windagent_storage.migrations.v2_canonical.migration_001_initial import upgrade
+        from windagent_storage.migrations.v2_canonical.migration_001_initial import upgrade
         
         with Session(engine) as session:
             upgrade(session)
@@ -418,7 +418,7 @@ class TestMigrationExecution:
         """Test migration 001 downgrade."""
         engine, db_path = temp_db
         
-        from storage.windagent_storage.migrations.v2_canonical.migration_001_initial import (
+        from windagent_storage.migrations.v2_canonical.migration_001_initial import (
             upgrade, downgrade
         )
         
@@ -442,8 +442,8 @@ class TestMigrationExecution:
         """Test migration 002 with backend data."""
         engine, db_path = temp_db_with_backend_tables
         
-        from storage.windagent_storage.migrations.v2_canonical.migration_001_initial import upgrade as upgrade_001
-        from storage.windagent_storage.migrations.v2_canonical.migration_002_legacy_data import upgrade as upgrade_002
+        from windagent_storage.migrations.v2_canonical.migration_001_initial import upgrade as upgrade_001
+        from windagent_storage.migrations.v2_canonical.migration_002_legacy_data import upgrade as upgrade_002
         
         # First run migration 001
         with Session(engine) as session:
@@ -470,8 +470,8 @@ class TestMigrationExecution:
         """Test that data integrity is preserved during migration."""
         engine, db_path = temp_db_with_backend_tables
         
-        from storage.windagent_storage.migrations.v2_canonical.migration_001_initial import upgrade as upgrade_001
-        from storage.windagent_storage.migrations.v2_canonical.migration_002_legacy_data import upgrade as upgrade_002
+        from windagent_storage.migrations.v2_canonical.migration_001_initial import upgrade as upgrade_001
+        from windagent_storage.migrations.v2_canonical.migration_002_legacy_data import upgrade as upgrade_002
         
         # Insert test data
         test_session_id = "test-session-123"
@@ -526,8 +526,8 @@ class TestDataIntegrityRequirements:
         """Test that row counts are preserved during migration."""
         engine, db_path = temp_db_with_backend_tables
         
-        from storage.windagent_storage.migrations.v2_canonical.migration_001_initial import upgrade as upgrade_001
-        from storage.windagent_storage.migrations.v2_canonical.migration_002_legacy_data import upgrade as upgrade_002
+        from windagent_storage.migrations.v2_canonical.migration_001_initial import upgrade as upgrade_001
+        from windagent_storage.migrations.v2_canonical.migration_002_legacy_data import upgrade as upgrade_002
         
         # Insert test data
         with engine.connect() as conn:
@@ -561,8 +561,8 @@ class TestDataIntegrityRequirements:
         """Test that IDs are preserved during migration."""
         engine, db_path = temp_db_with_backend_tables
         
-        from storage.windagent_storage.migrations.v2_canonical.migration_001_initial import upgrade as upgrade_001
-        from storage.windagent_storage.migrations.v2_canonical.migration_002_legacy_data import upgrade as upgrade_002
+        from windagent_storage.migrations.v2_canonical.migration_001_initial import upgrade as upgrade_001
+        from windagent_storage.migrations.v2_canonical.migration_002_legacy_data import upgrade as upgrade_002
         
         test_id = "preserved-id-12345"
         
@@ -594,8 +594,8 @@ class TestDataIntegrityRequirements:
         """Test that timestamps are preserved during migration."""
         engine, db_path = temp_db_with_backend_tables
         
-        from storage.windagent_storage.migrations.v2_canonical.migration_001_initial import upgrade as upgrade_001
-        from storage.windagent_storage.migrations.v2_canonical.migration_002_legacy_data import upgrade as upgrade_002
+        from windagent_storage.migrations.v2_canonical.migration_001_initial import upgrade as upgrade_001
+        from windagent_storage.migrations.v2_canonical.migration_002_legacy_data import upgrade as upgrade_002
         
         test_created_at = "2024-01-15T10:30:00"
         test_updated_at = "2024-01-15T11:45:00"
@@ -629,8 +629,8 @@ class TestDataIntegrityRequirements:
         """Test that JSON payload data integrity is preserved."""
         engine, db_path = temp_db_with_backend_tables
         
-        from storage.windagent_storage.migrations.v2_canonical.migration_001_initial import upgrade as upgrade_001
-        from storage.windagent_storage.migrations.v2_canonical.migration_002_legacy_data import upgrade as upgrade_002
+        from windagent_storage.migrations.v2_canonical.migration_001_initial import upgrade as upgrade_001
+        from windagent_storage.migrations.v2_canonical.migration_002_legacy_data import upgrade as upgrade_002
         
         test_data = {"key": "value", "nested": {"a": 1, "b": 2}}
         test_json = json.dumps(test_data)

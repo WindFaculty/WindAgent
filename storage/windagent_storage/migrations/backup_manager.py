@@ -280,7 +280,7 @@ class BackupManager:
     
     def _compute_schema_checksum(self, engine: Engine) -> str:
         """Compute schema checksum for the database."""
-        from storage.windagent_storage.migrations.schema_checksum import SchemaChecksum
+        from windagent_storage.migrations.schema_checksum import SchemaChecksum
         return SchemaChecksum.compute_checksum_from_engine(engine)
     
     def _get_row_counts(self, engine: Engine) -> Dict[str, int]:

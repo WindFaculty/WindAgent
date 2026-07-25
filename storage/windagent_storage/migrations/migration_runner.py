@@ -10,25 +10,25 @@ from typing import Any, Dict, List, Optional
 from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import Session
 
-from storage.windagent_storage.migrations.migration_registry import (
+from windagent_storage.migrations.migration_registry import (
     MigrationDirection,
     MigrationStatus,
     migration_registry,
 )
-from storage.windagent_storage.migrations.migration_lock import MigrationLock, LockType
-from storage.windagent_storage.migrations.backup_manager import BackupManager
-from storage.windagent_storage.migrations.schema_checksum import SchemaChecksum
-from storage.windagent_storage.orm.models import BaseORM
+from windagent_storage.migrations.migration_lock import MigrationLock, LockType
+from windagent_storage.migrations.backup_manager import BackupManager
+from windagent_storage.migrations.schema_checksum import SchemaChecksum
+from windagent_storage.orm.models import BaseORM
 
 # Import migrations
-from storage.windagent_storage.migrations.v2_canonical.migration_001_initial import (
+from windagent_storage.migrations.v2_canonical.migration_001_initial import (
     upgrade as upgrade_001,
     downgrade as downgrade_001,
     MIGRATION_REVISION as REVISION_001,
     MIGRATION_NAME as NAME_001,
     MIGRATION_DESCRIPTION as DESC_001,
 )
-from storage.windagent_storage.migrations.v2_canonical.migration_002_legacy_data import (
+from windagent_storage.migrations.v2_canonical.migration_002_legacy_data import (
     upgrade as upgrade_002,
     downgrade as downgrade_002,
     MIGRATION_REVISION as REVISION_002,

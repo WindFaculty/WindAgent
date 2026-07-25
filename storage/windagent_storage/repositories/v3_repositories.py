@@ -17,7 +17,7 @@ from windagent_core.contracts.providers.ports import (
     CanonicalModelRegistryPort, EndpointRegistryPort, EndpointStatePort,
     QuotaStatePort, RouteAttemptPort, RouteLockPort, UsageLedgerPort
 )
-from storage.windagent_storage.orm.v3_models import (
+from windagent_storage.orm.v3_models import (
     CanonicalModelV3ORM, EndpointModelBindingORM,
     EndpointRuntimeStateORM, ProviderEndpointORM,
     ProviderQuotaSnapshotV3ORM, ProviderUsageLedgerORM, RouteAttemptV3ORM, RouteLockV3ORM

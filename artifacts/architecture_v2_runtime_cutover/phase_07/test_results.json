@@ -1,0 +1,7 @@
+{
+  "total": 6,
+  "passed": 6,
+  "failed": 0,
+  "test_file": "tests/unit/storage/migrations/test_phase7_schema_mapping.py",
+  "verdict": "PASS"
+}

@@ -9,7 +9,7 @@ from sqlalchemy import (
     Boolean, Column, DateTime, Float, ForeignKey, Index, Integer, String, Text
 )
 
-from storage.windagent_storage.orm.models import BaseORM, default_utc_now
+from windagent_storage.orm.models import BaseORM, default_utc_now
 
 
 class ProviderVendorORM(BaseORM):

@@ -10,7 +10,7 @@ from typing import Any, Dict, List, Optional
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from storage.windagent_storage.orm.models import (
+from windagent_storage.orm.models import (
     BaseORM,
     SessionORM,
     TaskORM,

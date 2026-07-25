@@ -18,15 +18,15 @@ if backend_dir.exists() and str(backend_dir) not in sys.path:
 
 from utils.encryption import decrypt
 from db.models import Base as LegacyBase, ModelProviderORM, CanonicalModelORM, ProviderModelBindingORM
-from storage.windagent_storage.orm.models import BaseORM
-from storage.windagent_storage.orm.v3_models import (
+from windagent_storage.orm.models import BaseORM
+from windagent_storage.orm.v3_models import (
     ProviderVendorORM, ProviderCredentialORM, ProviderEndpointORM,
     CanonicalModelV3ORM, EndpointModelBindingORM
 )
-from storage.windagent_storage.migrations.v3_schema_migration import (
+from windagent_storage.migrations.v3_schema_migration import (
     backfill_legacy_providers, audit_v3_migration
 )
-from storage.windagent_storage.repositories.v3_repositories import (
+from windagent_storage.repositories.v3_repositories import (
     SQLEndpointRegistryRepository, SQLCanonicalModelRegistryRepository,
     SQLRouteLockRepository, SQLEndpointStateRepository
 )

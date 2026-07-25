@@ -22,8 +22,8 @@ from utils.encryption import encrypt
 from db.models import (
     ModelProviderORM, CanonicalModelORM, ProviderModelBindingORM
 )
-from storage.windagent_storage.orm.models import BaseORM
-from storage.windagent_storage.orm.v3_models import (
+from windagent_storage.orm.models import BaseORM
+from windagent_storage.orm.v3_models import (
     ProviderVendorORM, ProviderCredentialORM, ProviderEndpointORM,
     CanonicalModelV3ORM, EndpointModelBindingORM, RouteLockV3ORM
 )
