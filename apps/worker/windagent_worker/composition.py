@@ -48,6 +48,7 @@ from windagent_verification.query import VerificationQueryService
 from windagent_storage.outbox.sql_repository import SqlOutboxRepository
 from windagent_observability.events.dispatcher import EventDispatcher
 from windagent_observability.events.publisher import OutboxEventPublisher
+from windagent_storage.queue.sql_queue import SqlDurableTaskQueue
 from windagent_worker.lease import DurableTaskLeaseManager
 
 logger = logging.getLogger("windagent.worker.composition")
@@ -114,6 +115,7 @@ class WorkerContainer:
         self.event_dispatcher = EventDispatcher()
         
         # Durable queue and lease management (Worker-specific)
+        self.task_queue = SqlDurableTaskQueue(self.db.session_factory) if self.db else None
         self.lease_manager = DurableTaskLeaseManager(session_factory=self.db.session_factory if self.db else None)
         
         # Orchestration engine (Worker needs full orchestration for execution)

@@ -40,6 +40,7 @@ class ProductionWorker:
         name: str = "default-worker",
         worker_container: Optional[WorkerContainer] = None,
         lease_manager: Optional[DurableTaskLeaseManager] = None,
+        task_queue: Optional[Any] = None,
         execution_registry: Optional[ExecutionRuntimeRegistry] = None,
         uow_factory: Optional[Any] = None,
     ):
@@ -47,6 +48,7 @@ class ProductionWorker:
         self.worker_id = WorkerId(f"wkr_{name}")
         self.runtime_run_id = RuntimeRunId.generate()
         self.worker_container = worker_container
+        self.task_queue = task_queue or (worker_container.task_queue if worker_container else None)
         self.lease_manager = lease_manager or (worker_container.lease_manager if worker_container else DurableTaskLeaseManager())
         self.execution_registry = execution_registry or (worker_container.execution_registry if worker_container else ExecutionRuntimeRegistry())
         self.cancellation_broadcaster = CancellationBroadcaster()
@@ -125,13 +127,27 @@ class ProductionWorker:
         if not self._ready:
             raise RuntimeError(f"Worker [{self.worker_id}] is not ready.")
 
-        # Try to claim pending or abandoned task
-        claimed_task = self.lease_manager.claim_task(str(self.worker_id))
-        if not claimed_task:
+        # Try to claim pending or abandoned task via durable queue port or fallback
+        claimed: Any = None
+        if self.task_queue is not None:
+            claimed = await self.task_queue.claim_next(str(self.worker_id))
+        elif self.lease_manager is not None and hasattr(self.lease_manager, "claim_task"):
+            claimed = self.lease_manager.claim_task(str(self.worker_id))
+
+        if not claimed:
             return {"status": "idle", "processed": 0}
 
-        raw_tid = str(claimed_task["task_id"])
-        fencing_token = claimed_task.get("fencing_token", f"fence_{raw_tid}_gen_1")
+        if hasattr(claimed, "task_id"):
+            raw_tid = str(claimed.task_id)
+            fencing_token = claimed.fencing_token
+            tool_name = claimed.tool_name
+            prompt = claimed.prompt
+        else:
+            raw_tid = str(claimed["task_id"])
+            fencing_token = claimed.get("fencing_token", f"fence_{raw_tid}_gen_1")
+            tool_name = claimed.get("tool_name", "read_file")
+            prompt = claimed.get("prompt", "")
+
         try:
             tid = str(TaskId(raw_tid))
         except Exception:
@@ -142,11 +158,16 @@ class ProductionWorker:
         self.emit_event(EventCatalog.TASK_CREATED, {"task_id": tid, "worker_id": str(self.worker_id)}, aggregate_id=tid)
 
         # Heartbeat lease renewal with fencing token validation
-        renewed = self.lease_manager.renew_lease(
-            raw_tid,
-            str(self.worker_id),
-            fencing_token=fencing_token,
-        )
+        renewed = False
+        if self.task_queue is not None and hasattr(self.task_queue, "renew"):
+            renewed = await self.task_queue.renew(raw_tid, str(self.worker_id), fencing_token)
+        elif self.lease_manager is not None:
+            renewed = self.lease_manager.renew_lease(
+                raw_tid,
+                str(self.worker_id),
+                fencing_token=fencing_token,
+            )
+
         if not renewed:
             self._current_task_id = None
             self._current_fencing_token = None
@@ -155,7 +176,10 @@ class ProductionWorker:
         # Check for cancellation signal
         if self._cancellation_requested:
             self.emit_event(EventCatalog.TASK_CANCELLED, {"task_id": tid}, aggregate_id=tid)
-            self.lease_manager.release_lease(raw_tid, str(self.worker_id), fencing_token=fencing_token)
+            if self.task_queue is not None and hasattr(self.task_queue, "release"):
+                await self.task_queue.release(raw_tid, str(self.worker_id), fencing_token)
+            elif self.lease_manager is not None:
+                self.lease_manager.release_lease(raw_tid, str(self.worker_id), fencing_token=fencing_token)
             self._current_task_id = None
             self._current_fencing_token = None
             self._cancellation_requested = False
@@ -165,8 +189,8 @@ class ProductionWorker:
         exec_req = ExecutionRequest(
             step_run_id=tid,
             workflow_run_id=f"wf_{tid}",
-            tool_name=claimed_task.get("tool_name", "read_file"),
-            parameters={"task_id": tid, "prompt": claimed_task.get("prompt", "")},
+            tool_name=tool_name,
+            parameters={"task_id": tid, "prompt": prompt},
             attempt_id="att_1",
             fencing_token=fencing_token,
         )
@@ -185,7 +209,10 @@ class ProductionWorker:
             )
         except DomainError as err:
             logger.error(f"Late result rejected due to fencing token error: {err}")
-            self.lease_manager.release_lease(raw_tid, str(self.worker_id), fencing_token=fencing_token)
+            if self.task_queue is not None and hasattr(self.task_queue, "release"):
+                await self.task_queue.release(raw_tid, str(self.worker_id), fencing_token)
+            elif self.lease_manager is not None:
+                self.lease_manager.release_lease(raw_tid, str(self.worker_id), fencing_token=fencing_token)
             self._current_task_id = None
             self._current_fencing_token = None
             return {"status": "fencing_violation", "task_id": raw_tid, "error": str(err)}
@@ -195,7 +222,10 @@ class ProductionWorker:
             {"task_id": tid, "status": validated_result.status.value},
             aggregate_id=tid,
         )
-        self.lease_manager.release_lease(raw_tid, str(self.worker_id), fencing_token=fencing_token)
+        if self.task_queue is not None and hasattr(self.task_queue, "release"):
+            await self.task_queue.release(raw_tid, str(self.worker_id), fencing_token)
+        elif self.lease_manager is not None:
+            self.lease_manager.release_lease(raw_tid, str(self.worker_id), fencing_token=fencing_token)
         self._current_task_id = None
         self._current_fencing_token = None
 

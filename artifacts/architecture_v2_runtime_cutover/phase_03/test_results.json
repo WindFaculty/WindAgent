@@ -1,0 +1,44 @@
+{
+  "phase": "03",
+  "gate": "DURABLE_TASK_QUEUE_OPERATIONAL",
+  "total_unit_tests": 7,
+  "passed_unit_tests": 7,
+  "failed_unit_tests": 0,
+  "test_details": [
+    {
+      "name": "test_api_submit_task_creates_sql_queue_and_outbox_event",
+      "status": "PASSED",
+      "outcome": "SqlWorkSubmissionAdapter saves TaskRunORM and TaskSubmitted OutboxRecordORM in one transaction."
+    },
+    {
+      "name": "test_worker_claims_sql_task_atomically",
+      "status": "PASSED",
+      "outcome": "SqlDurableTaskQueue atomically claims pending task, bumps generation, and returns ClaimedTask."
+    },
+    {
+      "name": "test_two_workers_concurrent_claim",
+      "status": "PASSED",
+      "outcome": "Two concurrent worker claim calls result in exactly one successful claim winner."
+    },
+    {
+      "name": "test_task_non_reclaimable_before_lease_expiry",
+      "status": "PASSED",
+      "outcome": "Claimed task cannot be claimed by another worker before lease expiry."
+    },
+    {
+      "name": "test_task_reclaimable_after_lease_expiry",
+      "status": "PASSED",
+      "outcome": "Expired lease task is reclaimed with incremented generation and new fencing token."
+    },
+    {
+      "name": "test_fencing_token_validation_prevents_stale_renewal",
+      "status": "PASSED",
+      "outcome": "Renewal with mismatched fencing token is rejected."
+    },
+    {
+      "name": "test_production_worker_durable_tick",
+      "status": "PASSED",
+      "outcome": "ProductionWorker tick claims and completes task via SqlDurableTaskQueue."
+    }
+  ]
+}

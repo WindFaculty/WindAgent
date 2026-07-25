@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Mapping
+from typing import Any, Mapping, Optional
 
 
 class WorkerHealth(str, Enum):
@@ -26,11 +26,12 @@ class WorkerHeartbeat:
 
 @dataclass(frozen=True)
 class WorkSubmission:
-    task_id: str
-    session_id: str
     prompt: str
-    workflow_name: str
-    idempotency_key: str
+    task_id: Optional[str] = None
+    session_id: Optional[str] = None
+    workflow_name: str = "default"
+    idempotency_key: Optional[str] = None
+    tool_name: str = "read_file"
     parameters: Mapping[str, Any] = field(default_factory=dict)
 
 
