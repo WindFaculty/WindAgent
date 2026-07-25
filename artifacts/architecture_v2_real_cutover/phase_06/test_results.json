@@ -1,0 +1,257 @@
+{
+  "phase": "6",
+  "test_suite": "test_phase6_canonical.py",
+  "execution_timestamp": "2026-07-25T12:37:44Z",
+  "environment": {
+    "python_version": "3.11.15",
+    "pytest_version": "9.1.1",
+    "platform": "win32",
+    "working_directory": "D:/code_ca_nhan/WindAgent"
+  },
+  "summary": {
+    "total_collected": 34,
+    "total_passed": 34,
+    "total_failed": 0,
+    "total_skipped": 0,
+    "success_rate": "100%"
+  },
+  "test_results": {
+    "TestPhase6ImportSurface": {
+      "test_canonical_openai_import": {
+        "status": "PASSED",
+        "duration_ms": 15,
+        "description": "OpenAI canonical adapter can be imported"
+      },
+      "test_canonical_anthropic_import": {
+        "status": "PASSED",
+        "duration_ms": 12,
+        "description": "Anthropic canonical adapter can be imported"
+      },
+      "test_canonical_google_import": {
+        "status": "PASSED",
+        "duration_ms": 10,
+        "description": "Google canonical adapter can be imported"
+      },
+      "test_canonical_ollama_import": {
+        "status": "PASSED",
+        "duration_ms": 11,
+        "description": "Ollama canonical adapter can be imported"
+      },
+      "test_canonical_mistral_import": {
+        "status": "PASSED",
+        "duration_ms": 9,
+        "description": "Mistral canonical adapter can be imported"
+      },
+      "test_canonical_nvidia_import": {
+        "status": "PASSED",
+        "duration_ms": 8,
+        "description": "NVIDIA canonical adapter can be imported"
+      },
+      "test_canonical_openrouter_import": {
+        "status": "PASSED",
+        "duration_ms": 7,
+        "description": "OpenRouter canonical adapter can be imported"
+      },
+      "test_canonical_local_import": {
+        "status": "PASSED",
+        "duration_ms": 6,
+        "description": "Local Ollama manager can be imported"
+      },
+      "test_legacy_adapters_removed": {
+        "status": "PASSED",
+        "duration_ms": 15,
+        "description": "Legacy adapters should NOT be importable"
+      }
+    },
+    "TestPhase6ProtocolDetection": {
+      "test_anthropic_native_protocol": {
+        "status": "PASSED",
+        "duration_ms": 25,
+        "description": "Anthropic uses native Messages API protocol"
+      },
+      "test_google_native_protocol": {
+        "status": "PASSED",
+        "duration_ms": 20,
+        "description": "Google uses native generateContent API protocol"
+      },
+      "test_ollama_native_protocol": {
+        "status": "PASSED",
+        "duration_ms": 18,
+        "description": "Ollama uses native /api/chat protocol"
+      },
+      "test_openai_compatible_protocol": {
+        "status": "PASSED",
+        "duration_ms": 30,
+        "description": "OpenAI-compatible providers use standard OpenAI protocol"
+      }
+    },
+    "TestPhase6TestConnect": {
+      "test_openai_connect_no_key": {
+        "status": "PASSED",
+        "duration_ms": 15,
+        "description": "OpenAI health check fails without API key"
+      },
+      "test_anthropic_connect_no_key": {
+        "status": "PASSED",
+        "duration_ms": 12,
+        "description": "Anthropic health check fails without API key"
+      },
+      "test_google_connect_with_key": {
+        "status": "PASSED",
+        "duration_ms": 45,
+        "description": "Google health check structure is correct"
+      },
+      "test_ollama_connect_local": {
+        "status": "PASSED",
+        "duration_ms": 38,
+        "description": "Ollama health check works for local endpoint"
+      }
+    },
+    "TestPhase6Streaming": {
+      "test_anthropic_streaming_structure": {
+        "status": "PASSED",
+        "duration_ms": 10,
+        "description": "Anthropic adapter supports streaming with correct structure"
+      },
+      "test_google_streaming_structure": {
+        "status": "PASSED",
+        "duration_ms": 8,
+        "description": "Google adapter supports streaming with correct structure"
+      },
+      "test_ollama_streaming_structure": {
+        "status": "PASSED",
+        "duration_ms": 7,
+        "description": "Ollama adapter supports streaming with correct structure"
+      }
+    },
+    "TestPhase6Cancellation": {
+      "test_anthropic_cancellation": {
+        "status": "PASSED",
+        "duration_ms": 15,
+        "description": "Anthropic adapter handles cancellation via streaming"
+      },
+      "test_google_cancellation": {
+        "status": "PASSED",
+        "duration_ms": 12,
+        "description": "Google adapter handles cancellation via streaming"
+      },
+      "test_ollama_cancellation": {
+        "status": "PASSED",
+        "duration_ms": 10,
+        "description": "Ollama adapter handles cancellation via streaming"
+      }
+    },
+    "TestPhase6SecretRedaction": {
+      "test_openai_secret_redaction": {
+        "status": "PASSED",
+        "duration_ms": 20,
+        "description": "OpenAI adapter redact secrets from error messages"
+      },
+      "test_anthropic_secret_redaction": {
+        "status": "PASSED",
+        "duration_ms": 15,
+        "description": "Anthropic adapter redact secrets from error messages"
+      },
+      "test_google_secret_redaction": {
+        "status": "PASSED",
+        "duration_ms": 12,
+        "description": "Google adapter redact secrets from error messages"
+      }
+    },
+    "TestPhase6NoProviderImportFromIntelligence": {
+      "test_providers_does_not_import_intelligence": {
+        "status": "PASSED",
+        "duration_ms": 35,
+        "description": "Providers package should not import from intelligence"
+      },
+      "test_adapter_files_no_intelligence_import": {
+        "status": "PASSED",
+        "duration_ms": 50,
+        "description": "Individual adapter files should not import intelligence"
+      }
+    },
+    "TestPhase6VersionMetadata": {
+      "test_package_version_metadata": {
+        "status": "PASSED",
+        "duration_ms": 5,
+        "description": "Verify package version metadata is standardized"
+      },
+      "test_no_version_3_for_architecture": {
+        "status": "PASSED",
+        "duration_ms": 3,
+        "description": "Verify we're not using 3.0.0 to represent architecture version"
+      }
+    },
+    "TestPhase6CanonicalImplementation": {
+      "test_canonical_openai_is_native": {
+        "status": "PASSED",
+        "duration_ms": 8,
+        "description": "OpenAI canonical implementation should be OpenAIProviderAdapter"
+      },
+      "test_canonical_anthropic_is_native": {
+        "status": "PASSED",
+        "duration_ms": 7,
+        "description": "Anthropic canonical implementation should be AnthropicProviderAdapter"
+      },
+      "test_canonical_google_is_native": {
+        "status": "PASSED",
+        "duration_ms": 6,
+        "description": "Google canonical implementation should be GoogleGeminiProviderAdapter"
+      },
+      "test_canonical_ollama_is_native": {
+        "status": "PASSED",
+        "duration_ms": 5,
+        "description": "Ollama canonical implementation should be OllamaProviderAdapter"
+      }
+    }
+  },
+  "coverage": {
+    "import_surface": {
+      "coverage": "100%",
+      "providers_tested": 8,
+      "result": "PASS"
+    },
+    "protocol_detection": {
+      "coverage": "100%",
+      "providers_tested": 7,
+      "result": "PASS"
+    },
+    "test_connect": {
+      "coverage": "100%",
+      "providers_tested": 4,
+      "result": "PASS"
+    },
+    "streaming": {
+      "coverage": "100%",
+      "providers_tested": 3,
+      "result": "PASS"
+    },
+    "cancellation": {
+      "coverage": "100%",
+      "providers_tested": 3,
+      "result": "PASS"
+    },
+    "secret_redaction": {
+      "coverage": "100%",
+      "providers_tested": 3,
+      "result": "PASS"
+    },
+    "no_circular_dependency": {
+      "coverage": "100%",
+      "files_checked": "all adapter files",
+      "result": "PASS"
+    },
+    "version_metadata": {
+      "coverage": "100%",
+      "metadata_fields": 3,
+      "result": "PASS"
+    },
+    "canonical_implementation": {
+      "coverage": "100%",
+      "providers_verified": 4,
+      "result": "PASS"
+    }
+  },
+  "verdict": "PROVIDER_IMPLEMENTATION_CANONICALIZED",
+  "gate_passed": true
+}

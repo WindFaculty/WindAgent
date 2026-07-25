@@ -1,7 +1,7 @@
 [project]
 name = "windagent_providers"
-version = "0.3.0"
-description = "Model provider integrations (OpenAI, Anthropic, Google, Ollama, etc.)"
+version = "2.0.0"
+description = "Model provider integrations (OpenAI, Anthropic, Google, Ollama, etc.) - Architecture V2 Canonical"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
