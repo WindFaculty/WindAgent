@@ -6,7 +6,7 @@ ModelRouterPolicy using CanonicalModelId & RouteLockId, and SecretRef protection
 
 import pytest
 from windagent_core.domain.types import CanonicalModelId, ProviderId, TaskId, SessionId, RouteLockId
-from windagent_core.providers.models import (
+from windagent_core.contracts.providers import (
     ProviderRequest, ProviderResponse, ProviderUsage, ProviderToolCall, ProviderStreamChunk
 )
 from windagent_core.errors.exceptions import ProviderError, WindAgentError

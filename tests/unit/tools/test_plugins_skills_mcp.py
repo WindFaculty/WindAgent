@@ -17,7 +17,7 @@ import tempfile
 import shutil
 import pytest
 from windagent_core.domain.types import SessionId, ToolCallId
-from windagent_core.domain.models import ToolInvocation
+from windagent_core.contracts.tools import ToolInvocation
 from windagent_core.errors.exceptions import (
     ConflictError, PermissionDeniedError, ValidationError, NotFoundError
 )

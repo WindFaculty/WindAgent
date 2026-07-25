@@ -16,7 +16,7 @@ from datetime import datetime
 from typing import Any, Dict, Optional
 
 from windagent_providers.base.contracts import ProviderHealth, QuotaState
-from windagent_providers.base.ports import CachePort
+from windagent_core.contracts.providers.ports import CachePort
 
 
 HEALTH_TTL_SECONDS = 15

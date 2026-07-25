@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
 from windagent_providers.base.contracts import QuotaState
-from windagent_providers.base.ports import (
+from windagent_core.contracts.providers.ports import (
     EndpointRegistryPort,
     QuotaStatePort,
     RouteAttemptPort,

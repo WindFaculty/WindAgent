@@ -12,7 +12,7 @@ from __future__ import annotations
 from typing import List, Optional
 
 from windagent_providers.base.contracts import DiscoveredModel
-from windagent_providers.base.ports import CachePort
+from windagent_core.contracts.providers.ports import CachePort
 
 
 DISCOVERY_TTL_SECONDS = 300

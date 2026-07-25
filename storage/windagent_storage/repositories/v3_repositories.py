@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 from windagent_providers.base.contracts import (
     ModelDescriptor, ProviderCapabilities, QuotaState
 )
-from windagent_providers.base.ports import (
+from windagent_core.contracts.providers.ports import (
     CanonicalModelRegistryPort, EndpointRegistryPort, EndpointStatePort,
     QuotaStatePort, RouteAttemptPort, RouteLockPort, UsageLedgerPort
 )

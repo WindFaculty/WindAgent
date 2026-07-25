@@ -14,7 +14,7 @@ from windagent_providers.cache.contracts import (
     ResponseCacheHit,
     SingleFlightPort,
 )
-from windagent_providers.base.ports import CachePort
+from windagent_core.contracts.providers.ports import CachePort
 from windagent_providers.cache.backends import InMemoryCacheBackend
 from windagent_providers.cache.eligibility import response_cache_eligible
 from windagent_providers.cache.keys import build_response_cache_key

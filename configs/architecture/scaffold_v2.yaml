@@ -37,6 +37,15 @@ canonical_models:
   - ProviderRequest
   - ProviderResponse
   - ProviderUsage
+  - ProviderToolCall
+  - ProviderStreamChunk
+  - ProviderCapabilities
+  - ModelDescriptor
+  - ToolInvocation
+  - ToolResult
+  - ToolDefinition
+  - ToolExecutionContext
+  - ToolRiskLevel
 
 required_top_level_packages:
   - plugins

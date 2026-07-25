@@ -9,7 +9,7 @@ import time
 from pathlib import Path
 from typing import Any, Dict, List
 
-from windagent_core.domain.models import ToolInvocation, ToolResult
+from windagent_core.contracts.tools import ToolInvocation, ToolResult
 from windagent_tools.base import BaseTool, ToolDefinition, ToolRiskLevel, ToolExecutionContext
 from windagent_tools.filesystem.sandbox import PathSandbox
 

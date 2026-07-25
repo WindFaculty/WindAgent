@@ -8,7 +8,7 @@ import logging
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-from windagent_core.domain.models import ToolInvocation, ToolResult
+from windagent_core.contracts.tools import ToolInvocation, ToolResult
 from windagent_core.errors.exceptions import NotFoundError, ValidationError, DomainError
 from windagent_tools.base import BaseTool, ToolDefinition, ToolExecutionContext
 

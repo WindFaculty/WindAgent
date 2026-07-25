@@ -18,9 +18,9 @@ from windagent_core.domain.types import (
     SessionId, StepId, ToolCallId
 )
 from windagent_core.domain.models import (
-    Session, SessionStatus, TaskRequest, WorkflowStep, ToolInvocation,
-    WorkflowStatus
+    Session, SessionStatus, TaskRequest, WorkflowStep, WorkflowStatus,
 )
+from windagent_core.contracts.tools import ToolInvocation
 from windagent_core.errors.exceptions import (
     NotFoundError, ProviderError, ToolError, IdentityValidationError
 )

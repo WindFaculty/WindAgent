@@ -14,7 +14,7 @@ from typing import Any, Dict, List, Optional
 
 from windagent_providers.base.contracts import ProviderCapabilities
 from windagent_providers.base.errors import SameModelEndpointExhausted
-from windagent_providers.base.ports import EndpointStatePort, QuotaStatePort
+from windagent_core.contracts.providers.ports import EndpointStatePort, QuotaStatePort
 
 
 class BindingState(str, Enum):

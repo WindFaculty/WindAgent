@@ -11,7 +11,7 @@ from pathlib import Path
 import pytest
 
 from windagent_core.domain.types import SessionId, ToolCallId
-from windagent_core.domain.models import ToolInvocation
+from windagent_core.contracts.tools import ToolInvocation
 from windagent_core.errors.exceptions import PermissionDeniedError
 from windagent_tools import (
     ToolRegistry, PermissionEngine, PathSandbox, SafeShellRunner,

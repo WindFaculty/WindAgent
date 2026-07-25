@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, Optional
 
-from windagent_providers.base.ports import CachePort
+from windagent_core.contracts.providers.ports import CachePort
 
 
 ROUTE_LOCK_TTL_SECONDS = 60

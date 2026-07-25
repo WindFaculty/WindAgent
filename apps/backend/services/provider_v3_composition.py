@@ -21,7 +21,7 @@ from db.models import (
 )
 from services.quota_service import QuotaService
 from windagent_providers.base.contracts import QuotaState
-from windagent_providers.base.ports import (
+from windagent_core.contracts.providers.ports import (
     EndpointRegistryPort,
     QuotaStatePort,
     RouteAttemptPort,

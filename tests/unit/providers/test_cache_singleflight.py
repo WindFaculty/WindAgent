@@ -25,7 +25,7 @@ from windagent_providers.base.contracts import (
     ProviderRequest,
     ProviderResponse,
 )
-from windagent_providers.base.ports import CachePort
+from windagent_core.contracts.providers.ports import CachePort
 from windagent_providers.cache import (
     CacheNamespace,
     InMemoryCacheBackend,

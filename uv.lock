@@ -14,7 +14,9 @@ members = [
     "windagent-memory",
     "windagent-observability",
     "windagent-orchestration",
+    "windagent-plugins",
     "windagent-providers",
+    "windagent-skills",
     "windagent-storage",
     "windagent-tools",
     "windagent-verification",
@@ -1452,6 +1454,17 @@ requires-dist = [
 ]
 
 [[package]]
+name = "windagent-plugins"
+version = "0.3.0"
+source = { editable = "plugins" }
+dependencies = [
+    { name = "windagent-core" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "windagent-core", editable = "core" }]
+
+[[package]]
 name = "windagent-providers"
 version = "0.3.0"
 source = { editable = "providers" }
@@ -1465,6 +1478,17 @@ requires-dist = [
     { name = "httpx", specifier = ">=0.27.0" },
     { name = "windagent-core", editable = "core" },
 ]
+
+[[package]]
+name = "windagent-skills"
+version = "0.3.0"
+source = { editable = "skills" }
+dependencies = [
+    { name = "windagent-core" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "windagent-core", editable = "core" }]
 
 [[package]]
 name = "windagent-storage"

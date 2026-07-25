@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Dict, Optional
 
-from windagent_providers.base.ports import EndpointStatePort
+from windagent_core.contracts.providers.ports import EndpointStatePort
 
 
 @dataclass

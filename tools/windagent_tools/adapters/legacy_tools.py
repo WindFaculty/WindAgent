@@ -6,7 +6,7 @@ Wraps legacy tools into V2 BaseTool implementations with PathSandbox & Permissio
 from __future__ import annotations
 import time
 
-from windagent_core.domain.models import ToolInvocation, ToolResult
+from windagent_core.contracts.tools import ToolInvocation, ToolResult
 from windagent_tools.base import BaseTool, ToolDefinition, ToolExecutionContext, ToolRiskLevel
 from windagent_tools.filesystem.sandbox import PathSandbox
 from windagent_tools.shell.runner import SafeShellRunner

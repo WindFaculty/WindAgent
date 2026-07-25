@@ -19,7 +19,12 @@ ROOT_DIR = Path(__file__).resolve().parent.parent
 CANONICAL_ENVELOPE_FILE = ROOT_DIR / "core" / "windagent_core" / "events" / "envelope.py"
 CANONICAL_LIFECYCLE_FILE = ROOT_DIR / "core" / "windagent_core" / "domain" / "lifecycle.py"
 CANONICAL_ERROR_FILE = ROOT_DIR / "core" / "windagent_core" / "errors" / "exceptions.py"
-CANONICAL_PROVIDER_FILE = ROOT_DIR / "core" / "windagent_core" / "providers" / "models.py"
+CANONICAL_PROVIDER_FILE = ROOT_DIR / "core" / "windagent_core" / "contracts" / "providers" / "requests.py"
+CANONICAL_PROVIDER_FILES = {
+    ROOT_DIR / "core" / "windagent_core" / "contracts" / "providers" / "requests.py",
+    ROOT_DIR / "core" / "windagent_core" / "contracts" / "providers" / "responses.py",
+    ROOT_DIR / "core" / "windagent_core" / "contracts" / "providers" / "usage.py",
+}
 
 EXCLUDED_DIR_NAMES = {".venv", ".git", ".pytest_cache", "artifacts", "docs", "node_modules", "logs", "__pycache__", "tests", "scripts"}
 EXCLUDED_PATHS = {
@@ -62,7 +67,7 @@ class DuplicateVisitor(ast.NodeVisitor):
             self.duplicate_root_errors.append((node.lineno, node.name))
 
         # 4. Provider models duplicate
-        if node.name in ("ProviderRequest", "ProviderResponse", "ProviderUsage") and self.file_path != CANONICAL_PROVIDER_FILE:
+        if node.name in ("ProviderRequest", "ProviderResponse", "ProviderUsage") and self.file_path not in CANONICAL_PROVIDER_FILES:
             self.duplicate_provider_models.append((node.lineno, node.name))
 
         self.generic_visit(node)
