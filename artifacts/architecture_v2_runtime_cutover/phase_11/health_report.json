@@ -1,0 +1,11 @@
+{
+  "readiness_probes": {
+    "database": "SELECT 1 SQL query",
+    "schema_migration": "assert latest_revision == 002_legacy_data",
+    "outbox_publisher": "assert publisher.is_running == True",
+    "worker_heartbeat": "assert heartbeat age <= 30s",
+    "registries": "assert built-in registry loaded",
+    "configuration": "assert environment valid & debug disabled in production"
+  },
+  "readiness_verdict": "TRUSTWORTHY"
+}

@@ -288,7 +288,7 @@ class TestFullReadinessCheck:
         # Configure execute to return a result with fetchone returning a row
         mock_result = Mock()
         mock_row = Mock()
-        mock_row.__getitem__ = Mock(side_effect=lambda x: {"revision": "001", "count": 1, 0: "001", 1: 1}.get(x, 0))
+        mock_row.__getitem__ = Mock(side_effect=lambda x: {"revision": "002_legacy_data", "count": 2, 0: "002_legacy_data", 1: 2}.get(x, 0))
         mock_result.fetchone = Mock(return_value=mock_row)
         mock_session.execute = AsyncMock(return_value=mock_result)
         mock_cm = AsyncMock()

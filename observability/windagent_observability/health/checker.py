@@ -47,6 +47,7 @@ class HealthChecker:
         workflow_registry: Optional[Any] = None,
         event_dispatcher: Optional[Any] = None,
         outbox_repository: Optional[Any] = None,
+        outbox_publisher: Optional[Any] = None,
         required_paths: Optional[List[Path]] = None,
         profile: HealthProfile = HealthProfile.DEVELOPMENT,
         bundle: Optional[HealthDependencyBundle] = None,
@@ -64,6 +65,7 @@ class HealthChecker:
             self._workflow_registry = workflow_registry or bundle.workflows
             self._event_dispatcher = event_dispatcher or bundle.events
             self._outbox_repository = outbox_repository or bundle.outbox
+            self._outbox_publisher = outbox_publisher or (bundle.outbox if hasattr(bundle.outbox, "is_running") else None)
             self._required_paths = required_paths or (bundle.filesystem if isinstance(bundle.filesystem, list) else [])
         else:
             self._db_session_factory = db_session_factory
@@ -75,6 +77,7 @@ class HealthChecker:
             self._workflow_registry = workflow_registry
             self._event_dispatcher = event_dispatcher
             self._outbox_repository = outbox_repository
+            self._outbox_publisher = outbox_publisher
             self._required_paths = required_paths or []
 
         self._profile = profile
@@ -258,8 +261,10 @@ class HealthChecker:
                 required=True
             )
     
+    EXPECTED_HEAD_REVISIONS = {"002_legacy_data", "002"}
+
     async def _check_schema_migration(self) -> HealthCheckResult:
-        """Check current schema revision."""
+        """Check current schema revision against expected head."""
         if self._db_session_factory is None:
             return HealthCheckResult(
                 name="schema_migration",
@@ -286,13 +291,26 @@ class HealthChecker:
                         required=True
                     )
                 
-                latest_revision = row[0] if row[0] else "unknown"
+                latest_revision = str(row[0]) if row[0] else "unknown"
                 total_migrations = row[1] if row[1] else 0
                 
+                if latest_revision not in self.EXPECTED_HEAD_REVISIONS:
+                    return HealthCheckResult(
+                        name="schema_migration",
+                        status=HealthStatus.DOWN,
+                        message=f"Schema revision '{latest_revision}' does not match expected head '002_legacy_data'",
+                        details={
+                            "latest_revision": latest_revision,
+                            "expected_head": "002_legacy_data",
+                            "total_migrations": total_migrations,
+                        },
+                        required=True
+                    )
+
                 return HealthCheckResult(
                     name="schema_migration",
                     status=HealthStatus.UP,
-                    message=f"Schema at revision {latest_revision}",
+                    message=f"Schema head verified at revision {latest_revision}",
                     details={
                         "latest_revision": latest_revision,
                         "total_migrations": total_migrations
@@ -300,7 +318,6 @@ class HealthChecker:
                     required=True
                 )
         except Exception as e:
-            # Migration history table might not exist yet
             if "no such table" in str(e).lower():
                 return HealthCheckResult(
                     name="schema_migration",
@@ -318,33 +335,52 @@ class HealthChecker:
             )
     
     async def _check_outbox_publisher(self) -> HealthCheckResult:
-        """Check outbox publisher heartbeat."""
-        if self._outbox_repository is None:
+        """Check outbox publisher heartbeat and running task state."""
+        if self._outbox_repository is None and self._outbox_publisher is None:
             is_prod = self._profile == HealthProfile.PRODUCTION
             return HealthCheckResult(
                 name="outbox",
                 status=HealthStatus.DOWN if is_prod else HealthStatus.NOT_REQUIRED,
-                message="Outbox repository missing or not configured",
+                message="Outbox repository/publisher missing or not configured",
                 required=is_prod
             )
         
-        try:
-            # Check for pending records
-            async with self._db_session_factory() as session:
-                result = await session.execute(text("""
-                    SELECT COUNT(*) as pending_count FROM outbox_records 
-                    WHERE status = 'pending' OR status = 'failed'
-                """))
-                row = result.fetchone()
-                pending_count = row[0] if row and row[0] else 0
-                
+        # Check publisher running state if publisher object exists
+        if self._outbox_publisher is not None:
+            is_running = getattr(self._outbox_publisher, "is_running", True)
+            if not is_running:
                 return HealthCheckResult(
                     name="outbox",
-                    status=HealthStatus.UP,
-                    message="Outbox publisher heartbeat OK",
-                    details={"pending_records": pending_count},
+                    status=HealthStatus.DOWN,
+                    message="Outbox publisher object exists but task is not running",
+                    details={"is_running": False},
                     required=True
                 )
+
+        try:
+            # Check for pending records
+            if self._db_session_factory is not None:
+                async with self._db_session_factory() as session:
+                    result = await session.execute(text("""
+                        SELECT COUNT(*) as pending_count FROM outbox_records 
+                        WHERE status = 'pending' OR status = 'failed'
+                    """))
+                    row = result.fetchone()
+                    pending_count = row[0] if row and row[0] else 0
+                    
+                    return HealthCheckResult(
+                        name="outbox",
+                        status=HealthStatus.UP,
+                        message="Outbox publisher heartbeat OK",
+                        details={"pending_records": pending_count},
+                        required=True
+                    )
+            return HealthCheckResult(
+                name="outbox",
+                status=HealthStatus.UP,
+                message="Outbox publisher verified",
+                required=True
+            )
         except Exception as e:
             if "no such table" in str(e).lower():
                 return HealthCheckResult(
