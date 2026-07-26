@@ -68,6 +68,13 @@ from windagent_core.contracts.tools import (
     ToolRiskLevel,
 )
 
+from windagent_core.contracts.finalization import (
+    FinalizeTaskExecutionRequest,
+    FinalizeTaskExecutionResult,
+    StaleResultRejectedError,
+    TaskFinalizationPort,
+)
+
 __all__ = [
     "Clock",
     "IdGenerator",
@@ -124,4 +131,8 @@ __all__ = [
     "ToolRegistryPort",
     "ToolResult",
     "ToolRiskLevel",
+    "FinalizeTaskExecutionRequest",
+    "FinalizeTaskExecutionResult",
+    "StaleResultRejectedError",
+    "TaskFinalizationPort",
 ]
