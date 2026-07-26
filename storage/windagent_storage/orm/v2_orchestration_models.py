@@ -233,3 +233,36 @@ class SkillInstallationORM(BaseORM):
     manifest_json = Column(Text, nullable=False, default="{}")
     installed_at = Column(DateTime, nullable=False, default=default_utc_now)
 
+
+class TaskExecutionResultORM(BaseORM):
+    __tablename__ = "task_execution_results_v2"
+
+    id = Column(String(64), primary_key=True)
+    task_id = Column(String(64), nullable=False, index=True)
+    worker_id = Column(String(64), nullable=False)
+    execution_status = Column(String(32), nullable=False, default="completed")
+    result_data_json = Column(Text, nullable=False, default="{}")
+    artifacts_data_json = Column(Text, nullable=False, default="[]")
+    created_at = Column(DateTime, nullable=False, default=default_utc_now)
+
+    @property
+    def result_data(self) -> dict:
+        import json
+        return json.loads(self.result_data_json) if self.result_data_json else {}
+
+    @result_data.setter
+    def result_data(self, val: dict):
+        import json
+        self.result_data_json = json.dumps(val or {})
+
+    @property
+    def artifacts_data(self) -> list:
+        import json
+        return json.loads(self.artifacts_data_json) if self.artifacts_data_json else []
+
+    @artifacts_data.setter
+    def artifacts_data(self, val: list):
+        import json
+        self.artifacts_data_json = json.dumps(val or [])
+
+

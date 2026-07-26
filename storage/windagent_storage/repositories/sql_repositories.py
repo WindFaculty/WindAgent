@@ -143,7 +143,11 @@ class SqlOutboxWriter:
         self._session = session
 
     async def write(self, event: EventEnvelope) -> None:
-        dedup_key = f"{event.aggregate_id or 'noagg'}:{event.sequence}"
+        dedup_key = (
+            (event.metadata or {}).get("idempotency_key")
+            or (event.metadata or {}).get("deduplication_key")
+            or f"{event.aggregate_id or 'noagg'}:{event.sequence}"
+        )
         outbox_orm = OutboxRecordORM(
             id=str(EventId.generate()),
             event_id=str(event.event_id),

@@ -8,7 +8,10 @@ import json
 from typing import Any, List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from windagent_core.domain.types import EventId
+from windagent_core.contracts.finalization import (
+    FinalizeTaskExecutionRequest,
+    FinalizeTaskExecutionResult,
+)
 from windagent_core.events.envelope import EventEnvelope
 from windagent_storage.orm.models import OutboxRecordORM
 from windagent_storage.repositories.sql_repositories import (
@@ -83,6 +86,15 @@ class SqlUnitOfWork:
 
         # 2. Append to Transactional Outbox
         await self.outbox.write(event)
+
+    async def finalize_task_execution(
+        self, request: FinalizeTaskExecutionRequest
+    ) -> FinalizeTaskExecutionResult:
+        """Executes atomic task execution finalization (Phase 2)."""
+        from windagent_storage.services.task_finalizer import TaskFinalizer
+
+        finalizer = TaskFinalizer(self)
+        return await finalizer.finalize_task_execution(request)
 
     async def commit(self) -> None:
         if self.session:
