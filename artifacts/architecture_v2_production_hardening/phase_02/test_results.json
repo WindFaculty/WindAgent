@@ -1,26 +1,40 @@
 {
   "phase": "phase_02",
   "name": "test_results",
-  "timestamp": "2026-07-27T01:10:00Z",
+  "timestamp": "2026-07-27T01:55:00Z",
   "summary": {
-    "total": 83,
-    "passed": 83,
+    "total": 88,
+    "passed": 88,
     "failed": 0
   },
   "suites": [
     {
       "suite": "tests/unit/worker/test_phase2_transactional_finalization.py",
-      "passed": 4,
-      "failed": 0
+      "description": "Phase 2 fault injection and finalization tests (9 tests: 4 original + 5 extended)",
+      "passed": 9,
+      "failed": 0,
+      "tests": [
+        "test_atomic_finalization_happy_path",
+        "test_cas_stale_result_rejection",
+        "test_idempotent_retry_deduplication",
+        "test_fault_injection_outbox_failure_rolls_back_entire_transaction",
+        "test_fault_injection_result_persistence_failure",
+        "test_fault_injection_event_store_failure",
+        "test_fault_injection_lease_release_failure",
+        "test_fault_injection_commit_failure",
+        "test_crash_after_commit_idempotent_recovery"
+      ]
     },
     {
-      "suite": "tests/unit/worker/",
-      "passed": 19,
+      "suite": "tests/unit/worker/ (other)",
+      "description": "Worker lifecycle, heartbeat, durable queue, production worker tests",
+      "passed": 14,
       "failed": 0
     },
     {
       "suite": "tests/unit/storage/",
-      "passed": 64,
+      "description": "Storage repositories, outbox, migrations, schema tests",
+      "passed": 65,
       "failed": 0
     }
   ],
