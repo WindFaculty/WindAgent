@@ -122,13 +122,41 @@ class RouteLockV3ORM(BaseORM):
     scope_id = Column(String(128), nullable=False)
     canonical_model_id = Column(String(128), ForeignKey("canonical_models_v3.id"), nullable=False)
     policy_version = Column(Integer, nullable=True, default=1)
+    version = Column(Integer, nullable=False, default=1)  # optimistic concurrency
     routing_snapshot_json = Column(Text, nullable=False, default="{}")
     status = Column(String(32), nullable=False, default="active")  # active | released
+    reselection_reason = Column(String(128), nullable=True)
     created_at = Column(DateTime, nullable=False, default=default_utc_now)
+    updated_at = Column(DateTime, nullable=False, default=default_utc_now)
     released_at = Column(DateTime, nullable=True)
 
     __table_args__ = (
         Index("ix_route_locks_v3_scope", "scope_type", "scope_id", "status"),
+    )
+
+
+class ProviderRoutingAuditV3ORM(BaseORM):
+    """Durable audit trail for provider routing decisions (merge/split/reselect/failover)."""
+
+    __tablename__ = "provider_routing_audit_v3"
+
+    id = Column(String(128), primary_key=True)
+    action = Column(String(32), nullable=False)  # merge | split | reselect | failover
+    scope_type = Column(String(32), nullable=True)
+    scope_id = Column(String(128), nullable=True)
+    lock_id = Column(String(128), ForeignKey("route_locks_v3.id"), nullable=True)
+    canonical_model_id = Column(String(128), nullable=True)
+    previous_canonical_model_id = Column(String(128), nullable=True)
+    new_canonical_model_id = Column(String(128), nullable=True)
+    endpoint_id = Column(String(64), nullable=True)
+    reason = Column(String(255), nullable=True)
+    actor = Column(String(128), nullable=False, default="system")
+    metadata_json = Column(Text, nullable=False, default="{}")
+    created_at = Column(DateTime, nullable=False, default=default_utc_now)
+
+    __table_args__ = (
+        Index("ix_provider_routing_audit_scope", "scope_type", "scope_id"),
+        Index("ix_provider_routing_audit_lock", "lock_id"),
     )
 
 

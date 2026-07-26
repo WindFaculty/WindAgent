@@ -1,4 +1,4 @@
-version: "2.0"
+version: "3.0"
 workspace:
   root: "."
   members:
@@ -102,7 +102,7 @@ packages:
         path: core/windagent_core/events
         allowed_dependencies: ["core/windagent_core/domain", "core/windagent_core/contracts", "core/windagent_core/errors"]
         forbidden_dependencies: []
-  
+
   orchestration:
     layer: application
     namespace: windagent_orchestration
@@ -240,7 +240,7 @@ packages:
 
   backend:
     layer: legacy
-    namespace: ""
+    namespace: backend
     path: apps/backend
     description: "Legacy backend application - QUARANTINE ZONE"
     allowed_dependencies: ["windagent_core", "windagent_orchestration", "windagent_execution", "windagent_intelligence", "windagent_providers", "windagent_tools", "windagent_workflows", "windagent_verification", "windagent_context", "windagent_memory", "windagent_storage", "windagent_observability", "windagent_plugins", "windagent_skills"]
@@ -269,3 +269,17 @@ packages:
     allowed_dependencies: ["windagent_core", "windagent_providers", "windagent_tools"]
     forbidden_dependencies: ["apps", "windagent_orchestration"]
     legacy_source: ""
+
+composition_roots:
+  - "apps/api/.../composition.py"
+  - "apps/worker/.../composition.py"
+  - "apps/cli/.../composition.py"
+  - "tests/"
+
+concrete_adapters:
+  - "DatabaseManager"
+  - "SqlRepository"
+  - "Provider"
+  - "ExecutionRuntime"
+  - "ProviderAdapter"
+  - "ExecutionAdapter"
