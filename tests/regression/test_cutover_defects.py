@@ -12,6 +12,8 @@ from __future__ import annotations
 import sys
 import inspect
 from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import AsyncMock
 
 root = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(root))
@@ -24,6 +26,7 @@ for pkg in ["core", "storage", "orchestration", "execution", "workflows"]:
 import pytest
 from apps.backend.routers import conversations, workflow
 from windagent_orchestration.dispatcher.service import StepDispatcher
+from windagent_worker.runner import ProductionWorker
 
 
 def test_def_001_execute_endpoint_uses_legacy_references():
@@ -63,12 +66,29 @@ def test_def_005_retry_endpoint_is_noop():
     assert '"attempt_index": 2' in source
 
 
-def test_def_006_startup_recovery_not_wired():
-    """DEF-006: Startup recovery is wired in FastAPI lifespan in main.py."""
-    main_path = root / "apps" / "backend" / "main.py"
-    content = main_path.read_text()
-    
-    assert "orchestration_container.recovery_manager.recover_all_in_flight()" in content
+@pytest.mark.asyncio
+async def test_def_006_startup_recovery_not_wired():
+    """DEF-006: The Worker performs durable recovery before becoming ready."""
+    recover = AsyncMock()
+    container = SimpleNamespace(
+        task_queue=None,
+        lease_manager=None,
+        heartbeat_repo=None,
+        execution_registry=None,
+        uow_factory=None,
+        outbox_publisher=None,
+        orchestration_container=SimpleNamespace(
+            recovery_manager=SimpleNamespace(recover_all_in_flight=recover)
+        ),
+    )
+    worker = ProductionWorker(name="recovery-regression", worker_container=container)
+
+    await worker.start()
+    try:
+        recover.assert_awaited_once_with()
+        assert worker.is_ready is True
+    finally:
+        await worker.stop()
 
 
 def test_def_007_benchmark_contains_hardcoded_metrics():

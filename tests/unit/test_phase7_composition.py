@@ -69,7 +69,7 @@ class TestPhase7ApiComposition:
         assert "MemoryQueryService" in content
         assert "VerificationQueryService" in content
         assert "EventDispatcher" in content
-        assert "OutboxEventPublisher" in content
+        assert "OutboxEventPublisher" not in content
         assert "WorkerStatusQuery" in content
 
     def test_api_container_has_no_execution_registry(self):
@@ -248,6 +248,7 @@ class TestPhase7CliComposition:
 
     def test_cli_main_uses_per_command_composition(self):
         """CLI main should use per-command composition"""
+        import ast
         import os
         cli_main_path = os.path.join(
             os.path.dirname(__file__).replace("tests\\unit", ""),
@@ -256,11 +257,17 @@ class TestPhase7CliComposition:
         
         with open(cli_main_path, 'r') as f:
             content = f.read()
-        
-        # Should NOT compose all services at top level
-        assert "from windagent_orchestration.task_manager.service import TaskManager" not in content
-        assert "from windagent_providers.registry.canonical_registry import CanonicalModelRegistryService" not in content
-        assert "from windagent_tools.registry import ToolRegistry" not in content
+
+        # Heavy services may be imported lazily by their command, but never at module scope.
+        tree = ast.parse(content)
+        top_level_imports = {
+            node.module
+            for node in tree.body
+            if isinstance(node, ast.ImportFrom)
+        }
+        assert "windagent_orchestration.task_manager.service" not in top_level_imports
+        assert "windagent_providers.registry.canonical_registry" not in top_level_imports
+        assert "windagent_tools.registry" not in top_level_imports
         
         # Should import from composition module
         assert "from windagent_cli.composition import" in content

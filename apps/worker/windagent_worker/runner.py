@@ -89,6 +89,8 @@ class ProductionWorker:
         if self.worker_container and self.worker_container.outbox_publisher:
             if not self.worker_container.outbox_publisher.is_running:
                 raise RuntimeError("Outbox publisher must be running before worker becomes ready.")
+        if self.worker_container and self.worker_container.orchestration_container:
+            await self.worker_container.orchestration_container.recovery_manager.recover_all_in_flight()
         self._running = True
         self._ready = True
         self._cancellation_requested = False

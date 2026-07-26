@@ -58,20 +58,19 @@ async def test_backend():
 
 @pytest.mark.asyncio
 async def test_execute_plan_endpoint_http(test_backend):
-    """Call execute_plan HTTP endpoint and verify node completion."""
+    """The retired V1 execute endpoint directs callers to API V2."""
     async with AsyncClient(transport=ASGITransport(app=test_backend), base_url="http://testserver") as client:
         resp = await client.post("/api/v1/conversations/conv_123/plans/plan_123/execute")
-        assert resp.status_code == 200
+        assert resp.status_code == 410
         data = resp.json()
-        assert data["plan_id"] == "plan_123"
-        assert data["result"] == "completed"
-        assert "node_A" in data["completed"]
-        assert "node_B" in data["completed"]
+        assert data["status"] == 410
+        assert data["type"].endswith("/api-v1-removed")
+        assert data["available_endpoints"] == "/api/v2/*"
 
 
 @pytest.mark.asyncio
 async def test_execute_plan_cycle_rejection(test_backend):
-    """Verify HTTP endpoint rejects DAG cycles with 400 Bad Request."""
+    """Legacy state cannot bypass the V1 tombstone."""
     db = test_backend.state.db
     async with db.session() as s:
         # Add back edge node_B -> node_A
@@ -81,5 +80,5 @@ async def test_execute_plan_cycle_rejection(test_backend):
 
     async with AsyncClient(transport=ASGITransport(app=test_backend), base_url="http://testserver") as client:
         resp = await client.post("/api/v1/conversations/conv_123/plans/plan_123/execute")
-        assert resp.status_code == 400
-        assert "Cycle detected" in resp.json()["detail"]
+        assert resp.status_code == 410
+        assert resp.json()["available_endpoints"] == "/api/v2/*"

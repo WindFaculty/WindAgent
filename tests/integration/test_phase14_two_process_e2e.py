@@ -60,6 +60,33 @@ async def test_api_worker_durable_runtime_two_process(tmp_path):
         "WINDAGENT_ENV": "development",
         "WINDAGENT_FAKE_RUNTIME": "1",  # mock-safe task execution in Worker
     }
+    package_roots = [
+        ROOT / path
+        for path in (
+            "apps/api",
+            "apps/cli",
+            "apps/worker",
+            "core",
+            "orchestration",
+            "intelligence",
+            "providers",
+            "tools",
+            "workflows",
+            "verification",
+            "context",
+            "memory",
+            "execution",
+            "storage",
+            "observability",
+            "evals",
+            "plugins",
+            "skills",
+        )
+    ]
+    inherited_pythonpath = env.get("PYTHONPATH")
+    if inherited_pythonpath:
+        package_roots.append(Path(inherited_pythonpath))
+    env["PYTHONPATH"] = os.pathsep.join(str(path) for path in package_roots)
 
     python = sys.executable
     port = _free_port()

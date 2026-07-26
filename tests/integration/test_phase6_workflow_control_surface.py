@@ -72,56 +72,49 @@ async def test_backend():
 
 @pytest.mark.asyncio
 async def test_get_workflow_returns_durable_steps(test_backend):
-    """GET /sessions/{session_id}/workflow returns durable workflow steps."""
+    """The retired V1 workflow query returns the canonical tombstone."""
     sess_id = "00000000-0000-0000-0000-000000000001"
     async with AsyncClient(transport=ASGITransport(app=test_backend), base_url="http://testserver") as client:
         resp = await client.get(f"/api/v1/sessions/{sess_id}/workflow")
-        assert resp.status_code == 200
-        data = resp.json()
-        assert data["session_id"] == sess_id
-        assert len(data["steps"]) == 2
-        assert data["steps"][0]["name"] == "Step 1"
-        assert data["steps"][1]["name"] == "Step 2"
+        assert resp.status_code == 410
+        assert resp.json()["available_endpoints"] == "/api/v2/*"
 
 
 @pytest.mark.asyncio
 async def test_get_runner_state_queries_durable_facts(test_backend):
-    """GET /sessions/{session_id}/runner queries durable task state."""
+    """The retired V1 runner query returns the canonical tombstone."""
     sess_id = "00000000-0000-0000-0000-000000000001"
     async with AsyncClient(transport=ASGITransport(app=test_backend), base_url="http://testserver") as client:
         resp = await client.get(f"/api/v1/sessions/{sess_id}/runner")
-        assert resp.status_code == 200
-        data = resp.json()
-        assert data["session_id"] == sess_id
-        assert "runner" in data
+        assert resp.status_code == 410
+        assert resp.json()["status"] == 410
 
 
 @pytest.mark.asyncio
 async def test_pause_resume_stop_endpoints(test_backend):
-    """POST /pause, /resume, /stop execute durable user control transitions."""
+    """All retired V1 mutation controls remain unavailable."""
     sess_id = "00000000-0000-0000-0000-000000000001"
     async with AsyncClient(transport=ASGITransport(app=test_backend), base_url="http://testserver") as client:
         r1 = await client.post(f"/api/v1/sessions/{sess_id}/pause")
-        assert r1.status_code == 202
-        assert r1.json()["status"] == "paused_requested"
+        assert r1.status_code == 410
 
         r2 = await client.post(f"/api/v1/sessions/{sess_id}/resume")
-        assert r2.status_code == 202
-        assert r2.json()["status"] == "resumed_requested"
+        assert r2.status_code == 410
 
         r3 = await client.post(f"/api/v1/sessions/{sess_id}/stop")
-        assert r3.status_code == 202
-        assert r3.json()["status"] == "stopped_requested"
+        assert r3.status_code == 410
+        assert {
+            r1.json()["available_endpoints"],
+            r2.json()["available_endpoints"],
+            r3.json()["available_endpoints"],
+        } == {"/api/v2/*"}
 
 
 @pytest.mark.asyncio
 async def test_retry_step_endpoint(test_backend):
-    """POST /workflow/{step_id}/retry resets step state and returns attempt index."""
+    """The retired V1 retry endpoint returns the canonical tombstone."""
     step_id = "00000000-0000-0000-0000-000000000011"
     async with AsyncClient(transport=ASGITransport(app=test_backend), base_url="http://testserver") as client:
         resp = await client.post(f"/api/v1/workflow/{step_id}/retry")
-        assert resp.status_code == 202
-        data = resp.json()
-        assert data["status"] == "retry_requested"
-        assert data["step_id"] == step_id
-        assert data["attempt_index"] == 2
+        assert resp.status_code == 410
+        assert resp.json()["available_endpoints"] == "/api/v2/*"
