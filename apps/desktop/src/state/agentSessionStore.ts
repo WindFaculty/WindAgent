@@ -5,7 +5,9 @@ import {
   sendMessage as apiSendMessage,
   controlSession as apiControlSession,
   fetchSession,
+  fetchSessionEvents,
   fetchSessionMessages,
+  fetchSessionSnapshot,
 } from "../api/client";
 
 // ---------- Types ----------
@@ -256,9 +258,10 @@ export const useAgentSessionStore = create<AgentSessionStore>()(
         set((prev) => {
           const session = prev.sessionsById[sessionId];
           if (!session) return prev;
-          const messages = session.messages.map((m) =>
-            m.id === message.id ? message : m,
-          );
+          const exists = session.messages.some((m) => m.id === message.id);
+          const messages = exists
+            ? session.messages.map((m) => (m.id === message.id ? message : m))
+            : [...session.messages, message];
           return {
             sessionsById: {
               ...prev.sessionsById,
@@ -366,6 +369,7 @@ export const useAgentSessionStore = create<AgentSessionStore>()(
         set((prev) => {
           const session = prev.sessionsById[sessionId];
           if (!session) return prev;
+          if (seq <= session.lastEventSequence) return prev;
           return {
             sessionsById: {
               ...prev.sessionsById,
@@ -451,6 +455,11 @@ export const useAgentSessionStore = create<AgentSessionStore>()(
         set((prev) => {
           const session = prev.sessionsById[sessionId];
           if (!session) return prev;
+          const requestId = payload.request_id ?? payload.requestId;
+          const exists = session.permissionQueue.some(
+            (item) => (item.request_id ?? item.requestId) === requestId,
+          );
+          if (requestId && exists) return prev;
           return {
             sessionsById: {
               ...prev.sessionsById,
@@ -541,14 +550,13 @@ export const useAgentSessionStore = create<AgentSessionStore>()(
         }));
 
         try {
-          const [session, messages, toolCalls, workflow] = await Promise.all([
-            fetchSession(sessionId),
-            fetchSessionMessages(sessionId),
-            fetchSessionMessages(sessionId).then((items: any[]) =>
-              items.filter((item) => item.type === "tool_call"),
-            ),
-            get().updateStepStatus(sessionId, "", ""),
-          ]);
+          const snapshot = await fetchSessionSnapshot(sessionId);
+          const session = snapshot.session ?? await fetchSession(sessionId);
+          const messages = snapshot.messages ?? await fetchSessionMessages(sessionId);
+          const toolCalls = snapshot.tool_calls ?? [];
+          const workflow = snapshot.workflow ?? null;
+          const snapshotSequence = snapshot.last_event_sequence ?? 0;
+          const replay = await fetchSessionEvents(sessionId, snapshotSequence);
 
           set((prev) => {
             const current = prev.sessionsById[sessionId] ?? makeDefaultSession(sessionId);
@@ -579,16 +587,29 @@ export const useAgentSessionStore = create<AgentSessionStore>()(
                 [sessionId]: {
                   ...current,
                   ...session,
+                  id: sessionId,
                   messages: mappedMessages,
                   toolCalls: mappedToolCalls,
                   workflow,
                   isHydrated: true,
                   isLoading: false,
-                  lastEventSequence: current.lastEventSequence,
+                  lastEventSequence: Math.max(
+                    current.lastEventSequence,
+                    snapshotSequence,
+                  ),
                 },
               },
             } as any;
           });
+
+          if (replay.events?.length) {
+            const { applyAgentEvent } = await import(
+              "../services/agentEventReducer"
+            );
+            for (const event of replay.events) {
+              applyAgentEvent(sessionId, event);
+            }
+          }
         } catch (err) {
           set((prev) => ({
             sessionsById: {

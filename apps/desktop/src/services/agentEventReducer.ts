@@ -51,7 +51,6 @@ export function applyAgentEvent(sessionId: string, env: EventEnvelope): void {
       );
 
       if (tempMsg) {
-        store.upsertMessage(sessionId, { ...tempMsg, id: data.message_id });
         // Remove old temp
         useAgentSessionStore.setState((prev) => {
           const s = prev.sessionsById[sessionId];
