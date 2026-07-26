@@ -246,8 +246,15 @@ class RunCommandComposer:
         except Exception as ex:
             logger.warning(f"Database table creation warning: {ex}")
         
+        from windagent_storage.database.sync_factory import make_sync_session_factory
+        from windagent_storage.repositories.v3_routing_repositories import (
+            SQLEndpointBindingRepository,
+        )
+        sync_factory = make_sync_session_factory(self.db_url)
+        binding_repo = SQLEndpointBindingRepository(sync_factory())
+
         self._task_manager = TaskManager(uow_factory=db.session_factory)
-        self._provider_registry = CanonicalModelRegistryService()
+        self._provider_registry = CanonicalModelRegistryService(binding_repository=binding_repo)
         self._tool_registry = ToolRegistry()
         
         logger.info("Run command services bootstrapped.")
@@ -268,9 +275,16 @@ class ProviderTestCommandComposer:
     async def bootstrap(self):
         """Bootstraps only services needed for provider testing."""
         from windagent_providers.registry.canonical_registry import CanonicalModelRegistryService
+        from windagent_storage.database.sync_factory import make_sync_session_factory
+        from windagent_storage.repositories.v3_routing_repositories import (
+            SQLEndpointBindingRepository,
+        )
+        db_url = "sqlite:///windagent.db"
+        sync_factory = make_sync_session_factory(db_url)
+        binding_repo = SQLEndpointBindingRepository(sync_factory())
         
         logger.info("Bootstrapping Provider test command services...")
-        self._provider_registry = CanonicalModelRegistryService()
+        self._provider_registry = CanonicalModelRegistryService(binding_repository=binding_repo)
         logger.info("Provider test command services bootstrapped.")
     
     async def shutdown(self):

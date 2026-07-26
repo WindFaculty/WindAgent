@@ -276,3 +276,141 @@ class SQLProviderRoutingAuditRepository(RoutingAuditRepositoryPort):
             "metadata": json.loads(r.metadata_json) if r.metadata_json else {},
             "created_at": r.created_at,
         }
+
+
+class SQLCanonicalModelRepository:
+    """SQL-backed canonical model repository."""
+
+    def __init__(self, session: Session):
+        self.session = session
+
+    def get_canonical_model(self, canonical_model_id: str) -> Optional[Dict[str, Any]]:
+        row = self.session.query(CanonicalModelV3ORM).filter_by(id=canonical_model_id).first()
+        return self._to_dict(row) if row else None
+
+    def list_canonical_models(self) -> List[Dict[str, Any]]:
+        rows = self.session.query(CanonicalModelV3ORM).all()
+        return [self._to_dict(r) for r in rows]
+
+    def save_canonical_model(self, model_data: Dict[str, Any]) -> Dict[str, Any]:
+        cm_id = model_data.get("id") or f"cm-{uuid.uuid4().hex[:12]}"
+        existing = self.session.query(CanonicalModelV3ORM).filter_by(id=cm_id).first()
+        if existing:
+            existing.vendor = model_data.get("vendor", existing.vendor)
+            existing.family = model_data.get("family", existing.family)
+            existing.canonical_name = model_data.get("canonical_name", existing.canonical_name)
+            existing.revision = model_data.get("revision", existing.revision)
+            existing.context_window = model_data.get("context_window", existing.context_window)
+            row = existing
+        else:
+            row = CanonicalModelV3ORM(
+                id=cm_id,
+                vendor=model_data.get("vendor", "custom"),
+                family=model_data.get("family", model_data.get("canonical_name", "unknown")),
+                canonical_name=model_data.get("canonical_name", cm_id),
+                revision=model_data.get("revision", "latest"),
+                context_window=model_data.get("context_window", 128000),
+            )
+            self.session.add(row)
+        self.session.flush(); self.session.commit()
+        return self._to_dict(row)
+
+    @staticmethod
+    def _to_dict(r: CanonicalModelV3ORM) -> Dict[str, Any]:
+        return {
+            "id": r.id,
+            "vendor": r.vendor,
+            "family": r.family,
+            "canonical_name": r.canonical_name,
+            "revision": r.revision,
+            "context_window": r.context_window,
+            "enabled": r.enabled,
+            "created_at": r.created_at,
+            "updated_at": r.updated_at,
+        }
+
+
+class SQLRouteAttemptRepository:
+    """SQL-backed route attempt repository for recording failover and attempt tracking."""
+
+    def __init__(self, session: Session):
+        self.session = session
+
+    def record_attempt(
+        self,
+        lock_id: str,
+        endpoint_id: Optional[str],
+        provider_model_id: Optional[str],
+        attempt_number: int,
+        status: str,
+        failure_category: Optional[str] = None,
+        retry_after: Optional[float] = None,
+        started_at: Optional[float] = None,
+        finished_at: Optional[float] = None,
+    ) -> Dict[str, Any]:
+        from windagent_storage.orm.v3_models import RouteAttemptV3ORM
+
+        row = RouteAttemptV3ORM(
+            route_lock_id=lock_id,
+            attempt_index=attempt_number,
+            status=status,
+            error_class=failure_category,
+        )
+        self.session.add(row)
+        self.session.flush(); self.session.commit()
+        return {
+            "id": row.id,
+            "route_lock_id": row.route_lock_id,
+            "attempt_number": row.attempt_index,
+            "status": row.status,
+            "failure_category": row.error_class,
+            "started_at": row.started_at,
+        }
+
+    def get_attempts_for_lock(self, lock_id: str) -> List[Dict[str, Any]]:
+        from windagent_storage.orm.v3_models import RouteAttemptV3ORM
+
+        rows = self.session.query(RouteAttemptV3ORM).filter_by(route_lock_id=lock_id).all()
+        return [
+            {
+                "id": r.id,
+                "route_lock_id": r.route_lock_id,
+                "attempt_number": r.attempt_index,
+                "status": r.status,
+                "failure_category": r.error_class,
+                "started_at": r.started_at,
+            }
+            for r in rows
+        ]
+
+
+class SQLRoutingUnitOfWork:
+    """SQL-backed transactional Unit of Work scope for routing operations."""
+
+    def __init__(self, session: Session):
+        self.session = session
+
+    def __enter__(self) -> "SQLRoutingUnitOfWork":
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+        if exc_type is not None:
+            self.rollback()
+
+    def commit(self) -> None:
+        self.session.commit()
+
+    def rollback(self) -> None:
+        self.session.rollback()
+
+
+from windagent_storage.repositories.v3_repositories import SQLRouteLockRepository
+
+# Exact class aliases matching ban_ke_hoach.md §1.3
+SqlCanonicalModelRepository = SQLCanonicalModelRepository
+SqlEndpointBindingRepository = SQLEndpointBindingRepository
+SqlRouteLockRepository = SQLRouteLockRepository
+SqlRouteAttemptRepository = SQLRouteAttemptRepository
+SqlProviderRoutingAuditRepository = SQLProviderRoutingAuditRepository
+SqlRoutingUnitOfWork = SQLRoutingUnitOfWork
+

@@ -1,10 +1,10 @@
 {
   "phase": "phase_01",
   "name": "test_results",
-  "timestamp": "2026-07-26T23:45:00Z",
+  "timestamp": "2026-07-27T00:53:00Z",
   "summary": {
-    "total": 218,
-    "passed": 218,
+    "total": 209,
+    "passed": 209,
     "failed": 0,
     "skipped": 0
   },
@@ -23,6 +23,12 @@
       "suite": "tests/integration/test_phase1_routing_authority.py",
       "passed": 10,
       "failed": 0
+    },
+    {
+      "suite": "tests/integration/test_phase1_multiprocess_e2e.py",
+      "passed": 1,
+      "failed": 0,
+      "description": "True OS multi-process E2E test (1 API process + 2 Worker processes)"
     }
   ],
   "status": "PASSED"

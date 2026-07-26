@@ -88,3 +88,65 @@ class EndpointBindingRepositoryPort(Protocol):
 
     def get_audit_trails(self) -> List[Dict[str, Any]]:
         ...
+
+
+@runtime_checkable
+class CanonicalModelRepository(Protocol):
+    """Persistent store for canonical model descriptors and metadata."""
+
+    def get_canonical_model(self, canonical_model_id: str) -> Optional[Dict[str, Any]]:
+        ...
+
+    def list_canonical_models(self) -> List[Dict[str, Any]]:
+        ...
+
+    def save_canonical_model(self, model_data: Dict[str, Any]) -> Dict[str, Any]:
+        ...
+
+
+@runtime_checkable
+class RouteAttemptRepository(Protocol):
+    """Persistent store for route execution attempts and failover tracking."""
+
+    def record_attempt(
+        self,
+        lock_id: str,
+        endpoint_id: Optional[str],
+        provider_model_id: Optional[str],
+        attempt_number: int,
+        status: str,
+        failure_category: Optional[str] = None,
+        retry_after: Optional[float] = None,
+        started_at: Optional[float] = None,
+        finished_at: Optional[float] = None,
+    ) -> Dict[str, Any]:
+        ...
+
+    def get_attempts_for_lock(self, lock_id: str) -> List[Dict[str, Any]]:
+        ...
+
+
+@runtime_checkable
+class RoutingUnitOfWork(Protocol):
+    """Transactional Unit of Work scope for atomic routing operations."""
+
+    def __enter__(self) -> "RoutingUnitOfWork":
+        ...
+
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+        ...
+
+    def commit(self) -> None:
+        ...
+
+    def rollback(self) -> None:
+        ...
+
+
+# Spec name aliases for strict §1.1 port compliance
+CanonicalModelRepositoryPort = CanonicalModelRepository
+EndpointBindingRepository = EndpointBindingRepositoryPort
+RouteLockRepository = RouteLockRepositoryPort
+ProviderRoutingAuditRepository = RoutingAuditRepositoryPort
+RouteAttemptRepositoryPort = RouteAttemptRepository
+

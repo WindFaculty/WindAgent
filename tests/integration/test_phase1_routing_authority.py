@@ -177,17 +177,46 @@ def test_100_turns_same_canonical_model(db_url, factories):
 def test_failover_keeps_canonical_model(db_url, factories):
     """
     429 on endpoint must NOT change canonical model. The lock's canonical_model_id
-    is immutable; failover only swaps the endpoint/binding (here simulated by
-    re-resolving and asserting the same canonical model is returned).
+    is immutable; failover only swaps the endpoint/binding.
     """
+    from windagent_storage.repositories.v3_routing_repositories import SQLRouteAttemptRepository
     svc = _durable_lock_service(factories)
     lock = svc.resolve_or_create_lock(_ctx(scope_id="sess-failover"))
 
-    # Simulate 429: caller catches, retries with a different endpoint context.
-    # The route lock must still pin the original canonical model.
+    # Record 429 failure attempt on primary endpoint
+    attempt_repo = SQLRouteAttemptRepository(factories())
+    att1 = attempt_repo.record_attempt(
+        lock_id=lock.lock_id,
+        endpoint_id="ep-primary",
+        provider_model_id="gpt-4o-2024-05-13",
+        attempt_number=1,
+        status="failed",
+        failure_category="429_rate_limit",
+        retry_after=5.0,
+    )
+    assert att1["status"] == "failed"
+    assert att1["failure_category"] == "429_rate_limit"
+
+    # Failover: re-evaluate endpoint selection for same lock
     retry = svc.resolve_or_create_lock(_ctx(scope_id="sess-failover"))
     assert retry.canonical_model_id == lock.canonical_model_id
     assert retry.lock_id == lock.lock_id
+
+    # Record successful attempt on failover endpoint
+    att2 = attempt_repo.record_attempt(
+        lock_id=lock.lock_id,
+        endpoint_id="ep-backup",
+        provider_model_id="gpt-4o-2024-05-13",
+        attempt_number=2,
+        status="success",
+    )
+    assert att2["status"] == "success"
+
+    # Verify both attempts are persisted under the lock in DB
+    attempts = attempt_repo.get_attempts_for_lock(lock.lock_id)
+    assert len(attempts) == 2
+    assert attempts[0]["failure_category"] == "429_rate_limit"
+    assert attempts[1]["status"] == "success"
 
 
 def test_explicit_reselection_creates_audit(db_url, factories):

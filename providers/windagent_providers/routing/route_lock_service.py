@@ -91,75 +91,21 @@ class LockNotFoundError(Exception):
         self.lock_id = lock_id
 
 
-class _InMemoryLockStore(RouteLockRepositoryPort):
-    """Dev/test-only in-memory fallback implementing the route lock port."""
-
-    def __init__(self):
-        self._locks: Dict[str, RouteLockRecord] = {}
-        self._lock_by_id: Dict[str, RouteLockRecord] = {}
-        self._mutex = threading.RLock()
-
-    def _get_active_lock_dict(self, scope_type, scope_id):
-        for rec in self._locks.values():
-            if rec.scope == scope_type and rec.scope_id == scope_id and rec.is_active:
-                return rec.to_dict()
-        return None
-
-    def get_lock(self, scope_type, scope_id):
-        with self._mutex:
-            return self._get_active_lock_dict(scope_type, scope_id)
-
-    def get_lock_by_id(self, lock_id):
-        with self._mutex:
-            rec = self._lock_by_id.get(lock_id)
-            return rec.to_dict() if rec else None
-
-    def create_lock(self, scope_type, scope_id, canonical_model_id, routing_snapshot, policy_version=1):
-        with self._mutex:
-            existing = self._get_active_lock_dict(scope_type, scope_id)
-            if existing:
-                return existing
-            lock_id = f"lk-{uuid.uuid4().hex[:10]}"
-            rec = RouteLockRecord(
-                lock_id=lock_id,
-                scope=scope_type,
-                scope_id=scope_id,
-                canonical_model_id=canonical_model_id,
-                routing_snapshot=RoutingSnapshot(
-                    rule_id=routing_snapshot.get("rule_id", ""),
-                    rule_version=routing_snapshot.get("rule_version", 1),
-                    canonical_model_id=canonical_model_id,
-                    reason=routing_snapshot.get("reason", ""),
-                ),
-            )
-            self._locks[f"{scope_type}:{scope_id}"] = rec
-            self._lock_by_id[lock_id] = rec
-            return rec.to_dict()
-
-    def release_lock(self, lock_id):
-        with self._mutex:
-            rec = self._lock_by_id.get(lock_id)
-            if rec is None or not rec.is_active:
-                return False
-            rec.status = LockStatus.RELEASED.value
-            rec.released_at = time.time()
-            return True
-
-
 class RouteLockService:
     """
     Thread-safe Route Lock Service with optional durable repository.
 
     Parameters
     ----------
-    ruleset         : The active RoutingRuleSet.
-    matcher         : Optional RuleMatcher (default-constructed if not provided).
-    disabled_models : Set of canonical model IDs that are currently disabled.
-    lock_repository : Optional RouteLockRepositoryPort (durable store). If omitted,
-                      an in-memory store is used (dev/test only).
-    audit_repository: Optional RoutingAuditRepositoryPort (durable audit trail).
-    event_handler   : Optional callback ``(RoutingEvent) -> None`` invoked
-                      synchronously after each state-change event.
+    ruleset           : The active RoutingRuleSet.
+    matcher           : Optional RuleMatcher (default-constructed if not provided).
+    disabled_models   : Set of canonical model IDs that are currently disabled.
+    lock_repository   : Optional RouteLockRepositoryPort (durable store). If omitted,
+                        an in-memory store is used (dev/test only).
+    audit_repository  : Optional RoutingAuditRepositoryPort (durable audit trail).
+    attempt_repository: Optional RouteAttemptRepositoryPort (durable failover tracking).
+    event_handler     : Optional callback ``(RoutingEvent) -> None`` invoked
+                        synchronously after each state-change event.
     """
 
     def __init__(
@@ -169,6 +115,7 @@ class RouteLockService:
         disabled_models: Optional[set] = None,
         lock_repository: Optional[RouteLockRepositoryPort] = None,
         audit_repository: Optional[RoutingAuditRepositoryPort] = None,
+        attempt_repository: Optional[Any] = None,
         event_handler: Optional[Callable[[RoutingEvent], None]] = None,
     ):
         self._ruleset = ruleset or RoutingRuleSet()
@@ -177,13 +124,15 @@ class RouteLockService:
         self._event_handler = event_handler
         self._lock_repo = lock_repository
         self._audit_repo = audit_repository
+        self._attempt_repo = attempt_repository
         if self._lock_repo is None:
             warnings.warn(
                 "RouteLockService running IN-MEMORY (dev/test only). "
                 "Inject RouteLockRepositoryPort for cross-process durability.",
                 stacklevel=2,
             )
-            self._lock_repo = _InMemoryLockStore()
+            from tests.fakes.routing_fakes import InMemoryLockStore
+            self._lock_repo = InMemoryLockStore()
 
         # Per-scope creation locks to avoid thundering herd (in-memory only helps
         # within a single process; cross-process safety comes from repo.create_lock).
@@ -196,7 +145,30 @@ class RouteLockService:
 
     @property
     def is_durable(self) -> bool:
-        return not isinstance(self._lock_repo, _InMemoryLockStore)
+        from tests.fakes.routing_fakes import InMemoryLockStore
+        return not isinstance(self._lock_repo, InMemoryLockStore)
+
+    def record_attempt(
+        self,
+        lock_id: str,
+        endpoint_id: Optional[str],
+        provider_model_id: Optional[str],
+        attempt_number: int,
+        status: str,
+        failure_category: Optional[str] = None,
+        retry_after: Optional[float] = None,
+    ) -> Dict[str, Any]:
+        if self._attempt_repo is not None:
+            return self._attempt_repo.record_attempt(
+                lock_id=lock_id,
+                endpoint_id=endpoint_id,
+                provider_model_id=provider_model_id,
+                attempt_number=attempt_number,
+                status=status,
+                failure_category=failure_category,
+                retry_after=retry_after,
+            )
+        return {"lock_id": lock_id, "status": status, "failure_category": failure_category}
 
     # ------------------------------------------------------------------ #
     # Public API
@@ -310,15 +282,17 @@ class RouteLockService:
     # ------------------------------------------------------------------ #
     def snapshot(self) -> List[dict]:
         """Serialise all lock records (for in-memory store / diagnostics)."""
+        from tests.fakes.routing_fakes import InMemoryLockStore
         with self._mutex:
-            if isinstance(self._lock_repo, _InMemoryLockStore):
+            if isinstance(self._lock_repo, InMemoryLockStore):
                 return [rec.to_dict() for rec in self._lock_repo._lock_by_id.values()]
             return []
 
     def restore_snapshot(self, records: List[dict]) -> None:
         """Restore in-memory lock records (dev/test only)."""
+        from tests.fakes.routing_fakes import InMemoryLockStore
         with self._mutex:
-            if isinstance(self._lock_repo, _InMemoryLockStore):
+            if isinstance(self._lock_repo, InMemoryLockStore):
                 for d in records:
                     rec = RouteLockRecord.from_dict(d)
                     scope_key = self._scope_key(rec.scope, rec.scope_id)
