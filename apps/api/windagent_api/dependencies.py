@@ -21,15 +21,15 @@ from windagent_providers.registry.canonical_registry import CanonicalModelRegist
 from windagent_tools.registry import ToolRegistry
 from windagent_tools.security.permission_engine import PermissionEngine
 
-_fallback_container: Optional[ApplicationContainer] = None
-_fallback_db_path: Optional[Path] = None
+_container: Optional[ApplicationContainer] = None
+_db_path: Optional[Path] = None
 
 
-def _build_fallback_container() -> ApplicationContainer:
+def _build_container() -> ApplicationContainer:
     """Uncontextualized (no-lifespan) test runner fallback with a real file DB + schema."""
-    global _fallback_db_path
-    _fallback_db_path = Path(tempfile.mkdtemp(prefix="windagent_fb_")) / "fallback.db"
-    db_url = f"sqlite+aiosqlite:///{_fallback_db_path}"
+    global _db_path
+    _db_path = Path(tempfile.mkdtemp(prefix="windagent_fb_")) / "fallback.db"
+    db_url = f"sqlite+aiosqlite:///{_db_path}"
     container = ApplicationContainer()
     container.db = DatabaseManager(db_url)
     loop = asyncio.new_event_loop()
@@ -47,12 +47,12 @@ def _build_fallback_container() -> ApplicationContainer:
 
 
 def get_container(request: Request) -> ApplicationContainer:
-    global _fallback_container
+    global _container
     container = getattr(request.app.state, "container", None)
     if container is None:
-        if _fallback_container is None:
-            _fallback_container = _build_fallback_container()
-        container = _fallback_container
+        if _container is None:
+            _container = _build_container()
+        container = _container
         request.app.state.container = container
     return container
 

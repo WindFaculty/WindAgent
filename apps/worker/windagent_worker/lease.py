@@ -35,12 +35,12 @@ class DurableTaskLeaseManager:
         self.session_factory = session_factory
         self.default_lease_ttl_sec = default_lease_ttl_sec
         # Fallback storage for lightweight unit test mode when DB session is omitted
-        self._fallback_leases: Dict[str, TaskLease] = {}
-        self._fallback_pending: List[Dict[str, Any]] = []
+        self._leases: Dict[str, TaskLease] = {}
+        self._pending: List[Dict[str, Any]] = []
 
     def add_pending_task(self, task_id: str, prompt: str, workflow_name: str = "bugfix") -> None:
         """Adds a task to the queue for worker claim."""
-        self._fallback_pending.append({
+        self._pending.append({
             "task_id": task_id,
             "prompt": prompt,
             "workflow_name": workflow_name,
@@ -73,9 +73,9 @@ class DurableTaskLeaseManager:
         # Check for abandoned tasks with expired leases first
         self.recover_abandoned_tasks()
 
-        for task in self._fallback_pending:
+        for task in self._pending:
             task_id = task["task_id"]
-            if task_id not in self._fallback_leases and task["status"] == "QUEUED":
+            if task_id not in self._leases and task["status"] == "QUEUED":
                 gen = 1
                 fence = f"fence_{task_id}_gen_{gen}_{uuid.uuid4().hex[:6]}"
                 lease = TaskLease(
@@ -87,7 +87,7 @@ class DurableTaskLeaseManager:
                     acquired_at=now,
                     expires_at=now + ttl
                 )
-                self._fallback_leases[task_id] = lease
+                self._leases[task_id] = lease
                 task["status"] = "CLAIMED"
                 task["fencing_token"] = fence
                 task["lease_generation"] = gen
@@ -105,7 +105,7 @@ class DurableTaskLeaseManager:
         """Renews lease lock via heartbeat. Fails if fencing token is stale."""
         now = time.time()
         ttl = lease_ttl_sec or self.default_lease_ttl_sec
-        lease = self._fallback_leases.get(task_id)
+        lease = self._leases.get(task_id)
 
         if lease and lease.worker_id == worker_id:
             if fencing_token and lease.fencing_token != fencing_token:
@@ -118,12 +118,12 @@ class DurableTaskLeaseManager:
 
     def release_lease(self, task_id: str, worker_id: str, fencing_token: Optional[str] = None) -> bool:
         """Releases lease lock upon task completion or cancellation."""
-        lease = self._fallback_leases.get(task_id)
+        lease = self._leases.get(task_id)
         if lease and lease.worker_id == worker_id:
             if fencing_token and lease.fencing_token != fencing_token:
                 return False
-            del self._fallback_leases[task_id]
-            for t in self._fallback_pending:
+            del self._leases[task_id]
+            for t in self._pending:
                 if t["task_id"] == task_id:
                     t["status"] = "COMPLETED"
             return True
@@ -134,14 +134,14 @@ class DurableTaskLeaseManager:
         now = time.time()
         expired_task_ids = []
 
-        for task_id, lease in list(self._fallback_leases.items()):
+        for task_id, lease in list(self._leases.items()):
             if now > lease.expires_at:
                 expired_task_ids.append(task_id)
 
         recovered_tasks = []
         for task_id in expired_task_ids:
-            del self._fallback_leases[task_id]
-            for t in self._fallback_pending:
+            del self._leases[task_id]
+            for t in self._pending:
                 if t["task_id"] == task_id and t["status"] == "CLAIMED":
                     t["status"] = "QUEUED"
                     recovered_tasks.append(t)
@@ -149,7 +149,7 @@ class DurableTaskLeaseManager:
         return recovered_tasks
 
     def get_lease(self, task_id: str) -> Optional[TaskLease]:
-        return self._fallback_leases.get(task_id)
+        return self._leases.get(task_id)
 
 
 # Backward compatibility alias
