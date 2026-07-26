@@ -6,13 +6,14 @@ Enforces idempotency keys, pagination, filtering, and durable task management.
 
 from __future__ import annotations
 from typing import Any, Dict, List, Optional
-from fastapi import APIRouter, HTTPException, Header, Query, status, Depends
+from fastapi import APIRouter, HTTPException, Header, Query, Request, status, Depends
 from pydantic import BaseModel, Field
 
 from windagent_core.domain.types import TaskId, SessionId
 from windagent_core.domain.lifecycle import TaskState, TaskLifecycle, utc_now
 from windagent_core.errors.exceptions import NotFoundError, PermissionDeniedError, InvalidStateTransitionError
-from windagent_api.dependencies import get_task_manager, get_uow
+from windagent_core.contracts.workers.models import WorkSubmission
+from windagent_api.dependencies import get_task_manager, get_uow, get_container
 from windagent_orchestration.task_manager.service import TaskManager
 from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork
 
@@ -44,12 +45,13 @@ class TaskResponse(BaseModel):
 @router.post("", response_model=TaskResponse, status_code=status.HTTP_201_CREATED)
 async def create_task(
     req: CreateTaskRequest,
+    request: Request,
     x_idempotency_key: Optional[str] = Header(None, alias="X-Idempotency-Key"),
     tm: TaskManager = Depends(get_task_manager),
     uow: SqlUnitOfWork = Depends(get_uow),
 ) -> TaskResponse:
     idem_key = x_idempotency_key or req.idempotency_key or f"idem_{TaskId.generate()}"
-
+    container = get_container(request)
     tid = TaskId.generate()
     try:
         sid = SessionId(req.session_id) if req.session_id else SessionId.generate()
@@ -58,21 +60,33 @@ async def create_task(
 
     wf_name = req.workflow_name or "bugfix"
 
-    # Persist durable facts via TaskManager
+    # Enqueue into the SQL durable queue (single source of truth for the Worker process).
+    # SqlWorkSubmissionAdapter inserts the task_runs row in "pending" state plus the
+    # TaskSubmitted outbox record in one atomic transaction; the Worker claims from this row.
+    task_id = await container.task_submission.submit(
+        WorkSubmission(
+            task_id=str(tid),
+            session_id=str(sid),
+            prompt=req.prompt,
+            workflow_name=wf_name,
+            tool_name="read_file",
+            parameters=req.parameters,
+            idempotency_key=idem_key,
+        )
+    )
+
+    # Keep facts in TaskManager cache for fast in-process query; the durable row already exists.
     facts = tm.get_or_create_facts(tid, sid)
     facts.metadata["prompt"] = req.prompt
     facts.metadata["workflow_name"] = wf_name
     facts.metadata["idempotency_key"] = idem_key
-
-    # Save to durable repository
-    await tm.save_durable_facts(facts)
 
     now_iso = utc_now().isoformat()
     return TaskResponse(
         task_id=str(tid),
         session_id=str(sid),
         prompt=req.prompt,
-        status=facts.current_state.value,
+        status="pending",
         workflow_name=wf_name,
         created_at=now_iso,
         updated_at=now_iso,

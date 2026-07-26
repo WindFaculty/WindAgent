@@ -22,7 +22,7 @@ from windagent_core.events.catalog import EventCatalog
 from windagent_core.contracts.execution import ExecutionRequest, RuntimeStatusEnum
 from windagent_core.errors.exceptions import DomainError
 from windagent_worker.composition import WorkerContainer
-from windagent_worker.lease import DurableTaskLeaseManager, TaskLeaseManager
+from windagent_worker.lease import DurableTaskLeaseManager
 from windagent_execution.registry import ExecutionRuntimeRegistry
 from windagent_execution.results import ExecutionResultHandler
 from windagent_execution.cancellation import CancellationBroadcaster
@@ -32,7 +32,7 @@ logger = logging.getLogger("windagent.worker")
 
 class ProductionWorker:
     """Production Worker handling durable task claim, lease heartbeat, execution dispatch, fencing, and cancellation.
-    
+
     Uses WorkerContainer for process-specific composition (PHASE 7).
     Worker runs INDEPENDENTLY from API and Desktop processes.
     """
@@ -53,7 +53,7 @@ class ProductionWorker:
         self.runtime_run_id = RuntimeRunId.generate()
         self.worker_container = worker_container
         self.task_queue = task_queue or (worker_container.task_queue if worker_container else None)
-        self.lease_manager = lease_manager or (worker_container.lease_manager if worker_container else DurableTaskLeaseManager())
+        self.lease_manager = lease_manager or (worker_container.lease_manager if worker_container else None)
         self.heartbeat_repo = heartbeat_repo or (worker_container.heartbeat_repo if worker_container else None)
         self.execution_registry = execution_registry or (worker_container.execution_registry if worker_container else ExecutionRuntimeRegistry())
         self.cancellation_broadcaster = CancellationBroadcaster()
@@ -112,7 +112,7 @@ class ProductionWorker:
             if self.task_queue is not None and hasattr(self.task_queue, "release"):
                 await self.task_queue.release(str(self._current_task_id), str(self.worker_id), self._current_fencing_token)
             elif self.lease_manager is not None:
-                self.lease_manager.release_lease(
+                await self.lease_manager.release_lease(
                     str(self._current_task_id),
                     str(self.worker_id),
                     fencing_token=self._current_fencing_token,
@@ -147,7 +147,7 @@ class ProductionWorker:
                     self._current_fencing_token,
                 )
             elif self.lease_manager is not None:
-                renewed = self.lease_manager.renew_lease(
+                renewed = await self.lease_manager.renew_lease(
                     str(self._current_task_id),
                     str(self.worker_id),
                     fencing_token=self._current_fencing_token,
@@ -203,12 +203,12 @@ class ProductionWorker:
         if not self._ready:
             raise RuntimeError(f"Worker [{self.worker_id}] is not ready.")
 
-        # Try to claim pending or abandoned task via durable queue port or fallback
+        # Try to claim pending or abandoned task via durable queue port or lease manager
         claimed: Any = None
         if self.task_queue is not None:
             claimed = await self.task_queue.claim_next(str(self.worker_id))
-        elif self.lease_manager is not None and hasattr(self.lease_manager, "claim_task"):
-            claimed = self.lease_manager.claim_task(str(self.worker_id))
+        elif self.lease_manager is not None:
+            claimed = await self.lease_manager.claim_task(str(self.worker_id))
 
         if not claimed:
             return {"status": "idle", "processed": 0}
@@ -238,7 +238,7 @@ class ProductionWorker:
         if self.task_queue is not None and hasattr(self.task_queue, "renew"):
             renewed = await self.task_queue.renew(raw_tid, str(self.worker_id), fencing_token)
         elif self.lease_manager is not None:
-            renewed = self.lease_manager.renew_lease(
+            renewed = await self.lease_manager.renew_lease(
                 raw_tid,
                 str(self.worker_id),
                 fencing_token=fencing_token,
@@ -255,7 +255,7 @@ class ProductionWorker:
             if self.task_queue is not None and hasattr(self.task_queue, "release"):
                 await self.task_queue.release(raw_tid, str(self.worker_id), fencing_token)
             elif self.lease_manager is not None:
-                self.lease_manager.release_lease(raw_tid, str(self.worker_id), fencing_token=fencing_token)
+                await self.lease_manager.release_lease(raw_tid, str(self.worker_id), fencing_token=fencing_token)
             self._current_task_id = None
             self._current_fencing_token = None
             self._cancellation_requested = False
@@ -288,7 +288,7 @@ class ProductionWorker:
             if self.task_queue is not None and hasattr(self.task_queue, "release"):
                 await self.task_queue.release(raw_tid, str(self.worker_id), fencing_token)
             elif self.lease_manager is not None:
-                self.lease_manager.release_lease(raw_tid, str(self.worker_id), fencing_token=fencing_token)
+                await self.lease_manager.release_lease(raw_tid, str(self.worker_id), fencing_token=fencing_token)
             self._current_task_id = None
             self._current_fencing_token = None
             return {"status": "fencing_violation", "task_id": raw_tid, "error": str(err)}
@@ -298,10 +298,31 @@ class ProductionWorker:
             {"task_id": tid, "status": validated_result.status.value},
             aggregate_id=tid,
         )
+        # Persist terminal state back to task_runs so the API can query the result
+        # after the Worker process exits (PHASE 14 durable runtime proof).
+        if self.uow_factory is not None:
+            from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork
+            try:
+                async with SqlUnitOfWork(self.uow_factory) as uow:
+                    facts = dict(validated_result.result_data or {})
+                    facts["status"] = "completed"
+                    facts["result"] = validated_result.result_data
+                    existing = await uow.task_runs.get_by_id(tid)
+                    session_id = (existing or {}).get("session_id") or "default_session"
+                    await uow.task_runs.save_facts(
+                        task_id=tid,
+                        session_id=str(session_id),
+                        state="completed",
+                        version=(existing or {}).get("version", 0) or 1,
+                        facts=facts,
+                    )
+                    await uow.commit()
+            except Exception as ex:
+                logger.warning(f"Failed to persist terminal state for task [{tid}]: {ex}")
         if self.task_queue is not None and hasattr(self.task_queue, "release"):
             await self.task_queue.release(raw_tid, str(self.worker_id), fencing_token)
         elif self.lease_manager is not None:
-            self.lease_manager.release_lease(raw_tid, str(self.worker_id), fencing_token=fencing_token)
+            await self.lease_manager.release_lease(raw_tid, str(self.worker_id), fencing_token=fencing_token)
         self._current_task_id = None
         self._current_fencing_token = None
 

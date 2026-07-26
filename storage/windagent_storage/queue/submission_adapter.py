@@ -38,6 +38,7 @@ class SqlWorkSubmissionAdapter(WorkSubmissionPort):
             "tool_name": request.tool_name or "read_file",
             "parameters": request.parameters or {},
             "workflow_name": request.workflow_name or "bugfix",
+            "session_id": session_id,
         })
 
         async with self._session_factory() as session:

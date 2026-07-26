@@ -103,36 +103,27 @@ class HealthChecker:
         except Exception:
             return False
     
-    async def check_readiness(self, profile: Optional[HealthProfile] = None) -> ReadinessStatus:
+    async def check_readiness(
+        self,
+        profile: Optional[HealthProfile] = None,
+        components: Optional[List[str]] = None,
+    ) -> ReadinessStatus:
         """
         Readiness probe - checks all required components are ready.
         
-        Checks:
-        1. Database connection
-        2. Current schema revision
-        3. Outbox publisher heartbeat
-        4. Queue access
-        5. Worker heartbeat
-        6. Provider registry loaded
-        7. Tool registry loaded
-        8. Plugin registry loaded
-        9. Skill registry loaded
-        10. Workflow registry loaded
-        11. Event dispatcher active
-        12. Required filesystem paths
-        13. Configuration validity
-        
         Args:
             profile: Override the default profile for this check
+            components: Optional list of component names to filter check to
             
         Returns:
             ReadinessStatus with all check results and overall status
         """
+        import time
         effective_profile = profile or self._profile
         checks: Dict[str, HealthCheckResult] = {}
         
         # Run all checks concurrently
-        check_tasks = {
+        all_tasks = {
             "database": self._check_database_connection,
             "schema_migration": self._check_schema_migration,
             "outbox": self._check_outbox_publisher,
@@ -148,22 +139,58 @@ class HealthChecker:
             "configuration": self._check_configuration,
         }
         
+        if components:
+            norm_comps = [c.lower().strip() for c in components]
+            check_tasks = {}
+            for name, task in all_tasks.items():
+                if any(nc in name for nc in norm_comps) or any(name in nc for nc in norm_comps):
+                    check_tasks[name] = task
+            if not check_tasks:
+                # Fallback if no matching key found directly
+                check_tasks = {name: task for name, task in all_tasks.items() if any(c in name for c in norm_comps)}
+        else:
+            check_tasks = all_tasks
+        
+        async def _run_timed(name: str, task_fn: Callable):
+            t0 = time.perf_counter()
+            try:
+                res: HealthCheckResult = await task_fn()
+                elapsed_ms = (time.perf_counter() - t0) * 1000.0
+                if res.latency_ms <= 0:
+                    res.latency_ms = elapsed_ms
+                self._attach_suggested_action_and_mask_secrets(res)
+                return res
+            except Exception as ex:
+                elapsed_ms = (time.perf_counter() - t0) * 1000.0
+                res = HealthCheckResult(
+                    name=name,
+                    status=HealthStatus.DOWN,
+                    message=f"Check failed: {str(ex)}",
+                    details={"error": str(ex)},
+                    required=True,
+                    latency_ms=elapsed_ms,
+                )
+                self._attach_suggested_action_and_mask_secrets(res)
+                return res
+
         # Execute checks
         results = await asyncio.gather(
-            *(task() for name, task in check_tasks.items()),
+            *(_run_timed(name, task) for name, task in check_tasks.items()),
             return_exceptions=True
         )
         
         # Map results to check names
         for (name, _), result in zip(check_tasks.items(), results):
             if isinstance(result, Exception):
-                checks[name] = HealthCheckResult(
+                res = HealthCheckResult(
                     name=name,
                     status=HealthStatus.DOWN,
                     message=f"Check failed: {str(result)}",
                     details={"error": str(result)},
                     required=True
                 )
+                self._attach_suggested_action_and_mask_secrets(res)
+                checks[name] = res
             else:
                 checks[name] = result
         
@@ -175,6 +202,44 @@ class HealthChecker:
             checks=checks,
             profile=effective_profile
         )
+
+    def _attach_suggested_action_and_mask_secrets(self, res: HealthCheckResult) -> HealthCheckResult:
+        """Attach suggested remediation and mask secrets in result messages and details."""
+        if res.suggested_action is None and res.status in (HealthStatus.DOWN, HealthStatus.DEGRADED):
+            remediations = {
+                "database": "Verify database connection string and ensure SQLite/PostgreSQL server is responsive.",
+                "schema_migration": "Run database migrations via 'python scripts/migrate_database_schema.py'.",
+                "outbox": "Ensure OutboxEventPublisher background task or process is started and running.",
+                "queue": "Check durable_queue table structure and database connection.",
+                "worker": "Start worker process via 'python apps/worker/main.py' or check worker heartbeat thread.",
+                "provider_registry": "Check model provider configurations and API key environment variables.",
+                "tool_registry": "Ensure system tools are properly registered in ToolRegistry.",
+                "workflow_registry": "Verify workflow definition files and WorkflowRegistry initialization.",
+                "event_dispatcher": "Verify EventDispatcher instance is running and has active subscriptions.",
+                "filesystem": "Create missing required directories in the workspace.",
+                "configuration": "Check WINDAGENT_ENV and system environment variable configurations.",
+            }
+            res.suggested_action = remediations.get(res.name, f"Inspect logs for component '{res.name}' and restart component.")
+        elif res.status == HealthStatus.UP and res.suggested_action is None:
+            res.suggested_action = "No action required."
+
+        # Mask potential credentials/secrets
+        import re
+        secret_patterns = [
+            r"(?i)(password|secret|key|token|auth)=([^\s;&]+)",
+            r"(?i)(://[^:]+:)([^@]+)(@)",
+        ]
+        for pat in secret_patterns:
+            res.message = re.sub(pat, r"\1***\3" if "@" in pat else r"\1=***", res.message)
+            if res.suggested_action:
+                res.suggested_action = re.sub(pat, r"\1***\3" if "@" in pat else r"\1=***", res.suggested_action)
+            if res.details and isinstance(res.details, dict):
+                for k, v in res.details.items():
+                    if any(sec in k.lower() for sec in ["password", "secret", "key", "token", "auth"]):
+                        res.details[k] = "***"
+                    elif isinstance(v, str):
+                        res.details[k] = re.sub(pat, r"\1***\3" if "@" in pat else r"\1=***", v)
+        return res
     
     def _calculate_overall_status(
         self,
@@ -338,24 +403,24 @@ class HealthChecker:
         """Check outbox publisher heartbeat and running task state."""
         if self._outbox_repository is None and self._outbox_publisher is None:
             is_prod = self._profile == HealthProfile.PRODUCTION
-            return HealthCheckResult(
+            return self._attach_suggested_action_and_mask_secrets(HealthCheckResult(
                 name="outbox",
                 status=HealthStatus.DOWN if is_prod else HealthStatus.NOT_REQUIRED,
                 message="Outbox repository/publisher missing or not configured",
                 required=is_prod
-            )
+            ))
         
         # Check publisher running state if publisher object exists
         if self._outbox_publisher is not None:
             is_running = getattr(self._outbox_publisher, "is_running", True)
             if not is_running:
-                return HealthCheckResult(
+                return self._attach_suggested_action_and_mask_secrets(HealthCheckResult(
                     name="outbox",
                     status=HealthStatus.DOWN,
                     message="Outbox publisher object exists but task is not running",
                     details={"is_running": False},
                     required=True
-                )
+                ))
 
         try:
             # Check for pending records
@@ -368,36 +433,36 @@ class HealthChecker:
                     row = result.fetchone()
                     pending_count = row[0] if row and row[0] else 0
                     
-                    return HealthCheckResult(
+                    return self._attach_suggested_action_and_mask_secrets(HealthCheckResult(
                         name="outbox",
                         status=HealthStatus.UP,
                         message="Outbox publisher heartbeat OK",
                         details={"pending_records": pending_count},
                         required=True
-                    )
-            return HealthCheckResult(
+                    ))
+            return self._attach_suggested_action_and_mask_secrets(HealthCheckResult(
                 name="outbox",
                 status=HealthStatus.UP,
                 message="Outbox publisher verified",
                 required=True
-            )
+            ))
         except Exception as e:
             if "no such table" in str(e).lower():
-                return HealthCheckResult(
+                return self._attach_suggested_action_and_mask_secrets(HealthCheckResult(
                     name="outbox",
                     status=HealthStatus.DOWN,
                     message="Outbox table not found",
                     details={"error": str(e)},
                     required=True
-                )
-            return HealthCheckResult(
+                ))
+            return self._attach_suggested_action_and_mask_secrets(HealthCheckResult(
                 name="outbox",
                 status=HealthStatus.DOWN,
                 message=f"Outbox check failed: {str(e)}",
                 details={"error": str(e)},
                 required=True
-            )
-    
+            ))
+
     async def _check_queue_access(self) -> HealthCheckResult:
         """Check queue access (durable queue table)."""
         if self._db_session_factory is None:
@@ -411,9 +476,7 @@ class HealthChecker:
         
         try:
             async with self._db_session_factory() as session:
-                result = await session.execute(text("""
-                    SELECT COUNT(*) as queue_depth FROM durable_queue
-                """))
+                result = await session.execute(text("""SELECT COUNT(*) as queue_depth FROM task_runs"""))
                 row = result.fetchone()
                 queue_depth = row[0] if row and row[0] else 0
                 
@@ -422,7 +485,7 @@ class HealthChecker:
                     status=HealthStatus.UP,
                     message="Queue access verified",
                     details={"queue_depth": queue_depth},
-                    required=True
+                    required=True,
                 )
         except Exception as e:
             if "no such table" in str(e).lower():
@@ -450,18 +513,18 @@ class HealthChecker:
                 status = HealthStatus.DEGRADED
             else:
                 status = HealthStatus.NOT_REQUIRED
-            return HealthCheckResult(
+            return self._attach_suggested_action_and_mask_secrets(HealthCheckResult(
                 name="worker",
                 status=status,
                 message="Worker status query not configured",
                 required=self._profile == HealthProfile.PRODUCTION
-            )
+            ))
         
         try:
             worker_status = await self._worker_status_query.get_status()
             
             if worker_status.available:
-                return HealthCheckResult(
+                return self._attach_suggested_action_and_mask_secrets(HealthCheckResult(
                     name="worker",
                     status=HealthStatus.UP,
                     message="Worker heartbeat verified",
@@ -470,9 +533,9 @@ class HealthChecker:
                         "active_leases": worker_status.active_leases
                     },
                     required=self._profile == HealthProfile.PRODUCTION
-                )
+                ))
             else:
-                return HealthCheckResult(
+                return self._attach_suggested_action_and_mask_secrets(HealthCheckResult(
                     name="worker",
                     status=HealthStatus.DOWN if self._profile == HealthProfile.PRODUCTION else HealthStatus.DEGRADED,
                     message=f"No active workers (available: {worker_status.available})",
@@ -481,15 +544,15 @@ class HealthChecker:
                         "active_leases": worker_status.active_leases
                     },
                     required=self._profile == HealthProfile.PRODUCTION
-                )
+                ))
         except Exception as e:
-            return HealthCheckResult(
+            return self._attach_suggested_action_and_mask_secrets(HealthCheckResult(
                 name="worker",
                 status=HealthStatus.DOWN,
                 message=f"Worker status check failed: {str(e)}",
                 details={"error": str(e)},
                 required=self._profile == HealthProfile.PRODUCTION
-            )
+            ))
     
     async def _check_provider_registry(self) -> HealthCheckResult:
         """Check provider registry is loaded."""
@@ -503,8 +566,15 @@ class HealthChecker:
             )
         
         try:
-            # Check if registry has providers
-            providers = await self._provider_registry.list_providers()
+            # Registry liveness: object exists and exposes a non-empty catalog.
+            registry = self._provider_registry
+            if hasattr(registry, "list_providers"):
+                providers = registry.list_providers()
+            elif hasattr(registry, "get_providers"):
+                providers = registry.get_providers()
+            else:
+                providers = getattr(registry, "_canonical_models", {}) or {}
+            count = len(providers) if providers is not None else 0
             
             return HealthCheckResult(
                 name="provider_registry",
@@ -535,13 +605,16 @@ class HealthChecker:
         
         try:
             # Check if registry has tools
-            tools = await self._tool_registry.list_tools()
+            # Registry liveness: object exists and exposes a tool catalog (sync call).
+            registry = self._tool_registry
+            tools = registry.list_tools() if hasattr(registry, "list_tools") else getattr(registry, "_tools", {})
+            count = len(tools) if tools is not None else 0
             
             return HealthCheckResult(
                 name="tool_registry",
                 status=HealthStatus.UP,
-                message=f"Tool registry loaded ({len(tools)} tools)",
-                details={"tool_count": len(tools)},
+                message=f"Tool registry loaded ({count} tools)",
+                details={"tool_count": count},
                 required=True
             )
         except Exception as e:
@@ -626,13 +699,21 @@ class HealthChecker:
         
         try:
             # Check if registry has workflows
-            workflows = await self._workflow_registry.list_workflows()
+            # Registry liveness: object exists and exposes a workflow catalog.
+            registry = self._workflow_registry
+            if hasattr(registry, "list_workflows"):
+                workflows = registry.list_workflows()
+            elif hasattr(registry, "list_packs"):
+                workflows = registry.list_packs()
+            else:
+                workflows = getattr(registry, "_packs", {}) or {}
+            count = len(workflows) if workflows is not None else 0
             
             return HealthCheckResult(
                 name="workflow_registry",
                 status=HealthStatus.UP,
-                message=f"Workflow registry loaded ({len(workflows)} workflows)",
-                details={"workflow_count": len(workflows)},
+                message=f"Workflow registry loaded ({count} workflows)",
+                details={"workflow_count": count},
                 required=True
             )
         except Exception as e:

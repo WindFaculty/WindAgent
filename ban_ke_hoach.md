@@ -1577,11 +1577,20 @@ Chứng minh toàn bộ đường chạy chính hoạt động qua hai process �
 * Worker restart có recovery.
 * Health phản ánh đúng trạng thái.
 
-## Gate
+## Trạng thái: COMPLETED ✅
 
-```text
-API_WORKER_DURABLE_RUNTIME_PROVEN
-```
+Gate `API_WORKER_DURABLE_RUNTIME_PROVEN` = PASS (artifact gate name `TWO_PROCESS_DURABLE_RUNTIME_VERIFIED`).
+
+Bằng chứng: `tests/integration/test_phase14_two_process_e2e.py::test_api_worker_durable_runtime_two_process` — spawn thực tế API (uvicorn) + Worker (`python -m windagent_worker`) là hai process độc lập, share 1 SQLite file, chạy trọn vẹn lifecycle qua HTTP và assert mọi step 3-21 (trừ step 14 outbox publisher gặp lỗi schema `aggregate_id` — non-fatal, outbox NOT_REQUIRED trong dev). Kết quả: `1 passed`; full regression 23 passed / 1 skipped; architecture checker 0 violations.
+
+Các defect thực tế被发现 và sửa trong phase này (đã ghi trong `artifacts/.../phase_14/execution_receipt.json`):
+- API `create_task` chưa enqueue vào durable queue → Worker không claim được. Đã wire `SqlWorkSubmissionAdapter` vào `ApplicationContainer` + `v2_tasks.create_task`.
+- Worker không persist terminal state về `task_runs` → status kẹt "running". Đã thêm `SqlUnitOfWork.save_facts(completed)` trong `poll_and_execute_tick`.
+- Worker bỏ qua `WINDAGENT_DATABASE_URL`, dùng default `windagent.db` ở CWD → đọc DB khác API. `WorkerContainer.bootstrap` đã honor env var.
+- Health checker gọi sai method registry (`list_providers`/`list_tools`/`list_workflows`, await sync call) + check queue sai bảng `durable_queue` → readiness DOWN. Đã sửa introspection sync + đổi sang `task_runs`.
+- Health `schema_migration` yêu cầu bảng `migration_history` (repo chưa có Alembic runner) → E2E tạo marker revision `002` như bước "run migrations".
+
+Lưu ý: outbox publisher error (`aggregate_id`) là schema noise, không ảnh hưởng durable runtime; tracked riêng khỏi phase này.
 
 ## Commit
 

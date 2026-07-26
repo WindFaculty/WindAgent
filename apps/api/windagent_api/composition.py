@@ -51,6 +51,7 @@ from windagent_storage.repositories.worker_status import (
     SqlWorkerStatusQuery,
 )
 from windagent_observability.events.dispatcher import EventDispatcher
+from windagent_storage.queue.submission_adapter import SqlWorkSubmissionAdapter
 
 logger = logging.getLogger("windagent.api.composition")
 
@@ -89,6 +90,7 @@ class ApplicationContainer:
         self.memory_query_service: Optional[MemoryQueryService] = None
         self.verification_query_service: Optional[VerificationQueryService] = None
         self.worker_status_query: Optional[WorkerStatusQueryPort] = None
+        self.task_submission: Optional[SqlWorkSubmissionAdapter] = None
         self.is_initialized: bool = False
 
     async def bootstrap(self) -> None:
@@ -133,6 +135,10 @@ class ApplicationContainer:
 
         # Outbox: API submits events via get_uow().record_outbox_event() only.
         # Publishing loop is owned exclusively by the Worker process (Phase 6).
+
+        # Durable task submission: API enqueues tasks into the SQL durable queue
+        # so the independent Worker process can claim them (PHASE 14 wiring).
+        self.task_submission = SqlWorkSubmissionAdapter(self.db.session_factory)
 
         self.is_initialized = True
         logger.info("ApplicationContainer successfully bootstrapped (PHASE 7 - Process-specific composition).")

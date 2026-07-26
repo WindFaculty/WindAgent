@@ -28,6 +28,7 @@ Worker does NOT compose:
 
 from __future__ import annotations
 import logging
+import os
 from typing import Optional, Any
 
 from windagent_storage.database.connection import DatabaseManager
@@ -51,6 +52,7 @@ from windagent_observability.events.publisher import OutboxEventPublisher
 from windagent_storage.queue.sql_queue import SqlDurableTaskQueue
 from windagent_storage.repositories.worker_status import SqlWorkerHeartbeatRepository
 from windagent_worker.lease import DurableTaskLeaseManager
+from windagent_execution.registry import ExecutionRuntimeRegistry
 
 logger = logging.getLogger("windagent.worker.composition")
 
@@ -101,6 +103,10 @@ class WorkerContainer:
         if self.is_initialized:
             return
 
+        # Honor WINDAGENT_DATABASE_URL so the Worker process shares the API's DB
+        # (the two processes must target the same durable store). PHASE 14.
+        self.db_url = os.getenv("WINDAGENT_DATABASE_URL", self.db_url)
+
         logger.info(f"Initializing WorkerContainer with database: {self.db_url}")
         
         # Database layer
@@ -117,7 +123,7 @@ class WorkerContainer:
         
         # Durable queue, lease management, and heartbeat repository (Worker-specific)
         self.task_queue = SqlDurableTaskQueue(self.db.session_factory) if self.db else None
-        self.lease_manager = DurableTaskLeaseManager(session_factory=self.db.session_factory if self.db else None)
+        self.lease_manager = DurableTaskLeaseManager(session_factory=self.db.session_factory)
         self.heartbeat_repo = SqlWorkerHeartbeatRepository(self.db.session_factory) if self.db else None
         
         # Orchestration engine (Worker needs full orchestration for execution)
@@ -125,7 +131,12 @@ class WorkerContainer:
         self.task_manager = self.orchestration_container.task_manager
         
         # Execution runtime (Worker executes tools directly)
-        self.execution_registry = ExecutionRuntimeRegistry()
+        # FakeRuntimeAdapter seam for E2E / mock-safe task scenarios (WINDAGENT_FAKE_RUNTIME=1).
+        if os.getenv("WINDAGENT_FAKE_RUNTIME", "").lower() in ("1", "true", "yes"):
+            from windagent_execution.adapters.fake_runtime_adapter import FakeRuntimeAdapter
+            self.execution_registry = ExecutionRuntimeRegistry(default_adapter=FakeRuntimeAdapter(default_mode="success"))
+        else:
+            self.execution_registry = ExecutionRuntimeRegistry()
         
         # Registries
         self.provider_registry = CanonicalModelRegistryService()

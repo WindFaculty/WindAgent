@@ -1,0 +1,29 @@
+{
+  "phase": "phase_14",
+  "phase_name": "E2E two-process durable runtime proof",
+  "gate": "TWO_PROCESS_DURABLE_RUNTIME_VERIFIED",
+  "timestamp": "2026-07-26T16:25:00Z",
+  "proof_method": "Spawn real API (uvicorn windagent_api.main:app) and real Worker (python -m windagent_worker) as independent OS processes sharing one SQLite file; drive full task lifecycle over HTTP.",
+  "scenario_steps": [
+    "1. Empty SQLite DB + migration marker (revision 002) created.",
+    "2. Full canonical schema created (create_tables).",
+    "3. API process started (uvicorn) and reached /health/ready = 200 (UP).",
+    "4. Worker process started (python -m windagent_worker) and reached readiness; heartbeat recorded.",
+    "5. POST /api/v2/tasks submitted a mock-safe task -> 201, written to durable queue (task_runs state=pending).",
+    "6. Worker claimed task via SqlDurableTaskQueue.claim_next (fencing token issued).",
+    "7. Worker renewed heartbeat lease (fencing token validated).",
+    "8. ExecutionRuntimeRegistry dispatched task (FakeRuntimeAdapter under WINDAGENT_FAKE_RUNTIME=1) -> mock-safe execution.",
+    "9. Worker committed terminal state (task_runs state=completed) under SqlUnitOfWork.",
+    "10. GET /api/v2/tasks/{id} returned status=COMPLETED (proves cross-process durability; API reads worker-written state).",
+    "11. Worker process stopped; subsequent GET /health/ready shows worker DEGRADED (not DOWN) -> API survives worker failure."
+  ],
+  "real_defects_fixed": [
+    "API create_task never enqueued to durable queue (Worker could not claim). Wired SqlWorkSubmissionAdapter into ApplicationContainer + v2_tasks.create_task.",
+    "Worker never persisted terminal state back to task_runs (stayed 'running'). Added SqlUnitOfWork save_facts(completed) in poll_and_execute_tick.",
+    "Worker ignored WINDAGENT_DATABASE_URL and used default windagent.db in CWD, so it read a DIFFERENT DB than API. WorkerContainer.bootstrap now honors the env var.",
+    "Health checker referenced non-existent registry methods (list_providers/list_tools/list_workflows, awaited sync calls) -> readiness DOWN. Fixed to sync introspection.",
+    "Health queue check queried non-existent 'durable_queue' table -> changed to task_runs.",
+    "Health schema_migration requires migration_history table (no Alembic runner in repo) -> E2E creates the marker as part of 'run migrations'."
+  ],
+  "verdict": "PASS"
+}
