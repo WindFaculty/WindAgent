@@ -300,27 +300,37 @@ class ProductionWorker:
             {"task_id": tid, "status": validated_result.status.value},
             aggregate_id=tid,
         )
-        # Persist terminal state back to task_runs so the API can query the result
-        # after the Worker process exits (PHASE 14 durable runtime proof).
+        # Atomic Task Finalization (Phase 2):
+        # Result, terminal event, transactional outbox, and lease release commit in ONE transaction.
         if self.uow_factory is not None:
             from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork
-            try:
-                async with SqlUnitOfWork(self.uow_factory) as uow:
-                    facts = dict(validated_result.result_data or {})
-                    facts["status"] = "completed"
-                    facts["result"] = validated_result.result_data
-                    existing = await uow.task_runs.get_by_id(tid)
-                    session_id = (existing or {}).get("session_id") or "default_session"
-                    await uow.task_runs.save_facts(
-                        task_id=tid,
-                        session_id=str(session_id),
-                        state="completed",
-                        version=(existing or {}).get("version", 0) or 1,
-                        facts=facts,
-                    )
-                    await uow.commit()
-            except Exception as ex:
-                logger.warning(f"Failed to persist terminal state for task [{tid}]: {ex}")
+            from windagent_core.contracts.finalization import FinalizeTaskExecutionRequest
+
+            async with SqlUnitOfWork(self.uow_factory) as uow:
+                existing = await uow.task_runs.get_by_id(tid)
+                expected_version = (existing or {}).get("version", 0) or 1
+
+                req = FinalizeTaskExecutionRequest(
+                    task_id=tid,
+                    worker_id=str(self.worker_id),
+                    lease_id=str(self._current_task_id),
+                    fencing_token=fencing_token,
+                    expected_task_version=expected_version,
+                    execution_result=dict(validated_result.result_data or {}),
+                    result_artifacts=[],
+                    terminal_event={
+                        "event_type": EventCatalog.TASK_COMPLETED.value if hasattr(EventCatalog.TASK_COMPLETED, "value") else "task_completed",
+                        "task_id": tid,
+                        "status": validated_result.status.value,
+                    },
+                    attempt_id="att_1",
+                    fencing_generation=1,
+                    terminal_state="completed",
+                )
+                fin_res = await uow.finalize_task_execution(req)
+                if fin_res.status != "COMPLETED":
+                    raise RuntimeError(f"Task finalization rejected: {fin_res.error_message}")
+
         if self.task_queue is not None and hasattr(self.task_queue, "release"):
             await self.task_queue.release(raw_tid, str(self.worker_id), fencing_token)
         elif self.lease_manager is not None:
