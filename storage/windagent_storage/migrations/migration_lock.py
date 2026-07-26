@@ -7,10 +7,10 @@ from __future__ import annotations
 import time
 from contextlib import contextmanager
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import Enum
 import logging
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 import uuid
 
 from sqlalchemy import Engine, text
@@ -73,7 +73,9 @@ class MigrationLock:
         self._engine = engine
         self._lock_timeout = lock_timeout
         self._lock_id: Optional[str] = None
+        self._lock_ids: List[str] = []
         self._session: Optional[Session] = None
+        self._ensure_lock_table()
     
     def _ensure_lock_table(self) -> None:
         """Ensure the lock table exists."""
@@ -119,7 +121,7 @@ class MigrationLock:
         lock_id = identifier or str(uuid.uuid4())
         acquired_by = f"process-{uuid.uuid4().hex[:8]}"
         acquired_at = datetime.now()
-        expires_at = acquired_at.replace(second=acquired_at.second + self._lock_timeout)
+        expires_at = acquired_at + timedelta(seconds=self._lock_timeout)
         
         with self._engine.connect() as conn:
             try:
@@ -139,6 +141,7 @@ class MigrationLock:
                 conn.commit()
                 
                 self._lock_id = lock_id
+                self._lock_ids.append(lock_id)
                 logger.info(f"Acquired lock {lock_id} of type {lock_type.value}")
                 return True
                 
@@ -157,7 +160,7 @@ class MigrationLock:
         Returns:
             True if lock released, False otherwise
         """
-        lock_id = lock_id or self._lock_id
+        lock_id = lock_id or (self._lock_ids[-1] if self._lock_ids else self._lock_id)
         if not lock_id:
             logger.warning("No lock to release")
             return False
@@ -177,7 +180,9 @@ class MigrationLock:
             
             if result.rowcount > 0:
                 logger.info(f"Released lock {lock_id}")
-                self._lock_id = None
+                if lock_id in self._lock_ids:
+                    self._lock_ids.remove(lock_id)
+                self._lock_id = self._lock_ids[-1] if self._lock_ids else None
                 return True
             else:
                 logger.warning(f"Lock {lock_id} not found or already released")
@@ -199,9 +204,7 @@ class MigrationLock:
             return False
         
         with self._engine.connect() as conn:
-            expires_at = datetime.now().replace(
-                second=datetime.now().second + self._lock_timeout
-            )
+            expires_at = datetime.now() + timedelta(seconds=self._lock_timeout)
             result = conn.execute(text(f"""
                 UPDATE {self.LOCK_TABLE_NAME}
                 SET expires_at = :expires_at, heartbeat_at = :heartbeat_at

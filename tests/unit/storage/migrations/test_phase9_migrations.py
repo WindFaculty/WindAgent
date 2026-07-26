@@ -54,9 +54,6 @@ def temp_db_with_backend_tables():
     
     engine = create_engine(f"sqlite:///{db_path}")
     
-    # Create V2 tables
-    BaseORM.metadata.create_all(engine)
-    
     # Create legacy backend tables
     with engine.connect() as conn:
         # chat_sessions
@@ -147,6 +144,12 @@ def temp_db_with_backend_tables():
     # Cleanup
     engine.dispose()
     Path(db_path).unlink(missing_ok=True)
+
+
+@pytest.fixture
+def backup_manager(tmp_path):
+    """Keep backup artifacts isolated from the repository worktree."""
+    return BackupManager(backup_root=tmp_path / "db_backups")
 
 
 class TestSchemaChecksum:
@@ -284,17 +287,22 @@ class TestMigrationLock:
 class TestBackupManager:
     """Test backup manager."""
     
-    def test_create_backup(self, temp_db):
+    def test_create_backup(self, temp_db, backup_manager):
         """Test creating a backup."""
         engine, db_path = temp_db
         
         # Insert some test data
         with Session(engine) as session:
-            session.execute(text("INSERT INTO chat_sessions (id, title) VALUES ('test-id', 'Test Session')"))
+            session.execute(text("""
+                INSERT INTO chat_sessions
+                (id, title, status, created_at, updated_at, last_event_sequence)
+                VALUES
+                ('test-id', 'Test Session', 'idle', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 0)
+            """))
             session.commit()
         
         # Create backup
-        backup_info = BackupManager().create_backup(engine)
+        backup_info = backup_manager.create_backup(engine)
         
         assert backup_info is not None
         assert backup_info.backup_id is not None
@@ -302,11 +310,9 @@ class TestBackupManager:
         assert backup_info.schema_checksum is not None
         assert len(backup_info.row_counts) > 0
     
-    def test_list_backups(self, temp_db):
+    def test_list_backups(self, temp_db, backup_manager):
         """Test listing backups."""
         engine, db_path = temp_db
-        backup_manager = BackupManager()
-        
         # Create a backup
         backup_info = backup_manager.create_backup(engine)
         
@@ -316,11 +322,9 @@ class TestBackupManager:
         assert len(backups) >= 1
         assert any(b.backup_id == backup_info.backup_id for b in backups)
     
-    def test_get_latest_backup(self, temp_db):
+    def test_get_latest_backup(self, temp_db, backup_manager):
         """Test getting latest backup."""
         engine, db_path = temp_db
-        backup_manager = BackupManager()
-        
         # Create a backup
         backup_info = backup_manager.create_backup(engine)
         
@@ -330,11 +334,9 @@ class TestBackupManager:
         assert latest is not None
         assert latest.backup_id == backup_info.backup_id
     
-    def test_backup_metadata(self, temp_db):
+    def test_backup_metadata(self, temp_db, backup_manager):
         """Test backup metadata is saved correctly."""
         engine, db_path = temp_db
-        backup_manager = BackupManager()
-        
         # Create a backup
         backup_info = backup_manager.create_backup(engine)
         

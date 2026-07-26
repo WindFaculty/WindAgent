@@ -6,7 +6,7 @@ Computes and verifies schema checksums to detect schema drift.
 from __future__ import annotations
 import hashlib
 import json
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Type
 
 from sqlalchemy import Engine, MetaData, Table, inspect
 from sqlalchemy.orm import DeclarativeBase
@@ -42,10 +42,7 @@ class SchemaChecksum:
                 "name": column.name,
                 "type": str(column.type),
                 "nullable": column.nullable,
-                "default": str(column.default) if column.default else None,
-                "autoincrement": getattr(column, "autoincrement", False),
                 "primary_key": column.primary_key,
-                "unique": column.unique,
             }
             table_info["columns"].append(col_info)
         
@@ -56,8 +53,8 @@ class SchemaChecksum:
         # Process foreign keys
         for fk in table.foreign_keys:
             fk_info = {
-                "name": fk.name,
-                "column": fk.column.name,
+                "name": fk.name or "",
+                "column": fk.parent.name,
                 "target_table": fk.column.table.name,
                 "target_column": fk.target_fullname,
             }
@@ -66,9 +63,9 @@ class SchemaChecksum:
         # Process indexes
         for index in table.indexes:
             index_info = {
-                "name": index.name,
+                "name": index.name or "",
                 "columns": [c.name for c in index.columns],
-                "unique": index.unique,
+                "unique": bool(index.unique),
             }
             table_info["indexes"].append(index_info)
         
@@ -76,7 +73,7 @@ class SchemaChecksum:
         for constraint in table.constraints:
             if constraint is not table.primary_key:
                 constraint_info = {
-                    "name": constraint.name,
+                    "name": constraint.name or "",
                     "type": type(constraint).__name__,
                 }
                 table_info["constraints"].append(constraint_info)
@@ -84,8 +81,10 @@ class SchemaChecksum:
         # Sort for deterministic ordering
         table_info["columns"].sort(key=lambda x: x["name"])
         table_info["indexes"].sort(key=lambda x: x["name"])
-        table_info["foreign_keys"].sort(key=lambda x: x["name"])
-        table_info["constraints"].sort(key=lambda x: x["name"])
+        table_info["foreign_keys"].sort(
+            key=lambda x: (x["name"], x["column"], x["target_column"])
+        )
+        table_info["constraints"].sort(key=lambda x: (x["name"], x["type"]))
         
         # Compute checksum
         json_str = json.dumps(table_info, sort_keys=True)

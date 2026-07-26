@@ -8,8 +8,9 @@ import hashlib
 import json
 import logging
 import shutil
+import uuid
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -81,7 +82,9 @@ class BackupManager:
         app_version: str = "0.3.0",
     ) -> BackupInfo:
         """Create a backup of the database with file and schema checksums."""
-        backup_id = backup_id or datetime.now().strftime("%Y%m%d_%H%M%S")
+        backup_id = backup_id or (
+            f"{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}_{uuid.uuid4().hex[:8]}"
+        )
         backup_dir = self._get_backup_dir(backup_id)
         backup_dir.mkdir(parents=True, exist_ok=True)
 
@@ -229,10 +232,7 @@ class BackupManager:
         return backups
 
     def cleanup_old_backups(self, retention_days: int = DEFAULT_RETENTION_DAYS) -> int:
-        cutoff = datetime.now().replace(
-            day=datetime.now().day - retention_days,
-            hour=0, minute=0, second=0, microsecond=0
-        )
+        cutoff = datetime.now() - timedelta(days=retention_days)
         deleted_count = 0
         for backup in self.list_backups():
             if backup.created_at < cutoff:

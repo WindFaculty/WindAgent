@@ -52,13 +52,16 @@ def test_shadow_execution_comparator():
 
 
 @pytest.mark.asyncio
-async def test_legacy_compatibility_shim():
-    shim = LegacyCompatibilityShim()
+async def test_legacy_compatibility_shim(tmp_path):
+    db_path = tmp_path / "compatibility-shim.db"
+    shim = LegacyCompatibilityShim(
+        db_url=f"sqlite+aiosqlite:///{db_path.as_posix()}"
+    )
 
     # Task request routing
     task_res = await shim.handle_task_request({"prompt": "Migration test task", "workflow_name": "bugfix"})
     assert "task_id" in task_res
-    assert task_res["status"] == "CREATED"
+    assert task_res["status"] == "pending"
 
     # Provider request routing
     prov_res = await shim.handle_provider_request()

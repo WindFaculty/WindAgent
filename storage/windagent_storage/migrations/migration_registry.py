@@ -195,3 +195,29 @@ class MigrationRegistry:
 
 # Global registry instance
 migration_registry = MigrationRegistry()
+
+
+def _register_builtin_migrations() -> None:
+    from windagent_storage.migrations.v2_canonical import (
+        migration_001_initial,
+        migration_002_legacy_data,
+    )
+
+    migration_registry.register(
+        revision=migration_001_initial.MIGRATION_REVISION,
+        name=migration_001_initial.MIGRATION_NAME,
+        description=migration_001_initial.MIGRATION_DESCRIPTION,
+        upgrade=migration_001_initial.upgrade,
+        downgrade=migration_001_initial.downgrade,
+    )
+    migration_registry.register(
+        revision=migration_002_legacy_data.MIGRATION_REVISION,
+        name=migration_002_legacy_data.MIGRATION_NAME,
+        description=migration_002_legacy_data.MIGRATION_DESCRIPTION,
+        upgrade=migration_002_legacy_data.upgrade,
+        downgrade=migration_002_legacy_data.downgrade,
+        dependencies=[migration_001_initial.MIGRATION_REVISION],
+    )
+
+
+_register_builtin_migrations()

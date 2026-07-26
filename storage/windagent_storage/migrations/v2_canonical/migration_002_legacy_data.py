@@ -14,6 +14,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from windagent_storage.migrations.preflight import DataMigrationPreflightValidator
+from windagent_storage.orm.models import ExecutionEventORM, SessionORM
 
 logger = logging.getLogger("windagent.storage.migrations.002")
 
@@ -134,12 +135,14 @@ def upgrade(session: Session) -> None:
         cols = [c[1] for c in session.execute(text("PRAGMA table_info(chat_sessions)")).fetchall()]
         if "status" not in cols:
             session.execute(text("ALTER TABLE chat_sessions RENAME TO legacy_chat_sessions_snapshot"))
+            SessionORM.__table__.create(session.get_bind(), checkfirst=True)
 
     # If legacy `execution_events` exists, rename to `legacy_execution_events_snapshot`
     if _check_table_exists(session, "execution_events") and not _check_table_exists(session, "legacy_execution_events_snapshot"):
         cols = [c[1] for c in session.execute(text("PRAGMA table_info(execution_events)")).fetchall()]
         if "data_json" not in cols:
             session.execute(text("ALTER TABLE execution_events RENAME TO legacy_execution_events_snapshot"))
+            ExecutionEventORM.__table__.create(session.get_bind(), checkfirst=True)
 
     # Check source table names
     chat_source = "legacy_chat_sessions_snapshot" if _check_table_exists(session, "legacy_chat_sessions_snapshot") else "chat_sessions"
@@ -190,7 +193,7 @@ def upgrade(session: Session) -> None:
 
     try:
         # 1. Migrate chat_sessions from chat_source to chat_sessions
-        if source_counts["chat_sessions"] > 0:
+        if source_counts["chat_sessions"] > 0 and chat_source != "chat_sessions":
             session.execute(text(f"""
                 INSERT OR IGNORE INTO chat_sessions 
                 (id, title, status, agent_id, workspace_root, created_at, updated_at, last_event_sequence, metadata_json)
@@ -248,7 +251,7 @@ def upgrade(session: Session) -> None:
             stats.tables_migrated += 1
 
         # 5. Migrate execution_events
-        if source_counts["execution_events"] > 0:
+        if source_counts["execution_events"] > 0 and events_source != "execution_events":
             session.execute(text(f"""
                 INSERT OR IGNORE INTO execution_events 
                 (id, session_id, event_type, data_json, event_seq, created_at)
