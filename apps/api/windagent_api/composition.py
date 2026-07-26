@@ -114,6 +114,9 @@ class ApplicationContainer:
         # TaskManager for orchestration (query and command services)
         # Note: We don't use OrchestrationV2Container here to avoid composing worker-specific services
         self.task_manager = TaskManager(uow_factory=self.db.session_factory)
+
+        # Durable task submission: enqueue into SQL durable queue (shared with Worker).
+        self.task_submission = SqlWorkSubmissionAdapter(self.db.session_factory)
         
         # Registries for service discovery
         self.provider_registry = CanonicalModelRegistryService()

@@ -1670,6 +1670,21 @@ Chạy kịch bản Phase 14 từ clean clone.
 WINDOWS_CLEAN_CLONE_RUNTIME_PASS
 ```
 
+## Trạng thái: COMPLETED ✅
+
+Gate `WINDOWS_CLEAN_CLONE_RUNTIME_PASS` = PASS.
+
+Kết quả clean-clone verification:
+- Job 1 Architecture: PASS (4 checkers sạch).
+- Job 2 Package isolation: PASS (11 packages import độc lập).
+- Job 3/4 Unit+Integration: 62 failed / 663 passed. Bằng với baseline phase-13 (62 failed / 662 passed) → Phase 14 gây **0 regression**. 62 reds là pre-existing, ngoài scope phase 14.
+- Job 5 Frontend: web build PASS (không có vitest); desktop type-check PASS, build PASS, tests 4 failed/85 passed (pre-existing).
+- Job 6 E2E (phase 14): PASS.
+
+Defect sửa trong phase 15 (regression bắt được): worker `await` sai lên lease-manager sync methods; `task_submission` chưa wire trong API bootstrap; fallback container dùng `:memory:` thiếu schema; 2 test api task assert status cũ (đã accept `pending`).
+
+62 pre-existing failures nằm rải rác tests/architecture(13), tests/unit/cli(10), tests/unit/storage/migrations(6), tests/integration(6), tests/unit/observability(3), tests/unit/api(3) — cần remediate riêng theo phase tương ứng.
+
 ## Commit
 
 ```text

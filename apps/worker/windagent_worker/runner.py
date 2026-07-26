@@ -208,7 +208,7 @@ class ProductionWorker:
         if self.task_queue is not None:
             claimed = await self.task_queue.claim_next(str(self.worker_id))
         elif self.lease_manager is not None:
-            claimed = await self.lease_manager.claim_task(str(self.worker_id))
+            claimed = self.lease_manager.claim_task(str(self.worker_id))
 
         if not claimed:
             return {"status": "idle", "processed": 0}
@@ -238,7 +238,7 @@ class ProductionWorker:
         if self.task_queue is not None and hasattr(self.task_queue, "renew"):
             renewed = await self.task_queue.renew(raw_tid, str(self.worker_id), fencing_token)
         elif self.lease_manager is not None:
-            renewed = await self.lease_manager.renew_lease(
+            renewed = self.lease_manager.renew_lease(
                 raw_tid,
                 str(self.worker_id),
                 fencing_token=fencing_token,
@@ -255,7 +255,7 @@ class ProductionWorker:
             if self.task_queue is not None and hasattr(self.task_queue, "release"):
                 await self.task_queue.release(raw_tid, str(self.worker_id), fencing_token)
             elif self.lease_manager is not None:
-                await self.lease_manager.release_lease(raw_tid, str(self.worker_id), fencing_token=fencing_token)
+                self.lease_manager.release_lease(raw_tid, str(self.worker_id), fencing_token=fencing_token)
             self._current_task_id = None
             self._current_fencing_token = None
             self._cancellation_requested = False
@@ -288,7 +288,7 @@ class ProductionWorker:
             if self.task_queue is not None and hasattr(self.task_queue, "release"):
                 await self.task_queue.release(raw_tid, str(self.worker_id), fencing_token)
             elif self.lease_manager is not None:
-                await self.lease_manager.release_lease(raw_tid, str(self.worker_id), fencing_token=fencing_token)
+                self.lease_manager.release_lease(raw_tid, str(self.worker_id), fencing_token=fencing_token)
             self._current_task_id = None
             self._current_fencing_token = None
             return {"status": "fencing_violation", "task_id": raw_tid, "error": str(err)}
@@ -322,7 +322,7 @@ class ProductionWorker:
         if self.task_queue is not None and hasattr(self.task_queue, "release"):
             await self.task_queue.release(raw_tid, str(self.worker_id), fencing_token)
         elif self.lease_manager is not None:
-            await self.lease_manager.release_lease(raw_tid, str(self.worker_id), fencing_token=fencing_token)
+            self.lease_manager.release_lease(raw_tid, str(self.worker_id), fencing_token=fencing_token)
         self._current_task_id = None
         self._current_fencing_token = None
 

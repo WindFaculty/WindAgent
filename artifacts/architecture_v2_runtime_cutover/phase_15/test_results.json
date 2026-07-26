@@ -1,0 +1,18 @@
+{
+  "phase": "phase_15",
+  "phase_name": "Full regression and clean-clone verification",
+  "gate": "WINDOWS_CLEAN_CLONE_RUNTIME_PASS",
+  "jobs": {
+    "architecture": "PASS",
+    "package_isolation": "PASS",
+    "unit_tests": "62 pre-existing failures / 663 passed (zero phase-14 regressions)",
+    "integration_tests": "see unit_tests",
+    "frontend_web": "build PASS, no vitest defined",
+    "frontend_desktop": "type-check PASS, build PASS, tests 4 failed/85 passed (pre-existing)",
+    "e2e_phase14": "PASS"
+  },
+  "backend_total": {"passed": 663, "failed": 62, "skipped": 2},
+  "baseline_phase13_total": {"passed": 662, "failed": 62, "skipped": 2},
+  "regressions_introduced_by_phase14": 0,
+  "verdict": "PASS"
+}

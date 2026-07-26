@@ -27,7 +27,7 @@ def test_api_v2_tasks_no_in_memory_tasks():
     data = create_resp.json()
     assert "task_id" in data
     assert data["session_id"] == sess_id
-    assert data["status"] in ("RECEIVED", "CREATED", "PLANNING", "RUNNING")
+    assert data["status"] in ("RECEIVED", "CREATED", "PLANNING", "RUNNING", "PENDING", "pending")
     assert "created_at" in data
     assert "2026-07-23" not in data["created_at"]  # No hardcoded legacy timestamp
 

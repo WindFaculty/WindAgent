@@ -4,11 +4,16 @@ Provides clean dependency injection from ApplicationContainer with safe fallback
 """
 
 from __future__ import annotations
+import asyncio
+import tempfile
+from pathlib import Path
 from typing import Generator, Optional
 from fastapi import Request, HTTPException, status
 
 from windagent_api.composition import ApplicationContainer
 from windagent_storage.database.connection import DatabaseManager
+from windagent_storage.orm.models import BaseORM
+from windagent_storage.queue.submission_adapter import SqlWorkSubmissionAdapter
 from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork
 from windagent_orchestration.task_manager.service import TaskManager
 from windagent_execution.registry import ExecutionRuntimeRegistry
@@ -17,6 +22,28 @@ from windagent_tools.registry import ToolRegistry
 from windagent_tools.security.permission_engine import PermissionEngine
 
 _fallback_container: Optional[ApplicationContainer] = None
+_fallback_db_path: Optional[Path] = None
+
+
+def _build_fallback_container() -> ApplicationContainer:
+    """Uncontextualized (no-lifespan) test runner fallback with a real file DB + schema."""
+    global _fallback_db_path
+    _fallback_db_path = Path(tempfile.mkdtemp(prefix="windagent_fb_")) / "fallback.db"
+    db_url = f"sqlite+aiosqlite:///{_fallback_db_path}"
+    container = ApplicationContainer()
+    container.db = DatabaseManager(db_url)
+    loop = asyncio.new_event_loop()
+    try:
+        loop.run_until_complete(container.db.create_tables(BaseORM.metadata))
+    finally:
+        loop.close()
+    container.task_manager = TaskManager(uow_factory=container.db.session_factory)
+    container.task_submission = SqlWorkSubmissionAdapter(container.db.session_factory)
+    container.provider_registry = CanonicalModelRegistryService()
+    container.tool_registry = ToolRegistry()
+    container.execution_registry = ExecutionRuntimeRegistry()
+    container.is_initialized = True
+    return container
 
 
 def get_container(request: Request) -> ApplicationContainer:
@@ -24,13 +51,7 @@ def get_container(request: Request) -> ApplicationContainer:
     container = getattr(request.app.state, "container", None)
     if container is None:
         if _fallback_container is None:
-            _fallback_container = ApplicationContainer()
-            _fallback_container.db = DatabaseManager("sqlite+aiosqlite:///:memory:")
-            _fallback_container.task_manager = TaskManager(uow_factory=_fallback_container.db.session_factory)
-            _fallback_container.provider_registry = CanonicalModelRegistryService()
-            _fallback_container.tool_registry = ToolRegistry()
-            _fallback_container.execution_registry = ExecutionRuntimeRegistry()
-            _fallback_container.is_initialized = True
+            _fallback_container = _build_fallback_container()
         container = _fallback_container
         request.app.state.container = container
     return container
