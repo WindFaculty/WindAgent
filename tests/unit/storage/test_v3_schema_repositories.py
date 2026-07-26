@@ -139,23 +139,23 @@ async def test_atomic_route_lock_creation(in_memory_db):
     repo = SQLRouteLockRepository(session)
 
     # First lock creation
-    lock1 = await repo.create_lock("session", "sess-100", "gpt-4o", {"tier": "primary"})
+    lock1 = repo.create_lock("session", "sess-100", "gpt-4o", {"tier": "primary"})
     session.commit()
     assert lock1["canonical_model_id"] == "gpt-4o"
     assert lock1["status"] == "active"
 
     # Concurrent attempt to create lock on same scope returns existing lock
-    lock2 = await repo.create_lock("session", "sess-100", "claude-3-5-sonnet", {"tier": "fallback"})
+    lock2 = repo.create_lock("session", "sess-100", "claude-3-5-sonnet", {"tier": "fallback"})
     assert lock2["id"] == lock1["id"]
     assert lock2["canonical_model_id"] == "gpt-4o"
 
     # Release lock
-    released = await repo.release_lock(lock1["id"])
+    released = repo.release_lock(lock1["id"])
     session.commit()
     assert released is True
 
     # Now new lock can be created
-    lock3 = await repo.create_lock("session", "sess-100", "claude-3-5-sonnet", {"tier": "primary"})
+    lock3 = repo.create_lock("session", "sess-100", "claude-3-5-sonnet", {"tier": "primary"})
     session.commit()
     assert lock3["id"] != lock1["id"]
     assert lock3["canonical_model_id"] == "claude-3-5-sonnet"

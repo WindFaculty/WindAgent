@@ -8,6 +8,7 @@ import json
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from windagent_providers.base.contracts import (
@@ -15,8 +16,9 @@ from windagent_providers.base.contracts import (
 )
 from windagent_core.contracts.providers.ports import (
     CanonicalModelRegistryPort, EndpointRegistryPort, EndpointStatePort,
-    QuotaStatePort, RouteAttemptPort, RouteLockPort, UsageLedgerPort
+    QuotaStatePort, RouteAttemptPort, UsageLedgerPort
 )
+from windagent_providers.routing.ports import RouteLockRepositoryPort
 from windagent_storage.orm.v3_models import (
     CanonicalModelV3ORM, EndpointModelBindingORM,
     EndpointRuntimeStateORM, ProviderEndpointORM,
@@ -109,20 +111,38 @@ class SQLCanonicalModelRegistryRepository(CanonicalModelRegistryPort):
         ]
 
 
-class SQLRouteLockRepository(RouteLockPort):
-    """SQL Implementation of RouteLockPort guaranteeing single active lock per scope."""
+def _row_to_lock(lock: RouteLockV3ORM) -> Dict[str, Any]:
+    return {
+        "id": lock.id,
+        "scope": lock.scope_type,
+        "scope_type": lock.scope_type,
+        "scope_id": lock.scope_id,
+        "canonical_model_id": lock.canonical_model_id,
+        "policy_version": lock.policy_version,
+        "routing_snapshot": json.loads(lock.routing_snapshot_json) if lock.routing_snapshot_json else {},
+        "status": lock.status,
+        "created_at": lock.created_at,
+    }
+
+
+class SQLRouteLockRepository(RouteLockRepositoryPort):
+    """SQL Implementation of RouteLockPort guaranteeing single active lock per scope.
+
+    Synchronous: receives a synchronous SQLAlchemy ``Session`` and is invoked
+    synchronously from RouteLockService (Phase 1 durable authority).
+    """
 
     def __init__(self, session: Session):
         self.session = session
 
-    async def get_lock(self, scope_type: str, scope_id: str) -> Optional[Dict[str, Any]]:
-        lock = self.session.query(RouteLockV3ORM).filter_by(
-            scope_type=scope_type, scope_id=scope_id, status="active"
-        ).first()
+    def get_lock_by_id(self, lock_id: str) -> Optional[Dict[str, Any]]:
+        self.session.expire_all()
+        lock = self.session.query(RouteLockV3ORM).filter_by(id=lock_id).first()
         if not lock:
             return None
         return {
             "id": lock.id,
+            "scope": lock.scope_type,
             "scope_type": lock.scope_type,
             "scope_id": lock.scope_id,
             "canonical_model_id": lock.canonical_model_id,
@@ -132,19 +152,40 @@ class SQLRouteLockRepository(RouteLockPort):
             "created_at": lock.created_at,
         }
 
-    async def create_lock(
+    def get_lock(self, scope_type: str, scope_id: str) -> Optional[Dict[str, Any]]:
+        self.session.expire_all()
+        lock = self.session.query(RouteLockV3ORM).filter_by(
+            scope_type=scope_type, scope_id=scope_id, status="active"
+        ).first()
+        if not lock:
+            return None
+        return {
+            "id": lock.id,
+            "scope": lock.scope_type,
+            "scope_type": lock.scope_type,
+            "scope_id": lock.scope_id,
+            "canonical_model_id": lock.canonical_model_id,
+            "policy_version": lock.policy_version,
+            "routing_snapshot": json.loads(lock.routing_snapshot_json) if lock.routing_snapshot_json else {},
+            "status": lock.status,
+            "created_at": lock.created_at,
+        }
+
+    def create_lock(
         self,
         scope_type: str,
         scope_id: str,
         canonical_model_id: str,
         routing_snapshot: Dict[str, Any],
+        policy_version: int = 1,
     ) -> Dict[str, Any]:
-        # Atomic single active lock check
+        # Fast path: lock already active for this scope.
+        self.session.expire_all()
         existing = self.session.query(RouteLockV3ORM).filter_by(
             scope_type=scope_type, scope_id=scope_id, status="active"
         ).first()
         if existing:
-            return await self.get_lock(scope_type, scope_id)
+            return _row_to_lock(existing)
 
         lock_id = f"lock-{uuid.uuid4().hex[:12]}"
         lock = RouteLockV3ORM(
@@ -152,30 +193,35 @@ class SQLRouteLockRepository(RouteLockPort):
             scope_type=scope_type,
             scope_id=scope_id,
             canonical_model_id=canonical_model_id,
-            policy_version=1,
+            policy_version=policy_version,
             routing_snapshot_json=json.dumps(routing_snapshot),
             status="active",
+            version=1,
         )
         self.session.add(lock)
-        self.session.flush()
-        return {
-            "id": lock.id,
-            "scope_type": lock.scope_type,
-            "scope_id": lock.scope_id,
-            "canonical_model_id": lock.canonical_model_id,
-            "policy_version": lock.policy_version,
-            "routing_snapshot": routing_snapshot,
-            "status": lock.status,
-            "created_at": lock.created_at,
-        }
+        try:
+            self.session.flush()
+            self.session.commit()
+        except IntegrityError:
+            # Lost the race: another process/thread inserted the active lock.
+            # Roll back our insert and return the winner (compare-and-swap semantics).
+            self.session.rollback()
+            winner = self.session.query(RouteLockV3ORM).filter_by(
+                scope_type=scope_type, scope_id=scope_id, status="active"
+            ).first()
+            if winner is None:
+                raise
+            return _row_to_lock(winner)
+        return _row_to_lock(lock)
 
-    async def release_lock(self, lock_id: str) -> bool:
+    def release_lock(self, lock_id: str) -> bool:
         lock = self.session.query(RouteLockV3ORM).filter_by(id=lock_id).first()
         if not lock or lock.status != "active":
             return False
         lock.status = "released"
         lock.released_at = datetime.now(timezone.utc)
-        self.session.flush()
+        lock.updated_at = datetime.now(timezone.utc)
+        self.session.flush(); self.session.commit()
         return True
 
 
@@ -211,7 +257,7 @@ class SQLRouteAttemptRepository(RouteAttemptPort):
             finished_at=datetime.now(timezone.utc),
         )
         self.session.add(attempt)
-        self.session.flush()
+        self.session.flush(); self.session.commit()
         return str(attempt.id)
 
 
@@ -250,7 +296,7 @@ class SQLQuotaStateRepository(QuotaStatePort):
             reset_at=snapshot.reset_at,
         )
         self.session.add(orm)
-        self.session.flush()
+        self.session.flush(); self.session.commit()
 
 
 class SQLEndpointStateRepository(EndpointStatePort):
@@ -274,7 +320,7 @@ class SQLEndpointStateRepository(EndpointStatePort):
         state.circuit_state = "closed"
         state.cooldown_until = None
         state.updated_at = datetime.now(timezone.utc)
-        self.session.flush()
+        self.session.flush(); self.session.commit()
 
     async def record_failure(self, endpoint_id: str, error_class: str, status_code: Optional[int]) -> None:
         state = self.session.query(EndpointRuntimeStateORM).filter_by(endpoint_id=endpoint_id).first()
@@ -298,7 +344,7 @@ class SQLEndpointStateRepository(EndpointStatePort):
             state.circuit_state = "open"
 
         state.updated_at = datetime.now(timezone.utc)
-        self.session.flush()
+        self.session.flush(); self.session.commit()
 
     async def set_cooldown(self, endpoint_id: str, cooldown_until: datetime) -> None:
         state = self.session.query(EndpointRuntimeStateORM).filter_by(endpoint_id=endpoint_id).first()
@@ -308,7 +354,7 @@ class SQLEndpointStateRepository(EndpointStatePort):
 
         state.cooldown_until = cooldown_until
         state.updated_at = datetime.now(timezone.utc)
-        self.session.flush()
+        self.session.flush(); self.session.commit()
 
     async def is_available(self, endpoint_id: str) -> bool:
         state = self.session.query(EndpointRuntimeStateORM).filter_by(endpoint_id=endpoint_id).first()
@@ -351,4 +397,4 @@ class SQLUsageLedgerRepository(UsageLedgerPort):
             cost_usd=cost_usd,
         )
         self.session.add(record)
-        self.session.flush()
+        self.session.flush(); self.session.commit()

@@ -6,7 +6,7 @@ Decoupled domain storage tables adhering to ban_ke_hoach.md §PHASE 2.
 from __future__ import annotations
 
 from sqlalchemy import (
-    Boolean, Column, DateTime, Float, ForeignKey, Index, Integer, String, Text
+    Boolean, Column, DateTime, Float, ForeignKey, Index, Integer, String, Text, text
 )
 
 from windagent_storage.orm.models import BaseORM, default_utc_now
@@ -132,6 +132,14 @@ class RouteLockV3ORM(BaseORM):
 
     __table_args__ = (
         Index("ix_route_locks_v3_scope", "scope_type", "scope_id", "status"),
+        Index(
+            "uq_route_locks_v3_active_scope",
+            "scope_type",
+            "scope_id",
+            unique=True,
+            sqlite_where=text("status = 'active'"),
+            postgresql_where=text("status = 'active'"),
+        ),
     )
 
 
