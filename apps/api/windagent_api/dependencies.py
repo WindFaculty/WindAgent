@@ -18,6 +18,7 @@ from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork
 from windagent_orchestration.task_manager.service import TaskManager
 from windagent_execution.registry import ExecutionRuntimeRegistry
 from windagent_providers.registry.canonical_registry import CanonicalModelRegistryService
+from windagent_providers.routing.route_lock_service import RouteLockService
 from windagent_tools.registry import ToolRegistry
 from windagent_tools.security.permission_engine import PermissionEngine
 
@@ -39,7 +40,20 @@ def _build_container() -> ApplicationContainer:
         loop.close()
     container.task_manager = TaskManager(uow_factory=container.db.session_factory)
     container.task_submission = SqlWorkSubmissionAdapter(container.db.session_factory)
-    container.provider_registry = CanonicalModelRegistryService()
+    from windagent_storage.database.sync_factory import make_sync_session_factory
+    from windagent_storage.repositories.v3_routing_repositories import (
+        SQLEndpointBindingRepository,
+        SQLProviderRoutingAuditRepository,
+    )
+    from windagent_storage.repositories.v3_repositories import SQLRouteLockRepository
+    sync_factory = make_sync_session_factory(container.db_url)
+    container.provider_registry = CanonicalModelRegistryService(
+        binding_repository=SQLEndpointBindingRepository(sync_factory())
+    )
+    container.route_lock_service = RouteLockService(
+        lock_repository=SQLRouteLockRepository(sync_factory()),
+        audit_repository=SQLProviderRoutingAuditRepository(sync_factory()),
+    )
     container.tool_registry = ToolRegistry()
     container.execution_registry = ExecutionRuntimeRegistry()
     container.is_initialized = True

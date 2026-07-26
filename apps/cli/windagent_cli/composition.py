@@ -70,8 +70,16 @@ class DoctorCommandComposer:
         except Exception:
             pass  # Tables may already exist
         
-        # Initialize registries
-        provider_registry = CanonicalModelRegistryService()
+        # Initialize registries (DB-backed when db available)
+        from windagent_storage.database.sync_factory import make_sync_session_factory
+        from windagent_storage.repositories.v3_routing_repositories import (
+            SQLEndpointBindingRepository,
+            SQLProviderRoutingAuditRepository,
+        )
+        sync_factory = make_sync_session_factory(self.db_url)
+        binding_repo = SQLEndpointBindingRepository(sync_factory())
+        audit_repo = SQLProviderRoutingAuditRepository(sync_factory())
+        provider_registry = CanonicalModelRegistryService(binding_repository=binding_repo)
         tool_registry = ToolRegistry()
         plugin_registry = PluginRegistry()
         skill_registry = SkillRegistry()

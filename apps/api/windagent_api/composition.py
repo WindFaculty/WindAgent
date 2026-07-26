@@ -118,8 +118,22 @@ class ApplicationContainer:
         # Durable task submission: enqueue into SQL durable queue (shared with Worker).
         self.task_submission = SqlWorkSubmissionAdapter(self.db.session_factory)
         
-        # Registries for service discovery
-        self.provider_registry = CanonicalModelRegistryService()
+        from windagent_storage.database.sync_factory import make_sync_session_factory
+        from windagent_storage.repositories.v3_routing_repositories import (
+            SQLEndpointBindingRepository,
+            SQLProviderRoutingAuditRepository,
+        )
+        from windagent_storage.repositories.v3_repositories import (
+            SQLRouteLockRepository,
+        )
+
+        sync_factory = make_sync_session_factory(self.db_url)
+        binding_repo = SQLEndpointBindingRepository(sync_factory())
+        audit_repo = SQLProviderRoutingAuditRepository(sync_factory())
+        lock_repo = SQLRouteLockRepository(sync_factory())
+
+        # Registries for service discovery (DB-backed durable authority)
+        self.provider_registry = CanonicalModelRegistryService(binding_repository=binding_repo)
         self.tool_registry = ToolRegistry()
         self.plugin_registry = PluginRegistry()
         self.skill_registry = SkillRegistry()
@@ -131,7 +145,7 @@ class ApplicationContainer:
         self.verification_query_service = VerificationQueryService()
         
         # Routing and worker coordination
-        self.route_lock_service = RouteLockService()
+        self.route_lock_service = RouteLockService(lock_repository=lock_repo, audit_repository=audit_repo)
         self.worker_status_query = SqlWorkerStatusQuery(
             SqlWorkerHeartbeatRepository(self.db.session_factory)
         )

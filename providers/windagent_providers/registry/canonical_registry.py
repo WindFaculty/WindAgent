@@ -1,12 +1,18 @@
 """
 Canonical Model Registry Service for WindAgent Provider Subsystem V3.
-Manages canonical model definitions, endpoint bindings, equivalence classification,
-discovery snapshot reconciliation, and audit trails.
+
+Phase 1: database is the source of truth.  The service depends only on
+``EndpointBindingRepositoryPort``; when no repository is injected it falls back
+to an in-memory store (development / tests only — NOT for production, see
+ban_ke_hoach.md §1.4).  All production composition roots inject the SQL
+repository so API and Worker share one durable authority.
 """
 
 from __future__ import annotations
 import uuid
 import time
+import logging
+import warnings
 from typing import Dict, List, Optional
 from dataclasses import dataclass, field
 
@@ -16,6 +22,9 @@ from windagent_providers.registry.equivalence import (
     classify_equivalence,
     EquivalenceLevel,
 )
+from windagent_providers.routing.ports import EndpointBindingRepositoryPort
+
+logger = logging.getLogger("windagent.providers.registry")
 
 
 @dataclass
@@ -52,35 +61,23 @@ class AuditTrailRecord:
     timestamp: float = field(default_factory=time.time)
 
 
-class CanonicalModelRegistryService:
-    """In-memory & persistence-backed Canonical Model Registry Engine."""
+class _InMemoryBindingStore(EndpointBindingRepositoryPort):
+    """Dev/test-only in-memory fallback implementing the routing port."""
 
     def __init__(self):
         self._canonical_models: Dict[str, CanonicalModelRecord] = {}
         self._bindings: Dict[str, EndpointBindingRecord] = {}
         self._audit_trails: List[AuditTrailRecord] = []
 
-    def register_discovery_snapshot(
-        self, endpoint_id: str, discovered_models: List[DiscoveredModel]
-    ) -> List[EndpointBindingRecord]:
-        """
-        Idempotently processes endpoint discovery snapshot.
-        Re-running discovery updates timestamps and metadata without creating duplicates.
-        """
-        results: List[EndpointBindingRecord] = []
-
+    def register_discovery_snapshot(self, endpoint_id, discovered_models):
+        results: List[Dict[str, Any]] = []
         for disc in discovered_models:
-            norm = normalize_model_id(
-                disc.raw_model_id, default_vendor=disc.provider_id
-            )
-
-            # Find or create canonical model
+            norm = normalize_model_id(disc.raw_model_id, default_vendor=disc.provider_id)
             canonical_id = None
             for c_id, c_rec in self._canonical_models.items():
                 if c_rec.name == norm.canonical_name:
                     canonical_id = c_id
                     break
-
             if not canonical_id:
                 canonical_id = f"cm-{uuid.uuid4().hex[:8]}"
                 self._canonical_models[canonical_id] = CanonicalModelRecord(
@@ -91,77 +88,56 @@ class CanonicalModelRegistryService:
                     revision=norm.revision,
                     context_window=disc.context_window or 128000,
                 )
-
             c_rec = self._canonical_models[canonical_id]
             norm_c = normalize_model_id(c_rec.name, default_vendor=c_rec.vendor)
             assessment = classify_equivalence(norm, norm_c)
-
-            # Check if binding already exists for this endpoint + canonical model
-            existing_binding = None
+            existing = None
             for b in self._bindings.values():
                 if (
                     b.endpoint_id == endpoint_id
                     and b.canonical_model_id == canonical_id
                     and b.provider_model_id == disc.raw_model_id
                 ):
-                    existing_binding = b
+                    existing = b
                     break
-
-            if existing_binding:
-                existing_binding.updated_at = time.time()
-                existing_binding.equivalence_level = assessment.level.value
-                existing_binding.confidence = assessment.confidence
-                results.append(existing_binding)
+            if existing:
+                existing.updated_at = time.time()
+                existing.equivalence_level = assessment.level.value
+                existing.confidence = assessment.confidence
+                binding = existing
             else:
-                binding_id = f"bnd-{uuid.uuid4().hex[:8]}"
-                new_binding = EndpointBindingRecord(
-                    id=binding_id,
+                binding = EndpointBindingRecord(
+                    id=f"bnd-{uuid.uuid4().hex[:8]}",
                     endpoint_id=endpoint_id,
                     canonical_model_id=canonical_id,
                     provider_model_id=disc.raw_model_id,
                     equivalence_level=assessment.level.value,
                     confidence=assessment.confidence,
                 )
-                self._bindings[binding_id] = new_binding
-                results.append(new_binding)
-
+                self._bindings[binding.id] = binding
+            results.append(binding)
         return results
 
-    def get_exact_equivalent_endpoints(
-        self, canonical_model_id: str
-    ) -> List[EndpointBindingRecord]:
-        """
-        Returns binding records strictly with equivalence_level == 'exact_revision'.
-        Used exclusively for automatic failover candidate querying.
-        """
+    def get_exact_equivalent_endpoints(self, canonical_model_id):
         return [
-            b
+            self._binding_to_dict(b)
             for b in self._bindings.values()
             if b.canonical_model_id == canonical_model_id
             and b.is_active
             and b.equivalence_level == EquivalenceLevel.EXACT_REVISION.value
         ]
 
-    def merge_canonical_models(
-        self, source_canonical_id: str, target_canonical_id: str, actor: str = "system"
-    ) -> bool:
-        """Merges source canonical model into target canonical model with audit tracking."""
+    def merge_canonical_models(self, source_canonical_id, target_canonical_id, actor="system"):
         if (
             source_canonical_id not in self._canonical_models
             or target_canonical_id not in self._canonical_models
         ):
             return False
-
-        # Re-point bindings
         for b in self._bindings.values():
             if b.canonical_model_id == source_canonical_id:
                 b.canonical_model_id = target_canonical_id
                 b.updated_at = time.time()
-
-        # Delete source model
         del self._canonical_models[source_canonical_id]
-
-        # Audit log
         self._audit_trails.append(
             AuditTrailRecord(
                 id=f"aud-{uuid.uuid4().hex[:8]}",
@@ -173,31 +149,23 @@ class CanonicalModelRegistryService:
         )
         return True
 
-    def split_binding(
-        self, binding_id: str, new_canonical_name: str, actor: str = "system"
-    ) -> Optional[EndpointBindingRecord]:
-        """Splits an endpoint model binding into a newly created canonical model with audit tracking."""
+    def split_binding(self, binding_id, new_canonical_name, actor="system"):
         if binding_id not in self._bindings:
             return None
-
         binding = self._bindings[binding_id]
         old_canonical_id = binding.canonical_model_id
-
         new_canonical_id = f"cm-{uuid.uuid4().hex[:8]}"
-        new_canonical = CanonicalModelRecord(
+        self._canonical_models[new_canonical_id] = CanonicalModelRecord(
             id=new_canonical_id,
             name=new_canonical_name,
             family=new_canonical_name,
             vendor="custom",
             revision=None,
         )
-        self._canonical_models[new_canonical_id] = new_canonical
-
         binding.canonical_model_id = new_canonical_id
         binding.equivalence_level = EquivalenceLevel.EXACT_REVISION.value
         binding.confidence = 1.0
         binding.updated_at = time.time()
-
         self._audit_trails.append(
             AuditTrailRecord(
                 id=f"aud-{uuid.uuid4().hex[:8]}",
@@ -207,8 +175,84 @@ class CanonicalModelRegistryService:
                 actor=actor,
             )
         )
-        return binding
+        return self._binding_to_dict(binding)
+
+    def get_audit_trails(self):
+        return list(self._audit_trails)
+
+    @staticmethod
+    def _binding_to_dict(b: EndpointBindingRecord) -> Dict[str, Any]:
+        return {
+            "id": b.id,
+            "endpoint_id": b.endpoint_id,
+            "canonical_model_id": b.canonical_model_id,
+            "provider_model_id": b.provider_model_id,
+            "equivalence_level": b.equivalence_level,
+            "is_active": b.is_active,
+            "created_at": b.created_at,
+            "updated_at": b.updated_at,
+        }
+
+
+class CanonicalModelRegistryService:
+    """Canonical model registry. Durable when a repository is injected."""
+
+    def __init__(self, binding_repository: Optional[EndpointBindingRepositoryPort] = None):
+        self._repo = binding_repository
+        if self._repo is None:
+            warnings.warn(
+                "CanonicalModelRegistryService running IN-MEMORY (dev/test only). "
+                "Inject EndpointBindingRepositoryPort for production durability.",
+                stacklevel=2,
+            )
+            self._repo = _InMemoryBindingStore()
+
+    # ------------------------------------------------------------------ #
+    # Public API (unchanged signatures for existing call sites/tests)
+    # ------------------------------------------------------------------ #
+    def register_discovery_snapshot(
+        self, endpoint_id: str, discovered_models: List[DiscoveredModel]
+    ) -> List[EndpointBindingRecord]:
+        raw = self._repo.register_discovery_snapshot(endpoint_id, discovered_models)
+        return [self._coerce_binding(b) for b in raw]
+
+    def get_exact_equivalent_endpoints(
+        self, canonical_model_id: str
+    ) -> List[EndpointBindingRecord]:
+        raw = self._repo.get_exact_equivalent_endpoints(canonical_model_id)
+        return [self._coerce_binding(b) for b in raw]
+
+    def merge_canonical_models(
+        self, source_canonical_id: str, target_canonical_id: str, actor: str = "system"
+    ) -> bool:
+        return self._repo.merge_canonical_models(source_canonical_id, target_canonical_id, actor)
+
+    def split_binding(
+        self, binding_id: str, new_canonical_name: str, actor: str = "system"
+    ) -> Optional[EndpointBindingRecord]:
+        r = self._repo.split_binding(binding_id, new_canonical_name, actor)
+        return self._coerce_binding(r) if r else None
 
     def get_audit_trails(self) -> List[AuditTrailRecord]:
-        """Returns recorded audit log entries."""
-        return self._audit_trails.copy()
+        return self._repo.get_audit_trails()
+
+    @property
+    def is_durable(self) -> bool:
+        return not isinstance(self._repo, _InMemoryBindingStore)
+
+    # ------------------------------------------------------------------ #
+    @staticmethod
+    def _coerce_binding(b) -> EndpointBindingRecord:
+        if isinstance(b, EndpointBindingRecord):
+            return b
+        return EndpointBindingRecord(
+            id=b["id"],
+            endpoint_id=b["endpoint_id"],
+            canonical_model_id=b["canonical_model_id"],
+            provider_model_id=b["provider_model_id"],
+            equivalence_level=b["equivalence_level"],
+            confidence=b.get("confidence", 1.0),
+            is_active=b.get("is_active", True),
+            created_at=b.get("created_at", time.time()),
+            updated_at=b.get("updated_at", time.time()),
+        )

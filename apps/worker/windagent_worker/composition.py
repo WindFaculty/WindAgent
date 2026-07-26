@@ -138,8 +138,20 @@ class WorkerContainer:
         else:
             self.execution_registry = ExecutionRuntimeRegistry()
         
-        # Registries
-        self.provider_registry = CanonicalModelRegistryService()
+        # Registries (DB-backed durable authority shared with API)
+        from windagent_storage.database.sync_factory import make_sync_session_factory
+        from windagent_storage.repositories.v3_routing_repositories import (
+            SQLEndpointBindingRepository,
+            SQLProviderRoutingAuditRepository,
+        )
+        from windagent_storage.repositories.v3_repositories import (
+            SQLRouteLockRepository,
+        )
+        sync_factory = make_sync_session_factory(self.db_url)
+        binding_repo = SQLEndpointBindingRepository(sync_factory())
+        audit_repo = SQLProviderRoutingAuditRepository(sync_factory())
+        lock_repo = SQLRouteLockRepository(sync_factory())
+        self.provider_registry = CanonicalModelRegistryService(binding_repository=binding_repo)
         self.tool_registry = ToolRegistry()
         self.workflow_registry = WorkflowRegistry()
         
@@ -155,7 +167,7 @@ class WorkerContainer:
         self.verification_service = VerificationQueryService()
         
         # Routing
-        self.route_lock_service = RouteLockService()
+        self.route_lock_service = RouteLockService(lock_repository=lock_repo, audit_repository=audit_repo)
         
         # Outbox: Worker OWNS the outbox publisher - publishes events to message bus
         self.outbox_publisher = OutboxEventPublisher(

@@ -114,11 +114,11 @@ class RouteLockRecord:
             rule_id=snap_d["rule_id"],
             rule_version=snap_d["rule_version"],
             canonical_model_id=snap_d["canonical_model_id"],
-            selected_at=snap_d["selected_at"],
+            selected_at=snap_d.get("selected_at", 0.0),
             reason=snap_d.get("reason", ""),
         )
         return cls(
-            lock_id=d["lock_id"],
+            lock_id=d.get("lock_id") or d["id"],
             scope=d["scope"],
             scope_id=d["scope_id"],
             canonical_model_id=d["canonical_model_id"],
