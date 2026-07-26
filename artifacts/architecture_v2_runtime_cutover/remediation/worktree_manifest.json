@@ -1,0 +1,111 @@
+{
+  "timestamp_utc": "2026-07-26T10:41:39.6042870Z",
+  "branch": "fix/architecture-v2-runtime-cutover",
+  "local_sha": "628385eae59e311670c08d5e08904b34d23749ad",
+  "classification": {
+    "stat_only_content_equal_to_index": [
+      "apps/web/package-lock.json",
+      "tests/architecture/test_phase00_runtime_cutover_defects.py",
+      "tests/integration/test_phase14_two_process_e2e.py"
+    ],
+    "keep_and_complete": [
+      "configs/architecture/scaffold_v2.yaml",
+      "observability/windagent_observability/health/contracts.py",
+      "scripts/check_architecture_imports.py",
+      "tests/architecture/test_phase13_regression.py",
+      "tests/unit/cli/test_phase12_cli_doctor.py",
+      "ke_hoach_fix_loi_va_don_worktree.md"
+    ],
+    "keep_as_audit_evidence": [
+      "artifacts/architecture_v2_runtime_cutover/phase_12/",
+      "artifacts/architecture_v2_runtime_cutover/phase_13/",
+      "artifacts/architecture_v2_runtime_cutover/phase_16/",
+      "artifacts/architecture_v2_runtime_cutover/final/"
+    ],
+    "duplicate_remove_after_verify": [
+      "artifacts/import_graph.json",
+      "artifacts/dependency_boundary_report_current.json",
+      "artifacts/architecture_v2_completion/phase_16/import_graph.json"
+    ],
+    "temporary_remove_after_verify": [
+      "check_tables.py",
+      "debug_tables.py",
+      "probe_claim.py",
+      "probe_e2e2.py",
+      "probe_health.py"
+    ],
+    "needs_owner_decision": [
+      "tests/fakes/in_memory_lease.py"
+    ]
+  },
+  "hashes": [
+    {
+      "path": "configs/architecture/scaffold_v2.yaml",
+      "sha256": "4b8846e5b93ff2498fc4c2db684035a063f33ee5f1db93d5a407192d329d03fc"
+    },
+    {
+      "path": "observability/windagent_observability/health/contracts.py",
+      "sha256": "8f61a8d5fe15123e8d9c3795fce3ff646e15eba04af97eda42d7ec03dc8c3792"
+    },
+    {
+      "path": "scripts/check_architecture_imports.py",
+      "sha256": "693d76ad29782fc0535f724725b9abd490d69c3a7798a6a9fbf52c28a20049e2"
+    },
+    {
+      "path": "tests/architecture/test_phase13_regression.py",
+      "sha256": "1fbb159bbd8184a21614f6e9acf5f27ce46b0dfb7a06fdf826629c2e9e0d095f"
+    },
+    {
+      "path": "tests/unit/cli/test_phase12_cli_doctor.py",
+      "sha256": "de09eae5f9001fbd1c3b6be658a70b345d43b1f7987b772b8ef7e1ef76075eb0"
+    },
+    {
+      "path": "tests/fakes/in_memory_lease.py",
+      "sha256": "85cf15dc8cd99eeea063f363831d729378d1c4acc00465666f945e646e65b47a"
+    },
+    {
+      "path": "artifacts/import_graph.json",
+      "sha256": "ca4cbd565f05699cb3467065524c9b93d5f77bb595816e9aa4d1dcb93b47b57d"
+    },
+    {
+      "path": "artifacts/architecture_v2_completion/phase_16/import_graph.json",
+      "sha256": "ca4cbd565f05699cb3467065524c9b93d5f77bb595816e9aa4d1dcb93b47b57d"
+    },
+    {
+      "path": "artifacts/architecture_v2_runtime_cutover/phase_13/import_graph.json",
+      "sha256": "f29651869d8dd479ef6c1c3e7fce950e10bd7579a41640a2632a8abc3048ab68"
+    },
+    {
+      "path": "artifacts/dependency_boundary_report_current.json",
+      "sha256": "2f1552711df9caf583d7c72c415384d074c4f275cbbc034ca78648c8507238ce"
+    },
+    {
+      "path": "artifacts/architecture_v2_runtime_cutover/phase_13/dependency_boundary_report.json",
+      "sha256": "2f1552711df9caf583d7c72c415384d074c4f275cbbc034ca78648c8507238ce"
+    },
+    {
+      "path": "check_tables.py",
+      "sha256": "a399220f49ba76af9c6cb849a7f4d0181419af51edc4970a67c38305a12438fe"
+    },
+    {
+      "path": "debug_tables.py",
+      "sha256": "4ad5a8e74467715189dcbcf38a7fd1c9cf33ec8bd0130c3660ec7e6421411779"
+    },
+    {
+      "path": "probe_claim.py",
+      "sha256": "166d97245c2f4743ce36f3733b5279a684b26ae0bca467ecf14eadacd9e27675"
+    },
+    {
+      "path": "probe_e2e2.py",
+      "sha256": "9677179927332fee61a50a04348b5d622dd4607a937921e3830a7500ad143102"
+    },
+    {
+      "path": "probe_health.py",
+      "sha256": "d3f8b04cfc534d66fc9c348a6533a23dda2729c06bb7843373a1dbb1997d9836"
+    },
+    {
+      "path": "ke_hoach_fix_loi_va_don_worktree.md",
+      "sha256": "41cfddf4c40097fd7d20767e29e0145b5d98a6decddba6b719942c32ce92ab66"
+    }
+  ]
+}

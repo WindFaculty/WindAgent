@@ -1,0 +1,12 @@
+{
+  "phase": "phase_13",
+  "phase_name": "Đồng bộ architecture checker và regression policy",
+  "gate": "ARCHITECTURE_POLICY_AND_RUNTIME_ALIGNED",
+  "timestamp": "2026-07-26T08:30:00Z",
+  "checker_command": "python scripts/check_architecture_imports.py --root .",
+  "checker_exit_code": 0,
+  "checker_output": "ok",
+  "zero_violations_on_clean_repo": true,
+  "regression_rule_set_aligned": true,
+  "verdict": "PASS"
+}

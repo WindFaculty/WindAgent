@@ -1,0 +1,25 @@
+{
+  "timestamp_utc": "2026-07-26T10:24:06.7895650Z",
+  "status": "PASS",
+  "api": {
+    "script": "scripts/test_api_isolation.ps1",
+    "python": "3.12.13",
+    "clean_venv": true,
+    "installed_target": "windagent-api==0.3.0",
+    "bootstrap": "PASS",
+    "shutdown": "PASS"
+  },
+  "worker": {
+    "script": "scripts/test_worker_isolation.ps1",
+    "python": "3.12.13",
+    "clean_venv": true,
+    "installed_target": "windagent-worker==0.3.0",
+    "bootstrap": "PASS",
+    "runner_start_stop": "PASS"
+  },
+  "harness_risk": {
+    "status": "OPEN",
+    "description": "The PowerShell scripts do not check native-command exit codes after uv/Python calls and can print SUCCESS after a failed install/import.",
+    "audit_handling": "Only the approved reruns containing explicit [PASS] smoke output were counted as valid."
+  }
+}

@@ -1,0 +1,116 @@
+{
+  "algorithm": "SHA-256",
+  "generated_at_utc": "2026-07-26T10:24:06.7895650Z",
+  "local_sha": "628385eae59e311670c08d5e08904b34d23749ad",
+  "manifest_includes_itself": false,
+  "files": [
+    {
+      "path": "artifacts/architecture_v2_runtime_cutover/phase_16/execution_receipt.json",
+      "sha256": "a23b1d32b22de1f1d7363bc56c346f358cb26d8c4af0dc23d7ed449a2d5095e0"
+    },
+    {
+      "path": "artifacts/architecture_v2_runtime_cutover/phase_16/changed_files.txt",
+      "sha256": "c124d9d625cd142cf9f290fb9294b710a9dafca9dc0cfbfd880d01d5036c3883"
+    },
+    {
+      "path": "artifacts/architecture_v2_runtime_cutover/phase_16/test_results.json",
+      "sha256": "690d11d936e81427a9a44810eaf1448041d5a4e991c050ebce80e8b2ca591fb7"
+    },
+    {
+      "path": "artifacts/architecture_v2_runtime_cutover/phase_16/risk_register.md",
+      "sha256": "c5b00aae2937d73eb0c081a9f6294a41590721464a254d4d699405a444511bc7"
+    },
+    {
+      "path": "artifacts/architecture_v2_runtime_cutover/phase_16/phase_verdict.md",
+      "sha256": "5af9e7aa67d8829988297e61a4ae749e154db8e5315befea08d1262bee2341be"
+    },
+    {
+      "path": "artifacts/architecture_v2_runtime_cutover/phase_16/execution_log.md",
+      "sha256": "679b31c3e56c025b9e50f325030ff69607679c89b9d3c84d29b9988646349d05"
+    },
+    {
+      "path": "artifacts/architecture_v2_runtime_cutover/final/final_verdict.md",
+      "sha256": "884394dda56ada226988552a6fb85107ea16373e9da9b76e2bbd7a954e79ad28"
+    },
+    {
+      "path": "artifacts/architecture_v2_runtime_cutover/final/publication_receipt.json",
+      "sha256": "752917876e4149c7cf6d4d4fd4daa17a3bb0e74fefd8eeca5504aa77f59c0195"
+    },
+    {
+      "path": "artifacts/architecture_v2_runtime_cutover/final/dependency_report.json",
+      "sha256": "c7b5a32e94d7f5d2fbd381fd229865f00abfd5d685e9e9bf0e28957aed29f7a5"
+    },
+    {
+      "path": "artifacts/architecture_v2_runtime_cutover/final/package_isolation_report.json",
+      "sha256": "f04b9d8b886f1b1511ca416770976475631180ab5e90165514162d01381bbcdd"
+    },
+    {
+      "path": "artifacts/architecture_v2_runtime_cutover/final/api_lifecycle_report.json",
+      "sha256": "5287111f3afc4eaad97a0dc9c128ee3d090b079626589d48b03f7ae4cb85cf98"
+    },
+    {
+      "path": "artifacts/architecture_v2_runtime_cutover/final/worker_runtime_report.json",
+      "sha256": "3df226ab6e6783827d9d1fc68d2d0f2a900c89a30a10d8c09c70a71fec522497"
+    },
+    {
+      "path": "artifacts/architecture_v2_runtime_cutover/final/lease_recovery_report.json",
+      "sha256": "35236b33c255550a71005687121632cce5a2b25deeac967bf4ebc3cb285202de"
+    },
+    {
+      "path": "artifacts/architecture_v2_runtime_cutover/final/outbox_report.json",
+      "sha256": "d1673f14d22b6816930728a8ccafaef9ca100fd760c48586dfeb996f188b8eb7"
+    },
+    {
+      "path": "artifacts/architecture_v2_runtime_cutover/final/migration_report.json",
+      "sha256": "4fa42cfbdb76dc00ec5c0da2e4ef327b1a77151624e701687d44af248137e820"
+    },
+    {
+      "path": "artifacts/architecture_v2_runtime_cutover/final/rollback_report.json",
+      "sha256": "6c133c1ba8148088726c6ff901cd79ea4b2e6d1f5eb2801c1af17b7c5bdc2256"
+    },
+    {
+      "path": "artifacts/architecture_v2_runtime_cutover/final/health_report.json",
+      "sha256": "9754b3e0dfb6afe0c5ad7d55e91dfbf246b923b5ba62c02e384b3110b4117de4"
+    },
+    {
+      "path": "artifacts/architecture_v2_runtime_cutover/final/e2e_report.json",
+      "sha256": "da0ca433c6c5d73f948269995a91ded8a0a732fde5f34f01b4bed58691f32d21"
+    },
+    {
+      "path": "artifacts/architecture_v2_runtime_cutover/final/clean_clone_report.json",
+      "sha256": "f77e46349ea41fc03e40f47bfad8bcacf95ba5f933b4528f555853d1e77c6640"
+    },
+    {
+      "path": "configs/architecture/scaffold_v2.yaml",
+      "sha256": "4b8846e5b93ff2498fc4c2db684035a063f33ee5f1db93d5a407192d329d03fc"
+    },
+    {
+      "path": "scripts/check_architecture_imports.py",
+      "sha256": "693d76ad29782fc0535f724725b9abd490d69c3a7798a6a9fbf52c28a20049e2"
+    },
+    {
+      "path": "apps/api/windagent_api/composition.py",
+      "sha256": "a405c3a99fe55dd9577391504d66052129f57dec2a419ff1753191311c422a61"
+    },
+    {
+      "path": "apps/worker/windagent_worker/runner.py",
+      "sha256": "f99ab129d0c25fab20c55a496c26dc9110767fdea394334c550519e375de6c8a"
+    },
+    {
+      "path": "storage/windagent_storage/queue/sql_queue.py",
+      "sha256": "5b1693eed47401e5513497ac9dda6389288086efa9c1c3875ed5234ca2080f9c"
+    },
+    {
+      "path": "observability/windagent_observability/health/checker.py",
+      "sha256": "a8102f24ef040672f0bb8548f94dc432e268faa1a07697e74d6c61223a537465"
+    },
+    {
+      "path": "apps/cli/windagent_cli/composition.py",
+      "sha256": "c58f1452dc5bf6f895d91f3d088917ae501443b55a73c96922bf449c26045719"
+    },
+    {
+      "path": "tests/integration/test_phase14_two_process_e2e.py",
+      "sha256": "f3bc3f4de39baa8bdc86e323bbada5fcc15ed8f098ca58a5c6193f3fef931400"
+    }
+  ]
+}

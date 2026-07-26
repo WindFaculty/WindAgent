@@ -1,0 +1,20 @@
+{
+  "timestamp_utc": "2026-07-26T10:24:06.7895650Z",
+  "status": "PASS",
+  "verified_behaviors": [
+    "Two concurrent workers produce exactly one claim winner.",
+    "A task cannot be reclaimed before lease expiry.",
+    "An expired lease is reclaimed with a new generation and fencing token.",
+    "A stale fencing token cannot renew the lease.",
+    "Heartbeat renews the active lease.",
+    "A fencing mismatch triggers task cancellation.",
+    "An abandoned task is recovered.",
+    "Recovery-leader concurrency and recovery distribution tests pass in the full suite."
+  ],
+  "primary_tests": [
+    "tests/unit/worker/test_phase03_durable_queue.py",
+    "tests/unit/worker/test_phase04_worker_heartbeat.py",
+    "tests/unit/worker/test_production_worker.py",
+    "tests/unit/orchestration/test_phase7_recovery.py"
+  ]
+}

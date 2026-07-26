@@ -1,0 +1,8 @@
+{
+  "test_suite": "tests/architecture/test_phase13_regression.py tests/architecture/test_architecture_policy.py",
+  "total_tests": 23,
+  "passed": 22,
+  "failed": 0,
+  "skipped": 1,
+  "verdict": "PASS"
+}

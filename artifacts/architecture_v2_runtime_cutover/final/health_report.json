@@ -1,0 +1,30 @@
+{
+  "timestamp_utc": "2026-07-26T10:24:06.7895650Z",
+  "status": "FAILED",
+  "focused_capability_readiness": {
+    "test_files": [
+      "tests/unit/observability/test_phase10_health_wiring.py",
+      "tests/unit/observability/test_phase11_capability_readiness.py"
+    ],
+    "result": "9 passed"
+  },
+  "verified": {
+    "production_missing_required_dependency_is_down": "PASS",
+    "worker_heartbeat_health": "PASS",
+    "publisher_running_state_and_heartbeat": "PASS",
+    "schema_head_check": "PASS",
+    "configuration_validation": "PASS",
+    "event_dispatcher_capability": "PASS",
+    "timeouts_do_not_hang": "PASS"
+  },
+  "blocking_results": {
+    "api_cli_same_bundle_parity": "FAILED",
+    "phase12_cli_suite": "4 failed / 4 passed",
+    "legacy_phase10_health_suite": "3 failures in full pytest"
+  },
+  "cli_contract_defects": [
+    "DoctorCommandComposer does not accept profile.",
+    "doctor() does not accept profile or component.",
+    "Invalid CLI invocation raises SystemExit(2) instead of returning exit code 3."
+  ]
+}
