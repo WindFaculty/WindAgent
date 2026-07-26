@@ -1,0 +1,23 @@
+{
+  "phase": "phase_01",
+  "name": "registry_parity_report",
+  "timestamp": "2026-07-26T23:35:00Z",
+  "checks": [
+    {
+      "name": "durable_registry_is_durable",
+      "result": "PASS",
+      "detail": "CanonicalModelRegistryService receives SQLEndpointBindingRepository and sets is_durable=True"
+    },
+    {
+      "name": "durable_lock_service_is_durable",
+      "result": "PASS",
+      "detail": "RouteLockService receives SQLRouteLockRepository + SQLProviderRoutingAuditRepository and sets is_durable=True"
+    },
+    {
+      "name": "no_in_memory_default_in_composition",
+      "result": "PASS",
+      "detail": "API and Worker composition roots inject SQL repositories explicitly"
+    }
+  ],
+  "parity_status": "VERIFIED"
+}

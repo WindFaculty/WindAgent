@@ -1,0 +1,23 @@
+{
+  "phase": "phase_01",
+  "name": "process_restart_report",
+  "timestamp": "2026-07-26T23:40:00Z",
+  "scenarios": [
+    {
+      "scenario": "api_creates_lock_worker_reads_same_lock",
+      "result": "PASS",
+      "detail": "API resolves lock lk-xxx on DB; new Worker service instance on same DB reads exact same lock_id and canonical_model_id"
+    },
+    {
+      "scenario": "worker_restart_retains_model",
+      "result": "PASS",
+      "detail": "Worker restart (new RouteLockService instance) loads existing active lock from DB"
+    },
+    {
+      "scenario": "100_turns_same_session",
+      "result": "PASS",
+      "detail": "100 consecutive turns resolve the exact same canonical_model_id (cm-gpt4o)"
+    }
+  ],
+  "status": "PASSED"
+}

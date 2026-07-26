@@ -1,0 +1,15 @@
+{
+  "phase": "phase_01",
+  "name": "rollback_receipt",
+  "timestamp": "2026-07-26T23:32:00Z",
+  "rollback_script": "storage/windagent_storage/migrations/phase1_routing_authority.py",
+  "actions_performed": [
+    "dropped:provider_routing_audit_v3",
+    "dropped:index:uq_route_locks_v3_active_scope",
+    "dropped:route_locks_v3.version",
+    "dropped:route_locks_v3.reselection_reason",
+    "dropped:route_locks_v3.updated_at"
+  ],
+  "data_retention_policy": "Route lock data and endpoint bindings preserved. Table structures kept intact.",
+  "status": "PASSED"
+}

@@ -1,0 +1,24 @@
+{
+  "phase": "phase_01",
+  "name": "canonical_schema_manifest",
+  "tables": [
+    "canonical_models_v3",
+    "provider_endpoints",
+    "endpoint_model_bindings",
+    "route_locks_v3",
+    "route_attempts_v3",
+    "provider_routing_audit_v3",
+    "endpoint_health_samples"
+  ],
+  "constraints": {
+    "canonical_models_v3": ["primary_key:id"],
+    "endpoint_model_bindings": ["foreign_key:canonical_model_id->canonical_models_v3.id", "index:ix_endpoint_model_bindings_canonical"],
+    "route_locks_v3": ["primary_key:id", "foreign_key:canonical_model_id->canonical_models_v3.id", "unique_index:uq_route_locks_v3_active_scope(scope_type, scope_id) WHERE status='active'"],
+    "provider_routing_audit_v3": ["primary_key:id", "foreign_key:lock_id->route_locks_v3.id", "index:ix_provider_routing_audit_scope"]
+  },
+  "database_profiles": {
+    "development": "SQLite",
+    "production": "PostgreSQL"
+  },
+  "status": "VALIDATED"
+}
