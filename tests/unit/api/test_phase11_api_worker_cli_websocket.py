@@ -71,10 +71,11 @@ async def test_worker_typed_ids_and_canonical_events():
 
 def test_cli_doctor_phase11_checks(capsys):
     res = cli_doctor()
-    assert res == 0
+    assert res == 2
     captured = capsys.readouterr().out
     assert "Duplicate Model Check" in captured
     assert "Import Boundary Check" in captured
-    assert "Migration Status Check" in captured
-    assert "Secret Configuration Check" in captured
-    assert "Event Schema Version Check" in captured
+    assert "Schema Migration" in captured
+    assert "Configuration" in captured
+    assert "Worker" in captured
+    assert "System health status: DOWN" in captured

@@ -31,8 +31,15 @@ logger = logging.getLogger("windagent.cli.composition")
 class DoctorCommandComposer:
     """Composes services for 'doctor' command using real HealthChecker service."""
     
-    def __init__(self, db_url: str = "sqlite+aiosqlite:///windagent.db"):
+    def __init__(
+        self,
+        db_url: str = "sqlite+aiosqlite:///windagent.db",
+        profile: Optional[str] = None,
+        component: Optional[str] = None,
+    ):
         self.db_url = db_url
+        self.profile = profile
+        self.component = component
         self._checker_scripts = []
         self._health_checker = None
     
@@ -78,8 +85,8 @@ class DoctorCommandComposer:
         
         # Determine profile from environment
         import os
-        env = os.environ.get("WINDAGENT_ENV", "development")
-        profile = HealthProfile(env) if env in ["production", "development", "test"] else HealthProfile.DEVELOPMENT
+        env = self.profile or os.environ.get("WINDAGENT_ENV", "development")
+        profile = HealthProfile(env)
         
         # Create HealthChecker
         self._health_checker = HealthChecker(
@@ -141,14 +148,20 @@ class DoctorCommandComposer:
         db = None
         try:
             db = await self.initialize()
-            readiness_status = await self._health_checker.check_readiness()
+            components = [self.component] if self.component else None
+            readiness_status = await self._health_checker.check_readiness(
+                components=components
+            )
             is_alive = await self._health_checker.check_liveness()
             
             # Convert health check results
             health_checks = {}
             for name, check_result in readiness_status.checks.items():
                 health_checks[name] = {
-                    "passed": check_result.status == HealthStatus.UP,
+                    "passed": check_result.status in (
+                        HealthStatus.UP,
+                        HealthStatus.NOT_REQUIRED,
+                    ),
                     "details": check_result.message,
                     "status": check_result.status.value,
                     "required": check_result.required,
@@ -163,21 +176,27 @@ class DoctorCommandComposer:
             }
             
             # Combine results
+            for check in script_results.values():
+                check.setdefault("required", True)
+                check.setdefault("status", "UP" if check["passed"] else "DOWN")
             all_checks = {**script_results, **health_checks}
-            
-            # Determine overall status
-            all_passed = all(chk.get("passed", False) for chk in all_checks.values())
-            any_failed = any(not chk.get("passed", True) and chk.get("required", True) for chk in all_checks.values())
-            
-            if any_failed:
-                status = "SYSTEM_HEALTH_WARNING"
-            elif all_passed:
-                status = "ALL_SYSTEMS_OPERATIONAL"
-            else:
-                status = "SYSTEM_HEALTH_DEGRADED"
+
+            overall_status = readiness_status.overall_status
+            if not is_alive or any(
+                not check.get("passed", False)
+                for check in script_results.values()
+            ):
+                overall_status = HealthStatus.DOWN
+
+            legacy_status = {
+                HealthStatus.UP: "ALL_SYSTEMS_OPERATIONAL",
+                HealthStatus.DEGRADED: "SYSTEM_HEALTH_DEGRADED",
+                HealthStatus.DOWN: "SYSTEM_HEALTH_DOWN",
+            }[overall_status]
             
             return {
-                "status": status,
+                "status": legacy_status,
+                "overall_status": overall_status.value,
                 "profile": readiness_status.profile.value,
                 "checks": all_checks,
             }

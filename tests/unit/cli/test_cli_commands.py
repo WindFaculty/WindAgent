@@ -7,10 +7,10 @@ from windagent_cli.main import main
 
 def test_cli_doctor_command(capsys):
     ret = main(["doctor"])
-    assert ret == 0
+    assert ret == 2
     captured = capsys.readouterr()
     assert "WindAgent Doctor" in captured.out
-    assert "ALL SYSTEMS OPERATIONAL" in captured.out
+    assert "System health status: DOWN" in captured.out
 
 
 def test_cli_run_command(capsys):

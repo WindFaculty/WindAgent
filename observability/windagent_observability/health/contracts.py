@@ -32,6 +32,8 @@ class HealthCheckResult:
     message: str
     details: Optional[Dict[str, Any]] = None
     required: bool = True
+    latency_ms: float = 0.0
+    suggested_action: Optional[str] = None
 
 
 @dataclass(frozen=True)
@@ -69,6 +71,8 @@ class ReadinessStatus:
                     "message": check.message,
                     "details": check.details,
                     "required": check.required,
+                    "latency_ms": round(check.latency_ms, 2),
+                    "suggested_action": check.suggested_action,
                 }
                 for name, check in self.checks.items()
             }

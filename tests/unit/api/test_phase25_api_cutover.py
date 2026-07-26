@@ -33,15 +33,15 @@ def client():
 
 
 def test_health_liveness_and_readiness_probes(client):
-    """Verify /health/live and /health/ready probes."""
+    """Readiness fails closed when required runtime dependencies are absent."""
     res_live = client.get("/health/live")
     assert res_live.status_code == 200
     assert res_live.json()["status"] == "live"
 
     res_ready = client.get("/health/ready")
-    assert res_ready.status_code == 200
-    assert res_ready.json()["status"] == "DEGRADED"
-    assert res_ready.json()["checks"]["worker"]["status"] == "DOWN"
+    assert res_ready.status_code == 503
+    assert res_ready.json()["status"] == "DOWN"
+    assert res_ready.json()["checks"]["worker"]["status"] != "UP"
     assert "checks" in res_ready.json()
 
 

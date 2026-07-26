@@ -25,15 +25,15 @@ from sidecar_manager import SidecarManager, get_free_port
 def test_cli_doctor_text_and_json(capsys):
     """Verify CLI doctor command in text and JSON mode."""
     res_text = doctor(json_mode=False)
-    assert res_text == 0
+    assert res_text == 2
     captured_text = capsys.readouterr().out
     assert "WindAgent Doctor" in captured_text
 
     res_json = doctor(json_mode=True)
-    assert res_json == 0
+    assert res_json == 2
     captured_json = capsys.readouterr().out
     parsed = json.loads(captured_json)
-    assert parsed["status"] == "ALL_SYSTEMS_OPERATIONAL"
+    assert parsed["overall_status"] == "DOWN"
     assert "checks" in parsed
 
 

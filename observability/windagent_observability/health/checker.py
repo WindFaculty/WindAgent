@@ -6,6 +6,7 @@ Implements real liveness and readiness checks with profile-based behavior.
 from __future__ import annotations
 import logging
 import asyncio
+import inspect
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Callable, AsyncGenerator
 from sqlalchemy import text
@@ -308,7 +309,10 @@ class HealthChecker:
             )
         
         try:
-            async with self._db_session_factory() as session:
+            session_context = self._db_session_factory()
+            if inspect.isawaitable(session_context):
+                session_context = await session_context
+            async with session_context as session:
                 await session.execute(text("SELECT 1"))
             return HealthCheckResult(
                 name="database",
@@ -574,13 +578,15 @@ class HealthChecker:
                 providers = registry.get_providers()
             else:
                 providers = getattr(registry, "_canonical_models", {}) or {}
+            if inspect.isawaitable(providers):
+                providers = await providers
             count = len(providers) if providers is not None else 0
             
             return HealthCheckResult(
                 name="provider_registry",
                 status=HealthStatus.UP,
-                message=f"Provider registry loaded ({len(providers)} providers)",
-                details={"provider_count": len(providers)},
+                message=f"Provider registry loaded ({count} providers)",
+                details={"provider_count": count},
                 required=True
             )
         except Exception as e:
@@ -608,6 +614,8 @@ class HealthChecker:
             # Registry liveness: object exists and exposes a tool catalog (sync call).
             registry = self._tool_registry
             tools = registry.list_tools() if hasattr(registry, "list_tools") else getattr(registry, "_tools", {})
+            if inspect.isawaitable(tools):
+                tools = await tools
             count = len(tools) if tools is not None else 0
             
             return HealthCheckResult(
@@ -707,6 +715,8 @@ class HealthChecker:
                 workflows = registry.list_packs()
             else:
                 workflows = getattr(registry, "_packs", {}) or {}
+            if inspect.isawaitable(workflows):
+                workflows = await workflows
             count = len(workflows) if workflows is not None else 0
             
             return HealthCheckResult(

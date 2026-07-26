@@ -37,13 +37,26 @@ def get_logger():
     return logger
 
 
-def doctor(json_mode: bool = False) -> int:
+def doctor(
+    json_mode: bool = False,
+    profile: Optional[str] = None,
+    component: Optional[str] = None,
+) -> int:
     """Run real system diagnostic health check across V2 architecture components.
     
     Uses DoctorCommandComposer with HealthChecker service for real runtime health checks (PHASE 10).
     Uses same health provider as API, not hardcoded results.
     """
-    composer = DoctorCommandComposer()
+    from windagent_observability.health import HealthProfile
+
+    if profile is not None:
+        try:
+            HealthProfile(profile)
+        except ValueError:
+            print(f"Invalid health profile: {profile}", file=sys.stderr)
+            return 3
+
+    composer = DoctorCommandComposer(profile=profile, component=component)
     results = composer.run_checks_sync()
 
     if json_mode:
@@ -59,9 +72,13 @@ def doctor(json_mode: bool = False) -> int:
             title_name = name.replace("_", " ").title()
             print(f"[{st}] {title_name}: {chk.get('details', chk.get('message', 'No details'))}")
         print()
-        print(f"System health status: {results['status']}")
+        print(f"System health status: {results['overall_status']}")
 
-    return 0 if results["status"] == "ALL_SYSTEMS_OPERATIONAL" else 1
+    return {
+        "UP": 0,
+        "DEGRADED": 1,
+        "DOWN": 2,
+    }.get(results["overall_status"], 3)
 
 
 async def run_task(prompt: str, workflow: str = "bugfix", json_mode: bool = False) -> int:
@@ -196,6 +213,8 @@ def replay_trace(trace_id: str = "trace_demo", json_mode: bool = False) -> int:
 
 def list_providers(json_mode: bool = False) -> int:
     """Queries real canonical model registry service."""
+    from windagent_providers.registry.canonical_registry import CanonicalModelRegistryService
+
     registry = CanonicalModelRegistryService()
     prov_data = [
         {"provider": "openai", "models": ["gpt-4o", "gpt-4o-mini"], "status": "HEALTHY"},
@@ -218,6 +237,8 @@ def list_providers(json_mode: bool = False) -> int:
 
 def list_tools(json_mode: bool = False) -> int:
     """Queries real canonical tool registry."""
+    from windagent_tools.registry import ToolRegistry
+
     registry = ToolRegistry()
     tools_list = [
         {"name": "read_file", "capability": "filesystem", "risk_level": "read_only"},
@@ -307,6 +328,12 @@ def main(args=None) -> int:
 
     p_doc = subparsers.add_parser("doctor", help="Run system health diagnostic check")
     p_doc.add_argument("--json", action="store_true", help="JSON output mode")
+    p_doc.add_argument(
+        "--profile",
+        choices=("production", "development", "test"),
+        help="Health policy profile",
+    )
+    p_doc.add_argument("--component", help="Run only matching health component")
     
     run_parser = subparsers.add_parser("run", help="Run task with specified prompt & workflow")
     run_parser.add_argument("--prompt", type=str, default="Fix bug in calculation module", help="Task prompt")
@@ -348,12 +375,19 @@ def main(args=None) -> int:
     p_ptest = subparsers.add_parser("provider-test", help="Test provider connectivity")
     p_ptest.add_argument("--json", action="store_true", help="JSON output mode")
 
-    parsed = parser.parse_args(args)
+    try:
+        parsed = parser.parse_args(args)
+    except SystemExit:
+        return 3
     json_flag = getattr(parsed, "json", False)
 
     # Sync commands (no async)
     if parsed.command == "doctor":
-        return doctor(json_mode=json_flag)
+        return doctor(
+            json_mode=json_flag,
+            profile=getattr(parsed, "profile", None),
+            component=getattr(parsed, "component", None),
+        )
     elif parsed.command == "status":
         return get_status(json_mode=json_flag)
     elif parsed.command == "task":
