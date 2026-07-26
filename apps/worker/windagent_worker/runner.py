@@ -184,7 +184,16 @@ class ProductionWorker:
             await self.cancellation_broadcaster.cancel_step(str(self._current_task_id))
 
     def emit_event(self, event_type: EventCatalog | str, payload: Dict[str, Any], aggregate_id: str = "worker") -> EventEnvelope:
-        """Emits canonical EventEnvelope from worker execution."""
+        """Creates a diagnostic / domain-intent EventEnvelope stored in the in-memory observer list.
+
+        DURABILITY SEPARATION (ban_ke_hoach.md §2.4):
+        - ``_emitted_envelopes`` is a **diagnostic observer** — NOT a durable source of truth.
+        - This method is safe to call for in-process event intent signaling and test observation.
+        - Terminal task events (task_completed, task_failed) MUST be written atomically through
+          ``SqlUnitOfWork.finalize_task_execution()``, which persists them in the EventStore and
+          Outbox within a single database transaction.
+        - Calling ``emit_event()`` alone does NOT guarantee durability of the event.
+        """
         self._sequence_counter += 1
         ev_str = event_type.value if hasattr(event_type, "value") else str(event_type)
 
@@ -196,7 +205,7 @@ class ProductionWorker:
             payload=payload,
             metadata={"worker_id": str(self.worker_id), "runtime_run_id": str(self.runtime_run_id)}
         )
-        self._emitted_envelopes.append(env)
+        self._emitted_envelopes.append(env)  # diagnostic observer only — not durable
         logger.info(f"Worker [{self.worker_id}] emitted EventEnvelope seq={env.sequence}")
         return env
 
@@ -295,13 +304,22 @@ class ProductionWorker:
             self._current_fencing_token = None
             return {"status": "fencing_violation", "task_id": raw_tid, "error": str(err)}
 
+        # Diagnostic emit: records intent in the in-memory observer list ONLY.
+        # The durable terminal event is written atomically inside finalize_task_execution() below.
         self.emit_event(
             EventCatalog.TASK_COMPLETED,
             {"task_id": tid, "status": validated_result.status.value},
             aggregate_id=tid,
         )
-        # Atomic Task Finalization (Phase 2):
-        # Result, terminal event, transactional outbox, and lease release commit in ONE transaction.
+
+        # ------------------------------------------------------------------ #
+        # Atomic Task Finalization (Phase 2 — ban_ke_hoach.md §2.1):
+        # Task state CAS, result, artifact refs, terminal event, transactional
+        # outbox, AND lease release all commit in ONE database transaction.
+        # Lease MUST NOT be released separately after this block — doing so
+        # would be a double release violating §2.1 and §2.3.
+        # ------------------------------------------------------------------ #
+        finalized_via_uow = False
         if self.uow_factory is not None:
             from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork
             from windagent_core.contracts.finalization import FinalizeTaskExecutionRequest
@@ -331,10 +349,18 @@ class ProductionWorker:
                 if fin_res.status != "COMPLETED":
                     raise RuntimeError(f"Task finalization rejected: {fin_res.error_message}")
 
-        if self.task_queue is not None and hasattr(self.task_queue, "release"):
-            await self.task_queue.release(raw_tid, str(self.worker_id), fencing_token)
-        elif self.lease_manager is not None:
-            self.lease_manager.release_lease(raw_tid, str(self.worker_id), fencing_token=fencing_token)
+            # Lease was released atomically inside the transaction above.
+            # Do NOT call task_queue.release() again — that would be a double release.
+            finalized_via_uow = True
+
+        if not finalized_via_uow:
+            # Fallback: no UoW factory configured (e.g. test/legacy mode without persistent DB).
+            # Release lease manually only when atomic finalization was NOT used.
+            if self.task_queue is not None and hasattr(self.task_queue, "release"):
+                await self.task_queue.release(raw_tid, str(self.worker_id), fencing_token)
+            elif self.lease_manager is not None:
+                self.lease_manager.release_lease(raw_tid, str(self.worker_id), fencing_token=fencing_token)
+
         self._current_task_id = None
         self._current_fencing_token = None
 
