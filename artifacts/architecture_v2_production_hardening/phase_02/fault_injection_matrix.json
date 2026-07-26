@@ -1,0 +1,33 @@
+{
+  "phase": "phase_02",
+  "fault_injection_points": [
+    {
+      "step": 1,
+      "name": "lease_validation",
+      "simulated_failure": "Fencing token mismatch or expired lease",
+      "expected_outcome": "StaleResultRejectedError raised, 0 DB mutations committed",
+      "status": "PASSED"
+    },
+    {
+      "step": 2,
+      "name": "cas_state_update",
+      "simulated_failure": "Task version mismatch (expected=1, current=2)",
+      "expected_outcome": "StaleResultRejectedError raised, late result rejected",
+      "status": "PASSED"
+    },
+    {
+      "step": 3,
+      "name": "outbox_writer_failure",
+      "simulated_failure": "Database exception during outbox insert",
+      "expected_outcome": "Full transaction rollback, task state remains running, lease remains active",
+      "status": "PASSED"
+    },
+    {
+      "step": 4,
+      "name": "lease_release_failure",
+      "simulated_failure": "Exception when marking lease completed",
+      "expected_outcome": "Full transaction rollback",
+      "status": "PASSED"
+    }
+  ]
+}

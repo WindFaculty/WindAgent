@@ -1,0 +1,9 @@
+{
+  "phase": "phase_02",
+  "idempotency_key_format": "{task_id}:{attempt_id}:{terminal_state}:{fencing_generation}",
+  "deduplication_behavior": {
+    "outbox_unique_constraint": "deduplication_key (UNIQUE)",
+    "duplicate_retry_handling": "Returns already_finalized=True with 0 duplicate outbox records created",
+    "status": "PASSED"
+  }
+}

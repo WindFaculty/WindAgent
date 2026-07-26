@@ -1,0 +1,10 @@
+{
+  "phase": "phase_02",
+  "test_name": "stale_result_rejection",
+  "verification": {
+    "cas_query": "UPDATE task_runs SET state = :terminal_state, version = version + 1 WHERE id = :task_id AND version = :expected_version",
+    "stale_version_behavior": "Raises StaleResultRejectedError",
+    "late_worker_overwriting_newer_result": "Prevented",
+    "status": "PASSED"
+  }
+}
