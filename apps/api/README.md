@@ -13,6 +13,12 @@ FastAPI REST & WebSocket entrypoint for Architecture V2
 - `windagent_intelligence`
 - `windagent_providers`
 - `windagent_tools`
+- `windagent_workflows`
+- `windagent_verification`
+- `windagent_context`
+- `windagent_memory`
+- `windagent_plugins`
+- `windagent_skills`
 - `windagent_storage`
 - `windagent_observability`
 

@@ -9,6 +9,10 @@ Unit Tests for WindAgent Intelligence System (Phase 22):
 - TaskReporter: machine-readable canonical format, markdown/html render
 """
 
+import os
+import subprocess
+import sys
+
 import pytest
 from windagent_intelligence import (
     # task_classifier
@@ -666,13 +670,19 @@ class TestTaskReporter:
 
 def test_intelligence_no_forbidden_imports():
     """Gate: Intelligence must not import orchestration or apps packages."""
-    import windagent_intelligence
-    import sys
+    code = """
+import sys
+import windagent_intelligence
 
-    # Check loaded modules after importing intelligence
-    forbidden_prefixes = ["windagent_orchestration", "apps.api", "apps.backend", "apps.worker"]
-    loaded_modules = list(sys.modules.keys())
-
-    for prefix in forbidden_prefixes:
-        matches = [m for m in loaded_modules if m.startswith(prefix)]
-        assert len(matches) == 0, f"Intelligence imports forbidden package: {matches}"
+forbidden = ("windagent_orchestration", "apps.api", "apps.backend", "apps.worker")
+matches = sorted(name for name in sys.modules if name.startswith(forbidden))
+if matches:
+    raise SystemExit(f"Intelligence imports forbidden packages: {matches}")
+"""
+    result = subprocess.run(
+        [sys.executable, "-c", code],
+        capture_output=True,
+        text=True,
+        env={**os.environ, "PYTHONPATH": os.pathsep.join(sys.path)},
+    )
+    assert result.returncode == 0, result.stdout + result.stderr

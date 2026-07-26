@@ -10,6 +10,13 @@ Background worker process for asynchronous task execution
 - `windagent_core`
 - `windagent_orchestration`
 - `windagent_execution`
+- `windagent_providers`
+- `windagent_tools`
+- `windagent_intelligence`
+- `windagent_context`
+- `windagent_memory`
+- `windagent_workflows`
+- `windagent_verification`
 - `windagent_storage`
 - `windagent_observability`
 

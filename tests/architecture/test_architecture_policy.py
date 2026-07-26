@@ -51,7 +51,14 @@ def run_checker(tmp_path: Path, packages: dict, members=None):
 
 
 def package(path: str, allowed=()):
-    return {"path": path, "namespace": f"windagent_{Path(path).name}", "layer": "platform", "allowed_dependencies": list(allowed)}
+    name = Path(path).name
+    return {
+        "path": path,
+        "namespace": f"windagent_{name}",
+        "layer": "platform",
+        "legacy_source": f"legacy/{name}",
+        "allowed_dependencies": list(allowed),
+    }
 
 
 @pytest.mark.parametrize(

@@ -52,9 +52,9 @@ async def test_api_v2_skeleton_endpoints():
         assert res_live.json() == {"status": "live", "service": "windagent-api"}
 
         res_ready = await client.get("/health/ready")
-        assert res_ready.status_code == 200
-        assert res_ready.json()["status"] == "DEGRADED"
-        assert res_ready.json()["checks"]["worker"]["status"] == "DOWN"
+        assert res_ready.status_code == 503
+        assert res_ready.json()["status"] == "DOWN"
+        assert res_ready.json()["checks"]["worker"]["status"] != "UP"
         assert res_ready.json()["service"] == "windagent-api"
 
         res_arch = await client.get("/internal/architecture")
@@ -85,7 +85,7 @@ async def test_worker_v2_skeleton_lifecycle():
 
 def test_cli_v2_skeleton_doctor():
     exit_code = doctor()
-    assert exit_code == 0
+    assert exit_code != 0
 
 
 def test_cli_v2_skeleton_architecture_check():

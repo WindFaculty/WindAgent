@@ -26,6 +26,12 @@ global_rules:
   forbid_dependency_cycles: true
   forbid_public_api_leakage: true
   forbid_legacy_backend_imports: true
+  forbid_production_test_fallbacks: true
+
+forbidden_patterns:
+  production_fallback_regex: "\\b_fallback_[A-Za-z_][A-Za-z0-9_]*\\b"
+  test_adapter_paths:
+    - "tests/"
 
 canonical_models:
   - EventEnvelope

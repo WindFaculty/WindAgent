@@ -4,6 +4,7 @@
 import argparse
 import ast
 import json
+import re
 import sys
 import tomllib
 from collections import defaultdict
@@ -14,9 +15,10 @@ import yaml
 
 DEFAULT_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_CONFIG = DEFAULT_ROOT / "configs" / "architecture" / "scaffold_v2.yaml"
-DEFAULT_REPORT = DEFAULT_ROOT / "artifacts" / "architecture_v2_completion" / "phase_16" / "dependency_boundary_report.json"
+DEFAULT_REPORT = DEFAULT_ROOT / "artifacts" / "architecture_v2_runtime_cutover" / "phase_13" / "dependency_boundary_report.json"
 FORBIDDEN_CORE_IMPORTS = {"aiosqlite", "fastapi", "langgraph", "mcp", "sqlalchemy", "starlette"}
 APP_PACKAGES = {"api", "cli", "worker"}
+DEFAULT_FALLBACK_RE = re.compile(r"\b_fallback_[A-Za-z_][A-Za-z0-9_]*\b")
 
 
 def normalize_dependency(value: str) -> str:
@@ -36,6 +38,56 @@ def read_pyproject(path: Path) -> dict:
 def package_dependencies(path: Path) -> set[str]:
     project = read_pyproject(path / "pyproject.toml").get("project", {})
     return {normalize_dependency(item) for item in project.get("dependencies", [])}
+
+
+def find_production_fallback_references(
+    root: Path, packages: dict, test_adapter_paths: set[str], fallback_re: re.Pattern | None
+) -> list[dict]:
+    """Scan production source for test fallback symbol references outside tests."""
+    pattern = fallback_re or DEFAULT_FALLBACK_RE
+    violations: list[dict] = []
+    for info in packages.values():
+        namespace_path = root / info["path"] / info["namespace"]
+        if not namespace_path.is_dir():
+            continue
+        for source in namespace_path.rglob("*.py"):
+            relative = source.relative_to(root).as_posix()
+            if relative.startswith("tests/"):
+                continue
+            if any(relative.startswith(path) for path in test_adapter_paths):
+                continue
+            try:
+                text = source.read_text(encoding="utf-8")
+            except Exception:
+                continue
+            for lineno, line in enumerate(text.splitlines(), start=1):
+                stripped = line.split("#", 1)[0]
+                for match in pattern.finditer(stripped):
+                    violations.append(
+                        {
+                            "rule": "production_test_fallback",
+                            "file": relative,
+                            "line": lineno,
+                            "message": f"Production code references test fallback symbol '{match.group()}'",
+                        }
+                    )
+    return violations
+
+
+def find_package_source_declaration_issues(packages: dict) -> list[dict]:
+    """Ensure every package documents its legacy source declaration."""
+    violations: list[dict] = []
+    for name, info in packages.items():
+        if not info.get("legacy_source"):
+            violations.append(
+                {
+                    "rule": "package_source_declaration",
+                    "file": info["path"],
+                    "line": 1,
+                    "message": f"Package '{name}' is missing legacy_source declaration",
+                }
+            )
+    return violations
 
 
 def imports_and_classes(path: Path):
@@ -148,7 +200,11 @@ def check(root: Path, config: dict) -> tuple[dict, dict]:
                 if name in APP_PACKAGES and target in APP_PACKAGES and rules.get("forbid_cross_app_imports", True):
                     add("cross_app_dependency", relative, line, f"Cross-app import: {name} imports {target}")
                 if target not in allowed:
-                    add("disallowed_dependency", relative, line, f"{name} cannot depend on {target}")
+                    forbidden = {dep.removeprefix("windagent_").removeprefix("windagent-") for dep in info.get("forbidden_dependencies", [])}
+                    if target in forbidden:
+                        add("forbidden_import", relative, line, f"{name} has forbidden dependency on {target}")
+                    else:
+                        add("disallowed_dependency", relative, line, f"{name} cannot depend on {target}")
                 expected = normalize_dependency(packages[target].get("distribution", packages[target]["namespace"]))
                 if rules.get("require_declared_workspace_dependencies", True) and expected not in declared:
                     add("undeclared_workspace_dependency", relative, line, f"Missing declared dependency: {expected}")
@@ -167,6 +223,17 @@ def check(root: Path, config: dict) -> tuple[dict, dict]:
 
     if len(versions) > 1:
         add("package_version_mismatch", "workspace", 1, f"Package versions differ: {sorted(versions)}")
+
+    forbidden_patterns = config.get("forbidden_patterns", {})
+    if rules.get("forbid_production_test_fallbacks", True):
+        fallback_re_text = forbidden_patterns.get("production_fallback_regex")
+        fallback_re = re.compile(fallback_re_text) if fallback_re_text else None
+        test_adapter_paths = set(forbidden_patterns.get("test_adapter_paths") or [])
+        for violation in find_production_fallback_references(root, packages, test_adapter_paths, fallback_re):
+            violations.append(violation)
+
+    for violation in find_package_source_declaration_issues(packages):
+        violations.append(violation)
 
     graph_report = {
         "nodes": [{"id": name, "path": info["path"], "namespace": info["namespace"]} for name, info in packages.items()],
