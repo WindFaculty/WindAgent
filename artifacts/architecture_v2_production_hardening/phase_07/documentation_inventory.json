@@ -1,0 +1,106 @@
+{
+  "inventory_date": "2026-07-28",
+  "source_commit": "95b9551",
+  "root_readme": "README.md",
+  "architecture_docs": [
+    "docs/architecture/current-system.md",
+    "docs/architecture/orchestration_v2.md",
+    "docs/architecture/core-contracts.md",
+    "docs/architecture/core-canonical-model.md",
+    "docs/architecture/core-lifecycle.md",
+    "docs/architecture/core-security-boundary.md",
+    "docs/architecture/core-event-model.md",
+    "docs/architecture/core-migration-map.md",
+    "docs/architecture/legacy-dependency-map.md"
+  ],
+  "adr_docs": [
+    "docs/adr/0001-model-pinning.md",
+    "docs/adr/0002-task-dag.md",
+    "docs/adr/0003-websocket-durable-events.md",
+    "docs/adr/0004-git-worktree-isolation.md"
+  ],
+  "provider_docs": [
+    "docs/providers/provider_v3_architecture_decisions.md",
+    "docs/providers/provider_v3_inventory.md",
+    "docs/providers/provider_v3_migration_map.md"
+  ],
+  "api_docs": [
+    "docs/api_contract.md",
+    "docs/event_protocol.md"
+  ],
+  "package_readmes": [
+    "apps/api/README.md",
+    "apps/worker/README.md",
+    "apps/cli/README.md",
+    "apps/desktop/README.md",
+    "apps/web/README.md"
+  ],
+  "root_scripts": [
+    "scripts/dev_api.ps1",
+    "scripts/dev_desktop.ps1",
+    "scripts/dev_frontend.ps1",
+    "scripts/healthcheck.ps1",
+    "scripts/migrate_database_schema.py",
+    "scripts/migrate_event_logs.py",
+    "scripts/check_architecture_imports.py"
+  ],
+  "legacy_removal_docs": [
+    "artifacts/architecture_v2/phase_14/legacy_cutover_receipt.json",
+    "artifacts/architecture_v2/phase_14/legacy_cutover_receipt_correction.json",
+    "artifacts/architecture_v2_completion/final/legacy_removal_report.json",
+    "artifacts/architecture_v2_completion/final/migration_receipt.json",
+    "artifacts/architecture_v2_completion/phase_17/migration_rollback_receipt.json",
+    "artifacts/architecture_v2_completion/phase_17/phase_17_verdict.json",
+    "artifacts/architecture_v2_completion/phase_23/migration_receipt.json",
+    "artifacts/architecture_v2_completion/phase_27/legacy_evacuation_manifest.json",
+    "artifacts/architecture_v2_completion/phase_27/phase_27_verdict.json",
+    "artifacts/architecture_v2_production_hardening/phase_01/migration_receipt.json",
+    "artifacts/architecture_v2_production_hardening/phase_01/rollback_receipt.json",
+    "artifacts/architecture_v2_real_cutover/phase_00/phase_verdict.md",
+    "artifacts/architecture_v2_real_cutover/phase_14/phase_verdict.md",
+    "artifacts/architecture_v2_runtime_cutover/final/final_verdict.md",
+    "artifacts/architecture_v2_runtime_cutover/final/migration_report.json"
+  ],
+  "phase_verdicts": [
+    "artifacts/architecture_v2_production_hardening/phase_01/phase_verdict.md",
+    "artifacts/architecture_v2_production_hardening/phase_02/phase_verdict.md",
+    "artifacts/architecture_v2_runtime_cutover/phase_00/phase_verdict.md",
+    "artifacts/architecture_v2_runtime_cutover/phase_01/phase_verdict.md",
+    "artifacts/architecture_v2_runtime_cutover/phase_02/phase_verdict.md",
+    "artifacts/architecture_v2_runtime_cutover/phase_03/phase_verdict.md",
+    "artifacts/architecture_v2_runtime_cutover/phase_04/phase_verdict.md",
+    "artifacts/architecture_v2_runtime_cutover/phase_05/phase_verdict.md",
+    "artifacts/architecture_v2_runtime_cutover/phase_06/phase_verdict.md",
+    "artifacts/architecture_v2_runtime_cutover/phase_07/phase_verdict.md",
+    "artifacts/architecture_v2_runtime_cutover/phase_08/phase_verdict.md",
+    "artifacts/architecture_v2_runtime_cutover/phase_09/phase_verdict.md",
+    "artifacts/architecture_v2_runtime_cutover/phase_10/phase_verdict.md",
+    "artifacts/architecture_v2_runtime_cutover/phase_11/phase_verdict.md",
+    "artifacts/architecture_v2_runtime_cutover/phase_12/phase_verdict.md",
+    "artifacts/architecture_v2_runtime_cutover/phase_13/phase_verdict.md",
+    "artifacts/architecture_v2_runtime_cutover/phase_14/phase_verdict.md",
+    "artifacts/architecture_v2_runtime_cutover/phase_15/phase_verdict.md",
+    "artifacts/architecture_v2_runtime_cutover/phase_16/phase_verdict.md"
+  ],
+  "risk_registers": [
+    "artifacts/architecture_v2_production_hardening/phase_01/risk_register.md",
+    "artifacts/architecture_v2_production_hardening/phase_02/risk_register.md",
+    "artifacts/architecture_v2_runtime_cutover/phase_00/risk_register.md",
+    "artifacts/architecture_v2_runtime_cutover/phase_01/risk_register.md",
+    "artifacts/architecture_v2_runtime_cutover/phase_02/risk_register.md",
+    "artifacts/architecture_v2_runtime_cutover/phase_03/risk_register.md",
+    "artifacts/architecture_v2_runtime_cutover/phase_04/risk_register.md",
+    "artifacts/architecture_v2_runtime_cutover/phase_05/risk_register.md",
+    "artifacts/architecture_v2_runtime_cutover/phase_06/risk_register.md",
+    "artifacts/architecture_v2_runtime_cutover/phase_07/risk_register.md",
+    "artifacts/architecture_v2_runtime_cutover/phase_08/risk_register.md",
+    "artifacts/architecture_v2_runtime_cutover/phase_09/risk_register.md",
+    "artifacts/architecture_v2_runtime_cutover/phase_10/risk_register.md",
+    "artifacts/architecture_v2_runtime_cutover/phase_11/risk_register.md",
+    "artifacts/architecture_v2_runtime_cutover/phase_12/risk_register.md",
+    "artifacts/architecture_v2_runtime_cutover/phase_13/risk_register.md",
+    "artifacts/architecture_v2_runtime_cutover/phase_14/risk_register.md",
+    "artifacts/architecture_v2_runtime_cutover/phase_15/risk_register.md",
+    "artifacts/architecture_v2_runtime_cutover/phase_16/risk_register.md"
+  ]
+}

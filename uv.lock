@@ -1634,6 +1634,12 @@ requires-dist = [{ name = "windagent-core", editable = "core" }]
 name = "windagent-verification"
 version = "0.3.0"
 source = { editable = "verification" }
+dependencies = [
+    { name = "windagent-core" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "windagent-core", editable = "core" }]
 
 [[package]]
 name = "windagent-worker"

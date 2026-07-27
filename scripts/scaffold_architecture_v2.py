@@ -104,8 +104,7 @@ def generate_package_readme(pkg_name: str, pkg_info: dict) -> str:
 
 def generate_package_init(pkg_name: str, pkg_info: dict) -> str:
     desc = pkg_info["description"]
-    version = pkg_info.get("version", "0.3.0")
-    return f'"""\n{desc}\n"""\n\n__version__ = "{version}"\n'
+    return f'"""\n{desc}\n"""\n\nfrom windagent_core.version import PRODUCT_VERSION\n__version__ = PRODUCT_VERSION\n'
 
 
 def scaffold_matches(file_path: Path, current: str, expected: str, pkg_info: dict) -> bool:

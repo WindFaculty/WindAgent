@@ -14,6 +14,13 @@ from pydantic import BaseModel
 from windagent_core.errors.exceptions import (
     WindAgentError, NotFoundError, PermissionDeniedError, ValidationError, DomainError
 )
+from windagent_core.version import (
+    PRODUCT_VERSION,
+    ARCHITECTURE_GENERATION,
+    API_VERSION,
+    PROVIDER_PROTOCOL_VERSION,
+    ARTIFACT_PROTOCOL_VERSION,
+)
 from windagent_api.lifespan import lifespan
 from windagent_api.health import router as health_router
 from windagent_api.routers.v2_sessions import router as v2_sessions_router
@@ -36,7 +43,7 @@ logger = logging.getLogger("windagent.api.main")
 app = FastAPI(
     title="WindAgent V2 API",
     description="Modular Monolith API V2 Production Application",
-    version="0.4.0",
+    version=PRODUCT_VERSION,
     lifespan=lifespan,
 )
 
@@ -160,6 +167,10 @@ class ArchitectureResponse(BaseModel):
     architecture: str
     status: str
     version: str
+    architecture_generation: str
+    api_version: str
+    provider_protocol_version: str
+    artifact_protocol_version: str
 
 
 @app.get("/internal/architecture", response_model=ArchitectureResponse)
@@ -167,5 +178,9 @@ async def internal_architecture() -> ArchitectureResponse:
     return ArchitectureResponse(
         architecture="V2",
         status="canonical_api_v2_production",
-        version="0.4.0",
+        version=PRODUCT_VERSION,
+        architecture_generation=ARCHITECTURE_GENERATION,
+        api_version=API_VERSION,
+        provider_protocol_version=PROVIDER_PROTOCOL_VERSION,
+        artifact_protocol_version=ARTIFACT_PROTOCOL_VERSION,
     )

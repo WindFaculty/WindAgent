@@ -7,7 +7,8 @@
       "Bash(uv --version)",
       "Bash(cargo tauri *)",
       "Bash(git checkout *)",
-      "Bash(uv run *)"
+      "Bash(uv run *)",
+      "Bash(git *)"
     ]
   }
 }

@@ -4,7 +4,9 @@ version = "0.3.0"
 description = "Quality gates, verification runners, test assertion helpers"
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = []
+dependencies = [
+    "windagent-core",
+]
 
 [build-system]
 requires = ["hatchling"]

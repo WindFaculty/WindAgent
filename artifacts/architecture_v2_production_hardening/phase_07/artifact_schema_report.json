@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0.0",
+  "validated_at": "2026-07-27T19:54:23.004372Z",
+  "total_files": 1,
+  "passed": 0,
+  "failed": 1,
+  "results": {
+    "artifacts\\architecture_v2\\phase_00\\provider_v3_baseline_test_receipt.json": {
+      "status": "FAIL",
+      "errors": [
+        ": 'protocol_version' is a required property",
+        ": 'generated_at' is a required property",
+        ": 'source_sha' is a required property",
+        ": 'verified_sha' is a required property",
+        ": 'worktree_clean' is a required property",
+        ": 'commands' is a required property",
+        ": 'results' is a required property",
+        ": 'failures' is a required property",
+        ": 'warnings' is a required property",
+        ": 'artifact_hashes' is a required property",
+        ": 'verdict' is a required property",
+        ": Additional properties are not allowed ('acceptance_gates', 'inventory_summary', 'name', 'phase', 'starting_sha', 'status', 'test_session', 'timestamp' were unexpected)"
+      ]
+    }
+  }
+}

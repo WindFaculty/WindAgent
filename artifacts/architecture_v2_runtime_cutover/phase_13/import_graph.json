@@ -2675,6 +2675,36 @@
     {
       "from": "api",
       "to": "core",
+      "file": "apps/api/windagent_api/main.py",
+      "line": 17
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/main.py",
+      "line": 17
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/main.py",
+      "line": 17
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/main.py",
+      "line": 17
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/main.py",
+      "line": 17
+    },
+    {
+      "from": "api",
+      "to": "core",
       "file": "apps/api/windagent_api/adapters/legacy_event_mappers.py",
       "line": 17
     },
@@ -3160,21 +3190,57 @@
     },
     {
       "from": "cli",
+      "to": "core",
+      "file": "apps/cli/windagent_cli/main.py",
+      "line": 19
+    },
+    {
+      "from": "cli",
+      "to": "core",
+      "file": "apps/cli/windagent_cli/main.py",
+      "line": 19
+    },
+    {
+      "from": "cli",
+      "to": "core",
+      "file": "apps/cli/windagent_cli/main.py",
+      "line": 19
+    },
+    {
+      "from": "cli",
+      "to": "core",
+      "file": "apps/cli/windagent_cli/main.py",
+      "line": 19
+    },
+    {
+      "from": "cli",
+      "to": "core",
+      "file": "apps/cli/windagent_cli/main.py",
+      "line": 19
+    },
+    {
+      "from": "cli",
+      "to": "core",
+      "file": "apps/cli/windagent_cli/main.py",
+      "line": 19
+    },
+    {
+      "from": "cli",
       "to": "observability",
       "file": "apps/cli/windagent_cli/main.py",
-      "line": 50
+      "line": 72
     },
     {
       "from": "cli",
       "to": "providers",
       "file": "apps/cli/windagent_cli/main.py",
-      "line": 216
+      "line": 240
     },
     {
       "from": "cli",
       "to": "tools",
       "file": "apps/cli/windagent_cli/main.py",
-      "line": 240
+      "line": 264
     },
     {
       "from": "worker",
@@ -3451,6 +3517,12 @@
       "to": "core",
       "file": "apps/worker/windagent_worker/runner.py",
       "line": 325
+    },
+    {
+      "from": "worker",
+      "to": "core",
+      "file": "apps/worker/windagent_worker/__init__.py",
+      "line": 5
     },
     {
       "from": "plugins",

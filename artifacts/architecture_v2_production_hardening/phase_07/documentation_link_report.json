@@ -1,0 +1,106 @@
+{
+  "checked_at": "2026-07-28",
+  "source_commit": "95b9551",
+  "readme_links": {
+    "implementation_plan": {
+      "path": "ban_ke_hoach.md",
+      "exists": true,
+      "valid": true
+    },
+    "api_v2_package": {
+      "path": "apps/api/README.md",
+      "exists": true,
+      "valid": true
+    },
+    "worker_package": {
+      "path": "apps/worker/README.md",
+      "exists": true,
+      "valid": true
+    },
+    "cli_package": {
+      "path": "apps/cli/README.md",
+      "exists": true,
+      "valid": true
+    },
+    "desktop_client": {
+      "path": "apps/desktop/README.md",
+      "exists": true,
+      "valid": true
+    },
+    "event_protocol": {
+      "path": "docs/event_protocol.md",
+      "exists": true,
+      "valid": true
+    }
+  },
+  "architecture_doc_links": {
+    "current_system": {
+      "path": "docs/architecture/current-system.md",
+      "exists": true,
+      "valid": true,
+      "note": "Historical Phase 0 snapshot - labeled as non-authoritative"
+    },
+    "orchestration_v2": {
+      "path": "docs/architecture/orchestration_v2.md",
+      "exists": true,
+      "valid": true
+    },
+    "core_contracts": {
+      "path": "docs/architecture/core-contracts.md",
+      "exists": true,
+      "valid": true
+    },
+    "core_canonical_model": {
+      "path": "docs/architecture/core-canonical-model.md",
+      "exists": true,
+      "valid": true
+    },
+    "core_lifecycle": {
+      "path": "docs/architecture/core-lifecycle.md",
+      "exists": true,
+      "valid": true
+    }
+  },
+  "provider_doc_links": {
+    "v3_architecture": {
+      "path": "docs/providers/provider_v3_architecture_decisions.md",
+      "exists": true,
+      "valid": true
+    },
+    "v3_inventory": {
+      "path": "docs/providers/provider_v3_inventory.md",
+      "exists": true,
+      "valid": true
+    },
+    "v3_migration": {
+      "path": "docs/providers/provider_v3_migration_map.md",
+      "exists": true,
+      "valid": true
+    }
+  },
+  "legacy_references": {
+    "apps_backend_main_py": {
+      "found_in": [],
+      "count": 0
+    },
+    "apps_backend_paths": {
+      "found_in": [
+        "docs/architecture/current-system.md"
+      ],
+      "count": 1,
+      "note": "Historical doc labeled non-authoritative"
+    },
+    "api_v1_usage": {
+      "found_in": [
+        "docs/event_protocol.md"
+      ],
+      "count": 1,
+      "note": "Reference to /api/v1/events in event protocol doc - tombstone reference"
+    },
+    "old_launcher": {
+      "found_in": [],
+      "count": 0
+    }
+  },
+  "broken_links": []
+}

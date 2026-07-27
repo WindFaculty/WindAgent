@@ -1,0 +1,46 @@
+{
+  "errors": [],
+  "warnings": [],
+  "checks": {
+    "README commands exist": {
+      "passed": true,
+      "errors": []
+    },
+    "Package paths exist": {
+      "passed": true,
+      "errors": []
+    },
+    "Launcher is correct": {
+      "passed": true,
+      "errors": []
+    },
+    "No production apps/backend references": {
+      "passed": true,
+      "errors": []
+    },
+    "No frontend /api/v1 usage": {
+      "passed": true,
+      "errors": []
+    },
+    "Artifact pointers exist": {
+      "passed": true,
+      "errors": []
+    },
+    "Referenced SHAs exist in Git": {
+      "passed": true,
+      "errors": []
+    },
+    "No raw secrets": {
+      "passed": true,
+      "errors": []
+    },
+    "No stale hardcoded test counts": {
+      "passed": true,
+      "errors": []
+    },
+    "Environment variables documented in code/config": {
+      "passed": true,
+      "errors": []
+    }
+  }
+}

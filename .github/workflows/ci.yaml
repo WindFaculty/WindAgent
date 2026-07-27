@@ -7,6 +7,133 @@ on:
     branches: [main]
 
 jobs:
+  version-consistency:
+    name: Version Consistency Gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "0.5.0"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Sync dependencies
+        run: uv sync --all-packages
+
+      - name: Run Version Consistency Check
+        run: uv run python scripts/check_version_consistency.py
+
+  artifact-schema-validation:
+    name: Artifact Schema Validation Gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "0.5.0"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Sync dependencies
+        run: uv sync --all-packages
+
+      - name: Run Artifact Schema Validator
+        run: uv run python scripts/validate_artifact_schema.py tests/fixtures/artifacts/valid_artifact.json
+
+      - name: Verify Negative Fixtures Fail
+        run: |
+          for f in tests/fixtures/artifacts/*.json; do
+            if [[ "$f" != *"valid_artifact"* ]]; then
+              if uv run python scripts/validate_artifact_schema.py "$f"; then
+                echo "ERROR: Negative fixture $f should have failed but passed"
+                exit 1
+              fi
+            fi
+          done
+
+  runtime-version-smoke:
+    name: Runtime Version Smoke Gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "0.5.0"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Sync dependencies
+        run: uv sync --all-packages
+
+      - name: Install packages
+        run: uv pip install -e core -e apps/api -e apps/cli -e apps/worker
+
+      - name: FastAPI Version Smoke
+        run: |
+          python -c "
+          from windagent_api import app
+          import requests
+          import uvicorn
+          from fastapi.testclient import TestClient
+          client = TestClient(app)
+          resp = client.get('/internal/architecture')
+          data = resp.json()
+          print(f'API version: {data[\"version\"]}')
+          print(f'Architecture: {data[\"architecture\"]}')
+          print(f'Architecture Generation: {data[\"architecture_generation\"]}')
+          print(f'API Version: {data[\"api_version\"]}')
+          print(f'Provider Protocol: {data[\"provider_protocol_version\"]}')
+          print(f'Artifact Protocol: {data[\"artifact_protocol_version\"]}')
+          assert data['version'] == data['product_version'] == '0.3.0'
+          assert data['architecture_generation'] == 'v2'
+          assert data['api_version'] == 'v2'
+          assert data['provider_protocol_version'] == '1.0.0'
+          assert data['artifact_protocol_version'] == '1.0.0'
+          print('FastAPI version smoke: PASS')
+          "
+
+      - name: CLI Version Smoke
+        run: |
+          python -m windagent_cli --version --json
+
+      - name: Worker Version Smoke
+        run: |
+          python -c "
+          import windagent_worker
+          print(f'Worker version: {windagent_worker.__version__}')
+          from windagent_core.version import PRODUCT_VERSION
+          assert windagent_worker.__version__ == PRODUCT_VERSION
+          print('Worker version smoke: PASS')
+          "
+
+      - name: Package Metadata Smoke
+        run: |
+          python -c "
+          from importlib.metadata import version
+          for pkg in ['windagent-core', 'windagent-api', 'windagent-cli', 'windagent-worker']:
+              v = version(pkg)
+              print(f'{pkg}: {v}')
+              from windagent_core.version import PRODUCT_VERSION
+              assert v == PRODUCT_VERSION
+          print('Package metadata smoke: PASS')
+          "
+
   test_matrix:
     name: V2 Canonical Architecture Test (${{ matrix.os }}, ${{ matrix.database }})
     runs-on: ${{ matrix.os }}

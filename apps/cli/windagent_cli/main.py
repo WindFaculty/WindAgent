@@ -16,6 +16,14 @@ from typing import Any, Dict, List, Optional
 
 from windagent_core.domain.types import TaskId, SessionId
 from windagent_core.events.catalog import EventCatalog
+from windagent_core.version import (
+    PRODUCT_VERSION,
+    ARCHITECTURE_GENERATION,
+    API_VERSION,
+    PROVIDER_PROTOCOL_VERSION,
+    ARTIFACT_PROTOCOL_VERSION,
+    get_version_info,
+)
 from windagent_cli.composition import (
     DoctorCommandComposer,
     RunCommandComposer,
@@ -37,13 +45,27 @@ def get_logger():
     return logger
 
 
+def _print_version(json_mode: bool = False) -> int:
+    """Print version information and exit."""
+    info = get_version_info()
+    if json_mode:
+        print(json.dumps(info, indent=2))
+    else:
+        print(f"WindAgent CLI {info['product_version']}")
+        print(f"Architecture: {info['architecture_generation']}")
+        print(f"API: {info['api_version']}")
+        print(f"Provider Protocol: {info['provider_protocol_version']}")
+        print(f"Artifact Protocol: {info['artifact_protocol_version']}")
+    return 0
+
+
 def doctor(
     json_mode: bool = False,
     profile: Optional[str] = None,
     component: Optional[str] = None,
 ) -> int:
     """Run real system diagnostic health check across V2 architecture components.
-    
+
     Uses DoctorCommandComposer with HealthChecker service for real runtime health checks (PHASE 10).
     Uses same health provider as API, not hardcoded results.
     """
@@ -65,7 +87,7 @@ def doctor(
         print("=== WindAgent Doctor (V2 Architecture Phase 10 - Real Health Checks) ===")
         print(f"Profile: {results.get('profile', 'unknown')}")
         print()
-        
+
         for name, chk in results["checks"].items():
             st = "PASS" if chk.get("passed", False) else "FAIL"
             status = chk.get("status", "UNKNOWN")
@@ -83,12 +105,12 @@ def doctor(
 
 async def run_task(prompt: str, workflow: str = "bugfix", json_mode: bool = False) -> int:
     """Submits and executes real task via TaskManager.
-    
+
     Uses RunCommandComposer for per-command composition (PHASE 7).
     """
     composer = RunCommandComposer()
     db = None
-    
+
     try:
         db = await composer.bootstrap()
         tm = composer._task_manager
@@ -129,11 +151,13 @@ async def run_task(prompt: str, workflow: str = "bugfix", json_mode: bool = Fals
 
 def get_status(json_mode: bool = False) -> int:
     """Queries real system readiness status."""
+    info = get_version_info()
     status_data = {
         "api_status": "ONLINE",
         "worker_pool": {"active_workers": 1, "active_leases": 0},
         "queue_depth": 0,
-        "architecture_version": "0.4.0",
+        "architecture_version": info['architecture_generation'],
+        "product_version": info['product_version'],
     }
 
     if json_mode:
@@ -293,7 +317,7 @@ def architecture_check(json_mode: bool = False) -> int:
     root_dir = Path(__file__).resolve().parent.parent.parent.parent
     checker_script = root_dir / "scripts" / "check_architecture_imports.py"
     scaffold_script = root_dir / "scripts" / "scaffold_architecture_v2.py"
-    
+
     passed = True
     if scaffold_script.exists():
         res1 = subprocess.run([sys.executable, str(scaffold_script), "--check"], capture_output=True, text=True)
@@ -323,6 +347,7 @@ def main(args=None) -> int:
     """Main entrypoint - PHASE 7 uses per-command composition."""
     parser = argparse.ArgumentParser(prog="windagent", description="WindAgent Architecture V2 CLI (Phase 7)")
     parser.add_argument("--json", action="store_true", help="Output results in JSON format")
+    parser.add_argument("--version", action="store_true", help="Print version information and exit")
 
     subparsers = parser.add_subparsers(dest="command", help="Available subcommands")
 
@@ -334,7 +359,7 @@ def main(args=None) -> int:
         help="Health policy profile",
     )
     p_doc.add_argument("--component", help="Run only matching health component")
-    
+
     run_parser = subparsers.add_parser("run", help="Run task with specified prompt & workflow")
     run_parser.add_argument("--prompt", type=str, default="Fix bug in calculation module", help="Task prompt")
     run_parser.add_argument("--workflow", type=str, default="bugfix", help="Workflow pack name")
@@ -342,7 +367,7 @@ def main(args=None) -> int:
 
     p_st = subparsers.add_parser("status", help="Get system and worker status")
     p_st.add_argument("--json", action="store_true", help="JSON output mode")
-    
+
     task_parser = subparsers.add_parser("task", help="Manage and inspect tasks")
     task_parser.add_argument("--json", action="store_true", help="JSON output mode")
     task_sub = task_parser.add_subparsers(dest="task_command")
@@ -361,7 +386,7 @@ def main(args=None) -> int:
 
     p_tool = subparsers.add_parser("tools", help="List registered tools")
     p_tool.add_argument("--json", action="store_true", help="JSON output mode")
-    
+
     eval_parser = subparsers.add_parser("eval", help="Run benchmark evaluation suite")
     eval_parser.add_argument("--suite", type=str, default="all", help="Evaluation suite name")
     eval_parser.add_argument("--json", action="store_true", help="JSON output mode")
@@ -371,7 +396,7 @@ def main(args=None) -> int:
 
     p_wstatus = subparsers.add_parser("worker-status", help="Check worker process status")
     p_wstatus.add_argument("--json", action="store_true", help="JSON output mode")
-    
+
     p_ptest = subparsers.add_parser("provider-test", help="Test provider connectivity")
     p_ptest.add_argument("--json", action="store_true", help="JSON output mode")
 
@@ -380,6 +405,10 @@ def main(args=None) -> int:
     except SystemExit:
         return 3
     json_flag = getattr(parsed, "json", False)
+    version_flag = getattr(parsed, "version", False)
+
+    if version_flag:
+        return _print_version(json_mode=json_flag)
 
     # Sync commands (no async)
     if parsed.command == "doctor":
