@@ -363,15 +363,17 @@ class TestPhase6VersionMetadata:
     """Test version metadata standardization"""
 
     def test_package_version_metadata(self):
-        """Verify package version metadata is standardized"""
+        """Verify package version metadata is standardized to the product authority."""
         from windagent_providers import __version__, __architecture_version__, __provider_protocol_version__
-        
-        # Version should be semantic versioning
-        assert __version__ == "2.0.0"
-        
+        from windagent_core.version import PRODUCT_VERSION
+
+        # After Phase 7 convergence every package derives its __version__ from the
+        # single product version authority, not from a package-local semantic version.
+        assert __version__ == PRODUCT_VERSION
+
         # Architecture version should be clear
         assert __architecture_version__ == "v2"
-        
+
         # Protocol version should be semantic
         assert __provider_protocol_version__ == "1.0.0"
 
