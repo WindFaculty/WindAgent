@@ -314,7 +314,12 @@ def run_eval(suite: str = "all", json_mode: bool = False) -> int:
 def architecture_check(json_mode: bool = False) -> int:
     """Verifies architecture integrity and boundary rules."""
     import subprocess
-    root_dir = Path(__file__).resolve().parent.parent.parent.parent
+    # Find repository root by looking for pyproject.toml
+    root_dir = Path(__file__).resolve().parent
+    while root_dir != root_dir.parent:
+        if (root_dir / "pyproject.toml").exists():
+            break
+        root_dir = root_dir.parent
     checker_script = root_dir / "scripts" / "check_architecture_imports.py"
     scaffold_script = root_dir / "scripts" / "scaffold_architecture_v2.py"
 

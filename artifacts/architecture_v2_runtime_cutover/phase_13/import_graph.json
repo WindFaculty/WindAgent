@@ -250,6 +250,12 @@
     },
     {
       "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/__init__.py",
+      "line": 6
+    },
+    {
+      "from": "orchestration",
       "to": "storage",
       "file": "orchestration/windagent_orchestration/dispatcher/dispatch.py",
       "line": 50
@@ -487,6 +493,12 @@
       "to": "core",
       "file": "orchestration/windagent_orchestration/workflow_engine/graph.py",
       "line": 10
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/__init__.py",
+      "line": 7
     },
     {
       "from": "intelligence",
@@ -751,6 +763,12 @@
       "to": "core",
       "file": "providers/windagent_providers/openai_compatible_adapter.py",
       "line": 14
+    },
+    {
+      "from": "providers",
+      "to": "core",
+      "file": "providers/windagent_providers/__init__.py",
+      "line": 6
     },
     {
       "from": "providers",
@@ -1145,6 +1163,12 @@
     {
       "from": "tools",
       "to": "core",
+      "file": "tools/windagent_tools/__init__.py",
+      "line": 7
+    },
+    {
+      "from": "tools",
+      "to": "core",
       "file": "tools/windagent_tools/adapters/legacy_tools.py",
       "line": 9
     },
@@ -1451,6 +1475,12 @@
     {
       "from": "workflows",
       "to": "core",
+      "file": "workflows/windagent_workflows/__init__.py",
+      "line": 7
+    },
+    {
+      "from": "workflows",
+      "to": "core",
       "file": "workflows/windagent_workflows/packs/bugfix.py",
       "line": 10
     },
@@ -1543,6 +1573,18 @@
       "to": "core",
       "file": "workflows/windagent_workflows/packs/scientific_eval.py",
       "line": 10
+    },
+    {
+      "from": "verification",
+      "to": "core",
+      "file": "verification/windagent_verification/__init__.py",
+      "line": 6
+    },
+    {
+      "from": "context",
+      "to": "core",
+      "file": "context/windagent_context/__init__.py",
+      "line": 7
     },
     {
       "from": "memory",
@@ -1581,6 +1623,12 @@
       "line": 10
     },
     {
+      "from": "memory",
+      "to": "core",
+      "file": "memory/windagent_memory/__init__.py",
+      "line": 8
+    },
+    {
       "from": "execution",
       "to": "core",
       "file": "execution/windagent_execution/cancellation.py",
@@ -1639,6 +1687,12 @@
       "to": "core",
       "file": "execution/windagent_execution/results.py",
       "line": 12
+    },
+    {
+      "from": "execution",
+      "to": "core",
+      "file": "execution/windagent_execution/__init__.py",
+      "line": 6
     },
     {
       "from": "execution",
@@ -1861,6 +1915,12 @@
       "to": "core",
       "file": "execution/windagent_execution/adapters/tool_runtime.py",
       "line": 12
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/__init__.py",
+      "line": 6
     },
     {
       "from": "storage",
@@ -1975,6 +2035,12 @@
       "to": "core",
       "file": "storage/windagent_storage/mappers/domain_orm.py",
       "line": 18
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/migrations/backup_manager.py",
+      "line": 19
     },
     {
       "from": "storage",
@@ -2356,6 +2422,12 @@
     },
     {
       "from": "observability",
+      "to": "core",
+      "file": "observability/windagent_observability/__init__.py",
+      "line": 5
+    },
+    {
+      "from": "observability",
       "to": "storage",
       "file": "observability/windagent_observability/events/dead_letter.py",
       "line": 8
@@ -2401,6 +2473,12 @@
       "to": "core",
       "file": "evals/windagent_evals/datasets.py",
       "line": 14
+    },
+    {
+      "from": "evals",
+      "to": "core",
+      "file": "evals/windagent_evals/__init__.py",
+      "line": 6
     },
     {
       "from": "api",
@@ -2701,6 +2779,12 @@
       "to": "core",
       "file": "apps/api/windagent_api/main.py",
       "line": 17
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/__init__.py",
+      "line": 5
     },
     {
       "from": "api",
@@ -3243,6 +3327,12 @@
       "line": 264
     },
     {
+      "from": "cli",
+      "to": "core",
+      "file": "apps/cli/windagent_cli/__init__.py",
+      "line": 5
+    },
+    {
       "from": "worker",
       "to": "storage",
       "file": "apps/worker/windagent_worker/composition.py",
@@ -3527,6 +3617,12 @@
     {
       "from": "plugins",
       "to": "core",
+      "file": "plugins/windagent_plugins/__init__.py",
+      "line": 5
+    },
+    {
+      "from": "plugins",
+      "to": "core",
       "file": "plugins/windagent_plugins/loader/loader.py",
       "line": 16
     },
@@ -3553,6 +3649,12 @@
       "to": "core",
       "file": "plugins/windagent_plugins/manifest/manifest.py",
       "line": 12
+    },
+    {
+      "from": "skills",
+      "to": "core",
+      "file": "skills/windagent_skills/__init__.py",
+      "line": 5
     },
     {
       "from": "skills",
@@ -3605,8 +3707,12 @@
     "workflows": [
       "core"
     ],
-    "verification": [],
-    "context": [],
+    "verification": [
+      "core"
+    ],
+    "context": [
+      "core"
+    ],
     "memory": [
       "core",
       "storage"

@@ -10,7 +10,8 @@
       "command": "pytest tests/ -v",
       "exit_code": 0,
       "duration_ms": 45000,
-      "output_tail": "516 passed, 8 failed, 12 skipped in 45.23s"
+      "stdout_tail": "516 passed, 8 failed, 12 skipped in 45.23s",
+      "stderr_tail": ""
     }
   ],
   "results": {

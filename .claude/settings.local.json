@@ -11,7 +11,19 @@
       "Bash(git *)",
       "Bash(python scripts/scaffold_architecture_v2.py --create)",
       "Bash(python scripts/scaffold_architecture_v2.py --check)",
-      "Bash(python *)"
+      "Bash(python *)",
+      "Bash(tee artifacts/architecture_v2_production_hardening/phase_07/pytest_initial.log)",
+      "Bash(uv sync *)",
+      "Bash(mkdir -p /tmp/windagent_version_test)",
+      "Bash(cp -r . /tmp/windagent_version_test/repo)",
+      "Bash(rm -rf /tmp/windagent_version_test)",
+      "Bash(mkdir -p /c/temp/windagent_version_test)",
+      "Bash(cp -r . /c/temp/windagent_version_test/repo)",
+      "Bash(echo \"EXIT_CODE=$?\")",
+      "Bash(set -x)",
+      "Bash(MSYS2_ARG_CONV_EXCL=* uv run python scripts/check_version_consistency.py --root //nonexistent)",
+      "Bash(echo \"EXIT=$?\")",
+      "PowerShell(uv run *)"
     ]
   }
 }

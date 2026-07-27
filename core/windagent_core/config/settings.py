@@ -7,6 +7,8 @@ from __future__ import annotations
 from typing import List, Optional, Dict, Any
 from pydantic import BaseModel, ConfigDict, Field
 
+from windagent_core.version import PRODUCT_VERSION
+
 
 def redact_value(val: Optional[str]) -> str:
     if not val:
@@ -18,7 +20,7 @@ class ApplicationConfig(BaseModel):
     environment: str = "development"
     debug: bool = False
     app_name: str = "WindAgent"
-    version: str = "0.3.0"
+    version: str = PRODUCT_VERSION
 
     model_config = ConfigDict(frozen=True, extra="forbid", validate_assignment=True)
 

@@ -16,6 +16,8 @@ from typing import Any, Dict, List, Optional
 
 from sqlalchemy import Engine, text
 
+from windagent_core.version import PRODUCT_VERSION
+
 logger = logging.getLogger("windagent.storage.migrations.backup")
 
 
@@ -39,7 +41,7 @@ class BackupInfo:
     schema_checksum: str
     file_checksum: str = ""
     migration_revision: str = "002_legacy_data"
-    app_version: str = "0.3.0"
+    app_version: str = PRODUCT_VERSION
     row_counts: Dict[str, int] = field(default_factory=dict)
     is_compressed: bool = False
 
@@ -79,7 +81,7 @@ class BackupManager:
         compress: bool = True,
         include_row_counts: bool = True,
         migration_revision: str = "002_legacy_data",
-        app_version: str = "0.3.0",
+        app_version: str = PRODUCT_VERSION,
     ) -> BackupInfo:
         """Create a backup of the database with file and schema checksums."""
         backup_id = backup_id or (
@@ -221,7 +223,7 @@ class BackupManager:
                     schema_checksum=metadata.get("schema_checksum", ""),
                     file_checksum=metadata.get("file_checksum", ""),
                     migration_revision=metadata.get("migration_revision", "002_legacy_data"),
-                    app_version=metadata.get("app_version", "0.3.0"),
+                    app_version=metadata.get("app_version", PRODUCT_VERSION),
                     row_counts=metadata.get("row_counts", {}),
                     is_compressed=metadata.get("is_compressed", False),
                 )
