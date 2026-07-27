@@ -2,4 +2,6 @@
 Evaluation benchmarks, model output scoring, regression suites
 """
 
-__version__ = "0.3.0"
+from windagent_core.version import PRODUCT_VERSION
+
+__version__ = PRODUCT_VERSION

@@ -2,8 +2,9 @@
 Context assembly, token budgeting, prompt formatting
 """
 
-__version__ = "0.3.0"
+from windagent_core.version import PRODUCT_VERSION
 
+__version__ = PRODUCT_VERSION
 from windagent_context.builder import ContextBuilder
 from windagent_context.budget import TokenBudgetManager
 from windagent_context.compaction import ContextCompactor

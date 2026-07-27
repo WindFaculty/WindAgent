@@ -95,6 +95,24 @@ required_top_level_packages:
   - plugins
   - skills
 
+# Declarative public API exports for app-layer and core packages.
+# The scaffold generator/checker uses this to maintain required exports
+# without overwriting hand-maintained documentation or implementation imports.
+public_exports:
+  core:
+    required: []
+  api:
+    required: []
+  cli:
+    required: []
+  worker:
+    required:
+      TaskLease: windagent_worker.lease
+      TaskLeaseManager: windagent_worker.lease
+      DurableTaskLeaseManager: windagent_worker.lease
+      ProductionWorker: windagent_worker.runner
+      WorkerRunner: windagent_worker.runner
+
 packages:
   core:
     layer: domain

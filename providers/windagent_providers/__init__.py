@@ -3,6 +3,8 @@ WindAgent Providers Package (Architecture V3 Rebuild).
 Modular model provider contracts, adapters, error taxonomy, and ports.
 """
 
+from windagent_core.version import PRODUCT_VERSION
+
 from windagent_providers.base import (
     # Errors
     ProviderFailure,
@@ -106,7 +108,7 @@ from windagent_providers.cache import (
 # Mock adapter for testing
 from windagent_providers.mock import MockProviderAdapter
 
-__version__ = "2.0.0"
+__version__ = PRODUCT_VERSION
 __architecture_version__ = "v2"
 __provider_protocol_version__ = "1.0.0"
 

@@ -8,7 +8,10 @@
       "Bash(cargo tauri *)",
       "Bash(git checkout *)",
       "Bash(uv run *)",
-      "Bash(git *)"
+      "Bash(git *)",
+      "Bash(python scripts/scaffold_architecture_v2.py --create)",
+      "Bash(python scripts/scaffold_architecture_v2.py --check)",
+      "Bash(python *)"
     ]
   }
 }

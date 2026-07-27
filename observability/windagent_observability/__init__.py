@@ -2,4 +2,6 @@
 Logging, tracing, metrics, audit trail, cost tracking
 """
 
-__version__ = "0.3.0"
+from windagent_core.version import PRODUCT_VERSION
+
+__version__ = PRODUCT_VERSION
