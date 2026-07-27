@@ -252,6 +252,11 @@ class ModelCallId(UUIDEntityId):
 
 # --- Opaque External / Runtime IDs ---
 
+class AggregateId(OpaqueId):
+    """Aggregate identifier for event sourcing."""
+    pass
+
+
 class ProviderId(OpaqueId):
     """Identifier for an LLM provider (e.g. 'openai', 'anthropic')."""
     pass

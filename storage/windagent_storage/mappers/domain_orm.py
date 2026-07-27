@@ -7,15 +7,14 @@ from __future__ import annotations
 import json
 from datetime import datetime, timezone
 
+from windagent_core.domain.models import (
+    Session, Task, WorkflowRun, WorkflowStep, ArtifactRef,
+    SessionStatus, WorkflowStatus, StepStatus
+)
 from windagent_core.domain.types import (
     SessionId, TaskId, WorkflowId, StepId, RunId, TaskRunId, WorkflowRunId, EventId, ArtifactId
 )
-from windagent_core.domain.models import (
-    Session, Task, WorkflowRun, WorkflowStep, ArtifactRef
-)
-from windagent_core.domain.lifecycle import (
-    SessionState, TaskState, WorkflowState, StepState
-)
+from windagent_core.domain.lifecycle import TaskState
 from windagent_core.events.envelope import EventEnvelope
 from windagent_storage.orm.models import (
     SessionORM, TaskORM, WorkflowRunORM, WorkflowStepORM, ExecutionEventORM, ArtifactRefORM
@@ -26,9 +25,9 @@ def orm_to_domain_session(orm: SessionORM) -> Session:
     meta = json.loads(orm.metadata_json) if orm.metadata_json else {}
     status_raw = str(orm.status).upper()
     try:
-        status = SessionState[status_raw]
+        status = SessionStatus[status_raw]
     except KeyError:
-        status = SessionState.IDLE
+        status = SessionStatus.IDLE
 
     return Session(
         id=SessionId(orm.id),
@@ -61,9 +60,9 @@ def orm_to_domain_task(orm: TaskORM) -> Task:
     tags = json.loads(orm.tags_json) if orm.tags_json else []
     status_raw = str(orm.status).upper()
     try:
-        status = TaskState[status_raw]
+        status = SessionStatus[status_raw]
     except KeyError:
-        status = TaskState.RECEIVED
+        status = SessionStatus.PENDING
 
     return Task(
         id=TaskId(orm.id),
@@ -93,9 +92,9 @@ def orm_to_domain_step(orm: WorkflowStepORM) -> WorkflowStep:
     result = json.loads(orm.result_json) if orm.result_json else None
     status_raw = str(orm.status).upper()
     try:
-        status = StepState[status_raw]
+        status = StepStatus[status_raw]
     except KeyError:
-        status = StepState.BLOCKED
+        status = StepStatus.PENDING
 
     return WorkflowStep(
         id=StepId(orm.id),
@@ -129,9 +128,9 @@ def domain_to_orm_step(domain: WorkflowStep, run_id: RunId) -> WorkflowStepORM:
 def orm_to_domain_workflow(orm: WorkflowRunORM) -> WorkflowRun:
     status_raw = str(orm.status).upper()
     try:
-        status = WorkflowState[status_raw]
+        status = WorkflowStatus[status_raw]
     except KeyError:
-        status = WorkflowState.DRAFT
+        status = WorkflowStatus.PENDING
 
     steps = [orm_to_domain_step(s) for s in (orm.steps or [])]
     steps.sort(key=lambda s: s.order)
@@ -173,7 +172,13 @@ def orm_to_domain_event(orm: ExecutionEventORM) -> EventEnvelope:
 
 
 def domain_to_orm_event(domain: EventEnvelope) -> ExecutionEventORM:
-    data_json = json.dumps(domain.payload) if domain.payload else "{}"
+    data = {
+        "aggregate_id": str(domain.aggregate_id) if domain.aggregate_id else None,
+        "aggregate_type": domain.aggregate_type,
+        "payload": domain.payload,
+        "metadata": domain.metadata,
+    }
+    data_json = json.dumps(data) if data else "{}"
     return ExecutionEventORM(
         id=str(domain.event_id),
         session_id=str(domain.session_id) if domain.session_id else None,

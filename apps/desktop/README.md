@@ -2,12 +2,12 @@
 
 Tauri + React + TypeScript desktop app cho WindAgent.
 
-## Trạng thái hiện tại (Phase 6)
+## Trạng thái hiện tại
 
 - **Frontend (React + Vite + TS)** — scaffold xong, có thể chạy standalone
   bằng `npm run dev`. Không cần Rust.
-- **Backend integration** — Vite proxy `/api` + `/ws` tới
-  `http://127.0.0.1:8765`. Backend phải chạy trước (xem `apps/backend/README.md`).
+- **API integration** — Vite proxy `/api` + `/ws` tới Architecture V2 API ở
+  `http://127.0.0.1:8765`. Chạy `scripts/dev_api.ps1` trước khi mở desktop.
 - **Tauri shell (Rust)** — scaffold xong (`src-tauri/`) nhưng cần Rust
   toolchain để build. Phase 9 sẽ wire Python sidecar launcher.
 
@@ -59,17 +59,12 @@ npm install
 npm run dev
 ```
 
-Mở `http://localhost:5173`. Backend phải chạy ở port 8765 (xem
-`apps/backend/README.md`).
+Mở `http://localhost:5173`. Architecture V2 API phải chạy ở port 8765.
 
-Để dev backend với mock GUI + mock model (không cần Ollama, không cần
-desktop):
+Để chạy API với provider/runtime mock:
 
 ```powershell
-cd apps/backend
-$env:WINDAGENT_MOCK_GUI=1
-$env:WINDAGENT_MODEL_BACKEND=mock
-uv run uvicorn main:app --port 8765
+powershell -ExecutionPolicy Bypass -File scripts\dev_api.ps1
 ```
 
 ## Cách build Tauri (cần Rust)
@@ -84,7 +79,7 @@ Yêu cầu:
 # One-time
 cargo install tauri-cli --version "^2.0"
 
-# Run full desktop shell (auto-builds React + spawns backend dev)
+# Run full desktop shell (API runs separately via scripts/dev_api.ps1)
 cargo tauri dev
 
 # Production build → apps/desktop/src-tauri/target/release/bundle/

@@ -6,7 +6,7 @@ namespace packages, pyproject.toml files, and bounded context READMEs.
 
 Supports:
   --dry-run : Preview changes without writing to disk
-  --check   : Verify that all expected scaffold files exist with correct content (exit 0 if clean, 1 if diffs found)
+  --check   : Verify required scaffold contracts without overwriting maintained docs
   --create  : Generate or update scaffold files (idempotent)
 """
 
@@ -92,7 +92,7 @@ def generate_package_readme(pkg_name: str, pkg_info: dict) -> str:
 - Exposed strictly via `{namespace}` top-level exports.
 
 ## Out-of-Scope
-- Legacy backend services running in `apps/backend/`.
+- Retired legacy implementation (Architecture V2 packages are authoritative).
 - Concrete implementations of other bounded contexts.
 
 ## Acceptance Criteria
@@ -114,6 +114,15 @@ def scaffold_matches(file_path: Path, current: str, expected: str, pkg_info: dic
         return project.get("name") == pkg_info["namespace"] and project.get("version") == pkg_info.get("version", "0.3.0")
     if file_path.name == "__init__.py":
         return bool(re.search(r'^__version__\s*=\s*["\'][^"\']+["\']', current, re.MULTILINE))
+    if file_path.name == "README.md":
+        # Package READMEs become maintained runtime documentation after the
+        # initial scaffold. Require identity and a responsibility heading, but
+        # do not force them back to the historical generated migration text.
+        return (
+            current.lstrip().startswith("# ")
+            and "## Responsibility" in current
+            and pkg_info["namespace"] in current
+        )
     return current.strip() == expected.strip()
 
 

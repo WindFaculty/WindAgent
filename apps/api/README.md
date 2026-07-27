@@ -25,15 +25,23 @@ FastAPI REST & WebSocket entrypoint for Architecture V2
 ## Forbidden Dependencies
 - None
 
-## Legacy Migration Source
-`apps/backend/main.py`
+## Runtime
+
+This is the only HTTP/ASGI authority. Start it from the workspace root:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\dev_api.ps1
+```
+
+The ASGI target is `windagent_api.main:app`. API V2 is served under
+`/api/v2/*`; `/api/v1/*` is a permanent `410 Gone` tombstone.
 
 ## Public API (Target)
 - Expected domain models, interfaces, and public handlers for api.
 - Exposed strictly via `windagent_api` top-level exports.
 
 ## Out-of-Scope
-- Legacy backend services running in `apps/backend/`.
+- Retired Architecture V1 implementation.
 - Concrete implementations of other bounded contexts.
 
 ## Acceptance Criteria

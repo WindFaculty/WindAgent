@@ -81,11 +81,6 @@
       "namespace": "windagent_worker"
     },
     {
-      "id": "backend",
-      "path": "apps/backend",
-      "namespace": ""
-    },
-    {
       "id": "plugins",
       "path": "plugins",
       "namespace": "windagent_plugins"
@@ -119,6 +114,72 @@
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/commands.py",
+      "line": 11
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/commands.py",
+      "line": 11
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/commands.py",
+      "line": 11
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/commands.py",
+      "line": 11
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/commands.py",
+      "line": 11
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/commands.py",
+      "line": 11
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/commands.py",
+      "line": 11
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/commands.py",
+      "line": 14
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/commands.py",
+      "line": 14
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/ports.py",
+      "line": 14
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/ports.py",
+      "line": 14
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/ports.py",
       "line": 14
     },
     {
@@ -132,6 +193,54 @@
       "to": "core",
       "file": "orchestration/windagent_orchestration/ports.py",
       "line": 17
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/ports.py",
+      "line": 17
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/ports.py",
+      "line": 17
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/ports.py",
+      "line": 17
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/ports.py",
+      "line": 17
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/ports.py",
+      "line": 17
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/queries.py",
+      "line": 8
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/queries.py",
+      "line": 8
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/queries.py",
+      "line": 8
     },
     {
       "from": "orchestration",
@@ -189,6 +298,54 @@
     },
     {
       "from": "orchestration",
+      "to": "storage",
+      "file": "orchestration/windagent_orchestration/recovery/reconciler.py",
+      "line": 18
+    },
+    {
+      "from": "orchestration",
+      "to": "storage",
+      "file": "orchestration/windagent_orchestration/recovery/reconciler.py",
+      "line": 18
+    },
+    {
+      "from": "orchestration",
+      "to": "storage",
+      "file": "orchestration/windagent_orchestration/recovery/reconciler.py",
+      "line": 18
+    },
+    {
+      "from": "orchestration",
+      "to": "storage",
+      "file": "orchestration/windagent_orchestration/recovery/reconciler.py",
+      "line": 18
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/retry/classifier.py",
+      "line": 11
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/retry/classifier.py",
+      "line": 11
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/retry/classifier.py",
+      "line": 11
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/retry/classifier.py",
+      "line": 11
+    },
+    {
+      "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/retry/classifier.py",
       "line": 11
@@ -214,8 +371,26 @@
     {
       "from": "orchestration",
       "to": "core",
+      "file": "orchestration/windagent_orchestration/state_machine/step_state.py",
+      "line": 8
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
       "file": "orchestration/windagent_orchestration/state_machine/task.py",
       "line": 6
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/state_machine/task.py",
+      "line": 6
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/state_machine/transitions.py",
+      "line": 10
     },
     {
       "from": "orchestration",
@@ -232,6 +407,24 @@
     {
       "from": "orchestration",
       "to": "core",
+      "file": "orchestration/windagent_orchestration/state_machine/transitions.py",
+      "line": 11
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/state_machine/transitions.py",
+      "line": 11
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/state_machine/workflow_state.py",
+      "line": 8
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
       "file": "orchestration/windagent_orchestration/state_machine/workflow_state.py",
       "line": 8
     },
@@ -240,6 +433,18 @@
       "to": "core",
       "file": "orchestration/windagent_orchestration/task_manager/facts.py",
       "line": 12
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/task_manager/facts.py",
+      "line": 12
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/task_manager/service.py",
+      "line": 13
     },
     {
       "from": "orchestration",
@@ -258,6 +463,18 @@
       "to": "storage",
       "file": "orchestration/windagent_orchestration/workflow_engine/checkpoints.py",
       "line": 12
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/workflow_engine/definition.py",
+      "line": 6
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/workflow_engine/definition.py",
+      "line": 6
     },
     {
       "from": "orchestration",
@@ -287,6 +504,36 @@
       "from": "intelligence",
       "to": "context",
       "file": "intelligence/windagent_intelligence/context_builder/builder.py",
+      "line": 13
+    },
+    {
+      "from": "intelligence",
+      "to": "context",
+      "file": "intelligence/windagent_intelligence/context_builder/builder.py",
+      "line": 13
+    },
+    {
+      "from": "intelligence",
+      "to": "context",
+      "file": "intelligence/windagent_intelligence/context_builder/builder.py",
+      "line": 13
+    },
+    {
+      "from": "intelligence",
+      "to": "context",
+      "file": "intelligence/windagent_intelligence/context_builder/builder.py",
+      "line": 13
+    },
+    {
+      "from": "intelligence",
+      "to": "context",
+      "file": "intelligence/windagent_intelligence/context_builder/builder.py",
+      "line": 13
+    },
+    {
+      "from": "intelligence",
+      "to": "context",
+      "file": "intelligence/windagent_intelligence/context_builder/builder.py",
       "line": 113
     },
     {
@@ -294,6 +541,30 @@
       "to": "core",
       "file": "intelligence/windagent_intelligence/model_router/cache.py",
       "line": 17
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/model_router/policy.py",
+      "line": 10
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/model_router/policy.py",
+      "line": 10
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/model_router/policy.py",
+      "line": 10
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/model_router/policy.py",
+      "line": 10
     },
     {
       "from": "intelligence",
@@ -311,7 +582,49 @@
       "from": "intelligence",
       "to": "providers",
       "file": "intelligence/windagent_intelligence/model_router/policy.py",
+      "line": 11
+    },
+    {
+      "from": "intelligence",
+      "to": "providers",
+      "file": "intelligence/windagent_intelligence/model_router/policy.py",
+      "line": 11
+    },
+    {
+      "from": "intelligence",
+      "to": "providers",
+      "file": "intelligence/windagent_intelligence/model_router/policy.py",
       "line": 14
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/model_router/route_lock.py",
+      "line": 11
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/model_router/route_lock.py",
+      "line": 11
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/model_router/route_lock.py",
+      "line": 11
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/model_router/route_lock.py",
+      "line": 11
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/model_router/route_lock.py",
+      "line": 11
     },
     {
       "from": "intelligence",
@@ -347,12 +660,42 @@
       "from": "intelligence",
       "to": "core",
       "file": "intelligence/windagent_intelligence/planner/planner.py",
+      "line": 18
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/planner/planner.py",
+      "line": 18
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/planner/planner.py",
       "line": 19
     },
     {
       "from": "intelligence",
       "to": "core",
       "file": "intelligence/windagent_intelligence/reviewer/reviewer.py",
+      "line": 16
+    },
+    {
+      "from": "intelligence",
+      "to": "context",
+      "file": "intelligence/windagent_intelligence/summarizer/summarizer.py",
+      "line": 16
+    },
+    {
+      "from": "intelligence",
+      "to": "context",
+      "file": "intelligence/windagent_intelligence/summarizer/summarizer.py",
+      "line": 16
+    },
+    {
+      "from": "intelligence",
+      "to": "context",
+      "file": "intelligence/windagent_intelligence/summarizer/summarizer.py",
       "line": 16
     },
     {
@@ -382,8 +725,20 @@
     {
       "from": "providers",
       "to": "core",
+      "file": "providers/windagent_providers/mock.py",
+      "line": 11
+    },
+    {
+      "from": "providers",
+      "to": "core",
       "file": "providers/windagent_providers/openai_compatible_adapter.py",
       "line": 12
+    },
+    {
+      "from": "providers",
+      "to": "core",
+      "file": "providers/windagent_providers/openai_compatible_adapter.py",
+      "line": 13
     },
     {
       "from": "providers",
@@ -407,7 +762,85 @@
       "from": "providers",
       "to": "core",
       "file": "providers/windagent_providers/base/contracts.py",
+      "line": 8
+    },
+    {
+      "from": "providers",
+      "to": "core",
+      "file": "providers/windagent_providers/base/contracts.py",
+      "line": 8
+    },
+    {
+      "from": "providers",
+      "to": "core",
+      "file": "providers/windagent_providers/base/contracts.py",
+      "line": 8
+    },
+    {
+      "from": "providers",
+      "to": "core",
+      "file": "providers/windagent_providers/base/contracts.py",
+      "line": 8
+    },
+    {
+      "from": "providers",
+      "to": "core",
+      "file": "providers/windagent_providers/base/contracts.py",
+      "line": 8
+    },
+    {
+      "from": "providers",
+      "to": "core",
+      "file": "providers/windagent_providers/base/contracts.py",
+      "line": 8
+    },
+    {
+      "from": "providers",
+      "to": "core",
+      "file": "providers/windagent_providers/base/contracts.py",
+      "line": 8
+    },
+    {
+      "from": "providers",
+      "to": "core",
+      "file": "providers/windagent_providers/base/contracts.py",
+      "line": 8
+    },
+    {
+      "from": "providers",
+      "to": "core",
+      "file": "providers/windagent_providers/base/contracts.py",
+      "line": 8
+    },
+    {
+      "from": "providers",
+      "to": "core",
+      "file": "providers/windagent_providers/base/contracts.py",
+      "line": 8
+    },
+    {
+      "from": "providers",
+      "to": "core",
+      "file": "providers/windagent_providers/base/contracts.py",
       "line": 21
+    },
+    {
+      "from": "providers",
+      "to": "core",
+      "file": "providers/windagent_providers/base/contracts.py",
+      "line": 21
+    },
+    {
+      "from": "providers",
+      "to": "core",
+      "file": "providers/windagent_providers/base/contracts.py",
+      "line": 21
+    },
+    {
+      "from": "providers",
+      "to": "core",
+      "file": "providers/windagent_providers/base/errors.py",
+      "line": 9
     },
     {
       "from": "providers",
@@ -430,8 +863,146 @@
     {
       "from": "providers",
       "to": "core",
+      "file": "providers/windagent_providers/base/provider.py",
+      "line": 12
+    },
+    {
+      "from": "providers",
+      "to": "core",
       "file": "providers/windagent_providers/base/secret_redaction.py",
-      "line": 1
+      "line": 2
+    },
+    {
+      "from": "providers",
+      "to": "core",
+      "file": "providers/windagent_providers/base/secret_redaction.py",
+      "line": 2
+    },
+    {
+      "from": "providers",
+      "to": "core",
+      "file": "providers/windagent_providers/base/__init__.py",
+      "line": 27
+    },
+    {
+      "from": "providers",
+      "to": "core",
+      "file": "providers/windagent_providers/base/__init__.py",
+      "line": 27
+    },
+    {
+      "from": "providers",
+      "to": "core",
+      "file": "providers/windagent_providers/base/__init__.py",
+      "line": 27
+    },
+    {
+      "from": "providers",
+      "to": "core",
+      "file": "providers/windagent_providers/base/__init__.py",
+      "line": 27
+    },
+    {
+      "from": "providers",
+      "to": "core",
+      "file": "providers/windagent_providers/base/__init__.py",
+      "line": 27
+    },
+    {
+      "from": "providers",
+      "to": "core",
+      "file": "providers/windagent_providers/base/__init__.py",
+      "line": 27
+    },
+    {
+      "from": "providers",
+      "to": "core",
+      "file": "providers/windagent_providers/base/__init__.py",
+      "line": 27
+    },
+    {
+      "from": "providers",
+      "to": "core",
+      "file": "providers/windagent_providers/base/__init__.py",
+      "line": 27
+    },
+    {
+      "from": "providers",
+      "to": "core",
+      "file": "providers/windagent_providers/base/__init__.py",
+      "line": 27
+    },
+    {
+      "from": "providers",
+      "to": "core",
+      "file": "providers/windagent_providers/base/__init__.py",
+      "line": 27
+    },
+    {
+      "from": "providers",
+      "to": "core",
+      "file": "providers/windagent_providers/base/__init__.py",
+      "line": 27
+    },
+    {
+      "from": "providers",
+      "to": "core",
+      "file": "providers/windagent_providers/base/__init__.py",
+      "line": 27
+    },
+    {
+      "from": "providers",
+      "to": "core",
+      "file": "providers/windagent_providers/base/__init__.py",
+      "line": 27
+    },
+    {
+      "from": "providers",
+      "to": "core",
+      "file": "providers/windagent_providers/base/__init__.py",
+      "line": 27
+    },
+    {
+      "from": "providers",
+      "to": "core",
+      "file": "providers/windagent_providers/base/__init__.py",
+      "line": 27
+    },
+    {
+      "from": "providers",
+      "to": "core",
+      "file": "providers/windagent_providers/base/__init__.py",
+      "line": 27
+    },
+    {
+      "from": "providers",
+      "to": "core",
+      "file": "providers/windagent_providers/base/__init__.py",
+      "line": 27
+    },
+    {
+      "from": "providers",
+      "to": "core",
+      "file": "providers/windagent_providers/base/__init__.py",
+      "line": 27
+    },
+    {
+      "from": "providers",
+      "to": "core",
+      "file": "providers/windagent_providers/base/__init__.py",
+      "line": 27
+    },
+    {
+      "from": "providers",
+      "to": "core",
+      "file": "providers/windagent_providers/base/__init__.py",
+      "line": 27
+    },
+    {
+      "from": "providers",
+      "to": "core",
+      "file": "providers/windagent_providers/base/__init__.py",
+      "line": 27
     },
     {
       "from": "providers",
@@ -496,8 +1067,44 @@
     {
       "from": "providers",
       "to": "core",
+      "file": "providers/windagent_providers/routing/endpoint_selector.py",
+      "line": 17
+    },
+    {
+      "from": "providers",
+      "to": "core",
       "file": "providers/windagent_providers/routing/execution_coordinator.py",
       "line": 31
+    },
+    {
+      "from": "providers",
+      "to": "core",
+      "file": "providers/windagent_providers/routing/execution_coordinator.py",
+      "line": 31
+    },
+    {
+      "from": "providers",
+      "to": "core",
+      "file": "providers/windagent_providers/routing/execution_coordinator.py",
+      "line": 31
+    },
+    {
+      "from": "providers",
+      "to": "core",
+      "file": "providers/windagent_providers/routing/execution_coordinator.py",
+      "line": 31
+    },
+    {
+      "from": "providers",
+      "to": "core",
+      "file": "providers/windagent_providers/routing/memory_ports.py",
+      "line": 18
+    },
+    {
+      "from": "providers",
+      "to": "core",
+      "file": "providers/windagent_providers/routing/memory_ports.py",
+      "line": 18
     },
     {
       "from": "providers",
@@ -514,8 +1121,44 @@
     {
       "from": "tools",
       "to": "core",
+      "file": "tools/windagent_tools/base.py",
+      "line": 11
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/base.py",
+      "line": 11
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/base.py",
+      "line": 11
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/base.py",
+      "line": 11
+    },
+    {
+      "from": "tools",
+      "to": "core",
       "file": "tools/windagent_tools/adapters/legacy_tools.py",
       "line": 9
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/adapters/legacy_tools.py",
+      "line": 9
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/ast/tool.py",
+      "line": 12
     },
     {
       "from": "tools",
@@ -532,8 +1175,26 @@
     {
       "from": "tools",
       "to": "core",
+      "file": "tools/windagent_tools/browser/tool.py",
+      "line": 10
+    },
+    {
+      "from": "tools",
+      "to": "core",
       "file": "tools/windagent_tools/code_search/tool.py",
       "line": 11
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/code_search/tool.py",
+      "line": 11
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/database/tool.py",
+      "line": 10
     },
     {
       "from": "tools",
@@ -550,7 +1211,25 @@
     {
       "from": "tools",
       "to": "core",
+      "file": "tools/windagent_tools/filesystem/canonical.py",
+      "line": 13
+    },
+    {
+      "from": "tools",
+      "to": "core",
       "file": "tools/windagent_tools/filesystem/sandbox.py",
+      "line": 10
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/filesystem/sandbox.py",
+      "line": 10
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/git/tool.py",
       "line": 10
     },
     {
@@ -568,8 +1247,26 @@
     {
       "from": "tools",
       "to": "core",
+      "file": "tools/windagent_tools/github/tool.py",
+      "line": 10
+    },
+    {
+      "from": "tools",
+      "to": "core",
       "file": "tools/windagent_tools/lsp/tool.py",
       "line": 10
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/lsp/tool.py",
+      "line": 10
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/mcp/adapter.py",
+      "line": 11
     },
     {
       "from": "tools",
@@ -586,8 +1283,32 @@
     {
       "from": "tools",
       "to": "core",
+      "file": "tools/windagent_tools/mcp/client.py",
+      "line": 13
+    },
+    {
+      "from": "tools",
+      "to": "core",
       "file": "tools/windagent_tools/registry/registry.py",
       "line": 11
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/registry/registry.py",
+      "line": 11
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/registry/registry.py",
+      "line": 12
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/registry/registry.py",
+      "line": 12
     },
     {
       "from": "tools",
@@ -617,6 +1338,36 @@
       "from": "tools",
       "to": "core",
       "file": "tools/windagent_tools/security/permission_engine.py",
+      "line": 18
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/security/permission_engine.py",
+      "line": 19
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/security/permission_engine.py",
+      "line": 19
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/security/permission_engine.py",
+      "line": 19
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/security/permission_engine.py",
+      "line": 19
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/security/permission_engine.py",
       "line": 19
     },
     {
@@ -628,7 +1379,25 @@
     {
       "from": "tools",
       "to": "core",
+      "file": "tools/windagent_tools/shell/runner.py",
+      "line": 14
+    },
+    {
+      "from": "tools",
+      "to": "core",
       "file": "tools/windagent_tools/shell/tool.py",
+      "line": 10
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/shell/tool.py",
+      "line": 10
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/testing/tool.py",
       "line": 10
     },
     {
@@ -660,6 +1429,18 @@
       "to": "core",
       "file": "workflows/windagent_workflows/models.py",
       "line": 19
+    },
+    {
+      "from": "workflows",
+      "to": "core",
+      "file": "workflows/windagent_workflows/registry.py",
+      "line": 11
+    },
+    {
+      "from": "workflows",
+      "to": "core",
+      "file": "workflows/windagent_workflows/registry.py",
+      "line": 11
     },
     {
       "from": "workflows",
@@ -784,6 +1565,18 @@
     {
       "from": "memory",
       "to": "core",
+      "file": "memory/windagent_memory/store.py",
+      "line": 19
+    },
+    {
+      "from": "memory",
+      "to": "core",
+      "file": "memory/windagent_memory/write_policy.py",
+      "line": 10
+    },
+    {
+      "from": "memory",
+      "to": "core",
       "file": "memory/windagent_memory/write_policy.py",
       "line": 10
     },
@@ -796,8 +1589,44 @@
     {
       "from": "execution",
       "to": "core",
+      "file": "execution/windagent_execution/cancellation.py",
+      "line": 9
+    },
+    {
+      "from": "execution",
+      "to": "core",
       "file": "execution/windagent_execution/registry.py",
       "line": 10
+    },
+    {
+      "from": "execution",
+      "to": "core",
+      "file": "execution/windagent_execution/registry.py",
+      "line": 10
+    },
+    {
+      "from": "execution",
+      "to": "core",
+      "file": "execution/windagent_execution/registry.py",
+      "line": 10
+    },
+    {
+      "from": "execution",
+      "to": "core",
+      "file": "execution/windagent_execution/registry.py",
+      "line": 10
+    },
+    {
+      "from": "execution",
+      "to": "core",
+      "file": "execution/windagent_execution/registry.py",
+      "line": 10
+    },
+    {
+      "from": "execution",
+      "to": "core",
+      "file": "execution/windagent_execution/results.py",
+      "line": 11
     },
     {
       "from": "execution",
@@ -820,8 +1649,104 @@
     {
       "from": "execution",
       "to": "core",
+      "file": "execution/windagent_execution/adapters/browser_runtime.py",
+      "line": 12
+    },
+    {
+      "from": "execution",
+      "to": "core",
+      "file": "execution/windagent_execution/adapters/browser_runtime.py",
+      "line": 12
+    },
+    {
+      "from": "execution",
+      "to": "core",
+      "file": "execution/windagent_execution/adapters/browser_runtime.py",
+      "line": 12
+    },
+    {
+      "from": "execution",
+      "to": "core",
+      "file": "execution/windagent_execution/adapters/browser_runtime.py",
+      "line": 12
+    },
+    {
+      "from": "execution",
+      "to": "core",
+      "file": "execution/windagent_execution/adapters/browser_runtime.py",
+      "line": 12
+    },
+    {
+      "from": "execution",
+      "to": "core",
       "file": "execution/windagent_execution/adapters/fake_runtime_adapter.py",
       "line": 12
+    },
+    {
+      "from": "execution",
+      "to": "core",
+      "file": "execution/windagent_execution/adapters/fake_runtime_adapter.py",
+      "line": 12
+    },
+    {
+      "from": "execution",
+      "to": "core",
+      "file": "execution/windagent_execution/adapters/fake_runtime_adapter.py",
+      "line": 12
+    },
+    {
+      "from": "execution",
+      "to": "core",
+      "file": "execution/windagent_execution/adapters/fake_runtime_adapter.py",
+      "line": 12
+    },
+    {
+      "from": "execution",
+      "to": "core",
+      "file": "execution/windagent_execution/adapters/fake_runtime_adapter.py",
+      "line": 12
+    },
+    {
+      "from": "execution",
+      "to": "core",
+      "file": "execution/windagent_execution/adapters/fake_runtime_adapter.py",
+      "line": 12
+    },
+    {
+      "from": "execution",
+      "to": "core",
+      "file": "execution/windagent_execution/adapters/fake_runtime_adapter.py",
+      "line": 16
+    },
+    {
+      "from": "execution",
+      "to": "core",
+      "file": "execution/windagent_execution/adapters/hermes_runtime_adapter.py",
+      "line": 13
+    },
+    {
+      "from": "execution",
+      "to": "core",
+      "file": "execution/windagent_execution/adapters/hermes_runtime_adapter.py",
+      "line": 13
+    },
+    {
+      "from": "execution",
+      "to": "core",
+      "file": "execution/windagent_execution/adapters/hermes_runtime_adapter.py",
+      "line": 13
+    },
+    {
+      "from": "execution",
+      "to": "core",
+      "file": "execution/windagent_execution/adapters/hermes_runtime_adapter.py",
+      "line": 13
+    },
+    {
+      "from": "execution",
+      "to": "core",
+      "file": "execution/windagent_execution/adapters/hermes_runtime_adapter.py",
+      "line": 13
     },
     {
       "from": "execution",
@@ -838,7 +1763,97 @@
     {
       "from": "execution",
       "to": "core",
+      "file": "execution/windagent_execution/adapters/local_agent.py",
+      "line": 12
+    },
+    {
+      "from": "execution",
+      "to": "core",
+      "file": "execution/windagent_execution/adapters/local_agent.py",
+      "line": 12
+    },
+    {
+      "from": "execution",
+      "to": "core",
+      "file": "execution/windagent_execution/adapters/local_agent.py",
+      "line": 12
+    },
+    {
+      "from": "execution",
+      "to": "core",
+      "file": "execution/windagent_execution/adapters/local_agent.py",
+      "line": 12
+    },
+    {
+      "from": "execution",
+      "to": "core",
+      "file": "execution/windagent_execution/adapters/local_agent.py",
+      "line": 12
+    },
+    {
+      "from": "execution",
+      "to": "core",
       "file": "execution/windagent_execution/adapters/subprocess_runtime.py",
+      "line": 12
+    },
+    {
+      "from": "execution",
+      "to": "core",
+      "file": "execution/windagent_execution/adapters/subprocess_runtime.py",
+      "line": 12
+    },
+    {
+      "from": "execution",
+      "to": "core",
+      "file": "execution/windagent_execution/adapters/subprocess_runtime.py",
+      "line": 12
+    },
+    {
+      "from": "execution",
+      "to": "core",
+      "file": "execution/windagent_execution/adapters/subprocess_runtime.py",
+      "line": 12
+    },
+    {
+      "from": "execution",
+      "to": "core",
+      "file": "execution/windagent_execution/adapters/subprocess_runtime.py",
+      "line": 12
+    },
+    {
+      "from": "execution",
+      "to": "core",
+      "file": "execution/windagent_execution/adapters/subprocess_runtime.py",
+      "line": 12
+    },
+    {
+      "from": "execution",
+      "to": "core",
+      "file": "execution/windagent_execution/adapters/tool_runtime.py",
+      "line": 12
+    },
+    {
+      "from": "execution",
+      "to": "core",
+      "file": "execution/windagent_execution/adapters/tool_runtime.py",
+      "line": 12
+    },
+    {
+      "from": "execution",
+      "to": "core",
+      "file": "execution/windagent_execution/adapters/tool_runtime.py",
+      "line": 12
+    },
+    {
+      "from": "execution",
+      "to": "core",
+      "file": "execution/windagent_execution/adapters/tool_runtime.py",
+      "line": 12
+    },
+    {
+      "from": "execution",
+      "to": "core",
+      "file": "execution/windagent_execution/adapters/tool_runtime.py",
       "line": 12
     },
     {
@@ -857,19 +1872,109 @@
       "from": "storage",
       "to": "core",
       "file": "storage/windagent_storage/mappers/domain_orm.py",
-      "line": 13
+      "line": 10
     },
     {
       "from": "storage",
       "to": "core",
       "file": "storage/windagent_storage/mappers/domain_orm.py",
-      "line": 16
+      "line": 10
     },
     {
       "from": "storage",
       "to": "core",
       "file": "storage/windagent_storage/mappers/domain_orm.py",
-      "line": 19
+      "line": 10
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/mappers/domain_orm.py",
+      "line": 10
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/mappers/domain_orm.py",
+      "line": 10
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/mappers/domain_orm.py",
+      "line": 10
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/mappers/domain_orm.py",
+      "line": 10
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/mappers/domain_orm.py",
+      "line": 14
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/mappers/domain_orm.py",
+      "line": 14
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/mappers/domain_orm.py",
+      "line": 14
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/mappers/domain_orm.py",
+      "line": 14
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/mappers/domain_orm.py",
+      "line": 14
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/mappers/domain_orm.py",
+      "line": 14
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/mappers/domain_orm.py",
+      "line": 14
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/mappers/domain_orm.py",
+      "line": 14
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/mappers/domain_orm.py",
+      "line": 14
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/mappers/domain_orm.py",
+      "line": 17
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/mappers/domain_orm.py",
+      "line": 18
     },
     {
       "from": "storage",
@@ -893,6 +1998,12 @@
       "from": "storage",
       "to": "core",
       "file": "storage/windagent_storage/queue/sql_queue.py",
+      "line": 13
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/queue/sql_queue.py",
       "line": 14
     },
     {
@@ -911,25 +2022,169 @@
       "from": "storage",
       "to": "core",
       "file": "storage/windagent_storage/repositories/sql_repositories.py",
-      "line": 14
-    },
-    {
-      "from": "storage",
-      "to": "core",
-      "file": "storage/windagent_storage/repositories/sql_repositories.py",
-      "line": 17
-    },
-    {
-      "from": "storage",
-      "to": "core",
-      "file": "storage/windagent_storage/repositories/sql_repositories.py",
-      "line": 20
+      "line": 21
     },
     {
       "from": "storage",
       "to": "core",
       "file": "storage/windagent_storage/repositories/sql_repositories.py",
       "line": 21
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/repositories/sql_repositories.py",
+      "line": 21
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/repositories/sql_repositories.py",
+      "line": 21
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/repositories/sql_repositories.py",
+      "line": 21
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/repositories/sql_repositories.py",
+      "line": 21
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/repositories/sql_repositories.py",
+      "line": 21
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/repositories/sql_repositories.py",
+      "line": 21
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/repositories/sql_repositories.py",
+      "line": 31
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/repositories/sql_repositories.py",
+      "line": 32
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/repositories/sql_repositories.py",
+      "line": 32
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/repositories/sql_repositories.py",
+      "line": 32
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/repositories/sql_repositories.py",
+      "line": 32
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/repositories/sql_repositories.py",
+      "line": 32
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/repositories/sql_repositories.py",
+      "line": 32
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/repositories/sql_repositories.py",
+      "line": 32
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/repositories/sql_repositories.py",
+      "line": 32
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/repositories/sql_repositories.py",
+      "line": 32
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/repositories/sql_repositories.py",
+      "line": 32
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/repositories/sql_repositories.py",
+      "line": 44
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/repositories/sql_repositories.py",
+      "line": 44
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/repositories/sql_repositories.py",
+      "line": 44
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/repositories/sql_repositories.py",
+      "line": 44
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/repositories/sql_repositories.py",
+      "line": 44
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/repositories/sql_repositories.py",
+      "line": 44
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/repositories/sql_repositories.py",
+      "line": 44
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/repositories/sql_repositories.py",
+      "line": 44
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/repositories/sql_repositories.py",
+      "line": 551
     },
     {
       "from": "storage",
@@ -941,13 +2196,97 @@
       "from": "storage",
       "to": "providers",
       "file": "storage/windagent_storage/repositories/v3_repositories.py",
-      "line": 13
+      "line": 14
+    },
+    {
+      "from": "storage",
+      "to": "providers",
+      "file": "storage/windagent_storage/repositories/v3_repositories.py",
+      "line": 14
+    },
+    {
+      "from": "storage",
+      "to": "providers",
+      "file": "storage/windagent_storage/repositories/v3_repositories.py",
+      "line": 14
     },
     {
       "from": "storage",
       "to": "core",
       "file": "storage/windagent_storage/repositories/v3_repositories.py",
-      "line": 16
+      "line": 17
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/repositories/v3_repositories.py",
+      "line": 17
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/repositories/v3_repositories.py",
+      "line": 17
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/repositories/v3_repositories.py",
+      "line": 17
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/repositories/v3_repositories.py",
+      "line": 17
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/repositories/v3_repositories.py",
+      "line": 17
+    },
+    {
+      "from": "storage",
+      "to": "providers",
+      "file": "storage/windagent_storage/repositories/v3_repositories.py",
+      "line": 21
+    },
+    {
+      "from": "storage",
+      "to": "providers",
+      "file": "storage/windagent_storage/repositories/v3_routing_repositories.py",
+      "line": 23
+    },
+    {
+      "from": "storage",
+      "to": "providers",
+      "file": "storage/windagent_storage/repositories/v3_routing_repositories.py",
+      "line": 24
+    },
+    {
+      "from": "storage",
+      "to": "providers",
+      "file": "storage/windagent_storage/repositories/v3_routing_repositories.py",
+      "line": 25
+    },
+    {
+      "from": "storage",
+      "to": "providers",
+      "file": "storage/windagent_storage/repositories/v3_routing_repositories.py",
+      "line": 25
+    },
+    {
+      "from": "storage",
+      "to": "providers",
+      "file": "storage/windagent_storage/repositories/v3_routing_repositories.py",
+      "line": 29
+    },
+    {
+      "from": "storage",
+      "to": "providers",
+      "file": "storage/windagent_storage/repositories/v3_routing_repositories.py",
+      "line": 29
     },
     {
       "from": "storage",
@@ -958,6 +2297,48 @@
     {
       "from": "storage",
       "to": "core",
+      "file": "storage/windagent_storage/repositories/worker_status.py",
+      "line": 11
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/repositories/worker_status.py",
+      "line": 11
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/services/task_finalizer.py",
+      "line": 15
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/services/task_finalizer.py",
+      "line": 15
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/services/task_finalizer.py",
+      "line": 15
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/services/task_finalizer.py",
+      "line": 20
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/services/task_finalizer.py",
+      "line": 184
+    },
+    {
+      "from": "storage",
+      "to": "core",
       "file": "storage/windagent_storage/unit_of_work/sql_uow.py",
       "line": 11
     },
@@ -965,7 +2346,13 @@
       "from": "storage",
       "to": "core",
       "file": "storage/windagent_storage/unit_of_work/sql_uow.py",
-      "line": 12
+      "line": 11
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/unit_of_work/sql_uow.py",
+      "line": 15
     },
     {
       "from": "observability",
@@ -1113,6 +2500,12 @@
     },
     {
       "from": "api",
+      "to": "storage",
+      "file": "apps/api/windagent_api/composition.py",
+      "line": 49
+    },
+    {
+      "from": "api",
       "to": "observability",
       "file": "apps/api/windagent_api/composition.py",
       "line": 53
@@ -1122,6 +2515,30 @@
       "to": "storage",
       "file": "apps/api/windagent_api/composition.py",
       "line": 54
+    },
+    {
+      "from": "api",
+      "to": "storage",
+      "file": "apps/api/windagent_api/composition.py",
+      "line": 121
+    },
+    {
+      "from": "api",
+      "to": "storage",
+      "file": "apps/api/windagent_api/composition.py",
+      "line": 122
+    },
+    {
+      "from": "api",
+      "to": "storage",
+      "file": "apps/api/windagent_api/composition.py",
+      "line": 122
+    },
+    {
+      "from": "api",
+      "to": "storage",
+      "file": "apps/api/windagent_api/composition.py",
+      "line": 126
     },
     {
       "from": "api",
@@ -1167,7 +2584,7 @@
     },
     {
       "from": "api",
-      "to": "tools",
+      "to": "providers",
       "file": "apps/api/windagent_api/dependencies.py",
       "line": 21
     },
@@ -1176,6 +2593,48 @@
       "to": "tools",
       "file": "apps/api/windagent_api/dependencies.py",
       "line": 22
+    },
+    {
+      "from": "api",
+      "to": "tools",
+      "file": "apps/api/windagent_api/dependencies.py",
+      "line": 23
+    },
+    {
+      "from": "api",
+      "to": "storage",
+      "file": "apps/api/windagent_api/dependencies.py",
+      "line": 43
+    },
+    {
+      "from": "api",
+      "to": "storage",
+      "file": "apps/api/windagent_api/dependencies.py",
+      "line": 44
+    },
+    {
+      "from": "api",
+      "to": "storage",
+      "file": "apps/api/windagent_api/dependencies.py",
+      "line": 44
+    },
+    {
+      "from": "api",
+      "to": "storage",
+      "file": "apps/api/windagent_api/dependencies.py",
+      "line": 48
+    },
+    {
+      "from": "api",
+      "to": "observability",
+      "file": "apps/api/windagent_api/health.py",
+      "line": 13
+    },
+    {
+      "from": "api",
+      "to": "observability",
+      "file": "apps/api/windagent_api/health.py",
+      "line": 13
     },
     {
       "from": "api",
@@ -1188,6 +2647,36 @@
       "to": "core",
       "file": "apps/api/windagent_api/main.py",
       "line": 14
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/main.py",
+      "line": 14
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/main.py",
+      "line": 14
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/main.py",
+      "line": 14
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/main.py",
+      "line": 14
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/adapters/legacy_event_mappers.py",
+      "line": 17
     },
     {
       "from": "api",
@@ -1276,6 +2765,138 @@
     {
       "from": "api",
       "to": "core",
+      "file": "apps/api/windagent_api/routers/v2_sessions.py",
+      "line": 40
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v2_sessions.py",
+      "line": 40
+    },
+    {
+      "from": "api",
+      "to": "storage",
+      "file": "apps/api/windagent_api/routers/v2_sessions.py",
+      "line": 41
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v2_sessions.py",
+      "line": 76
+    },
+    {
+      "from": "api",
+      "to": "storage",
+      "file": "apps/api/windagent_api/routers/v2_sessions.py",
+      "line": 77
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v2_sessions.py",
+      "line": 108
+    },
+    {
+      "from": "api",
+      "to": "storage",
+      "file": "apps/api/windagent_api/routers/v2_sessions.py",
+      "line": 109
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v2_sessions.py",
+      "line": 137
+    },
+    {
+      "from": "api",
+      "to": "storage",
+      "file": "apps/api/windagent_api/routers/v2_sessions.py",
+      "line": 138
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v2_sessions.py",
+      "line": 219
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v2_sessions.py",
+      "line": 220
+    },
+    {
+      "from": "api",
+      "to": "storage",
+      "file": "apps/api/windagent_api/routers/v2_sessions.py",
+      "line": 221
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v2_sessions.py",
+      "line": 240
+    },
+    {
+      "from": "api",
+      "to": "storage",
+      "file": "apps/api/windagent_api/routers/v2_sessions.py",
+      "line": 241
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v2_sessions.py",
+      "line": 261
+    },
+    {
+      "from": "api",
+      "to": "storage",
+      "file": "apps/api/windagent_api/routers/v2_sessions.py",
+      "line": 262
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v2_sessions.py",
+      "line": 311
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v2_sessions.py",
+      "line": 312
+    },
+    {
+      "from": "api",
+      "to": "storage",
+      "file": "apps/api/windagent_api/routers/v2_sessions.py",
+      "line": 313
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v2_sessions.py",
+      "line": 330
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v2_sessions.py",
+      "line": 331
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v2_sessions.py",
+      "line": 333
+    },
+    {
+      "from": "api",
+      "to": "core",
       "file": "apps/api/windagent_api/routers/v2_skills.py",
       "line": 11
     },
@@ -1289,7 +2910,37 @@
       "from": "api",
       "to": "core",
       "file": "apps/api/windagent_api/routers/v2_tasks.py",
+      "line": 12
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v2_tasks.py",
       "line": 13
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v2_tasks.py",
+      "line": 13
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v2_tasks.py",
+      "line": 13
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v2_tasks.py",
+      "line": 14
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v2_tasks.py",
+      "line": 14
     },
     {
       "from": "api",
@@ -1320,6 +2971,12 @@
       "to": "storage",
       "file": "apps/cli/windagent_cli/composition.py",
       "line": 53
+    },
+    {
+      "from": "cli",
+      "to": "storage",
+      "file": "apps/cli/windagent_cli/composition.py",
+      "line": 54
     },
     {
       "from": "cli",
@@ -1373,61 +3030,121 @@
       "from": "cli",
       "to": "observability",
       "file": "apps/cli/windagent_cli/composition.py",
-      "line": 111
+      "line": 64
     },
     {
       "from": "cli",
       "to": "storage",
       "file": "apps/cli/windagent_cli/composition.py",
-      "line": 225
+      "line": 74
     },
     {
       "from": "cli",
       "to": "storage",
       "file": "apps/cli/windagent_cli/composition.py",
-      "line": 226
+      "line": 75
     },
     {
       "from": "cli",
       "to": "storage",
       "file": "apps/cli/windagent_cli/composition.py",
-      "line": 227
+      "line": 75
+    },
+    {
+      "from": "cli",
+      "to": "observability",
+      "file": "apps/cli/windagent_cli/composition.py",
+      "line": 119
+    },
+    {
+      "from": "cli",
+      "to": "storage",
+      "file": "apps/cli/windagent_cli/composition.py",
+      "line": 233
+    },
+    {
+      "from": "cli",
+      "to": "storage",
+      "file": "apps/cli/windagent_cli/composition.py",
+      "line": 234
+    },
+    {
+      "from": "cli",
+      "to": "storage",
+      "file": "apps/cli/windagent_cli/composition.py",
+      "line": 235
     },
     {
       "from": "cli",
       "to": "orchestration",
       "file": "apps/cli/windagent_cli/composition.py",
-      "line": 228
+      "line": 236
     },
     {
       "from": "cli",
       "to": "providers",
       "file": "apps/cli/windagent_cli/composition.py",
-      "line": 229
+      "line": 237
     },
     {
       "from": "cli",
       "to": "tools",
       "file": "apps/cli/windagent_cli/composition.py",
-      "line": 230
+      "line": 238
+    },
+    {
+      "from": "cli",
+      "to": "storage",
+      "file": "apps/cli/windagent_cli/composition.py",
+      "line": 249
+    },
+    {
+      "from": "cli",
+      "to": "storage",
+      "file": "apps/cli/windagent_cli/composition.py",
+      "line": 250
     },
     {
       "from": "cli",
       "to": "providers",
       "file": "apps/cli/windagent_cli/composition.py",
-      "line": 262
+      "line": 277
     },
     {
       "from": "cli",
       "to": "storage",
       "file": "apps/cli/windagent_cli/composition.py",
-      "line": 282
+      "line": 278
     },
     {
       "from": "cli",
       "to": "storage",
       "file": "apps/cli/windagent_cli/composition.py",
-      "line": 283
+      "line": 279
+    },
+    {
+      "from": "cli",
+      "to": "storage",
+      "file": "apps/cli/windagent_cli/composition.py",
+      "line": 304
+    },
+    {
+      "from": "cli",
+      "to": "storage",
+      "file": "apps/cli/windagent_cli/composition.py",
+      "line": 305
+    },
+    {
+      "from": "cli",
+      "to": "storage",
+      "file": "apps/cli/windagent_cli/composition.py",
+      "line": 305
+    },
+    {
+      "from": "cli",
+      "to": "core",
+      "file": "apps/cli/windagent_cli/main.py",
+      "line": 17
     },
     {
       "from": "cli",
@@ -1587,6 +3304,30 @@
     },
     {
       "from": "worker",
+      "to": "storage",
+      "file": "apps/worker/windagent_worker/composition.py",
+      "line": 142
+    },
+    {
+      "from": "worker",
+      "to": "storage",
+      "file": "apps/worker/windagent_worker/composition.py",
+      "line": 143
+    },
+    {
+      "from": "worker",
+      "to": "storage",
+      "file": "apps/worker/windagent_worker/composition.py",
+      "line": 143
+    },
+    {
+      "from": "worker",
+      "to": "storage",
+      "file": "apps/worker/windagent_worker/composition.py",
+      "line": 147
+    },
+    {
+      "from": "worker",
       "to": "execution",
       "file": "apps/worker/windagent_worker/composition.py",
       "line": 136
@@ -1607,7 +3348,43 @@
       "from": "worker",
       "to": "core",
       "file": "apps/worker/windagent_worker/runner.py",
+      "line": 17
+    },
+    {
+      "from": "worker",
+      "to": "core",
+      "file": "apps/worker/windagent_worker/runner.py",
       "line": 18
+    },
+    {
+      "from": "worker",
+      "to": "core",
+      "file": "apps/worker/windagent_worker/runner.py",
+      "line": 18
+    },
+    {
+      "from": "worker",
+      "to": "core",
+      "file": "apps/worker/windagent_worker/runner.py",
+      "line": 18
+    },
+    {
+      "from": "worker",
+      "to": "core",
+      "file": "apps/worker/windagent_worker/runner.py",
+      "line": 18
+    },
+    {
+      "from": "worker",
+      "to": "core",
+      "file": "apps/worker/windagent_worker/runner.py",
+      "line": 19
+    },
+    {
+      "from": "worker",
+      "to": "core",
+      "file": "apps/worker/windagent_worker/runner.py",
+      "line": 19
     },
     {
       "from": "worker",
@@ -1626,6 +3403,12 @@
       "to": "core",
       "file": "apps/worker/windagent_worker/runner.py",
       "line": 21
+    },
+    {
+      "from": "worker",
+      "to": "core",
+      "file": "apps/worker/windagent_worker/runner.py",
+      "line": 22
     },
     {
       "from": "worker",
@@ -1661,235 +3444,31 @@
       "from": "worker",
       "to": "storage",
       "file": "apps/worker/windagent_worker/runner.py",
-      "line": 306
+      "line": 324
     },
     {
-      "from": "backend",
-      "to": "api",
-      "file": "apps/backend/compatibility_shim.py",
-      "line": 9
-    },
-    {
-      "from": "backend",
-      "to": "api",
-      "file": "apps/backend/compatibility_shim.py",
-      "line": 10
-    },
-    {
-      "from": "backend",
+      "from": "worker",
       "to": "core",
-      "file": "apps/backend/compatibility_shim.py",
-      "line": 11
+      "file": "apps/worker/windagent_worker/runner.py",
+      "line": 325
     },
     {
-      "from": "backend",
+      "from": "plugins",
       "to": "core",
-      "file": "apps/backend/compatibility_shim.py",
-      "line": 12
-    },
-    {
-      "from": "backend",
-      "to": "core",
-      "file": "apps/backend/compatibility_shim.py",
-      "line": 13
-    },
-    {
-      "from": "backend",
-      "to": "api",
-      "file": "apps/backend/compatibility_shim.py",
-      "line": 73
-    },
-    {
-      "from": "backend",
-      "to": "api",
-      "file": "apps/backend/main.py",
-      "line": 11
-    },
-    {
-      "from": "backend",
-      "to": "orchestration",
-      "file": "apps/backend/compatibility/services_shim.py",
-      "line": 15
-    },
-    {
-      "from": "backend",
-      "to": "tools",
-      "file": "apps/backend/compatibility/services_shim.py",
+      "file": "plugins/windagent_plugins/loader/loader.py",
       "line": 16
     },
     {
-      "from": "backend",
-      "to": "tools",
-      "file": "apps/backend/compatibility/services_shim.py",
-      "line": 17
-    },
-    {
-      "from": "backend",
-      "to": "execution",
-      "file": "apps/backend/compatibility/services_shim.py",
-      "line": 18
-    },
-    {
-      "from": "backend",
-      "to": "providers",
-      "file": "apps/backend/compatibility/services_shim.py",
-      "line": 19
-    },
-    {
-      "from": "backend",
-      "to": "storage",
-      "file": "apps/backend/compatibility/services_shim.py",
-      "line": 20
-    },
-    {
-      "from": "backend",
-      "to": "storage",
-      "file": "apps/backend/db/database.py",
-      "line": 64
-    },
-    {
-      "from": "backend",
-      "to": "storage",
-      "file": "apps/backend/db/database.py",
-      "line": 65
-    },
-    {
-      "from": "backend",
-      "to": "orchestration",
-      "file": "apps/backend/routers/conversations.py",
-      "line": 216
-    },
-    {
-      "from": "backend",
+      "from": "plugins",
       "to": "core",
-      "file": "apps/backend/routers/conversations.py",
-      "line": 219
+      "file": "plugins/windagent_plugins/loader/loader.py",
+      "line": 16
     },
     {
-      "from": "backend",
-      "to": "providers",
-      "file": "apps/backend/routers/models.py",
-      "line": 425
-    },
-    {
-      "from": "backend",
-      "to": "orchestration",
-      "file": "apps/backend/routers/workflow.py",
-      "line": 27
-    },
-    {
-      "from": "backend",
-      "to": "orchestration",
-      "file": "apps/backend/routers/workflow.py",
-      "line": 28
-    },
-    {
-      "from": "backend",
-      "to": "storage",
-      "file": "apps/backend/routers/workflow.py",
-      "line": 29
-    },
-    {
-      "from": "backend",
+      "from": "plugins",
       "to": "core",
-      "file": "apps/backend/routers/workflow.py",
-      "line": 30
-    },
-    {
-      "from": "backend",
-      "to": "core",
-      "file": "apps/backend/routers/workflow.py",
-      "line": 31
-    },
-    {
-      "from": "backend",
-      "to": "core",
-      "file": "apps/backend/schemas/event.py",
-      "line": 20
-    },
-    {
-      "from": "backend",
-      "to": "core",
-      "file": "apps/backend/schemas/event.py",
-      "line": 21
-    },
-    {
-      "from": "backend",
-      "to": "core",
-      "file": "apps/backend/schemas/event.py",
-      "line": 22
-    },
-    {
-      "from": "backend",
-      "to": "orchestration",
-      "file": "apps/backend/services/phase14_compatibility.py",
-      "line": 34
-    },
-    {
-      "from": "backend",
-      "to": "orchestration",
-      "file": "apps/backend/services/phase14_compatibility.py",
-      "line": 35
-    },
-    {
-      "from": "backend",
-      "to": "orchestration",
-      "file": "apps/backend/services/phase14_compatibility.py",
-      "line": 232
-    },
-    {
-      "from": "backend",
-      "to": "providers",
-      "file": "apps/backend/services/provider_v3_adapter.py",
-      "line": 10
-    },
-    {
-      "from": "backend",
-      "to": "providers",
-      "file": "apps/backend/services/provider_v3_composition.py",
-      "line": 23
-    },
-    {
-      "from": "backend",
-      "to": "core",
-      "file": "apps/backend/services/provider_v3_composition.py",
-      "line": 24
-    },
-    {
-      "from": "backend",
-      "to": "providers",
-      "file": "apps/backend/services/provider_v3_coordinator.py",
-      "line": 12
-    },
-    {
-      "from": "backend",
-      "to": "providers",
-      "file": "apps/backend/services/provider_v3_coordinator.py",
-      "line": 13
-    },
-    {
-      "from": "backend",
-      "to": "providers",
-      "file": "apps/backend/services/provider_v3_coordinator.py",
-      "line": 14
-    },
-    {
-      "from": "backend",
-      "to": "providers",
-      "file": "apps/backend/services/provider_v3_coordinator.py",
-      "line": 17
-    },
-    {
-      "from": "backend",
-      "to": "api",
-      "file": "apps/backend/tests/conftest.py",
-      "line": 31
-    },
-    {
-      "from": "backend",
-      "to": "orchestration",
-      "file": "apps/backend/tests/test_phaseC_execute.py",
-      "line": 9
+      "file": "plugins/windagent_plugins/loader/loader.py",
+      "line": 16
     },
     {
       "from": "plugins",
@@ -1902,6 +3481,24 @@
       "to": "core",
       "file": "plugins/windagent_plugins/manifest/manifest.py",
       "line": 12
+    },
+    {
+      "from": "skills",
+      "to": "core",
+      "file": "skills/windagent_skills/loader/manager.py",
+      "line": 17
+    },
+    {
+      "from": "skills",
+      "to": "core",
+      "file": "skills/windagent_skills/loader/manager.py",
+      "line": 17
+    },
+    {
+      "from": "skills",
+      "to": "core",
+      "file": "skills/windagent_skills/loader/manager.py",
+      "line": 17
     },
     {
       "from": "skills",
@@ -1995,15 +3592,6 @@
       "tools",
       "verification",
       "workflows"
-    ],
-    "backend": [
-      "api",
-      "core",
-      "execution",
-      "orchestration",
-      "providers",
-      "storage",
-      "tools"
     ],
     "plugins": [
       "core"

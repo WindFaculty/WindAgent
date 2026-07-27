@@ -15,14 +15,24 @@ from windagent_core.contracts.finalization import (
 from windagent_core.events.envelope import EventEnvelope
 from windagent_storage.orm.models import OutboxRecordORM
 from windagent_storage.repositories.sql_repositories import (
-    SqlSessionRepository, SqlTaskRepository, SqlWorkflowRepository, SqlWorkflowRunRepository,
-    SqlEventStore, SqlOutboxWriter, FileArtifactRepository, SqlProviderConfigurationRepository
+    SqlSessionRepository,
+    SqlWorkflowRepository,
+    SqlEventStore,
+    SqlOutboxWriter,
+    FileArtifactRepository,
+    SqlProviderConfigurationRepository,
+    SqlWorkRepository,
+    SqlWorkflowRunRepository,
 )
 from windagent_storage.repositories.v2_orchestration_repositories import (
     SqlTaskRunRepository, SqlExecutionLeaseRepository,
     SqlWorkflowCheckpointRepository, SqlCancellationRepository,
     SqlRuntimeExecutionRepository, SqlRecoveryLeaderLeaseRepository
 )
+
+# Type alias for protocol compatibility
+TaskRepository = SqlWorkRepository
+TaskRunRepository = SqlTaskRunRepository
 
 
 class SqlUnitOfWork:
@@ -52,7 +62,7 @@ class SqlUnitOfWork:
     async def __aenter__(self) -> SqlUnitOfWork:
         self.session = self._session_factory()
         
-        self.tasks = SqlTaskRepository(self.session)
+        self.tasks = TaskRepository(self.session)
         self.task_runs = SqlTaskRunRepository(self.session)
         self.workflows = SqlWorkflowRepository(self.session)
         self.workflow_runs = SqlWorkflowRunRepository(self.session)

@@ -2,8 +2,7 @@
  *
  * Covers two things in one file because they're tiny and related:
  *  - <ControlBar> renders 4 buttons with correct enable/disable rules.
- *  - apiClient.controlSession hits the right URL with POST (smoke
- *    test against a stubbed global.fetch).
+ *  - apiClient uses only published Architecture V2 control contracts.
  */
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
@@ -98,31 +97,32 @@ describe("apiClient — control endpoints", () => {
     globalThis.fetch = originalFetch;
   });
 
-  it("controlSession POSTs to /api/sessions/{id}/{action}", async () => {
+  it("controlSession maps stop to the V2 session cancel contract", async () => {
     const fetchMock = vi.fn().mockResolvedValue(
       new Response(null, { status: 204 }),
     );
     globalThis.fetch = fetchMock as unknown as typeof fetch;
 
-    await controlSession("sess-1", "pause");
+    await controlSession("sess-1", "stop");
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url, init] = fetchMock.mock.calls[0];
-    expect(url).toBe("http://127.0.0.1:8765/api/v1/sessions/sess-1/pause");
+    expect(url).toBe("http://127.0.0.1:8765/api/v2/sessions/sess-1/cancel");
     expect(init).toMatchObject({ method: "POST" });
   });
 
-  it("retryStep POSTs to /api/workflow/{stepId}/retry", async () => {
-    const fetchMock = vi.fn().mockResolvedValue(
-      new Response(null, { status: 204 }),
-    );
+  it("fails locally for unpublished pause and retry contracts", async () => {
+    const fetchMock = vi.fn();
     globalThis.fetch = fetchMock as unknown as typeof fetch;
 
-    await retryStep("step-7");
+    await expect(controlSession("sess-1", "pause")).rejects.toThrow(
+      /not available in the Architecture V2 API/,
+    );
+    await expect(retryStep("step-7")).rejects.toThrow(
+      /not available in the Architecture V2 API/,
+    );
 
-    const [url, init] = fetchMock.mock.calls[0];
-    expect(url).toBe("http://127.0.0.1:8765/api/v1/workflow/step-7/retry");
-    expect(init).toMatchObject({ method: "POST" });
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it("controlSession throws with the API error message on non-2xx", async () => {

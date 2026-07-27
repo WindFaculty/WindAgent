@@ -1,11 +1,11 @@
 /** TypeScript types mirroring backend Pydantic schemas.
  *
- * Source of truth:
+ * Source of truth (Architecture V2):
  *  - docs/event_protocol.md (events)
  *  - docs/api_contract.md (REST + WS shapes)
- *  - apps/backend/schemas/event.py + session.py + workflow.py
+ *  - apps/api/windagent_api/schemas/ (canonical V2 request/response schemas)
  *
- * Keep these in sync with the backend.
+ * Keep these in sync with windagent_api schemas.
  */
 
 // ---------- Chat session ----------

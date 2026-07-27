@@ -6,6 +6,7 @@ terminal event & outbox insertion, and lease release (ban_ke_hoach.md §2).
 
 from __future__ import annotations
 
+import json
 import logging
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional, TYPE_CHECKING
@@ -159,6 +160,15 @@ class TaskFinalizer:
             created_at=now_utc,
         )
         session.add(result_orm)
+
+        # Also update the task facts with the result so API can read it
+        existing_facts = json.loads(task.facts_json) if task.facts_json else {}
+        existing_facts.update({
+            "result": request.execution_result,
+            "terminal_state": request.terminal_state,
+            "completed_at": now_utc.isoformat(),
+        })
+        task.facts_json = json.dumps(existing_facts)
 
         # ------------------------------------------------------------------ #
         # 5. Insert Terminal Event & Outbox Record with Idempotency Key

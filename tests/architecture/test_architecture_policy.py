@@ -87,9 +87,15 @@ def test_checker_rejects_architecture_violation(tmp_path, setup, rule):
 
 def test_checker_rejects_missing_workspace_package(tmp_path):
     write_package(tmp_path, "core")
-    result, report = run_checker(tmp_path, {"core": package("core"), "skills": package("skills")})
+    write_package(tmp_path, "skills")
+    # Create root pyproject.toml with only core declared
+    (tmp_path / "pyproject.toml").write_text(
+        '[tool.uv.workspace]\nmembers = ["core"]\n',
+        encoding="utf-8",
+    )
+    result, report = run_checker(tmp_path, {"core": package("core"), "skills": package("skills")}, members=["core"])
     assert result.returncode != 0
-    assert "missing_package" in {item["rule"] for item in report["violations"]}
+    assert "workspace_member_missing" in {item["rule"] for item in report["violations"]}
 
 
 def test_checker_rejects_duplicate_canonical_model(tmp_path):

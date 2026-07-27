@@ -17,15 +17,18 @@ Core domain models, contracts, domain events, errors, config, security types
 - `langgraph`
 - `providers`
 
-## Legacy Migration Source
-`apps/backend/models, apps/backend/config.py`
+## Migration Status
+
+The legacy backend model and configuration sources have been retired. This
+package is the canonical source for shared domain contracts.
 
 ## Public API (Target)
 - Expected domain models, interfaces, and public handlers for core.
 - Exposed strictly via `windagent_core` top-level exports.
 
 ## Out-of-Scope
-- Legacy backend services running in `apps/backend/`.
+
+- Application runtime and transport concerns.
 - Concrete implementations of other bounded contexts.
 
 ## Acceptance Criteria

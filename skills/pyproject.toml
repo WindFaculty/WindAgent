@@ -1,13 +1,19 @@
 [project]
-name = "windagent-skills"
+name = "windagent_skills"
 version = "0.3.0"
-description = "WindAgent Skills System - Top-level Package"
+description = "Skills system for reusable capabilities - loader, registry, execution, versioning"
 readme = "README.md"
 requires-python = ">=3.10"
-
 dependencies = [
-    "windagent-core>=0.3.0",
+    "windagent-core",
+    "windagent-providers",
+    "windagent-tools",
 ]
+
+[tool.uv.sources]
+windagent-core = { workspace = true }
+windagent-providers = { workspace = true }
+windagent-tools = { workspace = true }
 
 [build-system]
 requires = ["hatchling"]
@@ -15,6 +21,3 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["windagent_skills"]
-
-[tool.uv.sources]
-windagent-core = { workspace = true }

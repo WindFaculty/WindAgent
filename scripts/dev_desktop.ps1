@@ -19,7 +19,7 @@
     Cong Vite dev ben trong Tauri. Mac dinh: 5173.
 
 .PARAMETER NoProxy
-    Khong in nhac nho ve proxy backend.
+    Khong in nhac nho ve proxy API.
 #>
 [CmdletBinding()]
 param(
@@ -133,7 +133,7 @@ $env:PATH = "$DesktopDir\node_modules\.bin;$env:PATH"
 # --- Nhac nho proxy ---
 if (-not $NoProxy) {
     Write-Host "[desktop] Proxy /api + /ws -> http://127.0.0.1:8765" -ForegroundColor DarkGray
-    Write-Host "[desktop] Dam bao backend dang chay: scripts\dev_backend.ps1" -ForegroundColor DarkGray
+    Write-Host "[desktop] Dam bao API dang chay: scripts\dev_api.ps1" -ForegroundColor DarkGray
 }
 
 # --- Khoi dong Tauri dev ---

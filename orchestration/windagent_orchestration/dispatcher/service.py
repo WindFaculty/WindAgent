@@ -31,13 +31,8 @@ class StepDispatcher:
     ):
         self.lease_manager = lease_manager or LeaseManager(uow_factory=uow_factory)
         self.worker_registry = worker_registry or WorkerRegistry()
-        if runtime_port is None:
-            try:
-                import importlib
-                fake_mod = importlib.import_module("windagent_execution.adapters.fake_runtime_adapter")
-                runtime_port = fake_mod.FakeRuntimeAdapter()
-            except ImportError:
-                runtime_port = None
+        # runtime_port must be injected by the DI composition root (apps/api/composition.py,
+        # apps/worker/composition.py). Tests should pass a mock directly.
         self.runtime_port = runtime_port
         self.uow_factory = uow_factory
 

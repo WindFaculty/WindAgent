@@ -26,5 +26,5 @@ jobs:
 
       - name: Run multi-replica fencing tests
         run: |
-          uv run pytest apps/backend/tests/test_bootstrap_container.py -v
-          uv run pytest apps/backend/tests -k "fencing or replica or leader" -v || true
+          uv run pytest tests/integration/ -k "fencing or replica or leader" -v
+          uv run pytest tests/unit/worker/ -k "fencing or replica or lease" -v

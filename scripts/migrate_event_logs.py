@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 
 workspace_root = Path(__file__).resolve().parent.parent
 for pkg in [
-    "apps/api", "apps/cli", "apps/worker", "apps/backend", "core",
+    "apps/api", "apps/cli", "apps/worker", "core",
     "orchestration", "intelligence", "providers", "tools", "workflows",
     "verification", "context", "memory", "execution", "storage", "observability", "evals"
 ]:

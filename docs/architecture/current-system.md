@@ -1,5 +1,9 @@
 # WindAgent — Current System Baseline
 
+> Historical Phase 0 snapshot only. It describes the pre-cutover monolith and
+> is not an authoritative runtime or launch guide. The Architecture V2 package
+> map and commands in the repository root README are current.
+
 Phase 0 snapshot of the legacy monolith before Architecture V2 restructuring.
 No behavior changes; this is inventory and contract capture.
 

@@ -1,0 +1,69 @@
+{
+  "phase": "phase_06",
+  "generated_at": "2026-07-28T01:26:10+07:00",
+  "status": "MIGRATED",
+  "remaining_runtime_consumers": 0,
+  "consumers": [
+    {
+      "area": "desktop_sidecar_startup",
+      "legacy_dependency": "scripts/dev_backend.ps1 and the legacy backend application",
+      "canonical_target": "scripts/dev_api.ps1 -> windagent_api.main:app",
+      "status": "MIGRATED"
+    },
+    {
+      "area": "desktop_http_and_websocket_client",
+      "legacy_dependency": "/api/v1 HTTP and websocket paths",
+      "canonical_target": "/api/v2 session, task, event, provider, and health contracts",
+      "status": "MIGRATED",
+      "note": "Operations without a V2 contract now fail locally instead of calling the V1 tombstone."
+    },
+    {
+      "area": "powershell_and_developer_commands",
+      "legacy_dependency": "backend package working directory, backend database variable, and backend health probe",
+      "canonical_target": "workspace-level uv command, WINDAGENT_DATABASE_URL, and /health/live",
+      "status": "MIGRATED"
+    },
+    {
+      "area": "tests",
+      "legacy_dependency": "implementation-coupled tests under apps/backend",
+      "canonical_target": "root tests against windagent_api, canonical services, V2, and the V1 tombstone",
+      "status": "MIGRATED"
+    },
+    {
+      "area": "database_migration_configuration",
+      "legacy_dependency": "apps/backend/alembic.ini and apps/backend/alembic",
+      "canonical_target": "canonical windagent_storage schema/bootstrap path",
+      "status": "RETIRED",
+      "note": "No active launcher or package consumes the legacy Alembic environment."
+    },
+    {
+      "area": "packaging_and_pythonpath",
+      "legacy_dependency": "apps/backend workspace member and pytest pythonpath entry",
+      "canonical_target": "apps/api, apps/worker, apps/cli, and canonical packages",
+      "status": "MIGRATED"
+    },
+    {
+      "area": "ci",
+      "legacy_dependency": "legacy backend lint/test paths",
+      "canonical_target": "canonical workspace checks",
+      "status": "MIGRATED"
+    },
+    {
+      "area": "documentation_and_environment",
+      "legacy_dependency": "backend startup guidance and legacy environment naming",
+      "canonical_target": "Architecture V2 commands and WINDAGENT_DATABASE_URL",
+      "status": "MIGRATED"
+    },
+    {
+      "area": "direct_python_imports",
+      "legacy_dependency": "apps.backend or backend namespaces",
+      "canonical_target": "windagent_api, windagent_worker, windagent_cli, windagent_storage, windagent_providers, and windagent_orchestration",
+      "status": "ZERO_REMAINING"
+    }
+  ],
+  "verification": [
+    "tests/unit/api/test_phase27_legacy_evacuation.py",
+    "scripts/check_architecture_imports.py",
+    "configs/architecture/scaffold_v2.yaml"
+  ]
+}

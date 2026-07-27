@@ -8,7 +8,7 @@ from windagent_core.domain.types import (
     StepId, StepRunId, ToolCallId, ModelCallId, EventId, ArtifactId, PermissionRequestId,
     ProviderId, EndpointId, CanonicalModelId, ProviderModelId, RuntimeRunId, RuntimeSessionId,
     WorkerId, RouteLockId, RouteAttemptId, ExternalRequestId, classify_identifier,
-    ToolInvocationId, DecisionId
+    ToolInvocationId, DecisionId, AggregateId
 )
 from windagent_core.domain.lifecycle import (
     TaskState, WorkflowState, StepState, SessionState, StateTransitionResult,
@@ -55,7 +55,8 @@ from windagent_core.contracts import (
     Clock, IdGenerator, TaskRepository, TaskRunRepository, SessionRepository,
     WorkflowRepository, WorkflowRunRepository, EventStore, OutboxWriter, EventPublisher,
     ArtifactRepository, UnitOfWork, ExecutionRuntimePort, ModelGatewayPort, SecretStore,
-    PermissionEvaluator, AuditSink
+    PermissionEvaluator, AuditSink, WorkRepository, TaskState, WorkflowState, StepState, SessionState,
+    WorkflowRun, WorkflowStep, WorkflowDefinition, Task, TaskRun, Session, ModelRequest, ModelResponse, ArtifactRef,
 )
 
 __version__ = "0.3.0"
@@ -66,7 +67,7 @@ __all__ = [
     "StepId", "StepRunId", "ToolCallId", "ModelCallId", "EventId", "ArtifactId", "PermissionRequestId",
     "ProviderId", "EndpointId", "CanonicalModelId", "ProviderModelId", "RuntimeRunId", "RuntimeSessionId",
     "WorkerId", "RouteLockId", "RouteAttemptId", "ExternalRequestId", "classify_identifier",
-    # Models
+    "ToolInvocationId", "DecisionId", "AggregateId",
     "Session", "SessionStatus", "Task", "TaskRequest", "TaskRun",
     "WorkflowDefinition", "WorkflowRun", "WorkflowStep", "WorkflowStatus", "StepStatus",
     "ToolInvocation", "ToolResult", "ModelRequest", "ModelResponse",
@@ -94,4 +95,20 @@ __all__ = [
     "WorkflowRepository", "WorkflowRunRepository", "EventStore", "OutboxWriter", "EventPublisher",
     "ArtifactRepository", "UnitOfWork", "ExecutionRuntimePort", "ModelGatewayPort", "SecretStore",
     "PermissionEvaluator", "AuditSink",
+    # Domain Models
+    "WorkflowRun", "WorkflowStep", "WorkflowDefinition", "Task", "TaskRun", "Session", "ModelRequest", "ModelResponse", "ArtifactRef",
+    # Lifecycle
+    "TaskState", "WorkflowState", "StepState", "SessionState", "StateTransitionResult",
+    "TaskLifecycle", "WorkflowLifecycle", "StepLifecycle", "SessionLifecycle", "utc_now",
+    # Worker Contracts
+    "WorkerHealth", "WorkerHeartbeat", "WorkerHeartbeatRepository", "WorkerStatus", "WorkerStatusQueryPort",
+    "WorkSubmission", "WorkSubmissionPort", "WorkRepository",
+    # Contract Types
+    "ProviderRequest", "ProviderResponse", "ProviderUsage", "ProviderToolCall", "ProviderStreamChunk",
+    "CacheDirective", "CachePort", "CanonicalModelRegistryPort", "ConnectionTestResult", "DiscoveredModel",
+    "EndpointRegistryPort", "EndpointStatePort", "FinishReason", "ModelDescriptor", "ProtocolDetectionResult",
+    "ProviderCapabilities", "ProviderHealth", "QuotaState", "QuotaStatePort", "RateLimitState", "RouteAttemptPort",
+    "RouteLockPort", "UsageLedgerPort",
+    "ToolDefinition", "ToolExecutionContext", "ToolExecutorPort", "ToolInvocation", "ToolRegistryPort", "ToolResult", "ToolRiskLevel",
+    "FinalizeTaskExecutionRequest", "FinalizeTaskExecutionResult", "StaleResultRejectedError", "TaskFinalizationPort",
 ]

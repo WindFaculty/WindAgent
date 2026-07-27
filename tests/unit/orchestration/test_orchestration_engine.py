@@ -23,6 +23,7 @@ from windagent_orchestration import (
     RecoveryManager, TaskManager
 )
 from windagent_orchestration.dispatcher import LeaseManager
+from windagent_execution.adapters.fake_runtime_adapter import FakeRuntimeAdapter
 
 
 @pytest_asyncio.fixture
@@ -91,7 +92,7 @@ def test_task_scheduler_concurrency_and_priority_locks():
 @pytest.mark.asyncio
 async def test_step_dispatcher_duplicate_prevention(in_memory_db):
     lease_mgr = LeaseManager(uow_factory=in_memory_db.session_factory)
-    dispatcher = StepDispatcher(lease_manager=lease_mgr)
+    dispatcher = StepDispatcher(lease_manager=lease_mgr, runtime_port=FakeRuntimeAdapter())
     step = WorkflowStep(id=StepId.generate(), order=1, name="Step 1", tool_name="read_file")
     run_id = "run_100"
 

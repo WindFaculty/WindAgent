@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    run.ps1 - Menu khoi chay WindAgent (Frontend / Backend / Desktop App).
+    run.ps1 - Menu khoi chay WindAgent (Frontend / API / Desktop App).
 
 .DESCRIPTION
     Launcher tong hop voi menu tuong tac.
@@ -29,13 +29,13 @@ try {
 # --- Duong dan script ---
 $RepoRoot       = if ($PSScriptRoot) { $PSScriptRoot } else { Get-Location }
 $ScriptsDir     = Join-Path $RepoRoot "scripts"
-$BackendScript  = Join-Path $ScriptsDir "dev_backend.ps1"
+$ApiScript      = Join-Path $ScriptsDir "dev_api.ps1"
 $FrontendScript = Join-Path $ScriptsDir "dev_frontend.ps1"
 $DesktopScript  = Join-Path $ScriptsDir "dev_desktop.ps1"
 $HealthScript   = Join-Path $ScriptsDir "healthcheck.ps1"
 
 # --- Kiem tra scripts ton tai ---
-$missing = @($BackendScript, $FrontendScript, $DesktopScript) | Where-Object { -not (Test-Path $_) }
+$missing = @($ApiScript, $FrontendScript, $DesktopScript) | Where-Object { -not (Test-Path $_) }
 if ($missing.Count -gt 0) {
     Write-Host "[Launcher] LOI: Thieu cac script sau:" -ForegroundColor Red
     $missing | ForEach-Object { Write-Host "  - $_" -ForegroundColor Red }
@@ -99,9 +99,9 @@ while ($true) {
 
         "1" {
             Write-Host "`n  -> Khoi dong Web Dev - Mock Mode..." -ForegroundColor Green
-            Start-InNewWindow -Script $BackendScript `
+            Start-InNewWindow -Script $ApiScript `
                 -ExtraArgs @("-Port $BackendPort") `
-                -Title "WindAgent - Backend (Mock)"
+                -Title "WindAgent - API (Mock)"
             Start-Sleep -Milliseconds 800
             Write-Host "  -> Chay Frontend tai cua so nay..." -ForegroundColor Green
             & powershell -ExecutionPolicy Bypass -File $FrontendScript -Port $FrontendPort
@@ -109,9 +109,9 @@ while ($true) {
 
         "2" {
             Write-Host "`n  -> Khoi dong Web Dev - Real Mode..." -ForegroundColor Green
-            Start-InNewWindow -Script $BackendScript `
+            Start-InNewWindow -Script $ApiScript `
                 -ExtraArgs @("-Port $BackendPort -Mock:`$false") `
-                -Title "WindAgent - Backend (Real)"
+                -Title "WindAgent - API (Real)"
             Start-Sleep -Milliseconds 800
             Write-Host "  -> Chay Frontend tai cua so nay..." -ForegroundColor Green
             & powershell -ExecutionPolicy Bypass -File $FrontendScript -Port $FrontendPort
@@ -119,9 +119,9 @@ while ($true) {
 
         "3" {
             Write-Host "`n  -> Khoi dong Desktop App - Mock Mode..." -ForegroundColor Yellow
-            Start-InNewWindow -Script $BackendScript `
+            Start-InNewWindow -Script $ApiScript `
                 -ExtraArgs @("-Port $BackendPort") `
-                -Title "WindAgent - Backend (Mock)"
+                -Title "WindAgent - API (Mock)"
             Start-Sleep -Milliseconds 800
             Write-Host "  -> Chay Tauri shell tai cua so nay..." -ForegroundColor Yellow
             & powershell -ExecutionPolicy Bypass -File $DesktopScript -Port $FrontendPort
@@ -129,17 +129,17 @@ while ($true) {
 
         "4" {
             Write-Host "`n  -> Khoi dong Desktop App - Real Mode..." -ForegroundColor Yellow
-            Start-InNewWindow -Script $BackendScript `
+            Start-InNewWindow -Script $ApiScript `
                 -ExtraArgs @("-Port $BackendPort -Mock:`$false") `
-                -Title "WindAgent - Backend (Real)"
+                -Title "WindAgent - API (Real)"
             Start-Sleep -Milliseconds 800
             Write-Host "  -> Chay Tauri shell tai cua so nay..." -ForegroundColor Yellow
             & powershell -ExecutionPolicy Bypass -File $DesktopScript -Port $FrontendPort
         }
 
         "5" {
-            Write-Host "`n  -> Chi chay Backend (Mock)..." -ForegroundColor Magenta
-            & powershell -ExecutionPolicy Bypass -File $BackendScript -Port $BackendPort
+            Write-Host "`n  -> Chi chay API (Mock)..." -ForegroundColor Magenta
+            & powershell -ExecutionPolicy Bypass -File $ApiScript -Port $BackendPort
         }
 
         "6" {

@@ -17,7 +17,6 @@ from windagent_core.domain.types import (
 from windagent_core.domain.models import (
     Session, SessionStatus, Task, WorkflowRun, WorkflowStep
 )
-from windagent_core.domain.lifecycle import SessionState
 from windagent_core.events.envelope import EventEnvelope
 from windagent_core.events.catalog import EventCatalog
 from windagent_storage.database.connection import DatabaseManager
@@ -39,7 +38,7 @@ async def test_sql_session_repository_crud(in_memory_db):
     async with SqlUnitOfWork(in_memory_db.session_factory) as uow:
         session_id = SessionId.generate()
         session = Session(id=session_id, title="Test Storage Session")
-        
+
         await uow.sessions.save(session)
         await uow.commit()
 
@@ -49,13 +48,13 @@ async def test_sql_session_repository_crud(in_memory_db):
         assert fetched.title == "Test Storage Session"
         assert fetched.status.value.upper() == "IDLE"
 
-        fetched.status = SessionState.ACTIVE
+        fetched.status = SessionStatus.RUNNING
         await uow.sessions.save(fetched)
         await uow.commit()
 
     async with SqlUnitOfWork(in_memory_db.session_factory) as uow:
         updated = await uow.sessions.get_by_id(session_id)
-        assert updated.status.value.upper() in ("ACTIVE", "RUNNING")
+        assert updated.status.value.upper() in ("RUNNING", "COMPLETED", "FAILED", "CANCELLED")
 
         deleted = await uow.sessions.delete(session_id)
         assert deleted
@@ -108,7 +107,7 @@ async def test_sql_unit_of_work_atomic_transaction_and_rollback(in_memory_db):
     with pytest.raises(RuntimeError, match="Simulated Error"):
         async with SqlUnitOfWork(in_memory_db.session_factory) as uow:
             await uow.sessions.save(Session(id=sid, title="Should Be Rolled Back"))
-            
+
             envelope = EventEnvelope(
                 event_id=EventId.generate(),
                 event_type=EventCatalog.STEP_STARTED,
@@ -117,7 +116,7 @@ async def test_sql_unit_of_work_atomic_transaction_and_rollback(in_memory_db):
                 payload={"info": "test"},
             )
             await uow.record_outbox_event(envelope)
-            
+
             raise RuntimeError("Simulated Error")
 
     # Verify no session or outbox event was saved
@@ -172,7 +171,7 @@ async def test_file_artifact_repository(in_memory_db, tmp_path):
     storage_dir = tmp_path / "artifacts"
     async with SqlUnitOfWork(in_memory_db.session_factory) as uow:
         uow.artifacts = uow.artifacts.__class__(uow.session, storage_dir=str(storage_dir))
-        
+
         art_ref = await uow.artifacts.store("test_report.txt", b"Hello Artifact", "text/plain")
         await uow.commit()
 

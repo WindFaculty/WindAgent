@@ -67,7 +67,7 @@ Khi tích hợp tác vụ Agent-S3 để tự động hóa màn hình trực qua
 2.  **Bộ biên dịch an toàn bằng AST (AST-based Translation)**: Sử dụng thư viện `ast` của Python để phân tích cú pháp tĩnh đoạn mã đề xuất. Nếu phát hiện các câu lệnh lạ (như `import`, `subprocess`, `os.system`, `requests`, v.v.), hành động đó sẽ bị đánh dấu `rejected` với mã lỗi `AGENT_S3_UNSAFE_ACTION` và bị hủy bỏ ngay lập tức.
 3.  **Ánh xạ ngược về Whitelist**: Các câu lệnh PyAutoGUI hợp lệ (như `pyautogui.click`, `pyautogui.write`) sẽ được dịch ngược về các công cụ trong Whitelist của WindAgent (ví dụ: `click_xy`, `type_text`) để xử lý.
 4.  **Bảo vệ chống vòng lặp vô hạn (Bounded Loop)**: Mỗi bước chạy `agent_s3_step` chỉ được phép đề xuất và chạy đúng 1 hành động đơn lẻ. Cơ chế vòng lặp tự trị đa bước (multi-step loops) bị giới hạn để tránh Agent tự ý click chuột vô hạn mà không có sự kiểm soát của con người.
-5.  **Vô hiệu hóa Local Coding Sandbox**: Tham số cấu hình chạy code trực tiếp trên hệ điều hành (`enable_local_env`) của SDK Agent-S3 bị buộc thiết lập về `0` (False) tại tầng cấu hình backend bất kể thiết lập môi trường.
+5.  **Trạng thái đã nghỉ hưu**: Adapter Agent-S3 không còn nằm trong runtime Architecture V2; mọi lần tái giới thiệu phải đi qua canonical execution và permission contracts.
 
 ---
 

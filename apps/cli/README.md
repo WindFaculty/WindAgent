@@ -15,19 +15,24 @@ WindAgent CLI entrypoint (doctor, architecture check, workflow run)
 - `windagent_workflows`
 - `windagent_storage`
 - `windagent_observability`
+- `windagent_plugins`
+- `windagent_skills`
 
 ## Forbidden Dependencies
 - None
 
-## Legacy Migration Source
-`apps/backend/cli.py`
+## Runtime
+
+Install or run `windagent_cli` from the root workspace. The CLI composes only
+canonical packages and has no dependency on an HTTP application implementation.
 
 ## Public API (Target)
 - Expected domain models, interfaces, and public handlers for cli.
 - Exposed strictly via `windagent_cli` top-level exports.
 
 ## Out-of-Scope
-- Legacy backend services running in `apps/backend/`.
+- ASGI and Worker process startup.
+- Retired Architecture V1 implementation.
 - Concrete implementations of other bounded contexts.
 
 ## Acceptance Criteria

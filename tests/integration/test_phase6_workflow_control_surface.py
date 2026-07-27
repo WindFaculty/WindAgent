@@ -11,7 +11,6 @@ from pathlib import Path
 
 root = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(root))
-sys.path.insert(0, str(root / "apps" / "backend"))
 for pkg in ["core", "storage", "orchestration", "execution", "workflows"]:
     p = str(root / pkg)
     if p not in sys.path:
@@ -20,25 +19,18 @@ for pkg in ["core", "storage", "orchestration", "execution", "workflows"]:
 import pytest
 import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
-from db.database import Database
-from db.models import AgentSessionORM, ParentTaskORM, TaskPlanORM, TaskNodeORM, ChatSessionORM
-from services.event_bus import EventBus
-from services.session_service import SessionService
+from windagent_storage.database.connection import DatabaseManager
+from windagent_storage.orm.models import BaseORM
 from windagent_orchestration import OrchestrationV2Container
 from windagent_execution import FakeRuntimeAdapter
-from apps.backend.main import app
+from windagent_api.main import app
 
 
 @pytest_asyncio.fixture
 async def test_backend():
-    db = Database("sqlite+aiosqlite:///:memory:")
-    await db.init_models()
+    db = DatabaseManager("sqlite+aiosqlite:///:memory:")
+    await db.create_tables(BaseORM.metadata)
     app.state.db = db
-
-    event_bus = EventBus()
-    session_service = SessionService(event_bus=event_bus, db=db)
-    app.state.event_bus = event_bus
-    app.state.session_service = session_service
 
     fake_runtime = FakeRuntimeAdapter(default_mode="success")
     container = OrchestrationV2Container(uow_factory=db.session_factory)
@@ -48,26 +40,8 @@ async def test_backend():
     app.state.orchestration_dispatcher = container.dispatcher
     app.state.task_manager = container.task_manager
 
-    session_id_str = "00000000-0000-0000-0000-000000000001"
-    async with db.session() as s:
-        chat_sess = ChatSessionORM(id=session_id_str, status="idle")
-        sess = AgentSessionORM(
-            id="agent_sess_1",
-            windagent_session_id=session_id_str,
-            agent_id="ag_1",
-            runtime_type="hermes",
-            status="idle",
-        )
-        pt = ParentTaskORM(id="pt_1", conversation_id=session_id_str, title="Session Plan")
-        plan = TaskPlanORM(id=f"plan:{session_id_str}", parent_task_id="pt_1", status="active")
-        node_1 = TaskNodeORM(id="00000000-0000-0000-0000-000000000010", plan_id=plan.id, title="Step 1", agent_type="read_file", status="completed")
-        node_2 = TaskNodeORM(id="00000000-0000-0000-0000-000000000011", plan_id=plan.id, title="Step 2", agent_type="write_file", status="failed")
-
-        s.add_all([chat_sess, sess, pt, plan, node_1, node_2])
-        await s.commit()
-
     yield app
-    await db.dispose()
+    await db.close()
 
 
 @pytest.mark.asyncio

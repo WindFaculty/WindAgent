@@ -60,7 +60,7 @@ class SqlWorkSubmissionAdapter(WorkSubmissionPort):
 
                 # 2. Insert outbox record TaskSubmitted
                 outbox_id = f"out_{uuid.uuid4().hex[:12]}"
-                event_id = f"evt_{uuid.uuid4().hex[:12]}"
+                event_id = str(uuid.uuid4())
                 payload_json = json.dumps({
                     "task_id": task_id,
                     "session_id": session_id,

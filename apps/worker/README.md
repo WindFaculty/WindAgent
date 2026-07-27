@@ -23,15 +23,19 @@ Background worker process for asynchronous task execution
 ## Forbidden Dependencies
 - None
 
-## Legacy Migration Source
-`apps/backend/worker.py`
+## Runtime
+
+The Worker is installed from the root workspace and shares
+`WINDAGENT_DATABASE_URL` with the API process. It does not import an API
+application package or any retired runtime implementation.
 
 ## Public API (Target)
 - Expected domain models, interfaces, and public handlers for worker.
 - Exposed strictly via `windagent_worker` top-level exports.
 
 ## Out-of-Scope
-- Legacy backend services running in `apps/backend/`.
+- HTTP routing and ASGI startup.
+- Retired Architecture V1 implementation.
 - Concrete implementations of other bounded contexts.
 
 ## Acceptance Criteria

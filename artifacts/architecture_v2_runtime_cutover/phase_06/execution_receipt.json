@@ -1,7 +1,10 @@
 {
   "phase": "phase_06",
-  "phase_name": "Outbox runtime",
-  "timestamp": "2026-07-26T03:45:20Z",
-  "publisher_ownership": "worker_only",
-  "status": "PASS"
+  "completed_at": "2026-07-28T01:26:10+07:00",
+  "branch": "fix/architecture-v2-runtime-cutover",
+  "base_commit": "7fb0340edf711a2b2c864265e30ae9b284de1d66",
+  "deleted_legacy_files": 170,
+  "compatibility_shims": 0,
+  "acceptance_gate": "LEGACY_BACKEND_RUNTIME_REMOVED",
+  "result": "PASS"
 }

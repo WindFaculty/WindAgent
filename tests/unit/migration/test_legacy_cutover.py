@@ -1,18 +1,11 @@
 """
 Unit tests for WindAgent Phase 14 Legacy Cutover, Feature Flags, and Shadow Execution.
+apps/backend/compatibility_shim has been retired as of Phase 6 completion.
 """
 
 import pytest
 from windagent_api.bootstrap.feature_flags import FeatureFlagsManager
 from windagent_verification.shadow import ShadowExecutionEngine
-import sys
-from pathlib import Path
-root_dir = Path(__file__).resolve().parent.parent.parent.parent
-backend_dir = root_dir / "apps" / "backend"
-if str(backend_dir) not in sys.path:
-    sys.path.insert(0, str(backend_dir))
-
-from compatibility_shim import LegacyCompatibilityShim
 
 
 def test_feature_flags_manager():
@@ -49,21 +42,3 @@ def test_shadow_execution_comparator():
     # Destructive operation skip
     res_dest = engine.compare_read_only("delete_task", v1_calc, v2_calc, is_destructive=True)
     assert res_dest.diff_details == "Skipped destructive operation"
-
-
-@pytest.mark.asyncio
-async def test_legacy_compatibility_shim(tmp_path):
-    db_path = tmp_path / "compatibility-shim.db"
-    shim = LegacyCompatibilityShim(
-        db_url=f"sqlite+aiosqlite:///{db_path.as_posix()}"
-    )
-
-    # Task request routing
-    task_res = await shim.handle_task_request({"prompt": "Migration test task", "workflow_name": "bugfix"})
-    assert "task_id" in task_res
-    assert task_res["status"] == "pending"
-
-    # Provider request routing
-    prov_res = await shim.handle_provider_request()
-    assert len(prov_res) >= 3
-    assert any(p["name"] == "openai" for p in prov_res)

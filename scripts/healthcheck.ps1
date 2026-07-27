@@ -4,15 +4,14 @@ Phase 9 — Healthcheck môi trường cho WindAgent MVP.
 
 Kiểm tra:
   [CRIT] Python >= 3.10
-  [CRIT] uv (package manager cho backend)
+  [CRIT] uv (package manager cho workspace)
   [CRIT] node + npm >= 18
-  [CRIT] apps/backend/pyproject.toml + uv.lock tồn tại
+  [CRIT] root workspace + apps/api + apps/worker + apps/cli manifests tồn tại
   [CRIT] apps/desktop/package.json tồn tại
-  [CRIT] PyAutoGUI import OK (production GUI adapter)
   [OPT]  Rust + cargo + tauri CLI (cho Tauri build; Phase 9 defer OK)
   [OPT]  Ollama chạy ở localhost:11434
   [OPT]  Model qwen3:4b-q4 đã pull
-  [OPT]  Backend /health trả OK (chỉ check nếu cổng mở)
+  [OPT]  Architecture V2 API /health/live trả OK (chỉ check nếu cổng mở)
   [OPT]  Vite dev server chạy ở :5173
   [WARN] artifacts/logs writable
 
@@ -32,7 +31,9 @@ param(
 
 $ErrorActionPreference = "Continue"
 $RepoRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
-$BackendDir = Join-Path $RepoRoot "apps\backend"
+$ApiDir = Join-Path $RepoRoot "apps\api"
+$WorkerDir = Join-Path $RepoRoot "apps\worker"
+$CliDir = Join-Path $RepoRoot "apps\cli"
 $DesktopDir = Join-Path $RepoRoot "apps\desktop"
 $LogsDir = Join-Path $RepoRoot "artifacts\logs"
 
@@ -137,14 +138,19 @@ if (Get-Command node -ErrorAction SilentlyContinue) {
     Write-Item "node + npm" "FAIL" "CRIT" "chưa cài — https://nodejs.org/"
 }
 
-# 4. pyproject.toml + uv.lock
-if ((Test-Path (Join-Path $BackendDir "pyproject.toml")) -and (Test-Path (Join-Path $BackendDir "uv.lock"))) {
-    Write-Item "apps/backend manifest" "PASS" "CRIT" "pyproject.toml + uv.lock"
+# 4. Canonical workspace manifests
+$workspaceManifests = @(
+    (Join-Path $RepoRoot "pyproject.toml"),
+    (Join-Path $RepoRoot "uv.lock"),
+    (Join-Path $ApiDir "pyproject.toml"),
+    (Join-Path $WorkerDir "pyproject.toml"),
+    (Join-Path $CliDir "pyproject.toml")
+)
+$missingManifests = @($workspaceManifests | Where-Object { -not (Test-Path $_) })
+if ($missingManifests.Count -eq 0) {
+    Write-Item "canonical workspace manifests" "PASS" "CRIT" "root + API + Worker + CLI"
 } else {
-    $missing = @()
-    if (-not (Test-Path (Join-Path $BackendDir "pyproject.toml"))) { $missing += "pyproject.toml" }
-    if (-not (Test-Path (Join-Path $BackendDir "uv.lock"))) { $missing += "uv.lock" }
-    Write-Item "apps/backend manifest" "FAIL" "CRIT" "thiếu: $($missing -join ', ')"
+    Write-Item "canonical workspace manifests" "FAIL" "CRIT" "thiếu: $($missingManifests -join ', ')"
 }
 
 # 5. package.json desktop
@@ -152,29 +158,6 @@ if (Test-Path (Join-Path $DesktopDir "package.json")) {
     Write-Item "apps/desktop manifest" "PASS" "CRIT" "package.json"
 } else {
     Write-Item "apps/desktop manifest" "FAIL" "CRIT" "thiếu package.json"
-}
-
-# 6. PyAutoGUI — ưu tiên python trong apps/backend venv (nếu có), fallback system
-$venvPy = Join-Path $BackendDir ".venv\Scripts\python.exe"
-$pyCandidates = @()
-if (Test-Path $venvPy) { $pyCandidates += $venvPy }
-if ($pythonCmd) { $pyCandidates += $pythonCmd }
-$pyForGui = $null
-foreach ($c in $pyCandidates) {
-    $out = & $c -c "import pyautogui; print(pyautogui.__version__)" 2>&1
-    if ($LASTEXITCODE -eq 0) {
-        $pyForGui = $c
-        $pyautoguiVer = ($out | Out-String).Trim()
-        Write-Item "PyAutoGUI import" "PASS" "CRIT" "v$pyautoguiVer ($c)"
-        break
-    }
-}
-if (-not $pyForGui) {
-    if ($pyCandidates.Count -gt 0) {
-        Write-Item "PyAutoGUI import" "FAIL" "CRIT" "chưa cài trong $($pyCandidates[0]) — chạy 'uv sync' trong apps/backend"
-    } else {
-        Write-Item "PyAutoGUI import" "SKIP" "CRIT" "bỏ qua — Python không khả dụng"
-    }
 }
 
 # 7. Rust + Tauri CLI
@@ -225,18 +208,18 @@ if ($ollama) {
 
 # 9. Backend /health
 if ($SkipBackend) {
-    Write-Item "Backend /health" "SKIP" "OPT" "bỏ qua theo -SkipBackend"
+        Write-Item "API /health/live" "SKIP" "OPT" "bỏ qua theo -SkipBackend"
 } else {
     try {
-        $health = Invoke-RestMethod -Uri "$BackendUrl/health" -Method Get -TimeoutSec 3
+        $health = Invoke-RestMethod -Uri "$BackendUrl/health/live" -Method Get -TimeoutSec 3
         $status = $health.status
-        if ($status -eq "ok") {
-            Write-Item "Backend /health" "PASS" "OPT" "$BackendUrl/health → ok"
+        if ($status -eq "live") {
+            Write-Item "API /health/live" "PASS" "OPT" "$BackendUrl/health/live → live"
         } else {
-            Write-Item "Backend /health" "WARN" "OPT" "trả $status"
+            Write-Item "API /health/live" "WARN" "OPT" "trả $status"
         }
     } catch {
-        Write-Item "Backend /health" "WARN" "OPT" "chưa chạy ($BackendUrl) — 'scripts/dev_backend.ps1'"
+        Write-Item "API /health/live" "WARN" "OPT" "chưa chạy ($BackendUrl) — 'scripts/dev_api.ps1'"
     }
 }
 
@@ -286,7 +269,7 @@ if ($failCount -gt 0) {
 } else {
     Write-Host ""
     Write-Host "Tất cả CRIT đã PASS. MVP sẵn sàng khởi động." -ForegroundColor Green
-    Write-Host "  scripts/dev_backend.ps1    # Terminal 1: backend" -ForegroundColor DarkGray
+    Write-Host "  scripts/dev_api.ps1        # Terminal 1: API" -ForegroundColor DarkGray
     Write-Host "  scripts/dev_desktop.ps1    # Terminal 2: frontend" -ForegroundColor DarkGray
     exit 0
 }

@@ -58,8 +58,6 @@ logs/
 *.db
 *.sqlite
 *.sqlite3
-apps/backend/windagent.db
-apps/backend/windagent.db-journal
 
 # OS
 desktop.ini

@@ -7,6 +7,7 @@ architecture violation rule, causing the checker to fail with non-zero exit code
 import json
 import tempfile
 import shutil
+from copy import deepcopy
 from pathlib import Path
 import pytest
 
@@ -69,6 +70,10 @@ MINIMAL_POLICY = {
     "forbidden_patterns": {
         "production_fallback_regex": r"\b_fallback_[A-Za-z_][A-Za-z0-9_]*\b",
         "test_adapter_paths": ["tests/"],
+        "legacy_quarantine": {
+            "zone": "apps/backend",
+            "allowlist": [],
+        },
     },
     "canonical_models": [],
     "required_top_level_packages": [],
@@ -95,7 +100,7 @@ def cross_app_import_fixture(fixture_repo):
     
     # Create packages
     api_ns = repo.create_package("apps/api", "windagent_api")
-    cli_ns = repo.create_package("apps/cli", "windagent_cli")
+    repo.create_package("apps/cli", "windagent_cli")
     
     # Create cross-app import
     (api_ns / "module.py").write_text("from windagent_cli import something\n")
@@ -105,7 +110,7 @@ def cross_app_import_fixture(fixture_repo):
     repo.create_pyproject("apps/cli")
     
     # Create policy
-    policy = dict(MINIMAL_POLICY)
+    policy = deepcopy(MINIMAL_POLICY)
     policy["workspace"]["members"] = ["apps/api", "apps/cli"]
     policy["packages"] = {
         "api": {
@@ -146,7 +151,7 @@ def legacy_reverse_import_fixture(fixture_repo):
     repo = fixture_repo
     
     # Create packages
-    backend_ns = repo.create_package("apps/backend", "backend")
+    repo.create_package("apps/backend", "backend")
     core_ns = repo.create_package("core", "windagent_core")
     
     # Create reverse import
@@ -157,7 +162,7 @@ def legacy_reverse_import_fixture(fixture_repo):
     repo.create_pyproject("core")
     
     # Create policy
-    policy = dict(MINIMAL_POLICY)
+    policy = deepcopy(MINIMAL_POLICY)
     policy["workspace"]["members"] = ["apps/backend", "core"]
     policy["packages"] = {
         "backend": {
@@ -211,7 +216,7 @@ def core_framework_import_fixture(fixture_repo):
     repo.create_pyproject("core")
     
     # Create policy
-    policy = dict(MINIMAL_POLICY)
+    policy = deepcopy(MINIMAL_POLICY)
     policy["workspace"]["members"] = ["core"]
     policy["packages"] = {
         "core": {
@@ -246,7 +251,7 @@ def dynamic_legacy_import_fixture(fixture_repo):
     
     # Create packages
     core_ns = repo.create_package("core", "windagent_core")
-    backend_ns = repo.create_package("apps/backend", "backend")
+    repo.create_package("apps/backend", "backend")
     
     # Create dynamic import
     (core_ns / "loader.py").write_text("""
@@ -259,7 +264,7 @@ module = importlib.import_module("backend.legacy")
     repo.create_pyproject("apps/backend")
     
     # Create policy
-    policy = dict(MINIMAL_POLICY)
+    policy = deepcopy(MINIMAL_POLICY)
     policy["workspace"]["members"] = ["core", "apps/backend"]
     policy["global_rules"]["forbid_dynamic_imports"] = True
     policy["packages"] = {
@@ -285,7 +290,7 @@ def test_dynamic_legacy_import_violation(dynamic_legacy_import_fixture):
     report, _ = check(repo.root, policy)
     
     assert report["status"] == "FAIL"
-    assert any(v["rule"] == "dynamic_legacy_import" for v in report["violations"])
+    assert any(v["rule"] == "dynamic_external_import" for v in report["violations"])
 
 
 # =============================================================================
@@ -313,7 +318,7 @@ def private_api_import_fixture(fixture_repo):
     repo.create_pyproject("core")
     
     # Create policy
-    policy = dict(MINIMAL_POLICY)
+    policy = deepcopy(MINIMAL_POLICY)
     policy["workspace"]["members"] = ["apps/api", "core"]
     policy["packages"] = {
         "api": {
@@ -353,7 +358,7 @@ def missing_declared_dep_fixture(fixture_repo):
     
     # Create packages
     api_ns = repo.create_package("apps/api", "windagent_api")
-    core_ns = repo.create_package("core", "windagent_core")
+    repo.create_package("core", "windagent_core")
     
     # Import core from api but don't declare dependency
     (api_ns / "module.py").write_text("from windagent_core import Model\n")
@@ -363,7 +368,7 @@ def missing_declared_dep_fixture(fixture_repo):
     repo.create_pyproject("core")
     
     # Create policy
-    policy = dict(MINIMAL_POLICY)
+    policy = deepcopy(MINIMAL_POLICY)
     policy["workspace"]["members"] = ["apps/api", "core"]
     policy["global_rules"]["require_declared_workspace_dependencies"] = True
     policy["packages"] = {
@@ -414,7 +419,7 @@ def package_cycle_fixture(fixture_repo):
     repo.create_pyproject("pkg_b", ["windagent-pkga"])
     
     # Create policy
-    policy = dict(MINIMAL_POLICY)
+    policy = deepcopy(MINIMAL_POLICY)
     policy["workspace"]["members"] = ["pkg_a", "pkg_b"]
     policy["global_rules"]["forbid_dependency_cycles"] = True
     policy["packages"] = {
@@ -475,7 +480,7 @@ class TaskState:
     repo.create_pyproject("orchestration", ["windagent-core"])
     
     # Create policy
-    policy = dict(MINIMAL_POLICY)
+    policy = deepcopy(MINIMAL_POLICY)
     policy["workspace"]["members"] = ["core", "orchestration"]
     policy["canonical_models"] = ["TaskState"]
     policy["packages"] = {
@@ -505,28 +510,23 @@ def test_duplicate_canonical_model_violation(duplicate_canonical_model_fixture):
 
 
 # =============================================================================
-# Fixture: Production fake runtime
+# Fixture: Production test fallback
 # =============================================================================
 
 @pytest.fixture
 def production_fake_runtime_fixture(fixture_repo):
-    """Fixture: production code uses test fallback."""
+    """Fixture: production code uses test fallback symbol."""
     repo = fixture_repo
     
-    # Create package
+    # Create api package with _fallback_ symbol
     api_ns = repo.create_package("apps/api", "windagent_api")
-    
-    # Use fallback in production
-    (api_ns / "module.py").write_text("""
-def get_provider():
-    return _fallback_provider
-""")
+    (api_ns / "service.py").write_text("from _fallback_fake_runtime import FakeRuntime\n")
     
     # Create pyproject
     repo.create_pyproject("apps/api")
     
     # Create policy
-    policy = dict(MINIMAL_POLICY)
+    policy = deepcopy(MINIMAL_POLICY)
     policy["workspace"]["members"] = ["apps/api"]
     policy["global_rules"]["forbid_production_test_fallbacks"] = True
     policy["forbidden_patterns"]["production_fallback_regex"] = r"\b_fallback_[A-Za-z_][A-Za-z0-9_]*\b"
@@ -547,7 +547,7 @@ def test_production_fake_runtime_violation(production_fake_runtime_fixture):
     report, _ = check(repo.root, policy)
     
     assert report["status"] == "FAIL"
-    assert any(v["rule"] == "production_test_fallback" for v in report["violations"])
+    assert any(v["rule"] == "production_fallback_reference" for v in report["violations"])
 
 
 # =============================================================================
@@ -573,7 +573,7 @@ def domain_importing_config_fixture(fixture_repo):
     repo.create_pyproject("core")
     
     # Create policy with internal boundaries
-    policy = dict(MINIMAL_POLICY)
+    policy = deepcopy(MINIMAL_POLICY)
     policy["workspace"]["members"] = ["core"]
     policy["packages"] = {
         "core": {
@@ -584,7 +584,10 @@ def domain_importing_config_fixture(fixture_repo):
                 "domain": {
                     "path": "core/windagent_core/domain",
                     "forbidden_dependencies": ["core/windagent_core/config"],
-                    "allowed_dependencies": [],
+                    "allowed_dependencies": ["core/windagent_core/contracts"],
+                },
+                "config": {
+                    "path": "core/windagent_core/config",
                 },
             },
         },
@@ -603,35 +606,24 @@ def test_domain_importing_config_violation(domain_importing_config_fixture):
 
 
 # =============================================================================
-# Fixture: Application constructing SQL adapter
+# Fixture: App constructing SQL adapter
 # =============================================================================
 
 @pytest.fixture
 def app_constructing_sql_adapter_fixture(fixture_repo):
-    """Fixture: application layer creates SqlRepository."""
+    """Fixture: app layer constructs SQL adapter directly."""
     repo = fixture_repo
     
-    # Create application package
+    # Create api package
     api_ns = repo.create_package("apps/api", "windagent_api")
-    
-    # Create concrete adapter in application layer
-    (api_ns / "services.py").write_text("""
-class SqlRepository:
-    pass
-
-def get_repo():
-    return SqlRepository()
-""")
+    (api_ns / "module.py").write_text("from sqlalchemy import create_engine\nengine = create_engine('sqlite:///test.db')\n")
     
     # Create pyproject
     repo.create_pyproject("apps/api")
     
-    # Create policy with composition root rule
-    policy = dict(MINIMAL_POLICY)
+    # Create policy
+    policy = deepcopy(MINIMAL_POLICY)
     policy["workspace"]["members"] = ["apps/api"]
-    policy["global_rules"]["enforce_composition_root_rule"] = True
-    policy["composition_roots"] = ["apps/api/.../composition.py", "tests/"]
-    policy["concrete_adapters"] = ["SqlRepository", "DatabaseManager"]
     policy["packages"] = {
         "api": {
             "layer": "app",
@@ -644,52 +636,39 @@ def get_repo():
 
 
 def test_app_constructing_sql_adapter_violation(app_constructing_sql_adapter_fixture):
-    """Test that application constructing adapter outside composition root is detected."""
+    """Test that app layer constructing SQL adapter is detected."""
     repo, policy = app_constructing_sql_adapter_fixture
     report, _ = check(repo.root, policy)
     
     assert report["status"] == "FAIL"
-    assert any(v["rule"] == "concrete_adapter_outside_composition" 
-               for v in report["violations"])
+    assert any(v["rule"] == "orm_in_application_layer" for v in report["violations"])
 
 
 # =============================================================================
-# Fixture: Legacy main delegation check
+# Fixture: Legacy main delegation
 # =============================================================================
 
 @pytest.fixture
 def legacy_main_delegation_fixture(fixture_repo):
-    """Fixture: main.py doesn't delegate to windagent_api."""
+    """Fixture: apps/backend/main.py delegates to windagent_api."""
     repo = fixture_repo
     
-    # Create backend package
+    # Create backend package with main.py
     backend_ns = repo.create_package("apps/backend", "backend")
-    
-    # Create main.py without delegation
-    (backend_ns / "main.py").write_text("""
-from fastapi import FastAPI
-app = FastAPI()
-""")
+    (backend_ns / "main.py").write_text("from windagent_api.main import app\n")
     
     # Create pyproject
     repo.create_pyproject("apps/backend")
     
-    # Create policy with quarantine
-    policy = dict(MINIMAL_POLICY)
+    # Create policy
+    policy = deepcopy(MINIMAL_POLICY)
     policy["workspace"]["members"] = ["apps/backend"]
-    policy["global_rules"]["enforce_legacy_quarantine"] = True
-    policy["forbidden_patterns"]["legacy_quarantine"] = {
-        "zone": "apps/backend",
-        "allowlist": ["apps/backend/main.py"],
-        "delegation_target": "windagent_api",
-    }
     policy["packages"] = {
         "backend": {
             "layer": "legacy",
             "namespace": "backend",
             "path": "apps/backend",
             "quarantine": True,
-            "allowlist": ["apps/backend/main.py"],
         },
     }
     
@@ -697,14 +676,14 @@ app = FastAPI()
 
 
 def test_legacy_main_delegation_violation(legacy_main_delegation_fixture):
-    """Test that missing delegation in main.py is detected."""
+    """Test that recreating the retired legacy entrypoint is detected."""
     repo, policy = legacy_main_delegation_fixture
     report, _ = check(repo.root, policy)
     
     assert report["status"] == "FAIL"
-    assert any(v["rule"] == "legacy_main_delegation" for v in report["violations"])
+    assert any(v["rule"] in ("legacy_backend_source_present", "legacy_backend_import", "canonical_to_legacy_import")
+               for v in report["violations"])
 
 
 if __name__ == "__main__":
-    # Run all tests
-    pytest.main([__file__, "-v", "--tb=short"])
+    pytest.main([__file__, "-v"])

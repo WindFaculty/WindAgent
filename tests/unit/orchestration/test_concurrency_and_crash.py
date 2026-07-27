@@ -12,6 +12,7 @@ from windagent_storage.orm.models import BaseORM
 from windagent_orchestration import (
     OrchestrationV2Container, TaskState, WorkflowDefinition, WorkflowNode
 )
+from windagent_execution.adapters.fake_runtime_adapter import FakeRuntimeAdapter
 
 
 @pytest_asyncio.fixture
@@ -26,7 +27,7 @@ async def in_memory_db():
 
 @pytest.mark.asyncio
 async def test_concurrent_lease_claims(in_memory_db):
-    container = OrchestrationV2Container(uow_factory=in_memory_db.session_factory)
+    container = OrchestrationV2Container(uow_factory=in_memory_db.session_factory, runtime_port=FakeRuntimeAdapter())
     step = WorkflowStep(id=StepId.generate(), order=1, name="Concurrent Step", tool_name="exec_shell")
     run_id = "run_concurrent_99"
 
@@ -44,7 +45,7 @@ async def test_concurrent_lease_claims(in_memory_db):
 
 @pytest.mark.asyncio
 async def test_crash_injection_state_persistence(in_memory_db):
-    container = OrchestrationV2Container(uow_factory=in_memory_db.session_factory)
+    container = OrchestrationV2Container(uow_factory=in_memory_db.session_factory, runtime_port=FakeRuntimeAdapter())
     tid = TaskId.generate()
     sid = SessionId.generate()
 

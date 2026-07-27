@@ -103,6 +103,25 @@ class WorkflowRunRepository(Protocol):
 
 
 @runtime_checkable
+class WorkRepository(Protocol):
+    """Protocol for persisting and retrieving Work submissions."""
+    async def submit(self, work: WorkSubmission) -> None:
+        ...
+
+    async def get(self, task_id: TaskId) -> Optional[WorkSubmission]:
+        ...
+
+    async def claim(self, task_id: TaskId, worker_id: str, lease_seconds: int = 300) -> bool:
+        ...
+
+    async def complete(self, task_id: TaskId, result: Optional[dict] = None, error: Optional[str] = None) -> None:
+        ...
+
+    async def list_pending(self, limit: int = 100) -> List[WorkSubmission]:
+        ...
+
+
+@runtime_checkable
 class EventStore(Protocol):
     """Protocol for append-only domain event persistence."""
     async def append(self, event: EventEnvelope) -> None:

@@ -9,8 +9,7 @@ from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 
 from windagent_core.domain.types import TaskId, SessionId, StepId, RunId, WorkflowId, EventId, ArtifactId
-from windagent_core.domain.models import Task, Session, WorkflowRun, WorkflowStep, ArtifactRef
-from windagent_core.domain.lifecycle import TaskState, SessionState, WorkflowState, StepState
+from windagent_core.domain.models import Task, Session, WorkflowRun, WorkflowStep, ArtifactRef, SessionStatus, WorkflowStatus, StepStatus
 from windagent_core.events.envelope import EventEnvelope
 from windagent_core.contracts import UnitOfWork, TaskRepository, SessionRepository, EventStore, OutboxWriter
 
@@ -29,17 +28,17 @@ def test_session_orm_mapper_canonical_state():
     sid = SessionId.generate()
     session = Session(
         id=sid,
-        status=SessionState.ACTIVE,
+        status=SessionStatus.RUNNING,
         title="Test Session",
         metadata={"user": "admin"}
     )
     orm = domain_to_orm_session(session)
     assert orm.id == str(sid)
-    assert orm.status == "ACTIVE"
+    assert orm.status == "running"
 
     mapped_back = orm_to_domain_session(orm)
     assert mapped_back.id == sid
-    assert mapped_back.status == SessionState.ACTIVE
+    assert mapped_back.status == SessionStatus.RUNNING
     assert mapped_back.title == "Test Session"
 
 
@@ -50,16 +49,16 @@ def test_task_orm_mapper_canonical_state():
         id=tid,
         prompt="Fix bug in auth module",
         session_id=sid,
-        status=TaskState.RUNNING,
+        status=SessionStatus.RUNNING,
         tags=["bugfix", "urgent"]
     )
     orm = domain_to_orm_task(task)
     assert orm.id == str(tid)
-    assert orm.status == "RUNNING"
+    assert orm.status == "running"
 
     mapped_back = orm_to_domain_task(orm)
     assert mapped_back.id == tid
-    assert mapped_back.status == TaskState.RUNNING
+    assert mapped_back.status == SessionStatus.RUNNING
     assert mapped_back.prompt == "Fix bug in auth module"
 
 
@@ -74,26 +73,26 @@ def test_workflow_orm_mapper_canonical_state():
         order=1,
         name="Click Button",
         tool_name="click_xy",
-        status=StepState.COMPLETED
+        status=StepStatus.SUCCESS
     )
     wf_run = WorkflowRun(
         run_id=rid,
         workflow_id=wfid,
         session_id=sid,
-        status=WorkflowState.RUNNING,
+        status=WorkflowStatus.RUNNING,
         steps=[step]
     )
 
     orm = domain_to_orm_workflow(wf_run)
     assert orm.run_id == str(rid)
-    assert orm.status == "RUNNING"
+    assert orm.status == "running"
     assert len(orm.steps) == 1
 
     mapped_back = orm_to_domain_workflow(orm)
     assert mapped_back.run_id == rid
-    assert mapped_back.status == WorkflowState.RUNNING
+    assert mapped_back.status == WorkflowStatus.RUNNING
     assert len(mapped_back.steps) == 1
-    assert mapped_back.steps[0].status == StepState.COMPLETED
+    assert mapped_back.steps[0].status == StepStatus.SUCCESS
 
 
 @pytest.mark.asyncio
@@ -114,7 +113,7 @@ async def test_sql_uow_conformance():
         assert isinstance(uow.outbox, OutboxWriter)
 
         sid = SessionId.generate()
-        session = Session(id=sid, status=SessionState.ACTIVE, title="Async UoW Session")
+        session = Session(id=sid, status=SessionStatus.RUNNING, title="Async UoW Session")
         await uow.sessions.save(session)
         await uow.commit()
 

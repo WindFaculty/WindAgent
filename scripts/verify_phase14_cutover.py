@@ -115,7 +115,9 @@ def run_pytest(scope: str, args: List[str]) -> Dict[str, Any]:
 def run_tests() -> Dict[str, Any]:
     return {
         "top_level": run_pytest("top_level", []),
-        "backend": run_pytest("apps/backend", ["apps/backend/tests"]),
+        "api": run_pytest("apps/api", ["tests/unit/api"]),
+        "worker": run_pytest("apps/worker", ["tests/unit/worker"]),
+        "cli": run_pytest("apps/cli", ["tests/unit/cli"]),
     }
 
 
@@ -174,10 +176,12 @@ def main() -> int:
             "migration_dry_run_passed": migration["passed"],
             "feature_flags_v2_enabled": flags.get("passed", False),
             "top_level_pytest_passed": tests["top_level"]["passed"],
-            "backend_pytest_passed": tests["backend"]["passed"],
+            "api_pytest_passed": tests["api"]["passed"],
+            "worker_pytest_passed": tests["worker"]["passed"],
+            "cli_pytest_passed": tests["cli"]["passed"],
         },
         "notes": [
-            "Backend unit/integration failures are pre-existing app-state wiring issues unrelated to core canonicalization.",
+            "API, Worker, and CLI are verified from their canonical package test scopes.",
             "Full E2E multi-replica fencing and rollback rehearsal require CI / staging cluster.",
         ],
     }

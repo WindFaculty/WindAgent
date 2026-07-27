@@ -71,9 +71,11 @@ def get_container(request: Request) -> ApplicationContainer:
     return container
 
 
-def get_uow(request: Request) -> SqlUnitOfWork:
+async def get_uow(request: Request):
+    """Returns a UnitOfWork with active session and repositories."""
     container = get_container(request)
-    return container.get_uow()
+    async with container.get_uow() as uow:
+        yield uow
 
 
 def get_task_manager(request: Request) -> TaskManager:

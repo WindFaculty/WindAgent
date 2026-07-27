@@ -13,15 +13,13 @@
   ```
 - [ ] Xác nhận kết quả: Toàn bộ mục đánh dấu `[CRIT]` phải trả về trạng thái **PASS**.
 
-### 1.2. Khởi chạy Sidecar Backend (Mock Mode)
-- [ ] Chạy khởi động backend:
+### 1.2. Khởi chạy Architecture V2 API (Mock Mode)
+- [ ] Chạy khởi động API:
   ```powershell
-  powershell -ExecutionPolicy Bypass -File scripts\dev_backend.ps1
+  powershell -ExecutionPolicy Bypass -File scripts\dev_api.ps1
   ```
-- [ ] Đọc log tại `artifacts/logs/backend.log` và xác nhận xuất hiện dòng:
-  *   `using MockModelClient`
-  *   `backend ready — db=...`
-- [ ] Gửi request tới `http://127.0.0.1:8765/health` và nhận về JSON status: `"ok"`.
+- [ ] Đọc log tại `artifacts/logs/api.log` và xác nhận uvicorn đã sẵn sàng.
+- [ ] Gửi request tới `http://127.0.0.1:8765/health/live` và nhận về JSON status: `"live"`.
 
 ### 1.3. Khởi chạy Giao diện Frontend (Vite)
 - [ ] Mở terminal mới và chạy:
@@ -97,5 +95,5 @@
 
 ## 4. Kiểm thử Khôi phục & Tắt hệ thống
 
-- [ ] **Kiểm tra tắt nóng**: Ấn `Ctrl+C` tại terminal chạy Backend sidecar. Xác nhận toàn bộ tiến trình uvicorn dừng ngay lập tức, không bị treo luồng ngầm.
-- [ ] **Kiểm tra khôi phục**: Khởi động lại backend sidecar. Tải lại trang frontend `http://localhost:5173` và xác nhận toàn bộ lịch sử trò chuyện cùng các phiên cũ hiển thị đầy đủ (được nạp lại thành công từ file SQLite `windagent.db`).
+- [ ] **Kiểm tra tắt nóng**: Ấn `Ctrl+C` tại terminal chạy API. Xác nhận tiến trình uvicorn dừng ngay lập tức, không bị treo luồng ngầm.
+- [ ] **Kiểm tra khôi phục**: Khởi động lại API. Tải lại frontend và xác nhận lịch sử/phiên được khôi phục từ canonical storage.

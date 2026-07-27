@@ -13,6 +13,7 @@ from windagent_core.contracts.execution import (
     ExecutionRuntimePort, ExecutionRequest, ExecutionHandle,
     RuntimeStatus, RuntimeStatusEnum, ExecutionResult
 )
+from windagent_core.domain.types import EventId
 
 
 class FakeRuntimeAdapter(ExecutionRuntimePort):

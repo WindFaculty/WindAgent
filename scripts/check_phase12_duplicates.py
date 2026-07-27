@@ -33,8 +33,14 @@ EXCLUDED_PATHS = {
 }
 
 
-def should_skip(path: Path) -> bool:
-    for part in path.parts:
+def should_skip(path: Path, root: Path = ROOT_DIR) -> bool:
+    try:
+        parts = path.relative_to(root).parts
+    except ValueError:
+        parts = path.parts
+    if any(part.startswith(".") and part not in {".", ".."} for part in parts):
+        return True
+    for part in parts:
         if part in EXCLUDED_DIR_NAMES:
             return True
     if path in EXCLUDED_PATHS:
@@ -91,7 +97,7 @@ def main() -> int:
 
     scanned = 0
     for py_file in ROOT_DIR.rglob("*.py"):
-        if should_skip(py_file):
+        if should_skip(py_file, ROOT_DIR):
             continue
 
         scanned += 1

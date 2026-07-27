@@ -16,7 +16,11 @@ export class StateRecoveryEngine {
 
   saveSnapshot(snapshot: AppStateSnapshot): void {
     if (typeof localStorage !== "undefined") {
-      localStorage.setItem(this.storageKey, JSON.stringify(snapshot));
+      try {
+        localStorage.setItem(this.storageKey, JSON.stringify(snapshot));
+      } catch (e) {
+        console.warn("Failed to save state snapshot:", e);
+      }
     }
   }
 

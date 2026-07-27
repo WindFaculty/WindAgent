@@ -5,7 +5,6 @@ workspace:
     - apps/api
     - apps/cli
     - apps/worker
-    - apps/backend
     - core
     - orchestration
     - intelligence
@@ -36,16 +35,33 @@ global_rules:
   forbid_dynamic_imports: true
   enforce_composition_root_rule: true
 
+  composition_roots:
+      - "apps/api/**"
+      - "apps/worker/**"
+      - "apps/cli/**"
+      - "orchestration/**"
+      - "providers/**"
+      - "storage/**"
+      - "execution/**"
+      - "tools/**"
+      - "workflows/**"
+      - "verification/**"
+      - "context/**"
+      - "memory/**"
+      - "intelligence/**"
+      - "observability/**"
+      - "evals/**"
+      - "plugins/**"
+      - "skills/**"
+      - "tests/"
+
 forbidden_patterns:
   production_fallback_regex: "\\b_fallback_[A-Za-z_][A-Za-z0-9_]*\\b"
   test_adapter_paths:
     - "tests/"
   legacy_quarantine:
     zone: "apps/backend"
-    allowlist:
-      - "apps/backend/compatibility/**"
-      - "apps/backend/compatibility_shim.py"
-      - "apps/backend/main.py"
+    allowlist: []
     runtime_authority_blocked_patterns:
       - "DatabaseManager"
       - "SqlRepository"
@@ -53,7 +69,7 @@ forbidden_patterns:
       - "ExecutionRuntime"
       - "Authority"
       - "Adapter"
-    delegation_target: "windagent_api"
+    retirement_gate: "LEGACY_BACKEND_RUNTIME_REMOVED"
 
 canonical_models:
   - EventEnvelope
@@ -102,7 +118,7 @@ packages:
         path: core/windagent_core/events
         allowed_dependencies: ["core/windagent_core/domain", "core/windagent_core/contracts", "core/windagent_core/errors"]
         forbidden_dependencies: []
-  
+
   orchestration:
     layer: application
     namespace: windagent_orchestration
@@ -225,7 +241,7 @@ packages:
     namespace: windagent_cli
     path: apps/cli
     description: "WindAgent CLI entrypoint (doctor, architecture check, workflow run)"
-    allowed_dependencies: ["windagent_core", "windagent_orchestration", "windagent_intelligence", "windagent_providers", "windagent_tools", "windagent_workflows", "windagent_storage", "windagent_observability"]
+    allowed_dependencies: ["windagent_core", "windagent_orchestration", "windagent_intelligence", "windagent_providers", "windagent_tools", "windagent_workflows", "windagent_storage", "windagent_observability", "windagent_plugins", "windagent_skills"]
     forbidden_dependencies: []
     legacy_source: "apps/backend/cli.py"
 
@@ -238,20 +254,6 @@ packages:
     forbidden_dependencies: []
     legacy_source: "apps/backend/worker.py"
 
-  backend:
-    layer: legacy
-    namespace: ""
-    path: apps/backend
-    description: "Legacy backend application - QUARANTINE ZONE"
-    allowed_dependencies: ["windagent_core", "windagent_orchestration", "windagent_execution", "windagent_intelligence", "windagent_providers", "windagent_tools", "windagent_workflows", "windagent_verification", "windagent_context", "windagent_memory", "windagent_storage", "windagent_observability", "windagent_plugins", "windagent_skills"]
-    forbidden_dependencies: []
-    legacy_source: "apps/backend/"
-    quarantine: true
-    allowlist:
-      - "apps/backend/compatibility/**"
-      - "apps/backend/compatibility_shim.py"
-      - "apps/backend/main.py"
-
   plugins:
     layer: infrastructure
     namespace: windagent_plugins
@@ -259,7 +261,7 @@ packages:
     description: "Plugin system for extensible functionality - loader, registry, lifecycle, security, manifest"
     allowed_dependencies: ["windagent_core"]
     forbidden_dependencies: ["apps", "windagent_orchestration", "windagent_intelligence", "windagent_storage"]
-    legacy_source: ""
+    legacy_source: "apps/backend/plugins/"
 
   skills:
     layer: application
@@ -268,4 +270,4 @@ packages:
     description: "Skills system for reusable capabilities - loader, registry, execution, versioning"
     allowed_dependencies: ["windagent_core", "windagent_providers", "windagent_tools"]
     forbidden_dependencies: ["apps", "windagent_orchestration"]
-    legacy_source: ""
+    legacy_source: "apps/backend/skills/"

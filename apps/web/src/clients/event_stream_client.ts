@@ -41,7 +41,14 @@ export class EventStreamClient {
       throw new Error(`Event stream error: ${res.statusText}`);
     }
     const events: DomainEvent[] = await res.json();
-    
+
+    // Validate events have event_id
+    for (const evt of events) {
+      if (!evt.event_id) {
+        throw new Error("Malformed event: missing event_id");
+      }
+    }
+
     // Perform deduplication
     const newEvents: DomainEvent[] = [];
     for (const evt of events) {
@@ -67,5 +74,9 @@ export class EventStreamClient {
 
   clearDedupeCache(): void {
     this.processedEventIds.clear();
+  }
+
+  getDedupeCacheSize(): number {
+    return this.processedEventIds.size;
   }
 }

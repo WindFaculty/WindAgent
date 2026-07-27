@@ -31,6 +31,7 @@ def record_event_durable(envelope: EventEnvelope) -> None:
 
 class EventResponse(BaseModel):
     """Canonical V2 Event Response DTO."""
+
     event_id: str
     event_type: str
     aggregate_id: str
@@ -42,8 +43,12 @@ class EventResponse(BaseModel):
 @router.get("", response_model=List[EventResponse])
 async def list_events(
     aggregate_id: Optional[str] = Query(None, description="Filter by aggregate ID"),
-    min_sequence: int = Query(0, description="Minimum sequence number for event replay"),
-    last_sequence: Optional[int] = Query(None, description="Alias for min_sequence replay cursor"),
+    min_sequence: int = Query(
+        0, description="Minimum sequence number for event replay"
+    ),
+    last_sequence: Optional[int] = Query(
+        None, description="Alias for min_sequence replay cursor"
+    ),
 ) -> List[EventResponse]:
     replay_seq = last_sequence if last_sequence is not None else min_sequence
     results: List[EventResponse] = []
@@ -53,14 +58,20 @@ async def list_events(
             continue
         if aggregate_id and str(env.aggregate_id) != aggregate_id:
             continue
-        ev_type = env.event_type.value if hasattr(env.event_type, "value") else str(env.event_type)
+        ev_type = (
+            env.event_type.value
+            if hasattr(env.event_type, "value")
+            else str(env.event_type)
+        )
         results.append(
             EventResponse(
                 event_id=str(env.event_id),
                 event_type=ev_type,
                 aggregate_id=str(env.aggregate_id),
                 sequence_number=seq,
-                occurred_at=env.occurred_at.isoformat() if hasattr(env.occurred_at, "isoformat") else str(env.occurred_at),
+                occurred_at=env.occurred_at.isoformat()
+                if hasattr(env.occurred_at, "isoformat")
+                else str(env.occurred_at),
                 payload=env.payload,
             )
         )
@@ -69,29 +80,37 @@ async def list_events(
 
 @router.get("/stream")
 async def sse_event_stream(
-    last_sequence: int = Query(0, description="Replay missed events starting after last_sequence"),
+    last_sequence: int = Query(
+        0, description="Replay missed events starting after last_sequence"
+    ),
     aggregate_id: Optional[str] = Query(None),
 ):
     """Server-Sent Events (SSE) stream supporting reconnect and last_sequence replay."""
+
     async def event_generator():
         cursor = last_sequence
         while True:
             # Replay missed events
             new_events = [
-                env for env in _DURABLE_EVENT_STORE
+                env
+                for env in _DURABLE_EVENT_STORE
                 if getattr(env, "sequence_number", getattr(env, "sequence", 0)) > cursor
                 and (not aggregate_id or str(env.aggregate_id) == aggregate_id)
             ]
             for env in new_events:
                 seq = getattr(env, "sequence_number", getattr(env, "sequence", 0))
                 cursor = seq
-                payload_json = json.dumps({
-                    "event_id": str(env.event_id),
-                    "event_type": env.event_type.value if hasattr(env.event_type, "value") else str(env.event_type),
-                    "aggregate_id": str(env.aggregate_id),
-                    "sequence_number": seq,
-                    "payload": env.payload,
-                })
+                payload_json = json.dumps(
+                    {
+                        "event_id": str(env.event_id),
+                        "event_type": env.event_type.value
+                        if hasattr(env.event_type, "value")
+                        else str(env.event_type),
+                        "aggregate_id": str(env.aggregate_id),
+                        "sequence_number": seq,
+                        "payload": env.payload,
+                    }
+                )
                 yield f"data: {payload_json}\n\n"
 
             await asyncio.sleep(0.5)
@@ -103,6 +122,7 @@ async def sse_event_stream(
 async def websocket_event_stream(
     websocket: WebSocket,
     last_sequence: int = Query(0),
+    aggregate_id: Optional[str] = Query(None),
 ):
     """WebSocket endpoint supporting reconnect, last_sequence replay, and heartbeat pings."""
     await websocket.accept()
@@ -110,26 +130,57 @@ async def websocket_event_stream(
     try:
         # 1. Replay missed events first
         missed = [
-            env for env in _DURABLE_EVENT_STORE
-            if getattr(env, "sequence_number", getattr(env, "sequence", 0)) > cursor
+            env
+            for env in _DURABLE_EVENT_STORE
+            if getattr(env, "sequence", 0) > cursor
+            and (not aggregate_id or str(env.aggregate_id) == aggregate_id)
         ]
         for env in missed:
-            seq = getattr(env, "sequence_number", getattr(env, "sequence", 0))
+            seq = getattr(env, "sequence", 0)
             cursor = seq
-            await websocket.send_json({
-                "event_id": str(env.event_id),
-                "event_type": env.event_type.value if hasattr(env.event_type, "value") else str(env.event_type),
-                "aggregate_id": str(env.aggregate_id),
-                "sequence_number": seq,
-                "payload": env.payload,
-                "is_replay": True,
-            })
+            await websocket.send_json(
+                {
+                    "event_id": str(env.event_id),
+                    "event_type": env.event_type,
+                    "event": env.event_type,
+                    "aggregate_id": str(env.aggregate_id),
+                    "sequence_number": seq,
+                    "payload": env.payload,
+                    "is_replay": True,
+                }
+            )
 
-        # 2. Main streaming loop
+        # 2. Main streaming loop - continuously check for new events
         while True:
-            await asyncio.sleep(0.5)
-            # Send heartbeat ping if idle
-            await websocket.send_json({"type": "ping", "sequence_cursor": cursor})
+            await asyncio.sleep(0.05)  # Faster polling for real-time delivery
+            # Check for new events since cursor
+            new_events = [
+                env
+                for env in _DURABLE_EVENT_STORE
+                if getattr(env, "sequence", 0) > cursor
+                and (not aggregate_id or str(env.aggregate_id) == aggregate_id)
+            ]
+            logger.info(
+                f"WS aggregate_id={aggregate_id}, cursor={cursor}, new_events={len(new_events)}"
+            )
+            for env in new_events:
+                seq = getattr(env, "sequence", 0)
+                cursor = seq
+                await websocket.send_json(
+                    {
+                        "event_id": str(env.event_id),
+                        "event_type": env.event_type,
+                        "event": env.event_type,
+                        "aggregate_id": str(env.aggregate_id),
+                        "sequence_number": seq,
+                        "payload": env.payload,
+                        "is_replay": False,
+                    }
+                )
+
+            # Send heartbeat ping if no new events
+            if not new_events:
+                await websocket.send_json({"type": "ping", "sequence_cursor": cursor})
     except WebSocketDisconnect:
         logger.info("WebSocket disconnected gracefully.")
     except Exception as ex:

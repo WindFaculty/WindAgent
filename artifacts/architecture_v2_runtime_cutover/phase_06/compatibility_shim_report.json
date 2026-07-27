@@ -1,0 +1,19 @@
+{
+  "phase": "phase_06",
+  "generated_at": "2026-07-28T01:26:10+07:00",
+  "decision": "NO_COMPATIBILITY_SHIM",
+  "status": "PASS",
+  "shim_count": 0,
+  "business_logic_in_shims": 0,
+  "rationale": [
+    "Repository-owned launchers and clients have been migrated to canonical V2 targets.",
+    "No package or pythonpath entry requires apps/backend.",
+    "Retaining a delegating package would preserve an unnecessary runtime dependency."
+  ],
+  "guard": {
+    "policy": "configs/architecture/scaffold_v2.yaml#forbidden_patterns.legacy_quarantine",
+    "checker": "scripts/check_architecture_imports.py",
+    "behavior": "Any Python source recreated below apps/backend fails the architecture gate."
+  },
+  "external_compatibility": "The HTTP /api/v1/* tombstone remains in windagent_api and returns 410 Gone; it contains no legacy business logic."
+}

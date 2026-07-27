@@ -20,7 +20,7 @@ logger = logging.getLogger("windagent.orchestration.composition")
 
 
 class OrchestrationV2Container:
-    def __init__(self, uow_factory: Optional[Any] = None, max_concurrency: int = 5):
+    def __init__(self, uow_factory: Optional[Any] = None, max_concurrency: int = 5, runtime_port: Optional[Any] = None):
         self.uow_factory = uow_factory
         
         self.cancellation_manager = CancellationManager(uow_factory=uow_factory)
@@ -28,7 +28,11 @@ class OrchestrationV2Container:
         self.scheduler = TaskScheduler(max_concurrency=max_concurrency)
         self.worker_registry = WorkerRegistry()
         self.lease_manager = LeaseManager(uow_factory=uow_factory)
-        self.dispatcher = StepDispatcher(lease_manager=self.lease_manager, worker_registry=self.worker_registry)
+        self.dispatcher = StepDispatcher(
+            lease_manager=self.lease_manager,
+            worker_registry=self.worker_registry,
+            runtime_port=runtime_port,
+        )
         self.checkpoint_manager = CheckpointManager(uow_factory=uow_factory)
         self.workflow_engine = WorkflowEngine(checkpoint_manager=self.checkpoint_manager)
         self.task_manager = TaskManager(

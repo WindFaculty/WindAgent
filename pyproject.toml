@@ -21,7 +21,6 @@ members = [
     "apps/api",
     "apps/cli",
     "apps/worker",
-    "apps/backend",
     "core",
     "orchestration",
     "intelligence",
@@ -39,15 +38,35 @@ members = [
     "skills",
 ]
 
+[tool.uv.sources]
+windagent-core = { workspace = true }
+windagent-orchestration = { workspace = true }
+windagent-execution = { workspace = true }
+windagent-intelligence = { workspace = true }
+windagent-providers = { workspace = true }
+windagent-tools = { workspace = true }
+windagent-workflows = { workspace = true }
+windagent-verification = { workspace = true }
+windagent-context = { workspace = true }
+windagent-memory = { workspace = true }
+windagent-plugins = { workspace = true }
+windagent-skills = { workspace = true }
+windagent-storage = { workspace = true }
+windagent-observability = { workspace = true }
+windagent-evals = { workspace = true }
+windagent-api = { workspace = true }
+windagent-cli = { workspace = true }
+windagent-worker = { workspace = true }
+
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 testpaths = ["tests"]
 pythonpath = [
+    ".",
     "apps/api",
     "apps/cli",
     "apps/worker",
-    "apps/backend",
     "core",
     "orchestration",
     "intelligence",

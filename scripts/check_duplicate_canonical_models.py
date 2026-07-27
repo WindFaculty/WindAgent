@@ -59,8 +59,13 @@ EXCLUDED_PATH_PARTS = (
 )
 
 
-def should_skip(path: Path) -> bool:
-    parts = path.parts
+def should_skip(path: Path, root: Path = ROOT_DIR) -> bool:
+    try:
+        parts = path.relative_to(root).parts
+    except ValueError:
+        parts = path.parts
+    if any(part.startswith(".") and part not in {".", ".."} for part in parts):
+        return True
     if any(p in EXCLUDED_DIR_NAMES for p in parts):
         return True
     for excl in EXCLUDED_PATH_PARTS:
@@ -111,7 +116,7 @@ def scan(root: Path):
     signature_registry = {}
     scanned = 0
     for py_file in root.rglob("*.py"):
-        if should_skip(py_file):
+        if should_skip(py_file, root):
             continue
         scanned += 1
         try:

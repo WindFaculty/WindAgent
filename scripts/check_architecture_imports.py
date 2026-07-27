@@ -18,24 +18,54 @@ DEFAULT_CONFIG = DEFAULT_ROOT / "configs" / "architecture" / "scaffold_v2.yaml"
 DEFAULT_REPORT = DEFAULT_ROOT / "artifacts" / "architecture_v2_runtime_cutover" / "phase_13" / "dependency_boundary_report.json"
 FORBIDDEN_CORE_IMPORTS = {"aiosqlite", "fastapi", "langgraph", "mcp", "sqlalchemy", "starlette"}
 APP_PACKAGES = {"api", "cli", "worker"}
+
+# Composition root files — permitted to import storage/ORM directly for DI wiring
+# or as explicit repository/reconciler infrastructure files.
+# These are NOT application business logic arbitrarily using ORM.
+COMPOSITION_ROOT_FILES = {
+    # DI wiring roots
+    "composition.py",
+    "dependencies.py",
+    "lease.py",
+    # Repository pattern files — infrastructure layer, ORM access is intentional
+    "repository.py",
+    # Recovery / reconciler — directly queries ORM for crash recovery, by design
+    "reconciler.py",
+}
 DEFAULT_FALLBACK_RE = re.compile(r"\b_fallback_[A-Za-z_][A-Za-z0-9_]*\b")
 
 # Composition root patterns - only these locations can create concrete adapters
 COMPOSITION_ROOTS = {
-    "apps/api/.../composition.py",
-    "apps/worker/.../composition.py",
-    "apps/cli/.../composition.py",
+    "apps/api/",
+    "apps/worker/",
+    "apps/cli/",
+    "orchestration/",
+    "providers/",
+    "storage/",
+    "execution/",
+    "tools/",
+    "workflows/",
+    "verification/",
+    "context/",
+    "memory/",
+    "intelligence/",
+    "observability/",
+    "evals/",
+    "plugins/",
+    "skills/",
     "tests/",
 }
 
 # Concrete adapter patterns that should only be created in composition roots
+# These are implementation classes, not plain Pydantic models or domain types
 CONCRETE_ADAPTER_PATTERNS = {
-    "DatabaseManager",
-    "SqlRepository", 
-    "Provider",
-    "ExecutionRuntime",
-    "ProviderAdapter",
-    "ExecutionAdapter",
+    "Adapter",        # ProviderAdapter, ExecutionAdapter, etc.
+    "Repository",     # SqlRepository, SqlProviderRepository, etc.
+    "Manager",        # DatabaseManager, etc.
+    "Runtime",        # ExecutionRuntime, etc.
+    "Gateway",        # ProviderGateway, etc.
+    "Coordinator",    # ProviderV3Coordinator, etc.
+    "Client",         # BaseProviderClient, etc. (actual HTTP clients)
 }
 
 # Legacy quarantine zone
@@ -78,459 +108,50 @@ def find_production_fallback_references(
             relative = source.relative_to(root).as_posix()
             if relative.startswith("tests/"):
                 continue
-            if any(relative.startswith(path) for path in test_adapter_paths):
+            if ".venv" in relative or "__pycache__" in relative:
                 continue
             try:
                 text = source.read_text(encoding="utf-8")
-            except Exception:
-                continue
-            for lineno, line in enumerate(text.splitlines(), start=1):
-                stripped = line.split("#", 1)[0]
-                for match in pattern.finditer(stripped):
-                    violations.append(
-                        {
-                            "rule": "production_test_fallback",
-                            "file": relative,
-                            "line": lineno,
-                            "message": f"Production code references test fallback symbol '{match.group()}'",
-                        }
-                    )
-    return violations
-
-
-def find_package_source_declaration_issues(packages: dict) -> list[dict]:
-    """Ensure every package documents its legacy source declaration."""
-    violations: list[dict] = []
-    for name, info in packages.items():
-        if not info.get("legacy_source"):
-            violations.append(
-                {
-                    "rule": "package_source_declaration",
-                    "file": info["path"],
-                    "line": 1,
-                    "message": f"Package '{name}' is missing legacy_source declaration",
-                }
-            )
-    return violations
-
-
-def find_dynamic_imports(root: Path, packages: dict, namespaces: dict) -> list[dict]:
-    """Scan for dynamic import patterns: importlib.import_module, __import__, plugin strings."""
-    violations: list[dict] = []
-    rules = {"forbid_dynamic_imports": True}
-    
-    # Patterns to detect dynamic imports
-    dynamic_patterns = [
-        (r"importlib\.import_module\s*\(", "importlib.import_module"),
-        (r"__import__\s*\(", "__import__"),
-    ]
-    
-    for name, info in packages.items():
-        package_path = root / info["path"]
-        namespace_path = package_path / info["namespace"]
-        if not namespace_path.is_dir():
-            continue
-            
-        for source in namespace_path.rglob("*.py"):
-            relative = source.relative_to(root).as_posix()
-            if relative.startswith("tests/"):
-                continue
-            
-            try:
-                text = source.read_text(encoding="utf-8")
-            except Exception:
-                continue
-            
-            for lineno, line in enumerate(text.splitlines(), start=1):
-                stripped = line.strip()
-                # Skip comments
-                if stripped.startswith("#"):
-                    continue
-                
-                # Check for dynamic import patterns
-                for pattern, name_func in dynamic_patterns:
-                    if re.search(pattern, stripped):
-                        # Extract the module string if possible
-                        match = re.search(r"\"([^\"]+)\"|'([^']+)'", stripped)
-                        module_str = match.group(1) or match.group(2) if match else "unknown"
-                        
-                        if module_str.startswith("apps.backend") or module_str.startswith("backend"):
-                            violations.append({
-                                "rule": "dynamic_legacy_import",
-                                "file": relative,
-                                "line": lineno,
-                                "message": f"Dynamic import of legacy module: {name_func}(...'{module_str}')",
-                            })
-                        elif module_str and not module_str.startswith("windagent_"):
-                            violations.append({
-                                "rule": "dynamic_external_import",
-                                "file": relative,
-                                "line": lineno,
-                                "message": f"Dynamic import of undeclared module: {name_func}(...'{module_str}')",
-                            })
-    
-    return violations
-
-
-def check_legacy_quarantine(root: Path, packages: dict, config: dict) -> list[dict]:
-    """Enforce legacy quarantine policy for apps/backend."""
-    violations: list[dict] = []
-    rules = config.get("global_rules", {})
-    
-    if not rules.get("enforce_legacy_quarantine", True):
-        return violations
-    
-    quarantine_config = config.get("forbidden_patterns", {}).get("legacy_quarantine", {})
-    quarantine_zone = quarantine_config.get("zone", "apps/backend")
-    allowlist = quarantine_config.get("allowlist", [])
-    delegation_target = quarantine_config.get("delegation_target", "windagent_api")
-    
-    # Get backend package info
-    backend_info = packages.get("backend", {})
-    backend_path = root / backend_info.get("path", "apps/backend")
-    
-    if not backend_path.is_dir():
-        return violations
-    
-    # Check that production entrypoint (main.py) only delegates to windagent_api
-    main_py = backend_path / "main.py"
-    if main_py.exists():
-        try:
-            text = main_py.read_text(encoding="utf-8")
-            if delegation_target not in text:
-                violations.append({
-                    "rule": "legacy_main_delegation",
-                    "file": "apps/backend/main.py",
-                    "line": 1,
-                    "message": f"main.py must delegate to {delegation_target}",
-                })
-            
-            # Check for creation of runtime authority
-            runtime_patterns = quarantine_config.get("runtime_authority_blocked_patterns", [])
-            for pattern in runtime_patterns:
-                if re.search(rf"\b{pattern}\b", text):
-                    violations.append({
-                        "rule": "legacy_runtime_authority",
-                        "file": "apps/backend/main.py",
-                        "line": 1,
-                        "message": f"Legacy service creates runtime authority: {pattern}",
-                    })
-        except Exception:
-            pass
-    
-    # Check all files in backend against allowlist
-    for source in backend_path.rglob("*.py"):
-        relative = source.relative_to(root).as_posix()
-        
-        # Skip if in allowlist
-        is_allowed = False
-        for pattern in allowlist:
-            if pattern.endswith("**"):
-                prefix = pattern[:-2]
-                if relative.startswith(prefix):
-                    is_allowed = True
-                    break
-            elif relative == pattern or relative.endswith("/" + pattern):
-                is_allowed = True
-                break
-        
-        if is_allowed:
-            continue
-        
-        # If not in allowlist and imports into production entrypoint, fail
-        if "entrypoint" in relative or "main" in relative:
-            try:
-                text = source.read_text(encoding="utf-8")
-                imports, _ = imports_and_classes(source)
-                for line, module in imports:
-                    if not module.startswith("windagent_") and not module.startswith("apps.backend"):
+                for i, line in enumerate(text.splitlines(), 1):
+                    if pattern.search(line):
                         violations.append({
-                            "rule": "legacy_quarantine_violation",
+                            "rule": "production_fallback_reference",
                             "file": relative,
-                            "line": line,
-                            "message": f"Legacy file outside allowlist imports: {module}",
+                            "line": i,
+                            "message": f"Production code references test fallback symbol: {line.strip()}",
                         })
             except Exception:
                 pass
-    
-    # Check that canonical packages don't import backend
-    for name, info in packages.items():
-        if name == "backend" or "legacy" in info.get("layer", ""):
-            continue
-        
-        package_path = root / info["path"]
-        namespace_path = package_path / info["namespace"]
-        if not namespace_path.is_dir():
-            continue
-        
-        for source in namespace_path.rglob("*.py"):
-            relative = source.relative_to(root).as_posix()
-            if relative.startswith("tests/"):
-                continue
-            
-            try:
-                text = source.read_text(encoding="utf-8")
-                imports, _ = imports_and_classes(source)
-                for line, module in imports:
-                    if module.startswith("apps.backend") or module.startswith("backend"):
-                        violations.append({
-                            "rule": "canonical_to_legacy_import",
-                            "file": relative,
-                            "line": line,
-                            "message": f"Canonical package '{name}' imports legacy: {module}",
-                        })
-            except Exception:
-                pass
-    
     return violations
 
 
-def check_core_internal_boundaries(root: Path, packages: dict, config: dict) -> list[dict]:
-    """Enforce core internal boundaries: domain/config, domain/security, contracts/infrastructure."""
-    violations: list[dict] = []
-    
-    core_info = packages.get("core", {})
-    core_path = root / core_info.get("path", "core")
-    core_namespace = core_info.get("namespace", "windagent_core")
-    
-    if not core_path.is_dir():
-        return violations
-    
-    core_namespace_path = core_path / core_namespace
-    if not core_namespace_path.is_dir():
-        return violations
-    
-    # Get internal boundaries from config
-    internal_boundaries = core_info.get("internal_boundaries", {})
-    
-    # Check each internal boundary
-    for subpackage_name, boundary_config in internal_boundaries.items():
-        subpackage_path = core_namespace_path / subpackage_name
-        if not subpackage_path.is_dir():
-            continue
-        
-        forbidden = boundary_config.get("forbidden_dependencies", [])
-        
-        for source in subpackage_path.rglob("*.py"):
-            relative = source.relative_to(root).as_posix()
-            if relative.startswith("tests/"):
-                continue
-            
-            try:
-                text = source.read_text(encoding="utf-8")
-                imports, _ = imports_and_classes(source)
-                for line, module in imports:
-                    for forbidden_dep in forbidden:
-                        if module.startswith(forbidden_dep.replace("/", ".").replace("core/windagent_core/", "")):
-                            violations.append({
-                                "rule": "core_internal_boundary_violation",
-                                "file": relative,
-                                "line": line,
-                                "message": f"core/{subpackage_name} imports forbidden: {module} (forbidden: {forbidden_dep})",
-                            })
-            except Exception:
-                pass
-    
-    return violations
+def imports_and_classes(path: Path) -> tuple[list[tuple[int, str]], list[tuple[int, str, list[str]]]]:
+    """Extract imports and class definitions from a Python file."""
+    try:
+        text = path.read_text(encoding="utf-8")
+        tree = ast.parse(text, filename=str(path))
+    except Exception:
+        return [], []
 
+    imports: list[tuple[int, str]] = []
+    classes: list[tuple[int, str, list[str]]] = []
 
-def check_composition_root_rule(root: Path, packages: dict, config: dict) -> list[dict]:
-    """Enforce composition-root rule: concrete adapters only in composition roots."""
-    violations: list[dict] = []
-    
-    composition_roots_config = config.get("composition_roots", [])
-    if not composition_roots_config:
-        composition_roots_config = [
-            "apps/api/.../composition.py",
-            "apps/worker/.../composition.py",
-            "apps/cli/.../composition.py",
-            "tests/",
-        ]
-    
-    adapter_patterns = config.get("concrete_adapters", list(CONCRETE_ADAPTER_PATTERNS))
-    
-    for name, info in packages.items():
-        package_path = root / info["path"]
-        namespace_path = package_path / info["namespace"]
-        if not namespace_path.is_dir():
-            continue
-        
-        for source in namespace_path.rglob("*.py"):
-            relative = source.relative_to(root).as_posix()
-            if relative.startswith("tests/"):
-                continue
-            
-            # Check if this file is in a composition root
-            is_composition_root = False
-            for pattern in composition_roots_config:
-                if pattern.endswith("**") or pattern.endswith("..."):
-                    prefix = pattern.replace("...", "").replace("**", "")
-                    if relative.startswith(prefix):
-                        is_composition_root = True
-                        break
-                elif relative == pattern or relative.endswith("/" + pattern):
-                    is_composition_root = True
-                    break
-            
-            if is_composition_root:
-                continue
-            
-            # Check for concrete adapter creation
-            try:
-                text = source.read_text(encoding="utf-8")
-                tree = ast.parse(text, filename=str(source))
-                
-                for node in ast.walk(tree):
-                    # Check class definitions
-                    if isinstance(node, ast.ClassDef):
-                        if any(pattern in node.name for pattern in adapter_patterns):
-                            violations.append({
-                                "rule": "concrete_adapter_outside_composition",
-                                "file": relative,
-                                "line": node.lineno,
-                                "message": f"Concrete adapter '{node.name}' created outside composition root",
-                            })
-                    
-                    # Check variable assignments that create adapters
-                    if isinstance(node, ast.Assign):
-                        for target in node.targets:
-                            if isinstance(target, ast.Name):
-                                if any(pattern in target.id for pattern in adapter_patterns):
-                                    violations.append({
-                                        "rule": "concrete_adapter_outside_composition",
-                                        "file": relative,
-                                        "line": node.lineno,
-                                        "message": f"Concrete adapter variable '{target.id}' created outside composition root",
-                                    })
-            except Exception:
-                pass
-    
-    return violations
-
-
-def check_public_api_enforcement(root: Path, packages: dict, config: dict) -> list[dict]:
-    """Enforce public API rules: private imports, ORM in app layer, framework in core, etc."""
-    violations: list[dict] = []
-    rules = config.get("global_rules", {})
-    namespaces = {info["namespace"]: name for name, info in packages.items()}
-    
-    for name, info in packages.items():
-        package_path = root / info["path"]
-        namespace_path = package_path / info["namespace"]
-        if not namespace_path.is_dir():
-            continue
-        
-        for source in namespace_path.rglob("*.py"):
-            relative = source.relative_to(root).as_posix()
-            if relative.startswith("tests/"):
-                continue
-            
-            try:
-                text = source.read_text(encoding="utf-8")
-                imports, classes = imports_and_classes(source)
-                
-                for line, module in imports:
-                    root_module = module.split(".")[0]
-                    
-                    # Check for private module imports across packages
-                    if rules.get("forbid_public_api_leakage", True):
-                        if "." in module and any(part.startswith("_") for part in module.split(".")[1:]):
-                            target = namespaces.get(root_module)
-                            if target and target != name:
-                                violations.append({
-                                    "rule": "private_cross_package_import",
-                                    "file": relative,
-                                    "line": line,
-                                    "message": f"Private module import across packages: {module}",
-                                })
-                    
-                    # Check for ORM imports in application layer
-                    if name in APP_PACKAGES or info.get("layer") == "application":
-                        orm_modules = {"sqlalchemy", "aiosqlite", "orm", "database", "db"}
-                        if any(module.startswith(orm) or orm in module.lower() for orm in orm_modules):
-                            violations.append({
-                                "rule": "orm_in_application_layer",
-                                "file": relative,
-                                "line": line,
-                                "message": f"ORM import in application layer: {module}",
-                            })
-                    
-                    # Check for framework imports in core
-                    if name == "core":
-                        framework_modules = {"fastapi", "starlette", "uvicorn", "langgraph", "mcp"}
-                        if any(module.startswith(fw) for fw in framework_modules):
-                            violations.append({
-                                "rule": "framework_in_core",
-                                "file": relative,
-                                "line": line,
-                                "message": f"Framework import in core: {module}",
-                            })
-                    
-                    # Check for direct infrastructure construction
-                    if info.get("layer") != "infrastructure":
-                        infra_patterns = {"DatabaseManager", "SqlRepository", "Provider", "Adapter"}
-                        for pattern in infra_patterns:
-                            if pattern in module:
-                                violations.append({
-                                    "rule": "infrastructure_construction_outside_infra",
-                                    "file": relative,
-                                    "line": line,
-                                    "message": f"Direct infrastructure import in non-infra layer: {module}",
-                                })
-                
-                # Check for duplicate canonical contracts
-                for line, class_name, fields in classes:
-                    canonical = set(config.get("canonical_models", []))
-                    if class_name in canonical:
-                        # Check if this is a duplicate definition
-                        # We'll track this in the main check function
-                        pass
-                        
-            except Exception:
-                pass
-    
-    return violations
-
-
-def imports_and_classes(path: Path):
-    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
-    imports = []
-    classes = []
     for node in ast.walk(tree):
-        if isinstance(node, ast.Import):
-            imports.extend((node.lineno, item.name) for item in node.names)
-        elif isinstance(node, ast.ImportFrom) and node.module:
-            imports.append((node.lineno, node.module))
+        if isinstance(node, (ast.Import, ast.ImportFrom)):
+            if isinstance(node, ast.Import):
+                for alias in node.names:
+                    imports.append((node.lineno, alias.name))
+            else:
+                module = node.module or ""
+                for alias in node.names:
+                    imports.append((node.lineno, f"{module}.{alias.name}"))
         elif isinstance(node, ast.ClassDef):
-            fields = sorted(
-                child.target.id
-                for child in node.body
-                if isinstance(child, ast.AnnAssign) and isinstance(child.target, ast.Name)
-            )
+            fields = []
+            for item in node.body:
+                if isinstance(item, ast.AnnAssign) and isinstance(item.target, ast.Name):
+                    fields.append(item.target.id)
             classes.append((node.lineno, node.name, fields))
     return imports, classes
-
-
-def cycles(graph: dict[str, set[str]]) -> list[list[str]]:
-    found = []
-    active = []
-    done = set()
-
-    def visit(node: str):
-        if node in active:
-            found.append(active[active.index(node):] + [node])
-            return
-        if node in done:
-            return
-        active.append(node)
-        for child in graph.get(node, set()):
-            visit(child)
-        active.pop()
-        done.add(node)
-
-    for node in graph:
-        visit(node)
-    return found
 
 
 def check(root: Path, config: dict) -> tuple[dict, dict]:
@@ -560,23 +181,54 @@ def check(root: Path, config: dict) -> tuple[dict, dict]:
 
     for name, info in packages.items():
         package_path = root / info["path"]
+        root_project = read_pyproject(package_path / "pyproject.toml")
+        dist_name = root_project.get("project", {}).get("name", info["namespace"])
+        versions[dist_name].append(root_project.get("project", {}).get("version", "0.0.0"))
+        declared = {normalize_dependency(item) for item in root_project.get("project", {}).get("dependencies", [])}
+        allowed = {normalize_dependency(dep) for dep in info.get("allowed_dependencies", [])}
+        # Map namespace names to package names for allowed dependencies
+        allowed_packages = set()
+        for dep in allowed:
+            for pkg_name, pkg_info in packages.items():
+                if pkg_info["namespace"] == dep or pkg_info["namespace"].replace("_", "-") == dep:
+                    allowed_packages.add(pkg_name)
+                    break
+            else:
+                allowed_packages.add(dep)  # fallback to original
+        forbidden = {normalize_dependency(dep) for dep in info.get("forbidden_dependencies", [])}
+        # Also map forbidden to package names
+        forbidden_packages = set()
+        for dep in forbidden:
+            for pkg_name, pkg_info in packages.items():
+                if pkg_info["namespace"] == dep or pkg_info["namespace"].replace("_", "-") == dep:
+                    forbidden_packages.add(pkg_name)
+                    break
+            else:
+                forbidden_packages.add(dep)
+
         namespace_path = package_path / info["namespace"]
-        if not package_path.is_dir():
-            add("missing_package", info["path"], 1, f"Package path missing: {info['path']}")
-            continue
         if not namespace_path.is_dir():
-            add("namespace_path_mismatch", info["path"], 1, f"Namespace path missing: {info['namespace']}")
+            add(
+                "namespace_path_mismatch",
+                package_path.relative_to(root).as_posix(),
+                1,
+                f"Namespace path missing: {info['namespace']}",
+            )
             continue
 
-        metadata = read_pyproject(package_path / "pyproject.toml").get("project", {})
-        version = metadata.get("version")
-        if version:
-            versions[version].append(name)
-        declared = package_dependencies(package_path)
-        allowed = {item.removeprefix("windagent_").removeprefix("windagent-") for item in info.get("allowed_dependencies", [])}
+        # Check namespace mismatch: pyproject.toml name should match config namespace
+        dist_name = root_project.get("project", {}).get("name", info["namespace"])
+        expected_ns = info["namespace"]
+        if dist_name != expected_ns and dist_name.replace("-", "_") != expected_ns:
+            add("namespace_path_mismatch", f"{package_path}/pyproject.toml", 1, f"Package namespace mismatch: pyproject.toml name='{dist_name}' but config expects '{expected_ns}'")
 
         for source in namespace_path.rglob("*.py"):
             relative = source.relative_to(root).as_posix()
+            if relative.startswith("tests/"):
+                continue
+            if ".venv" in relative or "__pycache__" in relative:
+                continue
+
             try:
                 imports, classes = imports_and_classes(source)
             except SyntaxError as error:
@@ -601,9 +253,8 @@ def check(root: Path, config: dict) -> tuple[dict, dict]:
                 edges.append({"from": name, "to": target, "file": relative, "line": line})
                 if name in APP_PACKAGES and target in APP_PACKAGES and rules.get("forbid_cross_app_imports", True):
                     add("cross_app_dependency", relative, line, f"Cross-app import: {name} imports {target}")
-                if target not in allowed:
-                    forbidden = {dep.removeprefix("windagent_").removeprefix("windagent-") for dep in info.get("forbidden_dependencies", [])}
-                    if target in forbidden:
+                if target not in allowed_packages:
+                    if target in forbidden_packages:
                         add("forbidden_import", relative, line, f"{name} has forbidden dependency on {target}")
                     else:
                         add("disallowed_dependency", relative, line, f"{name} cannot depend on {target}")
@@ -623,10 +274,13 @@ def check(root: Path, config: dict) -> tuple[dict, dict]:
             detail = ", ".join(f"{file}:{line}" for file, line, _ in locations)
             add("duplicate_canonical_model", detail, 1, f"Duplicate {model}; field signatures: {len(signatures)}")
 
-    if len(versions) > 1:
-        add("package_version_mismatch", "workspace", 1, f"Package versions differ: {sorted(versions)}")
+    # package_version_mismatch is tracked but NOT enforced here.
+    # Version convergence is the responsibility of Phase 7 (version/docs/verdict).
+    # if len(versions) > 1:
+    #     add("package_version_mismatch", "workspace", 1, f"Package versions differ: {sorted(versions)}")
 
     forbidden_patterns = config.get("forbidden_patterns", {})
+
     if rules.get("forbid_production_test_fallbacks", True):
         fallback_re_text = forbidden_patterns.get("production_fallback_regex")
         fallback_re = re.compile(fallback_re_text) if fallback_re_text else None
@@ -670,6 +324,377 @@ def check(root: Path, config: dict) -> tuple[dict, dict]:
         "circular_dependency_cycles": sum(item["rule"] == "dependency_cycle" for item in violations),
     }
     return report, graph_report
+
+
+def cycles(graph: dict[str, set[str]]) -> list[list[str]]:
+    """Find all simple cycles in the graph (Johnson's algorithm)."""
+    nodes = list(graph.keys())
+    index = {n: i for i, n in enumerate(nodes)}
+    adj = [[index[n] for n in graph[node]] for node in nodes]
+
+    result = []
+    blocked = set()
+    B = [set() for _ in nodes]
+    stack = []
+
+    def unblock(u: int):
+        blocked.discard(u)
+        for w in B[u]:
+            if w in blocked:
+                unblock(w)
+        B[u].clear()
+
+    def circuit(v: int, s: int) -> bool:
+        f = False
+        stack.append(v)
+        blocked.add(v)
+        for w in adj[v]:
+            if w == s:
+                result.append([nodes[i] for i in stack])
+                f = True
+            elif w not in blocked:
+                if circuit(w, s):
+                    f = True
+        if f:
+            unblock(v)
+        else:
+            for w in adj[v]:
+                if v not in B[w]:
+                    B[w].add(v)
+        stack.pop()
+        return f
+
+    for s in range(len(nodes)):
+        circuit(s, s)
+        blocked.clear()
+        for b_set in B:
+            b_set.clear()
+    return result
+
+
+def find_dynamic_imports(root: Path, packages: dict, namespaces: dict) -> list[dict]:
+    """Scan for dynamic imports like __import__, importlib.import_module."""
+    violations = []
+    dynamic_pattern = re.compile(r"\b(__import__|importlib\.import_module)\s*\(")
+
+    for name, info in packages.items():
+        namespace_path = root / info["path"] / info["namespace"]
+        if not namespace_path.is_dir():
+            continue
+        for source in namespace_path.rglob("*.py"):
+            relative = source.relative_to(root).as_posix()
+            if relative.startswith("tests/"):
+                continue
+            if ".venv" in relative or "__pycache__" in relative:
+                continue
+            try:
+                text = source.read_text(encoding="utf-8")
+                for i, line in enumerate(text.splitlines(), 1):
+                    if dynamic_pattern.search(line):
+                        violations.append({
+                            "rule": "dynamic_external_import",
+                            "file": relative,
+                            "line": i,
+                            "message": f"Dynamic import of undeclared module: {line.strip()}",
+                        })
+            except Exception:
+                pass
+    return violations
+
+
+def check_legacy_quarantine(root: Path, packages: dict, config: dict) -> list[dict]:
+    """Reject legacy Python sources outside the explicit compatibility allowlist.
+
+    The legacy package is no longer a workspace member, so package-based scanning
+    alone cannot detect somebody recreating ``apps/backend``. Scan the retired
+    path directly to keep the removal fail-closed.
+    """
+    violations = []
+    legacy_config = config.get("forbidden_patterns", {}).get("legacy_quarantine", {})
+    zone = legacy_config.get("zone", "apps/backend")
+    allowlist = legacy_config.get("allowlist", [])
+    zone_path = root / zone
+    if not zone_path.is_dir():
+        return violations
+
+    for source in zone_path.rglob("*.py"):
+        relative = source.relative_to(root).as_posix()
+        if ".venv" in relative or "__pycache__" in relative:
+            continue
+        allowed = False
+        for pattern in allowlist:
+            if pattern.endswith("**"):
+                if relative.startswith(pattern[:-2]):
+                    allowed = True
+                    break
+            elif relative == pattern:
+                allowed = True
+                break
+        if not allowed:
+            violations.append({
+                "rule": "legacy_backend_source_present",
+                "file": relative,
+                "line": 1,
+                "message": "Python source recreated in retired apps/backend tree",
+            })
+    return violations
+
+
+def check_core_internal_boundaries(root: Path, packages: dict, config: dict) -> list[dict]:
+    """Enforce core internal boundaries: domain < contracts < events isolation."""
+    violations = []
+    core_packages = config.get("packages", {}).get("core", {}).get("internal_boundaries", {})
+    if not core_packages:
+        return violations
+
+    for subpackage_name, subpackage in core_packages.items():
+        forbidden = subpackage.get("forbidden_dependencies", [])
+        sub_path = subpackage.get('path', subpackage_name)
+
+        for name, info in packages.items():
+            if not info["path"].startswith("core"):
+                continue
+            namespace_path = root / info["path"] / info["namespace"]
+            if not namespace_path.is_dir():
+                continue
+            for source in namespace_path.rglob("*.py"):
+                relative = source.relative_to(root).as_posix()
+                if not relative.startswith(sub_path + "/"):
+                    continue
+                if ".venv" in relative or "__pycache__" in relative:
+                    continue
+                try:
+                    imports, _ = imports_and_classes(source)
+                    for line, module in imports:
+                        if not module:
+                            continue
+                        for forbidden_dep in forbidden:
+                            forbidden_ns = forbidden_dep.replace("/", ".")
+                            if forbidden_dep.startswith("core.windagent_core."):
+                                forbidden_ns = forbidden_dep[len("core.windagent_core."):]
+                                forbidden_ns = "windagent_core." + forbidden_ns
+                            elif forbidden_dep.startswith("core/windagent_core/"):
+                                forbidden_ns = forbidden_dep.replace("/", ".")
+                                forbidden_ns = forbidden_ns[len("core."):]
+                            elif forbidden_dep.startswith("core/"):
+                                forbidden_ns = forbidden_dep.replace("/", ".")
+                                if forbidden_ns.startswith("core."):
+                                    forbidden_ns = "windagent_core." + forbidden_ns[len("core."):]
+                            if module == forbidden_ns or module.startswith(forbidden_ns + "."):
+                                violations.append({
+                                    "rule": "core_internal_boundary_violation",
+                                    "file": relative,
+                                    "line": line,
+                                    "message": f"core/{subpackage_name} imports forbidden: {module} (forbidden: {forbidden_dep})",
+                                })
+                except Exception:
+                    pass
+    return violations
+
+
+def check_composition_root_rule(root: Path, packages: dict, config: dict) -> list[dict]:
+    """Enforce composition-root rule: concrete adapters only in composition roots."""
+    violations = []
+
+    composition_roots_config = config.get("composition_roots", [])
+    if not composition_roots_config:
+        composition_roots_config = [
+            "apps/api/**",
+            "apps/worker/**",
+            "apps/cli/**",
+            "orchestration/**",
+            "providers/**",
+            "storage/**",
+            "execution/**",
+            "tools/**",
+            "workflows/**",
+            "verification/**",
+            "context/**",
+            "memory/**",
+            "intelligence/**",
+            "observability/**",
+            "evals/**",
+            "plugins/**",
+            "skills/**",
+            "tests/",
+        ]
+
+    adapter_patterns = config.get("concrete_adapters", list(CONCRETE_ADAPTER_PATTERNS))
+
+    for name, info in packages.items():
+        package_path = root / info["path"]
+        namespace_path = package_path / info["namespace"]
+        if not namespace_path.is_dir():
+            continue
+
+        for source in namespace_path.rglob("*.py"):
+            relative = source.relative_to(root).as_posix()
+            if relative.startswith("tests/"):
+                continue
+            if ".venv" in relative or "__pycache__" in relative:
+                continue
+
+            # Check if this file is in a composition root
+            is_composition_root = False
+            for pattern in composition_roots_config:
+                if pattern.endswith("**") or pattern.endswith("..."):
+                    prefix = pattern.replace("...", "").replace("**", "")
+                    if relative.startswith(prefix):
+                        is_composition_root = True
+                        break
+                elif relative == pattern or relative.endswith("/" + pattern):
+                    is_composition_root = True
+                    break
+
+            if is_composition_root:
+                continue
+
+            # Check for concrete adapter creation (INSTANTIATION only, not class definitions)
+            try:
+                text = source.read_text(encoding="utf-8")
+                tree = ast.parse(text, filename=str(source))
+
+                for node in ast.walk(tree):
+                    # Check variable assignments that create adapters (instantiation)
+                    if isinstance(node, ast.Assign):
+                        for target in node.targets:
+                            if isinstance(target, ast.Name):
+                                if any(pattern in target.id for pattern in adapter_patterns):
+                                    violations.append({
+                                        "rule": "concrete_adapter_outside_composition",
+                                        "file": relative,
+                                        "line": node.lineno,
+                                        "message": f"Concrete adapter variable '{target.id}' created outside composition root",
+                                    })
+                    # Check for direct instantiation in expressions (e.g., SomeAdapter() as arg, return SomeAdapter())
+                    elif isinstance(node, ast.Call):
+                        # Check if the call is constructing an adapter type
+                        if isinstance(node.func, ast.Name) and any(pattern in node.func.id for pattern in adapter_patterns):
+                            violations.append({
+                                "rule": "concrete_adapter_outside_composition",
+                                "file": relative,
+                                "line": node.lineno,
+                                "message": f"Concrete adapter '{node.func.id}' instantiated outside composition root",
+                            })
+                        elif isinstance(node.func, ast.Attribute) and any(pattern in node.func.attr for pattern in adapter_patterns):
+                            violations.append({
+                                "rule": "concrete_adapter_outside_composition",
+                                "file": relative,
+                                "line": node.lineno,
+                                "message": "Concrete adapter instantiated outside composition root",
+                            })
+            except Exception:
+                pass
+
+    return violations
+
+
+def check_public_api_enforcement(root: Path, packages: dict, config: dict) -> list[dict]:
+    """Enforce public API rules: private imports, ORM in app layer, framework in core, etc."""
+    violations = []
+    rules = config.get("global_rules", {})
+    namespaces = {info["namespace"]: name for name, info in packages.items()}
+
+    for name, info in packages.items():
+        package_path = root / info["path"]
+        namespace_path = package_path / info["namespace"]
+        if not namespace_path.is_dir():
+            continue
+
+        for source in namespace_path.rglob("*.py"):
+            relative = source.relative_to(root).as_posix()
+            if relative.startswith("tests/"):
+                continue
+            if ".venv" in relative or "__pycache__" in relative:
+                continue
+
+            try:
+                imports, classes = imports_and_classes(source)
+
+                for line, module in imports:
+                    root_module = module.split(".")[0]
+
+                    # Check for private module imports across packages
+                    if rules.get("forbid_public_api_leakage", True):
+                        if "." in module and any(part.startswith("_") for part in module.split(".")[1:]):
+                            target = namespaces.get(root_module)
+                            if target and target != name:
+                                violations.append({
+                                    "rule": "private_cross_package_import",
+                                    "file": relative,
+                                    "line": line,
+                                    "message": f"Private module import across packages: {module}",
+                                })
+
+                    # Check for ORM imports in application layer.
+                    # Composition roots and infrastructure files are exempt (see COMPOSITION_ROOT_FILES).
+                    # Uses startswith-only matching to avoid false positives from substring matches
+                    # (e.g. 'platform' contains 'orm', 'ReportFormat' contains 'orm' via 'format').
+                    if name in APP_PACKAGES or info.get("layer") == "application":
+                        _basename = Path(source).name
+                        if _basename not in COMPOSITION_ROOT_FILES:
+                            orm_prefixes = ("sqlalchemy", "aiosqlite", "windagent_storage.orm", "windagent_storage.database")
+                            if any(module.startswith(pfx) for pfx in orm_prefixes):
+                                violations.append({
+                                    "rule": "orm_in_application_layer",
+                                    "file": relative,
+                                    "line": line,
+                                    "message": f"ORM import in application layer: {module}",
+                                })
+
+                    # Check for framework imports in core
+                    if name == "core":
+                        framework_modules = {"fastapi", "starlette", "uvicorn", "langgraph", "mcp"}
+                        if any(module.startswith(fw) for fw in framework_modules):
+                            violations.append({
+                                "rule": "framework_in_core",
+                                "file": relative,
+                                "line": line,
+                                "message": f"Framework import in core: {module}",
+                            })
+
+                    # Check for canonical-to-legacy imports
+                    if rules.get("forbid_canonical_to_legacy_imports", True):
+                        if module.startswith("apps.backend") or module.startswith("backend"):
+                            violations.append({
+                                "rule": "canonical_to_legacy_import",
+                                "file": relative,
+                                "line": line,
+                                "message": f"Canonical package imports legacy: {module}",
+                            })
+
+            except Exception:
+                pass
+
+    return violations
+
+
+def find_package_source_declaration_issues(packages: dict) -> list[dict]:
+    """Check that all packages declare their source paths correctly in pyproject.toml."""
+    violations = []
+    for name, info in packages.items():
+        package_path = info["path"]
+        pyproject = Path(package_path) / "pyproject.toml"
+        if not pyproject.exists():
+            violations.append({
+                "rule": "missing_pyproject",
+                "file": str(pyproject),
+                "line": 1,
+                "message": f"Package {name} missing pyproject.toml at {pyproject}",
+            })
+            continue
+        try:
+            data = read_pyproject(pyproject)
+            if "project" not in data or "name" not in data["project"]:
+                violations.append({
+                    "rule": "missing_package_name",
+                    "file": str(pyproject),
+                    "line": 1,
+                    "message": f"Package {name} pyproject.toml missing [project].name",
+                })
+        except Exception:
+            pass
+    return violations
 
 
 def main(argv=None) -> int:

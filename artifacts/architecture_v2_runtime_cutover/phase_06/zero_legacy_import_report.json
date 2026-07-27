@@ -1,0 +1,39 @@
+{
+  "phase": "phase_06",
+  "generated_at": "2026-07-28T01:26:10+07:00",
+  "status": "PASS",
+  "gate": "ZERO_PRODUCTION_LEGACY_IMPORTS",
+  "production_import_violations": 0,
+  "legacy_python_sources_present": 0,
+  "client_v1_request_paths": 0,
+  "scope": [
+    "apps/api",
+    "apps/worker",
+    "apps/cli",
+    "core",
+    "execution",
+    "orchestration",
+    "providers",
+    "storage",
+    "observability",
+    "policy",
+    "tools",
+    "workflows"
+  ],
+  "methods": [
+    "AST import scan for apps.backend and backend namespaces",
+    "architecture dependency and retired-tree checker",
+    "desktop and web source scan for /api/v1 request paths",
+    "physical source-tree check excluding local caches and virtual environments"
+  ],
+  "evidence": [
+    "tests/unit/api/test_phase27_legacy_evacuation.py",
+    "configs/architecture/scaffold_v2.yaml",
+    "scripts/check_architecture_imports.py"
+  ],
+  "intentional_non_runtime_references": [
+    "The canonical API V1 tombstone route.",
+    "Architecture policy/checker rules that prevent legacy source recreation.",
+    "Tests and Phase 6 artifacts describing the removed boundary."
+  ]
+}

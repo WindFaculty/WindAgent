@@ -15,7 +15,7 @@ Phase 4 implementation is complete for repository-wide architecture enforcement.
 - Dynamic import scanning implemented
 - Public API enforcement rules added
 - Composition root rule implemented
-- Negative fixture test suite created
+- Negative fixture test suite created - **ALL 12 TESTS PASS**
 
 Integration testing reveals existing codebase violations that need resolution before the gate can pass.
 
@@ -82,7 +82,7 @@ Integration testing reveals existing codebase violations that need resolution be
 - [x] Domain importing config fixture
 - [x] Application constructing SQL adapter fixture
 - [x] Legacy main delegation fixture
-- [ ] Negative fixture tests need to be run
+- [x] **All 12 negative fixture tests PASS**
 
 ## Current Issues
 
@@ -90,13 +90,16 @@ Integration testing reveals existing codebase violations that need resolution be
 2. **cli dependencies**: cli imports plugins and skills but they're not in allowed_dependencies
 3. **Backend compatibility**: compatibility_shim.py imports from api, which violates backend's allowed_dependencies
 4. **Namespace issue**: backend package uses empty namespace due to legacy structure
+5. **Core package violation**: concrete adapters created outside composition root (domain types, contracts, etc.)
+6. **Production packages scanning .venv**: Checker needs to exclude apps/backend/.venv directory
+7. **ORM in application layer**: Several application packages import sqlalchemy
 
 ## Artifacts Generated
 
 1. `architecture_policy_v3.yaml` - Updated policy with all Phase 4 rules
 2. `risk_register.md` - Architecture-specific risk register
 3. `phase_verdict.md` - This file
-4. `test_phase04_negative_fixtures.py` - Negative fixture test suite
+4. `test_phase04_negative_fixtures.py` - Negative fixture test suite (12 tests, all passing)
 
 ## Acceptance Conditions
 
@@ -105,8 +108,8 @@ To pass Phase 4 gate, ALL of the following must be true:
 1. [x] Plugins and skills are fully scanned and declared
 2. [x] Legacy quarantine is enforced with allowlist (policy exists, enforcement needs refinement)
 3. [x] Core internal boundaries are enforced (policy exists, enforcement implemented)
-4. [ ] Negative fixtures all make checker fail (tests need to be run)
-5. [ ] Full repository production scan has zero violations (currently 419 violations)
+4. [x] Negative fixtures all make checker fail (all 12 tests pass)
+5. [ ] Full repository production scan has zero violations (currently 137 violations)
 
 ## Next Steps
 
@@ -117,9 +120,9 @@ To pass Phase 4 gate, ALL of the following must be true:
 4. Refine legacy quarantine to allow imports in allowlisted files
 
 ### Medium Priority
-5. Run negative fixture tests and verify they all fail correctly
-6. Fix undeclared workspace dependencies in backend
-7. Resolve cross-package dependency violations
+5. Fix undeclared workspace dependencies in backend
+6. Resolve cross-package dependency violations
+7. Add legacy_source declarations for plugins and skills packages
 
 ### Low Priority
 8. Generate all report artifacts (import_graph, dependency_report, etc.)
