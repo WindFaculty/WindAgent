@@ -2,6 +2,20 @@
 
 **VERDICT: PHASE_7_CODE_CONVERGED_VERIFICATION_BLOCKED**
 
+## Authoritative Metadata
+
+```yaml
+implementation_status: substantially_complete
+verification_status: blocked
+promotion_status: not_ready
+blocking_reasons:
+  - artifact_protocol_not_converged
+  - evidence_publish_not_fail_closed
+  - cli_runtime_claims_not_truthful
+  - ci_workflow_invalid
+  - no_ci_run_on_candidate_sha
+```
+
 ## Summary
 
 Phase 7 code convergence achieved but verification blocked by artifact protocol defects.
