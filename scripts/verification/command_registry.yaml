@@ -1,0 +1,230 @@
+# Command Registry (Phase 2)
+# Canonical command definitions with shell specification
+
+commands:
+  # Version consistency check
+  version_check:
+    shell: process
+    command:
+      - uv
+      - run
+      - python
+      - scripts/check_version_consistency.py
+    expected_exit_codes: [0]
+    timeout: 60
+
+  # Architecture scaffold check
+  scaffold_check:
+    shell: process
+    command:
+      - uv
+      - run
+      - python
+      - scripts/scaffold_architecture_v2.py
+      - --check
+    expected_exit_codes: [0]
+    timeout: 60
+
+  # Architecture imports check
+  arch_imports_check:
+    shell: process
+    command:
+      - uv
+      - run
+      - python
+      - scripts/check_architecture_imports.py
+    expected_exit_codes: [0]
+    timeout: 60
+
+  # No legacy orchestration check
+  no_legacy_check:
+    shell: process
+    command:
+      - uv
+      - run
+      - python
+      - scripts/check_no_legacy_orchestration.py
+    expected_exit_codes: [0]
+    timeout: 60
+
+  # Full pytest suite
+  full_pytest:
+    shell: process
+    command:
+      - uv
+      - run
+      - pytest
+      - -q
+    expected_exit_codes: [0]
+    timeout: 300
+
+  # Unit tests only
+  unit_tests:
+    shell: process
+    command:
+      - uv
+      - run
+      - pytest
+      - tests/unit
+      - -q
+    expected_exit_codes: [0]
+    timeout: 180
+
+  # Integration tests
+  integration_tests:
+    shell: process
+    command:
+      - uv
+      - run
+      - pytest
+      - tests/integration
+      - -q
+    expected_exit_codes: [0]
+    timeout: 180
+
+  # Architecture tests
+  architecture_tests:
+    shell: process
+    command:
+      - uv
+      - run
+      - pytest
+      - tests/architecture
+      - -q
+    expected_exit_codes: [0]
+    timeout: 180
+
+  # Artifact schema validation
+  artifact_schema_validate:
+    shell: process
+    command:
+      - uv
+      - run
+      - python
+      - scripts/validate_artifact_schema.py
+      - --directory
+      - artifacts/architecture_v2_production_hardening/phase_07
+      - --recursive
+      - --verify-hashes
+    expected_exit_codes: [0]
+    timeout: 120
+
+  # CLI doctor
+  cli_doctor:
+    shell: process
+    command:
+      - uv
+      - run
+      - python
+      - -m
+      - windagent_cli
+      - doctor
+    expected_exit_codes: [0]
+    timeout: 30
+
+  # CLI architecture check
+  cli_arch_check:
+    shell: process
+    command:
+      - uv
+      - run
+      - python
+      - -m
+      - windagent_cli
+      - architecture-check
+    expected_exit_codes: [0]
+    timeout: 60
+
+  # Web tests (if available)
+  web_test:
+    shell: process
+    command:
+      - npm
+      - test
+      - --prefix
+      - apps/web
+    expected_exit_codes: [0]
+    timeout: 120
+
+  # Web build
+  web_build:
+    shell: process
+    command:
+      - npm
+      - run
+      - build
+      - --prefix
+      - apps/web
+    expected_exit_codes: [0]
+    timeout: 120
+
+  # Desktop tests (if available)
+  desktop_test:
+    shell: process
+    command:
+      - npm
+      - test
+      - --prefix
+      - apps/desktop
+    expected_exit_codes: [0]
+    timeout: 120
+
+  # Desktop build
+  desktop_build:
+    shell: process
+    command:
+      - npm
+      - run
+      - build
+      - --prefix
+      - apps/desktop
+    expected_exit_codes: [0]
+    timeout: 120
+
+  # Database migration (SQLite)
+  migrate_sqlite:
+    shell: process
+    command:
+      - uv
+      - run
+      - python
+      - scripts/migrate_database_schema.py
+      - --sqlite
+    expected_exit_codes: [0]
+    timeout: 60
+
+  # Database migration (PostgreSQL)
+  migrate_postgres:
+    shell: process
+    command:
+      - uv
+      - run
+      - python
+      - scripts/migrate_database_schema.py
+      - --postgres
+    expected_exit_codes: [0]
+    timeout: 60
+
+  # Runtime smoke tests
+  runtime_smoke:
+    shell: process
+    command:
+      - uv
+      - run
+      - pytest
+      - tests/unit/core/test_phase7_version_authority.py
+      - -v
+    expected_exit_codes: [0]
+    timeout: 60
+
+  # Negative injection: package version mismatch
+  neg_version_mismatch:
+    shell: process
+    command:
+      - uv
+      - run
+      - pytest
+      - tests/architecture/test_phase04_negative_fixtures.py
+      - -v
+    expected_exit_codes: [1]  # Expected to fail
+    timeout: 60
