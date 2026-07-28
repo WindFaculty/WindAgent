@@ -28,6 +28,7 @@ from jsonschema import validate, ValidationError
 
 
 SCHEMA_PATH = Path(__file__).resolve().parent / "schemas" / "artifact_protocol_v1.schema.json"
+RECEIPT_SCHEMA_PATH = Path(__file__).resolve().parent / "schemas" / "command_receipt_v1.schema.json"
 
 VALID_VERDICTS = {"PASS", "FAIL", "BLOCKED", "PARTIAL"}
 VALID_SEVERITIES = {"CRITICAL", "HIGH", "MEDIUM", "LOW"}
@@ -40,6 +41,31 @@ def load_schema() -> Dict[str, Any]:
     """Load the artifact JSON schema."""
     with open(SCHEMA_PATH) as f:
         return json.load(f)
+
+
+def load_receipt_schema() -> Dict[str, Any]:
+    """Load the command receipt JSON schema."""
+    with open(RECEIPT_SCHEMA_PATH) as f:
+        return json.load(f)
+
+
+def is_receipt_file(artifact_path: Path) -> bool:
+    """Check if a file is a command receipt (not a full artifact)."""
+    # Receipts are in receipts/ subdirectory
+    if "receipts" in artifact_path.parts:
+        return True
+    # Or check content for command receipt structure
+    try:
+        with open(artifact_path) as f:
+            data = json.load(f)
+        if isinstance(data, dict):
+            # Receipt has command_id but not artifact fields
+            has_artifact_fields = any(k in data for k in ["commands", "artifact_hashes", "verdict", "failures", "warnings"])
+            if not has_artifact_fields and "command_id" in data:
+                return True
+    except Exception:
+        pass
+    return False
 
 
 def compute_file_hash(filepath: Path) -> str:
@@ -89,6 +115,81 @@ def validate_artifact(
     if run_hashes and artifact_dir:
         hash_errors = _verify_artifact_hashes(artifact, artifact_dir)
         errors.extend(hash_errors)
+
+    if fail_on_warning and warnings:
+        errors.extend([f"WARNING (treated as error): {w}" for w in warnings])
+
+    return errors, warnings
+
+
+def validate_receipt(
+    receipt_path: Path,
+    schema: Dict[str, Any],
+    run_schema: bool = True,
+    fail_on_warning: bool = False,
+) -> Tuple[List[str], List[str]]:
+    """Validate a single command receipt file against schema.
+    Returns (errors, warnings)."""
+    errors = []
+    warnings = []
+
+    try:
+        with open(receipt_path) as f:
+            receipt = json.load(f)
+    except json.JSONDecodeError as e:
+        return [f"Invalid JSON: {e}"], []
+
+    # Schema validation only
+    if run_schema:
+        try:
+            validate(instance=receipt, schema=schema)
+        except ValidationError as e:
+            errors.append(f"Schema validation failed: {e.message}")
+
+    # Receipt semantic validations (minimal)
+    if "command_id" in receipt:
+        cmd_id = receipt.get("command_id", "")
+        if cmd_id and not re.match(VALID_COMMAND_ID_PATTERN, cmd_id):
+            errors.append(f"command_id must match {VALID_COMMAND_ID_PATTERN}, got '{cmd_id}'")
+
+    # Validate timestamps
+    for ts_field in ["started_at", "finished_at"]:
+        ts = receipt.get(ts_field, "")
+        try:
+            datetime.fromisoformat(ts.replace("Z", "+00:00"))
+        except ValueError:
+            errors.append(f"{ts_field} must be valid ISO8601 datetime")
+
+    # Validate duration_ms
+    duration = receipt.get("duration_ms", -1)
+    if not isinstance(duration, int) or duration < 0:
+        errors.append("duration_ms must be non-negative integer")
+
+    # Validate exit_code
+    exit_code = receipt.get("exit_code", None)
+    if not isinstance(exit_code, int):
+        errors.append("exit_code must be integer")
+
+    # Validate result
+    result = receipt.get("result", "")
+    if result not in VALID_RESULTS:
+        errors.append(f"result must be one of {VALID_RESULTS}, got '{result}'")
+
+    # Validate output_sha256
+    out_hash = receipt.get("output_sha256", "")
+    if out_hash and (len(out_hash) != 64 or not all(c in "0123456789abcdef" for c in out_hash)):
+        errors.append("output_sha256 must be 64 lowercase hex chars")
+
+    # Validate environment
+    env = receipt.get("environment", {})
+    required_env = ["os", "python", "uv", "git_sha"]
+    for field in required_env:
+        if field not in env:
+            errors.append(f"environment missing required field: {field}")
+    if "git_sha" in env:
+        gs = env["git_sha"]
+        if len(gs) != 40 or not all(c in "0123456789abcdef" for c in gs):
+            errors.append("environment.git_sha must be 40 lowercase hex chars")
 
     if fail_on_warning and warnings:
         errors.extend([f"WARNING (treated as error): {w}" for w in warnings])
@@ -449,22 +550,39 @@ Examples:
     # Resolve repo root for git identity checks (only when explicitly provided via --repo-root)
     repo_root = Path(args.repo_root).resolve() if args.repo_root else None
 
+    # Load receipt schema
+    receipt_schema = load_receipt_schema()
+
     for artifact_path in files_to_validate:
         if not artifact_path.exists():
             all_errors.append(f"File not found: {artifact_path}")
             continue
 
-        artifact_dir = artifact_path.parent if run_hashes else None
-        errors, warnings = validate_artifact(
-            artifact_path,
-            schema,
-            run_schema=run_schema,
-            run_semantic=run_semantic,
-            run_hashes=run_hashes,
-            fail_on_warning=args.fail_on_warning,
-            artifact_dir=artifact_dir,
-            repo_root=repo_root,
-        )
+        # Determine if this is a receipt or full artifact
+        is_receipt = is_receipt_file(artifact_path)
+
+        if is_receipt:
+            schema_to_use = receipt_schema
+            artifact_dir = None  # Receipts don't have artifact_hashes to verify
+            errors, warnings = validate_receipt(
+                artifact_path,
+                schema_to_use,
+                run_schema=run_schema,
+                fail_on_warning=args.fail_on_warning,
+            )
+        else:
+            schema_to_use = schema
+            artifact_dir = artifact_path.parent if run_hashes else None
+            errors, warnings = validate_artifact(
+                artifact_path,
+                schema_to_use,
+                run_schema=run_schema,
+                run_semantic=run_semantic,
+                run_hashes=run_hashes,
+                fail_on_warning=args.fail_on_warning,
+                artifact_dir=artifact_dir,
+                repo_root=repo_root,
+            )
 
         result = {
             "file": str(artifact_path),
