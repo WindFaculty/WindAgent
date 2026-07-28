@@ -314,38 +314,102 @@ def run_eval(suite: str = "all", json_mode: bool = False) -> int:
 def architecture_check(json_mode: bool = False) -> int:
     """Verifies architecture integrity and boundary rules."""
     import subprocess
-    # Find repository root by looking for pyproject.toml
-    root_dir = Path(__file__).resolve().parent
-    while root_dir != root_dir.parent:
-        if (root_dir / "pyproject.toml").exists():
-            break
-        root_dir = root_dir.parent
+    from windagent_core.config.repository_root import find_repository_root, is_repository_root
+    
+    # Use shared repository root locator
+    try:
+        root_dir = find_repository_root()
+    except FileNotFoundError as e:
+        if json_mode:
+            print(json.dumps({
+                "repository_root": None,
+                "checks": [],
+                "all_required_checks_executed": False,
+                "verdict": "ERROR",
+                "error": str(e)
+            }))
+        else:
+            print(f"ERROR: {e}")
+        return 2  # repository root not found
+    except Exception as e:
+        if json_mode:
+            print(json.dumps({
+                "repository_root": None,
+                "checks": [],
+                "all_required_checks_executed": False,
+                "verdict": "ERROR",
+                "error": f"Root detection failed: {e}"
+            }))
+        else:
+            print(f"ERROR: Root detection failed: {e}")
+        return 3  # required checker missing
+    
     checker_script = root_dir / "scripts" / "check_architecture_imports.py"
     scaffold_script = root_dir / "scripts" / "scaffold_architecture_v2.py"
 
-    passed = True
+    executed_checks = []
+    all_passed = True
+    
     if scaffold_script.exists():
-        res1 = subprocess.run([sys.executable, str(scaffold_script), "--check"], capture_output=True, text=True)
+        res1 = subprocess.run([sys.executable, str(scaffold_script), "--check"], capture_output=True, text=True, timeout=60, cwd=str(root_dir))
+        executed_checks.append({
+            "name": "scaffold",
+            "executed": True,
+            "exit_code": res1.returncode,
+            "stdout_tail": res1.stdout[-500:] if res1.stdout else "",
+            "stderr_tail": res1.stderr[-500:] if res1.stderr else ""
+        })
         if res1.returncode != 0:
-            passed = False
+            all_passed = False
+    else:
+        executed_checks.append({
+            "name": "scaffold",
+            "executed": False,
+            "exit_code": 3,
+            "error": "scaffold_architecture_v2.py not found"
+        })
+        all_passed = False
 
     if checker_script.exists():
-        res2 = subprocess.run([sys.executable, str(checker_script)], capture_output=True, text=True)
+        res2 = subprocess.run([sys.executable, str(checker_script)], capture_output=True, text=True, timeout=60, cwd=str(root_dir))
+        executed_checks.append({
+            "name": "import_boundaries",
+            "executed": True,
+            "exit_code": res2.returncode,
+            "stdout_tail": res2.stdout[-500:] if res2.stdout else "",
+            "stderr_tail": res2.stderr[-500:] if res2.stderr else ""
+        })
         if res2.returncode != 0:
-            passed = False
+            all_passed = False
+    else:
+        executed_checks.append({
+            "name": "import_boundaries",
+            "executed": False,
+            "exit_code": 3,
+            "error": "check_architecture_imports.py not found"
+        })
+        all_passed = False
 
     if json_mode:
-        print(json.dumps({"architecture_check": "PASSED" if passed else "FAILED"}, indent=2))
+        print(json.dumps({
+            "repository_root": str(root_dir),
+            "checks": executed_checks,
+            "all_required_checks_executed": all(c["executed"] for c in executed_checks),
+            "verdict": "PASS" if all_passed else "FAIL",
+            "violations": [],
+            "total_violations": 0
+        }, indent=2))
     else:
         print("=== WindAgent Architecture Checker ===")
-        if passed:
-            print("[PASS] Scaffold structure check: PASSED")
-            print("[PASS] Import boundaries check: PASSED")
+        for check in executed_checks:
+            status = "PASSED" if check["exit_code"] == 0 else "FAILED"
+            print(f"[{status}] {check['name']} check")
+        if all_passed:
             print("Architecture integrity: ALL CHECKS PASSED")
         else:
-            print("[FAIL] Architecture check failed!")
+            print("Architecture integrity: CHECKS FAILED")
 
-    return 0 if passed else 1
+    return 0 if all_passed else 1
 
 
 def main(args=None) -> int:

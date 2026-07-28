@@ -13,6 +13,7 @@ from pathlib import Path
 import yaml
 
 
+from windagent_core.config.repository_root import find_repository_root, is_repository_root
 DEFAULT_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_CONFIG = DEFAULT_ROOT / "configs" / "architecture" / "scaffold_v2.yaml"
 DEFAULT_REPORT = DEFAULT_ROOT / "artifacts" / "architecture_v2_runtime_cutover" / "phase_13" / "dependency_boundary_report.json"
@@ -699,24 +700,164 @@ def find_package_source_declaration_issues(packages: dict) -> list[dict]:
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--root", type=Path, default=DEFAULT_ROOT)
+    parser.add_argument("--root", type=Path, help="Repository root (auto-detected if omitted)")
     parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
     parser.add_argument("--report", type=Path, default=DEFAULT_REPORT)
     parser.add_argument("--graph", type=Path)
+    parser.add_argument("--json", action="store_true", help="Output structured JSON")
+    parser.add_argument("--skip-root-validation", action="store_true", 
+                        help="Skip root marker validation (for testing only)")
+    parser.add_argument("--skip-scaffold-check", action="store_true",
+                        help="Skip scaffold architecture check (for testing only)")
     args = parser.parse_args(argv)
+    
+    # Resolve root using shared locator
+    try:
+        if args.root:
+            root = args.root.resolve()
+            if not args.skip_root_validation and not is_repository_root(root):
+                print(f"ERROR: Specified root is not a valid repository root", file=sys.stderr)
+                return 2  # repository root not found
+        else:
+            root = find_repository_root()
+    except FileNotFoundError as e:
+        if args.json:
+            print(json.dumps({
+                "repository_root": None,
+                "checks": [],
+                "all_required_checks_executed": False,
+                "verdict": "ERROR",
+                "error": str(e)
+            }))
+        else:
+            print(f"ERROR: {e}", file=sys.stderr)
+        return 2  # repository root not found
+    except Exception as e:
+        if args.json:
+            print(json.dumps({
+                "repository_root": None,
+                "checks": [],
+                "all_required_checks_executed": False,
+                "verdict": "ERROR",
+                "error": f"Root detection failed: {e}"
+            }))
+        else:
+            print(f"ERROR: Root detection failed: {e}", file=sys.stderr)
+        return 3  # required checker missing
+    
     config = yaml.safe_load(args.config.read_text(encoding="utf-8"))
-    report, graph = check(args.root.resolve(), config)
+    
+    # Track which required checkers were executed
+    required_checkers = ["scaffold", "import_boundaries"]
+    executed_checks = []
+    
+    try:
+        report, graph = check(root, config)
+        executed_checks.append({"name": "import_boundaries", "executed": True, "exit_code": 0})
+    except Exception as e:
+        if args.json:
+            print(json.dumps({
+                "repository_root": str(root),
+                "checks": [{"name": "import_boundaries", "executed": False, "exit_code": 4, "error": str(e)}],
+                "all_required_checks_executed": False,
+                "verdict": "ERROR",
+                "error": f"Checker execution error: {e}"
+            }))
+        else:
+            print(f"ERROR: Checker execution failed: {e}", file=sys.stderr)
+        return 4  # checker execution error
+    
+    # Run scaffold check
+    if args.skip_scaffold_check:
+        executed_checks.append({"name": "scaffold", "executed": False, "exit_code": 0, "skipped": True})
+    else:
+        try:
+            import subprocess
+            result = subprocess.run([sys.executable, "scripts/scaffold_architecture_v2.py", "--check"], 
+                                  cwd=root, capture_output=True, text=True, timeout=60)
+            executed_checks.append({
+                "name": "scaffold", 
+                "executed": True, 
+                "exit_code": result.returncode,
+                "stdout_tail": result.stdout[-500:] if result.stdout else "",
+                "stderr_tail": result.stderr[-500:] if result.stderr else ""
+            })
+            if result.returncode != 0:
+                # Scaffold check failed - add to violations
+                report["violations"].append({
+                    "rule": "scaffold_check_failed",
+                    "file": "scaffold_architecture_v2.py",
+                    "line": 0,
+                    "message": f"Scaffold check failed with exit code {result.returncode}: {result.stderr}"
+                })
+                report["status"] = "FAIL"
+                report["total_violations"] = len(report["violations"])
+        except subprocess.TimeoutExpired:
+            executed_checks.append({"name": "scaffold", "executed": False, "exit_code": 4, "error": "timeout"})
+            if args.json:
+                print(json.dumps({
+                    "repository_root": str(root),
+                    "checks": executed_checks,
+                    "all_required_checks_executed": False,
+                    "verdict": "ERROR",
+                    "error": "Scaffold check timed out"
+                }))
+            else:
+                print(f"ERROR: Scaffold check timed out", file=sys.stderr)
+            return 4
+        except Exception as e:
+            executed_checks.append({"name": "scaffold", "executed": False, "exit_code": 4, "error": str(e)})
+            if args.json:
+                print(json.dumps({
+                    "repository_root": str(root),
+                    "checks": executed_checks,
+                    "all_required_checks_executed": False,
+                    "verdict": "ERROR",
+                    "error": f"Scaffold checker error: {e}"
+                }))
+            else:
+                print(f"ERROR: Scaffold checker failed: {e}", file=sys.stderr)
+            return 4
+    
+    all_required_executed = all(c["executed"] or c.get("skipped") for c in executed_checks)
+    
+    # Determine verdict
+    if not all_required_executed:
+        verdict = "ERROR"
+        exit_code = 3
+    elif report["status"] == "PASS":
+        verdict = "PASS"
+        exit_code = 0
+    else:
+        verdict = "FAIL"
+        exit_code = 1
+    
+    # Output
+    if args.json:
+        output = {
+            "repository_root": str(root),
+            "checks": executed_checks,
+            "all_required_checks_executed": all_required_executed,
+            "verdict": verdict,
+            "violations": report["violations"],
+            "total_violations": report["total_violations"]
+        }
+        print(json.dumps(output, indent=2))
+    else:
+        print(f"Architecture policy: {report['status']} ({report['total_violations']} violations)")
+        for item in report["violations"]:
+            print(f"[{item['rule']}] {item['file']}:{item['line']} {item['message']}")
+        if report["status"] == "PASS":
+            print("Zero boundary violations detected")
+    
+    # Write reports
     args.report.parent.mkdir(parents=True, exist_ok=True)
     args.report.write_text(json.dumps(report, indent=2), encoding="utf-8")
     graph_path = args.graph or args.report.with_name("import_graph.json")
     graph_path.parent.mkdir(parents=True, exist_ok=True)
     graph_path.write_text(json.dumps(graph, indent=2), encoding="utf-8")
-    print(f"Architecture policy: {report['status']} ({report['total_violations']} violations)")
-    for item in report["violations"]:
-        print(f"[{item['rule']}] {item['file']}:{item['line']} {item['message']}")
-    if report["status"] == "PASS":
-        print("Zero boundary violations detected")
-    return 0 if report["status"] == "PASS" else 1
+    
+    return exit_code
 
 
 if __name__ == "__main__":

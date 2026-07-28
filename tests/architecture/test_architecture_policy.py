@@ -43,7 +43,7 @@ def run_checker(tmp_path: Path, packages: dict, members=None):
     config_path.write_text(yaml.safe_dump(config), encoding="utf-8")
     report_path = tmp_path / "report.json"
     result = subprocess.run(
-        [sys.executable, str(CHECKER), "--root", str(tmp_path), "--config", str(config_path), "--report", str(report_path)],
+        [sys.executable, str(CHECKER), "--root", str(tmp_path), "--config", str(config_path), "--report", str(report_path), "--skip-root-validation", "--skip-scaffold-check"],
         capture_output=True,
         text=True,
     )
@@ -116,7 +116,7 @@ def test_checker_requires_top_level_plugin_and_skill_packages(tmp_path):
     config_path.write_text(yaml.safe_dump(config), encoding="utf-8")
     report_path = tmp_path / "required-report.json"
     result = subprocess.run(
-        [sys.executable, str(CHECKER), "--root", str(tmp_path), "--config", str(config_path), "--report", str(report_path)],
+        [sys.executable, str(CHECKER), "--root", str(tmp_path), "--config", str(config_path), "--report", str(report_path), "--skip-root-validation", "--skip-scaffold-check"],
         capture_output=True,
         text=True,
     )
