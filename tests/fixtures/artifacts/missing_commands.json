@@ -3,20 +3,14 @@
   "generated_at": "2026-07-28T12:00:00Z",
   "source_sha": "95b9551f0c9b5c8b1a3d8e4f6a7c2d1e5f8b9c0a",
   "verified_sha": "95b9551f0c9b5c8b1a3d8e4f6a7c2d1e5f8b9c0a",
-  "branch": "fix/architecture-v2-runtime-cutover",
+  "branch": "test",
   "worktree_clean": true,
   "commands": [],
-  "results": {
-    "total_tests": 536,
-    "passed": 516,
-    "failed": 8,
-    "skipped": 12,
-    "duration_seconds": 45.23
-  },
+  "results": {},
   "failures": [],
   "warnings": [],
   "artifact_hashes": {
-    "execution_receipt.json": "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456"
+    "test.json": "56f3fd843f7ae959a8409e0ae7c067a0e862a6faa7a22bad147ee90ee5992bd7"
   },
   "verdict": "PASS"
 }

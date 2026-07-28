@@ -7,11 +7,26 @@
   "worktree_clean": true,
   "commands": [
     {
+      "command_id": "pytest_run",
       "command": "pytest tests/ -v",
-      "exit_code": 0,
+      "cwd": ".",
+      "started_at": "2026-07-28T12:00:00Z",
+      "finished_at": "2026-07-28T12:00:45Z",
       "duration_ms": 45000,
+      "exit_code": 0,
       "stdout_tail": "516 passed, 8 failed, 12 skipped in 45.23s",
-      "stderr_tail": ""
+      "stderr_tail": "",
+      "environment": {
+        "os": "linux",
+        "python": "3.11.15",
+        "uv": "0.5.0",
+        "git_sha": "95b9551f0c9b5c8b1a3d8e4f6a7c2d1e5f8b9c0a"
+      },
+      "expected_exit_codes": [
+        0
+      ],
+      "result": "SUCCESS",
+      "output_sha256": "56f3fd843f7ae959a8409e0ae7c067a0e862a6faa7a22bad147ee90ee5992bd7"
     }
   ],
   "results": {
@@ -31,7 +46,10 @@
   "warnings": [
     {
       "check": "baseline_check",
-      "message": "8 pre-existing failures documented in baseline"
+      "message": "8 pre-existing failures documented in baseline",
+      "severity": "LOW",
+      "accepted": true,
+      "rationale": "Known pre-existing failures tracked in baseline"
     }
   ],
   "artifact_hashes": {

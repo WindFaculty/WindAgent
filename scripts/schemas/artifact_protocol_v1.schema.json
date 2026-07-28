@@ -1,0 +1,222 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "WindAgent Artifact Protocol v1",
+  "description": "Canonical artifact schema for WindAgent Architecture V2 Production Hardening. Single source of truth.",
+  "type": "object",
+  "required": [
+    "protocol_version",
+    "generated_at",
+    "source_sha",
+    "verified_sha",
+    "branch",
+    "worktree_clean",
+    "commands",
+    "results",
+    "failures",
+    "warnings",
+    "artifact_hashes",
+    "verdict"
+  ],
+  "properties": {
+    "protocol_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "const": "1.0.0",
+      "description": "Artifact protocol version (semver), fixed at 1.0.0"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when artifact was generated"
+    },
+    "source_sha": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{40}$",
+      "description": "Git commit SHA at time of artifact generation (40 lowercase hex chars)"
+    },
+    "verified_sha": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{40}$",
+      "description": "Git commit SHA that was verified against the artifact (40 lowercase hex chars)"
+    },
+    "branch": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Git branch name at generation time"
+    },
+    "worktree_clean": {
+      "type": "boolean",
+      "description": "Whether the worktree was clean at generation time"
+    },
+    "commands": {
+      "type": "array",
+      "minItems": 1,
+      "description": "List of commands executed with their receipts",
+      "items": {
+        "type": "object",
+        "required": [
+          "command_id",
+          "command",
+          "cwd",
+          "started_at",
+          "finished_at",
+          "duration_ms",
+          "exit_code",
+          "stdout_tail",
+          "stderr_tail",
+          "environment",
+          "expected_exit_codes",
+          "result",
+          "output_sha256"
+        ],
+        "properties": {
+          "command_id": {
+            "type": "string",
+            "pattern": "^[a-z0-9_-]+$",
+            "description": "Unique identifier for this command"
+          },
+          "command": {
+            "type": "string",
+            "description": "The command that was executed"
+          },
+          "cwd": {
+            "type": "string",
+            "description": "Working directory where command was executed"
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO 8601 timestamp when command started"
+          },
+          "finished_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO 8601 timestamp when command finished"
+          },
+          "duration_ms": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Execution duration in milliseconds"
+          },
+          "exit_code": {
+            "type": "integer",
+            "description": "Process exit code"
+          },
+          "stdout_tail": {
+            "type": "string",
+            "description": "Last 500 chars of stdout"
+          },
+          "stderr_tail": {
+            "type": "string",
+            "description": "Last 500 chars of stderr"
+          },
+          "environment": {
+            "type": "object",
+            "required": ["os", "python", "uv", "git_sha"],
+            "properties": {
+              "os": { "type": "string" },
+              "python": { "type": "string" },
+              "uv": { "type": "string" },
+              "git_sha": { "type": "string", "pattern": "^[a-f0-9]{40}$" }
+            },
+            "description": "Environment snapshot at execution time"
+          },
+          "expected_exit_codes": {
+            "type": "array",
+            "items": { "type": "integer" },
+            "minItems": 1,
+            "description": "Expected exit codes for success"
+          },
+          "result": {
+            "type": "string",
+            "enum": ["SUCCESS", "FAILURE", "TIMEOUT", "INTERRUPTED"],
+            "description": "Execution result classification"
+          },
+          "output_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "description": "SHA256 hash of full command output (stdout+stderr)"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "results": {
+      "type": "object",
+      "description": "Structured test/execution results",
+      "additionalProperties": true
+    },
+    "failures": {
+      "type": "array",
+      "description": "List of failures encountered",
+      "items": {
+        "type": "object",
+        "required": ["check", "message", "severity"],
+        "properties": {
+          "check": {
+            "type": "string",
+            "description": "Name of the check that failed"
+          },
+          "message": {
+            "type": "string",
+            "description": "Failure description"
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["CRITICAL", "HIGH", "MEDIUM", "LOW"],
+            "description": "Failure severity level"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "description": "List of warnings (non-blocking) with structured metadata",
+      "items": {
+        "type": "object",
+        "required": ["check", "message", "severity", "accepted", "rationale"],
+        "properties": {
+          "check": {
+            "type": "string",
+            "description": "Name of the check that produced warning"
+          },
+          "message": {
+            "type": "string",
+            "description": "Warning description"
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["LOW", "MEDIUM", "HIGH"],
+            "description": "Warning severity level"
+          },
+          "accepted": {
+            "type": "boolean",
+            "description": "Whether this warning has been explicitly accepted"
+          },
+          "rationale": {
+            "type": "string",
+            "description": "Justification for accepting or rejecting the warning"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "artifact_hashes": {
+      "type": "object",
+      "description": "SHA256 hashes of generated artifact files (64 lowercase hex chars)",
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[a-f0-9]{64}$"
+      },
+      "minProperties": 1,
+      "description": "Mapping of artifact filename to SHA256 hash"
+    },
+    "verdict": {
+      "type": "string",
+      "enum": ["PASS", "FAIL", "BLOCKED", "PARTIAL"],
+      "description": "Overall verdict for this phase"
+    }
+  },
+  "additionalProperties": false
+}
