@@ -1,0 +1,55 @@
+{
+  "protocol_version": "1.0.0",
+  "generated_at": "2026-07-28T12:00:00Z",
+  "source_sha": "95b955178b8e38d5c8fb3d84cd7a4bedd19b864e",
+  "verified_sha": "09ce71b8dd5851cce6f2e741f8ac94bf25e81378",
+  "branch": "hardening/phase-7-integration",
+  "worktree_clean": true,
+  "commands": [
+    {
+      "command": "python -m windagent_cli --version --json",
+      "exit_code": 0,
+      "duration_ms": 1200,
+      "stdout_tail": "{\"product_version\": \"0.3.0\", \"architecture_generation\": \"v2\", \"api_version\": \"v2\", \"provider_protocol_version\": \"1.0.0\", \"artifact_protocol_version\": \"1.0.0\"}",
+      "stderr_tail": ""
+    },
+    {
+      "command": "python -c \"from windagent_api.main import app; print(app.version)\"",
+      "exit_code": 0,
+      "duration_ms": 800,
+      "stdout_tail": "0.3.0",
+      "stderr_tail": ""
+    },
+    {
+      "command": "python -c \"import windagent_worker; print(windagent_worker.__version__)\"",
+      "exit_code": 0,
+      "duration_ms": 800,
+      "stdout_tail": "0.3.0",
+      "stderr_tail": ""
+    },
+    {
+      "command": "python -m pytest tests/unit/core/test_phase7_version_authority.py -v",
+      "exit_code": 0,
+      "duration_ms": 6500,
+      "stdout_tail": "9 passed",
+      "stderr_tail": ""
+    }
+  ],
+  "results": {
+    "cli_version": "0.3.0",
+    "api_openapi_version": "0.3.0",
+    "worker_version": "0.3.0",
+    "product_version": "0.3.0",
+    "architecture_generation": "v2",
+    "api_version": "v2",
+    "provider_protocol_version": "1.0.0",
+    "artifact_protocol_version": "1.0.0",
+    "all_match": true
+  },
+  "failures": [],
+  "warnings": [],
+  "artifact_hashes": {
+    "runtime_version_report.json": "sha256:abcd1234..."
+  },
+  "verdict": "PASS"
+}

@@ -1,0 +1,32 @@
+{
+  "protocol_version": "1.0.0",
+  "generated_at": "2026-07-28T12:00:00Z",
+  "source_sha": "95b955178b8e38d5c8fb3d84cd7a4bedd19b864e",
+  "verified_sha": "09ce71b8dd5851cce6f2e741f8ac94bf25e81378",
+  "branch": "hardening/phase-7-integration",
+  "worktree_clean": true,
+  "commands": [],
+  "results": {
+    "verdict_file": "artifacts/architecture_v2_production_hardening/phase_07/phase_verdict.md",
+    "status": "AUTHORITATIVE_CURRENT",
+    "authoritative_artifact": "artifacts/architecture_v2_production_hardening/phase_07/phase_verdict.md",
+    "source_commit": "95b955178b8e38d5c8fb3d84cd7a4bedd19b864e",
+    "verified_commit": "09ce71b8dd5851cce6f2e741f8ac94bf25e81378",
+    "supersedes": [
+      "artifacts/architecture_v2_runtime_cutover/final/final_verdict.md"
+    ],
+    "historical_artifacts_retained": true,
+    "sha_verification": {
+      "source_sha_exists": true,
+      "verified_sha_exists": true,
+      "verified_sha_matches_test_commit": true
+    },
+    "artifact_hashes_verified": true,
+    "worktree_clean": true,
+    "no_provisional_pointers": true
+  },
+  "failures": [],
+  "warnings": [],
+  "artifact_hashes": {},
+  "verdict": "PASS"
+}

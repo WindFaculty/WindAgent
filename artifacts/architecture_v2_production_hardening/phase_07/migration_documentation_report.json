@@ -7,19 +7,17 @@
   "worktree_clean": true,
   "commands": [],
   "results": {
-    "root_readme": "README.md",
-    "architecture_docs": 9,
-    "adr_docs": 4,
-    "provider_docs": 3,
-    "api_docs": 2,
-    "package_readmes": 5,
-    "root_scripts": 7,
-    "legacy_removal_docs": 21,
-    "phase_verdicts": 18,
-    "risk_registers": 16
+    "legacy_references_removed": true,
+    "launcher_updated": "windagent_api.main:app",
+    "api_v1_tombstone_documented": true,
+    "desktop_web_v2_status": "unsupported/disabled",
+    "migration_guide_exists": true,
+    "no_stale_test_counts": true
   },
   "failures": [],
-  "warnings": [],
+  "warnings": [
+    "Desktop/web V2 contract not yet implemented - marked as unsupported"
+  ],
   "artifact_hashes": {},
   "verdict": "PASS"
 }

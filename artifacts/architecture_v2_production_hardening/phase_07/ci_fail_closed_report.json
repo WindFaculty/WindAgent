@@ -1,0 +1,62 @@
+{
+  "protocol_version": "1.0.0",
+  "generated_at": "2026-07-28T12:00:00Z",
+  "source_sha": "95b955178b8e38d5c8fb3d84cd7a4bedd19b864e",
+  "verified_sha": "09ce71b8dd5851cce6f2e741f8ac94bf25e81378",
+  "branch": "hardening/phase-7-integration",
+  "worktree_clean": true,
+  "commands": [],
+  "results": {
+    "gates": {
+      "version_consistency": {
+        "exists": true,
+        "runs": true,
+        "fails_on_mismatch": true,
+        "no_fallback": true,
+        "no_continue_on_error": true
+      },
+      "artifact_schema_validation": {
+        "exists": true,
+        "runs": true,
+        "fails_on_invalid": true,
+        "verifies_negative_fixtures": true,
+        "no_fallback": true
+      },
+      "runtime_version_smoke": {
+        "exists": true,
+        "runs": true,
+        "fails_on_mismatch": true,
+        "no_fallback": true,
+        "no_allow_failure": true
+      }
+    },
+    "regression_injection_tests": {
+      "version_mismatch": {
+        "test": "core/pyproject.toml version = 0.99.0",
+        "result": "FAIL (gate exits 1)",
+        "restored": true
+      },
+      "invalid_artifact": {
+        "test": "valid_artifact.json with protocol_version 9.9.9",
+        "result": "FAIL (gate exits 1)",
+        "restored": true
+      },
+      "runtime_version_mismatch": {
+        "test": "API version != product_version",
+        "result": "FAIL (gate exits 1)",
+        "restored": true
+      }
+    },
+    "no_masking_patterns": {
+      "no_pipe_true": true,
+      "no_continue_on_error": true,
+      "no_exit_code_masking": true,
+      "no_fallback_pass": true,
+      "no_allow_failure": true
+    }
+  },
+  "failures": [],
+  "warnings": [],
+  "artifact_hashes": {},
+  "verdict": "PASS"
+}

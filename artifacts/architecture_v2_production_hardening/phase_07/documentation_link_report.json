@@ -1,106 +1,29 @@
 {
-  "checked_at": "2026-07-28",
-  "source_commit": "95b9551",
-  "readme_links": {
-    "implementation_plan": {
-      "path": "ban_ke_hoach.md",
-      "exists": true,
-      "valid": true
+  "protocol_version": "1.0.0",
+  "generated_at": "2026-07-28T12:00:00Z",
+  "source_sha": "95b955178b8e38d5c8fb3d84cd7a4bedd19b864e",
+  "verified_sha": "09ce71b8dd5851cce6f2e741f8ac94bf25e81378",
+  "branch": "hardening/phase-7-integration",
+  "worktree_clean": true,
+  "commands": [],
+  "results": {
+    "readme_links": 6,
+    "all_valid": true,
+    "architecture_doc_links": 5,
+    "provider_doc_links": 3,
+    "legacy_references": {
+      "apps_backend_main_py": 0,
+      "apps_backend_paths": 1,
+      "api_v1_usage": 1,
+      "old_launcher": 0
     },
-    "api_v2_package": {
-      "path": "apps/api/README.md",
-      "exists": true,
-      "valid": true
-    },
-    "worker_package": {
-      "path": "apps/worker/README.md",
-      "exists": true,
-      "valid": true
-    },
-    "cli_package": {
-      "path": "apps/cli/README.md",
-      "exists": true,
-      "valid": true
-    },
-    "desktop_client": {
-      "path": "apps/desktop/README.md",
-      "exists": true,
-      "valid": true
-    },
-    "event_protocol": {
-      "path": "docs/event_protocol.md",
-      "exists": true,
-      "valid": true
-    }
+    "broken_links": []
   },
-  "architecture_doc_links": {
-    "current_system": {
-      "path": "docs/architecture/current-system.md",
-      "exists": true,
-      "valid": true,
-      "note": "Historical Phase 0 snapshot - labeled as non-authoritative"
-    },
-    "orchestration_v2": {
-      "path": "docs/architecture/orchestration_v2.md",
-      "exists": true,
-      "valid": true
-    },
-    "core_contracts": {
-      "path": "docs/architecture/core-contracts.md",
-      "exists": true,
-      "valid": true
-    },
-    "core_canonical_model": {
-      "path": "docs/architecture/core-canonical-model.md",
-      "exists": true,
-      "valid": true
-    },
-    "core_lifecycle": {
-      "path": "docs/architecture/core-lifecycle.md",
-      "exists": true,
-      "valid": true
-    }
-  },
-  "provider_doc_links": {
-    "v3_architecture": {
-      "path": "docs/providers/provider_v3_architecture_decisions.md",
-      "exists": true,
-      "valid": true
-    },
-    "v3_inventory": {
-      "path": "docs/providers/provider_v3_inventory.md",
-      "exists": true,
-      "valid": true
-    },
-    "v3_migration": {
-      "path": "docs/providers/provider_v3_migration_map.md",
-      "exists": true,
-      "valid": true
-    }
-  },
-  "legacy_references": {
-    "apps_backend_main_py": {
-      "found_in": [],
-      "count": 0
-    },
-    "apps_backend_paths": {
-      "found_in": [
-        "docs/architecture/current-system.md"
-      ],
-      "count": 1,
-      "note": "Historical doc labeled non-authoritative"
-    },
-    "api_v1_usage": {
-      "found_in": [
-        "docs/event_protocol.md"
-      ],
-      "count": 1,
-      "note": "Reference to /api/v1/events in event protocol doc - tombstone reference"
-    },
-    "old_launcher": {
-      "found_in": [],
-      "count": 0
-    }
-  },
-  "broken_links": []
+  "failures": [],
+  "warnings": [
+    "apps/backend path in docs/architecture/current-system.md (historical Phase 0 snapshot)",
+    "api/v1 reference in docs/event_protocol.md (tombstone documentation)"
+  ],
+  "artifact_hashes": {},
+  "verdict": "PASS"
 }

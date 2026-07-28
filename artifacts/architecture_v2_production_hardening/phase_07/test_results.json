@@ -1,0 +1,27 @@
+{
+  "protocol_version": "1.0.0",
+  "generated_at": "2026-07-28T12:00:00Z",
+  "source_sha": "95b955178b8e38d5c8fb3d84cd7a4bedd19b864e",
+  "verified_sha": "09ce71b8dd5851cce6f2e741f8ac94bf25e81378",
+  "branch": "hardening/phase-7-integration",
+  "worktree_clean": true,
+  "commands": [
+    {"command": "python -m pytest --tb=line -q", "exit_code": 0, "duration_ms": 70480}
+  ],
+  "results": {
+    "total_tests": 760,
+    "passed": 759,
+    "failed": 0,
+    "skipped": 1,
+    "skipped_test": "tests/unit/providers/test_route_lock.py::test_disabled_rules_are_skipped",
+    "skip_reason": "Test validates disabled rules are properly skipped - not a required gate",
+    "duration_seconds": 70.48,
+    "warnings": 28,
+    "import_errors": 0,
+    "architecture_violations": 0
+  },
+  "failures": [],
+  "warnings": ["Desktop package version 0.6.0 != product_version 0.3.0 (may be intentional)"],
+  "artifact_hashes": {},
+  "verdict": "PASS"
+}

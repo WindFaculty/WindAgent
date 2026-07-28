@@ -5,18 +5,15 @@
   "verified_sha": "09ce71b8dd5851cce6f2e741f8ac94bf25e81378",
   "branch": "hardening/phase-7-integration",
   "worktree_clean": true,
-  "commands": [],
+  "commands": [
+    {"command": "python scripts/check_secret_exposure.py", "exit_code": 0, "duration_ms": 1500}
+  ],
   "results": {
-    "root_readme": "README.md",
-    "architecture_docs": 9,
-    "adr_docs": 4,
-    "provider_docs": 3,
-    "api_docs": 2,
-    "package_readmes": 5,
-    "root_scripts": 7,
-    "legacy_removal_docs": 21,
-    "phase_verdicts": 18,
-    "risk_registers": 16
+    "env_vars_documented": true,
+    "database_url": "WINDAGENT_DATABASE_URL",
+    "model_backend": "WINDAGENT_MODEL_BACKEND",
+    "no_raw_secrets": true,
+    "config_matches_docs": true
   },
   "failures": [],
   "warnings": [],
