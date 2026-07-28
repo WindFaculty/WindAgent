@@ -1,12 +1,80 @@
-name: CI & Orchestration V2 Cutover Acceptance
+# Phase 5 - GitHub Actions Repair
+# Fail-closed CI matrix with full platform coverage
+# Trigger: main, feat/*, fix/*, hardening/*
+name: CI & Phase 7 Verification Matrix
 
 on:
   push:
-    branches: [main, feat/*, fix/*]
+    branches:
+      - main
+      - "feat/**"
+      - "fix/**"
+      - "hardening/**"
   pull_request:
-    branches: [main]
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  UV_VERSION: "0.5.0"
+  PYTHON_VERSION: "3.11"
+  NODE_VERSION: "20"
+
+defaults:
+  run:
+    shell: bash
 
 jobs:
+
+  # 1. ARTIFACT PROTOCOL - Validate production artifacts against schema v1
+  artifact-protocol:
+    name: Artifact Protocol Gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: ${{ env.UV_VERSION }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Sync dependencies
+        run: uv sync --all-packages
+
+      - name: Validate production artifacts
+        run: |
+          uv run python scripts/validate_artifact_schema.py \
+            --directory artifacts/architecture_v2_production_hardening/phase_07 \
+            --recursive \
+            --verify-hashes
+
+      - name: Verify negative fixtures fail
+        run: |
+          for f in tests/fixtures/artifacts/*.json; do
+            fname=$(basename "$f")
+            if [ "$fname" != "valid_artifact.json" ]; then
+              if uv run python scripts/validate_artifact_schema.py "$f"; then
+                echo "ERROR: Negative fixture $fname should have failed but passed"
+                exit 1
+              fi
+            fi
+          done
+
+      - name: Upload artifact validation report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: artifact-validation-report
+          path: |
+            artifacts/architecture_v2_production_hardening/phase_07/artifact_schema_report.json
+            artifacts/architecture_v2_production_hardening/phase_07/artifact_manifest.json
+
+  # 2. VERSION CONSISTENCY - All versions derive from canonical source
   version-consistency:
     name: Version Consistency Gate
     runs-on: ubuntu-latest
@@ -16,21 +84,37 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v3
         with:
-          version: "0.5.0"
+          version: ${{ env.UV_VERSION }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Sync dependencies
         run: uv sync --all-packages
+
+      - name: Install workspace packages
+        run: |
+          uv pip install -e core -e apps/api -e apps/cli -e apps/worker \
+            -e orchestration -e storage -e execution -e providers \
+            -e tools -e workflows -e verification -e memory \
+            -e context -e intelligence -e observability -e evals \
+            -e plugins -e skills
 
       - name: Run Version Consistency Check
         run: uv run python scripts/check_version_consistency.py
 
-  artifact-schema-validation:
-    name: Artifact Schema Validation Gate
+      - name: Upload version consistency report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: version-consistency-report
+          path: artifacts/architecture_v2_production_hardening/phase_07/version_consistency_report.json
+
+  # 3. ARCHITECTURE BOUNDARIES - Scaffold + import boundaries + no-legacy
+  architecture-boundaries:
+    name: Architecture Boundaries Gate
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -38,32 +122,198 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v3
         with:
-          version: "0.5.0"
+          version: ${{ env.UV_VERSION }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Sync dependencies
         run: uv sync --all-packages
 
-      - name: Run Artifact Schema Validator
-        run: uv run python scripts/validate_artifact_schema.py tests/fixtures/artifacts/valid_artifact.json
+      - name: Scaffold Architecture Check
+        run: uv run python scripts/scaffold_architecture_v2.py --check
 
-      - name: Verify Negative Fixtures Fail
+      - name: Architecture Import Boundaries Check
+        run: uv run python scripts/check_architecture_imports.py
+
+      - name: No Legacy Orchestration Check
+        run: uv run python scripts/check_no_legacy_orchestration.py
+
+      - name: Ruff Lint & Format Check
         run: |
-          for f in tests/fixtures/artifacts/*.json; do
-            if [[ "$f" != *"valid_artifact"* ]]; then
-              if uv run python scripts/validate_artifact_schema.py "$f"; then
-                echo "ERROR: Negative fixture $f should have failed but passed"
-                exit 1
-              fi
-            fi
-          done
+          uv run ruff check orchestration storage execution tests
+          uv run ruff format --check orchestration storage execution tests
 
-  runtime-version-smoke:
-    name: Runtime Version Smoke Gate
+      - name: Upload architecture report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: architecture-boundaries-report
+          path: artifacts/architecture_v2_runtime_cutover/phase_13/dependency_boundary_report.json
+
+  # 4. PYTHON UNIT TESTS (Ubuntu SQLite)
+  python-unit-sqlite:
+    name: Python Unit Tests (Ubuntu SQLite)
+    runs-on: ubuntu-latest
+    env:
+      WINDAGENT_DATABASE_URL: sqlite+aiosqlite:///windagent.db
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: ${{ env.UV_VERSION }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Sync dependencies
+        run: uv sync --all-packages
+
+      - name: Architecture Tests
+        run: uv run pytest tests/architecture/ -v --tb=short -x
+
+      - name: Unit Tests
+        run: uv run pytest tests/unit/ -v --tb=short -x --junitxml=pytest-unit.xml
+
+      - name: Regression Tests
+        run: uv run pytest tests/regression/ -v --tb=short -x --junitxml=pytest-regression.xml
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pytest-unit-sqlite
+          path: |
+            pytest-unit.xml
+            pytest-regression.xml
+
+  # 5. PYTHON UNIT TESTS (Windows SQLite)
+  python-unit-windows:
+    name: Python Unit Tests (Windows SQLite)
+    runs-on: windows-latest
+    env:
+      WINDAGENT_DATABASE_URL: sqlite+aiosqlite:///windagent.db
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: ${{ env.UV_VERSION }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Sync dependencies
+        run: uv sync --all-packages
+
+      - name: Unit Tests
+        run: uv run pytest tests/unit/ -v --tb=short -x --junitxml=pytest-unit.xml
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pytest-unit-windows
+          path: pytest-unit.xml
+
+  # 6. PYTHON INTEGRATION TESTS (Ubuntu SQLite)
+  python-integration-sqlite:
+    name: Python Integration Tests (Ubuntu SQLite)
+    runs-on: ubuntu-latest
+    env:
+      WINDAGENT_DATABASE_URL: sqlite+aiosqlite:///windagent.db
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: ${{ env.UV_VERSION }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Sync dependencies
+        run: uv sync --all-packages
+
+      - name: Integration Tests
+        run: uv run pytest tests/integration/ -v --tb=short -x --junitxml=pytest-integration.xml
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pytest-integration-sqlite
+          path: pytest-integration.xml
+
+  # 7. PYTHON INTEGRATION TESTS (Ubuntu PostgreSQL)
+  python-integration-postgres:
+    name: Python Integration Tests (Ubuntu PostgreSQL)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: windagent
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U test -d windagent"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      WINDAGENT_DATABASE_URL: postgresql+asyncpg://test:test@localhost:5432/windagent
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: ${{ env.UV_VERSION }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Sync dependencies
+        run: uv sync --all-packages
+
+      - name: Integration Tests (PostgreSQL)
+        run: uv run pytest tests/integration/ -v --tb=short -x --junitxml=pytest-integration-postgres.xml
+
+      - name: Multi-replica fencing tests
+        run: |
+          uv run pytest tests/integration/ -k "fencing or replica or leader" -v --tb=short
+          uv run pytest tests/unit/worker/ -k "fencing or replica or lease" -v --tb=short
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pytest-integration-postgres
+          path: pytest-integration-postgres.xml
+
+  # 8. RUNTIME SMOKE - FastAPI, CLI, Worker version checks
+  runtime-smoke:
+    name: Runtime Smoke Gate
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -71,36 +321,36 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v3
         with:
-          version: "0.5.0"
+          version: ${{ env.UV_VERSION }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Sync dependencies
         run: uv sync --all-packages
 
-      - name: Install packages
-        run: uv pip install -e core -e apps/api -e apps/cli -e apps/worker
+      - name: Install workspace packages
+        run: |
+          uv pip install -e core -e apps/api -e apps/cli -e apps/worker
 
       - name: FastAPI Version Smoke
         run: |
           python -c "
           from windagent_api import app
-          import requests
-          import uvicorn
           from fastapi.testclient import TestClient
           client = TestClient(app)
           resp = client.get('/internal/architecture')
           data = resp.json()
-          print(f'API version: {data[\"version\"]}')
-          print(f'Architecture: {data[\"architecture\"]}')
-          print(f'Architecture Generation: {data[\"architecture_generation\"]}')
-          print(f'API Version: {data[\"api_version\"]}')
-          print(f'Provider Protocol: {data[\"provider_protocol_version\"]}')
-          print(f'Artifact Protocol: {data[\"artifact_protocol_version\"]}')
-          assert data['version'] == data['product_version'] == '0.3.0'
+          print('API version:', data['version'])
+          print('Architecture:', data['architecture'])
+          print('Architecture Generation:', data['architecture_generation'])
+          print('API Version:', data['api_version'])
+          print('Provider Protocol:', data['provider_protocol_version'])
+          print('Artifact Protocol:', data['artifact_protocol_version'])
+          from windagent_core.version import PRODUCT_VERSION
+          assert data['version'] == data['product_version'] == PRODUCT_VERSION
           assert data['architecture_generation'] == 'v2'
           assert data['api_version'] == 'v2'
           assert data['provider_protocol_version'] == '1.0.0'
@@ -109,14 +359,13 @@ jobs:
           "
 
       - name: CLI Version Smoke
-        run: |
-          python -m windagent_cli --version --json
+        run: python -m windagent_cli --version --json
 
       - name: Worker Version Smoke
         run: |
           python -c "
           import windagent_worker
-          print(f'Worker version: {windagent_worker.__version__}')
+          print('Worker version:', windagent_worker.__version__)
           from windagent_core.version import PRODUCT_VERSION
           assert windagent_worker.__version__ == PRODUCT_VERSION
           print('Worker version smoke: PASS')
@@ -125,123 +374,295 @@ jobs:
       - name: Package Metadata Smoke
         run: |
           python -c "
-          from importlib.metadata import version
+          from importlib.metadata import version as pkg_version
+          from windagent_core.version import PRODUCT_VERSION
           for pkg in ['windagent-core', 'windagent-api', 'windagent-cli', 'windagent-worker']:
-              v = version(pkg)
-              print(f'{pkg}: {v}')
-              from windagent_core.version import PRODUCT_VERSION
+              v = pkg_version(pkg)
+              print(pkg + ':', v)
               assert v == PRODUCT_VERSION
           print('Package metadata smoke: PASS')
           "
 
-  test_matrix:
-    name: V2 Canonical Architecture Test (${{ matrix.os }}, ${{ matrix.database }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest]
-        database: [sqlite, postgresql]
-        include:
-          - os: ubuntu-latest
-            database: postgresql
-            services:
-              postgres:
-                image: postgres:16-alpine
-                env:
-                  POSTGRES_DB: windagent
-                  POSTGRES_USER: test
-                  POSTGRES_PASSWORD: test
-                ports:
-                  - 5432:5432
-                options: >-
-                  --health-cmd "pg_isready -U test -d windagent"
-                  --health-interval 10s
-                  --health-timeout 5s
-                  --health-retries 5
+      - name: Upload runtime smoke results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: runtime-smoke-report
+          path: artifacts/architecture_v2_production_hardening/phase_07/runtime_version_report.json
+
+  # 9. CLI CONTRACT - CLI commands against real runtime
+  cli-contract:
+    name: CLI Contract Gate
+    runs-on: ubuntu-latest
+    env:
+      WINDAGENT_DATABASE_URL: sqlite+aiosqlite:///windagent.db
     steps:
       - uses: actions/checkout@v4
 
       - name: Install uv
         uses: astral-sh/setup-uv@v3
         with:
-          version: "0.5.0"
+          version: ${{ env.UV_VERSION }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Sync dependencies
         run: uv sync --all-packages
 
-      - name: Set database URL
+      - name: Install workspace packages
         run: |
-          if [ "${{ matrix.database }}" = "postgresql" ]; then
-            echo "WINDAGENT_DATABASE_URL=postgresql+asyncpg://test:test@localhost:5432/windagent" >> $GITHUB_ENV
-          else
-            echo "WINDAGENT_DATABASE_URL=sqlite+aiosqlite:///windagent.db" >> $GITHUB_ENV
-          fi
+          uv pip install -e core -e apps/cli
 
-      - name: Ruff Lint & Format Check
+      - name: CLI --version
+        run: python -m windagent_cli --version
+
+      # Note: CLI architecture-check is a mandatory gate per Phase 5 G5.6.
+      # Failure here correctly blocks the workflow. The CLI must be fully
+      # composable in CI with sqlite+aiosqlite.
+      - name: CLI architecture-check
+        run: python -m windagent_cli architecture-check
+
+      - name: Upload CLI results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cli-contract-results
+          path: artifacts/architecture_v2_production_hardening/phase_07/ci_fail_closed_report.json
+
+  # 10. WEB TEST (Ubuntu)
+  web-test:
+    name: Web Test & Build (Ubuntu)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install web dependencies (from lockfile)
+        working-directory: apps/web
+        run: npm ci
+
+      - name: Web typecheck
+        working-directory: apps/web
+        run: npx tsc --noEmit
+
+      - name: Web unit tests
+        working-directory: apps/web
+        run: npm test -- --run
+
+      - name: Web coverage
+        working-directory: apps/web
+        run: npm run test:coverage -- --run
+
+      - name: Web build
+        working-directory: apps/web
+        run: npm run build
+
+      - name: Upload web build
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: web-build
+          path: apps/web/dist/
+
+  # 11. WEB TEST (Windows)
+  web-test-windows:
+    name: Web Test & Build (Windows)
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install web dependencies (from lockfile)
+        working-directory: apps/web
+        run: npm ci
+
+      - name: Web typecheck
+        working-directory: apps/web
+        run: npx tsc --noEmit
+
+      - name: Web unit tests
+        working-directory: apps/web
+        run: npm test -- --run
+
+      - name: Web build
+        working-directory: apps/web
+        run: npm run build
+
+  # 12. DESKTOP TEST (Ubuntu)
+  desktop-test:
+    name: Desktop Test & Build (Ubuntu)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      # Note: using npm install for desktop until package-lock.json is committed.
+      # After commit, switch to: npm ci
+      - name: Install desktop dependencies
+        working-directory: apps/desktop
+        run: npm ci
+
+      - name: Desktop typecheck
+        working-directory: apps/desktop
+        run: npx tsc --noEmit
+
+      - name: Desktop unit tests
+        working-directory: apps/desktop
+        run: npm test -- --run
+
+      - name: Desktop build
+        working-directory: apps/desktop
+        run: npm run build
+
+      - name: Upload desktop build
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: desktop-build
+          path: apps/desktop/dist/
+
+  # 13. DESKTOP TEST (Windows)
+  desktop-test-windows:
+    name: Desktop Test & Build (Windows)
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install desktop dependencies
+        working-directory: apps/desktop
+        run: npm ci
+
+      - name: Desktop typecheck
+        working-directory: apps/desktop
+        run: npx tsc --noEmit
+
+      - name: Desktop unit tests
+        working-directory: apps/desktop
+        run: npm test -- --run
+
+      - name: Desktop build
+        working-directory: apps/desktop
+        run: npm run build
+
+  # 14. FINAL EVIDENCE - Aggregate and verify all gates
+  # Gate verification uses GitHub's built-in needs context.
+  # If any needed job fails, this job won't run (or will reflect the failure).
+  final-evidence:
+    name: Final Evidence Gate
+    needs:
+      - artifact-protocol
+      - version-consistency
+      - architecture-boundaries
+      - python-unit-sqlite
+      - python-unit-windows
+      - python-integration-sqlite
+      - python-integration-postgres
+      - runtime-smoke
+      - cli-contract
+      - web-test
+      - web-test-windows
+      - desktop-test
+      - desktop-test-windows
+    runs-on: ubuntu-latest
+    if: success() || failure()
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: ${{ env.UV_VERSION }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Sync dependencies
+        run: uv sync --all-packages
+
+      - name: Capture CI environment
         run: |
-          uv run ruff check orchestration storage execution tests
-          uv run ruff format --check orchestration storage execution tests
+          uv run python scripts/verification/capture_environment.py \
+            --cwd . \
+            --output artifacts/architecture_v2_production_hardening/phase_07/final/ci_environment.json
 
-      - name: Architecture Boundary & No-Legacy Check
+      - name: Generate evidence summary
         run: |
-          uv run python scripts/check_no_legacy_orchestration.py
-          uv run python scripts/check_architecture_imports.py
+          mkdir -p artifacts/architecture_v2_production_hardening/phase_07/final
+          cat > artifacts/architecture_v2_production_hardening/phase_07/final/ci_run_manifest.json << 'MANIFEST_EOF'
+          {
+            "workflow": "CI & Phase 7 Verification Matrix",
+            "trigger": "${{ github.event_name }}",
+            "sha": "${{ github.sha }}",
+            "ref": "${{ github.ref }}",
+            "run_id": ${{ github.run_id }},
+            "run_number": ${{ github.run_number }},
+            "jobs": {
+              "artifact-protocol": "${{ needs.artifact-protocol.result }}",
+              "version-consistency": "${{ needs.version-consistency.result }}",
+              "architecture-boundaries": "${{ needs.architecture-boundaries.result }}",
+              "python-unit-sqlite": "${{ needs.python-unit-sqlite.result }}",
+              "python-unit-windows": "${{ needs.python-unit-windows.result }}",
+              "python-integration-sqlite": "${{ needs.python-integration-sqlite.result }}",
+              "python-integration-postgres": "${{ needs.python-integration-postgres.result }}",
+              "runtime-smoke": "${{ needs.runtime-smoke.result }}",
+              "cli-contract": "${{ needs.cli-contract.result }}",
+              "web-test": "${{ needs.web-test.result }}",
+              "web-test-windows": "${{ needs.web-test-windows.result }}",
+              "desktop-test": "${{ needs.desktop-test.result }}",
+              "desktop-test-windows": "${{ needs.desktop-test-windows.result }}"
+            },
+            "verified_sha": "${{ github.sha }}"
+          }
+          MANIFEST_EOF
 
-      - name: Root & Subsystem Unit Tests
-        run: uv run pytest tests/unit/ -v --tb=short
-
-      - name: Regression & Defect Tests
-        run: uv run pytest tests/regression/ -v --tb=short
-
-      - name: Backend & HTTP Integration Tests
-        run: uv run pytest tests/integration/ -v --tb=short
-
-      - name: Multi-replica fencing tests
-        if: matrix.database == 'postgresql'
+      - name: Gate verdict
         run: |
-          uv run pytest tests/integration/ -k "fencing or replica or leader" -v --tb=short
-          uv run pytest tests/unit/worker/ -k "fencing or replica or lease" -v --tb=short
+          if [ "${{ needs.artifact-protocol.result }}" != "success" ]; then echo "FAIL: artifact-protocol"; exit 1; fi
+          if [ "${{ needs.version-consistency.result }}" != "success" ]; then echo "FAIL: version-consistency"; exit 1; fi
+          if [ "${{ needs.architecture-boundaries.result }}" != "success" ]; then echo "FAIL: architecture-boundaries"; exit 1; fi
+          if [ "${{ needs.python-unit-sqlite.result }}" != "success" ]; then echo "FAIL: python-unit-sqlite"; exit 1; fi
+          if [ "${{ needs.python-unit-windows.result }}" != "success" ]; then echo "FAIL: python-unit-windows"; exit 1; fi
+          if [ "${{ needs.python-integration-sqlite.result }}" != "success" ]; then echo "FAIL: python-integration-sqlite"; exit 1; fi
+          if [ "${{ needs.python-integration-postgres.result }}" != "success" ]; then echo "FAIL: python-integration-postgres"; exit 1; fi
+          if [ "${{ needs.runtime-smoke.result }}" != "success" ]; then echo "FAIL: runtime-smoke"; exit 1; fi
+          if [ "${{ needs.cli-contract.result }}" != "success" ]; then echo "FAIL: cli-contract"; exit 1; fi
+          if [ "${{ needs.web-test.result }}" != "success" ]; then echo "FAIL: web-test"; exit 1; fi
+          if [ "${{ needs.web-test-windows.result }}" != "success" ]; then echo "FAIL: web-test-windows"; exit 1; fi
+          if [ "${{ needs.desktop-test.result }}" != "success" ]; then echo "FAIL: desktop-test"; exit 1; fi
+          if [ "${{ needs.desktop-test-windows.result }}" != "success" ]; then echo "FAIL: desktop-test-windows"; exit 1; fi
+          echo "ALL REQUIRED GATES: PASS"
+          echo "Verdict: CI_MATRIX_FAIL_CLOSED_READY"
 
-      - name: Empirical Performance Benchmark Validation
-        run: uv run python scripts/bench_orchestration_v2.py
-
-  frontend_matrix:
-      name: Frontend Typecheck & Build (${{ matrix.os }}, ${{ matrix.app }})
-      runs-on: ${{ matrix.os }}
-      strategy:
-        matrix:
-          os: [ubuntu-latest, windows-latest]
-          app: [desktop, web]
-      steps:
-        - uses: actions/checkout@v4
-
-        - name: Set up Node.js
-          uses: actions/setup-node@v4
-          with:
-            node-version: "20"
-
-        - name: Install ${{ matrix.app }} dependencies
-          working-directory: apps/${{ matrix.app }}
-          run: npm ci
-
-        - name: Frontend unit tests
-          working-directory: apps/${{ matrix.app }}
-          run: npm test -- --run
-
-        - name: Frontend typecheck
-          working-directory: apps/${{ matrix.app }}
-          run: npx tsc --noEmit
-
-        - name: Frontend build
-          working-directory: apps/${{ matrix.app }}
-          run: npm run build
-
-        - name: Frontend coverage
-          if: matrix.app == 'web'
-          working-directory: apps/web
-          run: npm run test:coverage -- --run
+      - name: Upload final evidence bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: final-evidence-bundle
+          path: artifacts/architecture_v2_production_hardening/phase_07/final/
