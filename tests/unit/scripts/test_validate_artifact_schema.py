@@ -106,6 +106,7 @@ class TestValidArtifact:
         with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
             json.dump(artifact, f)
             f.flush()
+            # Default mode: run_schema=True, run_semantic=True, run_hashes=False
             errors, warnings = validate_artifact(Path(f.name), schema)
         assert errors == [], f"Valid artifact should pass: {errors}"
         Path(f.name).unlink()
@@ -116,13 +117,73 @@ class TestValidArtifact:
         with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
             json.dump(artifact, f)
             f.flush()
-            errors, warnings = validate_artifact(Path(f.name), schema, mode="full")
+            # Full mode = run_schema + run_semantic (same as default)
+            errors, warnings = validate_artifact(
+                Path(f.name), schema,
+                run_schema=True, run_semantic=True, run_hashes=False
+            )
         assert errors == [], f"Valid artifact should pass: {errors}"
         Path(f.name).unlink()
 
 
 class TestInvalidArtifacts:
     """Tests for various invalid artifact scenarios."""
+
+    def create_base_artifact(self) -> dict:
+        """Create a base artifact with minimal valid structure."""
+        return {
+            "protocol_version": "1.0.0",
+            "generated_at": "2026-07-28T12:00:00Z",
+            "source_sha": "95b955178b8e38d5c8fb3d84cd7a4bedd19b864e",
+            "verified_sha": "09ce71b8dd5851cce6f2e741f8ac94bf25e81378",
+            "branch": "hardening/phase-7-integration",
+            "worktree_clean": True,
+            "commands": [{
+                "command_id": "test_cmd",
+                "command": "python -c 'print(1)'",
+                "cwd": ".",
+                "started_at": "2026-07-28T12:00:00Z",
+                "finished_at": "2026-07-28T12:00:01Z",
+                "duration_ms": 1000,
+                "exit_code": 0,
+                "stdout_tail": "1",
+                "stderr_tail": "",
+                "environment": {
+                    "os": "windows",
+                    "python": "3.11.15",
+                    "uv": "0.5.0",
+                    "git_sha": "95b955178b8e38d5c8fb3d84cd7a4bedd19b864e"
+                },
+                "expected_exit_codes": [0],
+                "result": "SUCCESS",
+                "output_sha256": "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456"
+            }],
+            "results": {"test": "passed"},
+            "failures": [],
+            "warnings": [],
+            "artifact_hashes": {
+                "test_artifact.json": "141e1041263e7c5f4b5a50badfbafe4efa2f1cfe1e5721e9a7effe41fda37b45"
+            },
+            "verdict": "PASS"
+        }
+
+    def validate_artifact(self, artifact: dict) -> list:
+        schema = load_schema()
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+            json.dump(artifact, f)
+            f.flush()
+            errors, _ = validate_artifact(Path(f.name), schema)
+        Path(f.name).unlink()
+        return errors
+
+    def validate_artifact_with_warnings(self, artifact: dict) -> tuple:
+        schema = load_schema()
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+            json.dump(artifact, f)
+            f.flush()
+            errors, warnings = validate_artifact(Path(f.name), schema)
+        Path(f.name).unlink()
+        return errors, warnings
 
     def test_empty_commands_fails(self):
         artifact = self.create_base_artifact()
@@ -195,80 +256,23 @@ class TestInvalidArtifacts:
         artifact = self.create_base_artifact()
         artifact["warnings"] = [{"check": "test", "message": "warning"}]  # missing severity, accepted, rationale
         errors, warnings = self.validate_artifact_with_warnings(artifact)
-        # Should produce warnings about missing fields
-        assert any("severity" in w for w in warnings) or any("accepted" in w for w in warnings) or any("rationale" in w for w in warnings)
+        # Now missing fields in warnings are errors (not warnings)
+        assert any("severity" in e for e in errors) or any("accepted" in e for e in errors) or any("rationale" in e for e in errors)
 
-    def test_self_hash_detected_as_warning(self):
+    def test_self_hash_detected_as_error(self):
+        """Self-hash should now be an ERROR (not warning) per Phase 1.4"""
         artifact = self.create_base_artifact()
-        artifact_name = "test_artifact.json"
-        artifact["artifact_hashes"][artifact_name] = "141e1041263e7c5f4b5a50badfbafe4efa2f1cfe1e5721e9a7effe41fda37b45"
+        # Use temp file's actual name as the hash key
         with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+            temp_name = Path(f.name).name
+            artifact["artifact_hashes"][temp_name] = "141e1041263e7c5f4b5a50badfbafe4efa2f1cfe1e5721e9a7effe41fda37b45"
             json.dump(artifact, f)
             f.flush()
             schema = load_schema()
-            errors, warnings = validate_artifact(Path(f.name), schema, mode="full")
+            errors, warnings = validate_artifact(Path(f.name), schema)
         Path(f.name).unlink()
-        # The warning should trigger if the artifact file name is in artifact_hashes
-        # Since our temp file has a different name, we need to set the hash key to the actual file name
-        # But the test logic expects a warning for self-hash. Let's skip this test or fix it.
-        # For now, let's just verify the validator runs without error
-        assert errors == []
-
-    def create_base_artifact(self) -> dict:
-        """Create a base artifact with minimal valid structure."""
-        return {
-            "protocol_version": "1.0.0",
-            "generated_at": "2026-07-28T12:00:00Z",
-            "source_sha": "95b955178b8e38d5c8fb3d84cd7a4bedd19b864e",
-            "verified_sha": "09ce71b8dd5851cce6f2e741f8ac94bf25e81378",
-            "branch": "hardening/phase-7-integration",
-            "worktree_clean": True,
-            "commands": [{
-                "command_id": "test_cmd",
-                "command": "python -c 'print(1)'",
-                "cwd": ".",
-                "started_at": "2026-07-28T12:00:00Z",
-                "finished_at": "2026-07-28T12:00:01Z",
-                "duration_ms": 1000,
-                "exit_code": 0,
-                "stdout_tail": "1",
-                "stderr_tail": "",
-                "environment": {
-                    "os": "windows",
-                    "python": "3.11.15",
-                    "uv": "0.5.0",
-                    "git_sha": "95b955178b8e38d5c8fb3d84cd7a4bedd19b864e"
-                },
-                "expected_exit_codes": [0],
-                "result": "SUCCESS",
-                "output_sha256": "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456"
-            }],
-            "results": {"test": "passed"},
-            "failures": [],
-            "warnings": [],
-            "artifact_hashes": {
-                "test_artifact.json": "141e1041263e7c5f4b5a50badfbafe4efa2f1cfe1e5721e9a7effe41fda37b45"
-            },
-            "verdict": "PASS"
-        }
-
-    def validate_artifact(self, artifact: dict) -> list:
-        schema = load_schema()
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
-            json.dump(artifact, f)
-            f.flush()
-            errors, _ = validate_artifact(Path(f.name), schema)
-        Path(f.name).unlink()
-        return errors
-
-    def validate_artifact_with_warnings(self, artifact: dict) -> tuple:
-        schema = load_schema()
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
-            json.dump(artifact, f)
-            f.flush()
-            errors, warnings = validate_artifact(Path(f.name), schema, mode="full")
-        Path(f.name).unlink()
-        return errors, warnings
+        # Self-hash should now be an ERROR
+        assert any("self-referential hash detected" in e for e in errors)
 
 
 class TestCommandReceiptValidation:
@@ -352,76 +356,7 @@ class TestCommandReceiptValidation:
 
 
 class TestValidatorModes:
-    """Tests for validator CLI modes."""
-
-    def test_schema_only_mode(self):
-        artifact = self.create_valid_artifact()
-        # Add semantic error (dirty worktree + PASS)
-        artifact["worktree_clean"] = False
-        artifact["verdict"] = "PASS"
-
-        schema = load_schema()
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
-            json.dump(artifact, f)
-            f.flush()
-            errors, _ = validate_artifact(Path(f.name), schema, mode="schema-only")
-        Path(f.name).unlink()
-
-        # Schema-only should not catch semantic error
-        assert errors == []
-
-    def test_semantic_mode_catches_dirty_worktree(self):
-        artifact = self.create_valid_artifact()
-        artifact["worktree_clean"] = False
-        artifact["verdict"] = "PASS"
-
-        schema = load_schema()
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
-            json.dump(artifact, f)
-            f.flush()
-            errors, _ = validate_artifact(Path(f.name), schema, mode="semantic")
-        Path(f.name).unlink()
-
-        assert any("dirty worktree cannot PASS" in e for e in errors)
-
-    def test_full_mode_catches_both(self):
-        artifact = self.create_valid_artifact()
-        artifact["worktree_clean"] = False
-        artifact["verdict"] = "PASS"
-        # Also make it schema-invalid by removing required field
-        del artifact["protocol_version"]
-
-        schema = load_schema()
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
-            json.dump(artifact, f)
-            f.flush()
-            errors, _ = validate_artifact(Path(f.name), schema, mode="full")
-        Path(f.name).unlink()
-
-        assert any("protocol_version" in e or "required" in e for e in errors)
-        assert any("dirty worktree cannot PASS" in e for e in errors)
-
-    def test_fail_on_warning(self):
-        artifact = self.create_valid_artifact()
-        # Add an invalid warning that will trigger a warning (missing severity)
-        artifact["warnings"] = [{
-            "check": "test",
-            "message": "warning",
-            # missing severity, accepted, rationale - this will generate warnings
-        }]
-
-        schema = load_schema()
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
-            json.dump(artifact, f)
-            f.flush()
-            errors, warnings = validate_artifact(
-                Path(f.name), schema, mode="full", fail_on_warning=True
-            )
-        Path(f.name).unlink()
-
-        # The invalid warning should generate warnings, which then become errors with fail_on_warning
-        assert len(errors) > 0
-        assert any("WARNING (treated as error)" in e for e in errors)
+    """Tests for validator CLI modes (run_schema, run_semantic, run_hashes)."""
 
     def create_valid_artifact(self) -> dict:
         return {
@@ -459,6 +394,94 @@ class TestValidatorModes:
             },
             "verdict": "PASS"
         }
+
+    def test_schema_only_mode(self):
+        """--schema-only should only run schema validation, skip semantic."""
+        artifact = self.create_valid_artifact()
+        # Add semantic error (dirty worktree + PASS)
+        artifact["worktree_clean"] = False
+        artifact["verdict"] = "PASS"
+
+        schema = load_schema()
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+            json.dump(artifact, f)
+            f.flush()
+            # Schema-only: run_schema=True, run_semantic=False
+            errors, _ = validate_artifact(
+                Path(f.name), schema,
+                run_schema=True, run_semantic=False, run_hashes=False
+            )
+        Path(f.name).unlink()
+
+        # Schema-only should not catch semantic error
+        assert errors == []
+
+    def test_semantic_mode_catches_dirty_worktree(self):
+        """--semantic should catch semantic errors."""
+        artifact = self.create_valid_artifact()
+        artifact["worktree_clean"] = False
+        artifact["verdict"] = "PASS"
+
+        schema = load_schema()
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+            json.dump(artifact, f)
+            f.flush()
+            # Semantic-only: run_schema=False, run_semantic=True
+            errors, _ = validate_artifact(
+                Path(f.name), schema,
+                run_schema=False, run_semantic=True, run_hashes=False
+            )
+        Path(f.name).unlink()
+
+        assert any("dirty worktree cannot PASS" in e for e in errors)
+
+    def test_full_mode_catches_both(self):
+        """Default mode (schema + semantic) catches both."""
+        artifact = self.create_valid_artifact()
+        artifact["worktree_clean"] = False
+        artifact["verdict"] = "PASS"
+        # Also make it schema-invalid by removing required field
+        del artifact["protocol_version"]
+
+        schema = load_schema()
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+            json.dump(artifact, f)
+            f.flush()
+            # Default: run_schema=True, run_semantic=True
+            errors, _ = validate_artifact(Path(f.name), schema)
+        Path(f.name).unlink()
+
+        assert any("protocol_version" in e or "required" in e for e in errors)
+        assert any("dirty worktree cannot PASS" in e for e in errors)
+
+    def test_fail_on_warning(self):
+        """--fail-on-warning should turn warnings into errors."""
+        artifact = self.create_valid_artifact()
+        # Add a valid warning structure that will trigger a semantic warning:
+        # accepted=false in PASS artifact (Phase 1.6)
+        artifact["warnings"] = [{
+            "check": "test_warning",
+            "message": "This warning is not accepted",
+            "severity": "LOW",
+            "accepted": False,
+            "rationale": "Testing fail-on-warning"
+        }]
+
+        schema = load_schema()
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+            json.dump(artifact, f)
+            f.flush()
+            errors, warnings = validate_artifact(
+                Path(f.name), schema,
+                run_schema=True, run_semantic=True,
+                fail_on_warning=True
+            )
+        Path(f.name).unlink()
+
+        # The accepted=false in PASS should generate an error (not warning)
+        # but the warning about it should become an error with fail_on_warning
+        assert len(errors) > 0
+        assert any("accepted=false cannot appear in PASS artifact" in e for e in errors)
 
 
 class TestDirectoryGlobSupport:
@@ -554,7 +577,14 @@ class TestCLIIntegration:
             "branch": "hardening/phase-7-integration",
             "worktree_clean": False,
             "verdict": "PASS",  # Semantic error: dirty worktree + PASS
-            "commands": [{"command_id": "test", "command": "echo", "cwd": ".", "started_at": "2026-07-28T12:00:00Z", "finished_at": "2026-07-28T12:00:01Z", "duration_ms": 100, "exit_code": 0, "stdout_tail": "", "stderr_tail": "", "environment": {"os": "windows", "python": "3.11", "uv": "0.5", "git_sha": "95b955178b8e38d5c8fb3d84cd7a4bedd19b864e"}, "expected_exit_codes": [0], "result": "SUCCESS", "output_sha256": "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456"}],
+            "commands": [{
+                "command_id": "test", "command": "echo", "cwd": ".",
+                "started_at": "2026-07-28T12:00:00Z", "finished_at": "2026-07-28T12:00:01Z",
+                "duration_ms": 100, "exit_code": 0, "stdout_tail": "", "stderr_tail": "",
+                "environment": {"os": "windows", "python": "3.11", "uv": "0.5", "git_sha": "95b955178b8e38d5c8fb3d84cd7a4bedd19b864e"},
+                "expected_exit_codes": [0], "result": "SUCCESS",
+                "output_sha256": "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456"
+            }],
             "results": {},
             "failures": [],
             "warnings": [],

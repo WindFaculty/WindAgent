@@ -54,10 +54,12 @@ def compute_file_hash(filepath: Path) -> str:
 def validate_artifact(
     artifact_path: Path,
     schema: Dict[str, Any],
-    mode: str = "full",
-    verify_hashes: bool = False,
+    run_schema: bool = True,
+    run_semantic: bool = True,
+    run_hashes: bool = False,
     fail_on_warning: bool = False,
     artifact_dir: Optional[Path] = None,
+    repo_root: Optional[Path] = None,
 ) -> Tuple[List[str], List[str]]:
     """Validate a single artifact file against schema and additional rules.
     Returns (errors, warnings)."""
@@ -70,21 +72,21 @@ def validate_artifact(
     except json.JSONDecodeError as e:
         return [f"Invalid JSON: {e}"], []
 
-    # Schema validation (always run unless schema-only is false and we only want semantic)
-    if mode in ("full", "schema-only"):
+    # Schema validation
+    if run_schema:
         try:
             validate(instance=artifact, schema=schema)
         except ValidationError as e:
             errors.append(f"Schema validation failed: {e.message}")
 
     # Semantic validations
-    if mode in ("full", "semantic"):
-        sem_errors, sem_warnings = _validate_semantics(artifact, artifact_path, artifact_dir, verify_hashes)
+    if run_semantic:
+        sem_errors, sem_warnings = _validate_semantics(artifact, artifact_path, artifact_dir, run_hashes, repo_root)
         errors.extend(sem_errors)
         warnings.extend(sem_warnings)
 
     # Hash verification
-    if mode in ("full", "verify-hashes") and artifact_dir:
+    if run_hashes and artifact_dir:
         hash_errors = _verify_artifact_hashes(artifact, artifact_dir)
         errors.extend(hash_errors)
 
@@ -99,6 +101,7 @@ def _validate_semantics(
     artifact_path: Path,
     artifact_dir: Optional[Path] = None,
     verify_hashes: bool = False,
+    repo_root: Optional[Path] = None,
 ) -> Tuple[List[str], List[str]]:
     """Validate semantic rules beyond JSON schema."""
     errors = []
@@ -162,7 +165,7 @@ def _validate_semantics(
     except ValueError:
         errors.append("generated_at must be valid ISO8601 datetime")
 
-    # 10. warnings must be structured objects (not strings)
+    # 10. warnings must be structured objects (not strings) with required fields
     for warning in artifact.get("warnings", []):
         if isinstance(warning, str):
             errors.append("warnings must be structured objects, not strings. Use {check, message, severity, accepted, rationale}")
@@ -172,18 +175,33 @@ def _validate_semantics(
             accepted = warning.get("accepted", None)
             rationale = warning.get("rationale", "")
             if not check:
-                warnings.append("Warning missing 'check' field")
+                errors.append("Warning missing 'check' field")
             if severity not in VALID_WARNING_SEVERITIES:
-                warnings.append(f"Warning severity must be one of {VALID_WARNING_SEVERITIES}, got '{severity}'")
+                errors.append(f"Warning severity must be one of {VALID_WARNING_SEVERITIES}, got '{severity}'")
             if accepted is None:
-                warnings.append("Warning missing 'accepted' field")
+                errors.append("Warning missing 'accepted' field")
             if not rationale:
-                warnings.append("Warning missing 'rationale' field")
+                errors.append("Warning missing 'rationale' field")
+            # Phase 1.6: accepted=false cannot appear in PASS artifact
+            if verdict == "PASS" and accepted is False:
+                errors.append("Warning with accepted=false cannot appear in PASS artifact")
 
-    # 11. Self-hash check: artifact should not contain its own hash
+    # 11. Self-hash check: artifact should not contain its own hash (ERROR not warning)
     artifact_name = artifact_path.name
     if artifact_name in hashes:
-        warnings.append(f"Artifact contains its own hash ({artifact_name}) - self-referential hash detected")
+        errors.append(f"Artifact contains its own hash ({artifact_name}) - self-referential hash detected")
+
+    # 12. CRITICAL/HIGH failures always block PASS
+    if verdict == "PASS":
+        for failure in artifact.get("failures", []):
+            severity = failure.get("severity", "")
+            if severity in ("CRITICAL", "HIGH"):
+                errors.append(f"FAIL verdict required: failure with severity {severity} present but verdict is PASS")
+
+    # 13. Git identity checks (Phase 1.5) - only when repo_root explicitly provided
+    if repo_root is not None:
+        git_errors = _validate_git_identity(artifact, repo_root, verdict)
+        errors.extend(git_errors)
 
     return errors, warnings
 
@@ -273,6 +291,83 @@ def _verify_artifact_hashes(artifact: Dict[str, Any], artifact_dir: Path) -> Lis
     return errors
 
 
+def _validate_git_identity(
+    artifact: Dict[str, Any],
+    repo_root: Optional[Path] = None,
+    verdict: str = "",
+) -> List[str]:
+    """Validate Git identity per Phase 1.5 requirements."""
+    errors = []
+    import subprocess
+
+    verified_sha = artifact.get("verified_sha", "")
+    source_sha = artifact.get("source_sha", "")
+    worktree_clean = artifact.get("worktree_clean", True)
+
+    # Find git repo root
+    if repo_root is None:
+        # Try to find from artifact directory or cwd
+        try:
+            result = subprocess.run(
+                ["git", "rev-parse", "--show-toplevel"],
+                capture_output=True, text=True, check=True
+            )
+            git_root = Path(result.stdout.strip())
+        except subprocess.CalledProcessError:
+            git_root = None
+    else:
+        git_root = repo_root
+
+    if git_root is None:
+        errors.append("Cannot determine Git repository root (use --repo-root)")
+        return errors
+
+    # 1. verified_sha must exist in git (git cat-file -e)
+    if verified_sha:
+        try:
+            subprocess.run(
+                ["git", "cat-file", "-e", verified_sha],
+                cwd=git_root, capture_output=True, check=True
+            )
+        except subprocess.CalledProcessError:
+            errors.append(f"verified_sha {verified_sha} does not exist in Git repository")
+
+    # 2. source_sha must exist in git
+    if source_sha:
+        try:
+            subprocess.run(
+                ["git", "cat-file", "-e", source_sha],
+                cwd=git_root, capture_output=True, check=True
+            )
+        except subprocess.CalledProcessError:
+            errors.append(f"source_sha {source_sha} does not exist in Git repository")
+
+    # 3. Final artifact: verified_sha == HEAD or explicit candidate SHA
+    # Check if this looks like a final artifact (has commands and artifact_hashes)
+    commands = artifact.get("commands", [])
+    hashes = artifact.get("artifact_hashes", {})
+    if commands and hashes and verified_sha:
+        try:
+            result = subprocess.run(
+                ["git", "rev-parse", "HEAD"],
+                cwd=git_root, capture_output=True, text=True, check=True
+            )
+            head_sha = result.stdout.strip()
+            if verified_sha != head_sha:
+                errors.append(f"Final artifact: verified_sha ({verified_sha[:8]}) != HEAD ({head_sha[:8]})")
+        except subprocess.CalledProcessError:
+            pass
+
+    # 4. environment.git_sha == verified_sha for final receipts
+    # This is checked per-command in _validate_command_receipt
+
+    # 5. PASS + dirty worktree => fail
+    if worktree_clean is False and verdict == "PASS":
+        errors.append("worktree_clean=false but verdict=PASS (dirty worktree cannot PASS)")
+
+    return errors
+
+
 def collect_artifact_files(
     paths: List[str],
     recursive: bool = False,
@@ -308,6 +403,7 @@ Examples:
   python validate_artifact_schema.py --verify-hashes artifact.json
   python validate_artifact_schema.py --json artifact.json
   python validate_artifact_schema.py --fail-on-warning artifact.json
+  python validate_artifact_schema.py --repo-root /path/to/repo artifact.json
 """
     )
     parser.add_argument("files", nargs="*", help="Artifact JSON files to validate")
@@ -315,21 +411,21 @@ Examples:
     parser.add_argument("--recursive", "-r", action="store_true", help="Recursively search subdirectories")
     parser.add_argument("--schema-only", action="store_true", help="Only validate JSON schema, skip semantic checks")
     parser.add_argument("--semantic", action="store_true", help="Only run semantic validations (skip JSON schema)")
-    parser.add_argument("--verify-hashes", action="store_true", help="Verify artifact_hashes against actual files")
+    parser.add_argument("--verify-hashes", action="store_true", help="Verify artifact_hashes against actual files (additive: schema + semantic + hashes)")
     parser.add_argument("--json", action="store_true", help="Output results as JSON")
     parser.add_argument("--fail-on-warning", action="store_true", help="Treat warnings as errors")
+    parser.add_argument("--repo-root", help="Explicit repository root for git identity checks")
 
     args = parser.parse_args()
 
-    # Determine mode
-    if args.schema_only:
-        mode = "schema-only"
-    elif args.semantic:
-        mode = "semantic"
-    elif args.verify_hashes:
-        mode = "verify-hashes"
-    else:
-        mode = "full"
+    # Determine mode - flags are additive per Phase 1.3 spec
+    # default: schema + semantic
+    # --verify-hashes: schema + semantic + hashes
+    # --schema-only: schema only
+    # --semantic: semantic only
+    run_schema = not args.semantic
+    run_semantic = not args.schema_only
+    run_hashes = args.verify_hashes
 
     schema = load_schema()
     all_errors = []
@@ -350,19 +446,24 @@ Examples:
         print("No JSON artifact files found to validate")
         return 1
 
+    # Resolve repo root for git identity checks (only when explicitly provided via --repo-root)
+    repo_root = Path(args.repo_root).resolve() if args.repo_root else None
+
     for artifact_path in files_to_validate:
         if not artifact_path.exists():
             all_errors.append(f"File not found: {artifact_path}")
             continue
 
-        artifact_dir = artifact_path.parent if args.verify_hashes else None
+        artifact_dir = artifact_path.parent if run_hashes else None
         errors, warnings = validate_artifact(
             artifact_path,
             schema,
-            mode=mode,
-            verify_hashes=args.verify_hashes,
+            run_schema=run_schema,
+            run_semantic=run_semantic,
+            run_hashes=run_hashes,
             fail_on_warning=args.fail_on_warning,
             artifact_dir=artifact_dir,
+            repo_root=repo_root,
         )
 
         result = {
