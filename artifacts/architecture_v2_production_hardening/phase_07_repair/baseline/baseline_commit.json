@@ -1,0 +1,8 @@
+{
+  "baseline_sha": "601fd1282be7c4a7ae13f02422b70d5f107aaafd",
+  "branch": "fix/phase7-verification-integrity",
+  "parent_branch": "hardening/phase-7-integration",
+  "created_at": "2026-07-28T12:00:00Z",
+  "source_verdict": "VERSION_DOCUMENTATION_VERDICT_CONVERGED (incorrect)",
+  "corrected_verdict": "PHASE_7_CODE_CONVERGED_VERIFICATION_BLOCKED"
+}

@@ -1,0 +1,461 @@
+Validating artifacts\architecture_v2_production_hardening\phase_07\artifact_manifest.json... PASS
+  WARNING: Artifact contains its own hash (artifact_manifest.json) - self-referential hash detected
+Validating artifacts\architecture_v2_production_hardening\phase_07\artifact_schema_report.json... FAIL (8 errors)
+  ERROR: Schema validation failed: '89012345678901234567890abcdef1234567890abcdef12345678901234567' does not match '^[a-f0-9]{64}$'
+  ERROR: Command[1] output_sha256 must be 64 lowercase hex chars
+  ERROR: Command[2] output_sha256 must be 64 lowercase hex chars
+  ERROR: Command[3] output_sha256 must be 64 lowercase hex chars
+  ERROR: Command[4] output_sha256 must be 64 lowercase hex chars
+  ERROR: Command[5] output_sha256 must be 64 lowercase hex chars
+  ERROR: Command[6] output_sha256 must be 64 lowercase hex chars
+  ERROR: Command[7] output_sha256 must be 64 lowercase hex chars
+  WARNING: Artifact contains its own hash (artifact_schema_report.json) - self-referential hash detected
+Validating artifacts\architecture_v2_production_hardening\phase_07\ci_fail_closed_report.json... FAIL (3 errors)
+  ERROR: Schema validation failed: [] should be non-empty
+  ERROR: commands array must have at least one command receipt
+  ERROR: artifact_hashes must not be empty
+Validating artifacts\architecture_v2_production_hardening\phase_07\command_validation_report.json... FAIL (342 errors)
+  ERROR: Schema validation failed: {} should be non-empty
+  ERROR: Command[0] missing required field: command_id
+  ERROR: Command[0] missing required field: cwd
+  ERROR: Command[0] missing required field: started_at
+  ERROR: Command[0] missing required field: finished_at
+  ERROR: Command[0] missing required field: duration_ms
+  ERROR: Command[0] missing required field: stdout_tail
+  ERROR: Command[0] missing required field: stderr_tail
+  ERROR: Command[0] missing required field: environment
+  ERROR: Command[0] missing required field: expected_exit_codes
+  ERROR: Command[0] missing required field: result
+  ERROR: Command[0] missing required field: output_sha256
+  ERROR: Command[0] started_at must be valid ISO8601 datetime
+  ERROR: Command[0] finished_at must be valid ISO8601 datetime
+  ERROR: Command[0] duration_ms must be non-negative integer
+  ERROR: Command[0] expected_exit_codes must be non-empty array
+  ERROR: Command[0] result must be one of {'TIMEOUT', 'SUCCESS', 'INTERRUPTED', 'FAILURE'}, got ''
+  ERROR: Command[0] environment missing required field: os
+  ERROR: Command[0] environment missing required field: python
+  ERROR: Command[0] environment missing required field: uv
+  ERROR: Command[0] environment missing required field: git_sha
+  ERROR: Command[1] missing required field: command_id
+  ERROR: Command[1] missing required field: cwd
+  ERROR: Command[1] missing required field: started_at
+  ERROR: Command[1] missing required field: finished_at
+  ERROR: Command[1] missing required field: duration_ms
+  ERROR: Command[1] missing required field: stdout_tail
+  ERROR: Command[1] missing required field: stderr_tail
+  ERROR: Command[1] missing required field: environment
+  ERROR: Command[1] missing required field: expected_exit_codes
+  ERROR: Command[1] missing required field: result
+  ERROR: Command[1] missing required field: output_sha256
+  ERROR: Command[1] started_at must be valid ISO8601 datetime
+  ERROR: Command[1] finished_at must be valid ISO8601 datetime
+  ERROR: Command[1] duration_ms must be non-negative integer
+  ERROR: Command[1] expected_exit_codes must be non-empty array
+  ERROR: Command[1] result must be one of {'TIMEOUT', 'SUCCESS', 'INTERRUPTED', 'FAILURE'}, got ''
+  ERROR: Command[1] environment missing required field: os
+  ERROR: Command[1] environment missing required field: python
+  ERROR: Command[1] environment missing required field: uv
+  ERROR: Command[1] environment missing required field: git_sha
+  ERROR: Command[2] missing required field: command_id
+  ERROR: Command[2] missing required field: cwd
+  ERROR: Command[2] missing required field: started_at
+  ERROR: Command[2] missing required field: finished_at
+  ERROR: Command[2] missing required field: duration_ms
+  ERROR: Command[2] missing required field: stdout_tail
+  ERROR: Command[2] missing required field: stderr_tail
+  ERROR: Command[2] missing required field: environment
+  ERROR: Command[2] missing required field: expected_exit_codes
+  ERROR: Command[2] missing required field: result
+  ERROR: Command[2] missing required field: output_sha256
+  ERROR: Command[2] started_at must be valid ISO8601 datetime
+  ERROR: Command[2] finished_at must be valid ISO8601 datetime
+  ERROR: Command[2] duration_ms must be non-negative integer
+  ERROR: Command[2] expected_exit_codes must be non-empty array
+  ERROR: Command[2] result must be one of {'TIMEOUT', 'SUCCESS', 'INTERRUPTED', 'FAILURE'}, got ''
+  ERROR: Command[2] environment missing required field: os
+  ERROR: Command[2] environment missing required field: python
+  ERROR: Command[2] environment missing required field: uv
+  ERROR: Command[2] environment missing required field: git_sha
+  ERROR: Command[3] missing required field: command_id
+  ERROR: Command[3] missing required field: cwd
+  ERROR: Command[3] missing required field: started_at
+  ERROR: Command[3] missing required field: finished_at
+  ERROR: Command[3] missing required field: duration_ms
+  ERROR: Command[3] missing required field: stdout_tail
+  ERROR: Command[3] missing required field: stderr_tail
+  ERROR: Command[3] missing required field: environment
+  ERROR: Command[3] missing required field: expected_exit_codes
+  ERROR: Command[3] missing required field: result
+  ERROR: Command[3] missing required field: output_sha256
+  ERROR: Command[3] started_at must be valid ISO8601 datetime
+  ERROR: Command[3] finished_at must be valid ISO8601 datetime
+  ERROR: Command[3] duration_ms must be non-negative integer
+  ERROR: Command[3] expected_exit_codes must be non-empty array
+  ERROR: Command[3] result must be one of {'TIMEOUT', 'SUCCESS', 'INTERRUPTED', 'FAILURE'}, got ''
+  ERROR: Command[3] environment missing required field: os
+  ERROR: Command[3] environment missing required field: python
+  ERROR: Command[3] environment missing required field: uv
+  ERROR: Command[3] environment missing required field: git_sha
+  ERROR: Command[4] missing required field: command_id
+  ERROR: Command[4] missing required field: cwd
+  ERROR: Command[4] missing required field: started_at
+  ERROR: Command[4] missing required field: finished_at
+  ERROR: Command[4] missing required field: duration_ms
+  ERROR: Command[4] missing required field: stdout_tail
+  ERROR: Command[4] missing required field: stderr_tail
+  ERROR: Command[4] missing required field: environment
+  ERROR: Command[4] missing required field: expected_exit_codes
+  ERROR: Command[4] missing required field: result
+  ERROR: Command[4] missing required field: output_sha256
+  ERROR: Command[4] started_at must be valid ISO8601 datetime
+  ERROR: Command[4] finished_at must be valid ISO8601 datetime
+  ERROR: Command[4] duration_ms must be non-negative integer
+  ERROR: Command[4] expected_exit_codes must be non-empty array
+  ERROR: Command[4] result must be one of {'TIMEOUT', 'SUCCESS', 'INTERRUPTED', 'FAILURE'}, got ''
+  ERROR: Command[4] environment missing required field: os
+  ERROR: Command[4] environment missing required field: python
+  ERROR: Command[4] environment missing required field: uv
+  ERROR: Command[4] environment missing required field: git_sha
+  ERROR: Command[5] missing required field: command_id
+  ERROR: Command[5] missing required field: cwd
+  ERROR: Command[5] missing required field: started_at
+  ERROR: Command[5] missing required field: finished_at
+  ERROR: Command[5] missing required field: duration_ms
+  ERROR: Command[5] missing required field: stdout_tail
+  ERROR: Command[5] missing required field: stderr_tail
+  ERROR: Command[5] missing required field: environment
+  ERROR: Command[5] missing required field: expected_exit_codes
+  ERROR: Command[5] missing required field: result
+  ERROR: Command[5] missing required field: output_sha256
+  ERROR: Command[5] started_at must be valid ISO8601 datetime
+  ERROR: Command[5] finished_at must be valid ISO8601 datetime
+  ERROR: Command[5] duration_ms must be non-negative integer
+  ERROR: Command[5] expected_exit_codes must be non-empty array
+  ERROR: Command[5] result must be one of {'TIMEOUT', 'SUCCESS', 'INTERRUPTED', 'FAILURE'}, got ''
+  ERROR: Command[5] environment missing required field: os
+  ERROR: Command[5] environment missing required field: python
+  ERROR: Command[5] environment missing required field: uv
+  ERROR: Command[5] environment missing required field: git_sha
+  ERROR: Command[6] missing required field: command_id
+  ERROR: Command[6] missing required field: cwd
+  ERROR: Command[6] missing required field: started_at
+  ERROR: Command[6] missing required field: finished_at
+  ERROR: Command[6] missing required field: duration_ms
+  ERROR: Command[6] missing required field: stdout_tail
+  ERROR: Command[6] missing required field: stderr_tail
+  ERROR: Command[6] missing required field: environment
+  ERROR: Command[6] missing required field: expected_exit_codes
+  ERROR: Command[6] missing required field: result
+  ERROR: Command[6] missing required field: output_sha256
+  ERROR: Command[6] started_at must be valid ISO8601 datetime
+  ERROR: Command[6] finished_at must be valid ISO8601 datetime
+  ERROR: Command[6] duration_ms must be non-negative integer
+  ERROR: Command[6] expected_exit_codes must be non-empty array
+  ERROR: Command[6] result must be one of {'TIMEOUT', 'SUCCESS', 'INTERRUPTED', 'FAILURE'}, got ''
+  ERROR: Command[6] environment missing required field: os
+  ERROR: Command[6] environment missing required field: python
+  ERROR: Command[6] environment missing required field: uv
+  ERROR: Command[6] environment missing required field: git_sha
+  ERROR: Command[7] missing required field: command_id
+  ERROR: Command[7] missing required field: cwd
+  ERROR: Command[7] missing required field: started_at
+  ERROR: Command[7] missing required field: finished_at
+  ERROR: Command[7] missing required field: duration_ms
+  ERROR: Command[7] missing required field: stdout_tail
+  ERROR: Command[7] missing required field: stderr_tail
+  ERROR: Command[7] missing required field: environment
+  ERROR: Command[7] missing required field: expected_exit_codes
+  ERROR: Command[7] missing required field: result
+  ERROR: Command[7] missing required field: output_sha256
+  ERROR: Command[7] started_at must be valid ISO8601 datetime
+  ERROR: Command[7] finished_at must be valid ISO8601 datetime
+  ERROR: Command[7] duration_ms must be non-negative integer
+  ERROR: Command[7] expected_exit_codes must be non-empty array
+  ERROR: Command[7] result must be one of {'TIMEOUT', 'SUCCESS', 'INTERRUPTED', 'FAILURE'}, got ''
+  ERROR: Command[7] environment missing required field: os
+  ERROR: Command[7] environment missing required field: python
+  ERROR: Command[7] environment missing required field: uv
+  ERROR: Command[7] environment missing required field: git_sha
+  ERROR: Command[8] missing required field: command_id
+  ERROR: Command[8] missing required field: cwd
+  ERROR: Command[8] missing required field: started_at
+  ERROR: Command[8] missing required field: finished_at
+  ERROR: Command[8] missing required field: duration_ms
+  ERROR: Command[8] missing required field: stdout_tail
+  ERROR: Command[8] missing required field: stderr_tail
+  ERROR: Command[8] missing required field: environment
+  ERROR: Command[8] missing required field: expected_exit_codes
+  ERROR: Command[8] missing required field: result
+  ERROR: Command[8] missing required field: output_sha256
+  ERROR: Command[8] started_at must be valid ISO8601 datetime
+  ERROR: Command[8] finished_at must be valid ISO8601 datetime
+  ERROR: Command[8] duration_ms must be non-negative integer
+  ERROR: Command[8] expected_exit_codes must be non-empty array
+  ERROR: Command[8] result must be one of {'TIMEOUT', 'SUCCESS', 'INTERRUPTED', 'FAILURE'}, got ''
+  ERROR: Command[8] environment missing required field: os
+  ERROR: Command[8] environment missing required field: python
+  ERROR: Command[8] environment missing required field: uv
+  ERROR: Command[8] environment missing required field: git_sha
+  ERROR: Command[9] missing required field: command_id
+  ERROR: Command[9] missing required field: cwd
+  ERROR: Command[9] missing required field: started_at
+  ERROR: Command[9] missing required field: finished_at
+  ERROR: Command[9] missing required field: duration_ms
+  ERROR: Command[9] missing required field: stdout_tail
+  ERROR: Command[9] missing required field: stderr_tail
+  ERROR: Command[9] missing required field: environment
+  ERROR: Command[9] missing required field: expected_exit_codes
+  ERROR: Command[9] missing required field: result
+  ERROR: Command[9] missing required field: output_sha256
+  ERROR: Command[9] started_at must be valid ISO8601 datetime
+  ERROR: Command[9] finished_at must be valid ISO8601 datetime
+  ERROR: Command[9] duration_ms must be non-negative integer
+  ERROR: Command[9] expected_exit_codes must be non-empty array
+  ERROR: Command[9] result must be one of {'TIMEOUT', 'SUCCESS', 'INTERRUPTED', 'FAILURE'}, got ''
+  ERROR: Command[9] environment missing required field: os
+  ERROR: Command[9] environment missing required field: python
+  ERROR: Command[9] environment missing required field: uv
+  ERROR: Command[9] environment missing required field: git_sha
+  ERROR: Command[10] missing required field: command_id
+  ERROR: Command[10] missing required field: cwd
+  ERROR: Command[10] missing required field: started_at
+  ERROR: Command[10] missing required field: finished_at
+  ERROR: Command[10] missing required field: duration_ms
+  ERROR: Command[10] missing required field: stdout_tail
+  ERROR: Command[10] missing required field: stderr_tail
+  ERROR: Command[10] missing required field: environment
+  ERROR: Command[10] missing required field: expected_exit_codes
+  ERROR: Command[10] missing required field: result
+  ERROR: Command[10] missing required field: output_sha256
+  ERROR: Command[10] started_at must be valid ISO8601 datetime
+  ERROR: Command[10] finished_at must be valid ISO8601 datetime
+  ERROR: Command[10] duration_ms must be non-negative integer
+  ERROR: Command[10] expected_exit_codes must be non-empty array
+  ERROR: Command[10] result must be one of {'TIMEOUT', 'SUCCESS', 'INTERRUPTED', 'FAILURE'}, got ''
+  ERROR: Command[10] environment missing required field: os
+  ERROR: Command[10] environment missing required field: python
+  ERROR: Command[10] environment missing required field: uv
+  ERROR: Command[10] environment missing required field: git_sha
+  ERROR: Command[11] missing required field: command_id
+  ERROR: Command[11] missing required field: cwd
+  ERROR: Command[11] missing required field: started_at
+  ERROR: Command[11] missing required field: finished_at
+  ERROR: Command[11] missing required field: duration_ms
+  ERROR: Command[11] missing required field: stdout_tail
+  ERROR: Command[11] missing required field: stderr_tail
+  ERROR: Command[11] missing required field: environment
+  ERROR: Command[11] missing required field: expected_exit_codes
+  ERROR: Command[11] missing required field: result
+  ERROR: Command[11] missing required field: output_sha256
+  ERROR: Command[11] started_at must be valid ISO8601 datetime
+  ERROR: Command[11] finished_at must be valid ISO8601 datetime
+  ERROR: Command[11] duration_ms must be non-negative integer
+  ERROR: Command[11] expected_exit_codes must be non-empty array
+  ERROR: Command[11] result must be one of {'TIMEOUT', 'SUCCESS', 'INTERRUPTED', 'FAILURE'}, got ''
+  ERROR: Command[11] environment missing required field: os
+  ERROR: Command[11] environment missing required field: python
+  ERROR: Command[11] environment missing required field: uv
+  ERROR: Command[11] environment missing required field: git_sha
+  ERROR: Command[12] missing required field: command_id
+  ERROR: Command[12] missing required field: cwd
+  ERROR: Command[12] missing required field: started_at
+  ERROR: Command[12] missing required field: finished_at
+  ERROR: Command[12] missing required field: duration_ms
+  ERROR: Command[12] missing required field: stdout_tail
+  ERROR: Command[12] missing required field: stderr_tail
+  ERROR: Command[12] missing required field: environment
+  ERROR: Command[12] missing required field: expected_exit_codes
+  ERROR: Command[12] missing required field: result
+  ERROR: Command[12] missing required field: output_sha256
+  ERROR: Command[12] started_at must be valid ISO8601 datetime
+  ERROR: Command[12] finished_at must be valid ISO8601 datetime
+  ERROR: Command[12] duration_ms must be non-negative integer
+  ERROR: Command[12] expected_exit_codes must be non-empty array
+  ERROR: Command[12] result must be one of {'TIMEOUT', 'SUCCESS', 'INTERRUPTED', 'FAILURE'}, got ''
+  ERROR: Command[12] environment missing required field: os
+  ERROR: Command[12] environment missing required field: python
+  ERROR: Command[12] environment missing required field: uv
+  ERROR: Command[12] environment missing required field: git_sha
+  ERROR: Command[13] missing required field: command_id
+  ERROR: Command[13] missing required field: cwd
+  ERROR: Command[13] missing required field: started_at
+  ERROR: Command[13] missing required field: finished_at
+  ERROR: Command[13] missing required field: duration_ms
+  ERROR: Command[13] missing required field: stdout_tail
+  ERROR: Command[13] missing required field: stderr_tail
+  ERROR: Command[13] missing required field: environment
+  ERROR: Command[13] missing required field: expected_exit_codes
+  ERROR: Command[13] missing required field: result
+  ERROR: Command[13] missing required field: output_sha256
+  ERROR: Command[13] started_at must be valid ISO8601 datetime
+  ERROR: Command[13] finished_at must be valid ISO8601 datetime
+  ERROR: Command[13] duration_ms must be non-negative integer
+  ERROR: Command[13] expected_exit_codes must be non-empty array
+  ERROR: Command[13] result must be one of {'TIMEOUT', 'SUCCESS', 'INTERRUPTED', 'FAILURE'}, got ''
+  ERROR: Command[13] environment missing required field: os
+  ERROR: Command[13] environment missing required field: python
+  ERROR: Command[13] environment missing required field: uv
+  ERROR: Command[13] environment missing required field: git_sha
+  ERROR: Command[14] missing required field: command_id
+  ERROR: Command[14] missing required field: cwd
+  ERROR: Command[14] missing required field: started_at
+  ERROR: Command[14] missing required field: finished_at
+  ERROR: Command[14] missing required field: duration_ms
+  ERROR: Command[14] missing required field: stdout_tail
+  ERROR: Command[14] missing required field: stderr_tail
+  ERROR: Command[14] missing required field: environment
+  ERROR: Command[14] missing required field: expected_exit_codes
+  ERROR: Command[14] missing required field: result
+  ERROR: Command[14] missing required field: output_sha256
+  ERROR: Command[14] started_at must be valid ISO8601 datetime
+  ERROR: Command[14] finished_at must be valid ISO8601 datetime
+  ERROR: Command[14] duration_ms must be non-negative integer
+  ERROR: Command[14] expected_exit_codes must be non-empty array
+  ERROR: Command[14] result must be one of {'TIMEOUT', 'SUCCESS', 'INTERRUPTED', 'FAILURE'}, got ''
+  ERROR: Command[14] environment missing required field: os
+  ERROR: Command[14] environment missing required field: python
+  ERROR: Command[14] environment missing required field: uv
+  ERROR: Command[14] environment missing required field: git_sha
+  ERROR: Command[15] missing required field: command_id
+  ERROR: Command[15] missing required field: cwd
+  ERROR: Command[15] missing required field: started_at
+  ERROR: Command[15] missing required field: finished_at
+  ERROR: Command[15] missing required field: duration_ms
+  ERROR: Command[15] missing required field: stdout_tail
+  ERROR: Command[15] missing required field: stderr_tail
+  ERROR: Command[15] missing required field: environment
+  ERROR: Command[15] missing required field: expected_exit_codes
+  ERROR: Command[15] missing required field: result
+  ERROR: Command[15] missing required field: output_sha256
+  ERROR: Command[15] started_at must be valid ISO8601 datetime
+  ERROR: Command[15] finished_at must be valid ISO8601 datetime
+  ERROR: Command[15] duration_ms must be non-negative integer
+  ERROR: Command[15] expected_exit_codes must be non-empty array
+  ERROR: Command[15] result must be one of {'TIMEOUT', 'SUCCESS', 'INTERRUPTED', 'FAILURE'}, got ''
+  ERROR: Command[15] environment missing required field: os
+  ERROR: Command[15] environment missing required field: python
+  ERROR: Command[15] environment missing required field: uv
+  ERROR: Command[15] environment missing required field: git_sha
+  ERROR: Command[16] missing required field: command_id
+  ERROR: Command[16] missing required field: cwd
+  ERROR: Command[16] missing required field: started_at
+  ERROR: Command[16] missing required field: finished_at
+  ERROR: Command[16] missing required field: duration_ms
+  ERROR: Command[16] missing required field: stdout_tail
+  ERROR: Command[16] missing required field: stderr_tail
+  ERROR: Command[16] missing required field: environment
+  ERROR: Command[16] missing required field: expected_exit_codes
+  ERROR: Command[16] missing required field: result
+  ERROR: Command[16] missing required field: output_sha256
+  ERROR: Command[16] started_at must be valid ISO8601 datetime
+  ERROR: Command[16] finished_at must be valid ISO8601 datetime
+  ERROR: Command[16] duration_ms must be non-negative integer
+  ERROR: Command[16] expected_exit_codes must be non-empty array
+  ERROR: Command[16] result must be one of {'TIMEOUT', 'SUCCESS', 'INTERRUPTED', 'FAILURE'}, got ''
+  ERROR: Command[16] environment missing required field: os
+  ERROR: Command[16] environment missing required field: python
+  ERROR: Command[16] environment missing required field: uv
+  ERROR: Command[16] environment missing required field: git_sha
+  ERROR: artifact_hashes must not be empty
+Validating artifacts\architecture_v2_production_hardening\phase_07\current_verdict_validation.json... FAIL (3 errors)
+  ERROR: Schema validation failed: [] should be non-empty
+  ERROR: commands array must have at least one command receipt
+  ERROR: artifact_hashes must not be empty
+Validating artifacts\architecture_v2_production_hardening\phase_07\documentation_inventory.json... FAIL (3 errors)
+  ERROR: Schema validation failed: [] should be non-empty
+  ERROR: commands array must have at least one command receipt
+  ERROR: artifact_hashes must not be empty
+Validating artifacts\architecture_v2_production_hardening\phase_07\documentation_link_report.json... FAIL (5 errors)
+  ERROR: Schema validation failed: [] should be non-empty
+  ERROR: commands array must have at least one command receipt
+  ERROR: artifact_hashes must not be empty
+  ERROR: warnings must be structured objects, not strings. Use {check, message, severity, accepted, rationale}
+  ERROR: warnings must be structured objects, not strings. Use {check, message, severity, accepted, rationale}
+Validating artifacts\architecture_v2_production_hardening\phase_07\environment_documentation_report.json... FAIL (20 errors)
+  ERROR: Schema validation failed: {} should be non-empty
+  ERROR: Command[0] missing required field: command_id
+  ERROR: Command[0] missing required field: cwd
+  ERROR: Command[0] missing required field: started_at
+  ERROR: Command[0] missing required field: finished_at
+  ERROR: Command[0] missing required field: stdout_tail
+  ERROR: Command[0] missing required field: stderr_tail
+  ERROR: Command[0] missing required field: environment
+  ERROR: Command[0] missing required field: expected_exit_codes
+  ERROR: Command[0] missing required field: result
+  ERROR: Command[0] missing required field: output_sha256
+  ERROR: Command[0] started_at must be valid ISO8601 datetime
+  ERROR: Command[0] finished_at must be valid ISO8601 datetime
+  ERROR: Command[0] expected_exit_codes must be non-empty array
+  ERROR: Command[0] result must be one of {'TIMEOUT', 'SUCCESS', 'INTERRUPTED', 'FAILURE'}, got ''
+  ERROR: Command[0] environment missing required field: os
+  ERROR: Command[0] environment missing required field: python
+  ERROR: Command[0] environment missing required field: uv
+  ERROR: Command[0] environment missing required field: git_sha
+  ERROR: artifact_hashes must not be empty
+Validating artifacts\architecture_v2_production_hardening\phase_07\migration_documentation_report.json... FAIL (4 errors)
+  ERROR: Schema validation failed: [] should be non-empty
+  ERROR: commands array must have at least one command receipt
+  ERROR: artifact_hashes must not be empty
+  ERROR: warnings must be structured objects, not strings. Use {check, message, severity, accepted, rationale}
+Validating artifacts\architecture_v2_production_hardening\phase_07\phase7_starting_state.json... FAIL (5 errors)
+  ERROR: Schema validation failed: 'protocol_version' is a required property
+  ERROR: commands array must have at least one command receipt
+  ERROR: artifact_hashes must not be empty
+  ERROR: verdict must be one of {'PARTIAL', 'BLOCKED', 'FAIL', 'PASS'}, got ''
+  ERROR: generated_at must be valid ISO8601 datetime
+Validating artifacts\architecture_v2_production_hardening\phase_07\runtime_version_report.json... FAIL (4 errors)
+  ERROR: Schema validation failed: 'd4e5f6789012345678901234567890abcdef1234567890abcdef1234567890' does not match '^[a-f0-9]{64}$'
+  ERROR: Command[1] output_sha256 must be 64 lowercase hex chars
+  ERROR: Command[2] output_sha256 must be 64 lowercase hex chars
+  ERROR: Command[3] output_sha256 must be 64 lowercase hex chars
+  WARNING: Artifact contains its own hash (runtime_version_report.json) - self-referential hash detected
+Validating artifacts\architecture_v2_production_hardening\phase_07\test_results.json... FAIL (21 errors)
+  ERROR: Schema validation failed: {} should be non-empty
+  ERROR: Command[0] missing required field: command_id
+  ERROR: Command[0] missing required field: cwd
+  ERROR: Command[0] missing required field: started_at
+  ERROR: Command[0] missing required field: finished_at
+  ERROR: Command[0] missing required field: stdout_tail
+  ERROR: Command[0] missing required field: stderr_tail
+  ERROR: Command[0] missing required field: environment
+  ERROR: Command[0] missing required field: expected_exit_codes
+  ERROR: Command[0] missing required field: result
+  ERROR: Command[0] missing required field: output_sha256
+  ERROR: Command[0] started_at must be valid ISO8601 datetime
+  ERROR: Command[0] finished_at must be valid ISO8601 datetime
+  ERROR: Command[0] expected_exit_codes must be non-empty array
+  ERROR: Command[0] result must be one of {'TIMEOUT', 'SUCCESS', 'INTERRUPTED', 'FAILURE'}, got ''
+  ERROR: Command[0] environment missing required field: os
+  ERROR: Command[0] environment missing required field: python
+  ERROR: Command[0] environment missing required field: uv
+  ERROR: Command[0] environment missing required field: git_sha
+  ERROR: artifact_hashes must not be empty
+  ERROR: warnings must be structured objects, not strings. Use {check, message, severity, accepted, rationale}
+Validating artifacts\architecture_v2_production_hardening\phase_07\version_consistency_report.json... FAIL (6 errors)
+  ERROR: Schema validation failed: 'protocol_version' is a required property
+  ERROR: commands array must have at least one command receipt
+  ERROR: artifact_hashes must not be empty
+  ERROR: verdict must be one of {'PARTIAL', 'BLOCKED', 'FAIL', 'PASS'}, got ''
+  ERROR: generated_at must be valid ISO8601 datetime
+  ERROR: warnings must be structured objects, not strings. Use {check, message, severity, accepted, rationale}
+Validating artifacts\architecture_v2_production_hardening\phase_07\version_manifest.json... FAIL (18 errors)
+  ERROR: Schema validation failed: 'Desktop package version 0.6.0 != product_version 0.3.0 (may be intentional)' is not of type 'object'
+  ERROR: Command[0] missing required field: command_id
+  ERROR: Command[0] missing required field: cwd
+  ERROR: Command[0] missing required field: started_at
+  ERROR: Command[0] missing required field: finished_at
+  ERROR: Command[0] missing required field: environment
+  ERROR: Command[0] missing required field: expected_exit_codes
+  ERROR: Command[0] missing required field: result
+  ERROR: Command[0] missing required field: output_sha256
+  ERROR: Command[0] started_at must be valid ISO8601 datetime
+  ERROR: Command[0] finished_at must be valid ISO8601 datetime
+  ERROR: Command[0] expected_exit_codes must be non-empty array
+  ERROR: Command[0] result must be one of {'TIMEOUT', 'SUCCESS', 'INTERRUPTED', 'FAILURE'}, got ''
+  ERROR: Command[0] environment missing required field: os
+  ERROR: Command[0] environment missing required field: python
+  ERROR: Command[0] environment missing required field: uv
+  ERROR: Command[0] environment missing required field: git_sha
+  ERROR: warnings must be structured objects, not strings. Use {check, message, severity, accepted, rationale}
+
+VALIDATION FAILED: 442 total error(s)

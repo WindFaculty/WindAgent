@@ -1,0 +1,31 @@
+{
+  "commands_analyzed": [
+    "windagent_cli status",
+    "windagent_cli task list",
+    "windagent_cli task inspect",
+    "windagent_cli replay",
+    "windagent_cli providers",
+    "windagent_cli tools",
+    "windagent_cli eval"
+  ],
+  "classification": {
+    "LIVE": [],
+    "OFFLINE": [],
+    "DEMO_HARDCODED": [
+      "status",
+      "task list",
+      "task inspect",
+      "replay",
+      "providers",
+      "tools",
+      "eval"
+    ]
+  },
+  "issues": [
+    "status returns hardcoded ONLINE status",
+    "task list returns demo task_demo_01",
+    "task inspect defaults to task_demo_01",
+    "replay returns fake deterministic_parity=100%",
+    "providers/tools/eval return fabricated data"
+  ]
+}
