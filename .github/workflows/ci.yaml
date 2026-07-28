@@ -154,44 +154,47 @@ jobs:
           path: artifacts/architecture_v2_runtime_cutover/phase_13/dependency_boundary_report.json
 
   # 4. PYTHON UNIT TESTS (Ubuntu SQLite)
-  python-unit-sqlite:
-    name: Python Unit Tests (Ubuntu SQLite)
-    runs-on: ubuntu-latest
-    env:
-      WINDAGENT_DATABASE_URL: sqlite+aiosqlite:///windagent.db
-    steps:
-      - uses: actions/checkout@v4
+    python-unit-sqlite:
+      name: Python Unit Tests (Ubuntu SQLite)
+      runs-on: ubuntu-latest
+      env:
+        WINDAGENT_DATABASE_URL: sqlite+aiosqlite:///windagent.db
+      steps:
+        - uses: actions/checkout@v4
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v3
-        with:
-          version: ${{ env.UV_VERSION }}
+        - name: Install uv
+          uses: astral-sh/setup-uv@v3
+          with:
+            version: ${{ env.UV_VERSION }}
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
+        - name: Set up Python
+          uses: actions/setup-python@v5
+          with:
+            python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Sync dependencies
-        run: uv sync --all-packages
+        - name: Sync dependencies
+          run: uv sync --all-packages
 
-      - name: Architecture Tests
-        run: uv run pytest tests/architecture/ -v --tb=short -x
+        - name: Install ruff
+          run: uv pip install ruff
 
-      - name: Unit Tests
-        run: uv run pytest tests/unit/ -v --tb=short -x --junitxml=pytest-unit.xml
+        - name: Architecture Tests
+          run: uv run pytest tests/architecture/ -v --tb=short -x
 
-      - name: Regression Tests
-        run: uv run pytest tests/regression/ -v --tb=short -x --junitxml=pytest-regression.xml
+        - name: Unit Tests
+          run: uv run pytest tests/unit/ -v --tb=short -x --junitxml=pytest-unit.xml
 
-      - name: Upload test results
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: pytest-unit-sqlite
-          path: |
-            pytest-unit.xml
-            pytest-regression.xml
+        - name: Regression Tests
+          run: uv run pytest tests/regression/ -v --tb=short -x --junitxml=pytest-regression.xml
+
+        - name: Upload test results
+          uses: actions/upload-artifact@v4
+          if: always()
+          with:
+            name: pytest-unit-sqlite
+            path: |
+              pytest-unit.xml
+              pytest-regression.xml
 
   # 5. PYTHON UNIT TESTS (Windows SQLite)
   python-unit-windows:
