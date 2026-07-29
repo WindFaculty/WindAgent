@@ -9,6 +9,7 @@ on:
   pull_request:
     branches:
       - main
+      - fix/phase7-verification-integrity
     paths:
       - ".github/workflows/apply-agent-browser-bundle.yml"
       - ".github/agent-browser-bundle/**"
@@ -42,12 +43,15 @@ jobs:
               for path in sorted(bundle_dir.glob("part*.b85"))
           )
           archive_bytes = zlib.decompress(base64.b85decode(payload.encode("ascii")))
+          workflow_path = ".github/workflows/agent-browser-social-e2e.yml"
 
           with tarfile.open(fileobj=io.BytesIO(archive_bytes), mode="r:") as archive:
               for member in archive.getmembers():
                   path = PurePosixPath(member.name)
                   if path.is_absolute() or ".." in path.parts or not member.isfile():
                       raise RuntimeError(f"Unsafe bundle entry: {member.name}")
+                  if member.name == workflow_path:
+                      continue
                   target = (root / Path(*path.parts)).resolve()
                   target.relative_to(root)
                   target.parent.mkdir(parents=True, exist_ok=True)
