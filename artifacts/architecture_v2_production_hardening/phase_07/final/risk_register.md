@@ -9,4 +9,6 @@
 | R15 | CLI runtime truthfulness | P1 | Zero hardcoded demo fallbacks; real runtime checks | `CLOSED` |
 | R16 | Cross-platform CI integrity | P1 | 13-job CI matrix passing on Ubuntu and Windows | `CLOSED` |
 | R17 | Candidate identity drift | P0 | Candidate SHA match across git, manifest and receipts | `CLOSED` |
-| R18 | Required-check bypass | P1 | Verified 13 required CI status checks; branch protection unverified | `OPEN` |
+| R18 | Required-check bypass | P1 | 14 required status checks, strict up-to-date and enforce_admins verified via GitHub API | `CLOSED` |
+
+Risk status: R11-R17 CLOSED, R18 `CLOSED`.

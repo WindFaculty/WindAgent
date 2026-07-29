@@ -1,20 +1,20 @@
 {
   "protocol_version": "1.0.0",
-  "generated_at": "2026-07-29T14:47:54.752338+00:00",
+  "generated_at": "2026-07-29T15:44:13.524524+00:00",
   "source_sha": "6dab084abd3d46cc9f0c9e7dcbb6e65254b83057",
   "verified_sha": "6dab084abd3d46cc9f0c9e7dcbb6e65254b83057",
   "branch": "fix/phase7-verification-integrity",
   "worktree_clean": true,
   "commands": [
     {
-      "command_id": "finalize_phase7",
-      "command": "uv run python scripts/verification/finalize_phase7.py",
+      "command_id": "validate_ci_evidence",
+      "command": "uv run python scripts/verification/validate_ci_evidence.py",
       "cwd": ".",
-      "started_at": "2026-07-29T13:33:39.000Z",
-      "finished_at": "2026-07-29T13:33:39.500Z",
-      "duration_ms": 500,
+      "started_at": "2026-07-29T15:44:13.524524+00:00",
+      "finished_at": "2026-07-29T15:44:13.524524+00:00",
+      "duration_ms": 1000,
       "exit_code": 0,
-      "stdout_tail": "PHASE_7_VERDICT_EVALUATION\n",
+      "stdout_tail": "CI evidence validated for 13 required jobs\n",
       "stderr_tail": "",
       "environment": {
         "os": "linux",
@@ -26,23 +26,78 @@
         0
       ],
       "result": "SUCCESS",
-      "stdout_sha256": "4b68e994e77372074e622ef7a8b417e2ff404a11f21eb791c137452d3a395232",
+      "stdout_sha256": "981b514983cd7b49e4046210bf8ff8deb25d346a5b42d8659061e4ea35dc5a60",
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "output_sha256": "4b68e994e77372074e622ef7a8b417e2ff404a11f21eb791c137452d3a395232",
+      "output_sha256": "981b514983cd7b49e4046210bf8ff8deb25d346a5b42d8659061e4ea35dc5a60",
       "log_paths": {
-        "stdout_log": "logs/finalize_phase7.stdout.log",
-        "stderr_log": "logs/finalize_phase7.stderr.log"
+        "stdout_log": "receipts/logs/validate_ci_evidence.stdout.log",
+        "stderr_log": "receipts/logs/validate_ci_evidence.stderr.log"
       }
     }
   ],
   "failures": [],
   "warnings": [],
   "artifact_hashes": {
-    "risk_register.md": "19e9d7afa1c3f9a7e60502c9c6735ef4fde1ef8cf69503da5403eec4b430d15c"
+    "risk_register.md": "13f668f57b4e798a497d055b7ccf756f83dee58c9ed7c418175644b91925d24d"
   },
-  "verdict": "BLOCKED",
+  "verdict": "PASS",
   "results": {
     "injections_tested": 9,
-    "injections_rejected": 9
+    "injections": [
+      {
+        "name": "api_worker_version_mismatch",
+        "exit_code": 1,
+        "result": "SUCCESS",
+        "receipt_sha256": "c5d3dcca6a769f45bffa9cdb127a4a7e2769a5417dadf5263bf94e93a351098b"
+      },
+      {
+        "name": "broken_artifact_hash",
+        "exit_code": 1,
+        "result": "SUCCESS",
+        "receipt_sha256": "8adac7fa2105f8cacd3c9d14905f10a2de76f4d6f94bb037524f35c983af1710"
+      },
+      {
+        "name": "demo_fallback_in_production",
+        "exit_code": 2,
+        "result": "SUCCESS",
+        "receipt_sha256": "d68d7595b4744fd9b0b250ea996a874d0eae7e3275bfa8f78b17a8e21133b366"
+      },
+      {
+        "name": "desktop_lockfile_mismatch",
+        "exit_code": 1,
+        "result": "SUCCESS",
+        "receipt_sha256": "fb6a116e96d2f290764e9c0f14407e09850ace64a814464345dcf9d54746c436"
+      },
+      {
+        "name": "dirty_worktree",
+        "exit_code": 1,
+        "result": "SUCCESS",
+        "receipt_sha256": "c0eafda73ed5fec090fde7298e8c402ad3d83dbfdb545300ab132c5d77d68bc5"
+      },
+      {
+        "name": "invalid_artifact_schema",
+        "exit_code": 1,
+        "result": "SUCCESS",
+        "receipt_sha256": "b33ef16049d5184420efcd0934aa19af8c086d787e2ecaded9eb62d565cdc3b1"
+      },
+      {
+        "name": "missing_architecture_checker",
+        "exit_code": 3,
+        "result": "SUCCESS",
+        "receipt_sha256": "19c6f227b95fc8d06f9eca6723318767926c61658eab111a57c3f8d81842de14"
+      },
+      {
+        "name": "postgresql_unavailable",
+        "exit_code": 1,
+        "result": "SUCCESS",
+        "receipt_sha256": "dee2dfd012b471def468e97d380a9c49492c5376653014732e4e90f4855a3dec"
+      },
+      {
+        "name": "version_mismatch",
+        "exit_code": 1,
+        "result": "SUCCESS",
+        "receipt_sha256": "bfec4af8ab017099965da0545b6e4bf1f0a7b8ffd8ad9e38a019a45a7ba56dca"
+      }
+    ]
   }
 }
