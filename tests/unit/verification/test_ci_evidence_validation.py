@@ -9,6 +9,7 @@ from jsonschema import Draft202012Validator
 
 from scripts.verification.validate_ci_evidence import (
     _find_job_root,
+    _resolve_receipt_log_path,
     _validate_job,
 )
 
@@ -107,6 +108,36 @@ def test_tampered_ci_log_fails(tmp_path: Path):
 
     assert result["status"] == "FAIL"
     assert any("hash mismatch" in error for error in result["errors"])
+
+
+def test_windows_style_receipt_log_paths_are_portable(tmp_path: Path):
+    job_root = _write_job_evidence(tmp_path, "unit")
+    receipt_path = job_root / "receipts" / "pytest.json"
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    receipt["log_paths"] = {
+        key: value.replace("/", "\\")
+        for key, value in receipt["log_paths"].items()
+    }
+    receipt_path.write_text(json.dumps(receipt), encoding="utf-8")
+
+    result = _validate_job(
+        job="unit",
+        root=job_root,
+        expected_sha=SHA,
+        receipt_validator=_validator(),
+    )
+
+    assert result["status"] == "PASS"
+    assert result["errors"] == []
+
+
+def test_windows_log_path_normalizes_before_resolution(tmp_path: Path):
+    resolved = _resolve_receipt_log_path(
+        tmp_path,
+        r"receipts\logs\pytest.stdout.log",
+    )
+
+    assert resolved == tmp_path / "receipts" / "logs" / "pytest.stdout.log"
 
 
 def test_wrong_candidate_sha_fails(tmp_path: Path):

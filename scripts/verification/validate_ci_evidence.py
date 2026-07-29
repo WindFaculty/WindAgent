@@ -8,7 +8,7 @@ import hashlib
 import json
 import sys
 from datetime import datetime, timezone
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from typing import Any
 
 from jsonschema import Draft202012Validator
@@ -23,6 +23,23 @@ def _load_json(path: Path) -> dict[str, Any]:
     if not isinstance(data, dict):
         raise ValueError(f"{path} must contain a JSON object")
     return data
+
+
+def _resolve_receipt_log_path(root: Path, raw_path: object) -> Path:
+    """Resolve a portable, receipt-relative log path without escaping evidence."""
+    value = str(raw_path)
+    normalized = value.replace("\\", "/")
+    relative = Path(normalized)
+    windows_path = PureWindowsPath(value)
+    if (
+        not normalized
+        or relative.is_absolute()
+        or windows_path.is_absolute()
+        or windows_path.drive
+        or ".." in relative.parts
+    ):
+        raise ValueError("log path must be a safe relative path")
+    return root / relative
 
 
 def _find_job_root(download_root: Path, job: str) -> Path:
@@ -139,12 +156,20 @@ def _validate_job(
             )
 
         log_paths = receipt.get("log_paths", {})
-        stdout_path = root / str(log_paths.get("stdout_log", ""))
-        stderr_path = root / str(log_paths.get("stderr_log", ""))
-        for stream, log_path, hash_field in (
-            ("stdout", stdout_path, "stdout_sha256"),
-            ("stderr", stderr_path, "stderr_sha256"),
+        resolved_logs: dict[str, Path] = {}
+        for stream, path_key, hash_field in (
+            ("stdout", "stdout_log", "stdout_sha256"),
+            ("stderr", "stderr_log", "stderr_sha256"),
         ):
+            try:
+                log_path = _resolve_receipt_log_path(
+                    root,
+                    log_paths.get(path_key, ""),
+                )
+            except ValueError as exc:
+                errors.append(f"{receipt_path.name}: {stream} log path: {exc}")
+                continue
+            resolved_logs[stream] = log_path
             if not log_path.is_file():
                 errors.append(
                     f"{receipt_path.name}: {stream} log is missing"
@@ -153,7 +178,14 @@ def _validate_job(
                 errors.append(
                     f"{receipt_path.name}: {stream} log hash mismatch"
                 )
-        if stdout_path.is_file() and stderr_path.is_file():
+        stdout_path = resolved_logs.get("stdout")
+        stderr_path = resolved_logs.get("stderr")
+        if (
+            stdout_path is not None
+            and stderr_path is not None
+            and stdout_path.is_file()
+            and stderr_path.is_file()
+        ):
             combined_hash = hashlib.sha256(
                 stdout_path.read_bytes() + stderr_path.read_bytes()
             ).hexdigest()
