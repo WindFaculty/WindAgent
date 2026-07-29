@@ -1,31 +1,26 @@
-# Phase 7 Risk Register
+# Phase 0-5 Repair — Risk Register
 
-| ID | Risk | Likelihood | Impact | Mitigation | Status |
-|----|------|------------|--------|------------|--------|
-| R1 | Version drift between packages | Low | High | Single canonical source (`windagent_core.version`), automated checker | CLOSED |
-| R2 | Scaffold generator strips public exports | Medium | High | Updated scaffold preserves re-exports, tests verify | CLOSED |
-| R3 | Artifact schema validator accepts invalid artifacts | Low | High | 7 negative fixtures with distinct failure reasons | CLOSED |
-| R4 | CLI architecture-check fails from subdirs | Low | Medium | Root detection walks to pyproject.toml | CLOSED |
-| R5 | Documentation references legacy apps/backend | Low | Medium | All legacy refs removed or marked historical | CLOSED |
-| R6 | CI gates masked by `|| true` or continue-on-error | Low | Critical | Verified no masking in `.github/workflows/ci.yaml` | CLOSED |
-| R7 | CURRENT_VERDICT points to provisional SHA | Low | High | Points to final verified SHA `09ce71b8dd5851cce6f2e741f8ac94bf25e81378` | CLOSED |
-| R8 | Desktop/web version mismatch not flagged | Medium | Low | Warning only (intentional independent versioning) | ACCEPTED |
-| R9 | Single skipped test not a gate | Low | Low | `test_disabled_rules_are_skipped` tests disabled behavior | ACCEPTED |
-| R10 | Source checkout without installed metadata | Medium | Medium | Fallback to pyproject.toml with controlled canonical version | CLOSED |
+No statement that “all critical risks are closed” is valid while an OPEN or
+PENDING_REMOTE P0/P1 entry remains below.
 
----
+| ID | Risk | Priority | Current control | Status |
+|---|---|---:|---|---|
+| R11 | Artifact schema integrity | P0 | One canonical artifact schema referencing the receipt schema; semantic, candidate-SHA, hash and negative-fixture checks | `MITIGATED_LOCAL`: recursive production-root validation passes for all 18 JSON files |
+| R12 | Evidence publication integrity | P0 | Validate-before-publish, immutable `runs/<id>`, atomic `latest.json`, failed runs isolated in quarantine | `PENDING_CANDIDATE`: implementation and tamper tests pass; no clean candidate bundle exists |
+| R13 | Command receipt authenticity | P0 | Secrets redacted before persistence; stdout, stderr and combined hashes are recomputed from exact bytes | `PENDING_CANDIDATE`: local tests pass; final CI receipts do not yet exist |
+| R14 | CLI architecture exit contract | P1 | Typed JSON failures and stable exits for violation, root missing, missing checker, crash and timeout | `MITIGATED_LOCAL`: architecture/regression suite passes |
+| R15 | CLI runtime truthfulness | P1 | Read commands do not initialize schema; runtime-backed status/providers/replay/eval; explicit unavailable and mismatch states | `MITIGATED_LOCAL`: CLI contract and negative-path tests pass |
+| R16 | Cross-platform CI integrity | P1 | 14-job fail-closed matrix; PowerShell on Windows; PostgreSQL health/dialect preflight; `npm ci`; final receipt aggregation | `PENDING_REMOTE`: workflow lint and policy tests pass, hosted jobs have not run |
+| R17 | Candidate identity drift | P0 | Candidate SHA recorded in environment, bundles and final validator | `OPEN`: current worktree is dirty and is not a candidate |
+| R18 | Required-check bypass | P1 | Documented exact required-check list | `OPEN`: repository branch-protection configuration has not been verified |
 
-## Phase 0–5 OPEN Risks (Blocking Phase 6 Readiness)
+## Risk transition rules
 
-| ID | Risk | Priority | Phase | Details |
-|----|------|----------|-------|---------|
-| R11 | Artifact schema integrity | **OPEN / P0** | Phase 1 | Schema validator rejects self-hashes, placeholder hashes, empty commands/hashes; flags must be additive; git SHA semantics enforced |
-| R12 | CI evidence integrity | **OPEN / P0** | Phase 2 | Failed runs must not publish; publish must be atomic/immutable; receipts must link to redacted logs |
-| R13 | Command receipt authenticity | **OPEN / P0** | Phase 2 | Output hashes must match persisted redacted logs; secrets redacted before persistence |
-| R14 | CLI architecture exit contract | **OPEN / P1** | Phase 3 | Required checkers must all execute; missing checker = exit 3; crash/timeout = exit 4; violation = exit 1; root missing = exit 2 |
-| R15 | CLI runtime truthfulness | **OPEN / P1** | Phase 4 | No fabricated production values; demo only with `--demo`; data_source in every JSON; read commands don't mutate |
-| R16 | Cross-platform CI | **OPEN / P1** | Phase 5 | Windows jobs use pwsh; PostgreSQL on Ubuntu; npm ci with committed lockfiles; no fallback masking |
-
----
-
-**Note**: The statement "All critical risks closed" from the previous risk register is **retracted**. Six P0/P1 risks (R11–R16) remain open and block Phase 6 readiness.
+- `MITIGATED_LOCAL` means implementation risk is covered by local tests; it
+  does not authorize promotion.
+- `PENDING_CANDIDATE` closes only when a clean immutable bundle validates for
+  the exact candidate SHA.
+- `PENDING_REMOTE` closes only from a successful GitHub Actions run on that
+  candidate SHA.
+- R11 may close for promotion only after the same recursive gate passes on the
+  clean candidate; the current local mitigation is not remote evidence.

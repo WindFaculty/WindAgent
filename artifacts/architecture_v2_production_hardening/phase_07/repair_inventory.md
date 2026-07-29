@@ -1,162 +1,87 @@
-# Phase 7 Repair Inventory
+# Phase 0-5 Repair — Worktree Inventory
 
-## Baseline Information
+## Lineage
 
-- **Baseline SHA**: `6d9d5e0ba0419ace0efad7494e44392cbb2c705f` (HEAD at start of repair)
-- **Branch**: `fix/phase7-verification-integrity`
-- **Date**: 2026-07-29
+- Baseline required by the repair plan: `601fd128` — confirmed ancestor of
+  current HEAD.
+- Repair-start snapshot: `6d9d5e0ba0419ace0efad7494e44392cbb2c705f`
+  — confirmed ancestor of current HEAD.
+- Current HEAD: `59e4fdf04ab43790e03ad8cb0be6a6bb6282bdd2`.
+- Branch: `fix/phase7-verification-integrity`.
+- Inventory date: 2026-07-29.
 
-## Git Status (at repair start)
+No repair commit or clean candidate is claimed by this document. The worktree
+contains both repair changes and pre-existing/user-owned changes.
 
-```
-On branch fix/phase7-verification-integrity
-Changes not staged for commit:
-  (use "git add/rm <file>..." to update what will be committed)
-  (use "git restore <file>..." to discard changes in working directory)
-	modified:   .github/workflows/ci.yaml
-	modified:   .github/workflows/phase14_multi_replica_fencing.yml
-	modified:   apps/cli/windagent_cli/composition.py
-	modified:   apps/cli/windagent_cli/main.py
-	modified:   apps/desktop/src-tauri/Cargo.toml
-	modified:   apps/desktop/src-tauri/gen/schemas/desktop-schema.json
-	modified:   apps/desktop/src-tauri/gen/schemas/windows-schema.json
-	modified:   artifacts/architecture_v2_production_hardening/phase_07/artifact_manifest.json
-	modified:   artifacts/architecture_v2_production_hardening/phase_07/artifact_schema_report.json
-	modified:   artifacts/architecture_v2_production_hardening/phase_07/runtime_version_report.json
-	modified:   artifacts/architecture_v2_production_hardening/phase_07/version_consistency_report.json
-	modified:   artifacts/architecture_v2_production_hardening/phase_07/version_manifest.json
-	modified:   artifacts/architecture_v2_runtime_cutover/phase_13/import_graph.json
-	modified:   ban_ke_hoach.md
-	modified:   pyproject.toml
-	modified:   scripts/check_version_consistency.py
-	deleted:    scripts/schemas/artifact_schema.json
-	modified:   tests/unit/cli/test_cli_commands.py
-	modified:   tests/unit/cli/test_phase26_convergence.py
-	modified:   uv.lock
+## Repair scope
 
-Untracked files:
-  (use "git add <file>..." to include what will be committed)
-	artifacts/architecture_v2_production_hardening/phase_07/final/
-	artifacts/architecture_v2_production_hardening/phase_07/phase5_completion.md
-	artifacts/architecture_v2_runtime_cutover/CURRENT_VERDICT.json
-	ci_remote.yaml
-	ke_hoach_hoan_thien_phase_0_5.md
-	run_claude_cli_openrouter.ps1
-	tests/unit/cli/test_live_integration.py
-```
+| Area | Main paths | Classification |
+|---|---|---|
+| Phase 1 — artifact protocol | `scripts/schemas/*`, `scripts/validate_artifact_schema.py`, artifact fixtures | Repair-owned |
+| Phase 2 — evidence pipeline | `scripts/verification/{capture_environment,generate_phase7_evidence,run_command_receipt,validate_evidence_bundle,validate_ci_evidence}.py` and tests | Repair-owned |
+| Phase 3 — CLI architecture | `scripts/check_architecture_imports.py`, architecture fixtures/tests, repository-root discovery | Repair-owned |
+| Phase 4 — CLI truthfulness | `apps/cli/windagent_cli/{main,composition}.py`, shared tool registry, CLI tests | Mixed with earlier CLI work; preserve intent and review as one candidate |
+| Phase 5 — CI | `.github/workflows/ci.yaml`, version checker, database/runtime/CI evidence helpers and tests | Repair-owned |
+| Phase 0 — authority docs | This file, `phase_verdict.md`, `risk_register.md`, `phase5_completion.md` | Repair-owned |
 
-## Git Diff Stats
+The legacy duplicate `scripts/schemas/artifact_schema.json` is removed in favor
+of `scripts/schemas/artifact_protocol_v1.schema.json`.
 
-```
- .github/workflows/ci.yaml                          |  134 +-
- .github/workflows/phase14_multi_replica_fencing.yml |   11 +-
- apps/cli/windagent_cli/composition.py              |  610 +++++-
- apps/cli/windagent_cli/main.py                     |  422 +++-
- apps/desktop/src-tauri/Cargo.toml                  |    1 +-
- apps/desktop/src-tauri/gen/schemas/desktop-schema.json |   1 +-
- apps/desktop/src-tauri/gen/schemas/windows-schema.json |   1 +-
- artifacts/architecture_v2_production_hardening/phase_07/artifact_manifest.json |   82 +-
- artifacts/architecture_v2_production_hardening/phase_07/artifact_schema_report.json |  140 +-
- artifacts/architecture_v2_production_hardening/phase_07/runtime_version_report.json |   72 +-
- artifacts/architecture_v2_production_hardening/phase_07/version_consistency_report.json |   48 +-
- artifacts/architecture_v2_production_hardening/phase_07/version_manifest.json |    2 +-
- artifacts/architecture_v2_runtime_cutover/phase_13/import_graph.json |  374 +++-
- ban_ke_hoach.md                                    | 2149 ++++++++------------
- pyproject.toml                                     |    3 +-
- scripts/check_version_consistency.py               |   37 +-
- scripts/schemas/artifact_schema.json               |  145 --
- tests/unit/cli/test_cli_commands.py                |   28 +-
- tests/unit/cli/test_phase26_convergence.py         |   20 +-
- uv.lock                                            |  319 ++-
- 17 files changed, 2859 insertions(+), 1737 deletions(-)
-```
+## Preserved pre-existing or user-owned changes
 
-## Change Classification
+The repair does not discard, reset or overwrite the intent of these paths:
 
-### Phase 1 — Artifact Protocol
-| File | Classification | Rationale |
-|------|----------------|-----------|
-| `scripts/schemas/artifact_schema.json` (deleted) | **Phase 1** | Old duplicate schema removed; canonical is `artifact_protocol_v1.schema.json` |
-| `artifacts/.../phase_07/artifact_manifest.json` | **Phase 1** | Production artifact manifest modified |
-| `artifacts/.../phase_07/artifact_schema_report.json` | **Phase 1** | Schema validation report modified |
-| `scripts/check_version_consistency.py` | **Phase 1/5 overlap** | Version checker fixes (also used in CI) |
+- `.github/workflows/phase14_multi_replica_fencing.yml`
+- `apps/desktop/src-tauri/Cargo.toml`
+- `apps/desktop/src-tauri/gen/schemas/*.json`
+- `artifacts/architecture_v2_runtime_cutover/**`
+- `ban_ke_hoach.md`
+- `ci_remote.yaml`
+- `ke_hoach_hoan_thien_phase_0_5.md`
+- `run_claude_cli_openrouter.ps1`
+- `pyproject.toml` and `uv.lock` changes that predate or support this repair
 
-### Phase 2 — Evidence Pipeline
-| File | Classification | Rationale |
-|------|----------------|-----------|
-| `artifacts/.../phase_07/runtime_version_report.json` | **Phase 2** | Runtime evidence artifact modified |
-| `artifacts/.../phase_07/version_consistency_report.json` | **Phase 2** | Version evidence artifact modified |
-| `artifacts/.../phase_07/version_manifest.json` | **Phase 2** | Version manifest modified |
+Generated local directories such as `.pytest_tmp/`, `apps/web/coverage/`,
+`artifacts/ci/`, `test_repo/` and `test_repo2/` are not candidate source
+evidence.
 
-### Phase 3 — CLI Architecture
-| File | Classification | Rationale |
-|------|----------------|-----------|
-| `apps/cli/windagent_cli/composition.py` | **Phase 3** | CLI composition/architecture check logic modified |
-| `apps/cli/windagent_cli/main.py` | **Phase 3** | CLI entry point and architecture command modified |
-| `tests/unit/cli/test_cli_commands.py` | **Phase 3/4 overlap** | CLI command tests modified |
-| `tests/unit/cli/test_phase26_convergence.py` | **Phase 3/4 overlap** | CLI convergence tests modified |
-| `tests/unit/cli/test_live_integration.py` (untracked) | **Phase 3/4 overlap** | New CLI live integration test |
+## Legacy Phase 7 artifact state
 
-### Phase 4 — CLI Runtime Truthfulness
-| File | Classification | Rationale |
-|------|----------------|-----------|
-| `apps/cli/windagent_cli/composition.py` | **Phase 4** | CLI composition modified for truthfulness |
-| `apps/cli/windagent_cli/main.py` | **Phase 4** | CLI main modified for truthfulness |
-| `tests/unit/cli/test_cli_commands.py` | **Phase 4** | CLI command tests for truthfulness |
-| `tests/unit/cli/test_live_integration.py` (untracked) | **Phase 4** | Live integration tests |
+The earlier evidence generator removed a set of tracked, pre-protocol reports
+from the production root and left an untracked legacy `evidence_bundle.json`
+plus receipts. Those files were not valid under the repaired protocol:
 
-### Phase 5 — CI Matrix
-| File | Classification | Rationale |
-|------|----------------|-----------|
-| `.github/workflows/ci.yaml` | **Phase 5** | Complete CI workflow rewrite |
-| `.github/workflows/phase14_multi_replica_fencing.yml` | **Phase 5** | Trigger configuration for fencing workflow |
-| `scripts/check_version_consistency.py` | **Phase 5** | Version checker for CI fail-closed |
-| `artifacts/.../phase_13/import_graph.json` | **Phase 5** | CI artifact |
+- the bundle points to a different SHA;
+- old receipts lack persisted stdout/stderr hashes;
+- the old version report is not an artifact-protocol document.
 
-### Unrelated / User-Owned (Do Not Modify)
-| File | Classification | Rationale |
-|------|----------------|-----------|
-| `apps/desktop/src-tauri/Cargo.toml` | **Unrelated** | Desktop Tauri config - user-owned |
-| `apps/desktop/src-tauri/gen/schemas/desktop-schema.json` | **Unrelated** | Generated desktop schema - user-owned |
-| `apps/desktop/src-tauri/gen/schemas/windows-schema.json` | **Unrelated** | Generated windows schema - user-owned |
-| `artifacts/.../phase_13/import_graph.json` | **Unrelated** | Different phase artifact - historical |
-| `ban_ke_hoach.md` | **User-owned** | Vietnamese planning doc - user-owned |
-| `pyproject.toml` | **Unrelated** | Workspace config - minor change |
-| `uv.lock` | **Unrelated** | Lockfile - auto-generated |
-| `ci_remote.yaml` (untracked) | **Unrelated** | CI config variant - user-owned |
-| `ke_hoach_hoan_thien_phase_0_5.md` (untracked) | **User-owned** | This repair plan - user-owned |
-| `run_claude_cli_openrouter.ps1` (untracked) | **User-owned** | User script - user-owned |
-| `artifacts/.../runtime_cutover/CURRENT_VERDICT.json` (untracked) | **Unrelated** | Different phase verdict - historical |
-| `artifacts/.../phase_07/final/` (untracked dir) | **Unrelated** | Different artifact directory |
+The four authority Markdown files are restored with current truthful state.
+The invalid local outputs were preserved, not deleted, under
+`.pytest_tmp/legacy_phase_07_pre_protocol/2026-07-29-local/`. Other removed
+tracked reports remain recoverable from Git history and must not be republished
+as PASS evidence.
 
-## Repair Principles (Per Plan)
+Two immutable local runs now exist under `phase_07/quarantine/`: the first is a
+valid FAIL artifact recording sandbox temp/fixture failures; the second is a
+valid BLOCKED artifact with all 8 required commands successful. Neither run
+updates `latest.json`.
 
-1. **No direct modification of `main` branch**
-2. **No `git reset --hard`, `git checkout --`, or deletion of unowned changes**
-3. **Worktree classification before any implementation**
-4. **Verdicts derived from gates only — no manual PASS entry**
-5. **Test pass ≠ gate pass without acceptance contract coverage**
-6. **Production artifacts validated by exact CI command**
-7. **CI only valid on candidate commit SHA**
-8. **New commit + full CI rerun if code changes after CI starts**
+## Gate inventory
 
-## Phase 0 Gates (Entry Criteria for Phase 1)
+| Gate | State |
+|---|---|
+| G0.1 baseline lineage confirmed | PASS |
+| G0.2 authoritative verdict is blocked | PASS |
+| G0.3 P0/P1 risks are explicit | PASS |
+| G0.4 Phase 5 report is provisional | PASS |
+| G0.5 documentation-only Phase 0 commit | NOT CREATED; current worktree is mixed |
+| Recursive validation of current production root | PASS — 18/18 JSON files |
+| Clean candidate SHA and immutable evidence | PENDING |
+| Remote 14-job CI run | PENDING |
 
-- [x] G0.1 Baseline SHA and branch lineage confirmed
-- [x] G0.2 Verdict authoritative is BLOCKED
-- [x] G0.3 Risk register has complete OPEN P0/P1
-- [x] G0.4 Phase 5 completion report marked provisional
-- [x] G0.5 No implementation changes in Phase 0 closure commit
+## Safety constraints
 
-## Phase 0 Completion Commit
-
-Once all gates pass, create commit:
-```
-docs(phase7-repair): reconcile blocked verdict and open risks
-
-- Update phase_verdict.md with authoritative metadata (BLOCKED)
-- Update risk_register.md with OPEN P0/P1 risks
-- Add repair_inventory.md baseline snapshot
-- Mark phase5_completion.md as provisional
-- No implementation changes in this commit
-```
+- Do not use `git reset --hard`, `git checkout --` or destructive cleanup.
+- Do not treat generated local output as authoritative candidate evidence.
+- Do not mark PASS from local test output alone.
+- Any code change after a CI run requires a new candidate SHA and full rerun.

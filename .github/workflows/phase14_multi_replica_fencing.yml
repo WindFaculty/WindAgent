@@ -2,9 +2,16 @@ name: Phase 14 Multi-Replica Fencing CI
 
 on:
   push:
-    branches: [ main, master ]
+    branches:
+      - main
+      - master
+      - "feat/**"
+      - "fix/**"
+      - "hardening/**"
   pull_request:
-    branches: [ main, master ]
+    branches:
+      - main
+      - master
   workflow_dispatch:
 
 jobs:

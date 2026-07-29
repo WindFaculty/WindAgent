@@ -1,19 +1,23 @@
 #!/usr/bin/env python3
-"""Fail-closed Architecture V2 policy checker - Phase 4 Enhanced."""
+"""Fail-closed Architecture V2 policy checker - Phase 3: Complete CLI Architecture Contract."""
 
 import argparse
 import ast
 import json
 import re
+import subprocess
 import sys
+import time
 import tomllib
 from collections import defaultdict
+from dataclasses import dataclass, asdict
 from pathlib import Path
+from typing import Optional
 
 import yaml
 
-
 from windagent_core.config.repository_root import find_repository_root, is_repository_root
+
 DEFAULT_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_CONFIG = DEFAULT_ROOT / "configs" / "architecture" / "scaffold_v2.yaml"
 DEFAULT_REPORT = DEFAULT_ROOT / "artifacts" / "architecture_v2_runtime_cutover" / "phase_13" / "dependency_boundary_report.json"
@@ -76,6 +80,26 @@ LEGACY_QUARANTINE_ZONE = "apps/backend"
 FRAMEWORK_IMPORTS = {"aiosqlite", "fastapi", "langgraph", "mcp", "sqlalchemy", "starlette", "uvicorn", "pydantic"}
 
 
+@dataclass
+class CheckResult:
+    """Result of a single checker execution."""
+    name: str
+    argv: list[str]
+    cwd: str
+    executed: bool
+    exit_code: int
+    classification: str
+    duration_ms: int
+    stdout_tail: str
+    stderr_tail: str
+    error: Optional[str] = None
+
+    def to_dict(self) -> dict:
+        d = asdict(self)
+        # Remove None values for cleaner JSON
+        return {k: v for k, v in d.items() if v is not None}
+
+
 def normalize_dependency(value: str) -> str:
     value = value.split("[", 1)[0].split(";", 1)[0].strip().lower().replace("_", "-")
     for marker in (">", "<", "=", "!", "~"):
@@ -131,7 +155,9 @@ def imports_and_classes(path: Path) -> tuple[list[tuple[int, str]], list[tuple[i
     try:
         text = path.read_text(encoding="utf-8")
         tree = ast.parse(text, filename=str(path))
-    except Exception:
+    except SyntaxError:
+        raise
+    except (OSError, UnicodeError):
         return [], []
 
     imports: list[tuple[int, str]] = []
@@ -155,8 +181,122 @@ def imports_and_classes(path: Path) -> tuple[list[tuple[int, str]], list[tuple[i
     return imports, classes
 
 
+def run_required_check(
+    name: str,
+    argv: list[str],
+    cwd: Path,
+    timeout: int = 60,
+) -> CheckResult:
+    """
+    Execute a required checker and return structured result.
+
+    Catches all execution errors and classifies them properly.
+    Never allows traceback to become CLI contract.
+    """
+    start_time = time.perf_counter()
+    stdout_tail = ""
+    stderr_tail = ""
+    exit_code = 0
+    executed = False
+    classification = "UNKNOWN"
+    error = None
+
+    try:
+        result = subprocess.run(
+            argv,
+            cwd=str(cwd),
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+        )
+        executed = True
+        exit_code = result.returncode
+        stdout_tail = result.stdout[-500:] if result.stdout else ""
+        stderr_tail = result.stderr[-500:] if result.stderr else ""
+
+        if exit_code == 0:
+            classification = "PASS"
+        elif exit_code == 1:
+            classification = "VIOLATION"
+        elif exit_code == 2:
+            classification = "ROOT_NOT_FOUND"
+        elif exit_code == 3:
+            classification = "CHECKER_MISSING"
+        elif exit_code == 4:
+            classification = "CHECKER_ERROR"
+        else:
+            classification = "UNKNOWN_EXIT"
+
+    except FileNotFoundError as e:
+        exit_code = 3  # checker missing
+        classification = "CHECKER_MISSING"
+        error = f"FileNotFoundError: {e}"
+        stderr_tail = str(e)
+    except PermissionError as e:
+        exit_code = 4  # checker error
+        classification = "CHECKER_ERROR"
+        error = f"PermissionError: {e}"
+        stderr_tail = str(e)
+    except subprocess.TimeoutExpired as e:
+        exit_code = 4  # checker timeout
+        classification = "CHECKER_TIMEOUT"
+        error = f"TimeoutExpired after {timeout}s"
+        stdout_tail = e.stdout[-500:] if e.stdout else ""
+        stderr_tail = e.stderr[-500:] if e.stderr else ""
+    except UnicodeDecodeError as e:
+        exit_code = 4
+        classification = "CHECKER_ERROR"
+        error = f"UnicodeDecodeError: {e}"
+        stderr_tail = str(e)
+    except OSError as e:
+        exit_code = 4
+        classification = "CHECKER_ERROR"
+        error = f"OSError: {e}"
+        stderr_tail = str(e)
+    except Exception as e:
+        exit_code = 4
+        classification = "CHECKER_ERROR"
+        error = f"Unexpected error: {type(e).__name__}: {e}"
+        stderr_tail = str(e)
+    finally:
+        duration_ms = int((time.perf_counter() - start_time) * 1000)
+
+    return CheckResult(
+        name=name,
+        argv=argv,
+        cwd=str(cwd),
+        executed=executed,
+        exit_code=exit_code,
+        classification=classification,
+        duration_ms=duration_ms,
+        stdout_tail=stdout_tail,
+        stderr_tail=stderr_tail,
+        error=error,
+    )
+
+
 def check(root: Path, config: dict) -> tuple[dict, dict]:
-    packages = config.get("packages", {})
+    configured_packages = config.get("packages", {})
+    root_project = read_pyproject(root / "pyproject.toml")
+    root_members = set(
+        root_project.get("tool", {})
+        .get("uv", {})
+        .get("workspace", {})
+        .get("members", [])
+    )
+    policy_members = set(
+        config.get("workspace", {}).get("members", [])
+    )
+    # A real checkout's root pyproject is authoritative. Minimal policy
+    # fixtures intentionally omit that file, so their explicit policy members
+    # become authoritative instead of silently reducing the checked package set
+    # to zero.
+    actual_members = root_members or policy_members
+    packages = {
+        name: info
+        for name, info in configured_packages.items()
+        if info.get("path") in actual_members
+    }
     rules = config.get("global_rules", {})
     canonical = set(config.get("canonical_models", []))
     namespaces = {info["namespace"]: name for name, info in packages.items()}
@@ -169,14 +309,20 @@ def check(root: Path, config: dict) -> tuple[dict, dict]:
     def add(rule: str, file: str, line: int, message: str):
         violations.append({"rule": rule, "file": file, "line": line, "message": message})
 
+    enforce_all_required = not root_members or root_members == policy_members
     for required in config.get("required_top_level_packages", []):
-        if not (root / required).is_dir():
+        required_is_active = enforce_all_required or required in root_members
+        if required_is_active and not (root / required).is_dir():
             add("missing_top_level_package", required, 1, f"Top-level package missing: {required}")
 
-    configured_members = set(config.get("workspace", {}).get("members", []))
-    root_project = read_pyproject(root / "pyproject.toml")
-    actual_members = set(root_project.get("tool", {}).get("uv", {}).get("workspace", {}).get("members", configured_members))
-    expected_members = {info["path"] for info in packages.values()}
+    configured_paths = {
+        info["path"] for info in configured_packages.values()
+    }
+    expected_members = (
+        configured_paths
+        if root_members and root_members == policy_members
+        else {info["path"] for info in packages.values()}
+    )
     for member in sorted(expected_members - actual_members):
         add("workspace_member_missing", "pyproject.toml", 1, f"Workspace member not declared: {member}")
 
@@ -289,7 +435,7 @@ def check(root: Path, config: dict) -> tuple[dict, dict]:
         for violation in find_production_fallback_references(root, packages, test_adapter_paths, fallback_re):
             violations.append(violation)
 
-    for violation in find_package_source_declaration_issues(packages):
+    for violation in find_package_source_declaration_issues(root, packages):
         violations.append(violation)
 
     # Phase 4: Dynamic import scanning
@@ -670,12 +816,12 @@ def check_public_api_enforcement(root: Path, packages: dict, config: dict) -> li
     return violations
 
 
-def find_package_source_declaration_issues(packages: dict) -> list[dict]:
+def find_package_source_declaration_issues(root: Path, packages: dict) -> list[dict]:
     """Check that all packages declare their source paths correctly in pyproject.toml."""
     violations = []
     for name, info in packages.items():
         package_path = info["path"]
-        pyproject = Path(package_path) / "pyproject.toml"
+        pyproject = root / package_path / "pyproject.toml"
         if not pyproject.exists():
             violations.append({
                 "rule": "missing_pyproject",
@@ -698,165 +844,256 @@ def find_package_source_declaration_issues(packages: dict) -> list[dict]:
     return violations
 
 
+def _emit_contract(
+    *,
+    json_output: bool,
+    repository_root: Optional[Path],
+    checks: list[dict],
+    verdict: str,
+    exit_code: int,
+    violations: Optional[list[dict]] = None,
+    error: Optional[str] = None,
+) -> None:
+    """Emit the stable architecture-check contract for every exit path."""
+    payload = {
+        "repository_root": str(repository_root) if repository_root else None,
+        "checks": checks,
+        "all_required_checks_executed": all(
+            item.get("executed") or item.get("classification") == "SKIPPED"
+            for item in checks
+        ) if checks else False,
+        "verdict": verdict,
+        "exit_code": exit_code,
+        "violations": violations or [],
+        "total_violations": len(violations or []),
+    }
+    if error:
+        payload["error"] = error
+    if json_output:
+        print(json.dumps(payload, indent=2))
+    elif error:
+        print(f"ERROR: {error}", file=sys.stderr)
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, help="Repository root (auto-detected if omitted)")
-    parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
-    parser.add_argument("--report", type=Path, default=DEFAULT_REPORT)
+    parser.add_argument("--config", type=Path)
+    parser.add_argument("--report", type=Path)
     parser.add_argument("--graph", type=Path)
     parser.add_argument("--json", action="store_true", help="Output structured JSON")
-    parser.add_argument("--skip-root-validation", action="store_true", 
+    parser.add_argument(
+        "--checker-timeout",
+        type=int,
+        default=5,
+        help="Timeout in seconds for each subprocess checker",
+    )
+    parser.add_argument("--skip-root-validation", action="store_true",
                         help="Skip root marker validation (for testing only)")
     parser.add_argument("--skip-scaffold-check", action="store_true",
                         help="Skip scaffold architecture check (for testing only)")
     args = parser.parse_args(argv)
-    
-    # Resolve root using shared locator
+
+    root: Optional[Path] = None
     try:
         if args.root:
             root = args.root.resolve()
             if not args.skip_root_validation and not is_repository_root(root):
-                print(f"ERROR: Specified root is not a valid repository root", file=sys.stderr)
-                return 2  # repository root not found
+                raise FileNotFoundError(
+                    f"Specified root is not a valid repository root: {root}"
+                )
         else:
             root = find_repository_root()
-    except FileNotFoundError as e:
-        if args.json:
-            print(json.dumps({
-                "repository_root": None,
-                "checks": [],
-                "all_required_checks_executed": False,
-                "verdict": "ERROR",
-                "error": str(e)
-            }))
-        else:
-            print(f"ERROR: {e}", file=sys.stderr)
-        return 2  # repository root not found
-    except Exception as e:
-        if args.json:
-            print(json.dumps({
-                "repository_root": None,
-                "checks": [],
-                "all_required_checks_executed": False,
-                "verdict": "ERROR",
-                "error": f"Root detection failed: {e}"
-            }))
-        else:
-            print(f"ERROR: Root detection failed: {e}", file=sys.stderr)
-        return 3  # required checker missing
-    
-    config = yaml.safe_load(args.config.read_text(encoding="utf-8"))
-    
-    # Track which required checkers were executed
-    required_checkers = ["scaffold", "import_boundaries"]
-    executed_checks = []
-    
+    except FileNotFoundError as exc:
+        _emit_contract(
+            json_output=args.json,
+            repository_root=root,
+            checks=[],
+            verdict="ERROR",
+            exit_code=2,
+            error=str(exc),
+        )
+        return 2
+    except Exception as exc:
+        _emit_contract(
+            json_output=args.json,
+            repository_root=root,
+            checks=[],
+            verdict="ERROR",
+            exit_code=4,
+            error=f"Root detection failed: {type(exc).__name__}: {exc}",
+        )
+        return 4
+
+    config_path = (
+        args.config.resolve()
+        if args.config
+        else root / "configs" / "architecture" / "scaffold_v2.yaml"
+    )
+    try:
+        config = yaml.safe_load(config_path.read_text(encoding="utf-8"))
+        if not isinstance(config, dict):
+            raise ValueError("configuration root must be a mapping")
+    except FileNotFoundError:
+        _emit_contract(
+            json_output=args.json,
+            repository_root=root,
+            checks=[],
+            verdict="ERROR",
+            exit_code=2,
+            error=f"Architecture config not found: {config_path}",
+        )
+        return 2
+    except Exception as exc:
+        _emit_contract(
+            json_output=args.json,
+            repository_root=root,
+            checks=[],
+            verdict="ERROR",
+            exit_code=4,
+            error=f"Architecture config unreadable: {type(exc).__name__}: {exc}",
+        )
+        return 4
+
+    checks: list[CheckResult] = []
+    import_started = time.perf_counter()
+    invocation = [str(Path(__file__).resolve()), *(argv if argv is not None else sys.argv[1:])]
     try:
         report, graph = check(root, config)
-        executed_checks.append({"name": "import_boundaries", "executed": True, "exit_code": 0})
-    except Exception as e:
-        if args.json:
-            print(json.dumps({
-                "repository_root": str(root),
-                "checks": [{"name": "import_boundaries", "executed": False, "exit_code": 4, "error": str(e)}],
-                "all_required_checks_executed": False,
-                "verdict": "ERROR",
-                "error": f"Checker execution error: {e}"
-            }))
-        else:
-            print(f"ERROR: Checker execution failed: {e}", file=sys.stderr)
-        return 4  # checker execution error
-    
-    # Run scaffold check
+        import_exit = 0 if report["status"] == "PASS" else 1
+        checks.append(CheckResult(
+            name="import_boundaries",
+            argv=[sys.executable, *invocation],
+            cwd=str(root),
+            executed=True,
+            exit_code=import_exit,
+            classification="PASS" if import_exit == 0 else "VIOLATION",
+            duration_ms=int((time.perf_counter() - import_started) * 1000),
+            stdout_tail="",
+            stderr_tail="",
+        ))
+    except Exception as exc:
+        checks.append(CheckResult(
+            name="import_boundaries",
+            argv=[sys.executable, *invocation],
+            cwd=str(root),
+            executed=True,
+            exit_code=4,
+            classification="CHECKER_ERROR",
+            duration_ms=int((time.perf_counter() - import_started) * 1000),
+            stdout_tail="",
+            stderr_tail=str(exc)[-500:],
+            error=f"{type(exc).__name__}: {exc}",
+        ))
+        _emit_contract(
+            json_output=args.json,
+            repository_root=root,
+            checks=[item.to_dict() for item in checks],
+            verdict="ERROR",
+            exit_code=4,
+            error=f"Import checker failed: {type(exc).__name__}: {exc}",
+        )
+        return 4
+
     if args.skip_scaffold_check:
-        executed_checks.append({"name": "scaffold", "executed": False, "exit_code": 0, "skipped": True})
+        checks.append(CheckResult(
+            name="scaffold",
+            argv=[
+                sys.executable,
+                str(root / "scripts" / "scaffold_architecture_v2.py"),
+                "--check",
+            ],
+            cwd=str(root),
+            executed=False,
+            exit_code=0,
+            classification="SKIPPED",
+            duration_ms=0,
+            stdout_tail="",
+            stderr_tail="",
+        ))
     else:
-        try:
-            import subprocess
-            result = subprocess.run([sys.executable, "scripts/scaffold_architecture_v2.py", "--check"], 
-                                  cwd=root, capture_output=True, text=True, timeout=60)
-            executed_checks.append({
-                "name": "scaffold", 
-                "executed": True, 
-                "exit_code": result.returncode,
-                "stdout_tail": result.stdout[-500:] if result.stdout else "",
-                "stderr_tail": result.stderr[-500:] if result.stderr else ""
-            })
-            if result.returncode != 0:
-                # Scaffold check failed - add to violations
-                report["violations"].append({
-                    "rule": "scaffold_check_failed",
-                    "file": "scaffold_architecture_v2.py",
-                    "line": 0,
-                    "message": f"Scaffold check failed with exit code {result.returncode}: {result.stderr}"
-                })
-                report["status"] = "FAIL"
-                report["total_violations"] = len(report["violations"])
-        except subprocess.TimeoutExpired:
-            executed_checks.append({"name": "scaffold", "executed": False, "exit_code": 4, "error": "timeout"})
-            if args.json:
-                print(json.dumps({
-                    "repository_root": str(root),
-                    "checks": executed_checks,
-                    "all_required_checks_executed": False,
-                    "verdict": "ERROR",
-                    "error": "Scaffold check timed out"
-                }))
-            else:
-                print(f"ERROR: Scaffold check timed out", file=sys.stderr)
-            return 4
-        except Exception as e:
-            executed_checks.append({"name": "scaffold", "executed": False, "exit_code": 4, "error": str(e)})
-            if args.json:
-                print(json.dumps({
-                    "repository_root": str(root),
-                    "checks": executed_checks,
-                    "all_required_checks_executed": False,
-                    "verdict": "ERROR",
-                    "error": f"Scaffold checker error: {e}"
-                }))
-            else:
-                print(f"ERROR: Scaffold checker failed: {e}", file=sys.stderr)
-            return 4
-    
-    all_required_executed = all(c["executed"] or c.get("skipped") for c in executed_checks)
-    
-    # Determine verdict
-    if not all_required_executed:
-        verdict = "ERROR"
-        exit_code = 3
+        scaffold_path = root / "scripts" / "scaffold_architecture_v2.py"
+        scaffold_argv = [sys.executable, str(scaffold_path), "--check"]
+        if not scaffold_path.is_file():
+            checks.append(CheckResult(
+                name="scaffold",
+                argv=scaffold_argv,
+                cwd=str(root),
+                executed=False,
+                exit_code=3,
+                classification="CHECKER_MISSING",
+                duration_ms=0,
+                stdout_tail="",
+                stderr_tail=f"Checker not found: {scaffold_path}",
+                error=f"FileNotFoundError: {scaffold_path}",
+            ))
+        else:
+            checks.append(run_required_check(
+                "scaffold",
+                scaffold_argv,
+                root,
+                timeout=args.checker_timeout,
+            ))
+
+    scaffold = checks[-1]
+    if scaffold.exit_code == 1:
+        report["violations"].append({
+            "rule": "scaffold_check_failed",
+            "file": "scripts/scaffold_architecture_v2.py",
+            "line": 0,
+            "message": (
+                "Scaffold check reported violations: "
+                f"{scaffold.stderr_tail or scaffold.stdout_tail}"
+            ),
+        })
+        report["status"] = "FAIL"
+        report["total_violations"] = len(report["violations"])
+
+    check_dicts = [item.to_dict() for item in checks]
+    if scaffold.exit_code == 3:
+        verdict, exit_code = "ERROR", 3
+        error = "Required scaffold checker is missing"
+    elif scaffold.exit_code not in (0, 1):
+        verdict, exit_code = "ERROR", 4
+        error = scaffold.error or "Required scaffold checker failed"
     elif report["status"] == "PASS":
-        verdict = "PASS"
-        exit_code = 0
+        verdict, exit_code, error = "PASS", 0, None
     else:
-        verdict = "FAIL"
-        exit_code = 1
-    
-    # Output
-    if args.json:
-        output = {
-            "repository_root": str(root),
-            "checks": executed_checks,
-            "all_required_checks_executed": all_required_executed,
-            "verdict": verdict,
-            "violations": report["violations"],
-            "total_violations": report["total_violations"]
-        }
-        print(json.dumps(output, indent=2))
-    else:
-        print(f"Architecture policy: {report['status']} ({report['total_violations']} violations)")
+        verdict, exit_code, error = "FAIL", 1, None
+
+    _emit_contract(
+        json_output=args.json,
+        repository_root=root,
+        checks=check_dicts,
+        verdict=verdict,
+        exit_code=exit_code,
+        violations=report["violations"],
+        error=error,
+    )
+    if not args.json and error is None:
+        print(
+            f"Architecture policy: {report['status']} "
+            f"({report['total_violations']} violations)"
+        )
         for item in report["violations"]:
             print(f"[{item['rule']}] {item['file']}:{item['line']} {item['message']}")
         if report["status"] == "PASS":
             print("Zero boundary violations detected")
-    
-    # Write reports
-    args.report.parent.mkdir(parents=True, exist_ok=True)
-    args.report.write_text(json.dumps(report, indent=2), encoding="utf-8")
-    graph_path = args.graph or args.report.with_name("import_graph.json")
+
+    # Reports default inside the selected checkout, never the source checkout
+    # that happened to provide this installed checker.
+    report_path = args.report or (
+        root
+        / "artifacts"
+        / "architecture_v2_runtime_cutover"
+        / "phase_13"
+        / "dependency_boundary_report.json"
+    )
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    report_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
+    graph_path = args.graph or report_path.with_name("import_graph.json")
     graph_path.parent.mkdir(parents=True, exist_ok=True)
     graph_path.write_text(json.dumps(graph, indent=2), encoding="utf-8")
-    
     return exit_code
 
 

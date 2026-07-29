@@ -1,6 +1,3 @@
-# Phase 5 - GitHub Actions Repair
-# Fail-closed CI matrix with full platform coverage
-# Trigger: main, feat/*, fix/*, hardening/*
 name: CI & Phase 7 Verification Matrix
 
 on:
@@ -25,178 +22,237 @@ defaults:
     shell: bash
 
 jobs:
-
-  # 1. ARTIFACT PROTOCOL - Validate production artifacts against schema v1
   artifact-protocol:
     name: Artifact Protocol Gate
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v3
+      - uses: astral-sh/setup-uv@v3
         with:
           version: ${{ env.UV_VERSION }}
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Sync dependencies
         run: uv sync --all-packages
 
-      - name: Validate production artifacts
+      - name: Generate immutable candidate evidence
         run: |
+          uv run python scripts/verification/generate_phase7_evidence.py \
+            --commands-file scripts/verification/command_registry.yaml \
+            --output-dir artifacts/architecture_v2_production_hardening/phase_07 \
+            --cwd . \
+            --run-id "ci-${{ github.run_id }}-${{ github.run_attempt }}"
+
+      - name: Validate candidate evidence
+        run: |
+          BUNDLE="artifacts/architecture_v2_production_hardening/phase_07/runs/ci-${{ github.run_id }}-${{ github.run_attempt }}/evidence_bundle.json"
+          uv run python scripts/verification/validate_evidence_bundle.py "$BUNDLE"
+          uv run python scripts/validate_artifact_schema.py "$BUNDLE" \
+            --verify-hashes \
+            --fail-on-warning \
+            --repo-root . \
+            --candidate-sha "${{ github.sha }}"
           uv run python scripts/validate_artifact_schema.py \
             --directory artifacts/architecture_v2_production_hardening/phase_07 \
             --recursive \
-            --verify-hashes
+            --verify-hashes \
+            --fail-on-warning \
+            --repo-root .
 
       - name: Verify negative fixtures fail
         run: |
-          for f in tests/fixtures/artifacts/*.json; do
-            fname=$(basename "$f")
-            if [ "$fname" != "valid_artifact.json" ]; then
-              if uv run python scripts/validate_artifact_schema.py "$f"; then
-                echo "ERROR: Negative fixture $fname should have failed but passed"
+          for fixture in tests/fixtures/artifacts/*.json; do
+            if [ "$(basename "$fixture")" != "valid_artifact.json" ]; then
+              if uv run python scripts/validate_artifact_schema.py "$fixture"; then
+                echo "Negative fixture unexpectedly passed: $fixture"
                 exit 1
               fi
             fi
           done
 
-      - name: Upload artifact validation report
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Record Phase 6 negative-injection receipts
+        run: |
+          python scripts/verification/run_negative_injections.py \
+            --root . \
+            --output-dir artifacts/ci/artifact-protocol/negative-injections
+
+      - name: Upload artifact protocol evidence
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: artifact-validation-report
+          name: artifact-protocol-evidence
+          if-no-files-found: warn
           path: |
-            artifacts/architecture_v2_production_hardening/phase_07/artifact_schema_report.json
-            artifacts/architecture_v2_production_hardening/phase_07/artifact_manifest.json
+            artifacts/architecture_v2_production_hardening/phase_07/runs/ci-${{ github.run_id }}-${{ github.run_attempt }}
+            artifacts/architecture_v2_production_hardening/phase_07/quarantine/ci-${{ github.run_id }}-${{ github.run_attempt }}
+            artifacts/architecture_v2_production_hardening/phase_07/latest.json
+            artifacts/ci/artifact-protocol/negative-injections/
 
-  # 2. VERSION CONSISTENCY - All versions derive from canonical source
   version-consistency:
     name: Version Consistency Gate
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v3
+      - uses: astral-sh/setup-uv@v3
         with:
           version: ${{ env.UV_VERSION }}
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Sync dependencies
         run: uv sync --all-packages
 
-      - name: Install workspace packages
+      - name: Run fail-closed version check
         run: |
-          uv pip install -e core -e apps/api -e apps/cli -e apps/worker \
-            -e orchestration -e storage -e execution -e providers \
-            -e tools -e workflows -e verification -e memory \
-            -e context -e intelligence -e observability -e evals \
-            -e plugins -e skills
+          python scripts/verification/run_command_receipt.py \
+            --name version_consistency \
+            --output artifacts/ci/version-consistency/receipts/version_consistency.json \
+            --timeout 120 \
+            -- uv run python scripts/check_version_consistency.py \
+              --root . \
+              --report artifacts/ci/version-consistency/version_consistency_report.json
 
-      - name: Run Version Consistency Check
-        run: uv run python scripts/check_version_consistency.py
+      - name: Capture environment
+        if: always()
+        run: |
+          python scripts/verification/capture_environment.py \
+            --cwd . \
+            --output artifacts/ci/version-consistency/environment.json
 
-      - name: Upload version consistency report
+      - name: Upload version evidence
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: version-consistency-report
-          path: artifacts/architecture_v2_production_hardening/phase_07/version_consistency_report.json
+          name: version-consistency-evidence
+          path: artifacts/ci/version-consistency/
 
-  # 3. ARCHITECTURE BOUNDARIES - Scaffold + import boundaries + no-legacy
   architecture-boundaries:
     name: Architecture Boundaries Gate
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v3
+      - uses: astral-sh/setup-uv@v3
         with:
           version: ${{ env.UV_VERSION }}
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Sync dependencies
         run: uv sync --all-packages
 
-      - name: Scaffold Architecture Check
-        run: uv run python scripts/scaffold_architecture_v2.py --check
-
-      - name: Architecture Import Boundaries Check
-        run: uv run python scripts/check_architecture_imports.py
-
-      - name: No Legacy Orchestration Check
-        run: uv run python scripts/check_no_legacy_orchestration.py
-
-      - name: Ruff Lint & Format Check
+      - name: Architecture checks
         run: |
-          uv run ruff check orchestration storage execution tests
-          uv run ruff format --check orchestration storage execution tests
+          python scripts/verification/run_command_receipt.py \
+            --name architecture_boundaries \
+            --output artifacts/ci/architecture-boundaries/receipts/architecture_boundaries.json \
+            --timeout 180 \
+            -- uv run python scripts/check_architecture_imports.py \
+              --root . \
+              --json \
+              --report artifacts/ci/architecture-boundaries/dependency_boundary_report.json \
+              --graph artifacts/ci/architecture-boundaries/import_graph.json
 
-      - name: Upload architecture report
+      - name: No-legacy check
+        if: always()
+        run: |
+          python scripts/verification/run_command_receipt.py \
+            --name no_legacy_orchestration \
+            --output artifacts/ci/architecture-boundaries/receipts/no_legacy_orchestration.json \
+            --timeout 120 \
+            -- uv run python scripts/check_no_legacy_orchestration.py
+
+      - name: Repair-scope Ruff check
+        if: always()
+        run: |
+          python scripts/verification/run_command_receipt.py \
+            --name ruff_check \
+            --output artifacts/ci/architecture-boundaries/receipts/ruff_check.json \
+            --timeout 180 \
+            -- uv run ruff check \
+              apps/cli/windagent_cli/main.py \
+              apps/cli/windagent_cli/composition.py \
+              tools/windagent_tools/builtin_registry.py \
+              scripts/check_architecture_imports.py \
+              scripts/check_version_consistency.py \
+              scripts/validate_artifact_schema.py \
+              scripts/verification \
+              tests/unit/cli/test_live_integration.py \
+              tests/unit/scripts/test_check_version_consistency.py \
+              tests/unit/scripts/test_ci_workflow.py \
+              tests/unit/verification/test_evidence_generation.py \
+              tests/unit/verification/test_ci_evidence_validation.py
+
+      - name: Capture environment
+        if: always()
+        run: |
+          python scripts/verification/capture_environment.py \
+            --cwd . \
+            --output artifacts/ci/architecture-boundaries/environment.json
+
+      - name: Upload architecture evidence
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: architecture-boundaries-report
-          path: artifacts/architecture_v2_runtime_cutover/phase_13/dependency_boundary_report.json
+          name: architecture-boundaries-evidence
+          path: artifacts/ci/architecture-boundaries/
 
-  # 4. PYTHON UNIT TESTS (Ubuntu SQLite)
-    python-unit-sqlite:
-      name: Python Unit Tests (Ubuntu SQLite)
-      runs-on: ubuntu-latest
-      env:
-        WINDAGENT_DATABASE_URL: sqlite+aiosqlite:///windagent.db
-      steps:
-        - uses: actions/checkout@v4
+  python-unit-sqlite:
+    name: Python Unit Tests (Ubuntu SQLite)
+    runs-on: ubuntu-latest
+    env:
+      WINDAGENT_DATABASE_URL: sqlite+aiosqlite:///windagent.db
+    steps:
+      - uses: actions/checkout@v4
 
-        - name: Install uv
-          uses: astral-sh/setup-uv@v3
-          with:
-            version: ${{ env.UV_VERSION }}
+      - uses: astral-sh/setup-uv@v3
+        with:
+          version: ${{ env.UV_VERSION }}
 
-        - name: Set up Python
-          uses: actions/setup-python@v5
-          with:
-            python-version: ${{ env.PYTHON_VERSION }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
 
-        - name: Sync dependencies
-          run: uv sync --all-packages
+      - name: Sync dependencies
+        run: uv sync --all-packages
 
-        - name: Install ruff
-          run: uv pip install ruff
+      - name: Architecture, unit and regression tests
+        run: |
+          python scripts/verification/run_command_receipt.py \
+            --name python_unit_sqlite \
+            --output artifacts/ci/python-unit-sqlite/receipts/pytest.json \
+            --timeout 1200 \
+            -- uv run pytest tests/architecture tests/unit tests/regression \
+              -v --tb=short \
+              --junitxml=artifacts/ci/python-unit-sqlite/test-results/pytest.xml
 
-        - name: Architecture Tests
-          run: uv run pytest tests/architecture/ -v --tb=short -x
+      - name: Capture environment
+        if: always()
+        run: |
+          python scripts/verification/capture_environment.py \
+            --cwd . \
+            --output artifacts/ci/python-unit-sqlite/environment.json
 
-        - name: Unit Tests
-          run: uv run pytest tests/unit/ -v --tb=short -x --junitxml=pytest-unit.xml
+      - name: Upload unit evidence
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: python-unit-sqlite-evidence
+          path: artifacts/ci/python-unit-sqlite/
 
-        - name: Regression Tests
-          run: uv run pytest tests/regression/ -v --tb=short -x --junitxml=pytest-regression.xml
-
-        - name: Upload test results
-          uses: actions/upload-artifact@v4
-          if: always()
-          with:
-            name: pytest-unit-sqlite
-            path: |
-              pytest-unit.xml
-              pytest-regression.xml
-
-  # 5. PYTHON UNIT TESTS (Windows SQLite)
   python-unit-windows:
     name: Python Unit Tests (Windows SQLite)
     runs-on: windows-latest
@@ -208,30 +264,40 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v3
+      - uses: astral-sh/setup-uv@v3
         with:
           version: ${{ env.UV_VERSION }}
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Sync dependencies
         run: uv sync --all-packages
 
-      - name: Unit Tests
-        run: uv run pytest tests/unit/ -v --tb=short -x --junitxml=pytest-unit.xml
+      - name: Unit tests
+        run: |
+          python scripts/verification/run_command_receipt.py `
+            --name python_unit_windows `
+            --output artifacts/ci/python-unit-windows/receipts/pytest.json `
+            --timeout 1200 `
+            -- uv run pytest tests/unit -v --tb=short `
+              --junitxml=artifacts/ci/python-unit-windows/test-results/pytest.xml
 
-      - name: Upload test results
+      - name: Capture environment
+        if: always()
+        run: |
+          python scripts/verification/capture_environment.py `
+            --cwd . `
+            --output artifacts/ci/python-unit-windows/environment.json
+
+      - name: Upload Windows unit evidence
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: pytest-unit-windows
-          path: pytest-unit.xml
+          name: python-unit-windows-evidence
+          path: artifacts/ci/python-unit-windows/
 
-  # 6. PYTHON INTEGRATION TESTS (Ubuntu SQLite)
   python-integration-sqlite:
     name: Python Integration Tests (Ubuntu SQLite)
     runs-on: ubuntu-latest
@@ -240,30 +306,40 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v3
+      - uses: astral-sh/setup-uv@v3
         with:
           version: ${{ env.UV_VERSION }}
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Sync dependencies
         run: uv sync --all-packages
 
-      - name: Integration Tests
-        run: uv run pytest tests/integration/ -v --tb=short -x --junitxml=pytest-integration.xml
+      - name: Integration tests
+        run: |
+          python scripts/verification/run_command_receipt.py \
+            --name integration_sqlite \
+            --output artifacts/ci/python-integration-sqlite/receipts/pytest.json \
+            --timeout 1200 \
+            -- uv run pytest tests/integration -v --tb=short \
+              --junitxml=artifacts/ci/python-integration-sqlite/test-results/pytest.xml
 
-      - name: Upload test results
+      - name: Capture environment
+        if: always()
+        run: |
+          python scripts/verification/capture_environment.py \
+            --cwd . \
+            --output artifacts/ci/python-integration-sqlite/environment.json
+
+      - name: Upload SQLite integration evidence
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: pytest-integration-sqlite
-          path: pytest-integration.xml
+          name: python-integration-sqlite-evidence
+          path: artifacts/ci/python-integration-sqlite/
 
-  # 7. PYTHON INTEGRATION TESTS (Ubuntu PostgreSQL)
   python-integration-postgres:
     name: Python Integration Tests (Ubuntu PostgreSQL)
     runs-on: ubuntu-latest
@@ -286,114 +362,100 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v3
+      - uses: astral-sh/setup-uv@v3
         with:
           version: ${{ env.UV_VERSION }}
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Sync dependencies
         run: uv sync --all-packages
 
-      - name: Integration Tests (PostgreSQL)
-        run: uv run pytest tests/integration/ -v --tb=short -x --junitxml=pytest-integration-postgres.xml
+      - name: PostgreSQL dialect and schema preflight
+        run: |
+          python scripts/verification/run_command_receipt.py \
+            --name postgres_preflight \
+            --output artifacts/ci/python-integration-postgres/receipts/postgres_preflight.json \
+            --timeout 180 \
+            -- uv run python scripts/verification/database_preflight.py \
+              --require-dialect postgresql \
+              --initialize-schema \
+              --output artifacts/ci/python-integration-postgres/database_preflight.json
+
+      - name: PostgreSQL integration tests
+        run: |
+          python scripts/verification/run_command_receipt.py \
+            --name integration_postgres \
+            --output artifacts/ci/python-integration-postgres/receipts/pytest.json \
+            --timeout 1200 \
+            -- uv run pytest tests/integration -v --tb=short \
+              --junitxml=artifacts/ci/python-integration-postgres/test-results/pytest.xml
 
       - name: Multi-replica fencing tests
         run: |
-          uv run pytest tests/integration/ -k "fencing or replica or leader" -v --tb=short
-          uv run pytest tests/unit/worker/ -k "fencing or replica or lease" -v --tb=short
+          python scripts/verification/run_command_receipt.py \
+            --name postgres_fencing \
+            --output artifacts/ci/python-integration-postgres/receipts/fencing.json \
+            --timeout 600 \
+            -- uv run pytest tests/integration tests/unit/worker \
+              -k "fencing or replica or leader or lease" -v --tb=short
 
-      - name: Upload test results
+      - name: Capture environment
+        if: always()
+        run: |
+          python scripts/verification/capture_environment.py \
+            --cwd . \
+            --output artifacts/ci/python-integration-postgres/environment.json
+
+      - name: Upload PostgreSQL evidence
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: pytest-integration-postgres
-          path: pytest-integration-postgres.xml
+          name: python-integration-postgres-evidence
+          path: artifacts/ci/python-integration-postgres/
 
-  # 8. RUNTIME SMOKE - FastAPI, CLI, Worker version checks
   runtime-smoke:
     name: Runtime Smoke Gate
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v3
+      - uses: astral-sh/setup-uv@v3
         with:
           version: ${{ env.UV_VERSION }}
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Sync dependencies
         run: uv sync --all-packages
 
-      - name: Install workspace packages
+      - name: Runtime imports and version smoke
         run: |
-          uv pip install -e core -e apps/api -e apps/cli -e apps/worker
+          python scripts/verification/run_command_receipt.py \
+            --name runtime_version_smoke \
+            --output artifacts/ci/runtime-smoke/receipts/runtime_version_smoke.json \
+            --timeout 180 \
+            -- uv run python scripts/verification/runtime_version_smoke.py \
+              --output artifacts/ci/runtime-smoke/runtime_version_report.json
 
-      - name: FastAPI Version Smoke
+      - name: Capture environment
+        if: always()
         run: |
-          python -c "
-          from windagent_api import app
-          from fastapi.testclient import TestClient
-          client = TestClient(app)
-          resp = client.get('/internal/architecture')
-          data = resp.json()
-          print('API version:', data['version'])
-          print('Architecture:', data['architecture'])
-          print('Architecture Generation:', data['architecture_generation'])
-          print('API Version:', data['api_version'])
-          print('Provider Protocol:', data['provider_protocol_version'])
-          print('Artifact Protocol:', data['artifact_protocol_version'])
-          from windagent_core.version import PRODUCT_VERSION
-          assert data['version'] == data['product_version'] == PRODUCT_VERSION
-          assert data['architecture_generation'] == 'v2'
-          assert data['api_version'] == 'v2'
-          assert data['provider_protocol_version'] == '1.0.0'
-          assert data['artifact_protocol_version'] == '1.0.0'
-          print('FastAPI version smoke: PASS')
-          "
+          python scripts/verification/capture_environment.py \
+            --cwd . \
+            --output artifacts/ci/runtime-smoke/environment.json
 
-      - name: CLI Version Smoke
-        run: python -m windagent_cli --version --json
-
-      - name: Worker Version Smoke
-        run: |
-          python -c "
-          import windagent_worker
-          print('Worker version:', windagent_worker.__version__)
-          from windagent_core.version import PRODUCT_VERSION
-          assert windagent_worker.__version__ == PRODUCT_VERSION
-          print('Worker version smoke: PASS')
-          "
-
-      - name: Package Metadata Smoke
-        run: |
-          python -c "
-          from importlib.metadata import version as pkg_version
-          from windagent_core.version import PRODUCT_VERSION
-          for pkg in ['windagent-core', 'windagent-api', 'windagent-cli', 'windagent-worker']:
-              v = pkg_version(pkg)
-              print(pkg + ':', v)
-              assert v == PRODUCT_VERSION
-          print('Package metadata smoke: PASS')
-          "
-
-      - name: Upload runtime smoke results
+      - name: Upload runtime evidence
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: runtime-smoke-report
-          path: artifacts/architecture_v2_production_hardening/phase_07/runtime_version_report.json
+          name: runtime-smoke-evidence
+          path: artifacts/ci/runtime-smoke/
 
-  # 9. CLI CONTRACT - CLI commands against real runtime
   cli-contract:
     name: CLI Contract Gate
     runs-on: ubuntu-latest
@@ -402,79 +464,115 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v3
+      - uses: astral-sh/setup-uv@v3
         with:
           version: ${{ env.UV_VERSION }}
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Sync dependencies
         run: uv sync --all-packages
 
-      - name: Install workspace packages
+      - name: CLI live/offline/demo/failure contract tests
         run: |
-          uv pip install -e core -e apps/cli
+          python scripts/verification/run_command_receipt.py \
+            --name cli_contract \
+            --output artifacts/ci/cli-contract/receipts/pytest.json \
+            --timeout 600 \
+            -- uv run pytest \
+              tests/unit/cli/test_live_integration.py \
+              tests/unit/cli/test_cli_commands.py \
+              tests/unit/cli/test_phase26_convergence.py \
+              -v --tb=short \
+              --junitxml=artifacts/ci/cli-contract/test-results/pytest.xml
 
-      - name: CLI --version
-        run: python -m windagent_cli --version
+      - name: Capture environment
+        if: always()
+        run: |
+          python scripts/verification/capture_environment.py \
+            --cwd . \
+            --output artifacts/ci/cli-contract/environment.json
 
-      # Note: CLI architecture-check is a mandatory gate per Phase 5 G5.6.
-      # Failure here correctly blocks the workflow. The CLI must be fully
-      # composable in CI with sqlite+aiosqlite.
-      - name: CLI architecture-check
-        run: python -m windagent_cli architecture-check
-
-      - name: Upload CLI results
+      - name: Upload CLI evidence
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: cli-contract-results
-          path: artifacts/architecture_v2_production_hardening/phase_07/ci_fail_closed_report.json
+          name: cli-contract-evidence
+          path: artifacts/ci/cli-contract/
 
-  # 10. WEB TEST (Ubuntu)
   web-test:
     name: Web Test & Build (Ubuntu)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Install web dependencies (from lockfile)
-        working-directory: apps/web
-        run: npm ci
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Web typecheck
-        working-directory: apps/web
-        run: npx tsc --noEmit
+      - name: Install from lockfile
+        run: |
+          python scripts/verification/run_command_receipt.py \
+            --name web_npm_ci \
+            --cwd apps/web \
+            --output artifacts/ci/web-test/receipts/npm_ci.json \
+            --timeout 600 \
+            -- npm ci
 
-      - name: Web unit tests
-        working-directory: apps/web
-        run: npm test -- --run
+      - name: Typecheck
+        run: |
+          python scripts/verification/run_command_receipt.py \
+            --name web_typecheck \
+            --cwd apps/web \
+            --output artifacts/ci/web-test/receipts/typecheck.json \
+            --timeout 300 \
+            -- npm run typecheck
 
-      - name: Web coverage
-        working-directory: apps/web
-        run: npm run test:coverage -- --run
+      - name: Unit tests and coverage
+        run: |
+          python scripts/verification/run_command_receipt.py \
+            --name web_test_coverage \
+            --cwd apps/web \
+            --output artifacts/ci/web-test/receipts/test_coverage.json \
+            --timeout 600 \
+            -- npm run test:coverage
 
-      - name: Web build
-        working-directory: apps/web
-        run: npm run build
+      - name: Build
+        run: |
+          python scripts/verification/run_command_receipt.py \
+            --name web_build \
+            --cwd apps/web \
+            --output artifacts/ci/web-test/receipts/build.json \
+            --timeout 600 \
+            -- npm run build
+
+      - name: Capture environment
+        if: always()
+        run: |
+          python scripts/verification/capture_environment.py \
+            --cwd apps/web \
+            --output artifacts/ci/web-test/environment.json
+
+      - name: Upload web evidence
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: web-test-evidence
+          path: artifacts/ci/web-test/
 
       - name: Upload web build
         uses: actions/upload-artifact@v4
-        if: always()
+        if: success()
         with:
           name: web-build
           path: apps/web/dist/
 
-  # 11. WEB TEST (Windows)
   web-test-windows:
     name: Web Test & Build (Windows)
     runs-on: windows-latest
@@ -484,65 +582,135 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Install web dependencies (from lockfile)
-        working-directory: apps/web
-        run: npm ci
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Web typecheck
-        working-directory: apps/web
-        run: npx tsc --noEmit
+      - name: Install from lockfile
+        run: |
+          python scripts/verification/run_command_receipt.py `
+            --name web_windows_npm_ci `
+            --cwd apps/web `
+            --output artifacts/ci/web-test-windows/receipts/npm_ci.json `
+            --timeout 600 `
+            -- npm ci
 
-      - name: Web unit tests
-        working-directory: apps/web
-        run: npm test -- --run
+      - name: Typecheck
+        run: |
+          python scripts/verification/run_command_receipt.py `
+            --name web_windows_typecheck `
+            --cwd apps/web `
+            --output artifacts/ci/web-test-windows/receipts/typecheck.json `
+            --timeout 300 `
+            -- npm run typecheck
 
-      - name: Web build
-        working-directory: apps/web
-        run: npm run build
+      - name: Unit tests
+        run: |
+          python scripts/verification/run_command_receipt.py `
+            --name web_windows_tests `
+            --cwd apps/web `
+            --output artifacts/ci/web-test-windows/receipts/tests.json `
+            --timeout 600 `
+            -- npm test
 
-  # 12. DESKTOP TEST (Ubuntu)
+      - name: Build
+        run: |
+          python scripts/verification/run_command_receipt.py `
+            --name web_windows_build `
+            --cwd apps/web `
+            --output artifacts/ci/web-test-windows/receipts/build.json `
+            --timeout 600 `
+            -- npm run build
+
+      - name: Capture environment
+        if: always()
+        run: |
+          python scripts/verification/capture_environment.py `
+            --cwd apps/web `
+            --output artifacts/ci/web-test-windows/environment.json
+
+      - name: Upload Windows web evidence
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: web-test-windows-evidence
+          path: artifacts/ci/web-test-windows/
+
   desktop-test:
     name: Desktop Test & Build (Ubuntu)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      # Note: using npm install for desktop until package-lock.json is committed.
-      # After commit, switch to: npm ci
-      - name: Install desktop dependencies
-        working-directory: apps/desktop
-        run: npm ci
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Desktop typecheck
-        working-directory: apps/desktop
-        run: npx tsc --noEmit
+      - name: Install from lockfile
+        run: |
+          python scripts/verification/run_command_receipt.py \
+            --name desktop_npm_ci \
+            --cwd apps/desktop \
+            --output artifacts/ci/desktop-test/receipts/npm_ci.json \
+            --timeout 600 \
+            -- npm ci
 
-      - name: Desktop unit tests
-        working-directory: apps/desktop
-        run: npm test -- --run
+      - name: Typecheck
+        run: |
+          python scripts/verification/run_command_receipt.py \
+            --name desktop_typecheck \
+            --cwd apps/desktop \
+            --output artifacts/ci/desktop-test/receipts/typecheck.json \
+            --timeout 300 \
+            -- npx tsc --noEmit
 
-      - name: Desktop build
-        working-directory: apps/desktop
-        run: npm run build
+      - name: Unit tests
+        run: |
+          python scripts/verification/run_command_receipt.py \
+            --name desktop_tests \
+            --cwd apps/desktop \
+            --output artifacts/ci/desktop-test/receipts/tests.json \
+            --timeout 600 \
+            -- npm test
+
+      - name: Build
+        run: |
+          python scripts/verification/run_command_receipt.py \
+            --name desktop_build \
+            --cwd apps/desktop \
+            --output artifacts/ci/desktop-test/receipts/build.json \
+            --timeout 600 \
+            -- npm run build
+
+      - name: Capture environment
+        if: always()
+        run: |
+          python scripts/verification/capture_environment.py \
+            --cwd apps/desktop \
+            --output artifacts/ci/desktop-test/environment.json
+
+      - name: Upload desktop evidence
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: desktop-test-evidence
+          path: artifacts/ci/desktop-test/
 
       - name: Upload desktop build
         uses: actions/upload-artifact@v4
-        if: always()
+        if: success()
         with:
           name: desktop-build
           path: apps/desktop/dist/
 
-  # 13. DESKTOP TEST (Windows)
   desktop-test-windows:
     name: Desktop Test & Build (Windows)
     runs-on: windows-latest
@@ -552,30 +720,64 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Install desktop dependencies
-        working-directory: apps/desktop
-        run: npm ci
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Desktop typecheck
-        working-directory: apps/desktop
-        run: npx tsc --noEmit
+      - name: Install from lockfile
+        run: |
+          python scripts/verification/run_command_receipt.py `
+            --name desktop_windows_npm_ci `
+            --cwd apps/desktop `
+            --output artifacts/ci/desktop-test-windows/receipts/npm_ci.json `
+            --timeout 600 `
+            -- npm ci
 
-      - name: Desktop unit tests
-        working-directory: apps/desktop
-        run: npm test -- --run
+      - name: Typecheck
+        run: |
+          python scripts/verification/run_command_receipt.py `
+            --name desktop_windows_typecheck `
+            --cwd apps/desktop `
+            --output artifacts/ci/desktop-test-windows/receipts/typecheck.json `
+            --timeout 300 `
+            -- npx tsc --noEmit
 
-      - name: Desktop build
-        working-directory: apps/desktop
-        run: npm run build
+      - name: Unit tests
+        run: |
+          python scripts/verification/run_command_receipt.py `
+            --name desktop_windows_tests `
+            --cwd apps/desktop `
+            --output artifacts/ci/desktop-test-windows/receipts/tests.json `
+            --timeout 600 `
+            -- npm test
 
-  # 14. FINAL EVIDENCE - Aggregate and verify all gates
-  # Gate verification uses GitHub's built-in needs context.
-  # If any needed job fails, this job won't run (or will reflect the failure).
+      - name: Build
+        run: |
+          python scripts/verification/run_command_receipt.py `
+            --name desktop_windows_build `
+            --cwd apps/desktop `
+            --output artifacts/ci/desktop-test-windows/receipts/build.json `
+            --timeout 600 `
+            -- npm run build
+
+      - name: Capture environment
+        if: always()
+        run: |
+          python scripts/verification/capture_environment.py `
+            --cwd apps/desktop `
+            --output artifacts/ci/desktop-test-windows/environment.json
+
+      - name: Upload Windows desktop evidence
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: desktop-test-windows-evidence
+          path: artifacts/ci/desktop-test-windows/
+
   final-evidence:
     name: Final Evidence Gate
     needs:
@@ -593,79 +795,66 @@ jobs:
       - desktop-test
       - desktop-test-windows
     runs-on: ubuntu-latest
-    if: success() || failure()
+    if: always()
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v3
+      - uses: astral-sh/setup-uv@v3
         with:
           version: ${{ env.UV_VERSION }}
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Sync dependencies
         run: uv sync --all-packages
 
-      - name: Capture CI environment
+      - name: Download required job evidence
+        uses: actions/download-artifact@v4
+        with:
+          pattern: "*-evidence"
+          path: artifacts/ci/downloaded
+          merge-multiple: false
+
+      - name: Validate job evidence and candidate identity
+        env:
+          CI_JOB_RESULTS: >-
+            {"artifact-protocol":"${{ needs.artifact-protocol.result }}","version-consistency":"${{ needs.version-consistency.result }}","architecture-boundaries":"${{ needs.architecture-boundaries.result }}","python-unit-sqlite":"${{ needs.python-unit-sqlite.result }}","python-unit-windows":"${{ needs.python-unit-windows.result }}","python-integration-sqlite":"${{ needs.python-integration-sqlite.result }}","python-integration-postgres":"${{ needs.python-integration-postgres.result }}","runtime-smoke":"${{ needs.runtime-smoke.result }}","cli-contract":"${{ needs.cli-contract.result }}","web-test":"${{ needs.web-test.result }}","web-test-windows":"${{ needs.web-test-windows.result }}","desktop-test":"${{ needs.desktop-test.result }}","desktop-test-windows":"${{ needs.desktop-test-windows.result }}"}
         run: |
-          uv run python scripts/verification/capture_environment.py \
+          uv run python scripts/verification/validate_ci_evidence.py \
+            --download-root artifacts/ci/downloaded \
+            --schema scripts/schemas/command_receipt_v1.schema.json \
+            --sha "${{ github.sha }}" \
+            --run-id "${{ github.run_id }}" \
+            --run-attempt "${{ github.run_attempt }}" \
+            --job-results-json "$CI_JOB_RESULTS" \
+            --jobs \
+              artifact-protocol \
+              version-consistency \
+              architecture-boundaries \
+              python-unit-sqlite \
+              python-unit-windows \
+              python-integration-sqlite \
+              python-integration-postgres \
+              runtime-smoke \
+              cli-contract \
+              web-test \
+              web-test-windows \
+              desktop-test \
+              desktop-test-windows \
+            --output artifacts/ci/final-evidence/ci_run_manifest.json
+
+      - name: Capture final environment
+        if: always()
+        run: |
+          python scripts/verification/capture_environment.py \
             --cwd . \
-            --output artifacts/architecture_v2_production_hardening/phase_07/final/ci_environment.json
+            --output artifacts/ci/final-evidence/environment.json
 
-      - name: Generate evidence summary
-        run: |
-          mkdir -p artifacts/architecture_v2_production_hardening/phase_07/final
-          cat > artifacts/architecture_v2_production_hardening/phase_07/final/ci_run_manifest.json << 'MANIFEST_EOF'
-          {
-            "workflow": "CI & Phase 7 Verification Matrix",
-            "trigger": "${{ github.event_name }}",
-            "sha": "${{ github.sha }}",
-            "ref": "${{ github.ref }}",
-            "run_id": ${{ github.run_id }},
-            "run_number": ${{ github.run_number }},
-            "jobs": {
-              "artifact-protocol": "${{ needs.artifact-protocol.result }}",
-              "version-consistency": "${{ needs.version-consistency.result }}",
-              "architecture-boundaries": "${{ needs.architecture-boundaries.result }}",
-              "python-unit-sqlite": "${{ needs.python-unit-sqlite.result }}",
-              "python-unit-windows": "${{ needs.python-unit-windows.result }}",
-              "python-integration-sqlite": "${{ needs.python-integration-sqlite.result }}",
-              "python-integration-postgres": "${{ needs.python-integration-postgres.result }}",
-              "runtime-smoke": "${{ needs.runtime-smoke.result }}",
-              "cli-contract": "${{ needs.cli-contract.result }}",
-              "web-test": "${{ needs.web-test.result }}",
-              "web-test-windows": "${{ needs.web-test-windows.result }}",
-              "desktop-test": "${{ needs.desktop-test.result }}",
-              "desktop-test-windows": "${{ needs.desktop-test-windows.result }}"
-            },
-            "verified_sha": "${{ github.sha }}"
-          }
-          MANIFEST_EOF
-
-      - name: Gate verdict
-        run: |
-          if [ "${{ needs.artifact-protocol.result }}" != "success" ]; then echo "FAIL: artifact-protocol"; exit 1; fi
-          if [ "${{ needs.version-consistency.result }}" != "success" ]; then echo "FAIL: version-consistency"; exit 1; fi
-          if [ "${{ needs.architecture-boundaries.result }}" != "success" ]; then echo "FAIL: architecture-boundaries"; exit 1; fi
-          if [ "${{ needs.python-unit-sqlite.result }}" != "success" ]; then echo "FAIL: python-unit-sqlite"; exit 1; fi
-          if [ "${{ needs.python-unit-windows.result }}" != "success" ]; then echo "FAIL: python-unit-windows"; exit 1; fi
-          if [ "${{ needs.python-integration-sqlite.result }}" != "success" ]; then echo "FAIL: python-integration-sqlite"; exit 1; fi
-          if [ "${{ needs.python-integration-postgres.result }}" != "success" ]; then echo "FAIL: python-integration-postgres"; exit 1; fi
-          if [ "${{ needs.runtime-smoke.result }}" != "success" ]; then echo "FAIL: runtime-smoke"; exit 1; fi
-          if [ "${{ needs.cli-contract.result }}" != "success" ]; then echo "FAIL: cli-contract"; exit 1; fi
-          if [ "${{ needs.web-test.result }}" != "success" ]; then echo "FAIL: web-test"; exit 1; fi
-          if [ "${{ needs.web-test-windows.result }}" != "success" ]; then echo "FAIL: web-test-windows"; exit 1; fi
-          if [ "${{ needs.desktop-test.result }}" != "success" ]; then echo "FAIL: desktop-test"; exit 1; fi
-          if [ "${{ needs.desktop-test-windows.result }}" != "success" ]; then echo "FAIL: desktop-test-windows"; exit 1; fi
-          echo "ALL REQUIRED GATES: PASS"
-          echo "Verdict: CI_MATRIX_FAIL_CLOSED_READY"
-
-      - name: Upload final evidence bundle
+      - name: Upload final evidence
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: final-evidence-bundle
-          path: artifacts/architecture_v2_production_hardening/phase_07/final/
+          path: artifacts/ci/final-evidence/

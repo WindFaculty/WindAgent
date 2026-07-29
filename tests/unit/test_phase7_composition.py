@@ -12,8 +12,6 @@ Generated as part of PHASE 7: PROCESS_SPECIFIC_COMPOSITION_COMPLETE
 """
 
 import pytest
-import asyncio
-from unittest.mock import AsyncMock, MagicMock, patch
 import sys
 from pathlib import Path
 
@@ -117,7 +115,7 @@ class TestPhase7ApiComposition:
             assert container.tool_registry is not None
             await container.shutdown()
         except ImportError as e:
-            pytest.skip(f"Cannot import API composition: {e}")
+            pytest.fail(f"Cannot import API composition: {e}")
 
 
 class TestPhase7WorkerComposition:
@@ -196,7 +194,7 @@ class TestPhase7WorkerComposition:
             assert container.intelligence_pipeline is not None
             await container.shutdown()
         except ImportError as e:
-            pytest.skip(f"Cannot import Worker composition: {e}")
+            pytest.fail(f"Cannot import Worker composition: {e}")
 
 
 class TestPhase7CliComposition:

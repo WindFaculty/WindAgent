@@ -84,3 +84,20 @@ external/omniroute_ref/
 # Temporary DB backups
 db_backups/
 
+# Local verification output and disposable test fixtures. CI uploads these as
+# workflow artifacts; they are never candidate source or committed evidence.
+.pytest_tmp/
+apps/web/coverage/
+artifacts/ci/
+artifacts/architecture_v2_production_hardening/phase_07/quarantine/
+test_repo/
+test_repo2/
+
+# Local-only repair notes/configuration. The canonical plan and candidate
+# documentation live in the tracked Phase 07 artifact directory.
+ci_remote.yaml
+ke_hoach_hoan_thien_phase_0_5.md
+
+# Never retain local scripts that embed third-party credentials.
+run_claude_cli_openrouter.ps1
+

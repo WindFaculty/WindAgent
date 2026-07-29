@@ -1,1734 +1,1343 @@
-# Implementation Plan — Architecture V2 Production Hardening
+# Kế hoạch tiếp tục hoàn thiện Phase 7
 
-## 1. Starting context
+## Mục tiêu cuối
 
-**Repository:** `WindFaculty/WindAgent`
-**Starting commit:** `61d580e917adf48dc1f3dc8d56a7da70631a1293`
-**Recommended branch:** `hardening/architecture-v2-production-runtime`
-**Target architecture:** Architecture V2 modular monolith, API/Worker multi-process, PostgreSQL-capable multi-replica runtime.
-
-Không triển khai trực tiếp trên `main`. Tạo branch mới chính xác từ starting commit và ghi lại:
+Chuyển trạng thái từ:
 
 ```text
-starting_sha
-branch_name
-git_status
-workspace_package_inventory
-database_schema_revision
-current_test_baseline
-current_architecture_report
+PHASE_7_CODE_CONVERGED_VERIFICATION_BLOCKED
 ```
 
-## 2. Program objectives
+sang:
 
-Chương trình này xử lý bảy nhóm còn lại:
+```text
+PHASE_7_VERSION_DOCUMENTATION_VERDICT_CONVERGED
+READY_FOR_MAIN_PROMOTION
+```
 
-1. Persistent canonical model registry và route-lock repository.
-2. Transactional Worker completion, outbox và lease release.
-3. PostgreSQL multi-replica fencing và CI fail-closed.
-4. Mở rộng architecture checker cho toàn repository.
-5. Xây dựng web test suite và đưa web vào CI.
-6. Loại bỏ dần `apps/backend`.
-7. Đồng bộ version, README và authoritative verdict.
+Điều kiện bắt buộc:
 
-## 3. Nguyên tắc bắt buộc
+* Artifact Phase 7 đạt schema thật.
+* Không còn placeholder hash hoặc receipt viết thủ công.
+* CLI không còn false-positive.
+* Các command được phân loại rõ: production, diagnostic hoặc demo.
+* GitHub Actions chạy trên chính commit cuối.
+* Linux, Windows, SQLite, PostgreSQL, web và desktop đều được xác minh.
+* `verified_sha` trỏ đến commit đã được CI kiểm tra, không trỏ đến commit cha.
 
-* Không thay đổi public API V2 nếu không có migration contract.
-* Không sử dụng in-memory state làm source of truth trong production profile.
-* Không nuốt exception tại durability boundary.
-* Không dùng `|| true`, `continue-on-error` hoặc test fallback trong acceptance gate.
-* Mọi thay đổi schema phải có migration tiến, migration rollback và restore rehearsal.
-* API và Worker phải dùng cùng persistent state.
-* Missing evidence phải trả về `BLOCKED`, không được mặc định `PASS`.
-* Mỗi phase phải có artifact, test receipt và commit riêng.
-* Không xóa historical red artifacts; thêm authoritative pointer mới thay vì sửa lịch sử.
+Commit hiện tại là commit công bố artifact, nhưng vẫn chứa artifact có `commands: []`, `artifact_hashes: {}` và các hash placeholder trong khi verdict là `PASS`.
 
 ---
 
-# Phase 0 — Freeze baseline and define hardening contracts
+# Luồng phase đề xuất
+
+```text
+Phase 0  Correct verdict and freeze baseline
+   ↓
+Phase 1  Repair artifact protocol
+   ↓
+Phase 2  Build deterministic evidence generator
+   ↓
+Phase 3  Repair CLI root detection and architecture checks
+   ↓
+Phase 4  Remove false runtime claims from CLI
+   ↓
+Phase 5  Repair GitHub Actions and platform matrix
+   ↓
+Phase 6  Execute complete verification matrix
+   ↓
+Phase 7  Publish final evidence and authoritative verdict
+   ↓
+Phase 8  Open PR, review and promote to main
+```
+
+Không được bỏ qua Phase 0–3. Phase 6 chỉ được chạy sau khi toàn bộ verification infrastructure đã được sửa.
+
+---
+
+# Phase 0 — Correct Verdict and Freeze Baseline
 
 ## Mục tiêu
 
-Đóng băng trạng thái tại commit bắt đầu, tạo baseline có thể tái lập và xác định contract chính xác cho bảy phase tiếp theo.
+Ngăn verdict sai tiếp tục được xem là authoritative và tạo baseline có thể audit trước khi sửa.
 
 ## Công việc
 
-### 0.1. Tạo branch
-
-```powershell
-git switch --detach 61d580e917adf48dc1f3dc8d56a7da70631a1293
-git switch -c hardening/architecture-v2-production-runtime
-```
-
-Không dùng `main` làm base thay thế.
-
-### 0.2. Ghi inventory
-
-Thu thập:
-
-* Workspace package list.
-* Import graph.
-* ORM tables và migration heads.
-* API V2 route inventory.
-* Worker execution flow.
-* Provider registry và route-lock call sites.
-* `apps/backend` production import inventory.
-* CI workflow inventory.
-* Web components, clients và state stores.
-* Các `__version__`, package version và API version.
-* Tất cả final verdict artifact hiện tại.
-
-### 0.3. Chạy baseline
-
-Bắt buộc chạy:
+1. Tạo branch mới từ commit:
 
 ```text
-Full root pytest
-Architecture checker suite
-API package isolation
-Worker package isolation
-Two-process E2E
-Desktop tests
-Desktop type-check
-Desktop build
-Web test command
-Web build
-Migration dry-run
-Secret scan
+601fd1282be7c4a7ae13f02422b70d5f107aaafd
 ```
 
-Baseline kỳ vọng không thấp hơn trạng thái công bố:
+Tên đề xuất:
 
 ```text
-Backend: 726 passed, 0 failed
-Architecture: 4/4
-Two-process E2E: pass
-Desktop: 89 passed
-Web build: pass
+fix/phase7-verification-integrity
 ```
 
-Web test hiện có thể báo pass do không có test file; phải ghi rõ đây là baseline gap, không được tính là behavioral coverage.
+2. Không sửa trực tiếp `main`.
 
-## Artifact
+3. Hạ verdict hiện tại xuống:
 
 ```text
-artifacts/architecture_v2_production_hardening/
-└── phase_00/
-    ├── execution_receipt.json
-    ├── repository_inventory.json
-    ├── database_inventory.json
-    ├── route_lock_inventory.json
-    ├── provider_registry_inventory.json
-    ├── legacy_backend_inventory.json
-    ├── frontend_inventory.json
-    ├── ci_inventory.json
-    ├── version_inventory.json
-    ├── test_results.json
-    ├── changed_files.txt
-    ├── risk_register.md
-    └── phase_verdict.md
+PHASE_7_CODE_CONVERGED_VERIFICATION_BLOCKED
 ```
 
-## Acceptance gate
-
-```text
-PHASE_00_BASELINE_FROZEN
-```
-
-Chỉ pass khi baseline được chạy từ clean worktree và không có thay đổi source ngoài artifact của Phase 0.
-
-## Commit
-
-```text
-docs(hardening): freeze architecture v2 production baseline
-```
-
----
-
-# Phase 1 — Persistent model registry and distributed route locks
-
-## Vấn đề cần xử lý
-
-`CanonicalModelRegistryService` hiện lưu canonical models, bindings và audit trail trong dictionary nội bộ. Route lock cũng là state in-process và chỉ hỗ trợ snapshot/restore thủ công. API và Worker khởi tạo các instance riêng, vì vậy chưa có shared routing authority giữa các process.
-
-## Mục tiêu
-
-Biến database thành source of truth cho:
-
-* Canonical models.
-* Provider endpoints.
-* Endpoint/model bindings.
-* Route locks.
-* Route attempts.
-* Explicit reselection.
-* Provider routing audit trail.
-* Endpoint health và cooldown cần thiết cho failover.
-
-## 1.1. Canonical contracts
-
-Bổ sung hoặc hoàn thiện các port trong core:
-
-```text
-CanonicalModelRepository
-EndpointBindingRepository
-RouteLockRepository
-RouteAttemptRepository
-ProviderRoutingAuditRepository
-RoutingUnitOfWork
-```
-
-Các application service chỉ phụ thuộc port, không phụ thuộc SQLAlchemy ORM.
-
-## 1.2. Database schema
-
-Tạo hoặc chuẩn hóa các bảng:
-
-```text
-canonical_models
-provider_endpoints
-endpoint_model_bindings
-route_locks
-route_attempts
-provider_routing_audit
-endpoint_health_snapshots
-```
-
-### Ràng buộc bắt buộc
-
-`canonical_models`:
-
-```text
-id primary key
-canonical_name unique
-family
-vendor
-revision
-context_window
-enabled
-version
-created_at
-updated_at
-```
-
-`endpoint_model_bindings`:
-
-```text
-unique(endpoint_id, provider_model_id)
-canonical_model_id foreign key
-equivalence_level
-confidence
-active
-version
-```
-
-`route_locks`:
-
-```text
-lock_id primary key
-scope_type
-scope_id
-canonical_model_id
-status
-generation
-version
-created_at
-updated_at
-released_at
-reselection_reason
-unique active lock per scope_type + scope_id
-```
-
-`route_attempts`:
-
-```text
-attempt_id
-lock_id
-endpoint_id
-provider_model_id
-attempt_number
-status
-failure_category
-retry_after
-started_at
-finished_at
-```
-
-### Database compatibility
-
-* SQLite được phép cho local single-process development.
-* PostgreSQL là authoritative backend cho multi-replica acceptance.
-* Migration phải chạy được trên cả hai, hoặc phải khai báo rõ profile support.
-
-## 1.3. Repository adapters
-
-Triển khai trong `storage`:
-
-```text
-SqlCanonicalModelRepository
-SqlEndpointBindingRepository
-SqlRouteLockRepository
-SqlRouteAttemptRepository
-SqlProviderRoutingAuditRepository
-```
-
-Không để provider package import ORM trực tiếp.
-
-## 1.4. Refactor services
-
-`CanonicalModelRegistryService` nhận repository/UoW qua constructor.
-
-Không còn production default:
-
-```python
-self._canonical_models = {}
-self._bindings = {}
-```
-
-In-memory implementation chỉ được đặt tại:
-
-```text
-tests/fakes/
-tests/adapters/
-```
-
-`RouteLockService` phải thực hiện atomic resolve-or-create:
-
-```text
-1. Query active lock.
-2. Nếu tồn tại, trả lock hiện tại.
-3. Nếu chưa tồn tại, evaluate rule.
-4. Insert lock với unique constraint hoặc compare-and-swap.
-5. Khi xung đột, reload lock thắng cuộc.
-6. Không tạo hai active lock cho cùng scope.
-```
-
-## 1.5. Model continuity và failover
-
-Luồng bắt buộc:
-
-```text
-First request
-→ rule selects canonical model
-→ persistent route lock created
-→ subsequent turns reuse canonical model
-→ endpoint 429/unavailable
-→ create route attempt
-→ choose another endpoint with exact same canonical model/revision
-→ keep route lock unchanged
-```
-
-Không tự đổi canonical model khi:
-
-* 429.
-* Network timeout.
-* Endpoint unavailable.
-* Provider quota exhausted.
-
-Đổi model chỉ khi có:
-
-* Explicit reselection request.
-* Policy cho phép và có audit event.
-* Người dùng hoặc orchestration strategy yêu cầu rõ ràng.
-
-## 1.6. API và Worker composition
-
-API và Worker phải inject cùng repository adapters thông qua database URL chung.
-
-Cấm:
-
-```text
-API registry in memory
-Worker registry in memory
-API route lock independent from Worker route lock
-```
-
-## Test matrix
-
-### Unit
-
-* Canonical normalization.
-* Binding idempotency.
-* Merge/split transactional behavior.
-* Route lock create/reuse/release.
-* Optimistic concurrency conflict.
-* Explicit reselection.
-* Exact-revision endpoint selection.
-
-### Integration
-
-* API tạo route lock, Worker đọc đúng lock.
-* Worker restart vẫn giữ model.
-* API restart vẫn giữ route lock.
-* 100 lượt chat cùng session giữ một canonical model.
-* 50 concurrent first requests chỉ tạo một active lock.
-* 429 chuyển endpoint nhưng không đổi canonical model.
-* Endpoint exhaustion trả typed error, không silent fallback.
-* Merge/split canonical model có audit trail durable.
-* Rollback transaction không tạo partial binding.
-
-### Multi-process
-
-Chạy ít nhất:
-
-```text
-1 API
-2 Workers
-1 PostgreSQL
-```
-
-Hai Worker phải nhìn thấy cùng route lock.
-
-## Migration và rollback
-
-Migration tiến:
-
-* Tạo bảng.
-* Backfill canonical models và bindings hiện có.
-* Backfill route locks nếu có persisted snapshot.
-* Chuyển feature flag sang dual-read.
-* So sánh parity.
-* Chuyển sang DB authoritative.
-
-Rollback:
-
-* Tắt DB-authoritative flag.
-* Giữ bảng và dữ liệu.
-* Không xóa dữ liệu vừa ghi.
-* Chỉ cho phép in-memory fallback trong development/test, không phải production.
-
-## Artifact
-
-```text
-phase_01/
-├── canonical_schema_manifest.json
-├── migration_receipt.json
-├── rollback_receipt.json
-├── registry_parity_report.json
-├── route_lock_concurrency_report.json
-├── process_restart_report.json
-├── same_model_failover_report.json
-├── test_results.json
-├── risk_register.md
-└── phase_verdict.md
-```
-
-## Acceptance gate
-
-```text
-PERSISTENT_PROVIDER_ROUTING_AUTHORITY_VERIFIED
-```
-
-Điều kiện:
-
-* Không còn production in-memory model registry.
-* Không còn production in-process-only route lock.
-* API/Worker cùng đọc một lock.
-* Concurrent creation không tạo duplicate active lock.
-* 429 failover giữ nguyên canonical model.
-* Migration và rollback pass.
-
-## Commit sequence
-
-```text
-feat(core): define persistent provider routing ports
-feat(storage): add canonical registry and route lock repositories
-feat(providers): migrate registry and route locks to durable storage
-test(providers): verify cross-process model continuity and failover
-docs(hardening): record persistent routing authority verdict
-```
-
----
-
-# Phase 2 — Transactional Worker completion and outbox atomicity
-
-## Vấn đề cần xử lý
-
-Worker hiện có thể log warning khi ghi terminal state thất bại, sau đó vẫn release lease và trả `completed`. Event cũng được append vào danh sách trong RAM trước khi chứng minh đã ghi transactional outbox.
-
-## Mục tiêu
-
-Bảo đảm kết quả execution chỉ được coi là hoàn thành khi toàn bộ durability transaction đã commit.
-
-## 2.1. Thiết kế transaction
-
-Tạo application operation:
-
-```text
-FinalizeTaskExecution
-```
-
-Input:
-
-```text
-task_id
-worker_id
-lease_id
-fencing_token
-expected_task_version
-execution_result
-result_artifacts
-terminal_event
-```
-
-Một transaction phải thực hiện:
-
-```text
-1. Validate active lease.
-2. Validate fencing token và lease generation.
-3. Conditional update task state/version.
-4. Persist execution result.
-5. Persist artifact references.
-6. Insert terminal event vào event store.
-7. Insert publishable event vào outbox.
-8. Mark lease released/completed.
-9. Commit.
-```
-
-Không được release lease trước commit.
-
-## 2.2. Compare-and-swap
-
-Terminal update phải có điều kiện:
-
-```text
-WHERE task_id = ?
-AND state = running
-AND version = expected_version
-AND active_fencing_token = ?
-```
-
-Nếu row count bằng 0:
-
-```text
-STALE_RESULT_REJECTED
-```
-
-Không retry commit một late result như kết quả hợp lệ.
-
-## 2.3. Failure semantics
-
-Nếu một bước trong transaction lỗi:
-
-```text
-rollback toàn bộ
-task không được đánh dấu completed
-lease không được release thành công
-outbox không được ghi partial
-Worker trả retryable persistence failure
-recovery có thể claim lại sau expiry
-```
-
-Không được chỉ `logger.warning` rồi tiếp tục.
-
-## 2.4. Event emission
-
-Refactor `emit_event()` thành hai loại:
-
-```text
-Domain event intent
-Persistent event/outbox write
-```
-
-`_emitted_envelopes` chỉ được giữ như test observer hoặc diagnostics, không phải source of truth.
-
-Terminal event bắt buộc đi qua Unit of Work.
-
-## 2.5. Idempotency
-
-Tạo idempotency key:
-
-```text
-task_id + attempt_id + terminal_state + fencing_generation
-```
-
-Retry cùng transaction không tạo:
-
-* Hai task completion records.
-* Hai terminal events.
-* Hai outbox records.
-* Hai artifact links.
-
-## 2.6. Recovery
-
-Khi Worker chết tại các điểm sau:
-
-```text
-sau tool execution nhưng trước DB transaction
-sau task update nhưng trước outbox insert
-sau outbox insert nhưng trước commit
-sau commit nhưng trước ACK nội bộ
-```
-
-Recovery phải đưa hệ thống về một trong hai trạng thái:
-
-```text
-Toàn bộ transaction chưa tồn tại → retry an toàn
-Toàn bộ transaction đã commit → nhận diện idempotent completion
-```
-
-## Test matrix
-
-### Fault injection
-
-Inject failure tại:
-
-* Validate lease.
-* Task update.
-* Result persistence.
-* Artifact persistence.
-* Event store insert.
-* Outbox insert.
-* Lease release.
-* Commit.
-* Sau commit trước Worker acknowledgement.
-
-### Assertions
-
-* Không partial commit.
-* Không lost terminal state.
-* Không duplicate outbox.
-* Không duplicate completion.
-* Không release lease khi transaction rollback.
-* Late result bị reject.
-* Worker takeover không ghi đè kết quả mới hơn.
-* Outbox replay idempotent.
-* Event ordering ổn định.
-
-## Artifact
-
-```text
-phase_02/
-├── transaction_design.md
-├── fault_injection_matrix.json
-├── crash_point_matrix.json
-├── stale_result_report.json
-├── outbox_idempotency_report.json
-├── recovery_report.json
-├── test_results.json
-├── risk_register.md
-└── phase_verdict.md
-```
-
-## Acceptance gate
-
-```text
-TRANSACTIONAL_TASK_COMPLETION_VERIFIED
-```
-
-Điều kiện:
-
-* Terminal state, result, event, outbox và lease release atomic.
-* Không còn fail-open completion.
-* Tất cả fault injection pass.
-* Crash/restart không làm mất hoặc nhân đôi completion.
-
-## Commit sequence
-
-```text
-feat(core): define atomic task finalization contract
-feat(storage): implement transactional task finalization
-refactor(worker): commit result event outbox and lease atomically
-test(worker): add durability fault injection and crash recovery matrix
-docs(hardening): record transactional completion verdict
-```
-
----
-
-# Phase 3 — PostgreSQL multi-replica fencing and fail-closed CI
-
-## Mục tiêu
-
-Chứng minh hệ thống hoạt động an toàn với nhiều Worker replica trên PostgreSQL và biến CI thành acceptance authority thực sự.
-
-## 3.1. PostgreSQL profile
-
-Bổ sung production/test PostgreSQL profile:
-
-```text
-WINDAGENT_DATABASE_URL=postgresql+asyncpg://...
-```
-
-Thêm dependency và package isolation test cho `asyncpg`.
-
-Không thay đổi SQLite local development, nhưng phải ghi rõ:
-
-```text
-SQLite: local/single-host profile
-PostgreSQL: multi-replica production profile
-```
-
-## 3.2. Atomic queue claim
-
-Xác minh hoặc sửa `SqlDurableTaskQueue`:
-
-```text
-SELECT ... FOR UPDATE SKIP LOCKED
-```
-
-được dùng đúng trong PostgreSQL transaction.
-
-Với SQLite, dùng implementation phù hợp riêng hoặc conditional CAS, không giả định `SKIP LOCKED` có semantics tương đương.
-
-## 3.3. Multi-replica scenarios
-
-Chạy ít nhất các cấu hình:
-
-```text
-1 API + 2 Workers
-1 API + 4 Workers
-2 API + 4 Workers
-2 API + 8 Workers
-```
-
-Workload:
-
-```text
-1,000 task cơ bản
-mixed priority
-lease expiry
-worker crash
-worker restart
-slow execution
-duplicate submission
-cancellation
-429 provider failover
-outbox backlog
-```
-
-## Invariants
-
-* Mỗi task có tối đa một successful execution generation.
-* Không hai Worker cùng commit một generation.
-* Stale fencing token luôn bị reject.
-* Expired lease có thể takeover.
-* Original Worker không thể commit sau takeover.
-* Route lock vẫn giữ một canonical model giữa nhiều process.
-* Không mất task.
-* Không duplicate terminal event.
-* Không duplicate outbox publish vượt ngoài idempotency contract.
-
-## 3.4. Sửa CI fencing workflow
-
-Xóa hoàn toàn:
+4. Cập nhật `phase_verdict.md`:
 
 ```yaml
-|| true
+implementation_status: substantially_complete
+verification_status: blocked
+promotion_status: not_ready
+blocking_reasons:
+  - artifact_schema_noncompliance
+  - unverified_command_receipts
+  - architecture_check_false_positive
+  - no_ci_run_on_final_commit
+  - ci_matrix_configuration_defects
 ```
 
-Mọi fencing, replica hoặc leader test phải trả exit code thật.
+5. Mở lại các rủi ro:
 
-Workflow hiện tại đang nuốt failure của test nhóm fencing/replica; điều này phải được coi là blocker.
+| Risk                               | Trạng thái mới |
+| ---------------------------------- | -------------- |
+| Artifact schema integrity          | OPEN / P0      |
+| CI evidence integrity              | OPEN / P0      |
+| CLI architecture false-positive    | OPEN / P0      |
+| Command receipt authenticity       | OPEN / P0      |
+| Cross-platform CI                  | OPEN / P1      |
+| Demo data exposed as runtime state | OPEN / P1      |
 
-## 3.5. CI matrix mới
-
-Backend matrix:
+6. Tạo baseline inventory:
 
 ```text
-OS: ubuntu-latest, windows-latest
-Python: 3.11, 3.12
-Database:
-  SQLite focused suite
-  PostgreSQL integration/multi-replica suite
+artifacts/architecture_v2_production_hardening/phase_07_repair/baseline/
+├── baseline_commit.json
+├── invalid_artifact_inventory.json
+├── cli_command_classification.json
+├── ci_defect_inventory.json
+└── baseline_verdict.json
 ```
 
-Các gate:
+## Kiểm thử
 
-```text
-ruff check toàn bộ Python workspace
-ruff format --check toàn bộ Python workspace
-architecture checkers
-unit tests
-integration tests
-regression tests
-migration tests
-rollback tests
-PostgreSQL multi-replica tests
-performance regression
-secret scan
-package isolation
+Chạy validator trên toàn bộ artifact hiện tại và lưu lỗi, không sửa output:
+
+```bash
+python scripts/validate_artifact_schema.py \
+  artifacts/architecture_v2_production_hardening/phase_07/*.json
 ```
 
-## 3.6. Performance guardrails
-
-Đo:
-
-* Queue claim p50/p95/p99.
-* Lease renew p95.
-* Finalization transaction p95.
-* Outbox lag.
-* Throughput tasks/minute.
-* Duplicate claim count.
-* Stale result rejection count.
-* Lock contention.
-* Database pool saturation.
-
-Không hard-code kết quả benchmark. So sánh với baseline thực tế và dùng tolerance rõ ràng.
-
-## Artifact
-
-```text
-phase_03/
-├── postgres_environment_receipt.json
-├── multi_replica_matrix.json
-├── fencing_report.json
-├── crash_takeover_report.json
-├── workload_manifest.json
-├── performance_report.json
-├── ci_fail_closed_report.json
-├── test_results.json
-├── risk_register.md
-└── phase_verdict.md
-```
+Lệnh này được phép fail trong Phase 0.
 
 ## Acceptance gate
 
 ```text
-POSTGRES_MULTI_REPLICA_FENCING_VERIFIED
+G0.1 Baseline SHA recorded
+G0.2 Invalid artifacts fully inventoried
+G0.3 Current PASS verdict withdrawn
+G0.4 Repair branch clean
+G0.5 No implementation files changed yet
 ```
 
-Điều kiện:
-
-* Không có masked test.
-* Tất cả multi-replica scenario pass.
-* Duplicate committed execution bằng 0.
-* Stale fencing commit bằng 0.
-* Crash takeover pass.
-* CI workflow fail thật khi cố ý inject regression.
-
-## Commit sequence
+## Verdict Phase 0
 
 ```text
-feat(storage): add postgres production database profile
-fix(storage): enforce atomic postgres task claim and fencing
-test(runtime): add multi-replica crash and takeover matrix
-ci: make fencing and replica tests fail closed
-docs(hardening): publish multi-replica verification
+BASELINE_FROZEN_VERDICT_CORRECTED
 ```
 
 ---
 
-# Phase 4 — Repository-wide architecture enforcement
+# Phase 1 — Repair Artifact Protocol
 
 ## Mục tiêu
 
-Mở rộng architecture policy từ 16 package chính sang toàn bộ mã nguồn production.
+Làm rõ artifact protocol và buộc mọi artifact thực phải tuân thủ schema.
 
-## 4.1. Đưa plugins và skills vào package map
+Schema hiện yêu cầu command receipt đầy đủ và ít nhất một artifact hash, trong khi nhiều artifact Phase 7 không đáp ứng các điều kiện đó.
 
-Bổ sung đầy đủ vào `scaffold_v2.yaml`:
+## Công việc
 
-```text
-plugins
-skills
-```
+### 1.1 Chọn một schema canonical duy nhất
 
-Khai báo:
-
-* Layer.
-* Namespace.
-* Allowed dependencies.
-* Forbidden dependencies.
-* Legacy source.
-* External dependencies.
-
-Không chỉ kiểm tra thư mục tồn tại.
-
-## 4.2. Legacy quarantine policy
-
-Khai báo `apps/backend` là vùng quarantine có policy riêng:
+Hiện có hai đường dẫn:
 
 ```text
-apps/backend chỉ được import canonical V2 packages
-canonical packages không được import apps/backend
-legacy services không được tạo runtime authority mới
-main.py chỉ được delegate sang windagent_api
+scripts/artifact_schema.json
+scripts/schemas/artifact_schema.json
 ```
 
-Tạo allowlist nhỏ cho compatibility modules. Mọi file legacy ngoài allowlist import vào production entrypoint phải fail.
-
-## 4.3. Core internal boundaries
-
-Bổ sung rule nội bộ:
+Chỉ giữ một source of truth, đề xuất:
 
 ```text
-core/domain không import core/config
-core/domain không import core/security implementation
-core/contracts không import infrastructure
-core/events chỉ phụ thuộc domain/contracts/errors được cho phép
+scripts/schemas/artifact_protocol_v1.schema.json
 ```
 
-Mục tiêu là enforce yêu cầu tách cấu hình khỏi domain.
+File còn lại chỉ được:
 
-## 4.4. Dynamic import scanning
+* xóa; hoặc
+* trở thành symlink/copy được generate và kiểm tra hash.
 
-Bổ sung scan cho:
+Không được duy trì hai schema thủ công.
 
-```python
-importlib.import_module(...)
-__import__(...)
-plugin module strings
-entry points
-runtime adapter strings
+### 1.2 Chuẩn hóa hash
+
+Chọn duy nhất một định dạng:
+
+```json
+{
+  "filename.json": "64_lowercase_hex_characters"
+}
 ```
 
-Không cần suy luận mọi string trong repository; chỉ scan các API dynamic import đã biết.
-
-## 4.5. Public API enforcement
-
-Phát hiện:
-
-* Import private module xuyên package.
-* Import ORM từ application layer.
-* Import FastAPI/SQLAlchemy vào core.
-* Direct infrastructure construction ngoài composition roots.
-* Duplicate canonical contracts.
-* Production test fakes.
-* Undeclared workspace dependencies.
-* Dependency cycles.
-
-## 4.6. Composition-root rule
-
-Chỉ các vùng sau được tạo concrete adapters:
+Không chấp nhận:
 
 ```text
-apps/api/.../composition.py
-apps/worker/.../composition.py
-apps/cli/.../composition.py
-tests/
+sha256:abcd...
+abcd1234...
+placeholder
 ```
 
-Application package không được tự tạo:
+### 1.3 Giải quyết vòng lặp self-hash
+
+Artifact không nên chứa hash của chính nó vì nội dung thay đổi sau khi thêm hash.
+
+Thiết kế đề xuất:
 
 ```text
-DatabaseManager
-SqlRepository
-Provider adapter
-Execution runtime adapter
+artifact.json
+artifact.json.sha256
 ```
 
-trừ khi được policy cho phép rõ ràng.
-
-## Test matrix
-
-Tạo fixture repository nhỏ cho từng violation:
-
-* Cross-app import.
-* Legacy reverse import.
-* Core framework import.
-* Dynamic legacy import.
-* Private API import.
-* Missing declared dependency.
-* Package cycle.
-* Duplicate canonical model.
-* Production fake runtime.
-* Domain importing config.
-* Application constructing SQL adapter.
-
-Mỗi fixture phải làm checker fail đúng rule và exit code khác 0.
-
-## Artifact
+Hoặc manifest riêng:
 
 ```text
-phase_04/
-├── architecture_policy_v3.yaml
-├── repository_import_graph.json
-├── package_dependency_report.json
-├── legacy_quarantine_report.json
-├── dynamic_import_report.json
-├── negative_fixture_results.json
-├── test_results.json
-├── risk_register.md
-└── phase_verdict.md
+artifact_manifest.json
 ```
+
+với hash của các artifact khác, nhưng không hash chính nó.
+
+### 1.4 Chuẩn hóa command receipt
+
+Mỗi command phải có:
+
+```json
+{
+  "command": "uv run pytest ...",
+  "cwd": ".",
+  "started_at": "ISO-8601",
+  "finished_at": "ISO-8601",
+  "duration_ms": 1234,
+  "exit_code": 0,
+  "stdout_tail": "...",
+  "stderr_tail": "...",
+  "environment": {
+    "os": "windows",
+    "python": "3.11.x"
+  }
+}
+```
+
+Nên thêm:
+
+* `command_id`
+* `expected_exit_codes`
+* `result`
+* `output_sha256`
+
+### 1.5 Chuẩn hóa warning/failure
+
+Không sử dụng chuỗi đơn:
+
+```json
+"warnings": ["something"]
+```
+
+Sử dụng object:
+
+```json
+{
+  "check": "desktop_version",
+  "message": "Desktop version differs from product version",
+  "severity": "LOW",
+  "accepted": true,
+  "rationale": "Independent desktop release lifecycle"
+}
+```
+
+### 1.6 Validator phải hỗ trợ directory/glob
+
+Bổ sung:
+
+```bash
+python scripts/validate_artifact_schema.py \
+  --directory artifacts/.../phase_07 \
+  --recursive
+```
+
+Thêm các chế độ:
+
+```text
+--schema-only
+--semantic
+--verify-hashes
+--json
+--fail-on-warning
+```
+
+### 1.7 Không validate chính report đang được ghi
+
+`check_version_consistency.py` hiện ghi trực tiếp report trong quá trình chạy. Nên tách:
+
+```text
+run check → return structured result
+generate report → separate writer
+validate report → separate process
+```
+
+## Kiểm thử bắt buộc
+
+* Valid artifact pass.
+* Empty commands fail.
+* Empty hashes fail.
+* Placeholder hash fail.
+* Hash prefix fail nếu schema yêu cầu raw hex.
+* Self-hash cycle fail.
+* Warning sai type fail.
+* Receipt thiếu stdout/stderr fail.
+* Dirty worktree + PASS fail.
+* `verified_sha` không tồn tại trong Git fail.
+* `verified_sha` khác HEAD fail khi artifact đánh dấu final.
 
 ## Acceptance gate
 
 ```text
-REPOSITORY_WIDE_ARCHITECTURE_POLICY_ENFORCED
+G1.1 One canonical schema
+G1.2 All negative fixtures fail for intended reasons
+G1.3 Validator supports production artifact directories
+G1.4 Placeholder hashes impossible
+G1.5 Self-hash semantics explicitly defined
+G1.6 Validator unit tests pass
 ```
 
-Điều kiện:
-
-* Plugins và skills được scan đầy đủ.
-* Legacy quarantine được enforce.
-* Core internal boundaries được enforce.
-* Negative fixtures đều làm checker fail.
-* Toàn repository production scan có zero violation.
-
-## Commit sequence
+## Verdict Phase 1
 
 ```text
-feat(architecture): include plugins skills and legacy quarantine
-feat(architecture): enforce core internal dependency boundaries
-feat(architecture): detect dynamic and private cross-package imports
-test(architecture): add negative policy fixture suite
-docs(hardening): publish repository-wide architecture report
+ARTIFACT_PROTOCOL_V1_HARDENED
 ```
 
 ---
 
-# Phase 5 — Web behavioral tests and complete frontend CI
-
-## Vấn đề cần xử lý
-
-Web hiện dùng `vitest run --passWithNoTests`, nên test command có thể pass dù không có test file.
+# Phase 2 — Deterministic Evidence Generation
 
 ## Mục tiêu
 
-Xây dựng test suite thực cho `apps/web` và đưa web thành required CI gate.
+Loại bỏ artifact và receipt được nhập thủ công. Mọi artifact phải được tạo từ execution thật.
 
-## 5.1. Test foundation
+## Công việc
 
-Cài và cấu hình:
+### 2.1 Tạo evidence runner
 
-```text
-Vitest
-Testing Library
-jest-dom
-happy-dom hoặc jsdom
-MSW hoặc deterministic HTTP mocks
-```
-
-Bỏ:
+Đề xuất:
 
 ```text
---passWithNoTests
-```
-
-## 5.2. Unit tests
-
-Bắt buộc bao phủ:
-
-### API client
-
-* Base URL.
-* Success/error parsing.
-* RFC 7807 errors.
-* Abort/cancellation.
-* Unauthorized.
-* Retry policy.
-* Timeout.
-
-### Event stream client
-
-* Connect.
-* Reconnect.
-* Resume cursor.
-* Duplicate event suppression.
-* Out-of-order event handling.
-* Malformed event.
-* Connection close.
-* Backoff.
-
-### State recovery
-
-* Reload session.
-* Restore active task.
-* Recover terminal task.
-* Apply replayed events.
-* Ignore duplicate sequence.
-* Handle missing snapshot.
-
-### Permission client
-
-* Pending permission.
-* Approve.
-* Deny.
-* Timeout.
-* Server error.
-
-### Provider client
-
-* Provider inventory.
-* Test Connect.
-* Model listing.
-* Disabled endpoint.
-* Quota/health state.
-
-## 5.3. Component tests
-
-Bao phủ:
-
-* Application bootstrap.
-* Loading/error/empty state.
-* Session selection.
-* Task submission.
-* Task progress.
-* Permission dialog.
-* Provider status.
-* Artifact display.
-* Event replay after reconnect.
-* API V1 410 handling nếu client cũ gọi nhầm.
-
-## 5.4. Integration tests
-
-Chạy app với mock server:
-
-```text
-Submit task
-→ receive task accepted
-→ receive streamed events
-→ display progress
-→ receive completion
-→ display result/artifact
-```
-
-Thêm scenario:
-
-```text
-disconnect giữa task
-→ reconnect
-→ replay missing events
-→ UI hội tụ đúng terminal state
-```
-
-## 5.5. Browser E2E
-
-Bổ sung Playwright hoặc công cụ E2E tương đương cho ít nhất:
-
-* Web app load.
-* API health.
-* Submit mock-safe task.
-* Event stream.
-* Permission interaction.
-* Refresh recovery.
-* Provider Test Connect mock.
-* V1 tombstone error presentation.
-
-## 5.6. CI frontend matrix
-
-Tách thành:
-
-```text
-web-test
-web-typecheck
-web-build
-web-e2e
-
-desktop-test
-desktop-typecheck
-desktop-build
-```
-
-Không dùng một gate chung mơ hồ.
-
-## Coverage gate
-
-Đặt baseline ban đầu thực tế, sau đó yêu cầu:
-
-```text
-Statements ≥ 75%
-Branches ≥ 65%
-Functions ≥ 70%
-Lines ≥ 75%
-```
-
-Các module critical như event replay và state recovery nên có branch coverage cao hơn.
-
-## Artifact
-
-```text
-phase_05/
-├── web_test_inventory.json
-├── coverage_report.json
-├── client_contract_report.json
-├── reconnect_replay_report.json
-├── browser_e2e_report.json
-├── frontend_ci_report.json
-├── test_results.json
-├── risk_register.md
-└── phase_verdict.md
-```
-
-## Acceptance gate
-
-```text
-WEB_BEHAVIORAL_RUNTIME_VERIFIED
-```
-
-Điều kiện:
-
-* Có test file thực.
-* Không còn `passWithNoTests`.
-* Unit, integration và E2E đều pass.
-* Reconnect/replay pass.
-* Web test là required CI check.
-* Web build và type-check pass.
-
-## Commit sequence
-
-```text
-test(web): establish vitest and client contract coverage
-test(web): cover event replay state recovery and permissions
-test(web): add task execution browser e2e
-ci(frontend): require web test typecheck build and e2e
-docs(hardening): publish web behavioral verification
-```
-
----
-
-# Phase 6 — Controlled retirement of `apps/backend`
-
-## Mục tiêu
-
-Loại bỏ legacy implementation mà không phá desktop, scripts, tests hoặc migration compatibility.
-
-## 6.1. Phân loại legacy inventory
-
-Chia mọi file trong `apps/backend` thành:
-
-```text
-DELETE
-MIGRATE
-KEEP_TEMPORARILY
-COMPATIBILITY_ONLY
-HISTORICAL_TEST_ONLY
-```
-
-Không xóa theo thư mục hàng loạt trước khi xác định consumers.
-
-## 6.2. Freeze legacy
-
-Bổ sung checker:
-
-* Không được thêm router mới.
-* Không được thêm service mới.
-* Không được thêm ORM mới.
-* Không được thêm business logic mới.
-* Chỉ chấp nhận sửa compatibility hoặc removal.
-
-## 6.3. Migrate remaining consumers
-
-Kiểm tra và chuyển:
-
-* Desktop sidecar startup.
-* PowerShell scripts.
-* Test imports.
-* Alembic configuration.
-* Packaging.
-* Developer commands.
-* CI paths.
-* Documentation.
-* Environment variables.
-* Any direct `apps.backend` imports.
-
-Canonical targets:
-
-```text
-windagent_api
-windagent_worker
-windagent_cli
-windagent_storage
-windagent_providers
-windagent_orchestration
-```
-
-## 6.4. Compatibility window
-
-Giữ entrypoint nhỏ:
-
-```python
-from windagent_api.main import app
-```
-
-trong một release window nếu còn external launcher dùng path cũ.
-
-Compatibility entrypoint không được:
-
-* Đăng ký router riêng.
-* Khởi tạo database riêng.
-* Chạy Worker.
-* Tạo provider registry riêng.
-* Giữ business logic.
-
-## 6.5. Delete legacy implementation
-
-Sau khi import inventory bằng 0:
-
-Xóa hoặc archive:
-
-* Legacy routers.
-* Legacy services.
-* Legacy schemas trùng canonical.
-* Legacy ORM trùng storage.
-* Legacy workflow runner.
-* Legacy provider gateway.
-* Legacy orchestration.
-* Legacy tests chỉ kiểm tra implementation đã xóa.
-
-Các regression contract quan trọng phải được chuyển sang root test suite trước khi xóa.
-
-## 6.6. Remove Python path dependency
-
-Xóa `apps/backend` khỏi:
-
-* Root `pythonpath`.
-* Package installation.
-* Runtime scripts.
-* CI lint/test paths.
-* Desktop sidecar configuration.
-
-Nếu vẫn giữ compatibility package, đóng gói thành package tối thiểu riêng thay vì để toàn legacy tree trên Python path.
-
-## 6.7. API compatibility verification
-
-Xác minh:
-
-* `/api/v2/*` vẫn hoạt động.
-* `/api/v1/*` vẫn trả 410 theo contract.
-* Desktop dùng V2.
-* Web dùng V2.
-* CLI không import backend.
-* Worker không import backend.
-* Clean install không cần `apps/backend`.
-
-## Artifact
-
-```text
-phase_06/
-├── legacy_file_classification.json
-├── legacy_consumer_inventory.json
-├── migrated_contract_tests.json
-├── deleted_files_manifest.json
-├── compatibility_shim_report.json
-├── zero_legacy_import_report.json
-├── clean_install_report.json
-├── rollback_plan.md
-├── test_results.json
-├── risk_register.md
-└── phase_verdict.md
-```
-
-## Rollback
-
-Trước khi xóa:
-
-* Tag hoặc commit checkpoint.
-* Lưu deleted-file manifest.
-* Có compatibility branch hoặc reversible commit.
-* Không rollback database schema bằng cách mất dữ liệu.
-
-## Acceptance gate
-
-```text
-LEGACY_BACKEND_RUNTIME_REMOVED
-```
-
-Điều kiện:
-
-* Zero production import từ `apps/backend`.
-* Zero business logic trong compatibility shim.
-* API, Worker, CLI cài độc lập.
-* Desktop và web smoke pass.
-* Full regression pass.
-* V1 tombstone contract pass.
-
-## Commit sequence
-
-```text
-chore(legacy): freeze backend compatibility area
-refactor(runtime): migrate remaining backend consumers to canonical packages
-test(runtime): relocate legacy contract regressions
-chore(legacy): remove evacuated backend implementations
-build(workspace): remove legacy backend from runtime pythonpath
-docs(hardening): publish legacy backend removal verdict
-```
-
----
-
-# Phase 7 — Version, documentation and verdict convergence
-
-## Mục tiêu
-
-Tạo một nguồn version duy nhất và một authoritative current-state record.
-
-## 7.1. Single source of version truth
-
-Dùng package metadata làm nguồn chính:
-
-```python
-from importlib.metadata import version
-
-__version__ = version("windagent-core")
-```
-
-Không hard-code nhiều version khác nhau trong:
-
-* `__init__.py`
-* FastAPI app.
-* CLI.
-* Worker.
-* Artifacts.
-* README.
-
-Quyết định rõ hai loại version:
-
-```text
-Product/API version
-Architecture generation
+scripts/verification/
+├── run_command_receipt.py
+├── generate_phase7_evidence.py
+├── hash_artifacts.py
+├── validate_evidence_bundle.py
+└── finalize_verdict.py
 ```
 
 Ví dụ:
 
-```text
-product_version = 0.5.0
-architecture_generation = v2
-provider_protocol_version = 1.0
+```bash
+python scripts/verification/run_command_receipt.py \
+  --name full_pytest \
+  --cwd . \
+  --output artifacts/.../receipts/full_pytest.json \
+  -- uv run pytest -q
 ```
 
-Không dùng `provider version 2.0.0`, `Architecture V3 Rebuild` và `__architecture_version__ = v2` trong cùng package nếu không có định nghĩa rõ.
+### 2.2 Tạo evidence bundle theo staging directory
 
-## 7.2. Version checker
-
-Tạo script:
+Không ghi đè artifact chính ngay trong khi test:
 
 ```text
-scripts/check_version_consistency.py
+.tmp/phase7-evidence/<run-id>/
 ```
 
-Kiểm tra:
-
-* Root workspace version.
-* Package metadata.
-* `__version__`.
-* FastAPI OpenAPI version.
-* CLI `--version`.
-* Worker version.
-* Desktop/web package versions nếu chủ đích đồng bộ.
-* Artifact protocol versions.
-
-## 7.3. README rewrite
-
-README mới phải mô tả:
-
-* Architecture V2 hiện tại.
-* API/Worker/CLI separation.
-* Web và Desktop.
-* Package map.
-* Local SQLite profile.
-* PostgreSQL production profile.
-* Provider routing.
-* Tool execution.
-* Workflow packs.
-* Context/memory.
-* Development commands.
-* Test commands.
-* Packaging.
-* Migration guide.
-* Legacy status.
-
-Loại bỏ các số liệu Phase 12 và backend 338 tests đã lỗi thời.
-
-## 7.4. Authoritative verdict pointer
-
-Tạo:
+Luồng:
 
 ```text
-artifacts/architecture_v2_runtime_cutover/CURRENT_VERDICT.json
+execute commands
+→ capture raw receipts
+→ generate reports
+→ calculate hashes
+→ validate bundle
+→ atomically publish final directory
 ```
 
-Nội dung:
+Nếu bất kỳ bước nào fail, không cập nhật verdict authoritative.
+
+### 2.3 Capture environment
+
+Mỗi bundle phải có:
 
 ```json
 {
-  "status": "...",
-  "authoritative_artifact": "...",
-  "source_commit": "...",
-  "verified_commit": "...",
-  "supersedes": ["..."],
-  "historical_artifacts_retained": true
+  "git": {
+    "source_sha": "...",
+    "verified_sha": "...",
+    "branch": "...",
+    "worktree_clean": true
+  },
+  "runtime": {
+    "os": "...",
+    "python": "...",
+    "uv": "...",
+    "node": "...",
+    "npm": "...",
+    "postgres": "..."
+  }
 }
 ```
 
-Historical red verdict vẫn giữ nguyên, nhưng tooling phải đọc `CURRENT_VERDICT.json`.
+### 2.4 Tạo command registry
 
-## 7.5. Artifact schema
+Phân loại command theo shell:
 
-Chuẩn hóa tất cả phase artifacts:
-
-```text
-protocol_version
-generated_at
-source_sha
-verified_sha
-branch
-worktree_clean
-commands
-results
-failures
-warnings
-artifact_hashes
-verdict
+```yaml
+commands:
+  api_dev_windows:
+    shell: pwsh
+    command:
+      - pwsh
+      - -NoProfile
+      - -File
+      - scripts/dev_api.ps1
+      - -NoSync
+  pytest:
+    shell: process
+    command:
+      - uv
+      - run
+      - pytest
+      - -q
 ```
 
-## 7.6. Documentation validation
+Không được chạy PowerShell bằng Python như receipt hiện tại mô tả.
 
-CI phải kiểm tra:
+### 2.5 Kiểm tra receipt authenticity
 
-* README command tồn tại.
-* Package path tồn tại.
-* Version khớp.
-* Artifact pointer trỏ tới file tồn tại.
-* Current verdict source SHA có trong Git.
-* Không có raw secret.
-* Không có stale test count được hard-code ngoài generated section.
+Mỗi receipt cần:
 
-## Artifact
+* command canonicalized;
+* output hash;
+* process exit code;
+* timestamp thực;
+* environment identity;
+* optional nonce/run ID.
+
+### 2.6 Bổ sung unit/integration tests
+
+Test evidence generator với:
+
+* command success;
+* command failure;
+* timeout;
+* interrupted process;
+* invalid UTF-8;
+* large stdout;
+* Windows path;
+* command containing secrets;
+* output redaction.
+
+## Acceptance gate
 
 ```text
-phase_07/
-├── version_manifest.json
-├── version_consistency_report.json
-├── documentation_link_report.json
-├── command_validation_report.json
-├── current_verdict_validation.json
-├── artifact_schema_report.json
-├── test_results.json
-├── risk_register.md
-└── phase_verdict.md
+G2.1 No Phase 7 artifact is manually authored
+G2.2 Every PASS claim traces to command receipt
+G2.3 Every receipt traces to captured output
+G2.4 Failed run cannot publish final verdict
+G2.5 Secrets are redacted before persistence
+G2.6 Generated bundle passes schema validation
+```
+
+## Verdict Phase 2
+
+```text
+DETERMINISTIC_EVIDENCE_PIPELINE_READY
+```
+
+---
+
+# Phase 3 — CLI Root Detection and Architecture Integrity
+
+## Mục tiêu
+
+Loại bỏ khả năng CLI trả `PASS` khi checker script không được chạy.
+
+CLI hiện tìm `pyproject.toml` gần nhất, nên có thể dừng tại `apps/cli/pyproject.toml`, rồi bỏ qua checker không tồn tại nhưng vẫn trả thành công.
+
+## Công việc
+
+### 3.1 Tạo root locator dùng chung
+
+Đề xuất:
+
+```text
+core/windagent_core/config/repository_root.py
+```
+
+API:
+
+```python
+def find_repository_root(start: Path | None = None) -> Path:
+    ...
+```
+
+Root chỉ hợp lệ khi có đầy đủ marker:
+
+```text
+pyproject.toml
+configs/architecture/scaffold_v2.yaml
+scripts/check_architecture_imports.py
+```
+
+Hoặc root `pyproject.toml` có:
+
+```toml
+[tool.uv.workspace]
+```
+
+### 3.2 Fail-closed
+
+`architecture-check` phải fail nếu thiếu bất kỳ checker bắt buộc:
+
+```text
+exit 2: repository root not found
+exit 3: required checker missing
+exit 4: checker execution error
+exit 1: architecture violation
+exit 0: all required checks executed and passed
+```
+
+### 3.3 Structured output
+
+JSON output:
+
+```json
+{
+  "repository_root": "...",
+  "checks": [
+    {
+      "name": "scaffold",
+      "executed": true,
+      "exit_code": 0
+    },
+    {
+      "name": "import_boundaries",
+      "executed": true,
+      "exit_code": 0
+    }
+  ],
+  "all_required_checks_executed": true,
+  "verdict": "PASS"
+}
+```
+
+### 3.4 Sửa test subdirectory
+
+Test phải thực sự đổi `cwd`:
+
+```text
+repo root
+apps/
+apps/cli/
+apps/api/windagent_api/
+temporary external directory with --root
+```
+
+### 3.5 Regression tests
+
+* Missing scaffold script → fail.
+* Missing architecture checker → fail.
+* Checker crashes → fail.
+* Checker times out → fail.
+* Invalid root → typed error.
+* Run from installed package outside source tree → explicit unsupported/error, không empty PASS.
+* Run from symlink path.
+* Run from Windows drive.
+* Run from path chứa khoảng trắng.
+
+## Acceptance gate
+
+```text
+G3.1 Architecture check executes every mandatory checker
+G3.2 Missing checker cannot PASS
+G3.3 Root detection works from all repository subdirectories
+G3.4 Invalid root produces typed non-zero exit
+G3.5 JSON output records executed commands
+```
+
+## Verdict Phase 3
+
+```text
+CLI_ARCHITECTURE_CHECK_FAIL_CLOSED
+```
+
+---
+
+# Phase 4 — CLI Runtime Truthfulness
+
+## Mục tiêu
+
+Không để dữ liệu demo được trình bày như trạng thái production thật.
+
+Hiện các command `status`, `task list`, `task inspect`, `replay`, `providers`, `tools` và `eval` chứa nhiều kết quả hard-code.
+
+## Chiến lược
+
+Mỗi command phải thuộc một trong ba loại:
+
+```text
+LIVE       Truy vấn runtime/storage thật
+OFFLINE    Truy vấn dữ liệu local thật
+DEMO       Chỉ chạy khi người dùng truyền --demo
+```
+
+Không được ngầm fallback từ LIVE sang DEMO.
+
+## Công việc
+
+### 4.1 `status`
+
+Thay dữ liệu hard-code bằng:
+
+* API health adapter;
+* worker status query;
+* queue repository;
+* lease repository;
+* database readiness.
+
+Nếu runtime không chạy:
+
+```text
+status: UNAVAILABLE
+exit code: 2
+```
+
+Không trả `ONLINE`.
+
+### 4.2 `task list`
+
+Truy vấn task repository thật:
+
+```text
+--status
+--limit
+--after
+--session-id
+```
+
+Không có task thì trả danh sách rỗng.
+
+### 4.3 `task inspect`
+
+* ID không tồn tại → exit 4.
+* Không dùng `task_demo_01` làm default.
+* `task_id` trở thành argument bắt buộc.
+
+### 4.4 `replay`
+
+Truy vấn trace/event store thật.
+
+Chỉ trả `deterministic_parity=100%` nếu thực sự so sánh:
+
+* event count;
+* ordering;
+* state hash;
+* output hash.
+
+### 4.5 `providers`
+
+Sử dụng kết quả từ canonical registry thật. Không khởi tạo registry rồi bỏ qua.
+
+Phân biệt:
+
+```text
+configured
+available
+healthy
+authenticated
+rate_limited
+```
+
+### 4.6 `tools`
+
+Đọc từ `ToolRegistry` thật và hiển thị permission/risk metadata.
+
+### 4.7 `eval`
+
+Thực thi eval suite hoặc đọc artifact eval đã được verify.
+
+Không được hard-code:
+
+```text
+92.5%
+100%
+PASSED
+```
+
+### 4.8 Demo mode
+
+Nếu cần giữ demo:
+
+```bash
+windagent task list --demo
+windagent eval --demo
+```
+
+Output phải có:
+
+```json
+{
+  "data_source": "DEMO",
+  "non_production": true
+}
+```
+
+## Kiểm thử
+
+Mỗi command cần ít nhất:
+
+* happy path;
+* empty state;
+* unavailable dependency;
+* invalid input;
+* timeout;
+* JSON schema;
+* exit code;
+* no hidden demo fallback.
+
+## Acceptance gate
+
+```text
+G4.1 No production command returns fabricated runtime data
+G4.2 Demo behavior requires explicit --demo
+G4.3 Data source appears in JSON output
+G4.4 Exit codes distinguish unavailable/not-found/failure
+G4.5 CLI integration tests use real temporary storage
+```
+
+## Verdict Phase 4
+
+```text
+CLI_RUNTIME_SURFACES_TRUTHFUL
+```
+
+---
+
+# Phase 5 — GitHub Actions Repair
+
+## Mục tiêu
+
+Tạo CI thực sự chạy được trên branch sửa chữa và kiểm tra đúng các hệ điều hành/database.
+
+## Công việc
+
+### 5.1 Sửa trigger
+
+Hiện workflow không bao phủ `hardening/*`.
+
+Đề xuất:
+
+```yaml
+on:
+  push:
+    branches:
+      - main
+      - "feat/**"
+      - "fix/**"
+      - "hardening/**"
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+```
+
+### 5.2 Tách job theo trách nhiệm
+
+```text
+artifact-protocol
+version-consistency
+architecture-boundaries
+python-unit
+python-integration-sqlite
+python-integration-postgres
+runtime-smoke
+cli-contract
+web-test
+web-build
+desktop-test
+desktop-build
+final-evidence
+```
+
+### 5.3 Sửa PostgreSQL service
+
+Không đặt `services` bên trong matrix include mà không binding.
+
+Tạo job PostgreSQL riêng:
+
+```yaml
+services:
+  postgres:
+    image: postgres:16-alpine
+```
+
+Chỉ chạy trên Ubuntu nếu chưa có nhu cầu PostgreSQL trên Windows.
+
+### 5.4 Sửa shell cross-platform
+
+Không dùng Bash syntax trên Windows runner.
+
+Sử dụng:
+
+```yaml
+env:
+  WINDAGENT_DATABASE_URL: ...
+```
+
+hoặc step riêng theo OS:
+
+```yaml
+if: runner.os == 'Windows'
+shell: pwsh
+```
+
+### 5.5 Desktop lockfile
+
+Chọn một package manager canonical:
+
+```text
+npm + package-lock.json
+```
+
+Sau đó:
+
+```bash
+npm ci
+```
+
+Nếu không muốn commit lockfile, dùng `npm install`, nhưng không khuyến nghị cho CI reproducibility.
+
+### 5.6 Validate production artifacts
+
+CI phải chạy:
+
+```bash
+uv run python scripts/validate_artifact_schema.py \
+  --directory artifacts/architecture_v2_production_hardening/phase_07 \
+  --verify-hashes
+```
+
+Không chỉ validate fixture.
+
+### 5.7 Version checker
+
+Sửa hard-coded version scan để không bị vô hiệu hóa khi version bằng `0.3.0`.
+
+Worker/API/CLI import failure phải là error trong production CI.
+
+### 5.8 Upload raw receipts
+
+Mỗi CI job upload:
+
+```text
+pytest.xml
+coverage.xml
+command receipts
+environment manifest
+logs
+artifact validation report
+```
+
+### 5.9 Required checks
+
+Cấu hình branch protection để ít nhất yêu cầu:
+
+```text
+artifact-protocol
+version-consistency
+architecture-boundaries
+python-unit
+python-integration-sqlite
+python-integration-postgres
+runtime-smoke
+web-test
+desktop-test
+final-evidence
 ```
 
 ## Acceptance gate
 
 ```text
-VERSION_DOCUMENTATION_VERDICT_CONVERGED
+G5.1 Workflow triggers on repair branch
+G5.2 PostgreSQL service starts and health-checks
+G5.3 Windows jobs use valid PowerShell commands
+G5.4 Desktop npm ci succeeds from committed lockfile
+G5.5 Production artifacts are schema-validated
+G5.6 No continue-on-error or exit masking on mandatory gates
 ```
 
-Điều kiện:
-
-* Một nguồn version chính.
-* API/CLI/Worker báo version nhất quán.
-* README phản ánh Architecture V2 hiện tại.
-* `CURRENT_VERDICT.json` hợp lệ.
-* Historical artifact vẫn được giữ.
-* Documentation CI pass.
-
-## Commit sequence
+## Verdict Phase 5
 
 ```text
-refactor(version): derive runtime versions from package metadata
-build(version): add repository version consistency gate
-docs(readme): document canonical architecture v2 runtime
-docs(audit): add authoritative current verdict pointer
-test(docs): validate commands links versions and artifact references
+CI_MATRIX_FAIL_CLOSED_READY
 ```
 
 ---
 
-# Final Phase — Full production-hardening acceptance
+# Phase 6 — Complete Verification Matrix
 
-Phase cuối không thêm feature mới. Chỉ chạy verification từ clean clone/worktree.
+## Mục tiêu
 
-## Required environments
+Chạy lại toàn bộ hệ thống trên commit ứng viên cuối cùng và tạo evidence mới.
 
-```text
-Windows clean worktree
-Linux clean clone
-Python 3.11
-Python 3.12
-SQLite local profile
-PostgreSQL production profile
-Node.js locked install
+## Nguyên tắc
+
+* Không tái sử dụng kết quả từ `09ce71b`.
+* Không dùng receipt cũ.
+* Không sửa code sau khi bắt đầu final verification.
+* Nếu cần sửa, tạo commit mới và chạy lại toàn bộ Phase 6.
+
+## Matrix bắt buộc
+
+### Python
+
+| OS      | Database   | Test                                |
+| ------- | ---------- | ----------------------------------- |
+| Ubuntu  | SQLite     | full unit + integration             |
+| Ubuntu  | PostgreSQL | full integration + fencing          |
+| Windows | SQLite     | full unit + integration             |
+| Windows | PostgreSQL | tùy chọn nếu được hỗ trợ chính thức |
+
+### Frontend
+
+| App     | OS      | Gate                                      |
+| ------- | ------- | ----------------------------------------- |
+| Web     | Ubuntu  | install, test, coverage, typecheck, build |
+| Web     | Windows | install, test, typecheck, build           |
+| Desktop | Ubuntu  | install, test, typecheck, build           |
+| Desktop | Windows | install, test, typecheck, build           |
+
+### Architecture
+
+```bash
+uv run python scripts/scaffold_architecture_v2.py --check
+uv run python scripts/check_architecture_imports.py
+uv run python scripts/check_no_legacy_orchestration.py
+uv run python scripts/check_version_consistency.py
 ```
 
-## Backend gates
+### Artifact
 
-* Full pytest pass.
-* Unit pass.
-* Integration pass.
-* Regression pass.
-* Migration pass.
-* Rollback pass.
-* Restore pass.
-* Package isolation pass.
-* Architecture policy pass.
-* Secret scan pass.
-* No legacy import pass.
-* Provider routing persistence pass.
-* Transactional completion pass.
-* PostgreSQL multi-replica pass.
-* Crash recovery pass.
-* Outbox replay pass.
-
-## Frontend gates
-
-Web:
-
-```text
-npm ci
-unit tests
-integration tests
-coverage
-type-check
-build
-browser E2E
+```bash
+uv run python scripts/validate_artifact_schema.py \
+  --directory artifacts/.../phase_07 \
+  --verify-hashes
 ```
 
-Desktop:
+### CLI
 
 ```text
-npm ci
-tests
-type-check
-build
-sidecar smoke
+--version
+doctor
+architecture-check
+status
+task list
+task inspect <real-id>
+replay <real-trace-id>
+providers
+tools
+eval
+worker-status
+provider-test
 ```
 
-## Runtime E2E
+Các command cần dependency thật phải chạy trên temporary composed runtime, không dùng output giả.
 
-Chạy đầy đủ:
+### Runtime smoke
 
-```text
-Web/Desktop
-→ API task submission
-→ persistent route lock
-→ SQL queue
-→ Worker claim
-→ provider/tool execution
-→ transactional completion
-→ outbox event
-→ API query/event replay
-→ UI terminal state
-```
-
-Thêm:
-
-* Worker crash.
-* Worker takeover.
-* API restart.
-* Provider 429.
-* Endpoint failover cùng model.
-* Permission pause/resume.
-* Cancellation.
+* FastAPI startup/shutdown.
+* Internal architecture endpoint.
+* API version.
+* Worker startup/shutdown.
+* Worker lease acquisition/release.
+* CLI composition.
+* SQLite migration.
+* PostgreSQL migration.
 * Event replay.
-* Database reconnect.
+* Session recovery.
+* Web API client contract.
 
-## Final artifact
+### Negative injections
+
+* Package version mismatch.
+* Invalid artifact.
+* Broken hash.
+* Missing architecture checker.
+* Dirty worktree.
+* API/worker version mismatch.
+* PostgreSQL unavailable.
+* Desktop lockfile mismatch.
+* Demo fallback attempted in production mode.
+
+Mỗi injection phải chứng minh gate fail với exit code khác 0.
+
+## Acceptance gate
 
 ```text
-artifacts/architecture_v2_production_hardening/final/
-├── final_verdict.json
-├── final_verdict.md
-├── execution_receipt.json
-├── test_matrix.json
+G6.1 All mandatory CI jobs green
+G6.2 Full pytest has zero failure and zero collection error
+G6.3 Architecture violations = 0
+G6.4 Production artifact validation = PASS
+G6.5 Every negative injection is rejected
+G6.6 No unexplained skip
+G6.7 No fabricated CLI output
+G6.8 Worktree clean at verified SHA
+```
+
+Một skip chỉ được chấp nhận khi có:
+
+* test ID;
+* lý do;
+* owner;
+* expiry date;
+* xác nhận không phải mandatory gate.
+
+## Verdict Phase 6
+
+```text
+PHASE_7_FULL_VERIFICATION_PASSED
+```
+
+---
+
+# Phase 7 — Final Evidence and Authoritative Verdict
+
+## Mục tiêu
+
+Xuất bản evidence bundle nhất quán, được tạo từ commit đã chạy CI.
+
+## Quy tắc SHA
+
+Phân biệt:
+
+```text
+source_sha
+implementation_sha
+verification_candidate_sha
+verified_sha
+evidence_publish_sha
+```
+
+Không thể vừa thêm artifact vào commit sau vừa tuyên bố commit trước là final verified state mà không nói rõ.
+
+Thiết kế đề xuất:
+
+1. Commit implementation candidate.
+2. CI chạy và verify candidate.
+3. CI tạo evidence bundle dưới dạng workflow artifact.
+4. Bot hoặc finalization process commit evidence.
+5. Evidence ghi:
+
+```json
+{
+  "verified_sha": "<implementation-candidate>",
+  "evidence_publish_sha": "<artifact-only-commit>"
+}
+```
+
+6. Chạy một lightweight integrity CI trên evidence publish commit.
+
+## Artifact final
+
+```text
+artifacts/architecture_v2_production_hardening/phase_07/final/
+├── environment_manifest.json
+├── version_manifest.json
+├── version_consistency_report.json
 ├── architecture_report.json
-├── provider_routing_report.json
-├── transactional_runtime_report.json
-├── multi_replica_report.json
-├── frontend_report.json
-├── legacy_removal_report.json
-├── version_documentation_report.json
-├── migration_rollback_report.json
-├── security_report.json
-├── performance_report.json
-├── clean_clone_report.json
+├── scaffold_report.json
+├── artifact_schema_report.json
+├── cli_contract_report.json
+├── runtime_smoke_report.json
+├── python_test_matrix.json
+├── frontend_test_matrix.json
+├── database_matrix.json
+├── negative_injection_report.json
+├── ci_run_manifest.json
 ├── artifact_manifest.json
-└── publication_receipt.json
+├── risk_register.md
+└── final_verdict.json
 ```
 
-## Final verdict rules
+## `final_verdict.json`
 
-Chỉ được công bố:
+Chỉ được `PASS` nếu được tính từ gates:
+
+```json
+{
+  "verdict": "PASS",
+  "verdict_name": "PHASE_7_VERSION_DOCUMENTATION_VERDICT_CONVERGED",
+  "gates": {
+    "artifact_protocol": true,
+    "version_authority": true,
+    "architecture_integrity": true,
+    "cli_truthfulness": true,
+    "python_matrix": true,
+    "frontend_matrix": true,
+    "database_matrix": true,
+    "negative_injections": true,
+    "ci_verified": true
+  },
+  "manual_override": false
+}
+```
+
+Không cho phép author nhập trực tiếp verdict `PASS`. Verdict phải được derive từ gate values.
+
+## Acceptance gate
 
 ```text
-ARCHITECTURE_V2_PRODUCTION_HARDENING_COMPLETE
+G7.1 All artifacts schema-valid
+G7.2 All hashes verified
+G7.3 CI run IDs recorded
+G7.4 verified_sha matches tested candidate
+G7.5 evidence_publish_sha explicitly recorded
+G7.6 Final verdict is computed, not manually declared
+G7.7 Risk register has no OPEN P0/P1 risks
 ```
 
-khi tất cả required gates pass.
-
-Nếu một gate thiếu evidence:
+## Verdict Phase 7
 
 ```text
-ARCHITECTURE_V2_PRODUCTION_HARDENING_BLOCKED
+PHASE_7_VERSION_DOCUMENTATION_VERDICT_CONVERGED
 ```
-
-Nếu test fail:
-
-```text
-ARCHITECTURE_V2_PRODUCTION_HARDENING_FAILED
-```
-
-Không được dùng partial focused tests để thay thế full matrix.
 
 ---
 
-# Dependency order
+# Phase 8 — Pull Request and Main Promotion
 
-Trình tự bắt buộc:
+## Mục tiêu
 
-```text
-Phase 0
-  ↓
-Phase 1 — Persistent routing authority
-  ↓
-Phase 2 — Transactional completion
-  ↓
-Phase 3 — PostgreSQL multi-replica proof
+Đưa toàn bộ Architecture V2 đã sửa vào `main` qua một PR có thể review và rollback.
+
+## Công việc
+
+### 8.1 Rebase/update branch
+
+So sánh với `main` trước khi mở PR:
+
+```bash
+git fetch origin
+git rebase origin/main
 ```
 
-Phase 4 và Phase 5 có thể chạy song song sau Phase 0:
+Nếu `main` vẫn rất cũ so với branch kiến trúc, nên mở một integration PR riêng, không squash toàn bộ lịch sử mà không review.
+
+### 8.2 Draft PR
+
+Tiêu đề đề xuất:
 
 ```text
-Phase 0
-  ├── Phase 4 — Architecture enforcement
-  └── Phase 5 — Web tests
+fix(phase7): harden verification integrity and publish authoritative evidence
 ```
 
-Phase 6 chỉ bắt đầu khi:
+PR body cần có:
+
+* starting SHA;
+* implementation candidate SHA;
+* verified SHA;
+* evidence publish SHA;
+* defects sửa;
+* test matrix;
+* CI run IDs;
+* accepted risks;
+* rollback procedure.
+
+### 8.3 Review checklist
+
+Reviewer phải xác nhận:
+
+* không có artifact placeholder;
+* không có receipt thủ công;
+* không có CLI empty-success;
+* không có demo fallback;
+* CI chạy trên đúng SHA;
+* PostgreSQL service thật sự hoạt động;
+* desktop lockfile tồn tại;
+* artifact schema gate kiểm tra artifact thật.
+
+### 8.4 Merge strategy
+
+Khuyến nghị:
 
 ```text
-Phase 1 pass
-Phase 2 pass
-Phase 4 pass
-Phase 5 pass
+merge commit
 ```
 
-Phase 7 chạy sau khi source structure đã ổn định.
+thay vì squash nếu cần giữ chuỗi implementation SHA → verified SHA → evidence SHA.
 
-Final acceptance chạy cuối cùng.
+Nếu dùng squash, phải chạy lại required checks trên squash result trước khi coi `main` là verified.
+
+### 8.5 Post-merge smoke
+
+Trên `main`:
+
+```bash
+uv sync --all-packages
+uv run python scripts/check_version_consistency.py
+uv run python scripts/check_architecture_imports.py
+uv run python scripts/validate_artifact_schema.py --directory ...
+uv run pytest -q
+```
+
+Chạy thêm web/desktop build.
+
+### 8.6 Rollback
+
+Tạo rollback receipt:
+
+```text
+rollback_target_sha
+rollback_commands
+database_compatibility
+artifact_compatibility
+expected_downtime
+```
+
+## Acceptance gate
+
+```text
+G8.1 PR required checks green
+G8.2 No unresolved P0/P1 review thread
+G8.3 Merge result receives post-merge verification
+G8.4 main contains authoritative verdict
+G8.5 Rollback procedure validated
+```
+
+## Verdict Phase 8
+
+```text
+PHASE_7_PROMOTED_TO_MAIN
+```
 
 ---
 
-# Recommended PR strategy
+# Dependency và khả năng chạy song song
 
-Sử dụng một draft PR tổng hoặc bảy PR phụ thuộc. Phương án ít rủi ro hơn:
+| Phase | Phụ thuộc     | Có thể chạy song song        |
+| ----- | ------------- | ---------------------------- |
+| 0     | Không         | Không                        |
+| 1     | Phase 0       | Một phần với Phase 3         |
+| 2     | Phase 1       | Không                        |
+| 3     | Phase 0       | Có thể song song Phase 1     |
+| 4     | Phase 3       | Có thể song song đầu Phase 5 |
+| 5     | Phase 1, 2, 3 | Một phần với Phase 4         |
+| 6     | Phase 1–5     | Không                        |
+| 7     | Phase 6       | Không                        |
+| 8     | Phase 7       | Không                        |
+
+Critical path:
 
 ```text
-PR 1: Persistent provider routing
-PR 2: Transactional Worker completion
-PR 3: PostgreSQL multi-replica and CI
-PR 4: Repository-wide architecture checker
-PR 5: Web tests and CI
-PR 6: Legacy backend retirement
-PR 7: Version/docs/verdict convergence
+0 → 1 → 2 → 5 → 6 → 7 → 8
+        ↘ 3 → 4 ↗
 ```
-
-Mỗi PR:
-
-* Base trên commit đã merge gần nhất của chương trình.
-* Không trộn refactor không liên quan.
-* Có artifact riêng.
-* Có rollback notes.
-* Không merge khi required checks chưa xanh.
 
 ---
 
-# Definition of done
+# Phân chia commit đề xuất
 
-Chương trình chỉ hoàn thành khi đạt đồng thời:
+Không nên thực hiện tất cả trong một commit.
 
 ```text
-Persistent provider registry
-Persistent distributed route locks
-Same-model endpoint failover
-Atomic Worker terminal transaction
-Transactional outbox
-PostgreSQL multi-replica fencing
-Fail-closed CI
-Repository-wide architecture enforcement
-Real web test coverage
-Legacy backend runtime removed
-Single version authority
-Authoritative current verdict
-Windows and Linux clean verification
+1. docs(phase7): correct provisional verdict and freeze repair baseline
+2. fix(artifacts): harden canonical artifact protocol and validator
+3. feat(verification): add deterministic command receipt generator
+4. fix(cli): make repository root detection fail closed
+5. fix(cli): replace fabricated runtime responses with real queries
+6. fix(ci): repair workflow triggers and cross-platform matrix
+7. test(phase7): add verification integrity regression suite
+8. ci(phase7): execute and publish complete verification evidence
+9. docs(phase7): publish authoritative final verdict
 ```
+
+---
+
+# Thứ tự ưu tiên lỗi
+
+## P0 — Phải sửa trước
+
+1. Artifact thật không đạt schema.
+2. Placeholder hoặc empty hash.
+3. Receipt không phản ánh execution thật.
+4. CLI architecture checker false-positive.
+5. CI không validate artifact sản xuất.
+6. Không có CI run trên verified commit.
+
+## P1 — Phải sửa trước promotion
+
+1. PostgreSQL service CI.
+2. Windows shell syntax.
+3. Desktop lockfile.
+4. CLI trả dữ liệu demo như dữ liệu thật.
+5. Version checker bỏ qua hard-coded scan.
+6. Import failure chỉ tạo warning.
+
+## P2 — Có thể xử lý sau khi correctness đạt
+
+1. Tối ưu thời gian CI.
+2. Chia cache Python/Node.
+3. Chuẩn hóa naming artifact.
+4. Tự động tạo release notes.
+5. Dashboard lịch sử verification.
+
+---
+
+# Final gate toàn chương trình
+
+Chỉ được công bố hoàn thành khi lệnh tổng hợp tương đương sau trả exit code 0:
+
+```bash
+uv run python scripts/verification/finalize_phase7.py \
+  --verified-sha "$(git rev-parse HEAD)" \
+  --require-clean-worktree \
+  --require-ci \
+  --require-python-matrix \
+  --require-frontend-matrix \
+  --require-postgresql \
+  --require-negative-injections \
+  --verify-artifact-hashes \
+  --fail-on-open-risk P0 \
+  --fail-on-open-risk P1
+```
+
+Output hợp lệ cuối cùng:
+
+```text
+PHASE_7_VERSION_DOCUMENTATION_VERDICT_CONVERGED
+READY_FOR_MAIN_PROMOTION
+```
+
+Bất kỳ gate bắt buộc nào không đạt, verdict phải tự động hạ thành:
+
+```text
+BLOCKED
+```
+
+Không được dùng `PASS` kèm warning để che một gate chưa chạy.

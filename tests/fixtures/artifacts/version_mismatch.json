@@ -26,6 +26,8 @@
         0
       ],
       "result": "SUCCESS",
+      "stdout_sha256": "56f3fd843f7ae959a8409e0ae7c067a0e862a6faa7a22bad147ee90ee5992bd7",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "output_sha256": "56f3fd843f7ae959a8409e0ae7c067a0e862a6faa7a22bad147ee90ee5992bd7"
     }
   ],

@@ -22,10 +22,10 @@ from datetime import datetime
 from typing import Dict, Any, Optional, List
 import os
 import re
-import uuid
 
 _SECRET_PATTERNS = [
     re.compile(r"(?i)(api[_-]?key|token|secret|password|passwd|authorization|bearer)\s*[:=]\s*[^\s\"']+"),
+    re.compile(r"(?i)(--?(?:api[_-]?key|token|secret|password|passwd|authorization))\s+[^\s\"']+"),
     re.compile(r"ghp_[A-Za-z0-9]{36,}"),
     re.compile(r"sk-[A-Za-z0-9]{20,}"),
     re.compile(r"AKIA[0-9A-Z]{16}"),
@@ -78,12 +78,14 @@ def get_uv_version() -> str:
     return "unknown"
 
 
+def redact_bytes(value: bytes) -> bytes:
+    """Decode, redact, and return the exact UTF-8 bytes safe for persistence."""
+    return redact(value.decode("utf-8", errors="replace")).encode("utf-8")
+
+
 def compute_output_hash(stdout: bytes, stderr: bytes) -> str:
-    """Compute SHA256 of combined output."""
-    hasher = hashlib.sha256()
-    hasher.update(stdout)
-    hasher.update(stderr)
-    return hasher.hexdigest()
+    """Compute SHA256 of the exact persisted stdout+stderr byte sequence."""
+    return hashlib.sha256(stdout + stderr).hexdigest()
 
 
 def run_command(
@@ -111,19 +113,23 @@ def run_command(
     except subprocess.TimeoutExpired:
         duration_ms = (datetime.now() - start).total_seconds() * 1000
         return -1, b"", b"TIMEOUT", duration_ms
+    except KeyboardInterrupt:
+        duration_ms = (datetime.now() - start).total_seconds() * 1000
+        return -2, b"", b"INTERRUPTED", duration_ms
     except Exception as e:
         duration_ms = (datetime.now() - start).total_seconds() * 1000
-        return -1, b"", str(e).encode(), duration_ms
+        return -3, b"", str(e).encode("utf-8", errors="replace"), duration_ms
 
 
 def classify_result(exit_code: int, expected: List[int]) -> str:
     """Classify execution result."""
     if exit_code in expected:
         return "SUCCESS"
-    elif exit_code == -1:
+    if exit_code == -1:
         return "TIMEOUT"
-    else:
-        return "FAILURE"
+    if exit_code == -2:
+        return "INTERRUPTED"
+    return "FAILURE"
 
 
 def generate_receipt(
@@ -142,8 +148,10 @@ def generate_receipt(
     """Generate canonical command receipt."""
     command_id = name.replace(" ", "_").lower().replace("-", "_")
 
-    stdout_text = redact(stdout.decode("utf-8", errors="replace"))
-    stderr_text = redact(stderr.decode("utf-8", errors="replace"))
+    persisted_stdout = redact_bytes(stdout)
+    persisted_stderr = redact_bytes(stderr)
+    stdout_text = persisted_stdout.decode("utf-8")
+    stderr_text = persisted_stderr.decode("utf-8")
     return {
         "command_id": command_id,
         "command": redact(" ".join(command)),
@@ -157,7 +165,9 @@ def generate_receipt(
         "environment": environment,
         "expected_exit_codes": expected_exit_codes,
         "result": classify_result(exit_code, expected_exit_codes),
-        "output_sha256": compute_output_hash(stdout, stderr),
+        "stdout_sha256": hashlib.sha256(persisted_stdout).hexdigest(),
+        "stderr_sha256": hashlib.sha256(persisted_stderr).hexdigest(),
+        "output_sha256": compute_output_hash(persisted_stdout, persisted_stderr),
     }
 
 
@@ -172,14 +182,16 @@ def persist_logs(
     logs_dir = output_path.parent / "logs"
     logs_dir.mkdir(parents=True, exist_ok=True)
 
-    stdout_text = redact(stdout.decode("utf-8", errors="replace"))
-    stderr_text = redact(stderr.decode("utf-8", errors="replace"))
+    stdout_bytes = redact_bytes(stdout)
+    stderr_bytes = redact_bytes(stderr)
 
     stdout_path = logs_dir / f"{command_id}.stdout.log"
     stderr_path = logs_dir / f"{command_id}.stderr.log"
 
-    stdout_path.write_text(stdout_text, encoding="utf-8")
-    stderr_path.write_text(stderr_text, encoding="utf-8")
+    # write_bytes avoids platform newline translation, so the receipt hashes can
+    # always be recomputed from the persisted files on Linux and Windows.
+    stdout_path.write_bytes(stdout_bytes)
+    stderr_path.write_bytes(stderr_bytes)
 
     return {
         "stdout_log": str(stdout_path.relative_to(output_path.parent.parent)),
@@ -240,7 +252,7 @@ Examples:
     output_path = Path(args.output)
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    print(f"Executing: {' '.join(args.command)}")
+    print(f"Executing: {redact(' '.join(args.command))}")
     print(f"Working directory: {cwd}")
     print(f"Expected exit codes: {args.expected_exit_codes}")
 
@@ -279,7 +291,7 @@ Examples:
     receipt["log_paths"] = log_paths
 
     # Write receipt
-    with open(output_path, "w") as f:
+    with open(output_path, "w", encoding="utf-8", newline="\n") as f:
         json.dump(receipt, f, indent=2)
 
     print(f"Receipt written to: {output_path}")

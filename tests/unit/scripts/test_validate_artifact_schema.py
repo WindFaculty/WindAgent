@@ -25,16 +25,10 @@ from validate_artifact_schema import (
     load_schema,
     validate_artifact,
     compute_file_hash,
-    _validate_semantics,
     _validate_command_receipt,
     collect_artifact_files,
-    main,
+    validate_evidence_pointer,
 )
-# Also need to import the internal functions
-import validate_artifact_schema as vas
-_validate_semantics = vas._validate_semantics
-_validate_command_receipt = vas._validate_command_receipt
-collect_artifact_files = vas.collect_artifact_files
 
 
 class TestSchemaLoading:
@@ -57,6 +51,12 @@ class TestSchemaLoading:
         ]
         for field in expected:
             assert field in required, f"Missing required field: {field}"
+
+    def test_artifact_schema_references_canonical_receipt_schema(self):
+        schema = load_schema()
+        assert schema["properties"]["commands"]["items"] == {
+            "$ref": "command_receipt_v1.schema.json"
+        }
 
 
 class TestValidArtifact:
@@ -89,6 +89,12 @@ class TestValidArtifact:
                 },
                 "expected_exit_codes": [0],
                 "result": "SUCCESS",
+                "stdout_sha256": "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456",
+                "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "log_paths": {
+                    "stdout_log": "logs/test_cmd.stdout.log",
+                    "stderr_log": "logs/test_cmd.stderr.log",
+                },
                 "output_sha256": "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456"
             }],
             "results": {"test": "passed"},
@@ -156,6 +162,12 @@ class TestInvalidArtifacts:
                 },
                 "expected_exit_codes": [0],
                 "result": "SUCCESS",
+                "stdout_sha256": "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456",
+                "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "log_paths": {
+                    "stdout_log": "logs/test_cmd.stdout.log",
+                    "stderr_log": "logs/test_cmd.stderr.log",
+                },
                 "output_sha256": "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456"
             }],
             "results": {"test": "passed"},
@@ -384,6 +396,12 @@ class TestValidatorModes:
                 },
                 "expected_exit_codes": [0],
                 "result": "SUCCESS",
+                "stdout_sha256": "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456",
+                "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "log_paths": {
+                    "stdout_log": "logs/test_cmd.stdout.log",
+                    "stderr_log": "logs/test_cmd.stderr.log",
+                },
                 "output_sha256": "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456"
             }],
             "results": {"test": "passed"},
@@ -583,6 +601,12 @@ class TestCLIIntegration:
                 "duration_ms": 100, "exit_code": 0, "stdout_tail": "", "stderr_tail": "",
                 "environment": {"os": "windows", "python": "3.11", "uv": "0.5", "git_sha": "95b955178b8e38d5c8fb3d84cd7a4bedd19b864e"},
                 "expected_exit_codes": [0], "result": "SUCCESS",
+                "stdout_sha256": "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456",
+                "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "log_paths": {
+                    "stdout_log": "logs/test.stdout.log",
+                    "stderr_log": "logs/test.stderr.log",
+                },
                 "output_sha256": "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456"
             }],
             "results": {},
@@ -620,6 +644,65 @@ class TestHashComputation:
         Path(f.name).unlink()
 
         assert hash1 == hash2
+
+
+class TestEvidencePointer:
+    """The recursive gate must remain valid after a PASS creates latest.json."""
+
+    def _write_pointer_tree(
+        self,
+        root: Path,
+        *,
+        verdict: str = "PASS",
+        pointer_sha: str | None = None,
+    ) -> Path:
+        run_id = "ci-123-1"
+        verified_sha = "a" * 40
+        bundle_dir = root / "runs" / run_id
+        bundle_dir.mkdir(parents=True)
+        (bundle_dir / "evidence_bundle.json").write_text(
+            json.dumps(
+                {
+                    "artifact_type": "evidence_bundle",
+                    "verdict": verdict,
+                    "worktree_clean": verdict == "PASS",
+                    "verified_sha": verified_sha,
+                }
+            ),
+            encoding="utf-8",
+        )
+        pointer = root / "latest.json"
+        pointer.write_text(
+            json.dumps(
+                {
+                    "protocol_version": "1.0.0",
+                    "run_id": run_id,
+                    "bundle": f"runs/{run_id}/evidence_bundle.json",
+                    "verified_sha": pointer_sha or verified_sha,
+                    "published_at": "2026-07-29T12:00:00Z",
+                }
+            ),
+            encoding="utf-8",
+        )
+        return pointer
+
+    def test_valid_pointer_targets_matching_pass_bundle(self, tmp_path):
+        pointer = self._write_pointer_tree(tmp_path)
+        errors, warnings = validate_evidence_pointer(pointer)
+        assert errors == []
+        assert warnings == []
+
+    def test_pointer_rejects_non_pass_target(self, tmp_path):
+        pointer = self._write_pointer_tree(tmp_path, verdict="BLOCKED")
+        errors, _ = validate_evidence_pointer(pointer)
+        assert any("verdict must be PASS" in error for error in errors)
+        assert any("worktree_clean must be true" in error for error in errors)
+
+    def test_pointer_rejects_sha_mismatch(self, tmp_path):
+        pointer = self._write_pointer_tree(tmp_path, pointer_sha="b" * 40)
+        errors, _ = validate_evidence_pointer(pointer, candidate_sha="a" * 40)
+        assert any("does not match target" in error for error in errors)
+        assert any("does not match candidate" in error for error in errors)
 
 
 if __name__ == "__main__":

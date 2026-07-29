@@ -10,7 +10,6 @@ import json
 import sys
 import subprocess
 import platform
-import sysconfig
 from pathlib import Path
 from typing import Dict, Any, Optional
 import argparse
@@ -47,6 +46,7 @@ def get_git_info(cwd: Path) -> Dict[str, Any]:
 
 def get_runtime_info() -> Dict[str, Any]:
     """Get runtime environment information."""
+    postgres_output = run_cmd(["psql", "--version"])
     return {
         "os": platform.system().lower(),
         "os_version": platform.release(),
@@ -55,16 +55,20 @@ def get_runtime_info() -> Dict[str, Any]:
         "uv": run_cmd(["uv", "--version"]).replace("uv ", ""),
         "node": run_cmd(["node", "--version"]).lstrip("v"),
         "npm": run_cmd(["npm", "--version"]),
-        "postgres": run_cmd(["psql", "--version"]).split()[-1] if run_cmd(["psql", "--version"]) else None,
+        "postgres": postgres_output.split()[-1] if postgres_output else None,
     }
 
 
 def get_tool_versions() -> Dict[str, str]:
     """Get versions of key tools."""
+    def last_token(command: list[str]) -> Optional[str]:
+        output = run_cmd(command)
+        return output.split()[-1] if output else None
+
     return {
-        "pytest": run_cmd(["uv", "run", "pytest", "--version"]).split()[-1],
-        "ruff": run_cmd(["ruff", "--version"]).split()[-1] if run_cmd(["ruff", "--version"]) else None,
-        "mypy": run_cmd(["mypy", "--version"]).split()[-1] if run_cmd(["mypy", "--version"]) else None,
+        "pytest": last_token([sys.executable, "-m", "pytest", "--version"]),
+        "ruff": last_token(["ruff", "--version"]),
+        "mypy": last_token(["mypy", "--version"]),
     }
 
 

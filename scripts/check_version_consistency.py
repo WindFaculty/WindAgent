@@ -41,9 +41,11 @@ def _derive_fallback_product_version(root: Path) -> Optional[str]:
 
 
 _FALLBACK_VERSION = _derive_fallback_product_version(Path(__file__).resolve().parent.parent)
+_CANONICAL_IMPORT_ERROR: Optional[str] = None
 
 
 def _load_canonical_versions() -> Dict[str, str]:
+    global _CANONICAL_IMPORT_ERROR
     try:
         from windagent_core.version import (
             PRODUCT_VERSION,
@@ -59,7 +61,8 @@ def _load_canonical_versions() -> Dict[str, str]:
             "provider_protocol_version": PROVIDER_PROTOCOL_VERSION,
             "artifact_protocol_version": ARTIFACT_PROTOCOL_VERSION,
         }
-    except ImportError:
+    except ImportError as exc:
+        _CANONICAL_IMPORT_ERROR = f"{type(exc).__name__}: {exc}"
         return {
             "product_version": _FALLBACK_VERSION or "0.3.0",
             "architecture_generation": "v2",
@@ -103,8 +106,20 @@ class VersionChecker:
                 data = json.load(f)
             return data.get("version")
         except Exception as e:
-            self.warnings.append(f"Failed to read {path}: {e}")
+            self.errors.append(f"Failed to read {path}: {e}")
             return None
+
+    def check_canonical_version_import(self) -> bool:
+        """The canonical runtime version module must be importable in CI."""
+        if _CANONICAL_IMPORT_ERROR is None:
+            self.results["canonical_version_source"] = "windagent_core.version"
+            return True
+        self.errors.append(
+            "Canonical version module is not importable: "
+            f"{_CANONICAL_IMPORT_ERROR}"
+        )
+        self.results["canonical_version_source"] = "fallback_metadata"
+        return False
 
     def _get_package_version(self, pkg_name: str) -> Optional[str]:
         """Get version from installed package metadata."""
@@ -173,7 +188,10 @@ class VersionChecker:
         for pkg_name in self._discover_workspace_pyprojects().keys():
             version = self._get_package_version(pkg_name)
             if version is None:
-                self.warnings.append(f"Package {pkg_name} not installed, skipping metadata check")
+                self.errors.append(
+                    f"Package {pkg_name} is not installed; metadata check cannot run"
+                )
+                all_ok = False
                 continue
             self.results[f"installed_{pkg_name}_version"] = version
             if version != PRODUCT_VERSION:
@@ -249,6 +267,13 @@ class VersionChecker:
                 timeout=30,
             )
             self.results["cli_version_output"] = result.stdout.strip()
+            self.results["cli_version_returncode"] = result.returncode
+            if result.returncode != 0:
+                self.errors.append(
+                    "CLI --version command failed with "
+                    f"exit {result.returncode}: {result.stderr.strip()}"
+                )
+                return False
             if PRODUCT_VERSION not in result.stdout:
                 self.errors.append(
                     f"CLI --version output '{result.stdout.strip()}' does not contain product version {PRODUCT_VERSION}"
@@ -277,8 +302,11 @@ class VersionChecker:
             else:
                 self.errors.append("Worker module has no __version__")
                 return False
-        except ImportError:
-            self.warnings.append("Worker module not importable, skipping")
+        except ImportError as exc:
+            self.errors.append(
+                f"Worker module is not importable: {type(exc).__name__}: {exc}"
+            )
+            return False
         except Exception as e:
             self.errors.append(f"Failed to check worker version: {e}")
             return False
@@ -295,6 +323,13 @@ class VersionChecker:
                 cwd=self.root,
                 timeout=30,
             )
+            self.results["api_openapi_returncode"] = result.returncode
+            if result.returncode != 0:
+                self.errors.append(
+                    "API OpenAPI version command failed with "
+                    f"exit {result.returncode}: {result.stderr.strip()}"
+                )
+                return False
             version = result.stdout.strip()
             self.results["api_openapi_version"] = version
             if version != PRODUCT_VERSION:
@@ -360,18 +395,40 @@ class VersionChecker:
         return True
 
     def check_hardcoded_versions(self) -> bool:
-        """Scan for hardcoded product version strings that should use canonical service."""
-        all_ok = True
-        # Only flag literals equal to the canonical product version in source
-        # files (not tests, not the canonical version module itself, not build
-        # artifacts).
-        if PRODUCT_VERSION == "0.3.0":
-            return all_ok  # Cannot distinguish fallback from intentional hardcode.
-        exclude_dirs = {".git", ".venv", "__pycache__", "node_modules", ".tmp-uv-cache", "artifacts", "dist", "build"}
-        exclude_files = {"check_version_consistency.py", "version.py", "pyproject.toml"}
+        """Scan for hardcoded product version strings that should use canonical service.
 
+        Phase 5 hardening: Removed the early-return guard that disabled this scan
+        when PRODUCT_VERSION == "0.3.0". The scan now always runs.
+        Excludes test files, build artifacts, and the canonical version module itself.
+        """
+        all_ok = True
+        exclude_dirs = {
+            ".git",
+            ".venv",
+            "__pycache__",
+            "node_modules",
+            ".tmp-uv-cache",
+            ".pytest_tmp",
+            ".pytest_cache",
+            ".mypy_cache",
+            ".ruff_cache",
+            "artifacts",
+            "dist",
+            "build",
+        }
+        exclude_files = {"check_version_consistency.py", "version.py", "pyproject.toml"}
+        # Always-allowed: known-safe version strings or templates
+        # NOTE: PRODUCT_VERSION ("0.3.0") is intentionally NOT in always_allowed.
+        # Phase 5 removed the old guard that skipped scanning at version 0.3.0.
+        # The scan must always run regardless of product version value.
+        always_allowed = {"0.0.0", "1.0.0"}
+
+        # The product version may be a semver string like "0.3.0". We look for
+        # literal occurrences of PRODUCT_VERSION to flag places that should
+        # import from windagent_core.version instead.
         for py_file in self.root.rglob("*.py"):
-            if any(part in exclude_dirs for part in py_file.parts):
+            relative_path = py_file.relative_to(self.root)
+            if any(part in exclude_dirs for part in relative_path.parts):
                 continue
             if py_file.name in exclude_files:
                 continue
@@ -379,12 +436,23 @@ class VersionChecker:
                 continue
             try:
                 content = py_file.read_text()
-                if f'"{PRODUCT_VERSION}"' in content or f"'{PRODUCT_VERSION}'" in content:
-                    self.warnings.append(
-                        f"Potential hardcoded product version literal in {py_file.relative_to(self.root)}"
-                    )
-            except Exception:
-                pass
+                for version_str in [PRODUCT_VERSION]:
+                    if version_str in always_allowed:
+                        continue
+                    if f'"{version_str}"' in content or f"'{version_str}'" in content:
+                        # Check if file already imports from windagent_core.version
+                        if "from windagent_core.version import" in content:
+                            continue
+                        self.errors.append(
+                            f"Potential hardcoded product version literal in {relative_path}: "
+                            f"'{version_str}' (use import from windagent_core.version instead)"
+                        )
+                        all_ok = False
+            except Exception as exc:
+                self.errors.append(
+                    f"Failed to scan {relative_path}: {exc}"
+                )
+                all_ok = False
         return all_ok
 
     def run_all_checks(self) -> bool:
@@ -398,6 +466,7 @@ class VersionChecker:
         print()
 
         checks = [
+            ("Canonical version import", self.check_canonical_version_import),
             ("Root workspace version", self.check_root_workspace_version),
             ("Package pyproject.toml versions", self.check_package_versions),
             ("Installed package metadata versions", self.check_installed_package_versions),
@@ -413,7 +482,7 @@ class VersionChecker:
             ("Hardcoded version scan", self.check_hardcoded_versions),
         ]
 
-        all_passed = True
+        all_passed = not self.errors
         for name, check_fn in checks:
             print(f"  Checking {name}...", end=" ")
             try:
@@ -441,13 +510,21 @@ class VersionChecker:
                 print(f"  - {e}")
             print()
 
-        return all_passed
+        return all_passed and not self.errors
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="WindAgent Version Consistency Checker")
     parser.add_argument("--root", type=Path, default=Path.cwd(), help="Repository root (default: cwd)")
     parser.add_argument("--json", action="store_true", help="Report result as JSON to stdout")
+    parser.add_argument(
+        "--report",
+        type=Path,
+        help=(
+            "Report path (default: artifacts/ci/version_consistency_report.json "
+            "under --root)"
+        ),
+    )
     args = parser.parse_args()
 
     root = args.root.resolve()
@@ -473,7 +550,11 @@ def main() -> int:
         "results": checker.results,
     }
 
-    report_path = root / "artifacts" / "architecture_v2_production_hardening" / "phase_07" / "version_consistency_report.json"
+    report_path = args.report or Path(
+        "artifacts/ci/version_consistency_report.json"
+    )
+    if not report_path.is_absolute():
+        report_path = root / report_path
     report_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.write_text(json.dumps(report, indent=2))
 

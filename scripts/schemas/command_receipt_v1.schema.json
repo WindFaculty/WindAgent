@@ -16,7 +16,10 @@
     "environment",
     "expected_exit_codes",
     "result",
-    "output_sha256"
+    "stdout_sha256",
+    "stderr_sha256",
+    "output_sha256",
+    "log_paths"
   ],
   "properties": {
     "protocol_version": {
@@ -95,11 +98,22 @@
     "output_sha256": {
       "type": "string",
       "pattern": "^[a-f0-9]{64}$",
-      "description": "SHA256 hash of full command output (stdout+stderr)"
+      "description": "SHA256 hash of the exact persisted stdout+stderr bytes"
+    },
+    "stdout_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "SHA256 hash of the exact persisted redacted stdout bytes"
+    },
+    "stderr_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "SHA256 hash of the exact persisted redacted stderr bytes"
     },
     "log_paths": {
       "type": "object",
       "description": "Paths to persisted stdout/stderr log files",
+      "required": ["stdout_log", "stderr_log"],
       "properties": {
         "stdout_log": { "type": "string" },
         "stderr_log": { "type": "string" }

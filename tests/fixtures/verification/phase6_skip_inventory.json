@@ -1,0 +1,30 @@
+{
+  "inventory_version": "1.0.0",
+  "phase": "phase_06",
+  "skips": [
+    {
+      "test_id": "tests.architecture.test_phase3_negative.TestSymlink.test_symlinked_package",
+      "reason": "Symlinks require elevated privileges on Windows.",
+      "owner": "WindAgent maintainers",
+      "expiry_date": "2026-12-31",
+      "mandatory_gate": false,
+      "tracking_issue": "https://github.com/WindFaculty/WindAgent/issues/7"
+    },
+    {
+      "test_id": "tests.unit.tools.test_tool_platform.test_path_sandbox_symlink_escape_prevention",
+      "reason": "The host filesystem does not support creating the symlink fixture.",
+      "owner": "WindAgent maintainers",
+      "expiry_date": "2026-12-31",
+      "mandatory_gate": false,
+      "tracking_issue": "https://github.com/WindFaculty/WindAgent/issues/7"
+    },
+    {
+      "test_id": "tests.architecture.test_phase3_negative.TestWindowsDrive.test_different_drive_repo_root",
+      "reason": "The scenario is meaningful only on Windows and is executed by the mandatory Windows job.",
+      "owner": "WindAgent maintainers",
+      "expiry_date": "2026-12-31",
+      "mandatory_gate": false,
+      "tracking_issue": "https://github.com/WindFaculty/WindAgent/issues/8"
+    }
+  ]
+}

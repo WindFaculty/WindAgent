@@ -22,9 +22,9 @@ import argparse
 import re
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, List, Any, Optional, Set, Tuple
-import jsonschema
-from jsonschema import validate, ValidationError
+from typing import Dict, List, Any, Optional, Tuple
+from jsonschema import Draft7Validator, ValidationError, validate
+from referencing import Registry, Resource
 
 
 SCHEMA_PATH = Path(__file__).resolve().parent / "schemas" / "artifact_protocol_v1.schema.json"
@@ -35,18 +35,32 @@ VALID_SEVERITIES = {"CRITICAL", "HIGH", "MEDIUM", "LOW"}
 VALID_WARNING_SEVERITIES = {"LOW", "MEDIUM", "HIGH"}
 VALID_RESULTS = {"SUCCESS", "FAILURE", "TIMEOUT", "INTERRUPTED"}
 VALID_COMMAND_ID_PATTERN = r"^[a-z0-9_-]+$"
+VALID_RUN_ID_PATTERN = r"^[A-Za-z0-9._-]+$"
 
 
 def load_schema() -> Dict[str, Any]:
     """Load the artifact JSON schema."""
     with open(SCHEMA_PATH) as f:
-        return json.load(f)
+        schema = json.load(f)
+    # Give relative external references a stable, portable filesystem base.
+    schema["$id"] = SCHEMA_PATH.resolve().as_uri()
+    return schema
 
 
 def load_receipt_schema() -> Dict[str, Any]:
     """Load the command receipt JSON schema."""
     with open(RECEIPT_SCHEMA_PATH) as f:
         return json.load(f)
+
+
+def validate_artifact_schema(instance: Dict[str, Any], schema: Dict[str, Any]) -> None:
+    """Validate an artifact while resolving the canonical receipt schema."""
+    receipt_resource = Resource.from_contents(load_receipt_schema())
+    registry = Registry().with_resource(
+        RECEIPT_SCHEMA_PATH.resolve().as_uri(),
+        receipt_resource,
+    )
+    Draft7Validator(schema, registry=registry).validate(instance)
 
 
 def is_receipt_file(artifact_path: Path) -> bool:
@@ -68,6 +82,104 @@ def is_receipt_file(artifact_path: Path) -> bool:
     return False
 
 
+def is_evidence_pointer_file(path: Path) -> bool:
+    """Return whether a JSON file is the atomic authoritative-run pointer."""
+    return path.name == "latest.json"
+
+
+def validate_evidence_pointer(
+    pointer_path: Path,
+    run_schema: bool = True,
+    run_semantic: bool = True,
+    candidate_sha: Optional[str] = None,
+) -> Tuple[List[str], List[str]]:
+    """Validate ``latest.json`` and its link to an immutable PASS bundle."""
+    errors: List[str] = []
+    try:
+        pointer = json.loads(pointer_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        return [f"Invalid evidence pointer JSON: {exc}"], []
+
+    if not isinstance(pointer, dict):
+        return ["Evidence pointer must be a JSON object"], []
+
+    required = {
+        "protocol_version",
+        "run_id",
+        "bundle",
+        "verified_sha",
+        "published_at",
+    }
+    if run_schema:
+        missing = sorted(required - set(pointer))
+        additional = sorted(set(pointer) - required)
+        if missing:
+            errors.append(f"Evidence pointer missing fields: {missing}")
+        if additional:
+            errors.append(f"Evidence pointer has unsupported fields: {additional}")
+        if pointer.get("protocol_version") != "1.0.0":
+            errors.append("Evidence pointer protocol_version must be 1.0.0")
+        run_id = pointer.get("run_id")
+        if not isinstance(run_id, str) or not re.fullmatch(
+            VALID_RUN_ID_PATTERN, run_id
+        ):
+            errors.append("Evidence pointer run_id has invalid format")
+        verified_sha = pointer.get("verified_sha")
+        if not isinstance(verified_sha, str) or not re.fullmatch(
+            r"[a-f0-9]{40}", verified_sha
+        ):
+            errors.append("Evidence pointer verified_sha must be 40 lowercase hex")
+        published_at = pointer.get("published_at")
+        try:
+            datetime.fromisoformat(str(published_at).replace("Z", "+00:00"))
+        except ValueError:
+            errors.append("Evidence pointer published_at must be valid ISO8601")
+
+    if not run_semantic:
+        return errors, []
+
+    run_id = pointer.get("run_id")
+    bundle_value = pointer.get("bundle")
+    expected_bundle = (
+        f"runs/{run_id}/evidence_bundle.json"
+        if isinstance(run_id, str)
+        else None
+    )
+    if bundle_value != expected_bundle:
+        errors.append(
+            f"Evidence pointer bundle must equal {expected_bundle!r}, "
+            f"got {bundle_value!r}"
+        )
+        return errors, []
+
+    bundle_path = (pointer_path.parent / bundle_value).resolve()
+    try:
+        bundle_path.relative_to(pointer_path.parent.resolve())
+    except ValueError:
+        errors.append("Evidence pointer bundle path escapes the production root")
+        return errors, []
+    if not bundle_path.is_file():
+        errors.append(f"Evidence pointer target does not exist: {bundle_value}")
+        return errors, []
+
+    try:
+        bundle = json.loads(bundle_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        errors.append(f"Evidence pointer target is invalid JSON: {exc}")
+        return errors, []
+    if bundle.get("artifact_type") != "evidence_bundle":
+        errors.append("Evidence pointer target must be an evidence_bundle")
+    if bundle.get("verdict") != "PASS":
+        errors.append("Evidence pointer target verdict must be PASS")
+    if bundle.get("worktree_clean") is not True:
+        errors.append("Evidence pointer target worktree_clean must be true")
+    if bundle.get("verified_sha") != pointer.get("verified_sha"):
+        errors.append("Evidence pointer verified_sha does not match target bundle")
+    if candidate_sha and pointer.get("verified_sha") != candidate_sha:
+        errors.append("Evidence pointer verified_sha does not match candidate SHA")
+    return errors, []
+
+
 def compute_file_hash(filepath: Path) -> str:
     """Compute SHA256 hash of a file."""
     hasher = hashlib.sha256()
@@ -86,6 +198,7 @@ def validate_artifact(
     fail_on_warning: bool = False,
     artifact_dir: Optional[Path] = None,
     repo_root: Optional[Path] = None,
+    candidate_sha: Optional[str] = None,
 ) -> Tuple[List[str], List[str]]:
     """Validate a single artifact file against schema and additional rules.
     Returns (errors, warnings)."""
@@ -101,13 +214,20 @@ def validate_artifact(
     # Schema validation
     if run_schema:
         try:
-            validate(instance=artifact, schema=schema)
+            validate_artifact_schema(artifact, schema)
         except ValidationError as e:
             errors.append(f"Schema validation failed: {e.message}")
 
     # Semantic validations
     if run_semantic:
-        sem_errors, sem_warnings = _validate_semantics(artifact, artifact_path, artifact_dir, run_hashes, repo_root)
+        sem_errors, sem_warnings = _validate_semantics(
+            artifact,
+            artifact_path,
+            artifact_dir,
+            run_hashes,
+            repo_root,
+            candidate_sha,
+        )
         errors.extend(sem_errors)
         warnings.extend(sem_warnings)
 
@@ -175,10 +295,13 @@ def validate_receipt(
     if result not in VALID_RESULTS:
         errors.append(f"result must be one of {VALID_RESULTS}, got '{result}'")
 
-    # Validate output_sha256
-    out_hash = receipt.get("output_sha256", "")
-    if out_hash and (len(out_hash) != 64 or not all(c in "0123456789abcdef" for c in out_hash)):
-        errors.append("output_sha256 must be 64 lowercase hex chars")
+    # Validate persisted-output hashes.
+    for hash_field in ("stdout_sha256", "stderr_sha256", "output_sha256"):
+        out_hash = receipt.get(hash_field, "")
+        if not out_hash:
+            errors.append(f"{hash_field} is required")
+        elif len(out_hash) != 64 or not all(c in "0123456789abcdef" for c in out_hash):
+            errors.append(f"{hash_field} must be 64 lowercase hex chars")
 
     # Validate environment
     env = receipt.get("environment", {})
@@ -203,6 +326,7 @@ def _validate_semantics(
     artifact_dir: Optional[Path] = None,
     verify_hashes: bool = False,
     repo_root: Optional[Path] = None,
+    candidate_sha: Optional[str] = None,
 ) -> Tuple[List[str], List[str]]:
     """Validate semantic rules beyond JSON schema."""
     errors = []
@@ -228,12 +352,18 @@ def _validate_semantics(
 
     # 4. commands array must not be empty
     commands = artifact.get("commands", [])
+    strict_receipts = artifact.get("artifact_type") == "evidence_bundle"
     if not commands or len(commands) == 0:
         errors.append("commands array must have at least one command receipt")
     else:
         # Validate each command receipt
         for i, cmd in enumerate(commands):
-            cmd_errors = _validate_command_receipt(cmd, i)
+            cmd_errors = _validate_command_receipt(
+                cmd,
+                i,
+                verified_sha if strict_receipts else "",
+                require_persisted_hashes=strict_receipts,
+            )
             errors.extend(cmd_errors)
 
     # 5. artifact_hashes must not be empty
@@ -301,13 +431,23 @@ def _validate_semantics(
 
     # 13. Git identity checks (Phase 1.5) - only when repo_root explicitly provided
     if repo_root is not None:
-        git_errors = _validate_git_identity(artifact, repo_root, verdict)
+        git_errors = _validate_git_identity(
+            artifact,
+            repo_root,
+            verdict,
+            candidate_sha=candidate_sha,
+        )
         errors.extend(git_errors)
 
     return errors, warnings
 
 
-def _validate_command_receipt(cmd: Dict[str, Any], index: int) -> List[str]:
+def _validate_command_receipt(
+    cmd: Dict[str, Any],
+    index: int,
+    verified_sha: str = "",
+    require_persisted_hashes: bool = False,
+) -> List[str]:
     """Validate a single command receipt."""
     errors = []
 
@@ -315,8 +455,10 @@ def _validate_command_receipt(cmd: Dict[str, Any], index: int) -> List[str]:
     required_fields = [
         "command_id", "command", "cwd", "started_at", "finished_at",
         "duration_ms", "exit_code", "stdout_tail", "stderr_tail",
-        "environment", "expected_exit_codes", "result", "output_sha256"
+        "environment", "expected_exit_codes", "result", "output_sha256",
     ]
+    if require_persisted_hashes:
+        required_fields.extend(["stdout_sha256", "stderr_sha256", "log_paths"])
     for field in required_fields:
         if field not in cmd:
             errors.append(f"Command[{index}] missing required field: {field}")
@@ -356,10 +498,16 @@ def _validate_command_receipt(cmd: Dict[str, Any], index: int) -> List[str]:
     if result not in VALID_RESULTS:
         errors.append(f"Command[{index}] result must be one of {VALID_RESULTS}, got '{result}'")
 
-    # Validate output_sha256
-    out_hash = cmd.get("output_sha256", "")
-    if out_hash and (len(out_hash) != 64 or not all(c in "0123456789abcdef" for c in out_hash)):
-        errors.append(f"Command[{index}] output_sha256 must be 64 lowercase hex chars")
+    # Validate persisted-output hashes.
+    for hash_field in ("stdout_sha256", "stderr_sha256", "output_sha256"):
+        out_hash = cmd.get(hash_field, "")
+        if out_hash and (
+            len(out_hash) != 64
+            or not all(c in "0123456789abcdef" for c in out_hash)
+        ):
+            errors.append(
+                f"Command[{index}] {hash_field} must be 64 lowercase hex chars"
+            )
 
     # Validate environment
     env = cmd.get("environment", {})
@@ -371,6 +519,10 @@ def _validate_command_receipt(cmd: Dict[str, Any], index: int) -> List[str]:
         gs = env["git_sha"]
         if len(gs) != 40 or not all(c in "0123456789abcdef" for c in gs):
             errors.append(f"Command[{index}] environment.git_sha must be 40 lowercase hex chars")
+        elif verified_sha and gs != verified_sha:
+            errors.append(
+                f"Command[{index}] environment.git_sha must equal verified_sha"
+            )
 
     return errors
 
@@ -396,6 +548,7 @@ def _validate_git_identity(
     artifact: Dict[str, Any],
     repo_root: Optional[Path] = None,
     verdict: str = "",
+    candidate_sha: Optional[str] = None,
 ) -> List[str]:
     """Validate Git identity per Phase 1.5 requirements."""
     errors = []
@@ -454,8 +607,14 @@ def _validate_git_identity(
                 cwd=git_root, capture_output=True, text=True, check=True
             )
             head_sha = result.stdout.strip()
-            if verified_sha != head_sha:
-                errors.append(f"Final artifact: verified_sha ({verified_sha[:8]}) != HEAD ({head_sha[:8]})")
+            expected_sha = candidate_sha or head_sha
+            if verified_sha != expected_sha:
+                expected_label = "candidate" if candidate_sha else "HEAD"
+                errors.append(
+                    "Final artifact: "
+                    f"verified_sha ({verified_sha[:8]}) != "
+                    f"{expected_label} ({expected_sha[:8]})"
+                )
         except subprocess.CalledProcessError:
             pass
 
@@ -511,11 +670,21 @@ Examples:
     parser.add_argument("--directory", "-d", help="Directory containing artifact JSON files")
     parser.add_argument("--recursive", "-r", action="store_true", help="Recursively search subdirectories")
     parser.add_argument("--schema-only", action="store_true", help="Only validate JSON schema, skip semantic checks")
-    parser.add_argument("--semantic", action="store_true", help="Only run semantic validations (skip JSON schema)")
+    parser.add_argument(
+        "--semantic",
+        "--semantic-only",
+        dest="semantic",
+        action="store_true",
+        help="Only run semantic validations (skip JSON schema)",
+    )
     parser.add_argument("--verify-hashes", action="store_true", help="Verify artifact_hashes against actual files (additive: schema + semantic + hashes)")
     parser.add_argument("--json", action="store_true", help="Output results as JSON")
     parser.add_argument("--fail-on-warning", action="store_true", help="Treat warnings as errors")
     parser.add_argument("--repo-root", help="Explicit repository root for git identity checks")
+    parser.add_argument(
+        "--candidate-sha",
+        help="Explicit candidate SHA allowed instead of repository HEAD",
+    )
 
     args = parser.parse_args()
 
@@ -558,10 +727,18 @@ Examples:
             all_errors.append(f"File not found: {artifact_path}")
             continue
 
-        # Determine if this is a receipt or full artifact
-        is_receipt = is_receipt_file(artifact_path)
+        # Determine whether this is a pointer, receipt, or full artifact.
+        is_pointer = is_evidence_pointer_file(artifact_path)
+        is_receipt = not is_pointer and is_receipt_file(artifact_path)
 
-        if is_receipt:
+        if is_pointer:
+            errors, warnings = validate_evidence_pointer(
+                artifact_path,
+                run_schema=run_schema,
+                run_semantic=run_semantic,
+                candidate_sha=args.candidate_sha,
+            )
+        elif is_receipt:
             schema_to_use = receipt_schema
             artifact_dir = None  # Receipts don't have artifact_hashes to verify
             errors, warnings = validate_receipt(
@@ -582,6 +759,7 @@ Examples:
                 fail_on_warning=args.fail_on_warning,
                 artifact_dir=artifact_dir,
                 repo_root=repo_root,
+                candidate_sha=args.candidate_sha,
             )
 
         result = {

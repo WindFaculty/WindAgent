@@ -1,173 +1,159 @@
 #!/usr/bin/env python3
-"""
-Finalize Evidence (Phase 2)
+"""Derive a Phase 2 verdict from validated evidence.
 
-Derives verdict from gate values in evidence bundle.
-No manual PASS entry - verdict is computed from required gates.
+The finalizer has no option for supplying a verdict. It validates the bundle,
+loads the canonical command registry, and derives PASS/FAIL/BLOCKED from the
+persisted required-command evidence.
 """
 
 from __future__ import annotations
-import json
-import sys
+
 import argparse
+import json
+import re
+import sys
 from pathlib import Path
-from typing import Dict, Any, List, Tuple
+from typing import Any
+
+import yaml
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from validate_evidence_bundle import validate_evidence_bundle
 
 
-def load_bundle(bundle_path: Path) -> Dict[str, Any]:
-    """Load evidence bundle."""
-    with open(bundle_path) as f:
-        return json.load(f)
+def _command_id(name: str) -> str:
+    return re.sub(r"[^a-z0-9_-]+", "_", name.lower()).strip("_")
 
 
-def validate_evidence_bundle(
-    bundle_path: Path,
-    required_gates: List[str],
-) -> Tuple[Dict[str, Any], List[str], List[str]]:
-    """
-    Validate evidence bundle and derive gates status.
-    Returns (gates_dict, errors, warnings).
-    """
-    errors = []
-    warnings = []
+def load_required_commands(registry_path: Path) -> dict[str, dict[str, Any]]:
+    """Load only verdict-bearing commands from the canonical registry."""
+    payload = yaml.safe_load(registry_path.read_text(encoding="utf-8"))
+    commands = payload.get("commands") if isinstance(payload, dict) else None
+    if not isinstance(commands, dict) or not commands:
+        raise ValueError("command registry must contain a non-empty commands mapping")
 
-    try:
-        bundle = load_bundle(bundle_path)
-    except json.JSONDecodeError as e:
-        return {}, [f"Invalid JSON in bundle: {e}"], []
+    required: dict[str, dict[str, Any]] = {}
+    for name, spec in commands.items():
+        if not isinstance(name, str) or not isinstance(spec, dict):
+            raise ValueError("each registry command must have a string name and mapping")
+        if spec.get("required", True):
+            required[name] = spec
+    if not required:
+        raise ValueError("command registry contains no required commands")
+    return required
 
-    # Check required fields
-    required_fields = ["protocol_version", "verdict", "commands", "commands"]
-    for field in required_fields:
-        if field not in bundle:
-            errors.append(f"Bundle missing required field: {field}")
 
-    # Extract gate results from bundle
-    # Gates are derived from command results
-    gates = {
-        "gates": {},
-        "verdict": bundle.get("verdict", "BLOCKED"),
-        "has_failures": len(bundle.get("failures", [])) > 0,
-        "worktree_clean": bundle.get("worktree_clean", False),
+def derive_verdict(
+    bundle: dict[str, Any],
+    required_commands: dict[str, dict[str, Any]],
+    protocol_errors: list[str] | None = None,
+    protocol_warnings: list[str] | None = None,
+) -> dict[str, Any]:
+    """Return gate results and a verdict derived only from persisted evidence."""
+    errors = list(protocol_errors or [])
+    warnings = list(protocol_warnings or [])
+    receipts = {
+        receipt.get("command_id"): receipt
+        for receipt in bundle.get("commands", [])
+        if isinstance(receipt, dict) and isinstance(receipt.get("command_id"), str)
     }
+    result_map = bundle.get("results", {})
+    if not isinstance(result_map, dict):
+        result_map = {}
 
-    # Map command results to gates
-    gate_mapping = {
-        "artifact_protocol": ["artifact_schema_validation", "artifact_schema_check"],
-        "version_consistency": ["version_check", "version_authority_tests"],
-        "architecture_boundaries": ["architecture_scaffold_check", "architecture_imports_check"],
-        "python_unit_sqlite": ["pytest_unit"],
-        "python_unit_windows": ["pytest_unit"],
-        "python_integration_sqlite": ["pytest_integration"],
-        "python_integration_postgres": ["pytest_integration"],
-        "runtime_smoke": ["runtime_smoke"],
-        "cli_contract": ["cli_contract"],
-        "web_test": ["web_test", "web_test_windows"],
-        "web_test_windows": ["web_test_windows"],
-        "desktop_test": ["desktop_test", "desktop_test_windows"],
-        "desktop_test_windows": ["desktop_test_windows"],
-    }
+    gates: dict[str, bool] = {}
+    for name, spec in required_commands.items():
+        command_id = _command_id(name)
+        receipt = receipts.get(command_id)
+        expected = spec.get("expected_exit_codes", [0])
+        command_result = result_map.get(name)
+        passed = (
+            isinstance(receipt, dict)
+            and receipt.get("result") == "SUCCESS"
+            and receipt.get("exit_code") in expected
+            and isinstance(command_result, dict)
+            and command_result.get("success") is True
+            and command_result.get("exit_code") in expected
+        )
+        gates[name] = passed
+        if not passed:
+            errors.append(f"required command did not pass: {name}")
 
-    # Check each required gate
-    for gate_name in required_gates:
-        commands = gate_mapping.get(gate_name, [gate_name])
-        gate_passed = False
-
-        for cmd in bundle.get("commands", []):
-            if cmd.get("command_id") in commands or any(c in cmd.get("command", "") for c in commands):
-                if cmd.get("result") == "SUCCESS":
-                    gate_passed = True
-                    break
-
-        gates["gates"][gate_name] = gate_passed
-        if not gate_passed:
-            errors.append(f"Required gate '{gate_name}' did not pass (no successful command found)")
-
-    # All gates must pass for PASS
-    all_gates_pass = all(gates["gates"].values()) if gates["gates"] else False
-
-    # Derive verdict from gates
-    if not bundle.get("worktree_clean", False):
+    if protocol_errors or protocol_warnings:
+        derived_verdict = "FAIL"
+    elif not bundle.get("worktree_clean", False):
         derived_verdict = "BLOCKED"
-    elif not all_gates_pass:
+        errors.append("worktree is not clean; PASS evidence cannot be finalized")
+    elif not all(gates.values()) or bundle.get("failures"):
         derived_verdict = "FAIL"
     else:
         derived_verdict = "PASS"
 
-    gates["verdict"] = derived_verdict
-
-    # Bundle verdict must match derived verdict
-    bundle_verdict = bundle.get("verdict", "")
+    bundle_verdict = bundle.get("verdict")
     if bundle_verdict != derived_verdict:
-        warnings.append(f"Bundle verdict '{bundle_verdict}' differs from derived verdict '{derived_verdict}'")
+        errors.append(
+            f"bundle verdict {bundle_verdict!r} does not match derived "
+            f"verdict {derived_verdict!r}"
+        )
 
-    # No CRITICAL/HIGH failures allowed in PASS
-    if derived_verdict == "PASS":
-        for failure in bundle.get("failures", []):
-            severity = failure.get("severity", "")
-            if severity in ("CRITICAL", "HIGH"):
-                errors.append(f"PASS verdict not allowed with {severity} failure: {failure.get('check', 'unknown')}")
-
-    return gates, errors, warnings
+    return {
+        "status": "PASS" if derived_verdict == "PASS" and not errors else "FAIL",
+        "verdict": derived_verdict,
+        "bundle_verdict": bundle_verdict,
+        "worktree_clean": bool(bundle.get("worktree_clean", False)),
+        "gates": gates,
+        "errors": errors,
+        "warnings": warnings,
+    }
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Finalize evidence - derive verdict from gates")
+    parser = argparse.ArgumentParser(
+        description="Validate evidence and derive its verdict"
+    )
     parser.add_argument("bundle", help="Path to evidence_bundle.json")
-    parser.add_argument("--required-gates", nargs="+", default=[
-        "artifact_protocol",
-        "version_consistency",
-        "architecture_boundaries",
-        "python_unit_sqlite",
-        "python_unit_windows",
-        "python_integration_sqlite",
-        "python_integration_postgres",
-        "runtime_smoke",
-        "cli_contract",
-        "web_test",
-        "web_test_windows",
-        "desktop_test",
-        "desktop_test_windows",
-    ], help="Required gate names")
-    parser.add_argument("--output", "-o", help="Output JSON file")
-    parser.add_argument("--json", action="store_true", help="Output JSON to stdout")
-
+    parser.add_argument(
+        "--commands-file",
+        default=str(Path(__file__).with_name("command_registry.yaml")),
+        help="Canonical command registry",
+    )
+    parser.add_argument("--output", "-o", help="Optional JSON result path")
+    parser.add_argument("--json", action="store_true", help="Print JSON result")
     args = parser.parse_args()
 
-    bundle_path = Path(args.bundle)
-    if not bundle_path.exists():
-        print(f"ERROR: Bundle not found: {bundle_path}", file=sys.stderr)
+    bundle_path = Path(args.bundle).resolve()
+    registry_path = Path(args.commands_file).resolve()
+    try:
+        bundle = json.loads(bundle_path.read_text(encoding="utf-8"))
+        required_commands = load_required_commands(registry_path)
+        protocol_errors, protocol_warnings = validate_evidence_bundle(bundle_path)
+        result = derive_verdict(
+            bundle,
+            required_commands,
+            protocol_errors,
+            protocol_warnings,
+        )
+    except (OSError, ValueError, json.JSONDecodeError, yaml.YAMLError) as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
         return 1
 
-    gates, errors, warnings = validate_evidence_bundle(bundle_path, args.required_gates)
-
-    if args.json or args.output:
-        result = {
-            "bundle": str(bundle_path),
-            "status": "PASS" if not errors else "FAIL",
-            "gates": gates.get("gates", {}),
-            "verdict": gates.get("verdict", ""),
-            "has_failures": gates.get("has_failures", False),
-            "worktree_clean": gates.get("worktree_clean", False),
-            "errors": errors,
-            "warnings": warnings,
-        }
-        if args.output:
-            Path(args.output).write_text(json.dumps(result, indent=2))
-            print(f"Result written to {args.output}")
-        if args.json:
-            print(json.dumps(result, indent=2))
+    rendered = json.dumps(result, indent=2) + "\n"
+    if args.output:
+        output_path = Path(args.output)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_text(rendered, encoding="utf-8")
+    if args.json:
+        print(rendered, end="")
     else:
-        status = "PASS" if not errors else f"FAIL ({len(errors)} errors)"
-        print(f"Finalizing {bundle_path}... {status}")
-        print(f"  Verdict: {gates.get('verdict', 'UNKNOWN')}")
-        print(f"  Gates passed: {sum(1 for v in gates.get('gates', {}).values() if v)}/{len(gates.get('gates', {}))}")
-        for e in errors:
-            print(f"  ERROR: {e}")
-        for w in warnings:
-            print(f"  WARNING: {w}")
-
-    return 1 if errors else 0
+        print(
+            f"Final evidence verdict: {result['verdict']} "
+            f"({sum(result['gates'].values())}/{len(result['gates'])} gates)"
+        )
+        for error in result["errors"]:
+            print(f"ERROR: {error}")
+        for warning in result["warnings"]:
+            print(f"WARNING: {warning}")
+    return 0 if result["status"] == "PASS" else 1
 
 
 if __name__ == "__main__":

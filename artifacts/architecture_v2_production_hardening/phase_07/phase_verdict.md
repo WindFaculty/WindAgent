@@ -1,34 +1,66 @@
-# Phase 7 — Version, Documentation and Verdict Convergence
+# Phase 0-5 Repair — Authoritative Verdict
 
-**VERDICT: PHASE_7_CODE_CONVERGED_VERIFICATION_BLOCKED**
+**VERDICT: `BLOCKED_PENDING_CANDIDATE_VERIFICATION`**
 
-## Summary
+This file is the current authority for promotion readiness. Local implementation
+and tests are substantially complete, but the branch is not yet promotable.
 
-Phase 7 code convergence achieved but verification blocked by artifact protocol defects.
-
-| Gate | Status | Evidence |
-|------|--------|----------|
-| **Single product version authority** | PASS | `windagent_core.version.PRODUCT_VERSION = "0.3.0"` canonical source |
-| **API/CLI/Worker version consistency** | PASS | All report 0.3.0 |
-| **17 package `__version__` match canonical** | PASS | All workspace packages at 0.3.0 |
-| **Artifact schema + validator operational** | BLOCKED | Schema exists but artifact protocol defects: empty commands[], empty hashes{}, placeholder hashes in PASS artifacts |
-| **README/migration docs reflect V2** | PASS | No legacy `apps/backend` launcher references |
-| **CURRENT_VERDICT points to final commit** | BLOCKED | Points to `09ce71b8...` but artifact has empty commands[] and artifact_hashes{} |
-| **Architecture violations** | PASS | 0 violations (`check_architecture_imports.py` passes) |
-| **Full test suite** | PASS | 759 passed, 1 skipped, 0 failed |
-| **CI fail-closed gates** | PARTIAL | Gates defined but CI not run on final commit SHA |
-| **Worktree clean** | PASS | `git status` clean |
-
-## Authoritative Metadata
+## Authoritative metadata
 
 ```yaml
-implementation_status: substantially_complete
-verification_status: blocked
+baseline_sha: 601fd128
+repair_start_sha: 6d9d5e0ba0419ace0efad7494e44392cbb2c705f
+current_head: 59e4fdf04ab43790e03ad8cb0be6a6bb6282bdd2
+branch: fix/phase7-verification-integrity
+implementation_status: substantially_complete_local
+verification_status: local_gates_passed_remote_gates_pending
 promotion_status: not_ready
 blocking_reasons:
-  - artifact_protocol_not_converged
-  - evidence_publish_not_fail_closed
-  - cli_runtime_claims_not_truthful
-  - ci_workflow_invalid
-  - no_ci_run_on_candidate_sha
+  - no_clean_candidate_commit_or_immutable_bundle_for_current_sha
+  - no_github_actions_run_on_candidate_sha
+  - required_branch_protection_checks_not_verified
 ```
+
+Both recorded baseline commits are ancestors of `current_head`. The current
+worktree is intentionally treated as a repair worktree, not as candidate
+evidence.
+
+## Phase assessment
+
+| Phase | Local implementation | Local verification | Promotion status |
+|---|---|---|---|
+| Phase 0 — baseline reconciliation | Complete | This verdict, risk register and inventory agree | Blocked with the overall candidate |
+| Phase 1 — artifact protocol | Complete | Canonical recursive schema + semantic + hash gate passes for all 18 JSON files | Locally converged |
+| Phase 2 — evidence pipeline | Complete | Receipt hashing, redaction, tamper, immutable-run and derived-verdict tests pass | Waiting for a clean candidate bundle |
+| Phase 3 — CLI architecture | Complete | Architecture and regression suites pass | Locally ready |
+| Phase 4 — CLI truthfulness | Complete | CLI contract, read-only and failure-path tests pass | Locally ready |
+| Phase 5 — CI matrix | Complete locally | Workflow lint/policy and frontend/desktop gates pass locally | Waiting for GitHub-hosted execution |
+
+## Verified local evidence
+
+- Latest Phase 0-5 regression set: `271 passed, 1 skipped`.
+- Architecture and regression suite: `106 passed, 1 skipped`.
+- Integration suite: `21 passed`.
+- Full unit run captured by the local evidence pipeline: `771 passed,
+  1 skipped`; the later protocol-specific edits are covered by the latest
+  regression set above.
+- Web: `83 passed`, typecheck and production build passed; coverage `87.6%`.
+- Desktop: `89 passed`, TypeScript check and production build passed.
+- Runtime version smoke and fail-closed version consistency check passed.
+- CI workflow policy checks passed and `actionlint` reported no errors.
+- Post-repair CI/pointer policy set: `53 passed`.
+
+These results are local observations. They are not a replacement for immutable
+receipts produced by GitHub Actions on the final candidate SHA.
+
+## Remaining promotion gates
+
+1. Create a clean candidate commit without modifying preserved user-owned
+   changes.
+2. Run all 14 required CI jobs on that exact candidate SHA.
+3. Validate the downloaded job receipts and publish the immutable final
+   evidence manifest.
+4. Confirm the same 14 jobs are configured as required branch-protection
+   checks.
+
+The verdict may change to `PASS` only after all four conditions are evidenced.

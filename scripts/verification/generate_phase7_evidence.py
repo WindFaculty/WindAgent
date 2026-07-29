@@ -1,345 +1,401 @@
 #!/usr/bin/env python3
-"""
-Generate Phase 7 Evidence Bundle (Phase 2 - Hardened)
+"""Generate deterministic, immutable Phase 7 evidence.
 
-Orchestrates command execution, receipt capture, hash computation,
-and artifact validation in a staging directory before atomic publish.
+Runs are assembled and validated in staging. A clean PASS is published to
+``runs/<run-id>`` and atomically selected by ``latest.json``. FAIL/BLOCKED
+runs are retained under ``quarantine/<run-id>`` and never move the pointer.
 """
 
 from __future__ import annotations
-import json
-import sys
-import subprocess
-import shutil
-import uuid
+
 import argparse
-from pathlib import Path
-from datetime import datetime
-from typing import Dict, Any, List, Optional
-import os
 import hashlib
+import json
+import os
+import re
+import shutil
+import subprocess
+import sys
+import uuid
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from run_command_receipt import redact
+from capture_environment import get_git_info, get_runtime_info, get_tool_versions
+from run_command_receipt import classify_result, redact, redact_bytes
+from validate_evidence_bundle import validate_evidence_bundle
 
 
-def run_cmd(cmd: list[str], cwd: Optional[Path] = None, env: Optional[Dict[str, str]] = None, timeout: int = 300) -> tuple[int, str, str]:
-    """Run command and return (exit_code, stdout, stderr)."""
+RUN_ID_PATTERN = re.compile(r"^[A-Za-z0-9._-]+$")
+
+
+def _utc_now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+def _timestamp(value: datetime) -> str:
+    return value.isoformat(timespec="milliseconds").replace("+00:00", "Z")
+
+
+def _sha256(value: bytes) -> str:
+    return hashlib.sha256(value).hexdigest()
+
+
+def _file_sha256(path: Path) -> str:
+    return _sha256(path.read_bytes())
+
+
+def _command_id(name: str) -> str:
+    value = re.sub(r"[^a-z0-9_-]+", "_", name.lower()).strip("_")
+    if not value:
+        raise ValueError(f"Command name does not produce a valid id: {name!r}")
+    return value
+
+
+def _run_process(
+    argv: List[str],
+    cwd: Path,
+    timeout: int,
+    env: Optional[Dict[str, str]] = None,
+) -> tuple[int, bytes, bytes]:
+    process_env = os.environ.copy()
+    if env:
+        process_env.update(env)
     try:
-        process_env = os.environ.copy()
-        if env:
-            process_env.update(env)
         result = subprocess.run(
-            cmd, cwd=cwd, capture_output=True, text=True, timeout=timeout, env=process_env
+            argv,
+            cwd=cwd,
+            capture_output=True,
+            timeout=timeout,
+            env=process_env,
         )
         return result.returncode, result.stdout, result.stderr
-    except subprocess.TimeoutExpired:
-        return -1, "", "TIMEOUT"
-    except Exception as e:
-        return -1, "", str(e)
+    except subprocess.TimeoutExpired as exc:
+        return -1, exc.stdout or b"", (exc.stderr or b"") + b"TIMEOUT"
+    except KeyboardInterrupt:
+        return -2, b"", b"INTERRUPTED"
+    except Exception as exc:
+        return -3, b"", str(exc).encode("utf-8", errors="replace")
 
 
-def get_git_sha(cwd: Path) -> str:
-    """Get current git SHA."""
-    code, out, _ = run_cmd(["git", "rev-parse", "HEAD"], cwd)
-    return out.strip() if code == 0 else "0" * 40
+def _classify(exit_code: int, expected: List[int]) -> str:
+    if exit_code == -2:
+        return "INTERRUPTED"
+    return classify_result(exit_code, expected)
 
 
-def get_branch(cwd: Path) -> str:
-    """Get current git branch."""
-    code, out, _ = run_cmd(["git", "rev-parse", "--abbrev-ref", "HEAD"], cwd)
-    return out.strip() if code == 0 else "unknown"
-
-
-def is_worktree_clean(cwd: Path) -> bool:
-    """Check if worktree is clean."""
-    code, out, _ = run_cmd(["git", "status", "--porcelain"], cwd)
-    return code == 0 and len(out.strip()) == 0
-
-
-def compute_file_hash(filepath: Path) -> str:
-    """Compute SHA256 hash of a file."""
-    hasher = hashlib.sha256()
-    with open(filepath, "rb") as f:
-        for chunk in iter(lambda: f.read(8192), b""):
-            hasher.update(chunk)
-    return hasher.hexdigest()
-
-
-def compute_output_hash(stdout: bytes, stderr: bytes) -> str:
-    """Compute SHA256 of combined output."""
-    hasher = hashlib.sha256()
-    hasher.update(stdout)
-    hasher.update(stderr)
-    return hasher.hexdigest()
-
-
-def classify_result(exit_code: int, expected: List[int]) -> str:
-    """Classify execution result."""
-    if exit_code == -1:
-        return "TIMEOUT"
-    elif exit_code in expected:
-        return "SUCCESS"
-    else:
-        return "FAILURE"
-
-
-def get_environment(cwd: Path) -> Dict[str, Any]:
-    """Capture environment snapshot."""
-    git_sha = get_git_sha(cwd)
-    return {
-        "os": f"{os.name} {os.uname().sysname if hasattr(os, 'uname') else 'windows'}",
-        "python": f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}",
-        "uv": get_uv_version(),
-        "git_sha": git_sha,
-    }
-
-
-def get_uv_version() -> str:
-    """Get uv version."""
-    code, out, _ = run_cmd(["uv", "--version"])
-    return out.replace("uv ", "").strip() if code == 0 else "unknown"
-
-
-def execute_command(
+def _execute_command(
     name: str,
-    command: List[str],
+    spec: Dict[str, Any],
     cwd: Path,
-    expected: List[int],
-    timeout: int,
     receipts_dir: Path,
     logs_dir: Path,
+    receipt_environment: Dict[str, str],
 ) -> Dict[str, Any]:
-    """Execute a command and generate receipt with logs."""
-    command_id = name.replace(" ", "_").lower().replace("-", "_")
+    command_id = _command_id(name)
+    shell = spec.get("shell", "process")
+    command = spec.get("argv", spec.get("command"))
+    expected = spec.get("expected_exit_codes", [0])
+    timeout = spec.get("timeout", 300)
 
-    print(f"\nExecuting: {name} -> {' '.join(command)}")
+    if shell not in {"process", "pwsh"}:
+        raise ValueError(f"{name}: unsupported shell {shell!r}")
+    if not isinstance(command, list) or not command or not all(
+        isinstance(item, str) and item for item in command
+    ):
+        raise ValueError(f"{name}: argv must be a non-empty string array")
+    if not isinstance(expected, list) or not expected or not all(
+        isinstance(code, int) for code in expected
+    ):
+        raise ValueError(f"{name}: expected_exit_codes must be a non-empty int array")
+    if not isinstance(timeout, int) or timeout <= 0:
+        raise ValueError(f"{name}: timeout must be a positive integer")
 
-    started_at = datetime.utcnow()
-    exit_code, stdout, stderr = run_cmd(command, cwd=cwd, timeout=timeout)
-    finished_at = datetime.utcnow()
-    duration_ms = (finished_at - started_at).total_seconds() * 1000
+    argv = command
+    if shell == "pwsh":
+        argv = ["pwsh", "-NoProfile", "-NonInteractive", "-Command", *command]
 
-    environment = get_environment(cwd)
+    print(f"Executing: {name} -> {redact(' '.join(argv))}")
+    started_at = _utc_now()
+    exit_code, stdout, stderr = _run_process(argv, cwd, timeout)
+    finished_at = _utc_now()
 
-    # Redact and persist logs
-    stdout_text = redact(stdout)
-    stderr_text = redact(stderr)
+    persisted_stdout = redact_bytes(stdout)
+    persisted_stderr = redact_bytes(stderr)
+    stdout_path = logs_dir / f"{command_id}.stdout.log"
+    stderr_path = logs_dir / f"{command_id}.stderr.log"
+    stdout_path.write_bytes(persisted_stdout)
+    stderr_path.write_bytes(persisted_stderr)
 
-    logs_dir.mkdir(parents=True, exist_ok=True)
-    stdout_log = logs_dir / f"{command_id}.stdout.log"
-    stderr_log = logs_dir / f"{command_id}.stderr.log"
-    stdout_log.write_text(stdout_text, encoding="utf-8")
-    stderr_log.write_text(stderr_text, encoding="utf-8")
-
-    # Generate receipt
+    stdout_text = persisted_stdout.decode("utf-8")
+    stderr_text = persisted_stderr.decode("utf-8")
     receipt = {
         "command_id": command_id,
-        "command": redact(" ".join(command)),
-        "cwd": str(cwd.absolute()),
-        "started_at": started_at.isoformat() + "Z",
-        "finished_at": finished_at.isoformat() + "Z",
-        "duration_ms": int(duration_ms),
+        "command": redact(" ".join(argv)),
+        "cwd": str(cwd),
+        "started_at": _timestamp(started_at),
+        "finished_at": _timestamp(finished_at),
+        "duration_ms": max(
+            0, int((finished_at - started_at).total_seconds() * 1000)
+        ),
         "exit_code": exit_code,
         "stdout_tail": stdout_text[-500:],
         "stderr_tail": stderr_text[-500:],
-        "environment": environment,
+        "environment": receipt_environment,
         "expected_exit_codes": expected,
-        "result": classify_result(exit_code, expected),
-        "output_sha256": compute_output_hash(stdout.encode(), stderr.encode()),
+        "result": _classify(exit_code, expected),
+        "stdout_sha256": _sha256(persisted_stdout),
+        "stderr_sha256": _sha256(persisted_stderr),
+        "output_sha256": _sha256(persisted_stdout + persisted_stderr),
         "log_paths": {
             "stdout_log": f"logs/{command_id}.stdout.log",
             "stderr_log": f"logs/{command_id}.stderr.log",
         },
     }
-
-    # Save receipt
-    receipts_dir.mkdir(parents=True, exist_ok=True)
     receipt_path = receipts_dir / f"{command_id}.json"
-    with open(receipt_path, "w") as f:
-        json.dump(receipt, f, indent=2)
+    receipt_path.write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")
 
-    print(f"  exit_code: {exit_code}, duration_ms: {int(duration_ms)}, result: {receipt['result']}")
-    print(f"  Receipt: {receipt_path}")
-    print(f"  Logs: {stdout_log}, {stderr_log}")
-
+    success = exit_code in expected
+    print(
+        f"  exit_code={exit_code} result={receipt['result']} "
+        f"duration_ms={receipt['duration_ms']}"
+    )
     return {
         "receipt": receipt,
-        "name": name,
+        "success": success,
         "exit_code": exit_code,
-        "duration_ms": int(duration_ms),
-        "success": exit_code in expected,
+        "duration_ms": receipt["duration_ms"],
     }
+
+
+def _load_commands(path: Path) -> Dict[str, Dict[str, Any]]:
+    if path.suffix.lower() in {".yaml", ".yml"}:
+        import yaml
+
+        data = yaml.safe_load(path.read_text(encoding="utf-8"))
+    else:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    commands = data.get("commands") if isinstance(data, dict) else None
+    if not isinstance(commands, dict) or not commands:
+        raise ValueError("commands file must contain a non-empty commands mapping")
+    selected = {
+        name: spec
+        for name, spec in commands.items()
+        if isinstance(spec, dict) and spec.get("required", True)
+    }
+    if not selected:
+        raise ValueError("commands file contains no required commands")
+    command_ids = [_command_id(name) for name in selected]
+    if len(command_ids) != len(set(command_ids)):
+        raise ValueError("command names produce duplicate command_id values")
+    return selected
+
+
+def _capture_environment(cwd: Path) -> Dict[str, Any]:
+    return {
+        "git": get_git_info(cwd),
+        "runtime": get_runtime_info(),
+        "tools": get_tool_versions(),
+    }
+
+
+def _artifact_hashes(staging_dir: Path) -> Dict[str, str]:
+    hashes: Dict[str, str] = {}
+    for path in sorted(staging_dir.rglob("*")):
+        if path.is_file() and path.name != "evidence_bundle.json":
+            relative = path.relative_to(staging_dir).as_posix()
+            hashes[relative] = _file_sha256(path)
+    return hashes
+
+
+def _publish(
+    staging_dir: Path,
+    output_root: Path,
+    run_id: str,
+    verdict: str,
+    verified_sha: str,
+) -> Path:
+    category = "runs" if verdict == "PASS" else "quarantine"
+    destination = output_root / category / run_id
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    if destination.exists():
+        raise FileExistsError(f"Immutable destination already exists: {destination}")
+
+    # Path.replace is an atomic directory rename on the same filesystem.
+    staging_dir.replace(destination)
+
+    if verdict == "PASS":
+        pointer = {
+            "protocol_version": "1.0.0",
+            "run_id": run_id,
+            "bundle": f"runs/{run_id}/evidence_bundle.json",
+            "verified_sha": verified_sha,
+            "published_at": _timestamp(_utc_now()),
+        }
+        pointer_tmp = output_root / f".latest-{uuid.uuid4().hex}.json"
+        pointer_tmp.write_text(
+            json.dumps(pointer, indent=2) + "\n", encoding="utf-8"
+        )
+        os.replace(pointer_tmp, output_root / "latest.json")
+    return destination
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Generate Phase 7 evidence bundle")
-    parser.add_argument("--commands-file", required=True, help="YAML/JSON file with command specs")
-    parser.add_argument("--output-dir", required=True, help="Final output directory (atomic publish)")
-    parser.add_argument("--cwd", default=".", help="Working directory")
-    parser.add_argument("--staging-base", default=".tmp/phase7-evidence", help="Staging base directory")
-    parser.add_argument("--validate", action="store_true", help="Validate bundle after generation")
-
+    parser.add_argument("--commands-file", required=True)
+    parser.add_argument(
+        "--output-dir",
+        required=True,
+        help="Authoritative root containing runs/, quarantine/, and latest.json",
+    )
+    parser.add_argument("--cwd", default=".")
+    parser.add_argument(
+        "--staging-base",
+        help="Staging parent; defaults to <output-dir>/.staging on the same filesystem",
+    )
+    parser.add_argument(
+        "--validate",
+        action="store_true",
+        help="Deprecated compatibility flag; validation is always mandatory",
+    )
+    parser.add_argument("--run-id", help="Deterministic run id for automation/tests")
     args = parser.parse_args()
 
     cwd = Path(args.cwd).resolve()
-    if not cwd.exists():
+    commands_path = Path(args.commands_file).resolve()
+    output_root = Path(args.output_dir).resolve()
+    if not cwd.is_dir():
         print(f"ERROR: Working directory does not exist: {cwd}", file=sys.stderr)
         return 1
-
-    # Parse commands file
-    commands_path = Path(args.commands_file)
-    if not commands_path.exists():
+    if not commands_path.is_file():
         print(f"ERROR: Commands file not found: {commands_path}", file=sys.stderr)
         return 1
 
-    if commands_path.suffix in (".yaml", ".yml"):
-        import yaml
-        with open(commands_path) as f:
-            commands_data = yaml.safe_load(f)
-    else:
-        with open(commands_path) as f:
-            commands_data = json.load(f)
-
-    commands = commands_data.get("commands", {})
-    if not commands:
-        print("ERROR: No commands specified", file=sys.stderr)
+    run_id = args.run_id or (
+        _utc_now().strftime("%Y%m%dT%H%M%SZ") + "-" + uuid.uuid4().hex[:8]
+    )
+    if not RUN_ID_PATTERN.fullmatch(run_id):
+        print(f"ERROR: Invalid run id: {run_id}", file=sys.stderr)
         return 1
 
-    # Create staging directory
-    run_id = datetime.utcnow().strftime("%Y%m%dT%H%M%SZ") + "-" + str(uuid.uuid4())[:8]
-    staging_dir = Path(args.staging_base) / run_id
-    staging_dir.mkdir(parents=True, exist_ok=True)
+    output_root.mkdir(parents=True, exist_ok=True)
+    staging_base = (
+        Path(args.staging_base).resolve()
+        if args.staging_base
+        else output_root / ".staging"
+    )
+    staging_base.mkdir(parents=True, exist_ok=True)
+    staging_dir = staging_base / run_id
+    if staging_dir.exists():
+        print(f"ERROR: Staging destination already exists: {staging_dir}", file=sys.stderr)
+        return 1
+    staging_dir.mkdir()
 
-    output_dir = Path(args.output_dir)
-    output_dir.parent.mkdir(parents=True, exist_ok=True)
-
+    published = False
     try:
-        print(f"Staging directory: {staging_dir}")
-        print(f"Output directory: {output_dir}")
-
-        # Capture environment at start
-        git_sha = get_git_sha(cwd)
-        branch = get_branch(cwd)
-        worktree_clean = is_worktree_clean(cwd)
-
-        receipts = []
-        results = {}
-        failures = []
-        warnings = []
+        commands = _load_commands(commands_path)
+        environment = _capture_environment(cwd)
+        git = environment["git"]
+        source_sha = git.get("source_sha", "")
+        verified_sha = git.get("verified_sha", "")
 
         receipts_dir = staging_dir / "receipts"
         logs_dir = staging_dir / "logs"
+        receipts_dir.mkdir()
+        logs_dir.mkdir()
+        receipt_environment = {
+            "os": environment["runtime"].get("os", "unknown"),
+            "python": environment["runtime"].get("python", "unknown"),
+            "uv": environment["runtime"].get("uv") or "unknown",
+            "git_sha": verified_sha,
+        }
 
+        receipts: List[Dict[str, Any]] = []
+        results: Dict[str, Any] = {}
+        failures: List[Dict[str, str]] = []
         for name, spec in commands.items():
-            command = spec["command"]
-            expected = spec.get("expected_exit_codes", [0])
-            timeout = spec.get("timeout", 300)
-
-            result = execute_command(
-                name=name,
-                command=command,
-                cwd=cwd,
-                expected=expected,
-                timeout=timeout,
-                receipts_dir=receipts_dir,
-                logs_dir=logs_dir,
+            result = _execute_command(
+                name,
+                spec,
+                cwd,
+                receipts_dir,
+                logs_dir,
+                receipt_environment,
             )
-
             receipts.append(result["receipt"])
             results[name] = {
                 "exit_code": result["exit_code"],
                 "duration_ms": result["duration_ms"],
                 "success": result["success"],
             }
-
             if not result["success"]:
-                failures.append({
-                    "check": name,
-                    "message": f"Command failed with exit code {result['exit_code']}, expected {expected}",
-                    "severity": "HIGH",
-                })
-                warnings.append({
-                    "check": name,
-                    "message": f"Command {name} failed but continuing",
-                    "severity": "LOW",
-                    "accepted": True,
-                    "rationale": "Some commands may fail in partial verification",
-                })
+                failures.append(
+                    {
+                        "check": name,
+                        "message": (
+                            f"Command exited {result['exit_code']}; expected "
+                            f"{spec.get('expected_exit_codes', [0])}"
+                        ),
+                        "severity": "HIGH",
+                    }
+                )
 
-            print(f"  exit_code: {result['exit_code']}, duration_ms: {result['duration_ms']}, result: {result['receipt']['result']}")
-
-        # Generate artifact hashes for all JSON files in staging
-        artifact_hashes = {}
-        for json_file in staging_dir.rglob("*.json"):
-            rel_path = json_file.relative_to(staging_dir)
-            artifact_hashes[str(rel_path)] = compute_file_hash(json_file)
-
-        # Determine verdict
-        if failures:
-            verdict = "FAIL"
-        elif not worktree_clean:
-            verdict = "BLOCKED"
-        else:
-            verdict = "PASS"
-
-        # Generate final bundle
+        worktree_clean = bool(git.get("worktree_clean"))
+        verdict = "FAIL" if failures else ("PASS" if worktree_clean else "BLOCKED")
         bundle = {
+            "artifact_type": "evidence_bundle",
             "protocol_version": "1.0.0",
-            "generated_at": datetime.utcnow().isoformat() + "Z",
-            "source_sha": git_sha,
-            "verified_sha": git_sha,
-            "branch": branch,
+            "generated_at": _timestamp(_utc_now()),
+            "source_sha": source_sha,
+            "verified_sha": verified_sha,
+            "branch": git.get("branch") or "unknown",
             "worktree_clean": worktree_clean,
+            "environment": environment,
             "commands": receipts,
             "results": results,
             "failures": failures,
-            "warnings": warnings,
-            "artifact_hashes": artifact_hashes,
+            "warnings": [],
+            "artifact_hashes": _artifact_hashes(staging_dir),
             "verdict": verdict,
         }
-
-        # Save bundle
         bundle_path = staging_dir / "evidence_bundle.json"
-        with open(bundle_path, "w") as f:
-            json.dump(bundle, f, indent=2)
+        bundle_path.write_text(
+            json.dumps(bundle, indent=2) + "\n", encoding="utf-8"
+        )
 
-        # Validate if requested
-        if args.validate:
-            print("\nValidating bundle...")
-            # Run validator on the bundle
-            validate_cmd = [
-                sys.executable, "scripts/validate_artifact_schema.py",
-                str(bundle_path),
-                "--verify-hashes",
-                "--fail-on-warning",
-            ]
-            code, out, err = run_cmd(validate_cmd, cwd=cwd)
-            if code != 0:
-                print(f"VALIDATION FAILED:\n{out}\n{err}", file=sys.stderr)
-                return 1
-            print("Bundle validation PASSED")
+        validation_errors, validation_warnings = validate_evidence_bundle(bundle_path)
+        if validation_errors or validation_warnings:
+            for error in validation_errors:
+                print(f"VALIDATION ERROR: {error}", file=sys.stderr)
+            for warning in validation_warnings:
+                print(f"VALIDATION WARNING: {warning}", file=sys.stderr)
+            print("ERROR: Invalid evidence was not published", file=sys.stderr)
+            return 1
 
-        # Atomic publish: copy staging to output
-        if output_dir.exists():
-            shutil.rmtree(output_dir)
-        shutil.copytree(staging_dir, output_dir)
-
-        print(f"\n{'='*60}")
-        print(f"Evidence bundle generated at: {output_dir}")
-        print(f"Run ID: {run_id}")
+        destination = _publish(
+            staging_dir,
+            output_root,
+            run_id,
+            verdict,
+            verified_sha,
+        )
+        published = True
+        print(f"Evidence published: {destination}")
         print(f"Verdict: {verdict}")
-        print(f"Commands executed: {len(receipts)}")
-        print(f"Failures: {len(failures)}")
-        print(f"Worktree clean: {worktree_clean}")
-        print(f"Git SHA: {git_sha}")
-        print(f"{'='*60}")
-
-        return 0 if verdict != "FAIL" else 1
-
+        if verdict == "PASS":
+            print(f"Authoritative pointer: {output_root / 'latest.json'}")
+            return 0
+        if verdict == "BLOCKED":
+            print("Dirty worktree: run quarantined; latest.json unchanged")
+            return 2
+        print("Failed command: run quarantined; latest.json unchanged")
+        return 1
+    except (OSError, ValueError, json.JSONDecodeError) as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 1
     finally:
-        # Cleanup staging
-        if staging_dir.exists():
+        if not published and staging_dir.exists():
             shutil.rmtree(staging_dir)
 
 

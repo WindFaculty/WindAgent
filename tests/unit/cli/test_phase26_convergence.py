@@ -48,21 +48,25 @@ def test_cli_run_task_and_task_list_json(capsys):
     res_list = main(["task", "list", "--json"])
     assert res_list == 0
     list_out = json.loads(capsys.readouterr().out)
-    assert isinstance(list_out, list)
-    assert len(list_out) >= 1
+    assert "tasks" in list_out
+    assert "data_source" in list_out
+    assert isinstance(list_out["tasks"], list)
+    assert len(list_out["tasks"]) >= 1
 
 
 def test_cli_providers_tools_and_eval_json(capsys):
     """Verify CLI providers, tools, and eval subcommands in JSON mode."""
-    main(["providers", "--json"])
+    main(["providers", "--json", "--demo"])
     provs = json.loads(capsys.readouterr().out)
-    assert any(p["provider"] == "openai" for p in provs)
+    assert "providers" in provs
+    assert any(p["provider"] == "openai" for p in provs["providers"])
 
-    main(["tools", "--json"])
+    main(["tools", "--json", "--demo"])
     tools = json.loads(capsys.readouterr().out)
-    assert any(t["name"] == "read_file" for t in tools)
+    assert "tools" in tools
+    assert any(t["name"] == "read_file" for t in tools["tools"])
 
-    main(["eval", "--suite", "all", "--json"])
+    main(["eval", "--suite", "all", "--json", "--demo"])
     eval_res = json.loads(capsys.readouterr().out)
     assert eval_res["verdict"] in ("EVAL PASSED", "EVAL_PASSED")
 
