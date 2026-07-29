@@ -141,7 +141,7 @@ def generate_receipt(
 ) -> Dict[str, Any]:
     """Generate canonical command receipt."""
     command_id = name.replace(" ", "_").lower().replace("-", "_")
-    
+
     stdout_text = redact(stdout.decode("utf-8", errors="replace"))
     stderr_text = redact(stderr.decode("utf-8", errors="replace"))
     return {
@@ -161,22 +161,48 @@ def generate_receipt(
     }
 
 
+def persist_logs(
+    output_path: Path,
+    command_id: str,
+    stdout: bytes,
+    stderr: bytes,
+) -> Dict[str, str]:
+    """Persist redacted stdout/stderr logs alongside receipt.
+    Returns dict with log file paths."""
+    logs_dir = output_path.parent / "logs"
+    logs_dir.mkdir(parents=True, exist_ok=True)
+
+    stdout_text = redact(stdout.decode("utf-8", errors="replace"))
+    stderr_text = redact(stderr.decode("utf-8", errors="replace"))
+
+    stdout_path = logs_dir / f"{command_id}.stdout.log"
+    stderr_path = logs_dir / f"{command_id}.stderr.log"
+
+    stdout_path.write_text(stdout_text, encoding="utf-8")
+    stderr_path.write_text(stderr_text, encoding="utf-8")
+
+    return {
+        "stdout_log": str(stdout_path.relative_to(output_path.parent.parent)),
+        "stderr_log": str(stderr_path.relative_to(output_path.parent.parent)),
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Execute command and generate canonical receipt",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python scripts/verification/run_command_receipt.py \\
-    --name full_pytest \\
-    --output receipts/full_pytest.json \\
+  python scripts/verification/run_command_receipt.py \
+    --name full_pytest \
+    --output receipts/full_pytest.json \
     -- uv run pytest -q
 
-  python scripts/verification/run_command_receipt.py \\
-    --name arch_check \\
-    --cwd . \\
-    --output receipts/arch_check.json \\
-    --timeout 60 \\
+  python scripts/verification/run_command_receipt.py \
+    --name arch_check \
+    --cwd . \
+    --output receipts/arch_check.json \
+    --timeout 60 \
     -- uv run python scripts/check_architecture_imports.py
 """
     )
@@ -187,21 +213,21 @@ Examples:
     parser.add_argument("--timeout", type=int, help="Command timeout in seconds")
     parser.add_argument("--env", action="append", help="Environment variable KEY=VALUE")
     parser.add_argument("command", nargs=argparse.REMAINDER, help="Command to execute")
-    
+
     args = parser.parse_args()
-    
+
     if not args.command:
         print("ERROR: No command specified", file=sys.stderr)
         return 1
-    
+
     if args.command[0] == "--":
         args.command = args.command[1:]
-    
+
     cwd = Path(args.cwd).resolve()
     if not cwd.exists():
         print(f"ERROR: Working directory does not exist: {cwd}", file=sys.stderr)
         return 1
-    
+
     # Parse env vars
     env = {}
     if args.env:
@@ -209,30 +235,30 @@ Examples:
             if "=" in e:
                 k, v = e.split("=", 1)
                 env[k] = v
-    
+
     # Prepare output
     output_path = Path(args.output)
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    
+
     print(f"Executing: {' '.join(args.command)}")
     print(f"Working directory: {cwd}")
     print(f"Expected exit codes: {args.expected_exit_codes}")
-    
+
     # Capture environment
     environment = get_environment(cwd)
-    
+
     # Execute
     started_at = datetime.utcnow()
     exit_code, stdout, stderr, duration_ms = run_command(
         args.command, cwd, env, args.timeout
     )
     finished_at = datetime.utcnow()
-    
+
     print(f"Exit code: {exit_code}")
     print(f"Duration: {duration_ms:.0f}ms")
     print(f"Stdout: {len(stdout)} bytes")
     print(f"Stderr: {len(stderr)} bytes")
-    
+
     # Generate receipt
     receipt = generate_receipt(
         name=args.name,
@@ -247,15 +273,20 @@ Examples:
         expected_exit_codes=args.expected_exit_codes,
         environment=environment,
     )
-    
+
+    # Persist logs
+    log_paths = persist_logs(output_path, receipt["command_id"], stdout, stderr)
+    receipt["log_paths"] = log_paths
+
     # Write receipt
     with open(output_path, "w") as f:
         json.dump(receipt, f, indent=2)
-    
+
     print(f"Receipt written to: {output_path}")
+    print(f"Logs: {log_paths}")
     print(f"Result: {receipt['result']}")
     print(f"Output SHA256: {receipt['output_sha256']}")
-    
+
     return 0 if receipt["result"] == "SUCCESS" else 1
 
 

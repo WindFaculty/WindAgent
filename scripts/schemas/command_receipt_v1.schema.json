@@ -96,6 +96,15 @@
       "type": "string",
       "pattern": "^[a-f0-9]{64}$",
       "description": "SHA256 hash of full command output (stdout+stderr)"
+    },
+    "log_paths": {
+      "type": "object",
+      "description": "Paths to persisted stdout/stderr log files",
+      "properties": {
+        "stdout_log": { "type": "string" },
+        "stderr_log": { "type": "string" }
+      },
+      "additionalProperties": false
     }
   },
   "additionalProperties": false

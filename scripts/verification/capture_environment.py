@@ -29,14 +29,14 @@ def get_git_info(cwd: Path) -> Dict[str, Any]:
     """Get git repository information."""
     source_sha = run_cmd(["git", "rev-parse", "HEAD"], cwd)
     branch = run_cmd(["git", "rev-parse", "--abbrev-ref", "HEAD"], cwd)
-    
+
     # Check worktree clean
     status = run_cmd(["git", "status", "--porcelain"], cwd)
     worktree_clean = len(status) == 0
-    
+
     # verified_sha is typically the same as source_sha unless specified
     verified_sha = source_sha
-    
+
     return {
         "source_sha": source_sha,
         "verified_sha": verified_sha,
@@ -73,36 +73,36 @@ def main() -> int:
     parser.add_argument("--cwd", default=".", help="Working directory")
     parser.add_argument("--output", "-o", help="Output JSON file")
     parser.add_argument("--verified-sha", help="Override verified SHA")
-    
+
     args = parser.parse_args()
-    
+
     cwd = Path(args.cwd).resolve()
     if not cwd.exists():
         print(f"ERROR: Working directory does not exist: {cwd}", file=sys.stderr)
         return 1
-    
+
     git_info = get_git_info(cwd)
-    
+
     if args.verified_sha:
         git_info["verified_sha"] = args.verified_sha
-    
+
     runtime_info = get_runtime_info()
     tool_versions = get_tool_versions()
-    
+
     environment = {
         "git": git_info,
         "runtime": runtime_info,
         "tools": tool_versions,
     }
-    
+
     output = json.dumps(environment, indent=2)
-    
+
     if args.output:
         Path(args.output).write_text(output)
         print(f"Environment written to {args.output}")
     else:
         print(output)
-    
+
     return 0
 
 
