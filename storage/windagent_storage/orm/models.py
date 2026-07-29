@@ -27,8 +27,8 @@ class SessionORM(BaseORM):
     status = Column(String(32), nullable=False, default="idle")
     agent_id = Column(String(64), nullable=True)
     workspace_root = Column(String(255), nullable=True)
-    created_at = Column(DateTime, nullable=False, default=default_utc_now)
-    updated_at = Column(DateTime, nullable=False, default=default_utc_now)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
+    updated_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
     last_event_sequence = Column(Integer, nullable=False, default=0)
     metadata_json = Column(Text, nullable=True)
 
@@ -41,7 +41,7 @@ class TaskORM(BaseORM):
     session_id = Column(String(36), ForeignKey("chat_sessions.id"), nullable=False)
     status = Column(String(32), nullable=False, default="pending")
     tags_json = Column(Text, nullable=True)
-    created_at = Column(DateTime, nullable=False, default=default_utc_now)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
 
 
 class WorkflowRunORM(BaseORM):
@@ -51,7 +51,7 @@ class WorkflowRunORM(BaseORM):
     workflow_id = Column(String(36), nullable=False)
     session_id = Column(String(36), ForeignKey("chat_sessions.id"), nullable=False)
     status = Column(String(32), nullable=False, default="pending")
-    created_at = Column(DateTime, nullable=False, default=default_utc_now)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
 
     steps = relationship("WorkflowStepORM", back_populates="run", cascade="all, delete-orphan", lazy="selectin")
 
@@ -80,7 +80,7 @@ class ExecutionEventORM(BaseORM):
     event_type = Column(String(64), nullable=False)
     data_json = Column(Text, nullable=False)
     event_seq = Column(Integer, nullable=False, default=0)
-    created_at = Column(DateTime, nullable=False, default=default_utc_now)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
 
 
 class OutboxRecordORM(BaseORM):
@@ -94,16 +94,16 @@ class OutboxRecordORM(BaseORM):
     payload_json = Column(Text, nullable=False)
     schema_version = Column(Integer, nullable=False, default=1)
     sequence_number = Column(Integer, nullable=False, default=0)
-    created_at = Column(DateTime, nullable=False, default=default_utc_now)
-    available_at = Column(DateTime, nullable=False, default=default_utc_now)
-    published_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
+    available_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
+    published_at = Column(DateTime(timezone=True), nullable=True)
     attempt_count = Column(Integer, nullable=False, default=0)
     last_error = Column(Text, nullable=True)
     status = Column(String(32), nullable=False, default="pending")  # pending, publishing, published, dead_letter
     deduplication_key = Column(String(128), nullable=True, unique=True)
     claimed_by = Column(String(64), nullable=True)
     claim_token = Column(String(64), nullable=True)
-    claim_expires_at = Column(DateTime, nullable=True)
+    claim_expires_at = Column(DateTime(timezone=True), nullable=True)
 
 
 class OutboxReplayAuditORM(BaseORM):
@@ -116,7 +116,7 @@ class OutboxReplayAuditORM(BaseORM):
     operator = Column(String(128), nullable=True)
     previous_status = Column(String(32), nullable=False)
     previous_attempt_count = Column(Integer, nullable=False, default=0)
-    created_at = Column(DateTime, nullable=False, default=default_utc_now)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
 
 
 class ArtifactRefORM(BaseORM):
@@ -127,7 +127,7 @@ class ArtifactRefORM(BaseORM):
     mime_type = Column(String(128), nullable=False)
     uri = Column(Text, nullable=False)
     size_bytes = Column(Integer, nullable=False, default=0)
-    created_at = Column(DateTime, nullable=False, default=default_utc_now)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
     metadata_json = Column(Text, nullable=True)
 
 
@@ -138,4 +138,4 @@ class ProviderConfigORM(BaseORM):
     provider_name = Column(String(64), nullable=False, unique=True)
     enabled = Column(Boolean, nullable=False, default=True)
     config_json = Column(Text, nullable=True)
-    updated_at = Column(DateTime, nullable=False, default=default_utc_now)
+    updated_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)

@@ -13,7 +13,17 @@ from windagent_core.domain.models import Task, Session, WorkflowRun, WorkflowSte
 from windagent_core.events.envelope import EventEnvelope
 from windagent_core.contracts import UnitOfWork, TaskRepository, SessionRepository, EventStore, OutboxWriter
 
-from windagent_storage.orm.models import BaseORM, TaskORM, SessionORM, WorkflowRunORM, WorkflowStepORM, ExecutionEventORM, ArtifactRefORM
+from windagent_storage.orm.models import (
+    ArtifactRefORM,
+    BaseORM,
+    ExecutionEventORM,
+    OutboxRecordORM,
+    ProviderConfigORM,
+    SessionORM,
+    TaskORM,
+    WorkflowRunORM,
+    WorkflowStepORM,
+)
 from windagent_storage.mappers.domain_orm import (
     orm_to_domain_session, domain_to_orm_session,
     orm_to_domain_task, domain_to_orm_task,
@@ -40,6 +50,25 @@ def test_session_orm_mapper_canonical_state():
     assert mapped_back.id == sid
     assert mapped_back.status == SessionStatus.RUNNING
     assert mapped_back.title == "Test Session"
+
+
+def test_orm_timestamps_preserve_utc_timezone():
+    """PostgreSQL must accept the UTC-aware datetimes emitted by the domain."""
+    timestamp_columns = (
+        SessionORM.created_at,
+        SessionORM.updated_at,
+        TaskORM.created_at,
+        WorkflowRunORM.created_at,
+        ExecutionEventORM.created_at,
+        OutboxRecordORM.created_at,
+        OutboxRecordORM.available_at,
+        OutboxRecordORM.published_at,
+        OutboxRecordORM.claim_expires_at,
+        ArtifactRefORM.created_at,
+        ProviderConfigORM.updated_at,
+    )
+
+    assert all(column.type.timezone for column in timestamp_columns)
 
 
 def test_task_orm_mapper_canonical_state():
