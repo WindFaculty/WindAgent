@@ -107,3 +107,8 @@ final-evidence-bundle/
 web-build/
 desktop-build/
 
+# agent-browser authentication/session state and generated social reports
+.agent-browser/
+*.agent-browser-state.json
+agent-browser-state*.json
+artifacts/social_research/

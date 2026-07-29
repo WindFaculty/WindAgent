@@ -23,6 +23,15 @@ from windagent_workflows.packs.refactor import RefactorWorkflowPack
 from windagent_workflows.packs.research import ResearchWorkflowPack
 from windagent_workflows.packs.scientific_eval import ScientificEvalWorkflowPack
 from windagent_workflows.packs.release import ReleaseWorkflowPack
+from windagent_workflows.social_research import (
+    ModelGatewayPort,
+    ModelRoute,
+    SocialResearchConfig,
+    SocialResearchError,
+    SocialResearchResult,
+    SocialResearchWorkflow,
+    SocialSourceSpec,
+)
 
 __version__ = PRODUCT_VERSION
 __all__ = [
@@ -34,4 +43,7 @@ __all__ = [
     "BugfixWorkflowPack", "CIFixWorkflowPack", "CodeReviewWorkflowPack",
     "FeatureWorkflowPack", "RefactorWorkflowPack", "ResearchWorkflowPack",
     "ScientificEvalWorkflowPack", "ReleaseWorkflowPack",
+    "ModelGatewayPort", "ModelRoute", "SocialResearchConfig",
+    "SocialResearchError", "SocialResearchResult", "SocialResearchWorkflow",
+    "SocialSourceSpec",
 ]

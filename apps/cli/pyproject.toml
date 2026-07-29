@@ -18,6 +18,9 @@ dependencies = [
     "windagent-skills",
 ]
 
+[project.scripts]
+windagent-social-report = "windagent_cli.social_report_cli:main"
+
 [tool.uv.sources]
 windagent-core = { workspace = true }
 windagent-orchestration = { workspace = true }
