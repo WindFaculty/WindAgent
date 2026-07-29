@@ -51,7 +51,7 @@ def test_cli_run_task_and_task_list_json(capsys):
     assert "tasks" in list_out
     assert "data_source" in list_out
     assert isinstance(list_out["tasks"], list)
-    assert len(list_out["tasks"]) >= 1
+    assert list_out["data_source"].upper() == "LIVE"
 
 
 def test_cli_providers_tools_and_eval_json(capsys):

@@ -23,7 +23,7 @@ class TestPhase7ApiComposition:
         """API composition should not import Worker runtime or Desktop services"""
         import os
         api_composition_path = os.path.join(
-            os.path.dirname(__file__).replace("tests\\unit", ""),
+            os.path.dirname(__file__).replace("tests\\unit", "").replace("tests/unit", ""),
             "apps", "api", "windagent_api", "composition.py"
         )
         
@@ -47,7 +47,7 @@ class TestPhase7ApiComposition:
         """API should compose only allowed services"""
         import os
         api_composition_path = os.path.join(
-            os.path.dirname(__file__).replace("tests\\unit", ""),
+            os.path.dirname(__file__).replace("tests\\unit", "").replace("tests/unit", ""),
             "apps", "api", "windagent_api", "composition.py"
         )
         
@@ -74,7 +74,7 @@ class TestPhase7ApiComposition:
         """API should NOT compose ExecutionRuntimeRegistry directly"""
         import os
         api_composition_path = os.path.join(
-            os.path.dirname(__file__).replace("tests\\unit", ""),
+            os.path.dirname(__file__).replace("tests\\unit", "").replace("tests/unit", ""),
             "apps", "api", "windagent_api", "composition.py"
         )
         
@@ -125,7 +125,7 @@ class TestPhase7WorkerComposition:
         """Worker composition should import all required services"""
         import os
         worker_composition_path = os.path.join(
-            os.path.dirname(__file__).replace("tests\\unit", ""),
+            os.path.dirname(__file__).replace("tests\\unit", "").replace("tests/unit", ""),
             "apps", "worker", "windagent_worker", "composition.py"
         )
         
@@ -151,7 +151,7 @@ class TestPhase7WorkerComposition:
         """Worker should NOT import API or Desktop components"""
         import os
         worker_composition_path = os.path.join(
-            os.path.dirname(__file__).replace("tests\\unit", ""),
+            os.path.dirname(__file__).replace("tests\\unit", "").replace("tests/unit", ""),
             "apps", "worker", "windagent_worker", "composition.py"
         )
         
@@ -204,7 +204,7 @@ class TestPhase7CliComposition:
         """CLI should have composition module"""
         import os
         cli_composition_path = os.path.join(
-            os.path.dirname(__file__).replace("tests\\unit", ""),
+            os.path.dirname(__file__).replace("tests\\unit", "").replace("tests/unit", ""),
             "apps", "cli", "windagent_cli", "composition.py"
         )
         assert os.path.exists(cli_composition_path)
@@ -213,7 +213,7 @@ class TestPhase7CliComposition:
         """CLI composition should have per-command composers"""
         import os
         cli_composition_path = os.path.join(
-            os.path.dirname(__file__).replace("tests\\unit", ""),
+            os.path.dirname(__file__).replace("tests\\unit", "").replace("tests/unit", ""),
             "apps", "cli", "windagent_cli", "composition.py"
         )
         
@@ -232,7 +232,7 @@ class TestPhase7CliComposition:
         """CLI should NOT have a global god container"""
         import os
         cli_composition_path = os.path.join(
-            os.path.dirname(__file__).replace("tests\\unit", ""),
+            os.path.dirname(__file__).replace("tests\\unit", "").replace("tests/unit", ""),
             "apps", "cli", "windagent_cli", "composition.py"
         )
         
@@ -249,7 +249,7 @@ class TestPhase7CliComposition:
         import ast
         import os
         cli_main_path = os.path.join(
-            os.path.dirname(__file__).replace("tests\\unit", ""),
+            os.path.dirname(__file__).replace("tests\\unit", "").replace("tests/unit", ""),
             "apps", "cli", "windagent_cli", "main.py"
         )
         
@@ -278,7 +278,7 @@ class TestPhase7DesktopSupervisor:
         """Desktop should have sidecar manager"""
         import os
         sidecar_path = os.path.join(
-            os.path.dirname(__file__).replace("tests\\unit", ""),
+            os.path.dirname(__file__).replace("tests\\unit", "").replace("tests/unit", ""),
             "apps", "desktop", "sidecar_manager.py"
         )
         assert os.path.exists(sidecar_path)
@@ -287,7 +287,7 @@ class TestPhase7DesktopSupervisor:
         """Desktop supervisor should NOT compose services directly"""
         import os
         sidecar_path = os.path.join(
-            os.path.dirname(__file__).replace("tests\\unit", ""),
+            os.path.dirname(__file__).replace("tests\\unit", "").replace("tests/unit", ""),
             "apps", "desktop", "sidecar_manager.py"
         )
         
@@ -309,7 +309,7 @@ class TestPhase7DesktopSupervisor:
         """Desktop supervisor should have lifecycle management"""
         import os
         sidecar_path = os.path.join(
-            os.path.dirname(__file__).replace("tests\\unit", ""),
+            os.path.dirname(__file__).replace("tests\\unit", "").replace("tests/unit", ""),
             "apps", "desktop", "sidecar_manager.py"
         )
         
@@ -327,7 +327,7 @@ class TestPhase7DesktopSupervisor:
         """Desktop supervisor should have restart policy"""
         import os
         sidecar_path = os.path.join(
-            os.path.dirname(__file__).replace("tests\\unit", ""),
+            os.path.dirname(__file__).replace("tests\\unit", "").replace("tests/unit", ""),
             "apps", "desktop", "sidecar_manager.py"
         )
         
@@ -347,7 +347,7 @@ class TestPhase7NoGodContainer:
         """API should not have a global container exported"""
         import os
         api_init_path = os.path.join(
-            os.path.dirname(__file__).replace("tests\\unit", ""),
+            os.path.dirname(__file__).replace("tests\\unit", "").replace("tests/unit", ""),
             "apps", "api", "windagent_api", "__init__.py"
         )
         
@@ -363,7 +363,7 @@ class TestPhase7NoGodContainer:
         """Worker should not have a global container exported"""
         import os
         worker_init_path = os.path.join(
-            os.path.dirname(__file__).replace("tests\\unit", ""),
+            os.path.dirname(__file__).replace("tests\\unit", "").replace("tests/unit", ""),
             "apps", "worker", "windagent_worker", "__init__.py"
         )
         
@@ -381,7 +381,7 @@ class TestPhase7NoGodContainer:
         
         # Check API doesn't import from Worker
         api_composition_path = os.path.join(
-            os.path.dirname(__file__).replace("tests\\unit", ""),
+            os.path.dirname(__file__).replace("tests\\unit", "").replace("tests/unit", ""),
             "apps", "api", "windagent_api", "composition.py"
         )
         with open(api_composition_path, 'r') as f:
@@ -390,7 +390,7 @@ class TestPhase7NoGodContainer:
         
         # Check Worker doesn't import from API
         worker_composition_path = os.path.join(
-            os.path.dirname(__file__).replace("tests\\unit", ""),
+            os.path.dirname(__file__).replace("tests\\unit", "").replace("tests/unit", ""),
             "apps", "worker", "windagent_worker", "composition.py"
         )
         with open(worker_composition_path, 'r') as f:
@@ -399,7 +399,7 @@ class TestPhase7NoGodContainer:
         
         # Check Desktop doesn't import from API or Worker for service composition
         sidecar_path = os.path.join(
-            os.path.dirname(__file__).replace("tests\\unit", ""),
+            os.path.dirname(__file__).replace("tests\\unit", "").replace("tests/unit", ""),
             "apps", "desktop", "sidecar_manager.py"
         )
         with open(sidecar_path, 'r') as f:
@@ -416,7 +416,7 @@ class TestPhase7VersionMetadata:
         """API composition should have PHASE 7 marker"""
         import os
         api_composition_path = os.path.join(
-            os.path.dirname(__file__).replace("tests\\unit", ""),
+            os.path.dirname(__file__).replace("tests\\unit", "").replace("tests/unit", ""),
             "apps", "api", "windagent_api", "composition.py"
         )
         
@@ -429,7 +429,7 @@ class TestPhase7VersionMetadata:
         """Worker composition should have PHASE 7 marker"""
         import os
         worker_composition_path = os.path.join(
-            os.path.dirname(__file__).replace("tests\\unit", ""),
+            os.path.dirname(__file__).replace("tests\\unit", "").replace("tests/unit", ""),
             "apps", "worker", "windagent_worker", "composition.py"
         )
         
@@ -442,7 +442,7 @@ class TestPhase7VersionMetadata:
         """CLI composition should have PHASE 7 marker"""
         import os
         cli_composition_path = os.path.join(
-            os.path.dirname(__file__).replace("tests\\unit", ""),
+            os.path.dirname(__file__).replace("tests\\unit", "").replace("tests/unit", ""),
             "apps", "cli", "windagent_cli", "composition.py"
         )
         
@@ -455,7 +455,7 @@ class TestPhase7VersionMetadata:
         """Desktop supervisor should have PHASE 7 marker"""
         import os
         sidecar_path = os.path.join(
-            os.path.dirname(__file__).replace("tests\\unit", ""),
+            os.path.dirname(__file__).replace("tests\\unit", "").replace("tests/unit", ""),
             "apps", "desktop", "sidecar_manager.py"
         )
         

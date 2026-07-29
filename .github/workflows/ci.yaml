@@ -597,7 +597,7 @@ jobs:
             --cwd apps/web `
             --output artifacts/ci/web-test-windows/receipts/npm_ci.json `
             --timeout 600 `
-            -- npm ci
+            -- npm.cmd ci
 
       - name: Typecheck
         run: |
@@ -606,7 +606,7 @@ jobs:
             --cwd apps/web `
             --output artifacts/ci/web-test-windows/receipts/typecheck.json `
             --timeout 300 `
-            -- npm run typecheck
+            -- npm.cmd run typecheck
 
       - name: Unit tests
         run: |
@@ -615,7 +615,7 @@ jobs:
             --cwd apps/web `
             --output artifacts/ci/web-test-windows/receipts/tests.json `
             --timeout 600 `
-            -- npm test
+            -- npm.cmd test
 
       - name: Build
         run: |
@@ -624,7 +624,7 @@ jobs:
             --cwd apps/web `
             --output artifacts/ci/web-test-windows/receipts/build.json `
             --timeout 600 `
-            -- npm run build
+            -- npm.cmd run build
 
       - name: Capture environment
         if: always()
@@ -735,7 +735,7 @@ jobs:
             --cwd apps/desktop `
             --output artifacts/ci/desktop-test-windows/receipts/npm_ci.json `
             --timeout 600 `
-            -- npm ci
+            -- npm.cmd ci
 
       - name: Typecheck
         run: |
@@ -744,7 +744,7 @@ jobs:
             --cwd apps/desktop `
             --output artifacts/ci/desktop-test-windows/receipts/typecheck.json `
             --timeout 300 `
-            -- npx tsc --noEmit
+            -- npx.cmd tsc --noEmit
 
       - name: Unit tests
         run: |
@@ -753,7 +753,7 @@ jobs:
             --cwd apps/desktop `
             --output artifacts/ci/desktop-test-windows/receipts/tests.json `
             --timeout 600 `
-            -- npm test
+            -- npm.cmd test
 
       - name: Build
         run: |
@@ -762,7 +762,7 @@ jobs:
             --cwd apps/desktop `
             --output artifacts/ci/desktop-test-windows/receipts/build.json `
             --timeout 600 `
-            -- npm run build
+            -- npm.cmd run build
 
       - name: Capture environment
         if: always()

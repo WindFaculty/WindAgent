@@ -329,7 +329,7 @@ class TestPhase6NoProviderImportFromIntelligence:
         # Read the __init__.py file and check for intelligence imports
         import os
         providers_init_path = os.path.join(
-            os.path.dirname(__file__).replace("tests\\unit\\providers", ""),
+            os.path.dirname(__file__).replace("tests\\unit\\providers", "").replace("tests/unit/providers", ""),
             "providers", "windagent_providers", "__init__.py"
         )
         

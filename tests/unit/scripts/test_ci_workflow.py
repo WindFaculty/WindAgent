@@ -117,10 +117,10 @@ def test_frontend_jobs_install_test_typecheck_and_build():
         "desktop-test-windows",
     ):
         run_text = _run_text(jobs[name])
-        assert "npm ci" in run_text
-        assert "npm test" in run_text or "test:coverage" in run_text
+        assert "npm ci" in run_text or "npm.cmd ci" in run_text
+        assert "npm test" in run_text or "npm.cmd test" in run_text or "test:coverage" in run_text
         assert "typecheck" in run_text or "tsc --noEmit" in run_text
-        assert "npm run build" in run_text
+        assert "npm run build" in run_text or "npm.cmd run build" in run_text
 
 
 def test_finalizer_downloads_and_validates_job_receipts():
