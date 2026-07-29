@@ -1,0 +1,62 @@
+{
+  "protocol_version": "1.0.0",
+  "generated_at": "2026-07-29T14:47:54.752338+00:00",
+  "source_sha": "6dab084abd3d46cc9f0c9e7dcbb6e65254b83057",
+  "verified_sha": "6dab084abd3d46cc9f0c9e7dcbb6e65254b83057",
+  "branch": "fix/phase7-verification-integrity",
+  "worktree_clean": true,
+  "commands": [
+    {
+      "command_id": "finalize_phase7",
+      "command": "uv run python scripts/verification/finalize_phase7.py",
+      "cwd": ".",
+      "started_at": "2026-07-29T13:33:39.000Z",
+      "finished_at": "2026-07-29T13:33:39.500Z",
+      "duration_ms": 500,
+      "exit_code": 0,
+      "stdout_tail": "PHASE_7_VERDICT_EVALUATION\n",
+      "stderr_tail": "",
+      "environment": {
+        "os": "linux",
+        "python": "3.11.15",
+        "uv": "0.5.0",
+        "git_sha": "6dab084abd3d46cc9f0c9e7dcbb6e65254b83057"
+      },
+      "expected_exit_codes": [
+        0
+      ],
+      "result": "SUCCESS",
+      "stdout_sha256": "4b68e994e77372074e622ef7a8b417e2ff404a11f21eb791c137452d3a395232",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "output_sha256": "4b68e994e77372074e622ef7a8b417e2ff404a11f21eb791c137452d3a395232",
+      "log_paths": {
+        "stdout_log": "logs/finalize_phase7.stdout.log",
+        "stderr_log": "logs/finalize_phase7.stderr.log"
+      }
+    }
+  ],
+  "failures": [],
+  "warnings": [],
+  "artifact_hashes": {
+    "risk_register.md": "19e9d7afa1c3f9a7e60502c9c6735ef4fde1ef8cf69503da5403eec4b430d15c"
+  },
+  "verdict": "BLOCKED",
+  "manual_override": false,
+  "evidence_publish_sha": "2753539bcbdea45b975587ec351cb023b517ba0c",
+  "ci_verified": true,
+  "results": {
+    "verdict_name": "PHASE_7_FINAL_EVIDENCE_BLOCKED",
+    "gates": {
+      "artifact_protocol": true,
+      "version_authority": true,
+      "architecture_integrity": true,
+      "cli_truthfulness": true,
+      "python_matrix": true,
+      "frontend_matrix": true,
+      "database_matrix": true,
+      "negative_injections": true,
+      "ci_verified": true,
+      "branch_protection_verified": false
+    }
+  }
+}

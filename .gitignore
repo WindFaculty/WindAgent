@@ -101,3 +101,9 @@ ke_hoach_hoan_thien_phase_0_5.md
 # Never retain local scripts that embed third-party credentials.
 run_claude_cli_openrouter.ps1
 
+# Downloaded CI evidence and build artifacts
+*-evidence/
+final-evidence-bundle/
+web-build/
+desktop-build/
+
