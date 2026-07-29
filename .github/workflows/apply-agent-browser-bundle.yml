@@ -6,6 +6,12 @@ on:
       - feat/agent-browser-social-reporting
     paths:
       - ".github/workflows/apply-agent-browser-bundle.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/apply-agent-browser-bundle.yml"
+      - ".github/agent-browser-bundle/**"
 
 permissions:
   contents: write
