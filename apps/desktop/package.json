@@ -36,6 +36,7 @@
     "vitest": "^4.1.9"
   },
   "optionalDependencies": {
-    "@rolldown/binding-linux-x64-gnu": "^1.0.3"
+    "@rolldown/binding-linux-x64-gnu": "^1.0.3",
+    "@rollup/rollup-linux-x64-gnu": "^4.62.0"
   }
 }
