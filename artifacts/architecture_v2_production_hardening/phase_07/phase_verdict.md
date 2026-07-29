@@ -9,8 +9,8 @@ This document certifies that Phase 7 evidence, artifact schemas, CLI fail-closed
 
 ```yaml
 verified_sha: 6dab084abd3d46cc9f0c9e7dcbb6e65254b83057
-evidence_bundle_sha: 10e2260d5abae2660ddaa2d01becf65eedef1cbe
-attestation_sha: 9017f100f52c48c74b69188348352984550045e3
+evidence_bundle_sha: bd2f99ce63da33256881e15cbd380258bd5de789
+attestation_sha: ad7172ecbb86a5a43972649ae3c06891b25879b1
 branch: fix/phase7-verification-integrity
 implementation_status: complete
 verification_status: verified_remote_and_local
