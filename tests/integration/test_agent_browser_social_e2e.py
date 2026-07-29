@@ -138,3 +138,10 @@ async def test_real_agent_browser_collects_rendered_page_and_writes_report(tmp_p
     assert payload["sources"][0]["browser_backend"] == "vercel-labs/agent-browser"
     assert payload["sources"][0]["content_chars"] > 0
     assert payload["sources"][0]["content_sha256"]
+
+    evidence_dir = os.environ.get("WINDAGENT_E2E_EVIDENCE_DIR")
+    if evidence_dir:
+        destination = Path(evidence_dir)
+        destination.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(result.markdown_path, destination / Path(result.markdown_path).name)
+        shutil.copy2(result.json_path, destination / Path(result.json_path).name)
