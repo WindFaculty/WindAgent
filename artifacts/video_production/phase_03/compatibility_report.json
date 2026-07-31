@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "phase": 3,
-  "executed_at": "2026-07-31T17:25:03.479229+00:00",
+  "executed_at": "2026-07-31T17:25:50.343456+00:00",
   "fail_closed_unknown_major": true,
   "additive_fields_allowed_within_major": true,
   "round_trip_stable_hash": true,
