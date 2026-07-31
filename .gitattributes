@@ -1,0 +1,5 @@
+# Evidence hash/checksum files must be byte-stable so sha256 values recorded in
+# integrity manifests match on every platform (no autocrlf normalization).
+*.sha256        text eol=lf
+*.sha256sum     text eol=lf
+checksums.sha256 text eol=lf

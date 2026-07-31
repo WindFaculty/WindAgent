@@ -86,6 +86,7 @@ db_backups/
 
 # Local verification output and disposable test fixtures. CI uploads these as
 # workflow artifacts; they are never candidate source or committed evidence.
+.tmp/
 .pytest_tmp/
 apps/web/coverage/
 artifacts/ci/
