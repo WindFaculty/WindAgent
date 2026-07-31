@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "phase": 3,
-  "evaluated_at": "2026-07-31T16:58:22.812140+00:00",
+  "evaluated_at": "2026-07-31T16:59:23.694011+00:00",
   "checks": [
     {
       "name": "Architecture imports checker",
@@ -12,7 +12,7 @@
         "--json"
       ],
       "exit_code": 0,
-      "stdout_tail": "{\n  \"repository_root\": \"D:\\\\code_ca_nhan\\\\WindAgent\",\n  \"checks\": [\n    {\n      \"name\": \"import_boundaries\",\n      \"argv\": [\n        \"C:\\\\Users\\\\Admin\\\\AppData\\\\Local\\\\hermes\\\\hermes-agent\\\\venv\\\\Scripts\\\\python.exe\",\n        \"D:\\\\code_ca_nhan\\\\WindAgent\\\\scripts\\\\check_architecture_imports.py\",\n        \"--root\",\n        \"D:\\\\code_ca_nhan\\\\WindAgent\",\n        \"--json\"\n      ],\n      \"cwd\": \"D:\\\\code_ca_nhan\\\\WindAgent\",\n      \"executed\": true,\n      \"exit_code\": 0,\n      \"classification\": \"PASS\",\n      \"duration_ms\": 889,\n      \"stdout_tail\": \"\",\n      \"stderr_tail\": \"\"\n    },\n    {\n      \"name\": \"scaffold\",\n      \"argv\": [\n        \"C:\\\\Users\\\\Admin\\\\AppData\\\\Local\\\\hermes\\\\hermes-agent\\\\venv\\\\Scripts\\\\python.exe\",\n        \"D:\\\\code_ca_nhan\\\\WindAgent\\\\scripts\\\\scaffold_architecture_v2.py\",\n        \"--check\"\n      ],\n      \"cwd\": \"D:\\\\code_ca_nhan\\\\WindAgent\",\n      \"executed\": true,\n      \"exit_code\": 0,\n      \"classification\": \"PASS\",\n      \"duration_ms\": 116,\n      \"stdout_tail\": \"Scaffold Check Passed: All workspace packages are fully compliant and up to date.\\n\",\n      \"stderr_tail\": \"\"\n    }\n  ],\n  \"all_required_checks_executed\": true,\n  \"verdict\": \"PASS\",\n  \"exit_code\": 0,\n  \"violations\": [],\n  \"total_violations\": 0\n}\n",
+      "stdout_tail": "{\n  \"repository_root\": \"D:\\\\code_ca_nhan\\\\WindAgent\",\n  \"checks\": [\n    {\n      \"name\": \"import_boundaries\",\n      \"argv\": [\n        \"C:\\\\Users\\\\Admin\\\\AppData\\\\Local\\\\hermes\\\\hermes-agent\\\\venv\\\\Scripts\\\\python.exe\",\n        \"D:\\\\code_ca_nhan\\\\WindAgent\\\\scripts\\\\check_architecture_imports.py\",\n        \"--root\",\n        \"D:\\\\code_ca_nhan\\\\WindAgent\",\n        \"--json\"\n      ],\n      \"cwd\": \"D:\\\\code_ca_nhan\\\\WindAgent\",\n      \"executed\": true,\n      \"exit_code\": 0,\n      \"classification\": \"PASS\",\n      \"duration_ms\": 883,\n      \"stdout_tail\": \"\",\n      \"stderr_tail\": \"\"\n    },\n    {\n      \"name\": \"scaffold\",\n      \"argv\": [\n        \"C:\\\\Users\\\\Admin\\\\AppData\\\\Local\\\\hermes\\\\hermes-agent\\\\venv\\\\Scripts\\\\python.exe\",\n        \"D:\\\\code_ca_nhan\\\\WindAgent\\\\scripts\\\\scaffold_architecture_v2.py\",\n        \"--check\"\n      ],\n      \"cwd\": \"D:\\\\code_ca_nhan\\\\WindAgent\",\n      \"executed\": true,\n      \"exit_code\": 0,\n      \"classification\": \"PASS\",\n      \"duration_ms\": 134,\n      \"stdout_tail\": \"Scaffold Check Passed: All workspace packages are fully compliant and up to date.\\n\",\n      \"stderr_tail\": \"\"\n    }\n  ],\n  \"all_required_checks_executed\": true,\n  \"verdict\": \"PASS\",\n  \"exit_code\": 0,\n  \"violations\": [],\n  \"total_violations\": 0\n}\n",
       "stderr_tail": "",
       "status": "PASSED"
     },
