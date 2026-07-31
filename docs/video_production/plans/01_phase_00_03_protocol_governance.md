@@ -48,7 +48,7 @@ VP3_CANONICAL_PROTOCOL_VERIFIED
 ## 4. Điều kiện bắt đầu
 
 - Repository có thể checkout hoặc xác minh commit:
-  `cbf7257643d4a1705fa221ae37e9391b6ee3f40e`.
+  `cbf7257643d4a1705fa221ae37e9391b6ee3f40e` (điều kiện khởi tạo lịch sử của kế hoạch; sau khi VP0 re-certification, baseline chính thức được đóng băng là `1d98e26fe8923549e848e1a73cf32c6bb59944c1` — xem mục 26).
 - Các lệnh test canonical của Python, web, desktop, CLI và architecture checker được xác định từ repository.
 - Worktree hiện tại được kiểm kê; thay đổi của người dùng không bị ghi đè.
 - Người chịu trách nhiệm phê duyệt legal/security và protocol được chỉ định.
