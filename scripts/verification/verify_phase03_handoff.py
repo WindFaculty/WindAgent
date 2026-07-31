@@ -561,7 +561,11 @@ def main() -> int:
     checksum_lines = "\n".join(
         f"{digest}  {rel_path}" for rel_path, digest in sorted(checks.checksums.items())
     )
-    (HANDOFF_DIR / "handoff_checksums.sha256").write_text(checksum_lines + "\n", encoding="utf-8")
+    # newline="\n" keeps the checksums file byte-stable (LF) on all platforms so
+    # `sha256sum -c handoff_checksums.sha256` works identically on Windows and CI.
+    (HANDOFF_DIR / "handoff_checksums.sha256").write_text(
+        checksum_lines + "\n", encoding="utf-8", newline="\n"
+    )
 
     # Consistency self-check: the manifest's component_hashes must match the
     # standalone checksums file so the two artifacts cannot drift apart.
