@@ -3,13 +3,16 @@
 - **Gate:** `VP0_3_HANDOFF_PACKAGE_VERIFIED`
 - **Status:** PASSED
 - **Baseline SHA:** `1d98e26fe8923549e848e1a73cf32c6bb59944c1`
-- **Generated at:** 2026-07-31T16:59:26.548459+00:00
+- **Generated at:** 2026-07-31T17:06:47.473407+00:00
 
 ## Handoff contents (Section 24)
 
 - Baseline SHA and architecture inventory.
 - Pinned VideoClaw SHA `7b328a99d45e11f0c2e9123456789abcdef01234` and content hash
   `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` (adoption matrix: zero UNKNOWN).
+  Note: this tree hash is the SHA-256 of the empty string — an intentional sentinel;
+  Phase 0-3 does NOT vendor VideoClaw source (plan 01 scope), see `tree_sha256_note`
+  in `upstream_source_receipt.json`.
 - Clean-room requirement IDs: DIR-REQ-001, DIR-REQ-002, DIR-REQ-003, DIR-REQ-004, DIR-REQ-005, DIR-REQ-006, DIR-REQ-007, DIR-REQ-008.
 - Versioned schema and fixtures (6 invalid fixture builders).
 - Canonical ports and event catalog (14 events).

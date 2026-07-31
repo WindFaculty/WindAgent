@@ -9,7 +9,8 @@
     "pinned_commit_sha": "7b328a99d45e11f0c2e9123456789abcdef01234",
     "commit_date": "2026-06-15T10:00:00Z",
     "tree_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "verification_method": "HTTPS_GIT_ARCHIVE_VERIFIED"
+    "tree_sha256_note": "Sentinel value: Phase 0-3 does NOT vendor VideoClaw source (plan 01 scope), so the source tree is intentionally empty and hashes to the SHA-256 of the empty string. Per-file hashes are recorded in source_tree_hashes.json from metadata review only.",
+    "verification_method": "METADATA_REVIEW_ONLY_NO_SOURCE_VENDORED"
   },
   "license": {
     "primary": "MIT",

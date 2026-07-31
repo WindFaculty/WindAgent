@@ -160,7 +160,12 @@ def load_json(path: Path) -> dict:
 
 def write_json(path: Path, data) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    # newline="\n" keeps handoff JSON outputs byte-stable (LF) on all platforms.
+    path.write_text(
+        json.dumps(data, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
 
 
 # ----------------------------------------------------------------------
@@ -492,7 +497,7 @@ within major v1, and a new major requires a new migration note.
 None identified for existing storage/API. See `open_risks.json` for the
 consolidated open risks carried into Phase 4-7.
 """
-    (HANDOFF_DIR / "migration_note.md").write_text(note, encoding="utf-8")
+    (HANDOFF_DIR / "migration_note.md").write_text(note, encoding="utf-8", newline="\n")
 
 
 def main() -> int:
@@ -658,6 +663,9 @@ def main() -> int:
 - Baseline SHA and architecture inventory.
 - Pinned VideoClaw SHA `{checks.metadata.get('upstream_sha')}` and content hash
   `{checks.metadata.get('upstream_content_hash')}` (adoption matrix: zero UNKNOWN).
+  Note: this tree hash is the SHA-256 of the empty string — an intentional sentinel;
+  Phase 0-3 does NOT vendor VideoClaw source (plan 01 scope), see `tree_sha256_note`
+  in `upstream_source_receipt.json`.
 - Clean-room requirement IDs: {', '.join(checks.metadata.get('director_requirement_ids', []))}.
 - Versioned schema and fixtures ({checks.metadata.get('invalid_fixture_count')} invalid fixture builders).
 - Canonical ports and event catalog ({len(checks.metadata.get('event_types', []))} events).
@@ -680,7 +688,7 @@ def main() -> int:
 
 {chr(10).join('- ' + reason for reason in checks.errors) if checks.errors else 'None'}
 """
-    (HANDOFF_DIR / "handoff_report.md").write_text(report, encoding="utf-8")
+    (HANDOFF_DIR / "handoff_report.md").write_text(report, encoding="utf-8", newline="\n")
 
     print(f"Handoff verdict: {overall_status}")
     for reason in checks.errors:

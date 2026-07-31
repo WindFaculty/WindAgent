@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "generated_at": "2026-07-31T16:59:26.545623+00:00",
+  "generated_at": "2026-07-31T17:06:47.459671+00:00",
   "baseline_sha": "1d98e26fe8923549e848e1a73cf32c6bb59944c1",
   "upstream": {
     "repository": "https://github.com/HITsz-TMG/VideoClaw",
@@ -163,12 +163,12 @@
   "component_hashes": {
     "artifacts/video_production/phase_00/baseline_commit.json": "c424b307ec57636b6b1cf3aeea9421ea85740f1b13b27320560b90d417681260",
     "artifacts/video_production/phase_00/architecture_baseline.json": "f49f2b992a1f406e858af0f0f29b9313153c7e18e614785962e07a7263bee420",
-    "artifacts/video_production/phase_01/upstream_source_receipt.json": "4ee5c9211825f48c7beffee3f4e72bfc44efbc7a6c856b91181c2c43f3d4a6af",
+    "artifacts/video_production/phase_01/upstream_source_receipt.json": "6d12a6818ff4e8928fd06ee3d7ab25c130dd04b7c2e7267f0be309c4980fd08a",
     "artifacts/video_production/phase_01/source_tree_hashes.json": "adf6f107abd6db6d6e544251fcc1ea196b5adea7af702b5ffe4ae6776b9acf45",
     "docs/upstream/videoclaw/adoption_matrix.md": "675940264c415feb1a73ab458c01eb52dd79df48e06a3ac9f56bfbe5325a65c3",
     "docs/video_production/director_research/clean_room_attestation.md": "b09249ef447632c1acf3f371f87fd0227fcf698bf3c92cb0757535bd1d93fc13",
     "docs/video_production/director_research/independent_requirements.md": "aace4b5d286b7d5e3a16d3b454c3787b9b3ec9c03ae3d934deb8b886d792b023",
-    "docs/video_production/protocol/video_production_package_v1.schema.json": "e35b344eb3b3d10ca90ac8a330526d4407142cfa9cf483bd83580aacca2eb9fe",
+    "docs/video_production/protocol/video_production_package_v1.schema.json": "5feeb7e0b5656fd0d14fe72b645c2f4a78d2b599bf57f9e748546d0060fdef8a",
     "docs/video_production/protocol/video_production_package_v1.md": "e787a7d4e8dccad9541894fce1bbcb8d3ed1d9370dad94aba86f589a8bac1341",
     "docs/video_production/protocol/versioning_policy.md": "9aff4b7c76d14d6f5e94d68f37bbfdcf4da20d2bd6e80b04be38e61f37967bef",
     "docs/video_production/protocol/event_catalog.md": "857b0e4d6a874a2218de82da50de6f3d26676c443df0dc2577b18cea9357ce13",
@@ -180,7 +180,7 @@
     "artifacts/video_production/phase_00/phase_verdict.json": "4c6b12a73e62701473d61974272263de89261a714b50fb1d178057d8ac29b685",
     "artifacts/video_production/phase_01/phase_verdict.json": "740e5c4e7f41c74a26269855d172079adf6e2b3ac608f55a7e707208aac246d3",
     "artifacts/video_production/phase_02/phase_verdict.json": "e48bdc8a4d4ac421c195ce223c13de26df7fffeb28aa8b736e93b07972fb198c",
-    "artifacts/video_production/phase_03/phase_verdict.json": "5951e7cc9c06585c8aa5296afb79dd4e67668b19448b46f932aff7ee605ad31a"
+    "artifacts/video_production/phase_03/phase_verdict.json": "f3d92297a9132a5a785d4da0a6e356204f0e88c4d6f9aaabcca164989d4b04ef"
   },
   "open_risks": [
     {
