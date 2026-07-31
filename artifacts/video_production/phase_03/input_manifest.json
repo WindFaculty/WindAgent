@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "phase": 3,
-  "created_at": "2026-07-31T17:13:55.241350+00:00",
+  "created_at": "2026-07-31T17:15:00.634799+00:00",
   "baseline_sha": "1d98e26fe8923549e848e1a73cf32c6bb59944c1",
   "phase_02_verdict": "artifacts/video_production/phase_02/phase_verdict.json",
   "governance_plan": "docs/video_production/plans/01_phase_00_03_protocol_governance.md",
