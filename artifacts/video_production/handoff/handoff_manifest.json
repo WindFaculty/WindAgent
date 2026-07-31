@@ -1,11 +1,11 @@
 {
   "schema_version": "1.0.0",
-  "generated_at": "2026-07-31T17:31:05.906567+00:00",
+  "generated_at": "2026-07-31T18:07:17.863352+00:00",
   "baseline_sha": "1d98e26fe8923549e848e1a73cf32c6bb59944c1",
   "upstream": {
     "repository": "https://github.com/HITsz-TMG/VideoClaw",
-    "pinned_commit_sha": "7b328a99d45e11f0c2e9123456789abcdef01234",
-    "content_hash_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "pinned_commit_sha": "5a16ae23a4f1cb6886c44c0205f7b7e52a34c276",
+    "content_hash_sha256": "86a8af167d4fdbbfc077df457a96085453ba5d98439c6194400546c5df8577be",
     "license": "MIT"
   },
   "gates": {
@@ -163,8 +163,8 @@
   "component_hashes": {
     "artifacts/video_production/phase_00/baseline_commit.json": "c424b307ec57636b6b1cf3aeea9421ea85740f1b13b27320560b90d417681260",
     "artifacts/video_production/phase_00/architecture_baseline.json": "f49f2b992a1f406e858af0f0f29b9313153c7e18e614785962e07a7263bee420",
-    "artifacts/video_production/phase_01/upstream_source_receipt.json": "fe235fa361951ba2a9d0d1427d06bf90da1dbfa8ed702e44eb0a946ff5c4644b",
-    "artifacts/video_production/phase_01/source_tree_hashes.json": "9b08c6813925ced8b91399ec5aba505c49401d6e2002f0d830f982de23367968",
+    "artifacts/video_production/phase_01/upstream_source_receipt.json": "38b5044906110ce591f88cced187f94af6b5bcf9675ef42bdfd1e84fdda7a951",
+    "artifacts/video_production/phase_01/source_tree_hashes.json": "88d5a0425c514a4bfd3fe03505f34dba3945899db34557926f59a84ae25049b0",
     "docs/upstream/videoclaw/adoption_matrix.md": "675940264c415feb1a73ab458c01eb52dd79df48e06a3ac9f56bfbe5325a65c3",
     "docs/video_production/director_research/clean_room_attestation.md": "b09249ef447632c1acf3f371f87fd0227fcf698bf3c92cb0757535bd1d93fc13",
     "docs/video_production/director_research/independent_requirements.md": "aace4b5d286b7d5e3a16d3b454c3787b9b3ec9c03ae3d934deb8b886d792b023",

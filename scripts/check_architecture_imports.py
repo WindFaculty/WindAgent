@@ -452,6 +452,10 @@ def check(root: Path, config: dict) -> tuple[dict, dict]:
     for violation in check_legacy_quarantine(root, packages, config):
         violations.append(violation)
 
+    # Phase 4: VideoClaw quarantine boundary (plan 02)
+    for violation in check_videoclaw_quarantine(root, packages, config):
+        violations.append(violation)
+
     # Phase 4: Core internal boundaries
     for violation in check_core_internal_boundaries(root, packages, config):
         violations.append(violation)
@@ -589,6 +593,78 @@ def check_legacy_quarantine(root: Path, packages: dict, config: dict) -> list[di
                 "line": 1,
                 "message": "Python source recreated in retired apps/backend tree",
             })
+    return violations
+
+
+def check_videoclaw_quarantine(root: Path, packages: dict, config: dict) -> list[dict]:
+    """Enforce the VideoClaw quarantine boundary (plan 02 Phase 4).
+
+    Canonical packages must never import the quarantined upstream snapshot
+    (third_party/videoclaw/upstream/) via static import, sys.path mutation,
+    dynamic import, or subprocess launch. The vendored snapshot itself is NOT a
+    configured workspace package and is never scanned as canonical source.
+    """
+    violations = []
+    rules = config.get("global_rules", {})
+    if not rules.get("enforce_videoclaw_quarantine", True):
+        return violations
+
+    # Workspace membership: third_party must never be a uv workspace member.
+    try:
+        import tomllib
+        root_cfg = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))
+        members = root_cfg.get("tool", {}).get("uv", {}).get("workspace", {}).get("members", [])
+        for member in members:
+            if "third_party" in str(member):
+                violations.append({
+                    "rule": "videoclaw_workspace_membership",
+                    "file": "pyproject.toml",
+                    "line": 1,
+                    "message": f"third_party must not be a uv workspace member: {member}",
+                })
+    except Exception:  # noqa: BLE001
+        pass
+
+    # Scan canonical package sources for forbidden references.
+    for name, info in packages.items():
+        namespace_path = root / info["path"] / info["namespace"]
+        if not namespace_path.is_dir():
+            continue
+        for source in namespace_path.rglob("*.py"):
+            relative = source.relative_to(root).as_posix()
+            if relative.startswith("tests/"):
+                continue
+            if ".venv" in relative or "__pycache__" in relative:
+                continue
+            try:
+                text = source.read_text(encoding="utf-8")
+            except (OSError, UnicodeError):
+                continue
+            for i, line in enumerate(text.splitlines(), 1):
+                stripped = line.strip()
+                lowered = stripped.lower()
+                if "third_party" in lowered or "videoclaw" in lowered:
+                    if stripped.startswith(("import ", "from ")):
+                        violations.append({
+                            "rule": "videoclaw_quarantine_import",
+                            "file": relative,
+                            "line": i,
+                            "message": f"Forbidden import of quarantined upstream: {stripped}",
+                        })
+                    elif "sys.path" in lowered or "importlib" in lowered or "__import__" in lowered:
+                        violations.append({
+                            "rule": "videoclaw_quarantine_dynamic",
+                            "file": relative,
+                            "line": i,
+                            "message": f"sys.path/dynamic reference to upstream snapshot: {stripped}",
+                        })
+                    elif "subprocess" in lowered or "os.system" in lowered or "Popen" in lowered:
+                        violations.append({
+                            "rule": "videoclaw_quarantine_subprocess",
+                            "file": relative,
+                            "line": i,
+                            "message": f"subprocess reference to upstream snapshot: {stripped}",
+                        })
     return violations
 
 

@@ -1,38 +1,38 @@
 {
   "schema_version": "1.0.0",
   "phase": 1,
-  "calculated_at": "2026-07-31T18:57:00Z",
-  "upstream_commit": "7b328a99d45e11f0c2e9123456789abcdef01234",
-  "provenance_note": "Per-file hashes are metadata-derived from the pinned upstream commit review (verification_method METADATA_REVIEW_ONLY_NO_SOURCE_VENDORED). Phase 0-3 does NOT vendor VideoClaw source; these hashes document the reviewed tree structure for the adoption matrix, not vendored content in this repository.",
+  "calculated_at": "2026-08-01T01:05:00Z",
+  "upstream_commit": "5a16ae23a4f1cb6886c44c0205f7b7e52a34c276",
+  "provenance_note": "Re-pin amendment (2026-08-01): Phase 4 intake vendored the real upstream snapshot to third_party/videoclaw/upstream/ (443 files) at the approved re-pinned commit 5a16ae23... (main, 2026-07-17). The earlier metadata-derived pin (7b328a99...) and its placeholder per-file hashes are superseded by real filesystem hashes below. Full per-file inventory lives in artifacts/video_production/phase_04/source_inventory.json and content_hash_receipt.json.",
   "file_hashes": [
     {
       "path": "LICENSE",
-      "sha256": "5b4c106456f9a94156627063d81062f68a35ee33e8b09335f606001229f55e0a",
+      "sha256": "a1092e06ef022b021547b828af0e3b2cd30987e7f2741f553d32a19854abc227",
       "type": "LICENSE"
     },
     {
       "path": "README.md",
-      "sha256": "4b227777d4dd1fc61c6f884f48641d02b4d121d3fd328cb08b5531fcacdabf8a",
+      "sha256": "bab67b166b9ae56d272663b889500885a88a87003246422902705ef2201d0fd5",
       "type": "DOCUMENTATION"
     },
     {
-      "path": "videoclaw/screenplay/generator.py",
-      "sha256": "a3f4e221c56910a305b8719b18366914a872651112bc0bcae20309995166099b",
+      "path": "video-claw/video-claw/backend/core/agents/script_agent.py",
+      "sha256": "fe6279d452c068ff0d4c9c350ef938ac3834b496288e347a5783725c9fed1831",
       "type": "PYTHON_SOURCE"
     },
     {
-      "path": "videoclaw/character/bible.py",
-      "sha256": "b7890123456789abcdef0123456789abcdef0123456789abcdef0123456789ab",
+      "path": "video-claw/video-claw/backend/core/agents/character_agent.py",
+      "sha256": "12ed93c3e89216adc5f7d279fc9cf54b32492ed6c407eea5d2a0c75c61aa5a6b",
       "type": "PYTHON_SOURCE"
     },
     {
-      "path": "videoclaw/storyboard/planner.py",
-      "sha256": "c890123456789abcdef0123456789abcdef0123456789abcdef0123456789abc",
+      "path": "video-claw/video-claw/backend/core/agents/storyboard_agent.py",
+      "sha256": "91fb3705c751548e2af59e65be4a2e3de4c116656b6f9f2be4be6cbbf719c3cc",
       "type": "PYTHON_SOURCE"
     },
     {
-      "path": "videoclaw/assets/reference.py",
-      "sha256": "d90123456789abcdef0123456789abcdef0123456789abcdef0123456789abcd",
+      "path": "video-claw/video-claw/backend/core/agents/reference_agent.py",
+      "sha256": "1c45daed10bfabaa79c101b0119b475ae8d54bcfe5b0c1757a7be04216fd483c",
       "type": "PYTHON_SOURCE"
     }
   ]

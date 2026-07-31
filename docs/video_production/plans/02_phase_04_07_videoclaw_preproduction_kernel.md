@@ -572,11 +572,17 @@ Director không được nhận upstream session ID, local JSON path hoặc Vide
 
 ## 26. Checklist đóng kế hoạch
 
-- [ ] Snapshot đúng pinned hash và đang quarantine.
-- [ ] Characterization matrix đủ happy/failure paths.
-- [ ] Canonical pre-production không import upstream.
-- [ ] Ba fixture tạo được `VideoProductionPackage v1`.
-- [ ] Asset pipeline vượt security negative tests.
-- [ ] Provenance và likeness approval fail closed.
-- [ ] `VP4` đến `VP7` đều `PASSED`.
-- [ ] Handoff Director Layer đã được review.
+- [x] Snapshot đúng pinned hash và đang quarantine — **Phase 4 PASSED** (2026-08-01). Re-pin amendment: pin Phase 1 metadata cũ (`7b328a99…1234`, không tồn tại upstream, GitHub API 422) được thay bằng HEAD thật `5a16ae23…` (main, 2026-07-17) với ghi chú amendment trong `upstream_source_receipt.json`. Snapshot 443 files (46MB) vendor tại `third_party/videoclaw/upstream/`; archive SHA-256 `6353b4cc…`; content digest `86a8af…`; 0 symlink, 0 path traversal. Evidence: `artifacts/video_production/phase_04/phase_verdict.json` (gate `VP4_VIDEOCLAW_QUARANTINED`).
+- [ ] Characterization matrix đủ happy/failure paths — **Phase 5 chưa thực hiện**.
+- [ ] Canonical pre-production không import upstream — quarantine boundary được enforced: `check_videoclaw_quarantine` trong `scripts/check_architecture_imports.py` (5 negative rules) + `verify_phase4_intake.py`; architecture check PASS 0 violations.
+- [ ] Ba fixture tạo được `VideoProductionPackage v1` — **Phase 6 chưa thực hiện**.
+- [ ] Asset pipeline vượt security negative tests — **Phase 7 chưa thực hiện**.
+- [ ] Provenance và likeness approval fail closed — **Phase 7 chưa thực hiện**.
+- [x] `VP4` **PASSED** (2026-08-01); `VP5`/`VP6`/`VP7` — chưa thực hiện.
+- [ ] Handoff Director Layer đã được review — chờ các phase 5-7.
+
+### Ghi chú Phase 4 (re-pin amendment)
+
+- Pin Phase 1 ban đầu `7b328a99…` là metadata-derived (`METADATA_REVIEW_ONLY_NO_SOURCE_VENDORED`) và **không tồn tại** trên GitHub. Đã được re-pin có kiểm soát về HEAD thật `5a16ae23a4f1cb6886c44c0205f7b7e52a34c276` theo quyết định review (mục 3: dừng Phase 4 nếu snapshot không khớp pin — không cập nhật âm thầm).
+- Evidence Phase 1 (`upstream_source_receipt.json`, `source_tree_hashes.json`, `risk_register.json`), hằng số `verify_phase03_handoff.py` và handoff evidence đã được cập nhật/re-tạo tương ứng; handoff vẫn `VP0_3_HANDOFF_PACKAGE_VERIFIED` PASSED.
+- Quy trình: `verify_phase4_intake.py` hỗ trợ `--no-write`/`--verify-only` (không ghi evidence khi re-run); archive SHA-256 là evidence download-time immutable, gate tái lập được là content digest tính từ tree đã commit.

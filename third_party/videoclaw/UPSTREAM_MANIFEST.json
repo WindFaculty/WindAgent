@@ -1,0 +1,15 @@
+{
+  "source_repository": "HITsz-TMG/VideoClaw",
+  "source_repository_url": "https://github.com/HITsz-TMG/VideoClaw",
+  "source_commit": "5a16ae23a4f1cb6886c44c0205f7b7e52a34c276",
+  "source_commit_date": "2026-07-17T05:23:47Z",
+  "license": "MIT",
+  "copyright": "Copyright (c) 2026 Video-Claw",
+  "imported_at": "2026-08-01T01:01:00Z",
+  "archive_sha256": "6353b4cc1785b1c5d466b4e90427eb964844593f5721d74fa008c90b6baa6b18",
+  "content_sha256": "86a8af167d4fdbbfc077df457a96085453ba5d98439c6194400546c5df8577be",
+  "file_count": 443,
+  "patch_policy": "NO_DIRECT_RUNTIME_IMPORT",
+  "verification_method": "SOURCE_ARCHIVE_VERIFIED_REPIN",
+  "repin_amendment_note": "Phase 1 pinned commit 7b328a99...1234 was metadata-derived (METADATA_REVIEW_ONLY_NO_SOURCE_VENDORED) and does not exist upstream. Approved re-pin to real upstream HEAD 5a16ae23a4f1cb6886c44c0205f7b7e52a34c276 (main, 2026-07-17) with a real source archive downloaded and hash-verified. content_sha256 is the SHA-256 of the sorted '<sha256>  <relpath>' lines (LF, relpath without leading './') over the 443 vendored files, as computed by scripts/verification/verify_phase4_intake.py."
+}

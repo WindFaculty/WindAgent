@@ -40,8 +40,11 @@ PHASE_DIR = ROOT / "artifacts" / "video_production"
 HANDOFF_DIR = PHASE_DIR / "handoff"
 
 BASELINE_SHA = "1d98e26fe8923549e848e1a73cf32c6bb59944c1"
-VP1_UPSTREAM_SHA = "7b328a99d45e11f0c2e9123456789abcdef01234"
-VP1_TREE_SHA256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+# Re-pin amendment (2026-08-01): Phase 1 metadata pin 7b328a99...1234 did not
+# exist upstream; approved re-pin to real upstream HEAD 5a16ae23... (main,
+# 2026-07-17) with the source vendored and hash-verified in Phase 4 intake.
+VP1_UPSTREAM_SHA = "5a16ae23a4f1cb6886c44c0205f7b7e52a34c276"
+VP1_TREE_SHA256 = "86a8af167d4fdbbfc077df457a96085453ba5d98439c6194400546c5df8577be"
 
 # Gate names per plan 01 Section 26.
 GATE_VP0 = "VP0_BASELINE_FROZEN"

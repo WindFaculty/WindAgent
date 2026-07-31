@@ -1,0 +1,10 @@
+{
+  "schema_version": "1.0.0",
+  "phase": 4,
+  "generated_at": "2026-07-31T18:14:14.039800+00:00",
+  "file_count": 443,
+  "content_sha256": "86a8af167d4fdbbfc077df457a96085453ba5d98439c6194400546c5df8577be",
+  "digest_method": "sha256 of sorted '<sha256>  <relpath>' lines (LF)",
+  "manifest_matches": true,
+  "errors": []
+}

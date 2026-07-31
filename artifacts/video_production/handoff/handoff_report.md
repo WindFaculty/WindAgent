@@ -3,13 +3,13 @@
 - **Gate:** `VP0_3_HANDOFF_PACKAGE_VERIFIED`
 - **Status:** PASSED
 - **Baseline SHA:** `1d98e26fe8923549e848e1a73cf32c6bb59944c1`
-- **Generated at:** 2026-07-31T17:31:05.909767+00:00
+- **Generated at:** 2026-07-31T18:07:17.884628+00:00
 
 ## Handoff contents (Section 24)
 
 - Baseline SHA and architecture inventory.
-- Pinned VideoClaw SHA `7b328a99d45e11f0c2e9123456789abcdef01234` and content hash
-  `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` (adoption matrix: zero UNKNOWN).
+- Pinned VideoClaw SHA `5a16ae23a4f1cb6886c44c0205f7b7e52a34c276` and content hash
+  `86a8af167d4fdbbfc077df457a96085453ba5d98439c6194400546c5df8577be` (adoption matrix: zero UNKNOWN).
   Note: this tree hash is the SHA-256 of the empty string — an intentional sentinel;
   Phase 0-3 does NOT vendor VideoClaw source (plan 01 scope), see `tree_sha256_note`
   in `upstream_source_receipt.json`.

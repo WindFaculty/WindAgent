@@ -8,7 +8,7 @@
       "category": "Upstream Mutation",
       "description": "VideoClaw repository main branch changes after review.",
       "severity": "MEDIUM",
-      "mitigation": "Pinned commit SHA 7b328a99d45e11f0c2e9123456789abcdef01234 and sha256 tree hash are frozen."
+      "mitigation": "Re-pin amendment (2026-08-01): pinned commit SHA 5a16ae23a4f1cb6886c44c0205f7b7e52a34c276 (real upstream HEAD, main, 2026-07-17) and content sha256 86a8af... are frozen. The original metadata pin 7b328a99...1234 did not exist upstream and was superseded by an approved re-pin during Phase 4 intake (see upstream_source_receipt.json)."
     },
     {
       "risk_id": "RSK-VP1-002",

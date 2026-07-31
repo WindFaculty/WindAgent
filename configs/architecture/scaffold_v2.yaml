@@ -30,6 +30,7 @@ global_rules:
   forbid_legacy_backend_imports: true
   forbid_production_test_fallbacks: true
   enforce_legacy_quarantine: true
+  enforce_videoclaw_quarantine: true
   forbid_canonical_to_legacy_imports: true
   forbid_legacy_runtime_authority: true
   forbid_dynamic_imports: true
