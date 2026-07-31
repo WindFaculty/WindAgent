@@ -237,8 +237,9 @@ def run_architecture_report() -> dict:
 # ----------------------------------------------------------------------
 # Main
 # ----------------------------------------------------------------------
-def main() -> int:
-    PHASE_DIR.mkdir(parents=True, exist_ok=True)
+def main(no_write: bool = False) -> int:
+    if not no_write:
+        PHASE_DIR.mkdir(parents=True, exist_ok=True)
 
     schema_matrix = run_schema_validation_matrix()
     contract_receipt = run_contract_tests()
@@ -361,24 +362,26 @@ def main() -> int:
     # Machine-readable JSON Schema (VideoProductionPackage v1) — deliverable 20.3/22
     try:
         json_schema = VideoProductionPackage.model_json_schema()
-        schema_path = DOCS_DIR / "video_production_package_v1.schema.json"
-        schema_path.parent.mkdir(parents=True, exist_ok=True)
-        schema_path.write_text(
-            json.dumps(json_schema, indent=2, ensure_ascii=False) + "\n",
-            encoding="utf-8",
-            newline="\n",
-        )
+        if not no_write:
+            schema_path = DOCS_DIR / "video_production_package_v1.schema.json"
+            schema_path.parent.mkdir(parents=True, exist_ok=True)
+            schema_path.write_text(
+                json.dumps(json_schema, indent=2, ensure_ascii=False) + "\n",
+                encoding="utf-8",
+                newline="\n",
+            )
     except Exception as exc:  # noqa: BLE001
         blocking_reasons.append(f"Machine-readable JSON schema generation failed: {exc}")
 
-    write_json(PHASE_DIR / "input_manifest.json", input_manifest)
-    write_json(PHASE_DIR / "test_receipt.json", test_receipt)
-    write_json(PHASE_DIR / "architecture_report.json", architecture_report)
-    write_json(PHASE_DIR / "risk_register.json", risk_register)
-    write_json(PHASE_DIR / "schema_validation_matrix.json", schema_matrix)
-    write_json(PHASE_DIR / "contract_test_receipt.json", contract_receipt)
-    write_json(PHASE_DIR / "compatibility_report.json", compatibility_report)
-    write_json(PHASE_DIR / "phase_verdict.json", phase_verdict)
+    if not no_write:
+        write_json(PHASE_DIR / "input_manifest.json", input_manifest)
+        write_json(PHASE_DIR / "test_receipt.json", test_receipt)
+        write_json(PHASE_DIR / "architecture_report.json", architecture_report)
+        write_json(PHASE_DIR / "risk_register.json", risk_register)
+        write_json(PHASE_DIR / "schema_validation_matrix.json", schema_matrix)
+        write_json(PHASE_DIR / "contract_test_receipt.json", contract_receipt)
+        write_json(PHASE_DIR / "compatibility_report.json", compatibility_report)
+        write_json(PHASE_DIR / "phase_verdict.json", phase_verdict)
 
     # Phase report (markdown)
     phase_report = f"""# Phase 3 Report — Canonical Video Production Protocol
@@ -407,7 +410,8 @@ Phase 3 delivered the canonical video production protocol:
 
 {chr(10).join('- ' + r for r in blocking_reasons) if blocking_reasons else 'None'}
 """
-    (PHASE_DIR / "phase_report.md").write_text(phase_report, encoding="utf-8", newline="\n")
+    if not no_write:
+        (PHASE_DIR / "phase_report.md").write_text(phase_report, encoding="utf-8", newline="\n")
 
     # Implementation manifest (list every created file, hashed)
     implementation_files = sorted(
@@ -463,7 +467,10 @@ Phase 3 delivered the canonical video production protocol:
         "vimax_imports_added": 0,
         "third_party_vendored": 0,
     }
-    write_json(PHASE_DIR / "implementation_manifest.json", implementation_manifest)
+    if not no_write:
+        write_json(PHASE_DIR / "implementation_manifest.json", implementation_manifest)
+    else:
+        print("Verify-only mode: phase_03 artifacts untouched (--no-write keeps the tree clean).")
 
     print(f"Phase 3 verdict: {overall_status}")
     for reason in blocking_reasons:
@@ -472,4 +479,4 @@ Phase 3 delivered the canonical video production protocol:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(main(no_write="--no-write" in sys.argv or "--verify-only" in sys.argv))

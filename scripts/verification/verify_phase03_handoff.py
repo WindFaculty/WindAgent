@@ -500,14 +500,16 @@ consolidated open risks carried into Phase 4-7.
     (HANDOFF_DIR / "migration_note.md").write_text(note, encoding="utf-8", newline="\n")
 
 
-def main() -> int:
-    HANDOFF_DIR.mkdir(parents=True, exist_ok=True)
+def main(no_write: bool = False) -> int:
+    if not no_write:
+        HANDOFF_DIR.mkdir(parents=True, exist_ok=True)
 
     checks = HandoffChecks()
     checks.run()
 
     open_risks = collect_open_risks()
-    write_migration_note()
+    if not no_write:
+        write_migration_note()
 
     # KB-003 is carried as a RESOLVED finding (baseline 1d98e26 fixed it via
     # the build/verify finalizer refactor). It is surfaced but no longer a
@@ -561,34 +563,50 @@ def main() -> int:
         "migration_note": "NO_MIGRATION_REQUIRED (additive-only; see migration_note.md)",
         "derived_from": "scripts/verification/verify_phase03_handoff.py",
     }
-    write_json(HANDOFF_DIR / "handoff_manifest.json", handoff_manifest)
+    if not no_write:
+        write_json(HANDOFF_DIR / "handoff_manifest.json", handoff_manifest)
 
     checksum_lines = "\n".join(
         f"{digest}  {rel_path}" for rel_path, digest in sorted(checks.checksums.items())
     )
-    # newline="\n" keeps the checksums file byte-stable (LF) on all platforms so
-    # `sha256sum -c handoff_checksums.sha256` works identically on Windows and CI.
-    (HANDOFF_DIR / "handoff_checksums.sha256").write_text(
-        checksum_lines + "\n", encoding="utf-8", newline="\n"
-    )
+    checksum_path = HANDOFF_DIR / "handoff_checksums.sha256"
+    if not no_write:
+        # newline="\n" keeps the checksums file byte-stable (LF) on all platforms so
+        # `sha256sum -c handoff_checksums.sha256` works identically on Windows and CI.
+        checksum_path.write_text(checksum_lines + "\n", encoding="utf-8", newline="\n")
 
     # Consistency self-check: the manifest's component_hashes must match the
-    # standalone checksums file so the two artifacts cannot drift apart.
+    # standalone checksums file so the two artifacts cannot drift apart. In write
+    # mode this compares against the bytes just written; in --no-write
+    # (verify-only) mode it compares the freshly computed hashes against the
+    # existing on-disk checksums file, so verification never mutates the tree.
     manifest_hashes = handoff_manifest.get("component_hashes", {})
-    checksum_file_entries: dict[str, str] = {}
-    for line in (HANDOFF_DIR / "handoff_checksums.sha256").read_text(
-        encoding="utf-8"
-    ).splitlines():
-        if line.strip():
-            digest, _, rel = line.strip().partition("  ")
-            checksum_file_entries[rel] = digest
+    fresh_entries: dict[str, str] = {
+        rel: digest for rel, digest in sorted(checks.checksums.items())
+    }
+    on_disk_entries: dict[str, str] = {}
+    if checksum_path.is_file():
+        for line in checksum_path.read_text(encoding="utf-8").splitlines():
+            if line.strip():
+                digest, _, rel = line.strip().partition("  ")
+                on_disk_entries[rel] = digest
     self_check_ok = (
-        manifest_hashes == checksum_file_entries and bool(manifest_hashes)
+        manifest_hashes == fresh_entries
+        and fresh_entries == on_disk_entries
+        and bool(manifest_hashes)
     )
     if not self_check_ok:
-        checks.errors.append(
-            "handoff_manifest component_hashes do not match handoff_checksums.sha256"
-        )
+        if not on_disk_entries:
+            checks.errors.append(
+                "handoff_checksums.sha256 is missing on disk; handoff consistency "
+                "cannot be verified (run without --no-write to regenerate)"
+            )
+        else:
+            checks.errors.append(
+                "handoff_manifest component_hashes do not match the on-disk "
+                "handoff_checksums.sha256 (evidence is stale; run without "
+                "--no-write to regenerate)"
+            )
     checks.gates["outputs_consistent"] = self_check_ok
 
     all_required = [
@@ -630,7 +648,8 @@ def main() -> int:
         },
         "risks": open_risks,
     }
-    write_json(HANDOFF_DIR / "open_risks.json", open_risks_doc)
+    if not no_write:
+        write_json(HANDOFF_DIR / "open_risks.json", open_risks_doc)
 
     phase_verdict = {
         "schema_version": "1.1.0",
@@ -649,7 +668,8 @@ def main() -> int:
         "blocking_reasons": checks.errors,
         "derived_from": "scripts/verification/verify_phase03_handoff.py",
     }
-    write_json(HANDOFF_DIR / "phase_verdict.json", phase_verdict)
+    if not no_write:
+        write_json(HANDOFF_DIR / "phase_verdict.json", phase_verdict)
 
     report = f"""# Handoff Report — Video Production Protocol (Phase 0-3)
 
@@ -688,7 +708,10 @@ def main() -> int:
 
 {chr(10).join('- ' + reason for reason in checks.errors) if checks.errors else 'None'}
 """
-    (HANDOFF_DIR / "handoff_report.md").write_text(report, encoding="utf-8", newline="\n")
+    if not no_write:
+        (HANDOFF_DIR / "handoff_report.md").write_text(report, encoding="utf-8", newline="\n")
+    else:
+        print("Verify-only mode: handoff artifacts untouched (--no-write keeps the tree clean).")
 
     print(f"Handoff verdict: {overall_status}")
     for reason in checks.errors:
@@ -697,4 +720,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(main(no_write="--no-write" in sys.argv or "--verify-only" in sys.argv))
