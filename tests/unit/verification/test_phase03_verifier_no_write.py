@@ -21,6 +21,7 @@ VERIFIERS = (
     "scripts/verification/verify_phase03_handoff.py",
     "scripts/verification/verify_phase4_intake.py",
     "scripts/verification/verify_phase5_characterization.py",
+    "scripts/verification/verify_phase6_kernel.py",
 )
 
 KNOWN_EVIDENCE_FILES = (
@@ -29,6 +30,7 @@ KNOWN_EVIDENCE_FILES = (
     "phase_03/phase_verdict.json",
     "phase_04/phase_verdict.json",
     "phase_05/phase_verdict.json",
+    "phase_06/phase_verdict.json",
 )
 
 

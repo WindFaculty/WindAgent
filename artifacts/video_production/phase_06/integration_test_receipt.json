@@ -1,0 +1,181 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-07-31T23:33:20.912313+00:00",
+  "idea_to_package_e2e": true,
+  "fixtures": [
+    {
+      "fixture_id": "fixture_short_cartoon",
+      "all_ok": true,
+      "steps": [
+        {
+          "step": 1,
+          "capability": "CreativeBriefExpander",
+          "ok": true
+        },
+        {
+          "step": 2,
+          "capability": "StoryOutliner",
+          "ok": true
+        },
+        {
+          "step": 3,
+          "capability": "ScreenplayWriter",
+          "ok": true
+        },
+        {
+          "step": 4,
+          "capability": "DialogueNarrator",
+          "ok": true
+        },
+        {
+          "step": 5,
+          "capability": "EntityExtractor",
+          "ok": true
+        },
+        {
+          "step": 6,
+          "capability": "StyleDesigner",
+          "ok": true
+        },
+        {
+          "step": 8,
+          "capability": "AssetPromptSpecBuilder",
+          "ok": true
+        },
+        {
+          "step": 9,
+          "capability": "PackageAssembler",
+          "ok": true
+        },
+        {
+          "step": 10,
+          "capability": "Serialization+Validation",
+          "ok": true
+        },
+        {
+          "step": 11,
+          "capability": "ContentHashDeterminism",
+          "ok": true
+        }
+      ],
+      "content_hash": "507a09ca55d447d6fdc1b40f40abf1ce3c7e617e3432e16a8cc312538c40eb29",
+      "package_valid": true
+    },
+    {
+      "fixture_id": "fixture_two_character_dialogue",
+      "all_ok": true,
+      "steps": [
+        {
+          "step": 1,
+          "capability": "CreativeBriefExpander",
+          "ok": true
+        },
+        {
+          "step": 2,
+          "capability": "StoryOutliner",
+          "ok": true
+        },
+        {
+          "step": 3,
+          "capability": "ScreenplayWriter",
+          "ok": true
+        },
+        {
+          "step": 4,
+          "capability": "DialogueNarrator",
+          "ok": true
+        },
+        {
+          "step": 5,
+          "capability": "EntityExtractor",
+          "ok": true
+        },
+        {
+          "step": 6,
+          "capability": "StyleDesigner",
+          "ok": true
+        },
+        {
+          "step": 8,
+          "capability": "AssetPromptSpecBuilder",
+          "ok": true
+        },
+        {
+          "step": 9,
+          "capability": "PackageAssembler",
+          "ok": true
+        },
+        {
+          "step": 10,
+          "capability": "Serialization+Validation",
+          "ok": true
+        },
+        {
+          "step": 11,
+          "capability": "ContentHashDeterminism",
+          "ok": true
+        }
+      ],
+      "content_hash": "6518d341d68bfd521fb0c0be4fbfc9fe98f41741b3c7e09e7db11159fb3da890",
+      "package_valid": true
+    },
+    {
+      "fixture_id": "fixture_multi_scene_drama",
+      "all_ok": true,
+      "steps": [
+        {
+          "step": 1,
+          "capability": "CreativeBriefExpander",
+          "ok": true
+        },
+        {
+          "step": 2,
+          "capability": "StoryOutliner",
+          "ok": true
+        },
+        {
+          "step": 3,
+          "capability": "ScreenplayWriter",
+          "ok": true
+        },
+        {
+          "step": 4,
+          "capability": "DialogueNarrator",
+          "ok": true
+        },
+        {
+          "step": 5,
+          "capability": "EntityExtractor",
+          "ok": true
+        },
+        {
+          "step": 6,
+          "capability": "StyleDesigner",
+          "ok": true
+        },
+        {
+          "step": 8,
+          "capability": "AssetPromptSpecBuilder",
+          "ok": true
+        },
+        {
+          "step": 9,
+          "capability": "PackageAssembler",
+          "ok": true
+        },
+        {
+          "step": 10,
+          "capability": "Serialization+Validation",
+          "ok": true
+        },
+        {
+          "step": 11,
+          "capability": "ContentHashDeterminism",
+          "ok": true
+        }
+      ],
+      "content_hash": "d6f09beb61f1528bb573c4055a37d750400ed17b3c140011fc2ba9aeddc4c84a",
+      "package_valid": true
+    }
+  ]
+}

@@ -1,0 +1,328 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-07-31T23:33:20.901803+00:00",
+  "policy": "docs/video_production/preproduction/equivalence_policy.md",
+  "fixture_count": 3,
+  "all_blocking_passed": true,
+  "fixtures": [
+    {
+      "fixture_id": "fixture_short_cartoon",
+      "checks": {
+        "brief": {
+          "ok": true,
+          "title_preserved": true,
+          "audience_present": true,
+          "duration_present": true,
+          "constraints_present": true,
+          "prompt_version": "1.0.0",
+          "prompt_hash": "2a882ce066c5bf5a398cb4a78ce8ef043edc63dc63887efddcf16c14093a198e"
+        },
+        "outline": {
+          "ok": true,
+          "premise_present": true,
+          "synopsis_present": true,
+          "themes_sorted": true,
+          "beats_present": true,
+          "prompt_version": "1.0.0"
+        },
+        "screenplay": {
+          "ok": true,
+          "scene_count": 2,
+          "scene_order_ok": true,
+          "dialogue_attributed": true,
+          "narration_present": true,
+          "golden_characters": [
+            "豆豆",
+            "阿布"
+          ],
+          "screenplay_characters": [
+            "豆豆",
+            "阿布"
+          ],
+          "prompt_version": "1.0.0"
+        },
+        "dialogue_narration": {
+          "ok": true,
+          "dialogue_count": 4,
+          "narration_scene_count": 2,
+          "character_map": [
+            "豆豆",
+            "阿布"
+          ]
+        },
+        "entity_extraction": {
+          "ok": true,
+          "characters": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "extracted": [
+              "豆豆",
+              "阿布"
+            ],
+            "golden": [
+              "豆豆",
+              "阿布"
+            ]
+          },
+          "locations": {
+            "precision": 0.5,
+            "recall": 1.0,
+            "extracted": [
+              "森林",
+              "森林深处"
+            ],
+            "golden": [
+              "森林"
+            ]
+          },
+          "location_equivalence": "recall>=0.9 (screenplay-derived extras allowed)"
+        },
+        "style": {
+          "ok": true,
+          "visual_style": "anime",
+          "constraint_from_brief": true,
+          "prompt_version": "1.0.0"
+        },
+        "continuation": {
+          "ok": "1.0.0",
+          "existing_scenes_preserved": true,
+          "existing_order_preserved": true,
+          "existing_episode_count": 1,
+          "invalidation_intent": "INVALIDATE_SHOT_PLAN",
+          "proposal_status": "DRAFT",
+          "added_scene_count": 1,
+          "prompt_version": "1.0.0"
+        },
+        "asset_prompts": {
+          "ok": true,
+          "spec_count": 5,
+          "capabilities": [
+            "asset_prompt.character_portrait",
+            "asset_prompt.location",
+            "asset_prompt.style"
+          ]
+        },
+        "package_assembly": {
+          "ok": true,
+          "content_hash": "c4fa1f50bd87211f9a7335f651e8cc26d242f622739c6647f7aadf002d5fc4c5",
+          "schema_version": "1.0.0",
+          "scene_count_in_package": 2
+        }
+      },
+      "blocking_failed": [],
+      "all_blocking_passed": true
+    },
+    {
+      "fixture_id": "fixture_two_character_dialogue",
+      "checks": {
+        "brief": {
+          "ok": true,
+          "title_preserved": true,
+          "audience_present": true,
+          "duration_present": true,
+          "constraints_present": true,
+          "prompt_version": "1.0.0",
+          "prompt_hash": "2a882ce066c5bf5a398cb4a78ce8ef043edc63dc63887efddcf16c14093a198e"
+        },
+        "outline": {
+          "ok": true,
+          "premise_present": true,
+          "synopsis_present": true,
+          "themes_sorted": true,
+          "beats_present": true,
+          "prompt_version": "1.0.0"
+        },
+        "screenplay": {
+          "ok": true,
+          "scene_count": 1,
+          "scene_order_ok": true,
+          "dialogue_attributed": true,
+          "narration_present": true,
+          "golden_characters": [
+            "林默",
+            "陈晓"
+          ],
+          "screenplay_characters": [
+            "林默",
+            "陈晓"
+          ],
+          "prompt_version": "1.0.0"
+        },
+        "dialogue_narration": {
+          "ok": true,
+          "dialogue_count": 6,
+          "narration_scene_count": 1,
+          "character_map": [
+            "林默",
+            "陈晓"
+          ]
+        },
+        "entity_extraction": {
+          "ok": true,
+          "characters": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "extracted": [
+              "林默",
+              "陈晓"
+            ],
+            "golden": [
+              "林默",
+              "陈晓"
+            ]
+          },
+          "locations": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "extracted": [
+              "深夜咖啡馆"
+            ],
+            "golden": [
+              "深夜咖啡馆"
+            ]
+          },
+          "location_equivalence": "recall>=0.9 (screenplay-derived extras allowed)"
+        },
+        "style": {
+          "ok": true,
+          "visual_style": "realistic",
+          "constraint_from_brief": true,
+          "prompt_version": "1.0.0"
+        },
+        "continuation": {
+          "ok": "1.0.0",
+          "existing_scenes_preserved": true,
+          "existing_order_preserved": true,
+          "existing_episode_count": 1,
+          "invalidation_intent": "INVALIDATE_SHOT_PLAN",
+          "proposal_status": "DRAFT",
+          "added_scene_count": 1,
+          "prompt_version": "1.0.0"
+        },
+        "asset_prompts": {
+          "ok": true,
+          "spec_count": 4,
+          "capabilities": [
+            "asset_prompt.character_portrait",
+            "asset_prompt.location",
+            "asset_prompt.style"
+          ]
+        },
+        "package_assembly": {
+          "ok": true,
+          "content_hash": "ba6ce0f5bb4e19178ef595bde778e4e31dbd341d68c6cd8a9d5fa27eab6de701",
+          "schema_version": "1.0.0",
+          "scene_count_in_package": 1
+        }
+      },
+      "blocking_failed": [],
+      "all_blocking_passed": true
+    },
+    {
+      "fixture_id": "fixture_multi_scene_drama",
+      "checks": {
+        "brief": {
+          "ok": true,
+          "title_preserved": true,
+          "audience_present": true,
+          "duration_present": true,
+          "constraints_present": true,
+          "prompt_version": "1.0.0",
+          "prompt_hash": "2a882ce066c5bf5a398cb4a78ce8ef043edc63dc63887efddcf16c14093a198e"
+        },
+        "outline": {
+          "ok": true,
+          "premise_present": true,
+          "synopsis_present": true,
+          "themes_sorted": true,
+          "beats_present": true,
+          "prompt_version": "1.0.0"
+        },
+        "screenplay": {
+          "ok": true,
+          "scene_count": 4,
+          "scene_order_ok": true,
+          "dialogue_attributed": true,
+          "narration_present": true,
+          "golden_characters": [
+            "老周"
+          ],
+          "screenplay_characters": [
+            "老周"
+          ],
+          "prompt_version": "1.0.0"
+        },
+        "dialogue_narration": {
+          "ok": true,
+          "dialogue_count": 3,
+          "narration_scene_count": 4,
+          "character_map": [
+            "老周"
+          ]
+        },
+        "entity_extraction": {
+          "ok": true,
+          "characters": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "extracted": [
+              "老周"
+            ],
+            "golden": [
+              "老周"
+            ]
+          },
+          "locations": {
+            "precision": 0.4,
+            "recall": 1.0,
+            "extracted": [
+              "海面",
+              "灯塔",
+              "灯塔塔底",
+              "灯塔塔顶",
+              "灯塔控制室"
+            ],
+            "golden": [
+              "海面",
+              "灯塔"
+            ]
+          },
+          "location_equivalence": "recall>=0.9 (screenplay-derived extras allowed)"
+        },
+        "style": {
+          "ok": true,
+          "visual_style": "cinematic",
+          "constraint_from_brief": true,
+          "prompt_version": "1.0.0"
+        },
+        "continuation": {
+          "ok": "1.0.0",
+          "existing_scenes_preserved": true,
+          "existing_order_preserved": true,
+          "existing_episode_count": 1,
+          "invalidation_intent": "INVALIDATE_SHOT_PLAN",
+          "proposal_status": "DRAFT",
+          "added_scene_count": 1,
+          "prompt_version": "1.0.0"
+        },
+        "asset_prompts": {
+          "ok": true,
+          "spec_count": 7,
+          "capabilities": [
+            "asset_prompt.character_portrait",
+            "asset_prompt.location",
+            "asset_prompt.style"
+          ]
+        },
+        "package_assembly": {
+          "ok": true,
+          "content_hash": "7f1657b93ea6c6c6bb065afea00c228fd31f1e34559b9750ea5da96d00cbefae",
+          "schema_version": "1.0.0",
+          "scene_count_in_package": 4
+        }
+      },
+      "blocking_failed": [],
+      "all_blocking_passed": true
+    }
+  ]
+}
