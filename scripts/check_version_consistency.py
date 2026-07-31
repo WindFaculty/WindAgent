@@ -122,10 +122,13 @@ class VersionChecker:
         return False
 
     def _get_package_version(self, pkg_name: str) -> Optional[str]:
-        """Get version from installed package metadata."""
+        """Get version from installed package metadata or workspace pyproject.toml."""
         try:
             return pkg_version(pkg_name)
         except PackageNotFoundError:
+            pyprojects = self._discover_workspace_pyprojects()
+            if pkg_name in pyprojects:
+                return self._read_toml_version(pyprojects[pkg_name])
             return None
 
     def _discover_workspace_pyprojects(self) -> Dict[str, Path]:

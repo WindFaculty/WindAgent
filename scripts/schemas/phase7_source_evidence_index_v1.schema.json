@@ -1,0 +1,85 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "WindAgent Phase 7 Source Evidence Index v1",
+  "description": "Canonical, immutable input for finalize_phase7.py. This file is populated from CI artifacts; it contains no publication commit SHA.",
+  "type": "object",
+  "required": [
+    "implementation_verified_sha",
+    "verification_tooling_verified_sha",
+    "implementation_ci",
+    "tooling_ci",
+    "sources"
+  ],
+  "properties": {
+    "implementation_verified_sha": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "verification_tooling_verified_sha": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "implementation_ci": { "$ref": "#/definitions/ciRun" },
+    "tooling_ci": { "$ref": "#/definitions/ciRun" },
+    "branch_protection_for": { "enum": ["implementation", "tooling"] },
+    "sources": {
+      "type": "object",
+      "required": [
+        "artifact_protocol",
+        "version_authority",
+        "architecture_integrity",
+        "cli_truthfulness",
+        "python_matrix",
+        "frontend_matrix",
+        "database_matrix",
+        "runtime_smoke",
+        "negative_injections",
+        "branch_protection"
+      ],
+      "additionalProperties": {
+        "type": "array",
+        "minItems": 1,
+        "items": { "$ref": "#/definitions/source" }
+      }
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "ciRun": {
+      "type": "object",
+      "required": ["run_id", "run_attempt", "head_sha", "workflow_url", "aggregator_job", "producer_jobs"],
+      "properties": {
+        "run_id": { "type": "string", "minLength": 1 },
+        "run_attempt": { "type": "string", "minLength": 1 },
+        "head_sha": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+        "workflow_url": { "type": "string", "pattern": "^https://" },
+        "aggregator_job": {
+          "type": "object",
+          "required": ["name", "conclusion", "job_id"]
+        },
+        "producer_jobs": { "type": "array", "minItems": 13, "maxItems": 13 }
+      }
+    },
+    "source": {
+      "type": "object",
+      "required": [
+        "path",
+        "sha256",
+        "artifact_name",
+        "github_artifact_id",
+        "github_artifact_digest",
+        "source_job",
+        "source_job_id",
+        "source_run_id",
+        "source_head_sha"
+      ],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "kind": { "enum": ["receipt", "report", "pytest_xml", "skip_inventory"] },
+        "artifact_name": { "type": "string", "minLength": 1 },
+        "github_artifact_id": { "type": "integer", "minimum": 1 },
+        "github_artifact_digest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+        "source_job": { "type": "string", "minLength": 1 },
+        "source_job_id": { "type": "integer", "minimum": 1 },
+        "source_run_id": { "type": "string", "minLength": 1 },
+        "source_head_sha": { "type": "string", "pattern": "^[a-f0-9]{40}$" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

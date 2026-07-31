@@ -1,0 +1,69 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "WindAgent Phase 7 Final Artifact v1",
+  "description": "Schema shared by the immutable Phase 7 final evidence artifacts.",
+  "type": "object",
+  "required": [
+    "phase7_artifact_version",
+    "artifact_type",
+    "implementation_verified_sha",
+    "verification_tooling_verified_sha",
+    "publication_model",
+    "source_evidence_index_sha256",
+    "receipt_references",
+    "gates",
+    "risks",
+    "results",
+    "verdict"
+  ],
+  "properties": {
+    "phase7_artifact_version": {
+      "const": "1.0.0"
+    },
+    "artifact_type": {
+      "type": "string",
+      "minLength": 1
+    },
+    "implementation_verified_sha": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{40}$"
+    },
+    "verification_tooling_verified_sha": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{40}$"
+    },
+    "publication_model": {
+      "const": "external_commit_attestation"
+    },
+    "source_evidence_index_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "receipt_references": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "receipt_path",
+          "receipt_sha256",
+          "command_id",
+          "exit_code",
+          "result"
+        ],
+        "properties": {
+          "receipt_path": { "type": "string", "minLength": 1 },
+          "receipt_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+          "command_id": { "type": "string", "minLength": 1 },
+          "exit_code": { "type": "integer" },
+          "result": { "const": "SUCCESS" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "gates": { "type": "object" },
+    "risks": { "type": "object" },
+    "results": { "type": "object" },
+    "verdict": { "enum": ["PASS", "BLOCKED"] }
+  },
+  "additionalProperties": true
+}
