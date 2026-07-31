@@ -1,0 +1,35 @@
+{
+  "fixture_id": "fixture_multi_scene_drama",
+  "capability_path": ["CAP-001", "CAP-002", "CAP-003", "CAP-004", "CAP-005"],
+  "expected_stable_fields": [
+    "episode.episode_number",
+    "episode.act_title",
+    "scene.scene_key",
+    "scene.location",
+    "scene.scene_time",
+    "scene.scene_space",
+    "shot.shot_number",
+    "shot.shot_type",
+    "shot.duration",
+    "shot.content",
+    "character.character_id",
+    "character.name",
+    "setting.setting_id",
+    "setting.name"
+  ],
+  "allowed_variation": [
+    "created_at timestamp",
+    "uuid-suffixed character_id/setting_id suffix",
+    "absolute path to temp result dir"
+  ],
+  "canonicalization_policy": {
+    "strip_fields": ["created_at", "session_id"],
+    "normalize_paths": true,
+    "normalize_random_ids": true,
+    "keep_order": true,
+    "keep_errors": true,
+    "keep_relationships": true
+  },
+  "known_defect_references": ["DEF-001", "DEF-002", "DEF-003", "DEF-004", "DEF-005"],
+  "harness_notes": "Golden fixture #3: multi-scene drama (tests scene order, shot segmentation and duration labeling)."
+}

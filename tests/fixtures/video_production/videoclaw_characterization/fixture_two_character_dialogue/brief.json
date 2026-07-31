@@ -1,0 +1,12 @@
+{
+  "fixture_id": "fixture_two_character_dialogue",
+  "title": "Cà phê đêm",
+  "idea": "两位老友深夜在咖啡馆重逢，一个即将离开这座城市，另一个试图挽留。全程以对话为主。",
+  "style": "realistic",
+  "episodes": 1,
+  "video_ratio": "16:9",
+  "llm_model": "qwen3.5-plus",
+  "vlm_model": "qwen3.5-plus",
+  "image_t2i_model": "doubao-seedream-5-0-260128",
+  "capability_path": ["CAP-001", "CAP-002", "CAP-003", "CAP-004", "CAP-005"]
+}

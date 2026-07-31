@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-Tests for the verify-only (--no-write / --verify-only) mode of the Phase 0-4
-verifiers: `verify_phase3_protocol.py`, `verify_phase03_handoff.py` and
-`verify_phase4_intake.py`.
+Tests for the verify-only (--no-write / --verify-only) mode of the Phase 0-5
+verifiers: `verify_phase3_protocol.py`, `verify_phase03_handoff.py`,
+`verify_phase4_intake.py` and `verify_phase5_characterization.py`.
 
-Contract under test (plan 01, section 26 process note; plan 02 Phase 4):
+Contract under test (plan 01, section 26 process note; plan 02 Phase 4/5):
 - The verifiers run ALL real checks and compute the verdict, but must NOT
   write/rewrite any evidence artifact, so re-running verification never dirties
   the working tree (no more "refresh regenerated timestamps" churn).
@@ -20,6 +20,7 @@ VERIFIERS = (
     "scripts/verification/verify_phase3_protocol.py",
     "scripts/verification/verify_phase03_handoff.py",
     "scripts/verification/verify_phase4_intake.py",
+    "scripts/verification/verify_phase5_characterization.py",
 )
 
 KNOWN_EVIDENCE_FILES = (
@@ -27,6 +28,7 @@ KNOWN_EVIDENCE_FILES = (
     "phase_00/phase_verdict.json",
     "phase_03/phase_verdict.json",
     "phase_04/phase_verdict.json",
+    "phase_05/phase_verdict.json",
 )
 
 

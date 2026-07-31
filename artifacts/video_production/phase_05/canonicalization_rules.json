@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0.0",
+  "strip_fields": [
+    "created_at",
+    "updated_at",
+    "session_id",
+    "timestamp"
+  ],
+  "normalize": [
+    "ISO-8601 timestamps -> <TIMESTAMP>",
+    "uuid4 -> <UUID>",
+    "char_/set_/seg_/shot_ + 6-hex suffix -> prefix_<RANDOM>",
+    "absolute temp workdir path -> <WORKDIR>/..."
+  ],
+  "never_strip": [
+    "scene order",
+    "shot order / duration",
+    "dialogue attribution (speaker/tone/text)",
+    "errors and warnings",
+    "artifact relationships (segment/unit ids, character ids)"
+  ],
+  "harness_controls": [
+    "PYTHONHASHSEED=0 pinned in the probe subprocess so equal-length character names order deterministically across reruns (NONDET-005)"
+  ],
+  "policy_source": "plan 02 Section 12.4"
+}

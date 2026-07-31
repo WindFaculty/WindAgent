@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-07-31T22:41:43.257341+00:00",
+  "isolation": {
+    "runs_as_subprocess": true,
+    "network_blocked": true,
+    "heavy_deps_loaded": false,
+    "cwd_redirected_to_temp": true,
+    "hash_seed_pinned": true,
+    "only_launcher_of_upstream": "scripts/verification/phase5_upstream_probe.py"
+  },
+  "golden_stability": {
+    "schema_version": "1.0.0",
+    "generated_at": "2026-07-31T22:41:42.117258+00:00",
+    "iterations": 3,
+    "probe_count": 30,
+    "stable_after_canonicalization": true,
+    "differences": []
+  },
+  "architecture_quarantine_violations": 0
+}

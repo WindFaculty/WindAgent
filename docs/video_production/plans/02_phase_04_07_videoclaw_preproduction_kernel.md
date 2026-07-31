@@ -286,7 +286,7 @@ Không canonicalize mất nội dung, thứ tự scene, lỗi, warning hoặc ar
 ```text
 artifacts/video_production/phase_05/
 ├── behavior_matrix.json
-├── golden_outputs/
+├── golden_outputs.json
 ├── canonicalization_rules.json
 ├── defect_inventory.json
 ├── nondeterminism_inventory.json
@@ -573,13 +573,19 @@ Director không được nhận upstream session ID, local JSON path hoặc Vide
 ## 26. Checklist đóng kế hoạch
 
 - [x] Snapshot đúng pinned hash và đang quarantine — **Phase 4 PASSED** (2026-08-01). Re-pin amendment: pin Phase 1 metadata cũ (`7b328a99…1234`, không tồn tại upstream, GitHub API 422) được thay bằng HEAD thật `5a16ae23…` (main, 2026-07-17) với ghi chú amendment trong `upstream_source_receipt.json`. Snapshot 443 files (46MB) vendor tại `third_party/videoclaw/upstream/`; archive SHA-256 `6353b4cc…`; content digest `86a8af…`; 0 symlink, 0 path traversal. Evidence: `artifacts/video_production/phase_04/phase_verdict.json` (gate `VP4_VIDEOCLAW_QUARANTINED`).
-- [ ] Characterization matrix đủ happy/failure paths — **Phase 5 chưa thực hiện**.
-- [ ] Canonical pre-production không import upstream — quarantine boundary được enforced: `check_videoclaw_quarantine` trong `scripts/check_architecture_imports.py` (5 negative rules) + `verify_phase4_intake.py`; architecture check PASS 0 violations.
+- [x] Characterization matrix đủ happy/failure paths — **Phase 5 PASSED** (2026-08-01). 27 behavior cases (16 roadmap + 11 extended: Unicode/Vietnamese, empty/oversized, duplicate names, broken response, partial write, cancellation, deterministic rerun, hash-seed ordering) bao phủ 5 capabilities (CAP-001..005) đều có happy + failure path. Evidence: `artifacts/video_production/phase_05/phase_verdict.json` (gate `VP5_VIDEOCLAW_BEHAVIOR_CHARACTERIZED`).
+- [x] Canonical pre-production không import upstream — quarantine boundary được enforced: `check_videoclaw_quarantine` trong `scripts/check_architecture_imports.py` (5 negative rules) + `verify_phase4_intake.py`; architecture check PASS 0 violations. Harness isolation: upstream chỉ được launch qua `scripts/verification/phase5_upstream_probe.py` (subprocess, temp CWD, network-blocked stubs, `PYTHONHASHSEED=0` + `PYTHONDONTWRITEBYTECODE=1`); `tests/architecture/test_phase05_characterization_harness.py` chứng minh canonical code không import/launch upstream.
 - [ ] Ba fixture tạo được `VideoProductionPackage v1` — **Phase 6 chưa thực hiện**.
 - [ ] Asset pipeline vượt security negative tests — **Phase 7 chưa thực hiện**.
 - [ ] Provenance và likeness approval fail closed — **Phase 7 chưa thực hiện**.
-- [x] `VP4` **PASSED** (2026-08-01); `VP5`/`VP6`/`VP7` — chưa thực hiện.
-- [ ] Handoff Director Layer đã được review — chờ các phase 5-7.
+- [x] `VP4` **PASSED** (2026-08-01); `VP5` **PASSED** (2026-08-01); `VP6`/`VP7` — chưa thực hiện.
+- [ ] Handoff Director Layer đã được review — chờ các phase 6-7.
+
+### Ghi chú Phase 5 (characterization)
+
+- Harness: `scripts/verification/phase5_upstream_probe.py` load 4 agent modules upstream qua synthetic package (`importlib.spec_from_file_location`, bypass `core/__init__.py` chain để không kéo FastAPI/OpenAI/DashScope), stub `config`/`models.*` (network blocked), CWD redirect tới temp workdir, stdout UTF-8, `sys.dont_write_bytecode = True` + env `PYTHONDONTWRITEBYTECODE=1` để không tạo `__pycache__`/`.pyc` bên trong `third_party/videoclaw/upstream/` (quarantine Phase 4 pin 443 files + content digest).
+- Verifier `verify_phase5_characterization.py`: behavior matrix (27 cases), canonicalization rules (strip timestamp/uuid/absolute path; giữ order/error/relationship), golden stability 3 reruns (stable sau hash-seed pin; NONDET-005 ghi nhận upstream `sorted(set(names), key=len)` phụ thuộc hash seed), defect inventory DEF-001..005 (all decided, DEF-003 cross-ref NONDET-005), nondeterminism NONDET-001..005 (all explained), harness receipt (hash_seed_pinned), verdict derive từ real probe runs + quarantine check 0 violations. Hỗ trợ `--no-write`/`--verify-only`.
+- Tests: `tests/architecture/test_phase05_characterization_harness.py` (launch/import patterns thay vì keyword-presence — docstring mention hợp lệ; `ALLOWED_LAUNCH_ZONES` = scripts/verification/, tests/, check_architecture_imports.py), `tests/unit/verification/test_phase05_characterization.py`, mở rộng `test_phase03_verifier_no_write.py` cho Phase 5. Full relevant suite 21 passed; architecture PASS 0 violations; Phase 3/4/5 + handoff `--no-write` đều PASSED.
 
 ### Ghi chú Phase 4 (re-pin amendment)
 

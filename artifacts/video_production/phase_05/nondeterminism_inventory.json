@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-07-31T22:41:42.118261+00:00",
+  "entry_count": 5,
+  "all_explained": true,
+  "entries": [
+    {
+      "nondet_id": "NONDET-001",
+      "cause": "uuid.uuid4().hex[:6] in ScriptWriterAgent._gen_id",
+      "observed_in": "character_id/setting_id generation",
+      "accepted_boundary": "Stable canonical IDs; random suffix canonicalized to prefix_<RANDOM>."
+    },
+    {
+      "nondet_id": "NONDET-002",
+      "cause": "datetime.now(timezone.utc).isoformat() in script payload created_at",
+      "observed_in": "screenplay artifact metadata",
+      "accepted_boundary": "created_at stripped by canonicalization; canonical kernel uses injected clock."
+    },
+    {
+      "nondet_id": "NONDET-003",
+      "cause": "os.path.getmtime-based version ordering in _list_versions",
+      "observed_in": "asset version listing",
+      "accepted_boundary": "Deterministic version suffix ordering in canonical asset store."
+    },
+    {
+      "nondet_id": "NONDET-004",
+      "cause": "golden rerun stability gate",
+      "observed_in": "golden fixture reruns",
+      "accepted_boundary": "stable_after_canonicalization=True"
+    },
+    {
+      "nondet_id": "NONDET-005",
+      "cause": "StoryboardAgent._character_names sorts names by length only (sorted(set(...), key=len, reverse=True)); equal-length names fall back to set-iteration order, which varies per interpreter hash seed -> scene_characters/characters list order differs between processes.",
+      "observed_in": "storyboard_annotate / storyboard_regex_segments (characters, scene_characters, shot content)",
+      "accepted_boundary": "Harness pins PYTHONHASHSEED=0 for reproducible reruns. Canonical kernel must order character name lists deterministically (sorted full ordering, not length-then-set)."
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "schema_version": "1.0.0",
+  "recorded_mode": "synthetic_pinned_responses",
+  "note": "Pinned, sanitized responses in the exact shape the upstream prompts request. Used to characterize the upstream deterministic parsing/structuring code (not live model output).",
+  "generate_script": "第1集 豆豆迷路\n\n**第1集-第1场 日 内 森林\n人物：豆豆\n\n豆豆：这里是哪里呀？\n<action>豆豆东张西望，有点害怕。</action>\n\n**第1集-第2场 夜 外 森林深处\n人物：豆豆、阿布\n\n阿布：小朋友，你迷路了吗？\n豆豆：嗯……我找不到回家的路了。\n阿布：别怕，我带你飞回家。\n<action>阿布带着豆豆飞过森林，远处出现灯火。</action>\n\n完",
+  "meta_extract": "{\"title\": \"Mùa hè của Doudou\", \"logline\": \"小狐狸豆豆在猫头鹰阿布的帮助下找到回家的路\", \"genre\": [\"动画\", \"冒险\"], \"mood\": \"温暖\", \"characters\": [{\"name\": \"豆豆\", \"description\": \"一只金色皮毛的小狐狸，胆小而好奇\", \"role\": \"主角\"}, {\"name\": \"阿布\", \"description\": \"一只灰白色的大猫头鹰，乐于助人\", \"role\": \"配角\"}], \"settings\": [{\"name\": \"森林\", \"description\": \"茂密而温暖的秋日森林\"}]}",
+  "act_extract": "[{\"episode_number\": 1, \"act_title\": \"第1集\", \"content\": \"第1集 豆豆迷路\\n\\n**第1集-第1场 日 内 森林\\n人物：豆豆\\n\\n豆豆：这里是哪里呀？\\n<action>豆豆东张西望，有点害怕。</action>\\n\\n**第1集-第2场 夜 外 森林深处\\n人物：豆豆、阿布\\n\\n阿布：小朋友，你迷路了吗？\\n豆豆：嗯……我找不到回家的路了。\\n阿布：别怕，我带你飞回家。\\n<action>阿布带着豆豆飞过森林，远处出现灯火。</action>\\n\\n完\"}]"
+}

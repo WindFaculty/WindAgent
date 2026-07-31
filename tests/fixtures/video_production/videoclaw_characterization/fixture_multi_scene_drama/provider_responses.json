@@ -1,0 +1,8 @@
+{
+  "schema_version": "1.0.0",
+  "recorded_mode": "synthetic_pinned_responses",
+  "note": "Pinned, sanitized responses in the exact shape the upstream prompts request. Used to characterize the upstream deterministic parsing/structuring code.",
+  "generate_script": "第1集 风暴中的灯塔\n\n**第1集-第1场 夜 外 灯塔塔底\n人物：老周\n\n老周：（望向黑沉沉的天空）这风，要变天了。\n<action>老周拉紧雨衣，快步走向塔门。</action>\n\n**第1集-第2场 夜 内 灯塔控制室\n人物：老周\n\n老周：主灯怎么熄了？糟了，渔船还在海上！\n<action>老周抓起工具箱，冲向塔梯。</action>\n\n**第1集-第3场 夜 外 灯塔塔顶\n人物：老周\n\n老周：（咬着牙）撑住，马上就好。\n<action>暴风雨中，老周更换灯泡，一束光刺破黑暗。</action>\n\n**第1集-第4场 晨 外 海面\n人物：老周\n\n<action>晨光中，渔船安全靠岸，老周露出疲惫而欣慰的笑容。</action>\n\n完",
+  "meta_extract": "{\"title\": \"Ngọn đèn cuối cùng\", \"logline\": \"守灯人在暴风雨夜点亮灯塔拯救渔船\", \"genre\": [\"剧情\", \"冒险\"], \"mood\": \"紧张\", \"characters\": [{\"name\": \"老周\", \"description\": \"五十多岁的灯塔守灯人，坚毅而孤独\", \"role\": \"主角\"}], \"settings\": [{\"name\": \"灯塔\", \"description\": \"孤悬海边的旧式灯塔，内部狭窄潮湿\"}, {\"name\": \"海面\", \"description\": \"暴风雨中的黑色海面\"}]}",
+  "act_extract": "[{\"episode_number\": 1, \"act_title\": \"第1集\", \"content\": \"第1集 风暴中的灯塔\\n\\n**第1集-第1场 夜 外 灯塔塔底\\n人物：老周\\n\\n老周：（望向黑沉沉的天空）这风，要变天了。\\n<action>老周拉紧雨衣，快步走向塔门。</action>\\n\\n**第1集-第2场 夜 内 灯塔控制室\\n人物：老周\\n\\n老周：主灯怎么熄了？糟了，渔船还在海上！\\n<action>老周抓起工具箱，冲向塔梯。</action>\\n\\n**第1集-第3场 夜 外 灯塔塔顶\\n人物：老周\\n\\n老周：（咬着牙）撑住，马上就好。\\n<action>暴风雨中，老周更换灯泡，一束光刺破黑暗。</action>\\n\\n**第1集-第4场 晨 外 海面\\n人物：老周\\n\\n<action>晨光中，渔船安全靠岸，老周露出疲惫而欣慰的笑容。</action>\\n\\n完\"}]"
+}

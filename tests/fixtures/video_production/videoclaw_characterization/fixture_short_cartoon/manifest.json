@@ -1,0 +1,30 @@
+{
+  "fixture_id": "fixture_short_cartoon",
+  "capability_path": ["CAP-001", "CAP-002", "CAP-003", "CAP-004", "CAP-005"],
+  "expected_stable_fields": [
+    "episode.episode_number",
+    "episode.act_title",
+    "episode.content",
+    "character.character_id",
+    "character.name",
+    "character.description",
+    "setting.setting_id",
+    "setting.name",
+    "setting.description"
+  ],
+  "allowed_variation": [
+    "created_at timestamp",
+    "uuid-suffixed character_id/setting_id suffix (prefix char_/set_ is stable)",
+    "absolute path to temp result dir"
+  ],
+  "canonicalization_policy": {
+    "strip_fields": ["created_at", "session_id"],
+    "normalize_paths": true,
+    "normalize_random_ids": true,
+    "keep_order": true,
+    "keep_errors": true,
+    "keep_relationships": true
+  },
+  "known_defect_references": ["DEF-001", "DEF-002", "DEF-003", "DEF-004"],
+  "harness_notes": "Golden fixture #1: single-episode short cartoon with 2 characters and 2 settings."
+}

@@ -1,0 +1,8 @@
+{
+  "schema_version": "1.0.0",
+  "recorded_mode": "synthetic_pinned_responses",
+  "note": "Pinned, sanitized responses in the exact shape the upstream prompts request. Used to characterize the upstream deterministic parsing/structuring code.",
+  "generate_script": "第1集 离别前的夜谈\n\n**第1集-第1场 夜 内 深夜咖啡馆\n人物：林默、陈晓\n\n陈晓：你真的决定了？\n林默：（低头搅动咖啡）嗯，机票已经买好了。\n陈晓：这座城市有你的朋友、你的工作……\n林默：我知道，但有些事情必须去面对。\n陈晓：那我祝你一路顺风。\n林默：谢谢，你是唯一来送我的人。\n<action>两人相视一笑，窗外的城市灯火渐渐模糊。</action>\n\n完",
+  "meta_extract": "{\"title\": \"Cà phê đêm\", \"logline\": \"两位老友在深夜咖啡馆告别\", \"genre\": [\"剧情\"], \"mood\": \"感伤\", \"characters\": [{\"name\": \"林默\", \"description\": \"三十岁的设计师，即将离开这座城市\", \"role\": \"主角\"}, {\"name\": \"陈晓\", \"description\": \"林默多年好友，性格沉稳\", \"role\": \"配角\"}], \"settings\": [{\"name\": \"深夜咖啡馆\", \"description\": \"灯光昏黄的临街小咖啡馆\"}]}",
+  "act_extract": "[{\"episode_number\": 1, \"act_title\": \"第1集\", \"content\": \"第1集 离别前的夜谈\\n\\n**第1集-第1场 夜 内 深夜咖啡馆\\n人物：林默、陈晓\\n\\n陈晓：你真的决定了？\\n林默：（低头搅动咖啡）嗯，机票已经买好了。\\n陈晓：这座城市有你的朋友、你的工作……\\n林默：我知道，但有些事情必须去面对。\\n陈晓：那我祝你一路顺风。\\n林默：谢谢，你是唯一来送我的人。\\n<action>两人相视一笑，窗外的城市灯火渐渐模糊。</action>\\n\\n完\"}]"
+}

@@ -1,0 +1,12 @@
+{
+  "fixture_id": "fixture_multi_scene_drama",
+  "title": "Ngọn đèn cuối cùng",
+  "idea": "一名守灯人在暴风雨夜发现灯塔的主灯熄灭，必须冒着风浪爬上塔顶重新点亮它，拯救海上的渔船。多场景、快节奏。",
+  "style": "cinematic",
+  "episodes": 1,
+  "video_ratio": "21:9",
+  "llm_model": "qwen3.5-plus",
+  "vlm_model": "qwen3.5-plus",
+  "image_t2i_model": "doubao-seedream-5-0-260128",
+  "capability_path": ["CAP-001", "CAP-002", "CAP-003", "CAP-004", "CAP-005"]
+}

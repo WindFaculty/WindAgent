@@ -1,0 +1,49 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-07-31T22:41:42.118261+00:00",
+  "defect_count": 5,
+  "all_decided": true,
+  "defects": [
+    {
+      "defect_id": "DEF-001",
+      "observed_probe": "BM-021",
+      "observed_behavior": "extract_json('not json at all {{{ ') -> {'extracted': None}",
+      "upstream_source": "script_agent.ScriptWriterAgent._extract_json_from_text",
+      "failure_class": "FAILURE_BROKEN_RESPONSE",
+      "decision": "REWRITE — canonical kernel must surface a typed parse failure instead of returning None silently."
+    },
+    {
+      "defect_id": "DEF-002",
+      "observed_probe": "BM-017",
+      "observed_behavior": "split_episodes(Vietnamese 'Tập 1: ...') -> {'blocks': [{'episode_number': 1, 'lines': 7}], 'block_count': 1}",
+      "upstream_source": "script_agent.ScriptWriterAgent._split_episode_blocks",
+      "failure_class": "OBSERVED_UNICODE",
+      "decision": "REWRITE — canonical kernel must detect Unicode/Vietnamese episode headers, not CJK-only."
+    },
+    {
+      "defect_id": "DEF-003",
+      "observed_probe": "BM-020",
+      "observed_behavior": "annotate with two '豆豆' characters -> {'unit_count': 6, 'units': [{'unit_id': 'U001', 'line_number': 6, 'text': '豆豆：这里是哪里呀？', 'duration': 2, 'is_dialogue': True, 'speaker': '豆豆', 'tone': '', 'characters': ['豆豆'], 'scene_characters': ['豆豆'], 'scene_key': 1, 'location': '森林', 'scene_time': '日', 'scene_space': '内', 'scene_context': '第1集-第1场 日 内 森林', 'is_entry': False}, {'unit_id': 'U002', 'line_number': 7, 'text': '豆豆东张西望，有点害怕。', 'duration': 2, 'is_dialogue': False, 'speaker': '', 'tone': '', 'characters': ['豆豆'], 'scene_characters': ['豆豆'], 'scene_key': 1, 'location': '森林', 'scene_time': '日', 'scene_space': '内', 'scene_context': '第1集-第1场 日 内 森林', 'is_entry': False}, {'unit_id': 'U003', 'line_number': 12, 'text': '阿布：小朋友，你迷路了吗？', 'duration': 2, 'is_dialogue': True, 'speaker': '阿布', 'tone': '', 'characters': [], 'scene_characters': ['豆豆'], 'scene_key': 2, 'location': '森林', 'scene_time': '夜', 'scene_space': '外', 'scene_context': '第1集-第2场 夜 外 森林深处', 'is_entry': False}, {'unit_id': 'U004', 'line_number': 13, 'text': '豆豆：嗯……我找不到回家的路了。', 'duration': 3, 'is_dialogue': True, 'speaker': '豆豆', 'tone': '', 'characters': ['豆豆'], 'scene_characters': ['豆豆'], 'scene_key': 2, 'location': '森林', 'scene_time': '夜', 'scene_space': '外', 'scene_context': '第1集-第2场 夜 外 森林深处', 'is_entry': False}, {'unit_id': 'U005', 'line_number': 14, 'text': '阿布：别怕，我带你飞回家。', 'duration': 2, 'is_dialogue': True, 'speaker': '阿布', 'tone': '', 'characters': [], 'scene_characters': ['豆豆'], 'scene_key': 2, 'location': '森林', 'scene_time': '夜', 'scene_space': '外', 'scene_context': '第1集-第2场 夜 外 森林深处', 'is_entry': False}, {'unit_id': 'U006', 'line_number': 15, 'text': '阿布带着豆豆飞过森林，远处出现灯火。', 'duration': 2, 'is_dialogue': False, 'speaker': '', 'tone': '', 'characters': ['豆豆'], 'scene_characters': ['豆豆'], 'scene_key': 2, 'location': '森林', 'scene_time': '夜', 'scene_space': '外', 'scene_context': '第1集-第2场 夜 外 森林深处', 'is_entry': False}], 'annotated_lines': 12}",
+      "upstream_source": "storyboard_agent.StoryboardAgent._match_characters",
+      "failure_class": "OBSERVED_DUPLICATE_NAME",
+      "decision": "REWRITE — canonical kernel must bind identity via stable character_id, never merge on display name.",
+      "related_nondeterminism": "NONDET-005 (equal-length name ordering also varies by hash seed)"
+    },
+    {
+      "defect_id": "DEF-004",
+      "observed_probe": "BM-009/BM-016",
+      "observed_behavior": "Version discovery sorts by os.path.getmtime; tie ordering is filesystem-dependent.",
+      "upstream_source": "reference_agent/character_agent._list_versions",
+      "failure_class": "OBSERVED_PARTIAL_WRITE",
+      "decision": "REWRITE — canonical store orders versions deterministically (sort by version suffix)."
+    },
+    {
+      "defect_id": "DEF-005",
+      "observed_probe": "golden scene_header probes",
+      "observed_behavior": "Scene-header parsing result sample: {'location': '灯塔', 'scene_time': '夜', 'scene_space': '外', 'scene_context': '第1集-第1场 夜 外 灯塔塔底'}",
+      "upstream_source": "storyboard_agent.StoryboardAgent._parse_scene_header_parts",
+      "failure_class": "OBSERVED_UNICODE",
+      "decision": "REWRITE — canonical kernel must parse scene headers independent of CJK patterns."
+    }
+  ]
+}

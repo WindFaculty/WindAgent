@@ -1,0 +1,12 @@
+{
+  "fixture_id": "fixture_short_cartoon",
+  "title": "Mùa hè của Doudou",
+  "idea": "一只名叫豆豆的小狐狸在森林里迷路后，遇到一只热心的猫头鹰，最终找到了回家的路。",
+  "style": "anime",
+  "episodes": 1,
+  "video_ratio": "16:9",
+  "llm_model": "qwen3.5-plus",
+  "vlm_model": "qwen3.5-plus",
+  "image_t2i_model": "doubao-seedream-5-0-260128",
+  "capability_path": ["CAP-001", "CAP-002", "CAP-003", "CAP-004", "CAP-005"]
+}
