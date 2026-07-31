@@ -725,6 +725,18 @@
     {
       "from": "providers",
       "to": "core",
+      "file": "providers/windagent_providers/gateway_bridge.py",
+      "line": 8
+    },
+    {
+      "from": "providers",
+      "to": "core",
+      "file": "providers/windagent_providers/gateway_bridge.py",
+      "line": 8
+    },
+    {
+      "from": "providers",
+      "to": "core",
       "file": "providers/windagent_providers/mock.py",
       "line": 10
     },
@@ -1194,6 +1206,24 @@
       "from": "tools",
       "to": "core",
       "file": "tools/windagent_tools/browser/tool.py",
+      "line": 9
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/browser/tool.py",
+      "line": 9
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/browser/tool.py",
+      "line": 10
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/browser/tool.py",
       "line": 10
     },
     {
@@ -1471,6 +1501,54 @@
       "to": "core",
       "file": "workflows/windagent_workflows/registry.py",
       "line": 11
+    },
+    {
+      "from": "workflows",
+      "to": "core",
+      "file": "workflows/windagent_workflows/social_research.py",
+      "line": 29
+    },
+    {
+      "from": "workflows",
+      "to": "core",
+      "file": "workflows/windagent_workflows/social_research.py",
+      "line": 29
+    },
+    {
+      "from": "workflows",
+      "to": "core",
+      "file": "workflows/windagent_workflows/social_research.py",
+      "line": 33
+    },
+    {
+      "from": "workflows",
+      "to": "core",
+      "file": "workflows/windagent_workflows/social_research.py",
+      "line": 34
+    },
+    {
+      "from": "workflows",
+      "to": "core",
+      "file": "workflows/windagent_workflows/social_research.py",
+      "line": 34
+    },
+    {
+      "from": "workflows",
+      "to": "core",
+      "file": "workflows/windagent_workflows/social_research.py",
+      "line": 35
+    },
+    {
+      "from": "workflows",
+      "to": "tools",
+      "file": "workflows/windagent_workflows/social_research.py",
+      "line": 36
+    },
+    {
+      "from": "workflows",
+      "to": "tools",
+      "file": "workflows/windagent_workflows/social_research.py",
+      "line": 36
     },
     {
       "from": "workflows",
@@ -2482,6 +2560,66 @@
     },
     {
       "from": "api",
+      "to": "tools",
+      "file": "apps/api/windagent_api/browser_sessions.py",
+      "line": 22
+    },
+    {
+      "from": "api",
+      "to": "tools",
+      "file": "apps/api/windagent_api/browser_sessions.py",
+      "line": 22
+    },
+    {
+      "from": "api",
+      "to": "tools",
+      "file": "apps/api/windagent_api/browser_sessions.py",
+      "line": 22
+    },
+    {
+      "from": "api",
+      "to": "tools",
+      "file": "apps/api/windagent_api/browser_sessions.py",
+      "line": 22
+    },
+    {
+      "from": "api",
+      "to": "tools",
+      "file": "apps/api/windagent_api/browser_sessions.py",
+      "line": 22
+    },
+    {
+      "from": "api",
+      "to": "tools",
+      "file": "apps/api/windagent_api/browser_sessions.py",
+      "line": 22
+    },
+    {
+      "from": "api",
+      "to": "tools",
+      "file": "apps/api/windagent_api/browser_sessions.py",
+      "line": 30
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/browser_sessions.py",
+      "line": 31
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/browser_sessions.py",
+      "line": 31
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/browser_sessions.py",
+      "line": 31
+    },
+    {
+      "from": "api",
       "to": "storage",
       "file": "apps/api/windagent_api/composition.py",
       "line": 34
@@ -3430,6 +3568,24 @@
     },
     {
       "from": "cli",
+      "to": "workflows",
+      "file": "apps/cli/windagent_cli/composition.py",
+      "line": 922
+    },
+    {
+      "from": "cli",
+      "to": "workflows",
+      "file": "apps/cli/windagent_cli/composition.py",
+      "line": 922
+    },
+    {
+      "from": "cli",
+      "to": "workflows",
+      "file": "apps/cli/windagent_cli/composition.py",
+      "line": 945
+    },
+    {
+      "from": "cli",
       "to": "storage",
       "file": "apps/cli/windagent_cli/composition.py",
       "line": 86
@@ -3474,7 +3630,37 @@
       "from": "cli",
       "to": "core",
       "file": "apps/cli/windagent_cli/main.py",
-      "line": 707
+      "line": 788
+    },
+    {
+      "from": "cli",
+      "to": "providers",
+      "file": "apps/cli/windagent_cli/social_research_composition.py",
+      "line": 12
+    },
+    {
+      "from": "cli",
+      "to": "tools",
+      "file": "apps/cli/windagent_cli/social_research_composition.py",
+      "line": 13
+    },
+    {
+      "from": "cli",
+      "to": "workflows",
+      "file": "apps/cli/windagent_cli/social_research_composition.py",
+      "line": 14
+    },
+    {
+      "from": "cli",
+      "to": "workflows",
+      "file": "apps/cli/windagent_cli/social_research_composition.py",
+      "line": 14
+    },
+    {
+      "from": "cli",
+      "to": "workflows",
+      "file": "apps/cli/windagent_cli/social_research_composition.py",
+      "line": 14
     },
     {
       "from": "cli",
@@ -3855,7 +4041,8 @@
       "core"
     ],
     "workflows": [
-      "core"
+      "core",
+      "tools"
     ],
     "verification": [
       "core"

@@ -1,4 +1,5 @@
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -42,10 +43,16 @@ def run_checker(tmp_path: Path, packages: dict, members=None):
     config_path = tmp_path / "policy.yaml"
     config_path.write_text(yaml.safe_dump(config), encoding="utf-8")
     report_path = tmp_path / "report.json"
+    env = dict(os.environ)
+    pythonpath = [str(ROOT), str(ROOT / "core"), str(ROOT / "providers"), str(ROOT / "workflows"), str(ROOT / "apps" / "cli"), str(ROOT / "apps" / "desktop")]
+    if "PYTHONPATH" in env:
+        pythonpath.append(env["PYTHONPATH"])
+    env["PYTHONPATH"] = os.pathsep.join(pythonpath)
     result = subprocess.run(
         [sys.executable, str(CHECKER), "--root", str(tmp_path), "--config", str(config_path), "--report", str(report_path), "--skip-root-validation", "--skip-scaffold-check"],
         capture_output=True,
         text=True,
+        env=env,
     )
     return result, json.loads(report_path.read_text(encoding="utf-8"))
 
@@ -115,10 +122,16 @@ def test_checker_requires_top_level_plugin_and_skill_packages(tmp_path):
     config["required_top_level_packages"] = ["plugins", "skills"]
     config_path.write_text(yaml.safe_dump(config), encoding="utf-8")
     report_path = tmp_path / "required-report.json"
+    env = dict(os.environ)
+    pythonpath = [str(ROOT), str(ROOT / "core"), str(ROOT / "providers"), str(ROOT / "workflows"), str(ROOT / "apps" / "cli"), str(ROOT / "apps" / "desktop")]
+    if "PYTHONPATH" in env:
+        pythonpath.append(env["PYTHONPATH"])
+    env["PYTHONPATH"] = os.pathsep.join(pythonpath)
     result = subprocess.run(
         [sys.executable, str(CHECKER), "--root", str(tmp_path), "--config", str(config_path), "--report", str(report_path), "--skip-root-validation", "--skip-scaffold-check"],
         capture_output=True,
         text=True,
+        env=env,
     )
     report = json.loads(report_path.read_text(encoding="utf-8"))
     assert result.returncode != 0

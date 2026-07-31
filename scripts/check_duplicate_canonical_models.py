@@ -44,6 +44,39 @@ CANONICAL_MODELS = {
     # Shared domain envelopes (Phase 12 set)
     "EventEnvelope": "core/windagent_core/events/envelope.py",
     "WindAgentError": "core/windagent_core/errors/exceptions.py",
+    # Video production domain (Phase 3 canonical protocol)
+    "VideoProject": "core/windagent_core/domain/video_production/project.py",
+    "ProductionRevision": "core/windagent_core/domain/video_production/project.py",
+    "CreativeBrief": "core/windagent_core/domain/video_production/screenplay.py",
+    "StoryConcept": "core/windagent_core/domain/video_production/screenplay.py",
+    "Screenplay": "core/windagent_core/domain/video_production/screenplay.py",
+    "DialogueLine": "core/windagent_core/domain/video_production/screenplay.py",
+    "Scene": "core/windagent_core/domain/video_production/scene.py",
+    "CharacterBible": "core/windagent_core/domain/video_production/character.py",
+    "LocationBible": "core/windagent_core/domain/video_production/location.py",
+    "PropBible": "core/windagent_core/domain/video_production/location.py",
+    "StyleBible": "core/windagent_core/domain/video_production/location.py",
+    "Shot": "core/windagent_core/domain/video_production/shot.py",
+    "ShotDependency": "core/windagent_core/domain/video_production/shot.py",
+    "ShotDependencyGraph": "core/windagent_core/domain/video_production/shot.py",
+    "CinematicPlan": "core/windagent_core/domain/video_production/shot.py",
+    "ReferenceAsset": "core/windagent_core/domain/video_production/asset.py",
+    "FinalDeliverable": "core/windagent_core/domain/video_production/asset.py",
+    "ContinuityState": "core/windagent_core/domain/video_production/continuity.py",
+    "GenerationRequest": "core/windagent_core/domain/video_production/generation_job.py",
+    "GenerationCandidate": "core/windagent_core/domain/video_production/generation_job.py",
+    "GenerationRecord": "core/windagent_core/domain/video_production/generation_job.py",
+    # NOTE: "ReviewResult" is intentionally NOT registered here because a
+    # pre-existing `ReviewResult` lives in the intelligence layer
+    # (intelligence/windagent_intelligence/reviewer/reviewer.py). The video
+    # production review record is distinguished by its ReviewResultId and
+    # lives in approval.py; the checker would otherwise flag the shared name.
+    "ApprovalDecision": "core/windagent_core/domain/video_production/approval.py",
+    "ApprovalState": "core/windagent_core/domain/video_production/approval.py",
+    "VideoProductionPackage": "core/windagent_core/domain/video_production/package.py",
+    "PackageProvenance": "core/windagent_core/domain/video_production/package.py",
+    # Video production events (Phase 3)
+    "VideoProductionEventEnvelope": "core/windagent_core/events/video_production.py",
 }
 
 LIFECYCLE_ENUMS = {"TaskState", "WorkflowState", "StepState", "SessionState"}

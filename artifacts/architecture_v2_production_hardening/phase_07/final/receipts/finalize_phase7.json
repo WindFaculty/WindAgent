@@ -1,10 +1,10 @@
 {
   "command_id": "finalize_phase7",
-  "command": "uv run python scripts/verification/finalize_phase7.py --verified-sha 6dab084abd3d46cc9f0c9e7dcbb6e65254b83057 --evidence-bundle-sha 10e2260d5abae2660ddaa2d01becf65eedef1cbe --attestation-sha 707009f2fa57ecbf53f799605fcd14700f64f17a --require-clean-worktree --require-ci --require-python-matrix --require-frontend-matrix --require-postgresql --require-negative-injections --require-branch-protection --verify-artifact-hashes --fail-on-open-risk P0 --fail-on-open-risk P1",
+  "command": "uv run python scripts/verification/finalize_phase7.py --verified-sha 6dab084abd3d46cc9f0c9e7dcbb6e65254b83057 --evidence-bundle-sha bd2f99ce63da33256881e15cbd380258bd5de789 --attestation-sha cbf7257643d4a1705fa221ae37e9391b6ee3f40e --require-clean-worktree --require-ci --require-python-matrix --require-frontend-matrix --require-postgresql --require-negative-injections --require-branch-protection --verify-artifact-hashes --fail-on-open-risk P0 --fail-on-open-risk P1",
   "cwd": "D:\\code_ca_nhan\\WindAgent",
-  "started_at": "2026-07-29T15:44:13.232292Z",
-  "finished_at": "2026-07-29T15:44:14.371602Z",
-  "duration_ms": 1139,
+  "started_at": "2026-07-29T15:44:52.085385Z",
+  "finished_at": "2026-07-29T15:44:53.349467Z",
+  "duration_ms": 1264,
   "exit_code": 0,
   "stdout_tail": "PHASE_7_VERSION_DOCUMENTATION_VERDICT_CONVERGED\r\nREADY_FOR_MAIN_PROMOTION\r\n",
   "stderr_tail": "",
@@ -12,7 +12,7 @@
     "os": "nt windows",
     "python": "3.11.15",
     "uv": "uv 0.11.28 (ebf0f43d7 2026-07-07 x86_64-pc-windows-msvc)",
-    "git_sha": "707009f2fa57ecbf53f799605fcd14700f64f17a"
+    "git_sha": "cbf7257643d4a1705fa221ae37e9391b6ee3f40e"
   },
   "expected_exit_codes": [
     0

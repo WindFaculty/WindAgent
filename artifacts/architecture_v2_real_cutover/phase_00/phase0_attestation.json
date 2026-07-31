@@ -1,0 +1,50 @@
+{
+  "phase": "Phase 0 — Baseline và kiểm soát phạm vi Git",
+  "base_branch": "fix/phase7-verification-integrity",
+  "base_sha": "cbf7257643d4a1705fa221ae37e9391b6ee3f40e",
+  "feature_branch": "feat/agent-browser-social-reporting",
+  "head_sha": "ba0b8393d2816a9b628c2267df233828182fc4ac",
+  "merge_base_sha": "cbf7257643d4a1705fa221ae37e9391b6ee3f40e",
+  "pr_number": 10,
+  "pr_state": "draft",
+  "diff_stats": {
+    "files_changed": 15,
+    "insertions": 2230,
+    "deletions": 42
+  },
+  "changed_files": [
+    ".github/workflows/agent-browser-social-e2e.yml",
+    ".gitignore",
+    "apps/cli/pyproject.toml",
+    "apps/cli/windagent_cli/social_report.py",
+    "apps/cli/windagent_cli/social_report_cli.py",
+    "docs/integrations/agent-browser-social-research.md",
+    "tests/integration/test_agent_browser_social_e2e.py",
+    "tests/unit/apps/test_social_report_gateway.py",
+    "tests/unit/tools/test_agent_browser_tool.py",
+    "tests/unit/workflows/test_social_research.py",
+    "tools/windagent_tools/browser/__init__.py",
+    "tools/windagent_tools/browser/agent_browser.py",
+    "tools/windagent_tools/browser/tool.py",
+    "workflows/windagent_workflows/__init__.py",
+    "workflows/windagent_workflows/social_research.py"
+  ],
+  "e2e_ci": {
+    "workflow": "Agent Browser Social E2E",
+    "status": "success",
+    "artifact_id": "8736878678",
+    "artifact_size_bytes": 1539,
+    "artifact_sha256": "03400d23900e5c8945b4db847fecca037a3e822bcca31462c7018358cedf8aff",
+    "head_sha_tested": "ba0b8393d2816a9b628c2267df233828182fc4ac"
+  },
+  "gate_status": {
+    "merge_base_matches_required_sha": true,
+    "diff_contains_only_browser_social_files": true,
+    "no_bundle_or_temp_workflow_files": true,
+    "manifest_exists": true,
+    "pr_not_merged_before_gates": true
+  },
+  "verdict": "PASS",
+  "generated_at": "2025-07-30T00:00:00Z",
+  "generated_by": "phase0_attestation_script"
+}

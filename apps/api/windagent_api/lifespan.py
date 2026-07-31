@@ -10,6 +10,7 @@ from typing import AsyncGenerator
 from fastapi import FastAPI
 
 from windagent_api.bootstrap import initialize_bootstrap
+from windagent_api.browser_sessions import BrowserSessionService
 from windagent_api.composition import ApplicationContainer
 
 logger = logging.getLogger("windagent.api.lifespan")
@@ -33,11 +34,13 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     app.state.provider_registry = container.provider_registry
     app.state.tool_registry = container.tool_registry
     app.state.worker_status_query = container.worker_status_query
+    app.state.browser_session_service = BrowserSessionService()
 
     logger.info("FastAPI lifespan startup complete.")
     try:
         yield
     finally:
         logger.info("FastAPI lifespan shutting down...")
+        await app.state.browser_session_service.close_all()
         await container.shutdown()
         logger.info("FastAPI lifespan shutdown complete.")

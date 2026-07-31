@@ -6,6 +6,9 @@ import {
   goBackBrowser,
   goForwardBrowser,
   reloadBrowser,
+  fetchBrowserState,
+  scrollBrowser,
+  type BrowserState,
 } from "../../../api/client";
 
 interface Props {
@@ -16,44 +19,103 @@ interface Props {
     loading: boolean;
     screenshotUrl: string | null;
     controlledBy: "agent" | "user";
+    extractedText: string;
+    contentChars: number;
+    error: string | null;
+    authenticated: boolean;
+    profile: string | null;
   };
   dispatch: React.Dispatch<any>;
 }
 
 export function AgentBrowserPanel({ sessionId, browserState, dispatch }: Props) {
   const [addressInput, setAddressInput] = useState<string>(browserState.url);
+  const [useChromeProfile, setUseChromeProfile] = useState<boolean>(browserState.authenticated);
+
+  const applyBrowserState = (state: BrowserState) => {
+    dispatch({
+      type: "updateBrowserState",
+      browser: {
+        url: state.url,
+        title: state.title,
+        loading: state.loading,
+        screenshotUrl: state.screenshot_url,
+        controlledBy: state.controlled_by,
+        extractedText: state.extracted_text,
+        contentChars: state.content_chars,
+        error: state.error,
+        authenticated: state.authenticated,
+        profile: state.profile,
+      },
+    });
+  };
+
+  const runBrowserAction = async (action: () => Promise<BrowserState>) => {
+    dispatch({ type: "updateBrowserState", browser: { loading: true, error: null } });
+    try {
+      applyBrowserState(await action());
+    } catch (error) {
+      dispatch({
+        type: "updateBrowserState",
+        browser: {
+          loading: false,
+          error: error instanceof Error ? error.message : "Browser action failed.",
+        },
+      });
+    }
+  };
 
   // Sync addressInput with store state.browser.url
   useEffect(() => {
     setAddressInput(browserState.url);
   }, [browserState.url]);
 
+  useEffect(() => {
+    if (browserState.authenticated) {
+      setUseChromeProfile(true);
+    }
+  }, [browserState.authenticated]);
+
+  useEffect(() => {
+    if (!sessionId) return;
+    void runBrowserAction(() => fetchBrowserState(sessionId));
+  }, [sessionId]);
+
   const handleNavigate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!sessionId || !addressInput.trim()) return;
-    await navigateBrowser(sessionId, addressInput);
+    await runBrowserAction(() =>
+      navigateBrowser(sessionId, addressInput.trim(), {
+        authenticated: useChromeProfile,
+        profile: useChromeProfile ? "Default" : undefined,
+      }),
+    );
   };
 
   const handleBack = async () => {
     if (!sessionId) return;
-    await goBackBrowser(sessionId);
+    await runBrowserAction(() => goBackBrowser(sessionId));
   };
 
   const handleForward = async () => {
     if (!sessionId) return;
-    await goForwardBrowser(sessionId);
+    await runBrowserAction(() => goForwardBrowser(sessionId));
   };
 
   const handleReload = async () => {
     if (!sessionId) return;
-    await reloadBrowser(sessionId);
+    await runBrowserAction(() => reloadBrowser(sessionId));
+  };
+
+  const handleScroll = async () => {
+    if (!sessionId) return;
+    await runBrowserAction(() => scrollBrowser(sessionId));
   };
 
   const handleToggleControl = async () => {
     if (!sessionId) return;
     const newControl = browserState.controlledBy === "user" ? "agent" : "user";
-    await controlBrowser(sessionId, newControl);
-    dispatch({ type: "updateBrowserState", browser: { controlledBy: newControl } });
+    await runBrowserAction(() => controlBrowser(sessionId, newControl));
   };
 
   const handleScreenshotClick = async (e: React.MouseEvent<HTMLImageElement>) => {
@@ -64,7 +126,7 @@ export function AgentBrowserPanel({ sessionId, browserState, dispatch }: Props) 
     const x = Math.round(((e.clientX - rect.left) / rect.width) * 1280);
     const y = Math.round(((e.clientY - rect.top) / rect.height) * 800);
 
-    await clickBrowser(sessionId, x, y);
+    await runBrowserAction(() => clickBrowser(sessionId, x, y));
   };
 
   return (
@@ -120,6 +182,18 @@ export function AgentBrowserPanel({ sessionId, browserState, dispatch }: Props) 
         </form>
 
         <div className="browser-actions">
+          <label
+            title="Use the logged-in Default Chrome profile for this browser session"
+            style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "0.65rem", whiteSpace: "nowrap", color: "var(--text-muted)" }}
+          >
+            <input
+              type="checkbox"
+              checked={useChromeProfile}
+              disabled={!sessionId || browserState.authenticated}
+              onChange={(event) => setUseChromeProfile(event.target.checked)}
+            />
+            Chrome Default
+          </label>
           <button
             className="browser-nav-btn"
             onClick={() => { if (browserState.url) window.open(browserState.url, "_blank"); }}
@@ -128,6 +202,16 @@ export function AgentBrowserPanel({ sessionId, browserState, dispatch }: Props) 
           >
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+          </button>
+          <button
+            className="browser-nav-btn"
+            onClick={handleScroll}
+            disabled={!sessionId || browserState.controlledBy !== "user"}
+            title="Scroll down and refresh extracted data"
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 5v14m-6-6 6 6 6-6" />
             </svg>
           </button>
           <button
@@ -194,7 +278,41 @@ export function AgentBrowserPanel({ sessionId, browserState, dispatch }: Props) 
             Loading...
           </div>
         )}
+        {browserState.error && (
+          <div style={{
+            position: "absolute",
+            bottom: "12px",
+            left: "12px",
+            right: "12px",
+            backgroundColor: "rgba(127, 29, 29, 0.94)",
+            border: "1px solid rgba(248, 113, 113, 0.55)",
+            padding: "8px 10px",
+            borderRadius: "6px",
+            color: "#fecaca",
+            fontSize: "0.72rem",
+          }}>
+            {browserState.error}
+          </div>
+        )}
       </div>
+      {browserState.extractedText && (
+        <details style={{ borderTop: "1px solid var(--border-color)", padding: "8px 12px" }}>
+          <summary style={{ cursor: "pointer", fontSize: "0.74rem", color: "var(--text-muted)" }}>
+            Extracted page data ({browserState.contentChars.toLocaleString()} characters)
+          </summary>
+          <pre style={{
+            maxHeight: "180px",
+            overflow: "auto",
+            margin: "8px 0 0",
+            whiteSpace: "pre-wrap",
+            fontFamily: "var(--font-mono, monospace)",
+            fontSize: "0.7rem",
+            color: "var(--text-main)",
+          }}>
+            {browserState.extractedText}
+          </pre>
+        </details>
+      )}
     </section>
   );
 }

@@ -1,6 +1,6 @@
 {
   "protocol_version": "1.0.0",
-  "generated_at": "2026-07-29T15:44:13.524524+00:00",
+  "generated_at": "2026-07-29T15:44:52.382442+00:00",
   "source_sha": "6dab084abd3d46cc9f0c9e7dcbb6e65254b83057",
   "verified_sha": "6dab084abd3d46cc9f0c9e7dcbb6e65254b83057",
   "branch": "fix/phase7-verification-integrity",
@@ -10,8 +10,8 @@
       "command_id": "validate_ci_evidence",
       "command": "uv run python scripts/verification/validate_ci_evidence.py",
       "cwd": ".",
-      "started_at": "2026-07-29T15:44:13.524524+00:00",
-      "finished_at": "2026-07-29T15:44:13.524524+00:00",
+      "started_at": "2026-07-29T15:44:52.382442+00:00",
+      "finished_at": "2026-07-29T15:44:52.382442+00:00",
       "duration_ms": 1000,
       "exit_code": 0,
       "stdout_tail": "CI evidence validated for 13 required jobs\n",

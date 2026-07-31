@@ -322,19 +322,31 @@ export interface BrowserState {
   url: string;
   title: string;
   loading: boolean;
-  screenshot_path: string;
+  screenshot_url: string | null;
   controlled_by: "agent" | "user";
-  console_logs: string[];
-  errors: string[];
+  extracted_text: string;
+  content_chars: number;
+  error: string | null;
+  authenticated: boolean;
+  profile: string | null;
 }
 
 export async function fetchBrowserState(sessionId: string): Promise<BrowserState> {
-  return v2Unavailable(`Browser state for ${sessionId}`);
+  return request<BrowserState>(`/api/v2/browser/sessions/${encodeURIComponent(sessionId)}`);
 }
 
-export async function navigateBrowser(sessionId: string, url: string): Promise<BrowserState> {
-  void url;
-  return v2Unavailable(`Browser navigation for ${sessionId}`);
+export async function navigateBrowser(
+  sessionId: string,
+  url: string,
+  options: { authenticated?: boolean; profile?: string } = {},
+): Promise<BrowserState> {
+  return request<BrowserState>(
+    `/api/v2/browser/sessions/${encodeURIComponent(sessionId)}/navigate`,
+    {
+      method: "POST",
+      body: JSON.stringify({ url, ...options }),
+    },
+  );
 }
 
 export async function clickBrowser(
@@ -343,10 +355,13 @@ export async function clickBrowser(
   y: number,
   selector?: string,
 ): Promise<BrowserState> {
-  void x;
-  void y;
-  void selector;
-  return v2Unavailable(`Browser click for ${sessionId}`);
+  if (selector) {
+    throw new Error("Coordinate clicks cannot include a selector.");
+  }
+  return request<BrowserState>(
+    `/api/v2/browser/sessions/${encodeURIComponent(sessionId)}/click`,
+    { method: "POST", body: JSON.stringify({ x, y }) },
+  );
 }
 
 export async function typeBrowser(
@@ -354,29 +369,55 @@ export async function typeBrowser(
   text: string,
   selector?: string,
 ): Promise<BrowserState> {
-  void text;
-  void selector;
-  return v2Unavailable(`Browser typing for ${sessionId}`);
+  if (!selector) {
+    throw new Error("A browser selector is required when typing text.");
+  }
+  return request<BrowserState>(
+    `/api/v2/browser/sessions/${encodeURIComponent(sessionId)}/type`,
+    { method: "POST", body: JSON.stringify({ selector, text }) },
+  );
+}
+
+export async function scrollBrowser(
+  sessionId: string,
+  direction: "up" | "down" = "down",
+  pixels = 800,
+): Promise<BrowserState> {
+  return request<BrowserState>(
+    `/api/v2/browser/sessions/${encodeURIComponent(sessionId)}/scroll`,
+    { method: "POST", body: JSON.stringify({ direction, pixels }) },
+  );
 }
 
 export async function controlBrowser(
   sessionId: string,
   control: "agent" | "user",
 ): Promise<BrowserState> {
-  void control;
-  return v2Unavailable(`Browser control for ${sessionId}`);
+  return request<BrowserState>(
+    `/api/v2/browser/sessions/${encodeURIComponent(sessionId)}/control`,
+    { method: "POST", body: JSON.stringify({ controlled_by: control }) },
+  );
 }
 
 export async function goBackBrowser(sessionId: string): Promise<BrowserState> {
-  return v2Unavailable(`Browser back for ${sessionId}`);
+  return request<BrowserState>(
+    `/api/v2/browser/sessions/${encodeURIComponent(sessionId)}/back`,
+    { method: "POST" },
+  );
 }
 
 export async function goForwardBrowser(sessionId: string): Promise<BrowserState> {
-  return v2Unavailable(`Browser forward for ${sessionId}`);
+  return request<BrowserState>(
+    `/api/v2/browser/sessions/${encodeURIComponent(sessionId)}/forward`,
+    { method: "POST" },
+  );
 }
 
 export async function reloadBrowser(sessionId: string): Promise<BrowserState> {
-  return v2Unavailable(`Browser reload for ${sessionId}`);
+  return request<BrowserState>(
+    `/api/v2/browser/sessions/${encodeURIComponent(sessionId)}/reload`,
+    { method: "POST" },
+  );
 }
 
 // ---------- WebSocket Client ----------

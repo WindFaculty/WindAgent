@@ -113,6 +113,11 @@ export function AgentWorkspacePage({
               loading: false,
               screenshotUrl: null,
               controlledBy: "agent" as const,
+              extractedText: "",
+              contentChars: 0,
+              error: null,
+              authenticated: false,
+              profile: null,
             }}
             dispatch={dispatch}
           />

@@ -61,6 +61,11 @@ export interface BrowserSessionState {
   loading: boolean;
   screenshotUrl: string | null;
   controlledBy: "agent" | "user";
+  extractedText: string;
+  contentChars: number;
+  error: string | null;
+  authenticated: boolean;
+  profile: string | null;
 }
 
 export interface AgentSessionEntity {
@@ -168,6 +173,11 @@ function makeDefaultSession(id: string, agentId?: string): AgentSessionEntity {
       loading: false,
       screenshotUrl: null,
       controlledBy: "agent",
+      extractedText: "",
+      contentChars: 0,
+      error: null,
+      authenticated: false,
+      profile: null,
     },
     lastEventSequence: 0,
     connectionStatus: "disconnected",

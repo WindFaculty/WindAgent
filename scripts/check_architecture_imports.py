@@ -13,8 +13,13 @@ from collections import defaultdict
 from dataclasses import dataclass, asdict
 from pathlib import Path
 from typing import Optional
-
 import yaml
+
+DEFAULT_ROOT = Path(__file__).resolve().parent.parent
+for _pkg in ["core", "providers", "workflows", "apps/cli", "apps/desktop"]:
+    _p = str(DEFAULT_ROOT / _pkg)
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
 
 from windagent_core.config.repository_root import find_repository_root, is_repository_root
 

@@ -52,6 +52,45 @@ from windagent_core.events.registry import EventRegistry, BaseEventPayload
 from windagent_core.events.processor import (
     redact_event_payload, EventDeduplicator, ReplayFilter
 )
+from windagent_core.events.video_production import (
+    VideoProductionEventCatalog,
+    VideoProductionEventEnvelope,
+    VideoProductionEventTransitions,
+    EventIdempotencyGuard,
+)
+from windagent_core.domain.video_production import (
+    VideoProject,
+    ProductionRevision,
+    RevisionService,
+    CreativeBrief,
+    StoryConcept,
+    Screenplay,
+    DialogueLine,
+    Scene,
+    CharacterBible,
+    LocationBible,
+    PropBible,
+    StyleBible,
+    Shot,
+    ShotDependency,
+    ShotDependencyGraph,
+    CinematicPlan,
+    ReferenceAsset,
+    AssetAcquisitionRecord,
+    FinalDeliverable,
+    ContinuityState,
+    GenerationRequest,
+    GenerationCandidate,
+    GenerationRecord,
+    ReviewResult,
+    ApprovalDecision,
+    ApprovalState,
+    VideoProductionPackage,
+    PackageProvenance,
+    ValidationIssue,
+    VideoProductionPackageValidator,
+    VIDEO_PRODUCTION_PACKAGE_VERSION,
+)
 
 from windagent_core.contracts import (
     Clock, IdGenerator, TaskRepository, TaskRunRepository, SessionRepository,
@@ -86,6 +125,18 @@ __all__ = [
     # Events
     "EventEnvelope", "EventCatalog",
     "redact_event_payload", "EventDeduplicator", "ReplayFilter",
+    "VideoProductionEventCatalog", "VideoProductionEventEnvelope",
+    "VideoProductionEventTransitions", "EventIdempotencyGuard",
+    # Video Production Domain (Phase 3)
+    "VideoProject", "ProductionRevision", "RevisionService",
+    "CreativeBrief", "StoryConcept", "Screenplay", "DialogueLine", "Scene",
+    "CharacterBible", "LocationBible", "PropBible", "StyleBible",
+    "Shot", "ShotDependency", "ShotDependencyGraph", "CinematicPlan",
+    "ReferenceAsset", "AssetAcquisitionRecord", "FinalDeliverable",
+    "ContinuityState", "GenerationRequest", "GenerationCandidate",
+    "GenerationRecord", "ReviewResult", "ApprovalDecision", "ApprovalState",
+    "VideoProductionPackage", "PackageProvenance", "ValidationIssue",
+    "VideoProductionPackageValidator", "VIDEO_PRODUCTION_PACKAGE_VERSION",
     # Health Contracts
     "HealthStatus", "HealthProfile", "HealthCheckResult", "ReadinessStatus",
     "HealthCheckPort", "DatabaseHealthPort", "SchemaHealthPort", "OutboxHealthPort",

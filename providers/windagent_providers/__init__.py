@@ -85,6 +85,7 @@ from windagent_providers.anthropic import AnthropicProviderAdapter
 from windagent_providers.google import GoogleGeminiProviderAdapter
 from windagent_providers.ollama import OllamaProviderAdapter
 from windagent_providers.local import LocalOllamaManager
+from windagent_providers.gateway_bridge import V3ModelGatewayBridge
 
 # V3 Provider Caches & Singleflight
 from windagent_providers.cache import (
@@ -177,6 +178,7 @@ __all__ = [
     "GoogleGeminiProviderAdapter",
     "OllamaProviderAdapter",
     "LocalOllamaManager",
+    "V3ModelGatewayBridge",
     "InMemoryCacheBackend",
     "InMemorySingleFlight",
     "ResponseCacheService",

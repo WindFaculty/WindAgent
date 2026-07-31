@@ -6,7 +6,7 @@ $ErrorActionPreference = "Stop"
 # HARD-CODE YOUR NARAROUTER API KEY HERE
 # ============================================================
 $NaraApiKey = "sk-nry-OclNeHh1fqJk04syDWj9LR6ZBdwiiDgZv0gnBCpEZKg"
-$Model = "kimi-k2.7-code-free"
+$Model = "deepseek-v4-flash"
 $BaseUrl = "https://router.bynara.id"
 
 if ([string]::IsNullOrWhiteSpace($NaraApiKey)) {

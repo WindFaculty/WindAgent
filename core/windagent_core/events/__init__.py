@@ -8,6 +8,12 @@ from windagent_core.events.envelope import EventEnvelope
 from windagent_core.events.catalog import EventCatalog
 from windagent_core.events.registry import EventRegistry, BaseEventPayload
 from windagent_core.events.processor import redact_event_payload, EventDeduplicator, ReplayFilter
+from windagent_core.events.video_production import (
+    VideoProductionEventCatalog,
+    VideoProductionEventEnvelope,
+    VideoProductionEventTransitions,
+    EventIdempotencyGuard,
+)
 
 __all__ = [
     "EventEnvelope",
@@ -17,4 +23,8 @@ __all__ = [
     "redact_event_payload",
     "EventDeduplicator",
     "ReplayFilter",
+    "VideoProductionEventCatalog",
+    "VideoProductionEventEnvelope",
+    "VideoProductionEventTransitions",
+    "EventIdempotencyGuard",
 ]

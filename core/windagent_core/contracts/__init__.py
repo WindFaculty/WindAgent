@@ -92,6 +92,13 @@ from windagent_core.contracts.finalization import (
     StaleResultRejectedError,
     TaskFinalizationPort,
 )
+from windagent_core.contracts.video_production import (
+    PreproductionPort,
+    VideoDirectionPort,
+    MediaGenerationProviderPort,
+    AssetStoragePort,
+    QualityReviewPort,
+)
 
 __all__ = [
     "Clock",
@@ -167,4 +174,10 @@ __all__ = [
     "FinalizeTaskExecutionResult",
     "StaleResultRejectedError",
     "TaskFinalizationPort",
+    # Video Production Ports (Phase 3)
+    "PreproductionPort",
+    "VideoDirectionPort",
+    "MediaGenerationProviderPort",
+    "AssetStoragePort",
+    "QualityReviewPort",
 ]

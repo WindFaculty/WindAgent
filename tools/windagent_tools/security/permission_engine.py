@@ -38,13 +38,20 @@ HIGH_RISK_LEVELS = {
 HARD_DENY_ACTIONS = {"format_c", "drop_production_db", "exfiltrate_keys", "bypass_auth"}
 
 
+from pathlib import Path
+
+
 def normalize_and_validate_path(target_path: str, workspace_root: str) -> bool:
     """Validates that normalized absolute target_path is within normalized absolute workspace_root."""
     if not target_path or not workspace_root:
         return False
-    norm_root = os.path.abspath(os.path.normpath(workspace_root))
-    norm_target = os.path.abspath(os.path.normpath(target_path))
-    return norm_target.startswith(norm_root)
+    try:
+        norm_root = Path(workspace_root).resolve()
+        norm_target = Path(target_path).resolve()
+        norm_target.relative_to(norm_root)
+        return True
+    except (ValueError, RuntimeError, TypeError):
+        return False
 
 
 class PermissionEngine:
@@ -95,7 +102,7 @@ class PermissionEngine:
                     audit_metadata={"target_path": target_path, "workspace_root": workspace_root}
                 )
 
-        # 4. Destructive action check (missing profile -> NOT auto-approved)
+        # 4. Destructive action check (missing profile/approval -> NOT auto-approved)
         is_destructive = req.risk_level in (RiskLevel.HIGH, RiskLevel.CRITICAL) or req.context.get("is_destructive", False)
         is_auto_approved = req.context.get("user_approved", False)
 
@@ -109,6 +116,25 @@ class PermissionEngine:
                 matched_rule="DESTRUCTIVE_GUARD_POLICY",
                 audit_metadata={"action": req.action, "target": req.target}
             )
+
+        # 5. Principal explicit permission check
+        if req.principal and req.principal.permissions:
+            required_perms = req.context.get("required_permissions") or [req.action]
+            check_perms = list(required_perms) + [req.action, "*"]
+            has_perm = any(
+                req.principal.has_permission(perm, req.target) or req.principal.has_permission(perm, "*")
+                for perm in check_perms
+            )
+            if not has_perm and "admin" not in req.principal.roles:
+                return PermissionDecision(
+                    decision_id=decision_id,
+                    outcome="DENY",
+                    risk_level=RiskLevel.HIGH,
+                    reason_code="PRINCIPAL_PERMISSION_DENIED",
+                    human_reason=f"Principal [{req.principal.id}] lacks required permission for action [{req.action}].",
+                    matched_rule="PRINCIPAL_PERMISSION_POLICY",
+                    audit_metadata={"principal_id": req.principal.id, "action": req.action, "target": req.target}
+                )
 
         # Approved / Allow
         return PermissionDecision(
@@ -143,7 +169,8 @@ class PermissionEngine:
                 "target_path": explicit_path,
                 "workspace_root": ctx.workspace_root,
                 "user_approved": ctx.user_approved,
-                "is_destructive": definition.risk_level == ToolRiskLevel.DESTRUCTIVE
+                "is_destructive": definition.risk_level == ToolRiskLevel.DESTRUCTIVE,
+                "required_permissions": getattr(definition, "required_permissions", []),
             }
         )
 

@@ -48,7 +48,10 @@ class Principal:
 
     def has_permission(self, action: str, target: str) -> bool:
         for perm in self.permissions:
-            if perm.action in (action, "*") and perm.target in (target, "*"):
+            if isinstance(perm, str):
+                if perm in (action, "*"):
+                    return True
+            elif getattr(perm, "action", None) in (action, "*") and getattr(perm, "target", None) in (target, "*"):
                 return True
         return False
 

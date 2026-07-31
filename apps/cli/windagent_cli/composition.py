@@ -896,6 +896,57 @@ class StatusCommandComposer:
         }
 
 
+class SocialReportCommandComposer:
+    """Composes services for 'social-report' command (Phase 6)."""
+
+    def __init__(self, config=None):
+        self.config = config
+
+    async def run_report(
+        self,
+        *,
+        query: str,
+        urls: Sequence[str],
+        output_dir: str = "artifacts/social_reports",
+        workspace_root: str = ".",
+        task_id: Optional[str] = None,
+        session_id: Optional[str] = None,
+        skip_model_preflight: bool = False,
+        save_screenshots: bool = True,
+        authenticated: bool = False,
+        profile: Optional[str] = None,
+    ):
+        from windagent_cli.social_research_composition import (
+            compose_social_research_workflow,
+        )
+        from windagent_workflows.social_research import (
+            SocialResearchConfig,
+            SocialSourceSpec,
+        )
+
+        cfg = SocialResearchConfig(
+            output_dir=output_dir,
+            skip_model_preflight=skip_model_preflight,
+            save_screenshots=save_screenshots,
+            browser_authenticated=authenticated,
+            browser_profile=profile,
+        )
+        workflow = compose_social_research_workflow(config=cfg)
+        sources = [SocialSourceSpec(url=u) for u in urls]
+        return await workflow.run(
+            query=query,
+            sources=sources,
+            workspace_root=workspace_root,
+            task_id=task_id,
+            session_id=session_id,
+        )
+
+    def verify_report(self, report_dir: str):
+        from windagent_workflows.social_research import verify_report_integrity
+
+        return verify_report_integrity(report_dir)
+
+
 # Command registry for per-command composition
 COMMAND_COMPOSERS = {
     "doctor": DoctorCommandComposer,
@@ -910,4 +961,5 @@ COMMAND_COMPOSERS = {
     "providers": ProvidersCommandComposer,
     "tools": ToolsCommandComposer,
     "status": StatusCommandComposer,
+    "social-report": SocialReportCommandComposer,
 }

@@ -37,6 +37,7 @@ from windagent_api.routers.v2_plugins import router as v2_plugins_router
 from windagent_api.routers.v2_skills import router as v2_skills_router
 from windagent_api.routers.v2_evals import router as v2_evals_router
 from windagent_api.routers.v2_observability import router as v2_observability_router
+from windagent_api.routers.v2_browser import router as v2_browser_router
 
 logger = logging.getLogger("windagent.api.main")
 
@@ -140,6 +141,7 @@ app.include_router(v2_plugins_router)
 app.include_router(v2_skills_router)
 app.include_router(v2_evals_router)
 app.include_router(v2_observability_router)
+app.include_router(v2_browser_router)
 
 
 # API V1 Tombstone Handler - Returns 410 Gone for all /api/v1/* requests

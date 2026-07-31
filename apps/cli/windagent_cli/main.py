@@ -199,6 +199,87 @@ async def run_task(prompt: str, workflow: str = "bugfix", json_mode: bool = Fals
             await composer.shutdown(db)
 
 
+async def run_social_report(
+    *,
+    query: Optional[str] = None,
+    urls: Optional[list[str]] = None,
+    verify_dir: Optional[str] = None,
+    output_dir: str = "artifacts/social_reports",
+    task_id: Optional[str] = None,
+    session_id: Optional[str] = None,
+    skip_preflight: bool = False,
+    save_screenshots: bool = True,
+    authenticated: bool = False,
+    profile: Optional[str] = None,
+    json_mode: bool = False,
+) -> int:
+    from windagent_cli.composition import SocialReportCommandComposer
+
+    composer = SocialReportCommandComposer()
+
+    if verify_dir:
+        is_valid, errors = composer.verify_report(verify_dir)
+        payload = {
+            "verified": is_valid,
+            "report_dir": verify_dir,
+            "errors": errors,
+            "data_source": "LIVE",
+        }
+        if json_mode:
+            print(json.dumps(payload, indent=2))
+        else:
+            print("=== WindAgent Social Report Verification ===")
+            print(f"Report Directory: {verify_dir}")
+            print(f"Integrity Status: {'VALID' if is_valid else 'INVALID'}")
+            if errors:
+                for err in errors:
+                    print(f"  - Error: {err}", file=sys.stderr)
+        return 0 if is_valid else 1
+
+    if not query or not urls:
+        return _runtime_error(
+            "--query and at least one --url are required unless using --verify",
+            json_mode,
+            exit_code=3,
+        )
+
+    try:
+        res = await composer.run_report(
+            query=query,
+            urls=urls,
+            output_dir=output_dir,
+            workspace_root=".",
+            task_id=task_id,
+            session_id=session_id,
+            skip_model_preflight=skip_preflight,
+            save_screenshots=save_screenshots,
+            authenticated=authenticated,
+            profile=profile,
+        )
+        res_data = {
+            "report_id": res.report_id,
+            "status": res.status,
+            "markdown_path": res.markdown_path,
+            "json_path": res.json_path,
+            "source_count": res.source_count,
+            "successful_source_count": res.successful_source_count,
+            "schema_version": "2.0.0",
+            "data_source": "LIVE",
+        }
+        if json_mode:
+            print(json.dumps(res_data, indent=2))
+        else:
+            print("=== WindAgent Social Research Report Generated ===")
+            print(f"Report ID: {res.report_id}")
+            print(f"Status: {res.status}")
+            print(f"Markdown: {res.markdown_path}")
+            print(f"JSON: {res.json_path}")
+            print(f"Sources Collected: {res.successful_source_count}/{res.source_count}")
+        return 0
+    except Exception as exc:
+        return _command_failure("Social report pipeline", exc, json_mode)
+
+
 def get_status(json_mode: bool = False, demo: bool = False) -> int:
     """Queries real system readiness status."""
     if demo:
@@ -905,7 +986,6 @@ def main(args=None) -> int:
     eval_parser.add_argument("--suite", type=str, default="all", help="Evaluation suite name")
     eval_parser.add_argument("--json", action="store_true", help="JSON output mode")
     eval_parser.add_argument("--demo", action="store_true", help="Run in demo mode with simulated data")
-
     p_arch = subparsers.add_parser("architecture-check", help="Run architecture integrity and boundary checks")
     p_arch.add_argument("--json", action="store_true", help="JSON output mode")
 
@@ -914,6 +994,19 @@ def main(args=None) -> int:
 
     p_ptest = subparsers.add_parser("provider-test", help="Test provider connectivity")
     p_ptest.add_argument("--json", action="store_true", help="JSON output mode")
+
+    p_soc = subparsers.add_parser("social-report", help="Run social research workflow or verify report integrity")
+    p_soc.add_argument("--query", type=str, help="Research topic or question")
+    p_soc.add_argument("--url", action="append", dest="urls", help="Social post/video URL (can be specified multiple times)")
+    p_soc.add_argument("--output-dir", type=str, default="artifacts/social_reports", help="Output directory")
+    p_soc.add_argument("--task-id", type=str, help="Associated Task ID")
+    p_soc.add_argument("--session-id", type=str, help="Associated Session ID")
+    p_soc.add_argument("--verify", type=str, help="Verify integrity of an existing report directory")
+    p_soc.add_argument("--skip-preflight", action="store_true", help="Skip model preflight discovery check")
+    p_soc.add_argument("--no-screenshots", action="store_false", dest="save_screenshots", help="Disable screenshot captures")
+    p_soc.add_argument("--authenticated", action="store_true", help="Opt-in to authenticated browser profile")
+    p_soc.add_argument("--profile", type=str, help="Browser profile name")
+    p_soc.add_argument("--json", action="store_true", help="JSON output mode")
 
     try:
         parsed = parser.parse_args(args)
@@ -961,24 +1054,28 @@ def main(args=None) -> int:
                         json_flag,
                         exit_code=3,
                     )
-                return task_list(json_mode=json_flag, demo=getattr(parsed, "demo", False),
-                               limit=limit, offset=offset,
-                               status=getattr(parsed, "task_status", None),
-                               after=getattr(parsed, "after", None),
-                               session_id=getattr(parsed, "session_id", None))
+                return task_list(
+                    json_mode=json_flag,
+                    demo=getattr(parsed, "demo", False),
+                    limit=limit,
+                    offset=offset,
+                    status=getattr(parsed, "task_status", None),
+                    after=getattr(parsed, "after", None),
+                    session_id=getattr(parsed, "session_id", None),
+                )
     elif parsed.command == "replay":
-            trace_id = getattr(parsed, "trace_id", None)
-            if trace_id is None and not getattr(parsed, "demo", False):
-                if json_flag:
-                    print(json.dumps({
-                        "error": "trace_id required unless --demo",
-                        "data_source": "LIVE",
-                        "non_production": False,
-                    }, indent=2))
-                else:
-                    print("ERROR: trace_id required unless --demo", file=sys.stderr)
-                return 3
-            return replay_trace(trace_id or "trace_demo", json_mode=json_flag, demo=getattr(parsed, "demo", False))
+        trace_id = getattr(parsed, "trace_id", None)
+        if trace_id is None and not getattr(parsed, "demo", False):
+            if json_flag:
+                print(json.dumps({
+                    "error": "trace_id required unless --demo",
+                    "data_source": "LIVE",
+                    "non_production": False,
+                }, indent=2))
+            else:
+                print("ERROR: trace_id required unless --demo", file=sys.stderr)
+            return 3
+        return replay_trace(trace_id or "trace_demo", json_mode=json_flag, demo=getattr(parsed, "demo", False))
     elif parsed.command == "providers":
         return list_providers(json_mode=json_flag, demo=getattr(parsed, "demo", False))
     elif parsed.command == "tools":
@@ -993,10 +1090,26 @@ def main(args=None) -> int:
     elif parsed.command == "provider-test":
         import asyncio
         return asyncio.run(_async_provider_test(json_mode=json_flag))
-    # Async commands
     elif parsed.command == "run":
         import asyncio
         return asyncio.run(run_task(parsed.prompt, parsed.workflow, json_mode=json_flag))
+    elif parsed.command == "social-report":
+        import asyncio
+        return asyncio.run(
+            run_social_report(
+                query=getattr(parsed, "query", None),
+                urls=getattr(parsed, "urls", None),
+                verify_dir=getattr(parsed, "verify", None),
+                output_dir=getattr(parsed, "output_dir", "artifacts/social_reports"),
+                task_id=getattr(parsed, "task_id", None),
+                session_id=getattr(parsed, "session_id", None),
+                skip_preflight=getattr(parsed, "skip_preflight", False),
+                save_screenshots=getattr(parsed, "save_screenshots", True),
+                authenticated=getattr(parsed, "authenticated", False),
+                profile=getattr(parsed, "profile", None),
+                json_mode=json_flag,
+            )
+        )
     else:
         parser.print_help()
         return 0
