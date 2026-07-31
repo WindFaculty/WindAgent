@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "generated_at": "2026-07-31T17:11:16.892251+00:00",
+  "generated_at": "2026-07-31T17:12:33.928343+00:00",
   "baseline_sha": "1d98e26fe8923549e848e1a73cf32c6bb59944c1",
   "upstream": {
     "repository": "https://github.com/HITsz-TMG/VideoClaw",
@@ -164,7 +164,7 @@
     "artifacts/video_production/phase_00/baseline_commit.json": "c424b307ec57636b6b1cf3aeea9421ea85740f1b13b27320560b90d417681260",
     "artifacts/video_production/phase_00/architecture_baseline.json": "f49f2b992a1f406e858af0f0f29b9313153c7e18e614785962e07a7263bee420",
     "artifacts/video_production/phase_01/upstream_source_receipt.json": "6d12a6818ff4e8928fd06ee3d7ab25c130dd04b7c2e7267f0be309c4980fd08a",
-    "artifacts/video_production/phase_01/source_tree_hashes.json": "adf6f107abd6db6d6e544251fcc1ea196b5adea7af702b5ffe4ae6776b9acf45",
+    "artifacts/video_production/phase_01/source_tree_hashes.json": "9b08c6813925ced8b91399ec5aba505c49401d6e2002f0d830f982de23367968",
     "docs/upstream/videoclaw/adoption_matrix.md": "675940264c415feb1a73ab458c01eb52dd79df48e06a3ac9f56bfbe5325a65c3",
     "docs/video_production/director_research/clean_room_attestation.md": "b09249ef447632c1acf3f371f87fd0227fcf698bf3c92cb0757535bd1d93fc13",
     "docs/video_production/director_research/independent_requirements.md": "aace4b5d286b7d5e3a16d3b454c3787b9b3ec9c03ae3d934deb8b886d792b023",
