@@ -3,6 +3,7 @@
   "phase": 1,
   "calculated_at": "2026-07-31T18:57:00Z",
   "upstream_commit": "7b328a99d45e11f0c2e9123456789abcdef01234",
+  "provenance_note": "Per-file hashes are metadata-derived from the pinned upstream commit review (verification_method METADATA_REVIEW_ONLY_NO_SOURCE_VENDORED). Phase 0-3 does NOT vendor VideoClaw source; these hashes document the reviewed tree structure for the adoption matrix, not vendored content in this repository.",
   "file_hashes": [
     {
       "path": "LICENSE",
