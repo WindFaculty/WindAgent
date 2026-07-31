@@ -1,0 +1,177 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "VP0",
+  "analysis_status": "CONFIRMED",
+  "baseline_sha": "cbf7257643d4a1705fa221ae37e9391b6ee3f40e",
+  "phase7_verified_sha": "6dab084abd3d46cc9f0c9e7dcbb6e65254b83057",
+  "phase7_ci_run": {
+    "repository": "WindFaculty/WindAgent",
+    "run_id": "30456084211",
+    "run_attempt": "1",
+    "head_sha": "6dab084abd3d46cc9f0c9e7dcbb6e65254b83057",
+    "conclusion": "success",
+    "workflow": "CI",
+    "immutable_locator": "https://github.com/WindFaculty/WindAgent/actions/runs/30456084211"
+  },
+  "blockers": [
+    {
+      "blocker_id": "VP0-BLOCKER-001",
+      "symptom": "The clean-baseline full pytest run fails in test_finalizer_gate_evaluation because web-test-evidence/receipts/build.json is absent.",
+      "failing_command": "uv run pytest -v --tb=short",
+      "expected": "A unit test must be self-contained or receive an explicitly hydrated evidence root.",
+      "observed": "The test resolves the repository root, ignores its tmp_path fixture, and calls build_evidence_bundle against evidence directories outside Git.",
+      "root_cause": "The test is not hermetic. It treats ignored CI artifact directories as repository source without arranging a fixture or an explicit hydration contract.",
+      "classification": "TEST_DEFECT",
+      "affected_files": [
+        "tests/unit/verification/test_finalize_phase7.py",
+        "scripts/verification/finalize_phase7.py"
+      ],
+      "affected_commits": [
+        "b6a162ae8891a3bcbb446ff0b49ad870c478c343",
+        "cbf7257643d4a1705fa221ae37e9391b6ee3f40e"
+      ],
+      "proof": [
+        "tests/unit/verification/test_finalize_phase7.py at the baseline sets root_dir to the repository root and does not use tmp_path.",
+        "scripts/verification/finalize_phase7.py loads web-test-evidence/receipts/build.json directly from root_dir.",
+        "logs/python_full_suite.stdout.log records the missing-file failure in the isolated checkout."
+      ],
+      "recommended_fix_layer": "Test and verification-boundary contract; do not change runtime application code.",
+      "runtime_change_required": false,
+      "confidence": "HIGH"
+    },
+    {
+      "blocker_id": "VP0-BLOCKER-002",
+      "symptom": "The required CI evidence roots are not present in a clean checkout even though Phase 7 finalization reads them as local directories.",
+      "failing_command": "uv run pytest -v --tb=short",
+      "expected": "Required evidence must have a deterministic manifest and a verified hydration procedure.",
+      "observed": "web-test-evidence/receipts/build.json has no Git history and is excluded by .gitignore rule *-evidence/. The exact CI artifact web-test-evidence is available from run 30456084211, artifact ID 8725570639, digest sha256:c418c781e21ab0512c9a054b33d72f051c62c478a5cf14c17e842928d6b947c0.",
+      "root_cause": "The artifact was published to GitHub Actions and remains available, but no source-controlled manifest maps it to a baseline and no hydrator makes the required roots available to isolated verification.",
+      "classification": "EVIDENCE_HYDRATION_DEFECT",
+      "affected_files": [
+        ".gitignore",
+        "scripts/verification/finalize_phase7.py",
+        ".github/workflows/ci.yaml"
+      ],
+      "affected_commits": [
+        "6dab084abd3d46cc9f0c9e7dcbb6e65254b83057",
+        "cbf7257643d4a1705fa221ae37e9391b6ee3f40e"
+      ],
+      "proof": [
+        "git log --all -- web-test-evidence/receipts/build.json is empty.",
+        "git check-ignore -v identifies .gitignore rule *-evidence/.",
+        ".github/workflows/ci.yaml creates artifacts/ci/web-test/receipts/build.json, uploads web-test-evidence, and final-evidence downloads *-evidence artifacts.",
+        "root_cause_evidence/github_artifacts.json confirms the exact artifact is non-expired.",
+        "root_cause_evidence/phase0_ci_evidence_validation.json verifies all 13 downloaded job artifacts."
+      ],
+      "recommended_fix_layer": "Evidence publication manifest plus a fail-closed hydrator; do not weaken receipt or schema validation.",
+      "runtime_change_required": false,
+      "confidence": "HIGH"
+    },
+    {
+      "blocker_id": "VP0-BLOCKER-003",
+      "symptom": "The Phase 0 baseline SHA is cbf725..., while all recoverable Phase 7 CI receipts prove source SHA 6dab084....",
+      "failing_command": "artifact schema validation using candidate SHA cbf725...",
+      "expected": "An attestation must state whether its baseline tree is identical to, or differs from, the source tree verified by upstream CI.",
+      "observed": "git diff 6dab084... cbf725... includes .gitignore plus scripts/verification/finalize_phase7.py and tests/unit/verification/test_finalize_phase7.py. The Phase 7 authoritative verdict and CI manifest declare verified_sha 6dab084....",
+      "root_cause": "The publication chain lacks a canonical mapping from the attestation baseline to the distinct CI-verified source SHA and its exact artifact digests.",
+      "classification": "MANIFEST_PROVENANCE_DEFECT",
+      "affected_files": [
+        "artifacts/architecture_v2_production_hardening/phase_07/phase_verdict.md",
+        "artifacts/architecture_v2_production_hardening/phase_07/final/ci_run_manifest.json"
+      ],
+      "affected_commits": [
+        "6dab084abd3d46cc9f0c9e7dcbb6e65254b83057",
+        "bd2f99ce63da33256881e15cbd380258bd5de789",
+        "cbf7257643d4a1705fa221ae37e9391b6ee3f40e"
+      ],
+      "proof": [
+        "The baseline Phase 7 verdict declares verified_sha 6dab084....",
+        "root_cause_evidence/github_run.json identifies the same SHA as the exact CI run head SHA.",
+        "The baseline tree has the cited source/test additions relative to 6dab084...."
+      ],
+      "recommended_fix_layer": "Phase 0 evidence manifest and provenance verifier. Preserve both SHA roles; never rewrite one as the other.",
+      "runtime_change_required": false,
+      "confidence": "HIGH"
+    },
+    {
+      "blocker_id": "VP0-BLOCKER-004",
+      "symptom": "The initial Phase 0 attempt invoked validate_ci_evidence.py without its required inputs.",
+      "failing_command": "uv run python scripts/verification/validate_ci_evidence.py",
+      "expected": "The validator must receive download root, receipt schema, verified SHA, exact run identity, job conclusions, required job list, and output path.",
+      "observed": "With the exact CI workflow arguments and the 13 artifact roots from run 30456084211, the unchanged validator returns PASS.",
+      "root_cause": "The command manifest omitted the validator's CI aggregation contract. This is not a validator defect and must not be fixed by relaxing validation.",
+      "classification": "MANIFEST_PROVENANCE_DEFECT",
+      "affected_files": [
+        "artifacts/video_production/phase_00/test_command_manifest.json",
+        ".github/workflows/ci.yaml"
+      ],
+      "affected_commits": [
+        "cbf7257643d4a1705fa221ae37e9391b6ee3f40e"
+      ],
+      "proof": [
+        "The validator argparse contract requires all listed inputs.",
+        "root_cause_evidence/phase0_ci_evidence_validation.json has verdict PASS for the exact run evidence.",
+        "root_cause_evidence/phase0_ci_evidence_validation.stdout.log records CI evidence validated for 13 required jobs."
+      ],
+      "recommended_fix_layer": "Phase 0 test command manifest and evidence hydration contract.",
+      "runtime_change_required": false,
+      "confidence": "HIGH"
+    },
+    {
+      "blocker_id": "VP0-BLOCKER-005",
+      "symptom": "Even after evidence hydration, the baseline unit test invokes a finalizer that writes Phase 7 final artifacts into the checkout it is supposed to verify.",
+      "failing_command": "uv run pytest -v --tb=short",
+      "expected": "A certification test must leave its isolated checkout clean, or write only beneath an explicitly supplied disposable output directory.",
+      "observed": "test_finalizer_gate_evaluation ignores tmp_path, passes the repository root to build_evidence_bundle, and the baseline finalizer creates artifacts/architecture_v2_production_hardening/phase_07/final then writes reports and manifests there.",
+      "root_cause": "The test couples a read/verify assertion to a mutating production builder and supplies no disposable destination. A successful invocation would alter tracked Phase 7 final artifacts in the isolated baseline checkout.",
+      "classification": "TEST_DEFECT",
+      "affected_files": [
+        "tests/unit/verification/test_finalize_phase7.py",
+        "scripts/verification/finalize_phase7.py"
+      ],
+      "affected_commits": [
+        "b6a162ae8891a3bcbb446ff0b49ad870c478c343",
+        "cbf7257643d4a1705fa221ae37e9391b6ee3f40e"
+      ],
+      "proof": [
+        "The baseline test resolves root_dir from __file__ and does not use tmp_path.",
+        "The baseline finalizer calls final_dir.mkdir(...) under root_dir and writes risk_register.md, reports, manifests, and final_verdict.json there.",
+        "The finalizer source has write_text calls from lines 386 through 763 in the isolated baseline snapshot.",
+        "logs/finalizer_target_hydrated_retry.stdout.log records 1 passed after verified hydration, while logs/finalizer_target_hydrated_retry.status.log lists 17 modified tracked Phase 7 final artifacts.",
+        "logs/full_python_full_suite_retry.stdout.log records 920 passed and 2 skipped; its paired status log lists the same 17 tracked modifications."
+      ],
+      "recommended_fix_layer": "Test/finalizer API: inject a temporary output root or split read-only verification from artifact generation. This requires a future source change; it cannot be certified as an unchanged cbf725 baseline.",
+      "runtime_change_required": false,
+      "confidence": "HIGH"
+    },
+    {
+      "blocker_id": "VP0-BLOCKER-006",
+      "symptom": "The canonical sqlite_preflight argv exits 2 in a clean shell because it declares WINDAGENT_DATABASE_URL as allowable but does not define a deterministic non-secret test value.",
+      "failing_command": "uv run python scripts/verification/database_preflight.py --require-dialect sqlite --initialize-schema --output <path>",
+      "expected": "A baseline command that requires a database URL must specify an ephemeral test-backend contract, not rely on ambient host state.",
+      "observed": "The command's argparse error states that --database-url or WINDAGENT_DATABASE_URL is required. It passes with an explicitly injected temporary sqlite+aiosqlite URL and leaves the isolated checkout clean.",
+      "root_cause": "The Phase 0 command manifest recorded an environment allowlist but no required value/template for a non-sensitive SQLite test database.",
+      "classification": "MANIFEST_PROVENANCE_DEFECT",
+      "affected_files": [
+        "artifacts/video_production/phase_00/test_command_manifest.json",
+        "scripts/verification/database_preflight.py"
+      ],
+      "affected_commits": [
+        "cbf7257643d4a1705fa221ae37e9391b6ee3f40e"
+      ],
+      "proof": [
+        "logs/full_retry2_sqlite_preflight.stderr.log records the missing URL argparse error.",
+        "logs/full_retry3_sqlite_preflight.stdout.log records the PASS after an ephemeral URL was explicitly supplied.",
+        "logs/full_support_checks_retry3.verdict.log records that the support checks left no tracked changes."
+      ],
+      "recommended_fix_layer": "Phase 0 command-manifest environment contract; no runtime change or validator relaxation is needed.",
+      "runtime_change_required": false,
+      "confidence": "HIGH"
+    }
+  ],
+  "non_causes": [
+    "The GitHub Actions run is not missing or expired.",
+    "The CI validator does not need relaxed schema, hash, provenance, or job-status checks.",
+    "No Video Production runtime component is implicated."
+  ]
+}

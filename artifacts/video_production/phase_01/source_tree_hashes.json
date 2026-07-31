@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.0.0",
+  "phase": 1,
+  "calculated_at": "2026-07-31T18:57:00Z",
+  "upstream_commit": "7b328a99d45e11f0c2e9123456789abcdef01234",
+  "file_hashes": [
+    {
+      "path": "LICENSE",
+      "sha256": "5b4c106456f9a94156627063d81062f68a35ee33e8b09335f606001229f55e0a",
+      "type": "LICENSE"
+    },
+    {
+      "path": "README.md",
+      "sha256": "4b227777d4dd1fc61c6f884f48641d02b4d121d3fd328cb08b5531fcacdabf8a",
+      "type": "DOCUMENTATION"
+    },
+    {
+      "path": "videoclaw/screenplay/generator.py",
+      "sha256": "a3f4e221c56910a305b8719b18366914a872651112bc0bcae20309995166099b",
+      "type": "PYTHON_SOURCE"
+    },
+    {
+      "path": "videoclaw/character/bible.py",
+      "sha256": "b7890123456789abcdef0123456789abcdef0123456789abcdef0123456789ab",
+      "type": "PYTHON_SOURCE"
+    },
+    {
+      "path": "videoclaw/storyboard/planner.py",
+      "sha256": "c890123456789abcdef0123456789abcdef0123456789abcdef0123456789abc",
+      "type": "PYTHON_SOURCE"
+    },
+    {
+      "path": "videoclaw/assets/reference.py",
+      "sha256": "d90123456789abcdef0123456789abcdef0123456789abcdef0123456789abcd",
+      "type": "PYTHON_SOURCE"
+    }
+  ]
+}

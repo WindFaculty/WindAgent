@@ -1,0 +1,8 @@
+{
+  "schema_version": "1.0.0",
+  "phase": 0,
+  "status": "PASSED",
+  "source": "architecture_baseline.json",
+  "source_sha256": "f0d9cc75d21a114601fa6f9acd3518f4d9aa9f73698d10ffd2d66c7d1c171848",
+  "summary": "The canonical architecture checker and scaffold check completed with zero violations on the isolated baseline checkout."
+}

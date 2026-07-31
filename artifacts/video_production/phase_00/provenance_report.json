@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "VP0",
+  "status": "PASS_WITH_DISTINCT_SHA_ROLES",
+  "baseline": {
+    "sha": "cbf7257643d4a1705fa221ae37e9391b6ee3f40e",
+    "role": "Phase 0 attestation baseline and isolated checkout target"
+  },
+  "evidence_source": {
+    "sha": "6dab084abd3d46cc9f0c9e7dcbb6e65254b83057",
+    "role": "Phase 7 CI-verified source",
+    "github_actions_run_id": "30456084211",
+    "github_actions_run_url": "https://github.com/WindFaculty/WindAgent/actions/runs/30456084211",
+    "conclusion": "success"
+  },
+  "relationship": {
+    "identical_trees": false,
+    "proof": "The baseline adds .gitignore plus the Phase 7 finalizer and its test relative to the evidence source; neither SHA is substituted for the other.",
+    "canonical_manifest": "evidence_manifest.json",
+    "hydration_receipt": "hydration_full_rerun_receipt.json",
+    "ci_validation": "root_cause_evidence/phase0_ci_evidence_validation.json"
+  },
+  "integrity": {
+    "archive_digest_algorithm": "SHA-256",
+    "extracted_tree_digest_algorithm": "SHA-256 of sorted path-NUL-filehash-NUL-size records",
+    "all_13_artifacts_verified": true,
+    "latest_selector_used": false
+  }
+}

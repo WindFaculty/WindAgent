@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0.0",
+  "captured_at": "2026-07-31T02:42:54.5110585Z",
+  "host_tools": {
+    "python": "3.11.15",
+    "uv": "0.11.28",
+    "node": "22.23.1",
+    "npm": "10.9.8",
+    "ffmpeg": "8.1.2-full_build-www.gyan.dev",
+    "git": "2.55.0.windows.2"
+  },
+  "execution_tools": {
+    "uv_managed_python": "CPython 3.12.13",
+    "database_backend": "sqlite+aiosqlite:///windagent.db"
+  },
+  "baseline_ci_reference": {
+    "python": "3.11",
+    "uv": "0.5.0",
+    "node": "20"
+  },
+  "lockfiles": [
+    { "path": "uv.lock", "sha256": "305c52c18fdc79acd16522f67cc0ba1f641867ea22ae5c4bdee86f224eeca718" },
+    { "path": "apps/web/package-lock.json", "sha256": "ba758bed9971f40c58ff93c6c4d23bd53299f3370ceb22bf34048b1df9de1e48" },
+    { "path": "apps/desktop/package-lock.json", "sha256": "e94ff7f84ee8e6fe337727d3532810f150c61d6a55b5957517476f96328ac451" }
+  ],
+  "environment_differences": [
+    "The local uv and managed Python versions differ from the source CI matrix.",
+    "The local Node major version differs from the source CI matrix."
+  ]
+}

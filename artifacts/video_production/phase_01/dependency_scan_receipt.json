@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0.0",
+  "phase": 1,
+  "scanned_at": "2026-07-31T18:57:00Z",
+  "dependencies_evaluated": [
+    {"name": "pydantic", "license": "MIT", "action": "ALIGN_CORE"},
+    {"name": "jinja2", "license": "BSD-3-Clause", "action": "REUSE_CORE"},
+    {"name": "httpx", "license": "Apache-2.0", "action": "REUSE_CORE"},
+    {"name": "pillow", "license": "HPND", "action": "REUSE_CORE"},
+    {"name": "ffmpeg-python", "license": "MIT", "action": "WRAP_TOOL"},
+    {"name": "fastapi", "license": "MIT", "action": "REJECT"},
+    {"name": "edge-tts", "license": "LGPL-3.0", "action": "OPTIONAL_PORT"}
+  ],
+  "runtime_dependency_additions": [],
+  "verdict": "DEPENDENCY_SAFETY_APPROVED"
+}

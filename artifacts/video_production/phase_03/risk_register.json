@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0.0",
+  "phase": 3,
+  "updated_at": "2026-07-31T16:36:24.099742+00:00",
+  "risks": [
+    {
+      "risk_id": "RSK-VP3-001",
+      "category": "Schema Drift",
+      "description": "Future phases mutate v1 directly instead of proposing a revision.",
+      "severity": "MEDIUM",
+      "mitigation": "Versioning policy + additive compatibility tests + fail-closed major check."
+    },
+    {
+      "risk_id": "RSK-VP3-002",
+      "category": "Provider Leakage",
+      "description": "Browser/provider implementation details leak into core contracts.",
+      "severity": "HIGH",
+      "mitigation": "Ports audited for cookie/selector/flow-url/browser-session leakage; architecture tests enforce the boundary."
+    },
+    {
+      "risk_id": "RSK-VP3-003",
+      "category": "Clean-Room Contamination",
+      "description": "ViMax or VideoClaw identifiers appear in the canonical protocol.",
+      "severity": "MEDIUM",
+      "mitigation": "Terminology mapping enforced; duplicate canonical model checker rejects shadow definitions."
+    }
+  ]
+}

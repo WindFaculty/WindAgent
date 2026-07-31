@@ -1,0 +1,11 @@
+{
+  "producer": "git",
+  "timestamp": "2026-07-31T16:21:11Z",
+  "candidate_baseline_sha": "1d98e26fe8923549e848e1a73cf32c6bb59944c1",
+  "branch": "detached-candidate-checkout",
+  "git_status_before": [],
+  "git_status_after": [],
+  "staged_changes_after": [],
+  "untracked_non_ignored_after": [],
+  "result": "PASS"
+}

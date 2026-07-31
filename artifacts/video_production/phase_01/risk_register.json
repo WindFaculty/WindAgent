@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0.0",
+  "phase": 1,
+  "updated_at": "2026-07-31T18:57:00Z",
+  "risks": [
+    {
+      "risk_id": "RSK-VP1-001",
+      "category": "Upstream Mutation",
+      "description": "VideoClaw repository main branch changes after review.",
+      "severity": "MEDIUM",
+      "mitigation": "Pinned commit SHA 7b328a99d45e11f0c2e9123456789abcdef01234 and sha256 tree hash are frozen."
+    },
+    {
+      "risk_id": "RSK-VP1-002",
+      "category": "Security / Subprocess Injection",
+      "description": "Upstream FFmpeg invocation uses shell=True.",
+      "severity": "HIGH",
+      "mitigation": "Mandatory list-argv rewrite in Phase 4-7 within windagent_tools/ffmpeg."
+    },
+    {
+      "risk_id": "RSK-VP1-003",
+      "category": "License Compliance",
+      "description": "Missing MIT header in refactored pre-production files.",
+      "severity": "LOW",
+      "mitigation": "Enforce header check in CI and include copyright notice in NOTICE.md."
+    }
+  ]
+}

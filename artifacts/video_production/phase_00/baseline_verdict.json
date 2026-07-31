@@ -1,0 +1,40 @@
+{
+  "schema_version": "1.1.0",
+  "phase": 0,
+  "baseline_sha": "1d98e26fe8923549e848e1a73cf32c6bb59944c1",
+  "candidate_sha": "1d98e26fe8923549e848e1a73cf32c6bb59944c1",
+  "evidence_source_sha": "6dab084abd3d46cc9f0c9e7dcbb6e65254b83057",
+  "status": "PASSED",
+  "gate": "VP0_BASELINE_FROZEN",
+  "issued_at": "2026-07-31T16:21:11Z",
+  "evidence": [
+    "baseline_commit.json",
+    "workspace_inventory.json",
+    "toolchain_inventory.json",
+    "test_command_manifest.json",
+    "evidence_manifest.json",
+    "hydration_full_rerun_receipt.json",
+    "root_cause_matrix.json",
+    "test_baseline.json",
+    "known_baseline_failures.json",
+    "provenance_report.json",
+    "integrity_manifest.json",
+    "full_rerun_results.json",
+    "cleanliness_report.json",
+    "candidate_baseline_verdict.json"
+  ],
+  "acceptance_criteria": {
+    "baseline_sha_matches_required_sha": true,
+    "clean_test_checkout_and_inventory_exist": true,
+    "clean_before_hydration_and_non_mutating_checks": true,
+    "no_phase_0_runtime_change": true,
+    "baseline_commands_executed": true,
+    "all_baseline_test_exit_codes_passed": true,
+    "ci_evidence_validation_passed": true,
+    "baseline_failures_documented_without_being_presented_as_pass": true,
+    "shared_baseline_commit_record_exists": true,
+    "baseline_reproducible_from_clean_checkout": true
+  },
+  "blocking_reasons": [],
+  "next_required_action": "Baseline 1d98e26 is frozen and reproducible from a clean checkout. Proceed to Phase 4 per plan 02."
+}

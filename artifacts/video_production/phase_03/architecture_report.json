@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.0.0",
+  "phase": 3,
+  "evaluated_at": "2026-07-31T16:36:21.778559+00:00",
+  "checks": [
+    {
+      "name": "Architecture imports checker",
+      "argv": [
+        "scripts/check_architecture_imports.py",
+        "--root",
+        "D:\\code_ca_nhan\\WindAgent",
+        "--json"
+      ],
+      "exit_code": 0,
+      "stdout_tail": "{\n  \"repository_root\": \"D:\\\\code_ca_nhan\\\\WindAgent\",\n  \"checks\": [\n    {\n      \"name\": \"import_boundaries\",\n      \"argv\": [\n        \"C:\\\\Users\\\\Admin\\\\AppData\\\\Local\\\\hermes\\\\hermes-agent\\\\venv\\\\Scripts\\\\python.exe\",\n        \"D:\\\\code_ca_nhan\\\\WindAgent\\\\scripts\\\\check_architecture_imports.py\",\n        \"--root\",\n        \"D:\\\\code_ca_nhan\\\\WindAgent\",\n        \"--json\"\n      ],\n      \"cwd\": \"D:\\\\code_ca_nhan\\\\WindAgent\",\n      \"executed\": true,\n      \"exit_code\": 0,\n      \"classification\": \"PASS\",\n      \"duration_ms\": 863,\n      \"stdout_tail\": \"\",\n      \"stderr_tail\": \"\"\n    },\n    {\n      \"name\": \"scaffold\",\n      \"argv\": [\n        \"C:\\\\Users\\\\Admin\\\\AppData\\\\Local\\\\hermes\\\\hermes-agent\\\\venv\\\\Scripts\\\\python.exe\",\n        \"D:\\\\code_ca_nhan\\\\WindAgent\\\\scripts\\\\scaffold_architecture_v2.py\",\n        \"--check\"\n      ],\n      \"cwd\": \"D:\\\\code_ca_nhan\\\\WindAgent\",\n      \"executed\": true,\n      \"exit_code\": 0,\n      \"classification\": \"PASS\",\n      \"duration_ms\": 107,\n      \"stdout_tail\": \"Scaffold Check Passed: All workspace packages are fully compliant and up to date.\\n\",\n      \"stderr_tail\": \"\"\n    }\n  ],\n  \"all_required_checks_executed\": true,\n  \"verdict\": \"PASS\",\n  \"exit_code\": 0,\n  \"violations\": [],\n  \"total_violations\": 0\n}\n",
+      "stderr_tail": "",
+      "status": "PASSED"
+    },
+    {
+      "name": "Duplicate canonical models",
+      "argv": [
+        "scripts/check_duplicate_canonical_models.py"
+      ],
+      "exit_code": 0,
+      "stdout_tail": "Phase 5 Duplicate Canonical Model Scan across 527 Python files:\n[PASS] Zero duplicate canonical model definitions.\n",
+      "stderr_tail": "",
+      "status": "PASSED"
+    }
+  ],
+  "verdict": "CLEAN_ARCHITECTURE_ISOLATED"
+}

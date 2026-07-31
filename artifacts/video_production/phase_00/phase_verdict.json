@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.1.0",
+  "phase": 0,
+  "baseline_sha": "1d98e26fe8923549e848e1a73cf32c6bb59944c1",
+  "candidate_sha": "1d98e26fe8923549e848e1a73cf32c6bb59944c1",
+  "status": "PASSED",
+  "gate": "VP0_BASELINE_FROZEN",
+  "evidence": [
+    {"path": "baseline_verdict.json"},
+    {"path": "test_baseline.json"},
+    {"path": "evidence_manifest.json"},
+    {"path": "hydration_full_rerun_receipt.json"},
+    {"path": "integrity_manifest.json"},
+    {"path": "full_rerun_results.json"},
+    {"path": "cleanliness_report.json"}
+  ],
+  "blocking_reasons": [],
+  "derived_from": "baseline_verdict.json"
+}

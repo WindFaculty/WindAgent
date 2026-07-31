@@ -1,0 +1,1489 @@
+{
+  "$defs": {
+    "ApprovalDecision": {
+      "additionalProperties": true,
+      "description": "Approval record bound to a specific revision + content hash.",
+      "properties": {
+        "approval_id": {
+          "title": "Approval Id",
+          "type": "string"
+        },
+        "project_id": {
+          "title": "Project Id",
+          "type": "string"
+        },
+        "revision_id": {
+          "title": "Revision Id",
+          "type": "string"
+        },
+        "target_hash": {
+          "maxLength": 64,
+          "minLength": 64,
+          "title": "Target Hash",
+          "type": "string"
+        },
+        "actor": {
+          "minLength": 1,
+          "title": "Actor",
+          "type": "string"
+        },
+        "role": {
+          "$ref": "#/$defs/ApprovalRole",
+          "default": "OWNER"
+        },
+        "decision": {
+          "$ref": "#/$defs/ApprovalDecisionType"
+        },
+        "reason": {
+          "default": "",
+          "title": "Reason",
+          "type": "string"
+        },
+        "decided_at": {
+          "format": "date-time",
+          "title": "Decided At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "approval_id",
+        "project_id",
+        "revision_id",
+        "target_hash",
+        "actor",
+        "decision"
+      ],
+      "title": "ApprovalDecision",
+      "type": "object"
+    },
+    "ApprovalDecisionType": {
+      "description": "Outcome of an ApprovalDecision.",
+      "enum": [
+        "APPROVED",
+        "REJECTED"
+      ],
+      "title": "ApprovalDecisionType",
+      "type": "string"
+    },
+    "ApprovalRole": {
+      "description": "Role of an approval actor.",
+      "enum": [
+        "OWNER",
+        "DIRECTOR",
+        "QUALITY_REVIEWER",
+        "LEGAL",
+        "ADMIN"
+      ],
+      "title": "ApprovalRole",
+      "type": "string"
+    },
+    "ApprovalState": {
+      "additionalProperties": true,
+      "description": "Current approval state of a revision's package.",
+      "properties": {
+        "approvals": {
+          "items": {
+            "$ref": "#/$defs/ApprovalDecision"
+          },
+          "title": "Approvals",
+          "type": "array"
+        },
+        "locked": {
+          "default": false,
+          "title": "Locked",
+          "type": "boolean"
+        }
+      },
+      "title": "ApprovalState",
+      "type": "object"
+    },
+    "AssetAcquisitionRecord": {
+      "additionalProperties": true,
+      "description": "Provenance of an acquired asset.",
+      "properties": {
+        "source_type": {
+          "$ref": "#/$defs/AssetSourceType"
+        },
+        "source_url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Url"
+        },
+        "acquired_at": {
+          "format": "date-time",
+          "title": "Acquired At",
+          "type": "string"
+        },
+        "license_state": {
+          "$ref": "#/$defs/LicenseState",
+          "default": "UNKNOWN"
+        },
+        "notes": {
+          "default": "",
+          "title": "Notes",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_type"
+      ],
+      "title": "AssetAcquisitionRecord",
+      "type": "object"
+    },
+    "AssetSourceType": {
+      "description": "Origin of a ReferenceAsset.",
+      "enum": [
+        "GENERATED",
+        "INTERNET",
+        "UPLOADED",
+        "PROVIDER"
+      ],
+      "title": "AssetSourceType",
+      "type": "string"
+    },
+    "CameraMovement": {
+      "description": "Canonical camera movements.",
+      "enum": [
+        "STATIC",
+        "PAN",
+        "TILT",
+        "DOLLY",
+        "TRACK",
+        "CRANE",
+        "HANDHELD"
+      ],
+      "title": "CameraMovement",
+      "type": "string"
+    },
+    "CharacterBible": {
+      "additionalProperties": true,
+      "description": "Canonical identity reference catalog entry for a character.",
+      "properties": {
+        "character_id": {
+          "title": "Character Id",
+          "type": "string"
+        },
+        "name": {
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "role": {
+          "$ref": "#/$defs/CharacterRole",
+          "default": "SUPPORTING"
+        },
+        "visual_traits": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Visual Traits",
+          "type": "object"
+        },
+        "costume_descriptions": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Costume Descriptions",
+          "type": "array"
+        },
+        "portrait_asset_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Portrait Asset Ids",
+          "type": "array"
+        },
+        "metadata": {
+          "additionalProperties": true,
+          "title": "Metadata",
+          "type": "object"
+        }
+      },
+      "required": [
+        "character_id",
+        "name"
+      ],
+      "title": "CharacterBible",
+      "type": "object"
+    },
+    "CharacterRole": {
+      "description": "Role classification within a CharacterBible.",
+      "enum": [
+        "LEAD",
+        "SUPPORTING",
+        "EXTRAS"
+      ],
+      "title": "CharacterRole",
+      "type": "string"
+    },
+    "CinematicPlan": {
+      "additionalProperties": true,
+      "description": "Shot plan for a revision: shots + typed dependency graph.",
+      "properties": {
+        "plan_id": {
+          "title": "Plan Id",
+          "type": "string"
+        },
+        "project_id": {
+          "title": "Project Id",
+          "type": "string"
+        },
+        "revision_id": {
+          "title": "Revision Id",
+          "type": "string"
+        },
+        "graph": {
+          "$ref": "#/$defs/ShotDependencyGraph"
+        },
+        "locked": {
+          "default": false,
+          "title": "Locked",
+          "type": "boolean"
+        },
+        "metadata": {
+          "additionalProperties": true,
+          "title": "Metadata",
+          "type": "object"
+        }
+      },
+      "required": [
+        "plan_id",
+        "project_id",
+        "revision_id"
+      ],
+      "title": "CinematicPlan",
+      "type": "object"
+    },
+    "ContinuityState": {
+      "additionalProperties": true,
+      "description": "Per-shot continuity snapshot.",
+      "properties": {
+        "state_id": {
+          "title": "State Id",
+          "type": "string"
+        },
+        "shot_id": {
+          "title": "Shot Id",
+          "type": "string"
+        },
+        "character_states": {
+          "additionalProperties": true,
+          "title": "Character States",
+          "type": "object"
+        },
+        "location_state": {
+          "additionalProperties": true,
+          "title": "Location State",
+          "type": "object"
+        },
+        "prop_states": {
+          "additionalProperties": true,
+          "title": "Prop States",
+          "type": "object"
+        },
+        "camera_state": {
+          "additionalProperties": true,
+          "title": "Camera State",
+          "type": "object"
+        },
+        "must_preserve": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Must Preserve",
+          "type": "array"
+        },
+        "allowed_changes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Allowed Changes",
+          "type": "array"
+        }
+      },
+      "required": [
+        "state_id",
+        "shot_id"
+      ],
+      "title": "ContinuityState",
+      "type": "object"
+    },
+    "CreativeBrief": {
+      "additionalProperties": true,
+      "description": "Creative direction and production constraints for a project.",
+      "properties": {
+        "brief_id": {
+          "title": "Brief Id",
+          "type": "string"
+        },
+        "title": {
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        },
+        "genre": {
+          "default": "",
+          "title": "Genre",
+          "type": "string"
+        },
+        "logline": {
+          "default": "",
+          "title": "Logline",
+          "type": "string"
+        },
+        "tone": {
+          "default": "",
+          "title": "Tone",
+          "type": "string"
+        },
+        "audience": {
+          "default": "",
+          "title": "Audience",
+          "type": "string"
+        },
+        "target_duration_seconds": {
+          "default": 60,
+          "exclusiveMinimum": 0,
+          "title": "Target Duration Seconds",
+          "type": "integer"
+        },
+        "aspect_ratio": {
+          "default": "16:9",
+          "title": "Aspect Ratio",
+          "type": "string"
+        },
+        "production_constraints": {
+          "additionalProperties": true,
+          "title": "Production Constraints",
+          "type": "object"
+        }
+      },
+      "required": [
+        "brief_id",
+        "title"
+      ],
+      "title": "CreativeBrief",
+      "type": "object"
+    },
+    "DependencyType": {
+      "description": "Typed edges in a ShotDependencyGraph (road_map.md Phase 9).",
+      "enum": [
+        "TEMPORAL",
+        "VISUAL_REFERENCE",
+        "CONTINUITY",
+        "TRANSITION",
+        "DIALOGUE",
+        "ASSET"
+      ],
+      "title": "DependencyType",
+      "type": "string"
+    },
+    "DialogueLine": {
+      "additionalProperties": true,
+      "description": "A single line of dialogue bound to a scene and character.",
+      "properties": {
+        "dialogue_id": {
+          "title": "Dialogue Id",
+          "type": "string"
+        },
+        "scene_id": {
+          "title": "Scene Id",
+          "type": "string"
+        },
+        "character_id": {
+          "title": "Character Id",
+          "type": "string"
+        },
+        "order": {
+          "minimum": 1,
+          "title": "Order",
+          "type": "integer"
+        },
+        "text": {
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        },
+        "delivery": {
+          "default": "",
+          "title": "Delivery",
+          "type": "string"
+        }
+      },
+      "required": [
+        "dialogue_id",
+        "scene_id",
+        "character_id",
+        "order",
+        "text"
+      ],
+      "title": "DialogueLine",
+      "type": "object"
+    },
+    "FinalDeliverable": {
+      "additionalProperties": true,
+      "description": "Published final video deliverable bound to a revision.",
+      "properties": {
+        "deliverable_id": {
+          "title": "Deliverable Id",
+          "type": "string"
+        },
+        "project_id": {
+          "title": "Project Id",
+          "type": "string"
+        },
+        "revision_id": {
+          "title": "Revision Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "maxLength": 64,
+          "minLength": 64,
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "mime_type": {
+          "default": "video/mp4",
+          "title": "Mime Type",
+          "type": "string"
+        },
+        "duration_seconds": {
+          "minimum": 0,
+          "title": "Duration Seconds",
+          "type": "number"
+        },
+        "uri": {
+          "default": "",
+          "title": "Uri",
+          "type": "string"
+        },
+        "published_at": {
+          "format": "date-time",
+          "title": "Published At",
+          "type": "string"
+        },
+        "metadata": {
+          "additionalProperties": true,
+          "title": "Metadata",
+          "type": "object"
+        }
+      },
+      "required": [
+        "deliverable_id",
+        "project_id",
+        "revision_id",
+        "content_hash",
+        "duration_seconds"
+      ],
+      "title": "FinalDeliverable",
+      "type": "object"
+    },
+    "GenerationCandidate": {
+      "additionalProperties": true,
+      "description": "One candidate output from a provider, traceable to its request.",
+      "properties": {
+        "candidate_id": {
+          "title": "Candidate Id",
+          "type": "string"
+        },
+        "request_id": {
+          "title": "Request Id",
+          "type": "string"
+        },
+        "project_id": {
+          "title": "Project Id",
+          "type": "string"
+        },
+        "revision_id": {
+          "title": "Revision Id",
+          "type": "string"
+        },
+        "shot_id": {
+          "title": "Shot Id",
+          "type": "string"
+        },
+        "request_hash": {
+          "maxLength": 64,
+          "minLength": 64,
+          "title": "Request Hash",
+          "type": "string"
+        },
+        "prompt_version": {
+          "default": "1.0.0",
+          "title": "Prompt Version",
+          "type": "string"
+        },
+        "reference_hashes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Reference Hashes",
+          "type": "array"
+        },
+        "provider": {
+          "default": "",
+          "title": "Provider",
+          "type": "string"
+        },
+        "parameters": {
+          "additionalProperties": true,
+          "title": "Parameters",
+          "type": "object"
+        },
+        "status": {
+          "$ref": "#/$defs/GenerationStatus",
+          "default": "SUBMITTED"
+        },
+        "content_hash": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Content Hash"
+        },
+        "media_uri": {
+          "default": "",
+          "title": "Media Uri",
+          "type": "string"
+        },
+        "review_result_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Review Result Id"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "candidate_id",
+        "request_id",
+        "project_id",
+        "revision_id",
+        "shot_id",
+        "request_hash"
+      ],
+      "title": "GenerationCandidate",
+      "type": "object"
+    },
+    "GenerationMode": {
+      "description": "Canonical media generation modes (road_map.md Phase 9).",
+      "enum": [
+        "TEXT_TO_VIDEO",
+        "IMAGE_TO_VIDEO",
+        "FRAMES_TO_VIDEO",
+        "INGREDIENTS_TO_VIDEO",
+        "VIDEO_EXTENSION",
+        "VIDEO_TO_VIDEO",
+        "TEXT_TO_IMAGE"
+      ],
+      "title": "GenerationMode",
+      "type": "string"
+    },
+    "GenerationRecord": {
+      "additionalProperties": true,
+      "description": "Aggregated record: request + candidates + selected result.",
+      "properties": {
+        "request": {
+          "$ref": "#/$defs/GenerationRequest"
+        },
+        "candidates": {
+          "items": {
+            "$ref": "#/$defs/GenerationCandidate"
+          },
+          "title": "Candidates",
+          "type": "array"
+        },
+        "selected_candidate_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Selected Candidate Id"
+        },
+        "status": {
+          "$ref": "#/$defs/GenerationStatus",
+          "default": "SUBMITTED"
+        },
+        "metadata": {
+          "additionalProperties": true,
+          "title": "Metadata",
+          "type": "object"
+        }
+      },
+      "required": [
+        "request"
+      ],
+      "title": "GenerationRecord",
+      "type": "object"
+    },
+    "GenerationRequest": {
+      "additionalProperties": true,
+      "description": "Idempotent request to a media generation provider.",
+      "properties": {
+        "request_id": {
+          "title": "Request Id",
+          "type": "string"
+        },
+        "project_id": {
+          "title": "Project Id",
+          "type": "string"
+        },
+        "revision_id": {
+          "title": "Revision Id",
+          "type": "string"
+        },
+        "shot_id": {
+          "title": "Shot Id",
+          "type": "string"
+        },
+        "generation_mode": {
+          "$ref": "#/$defs/GenerationMode"
+        },
+        "provider": {
+          "default": "",
+          "title": "Provider",
+          "type": "string"
+        },
+        "prompt_version": {
+          "default": "1.0.0",
+          "title": "Prompt Version",
+          "type": "string"
+        },
+        "prompt_hash": {
+          "maxLength": 64,
+          "minLength": 64,
+          "title": "Prompt Hash",
+          "type": "string"
+        },
+        "reference_hashes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Reference Hashes",
+          "type": "array"
+        },
+        "request_hash": {
+          "maxLength": 64,
+          "minLength": 64,
+          "title": "Request Hash",
+          "type": "string"
+        },
+        "parameters": {
+          "additionalProperties": true,
+          "title": "Parameters",
+          "type": "object"
+        },
+        "submitted_at": {
+          "format": "date-time",
+          "title": "Submitted At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "request_id",
+        "project_id",
+        "revision_id",
+        "shot_id",
+        "generation_mode",
+        "prompt_hash",
+        "request_hash"
+      ],
+      "title": "GenerationRequest",
+      "type": "object"
+    },
+    "GenerationStatus": {
+      "description": "Lifecycle of a generation job / candidate.",
+      "enum": [
+        "SUBMITTED",
+        "GENERATING",
+        "COMPLETED",
+        "FAILED",
+        "REJECTED",
+        "CANCELLED"
+      ],
+      "title": "GenerationStatus",
+      "type": "string"
+    },
+    "LicenseState": {
+      "description": "License classification for assets (road_map.md Phase 7).",
+      "enum": [
+        "UNKNOWN",
+        "LICENSED",
+        "PUBLIC_DOMAIN",
+        "CREATIVE_COMMONS",
+        "PROPRIETARY",
+        "REJECTED"
+      ],
+      "title": "LicenseState",
+      "type": "string"
+    },
+    "LocationBible": {
+      "additionalProperties": true,
+      "description": "Canonical location definition.",
+      "properties": {
+        "location_id": {
+          "title": "Location Id",
+          "type": "string"
+        },
+        "name": {
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "visual_description": {
+          "default": "",
+          "title": "Visual Description",
+          "type": "string"
+        },
+        "lighting_profile": {
+          "default": "",
+          "title": "Lighting Profile",
+          "type": "string"
+        },
+        "atmosphere_tags": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Atmosphere Tags",
+          "type": "array"
+        },
+        "reference_asset_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Reference Asset Ids",
+          "type": "array"
+        },
+        "metadata": {
+          "additionalProperties": true,
+          "title": "Metadata",
+          "type": "object"
+        }
+      },
+      "required": [
+        "location_id",
+        "name"
+      ],
+      "title": "LocationBible",
+      "type": "object"
+    },
+    "MediaType": {
+      "description": "Canonical media type families for assets and deliverables.",
+      "enum": [
+        "image",
+        "video",
+        "audio",
+        "document",
+        "unknown"
+      ],
+      "title": "MediaType",
+      "type": "string"
+    },
+    "PackageProvenance": {
+      "additionalProperties": true,
+      "description": "Provenance metadata recorded for every package.",
+      "properties": {
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "created_by": {
+          "minLength": 1,
+          "title": "Created By",
+          "type": "string"
+        },
+        "generator": {
+          "default": "windagent-video-production-protocol",
+          "title": "Generator",
+          "type": "string"
+        },
+        "source_commit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Commit"
+        },
+        "metadata": {
+          "additionalProperties": true,
+          "title": "Metadata",
+          "type": "object"
+        }
+      },
+      "required": [
+        "created_by"
+      ],
+      "title": "PackageProvenance",
+      "type": "object"
+    },
+    "PropBible": {
+      "additionalProperties": true,
+      "description": "Canonical prop definition.",
+      "properties": {
+        "prop_id": {
+          "title": "Prop Id",
+          "type": "string"
+        },
+        "name": {
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "description": {
+          "default": "",
+          "title": "Description",
+          "type": "string"
+        },
+        "reference_asset_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Reference Asset Ids",
+          "type": "array"
+        },
+        "metadata": {
+          "additionalProperties": true,
+          "title": "Metadata",
+          "type": "object"
+        }
+      },
+      "required": [
+        "prop_id",
+        "name"
+      ],
+      "title": "PropBible",
+      "type": "object"
+    },
+    "ReferenceAsset": {
+      "additionalProperties": true,
+      "description": "Content-addressed asset referenced by bibles, shots, and candidates.",
+      "properties": {
+        "asset_id": {
+          "title": "Asset Id",
+          "type": "string"
+        },
+        "content_hash": {
+          "maxLength": 64,
+          "minLength": 64,
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "media_type": {
+          "$ref": "#/$defs/MediaType",
+          "default": "image"
+        },
+        "mime_type": {
+          "default": "image/png",
+          "title": "Mime Type",
+          "type": "string"
+        },
+        "size_bytes": {
+          "minimum": 0,
+          "title": "Size Bytes",
+          "type": "integer"
+        },
+        "source_type": {
+          "$ref": "#/$defs/AssetSourceType",
+          "default": "UPLOADED"
+        },
+        "source_url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Url"
+        },
+        "license_state": {
+          "$ref": "#/$defs/LicenseState",
+          "default": "UNKNOWN"
+        },
+        "acquisition": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AssetAcquisitionRecord"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "metadata": {
+          "additionalProperties": true,
+          "title": "Metadata",
+          "type": "object"
+        }
+      },
+      "required": [
+        "asset_id",
+        "content_hash",
+        "size_bytes"
+      ],
+      "title": "ReferenceAsset",
+      "type": "object"
+    },
+    "Scene": {
+      "additionalProperties": true,
+      "description": "A screenplay scene with explicit ordering.",
+      "properties": {
+        "scene_id": {
+          "title": "Scene Id",
+          "type": "string"
+        },
+        "order": {
+          "minimum": 1,
+          "title": "Order",
+          "type": "integer"
+        },
+        "title": {
+          "default": "",
+          "title": "Title",
+          "type": "string"
+        },
+        "location_id": {
+          "title": "Location Id",
+          "type": "string"
+        },
+        "character_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Character Ids",
+          "type": "array"
+        },
+        "dialogue_line_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Dialogue Line Ids",
+          "type": "array"
+        },
+        "action_description": {
+          "default": "",
+          "title": "Action Description",
+          "type": "string"
+        },
+        "time_of_day": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TimeOfDay"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "metadata": {
+          "additionalProperties": true,
+          "title": "Metadata",
+          "type": "object"
+        }
+      },
+      "required": [
+        "scene_id",
+        "order",
+        "location_id"
+      ],
+      "title": "Scene",
+      "type": "object"
+    },
+    "Screenplay": {
+      "additionalProperties": true,
+      "description": "Ordered scenes (embedded) forming the screenplay.",
+      "properties": {
+        "screenplay_id": {
+          "title": "Screenplay Id",
+          "type": "string"
+        },
+        "title": {
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        },
+        "logline": {
+          "default": "",
+          "title": "Logline",
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/ScreenplayStatus",
+          "default": "DRAFT"
+        },
+        "scenes": {
+          "items": {
+            "$ref": "#/$defs/Scene"
+          },
+          "title": "Scenes",
+          "type": "array"
+        },
+        "metadata": {
+          "additionalProperties": true,
+          "title": "Metadata",
+          "type": "object"
+        }
+      },
+      "required": [
+        "screenplay_id",
+        "title"
+      ],
+      "title": "Screenplay",
+      "type": "object"
+    },
+    "ScreenplayStatus": {
+      "description": "Lifecycle of a Screenplay aggregate.",
+      "enum": [
+        "DRAFT",
+        "LOCKED"
+      ],
+      "title": "ScreenplayStatus",
+      "type": "string"
+    },
+    "Shot": {
+      "additionalProperties": true,
+      "description": "A single camera shot within a scene.",
+      "properties": {
+        "shot_id": {
+          "title": "Shot Id",
+          "type": "string"
+        },
+        "scene_id": {
+          "title": "Scene Id",
+          "type": "string"
+        },
+        "order": {
+          "minimum": 1,
+          "title": "Order",
+          "type": "integer"
+        },
+        "shot_type": {
+          "$ref": "#/$defs/ShotType",
+          "default": "MEDIUM"
+        },
+        "camera_movement": {
+          "$ref": "#/$defs/CameraMovement",
+          "default": "STATIC"
+        },
+        "duration_seconds": {
+          "exclusiveMinimum": 0,
+          "title": "Duration Seconds",
+          "type": "number"
+        },
+        "framing_description": {
+          "default": "",
+          "title": "Framing Description",
+          "type": "string"
+        },
+        "transition_type": {
+          "$ref": "#/$defs/TransitionType",
+          "default": "CUT"
+        },
+        "generation_mode": {
+          "$ref": "#/$defs/GenerationMode",
+          "default": "TEXT_TO_VIDEO"
+        },
+        "dialogue_line_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Dialogue Line Ids",
+          "type": "array"
+        },
+        "reference_asset_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Reference Asset Ids",
+          "type": "array"
+        },
+        "metadata": {
+          "additionalProperties": true,
+          "title": "Metadata",
+          "type": "object"
+        }
+      },
+      "required": [
+        "shot_id",
+        "scene_id",
+        "order",
+        "duration_seconds"
+      ],
+      "title": "Shot",
+      "type": "object"
+    },
+    "ShotDependency": {
+      "additionalProperties": true,
+      "description": "Typed dependency edge between two shots.",
+      "properties": {
+        "dependency_id": {
+          "title": "Dependency Id",
+          "type": "string"
+        },
+        "from_shot_id": {
+          "title": "From Shot Id",
+          "type": "string"
+        },
+        "to_shot_id": {
+          "title": "To Shot Id",
+          "type": "string"
+        },
+        "dependency_type": {
+          "$ref": "#/$defs/DependencyType",
+          "default": "TEMPORAL"
+        },
+        "reason": {
+          "default": "",
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "dependency_id",
+        "from_shot_id",
+        "to_shot_id"
+      ],
+      "title": "ShotDependency",
+      "type": "object"
+    },
+    "ShotDependencyGraph": {
+      "additionalProperties": true,
+      "description": "Directed acyclic graph over shots for scheduling.",
+      "properties": {
+        "shots": {
+          "items": {
+            "$ref": "#/$defs/Shot"
+          },
+          "title": "Shots",
+          "type": "array"
+        },
+        "dependencies": {
+          "items": {
+            "$ref": "#/$defs/ShotDependency"
+          },
+          "title": "Dependencies",
+          "type": "array"
+        }
+      },
+      "title": "ShotDependencyGraph",
+      "type": "object"
+    },
+    "ShotType": {
+      "description": "Canonical shot types (terminology from road_map.md Phase 9).",
+      "enum": [
+        "ESTABLISHING",
+        "MASTER",
+        "MEDIUM",
+        "CLOSE_UP",
+        "EXTREME_CLOSE_UP",
+        "OVER_SHOULDER",
+        "POV",
+        "INSERT",
+        "REACTION",
+        "TRANSITION"
+      ],
+      "title": "ShotType",
+      "type": "string"
+    },
+    "StoryConcept": {
+      "additionalProperties": true,
+      "description": "High-level story concept used to seed screenplay generation.",
+      "properties": {
+        "concept_id": {
+          "title": "Concept Id",
+          "type": "string"
+        },
+        "title": {
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        },
+        "premise": {
+          "default": "",
+          "title": "Premise",
+          "type": "string"
+        },
+        "synopsis": {
+          "default": "",
+          "title": "Synopsis",
+          "type": "string"
+        },
+        "themes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Themes",
+          "type": "array"
+        },
+        "metadata": {
+          "additionalProperties": true,
+          "title": "Metadata",
+          "type": "object"
+        }
+      },
+      "required": [
+        "concept_id",
+        "title"
+      ],
+      "title": "StoryConcept",
+      "type": "object"
+    },
+    "StyleBible": {
+      "additionalProperties": true,
+      "description": "Canonical visual style definition.",
+      "properties": {
+        "style_id": {
+          "title": "Style Id",
+          "type": "string"
+        },
+        "name": {
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "visual_style": {
+          "default": "",
+          "title": "Visual Style",
+          "type": "string"
+        },
+        "color_palette": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Color Palette",
+          "type": "array"
+        },
+        "lighting_rules": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Lighting Rules",
+          "type": "array"
+        },
+        "reference_asset_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Reference Asset Ids",
+          "type": "array"
+        },
+        "metadata": {
+          "additionalProperties": true,
+          "title": "Metadata",
+          "type": "object"
+        }
+      },
+      "required": [
+        "style_id",
+        "name"
+      ],
+      "title": "StyleBible",
+      "type": "object"
+    },
+    "TimeOfDay": {
+      "description": "Canonical time-of-day tags for scenes.",
+      "enum": [
+        "DAY",
+        "NIGHT",
+        "DAWN",
+        "DUSK",
+        "INTERIOR"
+      ],
+      "title": "TimeOfDay",
+      "type": "string"
+    },
+    "TransitionType": {
+      "description": "Canonical shot transitions.",
+      "enum": [
+        "CUT",
+        "FADE",
+        "DISSOLVE",
+        "WIPE",
+        "MATCH_CUT"
+      ],
+      "title": "TransitionType",
+      "type": "string"
+    }
+  },
+  "additionalProperties": true,
+  "description": "Canonical v1 package artifact (immutable).",
+  "properties": {
+    "schema_version": {
+      "default": "1.0.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "project_id": {
+      "title": "Project Id",
+      "type": "string"
+    },
+    "revision_id": {
+      "title": "Revision Id",
+      "type": "string"
+    },
+    "creative_brief": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/CreativeBrief"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "story_concept": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/StoryConcept"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "screenplay": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Screenplay"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "characters": {
+      "items": {
+        "$ref": "#/$defs/CharacterBible"
+      },
+      "title": "Characters",
+      "type": "array"
+    },
+    "locations": {
+      "items": {
+        "$ref": "#/$defs/LocationBible"
+      },
+      "title": "Locations",
+      "type": "array"
+    },
+    "props": {
+      "items": {
+        "$ref": "#/$defs/PropBible"
+      },
+      "title": "Props",
+      "type": "array"
+    },
+    "style_bible": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/StyleBible"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "dialogue": {
+      "items": {
+        "$ref": "#/$defs/DialogueLine"
+      },
+      "title": "Dialogue",
+      "type": "array"
+    },
+    "cinematic_plan": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/CinematicPlan"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "continuity": {
+      "items": {
+        "$ref": "#/$defs/ContinuityState"
+      },
+      "title": "Continuity",
+      "type": "array"
+    },
+    "assets": {
+      "items": {
+        "$ref": "#/$defs/ReferenceAsset"
+      },
+      "title": "Assets",
+      "type": "array"
+    },
+    "generation_records": {
+      "items": {
+        "$ref": "#/$defs/GenerationRecord"
+      },
+      "title": "Generation Records",
+      "type": "array"
+    },
+    "approvals": {
+      "$ref": "#/$defs/ApprovalState"
+    },
+    "final_deliverable": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/FinalDeliverable"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "provenance": {
+      "$ref": "#/$defs/PackageProvenance"
+    }
+  },
+  "required": [
+    "project_id",
+    "revision_id"
+  ],
+  "title": "VideoProductionPackage",
+  "type": "object"
+}

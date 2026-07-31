@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.1.0",
+  "phase": "handoff",
+  "baseline_sha": "1d98e26fe8923549e848e1a73cf32c6bb59944c1",
+  "candidate_sha": "1d98e26fe8923549e848e1a73cf32c6bb59944c1",
+  "status": "PASSED",
+  "gate": "VP0_3_HANDOFF_PACKAGE_VERIFIED",
+  "evidence": [
+    {
+      "path": "handoff_manifest.json"
+    },
+    {
+      "path": "handoff_checksums.sha256"
+    },
+    {
+      "path": "open_risks.json"
+    },
+    {
+      "path": "migration_note.md"
+    },
+    {
+      "path": "handoff_report.md"
+    }
+  ],
+  "blocking_reasons": [],
+  "derived_from": "scripts/verification/verify_phase03_handoff.py"
+}

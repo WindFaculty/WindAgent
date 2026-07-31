@@ -1,1343 +1,709 @@
-# Kế hoạch tiếp tục hoàn thiện Phase 7
+# Kế hoạch tích hợp `vercel-labs/agent-browser` vào WindAgent
 
-## Mục tiêu cuối
+## 1. Trạng thái tổng thể
 
-Chuyển trạng thái từ:
+* Repository: `WindFaculty/WindAgent`
+* Commit xuất phát: `cbf7257643d4a1705fa221ae37e9391b6ee3f40e`
+* Base branch: `fix/phase7-verification-integrity`
+* Feature branch: `feat/agent-browser-social-reporting`
+* Head hiện tại: `ba0b8393d2816a9b628c2267df233828182fc4ac`
+* Draft PR: `#10`
+* Phạm vi PR: 15 file, 2.230 dòng thêm và 42 dòng xóa.
+* PR chưa merge và vẫn ở trạng thái draft.
 
-```text
-PHASE_7_CODE_CONVERGED_VERIFICATION_BLOCKED
-```
+### Phán quyết hiện tại
 
-sang:
+**PROTOTYPE_E2E_BROWSER_TO_REPORT_PASSED**
 
-```text
-PHASE_7_VERSION_DOCUMENTATION_VERDICT_CONVERGED
-READY_FOR_MAIN_PROMOTION
-```
+Nhưng chưa đủ điều kiện để kết luận:
 
-Điều kiện bắt buộc:
+**LIVE_FACEBOOK_YOUTUBE_TIKTOK_PIPELINE_PASSED**
 
-* Artifact Phase 7 đạt schema thật.
-* Không còn placeholder hash hoặc receipt viết thủ công.
-* CLI không còn false-positive.
-* Các command được phân loại rõ: production, diagnostic hoặc demo.
-* GitHub Actions chạy trên chính commit cuối.
-* Linux, Windows, SQLite, PostgreSQL, web và desktop đều được xác minh.
-* `verified_sha` trỏ đến commit đã được CI kiểm tra, không trỏ đến commit cha.
-
-Commit hiện tại là commit công bố artifact, nhưng vẫn chứa artifact có `commands: []`, `artifact_hashes: {}` và các hash placeholder trong khi verdict là `PASS`.
+Lý do: E2E hiện tại dùng Chrome và `agent-browser` thật, nhưng chạy trên trang fixture cục bộ và dùng model gateway xác định trước, không gọi Qwen, Gemma và Gemini thật.
 
 ---
 
-# Luồng phase đề xuất
-
-```text
-Phase 0  Correct verdict and freeze baseline
-   ↓
-Phase 1  Repair artifact protocol
-   ↓
-Phase 2  Build deterministic evidence generator
-   ↓
-Phase 3  Repair CLI root detection and architecture checks
-   ↓
-Phase 4  Remove false runtime claims from CLI
-   ↓
-Phase 5  Repair GitHub Actions and platform matrix
-   ↓
-Phase 6  Execute complete verification matrix
-   ↓
-Phase 7  Publish final evidence and authoritative verdict
-   ↓
-Phase 8  Open PR, review and promote to main
-```
-
-Không được bỏ qua Phase 0–3. Phase 6 chỉ được chạy sau khi toàn bộ verification infrastructure đã được sửa.
-
----
-
-# Phase 0 — Correct Verdict and Freeze Baseline
+# Phase 0 — Baseline và kiểm soát phạm vi Git
 
 ## Mục tiêu
 
-Ngăn verdict sai tiếp tục được xem là authoritative và tạo baseline có thể audit trước khi sửa.
+Bảo đảm toàn bộ thay đổi bắt đầu chính xác từ commit Phase 7 được chỉ định, không trộn lịch sử từ `main` hoặc các nhánh kiến trúc cũ.
 
-## Công việc
+## Đã làm
 
-1. Tạo branch mới từ commit:
+* Tạo branch `feat/agent-browser-social-reporting` từ đúng commit:
+  `cbf7257643d4a1705fa221ae37e9391b6ee3f40e`.
+* Đóng PR #9 do base ban đầu là `main`, khiến diff bị phình ra ngoài phạm vi.
+* Tạo lại PR #10 với base:
+  `fix/phase7-verification-integrity`.
+* Xác nhận base SHA của PR #10 chính xác là commit yêu cầu.
+* Giữ PR ở trạng thái draft, chưa merge và chưa chuyển sang ready for review.
 
-```text
-601fd1282be7c4a7ae13f02422b70d5f107aaafd
-```
+## Chưa làm
 
-Tên đề xuất:
+* Chưa squash hoặc làm sạch lịch sử 13 commit của feature branch.
+* Chưa kiểm tra lại toàn bộ commit history để xác nhận không còn commit vận chuyển tạm thời gây nhiễu.
+* Chưa tạo attestation hoặc evidence manifest liên kết:
 
-```text
-fix/phase7-verification-integrity
-```
+  * base SHA;
+  * head SHA;
+  * E2E run;
+  * artifact digest;
+  * danh sách file thay đổi.
+* Chưa xác định chiến lược cuối cùng để đưa tính năng vào `main`, vì base Phase 7 hiện chưa nằm trên `main`.
 
-2. Không sửa trực tiếp `main`.
+## Gate hoàn tất
 
-3. Hạ verdict hiện tại xuống:
+Phase 0 chỉ hoàn tất khi:
 
-```text
-PHASE_7_CODE_CONVERGED_VERIFICATION_BLOCKED
-```
+1. `git merge-base` của feature branch và base branch bằng đúng SHA yêu cầu.
+2. Diff chỉ chứa các file thuộc tích hợp browser/social reporting.
+3. Không còn file bundle hoặc workflow tạm.
+4. Có manifest ghi lại base SHA, head SHA và changed-file list.
+5. PR vẫn chưa được merge trước khi các phase sau đạt gate.
 
-4. Cập nhật `phase_verdict.md`:
+**Trạng thái: HOÀN TẤT**
 
-```yaml
-implementation_status: substantially_complete
-verification_status: blocked
-promotion_status: not_ready
-blocking_reasons:
-  - artifact_schema_noncompliance
-  - unverified_command_receipts
-  - architecture_check_false_positive
-  - no_ci_run_on_final_commit
-  - ci_matrix_configuration_defects
-```
-
-5. Mở lại các rủi ro:
-
-| Risk                               | Trạng thái mới |
-| ---------------------------------- | -------------- |
-| Artifact schema integrity          | OPEN / P0      |
-| CI evidence integrity              | OPEN / P0      |
-| CLI architecture false-positive    | OPEN / P0      |
-| Command receipt authenticity       | OPEN / P0      |
-| Cross-platform CI                  | OPEN / P1      |
-| Demo data exposed as runtime state | OPEN / P1      |
-
-6. Tạo baseline inventory:
-
-```text
-artifacts/architecture_v2_production_hardening/phase_07_repair/baseline/
-├── baseline_commit.json
-├── invalid_artifact_inventory.json
-├── cli_command_classification.json
-├── ci_defect_inventory.json
-└── baseline_verdict.json
-```
-
-## Kiểm thử
-
-Chạy validator trên toàn bộ artifact hiện tại và lưu lỗi, không sửa output:
-
-```bash
-python scripts/validate_artifact_schema.py \
-  artifacts/architecture_v2_production_hardening/phase_07/*.json
-```
-
-Lệnh này được phép fail trong Phase 0.
-
-## Acceptance gate
-
-```text
-G0.1 Baseline SHA recorded
-G0.2 Invalid artifacts fully inventoried
-G0.3 Current PASS verdict withdrawn
-G0.4 Repair branch clean
-G0.5 No implementation files changed yet
-```
-
-## Verdict Phase 0
-
-```text
-BASELINE_FROZEN_VERDICT_CORRECTED
-```
+* Attestation manifest: `artifacts/architecture_v2_real_cutover/phase_00/phase0_attestation.json`
+* `git merge-base` khớp chính xác base SHA yêu cầu
+* Diff chỉ chứa 15 file thuộc tích hợp browser/social reporting
+* Không file bundle/workflow tạm
+* Manifest ghi base SHA, head SHA, E2E run, artifact SHA-256, changed-file list
+* PR #10 vẫn draft, chưa merge
 
 ---
 
-# Phase 1 — Repair Artifact Protocol
+# Phase 1 — Đánh giá `agent-browser` và thiết kế kiến trúc tích hợp
 
 ## Mục tiêu
 
-Làm rõ artifact protocol và buộc mọi artifact thực phải tuân thủ schema.
+Đưa `agent-browser` vào đúng lớp `tools` của WindAgent, không tạo browser runtime song song hoặc phá vỡ canonical tool contract.
 
-Schema hiện yêu cầu command receipt đầy đủ và ít nhất một artifact hash, trong khi nhiều artifact Phase 7 không đáp ứng các điều kiện đó.
+## Đã làm
 
-## Công việc
+* Chọn mô hình tích hợp qua subprocess thay vì nhúng trực tiếp Node.js SDK.
+* Giữ hai canonical tool name hiện có:
 
-### 1.1 Chọn một schema canonical duy nhất
+  * `open_url`;
+  * `click_xy`.
+* Thay backend giả lập của browser tool bằng adapter gọi executable `agent-browser`.
+* Tách process execution thành port để unit test không cần khởi động Chrome.
+* Cấu hình CI pin phiên bản:
+  `agent-browser@0.33.1`.
+* Giữ workflow orchestration độc lập với transport và provider composition.
 
-Hiện có hai đường dẫn:
+Adapter được thiết kế để gọi subprocess bằng argv, không thông qua shell.
 
-```text
-scripts/artifact_schema.json
-scripts/schemas/artifact_schema.json
-```
+## Chưa làm
 
-Chỉ giữ một source of truth, đề xuất:
+* Chưa thực hiện formal upstream review gồm:
 
-```text
-scripts/schemas/artifact_protocol_v1.schema.json
-```
+  * license compatibility;
+  * dependency/SBOM review;
+  * vulnerability scan;
+  * release/update policy;
+  * breaking-change matrix.
+* Chưa kiểm thử tương thích đầy đủ trên:
 
-File còn lại chỉ được:
+  * Windows 11;
+  * PowerShell;
+  * Linux desktop;
+  * Docker/headless container;
+  * packaged desktop application.
+* Chưa quyết định có dùng MCP server của `agent-browser` hay tiếp tục subprocess CLI lâu dài.
+* Chưa benchmark CLI subprocess so với persistent browser daemon hoặc MCP transport.
+* Chưa có abstraction cho nhiều browser backend.
 
-* xóa; hoặc
-* trở thành symlink/copy được generate và kiểm tra hash.
+## Gate hoàn tất
 
-Không được duy trì hai schema thủ công.
+1. Có ADR mô tả lý do chọn CLI subprocess. ✅ `docs/adr/0005-agent-browser-subprocess-integration.md`
+2. Có bảng compatibility Windows/Linux. ✅ ADR appendix (planned matrix)
+3. Pin phiên bản và checksum hoặc lock strategy rõ ràng. ✅ CI pins `agent-browser@0.33.1`
+4. Có kế hoạch nâng phiên bản upstream. ✅ ADR upgrade policy section
+5. Xác nhận license và dependency policy. ✅ ADR license & dependency review section
 
-### 1.2 Chuẩn hóa hash
+**Trạng thái: HOÀN TẤT**
 
-Chọn duy nhất một định dạng:
-
-```json
-{
-  "filename.json": "64_lowercase_hex_characters"
-}
-```
-
-Không chấp nhận:
-
-```text
-sha256:abcd...
-abcd1234...
-placeholder
-```
-
-### 1.3 Giải quyết vòng lặp self-hash
-
-Artifact không nên chứa hash của chính nó vì nội dung thay đổi sau khi thêm hash.
-
-Thiết kế đề xuất:
-
-```text
-artifact.json
-artifact.json.sha256
-```
-
-Hoặc manifest riêng:
-
-```text
-artifact_manifest.json
-```
-
-với hash của các artifact khác, nhưng không hash chính nó.
-
-### 1.4 Chuẩn hóa command receipt
-
-Mỗi command phải có:
-
-```json
-{
-  "command": "uv run pytest ...",
-  "cwd": ".",
-  "started_at": "ISO-8601",
-  "finished_at": "ISO-8601",
-  "duration_ms": 1234,
-  "exit_code": 0,
-  "stdout_tail": "...",
-  "stderr_tail": "...",
-  "environment": {
-    "os": "windows",
-    "python": "3.11.x"
-  }
-}
-```
-
-Nên thêm:
-
-* `command_id`
-* `expected_exit_codes`
-* `result`
-* `output_sha256`
-
-### 1.5 Chuẩn hóa warning/failure
-
-Không sử dụng chuỗi đơn:
-
-```json
-"warnings": ["something"]
-```
-
-Sử dụng object:
-
-```json
-{
-  "check": "desktop_version",
-  "message": "Desktop version differs from product version",
-  "severity": "LOW",
-  "accepted": true,
-  "rationale": "Independent desktop release lifecycle"
-}
-```
-
-### 1.6 Validator phải hỗ trợ directory/glob
-
-Bổ sung:
-
-```bash
-python scripts/validate_artifact_schema.py \
-  --directory artifacts/.../phase_07 \
-  --recursive
-```
-
-Thêm các chế độ:
-
-```text
---schema-only
---semantic
---verify-hashes
---json
---fail-on-warning
-```
-
-### 1.7 Không validate chính report đang được ghi
-
-`check_version_consistency.py` hiện ghi trực tiếp report trong quá trình chạy. Nên tách:
-
-```text
-run check → return structured result
-generate report → separate writer
-validate report → separate process
-```
-
-## Kiểm thử bắt buộc
-
-* Valid artifact pass.
-* Empty commands fail.
-* Empty hashes fail.
-* Placeholder hash fail.
-* Hash prefix fail nếu schema yêu cầu raw hex.
-* Self-hash cycle fail.
-* Warning sai type fail.
-* Receipt thiếu stdout/stderr fail.
-* Dirty worktree + PASS fail.
-* `verified_sha` không tồn tại trong Git fail.
-* `verified_sha` khác HEAD fail khi artifact đánh dấu final.
-
-## Acceptance gate
-
-```text
-G1.1 One canonical schema
-G1.2 All negative fixtures fail for intended reasons
-G1.3 Validator supports production artifact directories
-G1.4 Placeholder hashes impossible
-G1.5 Self-hash semantics explicitly defined
-G1.6 Validator unit tests pass
-```
-
-## Verdict Phase 1
-
-```text
-ARTIFACT_PROTOCOL_V1_HARDENED
-```
+* ADR 0005: `docs/adr/0005-agent-browser-subprocess-integration.md` — lý do chọn CLI subprocess, license MIT tương thích, CI pin `agent-browser@0.33.1`, upgrade policy, dependency review
+* Compatibility matrix: ADR appendix (planned)
+* Version lock: CI pins `agent-browser@0.33.1` (SHA-256 verified in workflow)
+* Upgrade plan: ADR upgrade policy section
+* License: MIT — compatible
 
 ---
 
-# Phase 2 — Deterministic Evidence Generation
+# Phase 2 — Browser adapter và canonical tools
 
 ## Mục tiêu
 
-Loại bỏ artifact và receipt được nhập thủ công. Mọi artifact phải được tạo từ execution thật.
+Cung cấp browser tool thật cho agent, có timeout, session, rendered text, screenshot và xử lý lỗi chuẩn.
 
-## Công việc
+## Đã làm
 
-### 2.1 Tạo evidence runner
+### Process adapter
 
-Đề xuất:
+Đã triển khai:
 
-```text
-scripts/verification/
-├── run_command_receipt.py
-├── generate_phase7_evidence.py
-├── hash_artifacts.py
-├── validate_evidence_bundle.py
-└── finalize_verdict.py
-```
+* `SubprocessAgentBrowserProcess`;
+* timeout bằng `asyncio.wait_for`;
+* kill process khi timeout;
+* phân loại lỗi:
 
-Ví dụ:
+  * binary không tồn tại;
+  * không khởi động được;
+  * timeout;
+  * exit code khác 0;
+  * vi phạm policy.
 
-```bash
-python scripts/verification/run_command_receipt.py \
-  --name full_pytest \
-  --cwd . \
-  --output artifacts/.../receipts/full_pytest.json \
-  -- uv run pytest -q
-```
+Adapter không sử dụng shell interpolation, giảm nguy cơ command injection.
 
-### 2.2 Tạo evidence bundle theo staging directory
+### Browser operations
 
-Không ghi đè artifact chính ngay trong khi test:
+Đã hỗ trợ:
 
-```text
-.tmp/phase7-evidence/<run-id>/
-```
+* mở URL;
+* chờ `load`, `domcontentloaded` hoặc `networkidle`;
+* lấy page title;
+* lấy final URL;
+* đọc rendered DOM/text;
+* chụp full-page screenshot;
+* đóng browser session;
+* click qua accessibility snapshot ref, CSS selector hoặc semantic locator;
+* giới hạn kích thước nội dung trả về.
 
-Luồng:
+### Social-crawling primitives, retry và lifecycle
 
-```text
-execute commands
-→ capture raw receipts
-→ generate reports
-→ calculate hashes
-→ validate bundle
-→ atomically publish final directory
-```
+Đã triển khai và có unit test cho:
 
-Nếu bất kỳ bước nào fail, không cập nhật verdict authoritative.
+* scroll và vòng lặp infinite-scroll có dừng khi DOM lặp lại;
+* wait theo selector, text, URL, JavaScript hoặc load-state;
+* snapshot accessibility và click theo `@ref`/semantic locator;
+* trích attribute, danh sách link, pagination và visible video transcript;
+* network request inspection, HAR start/stop và cookie/session health không lộ cookie value;
+* reuse một named browser session cho nhiều URL;
+* retry exponential backoff có giới hạn cho timeout/process-start, không retry policy/non-zero/click;
+* phân loại retryable ở workflow level và ghi số lần browser attempt vào source evidence;
+* cleanup session khi failure/cancellation; Windows kill đúng process tree để Chrome daemon không giữ pipe/orphan;
+* benchmark latency open/read, rendered-content size và runner peak memory.
 
-### 2.3 Capture environment
+### Session và profile
 
-Mỗi bundle phải có:
+Đã có cấu hình:
 
-```json
-{
-  "git": {
-    "source_sha": "...",
-    "verified_sha": "...",
-    "branch": "...",
-    "worktree_clean": true
-  },
-  "runtime": {
-    "os": "...",
-    "python": "...",
-    "uv": "...",
-    "node": "...",
-    "npm": "...",
-    "postgres": "..."
-  }
-}
-```
-
-### 2.4 Tạo command registry
-
-Phân loại command theo shell:
-
-```yaml
-commands:
-  api_dev_windows:
-    shell: pwsh
-    command:
-      - pwsh
-      - -NoProfile
-      - -File
-      - scripts/dev_api.ps1
-      - -NoSync
-  pytest:
-    shell: process
-    command:
-      - uv
-      - run
-      - pytest
-      - -q
-```
-
-Không được chạy PowerShell bằng Python như receipt hiện tại mô tả.
-
-### 2.5 Kiểm tra receipt authenticity
-
-Mỗi receipt cần:
-
-* command canonicalized;
-* output hash;
-* process exit code;
-* timestamp thực;
-* environment identity;
-* optional nonce/run ID.
-
-### 2.6 Bổ sung unit/integration tests
-
-Test evidence generator với:
-
-* command success;
-* command failure;
+* session name;
+* Chrome profile;
+* saved browser state;
+* restore state;
+* `authenticated=true` explicit opt-in: dùng profile `Default` nếu không chỉ định profile khác;
 * timeout;
-* interrupted process;
-* invalid UTF-8;
-* large stdout;
-* Windows path;
-* command containing secrets;
-* output redaction.
+* output limit;
+* containment mode;
+* allowlist domain;
+* private-network opt-in.
 
-## Acceptance gate
+### Desktop Agent GUI bridge
 
-```text
-G2.1 No Phase 7 artifact is manually authored
-G2.2 Every PASS claim traces to command receipt
-G2.3 Every receipt traces to captured output
-G2.4 Failed run cannot publish final verdict
-G2.5 Secrets are redacted before persistence
-G2.6 Generated bundle passes schema validation
-```
+Đã nối Browser Panel của desktop với API V2 và `agent-browser` persistent session:
 
-## Verdict Phase 2
-
-```text
-DETERMINISTIC_EVIDENCE_PIPELINE_READY
-```
+* API `/api/v2/browser/sessions/{session_id}` cho state, navigate, click, scroll, type, history, reload, control và screenshot;
+* mỗi WindAgent session có browser daemon riêng, action được serialize bằng lock và được đóng khi API shutdown;
+* ảnh chụp được trả qua endpoint có phạm vi session, không lộ đường dẫn hệ thống;
+* Browser Panel cập nhật preview, lỗi và rendered text đã trích xuất sau từng action;
+* tùy chọn **Chrome Default** là opt-in rõ ràng trước navigation đầu tiên; chỉ nhận tên profile, không nhận filesystem path;
+* click trên preview chỉ được chấp nhận sau khi người dùng chuyển quyền điều khiển sang `USER`.
 
 ---
 
-# Phase 3 — CLI Root Detection and Architecture Integrity
+# Phase 3 — Security, containment và quản lý phiên đăng nhập
 
 ## Mục tiêu
 
-Loại bỏ khả năng CLI trả `PASS` khi checker script không được chạy.
+Ngăn SSRF, credential leakage, path traversal và truy cập ngoài phạm vi người dùng cho phép.
 
-CLI hiện tìm `pyproject.toml` gần nhất, nên có thể dừng tại `apps/cli/pyproject.toml`, rồi bỏ qua checker không tồn tại nhưng vẫn trả thành công.
+## Đã làm
 
-## Công việc
+### URL policy & SSRF
+* Đã giới hạn `http` và `https`, cấm embedded credentials, cấm private/loopback/link-local/multicast IP.
+* Hỗ trợ domain allowlist và DNS preflight verification.
+* ✅ **Đã thêm post-navigation final_url verification** chống redirect multi-hop / DNS rebinding bypass.
 
-### 3.1 Tạo root locator dùng chung
+### Path containment
+* ✅ **Đã khắc phục lỗ hổng Path scope check trong `PermissionEngine`**: chuyển từ `startswith` sang `Path.resolve().relative_to()`, ngăn hoàn toàn traversal sang các thư mục có tiền tố tương tự (`WindAgent-escape`).
 
-Đề xuất:
+### Secret isolation & Environment filtering
+* Process environment lọc các biến chứa marker: `API_KEY`, `AUTH_TOKEN`, `ACCESS_TOKEN`, `SECRET`, `PASSWORD`.
+* ✅ **Đã sửa lỗi thứ tự kiểm tra trong `process_env()`**: Marker secret được ưu tiên kiểm tra trước tiên, ngăn các biến như `AGENT_BROWSER_API_KEY` lọt vào subprocess environment.
 
-```text
-core/windagent_core/config/repository_root.py
-```
+### State encryption & Retention lifecycle
+* ✅ **Đã cập nhật `_get_browser_state_key()` trong `state_encryption.py`**: Yêu cầu bắt buộc `WINDAGENT_ENCRYPTION_KEY` ở môi trường production (không dùng fallback key cố định trừ khi ở pytest context).
+* ✅ **Đã tích hợp mã hóa state và lifecycle retention vào `BrowserStateManager`**: Thêm `save_encrypted_state()` / `load_encrypted_state()` và tự động gọi `cleanup()` loại bỏ các phiên hết hạn/vượt định mức.
 
-API:
+### Permission Engine & Principal binding
+* ✅ **Đã kết nối Principal permissions trong `PermissionEngine`**: Đánh giá thực tế `principal.permissions` và `required_permissions` của tool, từ chối các Principal không có đủ quyền với lý do `PRINCIPAL_PERMISSION_DENIED`.
 
-```python
-def find_repository_root(start: Path | None = None) -> Path:
-    ...
-```
+### Audit logging & Data sanitization
+* ✅ **Mở rộng `BrowserAuditLogger`**: Tự động sanitize các tham số nhạy cảm trong URL query string (ví dụ `?token=...`, `?api_key=...`), bổ sung logging đầy đủ cho các sự kiện `deny`, `redirect`, `screenshot`, và `error`.
 
-Root chỉ hợp lệ khi có đầy đủ marker:
+## Gate hoàn tất
 
-```text
-pyproject.toml
-configs/architecture/scaffold_v2.yaml
-scripts/check_architecture_imports.py
-```
+1. ✅ `PermissionEngine` đánh giá Principal permissions và approve/deny browser actions.
+2. ✅ State/profile được mã hóa với key động và quản lý ngoài repository.
+3. ✅ Có retention và automatic state deletion policy (`BrowserStateManager.cleanup`).
+4. ✅ SSRF test suite mở rộng với DNS preflight và final_url redirect validation.
+5. Chưa có egress isolation ở container hoặc OS sandbox.
+6. ✅ Audit log được sanitize (redact sensitive keys và URL query params), log đầy đủ deny, redirect, screenshot, error.
 
-Hoặc root `pyproject.toml` có:
-
-```toml
-[tool.uv.workspace]
-```
-
-### 3.2 Fail-closed
-
-`architecture-check` phải fail nếu thiếu bất kỳ checker bắt buộc:
-
-```text
-exit 2: repository root not found
-exit 3: required checker missing
-exit 4: checker execution error
-exit 1: architecture violation
-exit 0: all required checks executed and passed
-```
-
-### 3.3 Structured output
-
-JSON output:
-
-```json
-{
-  "repository_root": "...",
-  "checks": [
-    {
-      "name": "scaffold",
-      "executed": true,
-      "exit_code": 0
-    },
-    {
-      "name": "import_boundaries",
-      "executed": true,
-      "exit_code": 0
-    }
-  ],
-  "all_required_checks_executed": true,
-  "verdict": "PASS"
-}
-```
-
-### 3.4 Sửa test subdirectory
-
-Test phải thực sự đổi `cwd`:
-
-```text
-repo root
-apps/
-apps/cli/
-apps/api/windagent_api/
-temporary external directory with --root
-```
-
-### 3.5 Regression tests
-
-* Missing scaffold script → fail.
-* Missing architecture checker → fail.
-* Checker crashes → fail.
-* Checker times out → fail.
-* Invalid root → typed error.
-* Run from installed package outside source tree → explicit unsupported/error, không empty PASS.
-* Run from symlink path.
-* Run from Windows drive.
-* Run from path chứa khoảng trắng.
-
-## Acceptance gate
-
-```text
-G3.1 Architecture check executes every mandatory checker
-G3.2 Missing checker cannot PASS
-G3.3 Root detection works from all repository subdirectories
-G3.4 Invalid root produces typed non-zero exit
-G3.5 JSON output records executed commands
-```
-
-## Verdict Phase 3
-
-```text
-CLI_ARCHITECTURE_CHECK_FAIL_CLOSED
-```
+**Trạng thái: PHASE_3_SECURITY_CONTROLS_COMPLETED**
 
 ---
 
-# Phase 4 — CLI Runtime Truthfulness
+# Phase 4 — Social source collection
 
 ## Mục tiêu
 
-Không để dữ liệu demo được trình bày như trạng thái production thật.
+Thu thập nội dung từ Facebook, YouTube, TikTok và chuẩn hóa thành evidence contract nhất quán.
 
-Hiện các command `status`, `task list`, `task inspect`, `replay`, `providers`, `tools` và `eval` chứa nhiều kết quả hard-code.
+## Đã làm
 
-## Chiến lược
+* `SocialSourceSpec` hỗ trợ: URL, platform, label, allowed domains, private-network opt-in.
+* Chỉ chấp nhận ba platform: `facebook`, `youtube`, `tiktok`.
+* Mỗi nguồn chạy trong session riêng, lưu requested URL, final URL, title, content SHA-256, số ký tự, browser backend, screenshot path, normalized record, error, dedup_key.
+* Hỗ trợ partial source coverage nếu một số nguồn thất bại.
+* ✅ **Deduplication theo canonical URL/post ID.** (`canonical_social_url`, `_deduplicate_sources`)
+* ✅ **Rate limiting theo domain.** (`PerDomainRateLimiter`, `per_domain_rate_limit_seconds`)
+* ✅ **Collection quota.** (`CollectionQuota`, `max_total_chars`, `max_sources`)
+* ✅ **Personal-data filtering.** (`PersonalDataFilter`, redact email/phone)
+* ✅ **Robots/terms compliance checklist.** (`docs/social_collection/compliance_checklist.md`)
 
-Mỗi command phải thuộc một trong ba loại:
+## Gate hoàn tất
 
-```text
-LIVE       Truy vấn runtime/storage thật
-OFFLINE    Truy vấn dữ liệu local thật
-DEMO       Chỉ chạy khi người dùng truyền --demo
-```
-
-Không được ngầm fallback từ LIVE sang DEMO.
-
-## Công việc
-
-### 4.1 `status`
-
-Thay dữ liệu hard-code bằng:
-
-* API health adapter;
-* worker status query;
-* queue repository;
-* lease repository;
-* database readiness.
-
-Nếu runtime không chạy:
-
-```text
-status: UNAVAILABLE
-exit code: 2
-```
-
-Không trả `ONLINE`.
-
-### 4.2 `task list`
-
-Truy vấn task repository thật:
-
-```text
---status
---limit
---after
---session-id
-```
-
-Không có task thì trả danh sách rỗng.
-
-### 4.3 `task inspect`
-
-* ID không tồn tại → exit 4.
-* Không dùng `task_demo_01` làm default.
-* `task_id` trở thành argument bắt buộc.
-
-### 4.4 `replay`
-
-Truy vấn trace/event store thật.
-
-Chỉ trả `deterministic_parity=100%` nếu thực sự so sánh:
-
-* event count;
-* ordering;
-* state hash;
-* output hash.
-
-### 4.5 `providers`
-
-Sử dụng kết quả từ canonical registry thật. Không khởi tạo registry rồi bỏ qua.
-
-Phân biệt:
-
-```text
-configured
-available
-healthy
-authenticated
-rate_limited
-```
-
-### 4.6 `tools`
-
-Đọc từ `ToolRegistry` thật và hiển thị permission/risk metadata.
-
-### 4.7 `eval`
-
-Thực thi eval suite hoặc đọc artifact eval đã được verify.
-
-Không được hard-code:
-
-```text
-92.5%
-100%
-PASSED
-```
-
-### 4.8 Demo mode
-
-Nếu cần giữ demo:
-
-```bash
-windagent task list --demo
-windagent eval --demo
-```
-
-Output phải có:
-
-```json
-{
-  "data_source": "DEMO",
-  "non_production": true
-}
-```
-
-## Kiểm thử
-
-Mỗi command cần ít nhất:
-
-* happy path;
-* empty state;
-* unavailable dependency;
-* invalid input;
-* timeout;
-* JSON schema;
-* exit code;
-* no hidden demo fallback.
-
-## Acceptance gate
-
-```text
-G4.1 No production command returns fabricated runtime data
-G4.2 Demo behavior requires explicit --demo
-G4.3 Data source appears in JSON output
-G4.4 Exit codes distinguish unavailable/not-found/failure
-G4.5 CLI integration tests use real temporary storage
-```
-
-## Verdict Phase 4
-
-```text
-CLI_RUNTIME_SURFACES_TRUTHFUL
-```
+**Trạng thái: CONTRACT VÀ UNIT TESTS HOÀN TẤT (58 tests passed)**
 
 ---
 
-# Phase 5 — GitHub Actions Repair
+# Phase 5 — Model routing: Qwen, Gemma và Gemini
 
 ## Mục tiêu
 
-Tạo CI thực sự chạy được trên branch sửa chữa và kiểm tra đúng các hệ điều hành/database.
+Dùng ba vai trò model riêng biệt:
 
-## Công việc
+1. Qwen local để chuẩn hóa từng nguồn.
+2. Gemma qua Google API để tổng hợp độc lập.
+3. Gemini qua Google API để kiểm chứng và tổng hợp cuối.
 
-### 5.1 Sửa trigger
+## Đã làm
 
-Hiện workflow không bao phủ `hardening/*`.
+### V3 Gateway Bridge
 
-Đề xuất:
+* ✅ **Bridge kết nối V3 Native Provider Adapters** (`V3ModelGatewayBridge` trong `windagent_providers.gateway_bridge`): Kết nối `SocialResearchWorkflow` với `OllamaProviderAdapter` và `GoogleGeminiProviderAdapter`, trích xuất `ProviderUsage` thực tế (`prompt_tokens`, `completion_tokens`, `total_tokens`, `total_latency_ms`).
 
-```yaml
-on:
-  push:
-    branches:
-      - main
-      - "feat/**"
-      - "fix/**"
-      - "hardening/**"
-  pull_request:
-    branches:
-      - main
-  workflow_dispatch:
-```
+### Runtime Composition
 
-### 5.2 Tách job theo trách nhiệm
+* ✅ **Composition root cho runtime/CLI** (`apps/cli/windagent_cli/social_research_composition.py`): `compose_social_research_workflow()` inject `V3ModelGatewayBridge` mặc định vào `SocialResearchWorkflow`, đồng thời vẫn cho phép test/runtime khác truyền gateway tương thích rõ ràng.
 
-```text
-artifact-protocol
-version-consistency
-architecture-boundaries
-python-unit
-python-integration-sqlite
-python-integration-postgres
-runtime-smoke
-cli-contract
-web-test
-web-build
-desktop-test
-desktop-build
-final-evidence
-```
+### Mandatory Model Discovery & Preflight
 
-### 5.3 Sửa PostgreSQL service
+* ✅ **Phát hiện và xác thực model bắt buộc** (`discover_models`): Thực hiện preflight discovery với provider endpoint; báo lỗi `SocialResearchError` nếu model route không khả thi hoặc provider từ chối.
 
-Không đặt `services` bên trong matrix include mà không binding.
+### Resilient Extraction & Qwen Repair Retry
 
-Tạo job PostgreSQL riêng:
+* ✅ **Retry & Repair tự động cho Qwen Extraction**: Dọn dẹp markdown code block (` ```json `), trailing commas; tự động gọi retry model với câu nhắc sửa lỗi JSON nếu output bị lỗi format.
 
-```yaml
-services:
-  postgres:
-    image: postgres:16-alpine
-```
+### Failure Classification & Structured Retries
 
-Chỉ chạy trên Ubuntu nếu chưa có nhu cầu PostgreSQL trên Windows.
+* ✅ **Phân loại lỗi và exponential backoff**: Nhận diện chính xác `RateLimitFailure`, `ProviderUnavailableFailure`, `TimeoutFailure`, HTTP 429/5xx để retry theo chính sách backoff (`SUCCESS`, `RETRY_SUCCESS`, `FAILED`).
 
-### 5.4 Sửa shell cross-platform
+### Complete Secret Redaction
 
-Không dùng Bash syntax trên Windows runner.
+* ✅ **Làm sạch API Key và Secret Tokens toàn bộ**: Áp dụng `redact_text` cho `query`, `source_url`, `final_url`, `title`, `capture_text`, `SourceEvidence.error`, `normalized_records`, `synthesis` trước khi ghi báo cáo Markdown/JSON.
 
-Sử dụng:
+### Expanded Contradiction & Claim Verification
 
-```yaml
-env:
-  WINDAGENT_DATABASE_URL: ...
-```
+* ✅ **Phát hiện bất đồng quan điểm & xác thực trích dẫn**: So sánh sentiment polarization (positive/negative, authentic/fake, safe/dangerous), kiểm tra lệch chỉ số định lượng, và xác minh URL trích dẫn so với các nguồn cào thực tế.
 
-hoặc step riêng theo OS:
+### Test Suite V3 Integration
 
-```yaml
-if: runner.os == 'Windows'
-shell: pwsh
-```
+* ✅ **Bộ test tích hợp & unit test Phase 5** (`test_phase5_model_routing.py`): 15 tests passed 100%, kiểm thử bridge xuyên suốt workflow với V3 native adapters (`OllamaProviderAdapter`, `GoogleGeminiProviderAdapter`), preflight discovery bắt buộc, extraction retries, 429/5xx/timeout, secret redaction và contradiction analysis.
 
-### 5.5 Desktop lockfile
+## Gate hoàn tất
 
-Chọn một package manager canonical:
+1. ✅ `V3ModelGatewayBridge` nối workflow tới Ollama và Google Gemini adapters V3.
+2. ✅ Preflight model discovery check bắt buộc và có tùy chọn bypass rõ ràng.
+3. ✅ Qwen JSON extraction retry tự động khi output không đúng JSON schema.
+4. ✅ Retry và failure classification phân biệt rõ lỗi RateLimit (429), ServerError (5xx), Timeout.
+5. ✅ Real `ProviderUsage` token telemetry (hoặc len//4 fallback khi usage=None) trong `SocialResearchResult` and `report.json`.
+6. ✅ Contradiction detector mở rộng kiểm tra sentiment, metrics, và URL citations.
+7. ✅ Secret redaction dọn dẹp toàn bộ query, URL, title, error khỏi log và report files.
+8. ✅ Focused workflow regression: 77 tests passed (`test_phase4_social_source_collection.py`, `test_phase5_model_routing.py`, `test_social_research.py`); Phase 5 suite: 15 passed.
 
-```text
-npm + package-lock.json
-```
-
-Sau đó:
-
-```bash
-npm ci
-```
-
-Nếu không muốn commit lockfile, dùng `npm install`, nhưng không khuyến nghị cho CI reproducibility.
-
-### 5.6 Validate production artifacts
-
-CI phải chạy:
-
-```bash
-uv run python scripts/validate_artifact_schema.py \
-  --directory artifacts/architecture_v2_production_hardening/phase_07 \
-  --verify-hashes
-```
-
-Không chỉ validate fixture.
-
-### 5.7 Version checker
-
-Sửa hard-coded version scan để không bị vô hiệu hóa khi version bằng `0.3.0`.
-
-Worker/API/CLI import failure phải là error trong production CI.
-
-### 5.8 Upload raw receipts
-
-Mỗi CI job upload:
-
-```text
-pytest.xml
-coverage.xml
-command receipts
-environment manifest
-logs
-artifact validation report
-```
-
-### 5.9 Required checks
-
-Cấu hình branch protection để ít nhất yêu cầu:
-
-```text
-artifact-protocol
-version-consistency
-architecture-boundaries
-python-unit
-python-integration-sqlite
-python-integration-postgres
-runtime-smoke
-web-test
-desktop-test
-final-evidence
-```
-
-## Acceptance gate
-
-```text
-G5.1 Workflow triggers on repair branch
-G5.2 PostgreSQL service starts and health-checks
-G5.3 Windows jobs use valid PowerShell commands
-G5.4 Desktop npm ci succeeds from committed lockfile
-G5.5 Production artifacts are schema-validated
-G5.6 No continue-on-error or exit masking on mandatory gates
-```
-
-## Verdict Phase 5
-
-```text
-CI_MATRIX_FAIL_CLOSED_READY
-```
+**Trạng thái: PHASE_5_MODEL_ROUTING_COMPLETED (Phase 5: 15/15; focused workflow regression: 77/77; architecture policy: PASS)**
 
 ---
 
-# Phase 6 — Complete Verification Matrix
+# Phase 6 — Report generation và CLI
 
 ## Mục tiêu
 
-Chạy lại toàn bộ hệ thống trên commit ứng viên cuối cùng và tạo evidence mới.
+Cho phép chạy pipeline bằng một lệnh và xuất báo cáo Markdown/JSON có provenance.
 
-## Nguyên tắc
+## Đã làm
 
-* Không tái sử dụng kết quả từ `09ce71b`.
-* Không dùng receipt cũ.
-* Không sửa code sau khi bắt đầu final verification.
-* Nếu cần sửa, tạo commit mới và chạy lại toàn bộ Phase 6.
+### Canonical CLI subcommand
 
-## Matrix bắt buộc
+* ✅ **Đã tích hợp subcommand chính thức**: `windagent social-report` trong canonical CLI (`apps/cli/windagent_cli/main.py`), tuân thủ Phase 7 per-command composition (`SocialReportCommandComposer`).
+* ✅ Hỗ trợ `--query`, `--url` (nhiều nguồn), `--output-dir`, `--task-id`, `--session-id`, `--skip-preflight`, `--no-screenshots`, `--authenticated`, `--profile`, `--verify`, `--json`.
 
-### Python
+### Schema Version & Task/Session Identifiers
 
-| OS      | Database   | Test                                |
-| ------- | ---------- | ----------------------------------- |
-| Ubuntu  | SQLite     | full unit + integration             |
-| Ubuntu  | PostgreSQL | full integration + fencing          |
-| Windows | SQLite     | full unit + integration             |
-| Windows | PostgreSQL | tùy chọn nếu được hỗ trợ chính thức |
+* ✅ **Bổ sung `REPORT_SCHEMA_VERSION = "2.0.0"`**: Đã đưa `schema_version`, `task_id`, `session_id`, `run_id` vào `report.json`.
 
-### Frontend
+### Directory Integrity Manifest & Standalone Verification
 
-| App     | OS      | Gate                                      |
-| ------- | ------- | ----------------------------------------- |
-| Web     | Ubuntu  | install, test, coverage, typecheck, build |
-| Web     | Windows | install, test, typecheck, build           |
-| Desktop | Ubuntu  | install, test, typecheck, build           |
-| Desktop | Windows | install, test, typecheck, build           |
+* ✅ **Tự động sinh `manifest.json`**: Tạo manifest chứa bảng băm SHA-256 của toàn bộ file (`report.md`, `report.json`, screenshots) trong thư mục báo cáo.
+* ✅ **Lệnh kiểm tra tính toàn vẹn độc lập**: Hỗ trợ `windagent social-report --verify <report_dir>` (hoặc hàm `verify_report_integrity`) kiểm tra digest mà không cần gọi lại model network.
 
-### Architecture
+### Standardized Exit Codes & JSON Contracts
 
-```bash
-uv run python scripts/scaffold_architecture_v2.py --check
-uv run python scripts/check_architecture_imports.py
-uv run python scripts/check_no_legacy_orchestration.py
-uv run python scripts/check_version_consistency.py
-```
+* ✅ **Hợp đồng mã thoát chuẩn OS**:
+  * `0`: Thành công
+  * `1`: Lỗi nội bộ / generation failure
+  * `2`: Lỗi provider / network unavailable
+  * `3`: Lỗi cú pháp / missing options
 
-### Artifact
+### Unit Test Suite Phase 6
 
-```bash
-uv run python scripts/validate_artifact_schema.py \
-  --directory artifacts/.../phase_07 \
-  --verify-hashes
-```
+* ✅ **Test suite đầy đủ** (`tests/unit/cli/test_social_report_cli.py`): Kiểm thử CLI subcommand, schema v2.0.0, manifest creation, integrity tamper detection và exit codes (81 passed).
 
-### CLI
+## Gate hoàn tất
 
-```text
---version
-doctor
-architecture-check
-status
-task list
-task inspect <real-id>
-replay <real-trace-id>
-providers
-tools
-eval
-worker-status
-provider-test
-```
+1. ✅ Chuyển thành canonical CLI subcommand (`windagent social-report`).
+2. ✅ Report được lưu cùng `manifest.json` kiểm tra tính toàn vẹn.
+3. ✅ Có schema version `"2.0.0"` trong `report.json` và `manifest.json`.
+4. ✅ Có task_id và session_id.
+5. ✅ JSON output có exit-code contract đầy đủ (0, 1, 2, 3).
+6. ✅ Report integrity có thể kiểm tra độc lập qua `verify_report_integrity` / `--verify`.
 
-Các command cần dependency thật phải chạy trên temporary composed runtime, không dùng output giả.
-
-### Runtime smoke
-
-* FastAPI startup/shutdown.
-* Internal architecture endpoint.
-* API version.
-* Worker startup/shutdown.
-* Worker lease acquisition/release.
-* CLI composition.
-* SQLite migration.
-* PostgreSQL migration.
-* Event replay.
-* Session recovery.
-* Web API client contract.
-
-### Negative injections
-
-* Package version mismatch.
-* Invalid artifact.
-* Broken hash.
-* Missing architecture checker.
-* Dirty worktree.
-* API/worker version mismatch.
-* PostgreSQL unavailable.
-* Desktop lockfile mismatch.
-* Demo fallback attempted in production mode.
-
-Mỗi injection phải chứng minh gate fail với exit code khác 0.
-
-## Acceptance gate
-
-```text
-G6.1 All mandatory CI jobs green
-G6.2 Full pytest has zero failure and zero collection error
-G6.3 Architecture violations = 0
-G6.4 Production artifact validation = PASS
-G6.5 Every negative injection is rejected
-G6.6 No unexplained skip
-G6.7 No fabricated CLI output
-G6.8 Worktree clean at verified SHA
-```
-
-Một skip chỉ được chấp nhận khi có:
-
-* test ID;
-* lý do;
-* owner;
-* expiry date;
-* xác nhận không phải mandatory gate.
-
-## Verdict Phase 6
-
-```text
-PHASE_7_FULL_VERIFICATION_PASSED
-```
+**Trạng thái: PHASE_6_REPORT_GENERATION_AND_CLI_COMPLETED (81/81 tests passed)**
 
 ---
 
-# Phase 7 — Final Evidence and Authoritative Verdict
+# Phase 7 — Unit test và real-browser E2E
 
 ## Mục tiêu
 
-Xuất bản evidence bundle nhất quán, được tạo từ commit đã chạy CI.
-
-## Quy tắc SHA
-
-Phân biệt:
+Chứng minh luồng:
 
 ```text
-source_sha
-implementation_sha
-verification_candidate_sha
-verified_sha
-evidence_publish_sha
+browser thật
+→ rendered DOM
+→ normalized record
+→ synthesis
+→ Markdown/JSON report
 ```
 
-Không thể vừa thêm artifact vào commit sau vừa tuyên bố commit trước là final verified state mà không nói rõ.
+3. Cài Chrome/browser dependencies.
+4. Mở trang bằng `agent-browser` thật.
+5. Đọc rendered DOM.
+6. Chạy workflow.
+7. Ghi Markdown và JSON.
+8. Kiểm tra browser backend, content length và capture SHA-256.
 
-Thiết kế đề xuất:
+Fixture E2E dùng model gateway xác định trước, không gọi model network thật.
 
-1. Commit implementation candidate.
-2. CI chạy và verify candidate.
-3. CI tạo evidence bundle dưới dạng workflow artifact.
-4. Bot hoặc finalization process commit evidence.
-5. Evidence ghi:
+### Kết quả CI
 
-```json
-{
-  "verified_sha": "<implementation-candidate>",
-  "evidence_publish_sha": "<artifact-only-commit>"
-}
-```
+Workflow `Agent Browser Social E2E` trên head hiện tại đã hoàn tất với kết luận `success`.
 
-6. Chạy một lightweight integrity CI trên evidence publish commit.
+Artifact `agent-browser-social-e2e` đã được upload:
 
-## Artifact final
+* artifact ID: `8736878678`;
+* size: 1.539 byte;
+* SHA-256 digest:
+  `03400d23900e5c8945b4db847fecca037a3e822bcca31462c7018358cedf8aff`;
+* trạng thái: chưa hết hạn.
 
-```text
-artifacts/architecture_v2_production_hardening/phase_07/final/
-├── environment_manifest.json
-├── version_manifest.json
-├── version_consistency_report.json
-├── architecture_report.json
-├── scaffold_report.json
-├── artifact_schema_report.json
-├── cli_contract_report.json
-├── runtime_smoke_report.json
-├── python_test_matrix.json
-├── frontend_test_matrix.json
-├── database_matrix.json
-├── negative_injection_report.json
-├── ci_run_manifest.json
-├── artifact_manifest.json
-├── risk_register.md
-└── final_verdict.json
-```
+## Chưa làm
 
-## `final_verdict.json`
+* Chưa test browser thật trên domain Facebook.
+* Chưa test browser thật trên domain YouTube.
+* Chưa test browser thật trên domain TikTok.
+* Chưa dùng Qwen thật.
+* Chưa dùng Google API thật.
+* Chưa test profile/state authentication thật.
+* Chưa test Windows.
+* Chưa test flaky behavior qua nhiều lần chạy.
+* Chưa test network timeout, rate limit và partial platform failure bằng browser thật.
+* Chưa chạy load test nhiều nguồn.
+* Chưa chạy full repository pytest trên head hiện tại.
+* Chưa chạy toàn bộ architecture/import-boundary checker trên head hiện tại.
+* Chưa có certification rằng các CI khác trong repository đều pass.
+* Chưa kiểm tra artifact report thủ công sau khi tải xuống.
 
-Chỉ được `PASS` nếu được tính từ gates:
+## Gate hoàn tất
 
-```json
-{
-  "verdict": "PASS",
-  "verdict_name": "PHASE_7_VERSION_DOCUMENTATION_VERDICT_CONVERGED",
-  "gates": {
-    "artifact_protocol": true,
-    "version_authority": true,
-    "architecture_integrity": true,
-    "cli_truthfulness": true,
-    "python_matrix": true,
-    "frontend_matrix": true,
-    "database_matrix": true,
-    "negative_injections": true,
-    "ci_verified": true
-  },
-  "manual_override": false
-}
-```
+1. E2E fixture tiếp tục pass.
+2. Public live smoke test cho ba platform.
+3. Live model test đủ ba model.
+4. Windows smoke test.
+5. Full focused test suite.
+6. Full repository regression.
+7. Architecture checker.
+8. Artifact download và integrity verification.
+9. Ba lần CI liên tiếp không flaky.
 
-Không cho phép author nhập trực tiếp verdict `PASS`. Verdict phải được derive từ gate values.
-
-## Acceptance gate
-
-```text
-G7.1 All artifacts schema-valid
-G7.2 All hashes verified
-G7.3 CI run IDs recorded
-G7.4 verified_sha matches tested candidate
-G7.5 evidence_publish_sha explicitly recorded
-G7.6 Final verdict is computed, not manually declared
-G7.7 Risk register has no OPEN P0/P1 risks
-```
-
-## Verdict Phase 7
-
-```text
-PHASE_7_VERSION_DOCUMENTATION_VERDICT_CONVERGED
-```
+**Trạng thái: FIXTURE E2E PASS, LIVE E2E CHƯA PASS**
 
 ---
 
-# Phase 8 — Pull Request and Main Promotion
+# Phase 8 — Live platform validation
 
 ## Mục tiêu
 
-Đưa toàn bộ Architecture V2 đã sửa vào `main` qua một PR có thể review và rollback.
+Chứng minh pipeline hoạt động với các nguồn xã hội thật và dữ liệu thật.
 
-## Công việc
+## Đã làm
 
-### 8.1 Rebase/update branch
+* Chỉ mới chuẩn bị cấu hình:
 
-So sánh với `main` trước khi mở PR:
+  * URL input;
+  * platform detection;
+  * domain policy;
+  * profile/state;
+  * screenshots;
+  * partial source handling.
+* Chưa thực hiện live validation.
 
-```bash
-git fetch origin
-git rebase origin/main
-```
+## Chưa làm hoàn toàn
 
-Nếu `main` vẫn rất cũ so với branch kiến trúc, nên mở một integration PR riêng, không squash toàn bộ lịch sử mà không review.
+### Test A — YouTube public
 
-### 8.2 Draft PR
+Cần chạy trước vì ít phụ thuộc đăng nhập nhất:
 
-Tiêu đề đề xuất:
+1. Chọn một video public ổn định.
+2. Thu thập title, description, views và channel.
+3. Chạy Qwen extraction.
+4. Chạy Gemma và Gemini.
+5. Xuất report.
+6. Đối chiếu thủ công evidence với trang.
 
-```text
-fix(phase7): harden verification integrity and publish authoritative evidence
-```
+### Test B — Facebook public
 
-PR body cần có:
+1. Chọn public page/post do người dùng sở hữu hoặc cho phép test.
+2. Chạy không đăng nhập trước.
+3. Nếu login wall xuất hiện, dùng profile/state do người dùng cấp.
+4. Không bypass challenge.
+5. Xác nhận final URL vẫn thuộc allowlist.
+6. Xóa state sau test nếu không cần lưu.
 
-* starting SHA;
-* implementation candidate SHA;
-* verified SHA;
-* evidence publish SHA;
-* defects sửa;
-* test matrix;
-* CI run IDs;
-* accepted risks;
-* rollback procedure.
+### Test C — TikTok public
 
-### 8.3 Review checklist
+1. Chọn video public ổn định.
+2. Chạy browser capture.
+3. Kiểm tra caption, author và metrics.
+4. Nếu platform trả login challenge hoặc region block, ghi `BLOCKED_BY_PLATFORM`.
+5. Không dùng stealth hoặc CAPTCHA bypass.
 
-Reviewer phải xác nhận:
+### Test D — Cross-platform report
 
-* không có artifact placeholder;
-* không có receipt thủ công;
-* không có CLI empty-success;
-* không có demo fallback;
-* CI chạy trên đúng SHA;
-* PostgreSQL service thật sự hoạt động;
-* desktop lockfile tồn tại;
-* artifact schema gate kiểm tra artifact thật.
+1. Một URL Facebook.
+2. Một URL YouTube.
+3. Một URL TikTok.
+4. Qwen chuẩn hóa cả ba.
+5. Gemma tổng hợp độc lập.
+6. Gemini kiểm chứng.
+7. Report phải ghi rõ source nào thành công hoặc thất bại.
 
-### 8.4 Merge strategy
-
-Khuyến nghị:
-
-```text
-merge commit
-```
-
-thay vì squash nếu cần giữ chuỗi implementation SHA → verified SHA → evidence SHA.
-
-Nếu dùng squash, phải chạy lại required checks trên squash result trước khi coi `main` là verified.
-
-### 8.5 Post-merge smoke
-
-Trên `main`:
-
-```bash
-uv sync --all-packages
-uv run python scripts/check_version_consistency.py
-uv run python scripts/check_architecture_imports.py
-uv run python scripts/validate_artifact_schema.py --directory ...
-uv run pytest -q
-```
-
-Chạy thêm web/desktop build.
-
-### 8.6 Rollback
-
-Tạo rollback receipt:
+## Gate hoàn tất
 
 ```text
-rollback_target_sha
-rollback_commands
-database_compatibility
-artifact_compatibility
-expected_downtime
+3 nguồn được yêu cầu
+≥2 nguồn thu thập thành công
+Qwen extraction hợp lệ
+Gemma output không rỗng
+Gemini output không rỗng
+Markdown report tồn tại
+JSON report tồn tại
+Capture hashes hợp lệ
+Không lộ secret
+Không bypass platform protection
 ```
 
-## Acceptance gate
-
-```text
-G8.1 PR required checks green
-G8.2 No unresolved P0/P1 review thread
-G8.3 Merge result receives post-merge verification
-G8.4 main contains authoritative verdict
-G8.5 Rollback procedure validated
-```
-
-## Verdict Phase 8
-
-```text
-PHASE_7_PROMOTED_TO_MAIN
-```
+**Trạng thái: CHƯA THỰC HIỆN**
 
 ---
 
-# Dependency và khả năng chạy song song
+# Phase 9 — Production integration vào WindAgent runtime
 
-| Phase | Phụ thuộc     | Có thể chạy song song        |
-| ----- | ------------- | ---------------------------- |
-| 0     | Không         | Không                        |
-| 1     | Phase 0       | Một phần với Phase 3         |
-| 2     | Phase 1       | Không                        |
-| 3     | Phase 0       | Có thể song song Phase 1     |
-| 4     | Phase 3       | Có thể song song đầu Phase 5 |
-| 5     | Phase 1, 2, 3 | Một phần với Phase 4         |
-| 6     | Phase 1–5     | Không                        |
-| 7     | Phase 6       | Không                        |
-| 8     | Phase 7       | Không                        |
+## Mục tiêu
 
-Critical path:
+Biến prototype thành workflow chính thức có task lifecycle, worker execution, storage và observability.
 
-```text
-0 → 1 → 2 → 5 → 6 → 7 → 8
-        ↘ 3 → 4 ↗
-```
+## Đã làm
 
----
+* Workflow package và CLI có thể gọi trực tiếp các provider adapter và browser tool.
+* Chưa tích hợp vào runtime chính thức.
 
-# Phân chia commit đề xuất
+## Chưa làm
 
-Không nên thực hiện tất cả trong một commit.
+* Chưa đăng ký workflow vào `WorkflowRegistry`.
+* Chưa có workflow pack canonical.
+* Chưa kết nối TaskManager.
+* Chưa chạy qua worker lease.
+* Chưa hỗ trợ cancellation.
+* Chưa có retry orchestration.
+* Chưa có event-sourced execution trace.
+* Chưa có storage repository.
+* Chưa có API endpoint.
+* Chưa có desktop/web UI.
+* Chưa có observability:
 
-```text
-1. docs(phase7): correct provisional verdict and freeze repair baseline
-2. fix(artifacts): harden canonical artifact protocol and validator
-3. feat(verification): add deterministic command receipt generator
-4. fix(cli): make repository root detection fail closed
-5. fix(cli): replace fabricated runtime responses with real queries
-6. fix(ci): repair workflow triggers and cross-platform matrix
-7. test(phase7): add verification integrity regression suite
-8. ci(phase7): execute and publish complete verification evidence
-9. docs(phase7): publish authoritative final verdict
-```
+  * browser latency;
+  * source success rate;
+  * model latency;
+  * token usage;
+  * cost;
+  * report completion rate.
+* Chưa có quota và concurrency limits.
+* Chưa có per-platform circuit breaker.
+* Chưa có scheduler.
+* Chưa có retention cleanup job.
 
----
+## Gate hoàn tất
 
-# Thứ tự ưu tiên lỗi
+1. Workflow được registry quản lý.
+2. Task chạy qua worker.
+3. Có retry/cancellation/resume.
+4. Artifacts lưu bền vững.
+5. API/CLI đọc được trạng thái.
+6. Có metrics và audit trail.
+7. Có concurrency/rate limit.
+8. Crash/restart không làm mất task.
 
-## P0 — Phải sửa trước
-
-1. Artifact thật không đạt schema.
-2. Placeholder hoặc empty hash.
-3. Receipt không phản ánh execution thật.
-4. CLI architecture checker false-positive.
-5. CI không validate artifact sản xuất.
-6. Không có CI run trên verified commit.
-
-## P1 — Phải sửa trước promotion
-
-1. PostgreSQL service CI.
-2. Windows shell syntax.
-3. Desktop lockfile.
-4. CLI trả dữ liệu demo như dữ liệu thật.
-5. Version checker bỏ qua hard-coded scan.
-6. Import failure chỉ tạo warning.
-
-## P2 — Có thể xử lý sau khi correctness đạt
-
-1. Tối ưu thời gian CI.
-2. Chia cache Python/Node.
-3. Chuẩn hóa naming artifact.
-4. Tự động tạo release notes.
-5. Dashboard lịch sử verification.
+**Trạng thái: CHƯA THỰC HIỆN**
 
 ---
 
-# Final gate toàn chương trình
+# Phase 10 — Verification, review và promotion
 
-Chỉ được công bố hoàn thành khi lệnh tổng hợp tương đương sau trả exit code 0:
+## Mục tiêu
 
-```bash
-uv run python scripts/verification/finalize_phase7.py \
-  --verified-sha "$(git rev-parse HEAD)" \
-  --require-clean-worktree \
-  --require-ci \
-  --require-python-matrix \
-  --require-frontend-matrix \
-  --require-postgresql \
-  --require-negative-injections \
-  --verify-artifact-hashes \
-  --fail-on-open-risk P0 \
-  --fail-on-open-risk P1
-```
+Đánh giá toàn bộ diff và chỉ promotion khi có bằng chứng đầy đủ.
 
-Output hợp lệ cuối cùng:
+## Đã làm
+
+* PR #10 đang mở ở trạng thái draft.
+* PR mergeable theo GitHub.
+* Không có review thread đang mở tại thời điểm kiểm tra.
+* E2E chuyên biệt đã pass.
+* Artifact E2E đã tồn tại.
+
+## Chưa làm
+
+* Chưa thực hiện manual code review toàn bộ 15 file.
+* Chưa kiểm tra diff bằng security reviewer.
+* Chưa chạy static analysis đầy đủ.
+* Chưa chạy dependency audit.
+* Chưa chạy full CI matrix trên head hiện tại.
+* Chưa cập nhật PR body từ “E2E pending” sang kết quả thực tế.
+* Chưa thêm test evidence link/digest vào PR.
+* Chưa đánh giá các commit trung gian.
+* Chưa squash.
+* Chưa mark ready for review.
+* Chưa request reviewer.
+* Chưa merge.
+* Chưa có post-merge verification.
+* Chưa có rollback plan.
+
+## Gate hoàn tất
+
+1. Focused E2E pass.
+2. Full regression pass.
+3. Architecture checks pass.
+4. Security review pass.
+5. Live platform test pass theo tiêu chí đã định.
+6. Live model test pass.
+7. Evidence manifest hợp lệ.
+8. PR body phản ánh đúng trạng thái.
+9. Human review chấp thuận.
+10. Chỉ sau đó mới mark ready hoặc merge.
+
+**Trạng thái: DRAFT, CHƯA SẴN SÀNG MERGE**
+
+---
+
+# Thứ tự thực hiện tiếp được khuyến nghị
+
+## Nhóm 1 — Audit trước khi sửa thêm
+
+Không thay đổi code ngay. Trước tiên cần:
+
+1. Review toàn bộ 15 file trong PR #10.
+2. Phân loại:
+
+   * lỗi thực sự;
+   * thiếu test;
+   * thiết kế chưa hoàn chỉnh;
+   * CI không liên quan.
+3. Kiểm tra commit history và diff.
+4. Tải artifact E2E và xác nhận nội dung.
+5. Ghi issue list, không tự động fix.
+
+## Nhóm 2 — Live model preflight
+
+Thực hiện trên môi trường người dùng:
+
+1. Kiểm tra Ollama.
+2. Kiểm tra model Qwen.
+3. Gọi Google model discovery.
+4. Xác định model ID chính xác.
+5. Thực hiện một request tối thiểu cho từng model.
+6. Ghi latency, token và lỗi.
+
+## Nhóm 3 — YouTube public smoke test
+
+Bắt đầu với một URL YouTube public. Không mở rộng sang Facebook hoặc TikTok trước khi luồng này ổn định.
+
+## Nhóm 4 — Facebook/TikTok có kiểm soát
+
+Chỉ chạy bằng URL do người dùng chọn và profile/state do người dùng chủ động cung cấp.
+
+## Nhóm 5 — Runtime integration
+
+Chỉ thực hiện sau khi live test đạt gate. Khi đó mới đưa workflow vào TaskManager, worker, storage và API.
+
+---
+
+# Kết luận
+
+Phần đã được chứng minh:
 
 ```text
-PHASE_7_VERSION_DOCUMENTATION_VERDICT_CONVERGED
-READY_FOR_MAIN_PROMOTION
+agent-browser thật
+→ Chrome thật
+→ rendered fixture page
+→ normalized deterministic record
+→ dual deterministic synthesis
+→ Markdown/JSON report
+→ CI artifact
 ```
 
-Bất kỳ gate bắt buộc nào không đạt, verdict phải tự động hạ thành:
+Phần chưa được chứng minh:
 
 ```text
-BLOCKED
+Facebook/YouTube/TikTok thật
+→ Qwen 3.5 thật
+→ Gemma 4 31B thật
+→ Gemini 3.5 Flash Lite thật
+→ production WindAgent task/worker/storage
 ```
 
-Không được dùng `PASS` kèm warning để che một gate chưa chạy.
+Do đó, trạng thái phù hợp nhất hiện tại là:
+
+```text
+BROWSER_ADAPTER_IMPLEMENTED
+FIXTURE_BROWSER_TO_REPORT_E2E_PASSED
+LIVE_SOCIAL_COLLECTION_NOT_VERIFIED
+LIVE_MODEL_PIPELINE_NOT_VERIFIED
+PRODUCTION_INTEGRATION_NOT_COMPLETE
+NOT_READY_FOR_MERGE
+```

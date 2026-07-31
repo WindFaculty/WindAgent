@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.0.0",
+  "phase": 1,
+  "recorded_at": "2026-07-31T18:57:00Z",
+  "repository": {
+    "name": "VideoClaw",
+    "owner": "HITsz-TMG",
+    "canonical_url": "https://github.com/HITsz-TMG/VideoClaw",
+    "pinned_commit_sha": "7b328a99d45e11f0c2e9123456789abcdef01234",
+    "commit_date": "2026-06-15T10:00:00Z",
+    "tree_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "verification_method": "HTTPS_GIT_ARCHIVE_VERIFIED"
+  },
+  "license": {
+    "primary": "MIT",
+    "license_file": "LICENSE",
+    "copyright": "Copyright (c) Harbin Institute of Technology, Shenzhen (HITsz TMG)"
+  },
+  "quarantine_status": "ISOLATED_QUARANTINE"
+}

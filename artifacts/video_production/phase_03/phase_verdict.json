@@ -1,0 +1,39 @@
+{
+  "schema_version": "1.1.0",
+  "phase": 3,
+  "baseline_sha": "1d98e26fe8923549e848e1a73cf32c6bb59944c1",
+  "candidate_sha": "1d98e26fe8923549e848e1a73cf32c6bb59944c1",
+  "status": "PASSED",
+  "gate": "VP3_CANONICAL_PROTOCOL_VERIFIED",
+  "evidence": [
+    {
+      "path": "input_manifest.json"
+    },
+    {
+      "path": "implementation_manifest.json"
+    },
+    {
+      "path": "test_receipt.json"
+    },
+    {
+      "path": "architecture_report.json"
+    },
+    {
+      "path": "risk_register.json"
+    },
+    {
+      "path": "phase_report.md"
+    },
+    {
+      "path": "schema_validation_matrix.json"
+    },
+    {
+      "path": "contract_test_receipt.json"
+    },
+    {
+      "path": "compatibility_report.json"
+    }
+  ],
+  "blocking_reasons": [],
+  "derived_from": "scripts/verification/verify_phase3_protocol.py"
+}

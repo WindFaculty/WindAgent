@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.1.0",
+  "phase": 1,
+  "baseline_sha": "1d98e26fe8923549e848e1a73cf32c6bb59944c1",
+  "candidate_sha": "1d98e26fe8923549e848e1a73cf32c6bb59944c1",
+  "status": "PASSED",
+  "gate": "VP1_UPSTREAM_ADOPTION_APPROVED",
+  "evidence": [
+    {
+      "path": "upstream_source_receipt.json"
+    },
+    {
+      "path": "source_tree_hashes.json"
+    },
+    {
+      "path": "license_scan_receipt.json"
+    },
+    {
+      "path": "dependency_scan_receipt.json"
+    },
+    {
+      "path": "implementation_manifest.json"
+    },
+    {
+      "path": "test_receipt.json"
+    },
+    {
+      "path": "architecture_report.json"
+    },
+    {
+      "path": "risk_register.json"
+    },
+    {
+      "path": "phase_report.md"
+    }
+  ],
+  "blocking_reasons": []
+}

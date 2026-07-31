@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.0.0",
+  "producer": "phase-0-certification",
+  "timestamp": "2026-07-31T08:20:02Z",
+  "baseline_sha": "cbf7257643d4a1705fa221ae37e9391b6ee3f40e",
+  "command": "pytest tests/unit/verification/test_finalize_phase7.py::test_finalizer_gate_evaluation -vv",
+  "exit_code": 0,
+  "result": "PASS_WITH_MUTATION",
+  "tracked_mutation_count": 16,
+  "historical_inventory_count": 17,
+  "historical_extra_path": "artifacts/architecture_v2_production_hardening/phase_07/final/risk_register.md",
+  "diff_sha256": "d33dd6cf631d4cdc1c46228d6c67ca157d07f4df457c31861209c756aa446943",
+  "mutated_paths": [
+    "artifacts/architecture_v2_production_hardening/phase_07/final/architecture_report.json",
+    "artifacts/architecture_v2_production_hardening/phase_07/final/artifact_manifest.json",
+    "artifacts/architecture_v2_production_hardening/phase_07/final/artifact_schema_report.json",
+    "artifacts/architecture_v2_production_hardening/phase_07/final/branch_protection_report.json",
+    "artifacts/architecture_v2_production_hardening/phase_07/final/ci_run_manifest.json",
+    "artifacts/architecture_v2_production_hardening/phase_07/final/cli_contract_report.json",
+    "artifacts/architecture_v2_production_hardening/phase_07/final/database_matrix.json",
+    "artifacts/architecture_v2_production_hardening/phase_07/final/environment_manifest.json",
+    "artifacts/architecture_v2_production_hardening/phase_07/final/final_verdict.json",
+    "artifacts/architecture_v2_production_hardening/phase_07/final/frontend_test_matrix.json",
+    "artifacts/architecture_v2_production_hardening/phase_07/final/negative_injection_report.json",
+    "artifacts/architecture_v2_production_hardening/phase_07/final/python_test_matrix.json",
+    "artifacts/architecture_v2_production_hardening/phase_07/final/runtime_smoke_report.json",
+    "artifacts/architecture_v2_production_hardening/phase_07/final/scaffold_report.json",
+    "artifacts/architecture_v2_production_hardening/phase_07/final/version_consistency_report.json",
+    "artifacts/architecture_v2_production_hardening/phase_07/final/version_manifest.json"
+  ]
+}
