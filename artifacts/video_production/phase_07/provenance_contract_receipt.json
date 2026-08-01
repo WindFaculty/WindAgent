@@ -1,0 +1,64 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-08-01T00:04:39.134382+00:00",
+  "policy": "docs/video_production/assets/provenance_schema.md",
+  "check_count": 11,
+  "all_checks_pass": true,
+  "checks": [
+    {
+      "check": "record_starts_validated",
+      "ok": true,
+      "detail": "a built record starts at VALIDATED"
+    },
+    {
+      "check": "record_carries_content_hash",
+      "ok": true,
+      "detail": "content hash is recorded"
+    },
+    {
+      "check": "license_unknown_blocks_auto_approve",
+      "ok": true,
+      "detail": "UNKNOWN license -> LICENSE_UNKNOWN, never auto-approved"
+    },
+    {
+      "check": "license_evidence_approves",
+      "ok": true,
+      "detail": "CC evidence moves LICENSE_UNKNOWN -> APPROVED"
+    },
+    {
+      "check": "approve_without_evidence_fails_closed",
+      "ok": true,
+      "detail": "approval without evidence is rejected"
+    },
+    {
+      "check": "likeness_requires_human",
+      "ok": true,
+      "detail": "real-person likeness needs human approval"
+    },
+    {
+      "check": "likeness_with_human_approves",
+      "ok": true,
+      "detail": "likeness with human approval + evidence approves"
+    },
+    {
+      "check": "reject_to_rejected",
+      "ok": true,
+      "detail": "REJECTED license moves VALIDATED -> REJECTED"
+    },
+    {
+      "check": "rejected_asset_cannot_reselect",
+      "ok": true,
+      "detail": "rejected asset cannot silently flip to APPROVED"
+    },
+    {
+      "check": "approved_binds_to_project",
+      "ok": true,
+      "detail": "APPROVED -> BOUND_TO_PROJECT"
+    },
+    {
+      "check": "unapproved_cannot_bind",
+      "ok": true,
+      "detail": "a non-APPROVED asset cannot be bound"
+    }
+  ]
+}

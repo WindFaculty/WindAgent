@@ -1,0 +1,74 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-08-01T00:04:39.134382+00:00",
+  "state_count": 7,
+  "check_count": 13,
+  "all_checks_pass": true,
+  "checks": [
+    {
+      "check": "transition_table_DISCOVERED",
+      "ok": true,
+      "detail": "DISCOVERED -> {DOWNLOADED}"
+    },
+    {
+      "check": "transition_table_DOWNLOADED",
+      "ok": true,
+      "detail": "DOWNLOADED -> {VALIDATED}"
+    },
+    {
+      "check": "transition_table_VALIDATED",
+      "ok": true,
+      "detail": "VALIDATED -> {APPROVED, LICENSE_UNKNOWN, REJECTED}"
+    },
+    {
+      "check": "transition_table_LICENSE_UNKNOWN",
+      "ok": true,
+      "detail": "LICENSE_UNKNOWN -> {APPROVED, REJECTED}"
+    },
+    {
+      "check": "transition_table_APPROVED",
+      "ok": true,
+      "detail": "APPROVED -> {BOUND_TO_PROJECT}"
+    },
+    {
+      "check": "transition_table_REJECTED",
+      "ok": true,
+      "detail": "REJECTED -> {APPROVED}"
+    },
+    {
+      "check": "transition_table_BOUND_TO_PROJECT",
+      "ok": true,
+      "detail": "BOUND_TO_PROJECT -> {}"
+    },
+    {
+      "check": "download_to_bound_forbidden",
+      "ok": true,
+      "detail": "DOWNLOADED -> BOUND_TO_PROJECT is forbidden (must validate first)"
+    },
+    {
+      "check": "discovered_to_approved_forbidden",
+      "ok": true,
+      "detail": "DISCOVERED -> APPROVED is forbidden"
+    },
+    {
+      "check": "rejected_to_approved_requires_review",
+      "ok": true,
+      "detail": "REJECTED -> APPROVED without a new review record is forbidden"
+    },
+    {
+      "check": "rejected_to_approved_with_review_allowed",
+      "ok": true,
+      "detail": "REJECTED -> APPROVED with a new review record is allowed"
+    },
+    {
+      "check": "bound_is_terminal",
+      "ok": true,
+      "detail": "BOUND_TO_PROJECT is terminal"
+    },
+    {
+      "check": "require_transition_raises_typed_error",
+      "ok": true,
+      "detail": "require_transition raises VideoProductionProtocolError on illegal move"
+    }
+  ]
+}

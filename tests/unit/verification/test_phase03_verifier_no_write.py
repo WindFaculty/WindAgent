@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """
-Tests for the verify-only (--no-write / --verify-only) mode of the Phase 0-5
+Tests for the verify-only (--no-write / --verify-only) mode of the Phase 0-7
 verifiers: `verify_phase3_protocol.py`, `verify_phase03_handoff.py`,
-`verify_phase4_intake.py` and `verify_phase5_characterization.py`.
+`verify_phase4_intake.py`, `verify_phase5_characterization.py`,
+`verify_phase6_kernel.py` and `verify_phase7_assets.py`.
 
 Contract under test (plan 01, section 26 process note; plan 02 Phase 4/5):
 - The verifiers run ALL real checks and compute the verdict, but must NOT
@@ -22,6 +23,7 @@ VERIFIERS = (
     "scripts/verification/verify_phase4_intake.py",
     "scripts/verification/verify_phase5_characterization.py",
     "scripts/verification/verify_phase6_kernel.py",
+    "scripts/verification/verify_phase7_assets.py",
 )
 
 KNOWN_EVIDENCE_FILES = (
@@ -31,6 +33,7 @@ KNOWN_EVIDENCE_FILES = (
     "phase_04/phase_verdict.json",
     "phase_05/phase_verdict.json",
     "phase_06/phase_verdict.json",
+    "phase_07/phase_verdict.json",
 )
 
 

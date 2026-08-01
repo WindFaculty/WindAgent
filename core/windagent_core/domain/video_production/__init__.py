@@ -81,6 +81,10 @@ from windagent_core.domain.video_production.asset import (
     FinalDeliverable,
     ReferenceAsset,
 )
+from windagent_core.domain.video_production.asset_lifecycle import (
+    AssetLifecycleState,
+    AssetStateMachine,
+)
 from windagent_core.domain.video_production.continuity import ContinuityState
 from windagent_core.domain.video_production.generation_job import (
     GenerationCandidate,
@@ -172,6 +176,8 @@ __all__ = [
     "ReferenceAsset",
     "AssetAcquisitionRecord",
     "FinalDeliverable",
+    "AssetLifecycleState",
+    "AssetStateMachine",
     "ContinuityState",
     "GenerationRequest",
     "GenerationCandidate",
