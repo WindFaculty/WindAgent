@@ -13,7 +13,6 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from windagent_core.errors.exceptions import ValidationError
 
 logger = logging.getLogger("windagent.intelligence.reviewer")
 

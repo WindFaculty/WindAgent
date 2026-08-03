@@ -9,11 +9,10 @@ from __future__ import annotations
 import json
 import logging
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
-from sqlalchemy import select, delete, update
+from typing import List, Optional
+from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from windagent_core.errors.exceptions import NotFoundError
 from windagent_memory.models import MemoryRecord, MemoryScope, RetentionPolicy
 from windagent_storage.orm.v2_orchestration_models import MemoryRecordORM
 

@@ -11,7 +11,7 @@ from typing import Any, Dict, List, Optional
 
 from windagent_core.domain.types import (
     TaskId, RunId, SessionId, WorkflowId, StepId,
-    ToolCallId, ModelCallId, ArtifactId
+    ModelCallId, ArtifactId
 )
 
 

@@ -6,15 +6,9 @@ Pure Python protocols with ZERO framework (FastAPI/HTTP/Hermes) dependencies.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from datetime import datetime
-from enum import Enum
-from typing import Any, Dict, List, Optional, Protocol, Tuple, runtime_checkable
+from typing import Any, Dict, List, Optional, Protocol, runtime_checkable
 
-from windagent_core.domain.types import TaskId, SessionId, RunId, StepId
-
-
-from windagent_core.contracts.execution import (
+from windagent_core.contracts.execution import (  # noqa: F401  (re-exported for dispatcher/monitor/test consumers)
     RuntimeStatusEnum,
     ExecutionRequest,
     ExecutionHandle,
@@ -22,7 +16,6 @@ from windagent_core.contracts.execution import (
     ExecutionResult,
     ExecutionRuntimePort,
 )
-
 
 @runtime_checkable
 class WorkerRegistryPort(Protocol):

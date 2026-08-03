@@ -11,7 +11,7 @@ from windagent_core.domain.models import WorkflowStep
 from windagent_workflows.base import BaseWorkflowPack, WorkflowPackDefinition
 from windagent_workflows.models import (
     ImmutableWorkflowDefinition, WorkflowNodeSpec, WorkflowEdgeSpec,
-    ArtifactContract, CompletionPredicate,
+    ArtifactContract,
 )
 
 

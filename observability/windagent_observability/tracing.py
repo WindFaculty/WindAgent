@@ -81,7 +81,7 @@ class TraceChain:
     def get_span(self, span_id: str) -> Optional[Span]:
         return self.spans.get(span_id)
 
-    def list_spans() -> List[Span]:
+    def list_spans(self) -> List[Span]:
         return list(self.spans.values())
 
     def validate_chain_completeness(self) -> bool:

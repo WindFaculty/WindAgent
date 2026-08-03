@@ -131,7 +131,6 @@ class _FakeRedirectTransport:
         self._active = 0
 
     async def fetch(self, url: str, *, max_bytes: int, timeout: float) -> bytes:
-        from windagent_tools.media_assets.download import _RedirectSignal
 
         if self._hops:
             return await self._redirect(self._hops.pop(0))
@@ -178,7 +177,6 @@ def build_downloader_security_matrix() -> dict:
         validate_host_ips,
         validate_redirect_target,
     )
-    from windagent_tools.media_assets.download import AssetDownloadService
 
     checks: list[dict] = []
     PUBLIC_IP = "93.184.216.34"  # public IPv4 literal (example.com)

@@ -7,20 +7,23 @@ from __future__ import annotations
 import asyncio
 import tempfile
 from pathlib import Path
-from typing import Generator, Optional
-from fastapi import Request, HTTPException, status
+from typing import Optional
+from fastapi import Request
 
 from windagent_api.composition import ApplicationContainer
 from windagent_storage.database.connection import DatabaseManager
 from windagent_storage.orm.models import BaseORM
 from windagent_storage.queue.submission_adapter import SqlWorkSubmissionAdapter
-from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork
+from windagent_storage.security.encryption import decrypt
 from windagent_orchestration.task_manager.service import TaskManager
 from windagent_execution.registry import ExecutionRuntimeRegistry
 from windagent_providers.registry.canonical_registry import CanonicalModelRegistryService
 from windagent_providers.routing.route_lock_service import RouteLockService
 from windagent_tools.registry import ToolRegistry
 from windagent_tools.security.permission_engine import PermissionEngine
+from windagent_orchestration.orchestrator_service import OrchestratorService
+from windagent_providers.routing.endpoint_adapter_resolver import EndpointAdapterResolver
+from windagent_providers.routing.execution_coordinator import EndpointExecutionCoordinator
 
 _container: Optional[ApplicationContainer] = None
 _db_path: Optional[Path] = None
@@ -31,11 +34,11 @@ def _build_container() -> ApplicationContainer:
     global _db_path
     _db_path = Path(tempfile.mkdtemp(prefix="windagent_fb_")) / "fallback.db"
     db_url = f"sqlite+aiosqlite:///{_db_path}"
-    container = ApplicationContainer()
+    container = ApplicationContainer(db_url=db_url)
     container.db = DatabaseManager(db_url)
     loop = asyncio.new_event_loop()
     try:
-        loop.run_until_complete(container.db.create_tables(BaseORM.metadata))
+        loop.run_until_complete(container.db.upgrade_to_head(BaseORM.metadata))
     finally:
         loop.close()
     container.task_manager = TaskManager(uow_factory=container.db.session_factory)
@@ -45,17 +48,47 @@ def _build_container() -> ApplicationContainer:
         SQLEndpointBindingRepository,
         SQLProviderRoutingAuditRepository,
     )
-    from windagent_storage.repositories.v3_repositories import SQLRouteLockRepository
+    from windagent_storage.repositories.v3_repositories import (
+        SQLEndpointRegistryRepository,
+        SQLEndpointStateRepository,
+        SQLQuotaStateRepository,
+        SQLRouteAttemptRepository,
+        SQLRouteLockRepository,
+    )
     sync_factory = make_sync_session_factory(container.db_url)
     container.provider_registry = CanonicalModelRegistryService(
         binding_repository=SQLEndpointBindingRepository(sync_factory())
     )
+    from windagent_providers.routing.rules import RoutingRule, RoutingRuleSet
     container.route_lock_service = RouteLockService(
+        ruleset=RoutingRuleSet(
+            rules=[
+                RoutingRule(
+                    rule_id="orchestrator-local-agent",
+                    rule_version=1,
+                    canonical_model_id="windagent/local-agent",
+                    description="Phase-2 conversation control plane",
+                )
+            ]
+        ),
         lock_repository=SQLRouteLockRepository(sync_factory()),
         audit_repository=SQLProviderRoutingAuditRepository(sync_factory()),
     )
     container.tool_registry = ToolRegistry()
     container.execution_registry = ExecutionRuntimeRegistry()
+    container.provider_execution_coordinator = EndpointExecutionCoordinator(
+        adapter_resolver=EndpointAdapterResolver(decrypt),
+        endpoint_registry=SQLEndpointRegistryRepository(sync_factory()),
+        endpoint_state=SQLEndpointStateRepository(sync_factory()),
+        quota_state=SQLQuotaStateRepository(sync_factory()),
+        attempt_log=SQLRouteAttemptRepository(sync_factory()),
+    )
+    container.orchestrator_service = OrchestratorService(
+        container.db.session_factory,
+        container.execution_registry,
+        container.route_lock_service,
+        container.provider_execution_coordinator,
+    )
     container.is_initialized = True
     return container
 
@@ -90,6 +123,19 @@ def get_execution_registry(request: Request) -> ExecutionRuntimeRegistry:
     if not container.execution_registry:
         container.execution_registry = ExecutionRuntimeRegistry()
     return container.execution_registry
+
+
+def get_orchestrator_service(request: Request) -> OrchestratorService:
+    container = get_container(request)
+    if not container.orchestrator_service:
+        container.execution_registry = container.execution_registry or ExecutionRuntimeRegistry()
+        container.orchestrator_service = OrchestratorService(
+            container.db.session_factory,
+            container.execution_registry,
+            container.route_lock_service,
+            container.provider_execution_coordinator,
+        )
+    return container.orchestrator_service
 
 
 def get_provider_registry(request: Request) -> CanonicalModelRegistryService:

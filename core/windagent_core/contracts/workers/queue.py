@@ -5,7 +5,6 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, Optional, Protocol, runtime_checkable
 
-from windagent_core.domain.types import TaskId, WorkerId
 
 
 @dataclass

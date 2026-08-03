@@ -115,3 +115,27 @@ def redact_dict(data: Dict[str, Any]) -> Dict[str, Any]:
             sanitized[key] = value
 
     return sanitized
+
+
+def redact_before_persist(data: Any) -> Any:
+    """Canonical pre-persist redaction gate (Phase 1 — G9.4).
+
+    Apply this at **every** write boundary (commands, tool arguments, events,
+    audit logs) so secrets are never persisted or emitted raw:
+
+    - ``dict``   -> recursive key-based redaction (``redact_dict``)
+    - ``str``    -> pattern-based text redaction (``redact_text``)
+    - ``list``   -> per-item redaction
+    - other      -> unchanged
+
+    ``redact_text`` is applied to *all* string values inside dicts, so a secret
+    embedded in a message body (``Bearer sk-...``, ``api_key=...``) is masked in
+    addition to secret-keyed fields.
+    """
+    if isinstance(data, dict):
+        return redact_dict(data)
+    if isinstance(data, list):
+        return [redact_before_persist(item) for item in data]
+    if isinstance(data, str):
+        return redact_text(data)
+    return data

@@ -18,7 +18,7 @@ from windagent_core.domain.video_production.screenplay import (
     Screenplay,
 )
 
-from windagent_intelligence.video.errors import EmptyResponseError, ResponseParseError
+from windagent_intelligence.video.errors import EmptyResponseError
 from windagent_intelligence.video.ids import StableIdFactory
 from windagent_intelligence.video.parsing import parse_json_contract
 from windagent_intelligence.video.ports import (

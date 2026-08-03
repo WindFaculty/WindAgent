@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import asyncio
 from dataclasses import dataclass
-from typing import Callable, List, Optional, Protocol
+from typing import List, Optional, Protocol
 
 from windagent_tools.media_assets.errors import DownloadFailedError
 from windagent_tools.media_assets.security import (

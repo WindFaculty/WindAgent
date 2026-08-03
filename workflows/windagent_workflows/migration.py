@@ -7,14 +7,13 @@ Handles version-aware workflow definition changes:
 """
 
 from __future__ import annotations
-import json
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 from windagent_core.errors.exceptions import ValidationError
-from windagent_workflows.models import ImmutableWorkflowDefinition, WorkflowNodeSpec, WorkflowEdgeSpec
+from windagent_workflows.models import ImmutableWorkflowDefinition
 
 logger = logging.getLogger("windagent.workflows.migration")
 

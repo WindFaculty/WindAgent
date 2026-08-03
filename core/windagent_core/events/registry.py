@@ -5,7 +5,7 @@ Maps event names to Pydantic v2 payload models.
 
 from __future__ import annotations
 from typing import Any, Dict, Optional, Type
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict
 
 
 class BaseEventPayload(BaseModel):

@@ -6,7 +6,7 @@ Manages tool registration, namespace collision prevention, capability index, and
 from __future__ import annotations
 import logging
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from windagent_core.contracts.tools import ToolInvocation, ToolResult
 from windagent_core.errors.exceptions import NotFoundError, ValidationError, DomainError

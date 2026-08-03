@@ -16,6 +16,27 @@ from windagent_orchestration.recovery import RecoveryManager, DESTRUCTIVE_TOOLS,
 from windagent_orchestration.task_manager import TaskManager, DurableExecutionFacts
 from windagent_orchestration.workflow_engine import WorkflowEngine, WorkflowDefinition, WorkflowNode, WorkflowEdge, WorkflowValidator, CheckpointManager
 from windagent_orchestration.composition import OrchestrationV2Container
+from windagent_orchestration.production import (
+    ProductionRunState, ProductionStepState, ProductionRunStateMachine,
+    ProductionApprovalGate, ApprovalLedger, ProductionApproval,
+    ProductionCheckpoint, WorkerLease, PendingExternalOperation,
+    OutboxEvent, OutboxJournal, new_event,
+    ProductionStepNode, SchedulerFacts, ScheduleDecision, ProductionScheduler,
+    ProductionRecovery, ProviderJobState, RecoveryAction, RecoveryDecision,
+    ProductionCancellation, CancelAuditEntry, CancellationAuditLog,
+    ProductionRun, ProductionRunStore, ProductionUnitOfWork,
+    ProductionWorkflowEngine, StepExecutionResult, StepExecutorPort,
+    # plan 05 Phase 19 — cost, credits and quota control
+    COST_CATALOG_SCHEMA_VERSION, CostCatalog, CostCatalogEntry,
+    ESTIMATE_SCHEMA_VERSION, ESTIMATE_STATUS_KNOWN, ESTIMATE_STATUS_UNKNOWN,
+    CostEstimate, CreditEstimator, EstimateLine,
+    QUOTA_LEDGER_SCHEMA_VERSION, QuotaEntryType, QuotaLedger, QuotaLedgerEntry,
+    BUDGET_POLICY_SCHEMA_VERSION, BudgetApproval, DailyLimit,
+    GenerationBudgetPolicy, MonthlyLimit, ProjectLimit, RetryBudget,
+    SubmitDecision, SubmitVerdict,
+    CIRCUIT_BREAKER_SCHEMA_VERSION, CircuitEvent, CircuitState,
+    ProviderCircuitBreaker, TripReason,
+)
 
 __version__ = PRODUCT_VERSION
 __all__ = [
@@ -28,4 +49,23 @@ __all__ = [
     "TaskManager", "DurableExecutionFacts",
     "WorkflowEngine", "WorkflowDefinition", "WorkflowNode", "WorkflowEdge", "WorkflowValidator", "CheckpointManager",
     "OrchestrationV2Container",
+    "ProductionRunState", "ProductionStepState", "ProductionRunStateMachine",
+    "ProductionApprovalGate", "ApprovalLedger", "ProductionApproval",
+    "ProductionCheckpoint", "WorkerLease", "PendingExternalOperation",
+    "OutboxEvent", "OutboxJournal", "new_event",
+    "ProductionStepNode", "SchedulerFacts", "ScheduleDecision", "ProductionScheduler",
+    "ProductionRecovery", "ProviderJobState", "RecoveryAction", "RecoveryDecision",
+    "ProductionCancellation", "CancelAuditEntry", "CancellationAuditLog",
+    "ProductionRun", "ProductionRunStore", "ProductionUnitOfWork",
+    "ProductionWorkflowEngine", "StepExecutionResult", "StepExecutorPort",
+    # plan 05 Phase 19 — cost, credits and quota control
+    "COST_CATALOG_SCHEMA_VERSION", "CostCatalog", "CostCatalogEntry",
+    "ESTIMATE_SCHEMA_VERSION", "ESTIMATE_STATUS_KNOWN", "ESTIMATE_STATUS_UNKNOWN",
+    "CostEstimate", "CreditEstimator", "EstimateLine",
+    "QUOTA_LEDGER_SCHEMA_VERSION", "QuotaEntryType", "QuotaLedger", "QuotaLedgerEntry",
+    "BUDGET_POLICY_SCHEMA_VERSION", "BudgetApproval", "DailyLimit",
+    "GenerationBudgetPolicy", "MonthlyLimit", "ProjectLimit", "RetryBudget",
+    "SubmitDecision", "SubmitVerdict",
+    "CIRCUIT_BREAKER_SCHEMA_VERSION", "CircuitEvent", "CircuitState",
+    "ProviderCircuitBreaker", "TripReason",
 ]

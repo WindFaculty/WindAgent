@@ -6,7 +6,7 @@ Encapsulates principals, permissions, resource scopes, risk levels, and secret p
 from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, List
+from typing import Any, List, Optional
 
 
 class RiskLevel(str, Enum):
@@ -120,7 +120,7 @@ SecretName = str
 SecretValue = RedactedValue
 
 
-from windagent_core.domain.types import DecisionId
+from windagent_core.domain.types import DecisionId  # noqa: E402  (kept here to avoid import-cycle at module load)
 
 
 @dataclass(frozen=True)

@@ -5,7 +5,7 @@ Propagates cancellation requests to active runtime execution handles.
 
 from __future__ import annotations
 import logging
-from typing import Dict, List, Optional
+from typing import Dict
 from windagent_core.contracts.execution import ExecutionHandle, ExecutionRuntimePort
 
 logger = logging.getLogger("windagent.execution.cancellation")

@@ -11,7 +11,7 @@ from typing import Any, Dict, List, Optional, Set
 
 from windagent_orchestration.workflow_engine.definition import WorkflowDefinition
 from windagent_orchestration.workflow_engine.graph import WorkflowGraph
-from windagent_orchestration.workflow_engine.checkpoints import CheckpointManager, WorkflowCheckpoint
+from windagent_orchestration.workflow_engine.checkpoints import CheckpointManager
 
 logger = logging.getLogger("windagent.orchestration.workflow_engine")
 

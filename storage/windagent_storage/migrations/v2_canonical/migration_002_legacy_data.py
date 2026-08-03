@@ -8,12 +8,11 @@ import json
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from typing import Dict, List
 
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from windagent_storage.migrations.preflight import DataMigrationPreflightValidator
 from windagent_storage.orm.models import ExecutionEventORM, SessionORM
 
 logger = logging.getLogger("windagent.storage.migrations.002")

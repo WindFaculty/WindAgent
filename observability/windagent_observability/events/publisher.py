@@ -14,7 +14,6 @@ from windagent_storage.outbox.repository import OutboxRepository
 from windagent_observability.events.heartbeat import PublisherHeartbeat
 from windagent_observability.events.retry import (
     DEFAULT_MAX_ATTEMPTS,
-    compute_backoff_seconds,
     is_retryable_error,
     next_available_at,
 )

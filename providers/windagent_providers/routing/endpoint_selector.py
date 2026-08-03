@@ -54,6 +54,7 @@ class EndpointCandidate:
     score: float = 0.0
     score_components: Dict[str, float] = None  # type: ignore[assignment]
     is_exact_revision: bool = False
+    protocol_mode: str = "openai"
 
     def __post_init__(self) -> None:
         if self.score_components is None:
@@ -146,6 +147,7 @@ class EndpointSelector:
             base_url=base_url,
             credential_ciphertext=credential_ciphertext,
             is_exact_revision=True,
+            protocol_mode=str(binding.get("protocol_mode") or "openai"),
         )
 
     async def _score_candidate(

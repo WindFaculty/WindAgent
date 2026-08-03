@@ -23,6 +23,17 @@ from windagent_workflows.packs.refactor import RefactorWorkflowPack
 from windagent_workflows.packs.research import ResearchWorkflowPack
 from windagent_workflows.packs.scientific_eval import ScientificEvalWorkflowPack
 from windagent_workflows.packs.release import ReleaseWorkflowPack
+from windagent_workflows.video_production import (
+    VideoProductionWorkflowPack,
+    VIDEO_PRODUCTION_STEPS,
+    STEP_APPROVAL_GATES,
+    STEP_OUTPUT_ARTIFACTS,
+    STEP_EXPECTED_EVENTS,
+    STEP_MAX_ATTEMPTS,
+    build_production_step_nodes,
+    step_contract,
+    all_step_contracts,
+)
 
 __version__ = PRODUCT_VERSION
 __all__ = [
@@ -34,4 +45,13 @@ __all__ = [
     "BugfixWorkflowPack", "CIFixWorkflowPack", "CodeReviewWorkflowPack",
     "FeatureWorkflowPack", "RefactorWorkflowPack", "ResearchWorkflowPack",
     "ScientificEvalWorkflowPack", "ReleaseWorkflowPack",
+    "VideoProductionWorkflowPack",
+    "VIDEO_PRODUCTION_STEPS",
+    "STEP_APPROVAL_GATES",
+    "STEP_OUTPUT_ARTIFACTS",
+    "STEP_EXPECTED_EVENTS",
+    "STEP_MAX_ATTEMPTS",
+    "build_production_step_nodes",
+    "step_contract",
+    "all_step_contracts",
 ]

@@ -215,6 +215,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       WINDAGENT_DATABASE_URL: sqlite+aiosqlite:///windagent.db
+      # ADR 0006 §5: writable temp dir for tests (no writes to source tree).
+      TMPDIR: ${{ runner.temp }}
+      TEMP: ${{ runner.temp }}
     steps:
       - uses: actions/checkout@v4
 
@@ -258,6 +261,10 @@ jobs:
     runs-on: windows-latest
     env:
       WINDAGENT_DATABASE_URL: sqlite+aiosqlite:///windagent.db
+      # ADR 0006 §5: writable temp dir for tests.
+      TMPDIR: ${{ runner.temp }}
+      TEMP: ${{ runner.temp }}
+      TMP: ${{ runner.temp }}
     defaults:
       run:
         shell: pwsh
@@ -303,6 +310,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       WINDAGENT_DATABASE_URL: sqlite+aiosqlite:///windagent.db
+      # ADR 0006 §5: writable temp dir for tests.
+      TMPDIR: ${{ runner.temp }}
+      TEMP: ${{ runner.temp }}
     steps:
       - uses: actions/checkout@v4
 
@@ -359,6 +369,9 @@ jobs:
           --health-retries 5
     env:
       WINDAGENT_DATABASE_URL: postgresql+asyncpg://test:test@localhost:5432/windagent
+      # ADR 0006 §5: writable temp dir for tests.
+      TMPDIR: ${{ runner.temp }}
+      TEMP: ${{ runner.temp }}
     steps:
       - uses: actions/checkout@v4
 
@@ -461,6 +474,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       WINDAGENT_DATABASE_URL: sqlite+aiosqlite:///windagent.db
+      # ADR 0006 §5: writable temp dir for tests.
+      TMPDIR: ${{ runner.temp }}
+      TEMP: ${{ runner.temp }}
     steps:
       - uses: actions/checkout@v4
 

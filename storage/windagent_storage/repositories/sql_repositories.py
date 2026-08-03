@@ -12,34 +12,23 @@ from __future__ import annotations
 import json
 import logging
 from datetime import datetime, timezone
-from typing import Any, List, Optional, Sequence
-from uuid import UUID
+from typing import Any, List, Optional
 
-from sqlalchemy import delete, func, select, update
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from windagent_core.contracts import (
-    EventStore,
-    OutboxWriter,
-    SessionRepository,
-    WorkRepository,
     WorkSubmission,
-    WorkflowRepository,
     WorkflowRun,
-    WorkflowState,
 )
 from windagent_core.events.envelope import EventEnvelope
 from windagent_core.domain.types import (
-    AggregateId,
     ArtifactId,
     EventId,
     SessionId,
     StepId,
-    StepRunId,
     TaskId,
-    TaskRunId,
     WorkflowId,
-    WorkflowRunId,
 )
 from windagent_core.domain.models import (
     ArtifactRef,
@@ -47,24 +36,18 @@ from windagent_core.domain.models import (
     SessionStatus,
     StepStatus,
     Task,
-    WorkflowRun as DomainWorkflowRun,
     WorkflowStatus,
     WorkflowStep,
 )
 from windagent_storage.orm.models import (
     ExecutionEventORM,
-    OutboxRecordORM,
     SessionORM,
     TaskORM,
-    WorkflowRunORM,
-    WorkflowStepORM,
 )
 from windagent_storage.orm.v2_orchestration_models import (
-    WorkflowStepRunORM,
     TaskRunORM,
     WorkflowRunV2ORM,
 )
-from windagent_storage.orm.models import OutboxRecordORM
 from windagent_storage.outbox.sql_repository import SqlOutboxRepository
 from windagent_storage.mappers.domain_orm import domain_to_orm_event
 
@@ -210,6 +193,7 @@ class SqlSessionRepository:
             created_at=session_obj.created_at,
             updated_at=session_obj.updated_at,
             status=session_obj.status.value if session_obj.status else "idle",
+            workspace_root=getattr(session_obj, "workspace_root", None),
             metadata_json=json.dumps(session_obj.metadata)
             if session_obj.metadata
             else "{}",
@@ -228,6 +212,7 @@ class SqlSessionRepository:
             created_at=orm.created_at,
             updated_at=orm.updated_at,
             status=SessionStatus(orm.status),
+            workspace_root=orm.workspace_root,
             metadata=json.loads(orm.metadata_json) if orm.metadata_json else {},
         )
 
@@ -247,6 +232,7 @@ class SqlSessionRepository:
                     created_at=orm.created_at,
                     updated_at=orm.updated_at,
                     status=SessionStatus(orm.status),
+                    workspace_root=orm.workspace_root,
                     metadata=json.loads(orm.metadata_json) if orm.metadata_json else {},
                 )
             )
@@ -270,6 +256,7 @@ class SqlSessionRepository:
                     created_at=orm.created_at,
                     updated_at=orm.updated_at,
                     status=SessionStatus(orm.status),
+                    workspace_root=orm.workspace_root,
                     metadata=json.loads(orm.metadata_json) if orm.metadata_json else {},
                 )
             )
@@ -389,43 +376,63 @@ class SqlWorkRepository:
     def __init__(self, session: AsyncSession):
         self._session = session
 
+    @staticmethod
+    def _facts(orm: TaskRunORM) -> dict:
+        """Decode the facts_json column into a dict (fail-open to {})."""
+        return json.loads(orm.facts_json) if orm.facts_json else {}
+
+    @staticmethod
+    def _to_work_submission(orm: TaskRunORM) -> WorkSubmission:
+        """Reconstruct a WorkSubmission contract object from a task_runs row."""
+        facts = SqlWorkRepository._facts(orm)
+        return WorkSubmission(
+            prompt=facts.get("prompt", ""),
+            task_id=orm.id,
+            session_id=facts.get("session_id") or orm.session_id,
+            workflow_name=facts.get("workflow_name", "default"),
+            idempotency_key=facts.get("idempotency_key"),
+            tool_name=facts.get("tool_name", "read_file"),
+            parameters=facts.get("parameters", {}),
+        )
+
     async def submit(self, work: WorkSubmission) -> None:
-        orm = TaskRunV2ORM(
-            id=str(work.id),
-            task_type=work.task_type,
-            state=work.state.value if work.state else "pending",
-            created_at=work.created_at,
-            updated_at=work.updated_at,
-            payload_json=json.dumps(work.payload) if work.payload else "{}",
-            result_json=json.dumps(work.result) if work.result else None,
-            error=work.error,
-            workflow_run_id=str(work.workflow_run_id) if work.workflow_run_id else None,
-            step_run_id=work.step_run_id,
-            assigned_worker_id=work.assigned_worker_id,
+        """Persist a work submission into the task_runs table (state=pending)."""
+        import uuid
+
+        # TaskId/SessionId are UUID-backed identity types, so generated ids
+        # must be well-formed UUIDs to round-trip through them.
+        from windagent_core.security.redaction import redact_before_persist
+
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
+        task_id = work.task_id or str(uuid.uuid4())
+        session_id = work.session_id or str(uuid.uuid4())
+        # Phase 1 (G9.4): command prompt and tool arguments are redacted before
+        # they are persisted into facts_json.
+        facts = {
+            "prompt": redact_before_persist(work.prompt or ""),
+            "tool_name": work.tool_name or "read_file",
+            "parameters": redact_before_persist(dict(work.parameters or {})),
+            "workflow_name": work.workflow_name or "default",
+            "idempotency_key": work.idempotency_key,
+            "session_id": session_id,
+        }
+        orm = TaskRunORM(
+            id=task_id,
+            session_id=session_id,
+            state="pending",
+            facts_json=json.dumps(facts),
+            created_at=now,
+            updated_at=now,
         )
         await self._session.merge(orm)
 
     async def get(self, task_id: TaskId) -> Optional[WorkSubmission]:
-        stmt = select(TaskRunV2ORM).where(TaskRunV2ORM.id == str(task_id))
+        stmt = select(TaskRunORM).where(TaskRunORM.id == str(task_id))
         res = await self._session.execute(stmt)
         orm = res.scalar_one_or_none()
         if not orm:
             return None
-        return WorkSubmission(
-            id=TaskId(orm.id),
-            task_type=orm.task_type,
-            state=orm.state,
-            created_at=orm.created_at,
-            updated_at=orm.updated_at,
-            payload=json.loads(orm.payload_json) if orm.payload_json else {},
-            result=json.loads(orm.result_json) if orm.result_json else None,
-            error=orm.error,
-            workflow_run_id=WorkflowId(orm.workflow_run_id)
-            if orm.workflow_run_id
-            else None,
-            step_run_id=orm.step_run_id,
-            assigned_worker_id=orm.assigned_worker_id,
-        )
+        return self._to_work_submission(orm)
 
     async def get_by_id(self, task_id: TaskId) -> Optional[Task]:
         """TaskRepository protocol method."""
@@ -482,14 +489,17 @@ class SqlWorkRepository:
         self, task_id: TaskId, worker_id: str, lease_seconds: int = 300
     ) -> bool:
         """Claim a task for processing."""
-        stmt = select(TaskRunV2ORM).where(TaskRunV2ORM.id == str(task_id))
+        stmt = select(TaskRunORM).where(TaskRunORM.id == str(task_id))
         res = await self._session.execute(stmt)
         orm = res.scalar_one_or_none()
         if not orm or orm.state != "pending":
             return False
         orm.state = "running"
-        orm.assigned_worker_id = worker_id
-        orm.updated_at = datetime.now(timezone.utc)
+        facts = self._facts(orm)
+        facts["assigned_worker_id"] = worker_id
+        facts["lease_seconds"] = lease_seconds
+        orm.facts_json = json.dumps(facts)
+        orm.updated_at = datetime.now(timezone.utc).replace(tzinfo=None)
         return True
 
     async def complete(
@@ -498,44 +508,27 @@ class SqlWorkRepository:
         result: Optional[dict] = None,
         error: Optional[str] = None,
     ) -> None:
-        stmt = select(TaskRunV2ORM).where(TaskRunV2ORM.id == str(task_id))
+        stmt = select(TaskRunORM).where(TaskRunORM.id == str(task_id))
         res = await self._session.execute(stmt)
         orm = res.scalar_one_or_none()
         if orm:
             orm.state = "completed" if error is None else "failed"
-            orm.result_json = json.dumps(result) if result else None
-            orm.error = error
-            orm.updated_at = datetime.now(timezone.utc)
+            orm.last_error = error
+            facts = self._facts(orm)
+            facts["result"] = result
+            orm.facts_json = json.dumps(facts)
+            orm.updated_at = datetime.now(timezone.utc).replace(tzinfo=None)
 
     async def list_pending(self, limit: int = 100) -> List[WorkSubmission]:
         stmt = (
-            select(TaskRunV2ORM)
-            .where(TaskRunV2ORM.state == "pending")
-            .order_by(TaskRunV2ORM.created_at.asc())
+            select(TaskRunORM)
+            .where(TaskRunORM.state == "pending")
+            .order_by(TaskRunORM.created_at.asc())
             .limit(limit)
         )
         res = await self._session.execute(stmt)
         orms = res.scalars().all()
-        work_items = []
-        for orm in orms:
-            work_items.append(
-                WorkSubmission(
-                    id=TaskId(orm.id),
-                    task_type=orm.task_type,
-                    state=orm.state,
-                    created_at=orm.created_at,
-                    updated_at=orm.updated_at,
-                    payload=json.loads(orm.payload_json) if orm.payload_json else {},
-                    result=json.loads(orm.result_json) if orm.result_json else None,
-                    error=orm.error,
-                    workflow_run_id=WorkflowId(orm.workflow_run_id)
-                    if orm.workflow_run_id
-                    else None,
-                    step_run_id=orm.step_run_id,
-                    assigned_worker_id=orm.assigned_worker_id,
-                )
-            )
-        return work_items
+        return [self._to_work_submission(orm) for orm in orms]
 
 
 class SqlOutboxWriter:
@@ -545,10 +538,9 @@ class SqlOutboxWriter:
         self._session = session
 
     async def write(self, event: EventEnvelope) -> None:
-        from windagent_storage.orm.models import OutboxRecordORM
-        from windagent_storage.outbox.sql_repository import SqlOutboxRepository
         from windagent_storage.outbox.models import OutboxRecord
         from windagent_core.domain.lifecycle import utc_now
+        from windagent_core.events.processor import redact_event_payload
         import uuid
 
         repo = SqlOutboxRepository(self._session)
@@ -561,15 +553,26 @@ class SqlOutboxWriter:
         dedup_key = (
             metadata_key or f"{event.event_id}:{event.aggregate_id}:{event.sequence}"
         )
+        serialized = (
+            event.model_dump_json()
+            if hasattr(event, "model_dump_json")
+            else str(event.payload)
+        )
+        # Phase 1 (G9.4): outbox payloads must never persist raw secrets.
+        # Key-based redaction preserves event prose while masking secret keys.
+        try:
+            redacted_payload = redact_event_payload(json.loads(serialized))
+            serialized = json.dumps(redacted_payload)
+        except (json.JSONDecodeError, TypeError):
+            # Non-JSON serialization (legacy ``str(event.payload)`` path): keep as-is.
+            pass
         record = OutboxRecord(
             id=f"outbox_{uuid.uuid4().hex[:12]}",
             event_id=str(event.event_id),
             aggregate_id=str(event.aggregate_id),
             aggregate_type=event.aggregate_type or "session",
             event_type=event.event_type,
-            payload_json=event.model_dump_json()
-            if hasattr(event, "model_dump_json")
-            else str(event.payload),
+            payload_json=serialized,
             schema_version=1,
             sequence_number=event.sequence,
             created_at=utc_now(),

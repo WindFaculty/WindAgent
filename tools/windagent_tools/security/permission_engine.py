@@ -10,16 +10,14 @@ Enforces fail-closed security:
 
 from __future__ import annotations
 import logging
-import os
-from typing import Optional, Dict, Any
+from pathlib import Path
 
 from windagent_core.domain.types import DecisionId
 from windagent_core.contracts.tools import ToolInvocation
-from windagent_core.errors.exceptions import PermissionDeniedError, ToolExecutionError
+from windagent_core.errors.exceptions import PermissionDeniedError
 from windagent_core.security.types import (
     PermissionEvaluationRequest,
     PermissionDecision,
-    SecurityAuditContext,
     RiskLevel,
     Principal,
 )
@@ -36,9 +34,6 @@ HIGH_RISK_LEVELS = {
 }
 
 HARD_DENY_ACTIONS = {"format_c", "drop_production_db", "exfiltrate_keys", "bypass_auth"}
-
-
-from pathlib import Path
 
 
 def normalize_and_validate_path(target_path: str, workspace_root: str) -> bool:

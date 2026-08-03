@@ -5,9 +5,8 @@ Additive durable storage tables for task runs, workflow runs, leases, checkpoint
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
 from sqlalchemy import (
-    Boolean, Column, DateTime, Float, ForeignKey, Index, Integer, String, Text
+    Boolean, Column, DateTime, ForeignKey, Index, Integer, String, Text
 )
 from windagent_storage.orm.models import BaseORM, default_utc_now
 

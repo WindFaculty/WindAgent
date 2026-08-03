@@ -14,7 +14,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Set
 
 from windagent_core.errors.exceptions import ConflictError, NotFoundError, PermissionDeniedError, ValidationError
-from windagent_plugins.manifest.manifest import PluginDependency, PluginManifest
+from windagent_plugins.manifest.manifest import PluginManifest
 
 logger = logging.getLogger("windagent.plugins")
 

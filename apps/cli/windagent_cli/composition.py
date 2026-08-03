@@ -23,7 +23,7 @@ CLI does NOT compose:
 
 from __future__ import annotations
 import logging
-from typing import Optional
+from typing import Optional, Sequence
 
 logger = logging.getLogger("windagent.cli.composition")
 
@@ -84,7 +84,7 @@ class DoctorCommandComposer:
         db = DatabaseManager(self.db_url)
         try:
             from windagent_storage.orm.models import BaseORM
-            await db.create_tables(BaseORM.metadata)
+            await db.upgrade_to_head(BaseORM.metadata)
         except Exception:
             pass  # Tables may already exist
 
@@ -258,9 +258,9 @@ class RunCommandComposer:
         # Only compose what 'run' needs
         db = DatabaseManager(self.db_url)
         try:
-            await db.create_tables(BaseORM.metadata)
+            await db.upgrade_to_head(BaseORM.metadata)
         except Exception as ex:
-            logger.warning(f"Database table creation warning: {ex}")
+            logger.warning(f"Database migration warning: {ex}")
 
         from windagent_storage.database.sync_factory import make_sync_session_factory
         from windagent_storage.repositories.v3_routing_repositories import (
@@ -330,7 +330,7 @@ class WorkerStatusCommandComposer:
         db = DatabaseManager(self.db_url)
         try:
             from windagent_storage.orm.models import BaseORM
-            await db.create_tables(BaseORM.metadata)
+            await db.upgrade_to_head(BaseORM.metadata)
         except Exception as ex:
             logger.warning(f"Database setup warning: {ex}")
 

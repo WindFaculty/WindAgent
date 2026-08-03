@@ -102,6 +102,7 @@ from windagent_core.contracts.video_production import (
 
 __all__ = [
     "Clock",
+    "AsyncCloseablePort",
     "IdGenerator",
     "TaskRepository",
     "TaskRunRepository",

@@ -2,6 +2,7 @@
 
 import type {
   ChatSession,
+  ConversationEventEnvelope,
   CreateSessionResponse,
   EventEnvelope,
   ModelsHealthResponse,
@@ -13,6 +14,10 @@ import type {
 
 const BASE_URL = "http://127.0.0.1:8765";
 const WS_URL = "ws://127.0.0.1:8765";
+
+export function resolveApiUrl(path: string): string {
+  return path.startsWith("/") ? `${BASE_URL}${path}` : path;
+}
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const url = `${BASE_URL}${path}`;
@@ -189,35 +194,62 @@ export async function controlSession(
 // ---------- Phase 8: multi-agent workspace ----------
 
 export interface AgentBoardRow {
-  id: string;
+  agent_instance_id: string;
+  parent_task_id: string | null;
   agent_type: string;
   status: string;
-  permission_profile: string;
-  task_id: string | null;
-  run_status: string | null;
-  session_id: string | null;
-  created_at: string | null;
+  permission_profile: Record<string, unknown>;
+  canonical_model_id: string | null;
+  assigned_node_id: string | null;
+  agent_session_id: string | null;
+  windagent_session_id: string | null;
+  runtime_locator: string | null;
+  hermes_run_id: string | null;
+  session_status: string | null;
+  agent_run_id: string | null;
+  agent_run_status: string | null;
+  fencing_token: string | null;
+  task_node_run_id: string | null;
+  node_state: string | null;
+  node_version: number | null;
+  concurrency_group: string | null;
+  next_retry_at: string | null;
+  worktree_id: string | null;
+  worktree_path: string | null;
+  worktree_branch: string | null;
+  worktree_status: string | null;
+  worktree_quarantine_path: string | null;
+  planned_tool_name: string | null;
+  current_tool_name: string | null;
+  route_lock_id: string | null;
+  provider_binding_id: string | null;
 }
 
 export interface TaskGraphNode {
-  id: string;
-  title: string;
-  description?: string | null;
-  agent_type?: string | null;
-  status: string;
-  assigned_agent: string | null;
+  node_id: string;
+  position: number;
+  objective: string;
+  agent_type: string | null;
+  tool_name: string | null;
+  concurrency_group: string | null;
+  status: string | null;
+  task_node_run_id: string | null;
+  node_version: number | null;
+  next_retry_at: string | null;
+  assigned_agent_instance_id: string | null;
 }
 
 export interface TaskGraphEdge {
-  id?: string;
-  from: string;
-  to: string;
-  kind: string;
+  edge_id: string;
+  from_node_id: string;
+  to_node_id: string;
 }
 
 export interface TaskGraph {
-  plan_id: string | null;
+  plan_version_id: string;
   version: number;
+  parent_task_id: string;
+  objective: string;
   nodes: TaskGraphNode[];
   edges: TaskGraphEdge[];
 }
@@ -225,13 +257,27 @@ export interface TaskGraph {
 export async function fetchConversationAgents(
   conversationId: string,
 ): Promise<AgentBoardRow[]> {
-  return v2Unavailable(`Conversation agents for ${conversationId}`);
+  return request<AgentBoardRow[]>(
+    `/api/v2/conversations/${encodeURIComponent(conversationId)}/agents`,
+  );
 }
 
 export async function fetchConversationTasks(
   conversationId: string,
-): Promise<TaskGraph> {
-  return v2Unavailable(`Conversation task graph for ${conversationId}`);
+): Promise<TaskGraph[]> {
+  return request<TaskGraph[]>(
+    `/api/v2/conversations/${encodeURIComponent(conversationId)}/task-graphs`,
+  );
+}
+
+export async function stopConversationAgent(
+  conversationId: string,
+  agentInstanceId: string,
+): Promise<void> {
+  await request<{ status: string }>(
+    `/api/v2/conversations/${encodeURIComponent(conversationId)}/agents/${encodeURIComponent(agentInstanceId)}/stop`,
+    { method: "POST" },
+  );
 }
 
 export async function fetchAgentEvents(
@@ -430,6 +476,8 @@ export interface WsHandle {
   close: () => void;
 }
 
+export type ConversationWsListener = (env: ConversationEventEnvelope) => void;
+
 export function connectWs(
   sessionId: string,
   listeners: { onEvent?: WsListener; onClose?: WsCloseListener } = {},
@@ -471,6 +519,37 @@ export function connectWs(
     close: () => {
       ws.close();
     },
+  };
+}
+
+/** Open the single durable event stream for a conversation. */
+export function connectConversationWs(
+  conversationId: string,
+  listeners: { onEvent?: ConversationWsListener; onClose?: WsCloseListener } = {},
+  afterSequence = 0,
+): WsHandle {
+  const params = new URLSearchParams({ after_sequence: String(afterSequence) });
+  const wsUrl = `${WS_URL}/ws/conversations/${encodeURIComponent(conversationId)}?${params}`;
+  logDebug(`Conversation WebSocket connecting to ${wsUrl}`);
+
+  const ws = new WebSocket(wsUrl);
+  ws.onmessage = (event) => {
+    try {
+      const payload = JSON.parse(event.data) as ConversationEventEnvelope | { type?: string };
+      if ("type" in payload && payload.type === "ping") return;
+      if ("event_id" in payload) listeners.onEvent?.(payload);
+    } catch (error) {
+      logDebug(`Failed to parse conversation WS message: ${event.data}, error: ${error}`);
+    }
+  };
+  ws.onclose = (event) => listeners.onClose?.(event.reason || "Connection closed");
+  ws.onerror = (error) => logDebug(`Conversation WebSocket error: ${error}`);
+
+  return {
+    send: (text: string) => {
+      if (ws.readyState === WebSocket.OPEN) ws.send(text);
+    },
+    close: () => ws.close(),
   };
 }
 

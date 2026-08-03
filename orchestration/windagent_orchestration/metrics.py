@@ -5,7 +5,6 @@ Tracks latency percentiles (p50, p95, p99), gate compliance, and execution count
 
 from __future__ import annotations
 
-import time
 from dataclasses import dataclass, field
 from typing import Dict, List, Any
 

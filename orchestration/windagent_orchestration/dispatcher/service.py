@@ -6,11 +6,11 @@ Coordinates atomic step claim, runtime dispatch, execution monitoring, result in
 from __future__ import annotations
 
 import logging
-from typing import Set, Tuple, Optional, Any, Dict
+from typing import Optional, Any
 
 from windagent_core.domain.models import WorkflowStep
-from windagent_orchestration.ports import ExecutionRuntimePort, ExecutionHandle, ExecutionResult, RuntimeStatusEnum
-from windagent_orchestration.dispatcher.leases import LeaseManager, ExecutionLease
+from windagent_orchestration.ports import ExecutionRuntimePort, RuntimeStatusEnum
+from windagent_orchestration.dispatcher.leases import LeaseManager
 from windagent_orchestration.dispatcher.worker_registry import WorkerRegistry
 from windagent_orchestration.dispatcher.claim import StepClaimService
 from windagent_orchestration.dispatcher.dispatch import StepDispatchService

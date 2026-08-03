@@ -10,16 +10,17 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, Protocol, runtime_checkable
 
 from windagent_core.domain.types import (
-    TaskId, TaskRunId, SessionId, WorkflowId, WorkflowRunId, StepId, StepRunId, ArtifactId
+    TaskId, TaskRunId, SessionId, WorkflowId, WorkflowRunId, StepRunId, ArtifactId
 )
 from windagent_core.domain.models import (
-    Task, TaskRun, Session, WorkflowDefinition, WorkflowRun, WorkflowStep, ArtifactRef,
+    Task, TaskRun, Session, WorkflowDefinition, WorkflowRun, ArtifactRef,
     ModelRequest, ModelResponse
 )
 from windagent_core.events.envelope import EventEnvelope
 from windagent_core.security.types import (
     PermissionEvaluationRequest, PermissionDecision, SecretRef, SecretName, SecretValue
 )
+from windagent_core.contracts.workers.models import WorkSubmission
 
 
 @runtime_checkable

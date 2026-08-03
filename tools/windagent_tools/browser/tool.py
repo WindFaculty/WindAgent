@@ -24,6 +24,7 @@ from windagent_tools.browser.agent_browser import (
     is_retryable_browser_error,
     platform_for_url,
     resolve_workspace_artifact_path,
+    validate_navigation_url,
 )
 from windagent_tools.security.permission_engine import PermissionEngine
 

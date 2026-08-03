@@ -1,7 +1,7 @@
 """Outbox repository contract for WindAgent Storage Layer (Phase 3 / Phase 6)."""
 
 from __future__ import annotations
-from typing import Any, Dict, List, Optional, Protocol, runtime_checkable
+from typing import Dict, List, Optional, Protocol, runtime_checkable
 from datetime import datetime
 
 from windagent_storage.outbox.models import OutboxRecord

@@ -13,8 +13,6 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Set
 
-from windagent_core.domain.types import StepId
-from windagent_core.domain.models import WorkflowStep
 from windagent_core.domain.workflow import WorkflowDefinition, WorkflowNode, WorkflowEdge
 from windagent_core.errors.exceptions import ValidationError
 from windagent_intelligence.task_classifier.classifier import ClassificationResult

@@ -6,8 +6,6 @@ Extracts Python classes, functions, and imports via ast parsing.
 from __future__ import annotations
 import ast
 import time
-from pathlib import Path
-from typing import Any, Dict, List
 
 from windagent_core.contracts.tools import ToolInvocation, ToolResult
 from windagent_tools.base import BaseTool, ToolDefinition, ToolRiskLevel, ToolExecutionContext

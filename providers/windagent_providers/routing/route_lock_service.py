@@ -35,10 +35,9 @@ from __future__ import annotations
 
 import threading
 import time
-import uuid
 import logging
 import warnings
-from typing import Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 from windagent_providers.routing.events import (
     ModelReselected,
@@ -52,7 +51,6 @@ from windagent_providers.routing.events import (
 from windagent_providers.routing.route_lock import (
     LockStatus,
     RouteLockRecord,
-    RoutingSnapshot,
 )
 from windagent_providers.routing.rule_matcher import RuleMatchContext, RuleMatcher
 from windagent_providers.routing.rules import RoutingRule, RoutingRuleSet

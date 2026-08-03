@@ -5,9 +5,9 @@ import json
 import uuid
 import logging
 from datetime import datetime, timezone, timedelta
-from typing import Any, Callable, Dict, Optional
+from typing import Optional
 
-from sqlalchemy import select, update
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from windagent_core.contracts.workers.queue import ClaimedTask, DurableTaskQueuePort

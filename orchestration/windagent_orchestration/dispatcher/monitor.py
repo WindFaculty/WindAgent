@@ -5,10 +5,9 @@ Execution Monitoring & Heartbeat Service for WindAgent Orchestration V2 Dispatch
 from __future__ import annotations
 
 import logging
-from typing import Optional, Any
 
 from windagent_orchestration.ports import (
-    ExecutionRuntimePort, ExecutionHandle, RuntimeStatus, RuntimeStatusEnum
+    ExecutionRuntimePort, ExecutionHandle, RuntimeStatus
 )
 
 logger = logging.getLogger("windagent.orchestration.dispatcher.monitor")

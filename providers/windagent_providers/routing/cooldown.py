@@ -10,7 +10,7 @@ from __future__ import annotations
 from datetime import datetime, timezone, timedelta
 from typing import Optional
 
-from windagent_providers.base.errors import RateLimitFailure
+from windagent_providers.base.errors import ProviderFailure, RateLimitFailure
 from windagent_core.contracts.providers.ports import EndpointStatePort
 
 
@@ -52,6 +52,25 @@ async def apply_rate_limit_cooldown(
     """Record 429 cooldown using parsed Retry-After (capped at 5 minutes)."""
     seconds = _retry_after_from_headers(getattr(failure, "raw_error", None))
     seconds = min(seconds, _COOLDOWN_CEILING_SECONDS) if seconds else 1.0
+    until = datetime.now(timezone.utc) + timedelta(seconds=seconds)
+    await state_port.set_cooldown(endpoint_id, until)
+
+
+async def apply_transient_failure_cooldown(
+    state_port: EndpointStatePort,
+    endpoint_id: str,
+    failure: ProviderFailure,
+    *,
+    attempt_index: int,
+) -> None:
+    """Temporarily remove a 5xx/network endpoint from same-model failover.
+
+    A binding that failed a transient request must not be immediately selected
+    again while an exact-equivalent sibling is available.  The duration is a
+    bounded backoff and deliberately does not alter the canonical route lock.
+    """
+    del failure  # Kept in the signature for audit-friendly call sites.
+    seconds = calculate_backoff_cooldown_seconds(attempt_index)
     until = datetime.now(timezone.utc) + timedelta(seconds=seconds)
     await state_port.set_cooldown(endpoint_id, until)
 

@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Dict, Optional, Tuple
 
 from windagent_core.errors.exceptions import PermissionDeniedError, ToolError
+from windagent_core.security.redaction import redact_text
 
 FORBIDDEN_COMMAND_PATTERNS = [
     r"\brm\s+-[rf]*\s+/",
@@ -29,10 +30,20 @@ SECRET_MASK_PATTERNS = [
 
 
 def redact_shell_output(text: str) -> str:
+    """Mask secrets in shell stdout/stderr before they leave the runner.
+
+    Composes the core secret redactor (sk-/nvapi-/gsk_/AIzaSy keys, api_key=,
+    token=, password=, Bearer) with the shell-specific masks. Without the
+    core pass, unquoted `password=value` and API-key prefixes would survive
+    in process output (hardening finding closed in Phase 26, SE01).
+    """
     redacted = text
     for pat in SECRET_MASK_PATTERNS:
         redacted = re.sub(pat, "***REDACTED_SECRET***", redacted, flags=re.IGNORECASE)
-    return redacted
+    # Core redactor runs LAST so a value already masked by a shell pattern is
+    # not double-processed; anything a shell pattern missed (unquoted
+    # password=, api_key=, provider-key prefixes) is caught here.
+    return redact_text(redacted)
 
 
 class SafeShellRunner:

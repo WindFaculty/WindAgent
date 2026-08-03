@@ -12,9 +12,8 @@ from windagent_core.domain.models import (
     SessionStatus, WorkflowStatus, StepStatus
 )
 from windagent_core.domain.types import (
-    SessionId, TaskId, WorkflowId, StepId, RunId, TaskRunId, WorkflowRunId, EventId, ArtifactId
+    SessionId, TaskId, WorkflowId, StepId, RunId, EventId, ArtifactId
 )
-from windagent_core.domain.lifecycle import TaskState
 from windagent_core.events.envelope import EventEnvelope
 from windagent_storage.orm.models import (
     SessionORM, TaskORM, WorkflowRunORM, WorkflowStepORM, ExecutionEventORM, ArtifactRefORM
@@ -172,12 +171,18 @@ def orm_to_domain_event(orm: ExecutionEventORM) -> EventEnvelope:
 
 
 def domain_to_orm_event(domain: EventEnvelope) -> ExecutionEventORM:
+    from windagent_core.events.processor import redact_event_payload
+
     data = {
         "aggregate_id": str(domain.aggregate_id) if domain.aggregate_id else None,
         "aggregate_type": domain.aggregate_type,
         "payload": domain.payload,
         "metadata": domain.metadata,
     }
+    # Phase 1 (G9.4): redact secrets before they reach the durable event store.
+    # Key-based redaction (redact_event_payload) masks structured secrets while
+    # preserving legitimate user message content (prose is never pattern-masked).
+    data = redact_event_payload(data)
     data_json = json.dumps(data) if data else "{}"
     return ExecutionEventORM(
         id=str(domain.event_id),

@@ -5,7 +5,7 @@ Defines ports and models for real readiness, liveness, and diagnostics.
 
 from __future__ import annotations
 from enum import Enum
-from typing import Protocol, runtime_checkable, Any, Dict, List, Optional
+from typing import Protocol, runtime_checkable, Any, Dict, Optional
 from dataclasses import dataclass, field
 
 

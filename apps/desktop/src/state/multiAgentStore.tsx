@@ -1,138 +1,178 @@
 import { useEffect } from "react";
 import { create } from "zustand";
 import {
-  connectWs,
-  fetchAgentEvents,
+  decidePermission,
   fetchConversationAgents,
   fetchConversationTasks,
-  decidePermission,
+  type AgentBoardRow,
+  type TaskGraphEdge,
+  type TaskGraphNode,
 } from "../api/client";
-import type { AgentBoardRow, TaskGraphEdge, TaskGraphNode } from "../api/client";
-import type { PermissionRequestPayload } from "../api/types";
+import type { ConversationEventEnvelope, PermissionRequestPayload } from "../api/types";
+import { conversationSocketManager } from "../services/conversationSocketManager";
 
 interface AgentEvents {
-  seq: number;
+  sequence: number;
   lines: string[];
 }
 
+export interface ConversationProjection {
+  conversationId: string;
+  agentInstanceIds: string[];
+  planVersionIds: string[];
+  sequence: number;
+}
+
+export interface AgentSessionProjection {
+  agentSessionId: string;
+  agentInstanceId: string;
+  windagentSessionId: string | null;
+  runtimeLocator: string | null;
+  hermesRunId: string | null;
+  status: string | null;
+}
+
+/** The normalized Phase 7 desktop projection; every key is a durable ID. */
 export interface State {
+  conversations: Record<string, ConversationProjection>;
   agents: Record<string, AgentBoardRow>;
-  agentOrder: string[];
-  taskNodes: Record<string, TaskGraphNode>;
-  taskEdges: TaskGraphEdge[];
+  sessions: Record<string, AgentSessionProjection>;
   events: Record<string, AgentEvents>;
+  taskNodes: Record<string, Record<string, TaskGraphNode>>;
+  taskEdges: Record<string, TaskGraphEdge[]>;
+  browserSessionIds: Record<string, string>;
   selectedAgentId: string | null;
-  version: number;
 }
 
 interface MultiAgentStore {
   state: State;
   conversationId: string | null;
-  wsConnections: Record<string, { ws: any; sessionId: string; afterSeq: number }>;
   permissionQueue: PermissionRequestPayload[];
 
   setConversationId: (conversationId: string | null) => void;
-  select: (agentId: string) => void;
+  select: (agentInstanceId: string) => void;
   refresh: () => Promise<void>;
-  appendEvents: (agentId: string, seq: number, lines: string[]) => void;
+  appendEvents: (agentInstanceId: string, sequence: number, lines: string[]) => void;
   syncWebSockets: () => Promise<void>;
   closeAllWebSockets: () => void;
-
   enqueuePermission: (payload: PermissionRequestPayload) => void;
   removePermission: (requestId: string) => void;
   resolvePermission: (requestId: string, decision: "granted" | "denied") => Promise<void>;
 }
 
+const initialState: State = {
+  conversations: {},
+  agents: {},
+  sessions: {},
+  events: {},
+  taskNodes: {},
+  taskEdges: {},
+  browserSessionIds: {},
+  selectedAgentId: null,
+};
+
 export const useMultiAgentStore = create<MultiAgentStore>((set, get) => ({
-  state: {
-    agents: {},
-    agentOrder: [],
-    taskNodes: {},
-    taskEdges: [],
-    events: {},
-    selectedAgentId: null,
-    version: 1,
-  },
+  state: initialState,
   conversationId: null,
-  wsConnections: {},
   permissionQueue: [],
 
   setConversationId: (conversationId) => {
     if (get().conversationId === conversationId) return;
     get().closeAllWebSockets();
-    set({
+    set((previous) => ({
       conversationId,
-      state: {
-        agents: {},
-        agentOrder: [],
-        taskNodes: {},
-        taskEdges: [],
-        events: {},
-        selectedAgentId: null,
-        version: 1,
-      },
+      state: { ...previous.state, selectedAgentId: null },
       permissionQueue: [],
-    });
+    }));
   },
 
-  select: (agentId) => {
-    set((prev) => ({
-      state: {
-        ...prev.state,
-        selectedAgentId: agentId,
-      },
+  select: (agentInstanceId) => {
+    set((previous) => ({
+      state: { ...previous.state, selectedAgentId: agentInstanceId },
     }));
   },
 
   refresh: async () => {
     const conversationId = get().conversationId;
     if (!conversationId) return;
+    await get().syncWebSockets();
 
     try {
-      const [agents, tasks] = await Promise.all([
+      const [agents, plans] = await Promise.all([
         fetchConversationAgents(conversationId),
         fetchConversationTasks(conversationId),
       ]);
+      set((previous) => {
+        const agentIds = agents.map((agent) => agent.agent_instance_id);
+        const planIds = plans.map((plan) => plan.plan_version_id);
+        const agentsById = { ...previous.state.agents };
+        const sessionsById = { ...previous.state.sessions };
+        const nodesByPlan = { ...previous.state.taskNodes };
+        const edgesByPlan = { ...previous.state.taskEdges };
 
-      set((prev) => {
-        const agentsMap: Record<string, AgentBoardRow> = {};
-        for (const a of agents) {
-          agentsMap[a.id] = a;
+        for (const agent of agents) {
+          agentsById[agent.agent_instance_id] = agent;
+          if (agent.agent_session_id) {
+            sessionsById[agent.agent_session_id] = {
+              agentSessionId: agent.agent_session_id,
+              agentInstanceId: agent.agent_instance_id,
+              windagentSessionId: agent.windagent_session_id,
+              runtimeLocator: agent.runtime_locator,
+              hermesRunId: agent.hermes_run_id,
+              status: agent.session_status,
+            };
+          }
+        }
+        for (const plan of plans) {
+          nodesByPlan[plan.plan_version_id] = Object.fromEntries(
+            plan.nodes.map((node) => [node.node_id, node]),
+          );
+          edgesByPlan[plan.plan_version_id] = plan.edges;
         }
 
+        const current = previous.state.conversations[conversationId];
+        const selectedAgentId = previous.state.selectedAgentId;
+        const selectedStillPresent = selectedAgentId !== null && agentIds.includes(selectedAgentId);
+        const firstSubAgent = agents.find((agent) => agent.agent_type !== "orchestrator");
         return {
           state: {
-            ...prev.state,
-            agents: agentsMap,
-            agentOrder: agents.map((a) => a.id),
-            selectedAgentId: prev.state.selectedAgentId ?? agents[0]?.id ?? null,
-            taskNodes: Object.fromEntries(tasks.nodes.map((n) => [n.id, n])),
-            taskEdges: tasks.edges,
-            version: tasks.version ?? 1,
+            ...previous.state,
+            conversations: {
+              ...previous.state.conversations,
+              [conversationId]: {
+                conversationId,
+                agentInstanceIds: agentIds,
+                planVersionIds: planIds,
+                sequence: current?.sequence ?? 0,
+              },
+            },
+            agents: agentsById,
+            sessions: sessionsById,
+            taskNodes: nodesByPlan,
+            taskEdges: edgesByPlan,
+            selectedAgentId: selectedStillPresent
+              ? selectedAgentId
+              : firstSubAgent?.agent_instance_id ?? agents[0]?.agent_instance_id ?? null,
           },
         };
       });
-
-      // Synchronize WebSocket connections for all active sub-agents
-      await get().syncWebSockets();
-    } catch (e) {
-      console.warn("[MultiAgentStore] refresh failed:", e);
+    } catch (error) {
+      console.warn("[MultiAgentStore] workspace refresh failed:", error);
     }
   },
 
-  appendEvents: (agentId, seq, lines) => {
-    set((prev) => {
-      const prevEvents = prev.state.events[agentId] ?? { seq: 0, lines: [] };
-      // Deduplicate by seq: only append if the new seq is greater than previous seq
-      const combined = seq > prevEvents.seq ? [...prevEvents.lines, ...lines] : prevEvents.lines;
+  appendEvents: (agentInstanceId, sequence, lines) => {
+    set((previous) => {
+      const current = previous.state.events[agentInstanceId] ?? { sequence: 0, lines: [] };
+      if (sequence <= current.sequence) return previous;
       return {
         state: {
-          ...prev.state,
+          ...previous.state,
           events: {
-            ...prev.state.events,
-            [agentId]: {
-              seq: Math.max(prevEvents.seq, seq),
-              lines: combined.slice(-500),
+            ...previous.state.events,
+            [agentInstanceId]: {
+              sequence,
+              lines: [...current.lines, ...lines].slice(-500),
             },
           },
         },
@@ -140,16 +180,29 @@ export const useMultiAgentStore = create<MultiAgentStore>((set, get) => ({
     });
   },
 
+  syncWebSockets: async () => {
+    const conversationId = get().conversationId;
+    if (!conversationId) return;
+    conversationSocketManager.connect(
+      conversationId,
+      () => get().state.conversations[conversationId]?.sequence ?? 0,
+    );
+    conversationSocketManager.subscribe(conversationId, handleConversationEvent);
+  },
+
+  closeAllWebSockets: () => {
+    const conversationId = get().conversationId;
+    if (conversationId) conversationSocketManager.disconnect(conversationId);
+  },
+
   enqueuePermission: (payload) => {
-    if (get().permissionQueue.some((p) => p.request_id === payload.request_id)) return;
-    set((prev) => ({
-      permissionQueue: [...prev.permissionQueue, payload],
-    }));
+    if (get().permissionQueue.some((request) => request.request_id === payload.request_id)) return;
+    set((previous) => ({ permissionQueue: [...previous.permissionQueue, payload] }));
   },
 
   removePermission: (requestId) => {
-    set((prev) => ({
-      permissionQueue: prev.permissionQueue.filter((p) => p.request_id !== requestId),
+    set((previous) => ({
+      permissionQueue: previous.permissionQueue.filter((request) => request.request_id !== requestId),
     }));
   },
 
@@ -157,109 +210,63 @@ export const useMultiAgentStore = create<MultiAgentStore>((set, get) => ({
     try {
       await decidePermission(requestId, decision);
       get().removePermission(requestId);
-    } catch (err) {
-      console.warn("[MultiAgentStore] resolvePermission failed:", err);
+    } catch (error) {
+      console.warn("[MultiAgentStore] resolvePermission failed:", error);
     }
-  },
-
-  syncWebSockets: async () => {
-    const { agents } = get().state;
-    const { wsConnections } = get();
-    const activeSessionIds = new Set<string>();
-
-    for (const [agentId, agent] of Object.entries(agents)) {
-      const sessionId = agent.session_id;
-      if (!sessionId) continue;
-
-      activeSessionIds.add(sessionId);
-
-      // If we don't have an active connection for this session_id, create it
-      if (!wsConnections[sessionId]) {
-        const lastSeq = get().state.events[agentId]?.seq ?? 0;
-
-        // Step 1: Pre-fetch missed history
-        try {
-          const back = await fetchAgentEvents(agentId, lastSeq);
-          const lines = back.events
-            .filter((e: any) => e.event === "terminal_output")
-            .map((e: any) => String(e.data?.output ?? e.data?.text ?? ""))
-            .filter(Boolean);
-
-          if (lines.length) {
-            get().appendEvents(agentId, lastSeq, lines);
-          }
-        } catch (err) {
-          // No events or not initialized yet
-        }
-
-        // Step 2: Establish dynamic connection
-        const openWs = () => {
-          const currentLastSeq = get().state.events[agentId]?.seq ?? 0;
-          const wsHandle = connectWs(
-            sessionId,
-            {
-              onEvent: (env: any) => {
-                if (env.event === "terminal_output") {
-                  const text = String(env.data?.output ?? env.data?.text ?? "");
-                  if (text) {
-                    get().appendEvents(agentId, env.seq ?? 0, [text]);
-                  }
-                } else if (env.event === "permission_request") {
-                  get().enqueuePermission(env.data as unknown as PermissionRequestPayload);
-                } else if (env.event === "permission_granted" || env.event === "permission_denied") {
-                  const data = env.data as { request_id?: string };
-                  if (data.request_id) {
-                    get().removePermission(data.request_id);
-                  }
-                }
-              },
-              onClose: () => {
-                // Reconnect after 1500ms if session is still listed in active set
-                setTimeout(() => {
-                  const currentConnections = get().wsConnections;
-                  if (currentConnections[sessionId] && activeSessionIds.has(sessionId)) {
-                    console.log(`[MultiAgentStore] Reconnecting WS for agent ${agentId}`);
-                    openWs();
-                  }
-                }, 1500);
-              },
-            },
-            currentLastSeq
-          );
-
-          set((prev) => ({
-            wsConnections: {
-              ...prev.wsConnections,
-              [sessionId]: { ws: wsHandle, sessionId, afterSeq: currentLastSeq },
-            },
-          }));
-        };
-
-        openWs();
-      }
-    }
-
-    // Clean up closed/stale connections
-    for (const [sessionId, conn] of Object.entries(wsConnections)) {
-      if (!activeSessionIds.has(sessionId)) {
-        conn.ws.close();
-        set((prev) => {
-          const newConns = { ...prev.wsConnections };
-          delete newConns[sessionId];
-          return { wsConnections: newConns };
-        });
-      }
-    }
-  },
-
-  closeAllWebSockets: () => {
-    const { wsConnections } = get();
-    for (const conn of Object.values(wsConnections)) {
-      conn.ws.close();
-    }
-    set({ wsConnections: {} });
   },
 }));
+
+function handleConversationEvent(event: ConversationEventEnvelope): void {
+  const store = useMultiAgentStore.getState();
+  const conversationId = store.conversationId;
+  if (!conversationId || event.conversation_id !== conversationId) return;
+  const conversation = store.state.conversations[conversationId];
+  if (event.sequence <= (conversation?.sequence ?? 0)) return;
+
+  const agentInstanceId = event.agent_instance_id ?? "orchestrator";
+  if (event.event_type === "terminal_output") {
+    const line = String(event.data.output ?? event.data.text ?? "");
+    if (line) store.appendEvents(agentInstanceId, event.sequence, [line]);
+  }
+  if (event.event_type === "browser_session_started") {
+    const browserSessionId = String(event.data.browser_session_id ?? event.data.session_id ?? "");
+    if (browserSessionId) {
+      useMultiAgentStore.setState((previous) => ({
+        state: {
+          ...previous.state,
+          browserSessionIds: {
+            ...previous.state.browserSessionIds,
+            [agentInstanceId]: browserSessionId,
+          },
+        },
+      }));
+    }
+  }
+  if (event.event_type === "permission_request") {
+    store.enqueuePermission(event.data as unknown as PermissionRequestPayload);
+  } else if (event.event_type === "permission_granted" || event.event_type === "permission_denied") {
+    const requestId = (event.data as { request_id?: string }).request_id;
+    if (requestId) store.removePermission(requestId);
+  }
+
+  useMultiAgentStore.setState((previous) => ({
+    state: {
+      ...previous.state,
+      conversations: {
+        ...previous.state.conversations,
+        [conversationId]: {
+          ...(previous.state.conversations[conversationId] ?? {
+            conversationId,
+            agentInstanceIds: [],
+            planVersionIds: [],
+            sequence: 0,
+          }),
+          sequence: event.sequence,
+        },
+      },
+    },
+  }));
+}
 
 export function MultiAgentProvider({
   conversationId,
@@ -268,16 +275,16 @@ export function MultiAgentProvider({
   conversationId: string;
   children: React.ReactNode;
 }) {
-  const setConversationId = useMultiAgentStore((s) => s.setConversationId);
-  const refresh = useMultiAgentStore((s) => s.refresh);
-  const closeAll = useMultiAgentStore((s) => s.closeAllWebSockets);
+  const setConversationId = useMultiAgentStore((store) => store.setConversationId);
+  const refresh = useMultiAgentStore((store) => store.refresh);
+  const closeAll = useMultiAgentStore((store) => store.closeAllWebSockets);
 
   useEffect(() => {
     setConversationId(conversationId);
-    refresh();
-    const t = setInterval(refresh, 3000); // Polling agents list and task graph
+    void refresh();
+    const timer = setInterval(() => void refresh(), 3_000);
     return () => {
-      clearInterval(t);
+      clearInterval(timer);
       closeAll();
     };
   }, [conversationId, setConversationId, refresh, closeAll]);
@@ -286,11 +293,11 @@ export function MultiAgentProvider({
 }
 
 export function useMultiAgent() {
-  const state = useMultiAgentStore((s) => s.state);
-  const select = useMultiAgentStore((s) => s.select);
-  const refresh = useMultiAgentStore((s) => s.refresh);
-  const permissionQueue = useMultiAgentStore((s) => s.permissionQueue);
-  const resolvePermission = useMultiAgentStore((s) => s.resolvePermission);
-
-  return { state, select, refresh, permissionQueue, resolvePermission };
+  const state = useMultiAgentStore((store) => store.state);
+  const conversationId = useMultiAgentStore((store) => store.conversationId);
+  const select = useMultiAgentStore((store) => store.select);
+  const refresh = useMultiAgentStore((store) => store.refresh);
+  const permissionQueue = useMultiAgentStore((store) => store.permissionQueue);
+  const resolvePermission = useMultiAgentStore((store) => store.resolvePermission);
+  return { state, conversationId, select, refresh, permissionQueue, resolvePermission };
 }

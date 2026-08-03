@@ -22,7 +22,7 @@ from __future__ import annotations
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, List
 
 from sqlalchemy import inspect, text
 
@@ -30,8 +30,8 @@ root_dir = Path(__file__).resolve().parents[3]
 if str(root_dir) not in sys.path:
     sys.path.insert(0, str(root_dir))
 
-from windagent_storage.orm.models import BaseORM
-from windagent_storage.orm.v3_models import ProviderRoutingAuditV3ORM, RouteLockV3ORM
+from windagent_storage.orm.models import BaseORM  # noqa: E402  (needs sys.path bootstrap above)
+from windagent_storage.orm.v3_models import ProviderRoutingAuditV3ORM, RouteLockV3ORM  # noqa: E402
 
 
 @dataclass

@@ -12,7 +12,7 @@ contract without copying upstream template text.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import List
 
 from windagent_core.domain.video_production.character import CharacterBible
@@ -126,7 +126,7 @@ class AssetPromptSpecBuilder:
         style: StyleBible,
     ) -> List[AssetPromptSpecResult]:
         results = [self.build_character(c) for c in characters]
-        results += [self.build_location(l) for l in locations]
+        results += [self.build_location(loc) for loc in locations]
         results.append(self.build_style(style))
         return results
 

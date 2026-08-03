@@ -5,7 +5,7 @@ The actual manager (SkillManager) is synchronous; this registry wraps it.
 """
 from __future__ import annotations
 
-from typing import List
+from typing import Any, List
 
 from windagent_skills.loader.manager import SkillManager
 from windagent_skills.manifest.manifest import SkillManifest

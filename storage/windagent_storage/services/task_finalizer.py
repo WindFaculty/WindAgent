@@ -9,8 +9,8 @@ from __future__ import annotations
 import json
 import logging
 from datetime import datetime, timezone
-from typing import Any, Dict, Optional, TYPE_CHECKING
-from sqlalchemy import select, update, text
+from typing import TYPE_CHECKING
+from sqlalchemy import select, update
 
 from windagent_core.contracts.finalization import (
     FinalizeTaskExecutionRequest,

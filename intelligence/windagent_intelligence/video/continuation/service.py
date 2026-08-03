@@ -12,14 +12,10 @@ and parses the returned continuation deterministically.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import List, Optional
 
 from windagent_core.domain.video_production.enums import InvalidationIntent
-from windagent_core.domain.video_production.ids import (
-    ProductionRevisionId,
-    VideoProjectId,
-)
 from windagent_core.domain.video_production.screenplay import (
     CreativeBrief,
     Screenplay,

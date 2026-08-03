@@ -5,7 +5,7 @@ Binds a task/run to a specific model routing decision using CanonicalModelId and
 
 from __future__ import annotations
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from windagent_core.domain.types import (

@@ -22,7 +22,8 @@ from windagent_providers.routing.ports import RouteLockRepositoryPort
 from windagent_storage.orm.v3_models import (
     CanonicalModelV3ORM, EndpointModelBindingORM,
     EndpointRuntimeStateORM, ProviderEndpointORM,
-    ProviderQuotaSnapshotV3ORM, ProviderUsageLedgerORM, RouteAttemptV3ORM, RouteLockV3ORM
+    ProviderCredentialORM, ProviderQuotaSnapshotV3ORM, ProviderUsageLedgerORM,
+    ProviderVendorORM, RouteAttemptV3ORM, RouteLockV3ORM
 )
 
 
@@ -58,6 +59,14 @@ class SQLEndpointRegistryRepository(EndpointRegistryPort):
         for b in bindings:
             ep = self.session.query(ProviderEndpointORM).filter_by(id=b.endpoint_id, enabled=True).first()
             if ep:
+                credential = None
+                if ep.credential_id:
+                    credential = self.session.query(ProviderCredentialORM).filter_by(
+                        id=ep.credential_id, enabled=True
+                    ).first()
+                vendor = self.session.query(ProviderVendorORM).filter_by(
+                    id=ep.vendor_id, enabled=True
+                ).first()
                 results.append({
                     "binding_id": b.id,
                     "endpoint_id": ep.id,
@@ -68,6 +77,9 @@ class SQLEndpointRegistryRepository(EndpointRegistryPort):
                     "base_url": ep.base_url,
                     "protocol_mode": ep.protocol_mode,
                     "priority": b.priority,
+                    "provider_name": vendor.name if vendor else ep.vendor_id,
+                    "credential_ciphertext": credential.secret_ciphertext if credential else None,
+                    "is_active": bool(b.enabled and ep.enabled and vendor),
                 })
         return results
 
@@ -221,7 +233,8 @@ class SQLRouteLockRepository(RouteLockRepositoryPort):
         lock.status = "released"
         lock.released_at = datetime.now(timezone.utc)
         lock.updated_at = datetime.now(timezone.utc)
-        self.session.flush(); self.session.commit()
+        self.session.flush()
+        self.session.commit()
         return True
 
 
@@ -257,7 +270,8 @@ class SQLRouteAttemptRepository(RouteAttemptPort):
             finished_at=datetime.now(timezone.utc),
         )
         self.session.add(attempt)
-        self.session.flush(); self.session.commit()
+        self.session.flush()
+        self.session.commit()
         return str(attempt.id)
 
 
@@ -296,7 +310,8 @@ class SQLQuotaStateRepository(QuotaStatePort):
             reset_at=snapshot.reset_at,
         )
         self.session.add(orm)
-        self.session.flush(); self.session.commit()
+        self.session.flush()
+        self.session.commit()
 
 
 class SQLEndpointStateRepository(EndpointStatePort):
@@ -320,7 +335,8 @@ class SQLEndpointStateRepository(EndpointStatePort):
         state.circuit_state = "closed"
         state.cooldown_until = None
         state.updated_at = datetime.now(timezone.utc)
-        self.session.flush(); self.session.commit()
+        self.session.flush()
+        self.session.commit()
 
     async def record_failure(self, endpoint_id: str, error_class: str, status_code: Optional[int]) -> None:
         state = self.session.query(EndpointRuntimeStateORM).filter_by(endpoint_id=endpoint_id).first()
@@ -344,7 +360,8 @@ class SQLEndpointStateRepository(EndpointStatePort):
             state.circuit_state = "open"
 
         state.updated_at = datetime.now(timezone.utc)
-        self.session.flush(); self.session.commit()
+        self.session.flush()
+        self.session.commit()
 
     async def set_cooldown(self, endpoint_id: str, cooldown_until: datetime) -> None:
         state = self.session.query(EndpointRuntimeStateORM).filter_by(endpoint_id=endpoint_id).first()
@@ -354,7 +371,8 @@ class SQLEndpointStateRepository(EndpointStatePort):
 
         state.cooldown_until = cooldown_until
         state.updated_at = datetime.now(timezone.utc)
-        self.session.flush(); self.session.commit()
+        self.session.flush()
+        self.session.commit()
 
     async def is_available(self, endpoint_id: str) -> bool:
         state = self.session.query(EndpointRuntimeStateORM).filter_by(endpoint_id=endpoint_id).first()
@@ -397,4 +415,5 @@ class SQLUsageLedgerRepository(UsageLedgerPort):
             cost_usd=cost_usd,
         )
         self.session.add(record)
-        self.session.flush(); self.session.commit()
+        self.session.flush()
+        self.session.commit()

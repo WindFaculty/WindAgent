@@ -112,9 +112,10 @@ class WorkerContainer:
         # Database layer
         self.db = DatabaseManager(self.db_url)
         try:
-            await self.db.create_tables(BaseORM.metadata)
+            # Phase 1 (G1.1): canonical Alembic migration workflow.
+            await self.db.upgrade_to_head(BaseORM.metadata)
         except Exception as ex:
-            logger.warning(f"Database table creation warning: {ex}")
+            logger.warning(f"Database migration warning: {ex}")
         
         self.uow_factory = self.db.session_factory
         

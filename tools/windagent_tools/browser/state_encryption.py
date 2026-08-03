@@ -102,7 +102,7 @@ def decrypt_state_dir(encrypted_path: str, output_dir: str) -> str:
     
     parts = encrypted.split(":")
     if len(parts) != 4:
-        raise ValueError(f"Invalid encrypted state format")
+        raise ValueError("Invalid encrypted state format")
     
     _, version, nonce_b64, ct_b64 = parts
     if version != "v1":

@@ -8,7 +8,6 @@ import logging
 from typing import Dict, Set, Any
 
 from windagent_core.domain.lifecycle import TaskState, TaskLifecycle
-from windagent_core.errors.exceptions import InvalidStateTransitionError, TerminalStateMutationError, DomainError
 
 logger = logging.getLogger("windagent.orchestration.state_machine")
 

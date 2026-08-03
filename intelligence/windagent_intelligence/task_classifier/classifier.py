@@ -11,9 +11,8 @@ import re
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
-from windagent_core.errors.exceptions import ValidationError
 
 logger = logging.getLogger("windagent.intelligence.task_classifier")
 

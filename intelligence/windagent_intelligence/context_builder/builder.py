@@ -9,7 +9,6 @@ import logging
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
-from windagent_core.errors.exceptions import ValidationError
 from windagent_context import (
     ContextBuilder, ContextPipeline, ContextPipelineConfig,
     ContextItem, ProvenanceManifest, TokenBudgetManager,

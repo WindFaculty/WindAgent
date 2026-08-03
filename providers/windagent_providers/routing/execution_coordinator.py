@@ -24,9 +24,12 @@ from windagent_providers.base.contracts import (
     ProviderStreamEvent,
 )
 from windagent_providers.base.errors import (
+    NetworkFailure,
     ProviderFailure,
+    ProviderUnavailableFailure,
     RateLimitFailure,
     SameModelEndpointExhausted,
+    TimeoutFailure,
 )
 from windagent_core.contracts.providers.ports import (
     EndpointRegistryPort,
@@ -37,7 +40,10 @@ from windagent_core.contracts.providers.ports import (
 from windagent_providers.cache.contracts import CacheNamespace
 from windagent_providers.cache.response_cache import ResponseCacheService
 from windagent_providers.cache.singleflight import InMemorySingleFlight
-from windagent_providers.routing.cooldown import apply_rate_limit_cooldown
+from windagent_providers.routing.cooldown import (
+    apply_rate_limit_cooldown,
+    apply_transient_failure_cooldown,
+)
 from windagent_providers.routing.endpoint_selector import EndpointSelector
 from windagent_providers.routing.failover_policy import (
     FailoverDecision,
@@ -61,6 +67,7 @@ class EndpointExecutionCoordinator:
         failover_policy: Optional[SameModelFailoverPolicy] = None,
         response_cache: Optional[ResponseCacheService] = None,
         singleflight: Optional[InMemorySingleFlight] = None,
+        release_telemetry: Any | None = None,
     ):
         self._adapter_resolver = adapter_resolver
         self._registry = endpoint_registry
@@ -71,6 +78,7 @@ class EndpointExecutionCoordinator:
         self._policy = failover_policy or SameModelFailoverPolicy()
         self._response_cache = response_cache
         self._singleflight = singleflight
+        self._release_telemetry = release_telemetry
 
     async def execute(
         self,
@@ -92,6 +100,8 @@ class EndpointExecutionCoordinator:
         canonical_model_id = _canonical_model_id(route_lock)
         route_lock_id = _route_lock_id(route_lock)
         cache_key: Optional[str] = None
+        if self._release_telemetry is not None:
+            self._release_telemetry.record_route_request()
 
         # Phase 9: response cache short-circuit.
         if self._response_cache is not None and namespace is not None:
@@ -150,16 +160,20 @@ class EndpointExecutionCoordinator:
                 raise
 
             candidate = candidates[0]
-            adapter = self._adapter_resolver(candidate)
-
             start = time.perf_counter()
             try:
+                adapter = self._adapter_resolver(candidate)
                 response = await adapter.generate(
                     request, model_id=candidate.provider_model_id
                 )
                 # Normalize canonical_model_id to the locked model.
                 response.canonical_model_id = canonical_model_id
                 response.endpoint_id = candidate.endpoint_id
+                response.raw_metadata = {
+                    **response.raw_metadata,
+                    "route_lock_id": route_lock_id,
+                    "provider_binding_id": candidate.binding_id,
+                }
                 latency_ms = (time.perf_counter() - start) * 1000.0
 
                 await self._state.record_success(candidate.endpoint_id, latency_ms)
@@ -201,6 +215,16 @@ class EndpointExecutionCoordinator:
                     await apply_rate_limit_cooldown(
                         self._state, candidate.endpoint_id, exc
                     )
+                elif isinstance(
+                    exc,
+                    (ProviderUnavailableFailure, NetworkFailure, TimeoutFailure),
+                ):
+                    await apply_transient_failure_cooldown(
+                        self._state,
+                        candidate.endpoint_id,
+                        exc,
+                        attempt_index=attempt_index,
+                    )
 
                 await self._record_attempt(
                     route_lock_id=route_lock_id,
@@ -219,6 +243,8 @@ class EndpointExecutionCoordinator:
                     raise
 
                 # Otherwise continue loop and pick next candidate.
+                if self._release_telemetry is not None:
+                    self._release_telemetry.record_route_failover()
 
         raise SameModelEndpointExhausted(
             "All exact-equivalent endpoints for the locked canonical model are exhausted"
@@ -243,6 +269,8 @@ class EndpointExecutionCoordinator:
         """
         canonical_model_id = _canonical_model_id(route_lock)
         route_lock_id = _route_lock_id(route_lock)
+        if self._release_telemetry is not None:
+            self._release_telemetry.record_route_request()
 
         for attempt_index in range(max_attempts):
             try:
@@ -293,6 +321,16 @@ class EndpointExecutionCoordinator:
                     await apply_rate_limit_cooldown(
                         self._state, candidate.endpoint_id, exc
                     )
+                elif isinstance(
+                    exc,
+                    (ProviderUnavailableFailure, NetworkFailure, TimeoutFailure),
+                ):
+                    await apply_transient_failure_cooldown(
+                        self._state,
+                        candidate.endpoint_id,
+                        exc,
+                        attempt_index=attempt_index,
+                    )
 
                 await self._record_attempt(
                     route_lock_id=route_lock_id,
@@ -315,6 +353,8 @@ class EndpointExecutionCoordinator:
                 if decision.decision == FailoverDecision.STOP:
                     yield _error_event(exc.__class__.__name__)
                     return
+                if self._release_telemetry is not None:
+                    self._release_telemetry.record_route_failover()
 
                 # Otherwise failover.
 

@@ -9,19 +9,13 @@ repository so API and Worker share one durable authority.
 """
 
 from __future__ import annotations
-import uuid
 import time
 import logging
 import warnings
-from typing import Dict, List, Optional
+from typing import List, Optional
 from dataclasses import dataclass, field
 
 from windagent_providers.base.contracts import DiscoveredModel
-from windagent_providers.registry.model_normalizer import normalize_model_id
-from windagent_providers.registry.equivalence import (
-    classify_equivalence,
-    EquivalenceLevel,
-)
 from windagent_providers.routing.ports import EndpointBindingRepositoryPort
 
 logger = logging.getLogger("windagent.providers.registry")

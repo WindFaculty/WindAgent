@@ -28,12 +28,15 @@ NOT composed (separate process):
 """
 
 from __future__ import annotations
+import asyncio
 import logging
-from typing import Optional, Any, Dict
+import os
+from pathlib import Path
+from typing import Optional
 
 from windagent_storage.database.connection import DatabaseManager
 from windagent_storage.orm.models import BaseORM
-import windagent_storage.orm.v2_orchestration_models
+import windagent_storage.orm.v2_orchestration_models  # noqa: F401
 from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork
 from windagent_orchestration.task_manager.service import TaskManager
 from windagent_providers.registry.canonical_registry import CanonicalModelRegistryService
@@ -52,6 +55,14 @@ from windagent_storage.repositories.worker_status import (
 )
 from windagent_observability.events.dispatcher import EventDispatcher
 from windagent_storage.queue.submission_adapter import SqlWorkSubmissionAdapter
+from windagent_storage.security.encryption import decrypt
+from windagent_execution.registry import ExecutionRuntimeRegistry
+from windagent_execution.worktree.context import WorktreeContextManager
+from windagent_orchestration.orchestrator_service import OrchestratorService
+from windagent_orchestration.release.rollout import MultiAgentReleasePolicy
+from windagent_observability.release_metrics import ReleaseTelemetry
+from windagent_providers.routing.endpoint_adapter_resolver import EndpointAdapterResolver
+from windagent_providers.routing.execution_coordinator import EndpointExecutionCoordinator
 
 logger = logging.getLogger("windagent.api.composition")
 
@@ -77,11 +88,17 @@ class ApplicationContainer:
 
     def __init__(self, db_url: str = "sqlite+aiosqlite:///windagent.db"):
         self.db_url = db_url
+        self.release_policy = MultiAgentReleasePolicy.from_environment()
+        self.release_telemetry = ReleaseTelemetry()
         self.db: Optional[DatabaseManager] = None
         self.task_manager: Optional[TaskManager] = None
         self.event_dispatcher: Optional[EventDispatcher] = None
         self.provider_registry: Optional[CanonicalModelRegistryService] = None
         self.route_lock_service: Optional[RouteLockService] = None
+        self.execution_registry: Optional[ExecutionRuntimeRegistry] = None
+        self.worktree_manager: Optional[WorktreeContextManager] = None
+        self.provider_execution_coordinator: Optional[EndpointExecutionCoordinator] = None
+        self.orchestrator_service: Optional[OrchestratorService] = None
         self.tool_registry: Optional[ToolRegistry] = None
         self.plugin_registry: Optional[PluginRegistry] = None
         self.skill_registry: Optional[SkillRegistry] = None
@@ -102,11 +119,38 @@ class ApplicationContainer:
             return
 
         logger.info(f"Initializing ApplicationContainer with database: {self.db_url}")
-        self.db = DatabaseManager(self.db_url)
+        self.db = DatabaseManager(
+            self.db_url,
+            release_telemetry=self.release_telemetry,
+        )
         try:
-            await self.db.create_tables(BaseORM.metadata)
+            if os.getenv("WINDAGENT_ENV", "").lower() == "production":
+                backup_root = os.getenv("WINDAGENT_RELEASE_BACKUP_ROOT")
+                if self.db_url.startswith("sqlite+aiosqlite:///"):
+                    if not backup_root:
+                        raise RuntimeError(
+                            "WINDAGENT_RELEASE_BACKUP_ROOT is required before a production migration"
+                        )
+                    backup = await asyncio.to_thread(
+                        self.db.create_pre_migration_backup, backup_root
+                    )
+                    if backup is not None:
+                        logger.info("Created pre-migration SQLite backup at %s", backup)
+                else:
+                    evidence = os.getenv("WINDAGENT_EXTERNAL_BACKUP_EVIDENCE")
+                    if not evidence or not Path(evidence).exists():
+                        raise RuntimeError(
+                            "WINDAGENT_EXTERNAL_BACKUP_EVIDENCE must reference a verified "
+                            "PostgreSQL backup before a production migration"
+                        )
+            # Phase 1 (G1.1): runtime bootstraps schema through the canonical
+            # Alembic migration workflow instead of ad-hoc create_all.
+            await self.db.upgrade_to_head(BaseORM.metadata)
         except Exception as ex:
-            logger.warning(f"Database table creation warning: {ex}")
+            if os.getenv("WINDAGENT_ENV") == "production":
+                # Fail closed: a partially-migrated schema must not serve traffic.
+                raise
+            logger.warning(f"Database migration warning: {ex}")
 
         # Event dispatcher for internal notifications
         self.event_dispatcher = EventDispatcher()
@@ -124,6 +168,10 @@ class ApplicationContainer:
             SQLProviderRoutingAuditRepository,
         )
         from windagent_storage.repositories.v3_repositories import (
+            SQLEndpointRegistryRepository,
+            SQLEndpointStateRepository,
+            SQLQuotaStateRepository,
+            SQLRouteAttemptRepository,
             SQLRouteLockRepository,
         )
 
@@ -145,7 +193,60 @@ class ApplicationContainer:
         self.verification_query_service = VerificationQueryService()
         
         # Routing and worker coordination
-        self.route_lock_service = RouteLockService(lock_repository=lock_repo, audit_repository=audit_repo)
+        from windagent_providers.routing.rules import RoutingRule, RoutingRuleSet
+
+        default_model = os.getenv("WINDAGENT_ORCHESTRATOR_CANONICAL_MODEL", "windagent/local-agent")
+        self.route_lock_service = RouteLockService(
+            ruleset=RoutingRuleSet(
+                rules=[
+                    RoutingRule(
+                        rule_id="orchestrator-local-agent",
+                        rule_version=1,
+                        canonical_model_id=default_model,
+                        description="Phase-2 conversation control plane",
+                    )
+                ]
+            ),
+            lock_repository=lock_repo,
+            audit_repository=audit_repo,
+        )
+        self.execution_registry = ExecutionRuntimeRegistry()
+        # Phase 5: the deployment (not a browser/API request) chooses which
+        # repository coding agents may modify.  Leaving this unset deliberately
+        # disables coding-agent dispatch rather than falling back to the API
+        # process's current directory.
+        workspace_root = os.getenv("WINDAGENT_WORKSPACE_ROOT")
+        if workspace_root:
+            self.worktree_manager = WorktreeContextManager(
+                workspace_root,
+                worktree_root=os.getenv("WINDAGENT_WORKTREE_ROOT") or None,
+                quarantine_root=os.getenv("WINDAGENT_WORKTREE_QUARANTINE_ROOT") or None,
+            )
+        else:
+            if os.getenv("WINDAGENT_ENV") == "production":
+                raise RuntimeError(
+                    "WINDAGENT_WORKSPACE_ROOT is required for production coding-agent execution"
+                )
+            logger.warning(
+                "WINDAGENT_WORKSPACE_ROOT is unset; coding-agent Git worktree isolation is disabled"
+            )
+        self.provider_execution_coordinator = EndpointExecutionCoordinator(
+            adapter_resolver=EndpointAdapterResolver(decrypt),
+            endpoint_registry=SQLEndpointRegistryRepository(sync_factory()),
+            endpoint_state=SQLEndpointStateRepository(sync_factory()),
+            quota_state=SQLQuotaStateRepository(sync_factory()),
+            attempt_log=SQLRouteAttemptRepository(sync_factory()),
+            release_telemetry=self.release_telemetry,
+        )
+        self.orchestrator_service = OrchestratorService(
+            self.db.session_factory,
+            self.execution_registry,
+            self.route_lock_service,
+            self.provider_execution_coordinator,
+            self.worktree_manager,
+            self.release_policy,
+            self.release_telemetry,
+        )
         self.worker_status_query = SqlWorkerStatusQuery(
             SqlWorkerHeartbeatRepository(self.db.session_factory)
         )

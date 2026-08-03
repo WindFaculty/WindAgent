@@ -63,7 +63,8 @@ class SQLEndpointBindingRepository(EndpointBindingRepositoryPort):
             context_window=128000,
         )
         self.session.add(cm)
-        self.session.flush(); self.session.commit()
+        self.session.flush()
+        self.session.commit()
         return cm
 
     # ------------------------------------------------------------------ #
@@ -109,7 +110,8 @@ class SQLEndpointBindingRepository(EndpointBindingRepositoryPort):
                     priority=50,
                 )
                 self.session.add(binding)
-                self.session.flush(); self.session.commit()
+                self.session.flush()
+                self.session.commit()
             results.append(self._binding_to_dict(binding))
         return results
 
@@ -142,7 +144,8 @@ class SQLEndpointBindingRepository(EndpointBindingRepositoryPort):
             canonical_model_id=source_canonical_id
         ).update({EndpointModelBindingORM.canonical_model_id: target_canonical_id})
         self.session.delete(src)
-        self.session.flush(); self.session.commit()
+        self.session.flush()
+        self.session.commit()
         return True
 
     def split_binding(
@@ -162,11 +165,13 @@ class SQLEndpointBindingRepository(EndpointBindingRepositoryPort):
             context_window=128000,
         )
         self.session.add(new_cm)
-        self.session.flush(); self.session.commit()
+        self.session.flush()
+        self.session.commit()
         binding.canonical_model_id = new_cm.id
         binding.equivalence_level = EquivalenceLevel.EXACT_REVISION.value
         binding.updated_at = datetime.now(timezone.utc)
-        self.session.flush(); self.session.commit()
+        self.session.flush()
+        self.session.commit()
         return self._binding_to_dict(binding)
 
     def get_audit_trails(self) -> List[Dict[str, Any]]:
@@ -232,6 +237,10 @@ class SQLProviderRoutingAuditRepository(RoutingAuditRepositoryPort):
         actor: str = "system",
         metadata: Optional[Dict[str, Any]] = None,
     ) -> str:
+        from windagent_core.security.redaction import redact_before_persist
+
+        # Phase 1 (G9.4): audit metadata is redacted before it is persisted.
+        safe_metadata = redact_before_persist(metadata or {})
         row = ProviderRoutingAuditV3ORM(
             id=f"aud-{uuid.uuid4().hex[:12]}",
             action=action,
@@ -244,10 +253,11 @@ class SQLProviderRoutingAuditRepository(RoutingAuditRepositoryPort):
             endpoint_id=endpoint_id,
             reason=reason,
             actor=actor,
-            metadata_json=json.dumps(metadata or {}),
+            metadata_json=json.dumps(safe_metadata),
         )
         self.session.add(row)
-        self.session.flush(); self.session.commit()
+        self.session.flush()
+        self.session.commit()
         return str(row.id)
 
     def get_audit_trails(self) -> List[Dict[str, Any]]:
@@ -312,7 +322,8 @@ class SQLCanonicalModelRepository:
                 context_window=model_data.get("context_window", 128000),
             )
             self.session.add(row)
-        self.session.flush(); self.session.commit()
+        self.session.flush()
+        self.session.commit()
         return self._to_dict(row)
 
     @staticmethod
@@ -357,7 +368,8 @@ class SQLRouteAttemptRepository:
             error_class=failure_category,
         )
         self.session.add(row)
-        self.session.flush(); self.session.commit()
+        self.session.flush()
+        self.session.commit()
         return {
             "id": row.id,
             "route_lock_id": row.route_lock_id,
@@ -404,7 +416,7 @@ class SQLRoutingUnitOfWork:
         self.session.rollback()
 
 
-from windagent_storage.repositories.v3_repositories import SQLRouteLockRepository
+from windagent_storage.repositories.v3_repositories import SQLRouteLockRepository  # noqa: E402  (bottom import to avoid repo cycle)
 
 # Exact class aliases matching ban_ke_hoach.md §1.3
 SqlCanonicalModelRepository = SQLCanonicalModelRepository

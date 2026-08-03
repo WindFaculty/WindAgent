@@ -5,16 +5,13 @@ Preserves legacy tables untouched for rollback and parity.
 """
 
 from __future__ import annotations
-import sys
 from dataclasses import dataclass, field
-from pathlib import Path
 from typing import Any, Dict, List, Optional
 from sqlalchemy.orm import Session
 
-from windagent_storage.security.encryption import encrypt
 from windagent_storage.orm.models import BaseORM
 from windagent_storage.orm.v3_models import (
-    ProviderVendorORM, ProviderCredentialORM, ProviderEndpointORM,
+    ProviderCredentialORM, ProviderEndpointORM,
     CanonicalModelV3ORM, EndpointModelBindingORM, RouteLockV3ORM
 )
 

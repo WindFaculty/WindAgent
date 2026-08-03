@@ -15,11 +15,11 @@ for pkg in ["core", "storage", "orchestration", "execution", "workflows"]:
     if p not in sys.path:
         sys.path.insert(0, p)
 
-import pytest
-from windagent_orchestration.ports import (
+import pytest  # noqa: E402 - package paths are configured immediately above for standalone runs
+from windagent_orchestration.ports import (  # noqa: E402 - see path bootstrap above
     ExecutionRuntimePort, ExecutionRequest, RuntimeStatusEnum
 )
-from windagent_execution import FakeRuntimeAdapter, HermesRuntimeAdapter
+from windagent_execution import FakeRuntimeAdapter, HermesRuntimeAdapter  # noqa: E402
 
 
 @pytest.mark.asyncio
@@ -71,6 +71,40 @@ async def test_fake_runtime_adapter_failure_and_cancel():
     await run_adapter.cancel(h_run)
     status_c = await run_adapter.get_status(h_run)
     assert status_c.status == RuntimeStatusEnum.CANCELLED
+
+
+@pytest.mark.asyncio
+async def test_fake_runtime_adapter_controls_individual_steps_and_crash():
+    """Phase 8: a chaos fake can isolate step behavior and refuse reattach after crash."""
+    adapter = FakeRuntimeAdapter(default_mode="running")
+    adapter.set_mode_for_step("step-fail", "failure")
+    failing = await adapter.dispatch(
+        ExecutionRequest(
+            step_run_id="step-fail",
+            workflow_run_id="wf-phase8",
+            tool_name="agent_generalist",
+            attempt_id="attempt-fail",
+            fencing_token="fence-fail",
+        )
+    )
+    live = await adapter.dispatch(
+        ExecutionRequest(
+            step_run_id="step-live",
+            workflow_run_id="wf-phase8",
+            tool_name="agent_generalist",
+            attempt_id="attempt-live",
+            fencing_token="fence-live",
+        )
+    )
+
+    assert (await adapter.get_status(failing)).status == RuntimeStatusEnum.FAILED
+    assert (await adapter.get_status(live)).status == RuntimeStatusEnum.RUNNING
+
+    adapter.complete(live.runtime_run_id, {"checkpoint": "saved"})
+    assert (await adapter.get_result(live)).result_data == {"checkpoint": "saved"}
+    adapter.crash(live.runtime_run_id)
+    assert (await adapter.get_status(live)).status == RuntimeStatusEnum.LOST
+    assert await adapter.reattach(live.runtime_run_id) is None
 
 
 @pytest.mark.asyncio

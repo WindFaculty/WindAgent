@@ -6,12 +6,11 @@ Validates fencing tokens and ingests terminal execution results into durable sto
 from __future__ import annotations
 
 import logging
-from typing import Optional, Any, Dict
+from typing import Optional, Any
 
 from windagent_orchestration.ports import (
     ExecutionRuntimePort, ExecutionHandle, ExecutionResult, RuntimeStatusEnum
 )
-from windagent_orchestration.state_machine import StepState, StepStateMachine
 from windagent_core.errors.exceptions import DomainError
 
 logger = logging.getLogger("windagent.orchestration.dispatcher.result_ingestion")

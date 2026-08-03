@@ -5,11 +5,11 @@ Typed dataclasses representing state mutation requests using canonical domain ID
 
 from __future__ import annotations
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from windagent_core.domain.types import (
-    TaskId, TaskRunId, SessionId, WorkflowId, WorkflowRunId, StepId, StepRunId, WorkerId
+    TaskId, SessionId, WorkflowId, WorkflowRunId, StepId, WorkerId
 )
 from windagent_core.domain.lifecycle import TaskState, utc_now
 

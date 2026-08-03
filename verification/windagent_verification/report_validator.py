@@ -7,10 +7,10 @@ Missing evidence = BLOCKED, not PASSED.
 
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from windagent_verification.domain import (
-    VerificationGate, VerificationResult, VerificationStatus, ExecutionEvidence,
+    VerificationGate, VerificationResult, VerificationStatus,
 )
 from windagent_verification.quality_gates import (
     TestRunnerGate, PolicyEngineGate, SecurityGate, AcceptanceGate,

@@ -5,7 +5,7 @@ Routes dispatch requests to appropriate execution adapters based on tool capabil
 
 from __future__ import annotations
 import logging
-from typing import Dict, Optional, Any
+from typing import Dict, Optional
 
 from windagent_core.contracts.execution import (
     ExecutionRuntimePort, ExecutionRequest, ExecutionHandle, RuntimeStatus, ExecutionResult
@@ -14,7 +14,6 @@ from windagent_execution.adapters.tool_runtime import ToolRuntimeAdapter
 from windagent_execution.adapters.browser_runtime import BrowserRuntimeAdapter
 from windagent_execution.adapters.local_agent import LocalAgentRuntimeAdapter
 from windagent_execution.adapters.subprocess_runtime import SubprocessRuntimeAdapter
-from windagent_execution.adapters.hermes_runtime_adapter import HermesRuntimeAdapter
 
 logger = logging.getLogger("windagent.execution.registry")
 

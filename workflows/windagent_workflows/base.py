@@ -18,7 +18,7 @@ from windagent_core.domain.models import WorkflowStep
 from windagent_core.errors.exceptions import ValidationError
 from windagent_workflows.models import (
     ImmutableWorkflowDefinition, WorkflowNodeSpec, WorkflowEdgeSpec,
-    ArtifactContract, CompletionPredicate, NodeType, EdgeType,
+    ArtifactContract, CompletionPredicate, EdgeType,
 )
 
 
@@ -70,12 +70,12 @@ class BaseWorkflowPack(ABC):
     def validate_input(self, params: Dict[str, Any]) -> None:
         """Validates input parameters against the declared input_schema."""
         required = self.definition.input_schema.get("required", [])
-        for field in required:
-            if field not in params or params[field] is None:
+        for field_name in required:
+            if field_name not in params or params[field_name] is None:
                 raise ValidationError(
-                    f"Workflow [{self.name}] missing required input parameter [{field}].",
+                    f"Workflow [{self.name}] missing required input parameter [{field_name}].",
                     code="WINDAGENT_ERR_VALIDATION",
-                    details={"workflow": self.name, "missing_field": field},
+                    details={"workflow": self.name, "missing_field": field_name},
                 )
 
     # ------------------------------------------------------------------

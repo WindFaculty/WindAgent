@@ -96,6 +96,122 @@ class FinalDeliverableId(OpaqueId):
     """Identifier for the final published deliverable."""
 
 
+class DirectorialIssueId(OpaqueId):
+    """Identifier for a DirectorialIssue (Phase 8)."""
+
+
+class ScriptRevisionProposalId(OpaqueId):
+    """Identifier for a ScriptRevisionProposal (Phase 8)."""
+
+
+class ShotGraphIssueId(OpaqueId):
+    """Identifier for a ShotGraphIssue (Phase 9)."""
+
+
+class ShotSpecificationId(OpaqueId):
+    """Identifier for a ShotSpecification (Phase 9)."""
+
+
+class ContinuityLedgerId(OpaqueId):
+    """Identifier for a ContinuityLedger aggregate (Phase 10)."""
+
+
+class ContinuityIssueId(OpaqueId):
+    """Identifier for a ContinuityIssue finding (Phase 10)."""
+
+
+class ContinuityOverrideId(OpaqueId):
+    """Identifier for a HumanContinuityOverride audit record (Phase 10)."""
+
+
+class ReferenceBindingId(OpaqueId):
+    """Identifier for a ReferenceBinding edge (Phase 11)."""
+
+
+class ReferenceBindingPlanId(OpaqueId):
+    """Identifier for a ReferenceBindingPlan aggregate (Phase 11)."""
+
+
+class ReferenceBindingIssueId(OpaqueId):
+    """Identifier for a ReferenceBindingIssue finding (Phase 11)."""
+
+
+class PromptBlockId(OpaqueId):
+    """Identifier for a PromptBlock in a compiled prompt (Phase 11)."""
+
+
+class CompiledPromptId(OpaqueId):
+    """Identifier for a CompiledPrompt aggregate (Phase 11)."""
+
+
+class FlowGenerationSpecificationId(OpaqueId):
+    """Identifier for a FlowGenerationSpecification (Phase 11)."""
+
+
+class PromptCompilerIssueId(OpaqueId):
+    """Identifier for a PromptCompilerIssue finding (Phase 11)."""
+
+
+class PromptSecurityFindingId(OpaqueId):
+    """Identifier for a PromptSecurityFinding (Phase 11)."""
+
+
+class CharacterVoiceProfileId(OpaqueId):
+    """Identifier for a CharacterVoiceProfile (Phase 21)."""
+
+
+class DialogueTrackId(OpaqueId):
+    """Identifier for a DialogueTrack (Phase 21)."""
+
+
+class WordTimestampId(OpaqueId):
+    """Identifier for a WordTimestamp (Phase 21)."""
+
+
+class SoundEffectCueId(OpaqueId):
+    """Identifier for a SoundEffectCue (Phase 21)."""
+
+
+class MusicCueId(OpaqueId):
+    """Identifier for a MusicCue (Phase 21)."""
+
+
+class AudioMixPlanId(OpaqueId):
+    """Identifier for an AudioMixPlan aggregate (Phase 21)."""
+
+
+class TtsRequestId(OpaqueId):
+    """Identifier for a TTS synthesis request (Phase 21)."""
+
+
+class TtsAudioAssetId(OpaqueId):
+    """Identifier for a TTS output audio asset (Phase 21)."""
+
+
+class EditDecisionListId(OpaqueId):
+    """Identifier for an EditDecisionList aggregate (Phase 22)."""
+
+
+class TransitionPlanId(OpaqueId):
+    """Identifier for a TransitionPlan entity (Phase 22)."""
+
+
+class SubtitleTrackId(OpaqueId):
+    """Identifier for a SubtitleTrack aggregate (Phase 22)."""
+
+
+class SubtitleCueId(OpaqueId):
+    """Identifier for a SubtitleCue entity (Phase 22)."""
+
+
+class EncodingProfileId(OpaqueId):
+    """Identifier for an EncodingProfile value object (Phase 22)."""
+
+
+class PostProductionJobId(OpaqueId):
+    """Identifier for a PostProductionJob aggregate (Phase 22)."""
+
+
 __all__ = [
     "VideoProjectId",
     "ProductionRevisionId",
@@ -118,4 +234,33 @@ __all__ = [
     "ReviewResultId",
     "ApprovalId",
     "FinalDeliverableId",
+    "DirectorialIssueId",
+    "ScriptRevisionProposalId",
+    "ShotGraphIssueId",
+    "ShotSpecificationId",
+    "ContinuityLedgerId",
+    "ContinuityIssueId",
+    "ContinuityOverrideId",
+    "ReferenceBindingId",
+    "ReferenceBindingPlanId",
+    "ReferenceBindingIssueId",
+    "PromptBlockId",
+    "CompiledPromptId",
+    "FlowGenerationSpecificationId",
+    "PromptCompilerIssueId",
+    "PromptSecurityFindingId",
+    "CharacterVoiceProfileId",
+    "DialogueTrackId",
+    "WordTimestampId",
+    "SoundEffectCueId",
+    "MusicCueId",
+    "AudioMixPlanId",
+    "TtsRequestId",
+    "TtsAudioAssetId",
+    "EditDecisionListId",
+    "TransitionPlanId",
+    "SubtitleTrackId",
+    "SubtitleCueId",
+    "EncodingProfileId",
+    "PostProductionJobId",
 ]

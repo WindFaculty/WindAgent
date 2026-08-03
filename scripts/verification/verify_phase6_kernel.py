@@ -131,8 +131,6 @@ def _fixture_pinned_responses(fx: dict) -> dict:
     responses = fx["responses"]
     script = responses["generate_script"]
     title = brief.get("title", "Untitled")
-    idea = brief.get("idea", "")
-
     brief_json = json.dumps({
         "title": title,
         "logline": "Golden fixture logline.",
@@ -385,7 +383,7 @@ async def _run_fixture_golden(fx: dict) -> dict:
         location_id_map=written.get("location_map", {}),
     )
     char_names = [c.name for c in extracted["characters"]]
-    loc_names = [l.name for l in extracted["locations"]]
+    loc_names = [location.name for location in extracted["locations"]]
     char_pr = _precision_recall(char_names, golden_chars)
     loc_pr = _precision_recall(loc_names, golden_locs)
     # Characters: precision+recall blocking. Locations: the kernel folds
@@ -444,6 +442,7 @@ async def _run_fixture_golden(fx: dict) -> dict:
     continuation_ok = (
         existing_preserved
         and order_preserved
+        and existing_episode_count_ok
         and cont_result.invalidation_intent == InvalidationIntent.INVALIDATE_SHOT_PLAN
         and cont_result.prompt_version
     )
@@ -452,6 +451,7 @@ async def _run_fixture_golden(fx: dict) -> dict:
         "existing_scenes_preserved": existing_preserved,
         "existing_order_preserved": order_preserved,
         "existing_episode_count": cont_result.existing_episode_count,
+        "existing_episode_count_preserved": existing_episode_count_ok,
         "invalidation_intent": cont_result.invalidation_intent.value,
         "proposal_status": cont_result.proposal.status.value,
         "added_scene_count": len(cont_result.proposal.scenes) - len(locked.scenes),
@@ -626,7 +626,6 @@ async def _run_integration(fx: dict) -> dict:
     )
     from windagent_intelligence.video import (
         AssetPromptSpecBuilder,
-        ContinuationService,
         CreativeBriefExpander,
         DialogueNarrator,
         EntityExtractor,
@@ -659,7 +658,7 @@ async def _run_integration(fx: dict) -> dict:
     steps.append({"step": 3, "capability": "ScreenplayWriter", "ok": True})
 
     narrator = DialogueNarrator(id_factory=ids)
-    narrated = narrator.narrate(fx["responses"]["generate_script"], screenplay.scenes)
+    narrator.narrate(fx["responses"]["generate_script"], screenplay.scenes)
     steps.append({"step": 4, "capability": "DialogueNarrator", "ok": True})
 
     extractor = EntityExtractor(id_factory=ids)

@@ -13,7 +13,6 @@ Rules:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import List, Optional
 
 from windagent_core.domain.video_production.ids import CharacterId, LocationId
 

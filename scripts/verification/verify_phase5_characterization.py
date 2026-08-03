@@ -198,7 +198,6 @@ def _build_scenario_spec(fixtures: list[dict]) -> list[dict]:
     script0 = responses0["generate_script"]
     meta0 = responses0["meta_extract"]
     meta_obj = json.loads(meta0)
-    chars0 = [{"name": c["name"]} for c in meta_obj.get("characters", [])]
     sets0 = [{"name": s["name"]} for s in meta_obj.get("settings", [])]
     char0 = meta_obj["characters"][0] if meta_obj.get("characters") else {"name": "X", "description": ""}
     set0 = meta_obj["settings"][0] if meta_obj.get("settings") else {"name": "X", "description": ""}

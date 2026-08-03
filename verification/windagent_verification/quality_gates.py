@@ -8,13 +8,13 @@ RegressionGate, SecurityGate, and AcceptanceGate.
 
 from __future__ import annotations
 import time
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 from windagent_verification.domain import (
     VerificationGate, VerificationResult, VerificationStatus, ExecutionEvidence, EvidenceSource,
 )
 from windagent_verification.runners import (
-    CommandRunner, TestRunner, LinterRunner, SecurityScanner, EnvironmentSnapshot,
+    TestRunner, LinterRunner, SecurityScanner, EnvironmentSnapshot,
 )
 
 

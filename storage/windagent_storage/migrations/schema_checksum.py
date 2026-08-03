@@ -8,7 +8,7 @@ import hashlib
 import json
 from typing import Any, Dict, List, Type
 
-from sqlalchemy import Engine, MetaData, Table, inspect
+from sqlalchemy import Engine, MetaData, Table
 from sqlalchemy.orm import DeclarativeBase
 
 

@@ -9,15 +9,13 @@ import json
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
-from sqlalchemy import select, update, delete
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from windagent_storage.orm.v2_orchestration_models import (
-    TaskRunORM, WorkflowRunV2ORM, WorkflowStepRunORM,
-    ExecutionLeaseORM, ExecutionAttemptORM, WorkflowCheckpointORM,
-    CancellationRequestORM, WorkerRegistrationORM, RuntimeExecutionORM, RecoveryLeaderLeaseORM
+    TaskRunORM, ExecutionLeaseORM, WorkflowCheckpointORM,
+    CancellationRequestORM, RuntimeExecutionORM, RecoveryLeaderLeaseORM
 )
-from windagent_storage.orm.models import OutboxRecordORM
 from windagent_core.errors.exceptions import DomainError
 
 

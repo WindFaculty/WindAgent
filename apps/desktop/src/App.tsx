@@ -8,13 +8,30 @@ import { Browser } from "./pages/Browser";
 import { Files } from "./pages/Files";
 import { Router } from "./pages/Router";
 import { Settings } from "./pages/Settings";
-import { AgentWorkspacePage } from "./pages/AgentWorkspace";
+import { MultiAgentWorkspace } from "./pages/MultiAgentWorkspace";
+import { MultiAgentProvider } from "./state/multiAgentStore";
 import { fetchHermesHealth, fetchHealth } from "./api/client";
 import { Endpoints } from "./pages/Endpoints";
+
+// ADR 0006 §3: MultiAgentWorkspace is the canonical (target) workspace UI;
+function useConversationId(): string {
+  const [conversationId] = useState<string>(() => {
+    const existing = sessionStorage.getItem("windagent.conversationId");
+    if (existing) return existing;
+    const fresh =
+      typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+        ? crypto.randomUUID()
+        : `conv-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    sessionStorage.setItem("windagent.conversationId", fresh);
+    return fresh;
+  });
+  return conversationId;
+}
 
 export function App() {
   // Page routing
   const [activeTab, setActiveTab] = useState<string>("dashboard");
+  const conversationId = useConversationId();
   const [isModelsExpanded, setIsModelsExpanded] = useState<boolean>(false);
   const [refreshInterval, setRefreshInterval] = useState<string>("10s");
 
@@ -149,8 +166,6 @@ export function App() {
     const interval = setInterval(fetchMetrics, 2000);
     return () => clearInterval(interval);
   }, []);
-
-  // Workspace streaming now handled inside AgentWorkspace via useAgentSession.
 
   const renderSparkline = (points: number[], maxVal: number) => {
     const width = 50;
@@ -468,7 +483,9 @@ export function App() {
           {activeTab === "browser" && <Browser />}
           {activeTab === "files" && <Files />}
           {activeTab === "workspace" && (
-            <AgentWorkspacePage />
+            <MultiAgentProvider conversationId={conversationId}>
+              <MultiAgentWorkspace conversationId={conversationId} />
+            </MultiAgentProvider>
           )}
           {activeTab === "router" && <Router />}
           {activeTab === "settings" && <Settings />}

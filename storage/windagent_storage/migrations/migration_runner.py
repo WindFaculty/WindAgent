@@ -7,18 +7,15 @@ from __future__ import annotations
 import logging
 from typing import Any, Dict, List, Optional
 
-from sqlalchemy import Engine, create_engine
+from sqlalchemy import Engine, create_engine, text
 from sqlalchemy.orm import Session
 
 from windagent_storage.migrations.migration_registry import (
-    MigrationDirection,
-    MigrationStatus,
     migration_registry,
 )
 from windagent_storage.migrations.migration_lock import MigrationLock, LockType
 from windagent_storage.migrations.backup_manager import BackupManager
 from windagent_storage.migrations.schema_checksum import SchemaChecksum
-from windagent_storage.orm.models import BaseORM
 
 # Import migrations
 from windagent_storage.migrations.v2_canonical.migration_001_initial import (
@@ -316,7 +313,6 @@ class MigrationRunner:
         }
         
         try:
-            all_revisions = migration_registry.get_all_revisions()
             pending = migration_registry.get_pending_migrations(self.engine)
             applied = self.get_applied_migrations()
             

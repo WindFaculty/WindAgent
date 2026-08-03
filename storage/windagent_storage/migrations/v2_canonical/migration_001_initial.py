@@ -5,13 +5,12 @@ Creates the initial V2 canonical tables and migration history tracking.
 
 from __future__ import annotations
 import logging
-from typing import Any, Dict, List, Optional
+from typing import List
 
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from windagent_storage.orm.models import (
-    BaseORM,
     SessionORM,
     TaskORM,
     WorkflowRunORM,
@@ -66,9 +65,6 @@ def upgrade(session: Session) -> None:
     
     # Create migration history table first
     session.execute(text(MIGRATION_HISTORY_TABLE_DDL))
-    
-    # Create all V2 canonical tables using SQLAlchemy metadata
-    metadata = BaseORM.metadata
     
     # Create tables that don't exist
     created_tables: List[str] = []

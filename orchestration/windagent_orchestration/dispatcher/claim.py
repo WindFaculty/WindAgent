@@ -5,8 +5,7 @@ Atomic Step Lease Claim Service for WindAgent Orchestration V2 Dispatcher.
 from __future__ import annotations
 
 import logging
-import uuid
-from typing import Optional, Dict, Any
+from typing import Optional
 
 from windagent_orchestration.dispatcher.leases import LeaseManager, ExecutionLease
 

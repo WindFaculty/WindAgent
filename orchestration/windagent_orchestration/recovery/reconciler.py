@@ -5,19 +5,15 @@ Queries persisted database records, enforces singleton leader lease, distinguish
 
 from __future__ import annotations
 
-import json
 import logging
-from datetime import datetime, timezone
-from typing import List, Tuple, Optional, Any, Dict
-from sqlalchemy import select, update
+from typing import List, Tuple, Optional, Any
+from sqlalchemy import select
 
-from windagent_orchestration.state_machine import TaskState, WorkflowState, StepState
-from windagent_orchestration.recovery.destructive_guard import DestructiveReplayGuard, DESTRUCTIVE_TOOLS
-from windagent_orchestration.ports import RuntimeStatusEnum
+from windagent_orchestration.state_machine import TaskState
+from windagent_orchestration.recovery.destructive_guard import DESTRUCTIVE_TOOLS
 from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork
 from windagent_storage.orm.v2_orchestration_models import (
-    TaskRunORM, WorkflowRunV2ORM, WorkflowStepRunORM,
-    ExecutionLeaseORM, RuntimeExecutionORM
+    TaskRunORM, WorkflowStepRunORM
 )
 
 logger = logging.getLogger("windagent.orchestration.recovery.reconciler")

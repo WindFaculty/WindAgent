@@ -4,7 +4,7 @@ Pure Pydantic v2 frozen configuration schemas without environment loaders or sid
 """
 
 from __future__ import annotations
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict
 from pydantic import BaseModel, ConfigDict, Field
 
 from windagent_core.version import PRODUCT_VERSION

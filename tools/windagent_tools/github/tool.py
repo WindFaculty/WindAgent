@@ -5,7 +5,6 @@ API port abstraction for GitHub issues, PRs, and repository metadata.
 
 from __future__ import annotations
 import time
-from typing import Any, Dict
 
 from windagent_core.contracts.tools import ToolInvocation, ToolResult
 from windagent_tools.base import BaseTool, ToolDefinition, ToolRiskLevel, ToolExecutionContext

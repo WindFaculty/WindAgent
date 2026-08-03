@@ -16,7 +16,7 @@ from __future__ import annotations
 import ipaddress
 import re
 from dataclasses import dataclass
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 
 from windagent_tools.media_assets.errors import UrlBlockedError
 

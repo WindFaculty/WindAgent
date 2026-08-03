@@ -4,7 +4,6 @@ Durable Checkpoint and State Resume Manager for Orchestration V2 Workflow Engine
 
 from __future__ import annotations
 
-import json
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional

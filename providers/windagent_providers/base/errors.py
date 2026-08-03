@@ -6,7 +6,7 @@ Eliminates string-matching error classification in application layers.
 from __future__ import annotations
 from typing import Any, Dict, Optional
 
-from windagent_core.errors.exceptions import ProviderError, WindAgentError
+from windagent_core.errors.exceptions import ProviderError
 from windagent_providers.base.secret_redaction import redact_text
 
 

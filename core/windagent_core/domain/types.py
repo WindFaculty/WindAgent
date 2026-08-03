@@ -6,7 +6,7 @@ Distinguishes between UUID-backed domain entity IDs and opaque string-backed ext
 from __future__ import annotations
 import uuid
 import re
-from typing import TypeVar, Any, Optional
+from typing import TypeVar, Any
 from pydantic_core import core_schema
 from windagent_core.errors.exceptions import IdentityValidationError
 

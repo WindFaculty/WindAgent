@@ -21,7 +21,7 @@ for _pkg in ["core", "providers", "workflows", "apps/cli", "apps/desktop"]:
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
-from windagent_core.config.repository_root import find_repository_root, is_repository_root
+from windagent_core.config.repository_root import find_repository_root, is_repository_root  # noqa: E402
 
 DEFAULT_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_CONFIG = DEFAULT_ROOT / "configs" / "architecture" / "scaffold_v2.yaml"

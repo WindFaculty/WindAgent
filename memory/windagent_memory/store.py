@@ -14,10 +14,9 @@ from __future__ import annotations
 import logging
 import uuid
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
-from windagent_core.errors.exceptions import ConflictError, NotFoundError
-from windagent_memory.models import MemoryRecord, MemoryScope, RetentionPolicy, DEFAULT_SCOPE_TTL
+from windagent_memory.models import MemoryRecord, MemoryScope, RetentionPolicy
 from windagent_memory.write_policy import MemoryWritePolicy
 
 logger = logging.getLogger("windagent.memory.store")

@@ -18,8 +18,37 @@ from windagent_tools.code_search import CodeSearchTool
 from windagent_tools.ast import ASTSymbolExtractorTool
 from windagent_tools.lsp import LSPTool
 from windagent_tools.testing import TestRunnerTool
-from windagent_tools.browser import OpenURLTool, ClickXYTool
+from windagent_tools.browser import (
+    BrowserActionPolicy,
+    BrowserHealthCheck,
+    BrowserOperation,
+    BrowserProfileLock,
+    BrowserRuntime,
+    BrowserSessionRegistry,
+    ClickXYTool,
+    OpenURLTool,
+)
 from windagent_tools.database import DatabaseQueryTool
+from windagent_tools.google_flow import (
+    CandidateDownloader,
+    FlowImageGenerator,
+    FlowImageOperation,
+    FlowJobRegistry,
+    FlowJobStatus,
+    FlowNavigator,
+    FlowProjectManager,
+    FlowReconcileAction,
+    FlowUiState,
+    FlowUiStateMachine,
+    FlowVideoGenerator,
+    FlowVideoOperation,
+    PreSubmitGuard,
+    ReviewGate,
+    SelectorCatalog,
+    VideoCandidateDownloader,
+    VideoInspectorPort,
+    VideoOperationMapper,
+)
 from windagent_tools.github import GitHubTool
 from windagent_tools.mcp.client import (
     MCPClientPort, MCPServerConfig, MCPTransportType, MCPToolInfo
@@ -39,6 +68,15 @@ __all__ = [
     "LSPTool",
     "TestRunnerTool",
     "OpenURLTool", "ClickXYTool",
+    "BrowserRuntime", "BrowserActionPolicy", "BrowserOperation",
+    "BrowserHealthCheck", "BrowserProfileLock", "BrowserSessionRegistry",
+    "FlowNavigator", "FlowProjectManager", "FlowUiState",
+    "FlowUiStateMachine", "SelectorCatalog",
+    "FlowImageGenerator", "FlowImageOperation", "FlowJobRegistry",
+    "FlowJobStatus", "FlowReconcileAction", "CandidateDownloader",
+    "PreSubmitGuard", "ReviewGate",
+    "FlowVideoGenerator", "FlowVideoOperation", "VideoCandidateDownloader",
+    "VideoInspectorPort", "VideoOperationMapper",
     "DatabaseQueryTool",
     "GitHubTool",
     "MCPClientPort", "MCPServerConfig", "MCPTransportType", "MCPToolInfo",

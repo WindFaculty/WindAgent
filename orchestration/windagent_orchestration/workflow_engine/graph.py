@@ -6,7 +6,7 @@ Provides O(V+E) iterative Kahn's algorithm cycle detection & topological sorting
 from __future__ import annotations
 
 from collections import deque
-from typing import Dict, List, Set, Tuple, Any
+from typing import Dict, List, Tuple, Any
 from windagent_core.errors.exceptions import DomainError
 from windagent_orchestration.workflow_engine.definition import WorkflowDefinition
 

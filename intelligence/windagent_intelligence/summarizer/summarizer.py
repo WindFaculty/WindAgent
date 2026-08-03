@@ -13,7 +13,7 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from windagent_context import ContextItem, ContextItemProvenance, SourceType, SensitivityLevel
+from windagent_context import ContextItem
 
 logger = logging.getLogger("windagent.intelligence.summarizer")
 

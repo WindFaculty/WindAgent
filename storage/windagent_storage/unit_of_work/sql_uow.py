@@ -4,7 +4,6 @@ Implements UnitOfWork core contract port for atomic transactions, repository gro
 """
 
 from __future__ import annotations
-import json
 from typing import Any, List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
@@ -42,7 +41,7 @@ class SqlUnitOfWork:
         self.session: Optional[AsyncSession] = None
         
         # Canonical Repositories conforming to core contracts
-        self.tasks: SqlTaskRepository = None  # type: ignore
+        self.tasks: TaskRepository = None  # type: ignore
         self.task_runs: SqlTaskRunRepository = None  # type: ignore
         self.workflows: SqlWorkflowRepository = None  # type: ignore
         self.workflow_runs: SqlWorkflowRunRepository = None  # type: ignore

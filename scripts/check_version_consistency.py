@@ -102,7 +102,7 @@ class VersionChecker:
     def _read_json_version(self, path: Path) -> Optional[str]:
         """Read version from package.json."""
         try:
-            with open(path) as f:
+            with open(path, encoding="utf-8") as f:
                 data = json.load(f)
             return data.get("version")
         except Exception as e:
@@ -215,7 +215,7 @@ class VersionChecker:
         }
         for pkg_name, path in init_files.items():
             try:
-                content = path.read_text()
+                content = path.read_text(encoding="utf-8", errors="replace")
                 match = re.search(r'__version__\s*=\s*(["\']([^"\']+)["\']|PRODUCT_VERSION)', content)
                 if match:
                     version = match.group(2) if match.group(2) else PRODUCT_VERSION
@@ -239,7 +239,7 @@ class VersionChecker:
         """Check FastAPI app version matches product version."""
         main_py = self.root / "apps/api/windagent_api/main.py"
         try:
-            content = main_py.read_text()
+            content = main_py.read_text(encoding="utf-8", errors="replace")
             match = re.search(r'version\s*=\s*["\']([^"\']+)["\']', content)
             if not match:
                 if "version=PRODUCT_VERSION" in content:
@@ -418,6 +418,7 @@ class VersionChecker:
             "artifacts",
             "dist",
             "build",
+            "third_party",
         }
         exclude_files = {"check_version_consistency.py", "version.py", "pyproject.toml"}
         # Always-allowed: known-safe version strings or templates
@@ -438,7 +439,7 @@ class VersionChecker:
             if py_file.name.startswith("test_") or py_file.name.endswith("_test.py"):
                 continue
             try:
-                content = py_file.read_text()
+                content = py_file.read_text(encoding="utf-8", errors="replace")
                 for version_str in [PRODUCT_VERSION]:
                     if version_str in always_allowed:
                         continue

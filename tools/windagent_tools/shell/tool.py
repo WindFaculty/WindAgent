@@ -5,7 +5,6 @@ Provides ExecShellTool with full metadata contract and SafeShellRunner execution
 
 from __future__ import annotations
 import time
-from typing import Any, Dict
 
 from windagent_core.contracts.tools import ToolInvocation, ToolResult
 from windagent_tools.base import BaseTool, ToolDefinition, ToolRiskLevel, ToolExecutionContext

@@ -16,7 +16,6 @@ from windagent_evals.graders import (
     Grader, GradingResult, AccuracyGrader, ToolSelectionGrader,
     CostEfficiencyGrader, SafetyGrader, ModelRoutingGrader,
 )
-from windagent_core.errors.exceptions import ValidationError
 
 
 @dataclass

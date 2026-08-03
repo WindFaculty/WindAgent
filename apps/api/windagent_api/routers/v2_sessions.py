@@ -39,6 +39,22 @@ async def create_session(
 ) -> SessionResponse:
     from windagent_core.domain.models import Session, SessionStatus
     from windagent_storage.repositories.sql_repositories import SqlSessionRepository
+    from windagent_core.security.workspace import (
+        WorkspaceRootViolation,
+        validate_workspace_root,
+    )
+
+    # Phase 1 (G9.5): workspace_root must resolve inside the repository root;
+    # traversal / symlink escapes are rejected with HTTP 400.
+    resolved_workspace_root = None
+    if req.workspace_root:
+        try:
+            resolved_workspace_root = str(validate_workspace_root(req.workspace_root))
+        except WorkspaceRootViolation as exc:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"invalid workspace_root: {exc}",
+            ) from exc
 
     session_repo = SqlSessionRepository(uow.session)
     sid = str(SessionId.generate())
@@ -50,6 +66,7 @@ async def create_session(
         status=SessionStatus.IDLE,
         created_at=now,
         updated_at=now,
+        workspace_root=resolved_workspace_root,
         metadata=req.metadata,
     )
 
@@ -64,6 +81,26 @@ async def create_session(
         updated_at=now.isoformat(),
         metadata=req.metadata,
     )
+
+
+@router.get("/validate-workspace-root")
+async def validate_workspace_root_endpoint(
+    path: str = Query(..., description="workspace_root to validate"),
+) -> Dict[str, Any]:
+    """Validate a candidate workspace_root without creating a session (G9.5)."""
+    from windagent_core.security.workspace import (
+        WorkspaceRootViolation,
+        validate_workspace_root,
+    )
+
+    try:
+        resolved = validate_workspace_root(path)
+    except WorkspaceRootViolation as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"invalid workspace_root: {exc}",
+        ) from exc
+    return {"valid": True, "resolved_path": str(resolved)}
 
 
 @router.get("", response_model=List[SessionResponse])

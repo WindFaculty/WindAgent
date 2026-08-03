@@ -12,9 +12,9 @@ import logging
 import os
 import platform
 import sys
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from windagent_verification.domain import ExecutionEvidence, EvidenceSource
 
@@ -174,7 +174,6 @@ class TestRunner:
         """Parses pytest summary line to extract test counts.
         Example: "= 10 passed, 2 failed, 1 skipped, 1 error in 5.23s ="
         """
-        import re
         passed = _extract_count(r"(\d+)\s+passed", stdout)
         failed = _extract_count(r"(\d+)\s+failed", stdout)
         skipped = _extract_count(r"(\d+)\s+skipped", stdout)
@@ -202,7 +201,7 @@ class LinterRunner:
         result = await self.runner.run(cmd)
 
         evidence = result.to_evidence(source=EvidenceSource.LINTER)
-        issue_count = len([l for l in result.stdout.split("\n") if l.strip()])
+        issue_count = len([ln for ln in result.stdout.split("\n") if ln.strip()])
         evidence.metrics.update({
             "linter": linter,
             "target_path": target_path,
@@ -234,10 +233,9 @@ class SecurityScanner:
         # Also count by parsing content for each pattern
         findings: Dict[str, int] = {}
         for name, pattern in self.secret_patterns.items():
-            import re
             grep_cmd = f"findstr /S /R \"{pattern[:20]}\" {target_path}\\*.py 2>NUL || echo none"
             grep_result = await self.runner.run(grep_cmd)
-            count = len([l for l in grep_result.stdout.split("\n") if l.strip() and l.strip() != "none"])
+            count = len([ln for ln in grep_result.stdout.split("\n") if ln.strip() and ln.strip() != "none"])
             if count > 0:
                 findings[name] = count
 

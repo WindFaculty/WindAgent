@@ -1,7 +1,7 @@
 """
 FastAPI entrypoint for WindAgent Architecture V2 API (Phase 25 Cutover).
 Uses canonical lifespan manager, ApplicationContainer composition root, RFC 7807 exception mapping for WindAgentError,
-and registers all 14 canonical V2 routers. API V1 has been permanently removed - returns 410 Gone.
+and registers all canonical V2 routers. API V1 has been permanently removed - returns 410 Gone.
 """
 
 from __future__ import annotations
@@ -38,6 +38,9 @@ from windagent_api.routers.v2_skills import router as v2_skills_router
 from windagent_api.routers.v2_evals import router as v2_evals_router
 from windagent_api.routers.v2_observability import router as v2_observability_router
 from windagent_api.routers.v2_browser import router as v2_browser_router
+from windagent_api.routers.v2_production_workspace import router as v2_production_workspace_router
+from windagent_api.routers.v2_conversations import router as v2_conversations_router
+from windagent_api.routers.conversation_streams import router as conversation_streams_router
 
 logger = logging.getLogger("windagent.api.main")
 
@@ -100,7 +103,7 @@ async def domain_exception_handler(request: Request, exc: DomainError) -> JSONRe
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         content={
             "type": "https://windagent.io/errors/domain-error",
-            "title": "Domain Entity Invariant Violation",
+            "title": "Domain Error",
             "status": 422,
             "detail": exc.message,
             "code": getattr(exc, "code", "WINDAGENT_ERR_DOMAIN_INVARIANT_VIOLATION"),
@@ -126,7 +129,7 @@ async def base_windagent_exception_handler(request: Request, exc: WindAgentError
 # Register Health Router
 app.include_router(health_router)
 
-# Register all 14 Canonical V2 Routers
+# Register Canonical V2 Routers
 app.include_router(v2_sessions_router)
 app.include_router(v2_tasks_router)
 app.include_router(v2_runs_router)
@@ -142,6 +145,9 @@ app.include_router(v2_skills_router)
 app.include_router(v2_evals_router)
 app.include_router(v2_observability_router)
 app.include_router(v2_browser_router)
+app.include_router(v2_production_workspace_router)
+app.include_router(v2_conversations_router)
+app.include_router(conversation_streams_router)
 
 
 # API V1 Tombstone Handler - Returns 410 Gone for all /api/v1/* requests

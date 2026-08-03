@@ -159,6 +159,20 @@ export interface EventEnvelope {
   data: Record<string, unknown>;
 }
 
+/** Durable, replayable event emitted by the conversation stream. */
+export interface ConversationEventEnvelope {
+  event_id: string;
+  idempotency_key: string;
+  conversation_id: string;
+  agent_instance_id: string | null;
+  agent_session_id: string | null;
+  sequence: number;
+  event_type: EventName | string;
+  data: Record<string, unknown>;
+  occurred_at: string;
+  is_replay: boolean;
+}
+
 // ---------- Permission ----------
 
 export interface PermissionRequestPayload {

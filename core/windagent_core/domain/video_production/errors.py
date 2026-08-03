@@ -62,10 +62,26 @@ class DuplicateIdentifierError(IntegrityError):
     retryable = False
 
 
+class ShotDependencyGraphCycleError(IntegrityError):
+    """Raised when a shot dependency graph contains a cycle (Phase 9).
+
+    `ShotDependencyGraph.topological_order()` fails closed on a cyclic
+    blocking subgraph: instead of returning a partial order it raises this
+    typed failure so callers can distinguish a genuine scheduling deadlock
+    from other graph defects. The structural validator normally intercepts
+    the cycle first; this exception is the direct-API guard.
+    """
+
+    code = "VP_SHOT_GRAPH_CYCLE"
+    category = "VIDEO_PRODUCTION_GRAPH"
+    retryable = False
+
+
 __all__ = [
     "VideoProductionProtocolError",
     "UnsupportedMajorVersionError",
     "LockedRevisionMutationError",
     "BrokenReferenceError",
     "DuplicateIdentifierError",
+    "ShotDependencyGraphCycleError",
 ]

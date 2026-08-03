@@ -4,10 +4,9 @@ Supports nodes, dependency edges, conditional edges, priority, and graph validat
 """
 
 from __future__ import annotations
-from typing import Dict, List, Optional, Any, Union
+from typing import Dict, List, Optional, Any
 from pydantic import BaseModel, ConfigDict, Field
 
-from windagent_core.domain.types import WorkflowId, StepId
 
 
 class WorkflowNode(BaseModel):
