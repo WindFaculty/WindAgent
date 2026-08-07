@@ -12,9 +12,78 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from windagent_core.contracts.workers.queue import ClaimedTask, DurableTaskQueuePort
 from windagent_core.contracts.workers.leases import TaskLeasePort
-from windagent_storage.orm.v2_orchestration_models import TaskRunORM, ExecutionLeaseORM
+from windagent_storage.orm.v2_orchestration_models import (
+    TaskRunORM,
+    ExecutionLeaseORM,
+    WorkflowRunV2ORM,
+    WorkflowStepRunORM,
+)
 
 logger = logging.getLogger("windagent.storage.queue.sql")
+
+
+async def _ensure_step_run_graph(session: AsyncSession, task_orm: TaskRunORM, now_naive: datetime) -> None:
+    """Ensure the durable execution graph exists before a lease references it.
+
+    ``execution_leases.step_run_id`` has a foreign key to
+    ``workflow_step_runs.id`` (and ``workflow_step_runs.workflow_run_id`` to
+    ``v2_workflow_runs_v2.run_id``).  The worker's ``ExecutionRequest`` treats a
+    claimed task as a single-step workflow (``step_run_id=<task_id>``,
+    ``workflow_run_id=wf_<task_id>``), so the graph rows are created idempotently
+    here — inside the same claim transaction — instead of letting the lease
+    insert violate the FK.
+
+    Idempotent: a re-claim (expired lease takeover) finds the rows already
+    present and leaves them untouched.
+    """
+    workflow_run_id = f"wf_{task_orm.id}"
+    facts = json.loads(task_orm.facts_json) if task_orm.facts_json else {}
+
+    existing_run = (
+        await session.execute(select(WorkflowRunV2ORM).where(WorkflowRunV2ORM.run_id == workflow_run_id))
+    ).scalar_one_or_none()
+    if existing_run is None:
+        session.add(
+            WorkflowRunV2ORM(
+                run_id=workflow_run_id,
+                workflow_id=workflow_run_id,
+                session_id=task_orm.session_id,
+                task_run_id=task_orm.id,
+                state="running",
+                version=1,
+                checkpoint_cursor=0,
+                definition_json="{}",
+                created_at=now_naive,
+                updated_at=now_naive,
+            )
+        )
+
+    existing_step = (
+        await session.execute(select(WorkflowStepRunORM).where(WorkflowStepRunORM.id == task_orm.id))
+    ).scalar_one_or_none()
+    if existing_step is None:
+        session.add(
+            WorkflowStepRunORM(
+                id=task_orm.id,
+                workflow_run_id=workflow_run_id,
+                step_order=1,
+                name=task_orm.id,
+                tool_name=facts.get("tool_name", "read_file"),
+                params_json=json.dumps(facts.get("parameters", {})),
+                state="running",
+                ready_at=now_naive,
+                priority=task_orm.priority,
+                updated_at=now_naive,
+            )
+        )
+
+    # Flush now so the parent rows are physically inserted BEFORE the lease
+    # insert below. SQLAlchemy does not reorder plain INSERTs by table-level FK
+    # constraints (no relationship()), so without this the lease would violate
+    # the step_run_id FK.  Still within the same claim transaction.
+    await session.flush()
+
+    logger.debug(f"Execution graph ensured for task [{task_orm.id}] (run={workflow_run_id})")
 
 
 class SqlDurableTaskQueue(DurableTaskQueuePort, TaskLeasePort):
@@ -66,6 +135,15 @@ class SqlDurableTaskQueue(DurableTaskQueuePort, TaskLeasePort):
                     task_orm, lease_orm = row[0], row[1]
                     generation = (lease_orm.lease_generation or 1) + 1
 
+                # Parse facts payload once so both the execution graph and the
+                # ClaimedTask below can reuse it.
+                facts = json.loads(task_orm.facts_json) if task_orm.facts_json else {}
+
+                # GAP A: the lease's step_run_id FK requires a workflow_step_runs
+                # row (and its v2_workflow_runs_v2 parent). Create the graph
+                # idempotently in this same transaction before inserting the lease.
+                await _ensure_step_run_graph(session, task_orm, now_naive)
+
                 # Generate fencing token and lease ID
                 raw_tid = task_orm.id
                 fencing_token = f"fence_{raw_tid}_gen_{generation}_{uuid.uuid4().hex[:6]}"
@@ -103,8 +181,6 @@ class SqlDurableTaskQueue(DurableTaskQueuePort, TaskLeasePort):
                     )
                     session.add(new_lease)
 
-                # Parse facts payload
-                facts = json.loads(task_orm.facts_json) if task_orm.facts_json else {}
                 prompt = facts.get("prompt", "")
                 tool_name = facts.get("tool_name", "read_file")
                 parameters = facts.get("parameters", {})

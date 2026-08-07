@@ -1,0 +1,73 @@
+{
+  "schema_version": "1.0.0",
+  "phase": 1,
+  "program": "vp3d",
+  "gate": "VP3D_P1_ENGINE_NEUTRAL_IR_VERIFIED",
+  "recorded_at": "2026-08-07T08:00:00Z",
+  "baseline_sha": "9080fcb4bb6d9a6531a095c624a0f6d8796f4081",
+  "purpose": "Canonical field-by-field mapping from the legacy generative-video schemas onto the engine-neutral Production IR (plan §4 backlog item 1). Mirrors ProductionIrMigrator.mapping_table(); implemented and enforced by tests.",
+  "ir_schema_version": "1.0.0",
+  "mapping": [
+    {"legacy": "VideoProductionPackage.project_id", "ir": "ProductionIrDocument.project_id", "action": "PRESERVE"},
+    {"legacy": "VideoProductionPackage.revision_id", "ir": "ProductionIrDocument.revision_id", "action": "PRESERVE"},
+    {"legacy": "VideoProductionPackage.content_hash()", "ir": "ProductionIrDocument.source_package_hash", "action": "PRESERVE"},
+    {"legacy": "VideoProductionPackage.provenance", "ir": "ProductionIrDocument.provenance", "action": "PRESERVE"},
+    {"legacy": "VideoProductionPackage.approvals(.locked / target_hash)", "ir": "ProductionIrDocument.locked / approval_state_ref", "action": "PRESERVE"},
+    {"legacy": "Screenplay.scenes[].scene_id / order", "ir": "SceneDescription.scene_id / screenplay_scene_id + shot order", "action": "PRESERVE"},
+    {"legacy": "CharacterBible.character_id / portrait_asset_ids", "ir": "CharacterInstance.instance_id(=character_id) / mesh(AssetReference)", "action": "PRESERVE"},
+    {"legacy": "LocationBible.location_id / reference_asset_ids", "ir": "EnvironmentInstance.instance_id / asset", "action": "PRESERVE"},
+    {"legacy": "PropBible.prop_id / reference_asset_ids", "ir": "PropInstance.instance_id / asset", "action": "PRESERVE"},
+    {"legacy": "Shot.shot_id / order / scene_id", "ir": "ShotExecutionIntent.intent_id / order / scene_id", "action": "PRESERVE"},
+    {"legacy": "Shot.shot_type / camera_movement / duration_seconds / transition_type", "ir": "CameraTrack(shot_type/movement/duration/transition)", "action": "MIGRATE"},
+    {"legacy": "Shot.dialogue_line_ids", "ir": "DialogueTrack.dialogue_line_ids (+ audio_track_ids/audio_asset_ids refs)", "action": "MIGRATE"},
+    {"legacy": "Shot.framing_description", "ir": "ShotExecutionIntent.creative_prompt", "action": "SEPARATE (creative value kept; provider parts dropped)"},
+    {"legacy": "Shot.generation_mode", "ir": "(absent)", "action": "DROP"},
+    {"legacy": "GenerationModeDecision.preferred_mode / acceptable_fallback_modes", "ir": "(absent; advisory reason_code/rationale only)", "action": "DROP"},
+    {"legacy": "FlowGenerationSpecification.generation_mode / model_capability_constraints", "ir": "(absent)", "action": "DROP"},
+    {"legacy": "FlowGenerationSpecification.prompt.text / reference_hashes", "ir": "ShotExecutionIntent.creative_prompt / AssetReference hashes", "action": "MIGRATE"},
+    {"legacy": "GenerationRequest.provider / generation_mode", "ir": "(absent)", "action": "DROP"},
+    {"legacy": "GenerationRequest.parameters / prompt_hash", "ir": "metadata (advisory)", "action": "MIGRATE"}
+  ],
+  "ir_models": {
+    "ProductionIrDocument": ["ir_id", "schema_version", "project_id", "revision_id", "source_package_hash", "scenes", "shots", "render_profiles", "render_intents", "locked", "approval_state_ref", "provenance"],
+    "SceneDescription": ["scene_id", "screenplay_scene_id", "characters", "props", "environment", "light_rigs", "action"],
+    "ShotExecutionIntent": ["intent_id", "shot_id", "scene_id", "order", "characters", "props", "environment", "action", "camera", "animation_tracks", "facial_tracks", "dialogue_tracks", "light_rig_ids", "simulation_tracks", "duration_seconds", "render_profile_id", "creative_prompt"],
+    "tracks": ["CameraTrack", "AnimationTrack", "FacialTrack", "DialogueTrack(value object)", "LightRig", "SimulationTrack"],
+    "render": ["RenderProfile", "RenderIntent"],
+    "instances": ["CharacterInstance", "PropInstance", "EnvironmentInstance"],
+    "engine_surface": ["EngineJobReceipt", "DerivedArtifact", "AssetReference"]
+  },
+  "canonical_formats": {
+    "json_pydantic": "metadata / production IR (schema_version 1.0.0, MAJOR fail-closed, additive fields allowed)",
+    "gltf": "preferred asset interchange",
+    "fbx": "skeletal/animation compatibility",
+    "usd": "long-term Blender <-> Unreal interchange",
+    "blend": "DERIVED artifact only — validation rule BLEND_MUST_BE_DERIVED fails closed"
+  },
+  "events": {
+    "taxonomy": "video_production_ir.*",
+    "events": ["video_production_ir.created", "video_production_ir.locked", "video_production_ir.engine_job_submitted", "video_production_ir.engine_job_completed", "video_production_ir.engine_job_failed", "video_production_ir.derived_artifact_published"],
+    "transition_rule": "IR_CREATED -> IR_LOCKED -> ENGINE_JOB_SUBMITTED -> (COMPLETED | FAILED); FAILED -> SUBMITTED (retry); COMPLETED -> DERIVED_ARTIFACT_PUBLISHED (terminal); idempotent by event_id"
+  },
+  "invalidation": {
+    "component_to_scope": {
+      "DIALOGUE": "AUDIO_AND_FACIAL_AND_CUT",
+      "FACIAL": "AUDIO_AND_FACIAL_AND_CUT",
+      "CAMERA": "SCENE_COMPILE_AND_RENDER",
+      "LIGHTING": "SCENE_COMPILE_AND_RENDER",
+      "SCENE_STRUCTURE": "SCENE_COMPILE_AND_RENDER",
+      "ASSET_REFERENCE": "SCENE_COMPILE_AND_RENDER",
+      "DURATION": "SCENE_COMPILE_AND_RENDER",
+      "ANIMATION": "DEPENDENT_RENDER",
+      "SIMULATION": "DEPENDENT_RENDER",
+      "RENDER_PROFILE": "RENDER_ONLY"
+    },
+    "unknown_component": "FAIL_CLOSED (VideoProductionProtocolError)",
+    "test_assertions": [
+      "dialogue change invalidates audio mix + facial render + final cut, NEVER baked scene geometry",
+      "camera change invalidates scene compile + dependent render"
+    ]
+  },
+  "compatibility_window_note": "ProductionIrMigrator is the bounded READER used during Stage A. Legacy package v1 remains readable; no destructive persisted-data migration is performed in Phase 1. The legacy prompt compiler / GenerationModeDecider are the sunset-bound compatibility layer (Phase 2).",
+  "producer": "phase-1-production-ir"
+}

@@ -114,18 +114,6 @@ class DependencyType(str, Enum):
     ASSET = "ASSET"
 
 
-class GenerationMode(str, Enum):
-    """Canonical media generation modes (road_map.md Phase 9)."""
-
-    TEXT_TO_VIDEO = "TEXT_TO_VIDEO"
-    IMAGE_TO_VIDEO = "IMAGE_TO_VIDEO"
-    FRAMES_TO_VIDEO = "FRAMES_TO_VIDEO"
-    INGREDIENTS_TO_VIDEO = "INGREDIENTS_TO_VIDEO"
-    VIDEO_EXTENSION = "VIDEO_EXTENSION"
-    VIDEO_TO_VIDEO = "VIDEO_TO_VIDEO"
-    TEXT_TO_IMAGE = "TEXT_TO_IMAGE"
-
-
 class AssetSourceType(str, Enum):
     """Origin of a ReferenceAsset."""
 
@@ -133,6 +121,7 @@ class AssetSourceType(str, Enum):
     INTERNET = "INTERNET"
     UPLOADED = "UPLOADED"
     PROVIDER = "PROVIDER"
+    LOCAL_LIBRARY = "LOCAL_LIBRARY"
 
 
 class LicenseState(str, Enum):
@@ -283,17 +272,6 @@ class CameraDecisionReasonCode(str, Enum):
     TRANSITION_ENDPOINT = "TRANSITION_ENDPOINT"
 
 
-class GenerationModeReasonCode(str, Enum):
-    """Machine-readable reason behind a generation mode decision (plan §14.3)."""
-
-    NO_MANDATORY_REFERENCE = "NO_MANDATORY_REFERENCE"
-    IDENTITY_REFERENCE_REQUIRED = "IDENTITY_REFERENCE_REQUIRED"
-    LOCATION_REFERENCE_REQUIRED = "LOCATION_REFERENCE_REQUIRED"
-    FRAMES_REQUIRED = "FRAMES_REQUIRED"
-    MOTION_CONTINUATION = "MOTION_CONTINUATION"
-    CLIP_TRANSFORMATION = "CLIP_TRANSFORMATION"
-
-
 class ShotGraphIssueCode(str, Enum):
     """Typed findings from shot-graph / camera validation (Phase 9).
 
@@ -355,8 +333,8 @@ class ReferenceBindingRole(str, Enum):
     """Role a bound reference asset plays for a shot (plan 03 §24.1).
 
     Identity/location/prop/style assets are bound per content hash; first/last
-    frames and predecessor clips are required by specific generation modes;
-    ingredients are the generic fallback used by INGREDIENTS_TO_VIDEO.
+    frames and predecessor clips are required by specific dependency
+    semantics; ingredients are the generic fallback reference role.
     """
 
     IDENTITY = "IDENTITY"
@@ -536,7 +514,6 @@ __all__ = [
     "CameraMovement",
     "TransitionType",
     "DependencyType",
-    "GenerationMode",
     "AssetSourceType",
     "LicenseState",
     "GenerationStatus",
@@ -552,7 +529,6 @@ __all__ = [
     "CameraSide",
     "ScreenDirection",
     "CameraDecisionReasonCode",
-    "GenerationModeReasonCode",
     "ShotGraphIssueCode",
     "ReferenceBindingRole",
     "ReferenceBindingIssueCode",

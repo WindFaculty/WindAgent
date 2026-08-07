@@ -59,6 +59,9 @@ def make_sync_session_factory(db_url: str, echo: bool = False) -> sessionmaker[S
             try:
                 cur.execute("PRAGMA journal_mode=WAL")
                 cur.execute("PRAGMA busy_timeout=30000")
+                # G1.2 / GAP A: enable FK enforcement on every SQLite connection
+                # (off by default in SQLite). Orphan inserts must fail loudly.
+                cur.execute("PRAGMA foreign_keys=ON")
             finally:
                 cur.close()
 

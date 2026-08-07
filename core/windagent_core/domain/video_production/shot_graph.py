@@ -6,14 +6,12 @@ Domain objects, ports and invariants live in `core`. This module provides:
 - `ShotSpecification` — the full spec of a shot (plan §14.1): scene/sequence/
   ordinal, narrative purpose, shot type, subjects/action, camera decision,
   composition + screen direction, duration/frame-rate/aspect-ratio intent,
-  dialogue/narration range, required inputs / expected outputs, generation
-  mode decision and retry/alternative-mode policy.
+  dialogue/narration range, required inputs / expected outputs, and retry
+  policy. Generation-mode decisions were retired in VP3D Stage A — the
+  engine adapter decides execution from the IR, never a generation mode.
 - `CameraDecision` — position, angle, movement, lens intent, camera side
   (180-degree rule), screen direction, and a machine-readable `reason_code`
   (plan §14.2: camera decisions carry a reason code, not just prose).
-- `GenerationModeDecision` — preferred generation mode + acceptable fallbacks
-  + reason code (plan §14.3 decision matrix). The Director only RECORDS the
-  preferred mode and fallbacks; it never calls a provider.
 - `ShotScheduling` — parallel capability, concurrency hint, sequence retry
   boundary and waited-for artifact types (plan §14.4).
 - `ShotGraphIssue` — typed finding from graph/camera validation; structural
@@ -40,8 +38,6 @@ from windagent_core.domain.video_production.enums import (
     CameraMovement,
     CameraSide,
     DependencyType,
-    GenerationMode,
-    GenerationModeReasonCode,
     IssueSeverity,
     RequiredArtifactType,
     ScreenDirection,
@@ -88,37 +84,12 @@ class CameraDecision(BaseModel):
         }
 
 
-class GenerationModeDecision(BaseModel):
-    """Preferred generation mode + acceptable fallbacks (plan §14.3).
-
-    The Director records the preferred mode and fallbacks but does NOT call
-    the provider; the runtime picks a mode that is inside the provider's
-    capability set.
-    """
-
-    model_config = ConfigDict(frozen=True, extra="allow")
-
-    preferred_mode: GenerationMode = GenerationMode.TEXT_TO_VIDEO
-    acceptable_fallback_modes: List[GenerationMode] = Field(default_factory=list)
-    reason_code: GenerationModeReasonCode = GenerationModeReasonCode.NO_MANDATORY_REFERENCE
-    rationale: str = ""
-
-    def to_dict(self) -> Dict[str, Any]:
-        return {
-            "preferred_mode": self.preferred_mode.value,
-            "acceptable_fallback_modes": [m.value for m in self.acceptable_fallback_modes],
-            "reason_code": self.reason_code.value,
-            "rationale": self.rationale,
-        }
-
-
 class RetryPolicy(BaseModel):
     """Retry / alternative-mode policy for a shot (plan §14.1)."""
 
     model_config = ConfigDict(frozen=True, extra="allow")
 
     max_attempts: int = Field(default=2, ge=1)
-    acceptable_fallback_modes: List[GenerationMode] = Field(default_factory=list)
     retry_boundary: str = "sequence"  # "sequence" | "shot"
 
 
@@ -146,7 +117,6 @@ class ShotSpecification(BaseModel):
     narration_range: Optional[str] = None
     required_inputs: List[str] = Field(default_factory=list)
     expected_outputs: List[str] = Field(default_factory=list)
-    generation_mode: GenerationModeDecision = Field(default_factory=GenerationModeDecision)
     retry_policy: RetryPolicy = Field(default_factory=RetryPolicy)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -170,12 +140,8 @@ class ShotSpecification(BaseModel):
             "narration_range": self.narration_range,
             "required_inputs": list(self.required_inputs),
             "expected_outputs": list(self.expected_outputs),
-            "generation_mode": self.generation_mode.to_dict(),
             "retry_policy": {
                 "max_attempts": self.retry_policy.max_attempts,
-                "acceptable_fallback_modes": [
-                    m.value for m in self.retry_policy.acceptable_fallback_modes
-                ],
                 "retry_boundary": self.retry_policy.retry_boundary,
             },
         }
@@ -436,7 +402,6 @@ class ShotDependencyGraphValidator:
 
 __all__ = [
     "CameraDecision",
-    "GenerationModeDecision",
     "RetryPolicy",
     "ShotSpecification",
     "ShotScheduling",

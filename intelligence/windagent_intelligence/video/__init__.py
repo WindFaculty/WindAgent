@@ -77,7 +77,6 @@ from windagent_intelligence.video.director import (
 # Shot graph / camera planning layer (Phase 9)
 from windagent_intelligence.video.shot_planner import (
     CameraPlanner,
-    GenerationModeDecider,
     ShotGraphBuilder,
     ShotGraphPlannerService,
     ShotGraphReceipt,
@@ -96,16 +95,8 @@ from windagent_intelligence.video.reference_selector import (
     ReferenceBindingPlanner,
 )
 
-# Prompt compiler layer (Phase 11)
-from windagent_intelligence.video.prompt_compiler import (
-    COMPILER_VERSION,
-    CompiledRequestReceipt,
-    ModeCompiler,
-    PromptBlockBuilder,
-    PromptCompiler,
-    PromptSanitizer,
-    PROMPT_TEMPLATE_VERSION,
-)
+# Prompt compiler layer retired in VP3D Stage A — the runtime compiles IR
+# (ProductionIrDocument / ShotExecutionIntent) directly; see legacy_v1/SUNSET.md.
 
 # Audio pipeline layer (Phase 21)
 from windagent_intelligence.video.audio import (
@@ -215,7 +206,6 @@ __all__ = [
     "ShotGraphReceipt",
     "ShotGraphBuilder",
     "CameraPlanner",
-    "GenerationModeDecider",
     "ShotScheduler",
     # continuity ledger layer
     "ContinuityLedgerService",
@@ -223,14 +213,6 @@ __all__ = [
     # reference binding layer
     "ReferenceBindingPlanner",
     "ReferenceBindingPlanReceipt",
-    # prompt compiler layer
-    "PromptCompiler",
-    "COMPILER_VERSION",
-    "PromptBlockBuilder",
-    "PROMPT_TEMPLATE_VERSION",
-    "PromptSanitizer",
-    "ModeCompiler",
-    "CompiledRequestReceipt",
     # audio pipeline layer (Phase 21)
     "ALIGNMENT_VERSION",
     "AlignmentService",

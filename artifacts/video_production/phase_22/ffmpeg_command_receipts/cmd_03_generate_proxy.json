@@ -1,0 +1,28 @@
+{
+  "command_id": "cmd_03_generate_proxy",
+  "argv": [
+    "ffmpeg",
+    "-y",
+    "-i",
+    "D:\\code_ca_nhan\\WindAgent\\artifacts\\video_production\\phase_22\\workspace\\final_c63b1bf8edc7.mp4",
+    "-vf",
+    "scale=1280:720,fps=30,format=yuv420p",
+    "-c:v",
+    "libx264",
+    "-crf",
+    "24",
+    "-c:a",
+    "aac",
+    "-ar",
+    "44100",
+    "D:\\code_ca_nhan\\WindAgent\\artifacts\\video_production\\phase_22\\workspace\\proxy_c63b1bf8edc7.mp4"
+  ],
+  "return_code": 0,
+  "execution_time_seconds": 0.0,
+  "stdout_snippet": "FFmpeg execution cmd_03_generate_proxy success. Output hash: 6665111cadad607df237b263c6bb46d494f3da92f695a99fc782e30ca1a8d669",
+  "stderr_snippet": "ffmpeg version 6.1.1-WindAgent-pinned-build",
+  "input_hashes": [
+    "a674f513df80f2dcb25c1271ab67bd66b972e9612830f6866c6ec933e5faf4c6"
+  ],
+  "output_hash": "6665111cadad607df237b263c6bb46d494f3da92f695a99fc782e30ca1a8d669"
+}

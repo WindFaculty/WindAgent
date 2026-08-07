@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0.0",
+  "phase": 1,
+  "program": "vp3d",
+  "gate": "VP3D_P1_ENGINE_NEUTRAL_IR_VERIFIED",
+  "recorded_at": "2026-08-07T08:00:00Z",
+  "baseline_sha": "9080fcb4bb6d9a6531a095c624a0f6d8796f4081",
+  "implementation": {
+    "package": "core/windagent_core/domain/video_production/production_ir/",
+    "modules": ["__init__.py", "enums.py", "models.py", "validation.py", "invalidation.py", "migrator.py"],
+    "ids_added": ["ProductionIrId", "SceneDescriptionId", "CharacterInstanceId", "PropInstanceId", "EnvironmentInstanceId", "CameraTrackId", "AnimationTrackId", "FacialTrackId", "LightRigId", "SimulationTrackId", "RenderProfileId", "RenderIntentId", "ShotExecutionIntentId", "EngineJobId", "DerivedArtifactId"],
+    "contract": "core/windagent_core/contracts/video_production/production_engine.py (ProductionEnginePort)",
+    "events": "core/windagent_core/events/video_production_ir.py (ProductionIrEventCatalog + Envelope + Transitions)",
+    "fixtures": "tests/fixtures/video_production/ir_fixture_builder.py"
+  },
+  "test_results": {
+    "phase1_ir_suite": {
+      "command": "uv run pytest tests/unit/core/test_phase1_production_ir.py tests/unit/core/test_phase1_production_ir_migrator.py tests/unit/core/test_phase1_production_engine_port.py tests/architecture/test_phase1_production_ir_architecture.py -q",
+      "passed": 44,
+      "failed": 0,
+      "coverage_note": "round-trip + canonical hash stability, fail-closed versioning, validation rules (duplicate/broken ref/.blend-derived/duration/camera), track-scoped invalidation, migrator invariants (IDs/ordering/provenance/approval, no generation_mode leakage, multi-character scene), engine port contract with fake adapter, IR event transitions + idempotency, architecture boundaries."
+    },
+    "architecture_checker": {
+      "verdict": "PASS",
+      "violations": 0
+    },
+    "core_and_architecture_regression": {
+      "command": "uv run pytest tests/unit/core tests/architecture -q",
+      "passed": 401,
+      "skipped": 1,
+      "failed": 0
+    },
+    "verification_suite": {
+      "command": "uv run pytest tests/unit/verification -q",
+      "passed": 232,
+      "skipped": 1,
+      "failed": 1,
+      "failure": {
+        "test": "tests/unit/verification/test_phase27_release.py::test_ci_run_manifest_aggregates_all_required_lanes",
+        "classification": "PRE_EXISTING_BASELINE_DEFECT (VP3D_BASELINE_001)",
+        "note": "Hard-coded CANDIDATE_SHA vs HEAD; unrelated to Phase 1."
+      }
+    },
+    "duplicate_canonical_models_checker": "PASS",
+    "event_taxonomy_checker": "PASS"
+  },
+  "maintenance_action": {
+    "note": "Phase 1 additively extended core/windagent_core/contracts/video_production/__init__.py (added ProductionEnginePort export). This changed a file whose SHA-256 is pinned by the phase_03 handoff evidence (artifacts/video_production/handoff/). Per the repo's designed remedy, verify_phase03_handoff.py was re-run WITHOUT --no-write to refresh handoff_manifest.json + handoff_checksums.sha256 (Handoff verdict: PASSED). The 2 phase_03 verifier tests pass again. No phase_03 certification content (canonical_ports list is hardcoded) was altered."
+  },
+  "producer": "phase-1-production-ir"
+}

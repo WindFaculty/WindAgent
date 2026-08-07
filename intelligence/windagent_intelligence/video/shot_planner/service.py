@@ -1,13 +1,13 @@
 """
 ShotGraphPlannerService (Phase 9) — enriches a Phase 8 CinematicPlan into a
-full shot dependency graph with camera planning, generation mode decisions
-and scheduling metadata.
+full shot dependency graph with camera planning and scheduling metadata.
 
 Responsibilities (plan 03 §12-§16):
 - build a typed `ShotDependencyGraph` (TEMPORAL / DIALOGUE / CONTINUITY /
   TRANSITION / VISUAL_REFERENCE / ASSET edges) from the plan shots;
-- decide camera + generation mode per shot deterministically with
-  machine-readable reason codes (plan §14.2, §14.3);
+- decide camera per shot deterministically with machine-readable reason
+  codes (plan §14.2). Generation-mode decisions were retired in VP3D Stage A
+  — the engine adapter decides execution from the IR, never a mode;
 - compute scheduling metadata (independent shots, concurrency hints,
   sequence retry boundaries) — orchestration keeps final authority;
 - validate the graph BEFORE publishing: structural defects (duplicate IDs,
@@ -48,9 +48,6 @@ from windagent_core.domain.video_production.validation import (
 from windagent_intelligence.video.errors import ValidationFailureError
 from windagent_intelligence.video.ids import StableIdFactory
 from windagent_intelligence.video.shot_planner.camera import CameraPlanner
-from windagent_intelligence.video.shot_planner.generation_mode import (
-    GenerationModeDecider,
-)
 from windagent_intelligence.video.shot_planner.graph import ShotGraphBuilder
 from windagent_intelligence.video.shot_planner.models import ShotGraphReceipt
 from windagent_intelligence.video.shot_planner.scheduling import ShotScheduler
@@ -64,7 +61,6 @@ class ShotGraphPlannerService:
         *,
         id_factory: Optional[StableIdFactory] = None,
         camera_planner: Optional[CameraPlanner] = None,
-        mode_decider: Optional[GenerationModeDecider] = None,
         graph_builder: Optional[ShotGraphBuilder] = None,
         scheduler: Optional[ShotScheduler] = None,
         validator: Optional[ShotDependencyGraphValidator] = None,
@@ -73,7 +69,6 @@ class ShotGraphPlannerService:
         self.camera_planner = camera_planner or CameraPlanner(
             id_factory=self.id_factory,
         )
-        self.mode_decider = mode_decider or GenerationModeDecider()
         self.graph_builder = graph_builder or ShotGraphBuilder(
             id_factory=self.id_factory,
         )
@@ -93,7 +88,7 @@ class ShotGraphPlannerService:
         production_max_parallel: Optional[int] = None,
         require_locked: bool = True,
     ) -> ShotGraphReceipt:
-        """Build the typed graph + camera/generation/scheduling decisions.
+        """Build the typed graph + camera/scheduling decisions.
 
         Raises `ValidationFailureError` on structural graph defects (fail
         closed — a broken graph is never published). Camera warnings are
@@ -122,7 +117,7 @@ class ShotGraphPlannerService:
         # 1. Typed dependency graph.
         graph = self.graph_builder.build(package, list(plan.graph.shots))
 
-        # 2. Deterministic camera + generation mode decisions per shot.
+        # 2. Deterministic camera decisions per shot.
         specs = self._build_specifications(package, plan, graph)
 
         # 3. Scheduling metadata (independent shots, hints, boundaries).
@@ -173,7 +168,6 @@ class ShotGraphPlannerService:
             source_package_hash=source_package_hash,
             graph_version=self._graph_version(),
             camera_rule_version=self.camera_planner.rule_version,
-            generation_mode_version=self.mode_decider.version,
         )
 
     # ------------------------------------------------------------------
@@ -190,8 +184,6 @@ class ShotGraphPlannerService:
             if package.screenplay
             else {}
         )
-        scene_character_assets = _scene_character_asset_map(package)
-        scene_location_assets = _scene_location_asset_map(package)
         incoming_by_shot: Dict[str, List[ShotDependency]] = {}
         for dep in graph.dependencies:
             incoming_by_shot.setdefault(str(dep.to_shot_id), []).append(dep)
@@ -208,16 +200,6 @@ class ShotGraphPlannerService:
         ):
             scene = scenes_by_id.get(str(shot.scene_id))
             camera = self.camera_planner.decide(shot)
-            mode = self.mode_decider.decide(
-                shot=shot,
-                incoming=incoming_by_shot.get(str(shot.shot_id), []),
-                scene_character_asset_ids=scene_character_assets.get(
-                    str(shot.scene_id), []
-                ),
-                scene_location_asset_ids=scene_location_assets.get(
-                    str(shot.scene_id), []
-                ),
-            )
             subjects = _shot_subjects(shot, package)
             required_inputs = [
                 f"dialogue:{d}" for d in shot.dialogue_line_ids
@@ -246,10 +228,8 @@ class ShotGraphPlannerService:
                     narration_range=None,
                     required_inputs=required_inputs,
                     expected_outputs=expected_outputs,
-                    generation_mode=mode,
                     retry_policy=RetryPolicy(
                         max_attempts=2,
-                        acceptable_fallback_modes=mode.acceptable_fallback_modes,
                         retry_boundary="sequence",
                     ),
                 )

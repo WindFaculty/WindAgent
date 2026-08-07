@@ -11,10 +11,6 @@ GenerationRequest:
   REQUIRED block fails compilation.
 - `CompiledPrompt` — the assembled, sanitized prompt with a deterministic
   `prompt_hash` tied to the template version.
-- `FlowGenerationSpecification` — the request semantics for a Flow capability:
-  shot, generation mode, compiled prompt, reference binding ids + hashes,
-  mode-specific required inputs (first/last frame, ingredient, predecessor
-  clip) and generation parameters. It contains NO selectors or DOM state.
 - `PromptCompilerIssue` — typed, blocking-or-warning finding from compilation
   (missing required block, mode missing input, oversized prompt, forbidden
   content, unknown field, injection suspect).
@@ -34,14 +30,12 @@ from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, ConfigDict, Field
 
 from windagent_core.domain.video_production.enums import (
-    GenerationMode,
     IssueSeverity,
     PromptBlockType,
     PromptCompilerIssueCode,
 )
 from windagent_core.domain.video_production.ids import (
     CompiledPromptId,
-    FlowGenerationSpecificationId,
     PromptBlockId,
     PromptCompilerIssueId,
     PromptSecurityFindingId,
@@ -98,40 +92,6 @@ class CompiledPrompt(BaseModel):
             "template_version": self.template_version,
             "prompt_hash": self.prompt_hash,
             "total_chars": self.total_chars,
-        }
-
-
-class FlowGenerationSpecification(BaseModel):
-    """Request semantics for a Flow capability — NO selectors / DOM state.
-
-    The runtime Flow provider maps this specification onto its own UI state;
-    the compiler never embeds selector, cookie, or session information
-    (plan §23, §24.4 trust boundary).
-    """
-
-    model_config = ConfigDict(frozen=True, extra="allow")
-
-    spec_id: FlowGenerationSpecificationId
-    shot_id: ShotId
-    generation_mode: GenerationMode
-    prompt: CompiledPrompt
-    reference_binding_ids: List[str] = Field(default_factory=list)
-    reference_hashes: List[str] = Field(default_factory=list)
-    required_inputs: List[str] = Field(default_factory=list)
-    parameters: Dict[str, Any] = Field(default_factory=dict)
-    model_capability_constraints: Dict[str, Any] = Field(default_factory=dict)
-
-    def to_dict(self) -> Dict[str, Any]:
-        return {
-            "spec_id": str(self.spec_id),
-            "shot_id": str(self.shot_id),
-            "generation_mode": self.generation_mode.value,
-            "prompt": self.prompt.to_dict(),
-            "reference_binding_ids": list(self.reference_binding_ids),
-            "reference_hashes": list(self.reference_hashes),
-            "required_inputs": list(self.required_inputs),
-            "parameters": self.parameters,
-            "model_capability_constraints": self.model_capability_constraints,
         }
 
 
@@ -208,7 +168,6 @@ def compute_request_hash(
     project_id: object,
     revision_id: object,
     shot_id: object,
-    generation_mode: GenerationMode,
     compiler_version: str,
     prompt_template_version: str,
     prompt_hash: str,
@@ -219,16 +178,14 @@ def compute_request_hash(
     """Deterministic SHA-256 request hash (plan §24.5).
 
     Hash inputs: canonical shot spec + compiler version + prompt template
-    version + reference hashes + generation mode + model capability
-    constraints + generation parameters. Same inputs -> same hash; any change
-    -> new hash.
+    version + reference hashes + model capability constraints + generation
+    parameters. Same inputs -> same hash; any change -> new hash.
     """
     canonical = json.dumps(
         {
             "project_id": str(project_id),
             "revision_id": str(revision_id),
             "shot_id": str(shot_id),
-            "generation_mode": generation_mode.value,
             "compiler_version": compiler_version,
             "prompt_template_version": prompt_template_version,
             "prompt_hash": prompt_hash,
@@ -246,7 +203,6 @@ def compute_request_hash(
 __all__ = [
     "PromptBlock",
     "CompiledPrompt",
-    "FlowGenerationSpecification",
     "PromptCompilerIssue",
     "PromptSecurityFinding",
     "compute_prompt_hash",

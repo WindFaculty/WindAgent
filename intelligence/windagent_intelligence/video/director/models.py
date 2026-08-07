@@ -22,7 +22,6 @@ from windagent_core.domain.video_production.director import (
 )
 from windagent_core.domain.video_production.enums import (
     CameraMovement,
-    GenerationMode,
     ShotType,
     TransitionType,
 )
@@ -68,7 +67,6 @@ class ShotPlan(BaseModel):
     duration_seconds: float = Field(gt=0)
     framing_description: str = ""
     transition_type: TransitionType = TransitionType.CUT
-    generation_mode: GenerationMode = GenerationMode.TEXT_TO_VIDEO
     dialogue_line_ids: List[DialogueLineId] = Field(default_factory=list)
     reference_asset_ids: List[ReferenceAssetId] = Field(default_factory=list)
     narrative_purpose: str = ""

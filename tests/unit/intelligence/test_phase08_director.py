@@ -16,10 +16,7 @@ import pytest
 from windagent_core.domain.video_production.director import (
     DirectorialIssueCategory,
 )
-from windagent_core.domain.video_production.enums import (
-    GenerationMode,
-    ScreenplayStatus,
-)
+from windagent_core.domain.video_production.enums import ScreenplayStatus
 from windagent_core.domain.video_production.shot import CinematicPlan
 from windagent_intelligence.video import VideoDirectorService
 from windagent_intelligence.video.errors import (
@@ -82,8 +79,8 @@ class TestHappyPaths:
         receipt = await svc.create_cinematic_plan_receipt(pkg)
         assert len(receipt.plan.graph.shots) >= 4
         assert receipt.issues == []
-        modes = {s.generation_mode for s in receipt.plan.graph.shots}
-        assert GenerationMode.IMAGE_TO_VIDEO in modes  # identity refs -> image-to-video
+        # VP3D Stage A: shots carry NO generation_mode; identity references are
+        # bound by the reference selector instead (engine decides execution).
 
 
 # ---------------------------------------------------------------------------

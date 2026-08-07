@@ -26,6 +26,8 @@ from windagent_orchestration.production import (
     ProductionCancellation, CancelAuditEntry, CancellationAuditLog,
     ProductionRun, ProductionRunStore, ProductionUnitOfWork,
     ProductionWorkflowEngine, StepExecutionResult, StepExecutorPort,
+    # VP3D Stage A — engine-neutral consumer seam
+    ProductionEngineExecutor, ProductionStepExecutor,
     # plan 05 Phase 19 — cost, credits and quota control
     COST_CATALOG_SCHEMA_VERSION, CostCatalog, CostCatalogEntry,
     ESTIMATE_SCHEMA_VERSION, ESTIMATE_STATUS_KNOWN, ESTIMATE_STATUS_UNKNOWN,
@@ -58,6 +60,7 @@ __all__ = [
     "ProductionCancellation", "CancelAuditEntry", "CancellationAuditLog",
     "ProductionRun", "ProductionRunStore", "ProductionUnitOfWork",
     "ProductionWorkflowEngine", "StepExecutionResult", "StepExecutorPort",
+    "ProductionEngineExecutor", "ProductionStepExecutor",
     # plan 05 Phase 19 — cost, credits and quota control
     "COST_CATALOG_SCHEMA_VERSION", "CostCatalog", "CostCatalogEntry",
     "ESTIMATE_SCHEMA_VERSION", "ESTIMATE_STATUS_KNOWN", "ESTIMATE_STATUS_UNKNOWN",

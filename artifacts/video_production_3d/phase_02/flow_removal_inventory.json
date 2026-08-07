@@ -1,0 +1,61 @@
+{
+  "schema_version": "1.0.0",
+  "phase": 2,
+  "program": "vp3d",
+  "gate": "VP3D_P2_GOOGLE_FLOW_REMOVED",
+  "recorded_at": "2026-08-07T10:00:00Z",
+  "baseline_sha": "9080fcb4bb6d9a6531a095c624a0f6d8796f4081",
+  "purpose": "Inventory of removed Google Flow adapter modules, tests, verification scripts, and retained engine-neutral capabilities for Stage A Phase 2.",
+  "removed_components": {
+    "package": "tools/windagent_tools/google_flow/ (all 16 modules deleted)",
+    "deleted_modules": [
+      "tools/windagent_tools/google_flow/__init__.py",
+      "tools/windagent_tools/google_flow/candidate_downloader.py",
+      "tools/windagent_tools/google_flow/human_control.py",
+      "tools/windagent_tools/google_flow/image_generation.py",
+      "tools/windagent_tools/google_flow/image_operations.py",
+      "tools/windagent_tools/google_flow/job_record.py",
+      "tools/windagent_tools/google_flow/navigation.py",
+      "tools/windagent_tools/google_flow/pre_submit_guard.py",
+      "tools/windagent_tools/google_flow/project_manager.py",
+      "tools/windagent_tools/google_flow/review_approval.py",
+      "tools/windagent_tools/google_flow/selectors/__init__.py",
+      "tools/windagent_tools/google_flow/state_machine.py",
+      "tools/windagent_tools/google_flow/video_candidates.py",
+      "tools/windagent_tools/google_flow/video_generation.py",
+      "tools/windagent_tools/google_flow/video_inspection.py",
+      "tools/windagent_tools/google_flow/video_operations.py"
+    ],
+    "deleted_unit_tests": [
+      "tests/unit/tools/test_phase13_flow_navigation.py",
+      "tests/unit/tools/test_phase14_flow_images.py",
+      "tests/unit/tools/test_phase15_flow_video.py",
+      "tests/unit/tools/test_phase16_flow_human_control.py"
+    ],
+    "deleted_architecture_tests": [
+      "tests/architecture/test_phase13_flow_navigation_canonical.py",
+      "tests/architecture/test_phase14_flow_images_canonical.py",
+      "tests/architecture/test_phase15_flow_video_canonical.py",
+      "tests/architecture/test_phase16_human_control_canonical.py"
+    ],
+    "deleted_verification_scripts": [
+      "scripts/verification/verify_phase13_flow_navigation.py",
+      "scripts/verification/verify_phase14_flow_images.py",
+      "scripts/verification/verify_phase15_flow_video.py",
+      "scripts/verification/verify_phase16_human_control.py"
+    ],
+    "removed_exports": [
+      "tools/windagent_tools/__init__.py (removed FlowNavigator, FlowImageGenerator, FlowVideoGenerator, FlowJobRegistry, etc.)"
+    ]
+  },
+  "retained_neutral_capabilities": [
+    "core/windagent_core/contracts/video_production/video_inspection.py (VideoInspectorPort, VideoInspection, VideoInspectionPolicy, VideoInspectionError, VideoProbeUnavailableError)",
+    "tools/windagent_tools/video_probe.py (FfprobeVideoInspector using engine-neutral core contract)",
+    "providers/windagent_providers/google/ (GoogleGeminiProviderAdapter general LLM provider intact)",
+    "tools/windagent_tools/browser/ (BrowserRuntime shared agent browser capability intact)"
+  ],
+  "added_negative_tests": [
+    "tests/architecture/test_phase2_flow_removal_canonical.py (google_flow unimportable, 0 runtime imports, 0 active config residue, fake ProductionEnginePort lifecycle)"
+  ],
+  "producer": "phase-2-google-flow-removal"
+}

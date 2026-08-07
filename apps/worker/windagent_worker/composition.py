@@ -57,6 +57,32 @@ from windagent_execution.registry import ExecutionRuntimeRegistry
 logger = logging.getLogger("windagent.worker.composition")
 
 
+def _load_ir_document(artifact_root: str, revision_id: str):
+    """Load the engine-neutral IR document for a revision (VP3D Stage A).
+
+    The IR is written into the artifact workspace when the revision's shot
+    plan is locked / migrated. Returns None (fail closed) when absent so a
+    RENDER step never submits garbage.
+    """
+    import json
+
+    from windagent_core.domain.video_production.production_ir import (
+        ProductionIrDocument,
+    )
+
+    path = os.path.join(
+        artifact_root, "video_production_3d", "ir", f"{revision_id}.ir.json"
+    )
+    if not os.path.exists(path):
+        return None
+    try:
+        with open(path, encoding="utf-8") as fh:
+            return ProductionIrDocument.model_validate(json.load(fh))
+    except (OSError, ValueError) as exc:
+        logger.warning(f"Failed to load IR for revision {revision_id}: {exc}")
+        return None
+
+
 class WorkerContainer:
     """Process-specific composition root for Worker.
     
@@ -93,6 +119,10 @@ class WorkerContainer:
         self.verification_service: Optional[VerificationService] = None
         self.outbox_publisher: Optional[OutboxEventPublisher] = None
         self.route_lock_service: Optional[RouteLockService] = None
+        self.production_engine: Optional[Any] = None  # VP3D Phase 3 (guarded)
+        self.production_executor: Optional[Any] = None  # VP3D Stage A consumer seam
+        self.production_step_executor: Optional[Any] = None  # VP3D Stage A RENDER dispatch
+        self.production_workflow: Optional[Any] = None  # VP3D Stage A durable engine w/ executor
         self.is_initialized: bool = False
 
     async def bootstrap(self) -> None:
@@ -176,6 +206,62 @@ class WorkerContainer:
             dispatcher=self.event_dispatcher.dispatch,
         )
         await self.outbox_publisher.start()
+
+        # VP3D Phase 3 — guarded production engine registration.
+        # Only composed when explicitly enabled (WINDAGENT_BLENDER_ENGINE=1);
+        # the Blender adapter is never registered from memory/config defaults so
+        # existing worker bootstraps stay unaffected.
+        if os.getenv("WINDAGENT_BLENDER_ENGINE", "").lower() in ("1", "true", "yes"):
+            from windagent_tools.production_engines.blender import create_blender_engine_adapter
+
+            artifact_root = os.getenv("WINDAGENT_ARTIFACT_ROOT", "artifacts")
+            self.production_engine = create_blender_engine_adapter(
+                artifact_root=artifact_root,
+                state_dir=os.path.join(artifact_root, "video_production_3d", "blender_state"),
+            )
+            logger.info("BlenderEngineAdapter registered (VP3D Phase 3, guarded).")
+            
+            # VP3D Stage A consumer cutover: the worker-facing facade over the
+            # engine port lives in the orchestration layer (concrete executor with
+            # filesystem persistence — core keeps only the protocol/type contract).
+            # Workflow RENDER steps dispatch through the executor, which persists
+            # receipts for durable re-attach on worker restart.
+            from windagent_orchestration.production import (
+                ProductionEngineExecutor,
+                ProductionRunStore,
+                ProductionStepExecutor,
+                ProductionWorkflowEngine,
+            )
+            from windagent_workflows.video_production.definition import (
+                build_production_step_nodes,
+            )
+
+            self.production_executor = ProductionEngineExecutor(
+                port=self.production_engine,
+                state_dir=os.path.join(
+                    artifact_root, "video_production_3d", "executor_state"
+                ),
+            )
+            logger.info("ProductionEngineExecutor registered over BlenderEngineAdapter (VP3D Stage A).")
+
+            # Runtime call site: a queued RENDER step actually goes through the
+            # engine-neutral executor -> ProductionEnginePort + IR. The IR is
+            # loaded per revision from the artifact workspace (written at
+            # LOCK_SHOT_PLAN / migration time); a missing IR fails closed.
+            self.production_step_executor = ProductionStepExecutor(
+                engine=self.production_executor,
+                ir_source=lambda revision_id: _load_ir_document(
+                    artifact_root, revision_id
+                ),
+            )
+            self.production_workflow = ProductionWorkflowEngine(
+                store=ProductionRunStore(
+                    os.path.join(artifact_root, "video_production_3d", "runs")
+                ),
+                executor=self.production_step_executor,
+                step_nodes=build_production_step_nodes(),
+            )
+            logger.info("ProductionStepExecutor + ProductionWorkflowEngine wired (VP3D Stage A cutover).")
         
         self.is_initialized = True
         logger.info("WorkerContainer successfully bootstrapped (PHASE 7 - Process-specific composition).")

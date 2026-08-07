@@ -22,7 +22,10 @@ from enum import Enum
 from typing import Any, Callable, Dict, List, Optional
 
 from windagent_orchestration.production.states import ProductionRunState
-from windagent_orchestration.production.checkpoint import ProductionCheckpoint
+from windagent_orchestration.production.checkpoint import (
+    PendingExternalOperation,
+    ProductionCheckpoint,
+)
 
 
 class ProviderJobState(str, Enum):
@@ -66,6 +69,39 @@ class RecoveryDecision:
 
 
 InspectProviderFn = Callable[[str, str], ProviderJobState]  # (request_hash, external_id) -> state
+InspectEngineJobFn = Callable[[str], ProviderJobState]  # (engine job_id) -> state
+
+
+def _decision_for_job_state(state: ProviderJobState, external_id: str) -> RecoveryDecision:
+    """Map one engine job's observed provider state to a typed recovery decision."""
+    if state == ProviderJobState.COMPLETED:
+        return RecoveryDecision(
+            action=RecoveryAction.RESUME_AFTER_INSPECTION,
+            reason="engine job completed — resume ingestion, do NOT resubmit",
+            next_state=ProductionRunState.RUNNING,
+            details={"engine_job": external_id},
+        )
+    if state == ProviderJobState.GENERATING:
+        return RecoveryDecision(
+            action=RecoveryAction.REATTACH_WAITING_PROVIDER,
+            reason="engine job still generating — reattach poll, do NOT resubmit",
+            next_state=ProductionRunState.WAITING_PROVIDER,
+            details={"engine_job": external_id},
+        )
+    if state == ProviderJobState.FAILED:
+        return RecoveryDecision(
+            action=RecoveryAction.NEW_ATTEMPT,
+            reason="engine job failed — bounded retry within budget, do NOT blind-resubmit siblings",
+            attempt_increment=True,
+            next_state=ProductionRunState.RUNNING,
+            details={"engine_job": external_id},
+        )
+    return RecoveryDecision(
+        action=RecoveryAction.RECONCILE_UNKNOWN,
+        reason="engine job state unknown — pause for reconciliation, never resubmit",
+        next_state=ProductionRunState.WAITING_PROVIDER,
+        details={"engine_job": external_id},
+    )
 
 
 class ProductionRecovery:
@@ -76,9 +112,11 @@ class ProductionRecovery:
         *,
         max_download_retries: int = 3,
         inspect_provider: Optional[InspectProviderFn] = None,
+        inspect_engine_job: Optional[InspectEngineJobFn] = None,
     ) -> None:
         self.max_download_retries = max_download_retries
         self._inspect_provider = inspect_provider
+        self._inspect_engine_job = inspect_engine_job
 
     def decide(self, checkpoint: Optional[ProductionCheckpoint]) -> RecoveryDecision:
         """Reconcile a run given its last durable checkpoint.
@@ -145,6 +183,42 @@ class ProductionRecovery:
             details={"external_id": pending.external_id},
         )
 
+    def decide_all_engine_jobs(self, pending: PendingExternalOperation) -> List[RecoveryDecision]:
+        """Reconcile EVERY engine job in a scene/shot batch (VP3D).
+
+        A single RENDER step submits one engine job per scene/shot unit, all
+        recorded in ``pending.job_ids``. Recovery must inspect the FULL batch,
+        not just the primary ``external_id`` — otherwise a later job still
+        generating (or failed) is invisible after a worker crash.
+
+        Returns one decision per engine job, in batch order. Falls back to the
+        primary job when no per-engine inspector is injected.
+        """
+        if not pending.job_ids:
+            return [self.decide_from_op(pending)]
+        if self._inspect_engine_job is None:
+            # No per-engine inspector: reconcile the primary anchor and
+            # surface the batch visibility into it (all jobs listed), but
+            # never claim siblings are resolved without evidence.
+            base = self.decide_from_op(pending)
+            base.details["batch_job_ids"] = list(pending.job_ids)
+            return [base]
+
+        decisions: List[RecoveryDecision] = []
+        for job_id in pending.job_ids:
+            state = self._inspect_engine_job(job_id)
+            decisions.append(_decision_for_job_state(state, job_id))
+        return decisions
+
+    def decide_from_op(self, pending: PendingExternalOperation) -> RecoveryDecision:
+        """Single-op reconciliation reusing the primary ``external_id`` anchor."""
+        fake = ProductionCheckpoint(
+            run_id="",
+            current_step=pending.step_id,
+            pending_external_operation=pending,
+        )
+        return self.decide(fake)
+
     def decide_download_retry(
         self,
         *,
@@ -198,5 +272,6 @@ __all__ = [
     "RecoveryAction",
     "RecoveryDecision",
     "InspectProviderFn",
+    "InspectEngineJobFn",
     "ProductionRecovery",
 ]

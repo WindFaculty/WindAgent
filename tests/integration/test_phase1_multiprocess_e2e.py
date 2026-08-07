@@ -34,8 +34,13 @@ def _create_schema(db_url: str):
         conn.execute(text("PRAGMA journal_mode=WAL;"))
         conn.execute(text("PRAGMA busy_timeout=30000;"))
     BaseORM.metadata.create_all(engine)
-    # Warm up initial rule/tables so concurrent initializations don't contend on DDL
+    # FK enforcement (GAP A): route_locks_v3.canonical_model_id references
+    # canonical_models_v3.id. Seed the model the multi-process rule resolves to
+    # BEFORE spawning child processes, so their lock inserts never violate the FK.
+    from tests.fakes.provider_graph_seed import seed_canonical_model
     sf = make_sync_session_factory(db_url)
+    seed_canonical_model(sf(), "cm-gpt4o-multi")
+    # Warm up initial rule/tables so concurrent initializations don't contend on DDL
     session = sf()
     session.close()
 

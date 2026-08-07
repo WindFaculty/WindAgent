@@ -1,8 +1,8 @@
 """
 Phase 15 — Real `ffprobe` video inspector (plan 04 §23.3).
 
-The `google_flow` package must never launch processes (Phase 13/14
-architecture tests forbid subprocess inside `google_flow/`), so the real
+The browser-driven generation adapters must never launch processes (Phase 13/14
+architecture tests forbid subprocess inside adapter packages), so the real
 decoder adapter lives here in the tools layer and is injected into
 `VideoCandidateDownloader` at the composition root — exactly like the Phase 12
 browser runtime owns the process boundary.
@@ -31,7 +31,7 @@ import tempfile
 from pathlib import Path
 from typing import Optional
 
-from windagent_tools.google_flow.video_inspection import (
+from windagent_core.contracts.video_production.video_inspection import (
     VideoInspection,
     VideoInspectionError,
     VideoInspectorPort,

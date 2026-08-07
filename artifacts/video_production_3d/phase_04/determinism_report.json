@@ -1,0 +1,128 @@
+{
+  "differences": [],
+  "ffprobe_stable": true,
+  "final_mp4_stable": true,
+  "frame_hashes_stable": true,
+  "hardware_identical": true,
+  "passed": true,
+  "pixel_parity_enforced": true,
+  "run_a": {
+    "ffprobe": {
+      "format": {
+        "duration": "1.000000",
+        "format_name": "mov,mp4,m4a,3gp,3g2,mj2"
+      },
+      "streams": [
+        {
+          "avg_frame_rate": "24/1",
+          "codec_name": "h264",
+          "codec_type": "video",
+          "duration": "1.000000",
+          "height": 360,
+          "width": 640
+        }
+      ]
+    },
+    "final_mp4_hash": "96e02af9ffd51fdc216f327cdaf5f633f8e5e3dba93ebc3c1f47e082c775d3fa",
+    "frame_hashes": {
+      "1": "57a3c800cb7972159b2a0658e755e671e94d9f727e83cdaabf2a89b25984d4d3",
+      "10": "57a3c800cb7972159b2a0658e755e671e94d9f727e83cdaabf2a89b25984d4d3",
+      "11": "57a3c800cb7972159b2a0658e755e671e94d9f727e83cdaabf2a89b25984d4d3",
+      "12": "57a3c800cb7972159b2a0658e755e671e94d9f727e83cdaabf2a89b25984d4d3",
+      "13": "57a3c800cb7972159b2a0658e755e671e94d9f727e83cdaabf2a89b25984d4d3",
+      "14": "57a3c800cb7972159b2a0658e755e671e94d9f727e83cdaabf2a89b25984d4d3",
+      "15": "57a3c800cb7972159b2a0658e755e671e94d9f727e83cdaabf2a89b25984d4d3",
+      "16": "57a3c800cb7972159b2a0658e755e671e94d9f727e83cdaabf2a89b25984d4d3",
+      "17": "57a3c800cb7972159b2a0658e755e671e94d9f727e83cdaabf2a89b25984d4d3",
+      "18": "57a3c800cb7972159b2a0658e755e671e94d9f727e83cdaabf2a89b25984d4d3",
+      "19": "57a3c800cb7972159b2a0658e755e671e94d9f727e83cdaabf2a89b25984d4d3",
+      "2": "57a3c800cb7972159b2a0658e755e671e94d9f727e83cdaabf2a89b25984d4d3",
+      "20": "57a3c800cb7972159b2a0658e755e671e94d9f727e83cdaabf2a89b25984d4d3",
+      "21": "57a3c800cb7972159b2a0658e755e671e94d9f727e83cdaabf2a89b25984d4d3",
+      "22": "57a3c800cb7972159b2a0658e755e671e94d9f727e83cdaabf2a89b25984d4d3",
+      "23": "57a3c800cb7972159b2a0658e755e671e94d9f727e83cdaabf2a89b25984d4d3",
+      "24": "57a3c800cb7972159b2a0658e755e671e94d9f727e83cdaabf2a89b25984d4d3",
+      "3": "57a3c800cb7972159b2a0658e755e671e94d9f727e83cdaabf2a89b25984d4d3",
+      "4": "57a3c800cb7972159b2a0658e755e671e94d9f727e83cdaabf2a89b25984d4d3",
+      "5": "57a3c800cb7972159b2a0658e755e671e94d9f727e83cdaabf2a89b25984d4d3",
+      "6": "57a3c800cb7972159b2a0658e755e671e94d9f727e83cdaabf2a89b25984d4d3",
+      "7": "57a3c800cb7972159b2a0658e755e671e94d9f727e83cdaabf2a89b25984d4d3",
+      "8": "57a3c800cb7972159b2a0658e755e671e94d9f727e83cdaabf2a89b25984d4d3",
+      "9": "57a3c800cb7972159b2a0658e755e671e94d9f727e83cdaabf2a89b25984d4d3"
+    },
+    "frame_manifest_hash": "cb52112dbe9bf83422cd4932d6cd3f8664fb0d03c79eb0bd721badff289e9e27",
+    "hardware_profile": {
+      "build": "",
+      "color_management": "Standard",
+      "device": "CPU",
+      "driver": "",
+      "resolution": {
+        "height": 1080,
+        "width": 1920
+      }
+    },
+    "idempotency_key": "0d7cf90123759e9d0ae02ec4a87658a98a93bd73fdf8f0fb3c1b5370047d03fb",
+    "run_label": "det_a",
+    "scene_plan_hash": "33ecfb4083695b1380bf78621548655cdc050a627407ba7e46a45fdb8d884239"
+  },
+  "run_b": {
+    "ffprobe": {
+      "format": {
+        "duration": "1.000000",
+        "format_name": "mov,mp4,m4a,3gp,3g2,mj2"
+      },
+      "streams": [
+        {
+          "avg_frame_rate": "24/1",
+          "codec_name": "h264",
+          "codec_type": "video",
+          "duration": "1.000000",
+          "height": 360,
+          "width": 640
+        }
+      ]
+    },
+    "final_mp4_hash": "96e02af9ffd51fdc216f327cdaf5f633f8e5e3dba93ebc3c1f47e082c775d3fa",
+    "frame_hashes": {
+      "1": "57a3c800cb7972159b2a0658e755e671e94d9f727e83cdaabf2a89b25984d4d3",
+      "10": "57a3c800cb7972159b2a0658e755e671e94d9f727e83cdaabf2a89b25984d4d3",
+      "11": "57a3c800cb7972159b2a0658e755e671e94d9f727e83cdaabf2a89b25984d4d3",
+      "12": "57a3c800cb7972159b2a0658e755e671e94d9f727e83cdaabf2a89b25984d4d3",
+      "13": "57a3c800cb7972159b2a0658e755e671e94d9f727e83cdaabf2a89b25984d4d3",
+      "14": "57a3c800cb7972159b2a0658e755e671e94d9f727e83cdaabf2a89b25984d4d3",
+      "15": "57a3c800cb7972159b2a0658e755e671e94d9f727e83cdaabf2a89b25984d4d3",
+      "16": "57a3c800cb7972159b2a0658e755e671e94d9f727e83cdaabf2a89b25984d4d3",
+      "17": "57a3c800cb7972159b2a0658e755e671e94d9f727e83cdaabf2a89b25984d4d3",
+      "18": "57a3c800cb7972159b2a0658e755e671e94d9f727e83cdaabf2a89b25984d4d3",
+      "19": "57a3c800cb7972159b2a0658e755e671e94d9f727e83cdaabf2a89b25984d4d3",
+      "2": "57a3c800cb7972159b2a0658e755e671e94d9f727e83cdaabf2a89b25984d4d3",
+      "20": "57a3c800cb7972159b2a0658e755e671e94d9f727e83cdaabf2a89b25984d4d3",
+      "21": "57a3c800cb7972159b2a0658e755e671e94d9f727e83cdaabf2a89b25984d4d3",
+      "22": "57a3c800cb7972159b2a0658e755e671e94d9f727e83cdaabf2a89b25984d4d3",
+      "23": "57a3c800cb7972159b2a0658e755e671e94d9f727e83cdaabf2a89b25984d4d3",
+      "24": "57a3c800cb7972159b2a0658e755e671e94d9f727e83cdaabf2a89b25984d4d3",
+      "3": "57a3c800cb7972159b2a0658e755e671e94d9f727e83cdaabf2a89b25984d4d3",
+      "4": "57a3c800cb7972159b2a0658e755e671e94d9f727e83cdaabf2a89b25984d4d3",
+      "5": "57a3c800cb7972159b2a0658e755e671e94d9f727e83cdaabf2a89b25984d4d3",
+      "6": "57a3c800cb7972159b2a0658e755e671e94d9f727e83cdaabf2a89b25984d4d3",
+      "7": "57a3c800cb7972159b2a0658e755e671e94d9f727e83cdaabf2a89b25984d4d3",
+      "8": "57a3c800cb7972159b2a0658e755e671e94d9f727e83cdaabf2a89b25984d4d3",
+      "9": "57a3c800cb7972159b2a0658e755e671e94d9f727e83cdaabf2a89b25984d4d3"
+    },
+    "frame_manifest_hash": "cb52112dbe9bf83422cd4932d6cd3f8664fb0d03c79eb0bd721badff289e9e27",
+    "hardware_profile": {
+      "build": "",
+      "color_management": "Standard",
+      "device": "CPU",
+      "driver": "",
+      "resolution": {
+        "height": 1080,
+        "width": 1920
+      }
+    },
+    "idempotency_key": "0d7cf90123759e9d0ae02ec4a87658a98a93bd73fdf8f0fb3c1b5370047d03fb",
+    "run_label": "det_b",
+    "scene_plan_hash": "33ecfb4083695b1380bf78621548655cdc050a627407ba7e46a45fdb8d884239"
+  },
+  "structural_stable": true
+}

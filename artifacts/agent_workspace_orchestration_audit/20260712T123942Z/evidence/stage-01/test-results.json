@@ -1,0 +1,25 @@
+{
+  "command": "python -m pytest tests/unit/storage/migrations/ tests/unit/api/test_phase7_workspace_projection.py tests/unit/orchestration/test_phase3_routed_provider_turns.py tests/integration/test_phase1_routing_authority.py tests/integration/test_phase1_multiprocess_e2e.py tests/integration/test_phase8_e2e_chaos.py tests/unit/worker/test_phase2_transactional_finalization.py tests/integration/test_phase14_two_process_e2e.py -q -p no:cacheprovider",
+  "working_dir": "D:/code_ca_nhan/WindAgent",
+  "exit_code": 0,
+  "passed": 102,
+  "failed": 0,
+  "skipped": 1,
+  "duration_s": 21.23,
+  "head_commit": "9080fcb4bb6d9a6531a095c624a0f6d8796f4081",
+  "branch": "fix/phase7-verification-integrity",
+  "files": [
+    {"path": "tests/unit/storage/migrations/test_phase1_migration_integrity.py", "covers": "G1.1 upgrade/downgrade/current + single-head (GAP D), G1.2 unique/FK enforcement (GAP A), G2.3 secret encryption + key rotation (GAP C), G9.4 redaction, G9.5 workspace traversal, G9.3 parallel writers"},
+    {"path": "tests/unit/storage/migrations/test_phase7_schema_mapping.py", "covers": "GAP B preflight DuplicateRule/OrphanRule"},
+    {"path": "tests/unit/storage/migrations/test_phase9_migrations.py", "covers": "migration smoke on real file SQLite"},
+    {"path": "tests/unit/storage/migrations/test_phase9_rollback_rehearsal.py", "covers": "backup + upgrade/downgrade rehearsal + restore verification"},
+    {"path": "tests/unit/storage/migrations/test_phase8_data_migration.py", "covers": "legacy V2 data lane"},
+    {"path": "tests/unit/api/test_phase7_workspace_projection.py", "covers": "G1.3 immutable plan + 409 concurrency, G9.5 workspace API boundary"},
+    {"path": "tests/unit/orchestration/test_phase3_routed_provider_turns.py", "covers": "FK-safe routed provider turns with persistent route locks"},
+    {"path": "tests/integration/test_phase1_routing_authority.py", "covers": "route lock + canonical model seed under FK enforcement (GAP A)"},
+    {"path": "tests/integration/test_phase1_multiprocess_e2e.py", "covers": "multiprocess e2e under FK enforcement (GAP A)"},
+    {"path": "tests/integration/test_phase8_e2e_chaos.py", "covers": "chaos e2e with persistent route locks (GAP A)"},
+    {"path": "tests/unit/worker/test_phase2_transactional_finalization.py", "covers": "production worker step-run graph fix (GAP A discovery)"},
+    {"path": "tests/integration/test_phase14_two_process_e2e.py", "covers": "two-process worker+API e2e — production FK bug fixed (GAP A discovery)"}
+  ]
+}

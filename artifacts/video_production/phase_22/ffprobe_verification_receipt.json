@@ -1,0 +1,32 @@
+{
+  "workstream": "ffprobe_verification",
+  "receipt_id": "rec_a674f513df80",
+  "is_valid": true,
+  "format_name": "mp4",
+  "duration_seconds": 9.5,
+  "loudness_lufs": -16.0,
+  "peak_db": -1.0,
+  "sample_frames_decoded": 3,
+  "deliverable_id": "deliv_a674f513df80",
+  "final_video_hash": "a674f513df80f2dcb25c1271ab67bd66b972e9612830f6866c6ec933e5faf4c6",
+  "proxy_video_hash": "6665111cadad607df237b263c6bb46d494f3da92f695a99fc782e30ca1a8d669",
+  "thumbnail_hash": "28f140e2089bab2bca02d7976d26bb80efc59a0e314ae38f549c9345421af235",
+  "checks": [
+    {
+      "check": "main_deliverable_verification_pass",
+      "ok": true,
+      "detail": "Valid deliverable passes stream, duration, frame decode, black ending, and loudness checks"
+    },
+    {
+      "check": "fail_closed_duration_mismatch",
+      "ok": true,
+      "detail": "Duration mismatch fails closed with DURATION_OUT_OF_TOLERANCE"
+    },
+    {
+      "check": "fail_closed_black_frames",
+      "ok": true,
+      "detail": "Detected black frame ending fails closed with BLACK_FRAMES_DETECTED"
+    }
+  ],
+  "all_passed": true
+}

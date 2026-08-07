@@ -82,7 +82,7 @@ def test_manifest_covers_all_15_mandatory_scenarios():
     "CH12_DUPLICATE_EVENT",
     "CH13_LEASE_EXPIRY",
     "CH14_STALE_WORKER_WRITE",
-    "CH15_FLOW_PROJECT_DELETED",
+    "CH15_ENGINE_PROJECT_DELETED",
 ])
 def test_each_scenario_has_expected_behavior(scenario_id: str):
     from scripts.verification import chaos_phase25

@@ -1,0 +1,21 @@
+{
+  "phase": "phase_06",
+  "gate": "VP3D_P6_ASSET_TRUST_PROVENANCE_VERIFIED",
+  "recorded_at": "2026-08-08T00:00:00Z",
+  "command": "python -m pytest tests/unit/verification/test_phase07_assets.py tests/unit/verification/test_phase6_asset_trust.py",
+  "summary": {
+    "passed": 45,
+    "failed": 0,
+    "skipped": 0
+  },
+  "test_files": [
+    "tests/unit/verification/test_phase6_asset_trust.py",
+    "tests/unit/verification/test_phase07_assets.py"
+  ],
+  "phase6_tests": 19,
+  "architecture_checker": {
+    "command": "python scripts/check_architecture_imports.py",
+    "result": "PASS (0 violations)"
+  },
+  "known_baseline_defect": "tests/unit/verification/test_phase27_release.py::test_ci_run_manifest_aggregates_all_required_lanes (pre-existing, unchanged file)"
+}

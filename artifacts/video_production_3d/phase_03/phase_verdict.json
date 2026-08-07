@@ -1,0 +1,34 @@
+{
+  "phase": "phase_03",
+  "gate": "VP3D_P3_BLENDER_RUNTIME_VERIFIED",
+  "verdict": "PASS",
+  "decided_at": "2026-08-08T00:00:00Z",
+  "summary": "Blender runtime foundation implemented and verified. Detector/validator/probe/launcher/supervisor/receipt/manifest/execute_job adapter compose BlenderEngineAdapter (ProductionEnginePort), registered guarded in the worker composition root. Plan test-matrix gaps closed 2026-08-08: added real timeout enforcement test (supervisor kills never-exiting process after deadline), non-UTF-8 stdout fail-closed test and CUDA device classification test; contract_tests.json mappings corrected to point at the actual tests.",
+  "backlog_completion": {
+    "1_blender_installation_detector": "DONE — tools/windagent_tools/production_engines/blender/runtime/detector.py (configured > PATH > standard locations > registry, candidates with provenance, spaces-safe)",
+    "2_blender_version_validator": "DONE — tools/windagent_tools/production_engines/blender/validator.py (policy-pinned 4.5.x LTS, typed readiness failures: READY/VERSION_MISMATCH/UNPARSEABLE/BINARY_MISSING)",
+    "3_blender_capability_probe": "DONE — runtime/capabilities.py (read-only probe: build, Python, Cycles devices, import/export, codecs; banner-before-JSON tolerant parser; fail closed on unparseable)",
+    "4_blender_gpu_probe": "DONE — runtime/capabilities.py BlenderGpuProbe (never claims GPU-ready unless a CUDA/OptiX/Metal device actually enumerated)",
+    "5_blender_job_launcher": "DONE — runtime/launcher.py (argv list, no shell, env allowlist, workspace bounding, NUL rejection, timeout/cancel event, job_spec.json persistence)",
+    "6_blender_process_supervisor": "DONE — runtime/supervisor.py (locator persisted BEFORE start, heartbeat, graceful cancel via durable token then bounded kill, reconcile reattach/quarantine, Windows-safe PID liveness)",
+    "7_blender_execution_receipt": "DONE — runtime/receipts.py (redacted argv, version, timing, exit code, stdout/stderr hashes, output hashes, typed failure classification)",
+    "8_addon_manifest_allowlist": "DONE — manifest.py (id/version/SHA/source/permissions; unknown -> REQUIRES_HUMAN_APPROVAL, hash mismatch -> REJECTED, job blocked before process launch)",
+    "execute_job_script": "DONE — scripts/execute_job.py (pure stdlib, typed job spec, cancel token poll, job_result.json contract; COMPILE/SAVE/INSPECT/RENDER_CHUNK/ASSEMBLE/VERIFY fail closed until Phase 4)",
+    "adapter_registration": "DONE — adapter.py + create_blender_engine_adapter; guarded registration in apps/worker/windagent_worker/composition.py (WINDAGENT_BLENDER_ENGINE env)",
+    "test_matrix_complete": "DONE — 57 phase-3 tests pass (was 54): test_parse_cuda_report, test_non_utf8_stdout_does_not_crash, test_timeout_enforced_kills_process_and_marks_failed; contract_tests.json maps every plan matrix item to a real test"
+  },
+  "real_machine_probe": {
+    "evidence_file": "artifacts/video_production_3d/phase_03/blender_runtime_probe.json",
+    "detected": "C:/Program Files/Blender Foundation/Blender 5.1/blender.exe (source: standard_location, version_line 'Blender 5.1.2')",
+    "policy_result": "REJECTED — Blender 5.1 does not satisfy pinned 4.5.x LTS (fail closed as designed; jobs never launch on an unvalidated install)",
+    "capability_probe": "parsed_ok=true, build=5.1.2, python=3.13.9, codecs=6 (h264/h265/vp9/png/exr/jpeg), importers=6, exporters=6",
+    "gpu_probe": "gpu_ready=false, backend=NONE — Cycles enumerated no CUDA/OptiX/Metal device in this headless install, so the probe correctly does NOT claim GPU-ready (fail closed)",
+    "note": "Baseline machine currently runs Blender 5.1, NOT the pinned 4.5 LTS. The gate evidence proves detection + policy + capability machinery on real hardware; the version mismatch rejection is itself the fail-closed behavior the plan requires. Phase 4 renders only after a 4.5 LTS install is available."
+  },
+  "evidence_files": [
+    "artifacts/video_production_3d/phase_03/blender_runtime_probe.json",
+    "artifacts/video_production_3d/phase_03/contract_tests.json",
+    "artifacts/video_production_3d/phase_03/test_baseline.json"
+  ],
+  "known_baseline_defect": "tests/unit/verification/test_phase27_release.py::test_ci_run_manifest_aggregates_all_required_lanes — pre-existing, file unchanged by Phase 3 (git diff HEAD empty); verified failing again on 2026-08-08 run (Phase 27 release-lane manifest, unrelated to VP3D)."
+}

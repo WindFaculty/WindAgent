@@ -54,6 +54,11 @@ def factories(db_url):
     import windagent_storage.orm.v3_models  # noqa: F401 ensure tables registered
     engine = create_engine(sync_db_url(db_url))
     BaseORM.metadata.create_all(engine)
+    # FK enforcement (GAP A): route_locks_v3.canonical_model_id references
+    # canonical_models_v3.id. Production seeds models from discovery before a
+    # lock is resolved; tests seed the model the rule resolves to here.
+    from tests.fakes.provider_graph_seed import seed_canonical_model
+    seed_canonical_model(sf(), "cm-gpt4o")
     return sf
 
 

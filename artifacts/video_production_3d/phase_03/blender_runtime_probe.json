@@ -1,0 +1,106 @@
+{
+  "adapter_readiness": {
+    "candidate": {
+      "executable_path": "C:\\Program Files\\Blender Foundation\\Blender 5.1\\blender.exe",
+      "provenance": {
+        "found_by": "standard_location",
+        "note": "scanned C:/Program Files/Blender Foundation"
+      },
+      "source": "standard_location",
+      "version_line": "Blender 5.1.2"
+    },
+    "capability": null,
+    "gpu": null,
+    "ready": false,
+    "reason": "no candidate satisfies the pinned 4.5.x LTS policy: C:\\Program Files\\Blender Foundation\\Blender 5.1\\blender.exe: Blender 5.1 does not satisfy the pinned policy 4.5.x LTS.",
+    "validation": {
+      "accepted": false,
+      "executable_path": "C:\\Program Files\\Blender Foundation\\Blender 5.1\\blender.exe",
+      "policy_label": "4.5.x LTS",
+      "reason": "Blender 5.1 does not satisfy the pinned policy 4.5.x LTS.",
+      "reason_code": "VERSION_MISMATCH",
+      "version": [
+        5,
+        1,
+        2
+      ],
+      "version_line": "Blender 5.1.2"
+    }
+  },
+  "candidates": [
+    {
+      "executable_path": "C:\\Program Files\\Blender Foundation\\Blender 5.1\\blender.exe",
+      "provenance": {
+        "found_by": "standard_location",
+        "note": "scanned C:/Program Files/Blender Foundation"
+      },
+      "source": "standard_location",
+      "version_line": "Blender 5.1.2"
+    }
+  ],
+  "capability": {
+    "build": "5.1.2",
+    "codecs": [
+      "ffmpeg_video_h264",
+      "ffmpeg_video_h265",
+      "ffmpeg_video_vp9",
+      "png",
+      "exr",
+      "jpeg"
+    ],
+    "cycles_compute": "OPTIX",
+    "cycles_devices": [],
+    "executable_path": "C:\\Program Files\\Blender Foundation\\Blender 5.1\\blender.exe",
+    "exporters": [
+      "exporters_gltf",
+      "exporters_fbx",
+      "exporters_usd",
+      "exporters_usdz",
+      "exporters_obj",
+      "exporters_stl"
+    ],
+    "importers": [
+      "importers_gltf",
+      "importers_fbx",
+      "importers_usd",
+      "importers_usdz",
+      "importers_obj",
+      "importers_stl"
+    ],
+    "parsed_ok": true,
+    "probe_error": "",
+    "python_version": "3.13.9",
+    "raw_stdout_chars": 598
+  },
+  "configured_path": null,
+  "gate": "VP3D_P3_BLENDER_RUNTIME_VERIFIED",
+  "gpu": {
+    "backend": "NONE",
+    "gpu_devices": [],
+    "gpu_ready": false,
+    "reason": "no CUDA/OptiX/Metal device enumerated by Cycles; CPU-only"
+  },
+  "phase": "phase_03",
+  "probe_name": "blender_runtime",
+  "probed_at": "2026-08-07T22:52:06.392979+00:00",
+  "readiness": {
+    "policy": "4.5.x LTS",
+    "ready": false,
+    "reason": "no candidate satisfies pinned 4.5.x LTS policy (fail closed)"
+  },
+  "validations": [
+    {
+      "accepted": false,
+      "executable_path": "C:\\Program Files\\Blender Foundation\\Blender 5.1\\blender.exe",
+      "policy_label": "4.5.x LTS",
+      "reason": "Blender 5.1 does not satisfy the pinned policy 4.5.x LTS.",
+      "reason_code": "VERSION_MISMATCH",
+      "version": [
+        5,
+        1,
+        2
+      ],
+      "version_line": "Blender 5.1.2"
+    }
+  ]
+}

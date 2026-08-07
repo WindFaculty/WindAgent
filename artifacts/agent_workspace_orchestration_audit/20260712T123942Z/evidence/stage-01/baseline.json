@@ -1,0 +1,25 @@
+{
+  "stage": "stage-01-data-model-security",
+  "generated_at_utc": "2026-08-07T00:00:00Z",
+  "repository": "WindFaculty/WindAgent",
+  "local_root": "D:/code_ca_nhan/WindAgent",
+  "branch": "fix/phase7-verification-integrity",
+  "head_commit": "9080fcb4bb6d9a6531a095c624a0f6d8796f4081",
+  "remote_url": "https://github.com/WindFaculty/WindAgent.git",
+  "schema_revision": "0009_immutable_plan_revisions",
+  "schema_revisions": ["0001_baseline", "0002_legacy_v2_data", "0003_multi_agent_canonical", "0004_orchestrator_agent_runs", "0005_orchestrator_agent_turns", "0006_durable_plan_scheduler", "0007_git_worktree_lifecycle", "0008_conversation_stream_recovery", "0009_immutable_plan_revisions"],
+  "single_head": true,
+  "feature_flags": {
+    "PRAGMA_foreign_keys_ON": true,
+    "WAL_journal_mode": true,
+    "busy_timeout_ms": 30000,
+    "encryption_scheme": "AES-GCM enc:v1:kv<N>:",
+    "encryption_key_env": "WINDAGENT_ENCRYPTION_KEY (+ WINDAGENT_ENCRYPTION_KEY_V<N> per-version)",
+    "preflight_duplicate_rules": true,
+    "preflight_orphan_rules": true,
+    "workspace_root_guard": true,
+    "runtime_upgrade_to_head": true,
+    "create_all_production": false
+  },
+  "notes": "Schema revision verified via windagent_storage.migrations.runner.alembic_heads() = single head 0009_immutable_plan_revisions (GAP D). Evidence covers GAP A (FK enforcement + production worker bug fix), GAP B (preflight duplicate/orphan), GAP C (key_version rotation)."
+}

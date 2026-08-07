@@ -31,8 +31,44 @@ from windagent_storage.orm.v2_orchestration_models import (
     TaskRunORM,
     ExecutionLeaseORM,
     TaskExecutionResultORM,
+    WorkflowRunV2ORM,
+    WorkflowStepRunORM,
 )
 from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork
+
+
+async def _seed_step_run(session, step_run_id: str) -> None:
+    """Seed the workflow_step_runs + v2_workflow_runs_v2 graph the lease FK requires.
+
+    ``execution_leases.step_run_id`` references ``workflow_step_runs.id`` and
+    ``workflow_step_runs.workflow_run_id`` references ``v2_workflow_runs_v2.run_id``;
+    with FK enforcement enabled (GAP A) the parent rows must exist before a lease
+    insert.  Production creates them when a task is claimed; tests seed them
+    directly.
+    """
+    run_id = f"wf-{step_run_id}"
+    session.add(
+        WorkflowRunV2ORM(
+            run_id=run_id,
+            workflow_id=run_id,
+            session_id="sess-graph",
+            state="running",
+            version=1,
+        )
+    )
+    session.add(
+        WorkflowStepRunORM(
+            id=step_run_id,
+            workflow_run_id=run_id,
+            step_order=1,
+            name=step_run_id,
+            tool_name="read_file",
+            state="running",
+        )
+    )
+    # Flush so the parents are inserted before the lease insert below. SQLAlchemy
+    # does not reorder plain INSERTs by table-level FKs (no relationship()).
+    await session.flush()
 
 
 @pytest.fixture
@@ -52,6 +88,7 @@ async def test_atomic_finalization_happy_path(db_manager):
     now = datetime.now(timezone.utc)
     async with SqlUnitOfWork(db_manager.session_factory) as uow:
         task = TaskRunORM(id="task-100", session_id="sess-100", state="running", version=1)
+        await _seed_step_run(uow.session, "step-100")
         lease = ExecutionLeaseORM(
             lease_id="lease-100",
             step_run_id="step-100",
@@ -169,6 +206,7 @@ async def test_fault_injection_outbox_failure_rolls_back_entire_transaction(db_m
     now = datetime.now(timezone.utc)
     async with SqlUnitOfWork(db_manager.session_factory) as uow:
         task = TaskRunORM(id="task-fault", session_id="sess-fault", state="running", version=1)
+        await _seed_step_run(uow.session, "step-fault")
         lease = ExecutionLeaseORM(
             lease_id="lease-fault",
             step_run_id="step-fault",
@@ -230,6 +268,7 @@ async def test_fault_injection_result_persistence_failure(db_manager):
     now = datetime.now(timezone.utc)
     async with SqlUnitOfWork(db_manager.session_factory) as uow:
         task = TaskRunORM(id="task-res-fail", session_id="sess-res", state="running", version=1)
+        await _seed_step_run(uow.session, "step-res")
         lease = ExecutionLeaseORM(
             lease_id="lease-res-fail",
             step_run_id="step-res",
@@ -335,6 +374,7 @@ async def test_fault_injection_lease_release_failure(db_manager):
     now = datetime.now(timezone.utc)
     async with SqlUnitOfWork(db_manager.session_factory) as uow:
         task = TaskRunORM(id="task-lease-fail", session_id="sess-lease", state="running", version=1)
+        await _seed_step_run(uow.session, "step-lease")
         lease = ExecutionLeaseORM(
             lease_id="lease-lease-fail",
             step_run_id="step-lease",
@@ -409,6 +449,7 @@ async def test_fault_injection_commit_failure(db_manager):
     now = datetime.now(timezone.utc)
     async with SqlUnitOfWork(db_manager.session_factory) as uow:
         task = TaskRunORM(id="task-commit-fail", session_id="sess-commit", state="running", version=1)
+        await _seed_step_run(uow.session, "step-commit")
         lease = ExecutionLeaseORM(
             lease_id="lease-commit-fail",
             step_run_id="step-commit",

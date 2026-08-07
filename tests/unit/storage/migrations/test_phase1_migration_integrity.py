@@ -22,8 +22,13 @@ import pytest
 from sqlalchemy import create_engine, text
 
 from windagent_storage.migrations.runner import (
+    MultipleMigrationHeadsError,
+    SchemaAheadOfMigrationsError,
+    alembic_current,
     alembic_downgrade_base,
+    alembic_heads,
     alembic_upgrade_head,
+    verify_single_head,
 )
 from windagent_storage.orm.models import BaseORM, SessionORM
 
@@ -247,6 +252,62 @@ class TestAlembicUpgrade:
             engine.dispose()
 
 
+class TestAlembicHeadIntegrity:
+    """Stage 1 GAP D — single-head and current-revision inspection."""
+
+    def test_heads_declare_exactly_one_linear_chain(self):
+        heads = alembic_heads()
+        assert len(heads) == 1, f"revision graph must stay linear, got heads={heads}"
+        # Intentional tripwire (GAP D): bump this only when a new migration is
+        # appended to the chain — the test exists to fail loudly on drift.
+        assert heads[0] == "0009_immutable_plan_revisions"
+
+    def test_verify_single_head_passes_on_linear_chain(self):
+        assert verify_single_head() == "0009_immutable_plan_revisions"
+
+    def test_verify_single_head_raises_on_multiple_heads(self, monkeypatch):
+        monkeypatch.setattr(
+            "windagent_storage.migrations.runner.alembic_heads",
+            lambda: ("0008_conversation_stream_recovery", "0009_immutable_plan_revisions"),
+        )
+        with pytest.raises(MultipleMigrationHeadsError):
+            verify_single_head()
+
+    def test_current_is_empty_before_any_migration(self, fresh_db: str):
+        assert alembic_current(fresh_db) == ()
+
+    def test_current_matches_head_after_upgrade(self, fresh_db: str):
+        alembic_upgrade_head(fresh_db)
+        assert alembic_current(fresh_db) == ("0009_immutable_plan_revisions",)
+        assert verify_single_head(fresh_db) == "0009_immutable_plan_revisions"
+
+    def test_current_empty_after_downgrade_base(self, fresh_db: str):
+        alembic_upgrade_head(fresh_db)
+        alembic_downgrade_base(fresh_db)
+        assert alembic_current(fresh_db) == ()
+
+    def test_current_does_not_create_missing_db_file(self, tmp_path: Path):
+        db_path = tmp_path / "never-created.db"
+        assert not db_path.exists()
+        assert alembic_current(f"sqlite:///{db_path}") == ()
+        assert not db_path.exists(), "alembic_current must not create a DB file"
+
+    def test_verify_single_head_raises_on_unknown_stamp(self, fresh_db: str):
+        from sqlalchemy import create_engine, text
+
+        alembic_upgrade_head(fresh_db)
+        engine = create_engine(fresh_db)
+        try:
+            with engine.begin() as conn:
+                conn.execute(text(
+                    "INSERT INTO alembic_version (version_num) VALUES ('9999_future')"
+                ))
+        finally:
+            engine.dispose()
+        with pytest.raises(SchemaAheadOfMigrationsError):
+            verify_single_head(fresh_db)
+
+
 class TestSecretEncryption:
     """G2.3 — AES-GCM at rest, no fixed fallback key, metadata-only API."""
 
@@ -293,6 +354,140 @@ class TestSecretEncryption:
         assert "secret" not in serialized.lower() or "has_secret" in dto
         for forbidden in ("ciphertext", "api_key", "apiKey"):
             assert forbidden not in serialized.lower()
+
+
+class TestKeyRotation:
+    """Stage 1 GAP C — key_version recording, rotation and on-read re-encrypt."""
+
+    @pytest.fixture(autouse=True)
+    def _keys(self, monkeypatch):
+        import base64
+
+        monkeypatch.setenv("WINDAGENT_ENCRYPTION_KEY", base64.b64encode(b"k" * 32).decode())
+        monkeypatch.setenv("WINDAGENT_ENCRYPTION_KEY_V2", base64.b64encode(b"j" * 32).decode())
+
+    def test_default_version_is_v1_legacy_shape(self):
+        from windagent_storage.security.encryption import encrypt, key_version_of
+
+        cipher = encrypt("secret-1")
+        assert cipher.startswith("enc:v1:")
+        assert key_version_of(cipher) == 1
+
+    def test_pinned_v2_roundtrip_and_version_recorded(self):
+        from windagent_storage.security.encryption import decrypt, encrypt, key_version_of
+
+        cipher = encrypt("secret-2", key_version=2)
+        assert key_version_of(cipher) == 2
+        assert cipher.startswith("enc:v1:kv2:")
+        assert decrypt(cipher) == "secret-2"
+
+    def test_decrypt_uses_recorded_version(self, monkeypatch):
+        """A v2 ciphertext must decrypt with the v2 key even when the current version differs."""
+        from windagent_storage.security.encryption import decrypt, encrypt
+
+        cipher_v2 = encrypt("old-but-readable", key_version=2)
+        monkeypatch.setenv("WINDAGENT_ENCRYPTION_KEY_VERSION", "1")
+        assert decrypt(cipher_v2) == "old-but-readable"
+
+    def test_reencrypt_to_current_migrates_old_version(self, monkeypatch):
+        from windagent_storage.security.encryption import (
+            decrypt,
+            encrypt,
+            key_version_of,
+            reencrypt_to_current,
+        )
+
+        old = encrypt("rotate-me", key_version=1)
+        monkeypatch.setenv("WINDAGENT_ENCRYPTION_KEY_VERSION", "2")
+        migrated = reencrypt_to_current(old)
+        assert key_version_of(migrated) == 2
+        assert decrypt(migrated) == "rotate-me"
+
+    def test_reencrypt_keeps_plaintext_and_current_version_untouched(self, monkeypatch):
+        from windagent_storage.security.encryption import (
+            encrypt,
+            key_version_of,
+            reencrypt_to_current,
+        )
+
+        monkeypatch.setenv("WINDAGENT_ENCRYPTION_KEY_VERSION", "2")
+        assert reencrypt_to_current("plain-legacy") == "plain-legacy"
+        current = encrypt("already-current")
+        assert reencrypt_to_current(current) == current
+
+    def test_unknown_version_requires_its_key_env(self, monkeypatch):
+        from windagent_storage.security.encryption import (
+            EncryptionKeyMissingError,
+            encrypt,
+        )
+
+        monkeypatch.delenv("WINDAGENT_ENCRYPTION_KEY_V3", raising=False)
+        with pytest.raises(EncryptionKeyMissingError):
+            encrypt("needs-v3", key_version=3)
+
+
+class TestForeignKeyEnforcement:
+    """Stage 1 GAP A — orphan FK inserts must fail at the DB boundary."""
+
+    def test_orphan_agent_sessions_rejected_on_sync_connection(self, fresh_db: str):
+        from sqlalchemy.exc import IntegrityError
+
+        from windagent_storage.database.sync_factory import make_sync_session_factory
+
+        alembic_upgrade_head(fresh_db)
+        factory = make_sync_session_factory(fresh_db)
+        with factory() as session:
+            session.execute(text(
+                "INSERT INTO conversations (conversation_id, status, created_at, updated_at) "
+                "VALUES ('c1', 'idle', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)"
+            ))
+            session.execute(text(
+                "INSERT INTO agent_instances (agent_instance_id, conversation_id, agent_type, status, "
+                "created_at, updated_at) VALUES ('a1', 'c1', 'coder', 'created', "
+                "CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)"
+            ))
+            session.commit()
+        with factory() as session, pytest.raises(IntegrityError):
+            session.execute(text(
+                "INSERT INTO agent_sessions (agent_session_id, agent_instance_id, "
+                "windagent_session_id, status, version, created_at, updated_at) VALUES "
+                "('s-orphan', 'NO-SUCH-INSTANCE', 'ws-orphan', 'idle', 1, "
+                "CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)"
+            ))
+            session.commit()
+
+    @pytest.mark.asyncio
+    async def test_orphan_agent_sessions_rejected_on_async_connection(self, tmp_path: Path):
+        from sqlalchemy.exc import IntegrityError
+
+        from windagent_storage.database.connection import DatabaseManager
+        from windagent_storage.orm.models import BaseORM
+
+        db = DatabaseManager(f"sqlite+aiosqlite:///{tmp_path / 'fk.db'}")
+        await db.upgrade_to_head(BaseORM.metadata)
+        try:
+            async with db.session_factory() as session:
+                await session.execute(text(
+                    "INSERT INTO conversations (conversation_id, status, created_at, updated_at) "
+                    "VALUES ('c1', 'idle', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)"
+                ))
+                await session.execute(text(
+                    "INSERT INTO agent_instances (agent_instance_id, conversation_id, agent_type, status, "
+                    "created_at, updated_at) VALUES ('a1', 'c1', 'coder', 'created', "
+                    "CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)"
+                ))
+                await session.commit()
+            with pytest.raises(IntegrityError):
+                async with db.session_factory() as session:
+                    await session.execute(text(
+                        "INSERT INTO agent_sessions (agent_session_id, agent_instance_id, "
+                        "windagent_session_id, status, version, created_at, updated_at) VALUES "
+                        "('s-orphan', 'NO-SUCH-INSTANCE', 'ws-orphan', 'idle', 1, "
+                        "CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)"
+                    ))
+                    await session.commit()
+        finally:
+            await db.close()
 
 
 class TestWorkspaceRootValidation:

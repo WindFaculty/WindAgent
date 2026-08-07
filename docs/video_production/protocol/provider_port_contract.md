@@ -3,9 +3,9 @@
 Source: `core/windagent_core/contracts/video_production/`
 
 Ports are implementation-independent `Protocol` classes. They contain **no**
-browser/provider implementation details: no selectors, cookies, Flow project
-URLs, or browser session objects. Those belong in the provider adapter layer
-(`tools/google_flow`, `providers/`).
+provider implementation details: no selectors, cookies, browser session
+objects, or engine SDK calls. Those belong in the provider adapter layer
+(`providers/`, engine adapters).
 
 ## Ports
 

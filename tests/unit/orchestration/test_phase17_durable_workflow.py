@@ -584,3 +584,71 @@ def test_approval_gates_match_plan():
     assert set(STEP_APPROVAL_GATES.keys()) <= set(VIDEO_PRODUCTION_STEPS)
     assert ProductionApprovalGate.CONCEPT_APPROVAL.value == "CONCEPT_APPROVAL"
     assert ProductionApprovalGate.FINAL_CUT_APPROVAL.value == "FINAL_CUT_APPROVAL"
+
+
+# ---------------------------------------------------------------------------
+# VP3D recovery — track EVERY engine job of a scene/shot (not just the first)
+# ---------------------------------------------------------------------------
+
+
+def test_pending_op_carries_all_engine_jobs_in_batch():
+    """A RENDER step that fans out into N engine jobs records ALL of them in
+    the pending op, not only the first (VP3D recovery integrity)."""
+    op = PendingExternalOperation(
+        step_id="RENDER_SHOTS",
+        provider="engine",
+        request_hash="h" * 64,
+        external_id="ej_2",
+        job_ids=["ej_1", "ej_2", "ej_3"],
+    )
+    d = op.to_dict()
+    assert d["job_ids"] == ["ej_1", "ej_2", "ej_3"]
+    # Round-trip: legacy single-dict (no job_ids) must still promote external_id.
+    legacy = PendingExternalOperation.from_dict(
+        {
+            "step_id": "RENDER_SHOTS",
+            "provider": "engine",
+            "request_hash": "h" * 64,
+            "external_id": "ej_9",
+        }
+    )
+    assert legacy.job_ids == ["ej_9"]
+
+
+def test_recovery_decide_all_engine_jobs_reconciles_each():
+    """Recovery inspects EVERY engine job of the batch, and a failed later
+    sibling is reconciled without silently trusting the completed first job."""
+    op = PendingExternalOperation(
+        step_id="RENDER_SHOTS",
+        provider="engine",
+        request_hash="h" * 64,
+        external_id="ej_1",
+        job_ids=["ej_1", "ej_2", "ej_3"],
+    )
+    # Primary (ej_1) completed, but a later job (ej_3) still generating.
+    states = {"ej_1": ProviderJobState.COMPLETED, "ej_2": ProviderJobState.COMPLETED, "ej_3": ProviderJobState.GENERATING}
+    rec = ProductionRecovery(inspect_engine_job=lambda jid: states[jid])
+    decisions = rec.decide_all_engine_jobs(op)
+    assert len(decisions) == 3
+    # The still-generating sibling must NOT be reported resolved.
+    assert decisions[2].action == RecoveryAction.REATTACH_WAITING_PROVIDER
+    assert any(
+        d.action != RecoveryAction.RESUME_AFTER_INSPECTION for d in decisions
+    ), "batch with an in-flight sibling must not claim full completion"
+
+
+def test_recovery_no_engine_inspector_surfaces_batch_not_claiming_resolved():
+    """Without a per-engine inspector, recovery reconciles the primary anchor
+    but carries the full batch visibility and never blind-resubmits."""
+    op = PendingExternalOperation(
+        step_id="RENDER_ASSETS",
+        provider="engine",
+        request_hash="h" * 64,
+        external_id="ej_1",
+        job_ids=["ej_1", "ej_2"],
+    )
+    rec = ProductionRecovery()  # no inspectors
+    decisions = rec.decide_all_engine_jobs(op)
+    assert len(decisions) == 1
+    assert decisions[0].action == RecoveryAction.RECONCILE_UNKNOWN
+    assert decisions[0].details.get("batch_job_ids") == ["ej_1", "ej_2"]

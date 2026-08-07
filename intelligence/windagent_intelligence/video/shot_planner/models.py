@@ -2,9 +2,9 @@
 Phase 9 result types (plan 03 §16).
 
 `ShotGraphReceipt` is the immutable result of `ShotGraphPlannerService.plan`:
-the typed dependency graph, per-shot specifications (camera + generation mode
-+ scheduling), graph issues, and the deterministic graph hash tied to the
-source plan/package hashes.
+the typed dependency graph, per-shot specifications (camera + scheduling),
+graph issues, and the deterministic graph hash tied to the source
+plan/package hashes.
 """
 
 from __future__ import annotations
@@ -33,7 +33,6 @@ class ShotGraphReceipt:
     source_package_hash: str = ""
     graph_version: str = "1.0.0"
     camera_rule_version: str = "1.0.0"
-    generation_mode_version: str = "1.0.0"
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -46,7 +45,6 @@ class ShotGraphReceipt:
             "source_package_hash": self.source_package_hash,
             "graph_version": self.graph_version,
             "camera_rule_version": self.camera_rule_version,
-            "generation_mode_version": self.generation_mode_version,
         }
 
 

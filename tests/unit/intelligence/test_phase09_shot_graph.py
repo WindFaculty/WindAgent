@@ -6,9 +6,11 @@ Covers:
 - stable topological order;
 - tail-frame / transition dependencies create the correct required artifact;
 - independent shots are identified (parallel-capable);
-- generation mode decision table (plan §14.3);
 - camera side and screen direction constraints (plan §14.2);
 - serialize/round-trip the graph.
+
+Generation-mode decision logic was retired in VP3D Stage A (see
+legacy_v1/SUNSET.md) — the engine adapter decides execution from the IR.
 """
 
 import pytest
@@ -16,8 +18,6 @@ import pytest
 from windagent_core.domain.video_production.enums import (
     CameraDecisionReasonCode,
     DependencyType,
-    GenerationMode,
-    GenerationModeReasonCode,
     RequiredArtifactType,
     ScreenDirection,
     ShotGraphIssueCode,
@@ -42,7 +42,6 @@ from windagent_core.domain.video_production.shot_graph import (
 )
 from windagent_intelligence.video import (
     CameraPlanner,
-    GenerationModeDecider,
     ShotGraphPlannerService,
 )
 from windagent_intelligence.video.errors import ValidationFailureError
@@ -235,21 +234,20 @@ class TestServiceHappyPaths:
         assert DependencyType.TEMPORAL in types
         assert result.graph.has_cycle() is False
         assert result.issues == [] or all(not i.blocking for i in result.issues)
-        # Every shot has a specification with a generation mode + camera.
+        # Every shot has a specification with camera + scheduling metadata
+        # (generation-mode decisions were retired in VP3D Stage A).
         assert len(result.specifications) == len(result.graph.shots)
         for spec in result.specifications:
-            assert spec.generation_mode.preferred_mode
             assert spec.camera.reason_code
 
-    async def test_dialogue_fixture_modes_and_continuity(self):
+    async def test_dialogue_fixture_dialogue_and_continuity(self):
         out = await _planned_graph(build_two_character_dialogue_package)
         result = out["result"]
         types = {d.dependency_type for d in result.graph.dependencies}
         # Dialogue flow edges exist (multiple dialogue shots).
         assert DependencyType.DIALOGUE in types
-        # Identity references -> IMAGE_TO_VIDEO preferred.
-        modes = {s.generation_mode.preferred_mode for s in result.specifications}
-        assert GenerationMode.IMAGE_TO_VIDEO in modes
+        # Every specification carries a camera decision (no generation mode).
+        assert all(s.camera.reason_code for s in result.specifications)
         # Continuity edges carry TAIL_FRAME (tail-frame dependency).
         continuity = [
             d for d in result.graph.dependencies
@@ -323,90 +321,6 @@ class TestServiceHappyPaths:
         svc = ShotGraphPlannerService(graph_builder=CyclicBuilder())
         with pytest.raises(ValidationFailureError):
             svc.plan(pkg, locked)
-
-
-# ---------------------------------------------------------------------------
-# Generation mode decision table (plan §14.3)
-# ---------------------------------------------------------------------------
-class TestGenerationModeTable:
-    def _decider(self):
-        return GenerationModeDecider()
-
-    def test_transition_shot_transforms_clip(self):
-        shot = _shot("s1", "scn1", 1, shot_type=ShotType.TRANSITION)
-        decision = self._decider().decide(
-            shot=shot,
-            incoming=[],
-            scene_character_asset_ids=[],
-            scene_location_asset_ids=[],
-        )
-        assert decision.preferred_mode == GenerationMode.VIDEO_TO_VIDEO
-        assert decision.reason_code == GenerationModeReasonCode.CLIP_TRANSFORMATION
-
-    def test_identity_reference_preferred(self):
-        pkg = build_short_cartoon_package()
-        char_assets = [
-            a.asset_id
-            for a in pkg.assets
-            if str(a.asset_id) in {str(x) for x in pkg.characters[0].portrait_asset_ids}
-        ]
-        shot = _shot(
-            "s1", "scn1", 1,
-            reference_asset_ids=char_assets,
-            dialogue_line_ids=[pkg.dialogue[0].dialogue_id],
-        )
-        decision = self._decider().decide(
-            shot=shot,
-            incoming=[],
-            scene_character_asset_ids=char_assets,
-            scene_location_asset_ids=[],
-        )
-        assert decision.preferred_mode == GenerationMode.IMAGE_TO_VIDEO
-        assert decision.reason_code == GenerationModeReasonCode.IDENTITY_REFERENCE_REQUIRED
-
-    def test_frames_required_from_transition_dependency(self):
-        shot = _shot("s1", "scn1", 1)
-        incoming = [_dep(
-            "e1", "s0", "s1",
-            dependency_type=DependencyType.TRANSITION,
-            required_artifact_type=RequiredArtifactType.FULL_CLIP,
-        )]
-        decision = self._decider().decide(
-            shot=shot,
-            incoming=incoming,
-            scene_character_asset_ids=[],
-            scene_location_asset_ids=[],
-        )
-        assert decision.preferred_mode == GenerationMode.FRAMES_TO_VIDEO
-        assert decision.reason_code == GenerationModeReasonCode.FRAMES_REQUIRED
-
-    def test_motion_continuation_extension(self):
-        shot = _shot("s1", "scn1", 1)
-        incoming = [_dep(
-            "e1", "s0", "s1",
-            dependency_type=DependencyType.CONTINUITY,
-            required_artifact_type=RequiredArtifactType.TAIL_FRAME,
-            blocking=True,
-        )]
-        decision = self._decider().decide(
-            shot=shot,
-            incoming=incoming,
-            scene_character_asset_ids=[],
-            scene_location_asset_ids=[],
-        )
-        assert decision.preferred_mode == GenerationMode.VIDEO_EXTENSION
-        assert decision.reason_code == GenerationModeReasonCode.MOTION_CONTINUATION
-
-    def test_independent_shot_text_to_video(self):
-        shot = _shot("s1", "scn1", 1, shot_type=ShotType.ESTABLISHING)
-        decision = self._decider().decide(
-            shot=shot,
-            incoming=[],
-            scene_character_asset_ids=[],
-            scene_location_asset_ids=[],
-        )
-        assert decision.preferred_mode == GenerationMode.TEXT_TO_VIDEO
-        assert decision.reason_code == GenerationModeReasonCode.NO_MANDATORY_REFERENCE
 
 
 # ---------------------------------------------------------------------------

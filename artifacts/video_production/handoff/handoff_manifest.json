@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "generated_at": "2026-07-31T18:07:17.863352+00:00",
+  "generated_at": "2026-08-07T23:32:18.601520+00:00",
   "baseline_sha": "1d98e26fe8923549e848e1a73cf32c6bb59944c1",
   "upstream": {
     "repository": "https://github.com/HITsz-TMG/VideoClaw",
@@ -168,13 +168,13 @@
     "docs/upstream/videoclaw/adoption_matrix.md": "675940264c415feb1a73ab458c01eb52dd79df48e06a3ac9f56bfbe5325a65c3",
     "docs/video_production/director_research/clean_room_attestation.md": "b09249ef447632c1acf3f371f87fd0227fcf698bf3c92cb0757535bd1d93fc13",
     "docs/video_production/director_research/independent_requirements.md": "aace4b5d286b7d5e3a16d3b454c3787b9b3ec9c03ae3d934deb8b886d792b023",
-    "docs/video_production/protocol/video_production_package_v1.schema.json": "5feeb7e0b5656fd0d14fe72b645c2f4a78d2b599bf57f9e748546d0060fdef8a",
+    "docs/video_production/protocol/video_production_package_v1.schema.json": "e7ec5bc2b7b3f6a1a537f3b1b2c54849808e086e8f16978ccc6aa923b5af6eb8",
     "docs/video_production/protocol/video_production_package_v1.md": "e787a7d4e8dccad9541894fce1bbcb8d3ed1d9370dad94aba86f589a8bac1341",
     "docs/video_production/protocol/versioning_policy.md": "9aff4b7c76d14d6f5e94d68f37bbfdcf4da20d2bd6e80b04be38e61f37967bef",
     "docs/video_production/protocol/event_catalog.md": "857b0e4d6a874a2218de82da50de6f3d26676c443df0dc2577b18cea9357ce13",
-    "docs/video_production/protocol/provider_port_contract.md": "c4c48bfcdfef85c23261e9c95ed306a12bdc948ba1bc81845d28bd8bd6b3b409",
+    "docs/video_production/protocol/provider_port_contract.md": "93f478c1a8d63bff6899e4f0a02b8e4f9418cc36e422564827e0a1656828c655",
     "docs/video_production/protocol/revision_and_locking.md": "d9cc3333cf0bfbf66fce88b6769d1cd5aee6b10a09900dc7d38f3b36176a62a2",
-    "core/windagent_core/contracts/video_production/__init__.py": "0b98b40eeb2160e572bd3197c1c5c3fd91cdaaa7f8a649a4d3c87bc512344394",
+    "core/windagent_core/contracts/video_production/__init__.py": "55f09864e4f87e0ca7097a6e7ae95d7d3e246d5ddd2f0c180e5767e2d019a491",
     "core/windagent_core/events/video_production.py": "1b027391fa74544f7b20800275acbf570cca2e898dcc0ca2338a770aaccc7ff8",
     "tests/fixtures/video_production/fixture_builder.py": "b43d377a8738f0c08537c16f42ef1201469ac0c47280dcb07d01a1a749dfa7be",
     "artifacts/video_production/phase_00/phase_verdict.json": "4c6b12a73e62701473d61974272263de89261a714b50fb1d178057d8ac29b685",
@@ -226,7 +226,7 @@
       "description": "VideoClaw repository main branch changes after review.",
       "severity": "MEDIUM",
       "status": null,
-      "mitigation": "Pinned commit SHA 7b328a99d45e11f0c2e9123456789abcdef01234 and sha256 tree hash are frozen."
+      "mitigation": "Re-pin amendment (2026-08-01): pinned commit SHA 5a16ae23a4f1cb6886c44c0205f7b7e52a34c276 (real upstream HEAD, main, 2026-07-17) and content sha256 86a8af... are frozen. The original metadata pin 7b328a99...1234 did not exist upstream and was superseded by an approved re-pin during Phase 4 intake (see upstream_source_receipt.json)."
     },
     {
       "phase": 1,

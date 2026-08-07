@@ -1,0 +1,33 @@
+{
+  "phase": "phase_06",
+  "gate": "VP3D_P6_ASSET_TRUST_PROVENANCE_VERIFIED",
+  "verdict": "PASS",
+  "decided_at": "2026-08-08T00:00:00Z",
+  "summary": "Asset Trust & Provenance implemented on top of the existing media-asset pipeline (plan 02 VP7 kernel). Added QUARANTINED lifecycle state (fail-closed promotion requires a fresh human review record; metadata alone never auto-approves an UNKNOWN/proprietary license), full provenance fields for generated assets (tool/model/prompt_hash/seed/generation_receipt), commercial-use + trademark/attribution trust gates, static embedded-content scanning (never auto-runs script/driver/add-on; archive path-traversal blocked), and conversion lineage (derived asset -> source content hash + normalization receipt). Added 19 focused tests covering the plan's negative-test matrix (quarantine fail-closed, unknown-license-not-approved-by-metadata, checksum/commercial queries, embedded script + zip-bomb + add-on + zip-slip rejected, generated provenance, conversion lineage, content change -> new hash, signed-URL/token redaction).",
+  "backlog_completion": {
+    "1_expand_source_type_license_state": "ALREADY PRESENT — AssetSourceType covers LOCAL_LIBRARY/INTERNET/PROVIDER/MCP/GENERATED and LicenseState covers UNKNOWN/LICENSED/PUBLIC_DOMAIN/CREATIVE_COMMONS/PROPRIETARY/REJECTED (enums.py); no new enum needed",
+    "2_mandatory_provenance": "DONE — AssetProvenanceRecord extended with source_author/tool/model/prompt_hash/seed/generation_receipt/checksum_verified; build_record captures them; mandatory source_type+license+content hash enforced by trust enforcer",
+    "3_quarantine_fail_closed": "DONE — AssetLifecycleState.QUARANTINED added; VALIDATED/LICENSE_UNKNOWN -> QUARANTINED; QUARANTINED -> APPROVED requires new_review_record=True (human review); AssetTrustEnforcer quarantines UNKNOWN license / unverified checksum / unverified commercial use / unapproved trademark",
+    "4_downloader_safety": "ALREADY PRESENT — HTTP(S) only, bounded validated redirects, max bytes/timeout, MIME sniffing, executable block (security.py + download.py from VP7 kernel); verified by existing tests",
+    "5_archive_scan_no_auto_run": "DONE — AssetContentScanner scans payload statically, rejects embedded executable/script/add-on and archive path traversal, never extracts or runs embedded content (trust.py)",
+    "6_conversion_lineage": "DONE — AssetProvenanceService.record_derivation links derived asset to source content_sha256 + normalization_receipt; content-addressed so changed content = new hash",
+    "7_likeness_trademark_attribution_approval": "DONE — likeness human-approval existed; added trademark/requires_attribution human-approval gate in promote_from_quarantine + AssetTrustEnforcer"
+  },
+  "negative_tests": {
+    "ssrf_private_ip": "COVERED (pre-existing test_phase07_assets)",
+    "malicious_redirect": "COVERED (pre-existing test_phase07_assets)",
+    "fake_mime": "COVERED (pre-existing test_phase07_assets)",
+    "zip_bomb": "COVERED — test_zip_bomb_detected",
+    "path_traversal": "COVERED — test_archive_path_traversal_rejected",
+    "content_change_new_hash": "COVERED — test_content_change_produces_new_hash_version",
+    "unknown_license_not_approved_by_metadata": "COVERED — test_unknown_license_never_approved_by_metadata_alone",
+    "receipt_no_token_or_signed_url": "COVERED — test_receipt_redacts_signed_url_and_token, test_provenance_to_dict_never_contains_signed_url_credentials"
+  },
+  "evidence_files": [
+    "artifacts/video_production_3d/phase_06/phase_verdict.json",
+    "artifacts/video_production_3d/phase_06/test_baseline.json",
+    "artifacts/video_production_3d/phase_06/contract_tests.json",
+    "docs/video_production_3d/assets/provenance_policy.md"
+  ],
+  "known_baseline_defect": "tests/unit/verification/test_phase27_release.py::test_ci_run_manifest_aggregates_all_required_lanes — pre-existing, file unchanged by Phase 6 (Phase 27 release-lane manifest, unrelated to VP3D)."
+}

@@ -115,14 +115,14 @@ Audio / Post-production / Verification
   (quarantined, **không import runtime**)
 - `wind_agent` → source of truth, đạo diễn, shot planning, continuity,
   scheduling, approval, cost, retry, recovery, verification
-- `Google Flow` → tạo/chỉnh sửa ảnh và video qua trình duyệt
+- `ProductionEngine (Blender 4.5 LTS …)` → render 3D scenes/shots qua engine adapter
 - `ViMax` → chỉ tham khảo hành vi/kiến trúc (clean-room, không sao chép source)
 
 **Vị trí implementation:**
 
 - `intelligence/windagent_intelligence/video/` → kernel provider-neutral
-  (ideation, screenplay, director, shot_planner, continuity, prompt_compiler, reviewers, audio, assembly)
-- `tools/windagent_tools/google_flow/` → browser generation provider
+  (ideation, screenplay, director, shot_planner, continuity, reviewers, audio, assembly)
+- engine adapters (`BlenderEngineAdapter` …) → render qua `ProductionEnginePort`
 - `tools/windagent_tools/video_probe.py` → ffmpeg/ffprobe media probe
 
 ## 5. Trạng thái git hiện tại

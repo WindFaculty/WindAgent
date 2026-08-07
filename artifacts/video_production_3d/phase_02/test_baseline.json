@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.0.0",
+  "phase": 2,
+  "program": "vp3d",
+  "gate": "VP3D_P2_GOOGLE_FLOW_REMOVED",
+  "recorded_at": "2026-08-07T10:00:00Z",
+  "baseline_sha": "9080fcb4bb6d9a6531a095c624a0f6d8796f4081",
+  "implementation": {
+    "neutral_contract": "core/windagent_core/contracts/video_production/video_inspection.py",
+    "worker_consumer": "core/windagent_core/contracts/video_production/production_executor.py",
+    "composition_wiring": "apps/worker/windagent_worker/composition.py (WINDAGENT_BLENDER_ENGINE guard)",
+    "updated_tools": ["tools/windagent_tools/video_probe.py", "tools/windagent_tools/__init__.py"],
+    "removed_package": "tools/windagent_tools/google_flow/",
+    "negative_tests": "tests/architecture/test_phase2_flow_removal_canonical.py"
+  },
+  "test_results": {
+    "full_test_suite": {
+      "command": "python -m pytest -q",
+      "note": "Honest full-suite regression. Only failure is the PRE-EXISTING baseline defect VP3D_BASELINE_001 (test_phase27_release.py hard-coded CANDIDATE_SHA). Earlier receipt's '415 passed' was a PARTIAL run and has been corrected (audit finding #3).",
+      "passed": 1861,
+      "skipped": 5,
+      "failed": 1,
+      "failure_detail": "test_phase27_release.py::test_ci_run_manifest_aggregates_all_required_lanes — pre-existing baseline defect, unrelated to Flow removal"
+    },
+    "architecture_test_suite": {
+      "command": "python -m pytest tests/architecture/ -q",
+      "passed": 251,
+      "skipped": 1,
+      "failed": 0,
+      "note": "Includes flow-removal negative (7), IR architecture (5), Blender architecture (6) matrices."
+    },
+    "flow_removal_negative_tests": {
+      "command": "python -m pytest tests/architecture/test_phase2_flow_removal_canonical.py -q",
+      "passed": 7,
+      "failed": 0,
+      "checks": [
+        "google_flow package unimportable (PASS)",
+        "0 runtime imports of google_flow across canonical packages (PASS)",
+        "0 Flow credentials in active configs (PASS)",
+        "Google Gemini LLM provider intact (PASS)",
+        "worker submit -> cancel -> durable RESTART re-attach -> retry via NEW job id (inspect-before-resubmit) (PASS)",
+        "worker restart preserves in-flight durable pending state, still cancellable (PASS)",
+        "worker retry is inspect-before-resubmit; unknown job reconciles to FAILED (PASS)"
+      ]
+    },
+    "deep_immutability": {
+      "command": "python -m pytest tests/unit/core/test_phase1_production_ir.py -q",
+      "passed": 23,
+      "failed": 0,
+      "note": "TestDeepImmutability locks list/dict/nested mutation rejection while model_copy(deep=True) + serialize still work (audit finding #4)."
+    },
+    "executor_consumer": {
+      "command": "python -m pytest tests/unit/core/test_phase1_production_engine_port.py -q",
+      "passed": 12,
+      "failed": 0,
+      "note": "TestEngineExecutorConsumer proves the worker-facing ProductionEngineExecutor dispatches IR through a real port + durable restart reconcile (audit finding #1)."
+    }
+  },
+  "maintenance_actions": [
+    "Handoff checksums regenerated via scripts/verification/verify_phase03_handoff.py (write mode) because core/windagent_core/contracts/video_production/__init__.py legitimately gained ProductionEngineExecutor; test_phase03_verifier_no_write now PASS."
+  ],
+  "producer": "phase-2-google-flow-removal"
+}

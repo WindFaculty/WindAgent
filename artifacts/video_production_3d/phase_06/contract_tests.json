@@ -1,0 +1,33 @@
+{
+  "phase": "phase_06",
+  "gate": "VP3D_P6_ASSET_TRUST_PROVENANCE_VERIFIED",
+  "evidence_kind": "contract_tests_asset_trust",
+  "plan_matrix_coverage": {
+    "quarantine_legal_transitions": "tests/unit/verification/test_phase6_asset_trust.py::test_quarantined_legal_transitions",
+    "quarantine_promotion_requires_review_record": "tests/unit/verification/test_phase6_asset_trust.py::test_quarantined_to_approved_requires_review_record",
+    "quarantine_fail_closed_no_human": "tests/unit/verification/test_phase6_asset_trust.py::test_quarantine_and_fail_closed_promotion_no_human",
+    "quarantine_promotion_with_human_review": "tests/unit/verification/test_phase6_asset_trust.py::test_quarantine_promotion_with_human_review",
+    "unknown_license_not_approved_by_metadata": "tests/unit/verification/test_phase6_asset_trust.py::test_unknown_license_never_approved_by_metadata_alone",
+    "rejected_license_rejects": "tests/unit/verification/test_phase6_asset_trust.py::test_rejected_license_rejects",
+    "unverified_checksum_quarantines": "tests/unit/verification/test_phase6_asset_trust.py::test_unverified_checksum_quarantines",
+    "commercial_use_unverified_quarantines": "tests/unit/verification/test_phase6_asset_trust.py::test_commercial_use_unverified_quarantines",
+    "trademark_requires_human_approval": "tests/unit/verification/test_phase6_asset_trust.py::test_trademark_requires_human_approval",
+    "trusted_asset_approves": "tests/unit/verification/test_phase6_asset_trust.py::test_trusted_asset_approves",
+    "embedded_script_rejected_never_run": "tests/unit/verification/test_phase6_asset_trust.py::test_embedded_script_rejected_and_never_run",
+    "mesh_zip_with_addon_rejected": "tests/unit/verification/test_phase6_asset_trust.py::test_mesh_zip_with_addon_hint_rejected",
+    "archive_path_traversal_rejected": "tests/unit/verification/test_phase6_asset_trust.py::test_archive_path_traversal_rejected",
+    "zip_bomb_detected": "tests/unit/verification/test_phase6_asset_trust.py::test_zip_bomb_detected",
+    "generated_asset_provenance_fields": "tests/unit/verification/test_phase6_asset_trust.py::test_generated_asset_provenance_fields",
+    "conversion_lineage_points_to_source": "tests/unit/verification/test_phase6_asset_trust.py::test_conversion_lineage_points_to_source_hash",
+    "content_change_new_hash": "tests/unit/verification/test_phase6_asset_trust.py::test_content_change_produces_new_hash_version",
+    "receipt_redacts_signed_url_and_token": "tests/unit/verification/test_phase6_asset_trust.py::test_receipt_redacts_signed_url_and_token",
+    "provenance_to_dict_no_live_credentials": "tests/unit/verification/test_phase6_asset_trust.py::test_provenance_to_dict_never_contains_signed_url_credentials"
+  },
+  "pre_existing_covers": {
+    "ssrf_private_ip": "tests/unit/verification/test_phase07_assets.py::test_private_ip_literal_blocked",
+    "malicious_redirect": "tests/unit/verification/test_phase07_assets.py::test_redirect_target_revalidated",
+    "fake_mime_extension_not_evidence": "tests/unit/verification/test_phase07_assets.py::test_extension_is_not_mime_evidence",
+    "dns_rebinding": "tests/unit/verification/test_phase07_assets.py::test_dns_rebinding_blocked"
+  },
+  "result": "PASS"
+}

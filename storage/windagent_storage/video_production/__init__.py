@@ -62,6 +62,11 @@ from windagent_storage.video_production.reuse import (
     ReuseDecision,
     ReuseVerdict,
 )
+from windagent_storage.video_production.ir_invalidation import (
+    IR_INVALIDATION_SCHEMA_VERSION,
+    IrInvalidationResult,
+    IrTrackInvalidationService,
+)
 
 __all__ = [
     # model
@@ -105,4 +110,8 @@ __all__ = [
     "ArtifactReusePolicy",
     "ReuseDecision",
     "ReuseVerdict",
+    # IR track-scoped invalidation (VP3D Stage A Phase 2)
+    "IR_INVALIDATION_SCHEMA_VERSION",
+    "IrInvalidationResult",
+    "IrTrackInvalidationService",
 ]

@@ -1,0 +1,16 @@
+{
+  "workstream": "reproducibility_report",
+  "is_reproducible": true,
+  "input_hashes_matched": true,
+  "edl_hash_matched": true,
+  "command_manifest_matched": true,
+  "output_sha256": "a674f513df80f2dcb25c1271ab67bd66b972e9612830f6866c6ec933e5faf4c6",
+  "checks": [
+    {
+      "check": "reproducible_byte_identical_output",
+      "ok": true,
+      "detail": "Identical EDL and input clip hashes yield byte-identical output SHA-256 hash"
+    }
+  ],
+  "all_passed": true
+}

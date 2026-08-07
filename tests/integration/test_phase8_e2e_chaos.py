@@ -21,6 +21,7 @@ from tests.fakes.phase8_controlled_doubles import (
     ControlledHermesRuntime,
     ScriptedProviderAdapter,
 )
+from tests.fakes.provider_graph_seed import PersistentRouteLocks, seed_provider_graph
 from windagent_api.routers.conversation_streams import router as conversation_streams_router
 from windagent_core.contracts.providers.responses import ProviderResponse, ProviderUsage
 from windagent_execution.registry import ExecutionRuntimeRegistry
@@ -41,26 +42,18 @@ from windagent_storage.repositories.multi_agent_repository import MultiAgentRepo
 from windagent_storage.repositories.v3_repositories import SQLRouteAttemptRepository
 
 
-class StableRouteLocks:
-    """A deterministic route-lock boundary shared by each integration scenario."""
-
-    def __init__(self, canonical_model_id: str = "phase8/local-agent@2026-08-03") -> None:
-        self.canonical_model_id = canonical_model_id
-        self._locks: dict[str, Any] = {}
-
-    def resolve_or_create_lock(self, context: Any) -> Any:
-        return self._locks.setdefault(
-            context.scope_id,
-            SimpleNamespace(
-                lock_id=f"lock-{context.scope_id}",
-                canonical_model_id=self.canonical_model_id,
-                routing_snapshot=SimpleNamespace(
-                    rule_id="phase8-integration",
-                    rule_version=1,
-                    reason="controlled external boundary",
-                ),
-            ),
-        )
+def _stable_route_locks(
+    db: DatabaseManager,
+    canonical_model_id: str = "phase8/local-agent@2026-08-03",
+) -> PersistentRouteLocks:
+    """A deterministic route-lock boundary that persists locks for FK enforcement."""
+    return PersistentRouteLocks(
+        make_sync_session_factory(db.db_url),
+        canonical_model_id=canonical_model_id,
+        rule_id="phase8-integration",
+        rule_version=1,
+        reason="controlled external boundary",
+    )
 
 
 @pytest.fixture
@@ -77,7 +70,7 @@ def _service(
     db: DatabaseManager,
     runtime: ControlledHermesRuntime,
     *,
-    route_locks: StableRouteLocks | None = None,
+    route_locks: PersistentRouteLocks | None = None,
     provider_coordinator: EndpointExecutionCoordinator | None = None,
     worktrees: WorktreeContextManager | None = None,
 ) -> OrchestratorService:
@@ -86,7 +79,7 @@ def _service(
     return OrchestratorService(
         db.session_factory,
         registry,
-        route_locks or StableRouteLocks(),
+        route_locks or _stable_route_locks(db),
         provider_coordinator,
         worktrees,
     )
@@ -305,11 +298,18 @@ async def test_e2e_same_model_failover_and_partial_stream_are_durable(db: Databa
         quota_state=InMemoryQuotaStateManager(),
         attempt_log=SQLRouteAttemptRepository(make_sync_session_factory(db.db_url)()),
     )
+    # GAP A: FK enforcement needs the provider reference graph seeded before
+    # agent_turns/route_attempts reference it.
+    seed_provider_graph(
+        make_sync_session_factory(db.db_url)(),
+        canonical_model_id=canonical_model_id,
+        bindings=bindings,
+    )
     runtime = ControlledHermesRuntime()
     service = _service(
         db,
         runtime,
-        route_locks=StableRouteLocks(canonical_model_id),
+        route_locks=_stable_route_locks(db, canonical_model_id),
         provider_coordinator=coordinator,
     )
     goal = await service.submit_goal(
@@ -420,7 +420,7 @@ async def test_e2e_coding_worktree_isolation_and_cancel_cleanup(
 @pytest.mark.asyncio
 async def test_e2e_restart_mid_dag_surfaces_approval_and_unavailable_runtime(db: DatabaseManager):
     runtime = ControlledHermesRuntime()
-    route_locks = StableRouteLocks()
+    route_locks = _stable_route_locks(db)
     first = _service(db, runtime, route_locks=route_locks)
     goal = await first.submit_goal(
         conversation_id="phase8-recovery",

@@ -55,6 +55,12 @@ from windagent_orchestration.production.engine import (
     StepExecutionResult,
     StepExecutorPort,
 )
+from windagent_orchestration.production.engine_executor import (
+    ProductionEngineExecutor,
+)
+from windagent_orchestration.production.step_executor import (
+    ProductionStepExecutor,
+)
 from windagent_orchestration.production.cost_catalog import (
     COST_CATALOG_SCHEMA_VERSION,
     CostCatalog,
@@ -135,6 +141,9 @@ __all__ = [
     "ProductionWorkflowEngine",
     "StepExecutionResult",
     "StepExecutorPort",
+    # engine-neutral consumer seam (VP3D Stage A cutover)
+    "ProductionEngineExecutor",
+    "ProductionStepExecutor",
     # cost catalog (plan 05 Phase 19, §19.1)
     "COST_CATALOG_SCHEMA_VERSION",
     "CostCatalog",

@@ -30,6 +30,7 @@ from windagent_providers.routing.memory_ports import (
 from windagent_storage.database.connection import DatabaseManager
 from windagent_storage.database.sync_factory import make_sync_session_factory
 from windagent_storage.orm.models import BaseORM
+from tests.fakes.provider_graph_seed import PersistentRouteLocks, seed_provider_graph
 from windagent_storage.repositories.v3_repositories import SQLRouteAttemptRepository
 
 
@@ -55,27 +56,6 @@ class HoldingRuntime(ExecutionRuntimePort):
 
     async def reattach(self, runtime_run_id: str) -> ExecutionHandle | None:
         return None
-
-
-class RouteLocks:
-    """Keeps a single canonical lock per AgentSession, just like the durable service."""
-
-    def __init__(self) -> None:
-        self._locks: dict[str, Any] = {}
-
-    def resolve_or_create_lock(self, context: Any) -> Any:
-        return self._locks.setdefault(
-            context.scope_id,
-            SimpleNamespace(
-                lock_id=f"lock-{context.scope_id}",
-                canonical_model_id="phase3/model@2026-08-03",
-                routing_snapshot=SimpleNamespace(
-                    rule_id="phase3-test-rule",
-                    rule_version=7,
-                    reason="phase3 same-model policy",
-                ),
-            ),
-        )
 
 
 class RateLimitedAdapter:
@@ -131,6 +111,12 @@ async def test_turn_429_failover_is_same_model_and_auditable(db: DatabaseManager
             "is_active": True,
         },
     ]
+    # GAP A: FK enforcement requires the provider reference graph to exist and
+    # the route lock to be persisted into route_locks_v3 (as production
+    # RouteLockService + SQLRouteLockRepository do).
+    sync_session = make_sync_session_factory(db.db_url)()
+    seed_provider_graph(sync_session, canonical_model_id=canonical_model_id, bindings=bindings)
+
     endpoint_state = InMemoryEndpointStateManager()
     coordinator = EndpointExecutionCoordinator(
         adapter_resolver=lambda candidate: RateLimitedAdapter()
@@ -149,7 +135,13 @@ async def test_turn_429_failover_is_same_model_and_auditable(db: DatabaseManager
     service = OrchestratorService(
         db.session_factory,
         registry,
-        RouteLocks(),
+        PersistentRouteLocks(
+            make_sync_session_factory(db.db_url),
+            canonical_model_id=canonical_model_id,
+            rule_id="phase3-test-rule",
+            rule_version=7,
+            reason="phase3 same-model policy",
+        ),
         coordinator,
     )
 

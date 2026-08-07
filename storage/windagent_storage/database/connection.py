@@ -68,6 +68,10 @@ class DatabaseManager:
                     cur.execute("PRAGMA journal_mode=WAL")
                     cur.execute("PRAGMA busy_timeout=30000")
                     cur.execute("PRAGMA synchronous=NORMAL")
+                    # SQLite enforces FK constraints only when this pragma is
+                    # enabled per-connection (GAP A / G1.2). Orphan inserts must
+                    # be rejected at the DB boundary, not merely documented.
+                    cur.execute("PRAGMA foreign_keys=ON")
                 finally:
                     cur.close()
 

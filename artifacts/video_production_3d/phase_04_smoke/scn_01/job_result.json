@@ -1,0 +1,1 @@
+{"blender_version": "4.5.12 LTS", "cancel_requested": true, "error": "cancelled mid-chunk; partial frames discarded", "finished_at": 1786145833.8735256, "job_id": "ej_scn_01_render_2", "kind": "RENDER_CHUNK", "ok": false, "report": {"cancelled": true, "frame_count": 0, "frame_end": 24, "frame_start": 13, "rendered_frames": [], "resumed_from_validated": []}}

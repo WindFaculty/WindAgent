@@ -14,11 +14,16 @@ file / metadata services live here in `tools` (plan 02 §20-§21).
 
 from windagent_tools.media_assets.errors import (
     AssetPipelineError,
+    CheckSumUnverifiedError,
+    CommercialUseRequiresEvidenceError,
     DownloadFailedError,
+    EmbeddedExecutableError,
     LicenseUnknownError,
     LikenessRequiresApprovalError,
     MediaValidationError,
+    QuarantinedAssetError,
     RejectedAssetError,
+    TrademarkRequiresApprovalError,
     UrlBlockedError,
 )
 from windagent_tools.media_assets.security import (
@@ -49,6 +54,12 @@ from windagent_tools.media_assets.provenance import (
     AssetProvenanceRecord,
     AssetProvenanceService,
 )
+from windagent_tools.media_assets.trust import (
+    AssetContentScanner,
+    AssetTrustEnforcer,
+    ScanVerdict,
+    TrustDecision,
+)
 from windagent_tools.media_assets.references import (
     CharacterReference,
     IdentityReferenceBuilder,
@@ -65,6 +76,11 @@ __all__ = [
     "LicenseUnknownError",
     "LikenessRequiresApprovalError",
     "RejectedAssetError",
+    "TrademarkRequiresApprovalError",
+    "CommercialUseRequiresEvidenceError",
+    "CheckSumUnverifiedError",
+    "QuarantinedAssetError",
+    "EmbeddedExecutableError",
     # security
     "PayloadFingerprint",
     "classify_payload",
@@ -87,6 +103,11 @@ __all__ = [
     # provenance
     "AssetProvenanceService",
     "AssetProvenanceRecord",
+    # trust
+    "AssetContentScanner",
+    "AssetTrustEnforcer",
+    "ScanVerdict",
+    "TrustDecision",
     # references
     "IdentityReferenceBuilder",
     "LocationReferenceBuilder",

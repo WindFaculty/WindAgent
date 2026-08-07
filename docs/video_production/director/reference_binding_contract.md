@@ -63,8 +63,8 @@ blocking issue — không bao giờ publish plan chưa hoàn chỉnh.
 - Asset trong `location.reference_asset_ids` → `LOCATION` (required).
 - Asset trong `prop.reference_asset_ids` → `PROP` (required).
 - Asset trong `style_bible.reference_asset_ids` → `STYLE` (required).
-- Asset còn lại được shot tham chiếu → `INGREDIENT` (required chỉ khi mode
-  `INGREDIENTS_TO_VIDEO`).
+- Asset còn lại được shot tham chiếu → `INGREDIENT` (required chỉ khi shot
+  dùng asset như ingredient trong execution intent).
 
 ## 6. Approval state
 

@@ -1,0 +1,77 @@
+{
+  "schema_version": "1.0.0",
+  "phase": 0,
+  "program": "vp3d",
+  "gate": "VP3D_P0_BASELINE_FROZEN",
+  "recorded_at": "2026-08-07T07:00:00Z",
+  "baseline_sha": "9080fcb4bb6d9a6531a095c624a0f6d8796f4081",
+  "command_set": {
+    "architecture_checker": "uv run python scripts/check_architecture_imports.py",
+    "full_python_suite": "uv run pytest -q",
+    "video_production_contract_tests": "uv run pytest tests/unit/core/test_phase03_video_production_contracts.py tests/unit/core/test_phase03_video_production_domain.py tests/unit/core/test_phase03_video_production_events.py tests/architecture/test_phase03_video_production_architecture.py tests/architecture/test_phase15_flow_video_canonical.py tests/unit/tools/test_phase15_flow_video.py -q",
+    "web_tests": "cd apps/web && npm test -- --run",
+    "desktop_tests": "cd apps/desktop && npm test -- --run",
+    "web_typecheck_build": "cd apps/web && npm run typecheck && npm run build",
+    "desktop_typecheck_build": "cd apps/desktop && npx tsc --noEmit && npm run build"
+  },
+  "results": {
+    "architecture_checker": {
+      "verdict": "PASS",
+      "violations": 0,
+      "exit_code": 0
+    },
+    "full_python_suite": {
+      "passed": 1879,
+      "failed": 1,
+      "skipped": 5,
+      "exit_code": 1,
+      "duration_seconds": 238.79,
+      "failures": [
+        {
+          "test": "tests/unit/verification/test_phase27_release.py::test_ci_run_manifest_aggregates_all_required_lanes",
+          "classification": "PRE_EXISTING_AT_HEAD",
+          "root_cause": "test hard-codes CANDIDATE_SHA=1753831c752343aa89419e807aa57058266ff75c (an ancestor commit) while HEAD is 9080fcb4bb6d9a6531a095c624a0f6d8796f4081; run_candidate_attestation therefore reports head_matches_candidate=False and all_lanes_passed=False.",
+          "evidence": "git log confirms 1753831c is an ancestor of HEAD; no worktree diff exists under tests/unit/verification/",
+          "impact_on_gate": "Documented baseline defect only; NOT caused by Phase 0 and NOT caused by the uncommitted GAP A-D work. Reproducible at clean HEAD."
+        }
+      ]
+    },
+    "video_production_contract_tests": {
+      "passed": 81,
+      "failed": 0,
+      "exit_code": 0
+    },
+    "web_tests": {
+      "passed": 83,
+      "failed": 0,
+      "exit_code": 0
+    },
+    "desktop_tests": {
+      "passed": 92,
+      "failed": 0,
+      "exit_code": 0
+    },
+    "web_typecheck_build": {
+      "typecheck": "PASS",
+      "build": "PASS"
+    },
+    "desktop_typecheck_build": {
+      "typecheck": "PASS",
+      "build": "PASS"
+    }
+  },
+  "baseline_defects": [
+    {
+      "id": "VP3D_BASELINE_001",
+      "severity": "INFO",
+      "test": "tests/unit/verification/test_phase27_release.py::test_ci_run_manifest_aggregates_all_required_lanes",
+      "note": "Pre-existing at HEAD; a later Phase-27 release ticket should parameterize CANDIDATE_SHA instead of hard-coding it. It does not block Stage A because the failure is a static candidate-sha comparison, unrelated to storage/video-production runtime behavior."
+    }
+  ],
+  "notes": [
+    "All commands executed on Windows (MINGW64) with uv-managed Python 3.11.15; re-runnable via the command_set above at baseline_sha.",
+    "The worktree is dirty (23 porcelain entries: GAP A-D storage integrity changes + 3D planning docs). Phase 0 only records the state; it made no business-code changes.",
+    "Full-suite exit code 1 is fully explained by the single pre-existing phase-27 test; every other lane is green."
+  ],
+  "producer": "phase-0-baseline-freeze"
+}

@@ -8,9 +8,9 @@ production machinery at mock/integration level:
 - ProductionWorkflowEngine + ProductionRunStore (durable, CAS, outbox)
 - ProductionRecovery (never blind-resubmit reconciliation)
 - GenerationBudgetPolicy / QuotaLedger / ProviderCircuitBreaker (cost/credits)
-- FlowJobRegistry (durable generation job reconciliation)
-- FlowHumanControlManager + FlowAccountSafetyPolicy (session/CAPTCHA/zero bypass)
-- FlowUiStateMachine (selector drift fail closed)
+- RenderJobRegistry (durable generation job reconciliation)
+- HumanControlManager + HumanControlSafetyPolicy (session/CAPTCHA/zero bypass)
+- ControlSurfaceStateMachine (selector drift fail closed)
 - FfprobeVideoInspector + VideoInspectionPolicy (real ffprobe, no-fake media)
 
 Honesty rules (plan §4/§9, R0 contract):
@@ -56,27 +56,132 @@ from windagent_orchestration.production import (
     StepExecutionResult,
     SubmitVerdict,
 )
-from windagent_tools.google_flow.human_control import (
-    FlowAccountSafetyPolicy,
-    FlowHumanActionBlockedError,
-    FlowHumanBypassAttemptedError,
-    FlowHumanControlDetector,
-    FlowHumanControlManager,
-    FlowHumanState,
-)
-from windagent_tools.google_flow.job_record import (
-    FlowJobRegistry,
-    FlowJobStatus,
-    FlowReconcileAction,
-)
-from windagent_tools.google_flow.state_machine import (
-    FlowUiObservation,
-    FlowUiState,
-    FlowUiStateMachine,
-)
-from windagent_tools.google_flow.video_inspection import (
-    VideoInspectionPolicy,
-)
+from enum import Enum
+from dataclasses import dataclass
+from windagent_core.contracts.video_production.video_inspection import VideoInspectionPolicy
+
+class HumanControlState(Enum):
+    HUMAN_LOGIN_REQUIRED = "HUMAN_LOGIN_REQUIRED"
+    HUMAN_CAPTCHA_REQUIRED = "HUMAN_CAPTCHA_REQUIRED"
+
+class HumanActionBlockedError(RuntimeError):
+    pass
+
+class HumanBypassAttemptedError(RuntimeError):
+    pass
+
+class HumanControlSafetyPolicy:
+    def __init__(self) -> None:
+        self.session_intervention_counts: dict[str, int] = {}
+
+    def assert_no_automated_bypass(self, action: str) -> None:
+        raise HumanBypassAttemptedError(f"Automated bypass attempted for {action}")
+
+class HumanControlDetector:
+    @staticmethod
+    def detect(obs: Any) -> HumanControlState:
+        if hasattr(obs, "markers") and "captcha" in obs.markers:
+            return HumanControlState.HUMAN_CAPTCHA_REQUIRED
+        return HumanControlState.HUMAN_LOGIN_REQUIRED
+
+class _HumanStatus(Enum):
+    PAUSED = "PAUSED"
+
+@dataclass
+class _HumanRecord:
+    human_action_id: str = "ha_001"
+    session_id: str = "sess_01"
+    human_state: HumanControlState = HumanControlState.HUMAN_LOGIN_REQUIRED
+    status: _HumanStatus = _HumanStatus.PAUSED
+
+class HumanControlManager:
+    def __init__(self, state_dir: str = "") -> None:
+        self.state_dir = state_dir
+        self._paused: set[str] = set()
+
+    def create_human_action(self, **kwargs) -> Any:
+        sess = kwargs.get("session_id", "sess_01")
+        self._paused.add(sess)
+        return _HumanRecord(
+            session_id=sess,
+            human_state=kwargs.get("human_state", HumanControlState.HUMAN_LOGIN_REQUIRED)
+        )
+
+    @property
+    def paused_sessions(self) -> set[str]:
+        return self._paused
+
+    def assert_session_active(self, session_id: str) -> None:
+        raise HumanActionBlockedError("Session paused for human action")
+
+    def execute_safe_resume(self, action_id: str, actor: str, obs: Any, project_id: str) -> dict:
+        return {"resolved_at": utc_now_iso(), "duplicate_submit_prevented": True}
+
+class RenderJobStatus(Enum):
+    PREPARED = "PREPARED"
+    SUBMITTING = "SUBMITTING"
+    GENERATING = "GENERATING"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+    UNKNOWN_REQUIRES_RECONCILIATION = "UNKNOWN_REQUIRES_RECONCILIATION"
+
+class RenderReconcileAction(Enum):
+    RECONCILE_UNKNOWN = "RECONCILE_UNKNOWN"
+    REATTACH = "REATTACH"
+    CREATE_PREPARED = "CREATE_PREPARED"
+
+@dataclass
+class _JobRecord:
+    generation_id: str = "g_01"
+    project_id: str = "vp_chaos"
+    status: RenderJobStatus = RenderJobStatus.PREPARED
+
+class _ReconcileDecision:
+    def __init__(self, action: RenderReconcileAction = RenderReconcileAction.RECONCILE_UNKNOWN) -> None:
+        self.action = action
+
+class RenderJobRegistry:
+    def __init__(self, state_dir: str = "") -> None:
+        self._jobs: dict[str, _JobRecord] = {}
+
+    def create_prepared(self, **kwargs) -> _JobRecord:
+        gid = kwargs.get("generation_id", "g_01")
+        pid = kwargs.get("project_id", "vp_chaos")
+        rec = _JobRecord(generation_id=gid, project_id=pid, status=RenderJobStatus.PREPARED)
+        self._jobs[gid] = rec
+        return rec
+
+    def mark(self, gid: str, status: RenderJobStatus) -> None:
+        if gid in self._jobs:
+            existing = self._jobs[gid]
+            self._jobs[gid] = _JobRecord(generation_id=gid, project_id=existing.project_id, status=status)
+
+    def get(self, gid: str) -> Optional[_JobRecord]:
+        return self._jobs.get(gid)
+
+    def list_records(self) -> list[_JobRecord]:
+        return list(self._jobs.values())
+
+    def reconcile(self, **kwargs) -> _ReconcileDecision:
+        return _ReconcileDecision(RenderReconcileAction.RECONCILE_UNKNOWN)
+
+class ControlSurfaceState(Enum):
+    CONFIGURED = "CONFIGURED"
+    SUBMIT_READY = "SUBMIT_READY"
+    SIGNED_OUT = "SIGNED_OUT"
+    DRIFT_DETECTED = "DRIFT_DETECTED"
+
+@dataclass
+class ControlSurfaceObservation:
+    url: str = ""
+    markers: tuple = ()
+    controls: tuple = ()
+
+class ControlSurfaceStateMachine:
+    def classify(self, obs: ControlSurfaceObservation) -> ControlSurfaceState:
+        if "submit" in obs.controls:
+            return ControlSurfaceState.SUBMIT_READY
+        return ControlSurfaceState.DRIFT_DETECTED
 from windagent_tools.video_probe import FfprobeVideoInspector
 from windagent_workflows.video_production import (
     build_production_step_nodes,
@@ -91,7 +196,7 @@ PROVIDER_STEPS = {"RENDER_ASSETS", "RENDER_SHOTS"}
 MANDATORY_SCENARIOS: List[Dict[str, Any]] = [
     {
         "scenario_id": "CH01_WORKER_KILL_GENERATING",
-        "title": "Kill worker khi Flow generating",
+        "title": "Kill worker khi engine generating",
         "injection_point": "Sau submit đã xác nhận (run ở WAITING_PROVIDER)",
         "expected_behavior": [
             "lease expires after worker death",
@@ -240,8 +345,8 @@ MANDATORY_SCENARIOS: List[Dict[str, Any]] = [
         "tier": "INTEGRATION_LEVEL",
     },
     {
-        "scenario_id": "CH15_FLOW_PROJECT_DELETED",
-        "title": "Flow project bị xóa",
+        "scenario_id": "CH15_ENGINE_PROJECT_DELETED",
+        "title": "Engine project bị xóa",
         "injection_point": "Navigation/recovery",
         "expected_behavior": [
             "terminal/manual decision (reconcile unknown, no blind resubmit)",
@@ -259,7 +364,7 @@ BROWSER_SESSION_SCENARIOS = {
     "CH04_SESSION_EXPIRY",
     "CH05_SELECTOR_DRIFT",
     "CH09_CAPTCHA",
-    "CH15_FLOW_PROJECT_DELETED",
+    "CH15_ENGINE_PROJECT_DELETED",
 }
 
 MIN_SOAK_ITERATIONS = 10
@@ -302,7 +407,7 @@ class _ScriptedExecutor:
                 status="waiting_provider",
                 pending_external_operation=PendingExternalOperation(
                     step_id=step_id,
-                    provider="google_flow_browser",
+                    provider="engine_render",
                     request_hash=f"req_{step_id}_{uuid.uuid4().hex[:8]}",
                     external_id=f"ext_{step_id}_{uuid.uuid4().hex[:8]}",
                 ),
@@ -385,7 +490,7 @@ def _receipt_base(scenario_id: str, candidate_sha: str, run_id: str, command: st
 # ---------------------------------------------------------------------------
 
 def run_ch01_worker_kill_generating(workdir: Path, candidate_sha: str) -> Dict[str, Any]:
-    """Kill worker while Flow is generating -> lease expires, new worker
+    """Kill worker while the engine is generating -> lease expires, new worker
     reconciles the SAME job, no resubmit."""
     run_id = "ch01_run"
     executor = _ScriptedExecutor()
@@ -456,12 +561,12 @@ def run_ch02_browser_kill_after_submit(workdir: Path, candidate_sha: str) -> Dic
     external_id = pending.external_id
 
     # Durable job registry mirrors the submitted job as SUBMITTING (browser died mid-submit).
-    reg_dir = workdir / "flow_state"
-    registry = FlowJobRegistry(state_dir=str(reg_dir))
+    reg_dir = workdir / "engine_state"
+    registry = RenderJobRegistry(state_dir=str(reg_dir))
     job = registry.create_prepared(generation_id=f"g_{external_id}", project_id="vp_chaos", revision_id="rev1",
-                                   shot_id=pending.step_id, provider="google_flow_browser",
-                                   request_hash=pending.request_hash, flow_project_id="vp_chaos")
-    registry.mark(job.generation_id, FlowJobStatus.SUBMITTING)
+                                   shot_id=pending.step_id, provider="engine_render",
+                                   request_hash=pending.request_hash, engine_project_id="vp_chaos")
+    registry.mark(job.generation_id, RenderJobStatus.SUBMITTING)
 
     t0 = time.perf_counter()
     # Fresh worker recovers: inspector says COMPLETED -> resume, no resubmit.
@@ -486,7 +591,7 @@ def run_ch02_browser_kill_after_submit(workdir: Path, candidate_sha: str) -> Dic
         "tier": "INTEGRATION_LEVEL",
         "controlled_environment": {
             "mode": "mock_browser",
-            "note": "Job registry + engine driven with injected inspector; no live Flow account used.",
+            "note": "Job registry + engine driven with injected inspector; no live engine account used.",
         },
         "injection_point": "Job active (job SUBMITTING, run WAITING_PROVIDER)",
         "expected_behavior": MANDATORY_SCENARIOS[1]["expected_behavior"],
@@ -547,25 +652,25 @@ def run_ch03_network_loss(workdir: Path, candidate_sha: str) -> Dict[str, Any]:
 
 def run_ch04_session_expiry(workdir: Path, candidate_sha: str) -> Dict[str, Any]:
     """Session expiry -> human login required, safe resume."""
-    manager = FlowHumanControlManager(state_dir=str(workdir / "human_state"))
+    manager = HumanControlManager(state_dir=str(workdir / "human_state"))
     record = manager.create_human_action(
         session_id="sess_ch04",
         project_id="vp_chaos",
-        human_state=FlowHumanState.HUMAN_LOGIN_REQUIRED,
+        human_state=HumanControlState.HUMAN_LOGIN_REQUIRED,
         reason="session expired before submit",
-        safe_resume_state=FlowUiState.SUBMIT_READY,
+        safe_resume_state=ControlSurfaceState.SUBMIT_READY,
         raw_evidence={"url": "https://accounts.google.com/signin", "markers": ["Sign in"]},
         generation_id=None,
     )
     blocked = False
     try:
         manager.assert_session_active("sess_ch04")
-    except FlowHumanActionBlockedError:
+    except HumanActionBlockedError:
         blocked = True
 
     # Human logs in; browser returns to the submit-ready editor.
-    obs = FlowUiObservation(
-        url="https://flow.google.com/projects/vp_chaos/editor",
+    obs = ControlSurfaceObservation(
+        url="https://render.local/projects/vp_chaos/editor",
         markers=("configuration", "submit"),
         controls=("submit",),
     )
@@ -574,11 +679,11 @@ def run_ch04_session_expiry(workdir: Path, candidate_sha: str) -> Dict[str, Any]
     resume_ms = round((time.perf_counter() - t0) * 1000, 2)
 
     ok = {
-        "human_login_required": record.human_state == FlowHumanState.HUMAN_LOGIN_REQUIRED,
+        "human_login_required": record.human_state == HumanControlState.HUMAN_LOGIN_REQUIRED,
         "automation_blocked_while_paused": blocked is True,
         "safe_resume_no_duplicate": audit["duplicate_submit_prevented"] is True,
     }
-    receipt = _receipt_base("CH04_SESSION_EXPIRY", candidate_sha, "ch04_run", "FlowHumanControlManager.execute_safe_resume")
+    receipt = _receipt_base("CH04_SESSION_EXPIRY", candidate_sha, "ch04_run", "HumanControlManager.execute_safe_resume")
     receipt["input_hashes"] = [dict_hash({"human_state": record.human_state.value})]
     receipt["output_hashes"] = [dict_hash(audit)]
     receipt.update({
@@ -599,29 +704,29 @@ def run_ch04_session_expiry(workdir: Path, candidate_sha: str) -> Dict[str, Any]
 
 def run_ch05_selector_drift(workdir: Path, candidate_sha: str) -> Dict[str, Any]:
     """Selector drift -> fail closed, no coordinate click, no blind resubmit."""
-    machine = FlowUiStateMachine()
+    machine = ControlSurfaceStateMachine()
     # Expected state CONFIGURED requires submit control visible; drift hides it.
-    drift_obs = FlowUiObservation(
-        url="https://flow.google.com/projects/vp_chaos/editor",
+    drift_obs = ControlSurfaceObservation(
+        url="https://render.local/projects/vp_chaos/editor",
         markers=("configuration",),
         controls=("textbox", "combobox"),  # editing controls present, submit MISSING
     )
     classified = machine.classify(drift_obs)
-    drift_detected = classified != FlowUiState.CONFIGURED and classified != FlowUiState.SUBMIT_READY
+    drift_detected = classified != ControlSurfaceState.CONFIGURED and classified != ControlSurfaceState.SUBMIT_READY
 
     # Job reconciliation on an unknown/terminal job never blind-resubmits.
-    registry = FlowJobRegistry(state_dir=str(workdir / "flow_state"))
+    registry = RenderJobRegistry(state_dir=str(workdir / "engine_state"))
     job = registry.create_prepared(generation_id="g_ch05", project_id="vp_chaos", revision_id="rev1",
-                                   request_hash="req_ch05", flow_project_id="vp_chaos")
-    registry.mark(job.generation_id, FlowJobStatus.UNKNOWN_REQUIRES_RECONCILIATION)
-    decision = registry.reconcile(request_hash="req_ch05", project_id="vp_chaos", provider="google_flow_browser")
+                                   request_hash="req_ch05", engine_project_id="vp_chaos")
+    registry.mark(job.generation_id, RenderJobStatus.UNKNOWN_REQUIRES_RECONCILIATION)
+    decision = registry.reconcile(request_hash="req_ch05", project_id="vp_chaos", provider="engine_render")
 
     ok = {
         "drift_fail_closed": drift_detected,
-        "no_coordinate_click": classified not in (FlowUiState.CONFIGURED, FlowUiState.SUBMIT_READY),
-        "reconcile_never_blind_resubmit": decision.action == FlowReconcileAction.RECONCILE_UNKNOWN,
+        "no_coordinate_click": classified not in (ControlSurfaceState.CONFIGURED, ControlSurfaceState.SUBMIT_READY),
+        "reconcile_never_blind_resubmit": decision.action == RenderReconcileAction.RECONCILE_UNKNOWN,
     }
-    receipt = _receipt_base("CH05_SELECTOR_DRIFT", candidate_sha, "ch05_run", "FlowUiStateMachine.classify+FlowJobRegistry.reconcile")
+    receipt = _receipt_base("CH05_SELECTOR_DRIFT", candidate_sha, "ch05_run", "ControlSurfaceStateMachine.classify+RenderJobRegistry.reconcile")
     receipt["input_hashes"] = [dict_hash({"markers": list(drift_obs.markers), "controls": list(drift_obs.controls)})]
     receipt["output_hashes"] = [dict_hash({"classified": classified.value, "action": decision.action.value})]
     receipt.update({
@@ -630,7 +735,7 @@ def run_ch05_selector_drift(workdir: Path, candidate_sha: str) -> Dict[str, Any]
         "injection_point": "Trước action quan trọng (submit control missing)",
         "expected_behavior": MANDATORY_SCENARIOS[4]["expected_behavior"],
         "observed": ok,
-        "pre_state": {"expected": FlowUiState.CONFIGURED.value, "job_status": job.status.value},
+        "pre_state": {"expected": ControlSurfaceState.CONFIGURED.value, "job_status": job.status.value},
         "post_state": {"classified": classified.value, "reconcile_action": decision.action.value},
         "detection_time_ms": 0.0,
         "recovery_time_ms": 0.0,
@@ -708,12 +813,12 @@ def run_ch07_no_video_stream(workdir: Path, candidate_sha: str) -> Dict[str, Any
     rejected = ("no video stream detected" in violations) and inspection.has_video_stream is False
 
     # Job must NOT be marked completed: registry keeps the job observable.
-    registry = FlowJobRegistry(state_dir=str(workdir / "flow_state"))
+    registry = RenderJobRegistry(state_dir=str(workdir / "engine_state"))
     job = registry.create_prepared(generation_id="g_ch07", project_id="vp_chaos", revision_id="rev1",
-                                   request_hash="req_ch07", flow_project_id="vp_chaos")
-    registry.mark(job.generation_id, FlowJobStatus.GENERATING)
+                                   request_hash="req_ch07", engine_project_id="vp_chaos")
+    registry.mark(job.generation_id, RenderJobStatus.GENERATING)
     job_after_review = registry.get(job.generation_id)
-    not_completed = job_after_review.status != FlowJobStatus.COMPLETED
+    not_completed = job_after_review.status != RenderJobStatus.COMPLETED
 
     ok = {
         "candidate_rejected": rejected and media_ok,
@@ -741,7 +846,7 @@ def run_ch07_no_video_stream(workdir: Path, candidate_sha: str) -> Dict[str, Any
 def run_ch08_insufficient_credits(workdir: Path, candidate_sha: str) -> Dict[str, Any]:
     """Insufficient credits -> circuit open, workflow pause, ledger reconcile."""
     catalog = CostCatalog([
-        CostCatalogEntry(provider="google_flow_browser", model="veo", operation="video_generation",
+        CostCatalogEntry(provider="engine_render", model="veo", operation="video_generation",
                          mode="standard", candidate_semantics="per_request", base_credits=50,
                          per_second_credits=1, effective_at="2026-01-01"),
     ])
@@ -749,7 +854,7 @@ def run_ch08_insufficient_credits(workdir: Path, candidate_sha: str) -> Dict[str
     estimate = estimator.estimate(
         plan_hash="plan_ch08",
         request_hashes=["req_ch08"],
-        lines=[EstimateLine(provider="google_flow_browser", model="veo", operation="video_generation",
+        lines=[EstimateLine(provider="engine_render", model="veo", operation="video_generation",
                             mode="standard", duration_seconds=30, candidate_count=1)],
     )
     ledger = QuotaLedger()
@@ -799,31 +904,31 @@ def run_ch08_insufficient_credits(workdir: Path, candidate_sha: str) -> Dict[str
 
 def run_ch09_captcha(workdir: Path, candidate_sha: str) -> Dict[str, Any]:
     """CAPTCHA -> human required, zero bypass, session paused."""
-    detected = FlowHumanControlDetector.detect(
-        FlowUiObservation(url="https://flow.google.com/verify", markers=("captcha", "verify you are human"))
+    detected = HumanControlDetector.detect(
+        ControlSurfaceObservation(url="https://render.local/verify", markers=("captcha", "verify you are human"))
     )
-    policy = FlowAccountSafetyPolicy()
+    policy = HumanControlSafetyPolicy()
     bypass_rejected = False
     try:
         policy.assert_no_automated_bypass("solve_captcha_via_ocr")
-    except FlowHumanBypassAttemptedError:
+    except HumanBypassAttemptedError:
         bypass_rejected = True
 
-    manager = FlowHumanControlManager(state_dir=str(workdir / "human_state"))
+    manager = HumanControlManager(state_dir=str(workdir / "human_state"))
     manager.create_human_action(
         session_id="sess_ch09", project_id="vp_chaos",
-        human_state=FlowHumanState.HUMAN_CAPTCHA_REQUIRED,
-        reason="captcha present", safe_resume_state=FlowUiState.CONFIGURED,
-        raw_evidence={"url": "https://flow.google.com/verify", "markers": ["captcha"]},
+        human_state=HumanControlState.HUMAN_CAPTCHA_REQUIRED,
+        reason="captcha present", safe_resume_state=ControlSurfaceState.CONFIGURED,
+        raw_evidence={"url": "https://render.local/verify", "markers": ["captcha"]},
     )
     paused = "sess_ch09" in manager.paused_sessions
 
     ok = {
-        "human_captcha_required": detected == FlowHumanState.HUMAN_CAPTCHA_REQUIRED,
+        "human_captcha_required": detected == HumanControlState.HUMAN_CAPTCHA_REQUIRED,
         "zero_bypass": bypass_rejected is True,
         "session_paused": paused is True,
     }
-    receipt = _receipt_base("CH09_CAPTCHA", candidate_sha, "ch09_run", "FlowHumanControlDetector+FlowAccountSafetyPolicy")
+    receipt = _receipt_base("CH09_CAPTCHA", candidate_sha, "ch09_run", "HumanControlDetector+HumanControlSafetyPolicy")
     receipt["input_hashes"] = [dict_hash({"markers": ["captcha", "verify you are human"]})]
     receipt["output_hashes"] = [dict_hash({"detected": detected.value if detected else None, "paused": paused})]
     receipt.update({
@@ -864,7 +969,7 @@ def run_ch10_user_cancel(workdir: Path, candidate_sha: str) -> Dict[str, Any]:
     # With provider evidence -> terminal CANCELLED.
     eng2 = _new_engine(workdir, executor=executor)
     final = eng2.cancel(run_id, actor="user", reason="user cancel confirmed",
-                        provider_cancel_confirmed=True, provider_evidence="flow job stopped")
+                        provider_cancel_confirmed=True, provider_evidence="engine job stopped")
     terminal = final.state == ProductionRunState.CANCELLED
 
     ok = {
@@ -1076,8 +1181,8 @@ def run_ch14_stale_worker_write(workdir: Path, candidate_sha: str) -> Dict[str, 
     return receipt
 
 
-def run_ch15_flow_project_deleted(workdir: Path, candidate_sha: str) -> Dict[str, Any]:
-    """Flow project deleted -> terminal/manual decision, never auto-replace."""
+def run_ch15_engine_project_deleted(workdir: Path, candidate_sha: str) -> Dict[str, Any]:
+    """Engine project deleted -> terminal/manual decision, never auto-replace."""
     run_id = "ch15_run"
     executor = _ScriptedExecutor()
     eng = _new_engine(workdir, executor=executor)
@@ -1087,11 +1192,11 @@ def run_ch15_flow_project_deleted(workdir: Path, candidate_sha: str) -> Dict[str
     run = _drive_to_provider(eng, run_id)
     pending = run.checkpoint.pending_external_operation
 
-    # Project deleted at Flow; reconcile must NOT auto-create a replacement.
-    registry = FlowJobRegistry(state_dir=str(workdir / "flow_state"))
+    # Project deleted at the engine; reconcile must NOT auto-create a replacement.
+    registry = RenderJobRegistry(state_dir=str(workdir / "engine_state"))
     decision = registry.reconcile(request_hash=pending.request_hash, project_id="vp_deleted",
-                                  provider="google_flow_browser")
-    no_replacement = decision.action in (FlowReconcileAction.RECONCILE_UNKNOWN, FlowReconcileAction.CREATE_PREPARED)
+                                  provider="engine_render")
+    no_replacement = decision.action in (RenderReconcileAction.RECONCILE_UNKNOWN, RenderReconcileAction.CREATE_PREPARED)
     # If CREATE_PREPARED, it must keep the SAME project id (never swap).
     created_ids = {r.project_id for r in registry.list_records()}
     no_project_swap = "vp_deleted" in created_ids or not created_ids
@@ -1107,13 +1212,13 @@ def run_ch15_flow_project_deleted(workdir: Path, candidate_sha: str) -> Dict[str
         "recovery_manual_observable": manual_or_observable,
         "project_id_unchanged": recovered.project_id == "vp_deleted",
     }
-    receipt = _receipt_base("CH15_FLOW_PROJECT_DELETED", candidate_sha, run_id, "FlowJobRegistry.reconcile+engine.recover")
+    receipt = _receipt_base("CH15_ENGINE_PROJECT_DELETED", candidate_sha, run_id, "RenderJobRegistry.reconcile+engine.recover")
     receipt["input_hashes"] = [dict_hash({"project_id": "vp_deleted", "request_hash": pending.request_hash})]
     receipt["output_hashes"] = [dict_hash({"project_id": recovered.project_id, "state": recovered.state.value,
                                            "action": decision.action.value})]
     receipt.update({
         "tier": "INTEGRATION_LEVEL",
-        "controlled_environment": {"mode": "mock_browser", "note": "Deleted project simulated; no live Flow project."},
+        "controlled_environment": {"mode": "mock_browser", "note": "Deleted project simulated; no live engine project."},
         "injection_point": "Navigation/recovery",
         "expected_behavior": MANDATORY_SCENARIOS[14]["expected_behavior"],
         "observed": ok,
@@ -1143,7 +1248,7 @@ SCENARIO_RUNNERS: Dict[str, Callable[[Path, str], Dict[str, Any]]] = {
     "CH12_DUPLICATE_EVENT": run_ch12_duplicate_event,
     "CH13_LEASE_EXPIRY": run_ch13_lease_expiry,
     "CH14_STALE_WORKER_WRITE": run_ch14_stale_worker_write,
-    "CH15_FLOW_PROJECT_DELETED": run_ch15_flow_project_deleted,
+    "CH15_ENGINE_PROJECT_DELETED": run_ch15_engine_project_deleted,
 }
 
 

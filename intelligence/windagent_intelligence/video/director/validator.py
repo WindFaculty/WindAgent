@@ -107,7 +107,6 @@ class DirectorPlanValidator:
                         duration_seconds=shot_plan.duration_seconds,
                         framing_description=shot_plan.framing_description,
                         transition_type=shot_plan.transition_type,
-                        generation_mode=shot_plan.generation_mode,
                         dialogue_line_ids=list(shot_plan.dialogue_line_ids),
                         reference_asset_ids=list(shot_plan.reference_asset_ids),
                         metadata={

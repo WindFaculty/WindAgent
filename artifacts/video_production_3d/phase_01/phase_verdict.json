@@ -1,0 +1,87 @@
+{
+  "schema_version": "1.0.0",
+  "phase": 1,
+  "program": "vp3d",
+  "gate": "VP3D_P1_ENGINE_NEUTRAL_IR_VERIFIED",
+  "recorded_at": "2026-08-07T08:00:00Z",
+  "baseline_sha": "9080fcb4bb6d9a6531a095c624a0f6d8796f4081",
+  "phase0_gate": "VP3D_P0_BASELINE_FROZEN (PASS)",
+  "verdict": "PASS",
+  "status": "VP3D_P1_ENGINE_NEUTRAL_IR_VERIFIED",
+  "evidence_files": [
+    "test_baseline.json",
+    "schema_mapping.json",
+    "phase_verdict.json"
+  ],
+  "gate_checks": [
+    {
+      "check": "Engine-neutral Production IR package exists with immutable models, stable IDs, versioning",
+      "result": "PASS",
+      "detail": "production_ir/ package with ProductionIrDocument, ShotExecutionIntent, SceneDescription, CharacterInstance/PropInstance/EnvironmentInstance, CameraTrack/AnimationTrack/FacialTrack/DialogueTrack, LightRig, SimulationTrack, RenderProfile, RenderIntent. All frozen; 15 new OpaqueId types; schema_version 1.0.0 with MAJOR fail-closed. DEEP immutability (audit finding #4) now enforced by ProductionIrModel base (FrozenList/FrozenDict) — list/dict fields, including nested, reject mutation at runtime while model_dump/model_copy(deep=True)/serialize still work; locked by TestDeepImmutability."
+    },
+    {
+      "check": "ProductionEnginePort receives typed plans/artifact references; no Flow prompt, no bpy",
+      "result": "PASS",
+      "detail": "contracts/video_production/production_engine.py: submit_scene/submit_shot/inspect_job/cancel_job/download_artifact over typed IR models; identifier scan confirms no bpy/generation_mode/selector leakage; runtime-checkable; fake engine adapter consumed the same IR in contract tests."
+    },
+    {
+      "check": "Field-by-field mapping from Package v1 / Shot / GenerationModeDecision / FlowGenerationSpecification / GenerationRequest",
+      "result": "PASS",
+      "detail": "ProductionIrMigrator + schema_mapping.json; 19-row mapping table; IDs/ordering/provenance/approval preserved; generation_mode and provider DROPPED everywhere; multi-character scene regression locked."
+    },
+    {
+      "check": "GenerationMode replaced by execution intent in the IR (actor/action/camera/duration/dialogue/assets)",
+      "result": "PASS",
+      "detail": "ShotExecutionIntent carries characters/action/camera/dialogue_tracks/duration/assets; IR serialization contains no TEXT_TO_VIDEO/IMAGE_TO_VIDEO/generation_mode strings (asserted by tests). NOTE (audit finding #3/#5): the legacy generative-video domain (enums.py GenerationMode, shot.py generation_mode default, intelligence Director/shot_planner) is the superseded MIGRATION SOURCE and RETAINS GenerationMode — Stage A removes the Flow RUNTIME, not the generative domain that screenplay/Director still run on (plan §1). Removing GenerationMode from the legacy domain would regress the baseline; it is retired by the migrator on the canonical IR path, not deleted in Stage A."
+    },
+    {
+      "check": "Canonical serialization JSON/Pydantic + versioning + canonical hash",
+      "result": "PASS",
+      "detail": "serialize()/deserialize() round-trip; content_hash stable for identical logical content and different on change; excludes provenance/lock state; additive unknown fields accepted, unknown MAJOR rejected."
+    },
+    {
+      "check": "glTF/FBX/USD URI+hash; .blend always derived",
+      "result": "PASS",
+      "detail": "AssetReference carries uri+content_hash+format; IrAssetFormat GLTF/FBX/USD/BLEND; validator fails closed with BLEND_MUST_BE_DERIVED."
+    },
+    {
+      "check": "Minimal IR events defined",
+      "result": "PASS",
+      "detail": "ProductionIrEventCatalog with created/locked/engine_job_submitted/engine_job_completed/engine_job_failed/derived_artifact_published + transitions + idempotency guard; additive to legacy taxonomy (event taxonomy checker PASS)."
+    },
+    {
+      "check": "Track-scoped invalidation: dialogue -> audio/facial/final cut; camera -> scene compile + render",
+      "result": "PASS",
+      "detail": "invalidation.py mapping + tests; unknown component fails closed; storage/orchestration callers use invalidate_scope()/affected_outputs() (wiring happens in Phase 2 composition)."
+    },
+    {
+      "check": "Reader/migrator for legacy artifacts; no indefinite dual-write",
+      "result": "PASS",
+      "detail": "ProductionIrMigrator is a bounded READER (never mutates the legacy package); compatibility window is Stage A only; Phase 2 removes the legacy path."
+    },
+    {
+      "check": "No domain model imports Flow / Blender / Unreal SDK",
+      "result": "PASS",
+      "detail": "Architecture tests scan the IR package identifiers + imports; architecture checker PASS (0 violations); duplicate-canonical-model checker PASS."
+    },
+    {
+      "check": "Regression not below baseline",
+      "result": "PASS",
+      "detail": "core+architecture 401 passed / 1 skipped / 0 failed; Phase 1 suite 44 passed; only remaining failure is the pre-existing baseline defect VP3D_BASELINE_001 (phase27 hard-coded CANDIDATE_SHA). phase_03 handoff regenerated because the contracts __init__.py hash it pins legitimately changed (see test_baseline.json maintenance_action)."
+    }
+  ],
+  "known_baseline_defects": [
+    {
+      "id": "VP3D_BASELINE_001",
+      "severity": "INFO",
+      "detail": "test_phase27_release.py hard-coded CANDIDATE_SHA; fails at clean HEAD; unaffected by Phase 1."
+    }
+  ],
+  "next_phase": "Phase 2 — Hard Removal Google Flow (gate VP3D_P2_GOOGLE_FLOW_REMOVED). Precondition: move shared guarantees (idempotency/cancellation/retry/hash/provenance/fail-closed review) behind engine-neutral services, rewire composition root/workflow/API/UI onto ProductionEnginePort + IR, then delete tools/windagent_tools/google_flow/.",
+  "candidate": {
+    "head_sha": "9080fcb4bb6d9a6531a095c624a0f6d8796f4081",
+    "tree_sha": "88f3c427a29ce50113fcd7c87ebd1d8e6c41e4de",
+    "note": "Same candidate tree as Phase 2 (all Stage A gates on one candidate). Full worktree snapshot via temporary-index git add -A; pinned by a commit when the user is ready."
+  },
+  "producer": "phase-1-production-ir"
+}

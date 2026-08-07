@@ -94,7 +94,7 @@ def _publish(pub: ArtifactPublisher, *, data: bytes, artifact_id: str, atype=Art
         request_hash="req_1",
         prompt_version="prompt-1.0",
         model_version="flow-1.0",
-        generation_mode="TEXT_TO_VIDEO",
+        generation_mode="ENGINE_RENDER",
         generation_parameters={"duration": 5},
         reference_hashes=["ref_a"],
         canonical_input={"screenplay": "hello"},
@@ -241,7 +241,7 @@ def verify_artifact_key() -> dict:
             "prompt_version": "prompt-1.0",
             "reference_hashes": ["ref_a", "ref_b"],
             "model": "flow-1.0",
-            "generation_mode": "TEXT_TO_VIDEO",
+            "generation_mode": "ENGINE_RENDER",
             "generation_parameters": {"duration": 5, "aspect": "16:9"},
         }
         defaults.update(kw)
@@ -263,7 +263,7 @@ def verify_artifact_key() -> dict:
     unknown_version_rejected = False
     try:
         compute_artifact_key(canonical_input={"x": 1}, prompt_version="p", reference_hashes=[], model="m",
-                             generation_mode="TEXT_TO_VIDEO", generation_parameters={}, key_version="v99")
+                             generation_mode="ENGINE_RENDER", generation_parameters={}, key_version="v99")
     except ValueError:
         unknown_version_rejected = True
     _record(checks, "unknown_key_version_rejected", unknown_version_rejected, "old keys never reinterpreted (§13)")
@@ -487,7 +487,7 @@ def verify_publish_reuse() -> dict:
 
     d_key = policy.can_reuse(rec, expected_key=compute_artifact_key(
         canonical_input={"screenplay": "other"}, prompt_version="p", reference_hashes=[], model="m",
-        generation_mode="TEXT_TO_VIDEO", generation_parameters={},
+        generation_mode="ENGINE_RENDER", generation_parameters={},
     ))
     _record(checks, "reuse_blocks_key_mismatch", d_key.verdict == ReuseVerdict.REUSE_BLOCKED and "key mismatch" in d_key.reason, d_key.reason)
 

@@ -7,8 +7,8 @@ meets the Phase 9 architecture rules:
   never imports `windagent_tools` / `windagent_providers` / browser modules;
 - the shot graph layer is fully deterministic (no model port required);
 - core domain objects (ShotSpecification / ShotDependencyGraphValidator /
-  CameraDecision / GenerationModeDecision) live in core and stay
-  intelligence/tools-neutral;
+  CameraDecision) live in core and stay intelligence/tools-neutral;
+  GenerationModeDecision was retired in VP3D Stage A (legacy_v1/SUNSET.md);
 - the real workspace architecture check reports zero violations.
 """
 
@@ -96,7 +96,6 @@ def test_core_exports_shot_graph_models():
         "ShotSpecification",
         "ShotScheduling",
         "CameraDecision",
-        "GenerationModeDecision",
         "ShotDependencyGraphValidator",
         "ShotGraphIssue",
         "compute_graph_hash",
@@ -104,6 +103,8 @@ def test_core_exports_shot_graph_models():
         "RequiredArtifactType",
     ):
         assert hasattr(vp, name), f"core missing export {name}"
+    # VP3D Stage A: GenerationModeDecision is retired from canonical exports.
+    assert not hasattr(vp, "GenerationModeDecision")
     import windagent_core as core
 
     assert hasattr(core, "ShotSpecification")
@@ -118,10 +119,11 @@ def test_intelligence_exports_shot_graph_planner():
         "ShotGraphReceipt",
         "ShotGraphBuilder",
         "CameraPlanner",
-        "GenerationModeDecider",
         "ShotScheduler",
     ):
         assert hasattr(video, name), f"intelligence missing export {name}"
+    # VP3D Stage A: GenerationModeDecider is retired from intelligence exports.
+    assert not hasattr(video, "GenerationModeDecider")
 
 
 def test_real_repo_architecture_stays_clean():

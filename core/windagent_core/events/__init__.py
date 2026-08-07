@@ -14,6 +14,12 @@ from windagent_core.events.video_production import (
     VideoProductionEventTransitions,
     EventIdempotencyGuard,
 )
+from windagent_core.events.video_production_ir import (
+    ProductionIrEventCatalog,
+    ProductionIrEventEnvelope,
+    ProductionIrEventTransitions,
+    IrEventIdempotencyGuard,
+)
 
 __all__ = [
     "EventEnvelope",
@@ -27,4 +33,8 @@ __all__ = [
     "VideoProductionEventEnvelope",
     "VideoProductionEventTransitions",
     "EventIdempotencyGuard",
+    "ProductionIrEventCatalog",
+    "ProductionIrEventEnvelope",
+    "ProductionIrEventTransitions",
+    "IrEventIdempotencyGuard",
 ]

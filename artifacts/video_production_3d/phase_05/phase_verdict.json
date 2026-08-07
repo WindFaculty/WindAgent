@@ -1,0 +1,34 @@
+{
+  "phase": "phase_05",
+  "gate": "VP3D_P5_ASSET_GATEWAY_VERIFIED",
+  "verdict": "PASS",
+  "decided_at": "2026-08-08T00:00:00Z",
+  "summary": "Universal Asset Gateway implemented and verified: AssetResolverPort + provider-neutral DTOs in core; adapters (local/internet/mesh api/mesh mcp/future generator), CapabilityMatcher, idempotency cache, execution policy (timeout/retry/circuit breaker/cancellation/concurrency), credential redaction guard and deterministic fakes in providers/windagent_providers/assets; shared download/validation stays in tools/media_assets via injected ports. 113 tests pass, ruff clean, architecture boundaries proven.",
+  "backlog_completion": {
+    "1_standardize_requirement_fields": "DONE — AssetKind/AssetStyle/TopologyPolicy/RigRequirement/LicenseConstraint/TextureResolution + AssetBudget (polygons/texture/file/VRAM defaults) in asset_resolution/enums.py + models.py",
+    "2_capability_matching_before_call": "DONE — CapabilityMatcher returns exhaustive reasons; unconfigured/unsupported providers raise typed CapabilityRejectedError/NoCapableAdapterError BEFORE the provider is invoked (provider-not-called proven by test)",
+    "3_idempotency_cache": "DONE — AssetRequirement.canonical_hash + cache_key(adapter_id, adapter_version); AssetResolutionCache bounded LRU; lookup before network/generation; version-isolated keys",
+    "4_discover_separated_from_acquire": "DONE — AssetCandidate is DISCOVERED-only; acquire produces content-addressed ReferenceAsset + AssetAcquisitionRecord; candidate requirement-hash mismatch REJECTED",
+    "5_timeout_retry_circuit_cancel_concurrency": "DONE — ExecutionPolicy/CircuitBreaker(CLOSED/OPEN/HALF_OPEN)/CancellationScope/semaphore; tests for timeout->ASSET_PROVIDER_TIMEOUT, retry budget, circuit open pre-execution, mid-flight cancel->CANCELLED, concurrency peak",
+    "6_no_credentials": "DONE — value-based credential guard (SecretLeakError fail closed), secret references (env:VAR) allowed, config fields api_key_ref/client_ref, receipts redacted",
+    "7_fake_adapters_and_contract_tests": "DONE — 5 deterministic fake adapters; shared AssetAdapterContractSuite applied to fakes AND real adapters"
+  },
+  "evidence_files": [
+    "artifacts/video_production_3d/phase_05/input_manifest.json",
+    "artifacts/video_production_3d/phase_05/implementation_manifest.json",
+    "artifacts/video_production_3d/phase_05/test_receipt.json",
+    "artifacts/video_production_3d/phase_05/architecture_report.json",
+    "artifacts/video_production_3d/phase_05/risk_register.json",
+    "artifacts/video_production_3d/phase_05/phase_report.md",
+    "docs/video_production_3d/assets/resolver_contract.md",
+    "docs/video_production_3d/assets/provider_capability_matrix.md"
+  ],
+  "test_summary": "113 passed, 31 skipped (not-READY adapters; fail-closed branch covered by dedicated typed-rejection tests), 0 failed; ruff clean",
+  "known_limitations": [
+    "Mesh API/MCP real transport and real generation backend deferred to Phase 6+ (Phase 5 defines the fail-closed surface)",
+    "QUARANTINED/APPROVED license lifecycle + signed-URL redaction deferred to Phase 6",
+    "Sandboxed mesh import, VRAM estimate, preview render deferred to Phase 7",
+    "Idempotency cache in-memory; persistence deferred (canonical key ready for storage)",
+    "Pre-existing Phase 4 untracked test failure (test_phase4_blender_scene.py FrameManifest) unrelated to Phase 5, documented in test_receipt.json"
+  ]
+}

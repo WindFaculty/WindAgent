@@ -17,7 +17,7 @@ from __future__ import annotations
 import time
 import uuid
 from dataclasses import dataclass, field
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 
 @dataclass
@@ -50,12 +50,21 @@ class WorkerLease:
 
 @dataclass
 class PendingExternalOperation:
-    """An operation submitted to an external provider that is not yet resolved."""
+    """An operation submitted to an external provider that is not yet resolved.
+
+    A single scene/shot submission to the engine may fan out into MANY engine
+    jobs (one per scene compile or shot render inside the same RENDER step).
+    ``external_id`` is the primary reconcile anchor (first engine job); the
+    FULL set of engine jobs for the step is carried in ``job_ids`` so a crash
+    after a batch submit never loses visibility into jobs after the first
+    (VP3D recovery — track every engine job, not just the first).
+    """
 
     step_id: str
     provider: str
     request_hash: str
-    external_id: str = ""  # generation/job id at the provider
+    external_id: str = ""  # primary generation/job id at the provider
+    job_ids: List[str] = field(default_factory=list)  # ALL engine jobs in the batch
     submitted_at: float = field(default_factory=time.time)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -64,6 +73,7 @@ class PendingExternalOperation:
             "provider": self.provider,
             "request_hash": self.request_hash,
             "external_id": self.external_id,
+            "job_ids": list(self.job_ids),
             "submitted_at": self.submitted_at,
         }
 
@@ -71,11 +81,16 @@ class PendingExternalOperation:
     def from_dict(cls, data: Optional[Dict[str, Any]]) -> Optional["PendingExternalOperation"]:
         if not data:
             return None
+        job_ids = list(data.get("job_ids") or [])
+        external_id = data.get("external_id", "")
+        if external_id and external_id not in job_ids:
+            job_ids.insert(0, external_id)
         return cls(
             step_id=data["step_id"],
             provider=data["provider"],
             request_hash=data["request_hash"],
-            external_id=data.get("external_id", ""),
+            external_id=external_id,
+            job_ids=job_ids,
             submitted_at=data.get("submitted_at", 0.0),
         )
 

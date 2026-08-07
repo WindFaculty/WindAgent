@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0.0",
+  "candidate_sha": "1753831c752343aa89419e807aa57058266ff75c",
+  "run_id": "r1_render_1753831c7523",
+  "started_at": "2026-08-02T14:20:21.583452+00:00",
+  "completed_at": "2026-08-02T14:20:21.631906+00:00",
+  "command_or_provider": "ffmpeg",
+  "input_hashes": [
+    "ad8f211bc894755e0061c55ab280ae00e8d3d4f15a8cc4372b24cfa247b5942e",
+    "9df3b0b5275e830961df6d94e1f7a71121a7abd5ff708e9fec8a0b6084a55015"
+  ],
+  "output_hashes": [
+    "ad8f211bc894755e0061c55ab280ae00e8d3d4f15a8cc4372b24cfa247b5942e",
+    "9df3b0b5275e830961df6d94e1f7a71121a7abd5ff708e9fec8a0b6084a55015"
+  ],
+  "evidence_locator": "toolchain_receipt.json",
+  "status": "PASSED",
+  "ffmpeg_path": "ffmpeg.exe",
+  "ffprobe_path": "ffprobe.exe",
+  "ffmpeg_version": "ffmpeg version 8.1.2-full_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers",
+  "ffmpeg_buildconf": "\r\n  configuration:\r\n    --enable-gpl\r\n    --enable-version3\r\n    --enable-static\r\n    --disable-w32threads\r\n    --disable-autodetect\r\n    --enable-cairo\r\n    --enable-fontconfig\r\n    --enable-iconv\r\n    --enable-gnutls\r\n    --enable-lcms2\r\n    --enable-libxml2\r\n    --enable-gmp\r\n    --enable-bzlib\r\n    --enable-lzma\r\n    --enable-libsnappy\r\n    --enable-zlib\r\n    --enable-librist\r\n    --enable-libsrt\r\n    --enable-libssh\r\n    --enable-libzmq\r\n    --enable-avisynth\r\n    --enable-libbluray\r\n    --enable-libcaca\r\n    --enable-libdvdnav\r\n    --enable-libdvdread\r\n    --enable-sdl2\r\n    --enable-libaribb24\r\n    --enable-libaribcaption\r\n    --enable-libdav1d\r\n    --enable-libdavs2\r\n    --enable-libopenjpeg\r\n    --enable-libquirc\r\n    --enable-libuavs3d\r\n    --enable-libxevd\r\n    --enable-libzvbi\r\n    --enable-liboapv\r\n    --enable-libqrencode\r\n    --enable-librav1e\r\n    --enable-libsvtav1\r\n    --enable-libvvenc\r\n    --enable-libwebp\r\n    --enable-libx264\r\n    --enable-libx265\r\n    --enable-libxavs2\r\n    --enable-libxeve\r\n    --enable-libxvid\r\n    --enable-libaom\r\n    --enable-libjxl\r\n    --enable-libsvtjpegxs\r\n    --enable-libvpx\r\n    --enable-mediafoundation\r\n    --enable-libass\r\n    --enable-frei0r\r\n    --enable-libfreetype\r\n    --enable-libfribidi\r\n    --enable-libharfbuzz\r\n    --enable-liblensfun\r\n    --enable-libvidstab\r\n    --enable-libvmaf\r\n    --enable-libzimg\r\n    --enable-amf\r\n    --enable-cuda-llvm\r\n    --enable-cuvid\r\n    --enable-dxva2\r\n    --enable-d3d11va\r\n    --enable-d3d12va\r\n    --enable-ffnvcodec\r\n    --enable-libvpl\r\n    --enable-nvdec\r\n    --enable-nvenc\r\n    --enable-vaapi\r\n    --enable-libshaderc\r\n    --enable-vulkan\r\n    --enable-libplacebo\r\n    --enable-opencl\r\n    --enable-libcdio\r\n    --enable-openal\r\n    --enable-libgme\r\n    --enable-libmodplug\r\n    --enable-libopenmpt\r\n    --enable-libopencore-amrwb\r\n    --enable-libmp3lame\r\n    --enable-libshine\r\n    --enable-libtheora\r\n    --enable-libtwolame\r\n    --enable-libvo-amrwbenc\r\n    --enable-libcode",
+  "ffmpeg_binary_sha256": "ad8f211bc894755e0061c55ab280ae00e8d3d4f15a8cc4372b24cfa247b5942e",
+  "ffprobe_binary_sha256": "9df3b0b5275e830961df6d94e1f7a71121a7abd5ff708e9fec8a0b6084a55015"
+}

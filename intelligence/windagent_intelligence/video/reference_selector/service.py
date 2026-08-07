@@ -6,7 +6,7 @@ Responsibilities:
 - for every shot, collect the asset references it needs: character portraits
   (IDENTITY), location references (LOCATION), prop references (PROP), style
   references (STYLE), and first/last frame assets required by the shot's
-  generation mode;
+  dependency semantics;
 - record each binding with its asset content hash, role, required/optional
   flag, source revision, crop/usage intent and approval state;
 - FAIL CLOSED on any blocking binding defect: an unknown asset, an asset that
@@ -25,10 +25,7 @@ from typing import Dict, List, Optional
 
 from windagent_core.domain.video_production.asset import ReferenceAsset
 from windagent_core.domain.video_production.asset_lifecycle import AssetLifecycleState
-from windagent_core.domain.video_production.enums import (
-    GenerationMode,
-    ReferenceBindingRole,
-)
+from windagent_core.domain.video_production.enums import ReferenceBindingRole
 from windagent_core.domain.video_production.ids import (
     ReferenceAssetId,
     ReferenceBindingId,
@@ -113,22 +110,14 @@ class ReferenceBindingPlanner:
 
         asset_approval = asset_approval or {}
         assets_by_id = {str(a.asset_id): a for a in package.assets}
-        specs_by_shot = {str(s.shot_id): s for s in graph_receipt.specifications}
 
         bindings: List[ReferenceBinding] = []
         for shot in sorted(graph.shots, key=lambda s: (str(s.scene_id), s.order)):
-            spec = specs_by_shot.get(str(shot.shot_id))
-            mode = (
-                spec.generation_mode.preferred_mode
-                if spec and spec.generation_mode
-                else GenerationMode.TEXT_TO_VIDEO
-            )
             bindings.extend(
                 self._bind_shot(
                     package=package,
                     shot_id=shot.shot_id,
                     shot_asset_ids=shot.reference_asset_ids,
-                    mode=mode,
                     assets_by_id=assets_by_id,
                     asset_approval=asset_approval,
                 )
@@ -205,7 +194,6 @@ class ReferenceBindingPlanner:
         package: VideoProductionPackage,
         shot_id: ShotId,
         shot_asset_ids: List[ReferenceAssetId],
-        mode: GenerationMode,
         assets_by_id: Dict[str, ReferenceAsset],
         asset_approval: Dict[str, AssetLifecycleState],
     ) -> List[ReferenceBinding]:
@@ -252,7 +240,7 @@ class ReferenceBindingPlanner:
                 key,
                 _default_approval(asset),
             )
-            required = _binding_required(mode, role)
+            required = _binding_required(role)
             bindings.append(
                 ReferenceBinding(
                     binding_id=ReferenceBindingId(
@@ -345,19 +333,19 @@ def _default_approval(asset: ReferenceAsset) -> AssetLifecycleState:
     )
 
 
-def _binding_required(mode: GenerationMode, role: ReferenceBindingRole) -> bool:
-    """A reference is REQUIRED when the shot's mode cannot run without it.
+def _binding_required(role: ReferenceBindingRole) -> bool:
+    """A reference is REQUIRED based on its role only.
 
-    Identity/location/style/prop references are always required once bound;
-    generic ingredients are required only for INGREDIENTS_TO_VIDEO. First/last
-    frame assets are required for FRAMES_TO_VIDEO.
+    Identity/location/style/prop references are always required once bound.
+    Generic ingredients are optional hints — the engine adapter decides how to
+    use them. Generation-mode-based requirements were retired in VP3D Stage A.
     """
     if role in (ReferenceBindingRole.IDENTITY, ReferenceBindingRole.LOCATION):
         return True
     if role in (ReferenceBindingRole.PROP, ReferenceBindingRole.STYLE):
         return True
     if role == ReferenceBindingRole.INGREDIENT:
-        return mode == GenerationMode.INGREDIENTS_TO_VIDEO
+        return False
     return True
 
 

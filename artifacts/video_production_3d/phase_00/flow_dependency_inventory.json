@@ -1,0 +1,126 @@
+{
+  "schema_version": "1.0.0",
+  "phase": 0,
+  "program": "vp3d",
+  "gate": "VP3D_P0_BASELINE_FROZEN",
+  "recorded_at": "2026-08-07T07:00:00Z",
+  "baseline_sha": "9080fcb4bb6d9a6531a095c624a0f6d8796f4081",
+  "purpose": "Inventory of Google Flow runtime dependencies classified for the Stage A migration (Phase 2 hard removal). Classification: DELETE (Flow-only), MIGRATE (shared value moved to engine-neutral services), KEEP_GENERAL (shared capability, NOT Flow), HISTORICAL_ONLY (archived evidence/docs).",
+  "scope_definition": {
+    "google_flow_runtime": "tools/windagent_tools/google_flow/ (browser adapter for the Google Flow generative-video web UI)",
+    "not_in_scope": "Google Gemini model provider (providers/windagent_providers/google/) is a general LLM provider and MUST NOT be removed; it shares only the word 'google'."
+  },
+  "code": {
+    "DELETE": [
+      "tools/windagent_tools/google_flow/ (entire package: __init__, candidate_downloader, human_control, image_generation, image_operations, job_record, navigation, pre_submit_guard, project_manager, review_approval, selectors/, state_machine, video_candidates, video_generation, video_inspection, video_operations) — ~1200+ LOC, all Flow-specific",
+      "tools/windagent_tools/video_probe.py Flow imports (module itself may be kept; its google_flow import must be removed)",
+      "tools/windagent_tools/__init__.py Flow re-exports (FlowImageGenerator, FlowVideoGenerator, FlowJobRegistry, FlowNavigator, FlowProjectManager, FlowUiState, FlowImageOperation, FlowVideoOperation, VideoCandidateDownloader)"
+    ],
+    "MIGRATE": [
+      {
+        "item": "GenerationMode / GenerationModeDecider (intelligence/video/shot_planner/generation_mode.py)",
+        "to": "Production IR ShotExecutionIntent (engine-neutral execution intent)"
+      },
+      {
+        "item": "FlowGenerationSpecification + prompt compiler (core prompt_compiler.py, intelligence prompt_compiler/modes.py, director/prompts.py generation_mode block)",
+        "to": "IR creative_prompt separation; legacy compiler becomes a bounded compatibility layer with a sunset date"
+      },
+      {
+        "item": "Idempotency / cancellation / retry / artifact hash / provenance / fail-closed review guarantees inside Flow adapters",
+        "to": "engine-neutral services behind ProductionEnginePort (Phase 2 items 1-2)"
+      },
+      {
+        "item": "Flow-specific browser navigation state machines (state_machine, navigation, project_manager)",
+        "to": "retired; generic BrowserRuntime remains as the shared agent browser capability"
+      }
+    ],
+    "KEEP_GENERAL": [
+      "tools/windagent_tools/browser/ (BrowserRuntime, action policy, state encryption, session locks) — shared agent capability",
+      "execution/windagent_execution/adapters/browser_runtime.py + registry entry (execution runtime port)",
+      "core MediaGenerationProviderPort (contract remains; GenerationRequest loses generation_mode coupling over time)",
+      "TTS/audio pipeline, post-production, storage, verification, observability layers"
+    ],
+    "HISTORICAL_ONLY": [
+      "intelligence/windagent_intelligence/video/e2e_poc/recovery_auditor.py (job_flow_video_03 reference string — sample data only)",
+      "historical verification evidence referencing Flow (artifacts/video_production/* flow evidence)",
+      "Flow selector maps / DOM catalogs (google_flow/selectors) if archived for provenance, never re-imported"
+    ]
+  },
+  "docs": {
+    "DELETE": [
+      "docs/video_production/flow_* (current-release runtime contracts for Flow adapters)",
+      "docs/video_production/browser_runtime/* only if Flow-specific; browser_runtime_contract.md and browser_action_policy.md are KEEP_GENERAL (shared browser capability)"
+    ],
+    "MIGRATE": [
+      "docs/video_production/protocol/versioning_policy.md (extend to IR schema versioning)"
+    ],
+    "HISTORICAL_ONLY": [
+      "third_party/videoclaw/upstream manifests mentioning Flow (already quarantined)",
+      "old roadmap artifacts describing the Google Flow provider (road_map.md rewrite supersedes them)"
+    ]
+  },
+  "tests": {
+    "DELETE_OR_REWRITE": [
+      "tests/architecture/test_phase15_flow_video_canonical.py",
+      "tests/unit/tools/test_phase15_flow_video.py",
+      "tests/architecture/test_phase13_flow_navigation_canonical.py",
+      "tests/architecture/test_phase14_flow_images_canonical.py",
+      "tests/architecture/test_phase16_human_control_canonical.py",
+      "tests/unit/tools/ flow-related tests"
+    ],
+    "MIGRATE": [
+      "tests exercising idempotency/cancellation/retry/hash/provenance semantics — rewritten against fake ProductionEnginePort + IR fixtures"
+    ],
+    "KEEP_GENERAL": [
+      "tests/unit/tools/test_phase3_security_and_containment.py (browser audit)",
+      "tests/unit/tools/test_phase19_tool_platform.py",
+      "tests for browser runtime (shared)"
+    ]
+  },
+  "config_secrets": {
+    "DELETE": ["Flow browser session credentials, Flow project URLs, Flow-specific env keys (none committed; scan required at removal)"],
+    "KEEP": ["WINDAGENT_ENCRYPTION_KEY_* rotation keys (storage security, unrelated)", "Gemini API keys (general LLM provider)"]
+  },
+  "dependency_map": {
+    "inbound_production": [
+      "tools/windagent_tools/__init__.py (re-exports — line 32)",
+      "tools/windagent_tools/video_probe.py (imports google_flow.video_inspection — line 34)"
+    ],
+    "inbound_verification_tests": [
+      "scripts/verification/verify_phase15_flow_video.py",
+      "scripts/verification/verify_phase13_flow_navigation.py",
+      "scripts/verification/verify_phase11_compiler.py (GenerationModeDecision)",
+      "scripts/verification/verify_phase9_shot_graph.py (GenerationMode)",
+      "tests/architecture/*flow* and tests/unit/tools/*flow*"
+    ],
+    "inbound_domain_concepts": [
+      "core GenerationMode enum -> Shot.generation_mode, ShotSpecification.generation_mode, GenerationModeDecision, FlowGenerationSpecification, GenerationRequest.generation_mode",
+      "intelligence/video/director/prompts.py generation_mode prompt block",
+      "intelligence/video/reference_selector/service.py fallback mode choice",
+      "intelligence/video/prompt_compiler/modes.py decision table"
+    ],
+    "outbound": [
+      "google_flow/* imports only within-package modules + windagent_tools.browser (runtime/agent_browser/state) + windagent_core domain/ids/events",
+      "google_flow NEVER imports storage/ORM; it is a pure browser adapter (phase 13/14 architecture constraint)"
+    ],
+    "browser_shared_boundary": {
+      "note": "BrowserRuntime (tools/windagent_tools/browser/runtime.py) is a durable, bounded browser worker used by the whole agent. Only the Flow-specific navigation/project/selectors logic on top of it is DELETE. browser_runtime_contract.md docs remain.",
+      "also_used_by": "execution registry BrowserRuntimeAdapter"
+    }
+  },
+  "migration_contract": {
+    "compatibility_window": "Stage A in full (Phases 0-2). During the window the legacy GenerationRequest/FlowGenerationSpecification path stays readable; the IR becomes the source of truth for new productions.",
+    "schema_versioning": "ProductionIrDocument schema_version 1.0.0 (MAJOR.MINOR.PATCH, fail-closed on unknown MAJOR, additive fields allowed within MAJOR 1) — reuses the VideoProductionPackage versioning policy.",
+    "event_migration": "Legacy VideoProductionEventCatalog remains for historical streams; new ProductionIrEventCatalog (video_production_ir.*) is additive. No dual-write beyond the compatibility window.",
+    "rollback": "IR is purely additive in Phase 1; rollback = stop emitting IR documents and keep consuming VideoProductionPackage v1. No persisted schema is migrated destructively in Phase 1.",
+    "removal_conditions_for_google_flow": [
+      "1. Composition root / workflow / API / UI consume ProductionEnginePort + IR schemas (Phase 2 items 1-2).",
+      "2. `rg google_flow` and `rg 'FlowVideo|FlowImage|flow_video'` return zero runtime references (historical archive allowlist only).",
+      "3. Architecture test forbidding Flow imports from canonical packages passes.",
+      "4. Config/secret validator reports zero Flow residue.",
+      "5. Full regression not below baseline outside the retirement manifest."
+    ],
+    "data_risk": "GenerationRequest is referenced by storage/workflow; persisted data must be read via the migrator during the window. No destructive migration of persisted generation_records."
+  },
+  "producer": "phase-0-baseline-freeze"
+}

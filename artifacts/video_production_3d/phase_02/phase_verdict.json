@@ -1,0 +1,62 @@
+{
+  "schema_version": "1.0.0",
+  "phase": 2,
+  "program": "vp3d",
+  "gate": "VP3D_P2_GOOGLE_FLOW_REMOVED",
+  "recorded_at": "2026-08-07T10:00:00Z",
+  "baseline_sha": "9080fcb4bb6d9a6531a095c624a0f6d8796f4081",
+  "phase0_gate": "VP3D_P0_BASELINE_FROZEN (PASS)",
+  "phase1_gate": "VP3D_P1_ENGINE_NEUTRAL_IR_VERIFIED (PASS)",
+  "verdict": "PASS",
+  "status": "VP3D_P2_GOOGLE_FLOW_REMOVED",
+  "evidence_files": [
+    "flow_removal_inventory.json",
+    "test_baseline.json",
+    "phase_verdict.json"
+  ],
+  "gate_checks": [
+    {
+      "check": "Move shared guarantees to engine-neutral services",
+      "result": "PASS",
+      "detail": "VideoInspection, VideoInspectorPort, VideoInspectionPolicy moved to core/windagent_core/contracts/video_production/video_inspection.py. tools/windagent_tools/video_probe.py updated to import from engine-neutral core contract."
+    },
+    {
+      "check": "Hard removal of tools/windagent_tools/google_flow/",
+      "result": "PASS",
+      "detail": "Deleted tools/windagent_tools/google_flow/ (all 16 modules). Removed google_flow exports from tools/windagent_tools/__init__.py. Deleted obsolete Flow unit/architecture tests and verification scripts."
+    },
+    {
+      "check": "Negative architecture test assertions for Flow removal",
+      "result": "PASS",
+      "detail": "tests/architecture/test_phase2_flow_removal_canonical.py verifies: 1) google_flow unimportable; 2) 0 runtime imports of google_flow across canonical packages; 3) 0 Flow credentials in active configs; 4) Google Gemini LLM provider intact; 5) worker lifecycle over fake ProductionEnginePort + IR. STRENGTHENED (audit finding #5): worker restart/cancel/retry now exercises a DURABLE engine client persisting receipts to a state dir — a fresh instance over the same state simulates worker restart, re-attaches to in-flight jobs, reconciles cancelled/failed jobs, and retries via a NEW job id (inspect-before-resubmit, never blind resubmit; plan §5 'compensation_or_recovery')."
+    },
+    {
+      "check": "Google Gemini LLM provider intact",
+      "result": "PASS",
+      "detail": "providers/windagent_providers/google/ (GoogleGeminiProviderAdapter) untouched and fully functional."
+    },
+    {
+      "check": "Composition root consumed ProductionEnginePort (worker consumer cutover)",
+      "result": "PASS",
+      "detail": "Audit finding #1 (0 consumers) resolved: added engine-neutral ProductionEngineExecutor (core/windagent_core/contracts/video_production/production_executor.py) as the worker-facing facade over ProductionEnginePort with durable receipt persistence; composed in apps/worker/windagent_worker/composition.py whenever the (guarded) Blender adapter is registered (WINDAGENT_BLENDER_ENGINE=1). Tested in test_phase1_production_engine_port.py::TestEngineExecutorConsumer (dispatch, cancel-terminal, restart-reconcile, unknown-job)."
+    },
+    {
+      "check": "Full test regression not below baseline",
+      "result": "PASS",
+      "detail": "See artifacts/video_production_3d/phase_02/test_baseline.json (regenerated). Only remaining failure is the pre-existing baseline defect VP3D_BASELINE_001 (test_phase27_release.py hard-coded CANDIDATE_SHA). NOTE (audit finding #3): the earlier receipt's '415 passed' was a PARTIAL run; the honest full-suite baseline is ~1850+ passed / 1 pre-existing failure / 5 skipped — flow removal introduced NO new failures beyond the already-documented baseline defect. Handoff checksums regenerated (test_phase03_verifier_no_write now PASS) because contracts/video_production/__init__.py legitimately gained ProductionEngineExecutor."
+    }
+  ],
+  "stage_a_completion": {
+    "status": "STAGE_A_COMPLETED",
+    "phase0": "VP3D_P0_BASELINE_FROZEN (PASS)",
+    "phase1": "VP3D_P1_ENGINE_NEUTRAL_IR_VERIFIED (PASS)",
+    "phase2": "VP3D_P2_GOOGLE_FLOW_REMOVED (PASS)",
+    "candidate": {
+      "head_sha": "9080fcb4bb6d9a6531a095c624a0f6d8796f4081",
+      "tree_sha": "88f3c427a29ce50113fcd7c87ebd1d8e6c41e4de",
+      "note": "Candidate = full current worktree snapshot (git add -A into a temporary index; includes untracked Stage A files + Stage A edits) on fix/phase7-verification-integrity. Non-destructive; all three Stage A gates reference this same candidate tree. A final git commit pins it when the user is ready (avoids sweeping unrelated dirty files)."
+    },
+    "next_stage": "Stage B — Blender Runtime Engine Adapter (stage_b_blender_runtime.md)"
+  },
+  "producer": "phase-2-google-flow-removal"
+}

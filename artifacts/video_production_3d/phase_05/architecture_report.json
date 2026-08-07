@@ -1,0 +1,53 @@
+{
+  "phase": "phase_05",
+  "architecture_checks": [
+    {
+      "id": "P5_ARCH_1",
+      "check": "core (asset_resolution + AssetResolverPort) never imports windagent_providers/windagent_tools/intelligence/storage/workflows/third_party",
+      "result": "PASS",
+      "evidence": "tests/architecture/test_phase5_asset_gateway_architecture.py::test_core_never_imports_gateway_implementations"
+    },
+    {
+      "id": "P5_ARCH_2",
+      "check": "providers/windagent_providers/assets imports only windagent_core (scaffold_v2 providers.allowed_dependencies = [windagent_core])",
+      "result": "PASS",
+      "evidence": "test_gateway_adapters_only_import_core; shared download/validation stays in tools and is INJECTED through structural ports (InternetSearchPort/InternetAcquisitionPort) at composition root"
+    },
+    {
+      "id": "P5_ARCH_3",
+      "check": "AssetResolverPort surface leaks no provider SDK, transport or credential identifiers",
+      "result": "PASS",
+      "evidence": "test_port_leaks_no_provider_sdk_or_credential"
+    },
+    {
+      "id": "P5_ARCH_4",
+      "check": "no secret VALUES in gateway adapters; secret config fields are *_ref references only",
+      "result": "PASS",
+      "evidence": "test_adapters_store_no_secret_values; test_adapters_reference_secrets_only_by_reference"
+    },
+    {
+      "id": "P5_ARCH_5",
+      "check": "AssetResolver implements the runtime-checkable AssetResolverPort (discover/acquire/capabilities)",
+      "result": "PASS",
+      "evidence": "test_resolver_port_implemented_by_gateway"
+    },
+    {
+      "id": "P5_ARCH_6",
+      "check": "Director/Scene Compiler only channel is the port (no direct provider call path exists in core)",
+      "result": "PASS",
+      "evidence": "core domain contains no transport import; port is the only asset acquisition surface"
+    },
+    {
+      "id": "P5_ARCH_7",
+      "check": "credential redaction fail-closed (value-based guard; secret references allowed)",
+      "result": "PASS",
+      "evidence": "tests/unit/providers/test_phase5_asset_gateway.py::TestRedaction"
+    }
+  ],
+  "boundary_model": {
+    "core": "AssetResolverPort + asset_resolution DTOs/errors (provider-neutral)",
+    "providers": "windagent_providers/assets: adapters, capability matcher, cache, execution policy, registry, resolver, fakes",
+    "tools": "windagent_tools/media_assets: shared download/validation (unchanged; injected via ports)",
+    "composition_root": "apps/worker composes: tools services -> providers adapters -> gateway registration"
+  }
+}

@@ -14,7 +14,7 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from windagent_core.domain.video_production.enums import GenerationMode, GenerationStatus
+from windagent_core.domain.video_production.enums import GenerationStatus
 from windagent_core.domain.video_production.ids import (
     GenerationCandidateId,
     GenerationRequestId,
@@ -38,7 +38,6 @@ class GenerationRequest(BaseModel):
     project_id: VideoProjectId
     revision_id: ProductionRevisionId
     shot_id: ShotId
-    generation_mode: GenerationMode
     provider: str = ""
     prompt_version: str = "1.0.0"
     prompt_hash: str = Field(min_length=64, max_length=64)

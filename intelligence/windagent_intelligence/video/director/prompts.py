@@ -55,8 +55,6 @@ _DIRECTOR_SCHEMA_HINT = (
     '"duration_seconds": <positive number>, '
     '"framing_description": "<framing>", '
     '"transition_type": "CUT|FADE|DISSOLVE|WIPE|MATCH_CUT", '
-    '"generation_mode": "TEXT_TO_VIDEO|IMAGE_TO_VIDEO|FRAMES_TO_VIDEO|'
-    'INGREDIENTS_TO_VIDEO|VIDEO_EXTENSION|VIDEO_TO_VIDEO", '
     '"dialogue_line_ids": ["<existing dialogue id>"], '
     '"reference_asset_ids": ["<existing approved asset id>"], '
     '"narrative_purpose": "<why this shot>"}]}'

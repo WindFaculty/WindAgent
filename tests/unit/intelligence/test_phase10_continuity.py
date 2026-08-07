@@ -423,10 +423,9 @@ def _bare_specs(pkg, graph: ShotDependencyGraph):
         ShotSpecification,
     )
 
-    from windagent_intelligence.video import CameraPlanner, GenerationModeDecider
+    from windagent_intelligence.video import CameraPlanner
 
     camera = CameraPlanner()
-    decider = GenerationModeDecider()
     specs = []
     for shot in graph.shots:
         specs.append(
@@ -438,12 +437,6 @@ def _bare_specs(pkg, graph: ShotDependencyGraph):
                 ordinal=shot.order,
                 duration_seconds=shot.duration_seconds,
                 camera=camera.decide(shot),
-                generation_mode=decider.decide(
-                    shot=shot,
-                    incoming=[],
-                    scene_character_asset_ids=[],
-                    scene_location_asset_ids=[],
-                ),
             )
         )
     return specs

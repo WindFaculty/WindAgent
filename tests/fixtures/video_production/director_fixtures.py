@@ -21,7 +21,6 @@ from windagent_core.domain.video_production.enums import (
     AssetSourceType,
     CameraMovement,
     CharacterRole,
-    GenerationMode,
     LicenseState,
     MediaType,
     ScreenplayStatus,
@@ -29,6 +28,10 @@ from windagent_core.domain.video_production.enums import (
     TimeOfDay,
     TransitionType,
 )
+# Legacy-shaped pinned planner output keeps `generation_mode` keys ONLY as
+# backward-compatible extra fields (ShotPlan/Shot tolerate them via
+# extra="allow"); the canonical runtime never reads them (legacy_v1/SUNSET.md).
+from windagent_core.domain.video_production.legacy_v1 import GenerationMode
 from windagent_core.domain.video_production.ids import (
     CharacterId,
     CreativeBriefId,

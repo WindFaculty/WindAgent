@@ -1,10 +1,11 @@
-"""Phase 11 - Reference Binding + Prompt Compiler canonical isolation tests
-(plan 03 §4, §24.4).
+"""Phase 11 - Reference Binding canonical isolation tests
+(plan 03 §4, §24.4) + VP3D Stage A retirement checks.
 
-Proves the Phase 11 layers
-(`intelligence/windagent_intelligence/video/reference_selector/` and
-`intelligence/windagent_intelligence/video/prompt_compiler/`) meet the Phase 11
-architecture rules:
+Proves the Phase 11 reference-binding layer
+(`intelligence/windagent_intelligence/video/reference_selector/`) meets the
+Phase 11 architecture rules, and that the retired prompt-compiler surface
+(FlowGenerationSpecification / PromptCompiler / GenerationModeDecider) is no
+longer exported from canonical packages (legacy_v1/SUNSET.md):
 - no upstream import / sys.path mutation / subprocess (clean-room, plan §4);
 - provider-neutral: imports only `windagent_core` + `windagent_intelligence`;
   never imports `windagent_tools` / `windagent_providers` / browser modules;
@@ -12,8 +13,9 @@ architecture rules:
   required);
 - core domain objects (ReferenceBinding / ReferenceBindingPlan /
   ReferenceBindingValidator / PromptBlock / CompiledPrompt /
-  FlowGenerationSpecification / PromptCompilerIssue / PromptSecurityFinding /
-  compute_request_hash) live in core and stay intelligence/tools-neutral;
+  PromptCompilerIssue / PromptSecurityFinding / compute_request_hash) live in
+  core and stay intelligence/tools-neutral; FlowGenerationSpecification was
+  retired to the bounded legacy_v1 compatibility layer;
 - the real workspace architecture check reports zero violations.
 """
 
@@ -117,7 +119,6 @@ def test_core_exports_phase11_models():
         "ReferenceBindingIssueCode",
         "PromptBlock",
         "CompiledPrompt",
-        "FlowGenerationSpecification",
         "PromptCompilerIssue",
         "PromptSecurityFinding",
         "PromptBlockType",
@@ -126,10 +127,13 @@ def test_core_exports_phase11_models():
         "compute_request_hash",
     ):
         assert hasattr(vp, name), f"core missing export {name}"
+    # VP3D Stage A: FlowGenerationSpecification is retired from canonical
+    # exports (bounded legacy_v1 compatibility layer only).
+    assert not hasattr(vp, "FlowGenerationSpecification")
     import windagent_core as core
 
     assert hasattr(core, "ReferenceBindingPlan")
-    assert hasattr(core, "FlowGenerationSpecification")
+    assert not hasattr(core, "FlowGenerationSpecification")
     assert hasattr(core, "compute_request_hash")
 
 
@@ -139,13 +143,12 @@ def test_intelligence_exports_phase11_services():
     for name in (
         "ReferenceBindingPlanner",
         "ReferenceBindingPlanReceipt",
-        "PromptCompiler",
-        "CompiledRequestReceipt",
-        "PromptBlockBuilder",
-        "PromptSanitizer",
-        "ModeCompiler",
     ):
         assert hasattr(video, name), f"intelligence missing export {name}"
+    # VP3D Stage A: the prompt compiler service is retired from intelligence.
+    for retired in ("PromptCompiler", "CompiledRequestReceipt", "PromptBlockBuilder",
+                    "PromptSanitizer", "ModeCompiler"):
+        assert not hasattr(video, retired), f"retired export still present: {retired}"
 
 
 def test_real_repo_architecture_stays_clean():

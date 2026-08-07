@@ -65,6 +65,41 @@ class RejectedAssetError(AssetPipelineError):
     retryable = False
 
 
+class TrademarkRequiresApprovalError(AssetPipelineError):
+    """Asset carries a trademark or requires attribution; needs human approval."""
+
+    code = "ASSET_TRADEMARK_NEEDS_APPROVAL"
+    retryable = False
+
+
+class CommercialUseRequiresEvidenceError(AssetPipelineError):
+    """Asset is not demonstrably licensed for commercial use (fail closed)."""
+
+    code = "ASSET_COMMERCIAL_USE_UNVERIFIED"
+    retryable = False
+
+
+class CheckSumUnverifiedError(AssetPipelineError):
+    """Asset checksum could not be verified from an independent source."""
+
+    code = "ASSET_CHECKSUM_UNVERIFIED"
+    retryable = True
+
+
+class QuarantinedAssetError(AssetPipelineError):
+    """Asset is quarantined; cannot be used until a human reviews it."""
+
+    code = "ASSET_QUARANTINED"
+    retryable = False
+
+
+class EmbeddedExecutableError(AssetPipelineError):
+    """Archive/mesh payload embeds an executable/script/driver/add-on (banned)."""
+
+    code = "ASSET_EMBEDDED_EXECUTABLE"
+    retryable = False
+
+
 __all__ = [
     "AssetPipelineError",
     "UrlBlockedError",
@@ -73,4 +108,9 @@ __all__ = [
     "LicenseUnknownError",
     "LikenessRequiresApprovalError",
     "RejectedAssetError",
+    "TrademarkRequiresApprovalError",
+    "CommercialUseRequiresEvidenceError",
+    "CheckSumUnverifiedError",
+    "QuarantinedAssetError",
+    "EmbeddedExecutableError",
 ]

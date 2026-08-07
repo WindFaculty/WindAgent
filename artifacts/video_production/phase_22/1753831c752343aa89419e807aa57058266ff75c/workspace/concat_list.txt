@@ -1,0 +1,6 @@
+file 'D:/code_ca_nhan/WindAgent/artifacts/video_production/phase_22/1753831c752343aa89419e807aa57058266ff75c/workspace/clip_01.mp4'
+file 'D:/code_ca_nhan/WindAgent/artifacts/video_production/phase_22/1753831c752343aa89419e807aa57058266ff75c/workspace/clip_02.mp4'
+file 'D:/code_ca_nhan/WindAgent/artifacts/video_production/phase_22/1753831c752343aa89419e807aa57058266ff75c/workspace/clip_03.mp4'
+file 'D:/code_ca_nhan/WindAgent/artifacts/video_production/phase_22/1753831c752343aa89419e807aa57058266ff75c/workspace/clip_04.mp4'
+file 'D:/code_ca_nhan/WindAgent/artifacts/video_production/phase_22/1753831c752343aa89419e807aa57058266ff75c/workspace/clip_05.mp4'
+file 'D:/code_ca_nhan/WindAgent/artifacts/video_production/phase_22/1753831c752343aa89419e807aa57058266ff75c/workspace/clip_06.mp4'

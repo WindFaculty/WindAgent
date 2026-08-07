@@ -1,0 +1,55 @@
+{
+  "schema_version": "1.0.0",
+  "phase": 0,
+  "program": "vp3d",
+  "gate": "VP3D_P0_BASELINE_FROZEN",
+  "recorded_at": "2026-08-07T07:00:00Z",
+  "baseline_sha": "9080fcb4bb6d9a6531a095c624a0f6d8796f4081",
+  "branch": "fix/phase7-verification-integrity",
+  "verdict": "PASS",
+  "status": "VP3D_P0_BASELINE_FROZEN",
+  "evidence_files": [
+    "baseline_commit.json",
+    "toolchain_inventory.json",
+    "test_baseline.json",
+    "schema_snapshot.json",
+    "flow_dependency_inventory.json",
+    "phase_verdict.json"
+  ],
+  "gate_checks": [
+    {
+      "check": "Baseline re-runnable",
+      "result": "PASS",
+      "detail": "All commands in test_baseline.json.command_set execute on Windows/MINGW64 with the recorded toolchain; full suite reproduced at 1879 passed / 1 failed / 5 skipped."
+    },
+    {
+      "check": "All Flow dependencies classified",
+      "result": "PASS",
+      "detail": "flow_dependency_inventory.json classifies code/docs/tests/config/artifacts into DELETE / MIGRATE / KEEP_GENERAL / HISTORICAL_ONLY with inbound/outbound dependency map and removal conditions."
+    },
+    {
+      "check": "Phase 0 contains no business-code changes",
+      "result": "PASS",
+      "detail": "Phase 0 created only evidence files under artifacts/video_production_3d/phase_00/. Pre-existing uncommitted GAP A-D storage work and 3D planning docs were recorded, not modified."
+    },
+    {
+      "check": "Baseline SHA recorded and stable",
+      "result": "PASS",
+      "detail": "baseline_sha 9080fcb4bb6d9a6531a095c624a0f6d8796f4081, tree_sha 6cb1bf5c..., branch fix/phase7-verification-integrity. Subsequent phases reference this SHA."
+    }
+  ],
+  "known_baseline_defects": [
+    {
+      "id": "VP3D_BASELINE_001",
+      "severity": "INFO",
+      "detail": "test_phase27_release.py hard-codes an old CANDIDATE_SHA; fails at clean HEAD. Documented in test_baseline.json. Does not block Stage A."
+    }
+  ],
+  "next_phase": "Phase 1 — Canonical Production IR (gate VP3D_P1_ENGINE_NEUTRAL_IR_VERIFIED)",
+  "candidate": {
+    "head_sha": "9080fcb4bb6d9a6531a095c624a0f6d8796f4081",
+    "tree_sha": "88f3c427a29ce50113fcd7c87ebd1d8e6c41e4de",
+    "note": "All Stage A gates reference the same candidate tree (full worktree snapshot via temporary-index git add -A). P0 itself records the frozen baseline at baseline_sha; the candidate is where Stage A implementation lands."
+  },
+  "producer": "phase-0-baseline-freeze"
+}

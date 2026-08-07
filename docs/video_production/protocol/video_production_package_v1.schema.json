@@ -263,7 +263,7 @@
     },
     "ContinuityState": {
       "additionalProperties": true,
-      "description": "Per-shot continuity snapshot.",
+      "description": "Per-shot continuity snapshot (package v1 schema, Phase 6).",
       "properties": {
         "state_id": {
           "title": "State Id",
@@ -960,6 +960,19 @@
       "title": "ReferenceAsset",
       "type": "object"
     },
+    "RequiredArtifactType": {
+      "description": "Artifact a dependency edge requires from its predecessor (Phase 9).\n\n`NONE` means the edge is a pure ordering/scheduling hint; a non-NONE value\nmeans the successor cannot start until the predecessor produced that\nartifact (e.g. a tail frame for continuity, both clips for a transition).",
+      "enum": [
+        "NONE",
+        "TAIL_FRAME",
+        "FIRST_FRAME",
+        "LAST_FRAME",
+        "FULL_CLIP",
+        "REFERENCE_IMAGE"
+      ],
+      "title": "RequiredArtifactType",
+      "type": "string"
+    },
     "Scene": {
       "additionalProperties": true,
       "description": "A screenplay scene with explicit ordering.",
@@ -1151,7 +1164,7 @@
     },
     "ShotDependency": {
       "additionalProperties": true,
-      "description": "Typed dependency edge between two shots.",
+      "description": "Typed dependency edge between two shots (Phase 9 semantics).\n\nFields follow plan 03 §13: predecessor/successor shot IDs, dependency\ntype, required artifact type, reason, and whether the edge is blocking\n(successor cannot start until the predecessor produced the artifact).",
       "properties": {
         "dependency_id": {
           "title": "Dependency Id",
@@ -1169,10 +1182,19 @@
           "$ref": "#/$defs/DependencyType",
           "default": "TEMPORAL"
         },
+        "required_artifact_type": {
+          "$ref": "#/$defs/RequiredArtifactType",
+          "default": "NONE"
+        },
         "reason": {
           "default": "",
           "title": "Reason",
           "type": "string"
+        },
+        "blocking": {
+          "default": false,
+          "title": "Blocking",
+          "type": "boolean"
         }
       },
       "required": [
@@ -1185,7 +1207,7 @@
     },
     "ShotDependencyGraph": {
       "additionalProperties": true,
-      "description": "Directed acyclic graph over shots for scheduling.",
+      "description": "Directed acyclic graph over shots for scheduling (Phase 9).",
       "properties": {
         "shots": {
           "items": {

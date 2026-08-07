@@ -1,0 +1,275 @@
+{
+  "candidate_sha": "",
+  "generated_at": "2026-08-08T06:37:14.670639",
+  "blender_executable": "C:\\Program Files\\Blender Foundation\\Blender 4.5\\blender.exe",
+  "blender_ready": true,
+  "ready_reason": "Blender 4.5.12 ready; GPU CPU-only",
+  "ffmpeg_version": {
+    "ffmpeg_path": "C:\\Users\\Admin\\AppData\\Local\\Microsoft\\WinGet\\Packages\\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\\ffmpeg-8.1.2-full_build\\bin\\ffmpeg.EXE",
+    "ffprobe_path": "C:\\Users\\Admin\\AppData\\Local\\Microsoft\\WinGet\\Packages\\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\\ffmpeg-8.1.2-full_build\\bin\\ffprobe.EXE",
+    "ffmpeg_version_line": "ffmpeg version 8.1.2-full_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers",
+    "ffprobe_version_line": "ffprobe version 8.1.2-full_build-www.gyan.dev Copyright (c) 2007-2026 the FFmpeg developers",
+    "ffmpeg_version_hash": "1c02a15d2016905bddffb298be36e9c05c87d95ddd94f7ce98c3622015d3f3a0",
+    "ffprobe_version_hash": "5ec23ff87c8d3b9d884fe42a9378bb5e8fc81b8945d3dcd07cd2f32f2f00fcc8"
+  },
+  "workspace": "D:\\code_ca_nhan\\WindAgent\\artifacts\\video_production_3d\\phase_04_smoke\\scn_01",
+  "scene_plan_path": "D:\\code_ca_nhan\\WindAgent\\artifacts\\video_production_3d\\phase_04_smoke\\scn_01\\scene_plan.json",
+  "error": "render did not cover the full frame range",
+  "job_outcomes": [
+    {
+      "job_id": "ej_scn_01_compile",
+      "kind": "COMPILE",
+      "state": "COMPLETED",
+      "error": "",
+      "reused": false,
+      "metadata": {
+        "execution_receipt": {
+          "job_id": "ej_scn_01_compile",
+          "kind": "COMPILE",
+          "executable_path": "C:\\Program Files\\Blender Foundation\\Blender 4.5\\blender.exe",
+          "redacted_argv": [
+            "C:\\Program Files\\Blender Foundation\\Blender 4.5\\blender.exe",
+            "--background",
+            "--factory-startup",
+            "--python",
+            "D:\\code_ca_nhan\\WindAgent\\tools\\windagent_tools\\production_engines\\blender\\scripts\\execute_job.py",
+            "--",
+            "--job-id",
+            "ej_scn_01_compile",
+            "--kind",
+            "COMPILE",
+            "--job-spec",
+            "D:\\code_ca_nhan\\WindAgent\\artifacts\\video_production_3d\\phase_04_smoke\\scn_01\\job_spec.json"
+          ],
+          "blender_version": "",
+          "started_at": 1786145814.3834217,
+          "finished_at": 1786145816.3797886,
+          "duration_ms": 1996.367,
+          "exit_code": 0,
+          "pid": 13964,
+          "stdout_hash": "5f12a1fded2993d243d0dce63b7065ca71d100f65f1a712601c065ece932b42c",
+          "stderr_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_hashes": {},
+          "failure_classification": "SUCCESS",
+          "cancel_requested": false,
+          "error_snippet": "",
+          "metadata": {
+            "workspace": "D:\\code_ca_nhan\\WindAgent\\artifacts\\video_production_3d\\phase_04_smoke\\scn_01",
+            "timeout_seconds": 300.0,
+            "idempotency_key": "8c9eef6f731af5b8225ab7db410a3c4d394acc1b66204a4862adf7ee46529bdf"
+          }
+        }
+      }
+    },
+    {
+      "job_id": "ej_scn_01_save",
+      "kind": "SAVE",
+      "state": "COMPLETED",
+      "error": "",
+      "reused": false,
+      "metadata": {
+        "execution_receipt": {
+          "job_id": "ej_scn_01_save",
+          "kind": "SAVE",
+          "executable_path": "C:\\Program Files\\Blender Foundation\\Blender 4.5\\blender.exe",
+          "redacted_argv": [
+            "C:\\Program Files\\Blender Foundation\\Blender 4.5\\blender.exe",
+            "--background",
+            "--factory-startup",
+            "--python",
+            "D:\\code_ca_nhan\\WindAgent\\tools\\windagent_tools\\production_engines\\blender\\scripts\\execute_job.py",
+            "--",
+            "--job-id",
+            "ej_scn_01_save",
+            "--kind",
+            "SAVE",
+            "--job-spec",
+            "D:\\code_ca_nhan\\WindAgent\\artifacts\\video_production_3d\\phase_04_smoke\\scn_01\\job_spec.json"
+          ],
+          "blender_version": "",
+          "started_at": 1786145816.3797886,
+          "finished_at": 1786145817.3864071,
+          "duration_ms": 1006.618,
+          "exit_code": 0,
+          "pid": 16560,
+          "stdout_hash": "521c6ecf81de335e6777ed6f6304a69d647db4b2184738ba93bd0a2894490331",
+          "stderr_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_hashes": {},
+          "failure_classification": "SUCCESS",
+          "cancel_requested": false,
+          "error_snippet": "",
+          "metadata": {
+            "workspace": "D:\\code_ca_nhan\\WindAgent\\artifacts\\video_production_3d\\phase_04_smoke\\scn_01",
+            "timeout_seconds": 300.0,
+            "idempotency_key": "0d7cf90123759e9d0ae02ec4a87658a98a93bd73fdf8f0fb3c1b5370047d03fb"
+          }
+        }
+      }
+    },
+    {
+      "job_id": "ej_scn_01_inspect",
+      "kind": "INSPECT",
+      "state": "COMPLETED",
+      "error": "",
+      "reused": false,
+      "metadata": {
+        "execution_receipt": {
+          "job_id": "ej_scn_01_inspect",
+          "kind": "INSPECT",
+          "executable_path": "C:\\Program Files\\Blender Foundation\\Blender 4.5\\blender.exe",
+          "redacted_argv": [
+            "C:\\Program Files\\Blender Foundation\\Blender 4.5\\blender.exe",
+            "--background",
+            "--factory-startup",
+            "--python",
+            "D:\\code_ca_nhan\\WindAgent\\tools\\windagent_tools\\production_engines\\blender\\scripts\\execute_job.py",
+            "--",
+            "--job-id",
+            "ej_scn_01_inspect",
+            "--kind",
+            "INSPECT",
+            "--job-spec",
+            "D:\\code_ca_nhan\\WindAgent\\artifacts\\video_production_3d\\phase_04_smoke\\scn_01\\job_spec.json"
+          ],
+          "blender_version": "",
+          "started_at": 1786145817.387321,
+          "finished_at": 1786145818.3840294,
+          "duration_ms": 996.708,
+          "exit_code": 0,
+          "pid": 7364,
+          "stdout_hash": "e11d6445ad2e1d933bdef221e8d48fe580a3ab01e2a874e179a6fad663f57baa",
+          "stderr_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_hashes": {},
+          "failure_classification": "SUCCESS",
+          "cancel_requested": false,
+          "error_snippet": "",
+          "metadata": {
+            "workspace": "D:\\code_ca_nhan\\WindAgent\\artifacts\\video_production_3d\\phase_04_smoke\\scn_01",
+            "timeout_seconds": 300.0,
+            "idempotency_key": "0d7cf90123759e9d0ae02ec4a87658a98a93bd73fdf8f0fb3c1b5370047d03fb"
+          }
+        }
+      }
+    },
+    {
+      "job_id": "ej_scn_01_render_1",
+      "kind": "RENDER_CHUNK",
+      "state": "COMPLETED",
+      "error": "",
+      "reused": false,
+      "metadata": {
+        "execution_receipt": {
+          "job_id": "ej_scn_01_render_1",
+          "kind": "RENDER_CHUNK",
+          "executable_path": "C:\\Program Files\\Blender Foundation\\Blender 4.5\\blender.exe",
+          "redacted_argv": [
+            "C:\\Program Files\\Blender Foundation\\Blender 4.5\\blender.exe",
+            "--background",
+            "--factory-startup",
+            "--python",
+            "D:\\code_ca_nhan\\WindAgent\\tools\\windagent_tools\\production_engines\\blender\\scripts\\execute_job.py",
+            "--",
+            "--job-id",
+            "ej_scn_01_render_1",
+            "--kind",
+            "RENDER_CHUNK",
+            "--job-spec",
+            "D:\\code_ca_nhan\\WindAgent\\artifacts\\video_production_3d\\phase_04_smoke\\scn_01\\job_spec.json"
+          ],
+          "blender_version": "",
+          "started_at": 1786145818.3840294,
+          "finished_at": 1786145826.481139,
+          "duration_ms": 8097.11,
+          "exit_code": 0,
+          "pid": 4176,
+          "stdout_hash": "34708cbd988ff441b7705b8d2d6033b2d63e08cfb3535e7de2f4df4956ebed19",
+          "stderr_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_hashes": {},
+          "failure_classification": "SUCCESS",
+          "cancel_requested": false,
+          "error_snippet": "",
+          "metadata": {
+            "workspace": "D:\\code_ca_nhan\\WindAgent\\artifacts\\video_production_3d\\phase_04_smoke\\scn_01",
+            "timeout_seconds": 300.0,
+            "idempotency_key": "6cacaf20c30f3ee01ef8882998af62f7adcd328198e717074e9ea0b26b2463cd"
+          }
+        }
+      }
+    },
+    {
+      "job_id": "ej_scn_01_render_2",
+      "kind": "RENDER_CHUNK",
+      "state": "COMPLETED",
+      "error": "",
+      "reused": false,
+      "metadata": {
+        "execution_receipt": {
+          "job_id": "ej_scn_01_render_2",
+          "kind": "RENDER_CHUNK",
+          "executable_path": "C:\\Program Files\\Blender Foundation\\Blender 4.5\\blender.exe",
+          "redacted_argv": [
+            "C:\\Program Files\\Blender Foundation\\Blender 4.5\\blender.exe",
+            "--background",
+            "--factory-startup",
+            "--python",
+            "D:\\code_ca_nhan\\WindAgent\\tools\\windagent_tools\\production_engines\\blender\\scripts\\execute_job.py",
+            "--",
+            "--job-id",
+            "ej_scn_01_render_2",
+            "--kind",
+            "RENDER_CHUNK",
+            "--job-spec",
+            "D:\\code_ca_nhan\\WindAgent\\artifacts\\video_production_3d\\phase_04_smoke\\scn_01\\job_spec.json"
+          ],
+          "blender_version": "",
+          "started_at": 1786145826.4816434,
+          "finished_at": 1786145834.6611085,
+          "duration_ms": 8179.465,
+          "exit_code": 0,
+          "pid": 30472,
+          "stdout_hash": "faa9338fbeed0ddfc565cfb274785decd512a26d964889932712829157e06e1c",
+          "stderr_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_hashes": {},
+          "failure_classification": "SUCCESS",
+          "cancel_requested": false,
+          "error_snippet": "",
+          "metadata": {
+            "workspace": "D:\\code_ca_nhan\\WindAgent\\artifacts\\video_production_3d\\phase_04_smoke\\scn_01",
+            "timeout_seconds": 300.0,
+            "idempotency_key": "6cacaf20c30f3ee01ef8882998af62f7adcd328198e717074e9ea0b26b2463cd"
+          }
+        }
+      }
+    }
+  ],
+  "artifacts": {
+    "build_scene.py": {
+      "size_bytes": 6358,
+      "sha256": "62f85bf483cf99ff784270502094fbb82ef6624d12c2925971045d6d77f6a87b"
+    },
+    "frame_0001.png.tmp.png": {
+      "size_bytes": 758149,
+      "sha256": "df227b072577368f26ec4da5bd7f54e8aa94d162602bf587ce8ab676a550ef09"
+    },
+    "frame_0013.png.tmp.png": {
+      "size_bytes": 756260,
+      "sha256": "1789f823dcb9c90bcfe7497e89170ea9272381345e1761f79df0188ee81114ec"
+    },
+    "job_result.json": {
+      "size_bytes": 359,
+      "sha256": "742461576e6f0eb26ea27441e7f8edbf7e5533ecaf71c86bc60084d648619ae7"
+    },
+    "job_spec.json": {
+      "size_bytes": 214,
+      "sha256": "65896906097b13fb43b2bcd9f3eaf2cc82e7047dab53c01945dd10383241cbcf"
+    },
+    "scene.blend": {
+      "size_bytes": 443470,
+      "sha256": "023b26ee059ab7019dda3e8e768600efdca2ccc4aaae235a27ea4f99c5025505"
+    },
+    "scene_plan.json": {
+      "size_bytes": 1659,
+      "sha256": "03516cd81a7cb9fa98829a45f0054905c2ba01b1f1ba645318ae22b4fffed784"
+    }
+  }
+}

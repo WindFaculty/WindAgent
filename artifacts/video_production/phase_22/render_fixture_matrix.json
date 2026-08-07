@@ -1,0 +1,29 @@
+{
+  "workstream": "render_fixture_matrix",
+  "edl_id": "edl_poc_01",
+  "edl_hash": "c63b1bf8edc77687292c7a8402358b0c5c14493ce1e7a6c192576b306ab63e71",
+  "total_duration_seconds": 9.5,
+  "checks": [
+    {
+      "check": "1080p_16x9_input_spec",
+      "ok": true,
+      "detail": "Matching 16:9 input requires no padding"
+    },
+    {
+      "check": "1080x1080_input_padding_spec",
+      "ok": true,
+      "detail": "Square input requires letterbox padding and fps conversion to 30fps"
+    },
+    {
+      "check": "edl_hash_determinism",
+      "ok": true,
+      "detail": "EDL SHA-256 hash calculated deterministically: c63b1bf8edc77687..."
+    },
+    {
+      "check": "edl_duration_calculation",
+      "ok": true,
+      "detail": "EDL duration correctly accounts for shot durations minus transition overlap (9.5s)"
+    }
+  ],
+  "all_passed": true
+}

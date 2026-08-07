@@ -1,0 +1,59 @@
+{
+  "schema_version": "1.0.0",
+  "phase": 0,
+  "program": "vp3d",
+  "gate": "VP3D_P0_BASELINE_FROZEN",
+  "recorded_at": "2026-08-07T06:35:07Z",
+  "repository_root": "D:\\code_ca_nhan\\WindAgent",
+  "baseline_sha": "9080fcb4bb6d9a6531a095c624a0f6d8796f4081",
+  "tree_sha": "6cb1bf5c3c87ff0f729f2af4d62f8ae4540ae5a6",
+  "branch": "fix/phase7-verification-integrity",
+  "author": "Antigravity",
+  "author_date": "2026-08-07T10:07:27+07:00",
+  "subject": "docs: add project overview report and video production contracts",
+  "worktree_state": {
+    "dirty": true,
+    "porcelain_entry_count": 23,
+    "modified_tracked": [
+      "road_map.md",
+      "storage/windagent_storage/database/connection.py",
+      "storage/windagent_storage/database/sync_factory.py",
+      "storage/windagent_storage/migrations/preflight.py",
+      "storage/windagent_storage/migrations/runner.py",
+      "storage/windagent_storage/queue/sql_queue.py",
+      "storage/windagent_storage/security/encryption.py",
+      "tests/integration/test_phase1_multiprocess_e2e.py",
+      "tests/integration/test_phase1_routing_authority.py",
+      "tests/integration/test_phase8_e2e_chaos.py",
+      "tests/unit/orchestration/test_phase3_routed_provider_turns.py",
+      "tests/unit/storage/migrations/test_phase1_migration_integrity.py",
+      "tests/unit/storage/migrations/test_phase7_schema_mapping.py",
+      "tests/unit/worker/test_phase2_transactional_finalization.py"
+    ],
+    "deleted_tracked": [
+      "run_claude_cli_naraRouter.ps1"
+    ],
+    "untracked": [
+      "artifacts/agent_workspace_orchestration_audit/20260712T123942Z/evidence/",
+      "artifacts/video_production/phase_22/",
+      "artifacts/video_production/pipeline_evaluation/evidence/browser_screenshots/",
+      "data/",
+      "docs/blender_3d_animation_roadmap.md",
+      "docs/video_production/3d_animation_plans/",
+      "run_codex_cli_openrouter.ps1",
+      "tests/fakes/provider_graph_seed.py"
+    ],
+    "note": "Pre-existing uncommitted changes (GAP A-D storage integrity work and 3D planning docs). Phase 0 does NOT modify or overwrite them; they are recorded here as the dirty baseline context."
+  },
+  "toolchain": {
+    "platform": "Windows_NT (MINGW64_NT-10.0-26200)",
+    "python": "3.11.15",
+    "uv": "0.11.28",
+    "node": "v22.23.1",
+    "npm": "10.9.8",
+    "ffmpeg": "8.1.2-full_build-www.gyan.dev",
+    "git": "2.55.0.windows.2",
+    "requires_python": ">=3.10"
+  },
+  "producer": "phase-0-baseline-freeze"
+}
