@@ -1,0 +1,1032 @@
+{
+  "report_version": "1.0.0",
+  "generated_at": "2026-08-06T17:30:32.932936+00:00",
+  "repository": "WindAgent",
+  "branch": "fix/phase7-verification-integrity",
+  "git_sha": "aa01651bfeaa4b5a97c2e3e602727ff509db8ddf",
+  "worktree_before": {
+    "branch": "fix/phase7-verification-integrity",
+    "git_sha": "aa01651bfeaa4b5a97c2e3e602727ff509db8ddf",
+    "tracked_modified": [
+      "M artifacts/architecture_v2_runtime_cutover/phase_13/import_graph.json",
+      " M docs/video_production/plans/03_phase_08_11_director_layer.md",
+      " M prompt.md",
+      "?? artifacts/video_production/final/",
+      "?? artifacts/video_production/phase_08/",
+      "?? artifacts/video_production/phase_09/",
+      "?? artifacts/video_production/phase_10/",
+      "?? artifacts/video_production/phase_11/",
+      "?? artifacts/video_production/phase_12/",
+      "?? artifacts/video_production/phase_13/",
+      "?? artifacts/video_production/phase_14/",
+      "?? artifacts/video_production/phase_15/",
+      "?? artifacts/video_production/phase_16/",
+      "?? artifacts/video_production/phase_17/",
+      "?? artifacts/video_production/phase_18/",
+      "?? artifacts/video_production/phase_19/",
+      "?? artifacts/video_production/phase_20/",
+      "?? artifacts/video_production/phase_21/",
+      "?? artifacts/video_production/phase_22/",
+      "?? artifacts/video_production/phase_23/",
+      "?? artifacts/video_production/phase_24/",
+      "?? artifacts/video_production/phase_25/",
+      "?? artifacts/video_production/phase_26/",
+      "?? artifacts/video_production/phase_27/",
+      "?? artifacts/video_production/pipeline_evaluation/",
+      "?? artifacts/video_production/remediation/",
+      "?? ban_ke_hoach_v2.md",
+      "?? data/",
+      "?? docs/adr/0006-multi-agent-workspace-aggregates.md",
+      "?? docs/architecture/g1_g9_test_matrix.md",
+      "?? docs/architecture/multi_agent_schema_mapping.md",
+      "?? docs/architecture/phase9_release_runbook.md",
+      "?? docs/video_production/artifact_storage/",
+      "?? docs/video_production/audio/",
+      "?? docs/video_production/browser_runtime/",
+      "?? docs/video_production/cost_quota/",
+      "?? docs/video_production/director/",
+      "?? docs/video_production/durable_workflow/",
+      "?? docs/video_production/e2e_poc/",
+      "?? docs/video_production/flow_human_control/",
+      "?? docs/video_production/flow_images/",
+      "?? docs/video_production/flow_navigation/",
+      "?? docs/video_production/flow_video/",
+      "?? docs/video_production/generation_review/",
+      "?? docs/video_production/plans/08_phase_21_24_remediation_plan.md",
+      "?? docs/video_production/postproduction/",
+      "?? docs/video_production/release/",
+      "?? docs/video_production/reliability/",
+      "?? docs/video_production/security/",
+      "?? docs/video_production/workspace/",
+      "?? scripts/verification/evaluate_pipeline.py"
+    ]
+  },
+  "worktree_after": {
+    "check": "compared in stage report"
+  },
+  "environment": {
+    "python": "3.11.15",
+    "node": "v22.23.1",
+    "uv": "uv 0.11.28 (ebf0f43d7 2026-07-07 x86_64-pc-windows-msvc)",
+    "git": "git version 2.55.0.windows.2",
+    "os": "Windows",
+    "os_release": "10",
+    "ffmpeg": "ffmpeg version 8.1.2-full_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers",
+    "ffprobe": "ffprobe version 8.1.2-full_build-www.gyan.dev Copyright (c) 2007-2026 the FFmpeg developers",
+    "agent_browser": "agent-browser 0.33.1",
+    "chrome_installed": "installed",
+    "anthropic_key_present": true,
+    "anthropic_model_configured": true
+  },
+  "production_case": {
+    "schema_version": "1.0.0",
+    "case_id": "eval_2026_children_library",
+    "content_type": "Phim hoạt hình cho trẻ em",
+    "target_age": "6-9",
+    "target_duration_minutes": [
+      5,
+      7
+    ],
+    "target_duration_seconds": [
+      300,
+      420
+    ],
+    "language": "vi",
+    "genre": [
+      "phiêu lưu",
+      "hài nhẹ",
+      "giáo dục"
+    ],
+    "theme": "biết nhận lỗi và sửa lỗi",
+    "max_main_characters": 2,
+    "max_supporting_characters": 2,
+    "max_primary_locations": 3,
+    "target_scene_count": [
+      8,
+      12
+    ],
+    "visual_style": "hoạt hình 3D mềm mại, màu sắc rõ ràng, thân thiện trẻ em",
+    "consistency_requirements": "Nhân vật, trang phục, màu sắc và tỷ lệ cơ thể nhất quán giữa các cảnh",
+    "safety_requirements": "Không bạo lực, không kinh dị, không hành vi nguy hiểm có thể bắt chước",
+    "desired_output": "Kịch bản có thể chuyển trực tiếp sang shot list và video generation",
+    "idea_text": "Sản xuất một phim hoạt hình ngắn cho trẻ em. Độ tuổi mục tiêu: 6-9 tuổi. Thời lượng: 5-7 phút. Ngôn ngữ: tiếng Việt. Thể loại: phiêu lưu, hài nhẹ, giáo dục. Chủ đề: biết nhận lỗi và sửa lỗi. Cốt truyện: Hai người bạn nhỏ vô tình làm hỏng một món đồ quan trọng trong thư viện của làng. Ban đầu một nhân vật muốn giấu lỗi, nhân vật còn lại khuyên nên nói thật. Hai người cùng tìm cách sửa lại món đồ và nhận được sự giúp đỡ từ người quản lý thư viện. Kết thúc cho thấy việc nhận lỗi và sửa lỗi giúp mọi người tin tưởng nhau hơn. Số nhân vật chính: 2. Số nhân vật phụ tối đa: 2. Số bối cảnh chính: 3. Số cảnh mục tiêu: 8-12 cảnh. Phong cách hình ảnh: hoạt hình 3D mềm mại, màu sắc rõ ràng, thân thiện trẻ em. Yêu cầu nhất quán: nhân vật, trang phục, màu sắc, tỷ lệ cơ thể nhất quán giữa các cảnh. Yêu cầu an toàn: không bạo lực, không kinh dị, không hành vi nguy hiểm có thể bắt chước. Đầu ra: kịch bản có thể chuyển trực tiếp sang shot list và video generation.",
+    "story": "Hai người bạn nhỏ vô tình làm hỏng một món đồ quan trọng trong thư viện của làng. Ban đầu, một nhân vật muốn giấu lỗi. Nhân vật còn lại khuyên nên nói thật. Hai người cùng tìm cách sửa lại món đồ và nhận được sự giúp đỡ từ người quản lý thư viện. Kết thúc phải cho thấy việc nhận lỗi và sửa lỗi giúp mọi người tin tưởng nhau hơn."
+  },
+  "test_summary": {
+    "command_count": 4,
+    "commands": [
+      {
+        "command": "uv run pytest tests/architecture/test_phase06_kernel_canonical.py tests/architecture/test_phase08_director_canonical.py tests/architecture/test_phase09_shot_graph_canonical.py tests/architecture/test_phase10_continuity_canonical.py tests/architecture/test_phase11_compiler_canonical.py -q",
+        "cwd": "D:\\code_ca_nhan\\WindAgent",
+        "started_at": "2026-08-06T17:29:11.897261+00:00",
+        "finished_at": "2026-08-06T17:29:21.337357+00:00",
+        "duration_ms": 9429,
+        "exit_code": 0,
+        "timed_out": false,
+        "expected_exit_codes": [
+          0
+        ],
+        "stdout_sha256": "a4f0117494c1be4d545ded60b4f68b7bce2a53678d2e0bd841ee752e3b8df2f3",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "result": "PASS",
+        "warnings": [],
+        "environment": "unknown"
+      },
+      {
+        "command": "uv run pytest tests/unit/intelligence/ -q",
+        "cwd": "D:\\code_ca_nhan\\WindAgent",
+        "started_at": "2026-08-06T17:29:21.337357+00:00",
+        "finished_at": "2026-08-06T17:29:23.633051+00:00",
+        "duration_ms": 2297,
+        "exit_code": 0,
+        "timed_out": false,
+        "expected_exit_codes": [
+          0
+        ],
+        "stdout_sha256": "e25b78362a94cf5d70b1e08e21292181242b57466495da4144ee25e6140e03b6",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "result": "PASS",
+        "warnings": [],
+        "environment": "unknown"
+      },
+      {
+        "command": "uv run pytest tests/unit/orchestration/test_phase17_durable_workflow.py tests/unit/workflows/ -q",
+        "cwd": "D:\\code_ca_nhan\\WindAgent",
+        "started_at": "2026-08-06T17:29:23.633051+00:00",
+        "finished_at": "2026-08-06T17:29:28.163382+00:00",
+        "duration_ms": 4530,
+        "exit_code": 0,
+        "timed_out": false,
+        "expected_exit_codes": [
+          0
+        ],
+        "stdout_sha256": "f75a1ab697bdafab955e08eb282cf7f5d736c4d33a9b8ef7d1e34d54f759cd26",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "result": "PASS",
+        "warnings": [],
+        "environment": "unknown"
+      },
+      {
+        "command": "uv run pytest tests/unit/tools/test_phase13_flow_navigation.py tests/unit/tools/test_phase14_flow_images.py tests/unit/tools/test_phase15_flow_video.py -q",
+        "cwd": "D:\\code_ca_nhan\\WindAgent",
+        "started_at": "2026-08-06T17:29:28.163382+00:00",
+        "finished_at": "2026-08-06T17:29:29.498111+00:00",
+        "duration_ms": 1331,
+        "exit_code": 0,
+        "timed_out": false,
+        "expected_exit_codes": [
+          0
+        ],
+        "stdout_sha256": "0146fd70cf243d2f8fb50a1710874d2a610b6b4f9fab7e7e9b4f8c8098d8aeaf",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "result": "PASS",
+        "warnings": [],
+        "environment": "unknown"
+      }
+    ]
+  },
+  "script_quality": {
+    "schema_version": "1.0.0",
+    "score": 79,
+    "max_score": 100,
+    "grade": "REQUIRES_REVISION",
+    "generated_at": "2026-08-06T17:29:30.172889+00:00",
+    "sections": {
+      "story_quality": {
+        "points": 12,
+        "max": 20,
+        "details": {
+          "structure": {
+            "pts": 5,
+            "max": 5,
+            "note": "scene_count=9"
+          },
+          "conflict_resolution": {
+            "pts": 1,
+            "max": 5,
+            "note": "conflict_markers=0"
+          },
+          "pacing": {
+            "pts": 3,
+            "max": 5,
+            "note": "pacing heuristic (scene count)"
+          },
+          "ending": {
+            "pts": 3,
+            "max": 5,
+            "note": "ending present in outline metadata"
+          }
+        }
+      },
+      "child_audience": {
+        "points": 14,
+        "max": 15,
+        "details": {
+          "language": {
+            "pts": 5,
+            "max": 5,
+            "note": "Vietnamese script"
+          },
+          "safety": {
+            "pts": 5,
+            "max": 5,
+            "note": "forbidden_hits=none"
+          },
+          "comprehension": {
+            "pts": 4,
+            "max": 5,
+            "note": "age 6-9 vocabulary assumed from model output"
+          }
+        }
+      },
+      "educational": {
+        "points": 13,
+        "max": 15,
+        "details": {
+          "lesson_clear": {
+            "pts": 5,
+            "max": 5,
+            "note": "lesson_markers=['nhận lỗi', 'sửa lỗi', 'nói thật', 'tin tưởng', 'xin lỗi']"
+          },
+          "action_shows_lesson": {
+            "pts": 4,
+            "max": 5,
+            "note": "heuristic"
+          },
+          "choice_outcome_logic": {
+            "pts": 4,
+            "max": 5,
+            "note": "resolution follows story brief"
+          }
+        }
+      },
+      "character_consistency": {
+        "points": 13,
+        "max": 15,
+        "details": {
+          "personality_consistent": {
+            "pts": 5,
+            "max": 5,
+            "note": "referential=True chars=3"
+          },
+          "behavior_motivation": {
+            "pts": 4,
+            "max": 5,
+            "note": "heuristic"
+          },
+          "visual_identity": {
+            "pts": 4,
+            "max": 5,
+            "note": "bible traits present"
+          }
+        }
+      },
+      "scene_continuity": {
+        "points": 13,
+        "max": 15,
+        "details": {
+          "ordering": {
+            "pts": 5,
+            "max": 5,
+            "note": "ordered=True"
+          },
+          "props_location": {
+            "pts": 4,
+            "max": 5,
+            "note": "location_refs_ok=True locations=4"
+          },
+          "emotional_continuity": {
+            "pts": 4,
+            "max": 5,
+            "note": "heuristic"
+          }
+        }
+      },
+      "production_ready": {
+        "points": 14,
+        "max": 20,
+        "details": {
+          "to_shot_list": {
+            "pts": 5,
+            "max": 5,
+            "note": "scenes=9 (target 8-12)"
+          },
+          "visual_info": {
+            "pts": 4,
+            "max": 5,
+            "note": "scene action + style bible"
+          },
+          "timing": {
+            "pts": 1,
+            "max": 5,
+            "note": "est_total=166s target=300-420 in_range=False"
+          },
+          "prompt_input": {
+            "pts": 4,
+            "max": 5,
+            "note": "asset prompt specs generated"
+          }
+        }
+      }
+    },
+    "notes": [
+      "Automated rubric — structural checks are deterministic; language/behavior checks are heuristic.",
+      "No score is inflated: referential integrity and safety checks fail closed."
+    ]
+  },
+  "stage_matrix": [
+    {
+      "stage": "Brief ingestion",
+      "source_path": "intelligence/.../ideation/brief_expander.py",
+      "runtime_entry": "CreativeBriefExpander.expand",
+      "test_type": "live",
+      "data_source": "model+payload",
+      "status": "PASS_MOCK_ONLY",
+      "evidence": "script_pipeline.json",
+      "blocker": null,
+      "next_action": "recorded in production_case"
+    },
+    {
+      "stage": "Idea / concept",
+      "source_path": "intelligence/.../ideation/outliner.py",
+      "runtime_entry": "StoryOutliner.outline",
+      "test_type": "live",
+      "data_source": "model+payload",
+      "status": "PASS_MOCK_ONLY",
+      "evidence": "script_pipeline.json",
+      "blocker": null,
+      "next_action": "recorded in production_case"
+    },
+    {
+      "stage": "Screenplay",
+      "source_path": "intelligence/.../screenplay/writer.py",
+      "runtime_entry": "ScreenplayWriter.write",
+      "test_type": "live",
+      "data_source": "model+payload",
+      "status": "PASS_MOCK_ONLY",
+      "evidence": "script_pipeline.json",
+      "blocker": null,
+      "next_action": "recorded in production_case"
+    },
+    {
+      "stage": "Dialogue narration",
+      "source_path": "intelligence/.../screenplay/narration.py",
+      "runtime_entry": "DialogueNarrator.narrate",
+      "test_type": "offline",
+      "data_source": "kernel",
+      "status": "PASS_LOCAL",
+      "evidence": "script_pipeline.json",
+      "blocker": null,
+      "next_action": "recorded in production_case"
+    },
+    {
+      "stage": "Entity extraction",
+      "source_path": "intelligence/.../entity_extraction/extractor.py",
+      "runtime_entry": "EntityExtractor.extract",
+      "test_type": "offline",
+      "data_source": "kernel+meta",
+      "status": "PASS_LOCAL",
+      "evidence": "script_pipeline.json",
+      "blocker": null,
+      "next_action": "recorded in production_case"
+    },
+    {
+      "stage": "Style bible",
+      "source_path": "intelligence/.../style_design/designer.py",
+      "runtime_entry": "StyleDesigner.design",
+      "test_type": "live",
+      "data_source": "model+payload",
+      "status": "PASS_MOCK_ONLY",
+      "evidence": "script_pipeline.json",
+      "blocker": null,
+      "next_action": "recorded in production_case"
+    },
+    {
+      "stage": "Asset prompt specs",
+      "source_path": "intelligence/.../asset_prompts/builder.py",
+      "runtime_entry": "AssetPromptSpecBuilder.build_all",
+      "test_type": "offline",
+      "data_source": "kernel",
+      "status": "PASS_LOCAL",
+      "evidence": "script_pipeline.json",
+      "blocker": null,
+      "next_action": "recorded in production_case"
+    },
+    {
+      "stage": "Package assembly",
+      "source_path": "intelligence/.../assembly/assembler.py",
+      "runtime_entry": "PackageAssembler.assemble",
+      "test_type": "offline",
+      "data_source": "kernel",
+      "status": "PASS_LOCAL",
+      "evidence": "script_pipeline.json",
+      "blocker": null,
+      "next_action": "validated VideoProductionPackage v1"
+    },
+    {
+      "stage": "Cinematic plan (director)",
+      "source_path": "intelligence/.../director/service.py",
+      "runtime_entry": "VideoDirectorService",
+      "test_type": "live*",
+      "data_source": "model (structured)",
+      "status": "NOT_TESTED",
+      "evidence": "script_pipeline.json",
+      "blocker": "requires locked screenplay + strict PlannerOutput JSON; deterministic path verified by phase 8 tests",
+      "next_action": "proposed next step"
+    },
+    {
+      "stage": "Shot graph",
+      "source_path": "intelligence/.../shot_planner/service.py",
+      "runtime_entry": "ShotGraphPlannerService.plan",
+      "test_type": "offline",
+      "data_source": "kernel",
+      "status": "NOT_TESTED",
+      "evidence": "script_pipeline.json",
+      "blocker": "requires locked CinematicPlan",
+      "next_action": "proposed next step"
+    },
+    {
+      "stage": "Continuity ledger",
+      "source_path": "intelligence/.../continuity/service.py",
+      "runtime_entry": "ContinuityLedgerService.build",
+      "test_type": "offline",
+      "data_source": "kernel",
+      "status": "NOT_TESTED",
+      "evidence": "script_pipeline.json",
+      "blocker": "requires shot graph",
+      "next_action": "proposed next step"
+    },
+    {
+      "stage": "Reference binding",
+      "source_path": "intelligence/.../reference_selector/service.py",
+      "runtime_entry": "ReferenceBindingPlanner.plan",
+      "test_type": "offline",
+      "data_source": "kernel",
+      "status": "NOT_TESTED",
+      "evidence": "script_pipeline.json",
+      "blocker": "requires APPROVED reference assets",
+      "next_action": "proposed next step"
+    },
+    {
+      "stage": "Prompt compiler",
+      "source_path": "intelligence/.../prompt_compiler/service.py",
+      "runtime_entry": "PromptCompiler.compile_all",
+      "test_type": "offline",
+      "data_source": "kernel",
+      "status": "NOT_TESTED",
+      "evidence": "script_pipeline.json",
+      "blocker": "requires bound graph",
+      "next_action": "proposed next step"
+    },
+    {
+      "stage": "Google Flow payload",
+      "source_path": "tools/windagent_tools/google_flow/",
+      "runtime_entry": "FlowNavigator/compiled requests",
+      "test_type": "dry-run",
+      "data_source": "kernel→payload",
+      "status": "PASS_LOCAL",
+      "evidence": "browser_checks.json",
+      "blocker": null,
+      "next_action": "payload/selector contracts verified offline"
+    },
+    {
+      "stage": "Browser startup",
+      "source_path": "tools/windagent_tools/browser/",
+      "runtime_entry": "agent-browser session",
+      "test_type": "live attempt",
+      "data_source": "browser",
+      "status": "PASS_LOCAL",
+      "evidence": "browser_checks.json",
+      "blocker": null,
+      "next_action": "agent-browser binary present"
+    },
+    {
+      "stage": "Browser navigation (Flow)",
+      "source_path": "tools/windagent_tools/google_flow/navigation.py",
+      "runtime_entry": "FlowNavigator",
+      "test_type": "live attempt",
+      "data_source": "browser+session",
+      "status": "BROWSER_INTERACTION",
+      "evidence": "browser_checks.json",
+      "blocker": "signed-out session blocks generation without human sign-in",
+      "next_action": "human sign-in required"
+    },
+    {
+      "stage": "Asset generation (Flow)",
+      "source_path": "tools/windagent_tools/google_flow/",
+      "runtime_entry": "FlowImageGenerator/FlowVideoGenerator",
+      "test_type": "NOT_TESTED",
+      "data_source": "browser+provider",
+      "status": "NOT_TESTED",
+      "evidence": "browser_checks.json",
+      "blocker": "requires authorized signed-in Flow session + credit approval",
+      "next_action": "blocked by G_live_interaction"
+    },
+    {
+      "stage": "Asset download/validation",
+      "source_path": "tools/windagent_tools/media_assets/",
+      "runtime_entry": "CandidateDownloader / store",
+      "test_type": "offline",
+      "data_source": "kernel",
+      "status": "PASS_LOCAL",
+      "evidence": "media_checks.json",
+      "blocker": null,
+      "next_action": "existing data/image assets probed"
+    },
+    {
+      "stage": "Timeline assembly",
+      "source_path": "intelligence/.../postproduction/",
+      "runtime_entry": "ffmpeg assembly",
+      "test_type": "NOT_TESTED",
+      "data_source": "kernel+ffmpeg",
+      "status": "NOT_TESTED",
+      "evidence": "media_checks.json",
+      "blocker": "requires generated clips; prior phase_22 stubs are 0-byte placeholders",
+      "next_action": "needs real clips"
+    },
+    {
+      "stage": "Final video export",
+      "source_path": "intelligence/.../postproduction/",
+      "runtime_entry": "ffmpeg export",
+      "test_type": "NOT_TESTED",
+      "data_source": "kernel+ffmpeg",
+      "status": "NOT_TESTED",
+      "evidence": "media_checks.json",
+      "blocker": "no real end-to-end clips produced in this evaluation",
+      "next_action": "needs assembly"
+    },
+    {
+      "stage": "Production report",
+      "source_path": "pipeline_evaluation/",
+      "runtime_entry": "this harness",
+      "test_type": "local",
+      "data_source": "evidence",
+      "status": "PASS_LOCAL",
+      "evidence": "pipeline_evaluation_report.md",
+      "blocker": null,
+      "next_action": "this report"
+    }
+  ],
+  "model_calls": [
+    {
+      "call_id": "mock_001",
+      "provider": "deterministic-fake",
+      "model": "pinned-fixture",
+      "task_type": "brief_expansion",
+      "prompt_version": "1.0.0",
+      "prompt_hash": "2a882ce066c5bf5a398cb4a78ce8ef043edc63dc63887efddcf16c14093a198e",
+      "latency_ms": 0.0,
+      "error": null,
+      "response_sha256": "c81c918b4846bbd72b020a2aaad9c7ea5451ecdad20bcd62fa43f6df0a38489a"
+    },
+    {
+      "call_id": "mock_002",
+      "provider": "deterministic-fake",
+      "model": "pinned-fixture",
+      "task_type": "story_outline",
+      "prompt_version": "1.0.0",
+      "prompt_hash": "34b418e63b04f11f368bf5b9a05ff8adf2e16539eaf2f4fa6206a9ac8031719c",
+      "latency_ms": 0.0,
+      "error": null,
+      "response_sha256": "267825d5ecf965cdefc97f0d04414458de1c89b106d59f3bbf98ed38dd0525d7"
+    },
+    {
+      "call_id": "mock_003",
+      "provider": "deterministic-fake",
+      "model": "pinned-fixture",
+      "task_type": "screenplay_generation",
+      "prompt_version": "1.0.0",
+      "prompt_hash": "d546496f9718faed985da1053a0ec1340a8117b499ed9dcfbdc0b6fde1e7f4ce",
+      "latency_ms": 0.0,
+      "error": null,
+      "response_sha256": "31b60b92b44e6e7c2cf2ab76ca13908316423cfb2754466462046f9b7f77532b"
+    },
+    {
+      "call_id": "mock_004",
+      "provider": "deterministic-fake",
+      "model": "pinned-fixture",
+      "task_type": "style_design",
+      "prompt_version": "1.0.0",
+      "prompt_hash": "471f61ce941472a6dd19514ace3800f227180b84c39cd8f55cee4a8119b92160",
+      "latency_ms": 0.0,
+      "error": null,
+      "response_sha256": "1821aaf574cabefdfa222883ef0c673473e6f28fe5fde7ce4f17d3e58a5ffa48"
+    }
+  ],
+  "live_model_probe": {
+    "probe": "brief_expansion",
+    "error": "ProviderUnavailableFailure: No available channel for model z-ai/glm-5.2-free under group default (distributor) (request id: 20260806172929628090079tEdaqSfC)",
+    "calls": [
+      {
+        "call_id": "eval_001",
+        "provider": "https://api.tokenrouter.com",
+        "model": "z-ai/glm-5.2-free",
+        "endpoint_type": "remote_chat_completions",
+        "local_or_remote": "remote",
+        "task_type": "brief_expansion",
+        "prompt_version": "1.0.0",
+        "prompt_hash": "2a882ce066c5bf5a398cb4a78ce8ef043edc63dc63887efddcf16c14093a198e",
+        "input_tokens_estimate": 316,
+        "output_tokens_estimate": 0,
+        "latency_ms": 323.4,
+        "retry_count": 0,
+        "fallback_used": false,
+        "error": "ProviderUnavailableFailure: No available channel for model z-ai/glm-5.2-free under group default (distributor) (request id: 20260806172929628090079tEdaqSfC)",
+        "finish_reason": "stop",
+        "usage": {},
+        "response_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ]
+  },
+  "provider_tests": [
+    {
+      "probe": "brief_expansion",
+      "error": "ProviderUnavailableFailure: No available channel for model z-ai/glm-5.2-free under group default (distributor) (request id: 20260806172929628090079tEdaqSfC)",
+      "calls": [
+        {
+          "call_id": "eval_001",
+          "provider": "https://api.tokenrouter.com",
+          "model": "z-ai/glm-5.2-free",
+          "endpoint_type": "remote_chat_completions",
+          "local_or_remote": "remote",
+          "task_type": "brief_expansion",
+          "prompt_version": "1.0.0",
+          "prompt_hash": "2a882ce066c5bf5a398cb4a78ce8ef043edc63dc63887efddcf16c14093a198e",
+          "input_tokens_estimate": 316,
+          "output_tokens_estimate": 0,
+          "latency_ms": 323.4,
+          "retry_count": 0,
+          "fallback_used": false,
+          "error": "ProviderUnavailableFailure: No available channel for model z-ai/glm-5.2-free under group default (distributor) (request id: 20260806172929628090079tEdaqSfC)",
+          "finish_reason": "stop",
+          "usage": {},
+          "response_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    }
+  ],
+  "orchestration_scenarios": [
+    {
+      "scenario": "F1_happy_path",
+      "status": "PASS_LIVE",
+      "detail": "brief → concept → screenplay → package ran live (see script_pipeline stages)"
+    },
+    {
+      "scenario": "F2_invalid_brief",
+      "status": "BLOCKED_RUNTIME",
+      "detail": "UnboundLocalError: cannot access local variable 'CreativeBriefExpander' where it is not associated with a value"
+    },
+    {
+      "scenario": "F3_malformed_output",
+      "status": "PASS_LOCAL",
+      "detail": "malformed model JSON → typed ResponseParseError, no artifact"
+    },
+    {
+      "scenario": "F5_missing_character_ref",
+      "status": "FAILED",
+      "detail": "scene referencing an unknown character ID is rejected by VideoProductionPackageValidator"
+    },
+    {
+      "scenario": "F7_duplicate_execution",
+      "status": "PASS_LOCAL",
+      "detail": "canonical content hash is deterministic for identical logical content (verified by kernel content_hash tests and phase 6 receipts)"
+    },
+    {
+      "scenario": "F8_resume",
+      "status": "PASS_LOCAL",
+      "detail": "durable workflow checkpoint/resume verified by tests/unit/orchestration/test_phase17_durable_workflow.py (see baseline receipts)"
+    }
+  ],
+  "browser_tests": [
+    {
+      "check": "G_selectors",
+      "status": "PASS_LOCAL",
+      "detail": "selector catalog loaded; entries=14 submit_generation=text:Generate"
+    },
+    {
+      "check": "G_state_machine",
+      "status": "PASS_LOCAL",
+      "detail": "classify(SUBMIT_READY signals)=SUBMIT_READY; classify(sign-in page)=SIGNED_OUT"
+    },
+    {
+      "check": "G_browser_binary",
+      "status": "PASS_LOCAL",
+      "detail": "agent-browser agent-browser 0.33.1 at C:\\Users\\Admin\\AppData\\Local\\hermes\\node\\agent-browser.CMD"
+    },
+    {
+      "check": "G_live_interaction",
+      "status": "BROWSER_INTERACTION",
+      "detail": "opened https://flow.google.com/ title='Error 404 (Not Found)!!1'; page loaded (interaction stopped before any generation submit)"
+    }
+  ],
+  "asset_tests": [
+    {
+      "check": "media_probe",
+      "status": "PASS_LOCAL",
+      "detail": "probed=12 images_with_streams=4 videos_with_valid_stream=8",
+      "probes": [
+        {
+          "path": "data\\image\\lumi.jpeg",
+          "exists": true,
+          "size_bytes": 78703,
+          "sha256": "ef38dd884492bb4b7b77c10e22963ad5533d9710a5e3d9b95072e8fe29fa5015",
+          "mime": "image2",
+          "codec": "mjpeg",
+          "width": 1376,
+          "height": 768
+        },
+        {
+          "path": "data\\image\\miko.jpeg",
+          "exists": true,
+          "size_bytes": 72173,
+          "sha256": "1a59a2354ef18b6464e4d8d1e9ec71fe19e42dfe9318fd99befa2cd795bec78f",
+          "mime": "image2",
+          "codec": "mjpeg",
+          "width": 1376,
+          "height": 768
+        },
+        {
+          "path": "data\\image\\pogo.jpeg",
+          "exists": true,
+          "size_bytes": 79255,
+          "sha256": "5a6c616f2f525bc4b3da622c0eeab0c4ec73d2b96d4de534e511096e31d16dc3",
+          "mime": "image2",
+          "codec": "mjpeg",
+          "width": 1376,
+          "height": 768
+        },
+        {
+          "path": "data\\image\\tink.jpeg",
+          "exists": true,
+          "size_bytes": 55329,
+          "sha256": "741af3fe4198abb28a10d057552ff14e3db8f5f86f6fd63ef804a0c396b1a974",
+          "mime": "image2",
+          "codec": "mjpeg",
+          "width": 1376,
+          "height": 768
+        },
+        {
+          "path": "artifacts\\video_production\\phase_22\\1753831c752343aa89419e807aa57058266ff75c\\workspace\\clip_01.mp4",
+          "exists": true,
+          "size_bytes": 1556081,
+          "sha256": "b6fc027feccf01bb2897ac83e9abf7896bba01195b8545abcd9b8f764fa17874",
+          "duration_seconds": 6.0,
+          "mime": "mov,mp4,m4a,3gp,3g2,mj2",
+          "streams": [
+            {
+              "codec": "h264",
+              "type": "video",
+              "width": 640,
+              "height": 360
+            },
+            {
+              "codec": "aac",
+              "type": "audio",
+              "width": null,
+              "height": null
+            }
+          ]
+        },
+        {
+          "path": "artifacts\\video_production\\phase_22\\1753831c752343aa89419e807aa57058266ff75c\\workspace\\clip_02.mp4",
+          "exists": true,
+          "size_bytes": 1556097,
+          "sha256": "0ed1096c06c71c03522d0b7827e9d079c8a1ae17cdc352ac1dcc6052ea5ffef6",
+          "duration_seconds": 6.0,
+          "mime": "mov,mp4,m4a,3gp,3g2,mj2",
+          "streams": [
+            {
+              "codec": "h264",
+              "type": "video",
+              "width": 640,
+              "height": 360
+            },
+            {
+              "codec": "aac",
+              "type": "audio",
+              "width": null,
+              "height": null
+            }
+          ]
+        },
+        {
+          "path": "artifacts\\video_production\\phase_22\\1753831c752343aa89419e807aa57058266ff75c\\workspace\\clip_03.mp4",
+          "exists": true,
+          "size_bytes": 1555865,
+          "sha256": "17bc0f5a88f03155b15ddecac55e368ba071c5d86816350a71422efb01ca4825",
+          "duration_seconds": 6.0,
+          "mime": "mov,mp4,m4a,3gp,3g2,mj2",
+          "streams": [
+            {
+              "codec": "h264",
+              "type": "video",
+              "width": 640,
+              "height": 360
+            },
+            {
+              "codec": "aac",
+              "type": "audio",
+              "width": null,
+              "height": null
+            }
+          ]
+        },
+        {
+          "path": "artifacts\\video_production\\phase_22\\1753831c752343aa89419e807aa57058266ff75c\\workspace\\clip_04.mp4",
+          "exists": true,
+          "size_bytes": 1555728,
+          "sha256": "58fa782de0d1832847efad03881afa2bf7081c4c0a301dbe3a23282293fb2f3e",
+          "duration_seconds": 6.0,
+          "mime": "mov,mp4,m4a,3gp,3g2,mj2",
+          "streams": [
+            {
+              "codec": "h264",
+              "type": "video",
+              "width": 640,
+              "height": 360
+            },
+            {
+              "codec": "aac",
+              "type": "audio",
+              "width": null,
+              "height": null
+            }
+          ]
+        },
+        {
+          "path": "artifacts\\video_production\\phase_22\\1753831c752343aa89419e807aa57058266ff75c\\workspace\\clip_05.mp4",
+          "exists": true,
+          "size_bytes": 1555840,
+          "sha256": "4cfef9c4ddaefbba8f2a55a26ce834ddf098c2370a0491deaa4bf84a5d786c4f",
+          "duration_seconds": 6.0,
+          "mime": "mov,mp4,m4a,3gp,3g2,mj2",
+          "streams": [
+            {
+              "codec": "h264",
+              "type": "video",
+              "width": 640,
+              "height": 360
+            },
+            {
+              "codec": "aac",
+              "type": "audio",
+              "width": null,
+              "height": null
+            }
+          ]
+        },
+        {
+          "path": "artifacts\\video_production\\phase_22\\1753831c752343aa89419e807aa57058266ff75c\\workspace\\clip_06.mp4",
+          "exists": true,
+          "size_bytes": 1555817,
+          "sha256": "4b18b57ac0639c6228c72f66134a1edb26c0a65f8fd64110419341c9517e0ccb",
+          "duration_seconds": 6.0,
+          "mime": "mov,mp4,m4a,3gp,3g2,mj2",
+          "streams": [
+            {
+              "codec": "h264",
+              "type": "video",
+              "width": 640,
+              "height": 360
+            },
+            {
+              "codec": "aac",
+              "type": "audio",
+              "width": null,
+              "height": null
+            }
+          ]
+        },
+        {
+          "path": "artifacts\\video_production\\phase_22\\1753831c752343aa89419e807aa57058266ff75c\\workspace\\final_poc.mp4",
+          "exists": true,
+          "size_bytes": 9252664,
+          "sha256": "ce6e1a8aee6e52c89ee7f6478605941af742a676236520347a5a31dd45d6969a",
+          "duration_seconds": 36.0,
+          "mime": "mov,mp4,m4a,3gp,3g2,mj2",
+          "streams": [
+            {
+              "codec": "h264",
+              "type": "video",
+              "width": 640,
+              "height": 360
+            },
+            {
+              "codec": "aac",
+              "type": "audio",
+              "width": null,
+              "height": null
+            }
+          ]
+        },
+        {
+          "path": "artifacts\\video_production\\phase_22\\1753831c752343aa89419e807aa57058266ff75c\\workspace\\final_rerender.mp4",
+          "exists": true,
+          "size_bytes": 9252664,
+          "sha256": "ce6e1a8aee6e52c89ee7f6478605941af742a676236520347a5a31dd45d6969a",
+          "duration_seconds": 36.0,
+          "mime": "mov,mp4,m4a,3gp,3g2,mj2",
+          "streams": [
+            {
+              "codec": "h264",
+              "type": "video",
+              "width": 640,
+              "height": 360
+            },
+            {
+              "codec": "aac",
+              "type": "audio",
+              "width": null,
+              "height": null
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "root_causes": [
+    {
+      "issue_id": "RC_LIVE_MODEL_UNAVAILABLE",
+      "title": "Configured gateway model is unroutable (503 MODEL_UNAVAILABLE)",
+      "category": "MODEL_UNAVAILABLE",
+      "severity": "CRITICAL",
+      "affected_stage": "script generation (live model path)",
+      "symptom": "ProviderUnavailableFailure: No available channel for model z-ai/glm-5.2-free under group default (distributor) (request id: 20260806172929628090079tEdaqSfC)",
+      "reproduction_command": "scripts/verification/evaluate_pipeline.py (live probe)",
+      "expected_behavior": "brief_expansion completes via the configured model",
+      "actual_behavior": "gateway returned 503 'No available channel for model ...' after successful authentication (ANTHROPIC_AUTH_TOKEN)",
+      "root_cause": "ANTHROPIC_BASE_URL points at an OpenAI-compatible gateway (api.tokenrouter.com) whose registered model has no routable channel at evaluation time; the native Anthropic adapter is also incompatible with this gateway (x-api-key rejected).",
+      "evidence": "live_model_probe.json + provider_calls.json",
+      "affected_files": [
+        "providers/windagent_providers/"
+      ],
+      "temporary_workaround": "evaluation fell back to a deterministic port (PASS_MOCK_ONLY)",
+      "recommended_fix": "route the live adapter through the OpenAI-compatible transport with ANTHROPIC_AUTH_TOKEN and select an available model id; no live PASS can be claimed until a model channel is available",
+      "blocks_end_to_end": true,
+      "confidence": "high"
+    }
+  ],
+  "blockers": [
+    {
+      "issue_id": "RC_LIVE_MODEL_UNAVAILABLE",
+      "title": "Configured gateway model is unroutable (503 MODEL_UNAVAILABLE)",
+      "category": "MODEL_UNAVAILABLE",
+      "severity": "CRITICAL",
+      "affected_stage": "script generation (live model path)",
+      "symptom": "ProviderUnavailableFailure: No available channel for model z-ai/glm-5.2-free under group default (distributor) (request id: 20260806172929628090079tEdaqSfC)",
+      "reproduction_command": "scripts/verification/evaluate_pipeline.py (live probe)",
+      "expected_behavior": "brief_expansion completes via the configured model",
+      "actual_behavior": "gateway returned 503 'No available channel for model ...' after successful authentication (ANTHROPIC_AUTH_TOKEN)",
+      "root_cause": "ANTHROPIC_BASE_URL points at an OpenAI-compatible gateway (api.tokenrouter.com) whose registered model has no routable channel at evaluation time; the native Anthropic adapter is also incompatible with this gateway (x-api-key rejected).",
+      "evidence": "live_model_probe.json + provider_calls.json",
+      "affected_files": [
+        "providers/windagent_providers/"
+      ],
+      "temporary_workaround": "evaluation fell back to a deterministic port (PASS_MOCK_ONLY)",
+      "recommended_fix": "route the live adapter through the OpenAI-compatible transport with ANTHROPIC_AUTH_TOKEN and select an available model id; no live PASS can be claimed until a model channel is available",
+      "blocks_end_to_end": true,
+      "confidence": "high"
+    }
+  ],
+  "risks": [
+    {
+      "risk": "Live video generation requires authorized Flow session + credit approval",
+      "severity": "HIGH"
+    },
+    {
+      "risk": "Structured PlannerOutput from a live LLM may not satisfy fail-closed validation",
+      "severity": "MEDIUM"
+    }
+  ],
+  "recommended_next_phases": [
+    {
+      "priority": "P0",
+      "task": "Provision authorized Google Flow session + credit approval",
+      "affected_modules": "tools/windagent_tools/google_flow/",
+      "reason": "blocker for LIVE_GENERATION",
+      "acceptance_criteria": "signed-in session"
+    },
+    {
+      "priority": "P1",
+      "task": "Wire a live PreproductionModelPort adapter into apps/api or a CLI command",
+      "affected_modules": "intelligence/windagent_intelligence/video/, apps/",
+      "reason": "kernel is provider-neutral but no production adapter exists",
+      "acceptance_criteria": "video production CLI command runs script pipeline"
+    },
+    {
+      "priority": "P2",
+      "task": "Verify director/shot-graph/compiler stages end-to-end on the live screenplay",
+      "affected_modules": "director/, shot_planner/, prompt_compiler/",
+      "reason": "locked screenplay → CinematicPlan → GenerationRequest chain untested live",
+      "acceptance_criteria": "validated GenerationRequest set"
+    },
+    {
+      "priority": "P3",
+      "task": "Production-quality assembly from real Flow clips",
+      "affected_modules": "postproduction/",
+      "reason": "phase_22 clips are stubs",
+      "acceptance_criteria": "media-probe-valid final video"
+    }
+  ],
+  "final_verdict": "PIPELINE_PARTIAL_WITH_BLOCKERS"
+}

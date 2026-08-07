@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-08-01T23:34:24.620110+00:00",
+  "contract": "docs/video_production/browser_runtime/browser_runtime_contract.md",
+  "check_count": 5,
+  "all_checks_pass": true,
+  "checks": [
+    {
+      "check": "lock_acquired",
+      "ok": true,
+      "detail": "first worker holds the lease"
+    },
+    {
+      "check": "lock_collision_detected",
+      "ok": true,
+      "detail": "second worker on the same profile is rejected"
+    },
+    {
+      "check": "lock_released_by_holder",
+      "ok": true,
+      "detail": "holder can release the lock"
+    },
+    {
+      "check": "session_registry_persists",
+      "ok": true,
+      "detail": "registry survives reload (worker restart)"
+    },
+    {
+      "check": "metadata_has_no_profile_path",
+      "ok": true,
+      "detail": "only opaque profile_key is stored"
+    }
+  ]
+}

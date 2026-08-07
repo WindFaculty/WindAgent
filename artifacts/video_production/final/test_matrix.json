@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0.0",
+  "gate": "VIDEO_PRODUCTION_PLATFORM_VERIFIED",
+  "candidate_sha": "1753831c752343aa89419e807aa57058266ff75c",
+  "generated_at": "2026-08-02T18:09:17.624115+00:00",
+  "ci_lane_results": {
+    "ATTESTATION": "PASSED",
+    "CI_PYTHON_UNIT_SUBSET": "PASSED",
+    "CI_FFMPEG_FIXTURES": "PASSED",
+    "CI_LICENSE_NOTICE": "PASSED",
+    "CI_WEB_DESKTOP_PRESENCE": "PASSED",
+    "CI_VERSION_CONSISTENCY": "PASSED",
+    "CI_ARCHITECTURE_IMPORTS": "PASSED",
+    "CI_CANONICAL_SCHEMA": "PASSED",
+    "CI_EVENT_TAXONOMY": "PASSED",
+    "CI_SECRET_EXPOSURE": "PASSED",
+    "CI_NO_LEGACY_ORCHESTRATION": "PASSED",
+    "MIGRATION_REHEARSAL": "PASSED",
+    "RELEASE_E2E_MOCK": "PASSED",
+    "EVIDENCE_VALIDATION": "PASSED"
+  },
+  "ci_all_lanes_passed": true,
+  "migration_rehearsal": "PASSED",
+  "release_e2e_mock": "PASSED",
+  "real_credit_e2e": true,
+  "evidence_validation": "PASSED",
+  "platform_matrix": {
+    "python": "3.11.15",
+    "ffmpeg": "ffmpeg version 8.1.2-full_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers",
+    "sqlite": "rehearsed (migration lane)",
+    "postgresql": "delegated to GitHub Actions ci.yaml",
+    "web": "0.3.0",
+    "desktop": "0.6.0",
+    "os": "win32"
+  }
+}

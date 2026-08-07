@@ -1,0 +1,12 @@
+{
+  "schema_version": "1.0.0",
+  "gate": "VIDEO_PRODUCTION_PLATFORM_VERIFIED",
+  "candidate_sha": "1753831c752343aa89419e807aa57058266ff75c",
+  "generated_at": "2026-08-02T18:09:17.646115+00:00",
+  "phase_19_cost_gate": "PASSED",
+  "phase_19_evidence": "artifacts/video_production/phase_19/",
+  "phase_24_cost_report": "artifacts/video_production/phase_24/cost_report.json",
+  "release_mock_spend_credits": 0,
+  "real_credit_spend": "NOT_EXECUTED (controlled release precondition)",
+  "note": "No real-credit spend occurred during Phase 27 certification (offline mock)."
+}

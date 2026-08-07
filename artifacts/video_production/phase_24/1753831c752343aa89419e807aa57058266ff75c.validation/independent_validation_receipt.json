@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0.0",
+  "candidate_sha": "1753831c752343aa89419e807aa57058266ff75c",
+  "run_id": "r5_independent_20260802214152",
+  "started_at": "2026-08-02T14:41:52.207729+00:00",
+  "completed_at": "2026-08-02T14:41:52.279399+00:00",
+  "command_or_provider": "independent_validate_phase24.py v1.0.0",
+  "input_hashes": [
+    "94c57742ee20297cc0dc88fd635bcc25808056fa4d2bd151067992aa32cdad8e"
+  ],
+  "output_hashes": [],
+  "evidence_locator": "<evidence_dir>.validation/independent_validation_receipt.json",
+  "status": "BLOCKED",
+  "validator_version": "1.0.0",
+  "findings": [
+    "final media file missing — cannot independently re-probe",
+    "flow_job_receipts/ missing",
+    "browser recovery: duplicate_submits_count != 0 or receipt missing",
+    "cost_report.json missing",
+    "final-cut approval missing/not approved",
+    "automation_rate < 0.8",
+    "candidate review: hidden identity defects"
+  ],
+  "checks": {
+    "worktree_candidate_sha": true,
+    "manifest": true,
+    "final_media_reprobe": false,
+    "flow_lineage_no_duplicates": false,
+    "browser_recovery": false,
+    "cost_ledger": false,
+    "final_approval": false,
+    "redaction": true,
+    "acceptance_matrix": false
+  }
+}

@@ -1,0 +1,35 @@
+[
+  {
+    "character_id": "chr_e572cf0e2c908680",
+    "name": "Bin",
+    "role": "SUPPORTING",
+    "visual_traits": {},
+    "costume_descriptions": [],
+    "portrait_asset_ids": [],
+    "metadata": {
+      "identity_seq": 0
+    }
+  },
+  {
+    "character_id": "chr_c9e3012653941f60",
+    "name": "Bo",
+    "role": "SUPPORTING",
+    "visual_traits": {},
+    "costume_descriptions": [],
+    "portrait_asset_ids": [],
+    "metadata": {
+      "identity_seq": 1
+    }
+  },
+  {
+    "character_id": "chr_bd40ff29a9be8fcf",
+    "name": "Bác Quản Lý",
+    "role": "SUPPORTING",
+    "visual_traits": {},
+    "costume_descriptions": [],
+    "portrait_asset_ids": [],
+    "metadata": {
+      "identity_seq": 2
+    }
+  }
+]

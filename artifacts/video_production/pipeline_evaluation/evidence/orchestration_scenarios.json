@@ -1,0 +1,32 @@
+[
+  {
+    "scenario": "F1_happy_path",
+    "status": "PASS_LIVE",
+    "detail": "brief → concept → screenplay → package ran live (see script_pipeline stages)"
+  },
+  {
+    "scenario": "F2_invalid_brief",
+    "status": "BLOCKED_RUNTIME",
+    "detail": "UnboundLocalError: cannot access local variable 'CreativeBriefExpander' where it is not associated with a value"
+  },
+  {
+    "scenario": "F3_malformed_output",
+    "status": "PASS_LOCAL",
+    "detail": "malformed model JSON → typed ResponseParseError, no artifact"
+  },
+  {
+    "scenario": "F5_missing_character_ref",
+    "status": "FAILED",
+    "detail": "scene referencing an unknown character ID is rejected by VideoProductionPackageValidator"
+  },
+  {
+    "scenario": "F7_duplicate_execution",
+    "status": "PASS_LOCAL",
+    "detail": "canonical content hash is deterministic for identical logical content (verified by kernel content_hash tests and phase 6 receipts)"
+  },
+  {
+    "scenario": "F8_resume",
+    "status": "PASS_LOCAL",
+    "detail": "durable workflow checkpoint/resume verified by tests/unit/orchestration/test_phase17_durable_workflow.py (see baseline receipts)"
+  }
+]

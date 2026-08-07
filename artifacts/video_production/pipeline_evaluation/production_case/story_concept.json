@@ -1,0 +1,24 @@
+{
+  "concept_id": "cnc_5c7f7edfe5cbc5e3",
+  "title": "Bí Mật Thư Viện Làng",
+  "premise": "Hai người bạn nhỏ vô tình làm hỏng một món đồ quý trong thư viện làng.",
+  "synopsis": "Một nhân vật muốn giấu lỗi, nhân vật còn lại khuyên nên nói thật. Cả hai cùng sửa món đồ với sự giúp đỡ của người quản lý thư viện và hiểu rằng nhận lỗi, sửa lỗi giúp mọi người tin tưởng nhau hơn.",
+  "themes": [
+    "biết nhận lỗi",
+    "sửa lỗi",
+    "trung thực",
+    "tình bạn"
+  ],
+  "metadata": {
+    "beats": [
+      "Mở đầu ở thư viện làng",
+      "Tai nạn làm hỏng món đồ",
+      "Muốn giấu lỗi",
+      "Khuyên nói thật",
+      "Quyết định nói thật",
+      "Cùng sửa món đồ",
+      "Giúp đỡ từ quản lý thư viện",
+      "Kết thúc: tin tưởng hơn"
+    ]
+  }
+}

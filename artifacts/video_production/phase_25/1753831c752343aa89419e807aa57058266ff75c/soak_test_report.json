@@ -1,0 +1,192 @@
+{
+  "iterations": 20,
+  "all_runs_terminal": true,
+  "duplicate_events_total": 0,
+  "leaks": [],
+  "leaks_total": 0,
+  "flaky_races": 0,
+  "min_completed_steps": 16,
+  "max_completed_steps": 16,
+  "iterations_detail": [
+    {
+      "iteration": 0,
+      "state": "COMPLETED",
+      "completed_steps": 16,
+      "executor_calls": 16,
+      "duplicate_events": 0,
+      "store_files": 1,
+      "clean": true
+    },
+    {
+      "iteration": 1,
+      "state": "COMPLETED",
+      "completed_steps": 16,
+      "executor_calls": 16,
+      "duplicate_events": 0,
+      "store_files": 1,
+      "clean": true
+    },
+    {
+      "iteration": 2,
+      "state": "COMPLETED",
+      "completed_steps": 16,
+      "executor_calls": 16,
+      "duplicate_events": 0,
+      "store_files": 1,
+      "clean": true
+    },
+    {
+      "iteration": 3,
+      "state": "COMPLETED",
+      "completed_steps": 16,
+      "executor_calls": 16,
+      "duplicate_events": 0,
+      "store_files": 1,
+      "clean": true
+    },
+    {
+      "iteration": 4,
+      "state": "COMPLETED",
+      "completed_steps": 16,
+      "executor_calls": 16,
+      "duplicate_events": 0,
+      "store_files": 1,
+      "clean": true
+    },
+    {
+      "iteration": 5,
+      "state": "COMPLETED",
+      "completed_steps": 16,
+      "executor_calls": 16,
+      "duplicate_events": 0,
+      "store_files": 1,
+      "clean": true
+    },
+    {
+      "iteration": 6,
+      "state": "COMPLETED",
+      "completed_steps": 16,
+      "executor_calls": 16,
+      "duplicate_events": 0,
+      "store_files": 1,
+      "clean": true
+    },
+    {
+      "iteration": 7,
+      "state": "COMPLETED",
+      "completed_steps": 16,
+      "executor_calls": 16,
+      "duplicate_events": 0,
+      "store_files": 1,
+      "clean": true
+    },
+    {
+      "iteration": 8,
+      "state": "COMPLETED",
+      "completed_steps": 16,
+      "executor_calls": 16,
+      "duplicate_events": 0,
+      "store_files": 1,
+      "clean": true
+    },
+    {
+      "iteration": 9,
+      "state": "COMPLETED",
+      "completed_steps": 16,
+      "executor_calls": 16,
+      "duplicate_events": 0,
+      "store_files": 1,
+      "clean": true
+    },
+    {
+      "iteration": 10,
+      "state": "COMPLETED",
+      "completed_steps": 16,
+      "executor_calls": 16,
+      "duplicate_events": 0,
+      "store_files": 1,
+      "clean": true
+    },
+    {
+      "iteration": 11,
+      "state": "COMPLETED",
+      "completed_steps": 16,
+      "executor_calls": 16,
+      "duplicate_events": 0,
+      "store_files": 1,
+      "clean": true
+    },
+    {
+      "iteration": 12,
+      "state": "COMPLETED",
+      "completed_steps": 16,
+      "executor_calls": 16,
+      "duplicate_events": 0,
+      "store_files": 1,
+      "clean": true
+    },
+    {
+      "iteration": 13,
+      "state": "COMPLETED",
+      "completed_steps": 16,
+      "executor_calls": 16,
+      "duplicate_events": 0,
+      "store_files": 1,
+      "clean": true
+    },
+    {
+      "iteration": 14,
+      "state": "COMPLETED",
+      "completed_steps": 16,
+      "executor_calls": 16,
+      "duplicate_events": 0,
+      "store_files": 1,
+      "clean": true
+    },
+    {
+      "iteration": 15,
+      "state": "COMPLETED",
+      "completed_steps": 16,
+      "executor_calls": 16,
+      "duplicate_events": 0,
+      "store_files": 1,
+      "clean": true
+    },
+    {
+      "iteration": 16,
+      "state": "COMPLETED",
+      "completed_steps": 16,
+      "executor_calls": 16,
+      "duplicate_events": 0,
+      "store_files": 1,
+      "clean": true
+    },
+    {
+      "iteration": 17,
+      "state": "COMPLETED",
+      "completed_steps": 16,
+      "executor_calls": 16,
+      "duplicate_events": 0,
+      "store_files": 1,
+      "clean": true
+    },
+    {
+      "iteration": 18,
+      "state": "COMPLETED",
+      "completed_steps": 16,
+      "executor_calls": 16,
+      "duplicate_events": 0,
+      "store_files": 1,
+      "clean": true
+    },
+    {
+      "iteration": 19,
+      "state": "COMPLETED",
+      "completed_steps": 16,
+      "executor_calls": 16,
+      "duplicate_events": 0,
+      "store_files": 1,
+      "clean": true
+    }
+  ]
+}

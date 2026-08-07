@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0.0",
+  "candidate_sha": "1753831c752343aa89419e807aa57058266ff75c",
+  "run_id": "SE08-1753831c",
+  "started_at": "2026-08-02T15:55:18.847170+00:00",
+  "completed_at": "2026-08-02T15:55:18.847170+00:00",
+  "command_or_provider": "BrowserActionPolicy + SafeShellRunner + AssemblyPlanner",
+  "input_hashes": [
+    "7e06c1926fd6a6c3b955bf360eaed68be791ef52f98e400175a1bb56c81788dd"
+  ],
+  "output_hashes": [
+    "59d53708f225bc231a8ae7e1b9cf93a942c107ea4cfeb032a7ec4e37073352f1"
+  ],
+  "evidence_locator": "security_test_receipts/SE08.json",
+  "status": "PASSED",
+  "scenario_id": "SE08",
+  "tier": "MOCK_LEVEL",
+  "observed": {
+    "eval_denied": true,
+    "cookie_export_denied": true,
+    "filesystem_read_denied": true,
+    "forbidden_shell_blocked": true,
+    "ffmpeg_argv_typed_no_metachars": true
+  },
+  "blocked_commands": {
+    "rm_root": true,
+    "fork_bomb": true,
+    "dd_zero": true,
+    "mkfs": true,
+    "format_drive": true
+  },
+  "shell_metachars_found": []
+}

@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-08-01T23:34:24.622109+00:00",
+  "contract": "docs/video_production/browser_runtime/browser_runtime_contract.md",
+  "check_count": 5,
+  "all_checks_pass": true,
+  "checks": [
+    {
+      "check": "healthy_classification",
+      "ok": true,
+      "detail": "all signals pass -> HEALTHY"
+    },
+    {
+      "check": "human_required_is_degraded",
+      "ok": true,
+      "detail": "human-required state -> DEGRADED, never HEALTHY"
+    },
+    {
+      "check": "domain_violation_unhealthy",
+      "ok": true,
+      "detail": "page outside allowlist -> UNHEALTHY"
+    },
+    {
+      "check": "dead_session_unhealthy",
+      "ok": true,
+      "detail": "process/browser/lock down -> UNHEALTHY"
+    },
+    {
+      "check": "empty_allowlist_fails_closed",
+      "ok": true,
+      "detail": "no domain configured -> not healthy (fail closed)"
+    }
+  ]
+}

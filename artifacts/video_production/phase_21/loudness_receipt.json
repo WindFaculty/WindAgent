@@ -1,0 +1,64 @@
+{
+  "gate": "VP21_AUDIO_PIPELINE_VERIFIED",
+  "workstream": "loudness",
+  "generated_at": "2026-08-02T13:39:20.254069+00:00",
+  "check_count": 10,
+  "all_checks_pass": true,
+  "checks": [
+    {
+      "check": "clean_mix_no_issues",
+      "ok": true,
+      "detail": "issues=0"
+    },
+    {
+      "check": "versioned_mix_policy",
+      "ok": true,
+      "detail": "1.0.0"
+    },
+    {
+      "check": "loudness_target_default",
+      "ok": true,
+      "detail": "-16.0 LUFS"
+    },
+    {
+      "check": "peak_ceiling_default",
+      "ok": true,
+      "detail": "-1.0 dB"
+    },
+    {
+      "check": "ducking_default",
+      "ok": true,
+      "detail": "-12.0 dB"
+    },
+    {
+      "check": "mix_hash_deterministic",
+      "ok": true,
+      "detail": "414ff3496ab7a287"
+    },
+    {
+      "check": "mix_has_command_manifest",
+      "ok": true,
+      "detail": "manifest present"
+    },
+    {
+      "check": "unknown_license_blocks_mix",
+      "ok": true,
+      "detail": "cue with UNKNOWN license never published"
+    },
+    {
+      "check": "licensed_cue_passes",
+      "ok": true,
+      "detail": "LICENSED cue accepted"
+    },
+    {
+      "check": "technical_checks_exist",
+      "ok": true,
+      "detail": "peak<0 and loudness<=0 enforce headroom"
+    }
+  ],
+  "mix_policy_version": "1.0.0",
+  "loudness_target_lufs": -16.0,
+  "peak_ceiling_db": -1.0,
+  "dialogue_ducking_db": -12.0,
+  "mix_hash": "414ff3496ab7a287cf2119593438dbc74344f81c6361f0d543f287377312a516"
+}

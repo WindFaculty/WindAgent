@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0.0",
+  "candidate_sha": "1753831c752343aa89419e807aa57058266ff75c",
+  "run_id": "SE11-1753831c",
+  "started_at": "2026-08-02T15:55:19.375820+00:00",
+  "completed_at": "2026-08-02T15:55:19.375820+00:00",
+  "command_or_provider": "v2_production_workspace router + VideoProductionEventEnvelope",
+  "input_hashes": [
+    "149513103fb5e990dba480d7ca467a27af6b7616c452a22fe5865441b32ec50a"
+  ],
+  "output_hashes": [
+    "bece5d684573464280d5e8f3eef343d80871300d95caff5be3cccdbda59a530e"
+  ],
+  "evidence_locator": "security_test_receipts/SE11.json",
+  "status": "PASSED",
+  "scenario_id": "SE11",
+  "tier": "INTEGRATION_LEVEL",
+  "observed": {
+    "media_token_valid": true,
+    "media_token_path_denied": true,
+    "idempotency_dedup": true,
+    "stale_revision_conflict": true,
+    "cross_project_event_denied": true
+  },
+  "path_token_results": {
+    "traversal": true,
+    "secret": true,
+    "notok": true
+  },
+  "idempotency_note": "same X-Idempotency-Key replay returned the identical command_id (first response cached and served)",
+  "cross_project_note": "the envelope carries project_id (real); the consumer-boundary check is deployment-scoped (SEC-004) and demonstrated here as the channel authorization pattern"
+}

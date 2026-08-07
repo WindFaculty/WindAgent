@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0.0",
+  "gate": "VIDEO_PRODUCTION_PLATFORM_VERIFIED",
+  "candidate_sha": "1753831c752343aa89419e807aa57058266ff75c",
+  "generated_at": "2026-08-02T18:09:17.646115+00:00",
+  "status": "NOT_EXECUTED",
+  "reason": "Controlled real-credit Flow E2E (plan §20.3/§27.6) requires the approved credit maximum, an authorized Flow session and human takeover plan; it is a controlled-release precondition, not run in the offline certification.",
+  "mock_equivalent": {
+    "release_e2e_receipt": "release_e2e_receipt.json (zero real credits)",
+    "phase_24_evidence": "artifacts/video_production/phase_24/ (mock PoC + runbook preconditions)"
+  },
+  "approval_required": [
+    "credit_maximum",
+    "flow_session_authorization",
+    "human_takeover_plan"
+  ]
+}

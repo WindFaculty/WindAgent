@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0.0",
+  "phase": 15,
+  "status": "PASSED",
+  "gate": "VP15_FLOW_VIDEO_GENERATION_VERIFIED",
+  "evidence": [
+    {
+      "path": "video_operations_receipt.json"
+    },
+    {
+      "path": "video_mode_validation_receipt.json"
+    },
+    {
+      "path": "video_idempotency_receipt.json"
+    },
+    {
+      "path": "video_technical_validation_receipt.json"
+    },
+    {
+      "path": "video_cancel_retry_receipt.json"
+    }
+  ],
+  "blocking_reasons": [],
+  "derived_from": "scripts/verification/verify_phase15_flow_video.py"
+}

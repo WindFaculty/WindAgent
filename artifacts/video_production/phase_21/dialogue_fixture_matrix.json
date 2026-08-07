@@ -1,0 +1,92 @@
+{
+  "gate": "VP21_AUDIO_PIPELINE_VERIFIED",
+  "workstream": "dialogue_fixture_matrix",
+  "generated_at": "2026-08-02T13:39:20.254069+00:00",
+  "check_count": 10,
+  "all_checks_pass": true,
+  "checks": [
+    {
+      "check": "number_expanded_in_prepared",
+      "ok": true,
+      "detail": "số 5 -> số năm"
+    },
+    {
+      "check": "original_text_preserved",
+      "ok": true,
+      "detail": "source line keeps digits"
+    },
+    {
+      "check": "abbrev_expanded",
+      "ok": true,
+      "detail": "Xin chào, số năm. ok tivi."
+    },
+    {
+      "check": "lexicon_version_recorded",
+      "ok": true,
+      "detail": "1.0.0"
+    },
+    {
+      "check": "empty_line_is_issue",
+      "ok": true,
+      "detail": "EMPTY_LINE raised"
+    },
+    {
+      "check": "overlong_line_is_issue",
+      "ok": true,
+      "detail": "OVERLONG_LINE raised"
+    },
+    {
+      "check": "narration_intent_classified",
+      "ok": true,
+      "detail": "delivery=narration"
+    },
+    {
+      "check": "spoken_intent_default",
+      "ok": true,
+      "detail": "default intent"
+    },
+    {
+      "check": "target_duration_estimated",
+      "ok": true,
+      "detail": "4.12s"
+    },
+    {
+      "check": "text_revision_distinct",
+      "ok": true,
+      "detail": "new text -> new prepared text"
+    }
+  ],
+  "fixture": {
+    "lines": [
+      {
+        "dialogue_id": "dlg_1",
+        "character_id": "chr_1",
+        "text": "Xin chào, số 5. OK TV.",
+        "prepared_text": "Xin chào, số năm. ok tivi.",
+        "intent": "SPOKEN_DIALOGUE",
+        "target_duration_seconds": 3.25
+      },
+      {
+        "dialogue_id": "dlg_e",
+        "character_id": "chr_1",
+        "text": "   ",
+        "issue": "EMPTY_LINE"
+      },
+      {
+        "dialogue_id": "dlg_o",
+        "character_id": "chr_1",
+        "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "issue": "OVERLONG_LINE"
+      },
+      {
+        "dialogue_id": "dlg_n",
+        "character_id": "chr_1",
+        "text": "Vào một buổi sáng.",
+        "delivery": "narration",
+        "intent": "NARRATION"
+      }
+    ],
+    "lexicon_version": "1.0.0",
+    "max_line_chars": 400
+  }
+}

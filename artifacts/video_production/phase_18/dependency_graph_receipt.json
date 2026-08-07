@@ -1,0 +1,49 @@
+{
+  "gate": "VP18_ARTIFACT_INVALIDATION_VERIFIED",
+  "workstream": "dependency_graph",
+  "generated_at": "2026-08-02T04:36:39.249807+00:00",
+  "check_count": 8,
+  "all_checks_pass": true,
+  "checks": [
+    {
+      "check": "screenplay_chain_resolves",
+      "ok": true,
+      "detail": "full GENERATED_FROM chain"
+    },
+    {
+      "check": "inbound_query",
+      "ok": true,
+      "detail": "direct dependents"
+    },
+    {
+      "check": "outbound_query",
+      "ok": true,
+      "detail": "inputs of CLIP"
+    },
+    {
+      "check": "unknown_node_rejected",
+      "ok": true,
+      "detail": "add_edge fail-closed"
+    },
+    {
+      "check": "unknown_target_rejected",
+      "ok": true,
+      "detail": "dependency target must be known"
+    },
+    {
+      "check": "cycle_rejected",
+      "ok": true,
+      "detail": "no well-defined minimal scope on cycles"
+    },
+    {
+      "check": "edge_requires_exactly_one_target",
+      "ok": true,
+      "detail": "XOR artifact/revision target"
+    },
+    {
+      "check": "graph_round_trip",
+      "ok": true,
+      "detail": "serialization stable"
+    }
+  ]
+}

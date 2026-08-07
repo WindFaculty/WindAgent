@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "phase": 10,
+  "status": "PASSED",
+  "gate": "VP10_CONTINUITY_LEDGER_VERIFIED",
+  "evidence": [
+    {
+      "path": "continuity_fixture_matrix.json"
+    },
+    {
+      "path": "transition_test_receipt.json"
+    },
+    {
+      "path": "blocking_defect_receipt.json"
+    },
+    {
+      "path": "invalidation_dependency_receipt.json"
+    }
+  ],
+  "blocking_reasons": [],
+  "derived_from": "scripts/verification/verify_phase10_continuity.py"
+}

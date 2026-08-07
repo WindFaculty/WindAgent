@@ -1,0 +1,88 @@
+{
+  "gate": "VP21_AUDIO_PIPELINE_VERIFIED",
+  "workstream": "tts_contract",
+  "generated_at": "2026-08-02T13:39:20.254069+00:00",
+  "check_count": 13,
+  "all_checks_pass": true,
+  "checks": [
+    {
+      "check": "multi_character_mapping_never_swaps",
+      "ok": true,
+      "detail": "by_char={'chr_A': 'va', 'chr_B': 'vb'}"
+    },
+    {
+      "check": "preview_never_final_without_approval",
+      "ok": true,
+      "detail": "PREVIEW_NOT_APPROVED surfaced"
+    },
+    {
+      "check": "voice_reuse_forbidden",
+      "ok": true,
+      "detail": "identity-confusion guard"
+    },
+    {
+      "check": "approve_audited_no_license_fabrication",
+      "ok": true,
+      "detail": "rights=UNKNOWN"
+    },
+    {
+      "check": "request_hash_deterministic",
+      "ok": true,
+      "detail": "aeedfa6e84d457d5"
+    },
+    {
+      "check": "request_hash_binds_inputs",
+      "ok": true,
+      "detail": "dialogue change -> new hash"
+    },
+    {
+      "check": "valid_output_published",
+      "ok": true,
+      "detail": "assets=1"
+    },
+    {
+      "check": "asset_content_hash_64",
+      "ok": true,
+      "detail": "21168a58939014f7"
+    },
+    {
+      "check": "asset_has_source_request_hash",
+      "ok": true,
+      "detail": "aeedfa6e84d457d5"
+    },
+    {
+      "check": "asset_technical_fields",
+      "ok": true,
+      "detail": "sr=48000 dur=2.0"
+    },
+    {
+      "check": "timeout_never_published",
+      "ok": true,
+      "detail": "TTS_TIMEOUT"
+    },
+    {
+      "check": "empty_output_never_published",
+      "ok": true,
+      "detail": "TTS_EMPTY_OUTPUT"
+    },
+    {
+      "check": "invalid_output_never_published",
+      "ok": true,
+      "detail": "TTS_INVALID_OUTPUT"
+    }
+  ],
+  "voice_cast_version": "1.0.0",
+  "tts_version": "1.0.0",
+  "sample_asset": {
+    "asset_id": "tsa_e5298bed2dfb8e29",
+    "content_hash": "21168a58939014f73db6d5b199e418fc9ea648770752072acf8abd14a9851c0f",
+    "sample_rate": 48000,
+    "channel_layout": "stereo",
+    "duration_seconds": 2.0,
+    "byte_size": 320,
+    "source_request_hash": "aeedfa6e84d457d5c87a415ef0ab485fd29af9cfc4810e8edd0b50f744b9c61d",
+    "provider": "flow",
+    "model": "tts-v1",
+    "voice_id": "v1"
+  }
+}

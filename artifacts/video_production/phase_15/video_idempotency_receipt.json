@@ -1,0 +1,54 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-08-02T00:50:56.049494+00:00",
+  "contract": "docs/video_production/flow_video/video_job_idempotency.md",
+  "check_count": 9,
+  "all_checks_pass": true,
+  "checks": [
+    {
+      "check": "missing_job_creates_prepared",
+      "ok": true,
+      "detail": "no prior job → CREATE_PREPARED"
+    },
+    {
+      "check": "completed_job_reused",
+      "ok": true,
+      "detail": "COMPLETED → reuse candidate set (no resubmit)"
+    },
+    {
+      "check": "active_job_resumed",
+      "ok": true,
+      "detail": "active job → inspect/resume"
+    },
+    {
+      "check": "unknown_job_reconciles",
+      "ok": true,
+      "detail": "UNKNOWN → reconcile (never blind resubmit)"
+    },
+    {
+      "check": "retryable_failure_new_attempt",
+      "ok": true,
+      "detail": "attempt=1"
+    },
+    {
+      "check": "next_attempt_keeps_causal_link",
+      "ok": true,
+      "detail": "attempt=2 parent=gen_1"
+    },
+    {
+      "check": "first_command_submits_once",
+      "ok": true,
+      "detail": "candidates=1"
+    },
+    {
+      "check": "duplicate_command_no_resubmit",
+      "ok": true,
+      "detail": "completed job reused — no duplicate submit"
+    },
+    {
+      "check": "browser_close_resumes_same_project",
+      "ok": true,
+      "detail": "active job re-inspected, no resubmit"
+    }
+  ]
+}

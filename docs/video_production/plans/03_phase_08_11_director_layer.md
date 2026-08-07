@@ -89,6 +89,12 @@ class VideoDirectorService:
         package: VideoProductionPackage,
     ) -> CinematicPlan:
         ...
+
+    async def create_cinematic_plan_receipt(
+        self,
+        package: VideoProductionPackage,
+    ) -> DirectorPlanReceipt:
+        ...  # plan + issue/proposal/audit evidence for workflow review
 ```
 
 Input tối thiểu:
@@ -545,6 +551,7 @@ artifacts/video_production/phase_11/
 ├── prompt_hash_receipt.json
 ├── prompt_security_receipt.json
 ├── mode_contract_receipt.json
+├── cross_phase_integration_receipt.json
 └── phase_verdict.json
 ```
 
@@ -601,11 +608,11 @@ Handoff gồm:
 
 ## 30. Checklist đóng kế hoạch
 
-- [ ] Cinematic plan không mutate screenplay.
-- [ ] Shot graph acyclic và có scheduling semantics.
-- [ ] Continuity ledger trace được state xuyên shot.
-- [ ] Approved reference được bind theo content hash.
-- [ ] Prompt compiler mode-specific, versioned và deterministic.
-- [ ] Không browser/provider implementation dependency.
-- [ ] `VP8` đến `VP11` đều `PASSED`.
-- [ ] Flow provider nhận được fixture contract hoàn chỉnh.
+- [x] Cinematic plan không mutate screenplay.
+- [x] Shot graph acyclic và có scheduling semantics.
+- [x] Continuity ledger trace được state xuyên shot.
+- [x] Approved reference được bind theo content hash.
+- [x] Prompt compiler mode-specific, versioned và deterministic.
+- [x] Không browser/provider implementation dependency.
+- [x] `VP8` đến `VP11` đều `PASSED`.
+- [x] Flow provider nhận được fixture contract hoàn chỉnh.

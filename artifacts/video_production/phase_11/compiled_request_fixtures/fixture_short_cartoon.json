@@ -1,0 +1,81 @@
+{
+  "package": {
+    "project_id": "vp_phase8_short_cartoon",
+    "revision_id": "rev_phase8_short_cartoon_1",
+    "content_hash": "9af592bc450533af"
+  },
+  "requests": [
+    {
+      "request_id": "req_e248ae0a9fd617c2",
+      "shot_id": "sht_72f22cc0f8acc0f3",
+      "generation_mode": "TEXT_TO_VIDEO",
+      "prompt_version": "1.0.0",
+      "prompt_hash": "8b6e2d527d0080af722f3c1d026884b916e5fde75e7db1bf37a1c92c552dd9f9",
+      "reference_hashes": [
+        "828b182d660262f1fa0e51b0798079f124dc498df0449c357cede2ddf14eb433"
+      ],
+      "request_hash": "2a0fb8c84653e7eda4b02c74ba644b3e57a14a0c0caa8cd408ff4736776e430e",
+      "parameters": {
+        "duration_seconds": 9.541666666666666,
+        "frame_rate": 24,
+        "aspect_ratio": "16:9",
+        "preferred_mode": "TEXT_TO_VIDEO",
+        "acceptable_fallback_modes": [],
+        "retry_policy": {
+          "max_attempts": 2,
+          "retry_boundary": "sequence"
+        }
+      }
+    },
+    {
+      "request_id": "req_206b0cbdb79f3253",
+      "shot_id": "sht_7e980d4286fb6720",
+      "generation_mode": "IMAGE_TO_VIDEO",
+      "prompt_version": "1.0.0",
+      "prompt_hash": "726735c54c8f395dd97bde58dc4659d66ea45af4c8a3e8d11e8dd0faae7bba6b",
+      "reference_hashes": [
+        "6e40f2e99b3b0739e420c98ddd2f1c615264d23a70bdb68c3f9d48876e072a72",
+        "828b182d660262f1fa0e51b0798079f124dc498df0449c357cede2ddf14eb433"
+      ],
+      "request_hash": "4db940514b67194e9ff08f83b4f711c560e71e50fe51daa635e9e5d184f5416c",
+      "parameters": {
+        "duration_seconds": 3.7916666666666665,
+        "frame_rate": 24,
+        "aspect_ratio": "16:9",
+        "preferred_mode": "IMAGE_TO_VIDEO",
+        "acceptable_fallback_modes": [
+          "INGREDIENTS_TO_VIDEO"
+        ],
+        "retry_policy": {
+          "max_attempts": 2,
+          "retry_boundary": "sequence"
+        }
+      }
+    },
+    {
+      "request_id": "req_7049be387c002ca6",
+      "shot_id": "sht_0d0ffd683cc5abaf",
+      "generation_mode": "IMAGE_TO_VIDEO",
+      "prompt_version": "1.0.0",
+      "prompt_hash": "fc1ef050207c6296069cc92b28cfde4d439ce552e023602fbbdec349b02cc25d",
+      "reference_hashes": [
+        "6e40f2e99b3b0739e420c98ddd2f1c615264d23a70bdb68c3f9d48876e072a72",
+        "828b182d660262f1fa0e51b0798079f124dc498df0449c357cede2ddf14eb433"
+      ],
+      "request_hash": "ebec0b4c97b115ea2b3734c79a1bfb76f3dbf64dc18a3fa4459be8b5986e3356",
+      "parameters": {
+        "duration_seconds": 3.6666666666666665,
+        "frame_rate": 24,
+        "aspect_ratio": "16:9",
+        "preferred_mode": "IMAGE_TO_VIDEO",
+        "acceptable_fallback_modes": [
+          "INGREDIENTS_TO_VIDEO"
+        ],
+        "retry_policy": {
+          "max_attempts": 2,
+          "retry_boundary": "sequence"
+        }
+      }
+    }
+  ]
+}

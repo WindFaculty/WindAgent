@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0.0",
+  "candidate_sha": "1753831c752343aa89419e807aa57058266ff75c",
+  "run_id": "SE03-1753831c",
+  "started_at": "2026-08-02T15:55:18.210632+00:00",
+  "completed_at": "2026-08-02T15:55:18.210632+00:00",
+  "command_or_provider": "windagent_tools.browser.action_policy + media_assets.security",
+  "input_hashes": [
+    "21dac3ebd01ca0b437597c5a5a7487c78549c14884dfc784c6a491c59a78cffe"
+  ],
+  "output_hashes": [
+    "7a3ef34014b56496124b59221bf183a68a0312ac46893022e5d94f67110eb0ac"
+  ],
+  "evidence_locator": "security_test_receipts/SE03.json",
+  "status": "PASSED",
+  "scenario_id": "SE03",
+  "tier": "MOCK_LEVEL",
+  "observed": {
+    "allowlist_allow": true,
+    "allowlist_deny": true,
+    "credentials_deny": true,
+    "redirect_revalidated": true,
+    "public_host_allowed": true
+  },
+  "controlled_environment": {
+    "isolation": "offline policy evaluation only (no browser, no network)",
+    "allowed_domains": [
+      "flow.example.com"
+    ]
+  },
+  "decisions": {
+    "allow": "allow",
+    "deny": "deny_domain",
+    "credentials": "deny_credentials"
+  }
+}

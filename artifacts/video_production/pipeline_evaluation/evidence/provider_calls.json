@@ -1,0 +1,48 @@
+{
+  "calls": [
+    {
+      "call_id": "mock_001",
+      "provider": "deterministic-fake",
+      "model": "pinned-fixture",
+      "task_type": "brief_expansion",
+      "prompt_version": "1.0.0",
+      "prompt_hash": "2a882ce066c5bf5a398cb4a78ce8ef043edc63dc63887efddcf16c14093a198e",
+      "latency_ms": 0.0,
+      "error": null,
+      "response_sha256": "c81c918b4846bbd72b020a2aaad9c7ea5451ecdad20bcd62fa43f6df0a38489a"
+    },
+    {
+      "call_id": "mock_002",
+      "provider": "deterministic-fake",
+      "model": "pinned-fixture",
+      "task_type": "story_outline",
+      "prompt_version": "1.0.0",
+      "prompt_hash": "34b418e63b04f11f368bf5b9a05ff8adf2e16539eaf2f4fa6206a9ac8031719c",
+      "latency_ms": 0.0,
+      "error": null,
+      "response_sha256": "267825d5ecf965cdefc97f0d04414458de1c89b106d59f3bbf98ed38dd0525d7"
+    },
+    {
+      "call_id": "mock_003",
+      "provider": "deterministic-fake",
+      "model": "pinned-fixture",
+      "task_type": "screenplay_generation",
+      "prompt_version": "1.0.0",
+      "prompt_hash": "d546496f9718faed985da1053a0ec1340a8117b499ed9dcfbdc0b6fde1e7f4ce",
+      "latency_ms": 0.0,
+      "error": null,
+      "response_sha256": "31b60b92b44e6e7c2cf2ab76ca13908316423cfb2754466462046f9b7f77532b"
+    },
+    {
+      "call_id": "mock_004",
+      "provider": "deterministic-fake",
+      "model": "pinned-fixture",
+      "task_type": "style_design",
+      "prompt_version": "1.0.0",
+      "prompt_hash": "471f61ce941472a6dd19514ace3800f227180b84c39cd8f55cee4a8119b92160",
+      "latency_ms": 0.0,
+      "error": null,
+      "response_sha256": "1821aaf574cabefdfa222883ef0c673473e6f28fe5fde7ce4f17d3e58a5ffa48"
+    }
+  ]
+}

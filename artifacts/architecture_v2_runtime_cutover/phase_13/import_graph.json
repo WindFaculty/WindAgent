@@ -144,85 +144,97 @@
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/commands.py",
+      "line": 14
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/commands.py",
+      "line": 14
+    },
+    {
+      "from": "orchestration",
+      "to": "storage",
+      "file": "orchestration/windagent_orchestration/durable_plan_scheduler.py",
+      "line": 12
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/orchestrator_service.py",
+      "line": 18
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/orchestrator_service.py",
+      "line": 18
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/orchestrator_service.py",
+      "line": 18
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/orchestrator_service.py",
+      "line": 18
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/orchestrator_service.py",
+      "line": 24
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/orchestrator_service.py",
+      "line": 25
+    },
+    {
+      "from": "orchestration",
+      "to": "storage",
+      "file": "orchestration/windagent_orchestration/orchestrator_service.py",
+      "line": 28
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/ports.py",
       "line": 11
     },
     {
       "from": "orchestration",
       "to": "core",
-      "file": "orchestration/windagent_orchestration/commands.py",
+      "file": "orchestration/windagent_orchestration/ports.py",
       "line": 11
     },
     {
       "from": "orchestration",
       "to": "core",
-      "file": "orchestration/windagent_orchestration/commands.py",
-      "line": 14
-    },
-    {
-      "from": "orchestration",
-      "to": "core",
-      "file": "orchestration/windagent_orchestration/commands.py",
-      "line": 14
+      "file": "orchestration/windagent_orchestration/ports.py",
+      "line": 11
     },
     {
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/ports.py",
-      "line": 14
+      "line": 11
     },
     {
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/ports.py",
-      "line": 14
+      "line": 11
     },
     {
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/ports.py",
-      "line": 14
-    },
-    {
-      "from": "orchestration",
-      "to": "core",
-      "file": "orchestration/windagent_orchestration/ports.py",
-      "line": 14
-    },
-    {
-      "from": "orchestration",
-      "to": "core",
-      "file": "orchestration/windagent_orchestration/ports.py",
-      "line": 17
-    },
-    {
-      "from": "orchestration",
-      "to": "core",
-      "file": "orchestration/windagent_orchestration/ports.py",
-      "line": 17
-    },
-    {
-      "from": "orchestration",
-      "to": "core",
-      "file": "orchestration/windagent_orchestration/ports.py",
-      "line": 17
-    },
-    {
-      "from": "orchestration",
-      "to": "core",
-      "file": "orchestration/windagent_orchestration/ports.py",
-      "line": 17
-    },
-    {
-      "from": "orchestration",
-      "to": "core",
-      "file": "orchestration/windagent_orchestration/ports.py",
-      "line": 17
-    },
-    {
-      "from": "orchestration",
-      "to": "core",
-      "file": "orchestration/windagent_orchestration/ports.py",
-      "line": 17
+      "line": 11
     },
     {
       "from": "orchestration",
@@ -270,19 +282,103 @@
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/dispatcher/result_ingestion.py",
-      "line": 15
+      "line": 14
     },
     {
       "from": "orchestration",
       "to": "storage",
       "file": "orchestration/windagent_orchestration/dispatcher/result_ingestion.py",
-      "line": 36
+      "line": 35
     },
     {
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/dispatcher/service.py",
       "line": 11
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/production/approvals.py",
+      "line": 28
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/production/approvals.py",
+      "line": 28
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/production/approvals.py",
+      "line": 29
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/production/approvals.py",
+      "line": 29
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/production/budget_policy.py",
+      "line": 28
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/production/cancellation.py",
+      "line": 22
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/production/circuit_breaker.py",
+      "line": 28
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/production/engine.py",
+      "line": 40
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/production/engine.py",
+      "line": 40
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/production/estimator.py",
+      "line": 35
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/production/quota_ledger.py",
+      "line": 30
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/production/scheduler.py",
+      "line": 24
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/production/states.py",
+      "line": 29
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/production/states.py",
+      "line": 29
     },
     {
       "from": "orchestration",
@@ -294,49 +390,19 @@
       "from": "orchestration",
       "to": "storage",
       "file": "orchestration/windagent_orchestration/recovery/reconciler.py",
-      "line": 17
+      "line": 14
     },
     {
       "from": "orchestration",
       "to": "storage",
       "file": "orchestration/windagent_orchestration/recovery/reconciler.py",
-      "line": 18
+      "line": 15
     },
     {
       "from": "orchestration",
       "to": "storage",
       "file": "orchestration/windagent_orchestration/recovery/reconciler.py",
-      "line": 18
-    },
-    {
-      "from": "orchestration",
-      "to": "storage",
-      "file": "orchestration/windagent_orchestration/recovery/reconciler.py",
-      "line": 18
-    },
-    {
-      "from": "orchestration",
-      "to": "storage",
-      "file": "orchestration/windagent_orchestration/recovery/reconciler.py",
-      "line": 18
-    },
-    {
-      "from": "orchestration",
-      "to": "storage",
-      "file": "orchestration/windagent_orchestration/recovery/reconciler.py",
-      "line": 18
-    },
-    {
-      "from": "orchestration",
-      "to": "core",
-      "file": "orchestration/windagent_orchestration/retry/classifier.py",
-      "line": 11
-    },
-    {
-      "from": "orchestration",
-      "to": "core",
-      "file": "orchestration/windagent_orchestration/retry/classifier.py",
-      "line": 11
+      "line": 15
     },
     {
       "from": "orchestration",
@@ -407,24 +473,6 @@
     {
       "from": "orchestration",
       "to": "core",
-      "file": "orchestration/windagent_orchestration/state_machine/transitions.py",
-      "line": 11
-    },
-    {
-      "from": "orchestration",
-      "to": "core",
-      "file": "orchestration/windagent_orchestration/state_machine/transitions.py",
-      "line": 11
-    },
-    {
-      "from": "orchestration",
-      "to": "core",
-      "file": "orchestration/windagent_orchestration/state_machine/transitions.py",
-      "line": 11
-    },
-    {
-      "from": "orchestration",
-      "to": "core",
       "file": "orchestration/windagent_orchestration/state_machine/workflow_state.py",
       "line": 8
     },
@@ -468,7 +516,7 @@
       "from": "orchestration",
       "to": "storage",
       "file": "orchestration/windagent_orchestration/workflow_engine/checkpoints.py",
-      "line": 12
+      "line": 11
     },
     {
       "from": "orchestration",
@@ -502,7 +550,7 @@
     },
     {
       "from": "intelligence",
-      "to": "core",
+      "to": "context",
       "file": "intelligence/windagent_intelligence/context_builder/builder.py",
       "line": 12
     },
@@ -510,49 +558,37 @@
       "from": "intelligence",
       "to": "context",
       "file": "intelligence/windagent_intelligence/context_builder/builder.py",
-      "line": 13
+      "line": 12
     },
     {
       "from": "intelligence",
       "to": "context",
       "file": "intelligence/windagent_intelligence/context_builder/builder.py",
-      "line": 13
+      "line": 12
     },
     {
       "from": "intelligence",
       "to": "context",
       "file": "intelligence/windagent_intelligence/context_builder/builder.py",
-      "line": 13
+      "line": 12
     },
     {
       "from": "intelligence",
       "to": "context",
       "file": "intelligence/windagent_intelligence/context_builder/builder.py",
-      "line": 13
+      "line": 12
     },
     {
       "from": "intelligence",
       "to": "context",
       "file": "intelligence/windagent_intelligence/context_builder/builder.py",
-      "line": 13
+      "line": 12
     },
     {
       "from": "intelligence",
       "to": "context",
       "file": "intelligence/windagent_intelligence/context_builder/builder.py",
-      "line": 13
-    },
-    {
-      "from": "intelligence",
-      "to": "context",
-      "file": "intelligence/windagent_intelligence/context_builder/builder.py",
-      "line": 113
-    },
-    {
-      "from": "intelligence",
-      "to": "core",
-      "file": "intelligence/windagent_intelligence/model_router/cache.py",
-      "line": 17
+      "line": 112
     },
     {
       "from": "intelligence",
@@ -660,67 +696,1693 @@
       "from": "intelligence",
       "to": "core",
       "file": "intelligence/windagent_intelligence/planner/planner.py",
+      "line": 16
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/planner/planner.py",
+      "line": 16
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/planner/planner.py",
       "line": 17
     },
     {
       "from": "intelligence",
-      "to": "core",
-      "file": "intelligence/windagent_intelligence/planner/planner.py",
-      "line": 18
+      "to": "context",
+      "file": "intelligence/windagent_intelligence/summarizer/summarizer.py",
+      "line": 16
     },
     {
       "from": "intelligence",
       "to": "core",
-      "file": "intelligence/windagent_intelligence/planner/planner.py",
-      "line": 18
-    },
-    {
-      "from": "intelligence",
-      "to": "core",
-      "file": "intelligence/windagent_intelligence/planner/planner.py",
-      "line": 18
-    },
-    {
-      "from": "intelligence",
-      "to": "core",
-      "file": "intelligence/windagent_intelligence/planner/planner.py",
+      "file": "intelligence/windagent_intelligence/video/assembly/assembler.py",
       "line": 19
     },
     {
       "from": "intelligence",
       "to": "core",
-      "file": "intelligence/windagent_intelligence/reviewer/reviewer.py",
-      "line": 16
+      "file": "intelligence/windagent_intelligence/video/assembly/assembler.py",
+      "line": 20
     },
     {
       "from": "intelligence",
-      "to": "context",
-      "file": "intelligence/windagent_intelligence/summarizer/summarizer.py",
-      "line": 16
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/assembly/assembler.py",
+      "line": 20
     },
     {
       "from": "intelligence",
-      "to": "context",
-      "file": "intelligence/windagent_intelligence/summarizer/summarizer.py",
-      "line": 16
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/assembly/assembler.py",
+      "line": 24
     },
     {
       "from": "intelligence",
-      "to": "context",
-      "file": "intelligence/windagent_intelligence/summarizer/summarizer.py",
-      "line": 16
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/assembly/assembler.py",
+      "line": 24
     },
     {
       "from": "intelligence",
-      "to": "context",
-      "file": "intelligence/windagent_intelligence/summarizer/summarizer.py",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/assembly/assembler.py",
+      "line": 24
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/assembly/assembler.py",
+      "line": 29
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/assembly/assembler.py",
+      "line": 29
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/assembly/assembler.py",
+      "line": 33
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/assembly/assembler.py",
+      "line": 33
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/assembly/assembler.py",
+      "line": 33
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/assembly/assembler.py",
+      "line": 33
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/assembly/assembler.py",
+      "line": 39
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/assembly/assembler.py",
+      "line": 39
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/asset_prompts/builder.py",
+      "line": 18
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/asset_prompts/builder.py",
+      "line": 19
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/asset_prompts/builder.py",
+      "line": 19
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/audio/alignment.py",
+      "line": 23
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/audio/alignment.py",
+      "line": 23
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/audio/alignment.py",
+      "line": 24
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/audio/dialogue.py",
+      "line": 21
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/audio/dialogue.py",
+      "line": 22
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/audio/dialogue.py",
+      "line": 22
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/audio/dialogue.py",
+      "line": 26
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/audio/dialogue.py",
+      "line": 27
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/audio/mix.py",
+      "line": 20
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/audio/mix.py",
+      "line": 20
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/audio/mix.py",
+      "line": 20
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/audio/mix.py",
+      "line": 20
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/audio/mix.py",
+      "line": 26
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/audio/mix.py",
+      "line": 27
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/audio/models.py",
+      "line": 17
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/audio/models.py",
+      "line": 17
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/audio/models.py",
+      "line": 17
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/audio/models.py",
+      "line": 17
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/audio/pipeline.py",
+      "line": 31
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/audio/pipeline.py",
+      "line": 31
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/audio/pipeline.py",
+      "line": 31
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/audio/pipeline.py",
+      "line": 31
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/audio/pipeline.py",
+      "line": 37
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/audio/pipeline.py",
+      "line": 38
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/audio/tts.py",
+      "line": 24
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/audio/tts.py",
+      "line": 25
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/audio/tts.py",
+      "line": 25
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/audio/voice.py",
+      "line": 20
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/continuation/service.py",
+      "line": 18
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/continuation/service.py",
+      "line": 19
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/continuation/service.py",
+      "line": 19
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/continuation/service.py",
+      "line": 190
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/continuation/service.py",
+      "line": 196
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/continuation/service.py",
+      "line": 136
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/continuation/service.py",
+      "line": 137
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/continuation/service.py",
+      "line": 138
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/continuity/models.py",
+      "line": 20
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/continuity/models.py",
+      "line": 20
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/continuity/service.py",
+      "line": 31
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/continuity/service.py",
+      "line": 31
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/continuity/service.py",
+      "line": 31
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/continuity/service.py",
+      "line": 31
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/continuity/service.py",
+      "line": 31
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/continuity/service.py",
+      "line": 31
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/continuity/service.py",
+      "line": 31
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/continuity/service.py",
+      "line": 31
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/continuity/service.py",
+      "line": 41
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/continuity/service.py",
+      "line": 41
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/continuity/service.py",
+      "line": 45
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/continuity/service.py",
+      "line": 46
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/continuity/service.py",
+      "line": 47
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/continuity/service.py",
+      "line": 48
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/director/duration.py",
+      "line": 17
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/director/models.py",
+      "line": 19
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/director/models.py",
+      "line": 19
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/director/models.py",
+      "line": 23
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/director/models.py",
+      "line": 23
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/director/models.py",
+      "line": 23
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/director/models.py",
+      "line": 23
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/director/models.py",
+      "line": 29
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/director/models.py",
+      "line": 29
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/director/models.py",
+      "line": 29
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/director/models.py",
+      "line": 34
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/director/revision.py",
       "line": 16
     },
     {
       "from": "intelligence",
       "to": "core",
-      "file": "intelligence/windagent_intelligence/task_classifier/classifier.py",
+      "file": "intelligence/windagent_intelligence/video/director/revision.py",
       "line": 16
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/director/revision.py",
+      "line": 20
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/director/revision.py",
+      "line": 23
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/director/revision.py",
+      "line": 23
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/director/revision.py",
+      "line": 27
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/director/service.py",
+      "line": 25
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/director/service.py",
+      "line": 26
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/director/service.py",
+      "line": 27
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/director/service.py",
+      "line": 28
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/director/service.py",
+      "line": 29
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/director/validator.py",
+      "line": 25
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/director/validator.py",
+      "line": 25
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/director/validator.py",
+      "line": 29
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/director/validator.py",
+      "line": 29
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/director/validator.py",
+      "line": 33
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/director/validator.py",
+      "line": 33
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/director/validator.py",
+      "line": 37
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/director/validator.py",
+      "line": 38
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/director/validator.py",
+      "line": 38
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/director/validator.py",
+      "line": 38
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/director/validator.py",
+      "line": 38
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/e2e_poc/automation_calculator.py",
+      "line": 10
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/e2e_poc/poc_runner.py",
+      "line": 13
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/e2e_poc/poc_runner.py",
+      "line": 13
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/e2e_poc/poc_runner.py",
+      "line": 17
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/e2e_poc/poc_runner.py",
+      "line": 17
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/e2e_poc/recovery_auditor.py",
+      "line": 10
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/e2e_poc/traceability_auditor.py",
+      "line": 11
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/e2e_poc/traceability_auditor.py",
+      "line": 11
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/entity_extraction/extractor.py",
+      "line": 14
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/entity_extraction/extractor.py",
+      "line": 15
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/entity_extraction/extractor.py",
+      "line": 16
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/entity_extraction/extractor.py",
+      "line": 16
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/entity_extraction/extractor.py",
+      "line": 16
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/entity_extraction/extractor.py",
+      "line": 21
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/entity_extraction/extractor.py",
+      "line": 21
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/entity_extraction/extractor.py",
+      "line": 25
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/ideation/brief_expander.py",
+      "line": 15
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/ideation/brief_expander.py",
+      "line": 16
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/ideation/outliner.py",
+      "line": 13
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/ideation/outliner.py",
+      "line": 14
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/ideation/outliner.py",
+      "line": 14
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/postproduction/assembly_planner.py",
+      "line": 14
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/postproduction/assembly_planner.py",
+      "line": 14
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/postproduction/ffmpeg_runner.py",
+      "line": 17
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/postproduction/input_normalizer.py",
+      "line": 14
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/postproduction/models.py",
+      "line": 11
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/postproduction/models.py",
+      "line": 14
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/postproduction/reproducibility.py",
+      "line": 12
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/postproduction/reproducibility.py",
+      "line": 12
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/postproduction/verifier.py",
+      "line": 19
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/postproduction/verifier.py",
+      "line": 19
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/postproduction/verifier.py",
+      "line": 23
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/postproduction/verifier.py",
+      "line": 23
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/postproduction/verifier.py",
+      "line": 23
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/postproduction/verifier.py",
+      "line": 23
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/postproduction/verifier.py",
+      "line": 23
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/prompt_compiler/blocks.py",
+      "line": 29
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/prompt_compiler/blocks.py",
+      "line": 30
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/prompt_compiler/blocks.py",
+      "line": 31
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/prompt_compiler/blocks.py",
+      "line": 32
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/prompt_compiler/blocks.py",
+      "line": 33
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/prompt_compiler/blocks.py",
+      "line": 36
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/prompt_compiler/models.py",
+      "line": 16
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/prompt_compiler/models.py",
+      "line": 17
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/prompt_compiler/models.py",
+      "line": 17
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/prompt_compiler/models.py",
+      "line": 17
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/prompt_compiler/modes.py",
+      "line": 28
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/prompt_compiler/modes.py",
+      "line": 28
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/prompt_compiler/modes.py",
+      "line": 28
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/prompt_compiler/modes.py",
+      "line": 28
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/prompt_compiler/modes.py",
+      "line": 34
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/prompt_compiler/modes.py",
+      "line": 35
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/prompt_compiler/modes.py",
+      "line": 38
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/prompt_compiler/security.py",
+      "line": 28
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/prompt_compiler/security.py",
+      "line": 29
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/prompt_compiler/service.py",
+      "line": 26
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/prompt_compiler/service.py",
+      "line": 26
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/prompt_compiler/service.py",
+      "line": 26
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/prompt_compiler/service.py",
+      "line": 31
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/prompt_compiler/service.py",
+      "line": 32
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/prompt_compiler/service.py",
+      "line": 32
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/prompt_compiler/service.py",
+      "line": 32
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/prompt_compiler/service.py",
+      "line": 37
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/prompt_compiler/service.py",
+      "line": 38
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/prompt_compiler/service.py",
+      "line": 38
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/prompt_compiler/service.py",
+      "line": 38
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/prompt_compiler/service.py",
+      "line": 38
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/prompt_compiler/service.py",
+      "line": 38
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/prompt_compiler/service.py",
+      "line": 38
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/prompt_compiler/service.py",
+      "line": 46
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/prompt_compiler/service.py",
+      "line": 47
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/prompt_compiler/service.py",
+      "line": 427
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/reference_selector/models.py",
+      "line": 18
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/reference_selector/models.py",
+      "line": 18
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/reference_selector/service.py",
+      "line": 26
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/reference_selector/service.py",
+      "line": 27
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/reference_selector/service.py",
+      "line": 28
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/reference_selector/service.py",
+      "line": 28
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/reference_selector/service.py",
+      "line": 32
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/reference_selector/service.py",
+      "line": 32
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/reference_selector/service.py",
+      "line": 32
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/reference_selector/service.py",
+      "line": 32
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/reference_selector/service.py",
+      "line": 38
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/reference_selector/service.py",
+      "line": 39
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/reference_selector/service.py",
+      "line": 39
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/reference_selector/service.py",
+      "line": 39
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/reference_selector/service.py",
+      "line": 39
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/reference_selector/service.py",
+      "line": 45
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/reviewers/cross_shot.py",
+      "line": 25
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/reviewers/cross_shot.py",
+      "line": 26
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/screenplay/narration.py",
+      "line": 14
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/screenplay/narration.py",
+      "line": 14
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/screenplay/narration.py",
+      "line": 14
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/screenplay/narration.py",
+      "line": 19
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/screenplay/narration.py",
+      "line": 20
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/screenplay/writer.py",
+      "line": 17
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/screenplay/writer.py",
+      "line": 18
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/screenplay/writer.py",
+      "line": 18
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/screenplay/writer.py",
+      "line": 18
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/screenplay/writer.py",
+      "line": 18
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/screenplay/writer.py",
+      "line": 18
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/screenplay/writer.py",
+      "line": 25
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/screenplay/writer.py",
+      "line": 25
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/screenplay/writer.py",
+      "line": 25
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/screenplay/writer.py",
+      "line": 30
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/screenplay/writer.py",
+      "line": 234
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/camera.py",
+      "line": 27
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/camera.py",
+      "line": 27
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/camera.py",
+      "line": 27
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/camera.py",
+      "line": 27
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/camera.py",
+      "line": 27
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/camera.py",
+      "line": 27
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/camera.py",
+      "line": 27
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/camera.py",
+      "line": 27
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/camera.py",
+      "line": 37
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/camera.py",
+      "line": 37
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/camera.py",
+      "line": 37
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/camera.py",
+      "line": 42
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/camera.py",
+      "line": 43
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/camera.py",
+      "line": 43
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/generation_mode.py",
+      "line": 23
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/generation_mode.py",
+      "line": 23
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/generation_mode.py",
+      "line": 23
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/generation_mode.py",
+      "line": 23
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/generation_mode.py",
+      "line": 23
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/generation_mode.py",
+      "line": 30
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/generation_mode.py",
+      "line": 31
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/generation_mode.py",
+      "line": 31
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/generation_mode.py",
+      "line": 35
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/graph.py",
+      "line": 25
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/graph.py",
+      "line": 25
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/graph.py",
+      "line": 25
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/graph.py",
+      "line": 25
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/graph.py",
+      "line": 31
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/graph.py",
+      "line": 31
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/graph.py",
+      "line": 31
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/graph.py",
+      "line": 36
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/graph.py",
+      "line": 37
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/graph.py",
+      "line": 38
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/graph.py",
+      "line": 38
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/graph.py",
+      "line": 38
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/models.py",
+      "line": 15
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/models.py",
+      "line": 16
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/models.py",
+      "line": 16
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/models.py",
+      "line": 16
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/scheduling.py",
+      "line": 17
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/scheduling.py",
+      "line": 18
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/scheduling.py",
+      "line": 21
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/service.py",
+      "line": 27
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/service.py",
+      "line": 27
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/service.py",
+      "line": 31
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/service.py",
+      "line": 32
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/service.py",
+      "line": 32
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/service.py",
+      "line": 32
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/service.py",
+      "line": 32
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/service.py",
+      "line": 38
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/service.py",
+      "line": 38
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/service.py",
+      "line": 38
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/service.py",
+      "line": 38
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/shot_planner/service.py",
+      "line": 44
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/style_design/designer.py",
+      "line": 14
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/style_design/designer.py",
+      "line": 15
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/style_design/designer.py",
+      "line": 16
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/style_design/designer.py",
+      "line": 16
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/workspace/workspace_service.py",
+      "line": 12
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/workspace/workspace_service.py",
+      "line": 12
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/workspace/workspace_service.py",
+      "line": 12
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/workspace/workspace_service.py",
+      "line": 12
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/workspace/workspace_service.py",
+      "line": 18
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/workspace/workspace_service.py",
+      "line": 18
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/workspace/workspace_service.py",
+      "line": 18
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/workspace/workspace_service.py",
+      "line": 18
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/workspace/workspace_service.py",
+      "line": 18
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/workspace/workspace_service.py",
+      "line": 18
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/workspace/workspace_service.py",
+      "line": 18
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/video/workspace/workspace_service.py",
+      "line": 18
     },
     {
       "from": "providers",
@@ -865,12 +2527,6 @@
       "to": "core",
       "file": "providers/windagent_providers/base/contracts.py",
       "line": 21
-    },
-    {
-      "from": "providers",
-      "to": "core",
-      "file": "providers/windagent_providers/base/errors.py",
-      "line": 9
     },
     {
       "from": "providers",
@@ -1104,25 +2760,25 @@
       "from": "providers",
       "to": "core",
       "file": "providers/windagent_providers/routing/execution_coordinator.py",
-      "line": 31
+      "line": 34
     },
     {
       "from": "providers",
       "to": "core",
       "file": "providers/windagent_providers/routing/execution_coordinator.py",
-      "line": 31
+      "line": 34
     },
     {
       "from": "providers",
       "to": "core",
       "file": "providers/windagent_providers/routing/execution_coordinator.py",
-      "line": 31
+      "line": 34
     },
     {
       "from": "providers",
       "to": "core",
       "file": "providers/windagent_providers/routing/execution_coordinator.py",
-      "line": 31
+      "line": 34
     },
     {
       "from": "providers",
@@ -1194,13 +2850,13 @@
       "from": "tools",
       "to": "core",
       "file": "tools/windagent_tools/ast/tool.py",
-      "line": 12
+      "line": 10
     },
     {
       "from": "tools",
       "to": "core",
       "file": "tools/windagent_tools/ast/tool.py",
-      "line": 12
+      "line": 10
     },
     {
       "from": "tools",
@@ -1248,25 +2904,25 @@
       "from": "tools",
       "to": "core",
       "file": "tools/windagent_tools/database/tool.py",
-      "line": 10
+      "line": 9
     },
     {
       "from": "tools",
       "to": "core",
       "file": "tools/windagent_tools/database/tool.py",
-      "line": 10
+      "line": 9
     },
     {
       "from": "tools",
       "to": "core",
       "file": "tools/windagent_tools/filesystem/canonical.py",
-      "line": 13
+      "line": 11
     },
     {
       "from": "tools",
       "to": "core",
       "file": "tools/windagent_tools/filesystem/canonical.py",
-      "line": 13
+      "line": 11
     },
     {
       "from": "tools",
@@ -1284,37 +2940,37 @@
       "from": "tools",
       "to": "core",
       "file": "tools/windagent_tools/git/tool.py",
-      "line": 10
+      "line": 9
     },
     {
       "from": "tools",
       "to": "core",
       "file": "tools/windagent_tools/git/tool.py",
-      "line": 10
+      "line": 9
     },
     {
       "from": "tools",
       "to": "core",
       "file": "tools/windagent_tools/github/tool.py",
-      "line": 10
+      "line": 9
     },
     {
       "from": "tools",
       "to": "core",
       "file": "tools/windagent_tools/github/tool.py",
-      "line": 10
+      "line": 9
     },
     {
       "from": "tools",
       "to": "core",
       "file": "tools/windagent_tools/lsp/tool.py",
-      "line": 10
+      "line": 9
     },
     {
       "from": "tools",
       "to": "core",
       "file": "tools/windagent_tools/lsp/tool.py",
-      "line": 10
+      "line": 9
     },
     {
       "from": "tools",
@@ -1343,8 +2999,50 @@
     {
       "from": "tools",
       "to": "core",
-      "file": "tools/windagent_tools/registry/registry.py",
-      "line": 11
+      "file": "tools/windagent_tools/media_assets/provenance.py",
+      "line": 21
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/media_assets/provenance.py",
+      "line": 21
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/media_assets/provenance.py",
+      "line": 25
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/media_assets/provenance.py",
+      "line": 25
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/media_assets/references.py",
+      "line": 17
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/media_assets/references.py",
+      "line": 17
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/media_assets/search.py",
+      "line": 15
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/media_assets/validation.py",
+      "line": 22
     },
     {
       "from": "tools",
@@ -1356,7 +3054,7 @@
       "from": "tools",
       "to": "core",
       "file": "tools/windagent_tools/registry/registry.py",
-      "line": 12
+      "line": 11
     },
     {
       "from": "tools",
@@ -1369,6 +3067,18 @@
       "to": "core",
       "file": "tools/windagent_tools/registry/registry.py",
       "line": 12
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/registry/registry.py",
+      "line": 12
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/security/permission_engine.py",
+      "line": 15
     },
     {
       "from": "tools",
@@ -1398,31 +3108,13 @@
       "from": "tools",
       "to": "core",
       "file": "tools/windagent_tools/security/permission_engine.py",
-      "line": 19
+      "line": 18
     },
     {
       "from": "tools",
       "to": "core",
       "file": "tools/windagent_tools/security/permission_engine.py",
-      "line": 19
-    },
-    {
-      "from": "tools",
-      "to": "core",
-      "file": "tools/windagent_tools/security/permission_engine.py",
-      "line": 19
-    },
-    {
-      "from": "tools",
-      "to": "core",
-      "file": "tools/windagent_tools/security/permission_engine.py",
-      "line": 19
-    },
-    {
-      "from": "tools",
-      "to": "core",
-      "file": "tools/windagent_tools/security/permission_engine.py",
-      "line": 19
+      "line": 18
     },
     {
       "from": "tools",
@@ -1439,26 +3131,32 @@
     {
       "from": "tools",
       "to": "core",
-      "file": "tools/windagent_tools/shell/tool.py",
-      "line": 10
+      "file": "tools/windagent_tools/shell/runner.py",
+      "line": 15
     },
     {
       "from": "tools",
       "to": "core",
       "file": "tools/windagent_tools/shell/tool.py",
-      "line": 10
+      "line": 9
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/shell/tool.py",
+      "line": 9
     },
     {
       "from": "tools",
       "to": "core",
       "file": "tools/windagent_tools/testing/tool.py",
-      "line": 10
+      "line": 9
     },
     {
       "from": "tools",
       "to": "core",
       "file": "tools/windagent_tools/testing/tool.py",
-      "line": 10
+      "line": 9
     },
     {
       "from": "workflows",
@@ -1476,19 +3174,13 @@
       "from": "workflows",
       "to": "core",
       "file": "workflows/windagent_workflows/migration.py",
-      "line": 16
+      "line": 15
     },
     {
       "from": "workflows",
       "to": "core",
       "file": "workflows/windagent_workflows/models.py",
-      "line": 19
-    },
-    {
-      "from": "workflows",
-      "to": "core",
-      "file": "workflows/windagent_workflows/registry.py",
-      "line": 11
+      "line": 18
     },
     {
       "from": "workflows",
@@ -1653,6 +3345,24 @@
       "line": 10
     },
     {
+      "from": "workflows",
+      "to": "orchestration",
+      "file": "workflows/windagent_workflows/video_production/definition.py",
+      "line": 33
+    },
+    {
+      "from": "workflows",
+      "to": "orchestration",
+      "file": "workflows/windagent_workflows/video_production/definition.py",
+      "line": 34
+    },
+    {
+      "from": "workflows",
+      "to": "core",
+      "file": "workflows/windagent_workflows/video_production/pack.py",
+      "line": 12
+    },
+    {
       "from": "verification",
       "to": "core",
       "file": "verification/windagent_verification/__init__.py",
@@ -1666,27 +3376,9 @@
     },
     {
       "from": "memory",
-      "to": "core",
-      "file": "memory/windagent_memory/repository.py",
-      "line": 16
-    },
-    {
-      "from": "memory",
       "to": "storage",
       "file": "memory/windagent_memory/repository.py",
-      "line": 18
-    },
-    {
-      "from": "memory",
-      "to": "core",
-      "file": "memory/windagent_memory/store.py",
-      "line": 19
-    },
-    {
-      "from": "memory",
-      "to": "core",
-      "file": "memory/windagent_memory/store.py",
-      "line": 19
+      "line": 17
     },
     {
       "from": "memory",
@@ -1843,12 +3535,6 @@
       "to": "core",
       "file": "execution/windagent_execution/adapters/fake_runtime_adapter.py",
       "line": 12
-    },
-    {
-      "from": "execution",
-      "to": "core",
-      "file": "execution/windagent_execution/adapters/fake_runtime_adapter.py",
-      "line": 16
     },
     {
       "from": "execution",
@@ -2094,25 +3780,13 @@
       "from": "storage",
       "to": "core",
       "file": "storage/windagent_storage/mappers/domain_orm.py",
-      "line": 14
-    },
-    {
-      "from": "storage",
-      "to": "core",
-      "file": "storage/windagent_storage/mappers/domain_orm.py",
-      "line": 14
-    },
-    {
-      "from": "storage",
-      "to": "core",
-      "file": "storage/windagent_storage/mappers/domain_orm.py",
       "line": 17
     },
     {
       "from": "storage",
       "to": "core",
       "file": "storage/windagent_storage/mappers/domain_orm.py",
-      "line": 18
+      "line": 174
     },
     {
       "from": "storage",
@@ -2154,187 +3828,133 @@
       "from": "storage",
       "to": "core",
       "file": "storage/windagent_storage/queue/submission_adapter.py",
-      "line": 16
+      "line": 15
     },
     {
       "from": "storage",
       "to": "core",
       "file": "storage/windagent_storage/queue/submission_adapter.py",
-      "line": 17
+      "line": 16
     },
     {
       "from": "storage",
       "to": "core",
       "file": "storage/windagent_storage/repositories/sql_repositories.py",
-      "line": 21
+      "line": 20
     },
     {
       "from": "storage",
       "to": "core",
       "file": "storage/windagent_storage/repositories/sql_repositories.py",
-      "line": 21
+      "line": 20
     },
     {
       "from": "storage",
       "to": "core",
       "file": "storage/windagent_storage/repositories/sql_repositories.py",
-      "line": 21
+      "line": 24
     },
     {
       "from": "storage",
       "to": "core",
       "file": "storage/windagent_storage/repositories/sql_repositories.py",
-      "line": 21
+      "line": 25
     },
     {
       "from": "storage",
       "to": "core",
       "file": "storage/windagent_storage/repositories/sql_repositories.py",
-      "line": 21
+      "line": 25
     },
     {
       "from": "storage",
       "to": "core",
       "file": "storage/windagent_storage/repositories/sql_repositories.py",
-      "line": 21
+      "line": 25
     },
     {
       "from": "storage",
       "to": "core",
       "file": "storage/windagent_storage/repositories/sql_repositories.py",
-      "line": 21
+      "line": 25
     },
     {
       "from": "storage",
       "to": "core",
       "file": "storage/windagent_storage/repositories/sql_repositories.py",
-      "line": 21
+      "line": 25
     },
     {
       "from": "storage",
       "to": "core",
       "file": "storage/windagent_storage/repositories/sql_repositories.py",
-      "line": 31
+      "line": 25
     },
     {
       "from": "storage",
       "to": "core",
       "file": "storage/windagent_storage/repositories/sql_repositories.py",
-      "line": 32
+      "line": 33
     },
     {
       "from": "storage",
       "to": "core",
       "file": "storage/windagent_storage/repositories/sql_repositories.py",
-      "line": 32
+      "line": 33
     },
     {
       "from": "storage",
       "to": "core",
       "file": "storage/windagent_storage/repositories/sql_repositories.py",
-      "line": 32
+      "line": 33
     },
     {
       "from": "storage",
       "to": "core",
       "file": "storage/windagent_storage/repositories/sql_repositories.py",
-      "line": 32
+      "line": 33
     },
     {
       "from": "storage",
       "to": "core",
       "file": "storage/windagent_storage/repositories/sql_repositories.py",
-      "line": 32
+      "line": 33
     },
     {
       "from": "storage",
       "to": "core",
       "file": "storage/windagent_storage/repositories/sql_repositories.py",
-      "line": 32
+      "line": 33
     },
     {
       "from": "storage",
       "to": "core",
       "file": "storage/windagent_storage/repositories/sql_repositories.py",
-      "line": 32
+      "line": 33
     },
     {
       "from": "storage",
       "to": "core",
       "file": "storage/windagent_storage/repositories/sql_repositories.py",
-      "line": 32
+      "line": 404
     },
     {
       "from": "storage",
       "to": "core",
       "file": "storage/windagent_storage/repositories/sql_repositories.py",
-      "line": 32
+      "line": 542
     },
     {
       "from": "storage",
       "to": "core",
       "file": "storage/windagent_storage/repositories/sql_repositories.py",
-      "line": 32
-    },
-    {
-      "from": "storage",
-      "to": "core",
-      "file": "storage/windagent_storage/repositories/sql_repositories.py",
-      "line": 44
-    },
-    {
-      "from": "storage",
-      "to": "core",
-      "file": "storage/windagent_storage/repositories/sql_repositories.py",
-      "line": 44
-    },
-    {
-      "from": "storage",
-      "to": "core",
-      "file": "storage/windagent_storage/repositories/sql_repositories.py",
-      "line": 44
-    },
-    {
-      "from": "storage",
-      "to": "core",
-      "file": "storage/windagent_storage/repositories/sql_repositories.py",
-      "line": 44
-    },
-    {
-      "from": "storage",
-      "to": "core",
-      "file": "storage/windagent_storage/repositories/sql_repositories.py",
-      "line": 44
-    },
-    {
-      "from": "storage",
-      "to": "core",
-      "file": "storage/windagent_storage/repositories/sql_repositories.py",
-      "line": 44
-    },
-    {
-      "from": "storage",
-      "to": "core",
-      "file": "storage/windagent_storage/repositories/sql_repositories.py",
-      "line": 44
-    },
-    {
-      "from": "storage",
-      "to": "core",
-      "file": "storage/windagent_storage/repositories/sql_repositories.py",
-      "line": 44
-    },
-    {
-      "from": "storage",
-      "to": "core",
-      "file": "storage/windagent_storage/repositories/sql_repositories.py",
-      "line": 551
+      "line": 543
     },
     {
       "from": "storage",
       "to": "core",
       "file": "storage/windagent_storage/repositories/v2_orchestration_repositories.py",
-      "line": 21
+      "line": 19
     },
     {
       "from": "storage",
@@ -2435,6 +4055,12 @@
     {
       "from": "storage",
       "to": "core",
+      "file": "storage/windagent_storage/repositories/v3_routing_repositories.py",
+      "line": 240
+    },
+    {
+      "from": "storage",
+      "to": "core",
       "file": "storage/windagent_storage/repositories/worker_status.py",
       "line": 11
     },
@@ -2484,19 +4110,31 @@
       "from": "storage",
       "to": "core",
       "file": "storage/windagent_storage/unit_of_work/sql_uow.py",
-      "line": 11
+      "line": 10
     },
     {
       "from": "storage",
       "to": "core",
       "file": "storage/windagent_storage/unit_of_work/sql_uow.py",
-      "line": 11
+      "line": 10
     },
     {
       "from": "storage",
       "to": "core",
       "file": "storage/windagent_storage/unit_of_work/sql_uow.py",
-      "line": 15
+      "line": 14
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/video_production/graph.py",
+      "line": 33
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/video_production/invalidation.py",
+      "line": 33
     },
     {
       "from": "observability",
@@ -2520,7 +4158,7 @@
       "from": "observability",
       "to": "core",
       "file": "observability/windagent_observability/events/dispatcher.py",
-      "line": 9
+      "line": 8
     },
     {
       "from": "observability",
@@ -2543,14 +4181,8 @@
     {
       "from": "evals",
       "to": "core",
-      "file": "evals/windagent_evals/benchmarks.py",
-      "line": 19
-    },
-    {
-      "from": "evals",
-      "to": "core",
       "file": "evals/windagent_evals/datasets.py",
-      "line": 14
+      "line": 13
     },
     {
       "from": "evals",
@@ -2622,139 +4254,223 @@
       "from": "api",
       "to": "storage",
       "file": "apps/api/windagent_api/composition.py",
-      "line": 34
-    },
-    {
-      "from": "api",
-      "to": "storage",
-      "file": "apps/api/windagent_api/composition.py",
-      "line": 35
-    },
-    {
-      "from": "api",
-      "to": "storage",
-      "file": "apps/api/windagent_api/composition.py",
-      "line": 36
-    },
-    {
-      "from": "api",
-      "to": "storage",
-      "file": "apps/api/windagent_api/composition.py",
       "line": 37
     },
     {
       "from": "api",
-      "to": "orchestration",
+      "to": "storage",
       "file": "apps/api/windagent_api/composition.py",
       "line": 38
     },
     {
       "from": "api",
-      "to": "providers",
+      "to": "storage",
       "file": "apps/api/windagent_api/composition.py",
       "line": 39
     },
     {
       "from": "api",
-      "to": "providers",
+      "to": "storage",
       "file": "apps/api/windagent_api/composition.py",
       "line": 40
     },
     {
       "from": "api",
-      "to": "tools",
+      "to": "orchestration",
       "file": "apps/api/windagent_api/composition.py",
       "line": 41
     },
     {
       "from": "api",
-      "to": "plugins",
+      "to": "providers",
       "file": "apps/api/windagent_api/composition.py",
       "line": 42
     },
     {
       "from": "api",
-      "to": "skills",
+      "to": "providers",
       "file": "apps/api/windagent_api/composition.py",
       "line": 43
     },
     {
       "from": "api",
-      "to": "workflows",
+      "to": "tools",
       "file": "apps/api/windagent_api/composition.py",
       "line": 44
     },
     {
       "from": "api",
-      "to": "context",
+      "to": "plugins",
       "file": "apps/api/windagent_api/composition.py",
       "line": 45
     },
     {
       "from": "api",
-      "to": "memory",
+      "to": "skills",
       "file": "apps/api/windagent_api/composition.py",
       "line": 46
     },
     {
       "from": "api",
-      "to": "verification",
+      "to": "workflows",
       "file": "apps/api/windagent_api/composition.py",
       "line": 47
     },
     {
       "from": "api",
-      "to": "core",
+      "to": "context",
       "file": "apps/api/windagent_api/composition.py",
       "line": 48
     },
     {
       "from": "api",
-      "to": "storage",
+      "to": "memory",
       "file": "apps/api/windagent_api/composition.py",
       "line": 49
     },
     {
       "from": "api",
+      "to": "verification",
+      "file": "apps/api/windagent_api/composition.py",
+      "line": 50
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/composition.py",
+      "line": 51
+    },
+    {
+      "from": "api",
       "to": "storage",
       "file": "apps/api/windagent_api/composition.py",
-      "line": 49
+      "line": 52
+    },
+    {
+      "from": "api",
+      "to": "storage",
+      "file": "apps/api/windagent_api/composition.py",
+      "line": 52
     },
     {
       "from": "api",
       "to": "observability",
       "file": "apps/api/windagent_api/composition.py",
-      "line": 53
+      "line": 56
     },
     {
       "from": "api",
       "to": "storage",
       "file": "apps/api/windagent_api/composition.py",
-      "line": 54
+      "line": 57
     },
     {
       "from": "api",
       "to": "storage",
       "file": "apps/api/windagent_api/composition.py",
-      "line": 121
+      "line": 58
+    },
+    {
+      "from": "api",
+      "to": "execution",
+      "file": "apps/api/windagent_api/composition.py",
+      "line": 59
+    },
+    {
+      "from": "api",
+      "to": "execution",
+      "file": "apps/api/windagent_api/composition.py",
+      "line": 60
+    },
+    {
+      "from": "api",
+      "to": "orchestration",
+      "file": "apps/api/windagent_api/composition.py",
+      "line": 61
+    },
+    {
+      "from": "api",
+      "to": "orchestration",
+      "file": "apps/api/windagent_api/composition.py",
+      "line": 62
+    },
+    {
+      "from": "api",
+      "to": "observability",
+      "file": "apps/api/windagent_api/composition.py",
+      "line": 63
+    },
+    {
+      "from": "api",
+      "to": "providers",
+      "file": "apps/api/windagent_api/composition.py",
+      "line": 64
+    },
+    {
+      "from": "api",
+      "to": "providers",
+      "file": "apps/api/windagent_api/composition.py",
+      "line": 65
     },
     {
       "from": "api",
       "to": "storage",
       "file": "apps/api/windagent_api/composition.py",
-      "line": 122
+      "line": 165
     },
     {
       "from": "api",
       "to": "storage",
       "file": "apps/api/windagent_api/composition.py",
-      "line": 122
+      "line": 166
     },
     {
       "from": "api",
       "to": "storage",
       "file": "apps/api/windagent_api/composition.py",
-      "line": 126
+      "line": 166
+    },
+    {
+      "from": "api",
+      "to": "storage",
+      "file": "apps/api/windagent_api/composition.py",
+      "line": 170
+    },
+    {
+      "from": "api",
+      "to": "storage",
+      "file": "apps/api/windagent_api/composition.py",
+      "line": 170
+    },
+    {
+      "from": "api",
+      "to": "storage",
+      "file": "apps/api/windagent_api/composition.py",
+      "line": 170
+    },
+    {
+      "from": "api",
+      "to": "storage",
+      "file": "apps/api/windagent_api/composition.py",
+      "line": 170
+    },
+    {
+      "from": "api",
+      "to": "storage",
+      "file": "apps/api/windagent_api/composition.py",
+      "line": 170
+    },
+    {
+      "from": "api",
+      "to": "providers",
+      "file": "apps/api/windagent_api/composition.py",
+      "line": 196
+    },
+    {
+      "from": "api",
+      "to": "providers",
+      "file": "apps/api/windagent_api/composition.py",
+      "line": 196
     },
     {
       "from": "api",
@@ -2818,27 +4534,81 @@
     },
     {
       "from": "api",
-      "to": "storage",
+      "to": "orchestration",
       "file": "apps/api/windagent_api/dependencies.py",
-      "line": 43
+      "line": 24
+    },
+    {
+      "from": "api",
+      "to": "providers",
+      "file": "apps/api/windagent_api/dependencies.py",
+      "line": 25
+    },
+    {
+      "from": "api",
+      "to": "providers",
+      "file": "apps/api/windagent_api/dependencies.py",
+      "line": 26
     },
     {
       "from": "api",
       "to": "storage",
       "file": "apps/api/windagent_api/dependencies.py",
-      "line": 44
+      "line": 46
     },
     {
       "from": "api",
       "to": "storage",
       "file": "apps/api/windagent_api/dependencies.py",
-      "line": 44
+      "line": 47
     },
     {
       "from": "api",
       "to": "storage",
       "file": "apps/api/windagent_api/dependencies.py",
-      "line": 48
+      "line": 47
+    },
+    {
+      "from": "api",
+      "to": "storage",
+      "file": "apps/api/windagent_api/dependencies.py",
+      "line": 51
+    },
+    {
+      "from": "api",
+      "to": "storage",
+      "file": "apps/api/windagent_api/dependencies.py",
+      "line": 51
+    },
+    {
+      "from": "api",
+      "to": "storage",
+      "file": "apps/api/windagent_api/dependencies.py",
+      "line": 51
+    },
+    {
+      "from": "api",
+      "to": "storage",
+      "file": "apps/api/windagent_api/dependencies.py",
+      "line": 51
+    },
+    {
+      "from": "api",
+      "to": "storage",
+      "file": "apps/api/windagent_api/dependencies.py",
+      "line": 51
+    },
+    {
+      "from": "api",
+      "to": "providers",
+      "file": "apps/api/windagent_api/dependencies.py",
+      "line": 62
+    },
+    {
+      "from": "api",
+      "to": "providers",
+      "file": "apps/api/windagent_api/dependencies.py",
+      "line": 62
     },
     {
       "from": "api",
@@ -2857,6 +4627,12 @@
       "to": "observability",
       "file": "apps/api/windagent_api/health.py",
       "line": 13
+    },
+    {
+      "from": "api",
+      "to": "orchestration",
+      "file": "apps/api/windagent_api/lifespan.py",
+      "line": 15
     },
     {
       "from": "api",
@@ -2950,6 +4726,48 @@
     },
     {
       "from": "api",
+      "to": "storage",
+      "file": "apps/api/windagent_api/routers/conversation_streams.py",
+      "line": 10
+    },
+    {
+      "from": "api",
+      "to": "orchestration",
+      "file": "apps/api/windagent_api/routers/v2_conversations.py",
+      "line": 11
+    },
+    {
+      "from": "api",
+      "to": "orchestration",
+      "file": "apps/api/windagent_api/routers/v2_conversations.py",
+      "line": 11
+    },
+    {
+      "from": "api",
+      "to": "orchestration",
+      "file": "apps/api/windagent_api/routers/v2_conversations.py",
+      "line": 11
+    },
+    {
+      "from": "api",
+      "to": "orchestration",
+      "file": "apps/api/windagent_api/routers/v2_conversations.py",
+      "line": 16
+    },
+    {
+      "from": "api",
+      "to": "providers",
+      "file": "apps/api/windagent_api/routers/v2_conversations.py",
+      "line": 17
+    },
+    {
+      "from": "api",
+      "to": "providers",
+      "file": "apps/api/windagent_api/routers/v2_conversations.py",
+      "line": 17
+    },
+    {
+      "from": "api",
       "to": "core",
       "file": "apps/api/windagent_api/routers/v2_events.py",
       "line": 15
@@ -2999,6 +4817,60 @@
     {
       "from": "api",
       "to": "core",
+      "file": "apps/api/windagent_api/routers/v2_production_workspace.py",
+      "line": 17
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v2_production_workspace.py",
+      "line": 17
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v2_production_workspace.py",
+      "line": 21
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v2_production_workspace.py",
+      "line": 21
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v2_production_workspace.py",
+      "line": 21
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v2_production_workspace.py",
+      "line": 21
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v2_production_workspace.py",
+      "line": 21
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v2_production_workspace.py",
+      "line": 21
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v2_production_workspace.py",
+      "line": 21
+    },
+    {
+      "from": "api",
+      "to": "core",
       "file": "apps/api/windagent_api/routers/v2_sessions.py",
       "line": 11
     },
@@ -3036,115 +4908,139 @@
       "from": "api",
       "to": "core",
       "file": "apps/api/windagent_api/routers/v2_sessions.py",
-      "line": 76
+      "line": 42
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v2_sessions.py",
+      "line": 42
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v2_sessions.py",
+      "line": 91
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v2_sessions.py",
+      "line": 91
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v2_sessions.py",
+      "line": 113
     },
     {
       "from": "api",
       "to": "storage",
       "file": "apps/api/windagent_api/routers/v2_sessions.py",
-      "line": 77
+      "line": 114
     },
     {
       "from": "api",
       "to": "core",
       "file": "apps/api/windagent_api/routers/v2_sessions.py",
-      "line": 108
+      "line": 145
     },
     {
       "from": "api",
       "to": "storage",
       "file": "apps/api/windagent_api/routers/v2_sessions.py",
-      "line": 109
+      "line": 146
     },
     {
       "from": "api",
       "to": "core",
       "file": "apps/api/windagent_api/routers/v2_sessions.py",
-      "line": 137
+      "line": 174
     },
     {
       "from": "api",
       "to": "storage",
       "file": "apps/api/windagent_api/routers/v2_sessions.py",
-      "line": 138
+      "line": 175
     },
     {
       "from": "api",
       "to": "core",
       "file": "apps/api/windagent_api/routers/v2_sessions.py",
-      "line": 219
+      "line": 256
     },
     {
       "from": "api",
       "to": "core",
       "file": "apps/api/windagent_api/routers/v2_sessions.py",
-      "line": 220
+      "line": 257
     },
     {
       "from": "api",
       "to": "storage",
       "file": "apps/api/windagent_api/routers/v2_sessions.py",
-      "line": 221
+      "line": 258
     },
     {
       "from": "api",
       "to": "core",
       "file": "apps/api/windagent_api/routers/v2_sessions.py",
-      "line": 240
+      "line": 277
     },
     {
       "from": "api",
       "to": "storage",
       "file": "apps/api/windagent_api/routers/v2_sessions.py",
-      "line": 241
+      "line": 278
     },
     {
       "from": "api",
       "to": "core",
       "file": "apps/api/windagent_api/routers/v2_sessions.py",
-      "line": 261
+      "line": 298
     },
     {
       "from": "api",
       "to": "storage",
       "file": "apps/api/windagent_api/routers/v2_sessions.py",
-      "line": 262
+      "line": 299
     },
     {
       "from": "api",
       "to": "core",
       "file": "apps/api/windagent_api/routers/v2_sessions.py",
-      "line": 311
+      "line": 348
     },
     {
       "from": "api",
       "to": "core",
       "file": "apps/api/windagent_api/routers/v2_sessions.py",
-      "line": 312
+      "line": 349
     },
     {
       "from": "api",
       "to": "storage",
       "file": "apps/api/windagent_api/routers/v2_sessions.py",
-      "line": 313
+      "line": 350
     },
     {
       "from": "api",
       "to": "core",
       "file": "apps/api/windagent_api/routers/v2_sessions.py",
-      "line": 330
+      "line": 367
     },
     {
       "from": "api",
       "to": "core",
       "file": "apps/api/windagent_api/routers/v2_sessions.py",
-      "line": 331
+      "line": 368
     },
     {
       "from": "api",
       "to": "core",
       "file": "apps/api/windagent_api/routers/v2_sessions.py",
-      "line": 333
+      "line": 370
     },
     {
       "from": "api",
@@ -3798,31 +5694,31 @@
       "from": "worker",
       "to": "storage",
       "file": "apps/worker/windagent_worker/composition.py",
-      "line": 142
-    },
-    {
-      "from": "worker",
-      "to": "storage",
-      "file": "apps/worker/windagent_worker/composition.py",
       "line": 143
     },
     {
       "from": "worker",
       "to": "storage",
       "file": "apps/worker/windagent_worker/composition.py",
-      "line": 143
+      "line": 144
     },
     {
       "from": "worker",
       "to": "storage",
       "file": "apps/worker/windagent_worker/composition.py",
-      "line": 147
+      "line": 144
+    },
+    {
+      "from": "worker",
+      "to": "storage",
+      "file": "apps/worker/windagent_worker/composition.py",
+      "line": 148
     },
     {
       "from": "worker",
       "to": "execution",
       "file": "apps/worker/windagent_worker/composition.py",
-      "line": 136
+      "line": 137
     },
     {
       "from": "worker",
@@ -4042,6 +5938,7 @@
     ],
     "workflows": [
       "core",
+      "orchestration",
       "tools"
     ],
     "verification": [

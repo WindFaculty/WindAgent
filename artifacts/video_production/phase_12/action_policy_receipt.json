@@ -1,0 +1,59 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-08-01T23:34:24.590580+00:00",
+  "contract": "docs/video_production/browser_runtime/browser_action_policy.md",
+  "check_count": 10,
+  "all_checks_pass": true,
+  "checks": [
+    {
+      "check": "allow_url_inside_allowlist",
+      "ok": true,
+      "detail": "flow.google.com allowed"
+    },
+    {
+      "check": "deny_url_outside_allowlist",
+      "ok": true,
+      "detail": "code=deny_domain"
+    },
+    {
+      "check": "deny_credentials_in_url",
+      "ok": true,
+      "detail": "credentials in URL denied"
+    },
+    {
+      "check": "deny_arbitrary_eval",
+      "ok": true,
+      "detail": "code=deny_operation"
+    },
+    {
+      "check": "deny_cookie_export",
+      "ok": true,
+      "detail": "cookie export denied"
+    },
+    {
+      "check": "deny_upload_outside_store",
+      "ok": true,
+      "detail": "code=deny_upload_path"
+    },
+    {
+      "check": "allow_upload_inside_store",
+      "ok": true,
+      "detail": "approved store upload allowed"
+    },
+    {
+      "check": "payment_terms_never_auto_confirmed",
+      "ok": true,
+      "detail": "payment/terms requires human confirmation"
+    },
+    {
+      "check": "unknown_operation_fails_closed",
+      "ok": true,
+      "detail": "unknown operation denied (fail closed)"
+    },
+    {
+      "check": "allowlist_has_expected_ops",
+      "ok": true,
+      "detail": "allowlist=['click', 'download', 'fill', 'open_url', 'screenshot', 'select', 'snapshot', 'upload', 'wait']"
+    }
+  ]
+}

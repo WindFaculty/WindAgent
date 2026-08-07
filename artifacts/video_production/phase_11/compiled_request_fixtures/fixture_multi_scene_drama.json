@@ -1,0 +1,150 @@
+{
+  "package": {
+    "project_id": "vp_phase8_multi_scene_drama",
+    "revision_id": "rev_phase8_multi_scene_drama_1",
+    "content_hash": "4e713d772b2acae0"
+  },
+  "requests": [
+    {
+      "request_id": "req_79ca0ccb80d6bfc0",
+      "shot_id": "sht_72f22cc0f8acc0f3",
+      "generation_mode": "TEXT_TO_VIDEO",
+      "prompt_version": "1.0.0",
+      "prompt_hash": "e0b24cb29f24928855feb1c2f02e26770e0c0b9f9e5b43f6ded1452cc1b6ec57",
+      "reference_hashes": [
+        "37238e4d00e820fda082f93f4d4c9c0626f25e68e788a89f2144d8c49ea49e45"
+      ],
+      "request_hash": "6a6832ee23233daaf1e1db5e1a373c0f841b5cfb98223c53a55bcc7f0ad56ac8",
+      "parameters": {
+        "duration_seconds": 4.916666666666667,
+        "frame_rate": 24,
+        "aspect_ratio": "21:9",
+        "preferred_mode": "TEXT_TO_VIDEO",
+        "acceptable_fallback_modes": [],
+        "retry_policy": {
+          "max_attempts": 2,
+          "retry_boundary": "sequence"
+        }
+      }
+    },
+    {
+      "request_id": "req_3fd77a5b51946020",
+      "shot_id": "sht_7e980d4286fb6720",
+      "generation_mode": "IMAGE_TO_VIDEO",
+      "prompt_version": "1.0.0",
+      "prompt_hash": "1b42119c2821d043270d4267dbcb160efa5eda601f1f926ac0307d1d0a0db577",
+      "reference_hashes": [
+        "37238e4d00e820fda082f93f4d4c9c0626f25e68e788a89f2144d8c49ea49e45",
+        "ae40bd026fb5257f6f721b6e2c7c702bca434abb1bf6f51c5b79e71425be0426"
+      ],
+      "request_hash": "50d3b0b22daf83fec46b2bcacb7bcdda0879366c0a8de7b392845e210d780dc2",
+      "parameters": {
+        "duration_seconds": 3.0416666666666665,
+        "frame_rate": 24,
+        "aspect_ratio": "21:9",
+        "preferred_mode": "IMAGE_TO_VIDEO",
+        "acceptable_fallback_modes": [
+          "INGREDIENTS_TO_VIDEO"
+        ],
+        "retry_policy": {
+          "max_attempts": 2,
+          "retry_boundary": "sequence"
+        }
+      }
+    },
+    {
+      "request_id": "req_3efbdf9eacb21639",
+      "shot_id": "sht_3559d0d276c86ef9",
+      "generation_mode": "TEXT_TO_VIDEO",
+      "prompt_version": "1.0.0",
+      "prompt_hash": "27be5e3026240f8bf027aeccd9bc71b848972766476c7bc88967ee881d1be973",
+      "reference_hashes": [
+        "da4a9614a6166eaf7fcef9a83112f8ec642ebb57d838ec629e139040175f8418"
+      ],
+      "request_hash": "275d7e40329bb39a3e99cd30d1fa7194d86b7150401b78e64d11166607c5725b",
+      "parameters": {
+        "duration_seconds": 4.916666666666667,
+        "frame_rate": 24,
+        "aspect_ratio": "21:9",
+        "preferred_mode": "TEXT_TO_VIDEO",
+        "acceptable_fallback_modes": [],
+        "retry_policy": {
+          "max_attempts": 2,
+          "retry_boundary": "sequence"
+        }
+      }
+    },
+    {
+      "request_id": "req_7758ddac03c91df4",
+      "shot_id": "sht_a96782f5b860ac60",
+      "generation_mode": "IMAGE_TO_VIDEO",
+      "prompt_version": "1.0.0",
+      "prompt_hash": "88eda8af5f0353a898d18346422f6f562ace91f674b50b2e321a35cfac6e35aa",
+      "reference_hashes": [
+        "ae40bd026fb5257f6f721b6e2c7c702bca434abb1bf6f51c5b79e71425be0426",
+        "da4a9614a6166eaf7fcef9a83112f8ec642ebb57d838ec629e139040175f8418"
+      ],
+      "request_hash": "bab998a1d9ef96006f609363499d8fab959616b4f0bc0216be5bfa43952431e0",
+      "parameters": {
+        "duration_seconds": 3.4166666666666665,
+        "frame_rate": 24,
+        "aspect_ratio": "21:9",
+        "preferred_mode": "IMAGE_TO_VIDEO",
+        "acceptable_fallback_modes": [
+          "INGREDIENTS_TO_VIDEO"
+        ],
+        "retry_policy": {
+          "max_attempts": 2,
+          "retry_boundary": "sequence"
+        }
+      }
+    },
+    {
+      "request_id": "req_f4542360c2e1ba55",
+      "shot_id": "sht_24a9cf27a6d423c3",
+      "generation_mode": "TEXT_TO_VIDEO",
+      "prompt_version": "1.0.0",
+      "prompt_hash": "02850af0dd788d170e3ad83ed6cd599937dff43a4fadd2e2a4fbcf0d137e5212",
+      "reference_hashes": [
+        "37238e4d00e820fda082f93f4d4c9c0626f25e68e788a89f2144d8c49ea49e45"
+      ],
+      "request_hash": "8fdf19863f1f8645a6ec290a1baca223d0a993686a963dd913f7171b24cddd0e",
+      "parameters": {
+        "duration_seconds": 4.916666666666667,
+        "frame_rate": 24,
+        "aspect_ratio": "21:9",
+        "preferred_mode": "TEXT_TO_VIDEO",
+        "acceptable_fallback_modes": [],
+        "retry_policy": {
+          "max_attempts": 2,
+          "retry_boundary": "sequence"
+        }
+      }
+    },
+    {
+      "request_id": "req_1624bb74ebbe8a00",
+      "shot_id": "sht_ade385d9966d7af6",
+      "generation_mode": "IMAGE_TO_VIDEO",
+      "prompt_version": "1.0.0",
+      "prompt_hash": "0acac6b895b9c8faceced9c28071afe11c5032a51097cd0fe3ca0c64899932db",
+      "reference_hashes": [
+        "37238e4d00e820fda082f93f4d4c9c0626f25e68e788a89f2144d8c49ea49e45",
+        "ae40bd026fb5257f6f721b6e2c7c702bca434abb1bf6f51c5b79e71425be0426"
+      ],
+      "request_hash": "d87d2cf05a268842ef4e3f6c64440586705b9b58c7a32ea9fc5f824f98fc93b2",
+      "parameters": {
+        "duration_seconds": 2.7916666666666665,
+        "frame_rate": 24,
+        "aspect_ratio": "21:9",
+        "preferred_mode": "IMAGE_TO_VIDEO",
+        "acceptable_fallback_modes": [
+          "INGREDIENTS_TO_VIDEO"
+        ],
+        "retry_policy": {
+          "max_attempts": 2,
+          "retry_boundary": "sequence"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,171 @@
+{
+  "gate": "VP20_GENERATION_REVIEW_VERIFIED",
+  "workstream": "vlm_review",
+  "generated_at": "2026-08-02T12:12:58.755024+00:00",
+  "check_count": 11,
+  "all_checks_pass": true,
+  "checks": [
+    {
+      "check": "valid_payload_all_dimensions",
+      "ok": true,
+      "detail": "dims=8"
+    },
+    {
+      "check": "valid_payload_all_passed",
+      "ok": true,
+      "detail": "0.9 >= every threshold"
+    },
+    {
+      "check": "no_review_error",
+      "ok": true,
+      "detail": "clean parse"
+    },
+    {
+      "check": "timeout_is_review_error",
+      "ok": true,
+      "detail": "VLM review timed out"
+    },
+    {
+      "check": "timeout_defect_typed",
+      "ok": true,
+      "detail": "REVIEW_ERROR defect"
+    },
+    {
+      "check": "empty_response_is_error",
+      "ok": true,
+      "detail": "VLM returned an empty response"
+    },
+    {
+      "check": "invalid_json_is_error",
+      "ok": true,
+      "detail": "VLM output is not valid JSON"
+    },
+    {
+      "check": "schema_violation_is_error",
+      "ok": true,
+      "detail": "VLM output schema violation"
+    },
+    {
+      "check": "score_out_of_range_is_error",
+      "ok": true,
+      "detail": "VLM output schema violation"
+    },
+    {
+      "check": "below_threshold_not_passed",
+      "ok": true,
+      "detail": "score=0.3"
+    },
+    {
+      "check": "outcome_deterministic",
+      "ok": true,
+      "detail": "same input -> same scores"
+    }
+  ],
+  "schema_version": "1.0.0",
+  "sample_outcome": {
+    "candidate_id": "cand_1",
+    "dimension_results": [
+      {
+        "dimension": "PROMPT_COMPLIANCE",
+        "score": 0.9,
+        "passed": true,
+        "confidence": 0.9,
+        "metric_version": "1.0.0",
+        "reviewer_type": "VLM",
+        "blocking_rule": true,
+        "evidence": [
+          "probe"
+        ]
+      },
+      {
+        "dimension": "IDENTITY_CONSISTENCY",
+        "score": 0.9,
+        "passed": true,
+        "confidence": 0.9,
+        "metric_version": "1.0.0",
+        "reviewer_type": "VLM",
+        "blocking_rule": true,
+        "evidence": [
+          "probe"
+        ]
+      },
+      {
+        "dimension": "LOCATION_CONSISTENCY",
+        "score": 0.9,
+        "passed": true,
+        "confidence": 0.9,
+        "metric_version": "1.0.0",
+        "reviewer_type": "VLM",
+        "blocking_rule": true,
+        "evidence": [
+          "probe"
+        ]
+      },
+      {
+        "dimension": "PROP_CONSISTENCY",
+        "score": 0.9,
+        "passed": true,
+        "confidence": 0.9,
+        "metric_version": "1.0.0",
+        "reviewer_type": "VLM",
+        "blocking_rule": true,
+        "evidence": [
+          "probe"
+        ]
+      },
+      {
+        "dimension": "MOTION_QUALITY",
+        "score": 0.9,
+        "passed": true,
+        "confidence": 0.9,
+        "metric_version": "1.0.0",
+        "reviewer_type": "VLM",
+        "blocking_rule": false,
+        "evidence": [
+          "probe"
+        ]
+      },
+      {
+        "dimension": "CAMERA_COMPLIANCE",
+        "score": 0.9,
+        "passed": true,
+        "confidence": 0.9,
+        "metric_version": "1.0.0",
+        "reviewer_type": "VLM",
+        "blocking_rule": true,
+        "evidence": [
+          "probe"
+        ]
+      },
+      {
+        "dimension": "DIALOGUE_ALIGNMENT",
+        "score": 0.9,
+        "passed": true,
+        "confidence": 0.9,
+        "metric_version": "1.0.0",
+        "reviewer_type": "VLM",
+        "blocking_rule": false,
+        "evidence": [
+          "probe"
+        ]
+      },
+      {
+        "dimension": "VISUAL_ARTIFACTS",
+        "score": 0.9,
+        "passed": true,
+        "confidence": 0.9,
+        "metric_version": "1.0.0",
+        "reviewer_type": "VLM",
+        "blocking_rule": false,
+        "evidence": [
+          "probe"
+        ]
+      }
+    ],
+    "blocking_defects": [],
+    "review_error": false,
+    "error_reason": "",
+    "model": "canonical-vlm",
+    "prompt_version": "1.0.0"
+  }
+}

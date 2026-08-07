@@ -1,0 +1,49 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-08-02T00:50:56.071284+00:00",
+  "contract": "docs/video_production/flow_video/video_technical_validation.md",
+  "check_count": 8,
+  "all_checks_pass": true,
+  "checks": [
+    {
+      "check": "policy_accepts_valid",
+      "ok": true,
+      "detail": "violations=()"
+    },
+    {
+      "check": "policy_rejects_no_stream",
+      "ok": true,
+      "detail": "violations=('no video stream detected',)"
+    },
+    {
+      "check": "policy_rejects_short_duration",
+      "ok": true,
+      "detail": "violations=('duration 0.010s below min 0.5s',)"
+    },
+    {
+      "check": "policy_rejects_tiny_resolution",
+      "ok": true,
+      "detail": "violations=('resolution 32x32 below min 64x64',)"
+    },
+    {
+      "check": "valid_candidate_published_completed",
+      "ok": true,
+      "detail": "status=COMPLETED store_hashes=['e8066f89bf3f5ba391d3033afb798d60a67b8bd63861631260c57f37732bca0f']"
+    },
+    {
+      "check": "invalid_candidate_never_completed",
+      "ok": true,
+      "detail": "store_hashes=[] (must be empty)"
+    },
+    {
+      "check": "zero_byte_candidate_rejected",
+      "ok": true,
+      "detail": "store_hashes=[] (must be empty)"
+    },
+    {
+      "check": "all_candidates_acquired",
+      "ok": true,
+      "detail": "candidates=2 store_hashes=['c31e849919410f99075475f37f46a5e2b55e870272cd1c5def53fe921ac938d0', 'e8066f89bf3f5ba391d3033afb798d60a67b8bd63861631260c57f37732bca0f']"
+    }
+  ]
+}

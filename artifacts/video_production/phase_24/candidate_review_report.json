@@ -1,0 +1,8 @@
+{
+  "run_id": "run_poc_e2e_01",
+  "candidates_reviewed": 12,
+  "approved_shots_count": 6,
+  "identity_defects_count": 0,
+  "human_overrides_count": 1,
+  "is_acceptable": true
+}

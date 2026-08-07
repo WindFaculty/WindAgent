@@ -1,0 +1,57 @@
+{
+  "production_id": "vp_eval_2026_children_library",
+  "revision_id": "rev_eval_001",
+  "source_tag": "deterministic-fake (live probe failed)",
+  "stages": [
+    {
+      "stage": "brief_expansion",
+      "status": "PASS_MOCK_ONLY",
+      "detail": "title='Bí Mật Thư Viện Làng' audience='trẻ em 6-9 tuổi' duration=360s",
+      "data_source": "deterministic-fake (live probe failed)"
+    },
+    {
+      "stage": "story_concept",
+      "status": "PASS_MOCK_ONLY",
+      "detail": "title='Bí Mật Thư Viện Làng' themes=['biết nhận lỗi', 'sửa lỗi', 'trung thực', 'tình bạn']",
+      "data_source": "deterministic-fake (live probe failed)"
+    },
+    {
+      "stage": "screenplay",
+      "status": "PASS_MOCK_ONLY",
+      "detail": "scenes=9 episodes=1 dialogue_lines=21",
+      "data_source": "deterministic-fake (live probe failed)"
+    },
+    {
+      "stage": "dialogue_narration",
+      "status": "PASS_LOCAL",
+      "detail": "dialogue=21 narration_blocks=9",
+      "data_source": "deterministic-fake (live probe failed)"
+    },
+    {
+      "stage": "entity_extraction",
+      "status": "PASS_LOCAL",
+      "detail": "characters=3 locations=4 props=0",
+      "data_source": "deterministic-fake (live probe failed)"
+    },
+    {
+      "stage": "style_design",
+      "status": "PASS_MOCK_ONLY",
+      "detail": "style='hoạt hình 3D mềm mại, màu sắc rõ ràng, thân thiện trẻ em' palette=['#FFD54F', '#81C784', '#4FC3F7', '#FFB74D', '#F8BBD0']",
+      "data_source": "deterministic-fake (live probe failed)"
+    },
+    {
+      "stage": "asset_prompt_specs",
+      "status": "PASS_LOCAL",
+      "detail": "specs=8",
+      "data_source": "deterministic-fake (live probe failed)"
+    },
+    {
+      "stage": "package_assembly",
+      "status": "PASS_LOCAL",
+      "detail": "content_hash=428246af436ee979… scenes=9",
+      "data_source": "deterministic-fake (live probe failed)"
+    }
+  ],
+  "furthest": "package_assembly",
+  "ok": true
+}

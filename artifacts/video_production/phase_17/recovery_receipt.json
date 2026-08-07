@@ -1,0 +1,99 @@
+{
+  "gate": "VP17_DURABLE_WORKFLOW_VERIFIED",
+  "workstream": "recovery",
+  "generated_at": "2026-08-02T04:09:37.898025+00:00",
+  "check_count": 18,
+  "all_checks_pass": true,
+  "checks": [
+    {
+      "check": "no_checkpoint_fresh_attempt",
+      "ok": true,
+      "detail": "NEW_ATTEMPT"
+    },
+    {
+      "check": "checkpoint_no_pending_fresh_attempt",
+      "ok": true,
+      "detail": "NEW_ATTEMPT"
+    },
+    {
+      "check": "pending_no_inspector_reconcile_unknown",
+      "ok": true,
+      "detail": "never blind resubmit"
+    },
+    {
+      "check": "pending_inspector_completed_resume",
+      "ok": true,
+      "detail": "resume, do NOT resubmit"
+    },
+    {
+      "check": "completed_no_attempt_increment",
+      "ok": true,
+      "detail": "no new submit on completion"
+    },
+    {
+      "check": "pending_inspector_generating_reattach",
+      "ok": true,
+      "detail": "reattach poll"
+    },
+    {
+      "check": "pending_inspector_failed_new_attempt",
+      "ok": true,
+      "detail": "bounded new attempt"
+    },
+    {
+      "check": "pending_inspector_unknown_reconcile",
+      "ok": true,
+      "detail": "stay observable"
+    },
+    {
+      "check": "download_retry_bounded",
+      "ok": true,
+      "detail": "retry download, no resubmit"
+    },
+    {
+      "check": "download_retry_exhausted_terminal",
+      "ok": true,
+      "detail": "fail after budget"
+    },
+    {
+      "check": "single_shot_failure_keeps_siblings",
+      "ok": true,
+      "detail": "siblings=['S1', 'S3']"
+    },
+    {
+      "check": "revision_unchanged_keeps_dependents",
+      "ok": true,
+      "detail": "dependents valid"
+    },
+    {
+      "check": "revision_changed_stales_dependents",
+      "ok": true,
+      "detail": "dependents stale"
+    },
+    {
+      "check": "crash_lands_in_waiting_provider",
+      "ok": true,
+      "detail": "state=WAITING_PROVIDER"
+    },
+    {
+      "check": "pending_op_has_external_id",
+      "ok": true,
+      "detail": "ext_RENDER_ASSETS"
+    },
+    {
+      "check": "recovery_reattaches_same_external_id",
+      "ok": true,
+      "detail": "external_id unchanged: ext_RENDER_ASSETS"
+    },
+    {
+      "check": "recovery_no_new_submit",
+      "ok": true,
+      "detail": "no blind resubmit; still waiting"
+    },
+    {
+      "check": "run_recovers_from_durable_state",
+      "ok": true,
+      "detail": "state=WAITING_PROVIDER step=RENDER_ASSETS"
+    }
+  ]
+}

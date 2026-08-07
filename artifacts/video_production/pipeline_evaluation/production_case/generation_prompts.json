@@ -1,0 +1,58 @@
+[
+  {
+    "capability": "asset_prompt.character_portrait",
+    "target_id": "chr_e572cf0e2c908680",
+    "prompt_version": "1.0.0",
+    "prompt_hash": "55d39baf71350d2a52fdab6205e50160ffb69db11b80a0da2c3486acc7308d6e",
+    "rendered": "Character reference portrait.\nName: Bin\nDescription: \nStyle: \nRequired views: front, three-quarter, profile.\nConsistent appearance; no text, labels, or watermarks."
+  },
+  {
+    "capability": "asset_prompt.character_portrait",
+    "target_id": "chr_c9e3012653941f60",
+    "prompt_version": "1.0.0",
+    "prompt_hash": "55d39baf71350d2a52fdab6205e50160ffb69db11b80a0da2c3486acc7308d6e",
+    "rendered": "Character reference portrait.\nName: Bo\nDescription: \nStyle: \nRequired views: front, three-quarter, profile.\nConsistent appearance; no text, labels, or watermarks."
+  },
+  {
+    "capability": "asset_prompt.character_portrait",
+    "target_id": "chr_bd40ff29a9be8fcf",
+    "prompt_version": "1.0.0",
+    "prompt_hash": "55d39baf71350d2a52fdab6205e50160ffb69db11b80a0da2c3486acc7308d6e",
+    "rendered": "Character reference portrait.\nName: Bác Quản Lý\nDescription: \nStyle: \nRequired views: front, three-quarter, profile.\nConsistent appearance; no text, labels, or watermarks."
+  },
+  {
+    "capability": "asset_prompt.location",
+    "target_id": "loc_4a4dfbe05ce8dade",
+    "prompt_version": "1.0.0",
+    "prompt_hash": "d6cac2946b37c4e9c169cdd4605b9e4839fff0c06e2a76ac3b78b914c46031f2",
+    "rendered": "Location reference image.\nName: Phòng làm việc\nDescription: \nLighting: \nAtmosphere: \nNo people, animals, or text."
+  },
+  {
+    "capability": "asset_prompt.location",
+    "target_id": "loc_462020f341ef0abd",
+    "prompt_version": "1.0.0",
+    "prompt_hash": "d6cac2946b37c4e9c169cdd4605b9e4839fff0c06e2a76ac3b78b914c46031f2",
+    "rendered": "Location reference image.\nName: Sân làng\nDescription: \nLighting: \nAtmosphere: \nNo people, animals, or text."
+  },
+  {
+    "capability": "asset_prompt.location",
+    "target_id": "loc_576765dc341b0ebe",
+    "prompt_version": "1.0.0",
+    "prompt_hash": "d6cac2946b37c4e9c169cdd4605b9e4839fff0c06e2a76ac3b78b914c46031f2",
+    "rendered": "Location reference image.\nName: Thư viện làng\nDescription: \nLighting: \nAtmosphere: \nNo people, animals, or text."
+  },
+  {
+    "capability": "asset_prompt.location",
+    "target_id": "loc_fe5c803e17fda495",
+    "prompt_version": "1.0.0",
+    "prompt_hash": "d6cac2946b37c4e9c169cdd4605b9e4839fff0c06e2a76ac3b78b914c46031f2",
+    "rendered": "Location reference image.\nName: Xưởng sửa chữa\nDescription: \nLighting: \nAtmosphere: \nNo people, animals, or text."
+  },
+  {
+    "capability": "asset_prompt.style",
+    "target_id": "sty_f25fdddf1e098a50",
+    "prompt_version": "1.0.0",
+    "prompt_hash": "67a04f6897b6b3ecb748de9c89eced0cc0ebde87a442235205edbb373bd94513",
+    "rendered": "Style reference.\nName: Phong cách hoạt hình 3D mềm mại\nVisual style: hoạt hình 3D mềm mại, màu sắc rõ ràng, thân thiện trẻ em\nPalette: #FFD54F, #81C784, #4FC3F7, #FFB74D, #F8BBD0\nLighting rules: ánh sáng ban ngày ấm áp; đèn vàng dịu cho cảnh tối; bóng mềm, không tương phản gắt"
+  }
+]

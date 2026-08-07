@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0.0",
+  "gate": "VIDEO_PRODUCTION_PLATFORM_VERIFIED",
+  "candidate_sha": "1753831c752343aa89419e807aa57058266ff75c",
+  "generated_at": "2026-08-02T18:09:17.290734+00:00",
+  "toolchain": {
+    "python": "3.11.15",
+    "ffmpeg": "ffmpeg version 8.1.2-full_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers",
+    "platform": "win32"
+  },
+  "build_input_hashes": {
+    "uv.lock": "4b3860da4d7a01884cbfadd08bda707ac30483cadb3cdf1f0eba4063cf27bb74",
+    "apps/web/package-lock.json": "ba758bed9971f40c58ff93c6c4d23bd53299f3370ceb22bf34048b1df9de1e48",
+    "apps/desktop/package-lock.json": "e94ff7f84ee8e6fe337727d3532810f150c61d6a55b5957517476f96328ac451",
+    "scripts/migrate_database_schema.py": "563a5f460dbf7a5a0153db4afdc48bd69613da4fb3d681883a574cd00fecc53c",
+    "third_party/videoclaw/UPSTREAM_MANIFEST.json": "1a4c58cdcb9e546e08bcbc4212f40a9b85727e94164d8db99b567a63c761a69e",
+    "core/windagent_core/version.py": "b403df9ca93bde155542b112c9e9b01dde39ec105318ab07b4acb80bd8145d1f"
+  }
+}

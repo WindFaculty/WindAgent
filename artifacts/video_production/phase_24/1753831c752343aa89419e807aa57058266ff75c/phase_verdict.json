@@ -1,0 +1,15 @@
+{
+  "gate": "VP24_E2E_POC_PASSED",
+  "status": "BLOCKED",
+  "candidate_sha": "1753831c752343aa89419e807aa57058266ff75c",
+  "verified_at": "2026-08-02T14:19:18.758441+00:00",
+  "blocking_reasons": [
+    "creative brief/revision not locked (plan §17.1)",
+    "maximum credits / retry reserve not approved (§17.2)",
+    "live run timing not approved (§17.2)",
+    "Flow account/session not authorized in env (§17.3)",
+    "human operator takeover / stop plan not approved (§17.4)",
+    "artifact storage/retention/redaction policy not approved (§17.5)"
+  ],
+  "note": "Derived from runbook precondition validation — never fabricated."
+}

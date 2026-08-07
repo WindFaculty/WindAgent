@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0.0",
+  "candidate_sha": "1753831c752343aa89419e807aa57058266ff75c",
+  "run_id": "r0_mode_1753831c7523",
+  "started_at": "2026-08-02T14:35:37.180428+00:00",
+  "completed_at": "2026-08-02T14:35:37.180428+00:00",
+  "command_or_provider": "verify_phase22_postproduction.py",
+  "input_hashes": [
+    "bc1a317c10a5f7d59b6defa0e91d50b4ff58add0d2c7cf6fcc67e8e8165450af"
+  ],
+  "output_hashes": [
+    "bc1a317c10a5f7d59b6defa0e91d50b4ff58add0d2c7cf6fcc67e8e8165450af"
+  ],
+  "evidence_locator": "verifier_mode_test_receipt.json",
+  "status": "PASSED",
+  "read_only_no_mutation": "verified by tests/unit/verification/test_remediation_r0.py",
+  "fixture_writer_isolated": "--write-fixture refuses paths under artifacts/video_production",
+  "unknown_flags_rejected": "argparse rejects unrecognized flags (fail-closed)"
+}

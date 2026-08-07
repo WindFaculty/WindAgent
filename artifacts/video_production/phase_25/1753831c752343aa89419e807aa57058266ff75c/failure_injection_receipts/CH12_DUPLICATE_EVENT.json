@@ -1,0 +1,44 @@
+{
+  "schema_version": "1.0.0",
+  "candidate_sha": "1753831c752343aa89419e807aa57058266ff75c",
+  "run_id": "ch12_run",
+  "started_at": "2026-08-02T15:07:38.145684+00:00",
+  "completed_at": "2026-08-02T15:07:38.145684+00:00",
+  "command_or_provider": "OutboxJournal.ingest_external_result",
+  "input_hashes": [
+    "95958cba7578b629910596fe89feba24ea60bf757f31896df9aeca4906f1e9d2"
+  ],
+  "output_hashes": [
+    "adb8bd160ed03bda4b24b7a3ba1b795fc7f02e7aceb96576938f641bf02fb7d5"
+  ],
+  "evidence_locator": "failure_injection_receipts/CH12_DUPLICATE_EVENT.json",
+  "status": "PASSED",
+  "tier": "INTEGRATION_LEVEL",
+  "injection_point": "Event ingestion (duplicate external result)",
+  "expected_behavior": [
+    "one state transition / one ledger effect",
+    "duplicate ingestion no-op (dedup key)"
+  ],
+  "observed": {
+    "one_ingest_effect": true,
+    "one_ledger_effect": true,
+    "single_state_transition": true
+  },
+  "pre_state": {
+    "state": "WAITING_PROVIDER"
+  },
+  "post_state": {
+    "state": "RUNNING",
+    "ingests": 1,
+    "ledger_entries": 1
+  },
+  "detection_time_ms": 0.0,
+  "recovery_time_ms": 0.0,
+  "duplicates_prevented": {
+    "submit": 0,
+    "debit": 0,
+    "publish": 1
+  },
+  "cleanup_verified": true,
+  "scenario_id": "CH12_DUPLICATE_EVENT"
+}

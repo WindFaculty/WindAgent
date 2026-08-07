@@ -1,0 +1,59 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-08-01T23:27:45.909234+00:00",
+  "policy": "docs/video_production/director/script_revision_protocol.md",
+  "check_count": 10,
+  "all_checks_pass": true,
+  "checks": [
+    {
+      "check": "fixture_short_cartoon_package_hash_unchanged",
+      "ok": true,
+      "detail": "package content hash is identical after planning"
+    },
+    {
+      "check": "fixture_short_cartoon_screenplay_unchanged",
+      "ok": true,
+      "detail": "screenplay JSON is byte-identical after planning"
+    },
+    {
+      "check": "fixture_short_cartoon_plan_never_locks_screenplay",
+      "ok": true,
+      "detail": "plan records the locked state without mutating it"
+    },
+    {
+      "check": "fixture_two_character_dialogue_package_hash_unchanged",
+      "ok": true,
+      "detail": "package content hash is identical after planning"
+    },
+    {
+      "check": "fixture_two_character_dialogue_screenplay_unchanged",
+      "ok": true,
+      "detail": "screenplay JSON is byte-identical after planning"
+    },
+    {
+      "check": "fixture_two_character_dialogue_plan_never_locks_screenplay",
+      "ok": true,
+      "detail": "plan records the locked state without mutating it"
+    },
+    {
+      "check": "fixture_multi_scene_drama_package_hash_unchanged",
+      "ok": true,
+      "detail": "package content hash is identical after planning"
+    },
+    {
+      "check": "fixture_multi_scene_drama_screenplay_unchanged",
+      "ok": true,
+      "detail": "screenplay JSON is byte-identical after planning"
+    },
+    {
+      "check": "fixture_multi_scene_drama_plan_never_locks_screenplay",
+      "ok": true,
+      "detail": "plan records the locked state without mutating it"
+    },
+    {
+      "check": "draft_screenplay_rejected_by_default",
+      "ok": true,
+      "detail": "DRAFT screenplay is rejected unless explicitly unlocked"
+    }
+  ]
+}

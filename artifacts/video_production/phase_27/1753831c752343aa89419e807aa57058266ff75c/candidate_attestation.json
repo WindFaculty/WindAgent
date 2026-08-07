@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0.0",
+  "candidate_sha": "1753831c752343aa89419e807aa57058266ff75c",
+  "run_id": "ATTESTATION-1753831c",
+  "started_at": "2026-08-02T18:08:03.466030+00:00",
+  "completed_at": "2026-08-02T18:08:03.466030+00:00",
+  "command_or_provider": "git rev-parse + check_version_consistency + lockfile/migration/manifest freeze",
+  "input_hashes": [
+    "1753831c752343aa89419e807aa57058266ff75c"
+  ],
+  "output_hashes": [
+    "f643b819122709a27f377a943d789b71940f30fcfdb131dd59f7ca4f37139323",
+    "75a893b601d297d8ec57682787d92be8651cdc4925ba6b1ca8a0418bc4e23a5b",
+    "1a4c58cdcb9e546e08bcbc4212f40a9b85727e94164d8db99b567a63c761a69e"
+  ],
+  "evidence_locator": "ci_run_manifest.json#attestation",
+  "status": "PASSED",
+  "lane_id": "ATTESTATION",
+  "tier": "INTEGRATION_LEVEL",
+  "observed": {
+    "head_matches_candidate": true,
+    "parent_sha_known": true,
+    "version_consistency_passed": true,
+    "lockfiles_present": true,
+    "migration_set_present": true,
+    "third_party_manifest_present": true
+  },
+  "details": {
+    "branch": "fix/phase7-verification-integrity",
+    "parent_sha": "5547a472a74cf461132dfc70ecbd3851b4d2a3f2",
+    "worktree_dirty_count": 39,
+    "lockfile_hashes": {
+      "uv.lock": "4b3860da4d7a01884cbfadd08bda707ac30483cadb3cdf1f0eba4063cf27bb74",
+      "apps/web/package-lock.json": "ba758bed9971f40c58ff93c6c4d23bd53299f3370ceb22bf34048b1df9de1e48",
+      "apps/desktop/package-lock.json": "e94ff7f84ee8e6fe337727d3532810f150c61d6a55b5957517476f96328ac451"
+    },
+    "migration_file_hashes": {
+      "scripts/migrate_database_schema.py": "563a5f460dbf7a5a0153db4afdc48bd69613da4fb3d681883a574cd00fecc53c",
+      "scripts/migrate_event_logs.py": "1d25347aa6f457b894a69e778c9caa89a9ae16939b5e4797fc1509f47852ea51",
+      "scripts/migration/": "NONE"
+    },
+    "upstream_manifest_sha256": "1a4c58cdcb9e546e08bcbc4212f40a9b85727e94164d8db99b567a63c761a69e",
+    "product_version": "0.3.0",
+    "web_version": "0.3.0",
+    "desktop_version": "0.6.0"
+  }
+}

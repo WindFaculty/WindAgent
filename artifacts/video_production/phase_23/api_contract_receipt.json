@@ -1,0 +1,23 @@
+{
+  "workstream": "api_contract",
+  "snapshot_project_id": "vp_poc",
+  "snapshot_revision_id": "rev_poc_01",
+  "checks": [
+    {
+      "check": "snapshot_structure_valid",
+      "ok": true,
+      "detail": "WorkspaceSnapshot projection returns project status, brief/screenplay state, and cost summary"
+    },
+    {
+      "check": "mutating_command_optimistic_revision_update",
+      "ok": true,
+      "detail": "Mutating command updates target revision and returns new revision ID"
+    },
+    {
+      "check": "stale_revision_rejection",
+      "ok": true,
+      "detail": "Command targeting outdated revision is rejected immediately with REJECTED_STALE status"
+    }
+  ],
+  "all_passed": true
+}

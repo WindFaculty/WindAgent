@@ -1,0 +1,170 @@
+[
+  {
+    "dialogue_id": "dlg_91ea5ec8099681fc",
+    "scene_id": "scn_45cc77f2aa74f392",
+    "character_id": "chr_e572cf0e2c908680",
+    "order": 1,
+    "text": "Hôm nay thư viện vắng quá, Bo nhỉ.",
+    "delivery": ""
+  },
+  {
+    "dialogue_id": "dlg_47d486f068b7e96c",
+    "scene_id": "scn_45cc77f2aa74f392",
+    "character_id": "chr_c9e3012653941f60",
+    "order": 2,
+    "text": "Ừ, chúng mình tha hồ đọc sách!",
+    "delivery": ""
+  },
+  {
+    "dialogue_id": "dlg_fa44dddd2c26fcb8",
+    "scene_id": "scn_f6d3fd399594d226",
+    "character_id": "chr_e572cf0e2c908680",
+    "order": 3,
+    "text": "Cái bình gốm cổ này đẹp quá!",
+    "delivery": ""
+  },
+  {
+    "dialogue_id": "dlg_7a5b0af48997fc94",
+    "scene_id": "scn_f6d3fd399594d226",
+    "character_id": "chr_c9e3012653941f60",
+    "order": 4,
+    "text": "Bác quản lý nói đây là báu vật của làng đấy.",
+    "delivery": ""
+  },
+  {
+    "dialogue_id": "dlg_949783f6ce5df42a",
+    "scene_id": "scn_dda626e2f402fc83",
+    "character_id": "chr_e572cf0e2c908680",
+    "order": 5,
+    "text": "Ôi không! Mình làm vỡ bình rồi!",
+    "delivery": ""
+  },
+  {
+    "dialogue_id": "dlg_e2ed9cf77c9b81c1",
+    "scene_id": "scn_dda626e2f402fc83",
+    "character_id": "chr_c9e3012653941f60",
+    "order": 6,
+    "text": "Chúng mình giấu đi nhé, không ai biết đâu.",
+    "delivery": ""
+  },
+  {
+    "dialogue_id": "dlg_3622e9c5057e9c07",
+    "scene_id": "scn_dda626e2f402fc83",
+    "character_id": "chr_e572cf0e2c908680",
+    "order": 7,
+    "text": "Nhưng... làm vậy không tốt đâu Bo à.",
+    "delivery": ""
+  },
+  {
+    "dialogue_id": "dlg_8c46fb5a321fa455",
+    "scene_id": "scn_4d378ef976dfa8a1",
+    "character_id": "chr_c9e3012653941f60",
+    "order": 8,
+    "text": "Hay là mình nói thật với bác quản lý nhỉ?",
+    "delivery": ""
+  },
+  {
+    "dialogue_id": "dlg_5529733d518f6be8",
+    "scene_id": "scn_4d378ef976dfa8a1",
+    "character_id": "chr_e572cf0e2c908680",
+    "order": 9,
+    "text": "Mình sợ bác buồn lắm...",
+    "delivery": ""
+  },
+  {
+    "dialogue_id": "dlg_42273414f253cf17",
+    "scene_id": "scn_4d378ef976dfa8a1",
+    "character_id": "chr_c9e3012653941f60",
+    "order": 10,
+    "text": "Nói thật sẽ tốt hơn, dù khó. Mình sẽ đi cùng cậu.",
+    "delivery": ""
+  },
+  {
+    "dialogue_id": "dlg_d44c366bd982bca8",
+    "scene_id": "scn_97cf7362d3190438",
+    "character_id": "chr_e572cf0e2c908680",
+    "order": 11,
+    "text": "Bác ơi, chúng cháu xin lỗi. Cháu làm vỡ bình gốm cổ.",
+    "delivery": ""
+  },
+  {
+    "dialogue_id": "dlg_b170987ef667890f",
+    "scene_id": "scn_97cf7362d3190438",
+    "character_id": "chr_bd40ff29a9be8fcf",
+    "order": 12,
+    "text": "Cháu dũng cảm lắm khi nói thật. Không sao, chúng ta cùng sửa.",
+    "delivery": ""
+  },
+  {
+    "dialogue_id": "dlg_70697b326a7d9e66",
+    "scene_id": "scn_2c2d1d58d8a4e33d",
+    "character_id": "chr_c9e3012653941f60",
+    "order": 13,
+    "text": "Mình dùng keo dán từng mảnh lại nhé.",
+    "delivery": ""
+  },
+  {
+    "dialogue_id": "dlg_f672d338d0f4d4cf",
+    "scene_id": "scn_2c2d1d58d8a4e33d",
+    "character_id": "chr_e572cf0e2c908680",
+    "order": 14,
+    "text": "Cậu giỏi thật! Cảm ơn cậu đã giúp mình.",
+    "delivery": ""
+  },
+  {
+    "dialogue_id": "dlg_ff2781df2d9dfd4a",
+    "scene_id": "scn_05f43c7d2b86e3f3",
+    "character_id": "chr_bd40ff29a9be8fcf",
+    "order": 15,
+    "text": "Nhìn này, chiếc bình đã lành lặn trở lại.",
+    "delivery": ""
+  },
+  {
+    "dialogue_id": "dlg_4317a31566ed0ff0",
+    "scene_id": "scn_05f43c7d2b86e3f3",
+    "character_id": "chr_e572cf0e2c908680",
+    "order": 16,
+    "text": "Nhận lỗi và sửa lỗi không đáng sợ chút nào!",
+    "delivery": ""
+  },
+  {
+    "dialogue_id": "dlg_951c01a1876b6059",
+    "scene_id": "scn_05f43c7d2b86e3f3",
+    "character_id": "chr_c9e3012653941f60",
+    "order": 17,
+    "text": "Vâng, và mọi người còn tin tưởng nhau hơn nữa.",
+    "delivery": ""
+  },
+  {
+    "dialogue_id": "dlg_e31d0da1a6f7bb43",
+    "scene_id": "scn_a7acb561b3a45dcd",
+    "character_id": "chr_e572cf0e2c908680",
+    "order": 18,
+    "text": "Từ nay mình sẽ luôn nói thật và sửa lỗi.",
+    "delivery": ""
+  },
+  {
+    "dialogue_id": "dlg_88e406e23d89885e",
+    "scene_id": "scn_a7acb561b3a45dcd",
+    "character_id": "chr_c9e3012653941f60",
+    "order": 19,
+    "text": "Mình cũng vậy! Tình bạn của chúng ta càng thêm bền chặt.",
+    "delivery": ""
+  },
+  {
+    "dialogue_id": "dlg_e72ad4f60e14e942",
+    "scene_id": "scn_1d4b1066eb7f2941",
+    "character_id": "chr_c9e3012653941f60",
+    "order": 20,
+    "text": "Ngày mai mình lại đến thư viện nhé.",
+    "delivery": ""
+  },
+  {
+    "dialogue_id": "dlg_5a23c22af7f8612e",
+    "scene_id": "scn_1d4b1066eb7f2941",
+    "character_id": "chr_e572cf0e2c908680",
+    "order": 21,
+    "text": "Nhất định rồi! Hết.",
+    "delivery": ""
+  }
+]

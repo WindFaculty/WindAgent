@@ -1,0 +1,10 @@
+{
+  "schema_version": "1.0.0",
+  "gate": "VIDEO_PRODUCTION_PLATFORM_VERIFIED",
+  "candidate_sha": "1753831c752343aa89419e807aa57058266ff75c",
+  "generated_at": "2026-08-02T18:09:17.647116+00:00",
+  "architecture_lane_status": "PASSED",
+  "architecture_tool": "scripts/check_architecture_imports.py",
+  "canonical_schema_lane_status": "PASSED",
+  "architecture_evidence": "artifacts/architecture_v2_runtime_cutover/"
+}

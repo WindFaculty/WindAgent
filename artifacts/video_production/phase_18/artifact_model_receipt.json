@@ -1,0 +1,98 @@
+{
+  "gate": "VP18_ARTIFACT_INVALIDATION_VERIFIED",
+  "workstream": "artifact_model",
+  "generated_at": "2026-08-02T04:36:39.249807+00:00",
+  "check_count": 9,
+  "all_checks_pass": true,
+  "checks": [
+    {
+      "check": "record_has_all_12_fields",
+      "ok": true,
+      "detail": "fields=24"
+    },
+    {
+      "check": "content_hash_64_hex",
+      "ok": true,
+      "detail": "357e5d6fafa34d27"
+    },
+    {
+      "check": "validated_after_publish",
+      "ok": true,
+      "detail": "atomic publish validates"
+    },
+    {
+      "check": "status_valid_after_publish",
+      "ok": true,
+      "detail": "VALID"
+    },
+    {
+      "check": "storage_locator_is_content_hash",
+      "ok": true,
+      "detail": "content address, not authority"
+    },
+    {
+      "check": "history_grows_on_stale",
+      "ok": true,
+      "detail": "entries=2"
+    },
+    {
+      "check": "record_not_deleted_by_invalidation",
+      "ok": true,
+      "detail": "never deletes"
+    },
+    {
+      "check": "history_shrink_rejected",
+      "ok": true,
+      "detail": "append-only enforced"
+    },
+    {
+      "check": "record_round_trip",
+      "ok": true,
+      "detail": "serialization stable"
+    }
+  ],
+  "sample_record": {
+    "artifact_id": "art_model",
+    "artifact_type": "CLIP",
+    "content_sha256": "357e5d6fafa34d27360fec24b4326d3534905e33c6acdee60198fb078b7b79e5",
+    "byte_size": 11,
+    "media_type": "video/mp4",
+    "storage_locator": "357e5d6fafa34d27360fec24b4326d3534905e33c6acdee60198fb078b7b79e5",
+    "producer": "verifier",
+    "project_id": "p1",
+    "revision_id": "rev1",
+    "input_hashes": {
+      "clip": "abc"
+    },
+    "request_hash": "req_1",
+    "prompt_version": "prompt-1.0",
+    "compiler_version": "",
+    "model_version": "flow-1.0",
+    "generation_mode": "TEXT_TO_VIDEO",
+    "generation_parameters": {
+      "duration": 5
+    },
+    "created_at": 1700000000.0,
+    "validation_status": "VALIDATED",
+    "approval_status": "UNAPPROVED",
+    "status": "VALID",
+    "superseded_by": null,
+    "artifact_key": "v1:c4b3cc1e891fa7fd0e60a1d1551e7b96cab32e8860de22605d86950b5e0846b9",
+    "key_version": "v1",
+    "history": [
+      {
+        "kind": "published",
+        "reason": "atomic publish completed",
+        "at": 1700000000.0,
+        "content_sha256": "357e5d6fafa34d27360fec24b4326d3534905e33c6acdee60198fb078b7b79e5"
+      },
+      {
+        "kind": "stale",
+        "reason": "stale now",
+        "at": 1700000001.0,
+        "actor": "system",
+        "previous_status": "VALID"
+      }
+    ]
+  }
+}

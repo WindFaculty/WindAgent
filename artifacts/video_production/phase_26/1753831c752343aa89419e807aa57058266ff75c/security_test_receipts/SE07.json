@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0.0",
+  "candidate_sha": "1753831c752343aa89419e807aa57058266ff75c",
+  "run_id": "SE07-1753831c",
+  "started_at": "2026-08-02T15:55:18.846077+00:00",
+  "completed_at": "2026-08-02T15:55:18.846077+00:00",
+  "command_or_provider": "AssemblyPlanner + SafeShellRunner + AssetValidationService (typed boundaries)",
+  "input_hashes": [
+    "cd8a9db375cfa4b6ca64853870c52f837ca3404ee9e0f39715a359f71e3e635d",
+    "ca3b7362993a9394aa37d573d10bf466036ee8a1464c22c016ca314e0f307d0e"
+  ],
+  "output_hashes": [
+    "1fb33905978012fdcfefe0594cac85fadc79626d2057262e4f9e479ae22c5cfd"
+  ],
+  "evidence_locator": "security_test_receipts/SE07.json",
+  "status": "PASSED",
+  "scenario_id": "SE07",
+  "tier": "INTEGRATION_LEVEL",
+  "observed": {
+    "injection_stays_data": true,
+    "filter_graph_safe": true,
+    "shell_blocked": true,
+    "metadata_not_instruction": true
+  },
+  "filter_graph_allowed_chars_note": "filter graph is produced only from typed profile numbers; shell metachars and injection tokens are absent from argv"
+}

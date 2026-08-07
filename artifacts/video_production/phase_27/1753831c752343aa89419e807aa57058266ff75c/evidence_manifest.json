@@ -1,0 +1,73 @@
+{
+  "schema_version": "1.0.0",
+  "candidate_sha": "1753831c752343aa89419e807aa57058266ff75c",
+  "generated_at": "2026-08-02T18:09:17.779520+00:00",
+  "schema_hash": "615874baa6c58333e59597f41089e847b3cad71e4d96c6a1f0af1051df357dad",
+  "files": {
+    "build_hash_manifest.json": {
+      "sha256": "0d184c076f32819a9226270fb8d4237dfd9dd49309917a2ef82114cd69cdc02b",
+      "size_bytes": 1033,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "build_hash_manifest.json"
+    },
+    "candidate_attestation.json": {
+      "sha256": "55e3bf29cb20d0f8c4fe8416ee8e8a509b01fdfcdc507fc63a62b6141001cfb9",
+      "size_bytes": 2006,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "candidate_attestation.json"
+    },
+    "ci_run_manifest.json": {
+      "sha256": "358a8569d18b36d411565b29846a079dd34fc4abe9a35aeedcea813997179b6b",
+      "size_bytes": 5012,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "ci_run_manifest.json"
+    },
+    "evidence_validation_receipt.json": {
+      "sha256": "6e8d244b1b4078a99f5a2cea6eb2aef4a63e1d92debf77a08072977f99e38d24",
+      "size_bytes": 6194,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "evidence_validation_receipt.json"
+    },
+    "migration_rehearsal_receipt.json": {
+      "sha256": "040ac3e0d24c83001d6a871b6efb0f5897281df8b18c9457ae3bc472f170c41b",
+      "size_bytes": 1720,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "migration_rehearsal_receipt.json"
+    },
+    "open_release_findings.json": {
+      "sha256": "a7cc378afc2a3f2fdbf55f0d4fddd904aa092c8e81f62001f8fd3c3b41ee9d6f",
+      "size_bytes": 2577,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "open_release_findings.json"
+    },
+    "phase_verdict.json": {
+      "sha256": "34913f95994768020b566d2dc738f94d5073cad14a23cb2128f89096a55bec6d",
+      "size_bytes": 375,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "phase_verdict.json"
+    },
+    "release_e2e_receipt.json": {
+      "sha256": "083dd03a06365ffad31800ddded876cbb35f6fd5eab66b52971bde0c9f6059c5",
+      "size_bytes": 2553,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "release_e2e_receipt.json"
+    }
+  },
+  "manifest_sha256": "df4d6d8b52f371c97544f78928d92c66445294cab0929004c54a93d854b93e6e"
+}

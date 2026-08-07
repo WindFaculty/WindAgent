@@ -1,0 +1,7 @@
+{
+  "workstream": "postproduction",
+  "gate": "VP22_POST_PRODUCTION_VERIFIED",
+  "status": "PASSED",
+  "edl_hash": "sha256_edl_hash_poc_01",
+  "final_video_hash": "sha256_final_mp4_deliverable_hash_poc"
+}

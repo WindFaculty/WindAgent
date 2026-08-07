@@ -1,0 +1,29 @@
+{
+  "gate": "VP16_FLOW_HUMAN_CONTROL_VERIFIED",
+  "workstream": "resume_reconciliation",
+  "generated_at": "2026-08-02T01:23:59.017210+00:00",
+  "check_count": 4,
+  "all_checks_pass": true,
+  "checks": [
+    {
+      "check": "resume_fails_when_challenge_active",
+      "ok": true,
+      "detail": "blocked active challenge"
+    },
+    {
+      "check": "safe_resume_success",
+      "ok": true,
+      "detail": "action resolved"
+    },
+    {
+      "check": "job_reconciled_no_dup_submit",
+      "ok": true,
+      "detail": "status=UNKNOWN_REQUIRES_RECONCILIATION"
+    },
+    {
+      "check": "durable_resolution_unpauses_session",
+      "ok": true,
+      "detail": "resolved action persisted with verified project and active session"
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "phase": 8,
+  "status": "PASSED",
+  "gate": "VP8_DIRECTOR_FOUNDATION_VERIFIED",
+  "evidence": [
+    {
+      "path": "cinematic_plan_fixtures/"
+    },
+    {
+      "path": "director_contract_receipt.json"
+    },
+    {
+      "path": "screenplay_immutability_receipt.json"
+    },
+    {
+      "path": "duration_validation_receipt.json"
+    }
+  ],
+  "blocking_reasons": [],
+  "derived_from": "scripts/verification/verify_phase8_director.py"
+}

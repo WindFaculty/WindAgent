@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0.0",
+  "candidate_sha": "1753831c752343aa89419e807aa57058266ff75c",
+  "generated_at": "2026-08-02T14:19:18.773539+00:00",
+  "schema_hash": "615874baa6c58333e59597f41089e847b3cad71e4d96c6a1f0af1051df357dad",
+  "files": {
+    "poc_run_manifest.json": {
+      "sha256": "d430d9f7a1dbdf89d2e775f90920eba446e6093e3534c268166ea9446f0ce596",
+      "size_bytes": 1561,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "poc_run_manifest.json"
+    }
+  },
+  "manifest_sha256": "971c86b0c048c51ea9d730b96719e24fa1beb03f2f162e21007c34109ca78a30"
+}

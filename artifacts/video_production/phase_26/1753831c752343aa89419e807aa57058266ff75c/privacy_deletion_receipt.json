@@ -1,0 +1,11 @@
+{
+  "schema_version": "1.0.0",
+  "gate": "VP26_SECURITY_VERIFIED",
+  "candidate_sha": "1753831c752343aa89419e807aa57058266ff75c",
+  "generated_at": "2026-08-02T15:55:19.554740+00:00",
+  "retention_cleanup_executed": true,
+  "invalidation_stale_not_deleted": true,
+  "superseded_marking": true,
+  "deletion_receipt_contains_deleted_content": false,
+  "derived_from": "security_test_receipts/SE13.json"
+}

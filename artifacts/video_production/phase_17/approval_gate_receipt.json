@@ -1,0 +1,59 @@
+{
+  "gate": "VP17_DURABLE_WORKFLOW_VERIFIED",
+  "workstream": "approval_gates",
+  "generated_at": "2026-08-02T04:09:37.116151+00:00",
+  "check_count": 10,
+  "all_checks_pass": true,
+  "checks": [
+    {
+      "check": "all_7_gates",
+      "ok": true,
+      "detail": "gates=['CHARACTER_APPROVAL', 'CONCEPT_APPROVAL', 'COST_APPROVAL', 'FINAL_CUT_APPROVAL', 'LOCATION_APPROVAL', 'SCREENPLAY_APPROVAL', 'SHOT_PLAN_APPROVAL']"
+    },
+    {
+      "check": "approval_recorded",
+      "ok": true,
+      "detail": "first record added"
+    },
+    {
+      "check": "approval_idempotent",
+      "ok": true,
+      "detail": "duplicate not re-added"
+    },
+    {
+      "check": "current_hash_satisfied",
+      "ok": true,
+      "detail": "exact hash satisfied"
+    },
+    {
+      "check": "stale_detected",
+      "ok": true,
+      "detail": "different hash -> stale"
+    },
+    {
+      "check": "different_hash_not_satisfied",
+      "ok": true,
+      "detail": "stale approval never satisfies current target"
+    },
+    {
+      "check": "engine_rejects_wrong_hash",
+      "ok": true,
+      "detail": "approval must target current revision hash"
+    },
+    {
+      "check": "engine_rejects_stale_reuse",
+      "ok": true,
+      "detail": "stale approval never reused"
+    },
+    {
+      "check": "run_pauses_at_gate",
+      "ok": true,
+      "detail": "state=WAITING_APPROVAL"
+    },
+    {
+      "check": "run_resumes_after_gate",
+      "ok": true,
+      "detail": "state=RUNNING"
+    }
+  ]
+}

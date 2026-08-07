@@ -1,0 +1,111 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-08-01T23:27:45.908735+00:00",
+  "contract": "docs/video_production/director/reference_binding_contract.md",
+  "check_count": 14,
+  "all_checks_pass": true,
+  "fixtures": {
+    "schema_version": "1.0.0",
+    "fixtures": {
+      "fixture_short_cartoon": {
+        "bindings": 5,
+        "roles": [
+          "IDENTITY",
+          "LOCATION"
+        ],
+        "binding_hash": "ecb7dafa6755c644",
+        "blocking_issues": []
+      },
+      "fixture_two_character_dialogue": {
+        "bindings": 13,
+        "roles": [
+          "IDENTITY",
+          "LOCATION"
+        ],
+        "binding_hash": "df06aeae64a6b69e",
+        "blocking_issues": []
+      },
+      "fixture_multi_scene_drama": {
+        "bindings": 9,
+        "roles": [
+          "IDENTITY",
+          "LOCATION"
+        ],
+        "binding_hash": "f73dcefa4e79511d",
+        "blocking_issues": []
+      }
+    }
+  },
+  "checks": [
+    {
+      "check": "fixture_short_cartoon_bindings_resolved",
+      "ok": true,
+      "detail": "bindings=5"
+    },
+    {
+      "check": "fixture_short_cartoon_clean_binding_plan",
+      "ok": true,
+      "detail": "no blocking binding defect on the golden fixture"
+    },
+    {
+      "check": "fixture_short_cartoon_hash_tied_to_sources",
+      "ok": true,
+      "detail": "binding hash tied to source graph/plan/package hashes"
+    },
+    {
+      "check": "fixture_short_cartoon_reference_hash_bound",
+      "ok": true,
+      "detail": "every binding carries a 64-char content hash"
+    },
+    {
+      "check": "fixture_two_character_dialogue_bindings_resolved",
+      "ok": true,
+      "detail": "bindings=13"
+    },
+    {
+      "check": "fixture_two_character_dialogue_clean_binding_plan",
+      "ok": true,
+      "detail": "no blocking binding defect on the golden fixture"
+    },
+    {
+      "check": "fixture_two_character_dialogue_hash_tied_to_sources",
+      "ok": true,
+      "detail": "binding hash tied to source graph/plan/package hashes"
+    },
+    {
+      "check": "fixture_two_character_dialogue_reference_hash_bound",
+      "ok": true,
+      "detail": "every binding carries a 64-char content hash"
+    },
+    {
+      "check": "fixture_multi_scene_drama_bindings_resolved",
+      "ok": true,
+      "detail": "bindings=9"
+    },
+    {
+      "check": "fixture_multi_scene_drama_clean_binding_plan",
+      "ok": true,
+      "detail": "no blocking binding defect on the golden fixture"
+    },
+    {
+      "check": "fixture_multi_scene_drama_hash_tied_to_sources",
+      "ok": true,
+      "detail": "binding hash tied to source graph/plan/package hashes"
+    },
+    {
+      "check": "fixture_multi_scene_drama_reference_hash_bound",
+      "ok": true,
+      "detail": "every binding carries a 64-char content hash"
+    },
+    {
+      "check": "rejected_asset_blocked",
+      "ok": true,
+      "detail": "rejected asset is blocking (['NOT_APPROVED'])"
+    },
+    {
+      "check": "unknown_asset_blocked",
+      "ok": true,
+      "detail": "unknown asset is blocking (['UNKNOWN_ASSET'])"
+    }
+  ]
+}

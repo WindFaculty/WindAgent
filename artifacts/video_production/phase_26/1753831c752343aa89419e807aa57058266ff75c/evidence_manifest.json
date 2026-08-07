@@ -1,0 +1,161 @@
+{
+  "schema_version": "1.0.0",
+  "candidate_sha": "1753831c752343aa89419e807aa57058266ff75c",
+  "generated_at": "2026-08-02T15:55:19.738352+00:00",
+  "schema_hash": "615874baa6c58333e59597f41089e847b3cad71e4d96c6a1f0af1051df357dad",
+  "files": {
+    "api_authorization_report.json": {
+      "sha256": "cd506d6465d16e127d27c2f161210e2ebebaf37a5b834beaa47bcf0bd9ef43c9",
+      "size_bytes": 629,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "api_authorization_report.json"
+    },
+    "file_network_sandbox_report.json": {
+      "sha256": "33fd5583046214438b42b42f7bc4c952453c0374b7603f73e1bd62407e5136e0",
+      "size_bytes": 885,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "file_network_sandbox_report.json"
+    },
+    "open_security_findings.json": {
+      "sha256": "0deda2ece2e59d534cbaf48acea80530c4898b381057e832acb9177f63af5ff7",
+      "size_bytes": 2408,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "open_security_findings.json"
+    },
+    "privacy_deletion_receipt.json": {
+      "sha256": "6f76a2b6d54790437dda3b7bc268347974dd1aafaae80846c4b46ec48735eaed",
+      "size_bytes": 403,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "privacy_deletion_receipt.json"
+    },
+    "secret_redaction_report.json": {
+      "sha256": "6b8a57f54dda9c7efecaddf10866dac57f11301807ab6eb7d3c6551f5047cab1",
+      "size_bytes": 448,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "secret_redaction_report.json"
+    },
+    "security_test_receipts/SE01.json": {
+      "sha256": "10fbcc23dfec25a923e50165714a0dc109b0418594fdcde75ef767856b5fcd31",
+      "size_bytes": 1123,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "security_test_receipts/SE01.json"
+    },
+    "security_test_receipts/SE02.json": {
+      "sha256": "490e95adbfb04ad56a040a5367b2447ece78dfc4eb83898a0e98b11317fbb85c",
+      "size_bytes": 1007,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "security_test_receipts/SE02.json"
+    },
+    "security_test_receipts/SE03.json": {
+      "sha256": "d4df7b669ca57d64191f2c46ae98eece2a946811d71221017eb6933b5bc7c41c",
+      "size_bytes": 1092,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "security_test_receipts/SE03.json"
+    },
+    "security_test_receipts/SE04.json": {
+      "sha256": "7ded06402aede65a380d43c99e9c7e01ac4a8a3b058066c04a160de44b615ec0",
+      "size_bytes": 1116,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "security_test_receipts/SE04.json"
+    },
+    "security_test_receipts/SE05.json": {
+      "sha256": "2222f2484c2adc23adc84b988e01ed96bcd2ac50367bc2f39d068000ebf9b367",
+      "size_bytes": 1092,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "security_test_receipts/SE05.json"
+    },
+    "security_test_receipts/SE06.json": {
+      "sha256": "bc16f7b2ee0610e06538e94c8b4b4cba59ff1ba7e6edb8ec95d99ac29384d947",
+      "size_bytes": 1967,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "security_test_receipts/SE06.json"
+    },
+    "security_test_receipts/SE07.json": {
+      "sha256": "a7923778b1beb5de960f78554309079234e3873c2e490d697be4e496a67e62bc",
+      "size_bytes": 1043,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "security_test_receipts/SE07.json"
+    },
+    "security_test_receipts/SE08.json": {
+      "sha256": "42424486f481c38be80c88cb4ce5f24401c125826859b761910a843b46149984",
+      "size_bytes": 1000,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "security_test_receipts/SE08.json"
+    },
+    "security_test_receipts/SE09.json": {
+      "sha256": "d921f080d93c26e05cce3bbc76b05656e62d2b9a9b2eb0453f803e3fbe06a0cd",
+      "size_bytes": 856,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "security_test_receipts/SE09.json"
+    },
+    "security_test_receipts/SE10.json": {
+      "sha256": "3975707a6206963f6e653334938e8d4e96c774d6e3ec861b8875c10ba579d7df",
+      "size_bytes": 1426,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "security_test_receipts/SE10.json"
+    },
+    "security_test_receipts/SE11.json": {
+      "sha256": "9793f64df232b56e0608f0b423820b46888a267fd6ccc6954677ae291e5308c1",
+      "size_bytes": 1246,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "security_test_receipts/SE11.json"
+    },
+    "security_test_receipts/SE12.json": {
+      "sha256": "1ce1d3b35f5da76472ca753be921130190bbc97de6a7d11f9dd6aab51072f6e5",
+      "size_bytes": 950,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "security_test_receipts/SE12.json"
+    },
+    "security_test_receipts/SE13.json": {
+      "sha256": "7b68b85a37d1d9d69711b4fd411c7793950afdf6b85f12ab9f5ea135de86b4da",
+      "size_bytes": 1021,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "security_test_receipts/SE13.json"
+    },
+    "threat_model_manifest.json": {
+      "sha256": "1b6b86910b2622ec11b337910a849401377bc6162ea6878e98f53f4eb4193bd5",
+      "size_bytes": 7271,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "threat_model_manifest.json"
+    }
+  },
+  "manifest_sha256": "3738e45b230326767d9d2d98e77452ca154779125d73a3d0bbd15e6728d52324"
+}

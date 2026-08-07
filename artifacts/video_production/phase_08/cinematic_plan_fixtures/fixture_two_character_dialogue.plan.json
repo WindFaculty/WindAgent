@@ -1,0 +1,238 @@
+{
+  "plan": {
+    "plan_id": "plan_f5e8053cdacaf5e1",
+    "project_id": "vp_phase8_two_character_dialogue",
+    "revision_id": "rev_phase8_two_character_dialogue_1",
+    "graph": {
+      "shots": [
+        {
+          "shot_id": "sht_72f22cc0f8acc0f3",
+          "scene_id": "scn_01",
+          "order": 1,
+          "shot_type": "ESTABLISHING",
+          "camera_movement": "STATIC",
+          "duration_seconds": 3.2083333333333335,
+          "framing_description": "Wide establishing view of Cà phê đêm",
+          "transition_type": "CUT",
+          "generation_mode": "TEXT_TO_VIDEO",
+          "dialogue_line_ids": [],
+          "reference_asset_ids": [
+            "ast_cafe"
+          ],
+          "metadata": {
+            "camera_angle": "eye-level",
+            "narrative_purpose": "establish location and geography"
+          }
+        },
+        {
+          "shot_id": "sht_7e980d4286fb6720",
+          "scene_id": "scn_01",
+          "order": 2,
+          "shot_type": "CLOSE_UP",
+          "camera_movement": "STATIC",
+          "duration_seconds": 4.416666666666667,
+          "framing_description": "Cover You are really leaving tomorrow?",
+          "transition_type": "CUT",
+          "generation_mode": "IMAGE_TO_VIDEO",
+          "dialogue_line_ids": [
+            "dlg_tcd_01"
+          ],
+          "reference_asset_ids": [
+            "ast_minh",
+            "ast_linh",
+            "ast_cafe"
+          ],
+          "metadata": {
+            "camera_angle": "eye-level",
+            "narrative_purpose": "deliver dialogue line dlg_tcd_01"
+          }
+        },
+        {
+          "shot_id": "sht_0d0ffd683cc5abaf",
+          "scene_id": "scn_01",
+          "order": 3,
+          "shot_type": "MEDIUM",
+          "camera_movement": "STATIC",
+          "duration_seconds": 5.291666666666667,
+          "framing_description": "Cover The train leaves at dawn. I have to go.",
+          "transition_type": "CUT",
+          "generation_mode": "IMAGE_TO_VIDEO",
+          "dialogue_line_ids": [
+            "dlg_tcd_02"
+          ],
+          "reference_asset_ids": [
+            "ast_minh",
+            "ast_linh",
+            "ast_cafe"
+          ],
+          "metadata": {
+            "camera_angle": "eye-level",
+            "narrative_purpose": "deliver dialogue line dlg_tcd_02"
+          }
+        },
+        {
+          "shot_id": "sht_8235b5d64cb3ac97",
+          "scene_id": "scn_01",
+          "order": 4,
+          "shot_type": "CLOSE_UP",
+          "camera_movement": "STATIC",
+          "duration_seconds": 6.166666666666667,
+          "framing_description": "Cover Stay. This city needs you, and I need yo",
+          "transition_type": "CUT",
+          "generation_mode": "IMAGE_TO_VIDEO",
+          "dialogue_line_ids": [
+            "dlg_tcd_03"
+          ],
+          "reference_asset_ids": [
+            "ast_minh",
+            "ast_linh",
+            "ast_cafe"
+          ],
+          "metadata": {
+            "camera_angle": "eye-level",
+            "narrative_purpose": "deliver dialogue line dlg_tcd_03"
+          }
+        },
+        {
+          "shot_id": "sht_8af6ca07613600c0",
+          "scene_id": "scn_01",
+          "order": 5,
+          "shot_type": "MEDIUM",
+          "camera_movement": "STATIC",
+          "duration_seconds": 5.916666666666667,
+          "framing_description": "Cover Some part of me will always stay right h",
+          "transition_type": "CUT",
+          "generation_mode": "IMAGE_TO_VIDEO",
+          "dialogue_line_ids": [
+            "dlg_tcd_04"
+          ],
+          "reference_asset_ids": [
+            "ast_minh",
+            "ast_linh",
+            "ast_cafe"
+          ],
+          "metadata": {
+            "camera_angle": "eye-level",
+            "narrative_purpose": "deliver dialogue line dlg_tcd_04"
+          }
+        }
+      ],
+      "dependencies": [
+        {
+          "dependency_id": "dep_sht_a2dcbb266cfb0b8c",
+          "from_shot_id": "sht_72f22cc0f8acc0f3",
+          "to_shot_id": "sht_7e980d4286fb6720",
+          "dependency_type": "TEMPORAL",
+          "required_artifact_type": "NONE",
+          "reason": "in-scene shot order",
+          "blocking": false
+        },
+        {
+          "dependency_id": "dep_sht_c19182d63ff63ca5",
+          "from_shot_id": "sht_7e980d4286fb6720",
+          "to_shot_id": "sht_0d0ffd683cc5abaf",
+          "dependency_type": "TEMPORAL",
+          "required_artifact_type": "NONE",
+          "reason": "in-scene shot order",
+          "blocking": false
+        },
+        {
+          "dependency_id": "dep_sht_b7e295978b7e6861",
+          "from_shot_id": "sht_0d0ffd683cc5abaf",
+          "to_shot_id": "sht_8235b5d64cb3ac97",
+          "dependency_type": "TEMPORAL",
+          "required_artifact_type": "NONE",
+          "reason": "in-scene shot order",
+          "blocking": false
+        },
+        {
+          "dependency_id": "dep_sht_1ecbba75c2b48f3f",
+          "from_shot_id": "sht_8235b5d64cb3ac97",
+          "to_shot_id": "sht_8af6ca07613600c0",
+          "dependency_type": "TEMPORAL",
+          "required_artifact_type": "NONE",
+          "reason": "in-scene shot order",
+          "blocking": false
+        }
+      ]
+    },
+    "locked": false,
+    "metadata": {
+      "planner_version": "1.0.0",
+      "prompt_version": "1.0.0",
+      "prompt_hash": "46ef93f99abf68ce8f6492b34b66cb3af84821423106ccbfca129d8431e0bb24",
+      "duration_policy_version": "1.0.0",
+      "source_package_hash": "10821091cbc3e6a66b38cdc70f7043549bf89f8987162d559856a144780122a1",
+      "plan_hash": "641c6486369584a80085268ad079088b7d70b1671b69afcb6eb7010ec4ba4a01",
+      "screenplay_locked": true,
+      "scene_objectives": [
+        {
+          "scene_id": "scn_01",
+          "objective": "Advance the story in Cà phê đêm",
+          "beats": [
+            {
+              "beat_order": 1,
+              "objective": "You are really leaving tomorrow?",
+              "source": "dialogue:dlg_tcd_01"
+            },
+            {
+              "beat_order": 2,
+              "objective": "The train leaves at dawn. I have to go.",
+              "source": "dialogue:dlg_tcd_02"
+            },
+            {
+              "beat_order": 3,
+              "objective": "Stay. This city needs you, and I need you too.",
+              "source": "dialogue:dlg_tcd_03"
+            },
+            {
+              "beat_order": 4,
+              "objective": "Some part of me will always stay right here.",
+              "source": "dialogue:dlg_tcd_04"
+            }
+          ],
+          "required_story_facts": []
+        }
+      ]
+    }
+  },
+  "plan_hash": "641c6486369584a80085268ad079088b7d70b1671b69afcb6eb7010ec4ba4a01",
+  "source_package_hash": "10821091cbc3e6a66b38cdc70f7043549bf89f8987162d559856a144780122a1",
+  "scene_objectives": [
+    {
+      "scene_id": "scn_01",
+      "objective": "Advance the story in Cà phê đêm",
+      "beats": [
+        {
+          "beat_order": 1,
+          "objective": "You are really leaving tomorrow?",
+          "source": "dialogue:dlg_tcd_01"
+        },
+        {
+          "beat_order": 2,
+          "objective": "The train leaves at dawn. I have to go.",
+          "source": "dialogue:dlg_tcd_02"
+        },
+        {
+          "beat_order": 3,
+          "objective": "Stay. This city needs you, and I need you too.",
+          "source": "dialogue:dlg_tcd_03"
+        },
+        {
+          "beat_order": 4,
+          "objective": "Some part of me will always stay right here.",
+          "source": "dialogue:dlg_tcd_04"
+        }
+      ],
+      "required_story_facts": []
+    }
+  ],
+  "issues": [],
+  "proposals": [],
+  "planner_version": "1.0.0",
+  "prompt_version": "1.0.0",
+  "prompt_hash": "46ef93f99abf68ce8f6492b34b66cb3af84821423106ccbfca129d8431e0bb24",
+  "duration_policy_version": "1.0.0",
+  "screenplay_locked": true,
+  "metadata": {}
+}

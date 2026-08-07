@@ -1,0 +1,56 @@
+{
+  "gate": "VP21_AUDIO_PIPELINE_VERIFIED",
+  "workstream": "alignment",
+  "generated_at": "2026-08-02T13:39:20.254069+00:00",
+  "check_count": 7,
+  "all_checks_pass": true,
+  "checks": [
+    {
+      "check": "low_confidence_routes_to_human",
+      "ok": true,
+      "detail": "LOW_CONFIDENCE surfaced"
+    },
+    {
+      "check": "audio_without_timestamps_is_finding",
+      "ok": true,
+      "detail": "fail closed, never silently accepted"
+    },
+    {
+      "check": "unaligned_state_blocks_audio",
+      "ok": true,
+      "detail": "state not ALIGNED — has_valid_audio=False"
+    },
+    {
+      "check": "overlong_line_never_cut",
+      "ok": true,
+      "detail": "OVERLONG_FOR_SHOT"
+    },
+    {
+      "check": "overlong_proposes_timing",
+      "ok": true,
+      "detail": "proposals=1"
+    },
+    {
+      "check": "within_stretch_is_timing_proposed",
+      "ok": true,
+      "detail": "ratio within policy -> proposal, no blocking issue"
+    },
+    {
+      "check": "clean_alignment_no_issues",
+      "ok": true,
+      "detail": "issues=0"
+    }
+  ],
+  "alignment_version": "1.0.0",
+  "confidence_floor": 0.6,
+  "max_stretch_ratio": 1.15,
+  "timing_proposals": [
+    {
+      "dialogue_id": "dlg_1",
+      "audio_duration_seconds": 5.0,
+      "shot_duration_seconds": 2.0,
+      "ratio": 2.5,
+      "proposal": "extend shot timing or shorten line (never cut the line)"
+    }
+  ]
+}

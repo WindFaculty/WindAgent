@@ -1,0 +1,49 @@
+{
+  "gate": "VP17_DURABLE_WORKFLOW_VERIFIED",
+  "workstream": "checkpoint_outbox",
+  "generated_at": "2026-08-02T04:09:37.557056+00:00",
+  "check_count": 8,
+  "all_checks_pass": true,
+  "checks": [
+    {
+      "check": "event_committed_atomically",
+      "ok": true,
+      "detail": "state+event single write"
+    },
+    {
+      "check": "outbox_replay_no_pending",
+      "ok": true,
+      "detail": "no stuck-pending events"
+    },
+    {
+      "check": "uncommitted_event_not_persisted",
+      "ok": true,
+      "detail": "crash before commit leaves no record"
+    },
+    {
+      "check": "result_ingested_once",
+      "ok": true,
+      "detail": "single ingestion event"
+    },
+    {
+      "check": "duplicate_ingestion_no_side_effect",
+      "ok": true,
+      "detail": "duplicate delivery ignored"
+    },
+    {
+      "check": "submit_intent_before_side_effect",
+      "ok": true,
+      "detail": "generation_submitting write precedes executor call"
+    },
+    {
+      "check": "version_cas_rejects_stale_write",
+      "ok": true,
+      "detail": "stale writer version mismatch rejected"
+    },
+    {
+      "check": "cross_worker_lease_rejected",
+      "ok": true,
+      "detail": "worker_B cannot write worker_A's run"
+    }
+  ]
+}

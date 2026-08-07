@@ -1,0 +1,49 @@
+{
+  "schema_version": "1.0.0",
+  "candidate_sha": "1753831c752343aa89419e807aa57058266ff75c",
+  "run_id": "SE10-1753831c",
+  "started_at": "2026-08-02T15:55:18.849066+00:00",
+  "completed_at": "2026-08-02T15:55:18.849066+00:00",
+  "command_or_provider": "BrowserActionPolicy + PermissionEngine",
+  "input_hashes": [
+    "0c6c04426e62146913f196f4bb1f494b5bd1b46509f556405dd036163c2c2634"
+  ],
+  "output_hashes": [
+    "9872277349ee715830f3816b2149fc3b0041e4b6984c011ddd0fde2f0c0953f9"
+  ],
+  "evidence_locator": "security_test_receipts/SE10.json",
+  "status": "PASSED",
+  "scenario_id": "SE10",
+  "tier": "MOCK_LEVEL",
+  "observed": {
+    "terms_confirmation": true,
+    "publish_requires_approval": true,
+    "unknown_deny": true,
+    "hard_deny": true,
+    "explicit_approval_allows": true
+  },
+  "controlled_environment": {
+    "isolation": "offline policy evaluation; no real payment/terms UI touched",
+    "confirmation_targets": [
+      "delete",
+      "payment",
+      "subscribe",
+      "terms"
+    ]
+  },
+  "decisions": {
+    "browser_gates": {
+      "terms": "require_confirmation",
+      "payment": "require_confirmation",
+      "delete": "require_confirmation",
+      "subscribe": "require_confirmation"
+    },
+    "permission_outcomes": {
+      "publish": "REQUIRE_APPROVAL",
+      "delete": "REQUIRE_APPROVAL",
+      "unknown": "DENY",
+      "hard_deny": "DENY",
+      "approved_destructive": "ALLOW"
+    }
+  }
+}

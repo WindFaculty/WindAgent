@@ -1,0 +1,66 @@
+{
+  "gate": "VP21_AUDIO_PIPELINE_VERIFIED",
+  "workstream": "provenance",
+  "generated_at": "2026-08-02T13:39:20.255071+00:00",
+  "check_count": 8,
+  "all_checks_pass": true,
+  "checks": [
+    {
+      "check": "asset_content_provenance",
+      "ok": true,
+      "detail": "content_hash + source_request_hash"
+    },
+    {
+      "check": "asset_provider_provenance",
+      "ok": true,
+      "detail": "flow/tts-v1/v1"
+    },
+    {
+      "check": "approval_keeps_rights_integrity",
+      "ok": true,
+      "detail": "approval is a decision, not a license claim"
+    },
+    {
+      "check": "bgm_change_mix_only",
+      "ok": true,
+      "detail": "BGM never invalidates clips"
+    },
+    {
+      "check": "sfx_change_mix_only",
+      "ok": true,
+      "detail": "SFX lives on the audio timeline"
+    },
+    {
+      "check": "dialogue_change_track_and_mix",
+      "ok": true,
+      "detail": "dialogue invalidates track + mix + final cut"
+    },
+    {
+      "check": "unknown_kind_no_invalidation",
+      "ok": true,
+      "detail": "unknown change kind -> no scope"
+    },
+    {
+      "check": "track_binds_character_and_line",
+      "ok": true,
+      "detail": "traceable to character + dialogue line"
+    }
+  ],
+  "sample_asset": {
+    "asset_id": "tsa_e5298bed2dfb8e29",
+    "content_hash": "21168a58939014f73db6d5b199e418fc9ea648770752072acf8abd14a9851c0f",
+    "sample_rate": 48000,
+    "channel_layout": "stereo",
+    "duration_seconds": 2.0,
+    "byte_size": 320,
+    "source_request_hash": "aeedfa6e84d457d5c87a415ef0ab485fd29af9cfc4810e8edd0b50f744b9c61d",
+    "provider": "flow",
+    "model": "tts-v1",
+    "voice_id": "v1"
+  },
+  "invalidation_scopes": {
+    "BGM": "MIX_ONLY",
+    "SFX": "MIX_ONLY",
+    "dialogue": "TRACK_AND_MIX"
+  }
+}

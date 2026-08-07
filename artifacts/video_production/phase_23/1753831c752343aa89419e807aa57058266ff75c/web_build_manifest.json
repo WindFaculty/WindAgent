@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0.0",
+  "candidate_sha": "1753831c752343aa89419e807aa57058266ff75c",
+  "run_id": "r3_web_build_1753831c7523",
+  "started_at": "2026-08-02T14:15:06.258657+00:00",
+  "completed_at": "2026-08-02T14:15:08.470021+00:00",
+  "command_or_provider": "npm run build (tsc && vite build)",
+  "input_hashes": [
+    "ba758bed9971f40c58ff93c6c4d23bd53299f3370ceb22bf34048b1df9de1e48"
+  ],
+  "output_hashes": [
+    "7865fb75fb1ccd6f5b785ffe34996ee1c1d13629ae16b7cac95743630f642fd7",
+    "477b905efb90035494cbbf1ba4e9e782105a363183bd170efc23b96005ad68ea"
+  ],
+  "evidence_locator": "web_build_manifest.json",
+  "status": "PASSED",
+  "target": "apps/web",
+  "dist_directory": "apps/web/dist",
+  "bundle_count": 2,
+  "bundle_size_bytes": 145317,
+  "output_bundle": {
+    "assets/index-ukhmuQ1g.js": "7865fb75fb1ccd6f5b785ffe34996ee1c1d13629ae16b7cac95743630f642fd7",
+    "index.html": "477b905efb90035494cbbf1ba4e9e782105a363183bd170efc23b96005ad68ea"
+  }
+}

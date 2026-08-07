@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-08-01T23:27:45.979127+00:00",
+  "contract": "docs/video_production/director/prompt_block_contract.md",
+  "check_count": 4,
+  "all_checks_pass": true,
+  "checks": [
+    {
+      "check": "text_to_video_independent",
+      "ok": true,
+      "detail": "independent shots compile (['TEXT_TO_VIDEO'])"
+    },
+    {
+      "check": "request_hash_unique_per_shot",
+      "ok": true,
+      "detail": "one unique request hash per shot"
+    },
+    {
+      "check": "request_hash_algorithm_versioned",
+      "ok": true,
+      "detail": "compute_request_hash is deterministic and 64-char"
+    },
+    {
+      "check": "mode_missing_input_blocked",
+      "ok": true,
+      "detail": "mode missing input is blocking (['MODE_MISSING_INPUT'])"
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+[
+  {
+    "issue_id": "RC_LIVE_MODEL_UNAVAILABLE",
+    "title": "Configured gateway model is unroutable (503 MODEL_UNAVAILABLE)",
+    "category": "MODEL_UNAVAILABLE",
+    "severity": "CRITICAL",
+    "affected_stage": "script generation (live model path)",
+    "symptom": "ProviderUnavailableFailure: No available channel for model z-ai/glm-5.2-free under group default (distributor) (request id: 20260806172929628090079tEdaqSfC)",
+    "reproduction_command": "scripts/verification/evaluate_pipeline.py (live probe)",
+    "expected_behavior": "brief_expansion completes via the configured model",
+    "actual_behavior": "gateway returned 503 'No available channel for model ...' after successful authentication (ANTHROPIC_AUTH_TOKEN)",
+    "root_cause": "ANTHROPIC_BASE_URL points at an OpenAI-compatible gateway (api.tokenrouter.com) whose registered model has no routable channel at evaluation time; the native Anthropic adapter is also incompatible with this gateway (x-api-key rejected).",
+    "evidence": "live_model_probe.json + provider_calls.json",
+    "affected_files": [
+      "providers/windagent_providers/"
+    ],
+    "temporary_workaround": "evaluation fell back to a deterministic port (PASS_MOCK_ONLY)",
+    "recommended_fix": "route the live adapter through the OpenAI-compatible transport with ANTHROPIC_AUTH_TOKEN and select an available model id; no live PASS can be claimed until a model channel is available",
+    "blocks_end_to_end": true,
+    "confidence": "high"
+  }
+]

@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0.0",
+  "candidate_sha": "1753831c752343aa89419e807aa57058266ff75c",
+  "run_id": "SE09-1753831c",
+  "started_at": "2026-08-02T15:55:18.849066+00:00",
+  "completed_at": "2026-08-02T15:55:18.849066+00:00",
+  "command_or_provider": "windagent_tools.browser.action_policy (UPLOAD)",
+  "input_hashes": [
+    "568570294131e2024cd860a712b59e58a0cb98565b404b6729b72eeefce2cde5"
+  ],
+  "output_hashes": [
+    "149d9515b6755a7781bb676e2f0601c0c71b550342a99256e9e44a9f55a42d72"
+  ],
+  "evidence_locator": "security_test_receipts/SE09.json",
+  "status": "PASSED",
+  "scenario_id": "SE09",
+  "tier": "MOCK_LEVEL",
+  "observed": {
+    "store_allowed": true,
+    "outside_store_denied": true,
+    "no_store_denied": true
+  },
+  "decisions": {
+    "inside": "allow",
+    "outside": "deny_upload_path",
+    "unconfigured": "deny_upload_path"
+  }
+}

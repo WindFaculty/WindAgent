@@ -1,0 +1,39 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-08-02T00:21:59.730700+00:00",
+  "contract": "docs/video_production/flow_images/candidate_acquisition.md",
+  "check_count": 6,
+  "all_checks_pass": true,
+  "checks": [
+    {
+      "check": "valid_candidate_published",
+      "ok": true,
+      "detail": "mime=image/png published=True"
+    },
+    {
+      "check": "zero_byte_rejected",
+      "ok": true,
+      "detail": "zero-byte candidate never published"
+    },
+    {
+      "check": "wrong_mime_rejected",
+      "ok": true,
+      "detail": "non-image payload never published"
+    },
+    {
+      "check": "store_clean_after_rejections",
+      "ok": true,
+      "detail": "store hashes=['4e068b4a3490f1fa3076e323aae8ae3f9ecb26baa401105ba47e62d677f0d24d'] (only the valid PNG)"
+    },
+    {
+      "check": "zero_candidates_supported",
+      "ok": true,
+      "detail": "0 candidates is a valid (non-ok) outcome"
+    },
+    {
+      "check": "all_candidates_acquired",
+      "ok": true,
+      "detail": "candidates=2"
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-08-01T23:27:45.945083+00:00",
+  "contract": "docs/video_production/director/generation_mode_decision.md",
+  "check_count": 6,
+  "all_checks_pass": true,
+  "checks": [
+    {
+      "check": "transition_shot_transforms_clip",
+      "ok": true,
+      "detail": "preferred=VIDEO_TO_VIDEO"
+    },
+    {
+      "check": "independent_shot_text_to_video",
+      "ok": true,
+      "detail": "no mandatory reference -> text-to-video"
+    },
+    {
+      "check": "frames_required",
+      "ok": true,
+      "detail": "preferred=FRAMES_TO_VIDEO"
+    },
+    {
+      "check": "motion_continuation_extension",
+      "ok": true,
+      "detail": "preferred=VIDEO_EXTENSION"
+    },
+    {
+      "check": "identity_reference_image_to_video",
+      "ok": true,
+      "detail": "preferred=IMAGE_TO_VIDEO"
+    },
+    {
+      "check": "fallbacks_recorded",
+      "ok": true,
+      "detail": "fallback modes recorded for transform/frames/continuation/identity"
+    }
+  ]
+}

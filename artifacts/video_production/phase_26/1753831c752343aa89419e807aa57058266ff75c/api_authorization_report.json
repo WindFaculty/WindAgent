@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0.0",
+  "gate": "VP26_SECURITY_VERIFIED",
+  "candidate_sha": "1753831c752343aa89419e807aa57058266ff75c",
+  "generated_at": "2026-08-02T15:55:19.554740+00:00",
+  "idempotent_replay_dedup": true,
+  "stale_revision_blocked": true,
+  "media_token_path_blocked": true,
+  "cross_project_event_denied": true,
+  "stale_approval_blocked": true,
+  "csrf_note": "backend bearer API without cookie sessions -> CSRF non-applicable; replay protected by idempotency keys + optimistic revision checks (SE11/SE12)",
+  "derived_from": [
+    "security_test_receipts/SE11.json",
+    "security_test_receipts/SE12.json"
+  ]
+}

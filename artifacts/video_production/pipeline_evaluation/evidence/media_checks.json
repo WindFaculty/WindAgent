@@ -1,0 +1,225 @@
+[
+  {
+    "check": "media_probe",
+    "status": "PASS_LOCAL",
+    "detail": "probed=12 images_with_streams=4 videos_with_valid_stream=8",
+    "probes": [
+      {
+        "path": "data\\image\\lumi.jpeg",
+        "exists": true,
+        "size_bytes": 78703,
+        "sha256": "ef38dd884492bb4b7b77c10e22963ad5533d9710a5e3d9b95072e8fe29fa5015",
+        "mime": "image2",
+        "codec": "mjpeg",
+        "width": 1376,
+        "height": 768
+      },
+      {
+        "path": "data\\image\\miko.jpeg",
+        "exists": true,
+        "size_bytes": 72173,
+        "sha256": "1a59a2354ef18b6464e4d8d1e9ec71fe19e42dfe9318fd99befa2cd795bec78f",
+        "mime": "image2",
+        "codec": "mjpeg",
+        "width": 1376,
+        "height": 768
+      },
+      {
+        "path": "data\\image\\pogo.jpeg",
+        "exists": true,
+        "size_bytes": 79255,
+        "sha256": "5a6c616f2f525bc4b3da622c0eeab0c4ec73d2b96d4de534e511096e31d16dc3",
+        "mime": "image2",
+        "codec": "mjpeg",
+        "width": 1376,
+        "height": 768
+      },
+      {
+        "path": "data\\image\\tink.jpeg",
+        "exists": true,
+        "size_bytes": 55329,
+        "sha256": "741af3fe4198abb28a10d057552ff14e3db8f5f86f6fd63ef804a0c396b1a974",
+        "mime": "image2",
+        "codec": "mjpeg",
+        "width": 1376,
+        "height": 768
+      },
+      {
+        "path": "artifacts\\video_production\\phase_22\\1753831c752343aa89419e807aa57058266ff75c\\workspace\\clip_01.mp4",
+        "exists": true,
+        "size_bytes": 1556081,
+        "sha256": "b6fc027feccf01bb2897ac83e9abf7896bba01195b8545abcd9b8f764fa17874",
+        "duration_seconds": 6.0,
+        "mime": "mov,mp4,m4a,3gp,3g2,mj2",
+        "streams": [
+          {
+            "codec": "h264",
+            "type": "video",
+            "width": 640,
+            "height": 360
+          },
+          {
+            "codec": "aac",
+            "type": "audio",
+            "width": null,
+            "height": null
+          }
+        ]
+      },
+      {
+        "path": "artifacts\\video_production\\phase_22\\1753831c752343aa89419e807aa57058266ff75c\\workspace\\clip_02.mp4",
+        "exists": true,
+        "size_bytes": 1556097,
+        "sha256": "0ed1096c06c71c03522d0b7827e9d079c8a1ae17cdc352ac1dcc6052ea5ffef6",
+        "duration_seconds": 6.0,
+        "mime": "mov,mp4,m4a,3gp,3g2,mj2",
+        "streams": [
+          {
+            "codec": "h264",
+            "type": "video",
+            "width": 640,
+            "height": 360
+          },
+          {
+            "codec": "aac",
+            "type": "audio",
+            "width": null,
+            "height": null
+          }
+        ]
+      },
+      {
+        "path": "artifacts\\video_production\\phase_22\\1753831c752343aa89419e807aa57058266ff75c\\workspace\\clip_03.mp4",
+        "exists": true,
+        "size_bytes": 1555865,
+        "sha256": "17bc0f5a88f03155b15ddecac55e368ba071c5d86816350a71422efb01ca4825",
+        "duration_seconds": 6.0,
+        "mime": "mov,mp4,m4a,3gp,3g2,mj2",
+        "streams": [
+          {
+            "codec": "h264",
+            "type": "video",
+            "width": 640,
+            "height": 360
+          },
+          {
+            "codec": "aac",
+            "type": "audio",
+            "width": null,
+            "height": null
+          }
+        ]
+      },
+      {
+        "path": "artifacts\\video_production\\phase_22\\1753831c752343aa89419e807aa57058266ff75c\\workspace\\clip_04.mp4",
+        "exists": true,
+        "size_bytes": 1555728,
+        "sha256": "58fa782de0d1832847efad03881afa2bf7081c4c0a301dbe3a23282293fb2f3e",
+        "duration_seconds": 6.0,
+        "mime": "mov,mp4,m4a,3gp,3g2,mj2",
+        "streams": [
+          {
+            "codec": "h264",
+            "type": "video",
+            "width": 640,
+            "height": 360
+          },
+          {
+            "codec": "aac",
+            "type": "audio",
+            "width": null,
+            "height": null
+          }
+        ]
+      },
+      {
+        "path": "artifacts\\video_production\\phase_22\\1753831c752343aa89419e807aa57058266ff75c\\workspace\\clip_05.mp4",
+        "exists": true,
+        "size_bytes": 1555840,
+        "sha256": "4cfef9c4ddaefbba8f2a55a26ce834ddf098c2370a0491deaa4bf84a5d786c4f",
+        "duration_seconds": 6.0,
+        "mime": "mov,mp4,m4a,3gp,3g2,mj2",
+        "streams": [
+          {
+            "codec": "h264",
+            "type": "video",
+            "width": 640,
+            "height": 360
+          },
+          {
+            "codec": "aac",
+            "type": "audio",
+            "width": null,
+            "height": null
+          }
+        ]
+      },
+      {
+        "path": "artifacts\\video_production\\phase_22\\1753831c752343aa89419e807aa57058266ff75c\\workspace\\clip_06.mp4",
+        "exists": true,
+        "size_bytes": 1555817,
+        "sha256": "4b18b57ac0639c6228c72f66134a1edb26c0a65f8fd64110419341c9517e0ccb",
+        "duration_seconds": 6.0,
+        "mime": "mov,mp4,m4a,3gp,3g2,mj2",
+        "streams": [
+          {
+            "codec": "h264",
+            "type": "video",
+            "width": 640,
+            "height": 360
+          },
+          {
+            "codec": "aac",
+            "type": "audio",
+            "width": null,
+            "height": null
+          }
+        ]
+      },
+      {
+        "path": "artifacts\\video_production\\phase_22\\1753831c752343aa89419e807aa57058266ff75c\\workspace\\final_poc.mp4",
+        "exists": true,
+        "size_bytes": 9252664,
+        "sha256": "ce6e1a8aee6e52c89ee7f6478605941af742a676236520347a5a31dd45d6969a",
+        "duration_seconds": 36.0,
+        "mime": "mov,mp4,m4a,3gp,3g2,mj2",
+        "streams": [
+          {
+            "codec": "h264",
+            "type": "video",
+            "width": 640,
+            "height": 360
+          },
+          {
+            "codec": "aac",
+            "type": "audio",
+            "width": null,
+            "height": null
+          }
+        ]
+      },
+      {
+        "path": "artifacts\\video_production\\phase_22\\1753831c752343aa89419e807aa57058266ff75c\\workspace\\final_rerender.mp4",
+        "exists": true,
+        "size_bytes": 9252664,
+        "sha256": "ce6e1a8aee6e52c89ee7f6478605941af742a676236520347a5a31dd45d6969a",
+        "duration_seconds": 36.0,
+        "mime": "mov,mp4,m4a,3gp,3g2,mj2",
+        "streams": [
+          {
+            "codec": "h264",
+            "type": "video",
+            "width": 640,
+            "height": 360
+          },
+          {
+            "codec": "aac",
+            "type": "audio",
+            "width": null,
+            "height": null
+          }
+        ]
+      }
+    ]
+  }
+]

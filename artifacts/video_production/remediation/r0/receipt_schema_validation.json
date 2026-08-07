@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0.0",
+  "candidate_sha": "1753831c752343aa89419e807aa57058266ff75c",
+  "run_id": "r0_schema_1753831c7523",
+  "started_at": "2026-08-02T14:35:37.180428+00:00",
+  "completed_at": "2026-08-02T14:35:37.181429+00:00",
+  "command_or_provider": "evidence_lib.validate_production_receipt",
+  "input_hashes": [],
+  "output_hashes": [],
+  "evidence_locator": "receipt_schema_validation.json",
+  "status": "PASSED",
+  "golden_receipt_errors": [],
+  "adversarial_receipt_error_count": 9,
+  "adversarial_receipt_rejected": true,
+  "schema": "production_receipt_v1.0.0"
+}

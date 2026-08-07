@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0.0",
+  "gate": "VIDEO_PRODUCTION_PLATFORM_VERIFIED",
+  "candidate_sha": "1753831c752343aa89419e807aa57058266ff75c",
+  "generated_at": "2026-08-02T18:09:17.623114+00:00",
+  "product_version": "0.3.0",
+  "implementation_scope": [
+    "core/windagent_core/domain/video_production/**",
+    "core/windagent_core/contracts/video_production/**",
+    "core/windagent_core/events/video_production.py",
+    "intelligence/windagent_intelligence/video/**",
+    "orchestration/windagent_orchestration/production/**",
+    "storage/windagent_storage/video_production/**",
+    "apps/api/windagent_api/routers/v2_production_workspace.py",
+    "tools/windagent_tools/media_assets/**",
+    "tools/windagent_tools/shell/runner.py",
+    "tools/windagent_tools/browser/**"
+  ],
+  "verification_scope": "scripts/verification/verify_phase2*.py + release_phase27.py",
+  "evidence_scope": "artifacts/video_production/phase_0*/** .. phase_2*/** + final/**"
+}

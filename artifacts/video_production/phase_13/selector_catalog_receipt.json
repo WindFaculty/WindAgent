@@ -1,0 +1,39 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-08-01T23:58:05.812803+00:00",
+  "contract": "docs/video_production/flow_navigation/flow_selector_catalog.md",
+  "check_count": 6,
+  "all_checks_pass": true,
+  "checks": [
+    {
+      "check": "semantic_kinds_only",
+      "ok": true,
+      "detail": "kinds=['role', 'text', 'url']"
+    },
+    {
+      "check": "forbidden_primary_kind_rejected",
+      "ok": true,
+      "detail": "css_class/dom_index/coordinate raise SelectorCatalogError"
+    },
+    {
+      "check": "payment_selector_is_destructive",
+      "ok": true,
+      "detail": "payment confirm never auto-clicked by a fallback"
+    },
+    {
+      "check": "catalog_versioned",
+      "ok": true,
+      "detail": "version=1.0.0"
+    },
+    {
+      "check": "locale_assumption_explicit",
+      "ok": true,
+      "detail": "locale=en"
+    },
+    {
+      "check": "unknown_selector_raises",
+      "ok": true,
+      "detail": "unknown selector -> SelectorCatalogError"
+    }
+  ]
+}

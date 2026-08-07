@@ -1,0 +1,49 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-08-02T00:21:59.652452+00:00",
+  "contract": "docs/video_production/flow_images/pre_submit_guard.md",
+  "check_count": 8,
+  "all_checks_pass": true,
+  "checks": [
+    {
+      "check": "all_conditions_pass",
+      "ok": true,
+      "detail": "happy path → ok"
+    },
+    {
+      "check": "upload_hash_mismatch_fails_closed",
+      "ok": true,
+      "detail": "reasons=('reference upload hash mismatch',)"
+    },
+    {
+      "check": "reference_not_approved_fails_closed",
+      "ok": true,
+      "detail": "reasons=('required reference not approved',)"
+    },
+    {
+      "check": "missing_evidence_fails_closed",
+      "ok": true,
+      "detail": "reasons=('pre-submit evidence missing',)"
+    },
+    {
+      "check": "unsupported_operation_fails_closed",
+      "ok": true,
+      "detail": "reasons=('operation CREATE_STORYBOARD_FRAME not supported',)"
+    },
+    {
+      "check": "cost_policy_fails_closed",
+      "ok": true,
+      "detail": "reasons=('cost/quota policy blocks submission',)"
+    },
+    {
+      "check": "invalid_request_hash_fails_closed",
+      "ok": true,
+      "detail": "reasons=('request_hash invalid (expected 64-hex sha256)',)"
+    },
+    {
+      "check": "zero_candidate_limit_fails_closed",
+      "ok": true,
+      "detail": "reasons=('candidate_limit 0 outside [1, 8]',)"
+    }
+  ]
+}

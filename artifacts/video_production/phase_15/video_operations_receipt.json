@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-08-02T00:50:55.984396+00:00",
+  "contract": "docs/video_production/flow_video/video_operations_contract.md",
+  "check_count": 5,
+  "all_checks_pass": true,
+  "checks": [
+    {
+      "check": "exactly_five_video_operations",
+      "ok": true,
+      "detail": "operations=['FRAMES_TO_VIDEO', 'INGREDIENTS_TO_VIDEO', 'TEXT_TO_VIDEO', 'VIDEO_EXTENSION', 'VIDEO_TO_VIDEO']"
+    },
+    {
+      "check": "typed_actions_only",
+      "ok": true,
+      "detail": "config_steps=5"
+    },
+    {
+      "check": "reference_policy",
+      "ok": true,
+      "detail": "reference-required ops per §23.2"
+    },
+    {
+      "check": "source_clip_policy",
+      "ok": true,
+      "detail": "extension/v2v consume an approved source clip"
+    },
+    {
+      "check": "capability_fails_closed",
+      "ok": true,
+      "detail": "unsupported operation denied"
+    }
+  ]
+}

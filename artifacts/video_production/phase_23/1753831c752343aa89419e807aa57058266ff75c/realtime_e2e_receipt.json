@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "candidate_sha": "1753831c752343aa89419e807aa57058266ff75c",
+  "run_id": "r3_realtime_1753831c7523",
+  "started_at": "2026-08-02T14:15:04.460449+00:00",
+  "completed_at": "2026-08-02T14:15:04.548642+00:00",
+  "command_or_provider": "API V2 + WorkspaceService event stream",
+  "input_hashes": [
+    "692dff54d12009dd8f5f1c720c8680a41af66f294254316557e0892d522fc7de"
+  ],
+  "output_hashes": [
+    "692dff54d12009dd8f5f1c720c8680a41af66f294254316557e0892d522fc7de"
+  ],
+  "evidence_locator": "realtime_e2e_receipt.json",
+  "status": "PASSED",
+  "cursor_replay_verified": true,
+  "replay_events_count": 2,
+  "large_gap_snapshot_reset": true,
+  "duplicate_actions_after_reconnect": false,
+  "idempotency_cache_hit": true,
+  "notes": "Reconnect replayed the same idempotency key; server returned the cached response without duplicating the action."
+}

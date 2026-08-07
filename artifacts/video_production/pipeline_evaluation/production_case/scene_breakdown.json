@@ -1,0 +1,222 @@
+[
+  {
+    "scene_id": "scn_45cc77f2aa74f392",
+    "order": 1,
+    "title": "Thư viện làng",
+    "location_id": "loc_576765dc341b0ebe",
+    "character_ids": [
+      "chr_c9e3012653941f60",
+      "chr_e572cf0e2c908680"
+    ],
+    "dialogue_line_ids": [
+      "dlg_91ea5ec8099681fc",
+      "dlg_47d486f068b7e96c"
+    ],
+    "action_description": "Bin và Bo bước vào thư viện làng, nhìn quanh những kệ sách cao ngất.",
+    "time_of_day": null,
+    "metadata": {
+      "episode_number": 1,
+      "scene_number": 1,
+      "scene_time": "DAY",
+      "scene_space": "INTERIOR",
+      "scene_location": "Thư viện làng",
+      "scene_context": "Scene 1 | DAY | INTERIOR | Thư viện làng"
+    }
+  },
+  {
+    "scene_id": "scn_f6d3fd399594d226",
+    "order": 2,
+    "title": "Thư viện làng",
+    "location_id": "loc_576765dc341b0ebe",
+    "character_ids": [
+      "chr_c9e3012653941f60",
+      "chr_e572cf0e2c908680"
+    ],
+    "dialogue_line_ids": [
+      "dlg_fa44dddd2c26fcb8",
+      "dlg_7a5b0af48997fc94"
+    ],
+    "action_description": "Bin với tay, vô tình làm rơi chiếc bình gốm. Bình vỡ thành nhiều mảnh.",
+    "time_of_day": null,
+    "metadata": {
+      "episode_number": 1,
+      "scene_number": 2,
+      "scene_time": "DAY",
+      "scene_space": "INTERIOR",
+      "scene_location": "Thư viện làng",
+      "scene_context": "Scene 2 | DAY | INTERIOR | Thư viện làng"
+    }
+  },
+  {
+    "scene_id": "scn_dda626e2f402fc83",
+    "order": 3,
+    "title": "Thư viện làng",
+    "location_id": "loc_576765dc341b0ebe",
+    "character_ids": [
+      "chr_c9e3012653941f60",
+      "chr_e572cf0e2c908680"
+    ],
+    "dialogue_line_ids": [
+      "dlg_949783f6ce5df42a",
+      "dlg_e2ed9cf77c9b81c1",
+      "dlg_3622e9c5057e9c07"
+    ],
+    "action_description": "Bin nhìn những mảnh vỡ, lo lắng. Bo suy nghĩ.",
+    "time_of_day": null,
+    "metadata": {
+      "episode_number": 1,
+      "scene_number": 3,
+      "scene_time": "DAY",
+      "scene_space": "INTERIOR",
+      "scene_location": "Thư viện làng",
+      "scene_context": "Scene 3 | DAY | INTERIOR | Thư viện làng"
+    }
+  },
+  {
+    "scene_id": "scn_4d378ef976dfa8a1",
+    "order": 4,
+    "title": "Thư viện làng",
+    "location_id": "loc_576765dc341b0ebe",
+    "character_ids": [
+      "chr_c9e3012653941f60",
+      "chr_e572cf0e2c908680"
+    ],
+    "dialogue_line_ids": [
+      "dlg_8c46fb5a321fa455",
+      "dlg_5529733d518f6be8",
+      "dlg_42273414f253cf17"
+    ],
+    "action_description": "Hai bạn nắm tay nhau, cùng đi tìm bác quản lý.",
+    "time_of_day": null,
+    "metadata": {
+      "episode_number": 1,
+      "scene_number": 4,
+      "scene_time": "DAY",
+      "scene_space": "INTERIOR",
+      "scene_location": "Thư viện làng",
+      "scene_context": "Scene 4 | DAY | INTERIOR | Thư viện làng"
+    }
+  },
+  {
+    "scene_id": "scn_97cf7362d3190438",
+    "order": 5,
+    "title": "Phòng làm việc",
+    "location_id": "loc_4a4dfbe05ce8dade",
+    "character_ids": [
+      "chr_bd40ff29a9be8fcf",
+      "chr_e572cf0e2c908680"
+    ],
+    "dialogue_line_ids": [
+      "dlg_d44c366bd982bca8",
+      "dlg_b170987ef667890f"
+    ],
+    "action_description": "Bác quản lý mỉm cười hiền từ, đặt tay lên vai Bin.",
+    "time_of_day": null,
+    "metadata": {
+      "episode_number": 1,
+      "scene_number": 5,
+      "scene_time": "DAY",
+      "scene_space": "INTERIOR",
+      "scene_location": "Phòng làm việc",
+      "scene_context": "Scene 5 | DAY | INTERIOR | Phòng làm việc"
+    }
+  },
+  {
+    "scene_id": "scn_2c2d1d58d8a4e33d",
+    "order": 6,
+    "title": "Xưởng sửa chữa",
+    "location_id": "loc_fe5c803e17fda495",
+    "character_ids": [
+      "chr_c9e3012653941f60",
+      "chr_e572cf0e2c908680"
+    ],
+    "dialogue_line_ids": [
+      "dlg_70697b326a7d9e66",
+      "dlg_f672d338d0f4d4cf"
+    ],
+    "action_description": "Cả ba cùng tỉ mỉ dán từng mảnh gốm lại với nhau.",
+    "time_of_day": null,
+    "metadata": {
+      "episode_number": 1,
+      "scene_number": 6,
+      "scene_time": "DAY",
+      "scene_space": "INTERIOR",
+      "scene_location": "Xưởng sửa chữa",
+      "scene_context": "Scene 6 | DAY | INTERIOR | Xưởng sửa chữa"
+    }
+  },
+  {
+    "scene_id": "scn_05f43c7d2b86e3f3",
+    "order": 7,
+    "title": "Xưởng sửa chữa",
+    "location_id": "loc_fe5c803e17fda495",
+    "character_ids": [
+      "chr_bd40ff29a9be8fcf",
+      "chr_c9e3012653941f60",
+      "chr_e572cf0e2c908680"
+    ],
+    "dialogue_line_ids": [
+      "dlg_ff2781df2d9dfd4a",
+      "dlg_4317a31566ed0ff0",
+      "dlg_951c01a1876b6059"
+    ],
+    "action_description": "Chiếc bình được phục hồi, ánh nắng chiếu rọi vào xưởng.",
+    "time_of_day": null,
+    "metadata": {
+      "episode_number": 1,
+      "scene_number": 7,
+      "scene_time": "DAY",
+      "scene_space": "INTERIOR",
+      "scene_location": "Xưởng sửa chữa",
+      "scene_context": "Scene 7 | DAY | INTERIOR | Xưởng sửa chữa"
+    }
+  },
+  {
+    "scene_id": "scn_a7acb561b3a45dcd",
+    "order": 8,
+    "title": "Sân làng",
+    "location_id": "loc_462020f341ef0abd",
+    "character_ids": [
+      "chr_c9e3012653941f60",
+      "chr_e572cf0e2c908680"
+    ],
+    "dialogue_line_ids": [
+      "dlg_e31d0da1a6f7bb43",
+      "dlg_88e406e23d89885e"
+    ],
+    "action_description": "Hai bạn cười rạng rỡ dưới ánh nắng, bác quản lý vẫy tay chào.",
+    "time_of_day": null,
+    "metadata": {
+      "episode_number": 1,
+      "scene_number": 8,
+      "scene_time": "DAY",
+      "scene_space": "EXTERIOR",
+      "scene_location": "Sân làng",
+      "scene_context": "Scene 8 | DAY | EXTERIOR | Sân làng"
+    }
+  },
+  {
+    "scene_id": "scn_1d4b1066eb7f2941",
+    "order": 9,
+    "title": "Sân làng",
+    "location_id": "loc_462020f341ef0abd",
+    "character_ids": [
+      "chr_c9e3012653941f60",
+      "chr_e572cf0e2c908680"
+    ],
+    "dialogue_line_ids": [
+      "dlg_e72ad4f60e14e942",
+      "dlg_5a23c22af7f8612e"
+    ],
+    "action_description": "Hai bạn khoác tay nhau đi về dưới ánh đèn ấm áp.",
+    "time_of_day": null,
+    "metadata": {
+      "episode_number": 1,
+      "scene_number": 9,
+      "scene_time": "NIGHT",
+      "scene_space": "EXTERIOR",
+      "scene_location": "Sân làng",
+      "scene_context": "Scene 9 | NIGHT | EXTERIOR | Sân làng"
+    }
+  }
+]
