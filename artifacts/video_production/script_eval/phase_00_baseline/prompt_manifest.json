@@ -1,0 +1,79 @@
+{
+  "system_prompt": {
+    "status": "NOT_DEFINED",
+    "sha256": null,
+    "note": "no canonical system prompt for script eval yet"
+  },
+  "story_prompt": {
+    "status": "NOT_DEFINED",
+    "sha256": null,
+    "note": "to be defined in Phase 1+ (contract/schema work)"
+  },
+  "character_prompt": {
+    "status": "NOT_DEFINED",
+    "sha256": null,
+    "note": "to be defined in Phase 1+"
+  },
+  "reviewer_prompt": {
+    "status": "NOT_DEFINED",
+    "sha256": null,
+    "note": "to be defined in Phase 1+; writer/reviewer must be separate contexts"
+  },
+  "video_prompts_module": {
+    "status": "EXISTS",
+    "sha256": "258d2574c49f829660d61975e85e5235e8ea7808ced23794213b770407798392",
+    "path": "intelligence\\windagent_intelligence\\video\\prompts.py"
+  },
+  "director_prompts_module": {
+    "status": "EXISTS",
+    "sha256": "bf27a319805dfdf3a23cd76ccfe1914aca8c2aa7dc44354369fabf62db05ab39",
+    "path": "intelligence\\windagent_intelligence\\video\\director\\prompts.py"
+  },
+  "generation_prompts_json": {
+    "status": "EXISTS",
+    "sha256": "3d587e130dcc5788506981f20985a2982b8204db1d088a4de9b6f8bc5433c236",
+    "path": "artifacts\\video_production\\pipeline_evaluation\\production_case\\generation_prompts.json",
+    "capabilities": [
+      {
+        "capability": "asset_prompt.character_portrait",
+        "prompt_version": "1.0.0",
+        "prompt_hash": "55d39baf71350d2a52fdab6205e50160ffb69db11b80a0da2c3486acc7308d6e"
+      },
+      {
+        "capability": "asset_prompt.character_portrait",
+        "prompt_version": "1.0.0",
+        "prompt_hash": "55d39baf71350d2a52fdab6205e50160ffb69db11b80a0da2c3486acc7308d6e"
+      },
+      {
+        "capability": "asset_prompt.character_portrait",
+        "prompt_version": "1.0.0",
+        "prompt_hash": "55d39baf71350d2a52fdab6205e50160ffb69db11b80a0da2c3486acc7308d6e"
+      },
+      {
+        "capability": "asset_prompt.location",
+        "prompt_version": "1.0.0",
+        "prompt_hash": "d6cac2946b37c4e9c169cdd4605b9e4839fff0c06e2a76ac3b78b914c46031f2"
+      },
+      {
+        "capability": "asset_prompt.location",
+        "prompt_version": "1.0.0",
+        "prompt_hash": "d6cac2946b37c4e9c169cdd4605b9e4839fff0c06e2a76ac3b78b914c46031f2"
+      },
+      {
+        "capability": "asset_prompt.location",
+        "prompt_version": "1.0.0",
+        "prompt_hash": "d6cac2946b37c4e9c169cdd4605b9e4839fff0c06e2a76ac3b78b914c46031f2"
+      },
+      {
+        "capability": "asset_prompt.location",
+        "prompt_version": "1.0.0",
+        "prompt_hash": "d6cac2946b37c4e9c169cdd4605b9e4839fff0c06e2a76ac3b78b914c46031f2"
+      },
+      {
+        "capability": "asset_prompt.style",
+        "prompt_version": "1.0.0",
+        "prompt_hash": "67a04f6897b6b3ecb748de9c89eced0cc0ebde87a442235205edbb373bd94513"
+      }
+    ]
+  }
+}

@@ -1,0 +1,147 @@
+{
+  "count": 12,
+  "first_op": "NEW_SCENE",
+  "last_op": "SAVE_BLEND",
+  "ops": [
+    {
+      "args": {},
+      "op": "NEW_SCENE",
+      "target": "sc1"
+    },
+    {
+      "args": {
+        "end": 120,
+        "fps": 24,
+        "start": 1
+      },
+      "op": "SET_FRAME_RANGE",
+      "target": "sc1"
+    },
+    {
+      "args": {
+        "denoise": true,
+        "quality": "HIGH",
+        "resolution": {
+          "height": 1080,
+          "width": 1920
+        },
+        "samples": 32
+      },
+      "op": "SET_RENDER_CONFIG",
+      "target": "rp-1"
+    },
+    {
+      "args": {
+        "collection": "coll-char",
+        "kind": "MESH",
+        "location": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotation": [],
+        "scale": [],
+        "transform_unit": "METERS"
+      },
+      "op": "CREATE_OBJECT",
+      "target": "obj-mai"
+    },
+    {
+      "args": {
+        "collection": "coll-char",
+        "kind": "MESH",
+        "location": [
+          1.2,
+          0.0,
+          0.0
+        ],
+        "rotation": [],
+        "scale": [],
+        "transform_unit": "METERS"
+      },
+      "op": "CREATE_OBJECT",
+      "target": "obj-duc"
+    },
+    {
+      "args": {
+        "collection": "coll-prop",
+        "kind": "MESH",
+        "location": [
+          0.6,
+          -0.4,
+          0.7
+        ],
+        "rotation": [],
+        "scale": [],
+        "transform_unit": "METERS"
+      },
+      "op": "CREATE_OBJECT",
+      "target": "obj-table"
+    },
+    {
+      "args": {
+        "collection": "coll-env",
+        "kind": "MESH",
+        "location": [],
+        "rotation": [],
+        "scale": [],
+        "transform_unit": "METERS"
+      },
+      "op": "CREATE_OBJECT",
+      "target": "obj-ground"
+    },
+    {
+      "args": {
+        "fov_degrees": null,
+        "lens_mm": 35.0,
+        "sensor_width_mm": 36.0
+      },
+      "op": "ADD_CAMERA",
+      "target": "cam-1"
+    },
+    {
+      "args": {
+        "color": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "energy": 3.0,
+        "light_kind": "AREA"
+      },
+      "op": "ADD_LIGHT",
+      "target": "key-1"
+    },
+    {
+      "args": {
+        "color": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "energy": 1.0,
+        "light_kind": "AREA"
+      },
+      "op": "ADD_LIGHT",
+      "target": "fill-1"
+    },
+    {
+      "args": {
+        "end_frame": 80,
+        "start_frame": 1,
+        "tracks": [
+          "obj-mai"
+        ]
+      },
+      "op": "ADD_ANIMATION",
+      "target": "ab-1"
+    },
+    {
+      "args": {
+        "plan_hash": "4ca1406d9542da28d04d441d53cd318680d2c565f2750b964d0c8297d480e7cc"
+      },
+      "op": "SAVE_BLEND",
+      "target": "plan-gate"
+    }
+  ]
+}

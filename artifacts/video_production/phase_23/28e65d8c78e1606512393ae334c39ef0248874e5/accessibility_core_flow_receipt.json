@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0.0",
+  "candidate_sha": "28e65d8c78e1606512393ae334c39ef0248874e5",
+  "run_id": "r3_a11y_28e65d8c78e1",
+  "started_at": "2026-08-08T00:32:41.442459+00:00",
+  "completed_at": "2026-08-08T00:32:51.449969+00:00",
+  "command_or_provider": "vitest component/unit suite",
+  "input_hashes": [
+    "393460890ac84ecfb1446423aa92e7e247ecca4d804342290808d3b2499c8f70",
+    "e94ff7f84ee8e6fe337727d3532810f150c61d6a55b5957517476f96328ac451"
+  ],
+  "output_hashes": [
+    "6526ccddb130d0a714fe6d120e40d3beb6cff3e827180ac88f4ba0988b0411ae",
+    "ab344d3d89237bab303e19e178bc6fafe7f89c59bb7c87b2936b24c9654d0d2c"
+  ],
+  "evidence_locator": "accessibility_core_flow_receipt.json",
+  "status": "PASSED",
+  "core_flows_covered": [
+    "candidate review/approve",
+    "reject/override with reason",
+    "cost ledger widget",
+    "revision/stale state",
+    "reconnect no-duplicate action"
+  ],
+  "tests_passed": "derived from real vitest exit codes",
+  "notes": "Receipt derived from real command execution; no self-reported counters."
+}

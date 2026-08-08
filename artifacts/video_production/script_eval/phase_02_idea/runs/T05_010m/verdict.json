@@ -1,0 +1,11 @@
+{
+  "run_id": "T05_010m",
+  "case_id": "T05",
+  "duration_minutes": 10,
+  "status": "PASS",
+  "valid": true,
+  "errors": [],
+  "warnings": [],
+  "elapsed_seconds": 13.03,
+  "error": null
+}

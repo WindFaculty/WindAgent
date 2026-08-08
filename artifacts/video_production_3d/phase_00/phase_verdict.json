@@ -1,11 +1,11 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.2.0",
   "phase": 0,
   "program": "vp3d",
   "gate": "VP3D_P0_BASELINE_FROZEN",
-  "recorded_at": "2026-08-07T07:00:00Z",
-  "baseline_sha": "649e6faf95b6aa4f41ce4068018bc824a0b5c24f",
-  "branch": "fix/phase7-verification-integrity",
+  "recorded_at": "2026-08-08T04:03:20Z",
+  "baseline_sha": "5662edee35893876264a599a9480cafb531466f1",
+  "branch": "chore/cleanup-stale-md-docs",
   "verdict": "PASS",
   "status": "VP3D_P0_BASELINE_FROZEN",
   "evidence_files": [
@@ -20,36 +20,52 @@
     {
       "check": "Baseline re-runnable",
       "result": "PASS",
-      "detail": "All commands in test_baseline.json.command_set execute on Windows/MINGW64 with the recorded toolchain; full suite reproduced at 1879 passed / 1 failed / 5 skipped."
+      "detail": "All commands in test_baseline.json.command_set execute on Windows/MINGW64 with the recorded toolchain. Architecture checker 0 violations; web 83/83, desktop 92/92, contract 34/34. Full suite 2252 passed / 4 failed / 36 skipped; the 4 failures are all baseline defects rooted in the active stale-doc/artifact cleanup, fully classified in test_baseline.json."
     },
     {
       "check": "All Flow dependencies classified",
       "result": "PASS",
-      "detail": "flow_dependency_inventory.json classifies code/docs/tests/config/artifacts into DELETE / MIGRATE / KEEP_GENERAL / HISTORICAL_ONLY with inbound/outbound dependency map and removal conditions."
+      "detail": "flow_dependency_inventory.json records that Google Flow hard removal is EXECUTED on this tree (runtime package and all imports gone, negative gate test present, Flow tests retired) and classifies the residual governance (KEEP_GENERAL / HISTORICAL_ONLY / MIGRATE-executed). Zero runtime google_flow references across canonical packages."
     },
     {
       "check": "Phase 0 contains no business-code changes",
       "result": "PASS",
-      "detail": "Phase 0 created only evidence files under artifacts/video_production_3d/phase_00/. Pre-existing uncommitted GAP A-D storage work and 3D planning docs were recorded, not modified."
+      "detail": "Phase 0 re-freeze wrote evidence only under artifacts/video_production_3d/phase_00/. Pre-existing uncommitted vp3d Phase 7-12 work and the branch's staged/unstaged stale-doc deletions were recorded, not modified."
     },
     {
       "check": "Baseline SHA recorded and stable",
       "result": "PASS",
-      "detail": "baseline_sha 9080fcb4bb6d9a6531a095c624a0f6d8796f4081, tree_sha 6cb1bf5c..., branch fix/phase7-verification-integrity. Subsequent phases reference this SHA."
+      "detail": "baseline_sha 5662ede (tree 94205a6), branch chore/cleanup-stale-md-docs. Differs from prior freeze (649e6fa) because the tree advanced through doc cleanup and Stage A Phases 1-2; schema_snapshot and flow_dependency_inventory capture the post-migration surface."
     }
   ],
   "known_baseline_defects": [
     {
       "id": "VP3D_BASELINE_001",
       "severity": "INFO",
-      "detail": "test_phase27_release.py hard-codes an old CANDIDATE_SHA; fails at clean HEAD. Documented in test_baseline.json. Does not block Stage A."
+      "status": "RESOLVED_BY_DOC_CLEANUP",
+      "note": "Prior freeze flagged test_phase27_release CANDIDATE_SHA hard-code. On this baseline the phase27 lineage failure is instead caused by purged phase_24 evidence (see VP3D_BASELINE_004)."
+    },
+    {
+      "id": "VP3D_BASELINE_002",
+      "severity": "INFO",
+      "detail": "test_phase00_single_workspace_contract asserts ADR 0006 exists; ADR removed by 5662ede stale-doc purge. Verifier ADR list needs re-pointing."
+    },
+    {
+      "id": "VP3D_BASELINE_003",
+      "severity": "INFO",
+      "detail": "verify_phase03_handoff expects clean_room_attestation/independent_requirements/adoption_matrix docs removed by cleanup. Verifier deliverable list stale."
+    },
+    {
+      "id": "VP3D_BASELINE_004",
+      "severity": "INFO",
+      "detail": "release_phase27 lineage resolver reports phase_24 status None because phase_24 evidence purged. Resolver must treat missing phase dir as documented-BLOCKED."
     }
   ],
-  "next_phase": "Phase 1 — Canonical Production IR (gate VP3D_P1_ENGINE_NEUTRAL_IR_VERIFIED)",
+  "next_phase": "Phase 1 tracked as previously certified (gate VP3D_P1_ENGINE_NEUTRAL_IR_VERIFIED); this re-freeze confirms the IR surface it depends on is present in the frozen tree.",
   "candidate": {
-    "head_sha": "9080fcb4bb6d9a6531a095c624a0f6d8796f4081",
-    "tree_sha": "88f3c427a29ce50113fcd7c87ebd1d8e6c41e4de",
-    "note": "All Stage A gates reference the same candidate tree (full worktree snapshot via temporary-index git add -A). P0 itself records the frozen baseline at baseline_sha; the candidate is where Stage A implementation lands."
+    "head_sha": "5662edee35893876264a599a9480cafb531466f1",
+    "tree_sha": "94205a60546b8d320d7d7ec3221d6379cdc4b03d",
+    "note": "P0 records the frozen baseline at baseline_sha 5662ede. Dirty working tree (82 porcelain entries: uncommitted vp3d Phases 7-12 + cleanup deletions) is captured in baseline_commit.json.worktree_state and not modified by Phase 0."
   },
   "producer": "phase-0-baseline-freeze"
 }

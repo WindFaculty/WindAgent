@@ -279,6 +279,295 @@ class AssetResolutionId(OpaqueId):
     """Identifier for one Universal Asset Gateway resolution (VP3D Phase 5)."""
 
 
+class NormalizationRunId(OpaqueId):
+    """Identifier for one asset normalization run (VP3D Phase 7)."""
+
+
+# ---------------------------------------------------------------------------
+# Stage D Character System (VP3D Phase 8 — Character Master Asset)
+# ---------------------------------------------------------------------------
+class CharacterMasterId(OpaqueId):
+    """Stable identifier for a CharacterMaster aggregate (VP3D Phase 8)."""
+
+
+class CharacterMasterRevisionId(OpaqueId):
+    """Identifier for one immutable CharacterMasterRevision (VP3D Phase 8)."""
+
+
+class CharacterGeometryProfileId(OpaqueId):
+    """Identifier for a canonical mesh CharacterGeometryProfile (VP3D Phase 8)."""
+
+
+class CharacterMaterialProfileId(OpaqueId):
+    """Identifier for a materials/textures CharacterMaterialProfile (VP3D Phase 8)."""
+
+
+class CharacterProportionProfileId(OpaqueId):
+    """Identifier for a CharacterProportionProfile (VP3D Phase 8)."""
+
+
+class FacialRigProfileId(OpaqueId):
+    """Identifier for a FacialRigProfile (VP3D Phase 8)."""
+
+
+class AnimationProfileId(OpaqueId):
+    """Identifier for an approved AnimationProfile (VP3D Phase 8)."""
+
+
+class StyleFingerprintId(OpaqueId):
+    """Identifier for a StyleFingerprint (VP3D Phase 8)."""
+
+
+# ---------------------------------------------------------------------------
+# Stage D Rigging & Retargeting (VP3D Phase 9 — Rigging & Retargeting)
+# ---------------------------------------------------------------------------
+class SkeletonProfileId(OpaqueId):
+    """Identifier for a detected/normalized SkeletonProfile (VP3D Phase 9)."""
+
+
+class RigProfileId(OpaqueId):
+    """Identifier for a validated RigProfile (VP3D Phase 9)."""
+
+
+class RigValidationReceiptId(OpaqueId):
+    """Identifier for a RigValidationReceipt (VP3D Phase 9)."""
+
+
+class RetargetProfileId(OpaqueId):
+    """Identifier for a versioned RetargetProfile mapping (VP3D Phase 9)."""
+
+
+class AnimationCompatibilityProfileId(OpaqueId):
+    """Identifier for a per-clip AnimationCompatibilityProfile (VP3D Phase 9)."""
+
+
+# ---------------------------------------------------------------------------
+# Stage E Concurrent Audio (VP3D Phase 10 — Concurrent Audio Production)
+# ---------------------------------------------------------------------------
+class TtsProviderId(OpaqueId):
+    """Identifier for a registered TTS provider/engine (VP3D Phase 10)."""
+
+
+class AudioSynthesisRunId(OpaqueId):
+    """Identifier for one TTS synthesis run (per line, idempotent, Phase 10)."""
+
+
+class AudioValidationReceiptId(OpaqueId):
+    """Identifier for a TTS output validation receipt (VP3D Phase 10)."""
+
+
+class ForcedAlignRunId(OpaqueId):
+    """Identifier for one forced-alignment run (VP3D Phase 10)."""
+
+
+class AlignmentReceiptId(OpaqueId):
+    """Identifier for an alignment receipt with word/phoneme timestamps (Phase 10)."""
+
+
+class LineTimingResolutionId(OpaqueId):
+    """Identifier for a resolution of an overlong line (VP3D Phase 10)."""
+
+
+class AudioNodeExecutionId(OpaqueId):
+    """Identifier for one audio DAG node execution record (VP3D Phase 10)."""
+
+
+class AudioConcurrencyStateId(OpaqueId):
+    """Identifier for a persisted audio DAG concurrency state (VP3D Phase 10)."""
+
+
+# ---------------------------------------------------------------------------
+# Stage F Set Dressing (VP3D Phase 12 — Environment & Set Dressing)
+# ---------------------------------------------------------------------------
+class SetDressingSceneId(OpaqueId):
+    """Identifier for a compiled set-dressing scene plan (VP3D Phase 12)."""
+
+
+class SpatialFindingId(OpaqueId):
+    """Identifier for one spatial/constraint finding (VP3D Phase 12)."""
+
+
+# ---------------------------------------------------------------------------
+# Stage G Cinematography (VP3D Phase 13 — Blender Camera Compiler)
+# ---------------------------------------------------------------------------
+class CameraIntentId(OpaqueId):
+    """Identifier for one shot's CameraIntent (VP3D Phase 13)."""
+
+
+class CameraRigPlanId(OpaqueId):
+    """Identifier for a compiled CameraRigPlan (VP3D Phase 13)."""
+
+
+class CameraFindingId(OpaqueId):
+    """Identifier for one camera validation/occlusion finding (VP3D Phase 13)."""
+
+
+class CameraOverrideId(OpaqueId):
+    """Identifier for a manual camera override pinning a track revision (Phase 13)."""
+
+
+class CameraPathManifestId(OpaqueId):
+    """Identifier for a camera path / playblast manifest (VP3D Phase 13)."""
+
+
+# ---------------------------------------------------------------------------
+# Stage G Cinematography (VP3D Phase 14 — Lighting System)
+# ---------------------------------------------------------------------------
+class LightingIntentId(OpaqueId):
+    """Identifier for one shot's LightingIntent (VP3D Phase 14)."""
+
+
+class LightRigPlanId(OpaqueId):
+    """Identifier for a compiled LightRigPlan (VP3D Phase 14)."""
+
+
+class LightingFindingId(OpaqueId):
+    """Identifier for one lighting validation finding (VP3D Phase 14)."""
+
+
+class LightOverrideId(OpaqueId):
+    """Identifier for a bounded lighting override (VP3D Phase 14)."""
+
+
+class LightingContactSheetId(OpaqueId):
+    """Identifier for a lighting contact sheet / histogram manifest (Phase 14)."""
+
+
+# ---------------------------------------------------------------------------
+# Stage H Animation (VP3D Phase 15 — Animation Layer V1: Library + Mocap)
+# ---------------------------------------------------------------------------
+class AnimationIntentId(OpaqueId):
+    """Identifier for one AnimationIntent (VP3D Phase 15)."""
+
+
+class AnimationClipId(OpaqueId):
+    """Identifier for one versioned clip in the animation library (VP3D Phase 15)."""
+
+
+class AnimationFindingId(OpaqueId):
+    """Identifier for an animation validation finding (VP3D Phase 15)."""
+
+
+class RetargetReceiptId(OpaqueId):
+    """Identifier for a clip retarget receipt (VP3D Phase 15)."""
+
+
+class EpisodePinId(OpaqueId):
+    """Identifier for an episode clip-revision pin (VP3D Phase 15)."""
+
+
+class BlendTransitionId(OpaqueId):
+    """Identifier for a blend transition between tracks (VP3D Phase 15)."""
+
+
+# ---------------------------------------------------------------------------
+# Stage H Procedural Animation (VP3D Phase 16)
+# ---------------------------------------------------------------------------
+class ProceduralRecipeId(OpaqueId):
+    """Identifier for a procedural layer recipe (VP3D Phase 16)."""
+
+
+class ProceduralLayerId(OpaqueId):
+    """Identifier for one procedural layer spec (VP3D Phase 16)."""
+
+
+class ProceduralFindingId(OpaqueId):
+    """Identifier for a procedural validation finding (VP3D Phase 16)."""
+
+
+class BakedActionId(OpaqueId):
+    """Identifier for a baked derived action (VP3D Phase 16)."""
+
+
+# ---------------------------------------------------------------------------
+# Stage H AI Motion Adapter (VP3D Phase 17)
+# ---------------------------------------------------------------------------
+class MotionCapabilityId(OpaqueId):
+    """Identifier for an AI motion provider capability contract (Phase 17)."""
+
+
+class MotionRequestId(OpaqueId):
+    """Identifier for one AI motion generation request (VP3D Phase 17)."""
+
+
+class RawMotionArtifactId(OpaqueId):
+    """Identifier for a quarantined raw AI motion artifact (VP3D Phase 17)."""
+
+
+class MotionCandidateId(OpaqueId):
+    """Identifier for one AI motion candidate (VP3D Phase 17)."""
+
+
+class MotionFindingId(OpaqueId):
+    """Identifier for an AI motion validation finding (VP3D Phase 17)."""
+
+
+class SkeletonRemapReceiptId(OpaqueId):
+    """Identifier for a skeleton remap receipt (VP3D Phase 17)."""
+
+
+# ---------------------------------------------------------------------------
+# Stage I Facial Animation (VP3D Phase 18 — Lip-sync / Facial Pipeline)
+# ---------------------------------------------------------------------------
+class PhonemeTrackId(OpaqueId):
+    """Identifier for a normalized phoneme track (VP3D Phase 18)."""
+
+
+class VisemeMapId(OpaqueId):
+    """Identifier for a versioned viseme map (VP3D Phase 18)."""
+
+
+class EmotionCurveId(OpaqueId):
+    """Identifier for one emotion curve (VP3D Phase 18)."""
+
+
+class BlinkTrackId(OpaqueId):
+    """Identifier for a blink track (VP3D Phase 18)."""
+
+
+class GazeTrackId(OpaqueId):
+    """Identifier for a gaze/eye-target track (VP3D Phase 18)."""
+
+
+class FacialTrackId(OpaqueId):
+    """Identifier for a compiled FacialAnimationTrack (VP3D Phase 18)."""
+
+
+class FacialFindingId(OpaqueId):
+    """Identifier for one facial validation finding (VP3D Phase 18)."""
+
+
+class FacialValidationReceiptId(OpaqueId):
+    """Identifier for a facial validation receipt (VP3D Phase 18)."""
+
+
+class BakedFacialActionId(OpaqueId):
+    """Identifier for a baked derived facial action (VP3D Phase 18)."""
+
+
+class FacialRepairReceiptId(OpaqueId):
+    """Identifier for a facial repair receipt (VP3D Phase 18)."""
+
+
+# ---------------------------------------------------------------------------
+# Stage F Scene Construction (VP3D Phase 11 — Scene Compiler)
+# ---------------------------------------------------------------------------
+class BlenderScenePlanId(OpaqueId):
+    """Identifier for a compiled BlenderScenePlan (VP3D Phase 11)."""
+
+
+class BlendInspectionReceiptId(OpaqueId):
+    """Identifier for a save/reopen/publish inspection receipt (VP3D Phase 11)."""
+
+
+class IrMappingManifestId(OpaqueId):
+    """Identifier for an IR-entity -> data-block mapping manifest (Phase 11)."""
+
+
+class ScenePlanIssueId(OpaqueId):
+    """Identifier for a scene-plan validation / inspection issue (Phase 11)."""
+
+
 __all__ = [
     "VideoProjectId",
     "ProductionRevisionId",
@@ -347,4 +636,72 @@ __all__ = [
     "DerivedArtifactId",
     "AssetCandidateId",
     "AssetResolutionId",
+    "NormalizationRunId",
+    "CharacterMasterId",
+    "CharacterMasterRevisionId",
+    "CharacterGeometryProfileId",
+    "CharacterMaterialProfileId",
+    "CharacterProportionProfileId",
+    "FacialRigProfileId",
+    "AnimationProfileId",
+    "StyleFingerprintId",
+    "SkeletonProfileId",
+    "RigProfileId",
+    "RigValidationReceiptId",
+    "RetargetProfileId",
+    "AnimationCompatibilityProfileId",
+    "TtsProviderId",
+    "AudioSynthesisRunId",
+    "AudioValidationReceiptId",
+    "ForcedAlignRunId",
+    "AlignmentReceiptId",
+    "LineTimingResolutionId",
+    "AudioNodeExecutionId",
+    "AudioConcurrencyStateId",
+    "SetDressingSceneId",
+    "SpatialFindingId",
+    "BlenderScenePlanId",
+    "BlendInspectionReceiptId",
+    "IrMappingManifestId",
+    "ScenePlanIssueId",
+    "CameraIntentId",
+    "CameraRigPlanId",
+    "CameraFindingId",
+    "CameraOverrideId",
+    "CameraPathManifestId",
+    "LightingIntentId",
+    "LightRigPlanId",
+    "LightingFindingId",
+    "LightOverrideId",
+    "LightingContactSheetId",
+    # Stage H Animation (VP3D Phase 15)
+    "AnimationIntentId",
+    "AnimationClipId",
+    "AnimationFindingId",
+    "RetargetReceiptId",
+    "EpisodePinId",
+    "BlendTransitionId",
+    # Stage H Procedural Animation (VP3D Phase 16)
+    "ProceduralRecipeId",
+    "ProceduralLayerId",
+    "ProceduralFindingId",
+    "BakedActionId",
+    # Stage H AI Motion Adapter (VP3D Phase 17)
+    "MotionCapabilityId",
+    "MotionRequestId",
+    "RawMotionArtifactId",
+    "MotionCandidateId",
+    "MotionFindingId",
+    "SkeletonRemapReceiptId",
+    # Stage I Facial Animation (VP3D Phase 18)
+    "PhonemeTrackId",
+    "VisemeMapId",
+    "EmotionCurveId",
+    "BlinkTrackId",
+    "GazeTrackId",
+    "FacialTrackId",
+    "FacialFindingId",
+    "FacialValidationReceiptId",
+    "BakedFacialActionId",
+    "FacialRepairReceiptId",
 ]

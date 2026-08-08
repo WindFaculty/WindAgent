@@ -1,0 +1,542 @@
+{
+  "alpha": {
+    "derived_from": [],
+    "facial_controls": [
+      "brow_l",
+      "brow_r",
+      "mouth",
+      "eye_l",
+      "eye_r"
+    ],
+    "master_id": "vpc_alpha",
+    "metadata": {},
+    "rest_pose": {},
+    "revision_id": null,
+    "rig_profile_id": "rig-alpha",
+    "scale": 1.0,
+    "skeleton": {
+      "bones": [
+        {
+          "length": 0.2,
+          "name": "Root",
+          "parent": "",
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "semantic": "ROOT"
+        },
+        {
+          "length": 0.2,
+          "name": "Hips",
+          "parent": "Root",
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "semantic": "PELVIS"
+        },
+        {
+          "length": 0.2,
+          "name": "Spine1",
+          "parent": "Hips",
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "semantic": "SPINE"
+        },
+        {
+          "length": 0.2,
+          "name": "Spine2",
+          "parent": "Spine1",
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "semantic": "CHEST"
+        },
+        {
+          "length": 0.2,
+          "name": "Neck",
+          "parent": "Spine2",
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "semantic": "NECK"
+        },
+        {
+          "length": 0.2,
+          "name": "Head",
+          "parent": "Neck",
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "semantic": "HEAD"
+        },
+        {
+          "length": 0.2,
+          "name": "Shoulder_L",
+          "parent": "Spine2",
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "semantic": "SHOULDER_L"
+        },
+        {
+          "length": 0.2,
+          "name": "Shoulder_R",
+          "parent": "Spine2",
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "semantic": "SHOULDER_R"
+        },
+        {
+          "length": 0.2,
+          "name": "UpperArm_L",
+          "parent": "Shoulder_L",
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "semantic": "ARM_UPPER_L"
+        },
+        {
+          "length": 0.2,
+          "name": "UpperArm_R",
+          "parent": "Shoulder_R",
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "semantic": "ARM_UPPER_R"
+        },
+        {
+          "length": 0.2,
+          "name": "LowerArm_L",
+          "parent": "UpperArm_L",
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "semantic": "ARM_LOWER_L"
+        },
+        {
+          "length": 0.2,
+          "name": "LowerArm_R",
+          "parent": "UpperArm_R",
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "semantic": "ARM_LOWER_R"
+        },
+        {
+          "length": 0.2,
+          "name": "Hand_L",
+          "parent": "LowerArm_L",
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "semantic": "HAND_L"
+        },
+        {
+          "length": 0.2,
+          "name": "Hand_R",
+          "parent": "LowerArm_R",
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "semantic": "HAND_R"
+        },
+        {
+          "length": 0.2,
+          "name": "Thigh_L",
+          "parent": "Hips",
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "semantic": "THIGH_L"
+        },
+        {
+          "length": 0.2,
+          "name": "Thigh_R",
+          "parent": "Hips",
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "semantic": "THIGH_R"
+        },
+        {
+          "length": 0.2,
+          "name": "Shin_L",
+          "parent": "Thigh_L",
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "semantic": "SHIN_L"
+        },
+        {
+          "length": 0.2,
+          "name": "Shin_R",
+          "parent": "Thigh_R",
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "semantic": "SHIN_R"
+        },
+        {
+          "length": 0.2,
+          "name": "Foot_L",
+          "parent": "Shin_L",
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "semantic": "FOOT_L"
+        },
+        {
+          "length": 0.2,
+          "name": "Foot_R",
+          "parent": "Shin_R",
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "semantic": "FOOT_R"
+        }
+      ],
+      "metadata": {},
+      "profile_id": "skel-alpha",
+      "semantic_to_bone": {
+        "ARM_LOWER_L": "LowerArm_L",
+        "ARM_LOWER_R": "LowerArm_R",
+        "ARM_UPPER_L": "UpperArm_L",
+        "ARM_UPPER_R": "UpperArm_R",
+        "CHEST": "Spine2",
+        "FOOT_L": "Foot_L",
+        "FOOT_R": "Foot_R",
+        "HAND_L": "Hand_L",
+        "HAND_R": "Hand_R",
+        "HEAD": "Head",
+        "NECK": "Neck",
+        "PELVIS": "Hips",
+        "ROOT": "Root",
+        "SHIN_L": "Shin_L",
+        "SHIN_R": "Shin_R",
+        "SHOULDER_L": "Shoulder_L",
+        "SHOULDER_R": "Shoulder_R",
+        "SPINE": "Spine1",
+        "THIGH_L": "Thigh_L",
+        "THIGH_R": "Thigh_R"
+      },
+      "source_provider": "gate",
+      "status": "NORMALIZED",
+      "topology_hash": "7dfc5490c175ddd5d8a2135b8f6be45b616088a9d06d69b2fcf16d2ec827a280"
+    },
+    "status": "DETECTED",
+    "topology_hash": "7dfc5490c175ddd5d8a2135b8f6be45b616088a9d06d69b2fcf16d2ec827a280",
+    "weight_influences": 4
+  },
+  "beta": {
+    "derived_from": [],
+    "facial_controls": [
+      "brow_l",
+      "brow_r",
+      "mouth",
+      "eye_l",
+      "eye_r"
+    ],
+    "master_id": "vpc_beta",
+    "metadata": {},
+    "rest_pose": {},
+    "revision_id": null,
+    "rig_profile_id": "rig-beta",
+    "scale": 1.0,
+    "skeleton": {
+      "bones": [
+        {
+          "length": 0.2,
+          "name": "mixamorig:Root",
+          "parent": "",
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "semantic": "ROOT"
+        },
+        {
+          "length": 0.2,
+          "name": "mixamorig:Hips",
+          "parent": "mixamorig:Root",
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "semantic": "PELVIS"
+        },
+        {
+          "length": 0.2,
+          "name": "mixamorig:Spine",
+          "parent": "mixamorig:Hips",
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "semantic": "SPINE"
+        },
+        {
+          "length": 0.2,
+          "name": "mixamorig:Spine2",
+          "parent": "mixamorig:Spine",
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "semantic": "CHEST"
+        },
+        {
+          "length": 0.2,
+          "name": "mixamorig:Neck",
+          "parent": "mixamorig:Spine2",
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "semantic": "NECK"
+        },
+        {
+          "length": 0.2,
+          "name": "mixamorig:Head",
+          "parent": "mixamorig:Neck",
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "semantic": "HEAD"
+        },
+        {
+          "length": 0.2,
+          "name": "mixamorig:LeftShoulder",
+          "parent": "mixamorig:Spine2",
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "semantic": "SHOULDER_L"
+        },
+        {
+          "length": 0.2,
+          "name": "mixamorig:RightShoulder",
+          "parent": "mixamorig:Spine2",
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "semantic": "SHOULDER_R"
+        },
+        {
+          "length": 0.2,
+          "name": "mixamorig:LeftArm",
+          "parent": "mixamorig:LeftShoulder",
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "semantic": "ARM_UPPER_L"
+        },
+        {
+          "length": 0.2,
+          "name": "mixamorig:RightArm",
+          "parent": "mixamorig:RightShoulder",
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "semantic": "ARM_UPPER_R"
+        },
+        {
+          "length": 0.2,
+          "name": "mixamorig:LeftForeArm",
+          "parent": "mixamorig:LeftArm",
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "semantic": "ARM_LOWER_L"
+        },
+        {
+          "length": 0.2,
+          "name": "mixamorig:RightForeArm",
+          "parent": "mixamorig:RightArm",
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "semantic": "ARM_LOWER_R"
+        },
+        {
+          "length": 0.2,
+          "name": "mixamorig:LeftHand",
+          "parent": "mixamorig:LeftForeArm",
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "semantic": "HAND_L"
+        },
+        {
+          "length": 0.2,
+          "name": "mixamorig:RightHand",
+          "parent": "mixamorig:RightForeArm",
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "semantic": "HAND_R"
+        },
+        {
+          "length": 0.2,
+          "name": "mixamorig:LeftUpLeg",
+          "parent": "mixamorig:Hips",
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "semantic": "THIGH_L"
+        },
+        {
+          "length": 0.2,
+          "name": "mixamorig:RightUpLeg",
+          "parent": "mixamorig:Hips",
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "semantic": "THIGH_R"
+        },
+        {
+          "length": 0.2,
+          "name": "mixamorig:LeftLeg",
+          "parent": "mixamorig:LeftUpLeg",
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "semantic": "SHIN_L"
+        },
+        {
+          "length": 0.2,
+          "name": "mixamorig:RightLeg",
+          "parent": "mixamorig:RightUpLeg",
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "semantic": "SHIN_R"
+        },
+        {
+          "length": 0.2,
+          "name": "mixamorig:LeftFoot",
+          "parent": "mixamorig:LeftLeg",
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "semantic": "FOOT_L"
+        },
+        {
+          "length": 0.2,
+          "name": "mixamorig:RightFoot",
+          "parent": "mixamorig:RightLeg",
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "semantic": "FOOT_R"
+        }
+      ],
+      "metadata": {},
+      "profile_id": "skel-beta",
+      "semantic_to_bone": {
+        "ARM_LOWER_L": "mixamorig:LeftForeArm",
+        "ARM_LOWER_R": "mixamorig:RightForeArm",
+        "ARM_UPPER_L": "mixamorig:LeftArm",
+        "ARM_UPPER_R": "mixamorig:RightArm",
+        "CHEST": "mixamorig:Spine2",
+        "FOOT_L": "mixamorig:LeftFoot",
+        "FOOT_R": "mixamorig:RightFoot",
+        "HAND_L": "mixamorig:LeftHand",
+        "HAND_R": "mixamorig:RightHand",
+        "HEAD": "mixamorig:Head",
+        "NECK": "mixamorig:Neck",
+        "PELVIS": "mixamorig:Hips",
+        "ROOT": "mixamorig:Root",
+        "SHIN_L": "mixamorig:LeftLeg",
+        "SHIN_R": "mixamorig:RightLeg",
+        "SHOULDER_L": "mixamorig:LeftShoulder",
+        "SHOULDER_R": "mixamorig:RightShoulder",
+        "SPINE": "mixamorig:Spine",
+        "THIGH_L": "mixamorig:LeftUpLeg",
+        "THIGH_R": "mixamorig:RightUpLeg"
+      },
+      "source_provider": "gate",
+      "status": "NORMALIZED",
+      "topology_hash": "fb88d591d8bb4d78da9ef353bede6c1ea2c08c4f0b568ebea979a225da23ece6"
+    },
+    "status": "DETECTED",
+    "topology_hash": "fb88d591d8bb4d78da9ef353bede6c1ea2c08c4f0b568ebea979a225da23ece6",
+    "weight_influences": 4
+  }
+}

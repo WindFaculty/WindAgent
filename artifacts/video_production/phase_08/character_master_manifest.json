@@ -1,0 +1,141 @@
+{
+  "schema_version": "1.0.0",
+  "candidate_sha": "",
+  "generated_at": "2026-08-08T02:38:50.510329+00:00",
+  "master_models": {
+    "geometry_profile": {
+      "profile_id": "geo_62d5f81f-b78e-4265-9e96-a3a158462209",
+      "source_hash": "mesh-v1",
+      "vertex_count": 12000,
+      "poly_count": 3000,
+      "unit": "1 unit = 1 meter",
+      "z_up": true,
+      "bounds": {},
+      "polycount_target": 1.0,
+      "quality": "base",
+      "metadata": {}
+    },
+    "material_profile": {
+      "profile_id": "mat_ef83b580-868e-4160-9dd0-77f7f5dd8cfe",
+      "material_names": [],
+      "texture_hashes": {
+        "base": "tex-1"
+      },
+      "palette_hash": "palette-1",
+      "pbr": true,
+      "metadata": {}
+    },
+    "proportion_profile": {
+      "profile_id": "prop_8c520ae8-d983-4aff-90e1-1ae66cf438d6",
+      "height_units": 1.8,
+      "scale": 1.0,
+      "proportions": {
+        "torso_height": 0.5,
+        "leg_ratio": 0.5,
+        "scale_vs_height": 1.0
+      },
+      "metadata": {}
+    },
+    "facial_rig_profile": {
+      "profile_id": "facial_492411f1-0137-4639-9f75-4435dd291eec",
+      "control_names": [
+        "brow_l",
+        "brow_r",
+        "mouth_corner_l",
+        "mouth_corner_r"
+      ],
+      "topology_hash": "mesh-v1",
+      "lipsync_mapping_version": "1.0",
+      "valid": true,
+      "metadata": {}
+    },
+    "animation_profile": {
+      "profile_id": "anim_e3b4683f-1f03-4086-9075-c3d81d5d9321",
+      "approved_clips": [
+        "idle",
+        "walk",
+        "talk"
+      ],
+      "clip_manifest_hash": "clip-manifest-v1",
+      "retarget_readiness": true,
+      "metadata": {}
+    },
+    "style_fingerprint": {
+      "fingerprint_id": "sf_15f22a55-d7b9-43ec-98ec-855d5f962cbe",
+      "style_key": "stylized",
+      "palette_signature": "palette-1",
+      "silhouette_signature": "sig-1",
+      "approved_by": "hoa",
+      "approved_at": null
+    },
+    "voice_profile_id": ""
+  },
+  "profile_count": 6,
+  "checks": [
+    {
+      "check": "stable_id_across_rename",
+      "ok": true,
+      "detail": "master_id=vpc_ba75... survives rename"
+    },
+    {
+      "check": "lifecycle_happy_path",
+      "ok": true,
+      "detail": "DRAFT -> NORMALIZED -> RIGGED -> VALIDATED -> APPROVED -> RETIRED"
+    },
+    {
+      "check": "lifecycle_fail_closed",
+      "ok": true,
+      "detail": "3 illegal transitions rejected"
+    },
+    {
+      "check": "unapproved_revision_not_reusable",
+      "ok": true,
+      "detail": "style-key/palette match present but no approval -> no reuse"
+    },
+    {
+      "check": "approval_moves_to_approved",
+      "ok": true,
+      "detail": "state=APPROVED verdict=APPROVED"
+    },
+    {
+      "check": "rejected_cannot_be_silently_approved",
+      "ok": true,
+      "detail": "REJECTED -> APPROVED requires a fresh revision"
+    },
+    {
+      "check": "canonical_profile_capture",
+      "ok": true,
+      "detail": "6 profiles pinned"
+    },
+    {
+      "check": "content_hash_deterministic",
+      "ok": true,
+      "detail": "sha256=b6b581fef3225587..."
+    },
+    {
+      "check": "topology_invalidates_facial_rig",
+      "ok": true,
+      "detail": "facial topology_hash vs geometry source_hash mismatch detected"
+    },
+    {
+      "check": "style_compatible_reuse",
+      "ok": true,
+      "detail": "matching approved style reused; mismatched style skipped"
+    },
+    {
+      "check": "episode_keeps_pinning_retired_revision",
+      "ok": true,
+      "detail": "episode-2 pins rev1 (APPROVED); rev2 RETIRED only invalidates scene-3, scene-7"
+    },
+    {
+      "check": "replacement_invalidates_only_dependents",
+      "ok": true,
+      "detail": "new revision installed; invalidation scoped to ['scene-3', 'scene-7']"
+    },
+    {
+      "check": "bible_to_master_mapping",
+      "ok": true,
+      "detail": "CharacterBible linked by id as creative input; no asset data copied"
+    }
+  ]
+}

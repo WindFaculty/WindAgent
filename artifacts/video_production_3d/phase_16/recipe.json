@@ -1,0 +1,54 @@
+{
+  "recipe": {
+    "compiler_version": "1.0.0",
+    "layers": [
+      {
+        "affected_bones": [],
+        "enabled": true,
+        "input": {
+          "target_dx": 0.5,
+          "target_dz": 1.0
+        },
+        "kind": "LOOK_AT",
+        "layer_id": "l-look",
+        "priority": 60,
+        "seed": 0
+      },
+      {
+        "affected_bones": [],
+        "enabled": true,
+        "input": {
+          "obstacle_count": 2,
+          "obstacle_hits": 0,
+          "path_length_m": 1.6
+        },
+        "kind": "PATH_FOLLOW",
+        "layer_id": "l-path",
+        "priority": 40,
+        "seed": 0
+      },
+      {
+        "affected_bones": [],
+        "enabled": true,
+        "input": {},
+        "kind": "IDLE_VARIATION",
+        "layer_id": "l-idle",
+        "priority": 10,
+        "seed": 500
+      }
+    ],
+    "metadata": {},
+    "recipe_hash": "4ac730774d268c84bbb641c2b1a600fd430bc7295b96dab7f944bc42f0b33442",
+    "recipe_id": "prc_65ea5122ec3b42e5",
+    "schema_version": "1.0.0",
+    "seed": 500,
+    "track_id": "atk_6e2c28da6dac86f4"
+  },
+  "recipe_hash": "4ac730774d268c84bbb641c2b1a600fd430bc7295b96dab7f944bc42f0b33442",
+  "track": {
+    "fps": 24,
+    "frames": 48,
+    "root_motion_meters": 1.6,
+    "track_id": "atk_6e2c28da6dac86f4"
+  }
+}

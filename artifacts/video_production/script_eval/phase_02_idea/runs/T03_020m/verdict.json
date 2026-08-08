@@ -1,0 +1,25 @@
+{
+  "run_id": "T03_020m",
+  "case_id": "T03",
+  "duration_minutes": 20,
+  "status": "FAIL",
+  "valid": false,
+  "errors": [
+    {
+      "check": "inappropriate_conflict",
+      "message": "conflict unsuitable for young children, terms: ['mau']"
+    },
+    {
+      "check": "thin_premise",
+      "message": "premise too thin for 20 min (318 chars, need >= 400)"
+    }
+  ],
+  "warnings": [
+    {
+      "check": "preachy_lesson",
+      "message": "lesson sounds preachy/didactic, markers: ['phai nho']"
+    }
+  ],
+  "elapsed_seconds": 15.49,
+  "error": null
+}

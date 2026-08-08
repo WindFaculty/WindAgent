@@ -1,0 +1,14 @@
+{
+  "companion_change": {
+    "facial_audio_change_keeps_body_hash": true,
+    "unchanged_body_reuses": true
+  },
+  "episode_pin": {
+    "pin_mismatch_fails_closed": true,
+    "pinned_production_unchanged": true
+  },
+  "library_update": {
+    "invalidates_preview_only": true,
+    "unpinned_track_changes": true
+  }
+}

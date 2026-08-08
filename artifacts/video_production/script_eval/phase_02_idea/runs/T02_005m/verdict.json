@@ -1,0 +1,16 @@
+{
+  "run_id": "T02_005m",
+  "case_id": "T02",
+  "duration_minutes": 5,
+  "status": "FAIL",
+  "valid": false,
+  "errors": [
+    {
+      "check": "inappropriate_conflict",
+      "message": "conflict unsuitable for young children, terms: ['bat nat']"
+    }
+  ],
+  "warnings": [],
+  "elapsed_seconds": 25.36,
+  "error": null
+}

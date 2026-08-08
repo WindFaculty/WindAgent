@@ -15,12 +15,25 @@ from windagent_core.contracts.video_production.asset_resolver import (
     AssetResolverPort,
     AssetTrustPort,
 )
+from windagent_core.contracts.video_production.asset_normalizer import AssetNormalizerPort
 from windagent_core.contracts.video_production.video_inspection import (
     VideoInspection,
     VideoInspectionError,
     VideoInspectionPolicy,
     VideoInspectorPort,
     VideoProbeUnavailableError,
+)
+from windagent_core.contracts.video_production.tts_provider import (
+    TtsProviderCapability,
+    TtsProviderPort,
+    TtsSynthesisHandle,
+)
+from windagent_core.contracts.video_production.forced_alignment import (
+    AlignmentResultHandle,
+    ForcedAlignmentPort,
+)
+from windagent_core.contracts.video_production.facial_animation import (
+    FacialAnimationCompilerPort,
 )
 
 __all__ = [
@@ -32,10 +45,17 @@ __all__ = [
     "ProductionEnginePort",
     "AssetResolverPort",
     "AssetTrustPort",
+    "AssetNormalizerPort",
     "VideoInspection",
     "VideoInspectionError",
     "VideoInspectionPolicy",
     "VideoInspectorPort",
     "VideoProbeUnavailableError",
+    "TtsProviderPort",
+    "TtsProviderCapability",
+    "TtsSynthesisHandle",
+    "ForcedAlignmentPort",
+    "AlignmentResultHandle",
+    "FacialAnimationCompilerPort",
 ]
 

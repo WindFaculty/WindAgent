@@ -1,0 +1,15 @@
+{
+  "datablock_count_expected": 8,
+  "datablock_count_observed": 8,
+  "drifted_blend_rejected": true,
+  "frame_range": {
+    "end": 120,
+    "fps": 24,
+    "start": 1
+  },
+  "inspected_object_count": 4,
+  "issue_codes_clean": [],
+  "plan_hash_at_save": "4ca1406d9542da28d04d441d53cd318680d2c565f2750b964d0c8297d480e7cc",
+  "published": true,
+  "valid": true
+}

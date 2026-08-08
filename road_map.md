@@ -768,6 +768,12 @@ chair đúng chiều
 camera không nằm trong mesh
 ```
 
+**Gate** `VP3D_P12_SET_DRESSING_VERIFIED` — environment (surfaces/zones/volumes/anchors)
++ prop placement (seeded/versioned scatter) + spatial validation (penetration,
+below-floor, out-of-bounds, camera-in-mesh, occluder, out-of-reach, duplicate,
+missing approved asset) build a deterministic `SetDressingPlan` that fails
+closed; a changed prop revision hash invalidates only the dependent scene.
+
 ---
 
 # Stage G — Cinematography

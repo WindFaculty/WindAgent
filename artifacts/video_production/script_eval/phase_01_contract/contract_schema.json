@@ -1,0 +1,102 @@
+{
+  "schema_version": "1.0.0",
+  "required_fields": {
+    "root": [
+      "project",
+      "world_bible",
+      "characters",
+      "story",
+      "scenes",
+      "ending",
+      "moral",
+      "continuity_summary",
+      "production_notes"
+    ],
+    "project": [
+      "title",
+      "episode",
+      "target_audience",
+      "target_duration_minutes",
+      "genre",
+      "theme",
+      "educational_goal"
+    ],
+    "world_bible": [
+      "locations"
+    ],
+    "location": [
+      "id",
+      "name"
+    ],
+    "character": [
+      "id",
+      "name",
+      "age_type",
+      "appearance",
+      "personality",
+      "motivation",
+      "voice_profile",
+      "relationships"
+    ],
+    "story": [
+      "logline",
+      "synopsis",
+      "acts",
+      "beats"
+    ],
+    "scene": [
+      "scene_id",
+      "location",
+      "time",
+      "characters",
+      "objective",
+      "conflict",
+      "action",
+      "dialogue",
+      "emotional_state",
+      "continuity_state",
+      "estimated_duration_seconds"
+    ],
+    "ending": [
+      "summary"
+    ],
+    "beat": [
+      "description"
+    ]
+  },
+  "enums": {
+    "time_of_day": [
+      "afternoon",
+      "dawn",
+      "day",
+      "dusk",
+      "evening",
+      "morning",
+      "night"
+    ],
+    "emotional_state": [
+      "angry",
+      "ashamed",
+      "calm",
+      "confused",
+      "curious",
+      "disgusted",
+      "excited",
+      "frustrated",
+      "happy",
+      "hopeful",
+      "joyful",
+      "lonely",
+      "loved",
+      "neutral",
+      "proud",
+      "sad",
+      "scared",
+      "surprised",
+      "tired",
+      "worried"
+    ]
+  },
+  "duration_tolerance": 0.15,
+  "notes": "invalid_type check extends the plan list; empty dialogue/objective and duration mismatch are WARNINGs (wordless episodes T12 and Phase 8 duration gate)"
+}

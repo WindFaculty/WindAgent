@@ -1,0 +1,264 @@
+{
+  "schema_version": "1.0.0",
+  "brief_count": 12,
+  "durations_minutes": [
+    5,
+    10,
+    20
+  ],
+  "run_count": 36,
+  "runs": [
+    {
+      "run_id": "T01_005m",
+      "case_id": "T01",
+      "type": "phieu_luu",
+      "duration_minutes": 5,
+      "brief": "M\u1ed9t chuy\u1ebfn phi\u00eau l\u01b0u nh\u1ecf trong khu v\u01b0\u1eddn ho\u1eb7c c\u00f4ng vi\u00ean quen thu\u1ed9c."
+    },
+    {
+      "run_id": "T01_010m",
+      "case_id": "T01",
+      "type": "phieu_luu",
+      "duration_minutes": 10,
+      "brief": "M\u1ed9t chuy\u1ebfn phi\u00eau l\u01b0u nh\u1ecf trong khu v\u01b0\u1eddn ho\u1eb7c c\u00f4ng vi\u00ean quen thu\u1ed9c."
+    },
+    {
+      "run_id": "T01_020m",
+      "case_id": "T01",
+      "type": "phieu_luu",
+      "duration_minutes": 20,
+      "brief": "M\u1ed9t chuy\u1ebfn phi\u00eau l\u01b0u nh\u1ecf trong khu v\u01b0\u1eddn ho\u1eb7c c\u00f4ng vi\u00ean quen thu\u1ed9c."
+    },
+    {
+      "run_id": "T02_005m",
+      "case_id": "T02",
+      "type": "hai",
+      "duration_minutes": 5,
+      "brief": "T\u00ecnh hu\u1ed1ng h\u00e0i h\u01b0\u1edbc \u0111\u1ebfn t\u1eeb hi\u1ec3u l\u1ea7m ng\u1ed9 ngh\u0129nh gi\u1eefa c\u00e1c b\u1ea1n nh\u1ecf."
+    },
+    {
+      "run_id": "T02_010m",
+      "case_id": "T02",
+      "type": "hai",
+      "duration_minutes": 10,
+      "brief": "T\u00ecnh hu\u1ed1ng h\u00e0i h\u01b0\u1edbc \u0111\u1ebfn t\u1eeb hi\u1ec3u l\u1ea7m ng\u1ed9 ngh\u0129nh gi\u1eefa c\u00e1c b\u1ea1n nh\u1ecf."
+    },
+    {
+      "run_id": "T02_020m",
+      "case_id": "T02",
+      "type": "hai",
+      "duration_minutes": 20,
+      "brief": "T\u00ecnh hu\u1ed1ng h\u00e0i h\u01b0\u1edbc \u0111\u1ebfn t\u1eeb hi\u1ec3u l\u1ea7m ng\u1ed9 ngh\u0129nh gi\u1eefa c\u00e1c b\u1ea1n nh\u1ecf."
+    },
+    {
+      "run_id": "T03_005m",
+      "case_id": "T03",
+      "type": "giao_duc",
+      "duration_minutes": 5,
+      "brief": "B\u00e0i h\u1ecdc \u0111\u01a1n gi\u1ea3n v\u1ec1 m\u1ed9t kh\u00e1i ni\u1ec7m (m\u00e0u s\u1eafc, con s\u1ed1, h\u00ecnh kh\u1ed1i)."
+    },
+    {
+      "run_id": "T03_010m",
+      "case_id": "T03",
+      "type": "giao_duc",
+      "duration_minutes": 10,
+      "brief": "B\u00e0i h\u1ecdc \u0111\u01a1n gi\u1ea3n v\u1ec1 m\u1ed9t kh\u00e1i ni\u1ec7m (m\u00e0u s\u1eafc, con s\u1ed1, h\u00ecnh kh\u1ed1i)."
+    },
+    {
+      "run_id": "T03_020m",
+      "case_id": "T03",
+      "type": "giao_duc",
+      "duration_minutes": 20,
+      "brief": "B\u00e0i h\u1ecdc \u0111\u01a1n gi\u1ea3n v\u1ec1 m\u1ed9t kh\u00e1i ni\u1ec7m (m\u00e0u s\u1eafc, con s\u1ed1, h\u00ecnh kh\u1ed1i)."
+    },
+    {
+      "run_id": "T04_005m",
+      "case_id": "T04",
+      "type": "tinh_ban",
+      "duration_minutes": 5,
+      "brief": "M\u1ed9t ng\u01b0\u1eddi b\u1ea1n m\u1edbi xu\u1ea5t hi\u1ec7n v\u00e0 c\u00e1ch c\u1ea3 nh\u00f3m k\u1ebft b\u1ea1n."
+    },
+    {
+      "run_id": "T04_010m",
+      "case_id": "T04",
+      "type": "tinh_ban",
+      "duration_minutes": 10,
+      "brief": "M\u1ed9t ng\u01b0\u1eddi b\u1ea1n m\u1edbi xu\u1ea5t hi\u1ec7n v\u00e0 c\u00e1ch c\u1ea3 nh\u00f3m k\u1ebft b\u1ea1n."
+    },
+    {
+      "run_id": "T04_020m",
+      "case_id": "T04",
+      "type": "tinh_ban",
+      "duration_minutes": 20,
+      "brief": "M\u1ed9t ng\u01b0\u1eddi b\u1ea1n m\u1edbi xu\u1ea5t hi\u1ec7n v\u00e0 c\u00e1ch c\u1ea3 nh\u00f3m k\u1ebft b\u1ea1n."
+    },
+    {
+      "run_id": "T05_005m",
+      "case_id": "T05",
+      "type": "gia_dinh",
+      "duration_minutes": 5,
+      "brief": "Ho\u1ea1t \u0111\u1ed9ng gia \u0111\u00ecnh h\u00e0ng ng\u00e0y tr\u1edf th\u00e0nh kho\u1ea3nh kh\u1eafc \u0111\u00e1ng nh\u1edb."
+    },
+    {
+      "run_id": "T05_010m",
+      "case_id": "T05",
+      "type": "gia_dinh",
+      "duration_minutes": 10,
+      "brief": "Ho\u1ea1t \u0111\u1ed9ng gia \u0111\u00ecnh h\u00e0ng ng\u00e0y tr\u1edf th\u00e0nh kho\u1ea3nh kh\u1eafc \u0111\u00e1ng nh\u1edb."
+    },
+    {
+      "run_id": "T05_020m",
+      "case_id": "T05",
+      "type": "gia_dinh",
+      "duration_minutes": 20,
+      "brief": "Ho\u1ea1t \u0111\u1ed9ng gia \u0111\u00ecnh h\u00e0ng ng\u00e0y tr\u1edf th\u00e0nh kho\u1ea3nh kh\u1eafc \u0111\u00e1ng nh\u1edb."
+    },
+    {
+      "run_id": "T06_005m",
+      "case_id": "T06",
+      "type": "problem_solving",
+      "duration_minutes": 5,
+      "brief": "M\u1ed9t v\u1ea5n \u0111\u1ec1 nh\u1ecf c\u1ea7n gi\u1ea3i quy\u1ebft b\u1eb1ng c\u00e1ch th\u1eed v\u00e0 s\u1eeda sai."
+    },
+    {
+      "run_id": "T06_010m",
+      "case_id": "T06",
+      "type": "problem_solving",
+      "duration_minutes": 10,
+      "brief": "M\u1ed9t v\u1ea5n \u0111\u1ec1 nh\u1ecf c\u1ea7n gi\u1ea3i quy\u1ebft b\u1eb1ng c\u00e1ch th\u1eed v\u00e0 s\u1eeda sai."
+    },
+    {
+      "run_id": "T06_020m",
+      "case_id": "T06",
+      "type": "problem_solving",
+      "duration_minutes": 20,
+      "brief": "M\u1ed9t v\u1ea5n \u0111\u1ec1 nh\u1ecf c\u1ea7n gi\u1ea3i quy\u1ebft b\u1eb1ng c\u00e1ch th\u1eed v\u00e0 s\u1eeda sai."
+    },
+    {
+      "run_id": "T07_005m",
+      "case_id": "T07",
+      "type": "khoa_hoc",
+      "duration_minutes": 5,
+      "brief": "Hi\u1ec7n t\u01b0\u1ee3ng khoa h\u1ecdc \u0111\u01a1n gi\u1ea3n (b\u00f3ng, n\u01b0\u1edbc, gi\u00f3) \u0111\u01b0\u1ee3c kh\u00e1m ph\u00e1."
+    },
+    {
+      "run_id": "T07_010m",
+      "case_id": "T07",
+      "type": "khoa_hoc",
+      "duration_minutes": 10,
+      "brief": "Hi\u1ec7n t\u01b0\u1ee3ng khoa h\u1ecdc \u0111\u01a1n gi\u1ea3n (b\u00f3ng, n\u01b0\u1edbc, gi\u00f3) \u0111\u01b0\u1ee3c kh\u00e1m ph\u00e1."
+    },
+    {
+      "run_id": "T07_020m",
+      "case_id": "T07",
+      "type": "khoa_hoc",
+      "duration_minutes": 20,
+      "brief": "Hi\u1ec7n t\u01b0\u1ee3ng khoa h\u1ecdc \u0111\u01a1n gi\u1ea3n (b\u00f3ng, n\u01b0\u1edbc, gi\u00f3) \u0111\u01b0\u1ee3c kh\u00e1m ph\u00e1."
+    },
+    {
+      "run_id": "T08_005m",
+      "case_id": "T08",
+      "type": "moi_truong",
+      "duration_minutes": 5,
+      "brief": "B\u1ea3o v\u1ec7 m\u00f4i tr\u01b0\u1eddng: nh\u1eb7t r\u00e1c, t\u01b0\u1edbi c\u00e2y, ti\u1ebft ki\u1ec7m n\u01b0\u1edbc."
+    },
+    {
+      "run_id": "T08_010m",
+      "case_id": "T08",
+      "type": "moi_truong",
+      "duration_minutes": 10,
+      "brief": "B\u1ea3o v\u1ec7 m\u00f4i tr\u01b0\u1eddng: nh\u1eb7t r\u00e1c, t\u01b0\u1edbi c\u00e2y, ti\u1ebft ki\u1ec7m n\u01b0\u1edbc."
+    },
+    {
+      "run_id": "T08_020m",
+      "case_id": "T08",
+      "type": "moi_truong",
+      "duration_minutes": 20,
+      "brief": "B\u1ea3o v\u1ec7 m\u00f4i tr\u01b0\u1eddng: nh\u1eb7t r\u00e1c, t\u01b0\u1edbi c\u00e2y, ti\u1ebft ki\u1ec7m n\u01b0\u1edbc."
+    },
+    {
+      "run_id": "T09_005m",
+      "case_id": "T09",
+      "type": "bedtime",
+      "duration_minutes": 5,
+      "brief": "C\u00e2u chuy\u1ec7n tr\u01b0\u1edbc khi ng\u1ee7, nh\u1eb9 nh\u00e0ng v\u00e0 d\u1ec5 ch\u00ecm v\u00e0o gi\u1ea5c ng\u1ee7."
+    },
+    {
+      "run_id": "T09_010m",
+      "case_id": "T09",
+      "type": "bedtime",
+      "duration_minutes": 10,
+      "brief": "C\u00e2u chuy\u1ec7n tr\u01b0\u1edbc khi ng\u1ee7, nh\u1eb9 nh\u00e0ng v\u00e0 d\u1ec5 ch\u00ecm v\u00e0o gi\u1ea5c ng\u1ee7."
+    },
+    {
+      "run_id": "T09_020m",
+      "case_id": "T09",
+      "type": "bedtime",
+      "duration_minutes": 20,
+      "brief": "C\u00e2u chuy\u1ec7n tr\u01b0\u1edbc khi ng\u1ee7, nh\u1eb9 nh\u00e0ng v\u00e0 d\u1ec5 ch\u00ecm v\u00e0o gi\u1ea5c ng\u1ee7."
+    },
+    {
+      "run_id": "T10_005m",
+      "case_id": "T10",
+      "type": "fantasy",
+      "duration_minutes": 5,
+      "brief": "Th\u1ebf gi\u1edbi t\u01b0\u1edfng t\u01b0\u1ee3ng: sinh v\u1eadt l\u1ea1, ph\u00e9p m\u00e0u, v\u00f9ng \u0111\u1ea5t k\u1ef3 di\u1ec7u."
+    },
+    {
+      "run_id": "T10_010m",
+      "case_id": "T10",
+      "type": "fantasy",
+      "duration_minutes": 10,
+      "brief": "Th\u1ebf gi\u1edbi t\u01b0\u1edfng t\u01b0\u1ee3ng: sinh v\u1eadt l\u1ea1, ph\u00e9p m\u00e0u, v\u00f9ng \u0111\u1ea5t k\u1ef3 di\u1ec7u."
+    },
+    {
+      "run_id": "T10_020m",
+      "case_id": "T10",
+      "type": "fantasy",
+      "duration_minutes": 20,
+      "brief": "Th\u1ebf gi\u1edbi t\u01b0\u1edfng t\u01b0\u1ee3ng: sinh v\u1eadt l\u1ea1, ph\u00e9p m\u00e0u, v\u00f9ng \u0111\u1ea5t k\u1ef3 di\u1ec7u."
+    },
+    {
+      "run_id": "T11_005m",
+      "case_id": "T11",
+      "type": "mystery",
+      "duration_minutes": 5,
+      "brief": "B\u00ed \u1ea9n nh\u1eb9 nh\u00e0ng: m\u1ed9t \u0111\u1ed3 v\u1eadt bi\u1ebfn m\u1ea5t v\u00e0 h\u00e0nh tr\u00ecnh t\u00ecm ra th\u1ee7 ph\u1ea1m."
+    },
+    {
+      "run_id": "T11_010m",
+      "case_id": "T11",
+      "type": "mystery",
+      "duration_minutes": 10,
+      "brief": "B\u00ed \u1ea9n nh\u1eb9 nh\u00e0ng: m\u1ed9t \u0111\u1ed3 v\u1eadt bi\u1ebfn m\u1ea5t v\u00e0 h\u00e0nh tr\u00ecnh t\u00ecm ra th\u1ee7 ph\u1ea1m."
+    },
+    {
+      "run_id": "T11_020m",
+      "case_id": "T11",
+      "type": "mystery",
+      "duration_minutes": 20,
+      "brief": "B\u00ed \u1ea9n nh\u1eb9 nh\u00e0ng: m\u1ed9t \u0111\u1ed3 v\u1eadt bi\u1ebfn m\u1ea5t v\u00e0 h\u00e0nh tr\u00ecnh t\u00ecm ra th\u1ee7 ph\u1ea1m."
+    },
+    {
+      "run_id": "T12_005m",
+      "case_id": "T12",
+      "type": "khong_loi",
+      "duration_minutes": 5,
+      "brief": "G\u1ea7n nh\u01b0 kh\u00f4ng l\u1eddi tho\u1ea1i; k\u1ec3 chuy\u1ec7n b\u1eb1ng h\u00e0nh \u0111\u1ed9ng v\u00e0 bi\u1ec3u c\u1ea3m."
+    },
+    {
+      "run_id": "T12_010m",
+      "case_id": "T12",
+      "type": "khong_loi",
+      "duration_minutes": 10,
+      "brief": "G\u1ea7n nh\u01b0 kh\u00f4ng l\u1eddi tho\u1ea1i; k\u1ec3 chuy\u1ec7n b\u1eb1ng h\u00e0nh \u0111\u1ed9ng v\u00e0 bi\u1ec3u c\u1ea3m."
+    },
+    {
+      "run_id": "T12_020m",
+      "case_id": "T12",
+      "type": "khong_loi",
+      "duration_minutes": 20,
+      "brief": "G\u1ea7n nh\u01b0 kh\u00f4ng l\u1eddi tho\u1ea1i; k\u1ec3 chuy\u1ec7n b\u1eb1ng h\u00e0nh \u0111\u1ed9ng v\u00e0 bi\u1ec3u c\u1ea3m."
+    }
+  ]
+}

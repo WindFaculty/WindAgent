@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0.0",
+  "candidate_sha": "28e65d8c78e1606512393ae334c39ef0248874e5",
+  "run_id": "r3_desktop_build_28e65d8c78e1",
+  "started_at": "2026-08-08T00:32:46.978197+00:00",
+  "completed_at": "2026-08-08T00:32:51.449969+00:00",
+  "command_or_provider": "npm run build (tsc -b && vite build)",
+  "input_hashes": [
+    "e94ff7f84ee8e6fe337727d3532810f150c61d6a55b5957517476f96328ac451"
+  ],
+  "output_hashes": [
+    "a2adb48dc04bd633b61d007396e0810a2d68658ca9a22f3f232d98415b2e983a",
+    "9ab5a90444c8cc9132d28792924d9e01d4ae09cabf4496c339f687844bd08208",
+    "eea13b57b896166b2d48636188ea8c74d7d91ff21f69ffd49fa572f9979f917b",
+    "920b8bae9ac44b257d8819e6ce1be5eaa40b97b2d27d8976c8dd624597ce3ad0",
+    "e125731583d49d405481b87a0c1cfef28f2dc95d5421dfe4079354dc4fb663cc",
+    "c83b4248ebb7f6ece560dfd8e4fe68ba2a3183131dfc1cc7bf10b59a86a0bcb0"
+  ],
+  "evidence_locator": "desktop_build_manifest.json",
+  "status": "PASSED",
+  "target": "apps/desktop",
+  "dist_directory": "apps/desktop/dist",
+  "bundle_count": 6,
+  "bundle_size_bytes": 1674761,
+  "output_bundle": {
+    "assets/core-DhEqZVGG.js": "a2adb48dc04bd633b61d007396e0810a2d68658ca9a22f3f232d98415b2e983a",
+    "assets/core-DhEqZVGG.js.map": "9ab5a90444c8cc9132d28792924d9e01d4ae09cabf4496c339f687844bd08208",
+    "assets/index-Dia9ujm9.js": "eea13b57b896166b2d48636188ea8c74d7d91ff21f69ffd49fa572f9979f917b",
+    "assets/index-Dia9ujm9.js.map": "920b8bae9ac44b257d8819e6ce1be5eaa40b97b2d27d8976c8dd624597ce3ad0",
+    "assets/index-DXX0jmWG.css": "e125731583d49d405481b87a0c1cfef28f2dc95d5421dfe4079354dc4fb663cc",
+    "index.html": "c83b4248ebb7f6ece560dfd8e4fe68ba2a3183131dfc1cc7bf10b59a86a0bcb0"
+  },
+  "notes": "Frontend shell build via real tsc+vite; Tauri Rust bundle is a release-step concern outside this gate."
+}

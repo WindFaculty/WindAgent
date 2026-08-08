@@ -1,0 +1,31 @@
+{
+  "phase": "phase_01_contract",
+  "subsystem": "script_eval",
+  "gate": "SCRIPT_EVAL_CONTRACT_VALID",
+  "verdict": "PASS",
+  "summary": "Production-script contract defined (schema v1.0.0) with 13 fail-closed checks; valid fixture passes clean, broken fixture trips every check; WARNING policy for wordless episodes and duration drift documented.",
+  "backlog_completion": [
+    {
+      "item": "production script schema (project/world/characters/story/scenes/ending)",
+      "status": "DONE",
+      "evidence": "contract_schema.json"
+    },
+    {
+      "item": "automated checks: missing field, duplicate ids, unknown character/location, negative/zero duration, scene ordering, broken references, invalid enum, empty dialogue/objective, duration mismatch, invalid type",
+      "status": "DONE",
+      "evidence": "contract_report.json + test_baseline.json"
+    },
+    {
+      "item": "gate: schema validity 100% + reference integrity 100%, hard fail on dangling reference",
+      "status": "DONE",
+      "evidence": "phase_verdict.json"
+    }
+  ],
+  "evidence_files": [
+    "contract_report.json",
+    "contract_schema.json",
+    "phase_verdict.json",
+    "test_baseline.json"
+  ],
+  "decided_at": "2026-08-08T04:35:04+00:00"
+}

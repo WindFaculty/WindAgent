@@ -1,0 +1,27 @@
+{
+  "checkers": {
+    "check_architecture_imports": "PASS (0 violations)"
+  },
+  "command": "python -m pytest tests/unit/intelligence/test_phase15_animation_compiler.py tests/architecture/test_phase15_animation_canonical.py -q",
+  "gate": "VP3D_P15_ANIMATION_LIBRARY_VERIFIED",
+  "phase": "phase_15",
+  "producer": "phase-15-animation-library",
+  "recorded_at": "2026-08-08T05:22:26.794079+00:00",
+  "suites": [
+    {
+      "covers": "stage_h §6 animation matrix: 13-clip library versioned+hashed with provenance; resolution by action/emotion/skeleton never display name (decoy test); retarget fps/units/root normalization + fail-closed (non-resamplable, missing bones); bounded warp in/out of bounds; duration mismatch; determinism; companion refs excluded from hash; invalidation scope; blend stable boundary + excess overlap fail-closed; episode pin locks revision across library update; root drift + fps mismatch detected; no partial publish; frozen immutability",
+      "file": "tests/unit/intelligence/test_phase15_animation_compiler.py",
+      "passed": 41
+    },
+    {
+      "covers": "provider-neutral imports, no model port, no bpy/eval/exec, core neutrality, core+intelligence exports, real arch check PASS",
+      "file": "tests/architecture/test_phase15_animation_canonical.py",
+      "passed": 41
+    }
+  ],
+  "summary": {
+    "failed": 0,
+    "passed": 41,
+    "skipped": 0
+  }
+}

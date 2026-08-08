@@ -1,0 +1,11 @@
+{
+  "case_id": "T04",
+  "duration_minutes": 5,
+  "hook": "Mot qua bong bay mau xanh bay vao san choi, ben trong co mot chu tho nho dang khoc.",
+  "conflict": "Nhom ban muon giup chu tho nhung chu tho so khong dam ra khoi qua bong bay, vi so mat ban cua minh o ben trong.",
+  "premise": "Nhom ban cung nhau tim cach lam cho chu tho thoai mai, khong can pha vo qua bong bay, ma phai tim ra cach de chu tho tu tin buoc ra ngoai.",
+  "differentiation": "Thay vi chi don gian la 'lam quen', cau chuyen tap trung vao viec ton trong su khac biet va noi so cua ban moi, khong ep buoc, ma kien nhan dong hanh.",
+  "payoff": "Cuoi cung, chu tho chiu ra ngoai, va nhom ban phat hien ra chu tho co mot chiec khen nho biet hat, ca nhom cung hat va nhay mua, va qua bong bay tu tu bay len troi.",
+  "lesson": "Tinh ban den tu su cam thong va kien nhan, khong phai ep buoc nguoi khac phai thay doi.",
+  "visual_potential": "Hinh anh qua bong bay trong suot voi chu tho ben trong, nhom ban dung do choi mau sac de tao thanh cau thang, chu tho tu tung buoc ra ngoai, cuoi cung qua bong bay bay len cung nhung chiec khen nho phat sang."
+}

@@ -1,0 +1,49 @@
+{
+  "fair_comparison": "the validator imports the SAME constants as the library/mocap (phase 15) and procedural (phase 16) validators",
+  "negative_checks": {
+    "balance": [
+      "BALANCE_VIOLATED"
+    ],
+    "collision": [
+      "COLLISION"
+    ],
+    "duration_mismatch": [
+      "DURATION_MISMATCH"
+    ],
+    "duration_out_of_range": [
+      "DURATION_OUT_OF_RANGE"
+    ],
+    "foot_sliding": [
+      "FOOT_SLIDING"
+    ],
+    "format_unsupported": [
+      "FORMAT_UNSUPPORTED"
+    ],
+    "fps_mismatch": [
+      "DURATION_MISMATCH",
+      "FPS_MISMATCH"
+    ],
+    "fps_out_of_range": [
+      "FPS_OUT_OF_RANGE"
+    ],
+    "joint_limit": [
+      "JOINT_LIMIT_VIOLATED"
+    ],
+    "license_blocked": true,
+    "root_drift": [
+      "ROOT_DRIFT"
+    ],
+    "skeleton_remap_failed": true,
+    "skeleton_unsupported": [
+      "CAPABILITY_MISMATCH"
+    ]
+  },
+  "thresholds_shared_with_library_mocap": {
+    "DURATION_TOLERANCE_FRAMES": 1,
+    "FOOT_SLIDING_MAX_M": 0.1,
+    "MAX_BALANCE_OFFSET_M": 0.1,
+    "MAX_COLLISIONS": 0,
+    "MAX_JOINT_VIOLATIONS": 0,
+    "ROOT_DRIFT_TOLERANCE": 0.1
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "case_id": "T10",
+  "duration_minutes": 20,
+  "hook": "Mot chiec khen bi lac vao khu rung phat sang",
+  "conflict": "Chiec khen bi mat am thanh khi chaym vao mot bong hoa bi an, phai tim lai giong cua minh",
+  "premise": "Be An va chiec khen than ky cung nhau di qua nhung vung dat ky dieu de tim lai am thanh cho khen",
+  "differentiation": "Khen khong phai la nhan vat chinh ma la nguoi ban dong hanh, am thanh cua khen tao ra phep mau",
+  "payoff": "Khi khen tim lai am thanh, no phat ra nhac dieu lam cho ca khu rung noi hoa, be An hieu ra am thanh cua chinh minh cung quy gia",
+  "lesson": "Khong can giong noi that to, chi can su chan thanh va yeu thuong",
+  "visual_potential": "Khu rung voi hoa phat sang, lung linh, nhung sinh vat be nhu tho con, chim hot, khen bay lung tung toa ra am thanh mau sac"
+}

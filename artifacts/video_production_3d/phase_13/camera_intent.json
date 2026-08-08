@@ -1,0 +1,317 @@
+{
+  "fixtures": {
+    "master": {
+      "angle": "EYE_LEVEL",
+      "dialogue_timing": [
+        {
+          "end_second": 3.0,
+          "line_id": "dl-1",
+          "start_second": 0.0
+        }
+      ],
+      "duration_seconds": 4.0,
+      "focus": {
+        "dof_far_m": 5.0,
+        "dof_near_m": 2.0,
+        "focus_distance_m": 3.0,
+        "focus_target": ""
+      },
+      "fps": 24,
+      "framing": {
+        "head_room_ratio": 0.12,
+        "look_room_ratio": 0.2,
+        "safe_margin": 0.05,
+        "subject_height_m": 1.6
+      },
+      "intent_id": "ci-sh-master",
+      "lens": {
+        "aperture_fstop": 2.8,
+        "aspect_ratio": 1.7777777777777777,
+        "focal_mm": 35.0,
+        "sensor_width_mm": 36.0
+      },
+      "metadata": {},
+      "movement": "STATIC",
+      "path": {
+        "keyframes": [
+          {
+            "easing": "LINEAR",
+            "frame": 0,
+            "look_at": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 1.2
+            },
+            "position": {
+              "x": 0.0,
+              "y": -5.0,
+              "z": 1.6
+            }
+          }
+        ]
+      },
+      "scene_id": "sc-gate",
+      "screen_direction": "LEFT_TO_RIGHT",
+      "shot_id": "sh-master",
+      "side": "SIDE_A"
+    },
+    "moving": {
+      "angle": "EYE_LEVEL",
+      "dialogue_timing": [],
+      "duration_seconds": 2.0,
+      "focus": {
+        "dof_far_m": 5.0,
+        "dof_near_m": 2.0,
+        "focus_distance_m": 3.0,
+        "focus_target": ""
+      },
+      "fps": 24,
+      "framing": {
+        "head_room_ratio": 0.12,
+        "look_room_ratio": 0.2,
+        "safe_margin": 0.05,
+        "subject_height_m": 1.6
+      },
+      "intent_id": "ci-sh-track",
+      "lens": {
+        "aperture_fstop": 2.8,
+        "aspect_ratio": 1.7777777777777777,
+        "focal_mm": 35.0,
+        "sensor_width_mm": 36.0
+      },
+      "metadata": {},
+      "movement": "TRACK",
+      "path": {
+        "keyframes": [
+          {
+            "easing": "LINEAR",
+            "frame": 0,
+            "look_at": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 1.2
+            },
+            "position": {
+              "x": -3.0,
+              "y": -5.0,
+              "z": 1.6
+            }
+          },
+          {
+            "easing": "LINEAR",
+            "frame": 6,
+            "look_at": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 1.2
+            },
+            "position": {
+              "x": -1.5,
+              "y": -5.0,
+              "z": 1.6
+            }
+          },
+          {
+            "easing": "LINEAR",
+            "frame": 12,
+            "look_at": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 1.2
+            },
+            "position": {
+              "x": 0.0,
+              "y": -5.0,
+              "z": 1.6
+            }
+          },
+          {
+            "easing": "LINEAR",
+            "frame": 18,
+            "look_at": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 1.2
+            },
+            "position": {
+              "x": 1.5,
+              "y": -5.0,
+              "z": 1.6
+            }
+          },
+          {
+            "easing": "LINEAR",
+            "frame": 24,
+            "look_at": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 1.2
+            },
+            "position": {
+              "x": 3.0,
+              "y": -5.0,
+              "z": 1.6
+            }
+          }
+        ]
+      },
+      "scene_id": "sc-gate",
+      "screen_direction": "LEFT_TO_RIGHT",
+      "shot_id": "sh-track",
+      "side": "SIDE_A"
+    },
+    "over_shoulder": {
+      "angle": "EYE_LEVEL",
+      "dialogue_timing": [
+        {
+          "end_second": 2.5,
+          "line_id": "dl-2",
+          "start_second": 0.0
+        }
+      ],
+      "duration_seconds": 3.0,
+      "focus": {
+        "dof_far_m": 5.0,
+        "dof_near_m": 2.0,
+        "focus_distance_m": 3.0,
+        "focus_target": ""
+      },
+      "fps": 24,
+      "framing": {
+        "head_room_ratio": 0.12,
+        "look_room_ratio": 0.2,
+        "safe_margin": 0.05,
+        "subject_height_m": 1.6
+      },
+      "intent_id": "ci-sh-os",
+      "lens": {
+        "aperture_fstop": 2.8,
+        "aspect_ratio": 1.7777777777777777,
+        "focal_mm": 35.0,
+        "sensor_width_mm": 36.0
+      },
+      "metadata": {},
+      "movement": "STATIC",
+      "path": {
+        "keyframes": [
+          {
+            "easing": "LINEAR",
+            "frame": 0,
+            "look_at": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 1.2
+            },
+            "position": {
+              "x": 0.0,
+              "y": -5.0,
+              "z": 1.6
+            }
+          }
+        ]
+      },
+      "scene_id": "sc-gate",
+      "screen_direction": "LEFT_TO_RIGHT",
+      "shot_id": "sh-os",
+      "side": "SIDE_A"
+    },
+    "reaction": {
+      "angle": "EYE_LEVEL",
+      "dialogue_timing": [],
+      "duration_seconds": 2.0,
+      "focus": {
+        "dof_far_m": 5.0,
+        "dof_near_m": 2.0,
+        "focus_distance_m": 3.0,
+        "focus_target": ""
+      },
+      "fps": 24,
+      "framing": {
+        "head_room_ratio": 0.12,
+        "look_room_ratio": 0.2,
+        "safe_margin": 0.05,
+        "subject_height_m": 1.6
+      },
+      "intent_id": "ci-sh-reaction",
+      "lens": {
+        "aperture_fstop": 2.8,
+        "aspect_ratio": 1.7777777777777777,
+        "focal_mm": 35.0,
+        "sensor_width_mm": 36.0
+      },
+      "metadata": {},
+      "movement": "STATIC",
+      "path": {
+        "keyframes": [
+          {
+            "easing": "LINEAR",
+            "frame": 0,
+            "look_at": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 1.2
+            },
+            "position": {
+              "x": 0.0,
+              "y": -5.0,
+              "z": 1.6
+            }
+          }
+        ]
+      },
+      "scene_id": "sc-gate",
+      "screen_direction": "LEFT_TO_RIGHT",
+      "shot_id": "sh-reaction",
+      "side": "SIDE_A"
+    },
+    "static": {
+      "angle": "EYE_LEVEL",
+      "dialogue_timing": [],
+      "duration_seconds": 3.0,
+      "focus": {
+        "dof_far_m": 5.0,
+        "dof_near_m": 2.0,
+        "focus_distance_m": 3.0,
+        "focus_target": ""
+      },
+      "fps": 24,
+      "framing": {
+        "head_room_ratio": 0.12,
+        "look_room_ratio": 0.2,
+        "safe_margin": 0.05,
+        "subject_height_m": 1.6
+      },
+      "intent_id": "ci-sh-static",
+      "lens": {
+        "aperture_fstop": 2.8,
+        "aspect_ratio": 1.7777777777777777,
+        "focal_mm": 35.0,
+        "sensor_width_mm": 36.0
+      },
+      "metadata": {},
+      "movement": "STATIC",
+      "path": {
+        "keyframes": [
+          {
+            "easing": "LINEAR",
+            "frame": 0,
+            "look_at": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 1.2
+            },
+            "position": {
+              "x": 0.0,
+              "y": -5.0,
+              "z": 1.6
+            }
+          }
+        ]
+      },
+      "scene_id": "sc-gate",
+      "screen_direction": "NEUTRAL",
+      "shot_id": "sh-static",
+      "side": "SIDE_A"
+    }
+  }
+}

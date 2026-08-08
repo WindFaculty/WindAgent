@@ -1,0 +1,13 @@
+{
+  "run_id": "T03_010m",
+  "model": "deepseek-v4-flash-alibaba",
+  "status": "FAIL",
+  "elapsed_seconds": 17.41,
+  "usage": {
+    "completion_tokens": 1041,
+    "prompt_tokens": 289,
+    "total_tokens": 1330
+  },
+  "error": null,
+  "executed_at": "2026-08-08T05:23:03+00:00"
+}

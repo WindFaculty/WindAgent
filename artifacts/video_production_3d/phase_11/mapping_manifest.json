@@ -1,0 +1,36 @@
+{
+  "entries": [
+    {
+      "asset_revision_hash": "3810d33712a686ddde1f541a42734c37fe5686268c4235322a5be130d5d353c0",
+      "datablock_name": "obj-mai",
+      "ir_entity_id": "ci-mai",
+      "ir_entity_type": "CHARACTER_INSTANCE",
+      "mapping_hash": ""
+    },
+    {
+      "asset_revision_hash": "3810d33712a686ddde1f541a42734c37fe5686268c4235322a5be130d5d353c0",
+      "datablock_name": "obj-duc",
+      "ir_entity_id": "ci-duc",
+      "ir_entity_type": "CHARACTER_INSTANCE",
+      "mapping_hash": ""
+    },
+    {
+      "asset_revision_hash": "280b8e9a2264133d5307f609dafb9f75cbd8270290eb7be64eefed3bdb81afbb",
+      "datablock_name": "obj-table",
+      "ir_entity_id": "prop-chair-1",
+      "ir_entity_type": "PROP_INSTANCE",
+      "mapping_hash": ""
+    },
+    {
+      "asset_revision_hash": "ee0ccd646debf94cc8a18a49274297691c1f358f50092d0429a6fcaaa31b20cc",
+      "datablock_name": "obj-ground",
+      "ir_entity_id": "env-1",
+      "ir_entity_type": "ENVIRONMENT_INSTANCE",
+      "mapping_hash": ""
+    }
+  ],
+  "manifest_hash": "b0688d60ebacd2d28d37f762f91d9c1a5575fd5b377935da57460ceed1841be7",
+  "manifest_id": "map-gate",
+  "plan_id": "plan-gate",
+  "reconciles": true
+}

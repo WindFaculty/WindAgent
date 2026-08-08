@@ -1,0 +1,30 @@
+{
+  "bgm_change_invalidates_mix_only": true,
+  "cancelled_node_not_reused": true,
+  "dialogue_change_invalidates_track_facial_mix": true,
+  "max_concurrency": 2,
+  "received_content_hashes": {
+    "l1": {
+      "content_hash": "55e0439de58cdf9301aab8a4bded82d5150971ffceb2a6f3b840ca8a4a6d9433",
+      "valid": true
+    },
+    "l2": {
+      "content_hash": "045f5a483a23c82a6161a6ab492b0ac5c3b953a15bc270437b68dfb7a38cc140",
+      "valid": true
+    },
+    "l3": {
+      "content_hash": "7625524bfbf51448d45a95798137f695187e511ec428de0c2b8e47edccd927f9",
+      "valid": true
+    },
+    "l4": {
+      "content_hash": "d86edad398cf7d1ef1f4e91a376d07735772655378373f5b05485f1c06effa6f",
+      "valid": true
+    }
+  },
+  "resume_reuses_completed_audio": true,
+  "resume_skips_finished_lines": true,
+  "retry_budget": 1,
+  "rights_gate_holds_preview_never_final": true,
+  "secrets_redacted_from_receipt": true,
+  "voice_change_invalidates_track_facial_mix": true
+}

@@ -1,0 +1,27 @@
+{
+  "checkers": {
+    "check_architecture_imports": "PASS (0 violations)"
+  },
+  "command": "python -m pytest tests/unit/intelligence/test_phase16_procedural_compiler.py tests/architecture/test_phase16_procedural_canonical.py -q",
+  "gate": "VP3D_P16_PROCEDURAL_ANIMATION_VERIFIED",
+  "phase": "phase_16",
+  "producer": "phase-16-procedural-animation",
+  "recorded_at": "2026-08-08T05:35:29.315710+00:00",
+  "suites": [
+    {
+      "covers": "stage_h §6 procedural matrix: 10-layer registry with ownership+priority; ownership/conflict/duplicate-id fail-closed; default priority; ordered layers; recipe hash sensitivity; deterministic bake + seed changes hash; all 10 kinds bake clean; layer never touches bones outside ownership; foot sliding, hand reach, joint limit, collision, balance, transition drift DETECTED; anchor mismatch fail-closed; atomic bake; repair scope layer-scoped; seed change scope; invalidation scope; frozen immutability; recipe+compiler recorded",
+      "file": "tests/unit/intelligence/test_phase16_procedural_compiler.py",
+      "passed": 36
+    },
+    {
+      "covers": "provider-neutral imports, no model port, no bpy/eval/exec, core neutrality, core+intelligence exports, real arch check PASS",
+      "file": "tests/architecture/test_phase16_procedural_canonical.py",
+      "passed": 36
+    }
+  ],
+  "summary": {
+    "failed": 0,
+    "passed": 36,
+    "skipped": 0
+  }
+}

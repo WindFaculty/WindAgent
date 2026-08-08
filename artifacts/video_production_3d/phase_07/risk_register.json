@@ -1,0 +1,40 @@
+{
+  "phase": "phase_07",
+  "risks": [
+    {
+      "id": "VP3D_P7_RISK_001",
+      "mitigation": "host parsers for GLTF/GLB/OBJ; sandboxed Blender job for the rest; fail closed when no job runner",
+      "severity": "MEDIUM",
+      "status": "ACCEPTED",
+      "title": "FBX/USD/BLEND formats require a Blender job"
+    },
+    {
+      "id": "VP3D_P7_RISK_002",
+      "mitigation": "static content scan before parse; auto-execution disabled in blender jobs; archive/executable rejected",
+      "severity": "HIGH",
+      "status": "MITIGATED",
+      "title": "Malicious mesh/texture payloads (embedded scripts, zip bombs)"
+    },
+    {
+      "id": "VP3D_P7_RISK_003",
+      "mitigation": "VRAM estimated before preview; over hard limit => BLOCKED, never rendered",
+      "severity": "MEDIUM",
+      "status": "MITIGATED",
+      "title": "VRAM OOM mid-render from over-budget assets"
+    },
+    {
+      "id": "VP3D_P7_RISK_004",
+      "mitigation": "preview profile locks device=CPU; gpu_ready=false documented since Phase 3",
+      "severity": "LOW",
+      "status": "ACCEPTED",
+      "title": "GPU-less baseline (CPU-only Cycles)"
+    },
+    {
+      "id": "VP3D_P7_RISK_005",
+      "mitigation": "Blender job reports exact bmesh stats when engine available; heuristic only host-side",
+      "severity": "LOW",
+      "status": "ACCEPTED",
+      "title": "Host-side non-manifold heuristic approximates engine analysis"
+    }
+  ]
+}

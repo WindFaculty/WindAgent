@@ -1,0 +1,11 @@
+{
+  "case_id": "T06",
+  "duration_minutes": 10,
+  "hook": "Chu meo con Miu bi mac keo trong hang cay, phai tim cach chui ra",
+  "conflict": "Miu thu day manh nhung keo khong dich, thu keo nguoc lai thi dau bi nhuc",
+  "premise": "Miu va ban tho Gio cung tim cach giai cuu chu meo, moi lan thu deu cho ra mot dieu moi",
+  "differentiation": "Khong dung suc manh ma dung su kien nhan, thu cach nhe nhang va suy nghi",
+  "payoff": "Khi Miu nham mat va tho ra, keo tuot ra nhe nhu mot chiec la roi",
+  "lesson": "Khong phai luc nao manh cung la dung, doi khi nhe nhang va kien nhan lai giai quyet duoc van de",
+  "visual_potential": "Hinh anh keo to mau xanh la, tho Gio co canh buom, Miu mat tron long lanh, cac canh cay uon luon, anh nang xuyen qua ke la"
+}

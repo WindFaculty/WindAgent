@@ -1,0 +1,22 @@
+{
+  "checkers": {
+    "check_architecture_imports": "FAIL (4 pre-existing violations in untracked Phase 12 intelligence/video/set_dressing/; core scene_compiler adds 0)"
+  },
+  "command": "python -m pytest tests/unit/verification/test_phase11_scene_compiler.py -q",
+  "gate": "VP3D_P11_SCENE_COMPILER_VERIFIED",
+  "phase": "phase_11",
+  "producer": "phase-11-scene-compiler",
+  "recorded_at": "2026-08-08T03:41:52.645007+00:00",
+  "suites": [
+    {
+      "covers": "typed BlenderScenePlan, completeness/approval/revision validation, deterministic plan hash, allow-listed bpy transcriber + operation guard (no eval/exec), save->reopen->publish inspection, IR->data-block mapping manifest, incremental compile reuse/rebuild invalidation",
+      "file": "tests/unit/verification/test_phase11_scene_compiler.py",
+      "passed": 23
+    }
+  ],
+  "summary": {
+    "failed": 0,
+    "passed": 23,
+    "skipped": 0
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "backlog_completion": {
+    "1_semantic_bone_detection": "DONE — provider-agnostic bone detection (Avatar & Mixamo named skeletons normalize to identical SemanticBone coverage)",
+    "2_rig_validation": "DONE — rest pose, scale, root, parenting, weights, joint limits, facial controls; fail-closed RigValidationReceipt",
+    "3_versioned_retarget": "DONE — semantic source->target mapping, versioned, deterministic manifest hash",
+    "4_animation_suite": "DONE — minimal suite (10 clips: idle/walk/run/sit/stand/turn/point/grab/talk/facial_neutral)",
+    "5_deformation_metrics": "DONE — foot sliding / limb stretch / mesh penetration / root drift / pose discontinuity thresholds",
+    "6_compatibility_verdict": "DONE — fail-closed; failed/untested clip never enters approved library",
+    "7_derived_correction": "DONE — manual correction only as derived rig revision with manifest; source never silently mutated"
+  },
+  "decided_at": "2026-08-08T02:13:19.258978+00:00",
+  "evidence_files": [
+    "artifacts/video_production_3d/phase_09/evidence.json",
+    "artifacts/video_production_3d/phase_09/rig_profiles.json",
+    "artifacts/video_production_3d/phase_09/retarget_matrix.json",
+    "artifacts/video_production_3d/phase_09/compatibility_profiles.json",
+    "artifacts/video_production_3d/phase_09/test_baseline.json",
+    "artifacts/video_production_3d/phase_09/phase_verdict.json",
+    "artifacts/video_production_3d/phase_09/preview/evidence.json",
+    "artifacts/video_production_3d/phase_09/preview/approval_receipt.json",
+    "artifacts/video_production_3d/phase_09/preview/blender_rig_report.json",
+    "artifacts/video_production_3d/phase_09/preview/evidence.json",
+    "artifacts/video_production_3d/phase_09/preview/approval_receipt.json",
+    "artifacts/video_production_3d/phase_09/preview/blender_rig_report.json"
+  ],
+  "gate": "VP3D_P9_CHARACTER_RIG_VERIFIED",
+  "phase": "phase_09",
+  "preview_render": {
+    "frame_sha256_count": 6,
+    "note": "real Blender 4.5.12 preview render + in-Blender rig validation",
+    "root_drift": {
+      "alpha": 0.0,
+      "beta": 0.0
+    },
+    "status": "PASS",
+    "topologies_rendered": [
+      "alpha",
+      "beta"
+    ]
+  },
+  "summary": "Two character masters of DIFFERENT topology (alpha low-poly, beta high-poly) whose rigs validate fail-open were retargeted through the same minimal clip suite (10 clips). All retargets are deterministic (identical manifest_hash on identical input), every clip is APPROVED via the fail-closed compatibility gate, both episodes pin the same revision for stable identity (continuity), a deliberately failing clip is excluded from the approved library, and manual correction is captured only as a derived rig revision with a manifest. gate_passed=True. Tests: 27 passed, 0 failed. REAL rig preview: two different-topology rigs rendered (6 PNG frames hashed), in-Blender validation (root/parenting/weights/armature modifier) passed=True. REAL rig preview: two different-topology rigs rendered (6 PNG frames hashed), in-Blender validation (root/parenting/weights/armature modifier) passed=True.",
+  "verdict": "PASS"
+}

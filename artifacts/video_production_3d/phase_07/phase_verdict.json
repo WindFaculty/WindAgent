@@ -1,0 +1,46 @@
+{
+  "decided_at": "2026-08-08T02:34:44.479918+00:00",
+  "evidence_files": [
+    "artifacts/video_production_3d/phase_07/input_manifest.json",
+    "artifacts/video_production_3d/phase_07/implementation_manifest.json",
+    "artifacts/video_production_3d/phase_07/test_receipt.json",
+    "artifacts/video_production_3d/phase_07/architecture_report.json",
+    "artifacts/video_production_3d/phase_07/risk_register.json",
+    "artifacts/video_production_3d/phase_07/phase_report.md",
+    "artifacts/video_production_3d/phase_07/phase_verdict.json",
+    "artifacts/video_production_3d/phase_07/real_machine_evidence.json"
+  ],
+  "gate": "VP3D_P7_ASSET_NORMALIZATION_VERIFIED",
+  "gate_checks": [
+    {
+      "check": "One local asset through full pipeline",
+      "detail": "OBJ fixture -> READY bundle",
+      "result": "PASS"
+    },
+    {
+      "check": "One Internet fixture through full pipeline",
+      "detail": "source_type=INTERNET integration test -> READY",
+      "result": "PASS"
+    },
+    {
+      "check": "One generated/fake provider asset through full pipeline",
+      "detail": "source_type=GENERATED with texture -> READY",
+      "result": "PASS"
+    },
+    {
+      "check": "Malicious fixtures fail closed",
+      "detail": "archive/executable/shebang rejected pre-parse; traversal URI -> missing; VRAM/poly over budget -> BLOCKED, no preview",
+      "result": "PASS"
+    },
+    {
+      "check": "Real engine evidence on baseline machine",
+      "detail": "real_machine_evidence.json: READY, 12 preview frames, LOD1 blender_job, bundle hash c9c3eba3e556b6f7",
+      "result": "PASS"
+    }
+  ],
+  "known_baseline_defect": "test_phase27_release.py::test_ci_run_manifest_aggregates_all_required_lanes + test_evidence_validation_lane_lineage \u2014 pre-existing (Phase 27 stale CANDIDATE_SHA, unrelated to VP3D). test_phase0_docs_exist + test_phase03_verifier_no_write x2 fail due to doc-purge collateral (ADR 0006 + director_research docs removed by chore 5662ede / pending working-tree deletions), unrelated to Phase 7.",
+  "next_phase": "Phase 8 \u2014 Character Master Asset (Stage D, gate VP3D_P8_CHARACTER_MASTER_VERIFIED)",
+  "phase": "phase_07",
+  "summary": "Asset Normalization verified: full pipeline on real Blender 4.5.12 LTS (import validate, LOD Decimate, Cycles preview) + 62 Phase 7 tests + regression 198 passed + ruff clean + architecture 0 violations. Local/Internet/generated assets traverse the full pipeline; malicious fixtures fail closed (no bundle, no preview for over-budget).",
+  "verdict": "PASS"
+}

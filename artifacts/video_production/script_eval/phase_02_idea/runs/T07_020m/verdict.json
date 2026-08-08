@@ -1,0 +1,16 @@
+{
+  "run_id": "T07_020m",
+  "case_id": "T07",
+  "duration_minutes": 20,
+  "status": "FAIL",
+  "valid": false,
+  "errors": [
+    {
+      "check": "thin_premise",
+      "message": "premise too thin for 20 min (238 chars, need >= 400)"
+    }
+  ],
+  "warnings": [],
+  "elapsed_seconds": 13.99,
+  "error": null
+}

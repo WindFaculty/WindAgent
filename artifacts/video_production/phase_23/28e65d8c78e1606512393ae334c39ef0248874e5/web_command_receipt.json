@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0.0",
+  "candidate_sha": "28e65d8c78e1606512393ae334c39ef0248874e5",
+  "run_id": "r3_npm_test_28e65d8c78e1",
+  "started_at": "2026-08-08T00:32:41.442459+00:00",
+  "completed_at": "2026-08-08T00:32:43.159690+00:00",
+  "command_or_provider": "npm test",
+  "input_hashes": [
+    "393460890ac84ecfb1446423aa92e7e247ecca4d804342290808d3b2499c8f70"
+  ],
+  "output_hashes": [],
+  "evidence_locator": "npm_test_command_receipt.json",
+  "status": "PASSED",
+  "argv": [
+    "C:\\Users\\Admin\\AppData\\Local\\hermes\\node\\npm.CMD",
+    "test"
+  ],
+  "cwd": "D:\\code_ca_nhan\\WindAgent\\apps\\web",
+  "lockfile_sha256": "393460890ac84ecfb1446423aa92e7e247ecca4d804342290808d3b2499c8f70",
+  "exit_code": 0,
+  "stdout_sha256": "6526ccddb130d0a714fe6d120e40d3beb6cff3e827180ac88f4ba0988b0411ae",
+  "stderr_sha256": "ecd0922812fabe3f841c796d03c285bbb885de0f7582a47295dd69227e624de5",
+  "duration_seconds": 1.7172,
+  "output_bundle_sha256": "6526ccddb130d0a714fe6d120e40d3beb6cff3e827180ac88f4ba0988b0411ae"
+}

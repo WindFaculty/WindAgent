@@ -1,0 +1,240 @@
+{
+  "clip_count": 13,
+  "clips": {
+    "CRY": {
+      "clip_id": "acl_52e7d0d223e03f5f",
+      "content_hash": "5dfe92868458caf4f27b3993db54211823d1a105f2f29a118f6cd2d2507f5b57",
+      "duration_seconds": 3.2,
+      "emotion": "SAD",
+      "fps": 30,
+      "name": "cry",
+      "provenance": {
+        "imported_at": "",
+        "license": "LICENSED",
+        "provider": "library",
+        "recording_session": "lib-cry",
+        "source": "MOCAP_CAPTURE"
+      },
+      "requires_destination": false,
+      "root_motion_meters": 0.05,
+      "version": "1.0.0"
+    },
+    "IDLE": {
+      "clip_id": "acl_a2eb2a7e1551d168",
+      "content_hash": "5517fdb6a29fc6051cefd6b2114c3de0ccde35d59bdd3a57d740b0e55f263bd6",
+      "duration_seconds": 4.0,
+      "emotion": "NEUTRAL",
+      "fps": 30,
+      "name": "idle",
+      "provenance": {
+        "imported_at": "",
+        "license": "LICENSED",
+        "provider": "library",
+        "recording_session": "lib-idle",
+        "source": "MOCAP_CAPTURE"
+      },
+      "requires_destination": false,
+      "root_motion_meters": 0.0,
+      "version": "1.0.0"
+    },
+    "JUMP": {
+      "clip_id": "acl_3a7eefde319d7622",
+      "content_hash": "a5e3869b45d84d69fbf9c1b243213446af09ea8b4d3e1b3369295b7fd69132bc",
+      "duration_seconds": 0.8,
+      "emotion": "NEUTRAL",
+      "fps": 30,
+      "name": "jump",
+      "provenance": {
+        "imported_at": "",
+        "license": "LICENSED",
+        "provider": "library",
+        "recording_session": "lib-jump",
+        "source": "MOCAP_CAPTURE"
+      },
+      "requires_destination": false,
+      "root_motion_meters": 0.9,
+      "version": "1.0.0"
+    },
+    "LAUGH": {
+      "clip_id": "acl_045f434e3c33c3b6",
+      "content_hash": "cb436399f081d6766dc96dfb4e1d3d6531d0aa50d7aedb5dade0a2e5740dd512",
+      "duration_seconds": 2.4,
+      "emotion": "HAPPY",
+      "fps": 30,
+      "name": "laugh",
+      "provenance": {
+        "imported_at": "",
+        "license": "LICENSED",
+        "provider": "library",
+        "recording_session": "lib-laugh",
+        "source": "MOCAP_CAPTURE"
+      },
+      "requires_destination": false,
+      "root_motion_meters": 0.1,
+      "version": "1.0.0"
+    },
+    "PICK_UP": {
+      "clip_id": "acl_9ef5895c2bf9c9fc",
+      "content_hash": "b02f28d5c04fa3d70709d1ef4243dc021994c7560342779b34243de2d0307ec9",
+      "duration_seconds": 2.2,
+      "emotion": "NEUTRAL",
+      "fps": 30,
+      "name": "pick_up",
+      "provenance": {
+        "imported_at": "",
+        "license": "LICENSED",
+        "provider": "library",
+        "recording_session": "lib-pick_up",
+        "source": "MOCAP_CAPTURE"
+      },
+      "requires_destination": true,
+      "root_motion_meters": 0.4,
+      "version": "1.0.0"
+    },
+    "POINT": {
+      "clip_id": "acl_e1f18f9a713146a3",
+      "content_hash": "13a8ea157ed8b354755365413af3c9900df5c8f1ab94ce07c4252b9e1e12ca53",
+      "duration_seconds": 1.2,
+      "emotion": "NEUTRAL",
+      "fps": 30,
+      "name": "point",
+      "provenance": {
+        "imported_at": "",
+        "license": "LICENSED",
+        "provider": "library",
+        "recording_session": "lib-point",
+        "source": "MOCAP_CAPTURE"
+      },
+      "requires_destination": false,
+      "root_motion_meters": 0.0,
+      "version": "1.0.0"
+    },
+    "PUT_DOWN": {
+      "clip_id": "acl_74066d3cce38bb58",
+      "content_hash": "a496e23cb253c468470261aca13c4b7af4726d1b7cc52c74e9ef42d36c02d25d",
+      "duration_seconds": 2.2,
+      "emotion": "NEUTRAL",
+      "fps": 30,
+      "name": "put_down",
+      "provenance": {
+        "imported_at": "",
+        "license": "LICENSED",
+        "provider": "library",
+        "recording_session": "lib-put_down",
+        "source": "MOCAP_CAPTURE"
+      },
+      "requires_destination": true,
+      "root_motion_meters": 0.4,
+      "version": "1.0.0"
+    },
+    "RUN": {
+      "clip_id": "acl_ef58bf0ad56b9165",
+      "content_hash": "79001144ab0130d57d2463dcde963927def55c3ed2bb5ec56288ca765e6b1064",
+      "duration_seconds": 1.2,
+      "emotion": "NEUTRAL",
+      "fps": 30,
+      "name": "run",
+      "provenance": {
+        "imported_at": "",
+        "license": "LICENSED",
+        "provider": "library",
+        "recording_session": "lib-run",
+        "source": "MOCAP_CAPTURE"
+      },
+      "requires_destination": false,
+      "root_motion_meters": 2.4,
+      "version": "1.0.0"
+    },
+    "SIT": {
+      "clip_id": "acl_3860944da4201522",
+      "content_hash": "4ef26113d7c0d21bacfe0688e0b6357e062d9183679fe99fa2209d6e5c28dfee",
+      "duration_seconds": 1.5,
+      "emotion": "NEUTRAL",
+      "fps": 30,
+      "name": "sit",
+      "provenance": {
+        "imported_at": "",
+        "license": "LICENSED",
+        "provider": "library",
+        "recording_session": "lib-sit",
+        "source": "MOCAP_CAPTURE"
+      },
+      "requires_destination": false,
+      "root_motion_meters": 0.3,
+      "version": "1.0.0"
+    },
+    "STAND": {
+      "clip_id": "acl_679be717630b6279",
+      "content_hash": "b16f4653b5e24bda8fd12f6b4db753bf710418c4477dbd02916fb8c8f4fcb733",
+      "duration_seconds": 1.5,
+      "emotion": "NEUTRAL",
+      "fps": 30,
+      "name": "stand",
+      "provenance": {
+        "imported_at": "",
+        "license": "LICENSED",
+        "provider": "library",
+        "recording_session": "lib-stand",
+        "source": "MOCAP_CAPTURE"
+      },
+      "requires_destination": false,
+      "root_motion_meters": 0.3,
+      "version": "1.0.0"
+    },
+    "TALK": {
+      "clip_id": "acl_c123c08591f15a5d",
+      "content_hash": "04993b008e69cd84bba52dcdf01060e2621edd077676f06d21d5b6731971009e",
+      "duration_seconds": 3.0,
+      "emotion": "NEUTRAL",
+      "fps": 30,
+      "name": "talk",
+      "provenance": {
+        "imported_at": "",
+        "license": "LICENSED",
+        "provider": "library",
+        "recording_session": "lib-talk",
+        "source": "MOCAP_CAPTURE"
+      },
+      "requires_destination": false,
+      "root_motion_meters": 0.05,
+      "version": "1.0.0"
+    },
+    "WALK": {
+      "clip_id": "acl_a7c9f84e085a1daf",
+      "content_hash": "5a191db2a1300b56364dfc8714f56c1056d234e06cdc63fe67eb7e75d842d2b2",
+      "duration_seconds": 2.0,
+      "emotion": "NEUTRAL",
+      "fps": 30,
+      "name": "walk",
+      "provenance": {
+        "imported_at": "",
+        "license": "LICENSED",
+        "provider": "library",
+        "recording_session": "lib-walk",
+        "source": "MOCAP_CAPTURE"
+      },
+      "requires_destination": false,
+      "root_motion_meters": 1.6,
+      "version": "1.0.0"
+    },
+    "WAVE": {
+      "clip_id": "acl_18d98f650093d0cc",
+      "content_hash": "2fac4568e34547b01976276541bae01fb79e846872b10611e78428da209a949c",
+      "duration_seconds": 1.4,
+      "emotion": "HAPPY",
+      "fps": 30,
+      "name": "wave",
+      "provenance": {
+        "imported_at": "",
+        "license": "LICENSED",
+        "provider": "library",
+        "recording_session": "lib-wave",
+        "source": "MOCAP_CAPTURE"
+      },
+      "requires_destination": false,
+      "root_motion_meters": 0.0,
+      "version": "1.0.0"
+    }
+  },
+  "library_version": "1.0.0"
+}

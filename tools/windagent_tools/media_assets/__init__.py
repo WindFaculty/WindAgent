@@ -66,6 +66,16 @@ from windagent_tools.media_assets.references import (
     LocationReference,
     LocationReferenceBuilder,
 )
+from windagent_tools.media_assets.normalization import (
+    AssetNormalizationPipeline,
+    AssetNormalizer,
+    FakeAssetJobRunner,
+    JobInvocation,
+    JobResult,
+    MeshSnapshot,
+    detect_format,
+    parse_asset,
+)
 
 __all__ = [
     # errors
@@ -113,4 +123,13 @@ __all__ = [
     "LocationReferenceBuilder",
     "CharacterReference",
     "LocationReference",
+    # normalization (VP3D Phase 7)
+    "AssetNormalizationPipeline",
+    "AssetNormalizer",
+    "FakeAssetJobRunner",
+    "JobInvocation",
+    "JobResult",
+    "MeshSnapshot",
+    "detect_format",
+    "parse_asset",
 ]

@@ -1,0 +1,11 @@
+{
+  "case_id": "T05",
+  "duration_minutes": 5,
+  "hook": "Mot gia dinh nha tho (tho con, tho me, tho cha) cung nhau lam banh quy hinh ngoi sao, nhung banh quy cuoi cung tu nhien bay len troi va bien thanh mot chiec den troi.",
+  "conflict": "Den troi bay mat, gia dinh tho lo lang vi dem nay la dem hoi trang tri nha, va banh quy den la mon chinh de treo len cay thong. Tho con muon di tim nhung cha me ngai khong biet bay dau, va cung lo den troi co the vo.",
+  "premise": "Tho con de xuat ca nha cung nhau di theo anh sang le loi tu den troi, qua khu vuon, ra ngoai dong co, va gap nhung ngoi nha ban be. Moi buoc di, ho kham pha ra nhung ky niem gia dinh nho (nhu luc tho con moi biet di, luc ca nha cung nhau trong cay).",
+  "differentiation": "Khong giong cac phim ve viec di tim do vat bi mat, phim nay tap trung vao hanh trinh cung nhau tao ra ky niem moi tu nhung viec thuong ngay. Cach giai quyet khong phai la tim lai banh quy, ma la tao ra mot mon do trang tri moi tu nhung thu da co (nhu giay mau, la cay, long vu), va den troi tu bay ve.",
+  "payoff": "Cuoi phim, den troi tu quay ve va dung tren cay thong, sang ruc. Gia dinh tho nhan ra rang khi o ben nhau, nhung khoanh khac binh thuong nhat cung tro thanh dieu ky dieu. Ho cung nhau treo nhung mon do tu tao, va dem hoa trang cho ngoi nha.",
+  "lesson": "Khong can nhung thu cau ky, chi can su quan tam va tinh yeu cua gia dinh la du. Nhung viec nho nhat (lam banh, di dao, cung nhau lam do thu cong) deu co the tao nen dieu ky dieu.",
+  "visual_potential": "Hinh anh 3D mau sac am ap, cac nhan vat tho dang yeu voi khuon mat bieu cam. Canh quan: bep am cung, khu vuon co hoa, dong co rong lon voi nhung con de, buoi toi troi day sao. Den troi phat sang mau vang cam, co duong di lua lua. Cac pha hanh dong nhe nhang, khong bao luc, nhieu cu chuyen ngo nghinh cua tho con."
+}

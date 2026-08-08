@@ -1,0 +1,11 @@
+{
+  "case_id": "T07",
+  "duration_minutes": 10,
+  "hook": "Bong cua be khung long Bong bi mat tich khi dam may che mat anh nang, Bong phai di tim bong cua minh.",
+  "conflict": "Bong khong hieu vi sao bong bien mat, va khi troi doi gio, bong cua moi vat deu bi xao tron, Bong lo so bong cua minh khong bao gio tro lai.",
+  "premise": "Bong cung cac ban tho va chim cung nhau kham pha nguyen nhan: bong tao ra khi anh sang bi vat can chan lai. Ho thu nghiem voi den pin, voi cay, voi nuoc de hieu.",
+  "differentiation": "Khac voi cac phim ve bong thuong chi noi ve anh sang, phim nay long ghep them y to gio va nuoc: gio lam bay vat, nuoc phan chieu tao bong dua, giup tre hieu bong khong chi tren mat dat ma con tren mat nuoc.",
+  "payoff": "Khi mat troi lo ra, bong cua Bong tro lai, Bong vui mung nhay nhot va hieu ra quy luat cua bong.",
+  "lesson": "Bong khong phai la vat chat, ma la do anh sang bi chan. Khi khong co anh sang, khong co bong. Tre hoc duoc su to mo va kham pha.",
+  "visual_potential": "Hinh anh dam may den, tia nang vang, bong do tren mat dat, bong cua cay, bong cua Bong di chuyen, thiet ke nhan vat de thuong, mau sac tuoi sang, cam giac vui nhon."
+}

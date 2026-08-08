@@ -1,0 +1,65 @@
+{
+  "schema_version": "1.0.0",
+  "candidate_sha": "28e65d8c78e1606512393ae334c39ef0248874e5",
+  "generated_at": "2026-08-08T00:32:52.043912+00:00",
+  "schema_hash": "615874baa6c58333e59597f41089e847b3cad71e4d96c6a1f0af1051df357dad",
+  "files": {
+    "accessibility_core_flow_receipt.json": {
+      "sha256": "b0dbc16e1e6d71e83474aad6a3d35801fcecc238bfcd51f226fe801f9a331b10",
+      "size_bytes": 1045,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "accessibility_core_flow_receipt.json"
+    },
+    "api_integration_receipt.json": {
+      "sha256": "1238b169ca572f853b769597d4eaa1f478b101198db926cc43123f2fba017030",
+      "size_bytes": 2300,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "api_integration_receipt.json"
+    },
+    "desktop_build_manifest.json": {
+      "sha256": "ef4ec9ff19f88831a16d7a3efb179e2937034f03c06978d7a1117edb0685eb85",
+      "size_bytes": 1796,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "desktop_build_manifest.json"
+    },
+    "desktop_command_receipt.json": {
+      "sha256": "ea272659a0a8da5dd0f3ddf3f03fdb27997a0c7c14c2c77d137496f49c73d8aa",
+      "size_bytes": 1024,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "desktop_command_receipt.json"
+    },
+    "realtime_e2e_receipt.json": {
+      "sha256": "51b076a4e6d69c8f2dc3885a33b67900527527e17614391e32f7d40d0ba87f20",
+      "size_bytes": 878,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "realtime_e2e_receipt.json"
+    },
+    "web_build_manifest.json": {
+      "sha256": "2a721b1d6e6479961f61fc0bba36e07605f687e04333105fc0565c40712d07ae",
+      "size_bytes": 964,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "web_build_manifest.json"
+    },
+    "web_command_receipt.json": {
+      "sha256": "f35f8f1442b5d741a29d206f9fd38b275c19370f176590d9149743b8eb3f181b",
+      "size_bytes": 1021,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "web_command_receipt.json"
+    }
+  },
+  "manifest_sha256": "8563202e45de3bcdd3214059085ee220f7afab561331f4bcb618e94ba141a623"
+}

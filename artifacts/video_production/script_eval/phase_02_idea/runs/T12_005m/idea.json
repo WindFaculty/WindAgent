@@ -1,0 +1,11 @@
+{
+  "case_id": "T12",
+  "duration_minutes": 5,
+  "hook": "Mot chu meo con tim thay mot chiec mu len ma khi doi vao thi co the hieu duoc tieng noi cua cac con vat",
+  "conflict": "Chu meo con muon tra lai chiec mu len cho chu nhan cua no la mot ba cu tot bung, nhung tren duong di no gap phai mot con chim se bi lac va can su giup do. Meo con phai chon giua viec giup chim se hay tiep tuc di tra mu",
+  "premise": "Meo con nhat duoc mot chiec mu len mau do tu tren troi roi xuong. Khi doi vao, no nghe duoc tieng noi cua mot con cho dang buon vi bi mat xuong. Meo con quyet dinh giup cho tim xuong truoc khi tra mu. Tren duong di, chung gap nhieu tinh huong vui nhu con vit dang kho xuong ao, con tho dang lo vi mat cai ao len. Meo con dung mu len de hieu va giup tung con vat. Cuoi cung, chung tim duoc xuong cho va meo con tra mu lai cho ba cu. Ba cu cam on va tang meo con mot chiec mu len moi mau xanh",
+  "differentiation": "Khac voi cac phim hoat hinh thuong tap trung vao nhan vat chinh don le, phim nay tao mot chuoi hanh dong giup do noi tiep nhau, moi con vat deu co van de rieng va meo con dung mu len de giai quyet. Dieu nay tao su da dang va hap dan lien tuc. Mu len khong chi la vat dung ma la cong cu ket noi va thau hieu",
+  "payoff": "Khi meo con tra mu cho ba cu, ba cu mo ra mot chiec hop nho dung nhung chiec mu len mau sac khac nhau. Ba cu noi (khong loi thoai, chi bang hinh anh) rang meo con da giup nhieu nguoi, nen ba tang cho meo con mu len xanh. Meo con doi mu xanh va nghe duoc tieng noi cua cac con vat, vui ve chay nhay. Ket thuc canh meo con va cac ban vat cung nhau ngoi duoi go cay, doi mu len va cuoi khanh khiet",
+  "lesson": "Giup do nguoi khac khong chi mang lai niem vui cho ho ma con mang lai phan thuong bat ngo cho chinh minh. Su tu te va kien nhan se duoc den dap",
+  "visual_potential": "Hinh anh manh me voi cac mau sac tuoi sang: chiec mu len do noi bat tren nen xanh la cay, cac con vat co bieu cam ro rang va de thuong. Canh meo con doi mu len va nghe duoc tieng noi co the hien qua cac song am thanh mau (khi mu len vao, xung quanh co cac vong tron mau). Cac tinh huong giup do tao nen nhieu canh chuyen dong vui nhon: chim se bay loai quanh meo con, vit nhay xuong ao tao boc nuoc, tho nhay nhot tim ao len. Ket thuc voi canh nhieu con vat quay quanh meo con, mu len xanh toa sang, tao cam giac am ap va hanh phuc"
+}

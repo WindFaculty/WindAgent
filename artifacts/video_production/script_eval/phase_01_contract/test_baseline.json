@@ -1,0 +1,14 @@
+{
+  "tests": {
+    "command": "D:\\code_ca_nhan\\WindAgent\\.venv\\Scripts\\python.exe -m pytest tests/unit/verification/test_script_eval_phase1_contract.py -q",
+    "returncode": 0,
+    "summary": "20 passed in 0.33s",
+    "passed": true
+  },
+  "checkers": [
+    {
+      "name": "fail-closed contract matrix",
+      "status": "PASS"
+    }
+  ]
+}

@@ -61,6 +61,11 @@ SpatialConstraintValidator
 
 Gate nội bộ: `VP3D_P12_SET_DRESSING_VERIFIED`.
 
+Status: **HOÀN TẤT (VERIFIED)** — `artifacts/video_production_3d/phase_12/`
+(evidence.json, phase_verdict.json, test_baseline.json). Backlog items 1–7 DONE;
+item 8 (low-cost preview render/contact sheet) deferred to the renderer/tools
+layer at Stage F §6 evidence handoff. 26 tests (unit + architecture) pass.
+
 ## 5. Test matrix
 
 - Empty/minimal scene, nhiều character, duplicate ID và missing approved asset.

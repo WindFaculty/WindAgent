@@ -160,5 +160,136 @@ class StableIdFactory:
         """Deterministic id for a compiled GenerationRequest (one per shot)."""
         return self.entity_id("req", f"{project_id}:{revision_id}:{shot_id}")
 
+    def set_dressing_plan_id(self, scene_id: object) -> str:
+        """Deterministic id for a compiled set-dressing scene plan (VP3D Phase 12)."""
+        return self.entity_id("sd", str(scene_id))
+
+    def spatial_finding_id(self, seed_value: object, seq: int = 0) -> str:
+        """Deterministic id for a spatial finding (VP3D Phase 12)."""
+        return self.entity_id("sf", seed_value, seq)
+
+    # ------------------------------------------------------------------
+    # Camera compiler layer (Phase 13) IDs
+    # ------------------------------------------------------------------
+    def camera_rig_plan_id(self, shot_id: object) -> str:
+        """Deterministic id for a compiled camera rig plan (VP3D Phase 13)."""
+        return self.entity_id("crp", str(shot_id))
+
+    def camera_finding_id(self, seed_value: object, seq: int = 0) -> str:
+        """Deterministic id for a camera finding (VP3D Phase 13)."""
+        return self.entity_id("cf", seed_value, seq)
+
+    def camera_override_id(self, seed_value: object, seq: int = 0) -> str:
+        """Deterministic id for a manual camera override (VP3D Phase 13)."""
+        return self.entity_id("covr", seed_value, seq)
+
+    def camera_path_manifest_id(self, shot_id: object) -> str:
+        """Deterministic id for a camera path/playblast manifest (VP3D Phase 13)."""
+        return self.entity_id("cpm", str(shot_id))
+
+    # ------------------------------------------------------------------
+    # Lighting compiler layer (Phase 14) IDs
+    # ------------------------------------------------------------------
+    def light_rig_plan_id(self, shot_id: object) -> str:
+        """Deterministic id for a compiled light rig plan (VP3D Phase 14)."""
+        return self.entity_id("lrp", str(shot_id))
+
+    def lighting_finding_id(self, seed_value: object, seq: int = 0) -> str:
+        """Deterministic id for a lighting finding (VP3D Phase 14)."""
+        return self.entity_id("lf", seed_value, seq)
+
+    def light_override_id(self, seed_value: object, seq: int = 0) -> str:
+        """Deterministic id for a bounded lighting override (VP3D Phase 14)."""
+        return self.entity_id("lovr", seed_value, seq)
+
+    def lighting_contact_sheet_id(self, shot_id: object) -> str:
+        """Deterministic id for a lighting contact sheet manifest (VP3D Phase 14)."""
+        return self.entity_id("lcs", str(shot_id))
+
+    # ------------------------------------------------------------------
+    # Animation compiler layer (Phase 15) IDs
+    # ------------------------------------------------------------------
+    def animation_clip_id(self, action: object, emotion: object,
+                          version: str) -> str:
+        """Deterministic id for a library clip entry (VP3D Phase 15).
+
+        Content-based: same action+emotion+version -> same clip id, so the
+        library is deterministic and never keyed by display name.
+        """
+        return self.entity_id("acl", f"{action}:{emotion}:{version}")
+
+    def animation_track_id(self, actor_id: object,
+                           start_frame: object, seq: int = 0) -> str:
+        """Deterministic id for a compiled animation track (VP3D Phase 15)."""
+        return self.entity_id("atk", f"{actor_id}:{start_frame}", seq)
+
+    def animation_finding_id(self, seed_value: object, seq: int = 0) -> str:
+        """Deterministic id for an animation finding (VP3D Phase 15)."""
+        return self.entity_id("anf", seed_value, seq)
+
+    def retarget_receipt_id(self, clip_id: object) -> str:
+        """Deterministic id for a clip retarget receipt (VP3D Phase 15)."""
+        return self.entity_id("rtr", str(clip_id))
+
+    def episode_pin_id(self, episode_id: object, actor_id: object) -> str:
+        """Deterministic id for an episode clip-revision pin (VP3D Phase 15)."""
+        return self.entity_id("epn", f"{episode_id}:{actor_id}")
+
+    def blend_transition_id(self, actor_id: object,
+                            boundary_frame: object) -> str:
+        """Deterministic id for a blend transition (VP3D Phase 15)."""
+        return self.entity_id("bln", f"{actor_id}:{boundary_frame}")
+
+    # ------------------------------------------------------------------
+    # Procedural animation layer (Phase 16) IDs
+    # ------------------------------------------------------------------
+    def procedural_recipe_id(self, track_id: object) -> str:
+        """Deterministic id for a procedural recipe (VP3D Phase 16)."""
+        return self.entity_id("prc", str(track_id))
+
+    def procedural_layer_id(self, kind: object, seed_value: object,
+                            seq: int = 0) -> str:
+        """Deterministic id for one procedural layer spec (VP3D Phase 16)."""
+        return self.entity_id("plr", f"{kind}:{seed_value}", seq)
+
+    def procedural_finding_id(self, seed_value: object, seq: int = 0) -> str:
+        """Deterministic id for a procedural finding (VP3D Phase 16)."""
+        return self.entity_id("pfd", seed_value, seq)
+
+    def baked_action_id(self, track_id: object) -> str:
+        """Deterministic id for a baked derived action (VP3D Phase 16)."""
+        return self.entity_id("bka", str(track_id))
+
+    # ------------------------------------------------------------------
+    # AI motion adapter (Phase 17) IDs
+    # ------------------------------------------------------------------
+    def motion_capability_id(self, provider: object, model: object,
+                             version: object) -> str:
+        """Deterministic id for a capability contract (VP3D Phase 17)."""
+        return self.entity_id("moc", f"{provider}:{model}:{version}")
+
+    def motion_request_id(self, actor_id: object,
+                          prompt_hash: object, seed: object) -> str:
+        """Deterministic id for a generation request (VP3D Phase 17)."""
+        return self.entity_id("mor", f"{actor_id}:{prompt_hash}:{seed}")
+
+    def raw_motion_artifact_id(self, request_id: object,
+                               seed: object) -> str:
+        """Deterministic id for a raw artifact (VP3D Phase 17)."""
+        return self.entity_id("rma", f"{request_id}:{seed}")
+
+    def motion_candidate_id(self, request_id: object,
+                            seed: object) -> str:
+        """Deterministic id for one candidate (VP3D Phase 17)."""
+        return self.entity_id("mcd", f"{request_id}:{seed}")
+
+    def motion_finding_id(self, seed_value: object, seq: int = 0) -> str:
+        """Deterministic id for an AI motion finding (VP3D Phase 17)."""
+        return self.entity_id("mfd", seed_value, seq)
+
+    def skeleton_remap_receipt_id(self, artifact_id: object) -> str:
+        """Deterministic id for a skeleton remap receipt (VP3D Phase 17)."""
+        return self.entity_id("smr", str(artifact_id))
+
 
 __all__ = ["StableIdFactory"]

@@ -1,0 +1,103 @@
+{
+  "negative_checks": {
+    "camera_side_flip_detected": true,
+    "dialogue_timing_violation_detected": true,
+    "lens_out_of_bounds_detected": true,
+    "movement_too_fast_detected": true,
+    "path_through_geometry_detected": true,
+    "subject_out_of_frame_detected": true
+  },
+  "occlusion_preflight": {
+    "distinct_frames": [
+      1,
+      17,
+      32,
+      48
+    ],
+    "finding_count": 4,
+    "findings": [
+      {
+        "blocking": true,
+        "detail": "camera->subject segment blocked by 'pillar' at frame 1 (sample 1/4)",
+        "finding_id": "occ:sh-track:1:pillar",
+        "frame": 1,
+        "kind": "OCCLUSION",
+        "measured": {
+          "path_length_m": 6.0,
+          "sample_count": 4,
+          "sample_index": 0,
+          "volume": "pillar"
+        },
+        "position": {
+          "x": -3.0,
+          "y": -5.0,
+          "z": 1.6
+        },
+        "shot_id": "sh-track"
+      },
+      {
+        "blocking": true,
+        "detail": "camera->subject segment blocked by 'pillar' at frame 17 (sample 2/4)",
+        "finding_id": "occ:sh-track:17:pillar",
+        "frame": 17,
+        "kind": "OCCLUSION",
+        "measured": {
+          "path_length_m": 6.0,
+          "sample_count": 4,
+          "sample_index": 1,
+          "volume": "pillar"
+        },
+        "position": {
+          "x": -1.0,
+          "y": -5.0,
+          "z": 1.6
+        },
+        "shot_id": "sh-track"
+      },
+      {
+        "blocking": true,
+        "detail": "camera->subject segment blocked by 'pillar' at frame 32 (sample 3/4)",
+        "finding_id": "occ:sh-track:32:pillar",
+        "frame": 32,
+        "kind": "OCCLUSION",
+        "measured": {
+          "path_length_m": 6.0,
+          "sample_count": 4,
+          "sample_index": 2,
+          "volume": "pillar"
+        },
+        "position": {
+          "x": 1.0,
+          "y": -5.0,
+          "z": 1.6
+        },
+        "shot_id": "sh-track"
+      },
+      {
+        "blocking": true,
+        "detail": "camera->subject segment blocked by 'pillar' at frame 48 (sample 4/4)",
+        "finding_id": "occ:sh-track:48:pillar",
+        "frame": 48,
+        "kind": "OCCLUSION",
+        "measured": {
+          "path_length_m": 6.0,
+          "sample_count": 4,
+          "sample_index": 3,
+          "volume": "pillar"
+        },
+        "position": {
+          "x": 3.0,
+          "y": -5.0,
+          "z": 1.6
+        },
+        "shot_id": "sh-track"
+      }
+    ],
+    "fixture": "moving (TRACK)",
+    "multi_frame_sampling": true
+  },
+  "override_pin": {
+    "drifted_track_fails_closed": true,
+    "respected_when_matching": true
+  }
+}

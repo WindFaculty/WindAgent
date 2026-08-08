@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0.0",
+  "candidate_sha": "28e65d8c78e1606512393ae334c39ef0248874e5",
+  "run_id": "ch01_run",
+  "started_at": "2026-08-08T00:32:53.154524+00:00",
+  "completed_at": "2026-08-08T00:32:53.154524+00:00",
+  "command_or_provider": "ProductionWorkflowEngine.recover",
+  "input_hashes": [
+    "15369efdd196d4d6adc8cbdb89e7d323a027c3fae979da2828b6e81bd517989a"
+  ],
+  "output_hashes": [
+    "3372dd8c0bf5804e36cf61f4935083c8ac0b8890ead8af394262d61cb719d121"
+  ],
+  "evidence_locator": "failure_injection_receipts/CH01_WORKER_KILL_GENERATING.json",
+  "status": "PASSED",
+  "tier": "INTEGRATION_LEVEL",
+  "injection_point": "Sau submit đã xác nhận (run ở WAITING_PROVIDER)",
+  "expected_behavior": [
+    "lease expires after worker death",
+    "new worker reconciles the SAME external job",
+    "no resubmit (submission events unchanged)"
+  ],
+  "observed": {
+    "lease_expired_after_kill": true,
+    "new_worker_reconciles_same_job": true,
+    "no_resubmit": true
+  },
+  "pre_state": {
+    "state": "WAITING_PROVIDER",
+    "external_id": "ext_RENDER_ASSETS_727f3473",
+    "submits": 1
+  },
+  "post_state": {
+    "state": "WAITING_PROVIDER",
+    "external_id": "ext_RENDER_ASSETS_727f3473",
+    "submits": 1
+  },
+  "detection_time_ms": 1.76,
+  "recovery_time_ms": 1.76,
+  "duplicates_prevented": {
+    "submit": 0,
+    "debit": 0,
+    "publish": 0
+  },
+  "cleanup_verified": true,
+  "scenario_id": "CH01_WORKER_KILL_GENERATING"
+}

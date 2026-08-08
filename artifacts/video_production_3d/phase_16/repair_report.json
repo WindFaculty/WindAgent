@@ -1,0 +1,8 @@
+{
+  "layer_scoped": true,
+  "note": "backlog 6: repair only the broken layer, never re-bake the whole scene when other inputs are unchanged",
+  "repair_scope": [
+    "procedural/layer:l-look"
+  ],
+  "unchanged_layers_kept": true
+}

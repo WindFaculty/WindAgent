@@ -1,0 +1,233 @@
+{
+  "schema_version": "1.0.0",
+  "candidate_sha": "28e65d8c78e1606512393ae334c39ef0248874e5",
+  "generated_at": "2026-08-08T00:32:35.059390+00:00",
+  "schema_hash": "615874baa6c58333e59597f41089e847b3cad71e4d96c6a1f0af1051df357dad",
+  "files": {
+    "ffmpeg_command_receipts/cmd_assemble_final.json": {
+      "sha256": "33b84c9398669a691d5431a50f81f99f41656a6e299a91a6ae1d3c118911349a",
+      "size_bytes": 1972,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "ffmpeg_command_receipts/cmd_assemble_final.json"
+    },
+    "ffmpeg_command_receipts/cmd_build_audio_mix.json": {
+      "sha256": "ca2d9dd12c582009d2f06e68e214c0f337a7900121df995140f9c020c66b81d0",
+      "size_bytes": 1055,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "ffmpeg_command_receipts/cmd_build_audio_mix.json"
+    },
+    "ffmpeg_command_receipts/cmd_ffprobe_final.json": {
+      "sha256": "e1f1518f6e9f38c4e13ff94ddd3b201649f7c31d5c81ba5f5a5fda07876e5813",
+      "size_bytes": 876,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "ffmpeg_command_receipts/cmd_ffprobe_final.json"
+    },
+    "ffmpeg_command_receipts/cmd_gen_clip_01.json": {
+      "sha256": "8c92b106c37247e2c880d71016f4d1c6a9b34bdded685fe67926d461ac4f7fed",
+      "size_bytes": 1084,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "ffmpeg_command_receipts/cmd_gen_clip_01.json"
+    },
+    "ffmpeg_command_receipts/cmd_gen_clip_02.json": {
+      "sha256": "7d6a9197f8d4602289e1f8f2bcd067d6b91025874e26ca44e98f4ed0a0d2c361",
+      "size_bytes": 1084,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "ffmpeg_command_receipts/cmd_gen_clip_02.json"
+    },
+    "ffmpeg_command_receipts/cmd_gen_clip_03.json": {
+      "sha256": "3803cfd69238d69eb40e9673d44cc7807749b41daa19b680f63d56dfd05a3ad1",
+      "size_bytes": 1084,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "ffmpeg_command_receipts/cmd_gen_clip_03.json"
+    },
+    "ffmpeg_command_receipts/cmd_gen_clip_04.json": {
+      "sha256": "85dbf2174ea0010d730b6ca8a95e3a2672719ee984d2fa3aeac3c29da9edd9bb",
+      "size_bytes": 1084,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "ffmpeg_command_receipts/cmd_gen_clip_04.json"
+    },
+    "ffmpeg_command_receipts/cmd_gen_clip_05.json": {
+      "sha256": "6b22c2935eaedd42cc54e50104ff6eb80865fdf6fc0ed13535ba0c57b6c39b3f",
+      "size_bytes": 1083,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "ffmpeg_command_receipts/cmd_gen_clip_05.json"
+    },
+    "ffmpeg_command_receipts/cmd_gen_clip_06.json": {
+      "sha256": "5788fd290e3b48218a89fd3a715dd89188d2461f067ababd6bb24c4f9e87ee1c",
+      "size_bytes": 1084,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "ffmpeg_command_receipts/cmd_gen_clip_06.json"
+    },
+    "ffprobe_raw.json": {
+      "sha256": "4e9de32eb52488b896c3fa17659058294c21717bba8785d2e48c5b40ed57d132",
+      "size_bytes": 3638,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "ffprobe_raw.json"
+    },
+    "final_media_manifest.json": {
+      "sha256": "49668954f39194b02da80eb95517866d1f3fcfed7f5b500daa28073213a10dbf",
+      "size_bytes": 1427,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "final_media_manifest.json"
+    },
+    "media_decode_receipt.json": {
+      "sha256": "55548afe809831a3a77c55af7fc73193b223e10ba2535783b07e18eb3bcb0821",
+      "size_bytes": 1589,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "media_decode_receipt.json"
+    },
+    "render_manifest.json": {
+      "sha256": "9f06db72ac5d42ffd0831fc499adc85de32b3f6e54632bb7b10d2f7c3b89e36d",
+      "size_bytes": 1244,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "render_manifest.json"
+    },
+    "reproducibility_report.json": {
+      "sha256": "2d43baae53f64ee946f706bea0038e8fe4060ecdb7029f7329f46966dca27641",
+      "size_bytes": 1465,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "reproducibility_report.json"
+    },
+    "toolchain_receipt.json": {
+      "sha256": "8ff2e967ab457da64cbcc48ab290278a1bb6c13371154e5a0179276212b60a56",
+      "size_bytes": 3250,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "toolchain_receipt.json"
+    },
+    "workspace/audio_mix.wav": {
+      "sha256": "68c164f3dffa6629be2d301638cde2635ba8773891dfbceb5bbd2e08d4194197",
+      "size_bytes": 3456078,
+      "media_container": "wav",
+      "mime": "audio/wav",
+      "retention_days": 365,
+      "locator": "workspace/audio_mix.wav"
+    },
+    "workspace/clip_01.mp4": {
+      "sha256": "b6fc027feccf01bb2897ac83e9abf7896bba01195b8545abcd9b8f764fa17874",
+      "size_bytes": 1556081,
+      "media_container": "mp4",
+      "mime": "video/mp4",
+      "retention_days": 365,
+      "locator": "workspace/clip_01.mp4"
+    },
+    "workspace/clip_02.mp4": {
+      "sha256": "0ed1096c06c71c03522d0b7827e9d079c8a1ae17cdc352ac1dcc6052ea5ffef6",
+      "size_bytes": 1556097,
+      "media_container": "mp4",
+      "mime": "video/mp4",
+      "retention_days": 365,
+      "locator": "workspace/clip_02.mp4"
+    },
+    "workspace/clip_03.mp4": {
+      "sha256": "17bc0f5a88f03155b15ddecac55e368ba071c5d86816350a71422efb01ca4825",
+      "size_bytes": 1555865,
+      "media_container": "mp4",
+      "mime": "video/mp4",
+      "retention_days": 365,
+      "locator": "workspace/clip_03.mp4"
+    },
+    "workspace/clip_04.mp4": {
+      "sha256": "58fa782de0d1832847efad03881afa2bf7081c4c0a301dbe3a23282293fb2f3e",
+      "size_bytes": 1555728,
+      "media_container": "mp4",
+      "mime": "video/mp4",
+      "retention_days": 365,
+      "locator": "workspace/clip_04.mp4"
+    },
+    "workspace/clip_05.mp4": {
+      "sha256": "4cfef9c4ddaefbba8f2a55a26ce834ddf098c2370a0491deaa4bf84a5d786c4f",
+      "size_bytes": 1555840,
+      "media_container": "mp4",
+      "mime": "video/mp4",
+      "retention_days": 365,
+      "locator": "workspace/clip_05.mp4"
+    },
+    "workspace/clip_06.mp4": {
+      "sha256": "4b18b57ac0639c6228c72f66134a1edb26c0a65f8fd64110419341c9517e0ccb",
+      "size_bytes": 1555817,
+      "media_container": "mp4",
+      "mime": "video/mp4",
+      "retention_days": 365,
+      "locator": "workspace/clip_06.mp4"
+    },
+    "workspace/concat_list.txt": {
+      "sha256": "d0f325b8205593adc365b08ef33675b35e6893fa108713d62606f64ba133185c",
+      "size_bytes": 792,
+      "media_container": null,
+      "mime": "application/octet-stream",
+      "retention_days": 365,
+      "locator": "workspace/concat_list.txt"
+    },
+    "workspace/final_poc.mp4": {
+      "sha256": "ce6e1a8aee6e52c89ee7f6478605941af742a676236520347a5a31dd45d6969a",
+      "size_bytes": 9252664,
+      "media_container": "mp4",
+      "mime": "video/mp4",
+      "retention_days": 365,
+      "locator": "workspace/final_poc.mp4"
+    },
+    "workspace/final_rerender.mp4": {
+      "sha256": "ce6e1a8aee6e52c89ee7f6478605941af742a676236520347a5a31dd45d6969a",
+      "size_bytes": 9252664,
+      "media_container": "mp4",
+      "mime": "video/mp4",
+      "retention_days": 365,
+      "locator": "workspace/final_rerender.mp4"
+    },
+    "workspace/frame_first.png": {
+      "sha256": "7089e31c25b664f3e5137c603a518797dc52ccd93537ac8b29d07e1a4d3cb55b",
+      "size_bytes": 47885,
+      "media_container": "png",
+      "mime": "image/png",
+      "retention_days": 365,
+      "locator": "workspace/frame_first.png"
+    },
+    "workspace/frame_last.png": {
+      "sha256": "0244dba72652d594cca4602f9f19065ebc318fee221cc9aef64d172ead86e9e1",
+      "size_bytes": 63968,
+      "media_container": "png",
+      "mime": "image/png",
+      "retention_days": 365,
+      "locator": "workspace/frame_last.png"
+    },
+    "workspace/frame_middle.png": {
+      "sha256": "d01438652af330eb56f16f9e9ad73f70831ee2cad8ddbe420e78401c8bf06d8d",
+      "size_bytes": 49460,
+      "media_container": "png",
+      "mime": "image/png",
+      "retention_days": 365,
+      "locator": "workspace/frame_middle.png"
+    }
+  },
+  "manifest_sha256": "ff44548642a8e151ccc4ae4ecd0985c96689ebf91b9f1805f5ac6aef00abb357"
+}

@@ -1,0 +1,11 @@
+{
+  "case_id": "T01",
+  "duration_minutes": 20,
+  "hook": "Mot chiec la bi mat tu nhien bay vao tui ao cua be, dan be den mot cong vien thu nho sau goc cay",
+  "conflict": "Be va ban thu cung phai tim duong qua nhung chuong ngai vat tu nhien nhu dong nuoc, bai cat, va tranh nhung con kien dang di chuyen",
+  "premise": "Be kham pha mot khu vuon quen thuoc nung nho hon, noi cac con vat nhu oc sen, buom, de, kien co the noi chuyen va can su giup do de to chuc le hoi hat hoa",
+  "differentiation": "Khong co nhan vat sieu nang, khong co phep thuat, ma dung tri tuong tuong cua tre de bien nhung vat dung hang ngay thanh vat pham ki dieu, nhan manh su quan sat va hop tac",
+  "payoff": "Cuoi phim, be hieu ra chiec la do la loi moi cua ong Gio, va be duoc nhan mot bong hoa tu chinh khu vuon nho de dem ve trong nha, tao ra mot khu vuon nho cua rieng minh",
+  "lesson": "Kham pha nhung dieu nho nhat xung quanh cung co the la mot cuoc phieu luu, va su giup do lan nhau se lam cho cuoc vui them tron ven",
+  "visual_potential": "Hinh anh mau sac tuoi sang, cac goc quay gan voi mat dat de thay ro the gioi cua con trung, hieu ung anh nang xuyen qua la cay, am thanh tu nhien nhu tieng nuoc chay, tieng gio, va nhung chuyen dong nhe nhang cua con vat"
+}

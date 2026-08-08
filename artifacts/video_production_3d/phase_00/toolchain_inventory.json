@@ -1,8 +1,8 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.2.0",
   "phase": 0,
   "program": "vp3d",
-  "captured_at": "2026-08-07T06:35:07Z",
+  "captured_at": "2026-08-08T04:03:20Z",
   "host_tools": {
     "platform": "Windows_NT (MINGW64_NT-10.0-26200)",
     "python": "3.11.15",
@@ -22,6 +22,10 @@
     { "path": "apps/desktop/package-lock.json" }
   ],
   "environment_notes": [
-    "Local toolchain captured for VP3D Phase 0 baseline; CI matrix reference is Python 3.11 / Node 20."
-  ]
+    "Local toolchain captured for VP3D Phase 0 baseline re-freeze on candidate 5662ede; CI matrix reference is Python 3.11 / Node 20."
+  ],
+  "delta_vs_prior_baseline": {
+    "note": "Prior freeze captured the same toolchain versions (Python 3.11.15, uv 0.11.28, node v22.23.1, ffmpeg 8.1.2, git 2.55.0). No toolchain drift between baseline 649e6fa and candidate 5662ede."
+  },
+  "producer": "phase-0-baseline-freeze"
 }

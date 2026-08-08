@@ -98,6 +98,28 @@ ingest → security → parse → unit/axis → mesh → material/texture
 
 `VP3D_P7_ASSET_NORMALIZATION_VERIFIED` yêu cầu tối thiểu một asset local, một Internet fixture và một generated/fake provider asset đi qua full pipeline; malicious fixtures đều fail-closed.
 
+### Gate — HOÀN TẤT
+
+**Trạng thái: HOÀN TẤT** (2026-08-08) — `VP3D_P7_ASSET_NORMALIZATION_VERIFIED` PASS.
+
+- ✅ Canonical metadata meters + Z-up (`CanonicalMetadata` derive scale_factor từ detected unit, fail-closed UNKNOWN ⇒ meters); adapter chịu trách nhiệm convert trục.
+- ✅ Host-side parsers engine-free cho GLTF/GLB/OBJ (`parse_asset`); FBX/USD/BLEND yêu cầu sandboxed Blender job, không có job runner ⇒ fail closed.
+- ✅ Mesh validation fail-closed: degenerate faces, non-manifold heuristic, missing UV/textures, unsupported shader extensions, skeleton/animation report; poly budget ⇒ `BLOCKED`.
+- ✅ PBR material + texture content-addressed (resolution cap, bit-depth, color-space metadata, metadata strip).
+- ✅ VRAM estimate trước preview; over hard limit ⇒ `BLOCKED`, không render mù.
+- ✅ LOD theo policy (`NONE/SINGLE/MULTI`), source không bao giờ overwrite; mỗi LOD có hash + quality metrics.
+- ✅ Preview render deterministic (Cycles CPU, samples=8, 512x288, Standard color management) qua Blender job `execute_asset_job.py` (pure stdlib, auto-execution tắt) hoặc fake CI.
+- ✅ Immutable bundle: manifest + validation_report + provenance + textures content-addressed + lods + preview, bundle hash deterministic.
+- ✅ Negative tests: archive/executable/shebang rejected trước parse, content-hash mismatch, path-traversal texture URI, VRAM/poly BLOCKED không render, no-job-runner fail closed.
+- ✅ Local + Internet fixture + generated/fake-provider asset đều đi full pipeline (integration suite).
+- 45+ test mới pass (domain 8 + host 18 + job contract 8 + integration 11 + architecture 9), ruff clean, architecture imports 0 violation.
+
+Evidence:
+- `docs/video_production_3d/assets/normalization_profile.md`
+- `artifacts/video_production_3d/phase_07/phase_verdict.json`
+- `artifacts/video_production_3d/phase_07/test_receipt.json`
+- `artifacts/video_production_3d/phase_07/implementation_manifest.json`
+
 ## 6. Deliverables và test matrix
 
 ```text

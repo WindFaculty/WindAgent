@@ -1,0 +1,169 @@
+{
+  "schema_version": "1.0.0",
+  "candidate_sha": "28e65d8c78e1606512393ae334c39ef0248874e5",
+  "generated_at": "2026-08-08T00:33:04.345338+00:00",
+  "schema_hash": "615874baa6c58333e59597f41089e847b3cad71e4d96c6a1f0af1051df357dad",
+  "files": {
+    "chaos_scenario_manifest.json": {
+      "sha256": "872cfdbf5ac093f5538f83bc00f07d950e0ab8e3d79d7a2670e23169e81213be",
+      "size_bytes": 9832,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "chaos_scenario_manifest.json"
+    },
+    "duplicate_side_effect_audit.json": {
+      "sha256": "374cd5fa89274905be172b852f07fc81a83fbffbd0b39cd8d67dfb6de2b9bc3e",
+      "size_bytes": 1754,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "duplicate_side_effect_audit.json"
+    },
+    "failure_injection_receipts/CH01_WORKER_KILL_GENERATING.json": {
+      "sha256": "6f8f43a4af6b5581d4564c98b501adacabadbe189e877dbdfb1014bd5e01edc0",
+      "size_bytes": 1451,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "failure_injection_receipts/CH01_WORKER_KILL_GENERATING.json"
+    },
+    "failure_injection_receipts/CH02_BROWSER_KILL_AFTER_SUBMIT.json": {
+      "sha256": "2cbae3880385138936832e5fafc0412e723477d61e0ed2327978ee786c7e2f27",
+      "size_bytes": 1586,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "failure_injection_receipts/CH02_BROWSER_KILL_AFTER_SUBMIT.json"
+    },
+    "failure_injection_receipts/CH03_NETWORK_LOSS.json": {
+      "sha256": "f7be6f9e4bdbd617bcfae68742a0662754fbd4510addbc5bc45ed6afee87e4d8",
+      "size_bytes": 1303,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "failure_injection_receipts/CH03_NETWORK_LOSS.json"
+    },
+    "failure_injection_receipts/CH04_SESSION_EXPIRY.json": {
+      "sha256": "3585cf02107f69c1ed3df9665e9857a43fe04f12a83d69975bb210b3ea076e1d",
+      "size_bytes": 1509,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "failure_injection_receipts/CH04_SESSION_EXPIRY.json"
+    },
+    "failure_injection_receipts/CH05_SELECTOR_DRIFT.json": {
+      "sha256": "28e42b5940cdca259aef19f134fac17e647eeeab3c66c38b170f392cfc53190e",
+      "size_bytes": 1557,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "failure_injection_receipts/CH05_SELECTOR_DRIFT.json"
+    },
+    "failure_injection_receipts/CH06_DOWNLOAD_ZERO_BYTE.json": {
+      "sha256": "c49aac1fa47193ce56a6dba61bdbd30dee5fee31a29e1188e662e40d4847b0bc",
+      "size_bytes": 1329,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "failure_injection_receipts/CH06_DOWNLOAD_ZERO_BYTE.json"
+    },
+    "failure_injection_receipts/CH07_NO_VIDEO_STREAM.json": {
+      "sha256": "6e1b14f4cd468fb78b0744435afd4168ba86525bb947b1f505e44ccc6f0f19d0",
+      "size_bytes": 1314,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "failure_injection_receipts/CH07_NO_VIDEO_STREAM.json"
+    },
+    "failure_injection_receipts/CH08_INSUFFICIENT_CREDITS.json": {
+      "sha256": "6427b87d1d6e70330fd47295ae5cef2aa200937a0fd426bbc7c96d8f9d902c3e",
+      "size_bytes": 1382,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "failure_injection_receipts/CH08_INSUFFICIENT_CREDITS.json"
+    },
+    "failure_injection_receipts/CH09_CAPTCHA.json": {
+      "sha256": "9d652fb1a752718785540a6611d6f085e19385f731375574bed7621a407db67e",
+      "size_bytes": 1434,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "failure_injection_receipts/CH09_CAPTCHA.json"
+    },
+    "failure_injection_receipts/CH10_USER_CANCEL.json": {
+      "sha256": "1a4a372d233f399fa34b0b0ae4d9507023c5f193bebfd19ba64d05a15c36d84a",
+      "size_bytes": 1332,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "failure_injection_receipts/CH10_USER_CANCEL.json"
+    },
+    "failure_injection_receipts/CH11_DATABASE_RESTART.json": {
+      "sha256": "ec7c9977e8850386c3dec225cf55772be1c9fbf541a0dfaa336a38ca8f60d31a",
+      "size_bytes": 1369,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "failure_injection_receipts/CH11_DATABASE_RESTART.json"
+    },
+    "failure_injection_receipts/CH12_DUPLICATE_EVENT.json": {
+      "sha256": "3b2258120359290b86fa923d63519760dca729d3d77bd45921f1a87e54672bd7",
+      "size_bytes": 1273,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "failure_injection_receipts/CH12_DUPLICATE_EVENT.json"
+    },
+    "failure_injection_receipts/CH13_LEASE_EXPIRY.json": {
+      "sha256": "2d9300f2ee2d6786540160e03878e3d631c1ffba42598dc7cbfe52d0580bb40c",
+      "size_bytes": 1260,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "failure_injection_receipts/CH13_LEASE_EXPIRY.json"
+    },
+    "failure_injection_receipts/CH14_STALE_WORKER_WRITE.json": {
+      "sha256": "468eb29e6cc063d774ff49da3236c842dba74befa880e49416d27f2df68fc9d2",
+      "size_bytes": 1231,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "failure_injection_receipts/CH14_STALE_WORKER_WRITE.json"
+    },
+    "failure_injection_receipts/CH15_ENGINE_PROJECT_DELETED.json": {
+      "sha256": "72b94deaf1966c37584976db1507dbf8d4db30d42a3921c66673942b2736cfe4",
+      "size_bytes": 1512,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "failure_injection_receipts/CH15_ENGINE_PROJECT_DELETED.json"
+    },
+    "open_reliability_findings.json": {
+      "sha256": "05ec7f4276a0858a4fb6af8e9ecc5e0afde483fba991b074e1958dd67fb681f4",
+      "size_bytes": 1152,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "open_reliability_findings.json"
+    },
+    "recovery_timing_report.json": {
+      "sha256": "49e984b439f964f08780b4de17d43b43432c6e7d364d5346099b2d5ac2e9aa50",
+      "size_bytes": 2475,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "recovery_timing_report.json"
+    },
+    "soak_test_report.json": {
+      "sha256": "892a5bbabc0d2632220682427d07d9e7b1d9a5b9db4100a4fb8cb6f0e6bfc409",
+      "size_bytes": 4095,
+      "media_container": "json",
+      "mime": "application/json",
+      "retention_days": 365,
+      "locator": "soak_test_report.json"
+    }
+  },
+  "manifest_sha256": "e29d5d8ce46c1b862401374c9b006d0742f46301d4493427f10cd1356fd66493"
+}

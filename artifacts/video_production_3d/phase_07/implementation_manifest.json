@@ -1,0 +1,138 @@
+{
+  "files": [
+    {
+      "path": "core/windagent_core/domain/video_production/asset_normalization/__init__.py",
+      "sha256": "becbe4de2be6e9f390c9c3f8109f07c28d64e2aacbb33ded958096a262298eaa"
+    },
+    {
+      "path": "core/windagent_core/domain/video_production/asset_normalization/enums.py",
+      "sha256": "fbff39e6e3bdd1b753dfb605ba3013c64a6496010233d1cdf8d88097f8d3c2d7"
+    },
+    {
+      "path": "core/windagent_core/domain/video_production/asset_normalization/errors.py",
+      "sha256": "0c5786b760a30413db666ba933817640dc87bcc1006625a81506514039e0d256"
+    },
+    {
+      "path": "core/windagent_core/domain/video_production/asset_normalization/models.py",
+      "sha256": "088ee2ab73c815cf4855d083ded1fd2777baac20c036920fa7ef70b808b76fd1"
+    },
+    {
+      "path": "core/windagent_core/contracts/video_production/asset_normalizer.py",
+      "sha256": "23c775a16d171337593d8f7d4431de24416ac22669033effec84cbdea9a334af"
+    },
+    {
+      "path": "tools/windagent_tools/media_assets/normalization/__init__.py",
+      "sha256": "58ca6cbd2923072fa1274124a5fb1896aa3f9dcc5f6f49240e1db9a06d9f13e3"
+    },
+    {
+      "path": "tools/windagent_tools/media_assets/normalization/pipeline.py",
+      "sha256": "2719040cc313eccf673b5141e42347dda8699e5d38a3da1de39527aa923357d1"
+    },
+    {
+      "path": "tools/windagent_tools/media_assets/normalization/parsers.py",
+      "sha256": "9b53ebe16534d73852df366371b21c419f597f8eab68651ff312101570b47acb"
+    },
+    {
+      "path": "tools/windagent_tools/media_assets/normalization/snapshot.py",
+      "sha256": "9dec2fc95984b7139a807b17bcda23b1728df2fbf84ca3efa1683517f79d2b6c"
+    },
+    {
+      "path": "tools/windagent_tools/media_assets/normalization/checks.py",
+      "sha256": "e1ea14a55a6e8fab6d15519cd31cb2dad59b0d0f9c250ffc9732572b3045933d"
+    },
+    {
+      "path": "tools/windagent_tools/media_assets/normalization/vram.py",
+      "sha256": "4c847ffafcf91ad69fac46d78964e8ba2ed270d92e1cba1200dac9d0427eb351"
+    },
+    {
+      "path": "tools/windagent_tools/media_assets/normalization/textures.py",
+      "sha256": "90ba9f9ca29106e6c327c218c16a79f438c64b28975b69d26746016144639de8"
+    },
+    {
+      "path": "tools/windagent_tools/media_assets/normalization/lod.py",
+      "sha256": "d52cd8e6d810c51e9b38a6848d955ef00ccf4efb25b32644a86a0fe815071af6"
+    },
+    {
+      "path": "tools/windagent_tools/media_assets/normalization/preview.py",
+      "sha256": "f08b27bf4aab872b6cd23d487c160f8235ab023b544ee31c0d8eeb1b14cb1dc0"
+    },
+    {
+      "path": "tools/windagent_tools/media_assets/normalization/bundle.py",
+      "sha256": "b30ad68b5e396c7daf68c6bde2f2375d2fa6f12c79be5a8f7ae3bf5000418e31"
+    },
+    {
+      "path": "tools/windagent_tools/media_assets/normalization/job_runner.py",
+      "sha256": "5fc31afad679213f1f2f8fa3fb1d7159973eb1b2d21aa227df9fda86389b65d1"
+    },
+    {
+      "path": "tools/windagent_tools/media_assets/normalization/fakes.py",
+      "sha256": "72e5f1b9074eb36a749b08f50508805694d37e53dd4acc4c3a01c56265ac428f"
+    },
+    {
+      "path": "tools/windagent_tools/production_engines/blender/asset_pipeline.py",
+      "sha256": "32b27de85c22a13e8893338c09a0a3a3c3f487d7bdc81c6af05017b74c77be05"
+    },
+    {
+      "path": "tools/windagent_tools/production_engines/blender/scripts/execute_asset_job.py",
+      "sha256": "473951b077092277038d3013029e49398f44195f420f6a6c8c3287de39be0d1f"
+    },
+    {
+      "path": "apps/worker/windagent_worker/composition.py",
+      "sha256": "a6e1c5821e44b5993fccd5a475bbb8f08fe27329d285521dba096488f5fcff5d"
+    },
+    {
+      "path": "docs/video_production_3d/assets/normalization_profile.md",
+      "sha256": "2140a796159f4c0994d351cae514cea6b2a340e1811f856de42abe2ba388509c"
+    },
+    {
+      "path": "tests/unit/core/test_phase7_asset_normalization_domain.py",
+      "sha256": "a2ef7ee32c4ca86225f4030db2f964a51b1653769df32eed801232202192069e"
+    },
+    {
+      "path": "tests/unit/tools/test_phase7_normalization_host.py",
+      "sha256": "0881481bb0d88d12174fd4ca7085e71a3fc897d617686db9caac3ddba59482d0"
+    },
+    {
+      "path": "tests/unit/tools/test_phase7_asset_job_contract.py",
+      "sha256": "6cf8260ec4472436bdaeb1810df8b9cd95deadb7583f3b2a617b36b081aa1f94"
+    },
+    {
+      "path": "tests/integration/test_phase7_normalization_flow.py",
+      "sha256": "3f726c956a70cedef09ea00ede6a729b25c5165522fdc19b505dc98040817276"
+    },
+    {
+      "path": "tests/architecture/test_phase7_asset_normalization_architecture.py",
+      "sha256": "2915205f0f3a4cfa4e26e26626455cf129c8a33fba9f6040ee88b950a8588238"
+    },
+    {
+      "path": "scripts/verification/verify_phase7_normalization.py",
+      "sha256": "c9d4afed4ac2f327ec59ed9054298d219f77ccc7221101f97ccd973446088c7d"
+    }
+  ],
+  "modified_shared_files": [
+    {
+      "change": "additive exports/ids (NormalizationRunId, AssetNormalizerPort, normalization package exports)",
+      "path": "core/windagent_core/domain/video_production/ids.py"
+    },
+    {
+      "change": "additive exports/ids (NormalizationRunId, AssetNormalizerPort, normalization package exports)",
+      "path": "core/windagent_core/domain/video_production/__init__.py"
+    },
+    {
+      "change": "additive exports/ids (NormalizationRunId, AssetNormalizerPort, normalization package exports)",
+      "path": "core/windagent_core/contracts/video_production/__init__.py"
+    },
+    {
+      "change": "additive exports/ids (NormalizationRunId, AssetNormalizerPort, normalization package exports)",
+      "path": "tools/windagent_tools/media_assets/__init__.py"
+    }
+  ],
+  "phase": "phase_07",
+  "phase_name": "Asset Normalization",
+  "toolchain": {
+    "blender": "4.5.12 LTS (C:/Program Files/Blender Foundation/Blender 4.5/blender.exe)",
+    "pytest": "workspace dev group",
+    "python": "3.11.15",
+    "ruff": "workspace dev group"
+  }
+}

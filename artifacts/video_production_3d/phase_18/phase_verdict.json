@@ -1,0 +1,31 @@
+{
+  "backlog_completion": {
+    "1_timing_normalization": "DONE — word/phoneme timing from the Stage E alignment is normalized to shot frames (fps + shot offset); the source alignment hash is preserved verbatim on the PhonemeTrack; non-monotonic or out-of-range timing raises FacialCompileError",
+    "2_viseme_map_versioned": "DONE — VisemeMap is versioned by language + facial rig profile with a content hash; unknown phonemes resolve through an EXPLICIT fallback rule (NEUTRAL/CLOSED) and a map without a rule raises VisemeMapMissingPhonemeError — never a silent skip",
+    "3_viseme_curves": "DONE — compile emits semantic-control keyframes with coarticulation (lookahead blend window), minimum hold and amplitude bounded to [0, AMPLITUDE_MAX]; silence spans produce no mouth movement",
+    "4_emotion_curves": "DONE — emotion curves are separate layers over brow/eye controls; a curve overlapping articulation (jaw/lips) controls raises FacialCompileError (EMOTION_ARTICULATION_OVERLAP)",
+    "5_blink_gaze_head": "DONE — blink schedule, eye-target samples and subtle head motion are generated deterministically from the seed; head amplitude bounded to HEAD_MOTION_MAX_AMPLITUDE",
+    "6_layer_ownership": "DONE — jaw/lips/face/blink/brow/gaze controls are owned by the facial track; head follows HeadBlendPolicy (FACIAL_OWNS_HEAD / BLEND_LIMITED / BODY_OWNS_HEAD) and body head turn + facial head motion are checked against HEAD_JOINT_LIMIT_DEGREES",
+    "7_bake_derived_action": "DONE — bake produces a BakedFacialAction recording compiler version, input hashes and frame range; only APPROVED tracks bake (FacialBakeError otherwise)",
+    "8_layer_scoped_repair": "DONE — repair is scoped per layer (lip-sync / gaze / emotion / blink / head motion); invalidation touches only the affected layer + render/final downstream; body clip untouched when timing unchanged",
+    "9_preview_manifest": "DONE — close-up playblast manifest (camera framing, resolution, fps, frame range, semantic controls) is built engine-neutral before Cycles final"
+  },
+  "decided_at": "2026-08-08T07:23:58.126955+00:00",
+  "evidence_files": [
+    "artifacts/video_production_3d/phase_18/alignment_input_manifest.json",
+    "artifacts/video_production_3d/phase_18/viseme_map.json",
+    "artifacts/video_production_3d/phase_18/facial_track.json",
+    "artifacts/video_production_3d/phase_18/curve_validation_report.json",
+    "artifacts/video_production_3d/phase_18/sync_metrics.json",
+    "artifacts/video_production_3d/phase_18/preview_render_manifest.json",
+    "artifacts/video_production_3d/phase_18/bake_receipt.json",
+    "artifacts/video_production_3d/phase_18/repair_receipt.json",
+    "artifacts/video_production_3d/phase_18/evidence.json",
+    "artifacts/video_production_3d/phase_18/test_baseline.json",
+    "artifacts/video_production_3d/phase_18/phase_verdict.json"
+  ],
+  "gate": "VP3D_P18_FACIAL_PIPELINE_VERIFIED",
+  "phase": "phase_18",
+  "summary": "Two characters (Vietnamese with diacritics, silence gaps, a fast sentence, an emotion change) went through the FULL facial pipeline: Stage E alignment normalized to shot frames at 24fps (source alignment hash preserved), a vi-VN viseme map versioned by language + rig profile with an explicit NEUTRAL fallback for unknown phonemes (never silent skip), semantic-control curves with coarticulation + min hold + bounded amplitude (silence spans produce no mouth movement), emotion curves that never overlap articulation, deterministic blink/gaze/head motion from the seed, and layer ownership (jaw/lips/face owned by facial; head follows the blend policy and body turn + facial head stay within the joint limit). Validation passed the full §4 matrix: keyframes monotonic and inside the shot range, audio/animation drift at line start/mid/end within 1 frame, no facial pop between adjacent lines, no idle speech. Low-confidence alignment and a rig missing controls both routed to REQUIRES_HUMAN_REVIEW (never silently into render). Bake produced a deterministic derived action recording compiler version + input hashes + frame range; a non-APPROVED track failed closed. Repair was layer-scoped (gaze) with invalidation limited to the affected layer + render/final. Rebuilding with the same input/profile/seed produced the same curve manifest hash. Preview close-up playblast manifest built engine-neutral before Cycles. No bpy, no eval/exec anywhere; the domain carries semantic controls only. gate_passed=True.",
+  "verdict": "PASS"
+}

@@ -1,0 +1,663 @@
+{
+  "model": "deepseek-v4-flash-alibaba (via router.bynara.id)",
+  "requested_model": "deepseek/deepseek-v4-flash-0731 (OpenRouter) — unavailable: project key is NaraRouter sk-nry-*, OpenRouter returns 401; nara deepseek-v4-flash returns empty completions, alibaba variant used",
+  "run_count": 36,
+  "passed": 18,
+  "pass_rate": 0.5,
+  "error_check_counts": {
+    "thin_premise": 17,
+    "inappropriate_conflict": 1
+  },
+  "runs": [
+    {
+      "run_id": "T01_005m",
+      "model": "deepseek-v4-flash-alibaba",
+      "generation_status": "PASS",
+      "elapsed_seconds": 37.74,
+      "usage": {
+        "completion_tokens": 1241,
+        "prompt_tokens": 293,
+        "total_tokens": 1534
+      },
+      "validation_status": "PASS",
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "run_id": "T01_010m",
+      "model": "deepseek-v4-flash-alibaba",
+      "generation_status": "PASS",
+      "elapsed_seconds": 8.09,
+      "usage": {
+        "completion_tokens": 562,
+        "prompt_tokens": 293,
+        "total_tokens": 855
+      },
+      "validation_status": "PASS",
+      "errors": [],
+      "warnings": [
+        {
+          "check": "not_visual",
+          "message": "no visual-action vocabulary; may be hard to show on screen"
+        }
+      ]
+    },
+    {
+      "run_id": "T01_020m",
+      "model": "deepseek-v4-flash-alibaba",
+      "generation_status": "FAIL",
+      "elapsed_seconds": 9.31,
+      "usage": {
+        "completion_tokens": 456,
+        "prompt_tokens": 293,
+        "total_tokens": 749
+      },
+      "validation_status": "FAIL",
+      "errors": [
+        {
+          "check": "thin_premise",
+          "message": "premise too thin for 20 min (154 chars, need >= 400)"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "run_id": "T02_005m",
+      "model": "deepseek-v4-flash-alibaba",
+      "generation_status": "FAIL",
+      "elapsed_seconds": 25.36,
+      "usage": {
+        "completion_tokens": 535,
+        "prompt_tokens": 289,
+        "total_tokens": 824
+      },
+      "validation_status": "FAIL",
+      "errors": [
+        {
+          "check": "inappropriate_conflict",
+          "message": "conflict unsuitable for young children, terms: ['bat nat']"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "run_id": "T02_010m",
+      "model": "deepseek-v4-flash-alibaba",
+      "generation_status": "FAIL",
+      "elapsed_seconds": 14.13,
+      "usage": {
+        "completion_tokens": 789,
+        "prompt_tokens": 289,
+        "total_tokens": 1078
+      },
+      "validation_status": "PASS",
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "run_id": "T02_020m",
+      "model": "deepseek-v4-flash-alibaba",
+      "generation_status": "FAIL",
+      "elapsed_seconds": 12.45,
+      "usage": {
+        "completion_tokens": 719,
+        "prompt_tokens": 289,
+        "total_tokens": 1008
+      },
+      "validation_status": "FAIL",
+      "errors": [
+        {
+          "check": "thin_premise",
+          "message": "premise too thin for 20 min (229 chars, need >= 400)"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "run_id": "T03_005m",
+      "model": "deepseek-v4-flash-alibaba",
+      "generation_status": "PASS",
+      "elapsed_seconds": 17.79,
+      "usage": {
+        "completion_tokens": 1501,
+        "prompt_tokens": 289,
+        "total_tokens": 1790
+      },
+      "validation_status": "PASS",
+      "errors": [],
+      "warnings": [
+        {
+          "check": "not_visual",
+          "message": "no visual-action vocabulary; may be hard to show on screen"
+        }
+      ]
+    },
+    {
+      "run_id": "T03_010m",
+      "model": "deepseek-v4-flash-alibaba",
+      "generation_status": "FAIL",
+      "elapsed_seconds": 17.41,
+      "usage": {
+        "completion_tokens": 1041,
+        "prompt_tokens": 289,
+        "total_tokens": 1330
+      },
+      "validation_status": "FAIL",
+      "errors": [
+        {
+          "check": "thin_premise",
+          "message": "premise too thin for 10 min (120 chars, need >= 200)"
+        }
+      ],
+      "warnings": [
+        {
+          "check": "not_visual",
+          "message": "no visual-action vocabulary; may be hard to show on screen"
+        }
+      ]
+    },
+    {
+      "run_id": "T03_020m",
+      "model": "deepseek-v4-flash-alibaba",
+      "generation_status": "FAIL",
+      "elapsed_seconds": 15.49,
+      "usage": {
+        "completion_tokens": 901,
+        "prompt_tokens": 289,
+        "total_tokens": 1190
+      },
+      "validation_status": "FAIL",
+      "errors": [
+        {
+          "check": "thin_premise",
+          "message": "premise too thin for 20 min (318 chars, need >= 400)"
+        }
+      ],
+      "warnings": [
+        {
+          "check": "preachy_lesson",
+          "message": "lesson sounds preachy/didactic, markers: ['phai nho']"
+        }
+      ]
+    },
+    {
+      "run_id": "T04_005m",
+      "model": "deepseek-v4-flash-alibaba",
+      "generation_status": "PASS",
+      "elapsed_seconds": 8.03,
+      "usage": {
+        "completion_tokens": 402,
+        "prompt_tokens": 284,
+        "total_tokens": 686
+      },
+      "validation_status": "PASS",
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "run_id": "T04_010m",
+      "model": "deepseek-v4-flash-alibaba",
+      "generation_status": "PASS",
+      "elapsed_seconds": 13.37,
+      "usage": {
+        "completion_tokens": 711,
+        "prompt_tokens": 284,
+        "total_tokens": 995
+      },
+      "validation_status": "PASS",
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "run_id": "T04_020m",
+      "model": "deepseek-v4-flash-alibaba",
+      "generation_status": "FAIL",
+      "elapsed_seconds": 11.12,
+      "usage": {
+        "completion_tokens": 544,
+        "prompt_tokens": 284,
+        "total_tokens": 828
+      },
+      "validation_status": "FAIL",
+      "errors": [
+        {
+          "check": "thin_premise",
+          "message": "premise too thin for 20 min (174 chars, need >= 400)"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "run_id": "T05_005m",
+      "model": "deepseek-v4-flash-alibaba",
+      "generation_status": "PASS",
+      "elapsed_seconds": 15.91,
+      "usage": {
+        "completion_tokens": 719,
+        "prompt_tokens": 285,
+        "total_tokens": 1004
+      },
+      "validation_status": "PASS",
+      "errors": [],
+      "warnings": [
+        {
+          "check": "not_visual",
+          "message": "no visual-action vocabulary; may be hard to show on screen"
+        }
+      ]
+    },
+    {
+      "run_id": "T05_010m",
+      "model": "deepseek-v4-flash-alibaba",
+      "generation_status": "PASS",
+      "elapsed_seconds": 13.03,
+      "usage": {
+        "completion_tokens": 651,
+        "prompt_tokens": 285,
+        "total_tokens": 936
+      },
+      "validation_status": "PASS",
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "run_id": "T05_020m",
+      "model": "deepseek-v4-flash-alibaba",
+      "generation_status": "FAIL",
+      "elapsed_seconds": 13.49,
+      "usage": {
+        "completion_tokens": 758,
+        "prompt_tokens": 285,
+        "total_tokens": 1043
+      },
+      "validation_status": "FAIL",
+      "errors": [
+        {
+          "check": "thin_premise",
+          "message": "premise too thin for 20 min (148 chars, need >= 400)"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "run_id": "T06_005m",
+      "model": "deepseek-v4-flash-alibaba",
+      "generation_status": "PASS",
+      "elapsed_seconds": 62.31,
+      "usage": {
+        "completion_tokens": 779,
+        "prompt_tokens": 287,
+        "total_tokens": 1066
+      },
+      "validation_status": "PASS",
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "run_id": "T06_010m",
+      "model": "deepseek-v4-flash-alibaba",
+      "generation_status": "FAIL",
+      "elapsed_seconds": 9.16,
+      "usage": {
+        "completion_tokens": 373,
+        "prompt_tokens": 287,
+        "total_tokens": 660
+      },
+      "validation_status": "FAIL",
+      "errors": [
+        {
+          "check": "thin_premise",
+          "message": "premise too thin for 10 min (86 chars, need >= 200)"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "run_id": "T06_020m",
+      "model": "deepseek-v4-flash-alibaba",
+      "generation_status": "FAIL",
+      "elapsed_seconds": 12.17,
+      "usage": {
+        "completion_tokens": 547,
+        "prompt_tokens": 287,
+        "total_tokens": 834
+      },
+      "validation_status": "FAIL",
+      "errors": [
+        {
+          "check": "thin_premise",
+          "message": "premise too thin for 20 min (340 chars, need >= 400)"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "run_id": "T07_005m",
+      "model": "deepseek-v4-flash-alibaba",
+      "generation_status": "PASS",
+      "elapsed_seconds": 15.35,
+      "usage": {
+        "completion_tokens": 733,
+        "prompt_tokens": 293,
+        "total_tokens": 1026
+      },
+      "validation_status": "PASS",
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "run_id": "T07_010m",
+      "model": "deepseek-v4-flash-alibaba",
+      "generation_status": "FAIL",
+      "elapsed_seconds": 20.1,
+      "usage": {
+        "completion_tokens": 1508,
+        "prompt_tokens": 293,
+        "total_tokens": 1801
+      },
+      "validation_status": "FAIL",
+      "errors": [
+        {
+          "check": "thin_premise",
+          "message": "premise too thin for 10 min (161 chars, need >= 200)"
+        }
+      ],
+      "warnings": [
+        {
+          "check": "not_visual",
+          "message": "no visual-action vocabulary; may be hard to show on screen"
+        }
+      ]
+    },
+    {
+      "run_id": "T07_020m",
+      "model": "deepseek-v4-flash-alibaba",
+      "generation_status": "FAIL",
+      "elapsed_seconds": 13.99,
+      "usage": {
+        "completion_tokens": 641,
+        "prompt_tokens": 293,
+        "total_tokens": 934
+      },
+      "validation_status": "FAIL",
+      "errors": [
+        {
+          "check": "thin_premise",
+          "message": "premise too thin for 20 min (238 chars, need >= 400)"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "run_id": "T08_005m",
+      "model": "deepseek-v4-flash-alibaba",
+      "generation_status": "PASS",
+      "elapsed_seconds": 14.2,
+      "usage": {
+        "completion_tokens": 686,
+        "prompt_tokens": 291,
+        "total_tokens": 977
+      },
+      "validation_status": "PASS",
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "run_id": "T08_010m",
+      "model": "deepseek-v4-flash-alibaba",
+      "generation_status": "PASS",
+      "elapsed_seconds": 36.26,
+      "usage": {
+        "completion_tokens": 855,
+        "prompt_tokens": 291,
+        "total_tokens": 1146
+      },
+      "validation_status": "PASS",
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "run_id": "T08_020m",
+      "model": "deepseek-v4-flash-alibaba",
+      "generation_status": "FAIL",
+      "elapsed_seconds": 15.94,
+      "usage": {
+        "completion_tokens": 1037,
+        "prompt_tokens": 291,
+        "total_tokens": 1328
+      },
+      "validation_status": "FAIL",
+      "errors": [
+        {
+          "check": "thin_premise",
+          "message": "premise too thin for 20 min (292 chars, need >= 400)"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "run_id": "T09_005m",
+      "model": "deepseek-v4-flash-alibaba",
+      "generation_status": "PASS",
+      "elapsed_seconds": 9.67,
+      "usage": {
+        "completion_tokens": 886,
+        "prompt_tokens": 289,
+        "total_tokens": 1175
+      },
+      "validation_status": "PASS",
+      "errors": [],
+      "warnings": [
+        {
+          "check": "not_visual",
+          "message": "no visual-action vocabulary; may be hard to show on screen"
+        }
+      ]
+    },
+    {
+      "run_id": "T09_010m",
+      "model": "deepseek-v4-flash-alibaba",
+      "generation_status": "PASS",
+      "elapsed_seconds": 14.19,
+      "usage": {
+        "completion_tokens": 1171,
+        "prompt_tokens": 289,
+        "total_tokens": 1460
+      },
+      "validation_status": "PASS",
+      "errors": [],
+      "warnings": [
+        {
+          "check": "not_visual",
+          "message": "no visual-action vocabulary; may be hard to show on screen"
+        }
+      ]
+    },
+    {
+      "run_id": "T09_020m",
+      "model": "deepseek-v4-flash-alibaba",
+      "generation_status": "FAIL",
+      "elapsed_seconds": 8.32,
+      "usage": {
+        "completion_tokens": 712,
+        "prompt_tokens": 289,
+        "total_tokens": 1001
+      },
+      "validation_status": "FAIL",
+      "errors": [
+        {
+          "check": "thin_premise",
+          "message": "premise too thin for 20 min (266 chars, need >= 400)"
+        }
+      ],
+      "warnings": [
+        {
+          "check": "not_visual",
+          "message": "no visual-action vocabulary; may be hard to show on screen"
+        }
+      ]
+    },
+    {
+      "run_id": "T10_005m",
+      "model": "deepseek-v4-flash-alibaba",
+      "generation_status": "PASS",
+      "elapsed_seconds": 6.23,
+      "usage": {
+        "completion_tokens": 463,
+        "prompt_tokens": 293,
+        "total_tokens": 756
+      },
+      "validation_status": "PASS",
+      "errors": [],
+      "warnings": [
+        {
+          "check": "not_visual",
+          "message": "no visual-action vocabulary; may be hard to show on screen"
+        }
+      ]
+    },
+    {
+      "run_id": "T10_010m",
+      "model": "deepseek-v4-flash-alibaba",
+      "generation_status": "FAIL",
+      "elapsed_seconds": 18.06,
+      "usage": {
+        "completion_tokens": 1464,
+        "prompt_tokens": 293,
+        "total_tokens": 1757
+      },
+      "validation_status": "PASS",
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "run_id": "T10_020m",
+      "model": "deepseek-v4-flash-alibaba",
+      "generation_status": "FAIL",
+      "elapsed_seconds": 23.9,
+      "usage": {
+        "completion_tokens": 293,
+        "prompt_tokens": 293,
+        "total_tokens": 586
+      },
+      "validation_status": "FAIL",
+      "errors": [
+        {
+          "check": "thin_premise",
+          "message": "premise too thin for 20 min (96 chars, need >= 400)"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "run_id": "T11_005m",
+      "model": "deepseek-v4-flash-alibaba",
+      "generation_status": "PASS",
+      "elapsed_seconds": 10.14,
+      "usage": {
+        "completion_tokens": 618,
+        "prompt_tokens": 294,
+        "total_tokens": 912
+      },
+      "validation_status": "PASS",
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "run_id": "T11_010m",
+      "model": "deepseek-v4-flash-alibaba",
+      "generation_status": "FAIL",
+      "elapsed_seconds": 8.46,
+      "usage": {
+        "completion_tokens": 477,
+        "prompt_tokens": 294,
+        "total_tokens": 771
+      },
+      "validation_status": "FAIL",
+      "errors": [
+        {
+          "check": "thin_premise",
+          "message": "premise too thin for 10 min (128 chars, need >= 200)"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "run_id": "T11_020m",
+      "model": "deepseek-v4-flash-alibaba",
+      "generation_status": "FAIL",
+      "elapsed_seconds": 12.24,
+      "usage": {
+        "completion_tokens": 753,
+        "prompt_tokens": 294,
+        "total_tokens": 1047
+      },
+      "validation_status": "FAIL",
+      "errors": [
+        {
+          "check": "thin_premise",
+          "message": "premise too thin for 20 min (326 chars, need >= 400)"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "run_id": "T12_005m",
+      "model": "deepseek-v4-flash-alibaba",
+      "generation_status": "PASS",
+      "elapsed_seconds": 13.01,
+      "usage": {
+        "completion_tokens": 821,
+        "prompt_tokens": 289,
+        "total_tokens": 1110
+      },
+      "validation_status": "PASS",
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "run_id": "T12_010m",
+      "model": "deepseek-v4-flash-alibaba",
+      "generation_status": "FAIL",
+      "elapsed_seconds": 8.94,
+      "usage": {
+        "completion_tokens": 689,
+        "prompt_tokens": 289,
+        "total_tokens": 978
+      },
+      "validation_status": "FAIL",
+      "errors": [
+        {
+          "check": "thin_premise",
+          "message": "premise too thin for 10 min (122 chars, need >= 200)"
+        }
+      ],
+      "warnings": [
+        {
+          "check": "not_visual",
+          "message": "no visual-action vocabulary; may be hard to show on screen"
+        }
+      ]
+    },
+    {
+      "run_id": "T12_020m",
+      "model": "deepseek-v4-flash-alibaba",
+      "generation_status": "FAIL",
+      "elapsed_seconds": 8.83,
+      "usage": {
+        "completion_tokens": 582,
+        "prompt_tokens": 289,
+        "total_tokens": 871
+      },
+      "validation_status": "FAIL",
+      "errors": [
+        {
+          "check": "thin_premise",
+          "message": "premise too thin for 20 min (136 chars, need >= 400)"
+        }
+      ],
+      "warnings": []
+    }
+  ],
+  "generated_at": "2026-08-08T00:00:00+00:00"
+}

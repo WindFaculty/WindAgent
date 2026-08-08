@@ -1,0 +1,10 @@
+{
+  "backlog": "8_layer_scoped_repair",
+  "body_clip_untouched": "repair invalidates only the affected facial layer + render/final downstream; body animation clip untouched when timing unchanged (stage_h §6)",
+  "invalidation": "TRACK_AND_RENDER_FINAL",
+  "new_track_id": "ft-ft-p18-char_a-gaze",
+  "rebuilt_layers": [
+    "gaze"
+  ],
+  "scope": "GAZE"
+}

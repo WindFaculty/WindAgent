@@ -1,0 +1,27 @@
+{
+  "checkers": {
+    "check_architecture_imports": "PASS (0 violations)"
+  },
+  "command": "python -m pytest tests/unit/intelligence/test_phase13_camera_compiler.py tests/architecture/test_phase13_camera_canonical.py -q",
+  "gate": "VP3D_P13_CAMERA_COMPILER_VERIFIED",
+  "phase": "phase_13",
+  "producer": "phase-13-camera-compiler",
+  "recorded_at": "2026-08-08T04:29:30.021617+00:00",
+  "suites": [
+    {
+      "covers": "stage_g §5 matrix: movement-too-fast, path-through-geometry, subject-out-of-frame, camera-side flip, screen-direction flip, lens bounds, focus invalid, path discontinuity, dialogue timing, head room; dialogue coverage eyeline; determinism; invalidation scope; override pin respect/mismatch; multi-frame occlusion; playblast manifest; immutability; no-bpy neutrality",
+      "file": "tests/unit/intelligence/test_phase13_camera_compiler.py",
+      "passed": 32
+    },
+    {
+      "covers": "provider-neutral imports, no model port, no bpy/eval/exec, core neutrality, core+intelligence exports, real arch check PASS",
+      "file": "tests/architecture/test_phase13_camera_canonical.py",
+      "passed": 32
+    }
+  ],
+  "summary": {
+    "failed": 0,
+    "passed": 32,
+    "skipped": 0
+  }
+}

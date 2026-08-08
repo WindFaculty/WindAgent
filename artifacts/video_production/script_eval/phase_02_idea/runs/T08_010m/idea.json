@@ -1,0 +1,11 @@
+{
+  "case_id": "T08",
+  "duration_minutes": 10,
+  "hook": "Mot chiec la ky la roi xuong tu bau troi, khi cham dat thi bien thanh mot chu be xanh nho ten la La Xanh. La Xanh noi voi cac ban nho: 'Khu vuon cua minh dang bi ban rac va cay kho, cac ban co the giup minh khong?'",
+  "conflict": "Khu vuon co mot ong khe noi rat thich an rac, nhung ong ay khong biet phan loai rac, an ca rac huu co va rac nhua, lam cho cay bi benh. Cac ban nho phai thuyet phuc ong khe chi an rac huu co, va tach rieng rac nhua de tai che.",
+  "premise": "Cac ban nho cung La Xanh di dao quanh khu vuon, nhat rac, tuoi cay, va hoc cach tiet kiem nuoc. Moi lan lam dung viec, La Xanh se noi to ra mot bong hoa hoac mot chiec la xanh tuoi. Cuoi cung, ho phai cung nhau don dep mot dong rac lon gan dong nuoc de nuoc sach chay vao vuon.",
+  "differentiation": "Khac voi cac phim thuan tuy day bao ve moi truong, phim nay su dung nhan vat La Xanh - mot sinh vat tu cay co, tao ra mot cuoc phieu luu mang tinh tuong tuong va vui nhon. Ong Khe (nhan vat phan dien) khong xau xa ma chi hieu lam, tao ra co hoi giao duc ve phan loai rac mot cach nhe nhang. Phim nhan manh vao hanh dong cu the va ket qua truc quan (bong hoa, la xanh) de tre de hieu.",
+  "payoff": "Khi khu vuon sach dep, cay co xanh tuoi, La Xanh bien thanh mot cay dai tho lon, ong Khe tro thanh nguoi ban tot cua cac ban, va cac ban nhan duoc huy chuong 'Nguoi bao ve moi truong nho'. Dong nuoc trong vat chay ro roi, ai cung vui ve.",
+  "lesson": "Bao ve moi truong khong kho: chi can nhat rac, tuoi cay, tiet kiem nuoc, va phan loai rac dung cach. Moi hanh dong nho deu co y nghia lon, va lam viec cung nhau se vui hon.",
+  "visual_potential": "Hinh anh khu vuon 3D mau sac tuoi sang, nhan vat La Xanh vo cung dang yeu voi doi mat to tron, ong Khe co than hinh bang rac nhung de thuong. Canh nhat rac duoc thiet ke nhu tro choi tim kiem, tuoi cay tao hieu ung nuoc lung linh, va cuoi phim la canh khu vuon roi hoa, chim hot, mau sac noi bat, phu hop voi tre 3-6 tuoi."
+}

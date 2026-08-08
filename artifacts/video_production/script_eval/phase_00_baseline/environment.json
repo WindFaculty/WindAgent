@@ -1,0 +1,17 @@
+{
+  "os": "Windows-10-10.0.26200-SP0",
+  "release": "10",
+  "machine": "AMD64",
+  "hostname": "LAPTOP-711LLL6F",
+  "python": "3.11.15",
+  "cpu_count_logical": "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel",
+  "cpu_logical_cores": 24,
+  "total_ram_gb": 31.6,
+  "disk_free_gb": 186.1,
+  "toolchain": {
+    "uv": "uv 0.11.28 (ebf0f43d7 2026-07-07 x86_64-pc-windows-msvc)",
+    "git": "git version 2.55.0.windows.2",
+    "node": "v22.23.1",
+    "ffmpeg": "ffmpeg version 8.1.2-full_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers"
+  }
+}

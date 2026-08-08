@@ -1,0 +1,11 @@
+{
+  "case_id": "T05",
+  "duration_minutes": 10,
+  "hook": "Mot buoi sang, be Meo phat hien ra chiec hop giay ky dieu trong nha, khi mo ra thi tat ca do dung trong nha bat dau nhay nhot va hat ca bai hat vui nhan.",
+  "conflict": "Be Meo muon giu chiec hop lai de choi tiep, nhung bo me noi rang hop chi su dung khi ca nha cung nhau lam viec nha. Meo buon ba vi khong muon danh thoi gian don dep ma chi muon xem hop di ky.",
+  "premise": "Chiec hop than ky chi hoat dong khi ca gia dinh cung lam viec nha. Moi lan lam song mot viec, hop lai mo ra mot canh cua nhieu mau sac, dua ca nha den nhung noi ky thu (vi du: vuon hoa, dai duong, bau troi). Meo hoc duoc rang vui choi se thu vi hon khi duoc chia se cung bo me.",
+  "differentiation": "Khong giong cac phim gia dinh don gian, phim nay ket hop yeu to tuong tuong va am nhac, moi viec nha tro thanh mot tro choi. Su dung hop giay ky dieu nhu vat trung tam, tao su to mo va khich le tre tham gia hoat dong chung.",
+  "payoff": "Cuoi phim, ca gia dinh cung don xong nha, hop giay mo ra va phat ra anh sang lon, bien ca nha thanh nhung nhan vat hoa trang trong mot buoi tieu khuc vui ve. Be Meo nhan ra rang niem vui that su la khi duoc o ben bo me, khong phai chi tu chiec hop.",
+  "lesson": "Khong can bai hoc gay gat, chi truyen tai thong diep: 'Lam viec cung nhau se vui hon, va nhung khoanh khac ben gia dinh la dieu quy gia nhat'.",
+  "visual_potential": "Hinh anh 3D mau sac tuoi sang, hop giay co the thay doi hinh dang (tron, vuong, sao), cac canh cua mau rainbow dat den the gioi ao. Nhan vat dong vat ngo nghinh (Meo, Gau, Tho) co bieu cam de thuong. Hieu ung am nhac va chuyen canh sinh dong, phu hop tre nho."
+}

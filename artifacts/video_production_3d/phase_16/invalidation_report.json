@@ -1,0 +1,10 @@
+{
+  "changed_bake_invalidates_derived_only": true,
+  "never_invalidates": [
+    "body clip",
+    "assets",
+    "rigs",
+    "audio"
+  ],
+  "unchanged_bake_reuses": true
+}

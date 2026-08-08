@@ -56,6 +56,32 @@ class CharacterRole(str, Enum):
     EXTRAS = "EXTRAS"
 
 
+class CharacterMasterState(str, Enum):
+    """Lifecycle state of a CharacterMaster revision (VP3D Phase 8).
+
+    Mirrors the ratified transition graph `DRAFT → NORMALIZED → RIGGED →
+    VALIDATED → APPROVED → RETIRED` (stage_d.md §3 backlog item 2). A master
+    revision is immutable once bound; promoted revisions pin content so
+    locked episodes stay stable when a later revision replaces it.
+    """
+
+    DRAFT = "DRAFT"
+    NORMALIZED = "NORMALIZED"
+    RIGGED = "RIGGED"
+    VALIDATED = "VALIDATED"
+    APPROVED = "APPROVED"
+    RETIRED = "RETIRED"
+
+
+class CharacterApprovalVerdict(str, Enum):
+    """Verdict applied by human approval of a character master revision."""
+
+    APPROVED = "APPROVED"
+    REJECTED = "REJECTED"
+    PENDING = "PENDING"
+
+
+
 class TimeOfDay(str, Enum):
     """Canonical time-of-day tags for scenes."""
 
@@ -255,6 +281,82 @@ class ScreenDirection(str, Enum):
     LEFT_TO_RIGHT = "LEFT_TO_RIGHT"
     RIGHT_TO_LEFT = "RIGHT_TO_LEFT"
     NEUTRAL = "NEUTRAL"
+
+
+class EasingKind(str, Enum):
+    """Path easing between camera keyframes (VP3D Phase 13)."""
+
+    LINEAR = "LINEAR"
+    EASE_IN = "EASE_IN"
+    EASE_OUT = "EASE_OUT"
+    EASE_IN_OUT = "EASE_IN_OUT"
+
+
+class LightingMood(str, Enum):
+    """Director-facing mood of a scene's light (VP3D Phase 14, stage_g §4).
+
+    Mood is director flavor recorded on the intent; the lighting compiler
+    selects the versioned preset from style + time-of-day.
+    """
+
+    HAPPY = "HAPPY"
+    SAD = "SAD"
+    TENSE = "TENSE"
+    MYSTERIOUS = "MYSTERIOUS"
+    ROMANTIC = "ROMANTIC"
+    EPIC = "EPIC"
+    NEUTRAL = "NEUTRAL"
+
+
+class LightingStyle(str, Enum):
+    """Canonical lighting styles (road_map.md Phase 14).
+
+    `CHILDREN_3D` is the road_map example style; the preset registry aliases
+    it onto the CARTOON family so `mood=HAPPY, time=DAY, style=CHILDREN_3D`
+    resolves to CARTOON_DAY.
+    """
+
+    CARTOON = "CARTOON"
+    CHILDREN_3D = "CHILDREN_3D"
+    INTERIOR = "INTERIOR"
+    MAGIC_FOREST = "MAGIC_FOREST"
+    SUNSET = "SUNSET"
+    DRAMATIC = "DRAMATIC"
+    COMEDY = "COMEDY"
+
+
+class LightingEmphasis(str, Enum):
+    """What the light rig prioritizes (stage_g §4 backlog 3)."""
+
+    SUBJECT = "SUBJECT"
+    ENVIRONMENT = "ENVIRONMENT"
+    BALANCED = "BALANCED"
+
+
+class LightRole(str, Enum):
+    """Typed light roles in a rig (engine-neutral; the adapter maps to bpy/Lumen)."""
+
+    KEY = "KEY"
+    FILL = "FILL"
+    RIM = "RIM"
+    BOUNCE = "BOUNCE"
+    PRACTICAL = "PRACTICAL"
+    AMBIENT = "AMBIENT"
+
+
+class LightingColorPolicy(str, Enum):
+    """How strictly a preset's light colors may deviate (stage_g §4 backlog 2).
+
+    Each policy carries its own CCT spread tolerance in the validator so an
+    intentional warm/cool split never trips the "inconsistent color
+    temperature" check that a uniform-CCT rig would.
+    """
+
+    UNIFORM_CCT = "UNIFORM_CCT"
+    WARM_COOL_SPLIT = "WARM_COOL_SPLIT"
+    COOL_MOONLIGHT = "COOL_MOONLIGHT"
+    WARM_FIRELIGHT = "WARM_FIRELIGHT"
+    MULTICOLOR = "MULTICOLOR"
 
 
 class CameraDecisionReasonCode(str, Enum):
@@ -503,6 +605,381 @@ class PostProductionIssueCode(str, Enum):
     REPRODUCIBILITY_MISMATCH = "REPRODUCIBILITY_MISMATCH"
 
 
+class SemanticBone(str, Enum):
+    """Provider-agnostic semantic bone roles (VP3D Phase 9, backlog 1).
+
+    A normalized skeleton exposes these semantic roles regardless of the
+    source provider's bone naming. Retarget mapping operates on semantic roles,
+    never on raw bone names (stage_d.md §4 backlog 1).
+    """
+
+    ROOT = "ROOT"
+    PELVIS = "PELVIS"
+    SPINE = "SPINE"
+    CHEST = "CHEST"
+    NECK = "NECK"
+    HEAD = "HEAD"
+    JAW = "JAW"
+    EYE_L = "EYE_L"
+    EYE_R = "EYE_R"
+    BROW_L = "BROW_L"
+    BROW_R = "BROW_R"
+    SHOULDER_L = "SHOULDER_L"
+    SHOULDER_R = "SHOULDER_R"
+    ARM_UPPER_L = "ARM_UPPER_L"
+    ARM_UPPER_R = "ARM_UPPER_R"
+    ARM_LOWER_L = "ARM_LOWER_L"
+    ARM_LOWER_R = "ARM_LOWER_R"
+    HAND_L = "HAND_L"
+    HAND_R = "HAND_R"
+    THIGH_L = "THIGH_L"
+    THIGH_R = "THIGH_R"
+    SHIN_L = "SHIN_L"
+    SHIN_R = "SHIN_R"
+    FOOT_L = "FOOT_L"
+    FOOT_R = "FOOT_R"
+    TOE_L = "TOE_L"
+    TOE_R = "TOE_R"
+
+
+class RigValidationIssueCode(str, Enum):
+    """Typed validation findings on a rig (VP3D Phase 9, backlog 2 & 5)."""
+
+    REST_POSE_NOT_BIND = "REST_POSE_NOT_BIND"
+    SCALE_OUT_OF_RANGE = "SCALE_OUT_OF_RANGE"
+    ROOT_BONE_MISSING = "ROOT_BONE_MISSING"
+    ROOT_BONE_ORPHANED = "ROOT_BONE_ORPHANED"
+    PARENTING_BROKEN = "PARENTING_BROKEN"
+    WEIGHTS_UNASSIGNED = "WEIGHTS_UNASSIGNED"
+    WEIGHTS_OVER_BUDGET = "WEIGHTS_OVER_BUDGET"
+    JOINT_LIMIT_VIOLATED = "JOINT_LIMIT_VIOLATED"
+    FACIAL_CONTROLS_INCOMPATIBLE = "FACIAL_CONTROLS_INCOMPATIBLE"
+    SKELETON_MISSING_SEMANTIC_BONES = "SKELETON_MISSING_SEMANTIC_BONES"
+    TOPOLOGY_HASH_MISMATCH = "TOPOLOGY_HASH_MISMATCH"
+
+
+class RigStatus(str, Enum):
+    """Lifecycle state of a rig (VP3D Phase 9, backlog 2/6)."""
+
+    DETECTED = "DETECTED"
+    NORMALIZED = "NORMALIZED"
+    VALIDATED = "VALIDATED"
+    INVALID = "INVALID"
+    RETARGET_READY = "RETARGET_READY"
+
+
+class DeformationMetric(str, Enum):
+    """Animation deformation metrics measured per clip (VP3D Phase 9, backlog 5)."""
+
+    FOOT_SLIDING = "FOOT_SLIDING"
+    LIMB_STRETCH = "LIMB_STRETCH"
+    MESH_PENETRATION = "MESH_PENETRATION"
+    ROOT_DRIFT = "ROOT_DRIFT"
+    POSE_DISCONTINUITY = "POSE_DISCONTINUITY"
+
+
+class CompatibilityVerdict(str, Enum):
+    """Per-clip compatibility verdict (VP3D Phase 9, backlog 6)."""
+
+    APPROVED = "APPROVED"
+    FAILED = "FAILED"
+    NOT_TESTED = "NOT_TESTED"
+
+
+class CorrectionBasis(str, Enum):
+    """Basis of a manual correction (VP3D Phase 9, backlog 7)."""
+
+    MANUAL = "MANUAL"
+    AUTOMATED = "AUTOMATED"
+
+
+class TtsCapabilityFeature(str, Enum):
+    """Capability metadata a TTS provider advertises (stage_e Phase 10, backlog 1).
+
+    Provider ports stay provider-neutral but surface *what* they can return so
+    the orchestrator can plan the full audio DAG before fan-in. Feature flags
+    cover the alignment-critical capabilities: whether the provider returns
+    word, token, or phoneme timing and whether it supports emotion/sample-rate
+    variation. A capability the provider does NOT advertise is never assumed;
+    the forced-aligner is a separate adapter and never fabricates confidence.
+    """
+
+    WORD_TIMESTAMPS = "WORD_TIMESTAMPS"
+    TOKEN_TIMESTAMPS = "TOKEN_TIMESTAMPS"
+    PHONEME_TIMING = "PHONEME_TIMING"
+    EMOTION = "EMOTION"
+    MULTI_SAMPLE_RATE = "MULTI_SAMPLE_RATE"
+
+
+class TtsMode(str, Enum):
+    """TTS execution mode (stage_e Phase 10, backlog 1)."""
+
+    LOCAL = "LOCAL"
+    API = "API"
+
+
+class AudioValidationIssueCode(str, Enum):
+    """Typed fail-closed findings on a TTS output (stage_e Phase 10, backlog 4).
+
+    An invalid output — wrong sample rate, wrong channel layout, zero/negative
+    duration, an undecodable byte stream, a content-hash mismatch, or an
+    unsupported locale — is NEVER published to the dialogue track.
+    """
+
+    SAMPLE_RATE_INVALID = "SAMPLE_RATE_INVALID"
+    CHANNEL_LAYOUT_INVALID = "CHANNEL_LAYOUT_INVALID"
+    ZERO_DURATION = "ZERO_DURATION"
+    DECODE_FAILED = "DECODE_FAILED"
+    CONTENT_HASH_MISMATCH = "CONTENT_HASH_MISMATCH"
+    UNSUPPORTED_LOCALE = "UNSUPPORTED_LOCALE"
+
+
+class LineTimingProposalType(str, Enum):
+    """Typed proposal for a line longer than its shot (stage_e Phase 10, backlog 6).
+
+    When a synthesized line does not fit the shot duration the system never
+    silently cuts the sentence. It emits a typed proposal the producer resolves:
+    extend the shot, shorten the text, change pacing, or escalate to human
+    review. `HUMAN_REVIEW` is the default when no mechanical option is safe.
+    """
+
+    EXTEND_SHOT = "EXTEND_SHOT"
+    SHORTEN_TEXT = "SHORTEN_TEXT"
+    CHANGE_PACING = "CHANGE_PACING"
+    HUMAN_REVIEW = "HUMAN_REVIEW"
+
+
+class AudioNodeStatus(str, Enum):
+    """Lifecycle of one audio DAG node (stage_e Phase 10, backlog 7 & 8).
+
+    `REUSED` marks a node whose completed audio was reused after a worker
+    restart instead of being re-synthesized (resume semantics). `CANCELLED`
+    marks a node cancelled by the per-provider cancellation policy; a cancelled
+    node never publishes a partial file.
+    """
+
+    PENDING = "PENDING"
+    RUNNING = "RUNNING"
+    COMPLETED = "COMPLETED"
+    REUSED = "REUSED"
+    FAILED = "FAILED"
+    CANCELLED = "CANCELLED"
+
+
+class TransformUnit(str, Enum):
+    """Canonical transform unit for compiled objects (stage_f Phase 11)."""
+
+    METERS = "METERS"
+    CENTIMETERS = "CENTIMETERS"
+    BLENDER_UNITS = "BLENDER_UNITS"
+
+
+class BpyOpCode(str, Enum):
+    """Closed allow-list of trusted bpy operations the transcriber may emit.
+
+    stage_f §3/§4: compiler only uses the allow-list; no eval/exec of text from
+    model or asset metadata. `RUN_ARBITRARY_PY` / `MODULE_IMPORT` / `EXEC_TEXT`
+    are declared for completeness but are NEVER produced by the transcriber and
+    fail closed if encountered on input.
+    """
+
+    NEW_SCENE = "NEW_SCENE"
+    CREATE_COLLECTION = "CREATE_COLLECTION"
+    CREATE_OBJECT = "CREATE_OBJECT"
+    ADD_CAMERA = "ADD_CAMERA"
+    ADD_LIGHT = "ADD_LIGHT"
+    ADD_ANIMATION = "ADD_ANIMATION"
+    SET_FRAME_RANGE = "SET_FRAME_RANGE"
+    SET_RENDER_CONFIG = "SET_RENDER_CONFIG"
+    SAVE_BLEND = "SAVE_BLEND"
+    # never emitted; reserved to make the boundary explicit
+    RUN_ARBITRARY_PY = "RUN_ARBITRARY_PY"
+    MODULE_IMPORT = "MODULE_IMPORT"
+    EXEC_TEXT = "EXEC_TEXT"
+
+
+class CompileStatus(str, Enum):
+    """Outcome of an incremental compile decision (stage_f Phase 11, backlog 7)."""
+
+    REUSED = "REUSED"
+    BUILT = "BUILT"
+    BUILT_DEPENDENT = "BUILT_DEPENDENT"
+
+
+class PlanAffected(str, Enum):
+    """Which plans a changed input field invalidates (stage_f Phase 11, backlog 7)."""
+
+    ALL = "ALL"
+    OBJECT = "OBJECT"
+    ANIMATION = "ANIMATION"
+    UNKNOWN = "UNKNOWN"
+
+
+class AnimationAction(str, Enum):
+    """Library actions (stage_h §3 backlog 2 — the minimal 13-clip library)."""
+
+    IDLE = "IDLE"
+    WALK = "WALK"
+    RUN = "RUN"
+    JUMP = "JUMP"
+    SIT = "SIT"
+    STAND = "STAND"
+    TALK = "TALK"
+    LAUGH = "LAUGH"
+    CRY = "CRY"
+    POINT = "POINT"
+    WAVE = "WAVE"
+    PICK_UP = "PICK_UP"
+    PUT_DOWN = "PUT_DOWN"
+
+
+class AnimationEmotion(str, Enum):
+    """Emotional flavor on an intent/clip (stage_h §3 backlog 3)."""
+
+    NEUTRAL = "NEUTRAL"
+    HAPPY = "HAPPY"
+    SAD = "SAD"
+    ANGRY = "ANGRY"
+    FEARFUL = "FEARFUL"
+    SURPRISED = "SURPRISED"
+    EXCITED = "EXCITED"
+    CALM = "CALM"
+
+
+class ClipSource(str, Enum):
+    """Provenance source of a clip (stage_h §1/§3 backlog 1)."""
+
+    LIBRARY = "LIBRARY"
+    MOCAP_CAPTURE = "MOCAP_CAPTURE"
+    PROCEDURAL = "PROCEDURAL"          # Phase 16
+    AI_MOTION = "AI_MOTION"            # Phase 17
+
+
+class ProceduralLayerKind(str, Enum):
+    """Procedural animation layers (stage_h §4 backlog 1)."""
+
+    LOOK_AT = "LOOK_AT"
+    HEAD_TRACKING = "HEAD_TRACKING"
+    EYE_TRACKING = "EYE_TRACKING"
+    HAND_IK = "HAND_IK"
+    FOOT_IK = "FOOT_IK"
+    PATH_FOLLOW = "PATH_FOLLOW"
+    OBJECT_GRAB = "OBJECT_GRAB"
+    SITTING_ALIGNMENT = "SITTING_ALIGNMENT"
+    TURNING = "TURNING"
+    IDLE_VARIATION = "IDLE_VARIATION"
+
+
+class MotionOutputFormat(str, Enum):
+    """AI motion output formats (stage_h §5 backlog 1 capability contract)."""
+
+    FBX = "FBX"
+    GLTF = "GLTF"
+    BVH = "BVH"
+    RAW_JSON = "RAW_JSON"
+
+
+class MotionCandidateStatus(str, Enum):
+    """Lifecycle of one AI motion candidate (stage_h §5 backlog 6)."""
+
+    QUARANTINED = "QUARANTINED"
+    REMAPPED = "REMAPPED"
+    APPROVED = "APPROVED"
+    REJECTED = "REJECTED"
+
+
+class MotionRetryKind(str, Enum):
+    """Retry cause classification (stage_h §5 backlog 6)."""
+
+    TRANSIENT_PROVIDER = "TRANSIENT_PROVIDER"
+    VALIDATION_FAILED = "VALIDATION_FAILED"
+    CAPABILITY_MISMATCH = "CAPABILITY_MISMATCH"
+    LICENSE_BLOCKED = "LICENSE_BLOCKED"
+
+
+# ---------------------------------------------------------------------------
+# Stage I Facial Animation (VP3D Phase 18 — Lip-sync / Facial Pipeline)
+# ---------------------------------------------------------------------------
+class VisemeShape(str, Enum):
+    """Mouth shape classes used by the viseme map (stage_i §3 backlog 2)."""
+
+    NEUTRAL = "NEUTRAL"
+    AA = "AA"  # open vowel a
+    E = "E"  # spread vowel e/i
+    I = "I"  # narrow spread i
+    O = "O"  # rounded o
+    U = "U"  # rounded u
+    M_B_P = "M_B_P"  # bilabial closure
+    F_V = "F_V"  # labiodental
+    T_D_S = "T_D_S"  # alveolar tongue
+    K_G = "K_G"  # velar
+    L_N = "L_N"  # lateral/nasal
+    R = "R"
+    W_Q = "W_Q"
+    CLOSED = "CLOSED"  # mouth closed (silence / rest)
+
+
+class FacialLayerKind(str, Enum):
+    """Layer ownership classes inside a facial track (stage_i backlog 6)."""
+
+    LIP_SYNC = "LIP_SYNC"
+    EMOTION = "EMOTION"
+    BLINK = "BLINK"
+    GAZE = "GAZE"
+    EYEBROW = "EYEBROW"
+    HEAD_MOTION = "HEAD_MOTION"
+
+
+class FacialTrackStatus(str, Enum):
+    """Status of a compiled/validated facial track (stage_i §4)."""
+
+    DRAFT = "DRAFT"
+    APPROVED = "APPROVED"
+    REQUIRES_HUMAN_REVIEW = "REQUIRES_HUMAN_REVIEW"
+    REJECTED = "REJECTED"
+
+
+class HeadBlendPolicy(str, Enum):
+    """How facial head motion blends with body animation (stage_i backlog 6)."""
+
+    FACIAL_OWNS_HEAD = "FACIAL_OWNS_HEAD"
+    BLEND_LIMITED = "BLEND_LIMITED"
+    BODY_OWNS_HEAD = "BODY_OWNS_HEAD"
+
+
+class FacialFindingKind(str, Enum):
+    """Facial validation finding classes (stage_i §4 matrix)."""
+
+    NON_MONOTONIC = "NON_MONOTONIC"
+    OUT_OF_SHOT_RANGE = "OUT_OF_SHOT_RANGE"
+    DRIFT_EXCEEDED = "DRIFT_EXCEEDED"
+    LOW_CONFIDENCE_ALIGNMENT = "LOW_CONFIDENCE_ALIGNMENT"
+    RIG_CONTROL_MISSING = "RIG_CONTROL_MISSING"
+    SILENCE_MOUTH_MOVEMENT = "SILENCE_MOUTH_MOVEMENT"
+    FACIAL_POP = "FACIAL_POP"
+    IDLE_SPEECH = "IDLE_SPEECH"
+    HEAD_JOINT_LIMIT_EXCEEDED = "HEAD_JOINT_LIMIT_EXCEEDED"
+    EMOTION_ARTICULATION_OVERLAP = "EMOTION_ARTICULATION_OVERLAP"
+    UNKNOWN_PHONEME_NO_RULE = "UNKNOWN_PHONEME_NO_RULE"
+
+
+class FacialRepairScope(str, Enum):
+    """Per-layer repair scope (stage_i backlog 8)."""
+
+    LIP_SYNC = "LIP_SYNC"
+    GAZE = "GAZE"
+    EMOTION = "EMOTION"
+    BLINK = "BLINK"
+    HEAD_MOTION = "HEAD_MOTION"
+
+
+class FacialInvalidationScope(str, Enum):
+    """Downstream invalidation breadth after a repair (stage_i backlog 8)."""
+
+    TRACK_LAYER_ONLY = "TRACK_LAYER_ONLY"
+    TRACK_AND_RENDER_FINAL = "TRACK_AND_RENDER_FINAL"
+
+
 __all__ = [
     "ProjectStatus",
     "RevisionStatus",
@@ -528,6 +1005,7 @@ __all__ = [
     "CameraAngle",
     "CameraSide",
     "ScreenDirection",
+    "EasingKind",
     "CameraDecisionReasonCode",
     "ShotGraphIssueCode",
     "ReferenceBindingRole",
@@ -544,4 +1022,37 @@ __all__ = [
     "ContainerFormat",
     "PostProductionVerificationStatus",
     "PostProductionIssueCode",
+    "SemanticBone",
+    "RigValidationIssueCode",
+    "RigStatus",
+    "DeformationMetric",
+    "CompatibilityVerdict",
+    "CorrectionBasis",
+    "TtsCapabilityFeature",
+    "TtsMode",
+    "AudioValidationIssueCode",
+    "LineTimingProposalType",
+    "AudioNodeStatus",
+    "TransformUnit",
+    "BpyOpCode",
+    "CompileStatus",
+    "PlanAffected",
+    # Stage H Animation (VP3D Phase 15)
+    "AnimationAction",
+    "AnimationEmotion",
+    "ClipSource",
+    # Stage H Animation (VP3D Phase 16)
+    "ProceduralLayerKind",
+    # Stage H AI Motion Adapter (VP3D Phase 17)
+    "MotionOutputFormat",
+    "MotionCandidateStatus",
+    "MotionRetryKind",
+    # Stage I Facial Animation (VP3D Phase 18)
+    "VisemeShape",
+    "FacialLayerKind",
+    "FacialTrackStatus",
+    "HeadBlendPolicy",
+    "FacialFindingKind",
+    "FacialRepairScope",
+    "FacialInvalidationScope",
 ]

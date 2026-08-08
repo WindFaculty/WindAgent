@@ -1,0 +1,27 @@
+{
+  "backlog": "quality_matrix_stage_i_s4",
+  "character_a": {
+    "checks": {
+      "drift_within_tolerance": true,
+      "head_joint_limit_respected": true,
+      "idle_speech_absent": true,
+      "keyframes_in_shot_range": true,
+      "monotonic_ordering": true,
+      "no_facial_pop": true,
+      "silence_no_mouth_movement": true
+    },
+    "findings": [],
+    "gate_passed": true,
+    "status": "APPROVED"
+  },
+  "character_b": {
+    "findings": [],
+    "gate_passed": true,
+    "status": "APPROVED"
+  },
+  "human_review_routing": {
+    "low_confidence_alignment": true,
+    "policy": "LOW_CONFIDENCE_ALIGNMENT / RIG_CONTROL_MISSING route to REQUIRES_HUMAN_REVIEW; blocking findings (NON_MONOTONIC, OUT_OF_SHOT_RANGE, DRIFT_EXCEEDED) REJECT",
+    "rig_missing_controls": true
+  }
+}

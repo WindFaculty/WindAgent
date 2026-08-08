@@ -1,0 +1,9 @@
+{
+  "aligner": "whisperx/3.1.0/large-v3",
+  "alignment_hash": "67ac90d3a6ad8659a9af7ea798ca6bd77ab7c42c1bf1eab80d3d28244f2125ec",
+  "confidence_floor": 0.6,
+  "deterministic_hash": true,
+  "low_confidence_routed_to_human_review": true,
+  "segment_confidence": 0.95,
+  "word_timestamp_count": 1
+}

@@ -1,0 +1,33 @@
+{
+  "hash_axes": [
+    "provider",
+    "model",
+    "model_version",
+    "prompt_hash",
+    "seed",
+    "fps",
+    "duration_seconds",
+    "skeleton_profile_id",
+    "output_format"
+  ],
+  "hash_deterministic": true,
+  "prompt_hash": "c635acc061af9029b7b688932aff757ad2cf1bff38266927c8869656713894ed",
+  "request": {
+    "actor_id": "char_01",
+    "duration_seconds": 2.0,
+    "episode_id": "",
+    "fps": 24,
+    "metadata": {},
+    "model": "fake-text2motion-v1",
+    "model_version": "1.0.0",
+    "output_format": "RAW_JSON",
+    "prompt_hash": "c635acc061af9029b7b688932aff757ad2cf1bff38266927c8869656713894ed",
+    "provider": "fake-motion-studio",
+    "request_hash": "e213402e0d6babe9207812934abb611122c3251b94c485574c56d0e8db96ed8e",
+    "request_id": "mor_8d9aee3a1f5ebb59",
+    "retry_budget": 2,
+    "seed": 42,
+    "skeleton_profile_id": "skel_humanoid_standard"
+  },
+  "request_hash": "e213402e0d6babe9207812934abb611122c3251b94c485574c56d0e8db96ed8e"
+}

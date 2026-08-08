@@ -1,0 +1,71 @@
+{
+  "compiler_version": "1.0.0",
+  "determinism": {
+    "input_change_changes_hash": true,
+    "same_input_same_hash": true
+  },
+  "dialogue_coverage": {
+    "keeps_eyeline_and_screen_direction": true
+  },
+  "fixtures": {
+    "dialogue_coverage": "master -> over-shoulder -> reaction, SIDE_A, LEFT_TO_RIGHT",
+    "moving": "TRACK with 5 keyframes, occlusion preflight sampled",
+    "static": "STATIC master shot, SIDE_A, 35mm"
+  },
+  "gate": "VP3D_P13_CAMERA_COMPILER_VERIFIED",
+  "gate_passed": true,
+  "invalidation": {
+    "asset_rig_audio_untouched": true,
+    "camera_change_invalidates_shot_only": true,
+    "unchanged_reuses_artifact": true
+  },
+  "negative_checks": {
+    "camera_side_flip": true,
+    "dialogue_timing_violation": true,
+    "lens_out_of_bounds": true,
+    "movement_too_fast": true,
+    "path_through_geometry": true,
+    "subject_out_of_frame": true
+  },
+  "occlusion": {
+    "distinct_frames": [
+      1,
+      17,
+      32,
+      48
+    ],
+    "multi_frame_sampling": true
+  },
+  "override_pin": {
+    "mismatch_fails_closed": true,
+    "respected": true
+  },
+  "phase": "phase_13",
+  "playblast": {
+    "deterministic": true,
+    "manifest_hash": "b6083994d7e1958fc7b63ed024c7d0be1322595b3d0a5ad2f37b42a709d8f6ad",
+    "sampled_frames": 5
+  },
+  "rig_manifests": {
+    "master": {
+      "hash": "3b4cc21d0cd5d16b",
+      "primitive": "cam_rig/static/v1"
+    },
+    "moving": {
+      "hash": "39ce9c1c452c62c7",
+      "primitive": "cam_rig/track/v1"
+    },
+    "over_shoulder": {
+      "hash": "efa56b396fd5ac89",
+      "primitive": "cam_rig/static/v1"
+    },
+    "reaction": {
+      "hash": "84b0f7b413c47c0a",
+      "primitive": "cam_rig/static/v1"
+    },
+    "static": {
+      "hash": "a225d844ddb5c09f",
+      "primitive": "cam_rig/static/v1"
+    }
+  }
+}

@@ -1,10 +1,13 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.2.0",
   "phase": 1,
   "program": "vp3d",
   "gate": "VP3D_P1_ENGINE_NEUTRAL_IR_VERIFIED",
-  "recorded_at": "2026-08-07T08:00:00Z",
-  "baseline_sha": "649e6faf95b6aa4f41ce4068018bc824a0b5c24f",
+  "recorded_at": "2026-08-08T04:20:00Z",
+  "baseline_sha": "5662edee35893876264a599a9480cafb531466f1",
+  "branch": "chore/cleanup-stale-md-docs",
+  "re_certified": true,
+  "note": "Content unchanged from prior certification (mapping table verified identical against ProductionIrMigrator.mapping_table() on candidate 5662ede); header re-pinned to current baseline.",
   "purpose": "Canonical field-by-field mapping from the legacy generative-video schemas onto the engine-neutral Production IR (plan §4 backlog item 1). Mirrors ProductionIrMigrator.mapping_table(); implemented and enforced by tests.",
   "ir_schema_version": "1.0.0",
   "mapping": [

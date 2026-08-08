@@ -1,0 +1,11 @@
+{
+  "case_id": "T11",
+  "duration_minutes": 20,
+  "hook": "Mot buoi sang, be Meo phat hien chiec mu len mau do cua minh bi mat tich. Tren san nha chi con lai mot vien soi phat sang.",
+  "conflict": "Meo va ban Gau cung di tim mu, nhung moi lan gan tim duoc thi vien soi lai chi duong nguoc lai. ho phai vuot qua nhung tro choi do cua nguoi ban Rac (mot con chim tinh nghich) nhu doi mu, giau vat, va doan cau do.",
+  "premise": "Vien soi than ky dan duong den nha cua ba Cun, nguoi giu rung. Ba Cun bi mat chiec khan choang cua minh. Meo nhan ra ca hai su bien mat co lien quan den nhung mon do mau do. ho cung nhau tim ra rang Rac da lay cac vat do de to chuc mot buoi lieu hoan mung sinh nhat cho ba Cun, vi ba thuong ke ve nhung mon do mau do thoi tre.",
+  "differentiation": "Khong giong cac phim tim do vat don thuan, cau chuyen tap trung vao cam xuc cua nhan vat khi mat do yeu quy va su dong cam voi nguoi khac. Vien soi khong phai la phep thuat ma la mot manh kinh phan chieu anh nang, tao ra duong di tu su quan sat tinh te cua tre.",
+  "payoff": "Meo va Gau khong chi tim duoc mu, ma con giup ba Cun co lai khan choang. Rac xin loi va mo ra buoi lieu bat ngo, moi nguoi cung hat mung sinh nhat. Vien soi hoa ra la manh kinh tu chiec kinh cua ba Cun, va Meo hoc duoc cach nhin moi vat tu nhieu goc do.",
+  "lesson": "Khi mat do, dung voi hoang mang. Binh tinh quan sat, nghi den cam giac cua nguoi khac, va su chia se se mang lai niem vui lon hon vat chat.",
+  "visual_potential": "Mau sac tuoi sang: mu do, khan choang tim, vien soi long lanh. Canh rung voi nhung goc cay to, hang cay, ngoi nha nho cua ba Cun co nhieu vong trang tri. Chuyen dong cua Rac bay luon, nhung manh kinh phan chieu tao hieu ung cau vong. Cac canh quay gan mat nhan vat de bieu lo cam xuc, va canh cuoi tap hop cac nhan vat quanh ban sinh nhat."
+}

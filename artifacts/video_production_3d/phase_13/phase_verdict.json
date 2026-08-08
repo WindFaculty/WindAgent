@@ -1,0 +1,26 @@
+{
+  "backlog_completion": {
+    "1_movement_to_rig_primitives": "DONE — STATIC/PAN/TILT/DOLLY/TRACK/CRANE resolve to versioned rig primitives (RIG_PRIMITIVES_VERSION 1.0.0); HANDHELD fails closed; primitive id/version embedded in every rig manifest",
+    "2_compile_lens_sensor_dof_focus_lookat_path_easing_safe_framing": "DONE — CameraCompiler maps intent onto typed CameraRigPlan (lens, sensor, DOF band, focus target, look-at, path keyframes with easing, safe framing); Director never emits bpy (no bpy/eval/exec anywhere in core or intelligence)",
+    "3_shot_frames_from_duration_fps_and_dialogue_timing": "DONE — start/end frame derived from duration x fps (2s @ 24fps -> 1..48); dialogue lines outside the shot's frame range fail closed with DIALOGUE_TIMING_VIOLATION",
+    "4_automatic_validation": "DONE — 180-degree rule (SIDE_FLIP), screen direction flip, head room, look room, subject visibility, camera collision (position + path segment vs forbidden volumes), lens bounds, focus target validity, path continuity, motion speed — all fail closed",
+    "5_scene_proxy_occlusion_preflight_multi_frame": "DONE — OcclusionPreflight samples camera->subject segments vs forbidden volumes (Liang-Barsky); sampling density scales with path length; moving TRACK fixture flagged on multiple distinct frames",
+    "6_camera_preview_playblast_manifest": "DONE — PlayblastManifestBuilder produces deterministic camera-path manifest with sampled framing report (subject screen position, visibility, head room, fov) for review before Cycles; real render deferred to renderer/tools layer",
+    "7_manual_override_pins_track_revision": "DONE — CameraOverride pins a track revision; matching pin applies the manual placement and marks the plan; a drifted track fails closed with CameraOverridePinMismatchError"
+  },
+  "decided_at": "2026-08-08T04:29:24.750012+00:00",
+  "evidence_files": [
+    "artifacts/video_production_3d/phase_13/evidence.json",
+    "artifacts/video_production_3d/phase_13/camera_intent.json",
+    "artifacts/video_production_3d/phase_13/rig_manifest.json",
+    "artifacts/video_production_3d/phase_13/framing_report.json",
+    "artifacts/video_production_3d/phase_13/findings.json",
+    "artifacts/video_production_3d/phase_13/compile_receipt.json",
+    "artifacts/video_production_3d/phase_13/test_baseline.json",
+    "artifacts/video_production_3d/phase_13/phase_verdict.json"
+  ],
+  "gate": "VP3D_P13_CAMERA_COMPILER_VERIFIED",
+  "phase": "phase_13",
+  "summary": "Three gate fixtures compiled to deterministic, versioned rig manifests: a STATIC master shot, a dialogue-coverage chain (master -> over-shoulder -> reaction) that keeps eyeline and screen direction on one side of the action line, and a moving TRACK camera whose path was occlusion-preflighted on multiple frames. Every stage_g §5 failure mode was DETECTED: movement quá ngắn (0.2s dolly over 10m -> MOTION_TOO_FAST), path xuyên geometry (dolly through a wall -> CAMERA_COLLISION on the path segment), subject ra khỏi frame, camera-side flip (SIDE_A -> SIDE_B -> SIDE_FLIP), lens 500mm (LENS_OUT_OF_BOUNDS) and dialogue outside the shot (DIALOGUE_TIMING_VIOLATION). Determinism: identical input -> identical plan hash; a lens change -> new hash invalidating ONLY the owning shot (asset/rig/audio untouched). The manual override pin was respected when the track revision matched and a drifted track failed closed with CameraOverridePinMismatchError. The playblast manifest (camera path + sampled framing report) is deterministic. No bpy, no eval/exec anywhere in core or intelligence. gate_passed=True.",
+  "verdict": "PASS"
+}

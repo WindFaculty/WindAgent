@@ -1,0 +1,148 @@
+{
+  "compatibility": {
+    "alpha": {
+      "facial_neutral": {
+        "manifest_hash": "ed6e765a723cbb685a8d6ee32a0456681c01a9f34ef313908c258722e94eb1c0",
+        "verdict": "APPROVED"
+      },
+      "grab": {
+        "manifest_hash": "5efb4b7f4643c9f4923dc5563f96e075a93f1d2e5d1224b9e4f17360e98ae514",
+        "verdict": "APPROVED"
+      },
+      "idle": {
+        "manifest_hash": "b1ecc71175f211fd1ece9e135327f9e564c33405f7645b12cf2a9dd291794ef8",
+        "verdict": "APPROVED"
+      },
+      "point": {
+        "manifest_hash": "b26754ba32c91018e26fb2f8a2092f8d4611f628757d77351d0ee46b6ad2e5fa",
+        "verdict": "APPROVED"
+      },
+      "run": {
+        "manifest_hash": "42e21f8e33a023c99fb78f2dfad9a046bcf0476d18321090ede35fadfd7b69db",
+        "verdict": "APPROVED"
+      },
+      "sit": {
+        "manifest_hash": "661c721093f43464be7de94435b9492bec6d65bda51075d9992c4c477fcfc06c",
+        "verdict": "APPROVED"
+      },
+      "stand": {
+        "manifest_hash": "3b19f7cc0631d96fc426c778e6371b972a04f408b9b514139b6a387af67d3d6b",
+        "verdict": "APPROVED"
+      },
+      "talk": {
+        "manifest_hash": "5fe00ec67f9b6228ee998abb473ce723a5475b2ab3200d0c3a609abe673c60c3",
+        "verdict": "APPROVED"
+      },
+      "turn": {
+        "manifest_hash": "5601d42564a2f8422c9968baad2a8c3c7daf128a8b68459d8ba92a526f9fcce2",
+        "verdict": "APPROVED"
+      },
+      "walk": {
+        "manifest_hash": "6bc5cd879d4ad3bca8ba1d0f9a83e99af36c4f439350a17f04b6cb5822353421",
+        "verdict": "APPROVED"
+      }
+    },
+    "beta": {
+      "facial_neutral": {
+        "manifest_hash": "e1646014746a944541763b43766313b05b8969d650c41f502cf86b1a642c4bfa",
+        "verdict": "APPROVED"
+      },
+      "grab": {
+        "manifest_hash": "03929a28af6d5773ed091f7d5ff814ff451130b789b98339797f90bd6ccbcd2a",
+        "verdict": "APPROVED"
+      },
+      "idle": {
+        "manifest_hash": "b0d5c411076bd5c012cff83c8929a68b41f2b03b943e8ec0c6a0776c3ffe1e27",
+        "verdict": "APPROVED"
+      },
+      "point": {
+        "manifest_hash": "48c7e88756b073f75e6ce917e273ae4341f7008ac0cf12af7d15f7c35547bc73",
+        "verdict": "APPROVED"
+      },
+      "run": {
+        "manifest_hash": "661e15a32f1a734286762fb68f628abbc3d99991a5f420ab9451a482173ec93e",
+        "verdict": "APPROVED"
+      },
+      "sit": {
+        "manifest_hash": "920f9cfc754ac61934c2484bcae380042bd3ec0d3a6471ea49bd210bbed398d2",
+        "verdict": "APPROVED"
+      },
+      "stand": {
+        "manifest_hash": "6c9d186d6bf6e7ba4df6266284a9c8a4dc5320fc387307a50f8ba820fe59cea7",
+        "verdict": "APPROVED"
+      },
+      "talk": {
+        "manifest_hash": "c1324783e433062f9b7befad9bf5fe49f921445833fbc694105548e428f674f1",
+        "verdict": "APPROVED"
+      },
+      "turn": {
+        "manifest_hash": "93ba801168c1f15c378035e75296b049dc6bf901f2e565fff25ec2b54a304952",
+        "verdict": "APPROVED"
+      },
+      "walk": {
+        "manifest_hash": "80ec10ff8b239cc778cce6c6784f0d8c96aaf657b6ca15e86135dac87a1d55ca",
+        "verdict": "APPROVED"
+      }
+    }
+  },
+  "continuity": {
+    "episode_pins_same_revision": true,
+    "episodes": [
+      "episode-1",
+      "episode-2"
+    ]
+  },
+  "derived_correction": {
+    "derived_from": [
+      "rig-alpha"
+    ],
+    "manifest_present": true,
+    "source_untouched": true
+  },
+  "fail_closed_proof": {
+    "breached": [
+      "FOOT_SLIDING"
+    ],
+    "excluded_from_approved": true,
+    "failed_clip_verdict": "FAILED"
+  },
+  "gate": "VP3D_P9_CHARACTER_RIG_VERIFIED",
+  "gate_passed": true,
+  "master_a": {
+    "id": "vpc_alpha",
+    "revision_hash": "5b6100f651d044aaa672b4397c1c83f8bafae258f83f51a0d5a9549847b3f857"
+  },
+  "master_b": {
+    "id": "vpc_beta",
+    "revision_hash": "699c1381c82169b4040d58c98e925fcf7c12916663533f2d4db2527da273f2ba"
+  },
+  "minimal_clip_suite_count": 10,
+  "phase": "phase_09",
+  "retarget_matrix": [
+    {
+      "deterministic": true,
+      "manifest_hash": "f915acdaa35c7df9792d48932908f9e8fd4da479bfb0edf7c4852d5e316eaaf8",
+      "mapping_count": 20,
+      "source_topology_hash": "7dfc5490c175ddd5d8a2135b8f6be45b616088a9d06d69b2fcf16d2ec827a280",
+      "tag": "alpha",
+      "target_topology_hash": "7dfc5490c175ddd5d8a2135b8f6be45b616088a9d06d69b2fcf16d2ec827a280",
+      "version": 0
+    },
+    {
+      "deterministic": true,
+      "manifest_hash": "f0c63d853e9fc86bdc0cafe194db9d99199ff48898c29c5ce8876f30ac21a73c",
+      "mapping_count": 20,
+      "source_topology_hash": "7dfc5490c175ddd5d8a2135b8f6be45b616088a9d06d69b2fcf16d2ec827a280",
+      "tag": "beta",
+      "target_topology_hash": "fb88d591d8bb4d78da9ef353bede6c1ea2c08c4f0b568ebea979a225da23ece6",
+      "version": 0
+    }
+  ],
+  "rig_validation": {
+    "alpha_issues": [],
+    "alpha_valid": true,
+    "beta_issues": [],
+    "beta_valid": true
+  },
+  "topology_differs": true
+}

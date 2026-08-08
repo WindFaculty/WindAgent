@@ -1,0 +1,11 @@
+{
+  "case_id": "T12",
+  "duration_minutes": 10,
+  "hook": "Mot be trai thay mot con oc sen nho trong vuon, to mo nhin no.",
+  "conflict": "Be muon choi dua voi oc sen, nhung oc sen qua cham. Be thu du lop len, day no chay, nhung oc sen van tu tu bo.",
+  "premise": "Be trai tung cach giup oc sen di nhanh hon: dat no len la, thoi gio, nhung oc sen van khong doi. Be bat dau buon va bo di.",
+  "differentiation": "Khong giong cac phim ve dong vat nhanh nhen, phim nay tap trung vao su cham chap cua oc sen, tao cam giac thu gian va gan gui voi thien nhien.",
+  "payoff": "Khi be ngoi nghi, oc sen bo den ben canh, chung tu tu cung nhau kham pha vuon hoa, thay nhung dieu ki dieu ma truoc day be khong de y.",
+  "lesson": "Tre hoc duoc su kien nhan va biet thuong thuc nhung khoanh khac cham lai cua cuoc song.",
+  "visual_potential": "Hinh anh vuon hoa ruc ro, nhung giot suong tren la, duong di cua oc sen de lai vach nho long lanh, bieu cam khuon mat be tu guc giang sang vui ve."
+}

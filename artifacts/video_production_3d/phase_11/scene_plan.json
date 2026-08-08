@@ -1,0 +1,150 @@
+{
+  "animations": [
+    {
+      "action": "talk",
+      "binding_id": "ab-1",
+      "end_frame": 80,
+      "input_hash": "ef8216ef3790775235d45b3846e3168845244f1e7e5aa351c4f05f6505d8e98d",
+      "reference_hash": "",
+      "reference_uri": "",
+      "start_frame": 1,
+      "target_object_ids": [
+        "obj-mai"
+      ],
+      "track_id": "at-1"
+    }
+  ],
+  "cameras": [
+    {
+      "fov_degrees": null,
+      "lens_mm": 35.0,
+      "object_id": "cam-1",
+      "sensor_width_mm": 36.0,
+      "track_id": "ct-1"
+    }
+  ],
+  "collections": [],
+  "compiler_version": "1.0.0",
+  "frame_range": {
+    "end": 120,
+    "fps": 24,
+    "start": 1
+  },
+  "ir_hash": "ef8216ef3790775235d45b3846e3168845244f1e7e5aa351c4f05f6505d8e98d",
+  "lights": [
+    {
+      "color": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "energy": 3.0,
+      "light_kind": "AREA",
+      "object_id": "key-1",
+      "rig_id": "lg-1"
+    },
+    {
+      "color": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "energy": 1.0,
+      "light_kind": "AREA",
+      "object_id": "fill-1",
+      "rig_id": "lg-1"
+    }
+  ],
+  "metadata": {},
+  "objects": [
+    {
+      "asset_revision_hash": "3810d33712a686ddde1f541a42734c37fe5686268c4235322a5be130d5d353c0",
+      "collection_id": "coll-char",
+      "display_name": "",
+      "kind": "MESH",
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "object_id": "obj-mai",
+      "rotation": [],
+      "scale": [],
+      "source_id": "ci-mai",
+      "source_type": "CHARACTER",
+      "transform_unit": "METERS",
+      "units": {}
+    },
+    {
+      "asset_revision_hash": "3810d33712a686ddde1f541a42734c37fe5686268c4235322a5be130d5d353c0",
+      "collection_id": "coll-char",
+      "display_name": "",
+      "kind": "MESH",
+      "location": [
+        1.2,
+        0.0,
+        0.0
+      ],
+      "object_id": "obj-duc",
+      "rotation": [],
+      "scale": [],
+      "source_id": "ci-duc",
+      "source_type": "CHARACTER",
+      "transform_unit": "METERS",
+      "units": {}
+    },
+    {
+      "asset_revision_hash": "280b8e9a2264133d5307f609dafb9f75cbd8270290eb7be64eefed3bdb81afbb",
+      "collection_id": "coll-prop",
+      "display_name": "",
+      "kind": "MESH",
+      "location": [
+        0.6,
+        -0.4,
+        0.7
+      ],
+      "object_id": "obj-table",
+      "rotation": [],
+      "scale": [],
+      "source_id": "prop-chair-1",
+      "source_type": "PROP",
+      "transform_unit": "METERS",
+      "units": {}
+    },
+    {
+      "asset_revision_hash": "ee0ccd646debf94cc8a18a49274297691c1f358f50092d0429a6fcaaa31b20cc",
+      "collection_id": "coll-env",
+      "display_name": "",
+      "kind": "MESH",
+      "location": [],
+      "object_id": "obj-ground",
+      "rotation": [],
+      "scale": [],
+      "source_id": "env-1",
+      "source_type": "ENVIRONMENT",
+      "transform_unit": "METERS",
+      "units": {}
+    }
+  ],
+  "plan_hash": "4ca1406d9542da28d04d441d53cd318680d2c565f2750b964d0c8297d480e7cc",
+  "plan_id": "plan-gate",
+  "project_id": "p1",
+  "render_config": {
+    "denoise": true,
+    "frame_range": {
+      "end": 120,
+      "fps": 24,
+      "start": 1
+    },
+    "profile_id": "rp-1",
+    "quality": "HIGH",
+    "resolution": {
+      "height": 1080,
+      "width": 1920
+    },
+    "samples": 32
+  },
+  "revision_id": "r1",
+  "scene_id": "sc1",
+  "schema_version": "1.0.0"
+}

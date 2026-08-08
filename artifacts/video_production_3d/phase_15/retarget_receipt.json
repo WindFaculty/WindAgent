@@ -1,0 +1,52 @@
+{
+  "fail_closed": {
+    "missing_semantic_bones_detected": true,
+    "non_resamplable_clip_detected": true
+  },
+  "normalized": {
+    "fps_30_to_24_resample": 0.8,
+    "root_motion_meters_preserved": 1.6,
+    "root_motion_mps": 0.8,
+    "units_normalized": true
+  },
+  "ok": true,
+  "receipt": {
+    "clip_id": "acl_a7c9f84e085a1daf",
+    "receipt_id": "rtr_e1d019c46a8e5b4f",
+    "resample_ratio": 0.8,
+    "retarget_profile_hash": "",
+    "retarget_profile_id": null,
+    "root_motion_meters": 1.6,
+    "root_motion_mps": 0.8,
+    "semantic_bones_mapped": [
+      "ROOT",
+      "PELVIS",
+      "SPINE",
+      "CHEST",
+      "NECK",
+      "HEAD",
+      "SHOULDER_L",
+      "SHOULDER_R",
+      "ARM_UPPER_L",
+      "ARM_UPPER_R",
+      "ARM_LOWER_L",
+      "ARM_LOWER_R",
+      "HAND_L",
+      "HAND_R",
+      "THIGH_L",
+      "THIGH_R",
+      "SHIN_L",
+      "SHIN_R",
+      "FOOT_L",
+      "FOOT_R"
+    ],
+    "source_fps": 30,
+    "target_fps": 24,
+    "units_normalized": true
+  },
+  "stage_d_profile": {
+    "profile_hash": "9e9d0f564b04215b0fc7148c1861800a949f2d0d0fb7fa806380ddf9f2a6b270",
+    "profile_id": "rp_humanoid_mixamo",
+    "recorded_on_receipt": true
+  }
+}

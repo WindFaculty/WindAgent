@@ -95,6 +95,111 @@ from windagent_intelligence.video.reference_selector import (
     ReferenceBindingPlanner,
 )
 
+# Set dressing layer (Phase 12)
+from windagent_intelligence.video.set_dressing import (
+    ApprovedEnvironment,
+    ApprovedProp,
+    EnvironmentBuilder,
+    PropPlacementPlanner,
+    SCATTER_ALGORITHM_VERSION,
+    SetDressingPlanReceipt,
+    SetDressingPlanner,
+    SpatialConstraintValidator,
+)
+
+# Camera compiler layer (Phase 13)
+from windagent_intelligence.video.camera import (
+    CAMERA_COMPILER_LAYER_VERSION,
+    CameraCompileReceipt,
+    CameraCompiler,
+    CameraPathManifest,
+    CameraRigPrimitive,
+    FramingSample,
+    OcclusionPreflight,
+    PlayblastManifestBuilder,
+    RIG_PRIMITIVES_VERSION,
+    resolve_primitive,
+)
+
+# Lighting system layer (Phase 14)
+from windagent_intelligence.video.lighting import (
+    HISTOGRAM_BINS,
+    LIGHTING_COMPILER_LAYER_VERSION,
+    PRESET_REGISTRY_VERSION,
+    ContactSheetBuilder,
+    ContactSheetEntry,
+    LightingCompileReceipt,
+    LightingCompiler,
+    LightingContactSheetManifest,
+    all_presets,
+    get_preset,
+    select_preset,
+    supported_preset_ids,
+)
+
+# Animation layer (Phase 15)
+from windagent_intelligence.video.animation import (
+    ANIMATION_COMPILER_LAYER_VERSION,
+    ANIMATION_LIBRARY_VERSION,
+    BLEND_DEFAULT_WINDOW_FRAMES,
+    AnimationCompileReceipt,
+    AnimationCompiler,
+    AnimationLibrary,
+    BlendPlanner,
+    RetargetService,
+    WarpService,
+    all_clips,
+    get_clip,
+    resolve_clip,
+    supported_clip_actions,
+)
+
+# Procedural animation layer (Phase 16)
+from windagent_intelligence.video.procedural import (
+    PROCEDURAL_COMPILER_LAYER_VERSION,
+    PROCEDURAL_LAYER_REGISTRY_VERSION,
+    BakeService,
+    ProceduralBakeReceipt,
+    ProceduralCompiler,
+    default_priority,
+    input_defaults,
+    ownership,
+    requires_anchor,
+    supported_layer_kinds,
+)
+
+# AI motion adapter layer (Phase 17)
+from windagent_intelligence.video.ai_motion import (
+    MOTION_ADAPTER_LAYER_VERSION,
+    TRACK_PROVENANCE_FIELDS,
+    AiMotionAdapter,
+    FAKE_MODEL,
+    FAKE_MODEL_VERSION,
+    FAKE_PROVIDER,
+    FAKE_SKELETON,
+    FakeMotionAdapter,
+    MotionApproveReceipt,
+    MotionGenerationPort,
+    REQUIRED_TARGET_BONES,
+    SkeletonRemapService,
+    TextToMotionPort,
+    TransientProviderError,
+    VideoToMotionPort,
+)
+
+# Facial pipeline layer (Phase 18)
+from windagent_intelligence.video.facial import (
+    FACIAL_BINDING_TABLE,
+    FACIAL_LAYER_VERSION,
+    LINE_A_PHONEMES,
+    LINE_B_PHONEMES,
+    VIETNAMESE_LINE_A,
+    VIETNAMESE_LINE_B,
+    FacialAnimationCompiler,
+    FacialCompileRequest,
+    fake_alignment,
+)
+
 # Prompt compiler layer retired in VP3D Stage A — the runtime compiles IR
 # (ProductionIrDocument / ShotExecutionIntent) directly; see legacy_v1/SUNSET.md.
 
@@ -213,6 +318,39 @@ __all__ = [
     # reference binding layer
     "ReferenceBindingPlanner",
     "ReferenceBindingPlanReceipt",
+    # set dressing layer (Phase 12)
+    "ApprovedEnvironment",
+    "ApprovedProp",
+    "EnvironmentBuilder",
+    "PropPlacementPlanner",
+    "SpatialConstraintValidator",
+    "SetDressingPlanner",
+    "SetDressingPlanReceipt",
+    "SCATTER_ALGORITHM_VERSION",
+    # camera compiler layer (Phase 13)
+    "CAMERA_COMPILER_LAYER_VERSION",
+    "CameraCompiler",
+    "CameraCompileReceipt",
+    "OcclusionPreflight",
+    "CameraPathManifest",
+    "FramingSample",
+    "PlayblastManifestBuilder",
+    "RIG_PRIMITIVES_VERSION",
+    "CameraRigPrimitive",
+    "resolve_primitive",
+    # lighting system layer (Phase 14)
+    "LIGHTING_COMPILER_LAYER_VERSION",
+    "PRESET_REGISTRY_VERSION",
+    "LightingCompiler",
+    "LightingCompileReceipt",
+    "ContactSheetBuilder",
+    "ContactSheetEntry",
+    "LightingContactSheetManifest",
+    "HISTOGRAM_BINS",
+    "all_presets",
+    "get_preset",
+    "select_preset",
+    "supported_preset_ids",
     # audio pipeline layer (Phase 21)
     "ALIGNMENT_VERSION",
     "AlignmentService",
@@ -272,4 +410,55 @@ __all__ = [
     "SELECTION_ALGORITHM_VERSION",
     "CandidateReviewReceipt",
     "ReviewPipeline",
+    # Animation layer (Phase 15)
+    "ANIMATION_COMPILER_LAYER_VERSION",
+    "ANIMATION_LIBRARY_VERSION",
+    "BLEND_DEFAULT_WINDOW_FRAMES",
+    "AnimationCompileReceipt",
+    "AnimationCompiler",
+    "AnimationLibrary",
+    "BlendPlanner",
+    "RetargetService",
+    "WarpService",
+    "all_clips",
+    "get_clip",
+    "resolve_clip",
+    "supported_clip_actions",
+    # Procedural animation layer (Phase 16)
+    "PROCEDURAL_COMPILER_LAYER_VERSION",
+    "PROCEDURAL_LAYER_REGISTRY_VERSION",
+    "ProceduralBakeReceipt",
+    "ProceduralCompiler",
+    "BakeService",
+    "default_priority",
+    "input_defaults",
+    "ownership",
+    "requires_anchor",
+    "supported_layer_kinds",
+    # AI motion adapter layer (Phase 17)
+    "MOTION_ADAPTER_LAYER_VERSION",
+    "TRACK_PROVENANCE_FIELDS",
+    "AiMotionAdapter",
+    "MotionApproveReceipt",
+    "FakeMotionAdapter",
+    "FAKE_PROVIDER",
+    "FAKE_MODEL",
+    "FAKE_MODEL_VERSION",
+    "FAKE_SKELETON",
+    "MotionGenerationPort",
+    "TextToMotionPort",
+    "VideoToMotionPort",
+    "TransientProviderError",
+    "REQUIRED_TARGET_BONES",
+    "SkeletonRemapService",
+    # Facial pipeline layer (Phase 18)
+    "FACIAL_LAYER_VERSION",
+    "FACIAL_BINDING_TABLE",
+    "FacialAnimationCompiler",
+    "FacialCompileRequest",
+    "fake_alignment",
+    "VIETNAMESE_LINE_A",
+    "VIETNAMESE_LINE_B",
+    "LINE_A_PHONEMES",
+    "LINE_B_PHONEMES",
 ]

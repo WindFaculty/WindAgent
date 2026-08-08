@@ -1,0 +1,11 @@
+{
+  "case_id": "T01",
+  "duration_minutes": 5,
+  "hook": "Co be phat hien mot canh cua ti hon duoi goc cay trong vuon, mo ra mot the gioi thu nho.",
+  "conflict": "Chiec hat giong quy cua chu bo hung bi ket trong mang nhen, co be phai vuot qua noi so cua minh de giup chu bo lay lai.",
+  "premise": "Co be bi thu nho, buoc vao the gioi con trung, cung chu bo hung tim hat giong bi mat va mang ve le hoi.",
+  "differentiation": "Khac voi cac y tuong phieu luu thuong thay, bo phim nhan manh su thay doi goc nhin ve the gioi quen thuoc qua loi ki tho, voi cac vat dung hang ngay tro thanh vat the khong lo, tao su gan gui va ky thu cho tre nho.",
+  "payoff": "Co be duoc cac con trung to chuc le hoi tri an, nhan mot bong hoa dac biet va nhan ra rang minh da dung cam hon.",
+  "lesson": "Khi giup do nguoi khac, minh se tro nen dung cam va tu tin hon.",
+  "visual_potential": "Hinh anh khu vuon muon sac mau voi nhung canh hoa khong lo, nhung giot suong long lanh nhu pha le, con trung duoc thiet ke ngo nghinh, anh sang nhip nhang tao khong gian than thien va ky dieu."
+}

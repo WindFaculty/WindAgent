@@ -1,0 +1,34 @@
+{
+  "backlog": "1_normalize_word_phoneme_timing",
+  "characters": [
+    {
+      "alignment_receipt_id": "alr-p18-Chào",
+      "character_id": "char_a",
+      "first_phoneme_frame": 100,
+      "last_phoneme_frame": 138,
+      "locale": "vi-VN",
+      "monotonic": true,
+      "phoneme_count": 14,
+      "segment_confidence": 0.96,
+      "silence_spans": 2,
+      "source_alignment_hash": "277d34c46dde3828ee607131fc3fe31a8019145e7af591d523b404983942fb9b",
+      "source_hash_preserved": true,
+      "text": "Chào bạn, hôm nay thế nào?"
+    },
+    {
+      "alignment_receipt_id": "alr-p18-Tôi",
+      "character_id": "char_b",
+      "locale": "vi-VN",
+      "monotonic": true,
+      "phoneme_count": 11,
+      "segment_confidence": 0.96,
+      "silence_spans": 3,
+      "source_alignment_hash": "204a9919f6b7d6aecec5dc3f7ec47d58aab070607dfec03d2774e6c50d4a1483",
+      "source_hash_preserved": true,
+      "text": "Tôi ổn, cảm ơn!"
+    }
+  ],
+  "fps": 24,
+  "normalization": "seconds converted to frames at 24fps, offset by shot_start_frame; source alignment hash preserved verbatim; non-monotonic or out-of-range timing raises FacialCompileError",
+  "shot_offset_frames": 100
+}

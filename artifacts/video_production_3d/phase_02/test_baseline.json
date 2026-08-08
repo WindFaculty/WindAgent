@@ -1,78 +1,55 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.2.0",
   "phase": 2,
   "program": "vp3d",
   "gate": "VP3D_P2_GOOGLE_FLOW_REMOVED",
-  "recorded_at": "2026-08-08T00:00:00Z",
-  "baseline_sha": "649e6faf95b6aa4f41ce4068018bc824a0b5c24f",
+  "recorded_at": "2026-08-08T04:40:00Z",
+  "baseline_sha": "5662edee35893876264a599a9480cafb531466f1",
+  "branch": "chore/cleanup-stale-md-docs",
+  "prior_certification": "First certified on baseline 649e6fa. Re-certified on 5662ede; implementation unchanged.",
   "implementation": {
     "neutral_contract": "core/windagent_core/contracts/video_production/video_inspection.py",
     "worker_consumer": "core/windagent_core/contracts/video_production/production_executor.py",
-    "composition_wiring": "apps/worker/windagent_worker/composition.py (WINDAGENT_BLENDER_ENGINE guard)",
+    "composition_wiring": "apps/worker/windagent_worker/composition.py (WINDAGENT_BLENDER_ENGINE guard, lines 213-247)",
     "updated_tools": [
       "tools/windagent_tools/video_probe.py",
       "tools/windagent_tools/__init__.py"
     ],
-    "removed_package": "tools/windagent_tools/google_flow/",
+    "removed_package": "tools/windagent_tools/google_flow/ (16 modules, verified absent)",
     "negative_tests": "tests/architecture/test_phase2_flow_removal_canonical.py"
   },
-  "batch_recovery_fix": {
-    "problem": "A RENDER step fans out into ONE engine job per scene/shot unit; the durable checkpoint previously reconciled only the primary external_id (first job) and ingestion completed the step after the FIRST result.",
-    "fix": [
-      "checkpoint.PendingExternalOperation.job_ids carries EVERY engine job of the batch (step_executor.py); from_dict promotes legacy external_id",
-      "recovery.decide_batch(pending) aggregates per-job decisions fail-closed: ANY unknown -> RECONCILE_UNKNOWN (never resubmit); ANY failed -> NEW_ATTEMPT (bounded); ANY generating -> REATTACH; ALL completed -> RESUME (recovery.py)",
-      "engine.recover() uses decide_batch when the pending op carries a multi-job batch (engine.py)",
-      "engine.ingest_external_result() only clears the pending op and completes the step when EVERY batch job has been ingested (tracked via run.output_hashes)",
-      "ProductionEngineExecutor.cancel_batch(job_ids) cancels EVERY job of the batch, persisting terminal receipts",
-      "tests: tests/unit/orchestration/test_phase17_durable_workflow.py (decide_batch matrix) + tests/integration/test_phase2_workflow_engine_cutover.py TestBatchTracksEveryEngineJob (recover/ingest/cancel over a 2-scene batch)"
-    ]
-  },
-  "retirement_manifest_completion": {
-    "problem": "FLOW_RETIREMENT_MANIFEST.md omitted the 9 deleted test files and 4 deleted verification scripts; flow_removal_inventory.json lacked reconciled counts; one active-code Flow token residue existed (recovery_auditor.py job_flow_video_03).",
-    "fix": [
-      "docs/video_production/historical/FLOW_RETIREMENT_MANIFEST.md §1 lists all 9 retired test files; §2 documents the 4 deleted (non-archived) verification scripts; §7 adds reconciled inventory counts (16 modules / 9 tests / 9 scripts / 21 docs)",
-      "artifacts/video_production_3d/phase_02/flow_removal_inventory.json reconciled counts + residue scan section",
-      "intelligence/windagent_intelligence/video/e2e_poc/recovery_auditor.py default job_id neutralized to job_engine_render_03"
-    ]
-  },
   "test_results": {
-    "full_test_suite": {
-      "command": "python -m pytest -q",
-      "note": "Re-run at final candidate (2026-08-08).",
-      "passed": 2060,
-      "skipped": 36,
-      "failed": 1,
-      "failure_detail": "test_phase27_release.py::test_ci_run_manifest_aggregates_all_required_lanes was the pre-existing baseline defect (stale hard-coded CANDIDATE_SHA); fixed by resolving the candidate SHA from HEAD — the failure is gone at the final candidate."
-    },
-    "architecture_test_suite": {
-      "command": "python -m pytest tests/architecture/ -q",
-      "passed": "see final regression",
-      "note": "Included in the final full run; phase-2 negative matrix (7 checks) passes."
-    },
     "flow_removal_negative_tests": {
-      "command": "python -m pytest tests/architecture/test_phase2_flow_removal_canonical.py -q",
-      "passed": 7,
+      "command": "uv run pytest tests/architecture/test_phase2_flow_removal_canonical.py -q",
+      "passed": 13,
       "failed": 0,
-      "checks": [
-        "google_flow package unimportable (PASS)",
-        "0 runtime imports of google_flow across canonical packages (PASS)",
-        "0 Flow credentials in active configs (PASS)",
-        "Google Gemini LLM provider intact (PASS)",
-        "worker submit -> cancel -> durable RESTART re-attach -> retry via NEW job id (inspect-before-resubmit) (PASS)",
-        "worker restart preserves in-flight durable pending state, still cancellable (PASS)",
-        "worker retry is inspect-before-resubmit; unknown job reconciles to FAILED (PASS)"
-      ]
+      "note": "Prior certification: 7 checks; suite since grew to 13 (residue scanner tests added). All pass on 5662ede."
     },
     "batch_recovery_tests": {
-      "command": "python -m pytest tests/integration/test_phase2_workflow_engine_cutover.py tests/unit/orchestration/test_phase17_durable_workflow.py -q",
+      "command": "uv run pytest tests/integration/test_phase2_workflow_engine_cutover.py tests/unit/orchestration/test_phase17_durable_workflow.py -q",
       "passed": 51,
-      "failed": 0,
-      "note": "Includes TestBatchTracksEveryEngineJob (3 tests) + decide_batch matrix (4 tests)."
+      "failed": 0
+    },
+    "core_and_architecture_regression": {
+      "command": "uv run pytest tests/unit/core tests/architecture -q",
+      "passed": 447,
+      "skipped": 1,
+      "failed": 1,
+      "failure": {
+        "test": "test_phase00_single_workspace_contract.py::test_phase0_docs_exist",
+        "classification": "PRE_EXISTING_BASELINE_DEFECT (VP3D_BASELINE_002)"
+      }
+    },
+    "full_suite_reference": {
+      "note": "Phase 0 re-freeze on same candidate: 2252 passed / 4 failed / 36 skipped; the 4 failures are the frozen cleanup-branch defects (VP3D_BASELINE_002/003/004). No Phase 2 lane introduces any failure beyond those."
+    },
+    "runtime_residue_scan": {
+      "command": "rg 'google_flow|flow_video|FlowVideo|FlowImage' tools/ core/ providers/ workflows/ execution/ intelligence/ --type py (excluding test/historical)",
+      "result": "ZERO matches — clean"
     }
   },
   "maintenance_actions": [
-    "Handoff checksums regenerated via scripts/verification/verify_phase03_handoff.py (write mode) because core contracts legitimately gained AssetTrustPort + asset_resolution models.",
-    "scripts/verification/verify_phase7_assets.py state-machine matrix updated for the QUARANTINED lifecycle states (was stale)."
+    "None required this re-certification: no engine-neutral contract file changed since prior certification."
   ],
   "producer": "phase-2-google-flow-removal"
 }

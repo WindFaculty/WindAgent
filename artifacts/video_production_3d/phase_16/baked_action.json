@@ -1,0 +1,80 @@
+{
+  "baked_action": {
+    "bake_hash": "144773d714a20b851fdf891f8dd535b1031665fef0b7bf6ce2114492fccfacf4",
+    "bake_id": "bka_65ea5122ec3b42e5",
+    "compiler_version": "1.0.0",
+    "fps": 24,
+    "frame_count": 48,
+    "layers": [
+      {
+        "layer_hash": "d68837028463dcd5ed8cb6bafcf138365c41deb7b1d95da41bee6c70617b7a94",
+        "layer_id": "l-look",
+        "layer_kind": "LOOK_AT",
+        "metric": {
+          "joint_limit_violations": 0,
+          "turn_degrees": 26.565
+        },
+        "owned_bones": [
+          "HEAD",
+          "NECK"
+        ],
+        "priority": 60,
+        "seed": 500
+      },
+      {
+        "layer_hash": "7ec87d97c44a9549d8204eba7d7fb5147328c2d65fd241272547b1f82b0e3b51",
+        "layer_id": "l-path",
+        "layer_kind": "PATH_FOLLOW",
+        "metric": {
+          "collision_count": 0,
+          "foot_slide_meters": 0.0,
+          "obstacle_count": 2,
+          "path_length_m": 1.6
+        },
+        "owned_bones": [
+          "ROOT",
+          "PELVIS"
+        ],
+        "priority": 40,
+        "seed": 500
+      },
+      {
+        "layer_hash": "fc27b3a8058c310f1638ff4f0becc8ffa199be70de29e21a67fe652a4005b923",
+        "layer_id": "l-idle",
+        "layer_kind": "IDLE_VARIATION",
+        "metric": {
+          "balance_offset_m": 0.0,
+          "variation_samples": 4
+        },
+        "owned_bones": [
+          "SPINE",
+          "HEAD",
+          "SHOULDER_L",
+          "SHOULDER_R"
+        ],
+        "priority": 10,
+        "seed": 500
+      }
+    ],
+    "metadata": {},
+    "motion_metrics": {
+      "balance_offset_m": 0.0,
+      "boundary_drift_frames": 0,
+      "collision_count": 0,
+      "foot_slide_meters": 0.0,
+      "joint_limit_violations": 0,
+      "reach_meters": 0.0
+    },
+    "recipe_hash": "4ac730774d268c84bbb641c2b1a600fd430bc7295b96dab7f944bc42f0b33442",
+    "recipe_id": "prc_65ea5122ec3b42e5",
+    "schema_version": "1.0.0",
+    "track_id": "atk_6e2c28da6dac86f4"
+  },
+  "deterministic": true,
+  "rebuildable_from": {
+    "compiler_version": "1.0.0",
+    "recipe_hash": "4ac730774d268c84bbb641c2b1a600fd430bc7295b96dab7f944bc42f0b33442",
+    "recipe_id": "prc_65ea5122ec3b42e5"
+  },
+  "seed_changes_hash": true
+}

@@ -1,0 +1,478 @@
+{
+  "bins": 16,
+  "confidence_policy": "LOW — human visual + technical review required before a preset is approved (stage_g §6)",
+  "deterministic": true,
+  "normalized": true,
+  "sheets": {
+    "CARTOON_DAY": {
+      "confidence": "LOW",
+      "contrast_ratio": 2.857142857142857,
+      "entries": [
+        {
+          "casts_shadow": true,
+          "color_kelvin": 5600,
+          "intensity_ratio": 1.0,
+          "role": "KEY"
+        },
+        {
+          "casts_shadow": false,
+          "color_kelvin": 6000,
+          "intensity_ratio": 0.35,
+          "role": "FILL"
+        },
+        {
+          "casts_shadow": false,
+          "color_kelvin": 5600,
+          "intensity_ratio": 0.3,
+          "role": "RIM"
+        },
+        {
+          "casts_shadow": false,
+          "color_kelvin": 6200,
+          "intensity_ratio": 0.2,
+          "role": "AMBIENT"
+        }
+      ],
+      "exposure_ev": 1.0,
+      "histogram": [
+        7.1e-05,
+        0.002341,
+        0.031047,
+        0.166251,
+        0.359413,
+        0.313694,
+        0.110535,
+        0.015725,
+        0.000903,
+        2.1e-05,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "manifest_hash": "7f07f8afd163a8d35f2fcf6f349d8785652184ae77c4995e27fe5f67c06a704f",
+      "mean_luminance": 0.29000000000000004,
+      "preset_id": "CARTOON_DAY",
+      "preset_version": "1.0.0",
+      "sheet_id": "lcs_f3e27d326fa70525",
+      "shot_id": "sh-cartoon_day"
+    },
+    "CARTOON_NIGHT": {
+      "confidence": "LOW",
+      "contrast_ratio": 2.5,
+      "entries": [
+        {
+          "casts_shadow": true,
+          "color_kelvin": 6500,
+          "intensity_ratio": 1.0,
+          "role": "KEY"
+        },
+        {
+          "casts_shadow": false,
+          "color_kelvin": 7000,
+          "intensity_ratio": 0.4,
+          "role": "FILL"
+        },
+        {
+          "casts_shadow": false,
+          "color_kelvin": 4500,
+          "intensity_ratio": 0.2,
+          "role": "RIM"
+        },
+        {
+          "casts_shadow": false,
+          "color_kelvin": 3400,
+          "intensity_ratio": 0.3,
+          "role": "PRACTICAL"
+        },
+        {
+          "casts_shadow": false,
+          "color_kelvin": 7200,
+          "intensity_ratio": 0.15,
+          "role": "AMBIENT"
+        }
+      ],
+      "exposure_ev": -2.0,
+      "histogram": [
+        0.288632,
+        0.375142,
+        0.243475,
+        0.078908,
+        0.01277,
+        0.001032,
+        4.2e-05,
+        1e-06,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "manifest_hash": "fa3e9fadcca47cc3e5b364874542a8a7075068d908710344695cae62d39b1f63",
+      "mean_luminance": 0.058499999999999996,
+      "preset_id": "CARTOON_NIGHT",
+      "preset_version": "1.0.0",
+      "sheet_id": "lcs_02d6e8205828f193",
+      "shot_id": "sh-cartoon_night"
+    },
+    "COMEDY_BRIGHT": {
+      "confidence": "LOW",
+      "contrast_ratio": 1.6666666666666667,
+      "entries": [
+        {
+          "casts_shadow": true,
+          "color_kelvin": 5500,
+          "intensity_ratio": 1.0,
+          "role": "KEY"
+        },
+        {
+          "casts_shadow": false,
+          "color_kelvin": 5200,
+          "intensity_ratio": 0.6,
+          "role": "FILL"
+        },
+        {
+          "casts_shadow": false,
+          "color_kelvin": 5600,
+          "intensity_ratio": 0.4,
+          "role": "RIM"
+        },
+        {
+          "casts_shadow": false,
+          "color_kelvin": 5400,
+          "intensity_ratio": 0.35,
+          "role": "AMBIENT"
+        }
+      ],
+      "exposure_ev": 1.0,
+      "histogram": [
+        0.002676,
+        0.011958,
+        0.039239,
+        0.094565,
+        0.167382,
+        0.217592,
+        0.207748,
+        0.145677,
+        0.075024,
+        0.028377,
+        0.007883,
+        0.001608,
+        0.000241,
+        2.7e-05,
+        2e-06,
+        0.0
+      ],
+      "manifest_hash": "5de0160bf821f916fb67f3159dd1af4078fc079c2f721804c495a8c57f71acbc",
+      "mean_luminance": 0.3566666666666667,
+      "preset_id": "COMEDY_BRIGHT",
+      "preset_version": "1.0.0",
+      "sheet_id": "lcs_9d738daefa975e07",
+      "shot_id": "sh-comedy_bright"
+    },
+    "DRAMATIC": {
+      "confidence": "LOW",
+      "contrast_ratio": 6.666666666666667,
+      "entries": [
+        {
+          "casts_shadow": true,
+          "color_kelvin": 4000,
+          "intensity_ratio": 1.0,
+          "role": "KEY"
+        },
+        {
+          "casts_shadow": false,
+          "color_kelvin": 6500,
+          "intensity_ratio": 0.15,
+          "role": "FILL"
+        },
+        {
+          "casts_shadow": false,
+          "color_kelvin": 3000,
+          "intensity_ratio": 0.6,
+          "role": "RIM"
+        },
+        {
+          "casts_shadow": false,
+          "color_kelvin": 5000,
+          "intensity_ratio": 0.1,
+          "role": "AMBIENT"
+        }
+      ],
+      "exposure_ev": -1.5,
+      "histogram": [
+        0.172916,
+        0.765003,
+        0.061989,
+        9.2e-05,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "manifest_hash": "d199d810b6444bf0f700db242c2d73612856273a4c0a7ba736746324f2d3388a",
+      "mean_luminance": 0.05811786217943249,
+      "preset_id": "DRAMATIC",
+      "preset_version": "1.0.0",
+      "sheet_id": "lcs_8ac074f849b20d4e",
+      "shot_id": "sh-dramatic"
+    },
+    "INTERIOR_SOFT": {
+      "confidence": "LOW",
+      "contrast_ratio": 1.4285714285714286,
+      "entries": [
+        {
+          "casts_shadow": true,
+          "color_kelvin": 3200,
+          "intensity_ratio": 1.0,
+          "role": "KEY"
+        },
+        {
+          "casts_shadow": false,
+          "color_kelvin": 3400,
+          "intensity_ratio": 0.7,
+          "role": "FILL"
+        },
+        {
+          "casts_shadow": false,
+          "color_kelvin": 3000,
+          "intensity_ratio": 0.3,
+          "role": "RIM"
+        },
+        {
+          "casts_shadow": false,
+          "color_kelvin": 3200,
+          "intensity_ratio": 0.4,
+          "role": "BOUNCE"
+        },
+        {
+          "casts_shadow": false,
+          "color_kelvin": 2800,
+          "intensity_ratio": 0.5,
+          "role": "PRACTICAL"
+        },
+        {
+          "casts_shadow": false,
+          "color_kelvin": 3500,
+          "intensity_ratio": 0.3,
+          "role": "AMBIENT"
+        }
+      ],
+      "exposure_ev": -1.0,
+      "histogram": [
+        0.111043,
+        0.16892,
+        0.204827,
+        0.197977,
+        0.152533,
+        0.093677,
+        0.045859,
+        0.017895,
+        0.005566,
+        0.00138,
+        0.000273,
+        4.3e-05,
+        5e-06,
+        1e-06,
+        0.0,
+        0.0
+      ],
+      "manifest_hash": "558caa5e7a3c7cadadb82681faa835404b3c218c251e48eacfdab4518ef9e1d7",
+      "mean_luminance": 0.15666666666666665,
+      "preset_id": "INTERIOR_SOFT",
+      "preset_version": "1.0.0",
+      "sheet_id": "lcs_3dc3fb283517f171",
+      "shot_id": "sh-interior_soft"
+    },
+    "MAGIC_FOREST": {
+      "confidence": "LOW",
+      "contrast_ratio": 2.5,
+      "entries": [
+        {
+          "casts_shadow": true,
+          "color_kelvin": 5000,
+          "intensity_ratio": 1.0,
+          "role": "KEY"
+        },
+        {
+          "casts_shadow": false,
+          "color_kelvin": 5600,
+          "intensity_ratio": 0.4,
+          "role": "FILL"
+        },
+        {
+          "casts_shadow": false,
+          "color_kelvin": 4000,
+          "intensity_ratio": 0.5,
+          "role": "RIM"
+        },
+        {
+          "casts_shadow": false,
+          "color_kelvin": 2500,
+          "intensity_ratio": 0.6,
+          "role": "PRACTICAL"
+        },
+        {
+          "casts_shadow": false,
+          "color_kelvin": 7000,
+          "intensity_ratio": 0.3,
+          "role": "BOUNCE"
+        },
+        {
+          "casts_shadow": false,
+          "color_kelvin": 6800,
+          "intensity_ratio": 0.25,
+          "role": "AMBIENT"
+        }
+      ],
+      "exposure_ev": -1.5,
+      "histogram": [
+        0.143953,
+        0.306195,
+        0.325222,
+        0.172492,
+        0.045684,
+        0.006042,
+        0.000399,
+        1.3e-05,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "manifest_hash": "6c63e2e9160246621eb21a7a46a4c3ae4cca3ac81b48d2a5e6083d70c4761c5b",
+      "mean_luminance": 0.10578756936031529,
+      "preset_id": "MAGIC_FOREST",
+      "preset_version": "1.0.0",
+      "sheet_id": "lcs_3485db6b4362504c",
+      "shot_id": "sh-magic_forest"
+    },
+    "ROADMAP_CHILDREN_3D": {
+      "confidence": "LOW",
+      "contrast_ratio": 2.857142857142857,
+      "entries": [
+        {
+          "casts_shadow": true,
+          "color_kelvin": 5600,
+          "intensity_ratio": 1.0,
+          "role": "KEY"
+        },
+        {
+          "casts_shadow": false,
+          "color_kelvin": 6000,
+          "intensity_ratio": 0.35,
+          "role": "FILL"
+        },
+        {
+          "casts_shadow": false,
+          "color_kelvin": 5600,
+          "intensity_ratio": 0.3,
+          "role": "RIM"
+        },
+        {
+          "casts_shadow": false,
+          "color_kelvin": 6200,
+          "intensity_ratio": 0.2,
+          "role": "AMBIENT"
+        }
+      ],
+      "exposure_ev": 1.0,
+      "histogram": [
+        7.1e-05,
+        0.002341,
+        0.031047,
+        0.166251,
+        0.359413,
+        0.313694,
+        0.110535,
+        0.015725,
+        0.000903,
+        2.1e-05,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "manifest_hash": "28543e8b3b36bf9c4bcff04773dd4eeb605211981d68e4dab598f9240180b06a",
+      "mean_luminance": 0.29000000000000004,
+      "preset_id": "CARTOON_DAY",
+      "preset_version": "1.0.0",
+      "sheet_id": "lcs_6aa07776fc986f41",
+      "shot_id": "sh-children3d"
+    },
+    "SUNSET": {
+      "confidence": "LOW",
+      "contrast_ratio": 2.0,
+      "entries": [
+        {
+          "casts_shadow": true,
+          "color_kelvin": 3200,
+          "intensity_ratio": 1.0,
+          "role": "KEY"
+        },
+        {
+          "casts_shadow": false,
+          "color_kelvin": 6000,
+          "intensity_ratio": 0.5,
+          "role": "FILL"
+        },
+        {
+          "casts_shadow": false,
+          "color_kelvin": 2500,
+          "intensity_ratio": 0.8,
+          "role": "RIM"
+        },
+        {
+          "casts_shadow": false,
+          "color_kelvin": 5500,
+          "intensity_ratio": 0.3,
+          "role": "AMBIENT"
+        }
+      ],
+      "exposure_ev": 0.0,
+      "histogram": [
+        0.018954,
+        0.070325,
+        0.1673,
+        0.25519,
+        0.249582,
+        0.15651,
+        0.062929,
+        0.016223,
+        0.002682,
+        0.000284,
+        1.9e-05,
+        1e-06,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "manifest_hash": "a8ce71c7de36ca51007732fca011a76da00274108e7e0fa58791a3b2623f3cc8",
+      "mean_luminance": 0.22999999999999998,
+      "preset_id": "SUNSET",
+      "preset_version": "1.0.0",
+      "sheet_id": "lcs_9653dbd750c6c929",
+      "shot_id": "sh-sunset"
+    }
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "backlog": "audio_animation_drift_at_line_start_mid_end",
+  "character_a_lines": [
+    {
+      "end_drift_frames": 0,
+      "line": 0,
+      "max_drift_frame": 100,
+      "max_drift_frames": 0,
+      "mid_drift_frames": 0,
+      "start_drift_frames": 0
+    },
+    {
+      "end_drift_frames": 0,
+      "line": 1,
+      "max_drift_frame": 114,
+      "max_drift_frames": 0,
+      "mid_drift_frames": 0,
+      "start_drift_frames": 0
+    },
+    {
+      "end_drift_frames": 0,
+      "line": 2,
+      "max_drift_frame": 127,
+      "max_drift_frames": 0,
+      "mid_drift_frames": 0,
+      "start_drift_frames": 0
+    }
+  ],
+  "character_a_max_drift_frames": 0,
+  "character_b_lines": [
+    {
+      "end_drift_frames": 0,
+      "line": 0,
+      "max_drift_frame": 100,
+      "max_drift_frames": 0,
+      "mid_drift_frames": 0,
+      "start_drift_frames": 0
+    },
+    {
+      "end_drift_frames": 0,
+      "line": 1,
+      "max_drift_frame": 105,
+      "max_drift_frames": 0,
+      "mid_drift_frames": 0,
+      "start_drift_frames": 0
+    },
+    {
+      "end_drift_frames": 0,
+      "line": 2,
+      "max_drift_frame": 110,
+      "max_drift_frames": 0,
+      "mid_drift_frames": 0,
+      "start_drift_frames": 0
+    },
+    {
+      "end_drift_frames": 0,
+      "line": 3,
+      "max_drift_frame": 115,
+      "max_drift_frames": 0,
+      "mid_drift_frames": 0,
+      "start_drift_frames": 0
+    }
+  ],
+  "character_b_max_drift_frames": 0,
+  "drift_tolerance_frames": 1,
+  "within_tolerance": true
+}

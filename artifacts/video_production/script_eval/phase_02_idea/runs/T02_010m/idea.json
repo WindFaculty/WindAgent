@@ -1,0 +1,11 @@
+{
+  "case_id": "T02",
+  "duration_minutes": 10,
+  "hook": "Mot chiec mu bao hiem ky la roi tu tren troi xuong san choi, moi ban nho deu nghi do la mu cua minh bi mat.",
+  "conflict": "Bon ban nho tranh nhau chiec mu, moi ban deu khang dinh do la mu cua minh voi nhung ly do ngoc nghich: ban A noi co ngoi sao, ban B noi co mau xanh, ban C noi co hinh con tho, ban D noi co mui thom. Thuc ra chiec mu khong phai cua ai ca, ma la cua chu cho tot nghich.",
+  "premise": "Cac ban nho cung nhau dieu tra xem chiec mu tu dau den, nhung moi lan do len dau lai gay ra tinh huong buon cuoi: mu qua rong che mat, mu qua chat ket dau, mu co lo xo nhay ra. Cuoi cung ho phat hien ra chu cho dang nam trong mu, va hieu ra rang khong nen tranh nhau thu khong phai cua minh.",
+  "differentiation": "Khong giong cac phim khac thuong ve viec tranh do choi hay hieu lam don gian, phim nay dung chiec mu nhu vat the trung tam tao ra chuoi tinh huong vat ly hai huoc (mu bien dang, lo xo, hieu ung am thanh) va nhan vat chu cho dong vai 'thu pham' gay cuoi, giup tre nhan biet cam xuc va cach chia se.",
+  "payoff": "Khi chu cho chui ra khoi mu, no lam roi mot cuc xuong, cac ban nho cuoi nhoai va cung nhau quyet dinh bien chiec mu thanh 'o cho cho'. Moi ban nho ve mot hinh trang tri len mu de tang cho chu cho, va chu cho ngoi trong mu vui ve. Ket thuc la ca nhom choi tro 'doan xem mu cua ai' nhung khong ai tranh nua.",
+  "lesson": "Khong nen gan bo qua muc voi do vat, va khi co tranh chap, hay cung nhau tim hieu su that thay vi cai nhau. Nhung bai hoc nhe nhang qua tinh huong hai huoc, khong giao dieu.",
+  "visual_potential": "Mau sac tuoi sang cua san choi, chiec mu co the thay doi kich thuoc, mau sac, phat ra tieng keu khi do vao dau. Canh quay cham khi mu roi tu tren troi, canh gan khuon mat cac ban nho khi do mu bi che mat, canh chu cho chui ra voi bo long xo. Am nhac vui nhon, hieu ung am thanh 'boing' 'xoe' khi mu dan hoi. Toan canh 3D sinh dong, de ve bang hinh anh."
+}

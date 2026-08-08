@@ -1,0 +1,13 @@
+{
+  "excess_overlap_fails_closed": true,
+  "stable_boundary": true,
+  "transition": {
+    "actor_id": "char_01",
+    "blend_window_frames": 6,
+    "boundary_frame": 48,
+    "from_track_id": "atk_6e2c28da6dac86f4",
+    "to_track_id": "atk_7c09f59dfc95618e",
+    "transition_id": "bln_5a6e45ec3db857fe"
+  },
+  "validator_overlap_conflict_detected": true
+}

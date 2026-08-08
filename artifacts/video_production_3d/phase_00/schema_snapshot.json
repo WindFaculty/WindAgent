@@ -1,112 +1,64 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.2.0",
   "phase": 0,
   "program": "vp3d",
   "gate": "VP3D_P0_BASELINE_FROZEN",
-  "recorded_at": "2026-08-07T07:00:00Z",
-  "baseline_sha": "9080fcb4bb6d9a6531a095c624a0f6d8796f4081",
-  "purpose": "Snapshot of the public video-production domain surface that Phase 1 (Canonical Production IR) must map, supersede, or keep. Records the exact GenerationMode-coupled schemas so the migration is auditable.",
-  "domain": {
-    "file": "core/windagent_core/domain/video_production/enums.py",
-    "GenerationMode": {
-      "type": "str Enum",
-      "values": [
-        "TEXT_TO_VIDEO", "IMAGE_TO_VIDEO", "FRAMES_TO_VIDEO",
-        "INGREDIENTS_TO_VIDEO", "VIDEO_EXTENSION", "VIDEO_TO_VIDEO",
-        "TEXT_TO_IMAGE"
+  "recorded_at": "2026-08-08T04:03:20Z",
+  "baseline_sha": "5662edee35893876264a599a9480cafb531466f1",
+  "purpose": "Snapshot of the current video-production domain surface frozen at candidate 5662ede. Unlike the prior freeze (baseline 649e6fa, which recorded the legacy GenerationMode-coupled surface as current), this snapshot reflects the tree AFTER Stage A Phases 1-2 advanced: Production ISO IR and ProductionEnginePort are the canonical engine surface, and the Google Flow runtime is fully removed.",
+  "engine_neutral_core": {
+    "port": {
+      "note": "ProductionEnginePort is the canonical engine adapter contract. Takes typed IR units + artifact references; never a Flow prompt, GenerationMode, or engine SDK object.",
+      "file": "core/windagent_core/contracts/video_production/production_engine.py",
+      "methods": ["submit_scene", "submit_shot", "inspect_job", "cancel_job", "download_artifact"]
+    },
+    "production_ir": {
+      "file": "core/windagent_core/domain/video_production/production_ir/",
+      "version": "PRODUCTION_IR_VERSION (models.py); SUPPORTED_IR_MAJOR_VERSION",
+      "models": [
+        "ProductionIrDocument", "ShotExecutionIntent", "SceneDescription",
+        "CharacterInstance", "PropInstance", "EnvironmentInstance",
+        "CameraTrack", "AnimationTrack", "FacialTrack", "DialogueTrack",
+        "LightRig", "SimulationTrack", "RenderProfile", "RenderIntent",
+        "EngineJobReceipt", "DerivedArtifact", "AssetReference"
       ],
-      "phase1_action": "REMOVE_FROM_IR (replaced by engine-neutral execution intent; legacy enum retained only inside the compatibility layer)"
+      "enums": [
+        "IrAssetFormat", "DerivedArtifactKind", "EngineJobStatus", "IrComponentKind",
+        "IrInvalidationScope", "LipSyncSource", "SimulationKind", "RenderQuality",
+        "IrValidationIssueCode"
+      ],
+      "validation": "ProductionIrValidator (fail-closed)",
+      "invalidation": "invalidate_scope / affected_outputs (track-scoped)",
+      "migrator": "ProductionIrMigrator (bounded legacy compatibility reader)",
+      "note": "DialogueTrack value object lives ONLY in production_ir namespace (the domain package root already exports the Phase 21 audio DialogueTrack entity)."
     },
-    "GenerationModeReasonCode": {
-      "values": [
-        "NO_MANDATORY_REFERENCE", "IDENTITY_REFERENCE_REQUIRED", "LOCATION_REFERENCE_REQUIRED",
-        "FRAMES_REQUIRED", "MOTION_CONTINUATION", "CLIP_TRANSFORMATION"
-      ]
-    },
-    "Related_enums_kept": {
-      "note": "ShotType, CameraAngle, CameraMovement, CameraSide, ScreenDirection, TransitionType, DependencyType, RequiredArtifactType, InvalidationIntent, AudioInvalidationScope remain canonical and are REUSED by the IR (they describe cinematic intent, not provider capability)."
+    "derived_artifact_contract": {
+      "note": "glTF = preferred asset interchange; FBX = skeletal/animation compatibility; USD = long-horizon Blender<->Unreal; .blend = derived editable artifact, NEVER source of truth.",
+      "source_of_truth": "JSON/Pydantic production IR"
     }
   },
-  "generation_request": {
-    "file": "core/windagent_core/domain/video_production/generation_job.py",
-    "model": "GenerationRequest",
-    "fields": ["request_id", "project_id", "revision_id", "shot_id", "generation_mode", "provider", "prompt_version", "prompt_hash", "reference_hashes", "request_hash", "parameters", "submitted_at"],
-    "coupled_to": ["GenerationMode", "provider", "prompt_hash", "request_hash"]
-  },
-  "generation_candidate": {
-    "model": "GenerationCandidate",
-    "fields": ["candidate_id", "request_id", "project_id", "revision_id", "shot_id", "request_hash", "prompt_version", "reference_hashes", "provider", "parameters", "status", "content_hash", "media_uri", "review_result_id", "created_at"]
-  },
-  "generation_record": {
-    "model": "GenerationRecord",
-    "fields": ["request", "candidates", "selected_candidate_id", "status", "metadata"]
-  },
-  "media_generation_provider_port": {
-    "file": "core/windagent_core/contracts/video_production/media_generation.py",
-    "protocol": "MediaGenerationProviderPort",
-    "methods": ["generate_image", "generate_video", "extend_video", "inspect_job", "download_result"],
-    "input_type": "GenerationRequest",
-    "phase1_action": "SUPERSEDED by ProductionEnginePort for 3D engine path; kept for legacy generative-video adapters until Phase 2 cutover."
-  },
-  "flow_generation_specification": {
-    "file": "core/windagent_core/domain/video_production/prompt_compiler.py",
-    "model": "FlowGenerationSpecification",
-    "fields": ["spec_id", "shot_id", "generation_mode", "prompt", "reference_binding_ids", "reference_hashes", "required_inputs", "parameters", "model_capability_constraints"],
-    "phase1_action": "MIGRATE: its prompt/reference semantics are replaced by ShotExecutionIntent (creative prompt separated from provider-specific parts); retired in Phase 2."
-  },
-  "generation_mode_decision": {
-    "file": "core/windagent_core/domain/video_production/shot_graph.py",
-    "model": "GenerationModeDecision",
-    "fields": ["preferred_mode", "acceptable_fallback_modes", "reason_code", "rationale"],
-    "consumers": ["intelligence/windagent_intelligence/video/shot_planner/generation_mode.py (GenerationModeDecider)", "scripts/verification/verify_phase9_shot_graph.py", "scripts/verification/verify_phase11_compiler.py"],
-    "phase1_action": "NOT carried into IR; the IR carries actor/action/camera/duration/dialogue/assets and lets the engine adapter decide execution."
-  },
-  "shot": {
-    "file": "core/windagent_core/domain/video_production/shot.py",
-    "model": "Shot",
-    "fields": ["shot_id", "scene_id", "order", "shot_type", "camera_movement", "duration_seconds", "framing_description", "transition_type", "generation_mode", "dialogue_line_ids", "reference_asset_ids", "metadata"],
-    "generation_mode_field": "present (TEXT_TO_VIDEO default)"
-  },
-  "shot_specification": {
-    "file": "core/windagent_core/domain/video_production/shot_graph.py",
-    "model": "ShotSpecification",
-    "fields": ["spec_id", "shot_id", "scene_id", "sequence", "ordinal", "narrative_purpose", "shot_type", "subjects", "action", "camera", "composition", "screen_direction", "duration_seconds", "frame_rate", "aspect_ratio", "dialogue_line_ids", "narration_range", "required_inputs", "expected_outputs", "generation_mode", "retry_policy"],
-    "note": "Rich cinematic spec; its non-mode fields (subjects/action/camera/duration/frame_rate/aspect_ratio/dialogue_line_ids) are the primary source for the IR ShotExecutionIntent."
-  },
-  "video_production_package_v1": {
-    "file": "core/windagent_core/domain/video_production/package.py",
-    "model": "VideoProductionPackage",
-    "schema_version": "1.0.0",
-    "fields": ["schema_version", "project_id", "revision_id", "creative_brief", "story_concept", "screenplay", "characters", "locations", "props", "style_bible", "dialogue", "cinematic_plan", "continuity", "assets", "generation_records", "approvals", "final_deliverable", "provenance"],
-    "content_hash_excludes": ["approvals", "provenance", "generation_records", "final_deliverable"],
-    "phase1_action": "INPUT to ProductionIrMigrator; IR records source_package_hash."
+  "legacy_generation_surface": {
+    "status": "RETIRED_OR_READ_ONLY",
+    "GenerationMode": "REMOVED from core/windagent_core/domain/video_production/enums.py (no TEXT_TO_VIDEO / IMAGE_TO_VIDEO / VIDEO_EXTENSION values remain).",
+    "GenerationRequest.generation_mode": "field removed (grep of shot.py + enums.py returns zero generation_mode references).",
+    "MediaGenerationProviderPort": "no longer referenced by the current engine path; legacy generative-video adapters not in the canonical tree.",
+    "FlowGenerationSpecification": "removed with Google Flow.",
+    "GenerationModeDecision": "no longer current; IR carries cinematic intent."
   },
   "events": {
-    "file": "core/windagent_core/events/video_production.py",
-    "catalog": "VideoProductionEventCatalog",
-    "schema_version": "1.0.0",
-    "events": [
-      "video_production.project_created", "video_production.concept_approved",
-      "video_production.screenplay_generated", "video_production.screenplay_locked",
-      "video_production.character_bible_approved", "video_production.location_bible_approved",
-      "video_production.cinematic_plan_generated", "video_production.shot_plan_locked",
-      "video_production.generation_submitted", "video_production.generation_completed",
-      "video_production.generation_rejected", "video_production.human_action_required",
-      "video_production.sequence_completed", "video_production.final_video_published"
-    ],
-    "phase1_action": "KEEP for legacy flow; Phase 1 adds a separate ProductionIrEventCatalog (video_production_ir.*) for engine jobs and derived artifacts."
+    "catalog": "VideoProductionEventCatalog (legacy) retained for historical streams",
+    "production_ir_additive": "ProductionIrEventCatalog (video_production_ir.*) added by Phase 1; no dual-write beyond the compatibility window"
+  },
+  "storage_and_api": {
+    "note": "Content-addressed artifact storage (v2_artifacts) keyed by artifact hash; IR-derived artifacts reuse the same storage. API routers map canonical domain via legacy_event_mappers; no direct GenerationMode leak at the boundary."
   },
   "workflow": {
     "file": "workflows/windagent_workflows/video_production/definition.py",
-    "note": "Step-driven definition with expected_events per step; consumes VideoProductionPackage and event catalog above. Phase 2 re-wires the composition to ProductionEnginePort + IR; definition shape is preserved."
+    "note": "Step-driven definition; composition root wired to ProductionEnginePort + IR for the 3D path (per Phase 1-2)."
   },
-  "storage": {
-    "file": "storage/windagent_storage/video_production/publisher.py",
-    "note": "ArtifactAvailableEvent + EventJournal persist published artifacts; artifact keys are content-hash addressed (existing v2_artifacts table). IR-derived artifacts will reuse the same content-addressed storage keyed by ir_hash.",
-    "tables_of_record": ["v2_artifacts", "execution_events", "v2_outbox_records"]
-  },
-  "api_payloads": {
-    "note": "apps/api routers expose session/event/artifact payloads mapped from the canonical domain via legacy_event_mappers; no direct GenerationMode leak at the API boundary was introduced by Phase 0."
+  "delta_vs_prior_snapshot": {
+    "prior_baseline_sha": "649e6faf95b6aa4f41ce4068018bc824a0b5c24f",
+    "note": "Prior snapshot recorded GenerationMode/FlowGenerationSpecification/GenerationModeDecision as current and marked for Phase-1 migration. This re-freeze documents that migration as EXECUTED: GenerationMode gone, IR + ProductionEnginePort present, Google Flow runtime removed."
   },
   "producer": "phase-0-baseline-freeze"
 }

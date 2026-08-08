@@ -1,0 +1,47 @@
+{
+  "backlog": {
+    "1_timing_normalized": true,
+    "2_viseme_map_versioned_fallback": true,
+    "3_curves_coarticulation_bounded": true,
+    "4_emotion_no_articulation_overlap": true,
+    "5_blink_gaze_head_deterministic": true,
+    "6_layer_ownership": true,
+    "7_baked_derived_action": true,
+    "8_layer_scoped_repair": true,
+    "9_preview_manifest": true
+  },
+  "compiler_version": "facial-1.0",
+  "determinism": {
+    "same_input_profile_seed_same_manifest": true,
+    "same_track_same_action_hash": true
+  },
+  "fixture": {
+    "characters": [
+      "char_a",
+      "char_b"
+    ],
+    "emotion_change": true,
+    "fast_sentence": true,
+    "silence_gaps": true,
+    "two_character_dialogue": true,
+    "vietnamese_diacritics": true
+  },
+  "gate": "VP3D_P18_FACIAL_PIPELINE_VERIFIED",
+  "gate_passed": true,
+  "no_code_execution": {
+    "bpy": false,
+    "domain_carries_no_blender_data_block_names": true,
+    "dynamic_import": false,
+    "eval": false,
+    "exec": false
+  },
+  "phase": "phase_18",
+  "validation": {
+    "character_a_status": "APPROVED",
+    "character_b_status": "APPROVED",
+    "drift_tolerance_frames": 1,
+    "low_confidence_routes_review": true,
+    "max_drift_frames": 0,
+    "rig_missing_routes_review": true
+  }
+}

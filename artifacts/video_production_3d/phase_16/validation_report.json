@@ -1,0 +1,35 @@
+{
+  "gate_bake": {
+    "blocking_kinds": [],
+    "cleaned_ok": true
+  },
+  "negative_checks": {
+    "anchor_mismatch_detected": true,
+    "balance_detected": true,
+    "collision_detected": true,
+    "foot_sliding_detected": true,
+    "hand_reach_detected": true,
+    "joint_limit_detected": true,
+    "layer_conflict_detected": true,
+    "outside_ownership_detected": true,
+    "transition_drift_detected": true
+  },
+  "validator_reports": {
+    "transition_drift": {
+      "checked_entity_count": 3,
+      "findings": [
+        {
+          "blocking": true,
+          "detail": "bake boundary drift 3 frames > 0",
+          "finding_id": "pr:TRANSITION_CONTINUITY_BROKEN",
+          "kind": "TRANSITION_CONTINUITY_BROKEN",
+          "layer_id": "",
+          "measured": {
+            "boundary_drift_frames": 3
+          }
+        }
+      ],
+      "ok": false
+    }
+  }
+}

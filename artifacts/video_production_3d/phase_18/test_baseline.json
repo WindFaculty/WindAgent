@@ -1,0 +1,27 @@
+{
+  "checkers": {
+    "check_architecture_imports": "PASS (0 violations)"
+  },
+  "command": "python -m pytest tests/unit/intelligence/test_phase18_facial_compiler.py tests/architecture/test_phase18_facial_canonical.py -q",
+  "gate": "VP3D_P18_FACIAL_PIPELINE_VERIFIED",
+  "phase": "phase_18",
+  "producer": "phase-18-facial-pipeline",
+  "recorded_at": "2026-08-08T07:24:04.008956+00:00",
+  "suites": [
+    {
+      "covers": "stage_i §3/§4: timing normalization (fps + shot offset, alignment hash preserved, monotonic/in-range fail-closed); viseme map versioned by language+rig with explicit fallback (no silent skip); compile: coarticulation + min hold + bounded amplitude, silence no mouth movement, emotion never overlaps articulation, deterministic blink/gaze/head, layer ownership + head blend policy; validation matrix: monotonic, shot range, drift at line start/mid/end, silence, facial pop, idle speech, head joint limit, low-confidence + rig-missing -> REQUIRES_HUMAN_REVIEW; bake with compiler version/input hashes/frame range (non-APPROVED fails closed); layer-scoped repair + invalidation; preview manifest; determinism",
+      "file": "tests/unit/intelligence/test_phase18_facial_compiler.py",
+      "passed": 46
+    },
+    {
+      "covers": "provider-neutral imports, no bpy/eval/exec/pickle/importlib, domain carries no Blender data-block names (semantic controls only), binding table lives in intelligence, contract port is protocol-only, core neutrality, core+contracts+intelligence exports, real arch check PASS",
+      "file": "tests/architecture/test_phase18_facial_canonical.py",
+      "passed": 46
+    }
+  ],
+  "summary": {
+    "failed": 0,
+    "passed": 46,
+    "skipped": 0
+  }
+}

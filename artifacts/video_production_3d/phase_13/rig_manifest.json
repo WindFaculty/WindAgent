@@ -1,0 +1,288 @@
+{
+  "compiler_version": "1.0.0",
+  "deterministic": true,
+  "rig_primitives_version": "1.0.0",
+  "rigs": {
+    "master": {
+      "end_frame": 96,
+      "focus": {
+        "dof_far_m": 5.0,
+        "dof_near_m": 2.0,
+        "focus_distance_m": 3.0,
+        "focus_target": ""
+      },
+      "fps": 24,
+      "framing": {
+        "head_room_ratio": 0.12,
+        "look_room_ratio": 0.2,
+        "safe_margin": 0.05,
+        "subject_height_m": 1.6
+      },
+      "keyframes": [
+        {
+          "easing": "LINEAR",
+          "frame": 0,
+          "look_at": [
+            0.0,
+            0.0,
+            1.2
+          ],
+          "position": [
+            0.0,
+            -5.0,
+            1.6
+          ]
+        }
+      ],
+      "lens": {
+        "aperture_fstop": 2.8,
+        "aspect_ratio": 1.7777777777777777,
+        "focal_mm": 35.0,
+        "sensor_width_mm": 36.0
+      },
+      "movement": "STATIC",
+      "plan_hash": "3b4cc21d0cd5d16b4935fbb6671b0e49b4186ba1bf4590966d2991de29dfff1c",
+      "plan_id": "crp_dbdbe0486b267703",
+      "primitive_id": "cam_rig/static/v1",
+      "primitive_version": "1.0.0",
+      "shot_id": "sh-master",
+      "start_frame": 1
+    },
+    "moving": {
+      "end_frame": 48,
+      "focus": {
+        "dof_far_m": 5.0,
+        "dof_near_m": 2.0,
+        "focus_distance_m": 3.0,
+        "focus_target": ""
+      },
+      "fps": 24,
+      "framing": {
+        "head_room_ratio": 0.12,
+        "look_room_ratio": 0.2,
+        "safe_margin": 0.05,
+        "subject_height_m": 1.6
+      },
+      "keyframes": [
+        {
+          "easing": "LINEAR",
+          "frame": 0,
+          "look_at": [
+            0.0,
+            0.0,
+            1.2
+          ],
+          "position": [
+            -3.0,
+            -5.0,
+            1.6
+          ]
+        },
+        {
+          "easing": "LINEAR",
+          "frame": 6,
+          "look_at": [
+            0.0,
+            0.0,
+            1.2
+          ],
+          "position": [
+            -1.5,
+            -5.0,
+            1.6
+          ]
+        },
+        {
+          "easing": "LINEAR",
+          "frame": 12,
+          "look_at": [
+            0.0,
+            0.0,
+            1.2
+          ],
+          "position": [
+            0.0,
+            -5.0,
+            1.6
+          ]
+        },
+        {
+          "easing": "LINEAR",
+          "frame": 18,
+          "look_at": [
+            0.0,
+            0.0,
+            1.2
+          ],
+          "position": [
+            1.5,
+            -5.0,
+            1.6
+          ]
+        },
+        {
+          "easing": "LINEAR",
+          "frame": 24,
+          "look_at": [
+            0.0,
+            0.0,
+            1.2
+          ],
+          "position": [
+            3.0,
+            -5.0,
+            1.6
+          ]
+        }
+      ],
+      "lens": {
+        "aperture_fstop": 2.8,
+        "aspect_ratio": 1.7777777777777777,
+        "focal_mm": 35.0,
+        "sensor_width_mm": 36.0
+      },
+      "movement": "TRACK",
+      "plan_hash": "39ce9c1c452c62c72a3f0dc249028dbe219745fdd4c1e5779c6e3e4c770d760a",
+      "plan_id": "crp_35f0c578e744bf68",
+      "primitive_id": "cam_rig/track/v1",
+      "primitive_version": "1.0.0",
+      "shot_id": "sh-track",
+      "start_frame": 1
+    },
+    "over_shoulder": {
+      "end_frame": 72,
+      "focus": {
+        "dof_far_m": 5.0,
+        "dof_near_m": 2.0,
+        "focus_distance_m": 3.0,
+        "focus_target": ""
+      },
+      "fps": 24,
+      "framing": {
+        "head_room_ratio": 0.12,
+        "look_room_ratio": 0.2,
+        "safe_margin": 0.05,
+        "subject_height_m": 1.6
+      },
+      "keyframes": [
+        {
+          "easing": "LINEAR",
+          "frame": 0,
+          "look_at": [
+            0.0,
+            0.0,
+            1.2
+          ],
+          "position": [
+            0.0,
+            -5.0,
+            1.6
+          ]
+        }
+      ],
+      "lens": {
+        "aperture_fstop": 2.8,
+        "aspect_ratio": 1.7777777777777777,
+        "focal_mm": 35.0,
+        "sensor_width_mm": 36.0
+      },
+      "movement": "STATIC",
+      "plan_hash": "efa56b396fd5ac898993f08b930ecb98fdcc4b812f6eb9676e9e9497947a7ede",
+      "plan_id": "crp_fb298c45ac60072b",
+      "primitive_id": "cam_rig/static/v1",
+      "primitive_version": "1.0.0",
+      "shot_id": "sh-os",
+      "start_frame": 1
+    },
+    "reaction": {
+      "end_frame": 48,
+      "focus": {
+        "dof_far_m": 5.0,
+        "dof_near_m": 2.0,
+        "focus_distance_m": 3.0,
+        "focus_target": ""
+      },
+      "fps": 24,
+      "framing": {
+        "head_room_ratio": 0.12,
+        "look_room_ratio": 0.2,
+        "safe_margin": 0.05,
+        "subject_height_m": 1.6
+      },
+      "keyframes": [
+        {
+          "easing": "LINEAR",
+          "frame": 0,
+          "look_at": [
+            0.0,
+            0.0,
+            1.2
+          ],
+          "position": [
+            0.0,
+            -5.0,
+            1.6
+          ]
+        }
+      ],
+      "lens": {
+        "aperture_fstop": 2.8,
+        "aspect_ratio": 1.7777777777777777,
+        "focal_mm": 35.0,
+        "sensor_width_mm": 36.0
+      },
+      "movement": "STATIC",
+      "plan_hash": "84b0f7b413c47c0a4eec4b124caaab79f8c9c46d30b507786f1b42112b9aa50e",
+      "plan_id": "crp_c42e1d18df0b1509",
+      "primitive_id": "cam_rig/static/v1",
+      "primitive_version": "1.0.0",
+      "shot_id": "sh-reaction",
+      "start_frame": 1
+    },
+    "static": {
+      "end_frame": 72,
+      "focus": {
+        "dof_far_m": 5.0,
+        "dof_near_m": 2.0,
+        "focus_distance_m": 3.0,
+        "focus_target": ""
+      },
+      "fps": 24,
+      "framing": {
+        "head_room_ratio": 0.12,
+        "look_room_ratio": 0.2,
+        "safe_margin": 0.05,
+        "subject_height_m": 1.6
+      },
+      "keyframes": [
+        {
+          "easing": "LINEAR",
+          "frame": 0,
+          "look_at": [
+            0.0,
+            0.0,
+            1.2
+          ],
+          "position": [
+            0.0,
+            -5.0,
+            1.6
+          ]
+        }
+      ],
+      "lens": {
+        "aperture_fstop": 2.8,
+        "aspect_ratio": 1.7777777777777777,
+        "focal_mm": 35.0,
+        "sensor_width_mm": 36.0
+      },
+      "movement": "STATIC",
+      "plan_hash": "a225d844ddb5c09fbf63103346dfbe3862614a8add3b3b729330ed4590241409",
+      "plan_id": "crp_1cdea4042b427c56",
+      "primitive_id": "cam_rig/static/v1",
+      "primitive_version": "1.0.0",
+      "shot_id": "sh-static",
+      "start_frame": 1
+    }
+  }
+}

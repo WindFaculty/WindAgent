@@ -1,0 +1,18 @@
+{
+  "provider": {
+    "default_provider": "mock",
+    "default_model": "mock-gpt-4o"
+  },
+  "model_version": "N/A (mock provider, no versioned model)",
+  "temperature": {
+    "value": null,
+    "source": "no global config field; per-request passthrough (e.g. anthropic adapter sends temperature only when request.temperature is set)"
+  },
+  "seed": {
+    "value": null,
+    "supported": false,
+    "source": "no seed field in ProviderRoutingConfig nor in provider adapter payloads"
+  },
+  "config_snapshot_source": "core/windagent_core/config/settings.py (frozen pydantic defaults; no env loader side-effects)",
+  "note": "Runtime may override defaults via explicit model_id per request; baseline records the canonical static config surface."
+}

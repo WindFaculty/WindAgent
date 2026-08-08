@@ -1,0 +1,12 @@
+{
+  "approval_kind": "rig_preview_received",
+  "approved_at": "2026-08-08T03:04:59.859768+00:00",
+  "approved_by": "hoa",
+  "gate": "VP3D_P9_CHARACTER_RIG_VERIFIED",
+  "phase": "phase_09",
+  "preview_valid": true,
+  "topologies_rendered": [
+    "alpha",
+    "beta"
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "case_id": "T02",
+  "duration_minutes": 20,
+  "hook": "Mot hom, ba ban nho tim thay mot chiec hop bi an trong san truong. Mo ra thi thay ba chiec mu la voi mau sac khac nhau. Moi chiec mu deu co mot ngon den nho tren dinh. Khi doi mu len, dau cua moi ban bat ngo bien thanh mau cua chiec mu do.",
+  "conflict": "Ba ban tranh cai xem mu nao dep nhat va tuong rang mu se lam cho minh thong minh hon. Ho doi mu cho nhau nhung khi doi, mau toc cua ho thay doi theo mu, gay ra nhung hieu lam buon cuoi. Vi du, ban A doi mu xanh thi toc xanh, ban B doi mu do thi toc do, ban C doi mu vang thi toc vang. Ho nghi rang mu co phep thuat lam cho minh gioi hon, nhung thuc te khong phai. Ho bat dau lam nhung dieu ky quac de thu thach mu, nhu nha loan, hat to, nhay cao, nhung chang co gi xay ra.",
+  "premise": "Ba ban nho cung nhau kham pha chiec hop bi an va nhung chiec mu mau. Ho tuong rang mu co phep thuat, nhung thuc ra chi la mu thuong. Su hieu lam nay tao ra nhung tinh huong hai huoc khi ho co gang dung mu de lam nhung dieu vo ly.",
+  "differentiation": "Khac voi cac phim hoat hinh khac thuong tap trung vao sieu nang hoac phep thuat, phim nay khai thac su ngo nghinh cua tre khi tin vao nhung dieu khong co that. Thay vi co sieu nang, nhan vat chi co mau toc thay doi, tao ra su khac biet nhe nhang va gan gui.",
+  "payoff": "Cuoi phim, ba ban nhan ra mu khong co phep thuat. Ho cuoi vui ve va quyet dinh giu mu lam ky niem. Ho hieu ra rang khong can phep thuat cung co the vui ve va thong minh bang cach hoc hoi va choi cung nhau.",
+  "lesson": "Bai hoc khong gay giao dieu: Khong nen tin vao nhung dieu khong co that, ma hay tin vao chinh minh va tinh ban. Su tuong tuong co the vui nhung thuc te moi la quan trong.",
+  "visual_potential": "Hinh anh ba ban nho voi mau toc thay doi theo mu tao ra nhieu canh quan sinh dong. Mu co den nho phat sang khi doi, tao hieu ung mau sac tren dau. Cac canh ba ban lam nhung dieu ky quac nhu nha loan tren san truong, hat to vang vong, nhay cao qua lon, de ve bang hinh anh vui nhon va mau sac."
+}

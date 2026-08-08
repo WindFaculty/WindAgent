@@ -1,0 +1,42 @@
+{
+  "components": {
+    "EnvironmentBuilder": "approved env asset + IR instance -> EnvironmentSpec; id/path/revision validated, no download in compile, procedural pinned node-hash allowlist",
+    "PropPlacementPlanner": "approved props onto semantic anchors; seeded/versioned scatter (SCATTER_ALGORITHM_VERSION=1.0.0); unapproved prop excluded with typed finding",
+    "SpatialConstraintValidator": "proxy AABB checks: penetration, floating, below-floor, out-of-bounds, camera-in-mesh, occluding blocker, duplicate, out-of-reach, wrong facing; deterministic",
+    "SetDressingPlanner": "orchestrates env+props+characters+validation -> SetDressingPlan; idempotency key drives incremental invalidation; camera/light stay typed placeholders for Stage G"
+  },
+  "determinism": {
+    "same_seed_same_plan_hash": true,
+    "plan_hash": "bc86d8476b5ad662e3994fa846b9b15dc5c8b6a3da94d9adcb24fb5973da0a3e",
+    "plan_id": "sd_20d761a5eb16c53c",
+    "scatter_versioned": true,
+    "idempotency_key": "23c0477cefd1d36510742cd1a37e3f7d69667eb4682eaba37b45b4b23b5b6b50"
+  },
+  "gate": "VP3D_P12_SET_DRESSING_VERIFIED",
+  "gate_passed": true,
+  "invalidation": {
+    "one_prop_revision_change_invalidates_only_owning_scene": true,
+    "reuses_on_unchanged_input": true
+  },
+  "phase": "phase_12",
+  "security": {
+    "malicious_description_is_inert_data": true,
+    "no_bpy_in_core_or_intelligence": true,
+    "no_subprocess_eval_exec": true,
+    "procedural_asset_pins_node_group_hash": true
+  },
+  "test_matrix": {
+    "camera_inside_mesh": true,
+    "character_below_floor": true,
+    "chair_wrong_facing": true,
+    "duplicate_id": true,
+    "empty_minimal_scene_clean": true,
+    "multiple_characters": true,
+    "missing_approved_asset_fails_closed": true,
+    "prop_out_of_reach": true,
+    "same_seed_same_plan": true,
+    "save_reopen_preserves_mapping": true,
+    "table_penetrates_wall": true
+  },
+  "test_count": 26
+}

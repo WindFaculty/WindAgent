@@ -1,0 +1,27 @@
+{
+  "checkers": {
+    "check_architecture_imports": "PASS (0 violations)"
+  },
+  "command": "python -m pytest tests/unit/verification/test_phase10_concurrent_audio.py tests/integration/test_phase10_concurrent_audio_flow.py -q",
+  "gate": "VP3D_P10_CONCURRENT_AUDIO_VERIFIED",
+  "phase": "phase_10",
+  "producer": "phase-10-concurrent-audio",
+  "recorded_at": "2026-08-08T03:26:32.007833+00:00",
+  "suites": [
+    {
+      "covers": "provider capability, versioned voice identity, canonical request hash, fail-closed TTS validation, alignment hash + confidence gate, typed timing proposals, concurrency/resume state, per-provider policy, dialogue-vs-BGM invalidation, secret redaction",
+      "file": "tests/unit/verification/test_phase10_concurrent_audio.py",
+      "passed": 31
+    },
+    {
+      "covers": "multi-character gate scenario: parallel lines, deterministic screenplay ordering, idempotent voice identity, resume reuse, cancel-none-publish, rights gate, invalidation map, secret redaction",
+      "file": "tests/integration/test_phase10_concurrent_audio_flow.py",
+      "passed": 1
+    }
+  ],
+  "summary": {
+    "failed": 0,
+    "passed": 32,
+    "skipped": 0
+  }
+}

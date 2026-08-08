@@ -1,0 +1,93 @@
+{
+  "continuity": {
+    "different_key_skips_check": true,
+    "measured": {
+      "cct_tolerance_k": 1500,
+      "ev_tolerance": 1.0,
+      "ratio_tolerance": 0.25
+    },
+    "same_key_identical_rig_clean": true
+  },
+  "negative_checks": {
+    "clipped_exposure_detected": true,
+    "continuity_drift_detected": true,
+    "inconsistent_color_temp_detected": true,
+    "missing_key_light_detected": true,
+    "noise_risk_advisory_not_blocking": true,
+    "policy_exceeded_detected": true
+  },
+  "overrides": {
+    "bounded_override_applied": true,
+    "out_of_bounds_fails_closed": true,
+    "wrong_preset_fails_closed": true
+  },
+  "validator_reports": {
+    "inconsistent_cct": {
+      "checked_entity_count": 4,
+      "findings": [
+        {
+          "blocking": true,
+          "detail": "CCT spread 3400K exceeds 800K tolerance for UNIFORM_CCT policy",
+          "finding_id": "lt:INCONSISTENT_COLOR_TEMP",
+          "kind": "INCONSISTENT_COLOR_TEMP",
+          "measured": {
+            "cct_spread_k": 3400,
+            "policy": "UNIFORM_CCT",
+            "tolerance_k": 800
+          },
+          "shot_id": "sh-cartoon_day"
+        }
+      ],
+      "ok": false
+    },
+    "missing_key": {
+      "checked_entity_count": 3,
+      "findings": [
+        {
+          "blocking": true,
+          "detail": "no KEY light in rig plan",
+          "finding_id": "lt:MISSING_KEY_LIGHT",
+          "kind": "MISSING_KEY_LIGHT",
+          "measured": {
+            "roles": [
+              "AMBIENT",
+              "FILL",
+              "RIM"
+            ]
+          },
+          "shot_id": "sh-cartoon_day"
+        }
+      ],
+      "ok": false
+    },
+    "policy_exceeded": {
+      "checked_entity_count": 10,
+      "findings": [
+        {
+          "blocking": true,
+          "detail": "resource {'light_count': 10, 'sample_count': 128, 'bounce_count': 4, 'shadow_light_count': 1, 'bounce_light_count': 0, 'total_cost_units': 205, 'within_policy': False} exceeds render policy {'max_lights': 6, 'max_samples': 128, 'max_bounces': 4}",
+          "finding_id": "lt:POLICY_EXCEEDED",
+          "kind": "POLICY_EXCEEDED",
+          "measured": {
+            "policy": {
+              "max_bounces": 4,
+              "max_lights": 6,
+              "max_samples": 128
+            },
+            "resource": {
+              "bounce_count": 4,
+              "bounce_light_count": 0,
+              "light_count": 10,
+              "sample_count": 128,
+              "shadow_light_count": 1,
+              "total_cost_units": 205,
+              "within_policy": false
+            }
+          },
+          "shot_id": "sh-cartoon_day"
+        }
+      ],
+      "ok": false
+    }
+  }
+}

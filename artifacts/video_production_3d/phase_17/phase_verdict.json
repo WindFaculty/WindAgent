@@ -1,0 +1,28 @@
+{
+  "backlog_completion": {
+    "1_capability_contract": "DONE — MotionCapability declares supported skeletons, fps range, duration range, seed support, licenses and output formats; a request outside the contract fails closed (FPS_OUT_OF_RANGE, DURATION_OUT_OF_RANGE, FORMAT_UNSUPPORTED, CAPABILITY_MISMATCH) before any generation",
+    "2_request_hash_provenance": "DONE — every request carries a deterministic request hash over provider/model/version, prompt hash (sha256 of the prompt), seed, fps, duration, skeleton and format; every artifact records cost, license and full provider provenance",
+    "3_quarantine_raw_output": "DONE — raw artifacts are inert quarantined data with no track field and no approved flag; direct import always raises MotionQuarantineViolationError; approve is the only track-producing entry and always runs the full chain",
+    "4_same_validation_metrics": "DONE — the validator imports the SAME thresholds as library/mocap/procedural (FOOT_SLIDING_MAX_M, MAX_JOINT_VIOLATIONS, MAX_COLLISIONS, MAX_BALANCE_OFFSET_M, ROOT_DRIFT_TOLERANCE, DURATION_TOLERANCE_FRAMES); foot sliding, joint limit, collision, balance, root drift, fps/duration mismatch, license and skeleton remap failures are all DETECTED and blocking",
+    "5_fallback_library_or_human_review_no_bypass": "DONE — a failing artifact is REJECTED and approve raises ValidationFailureError naming the library/procedural/human fallback; validation is never bypassed (no unchecked path)",
+    "6_retry_by_cause_and_budget": "DONE — only TRANSIENT_PROVIDER retries within the request budget; exhaustion raises MotionRetryBudgetExceededError; validation/capability/license causes never retry; a different seed is a NEW candidate id and existing candidates are never overwritten"
+  },
+  "decided_at": "2026-08-08T05:57:51.231707+00:00",
+  "evidence_files": [
+    "artifacts/video_production_3d/phase_17/evidence.json",
+    "artifacts/video_production_3d/phase_17/capability.json",
+    "artifacts/video_production_3d/phase_17/request.json",
+    "artifacts/video_production_3d/phase_17/raw_artifact.json",
+    "artifacts/video_production_3d/phase_17/remap_receipt.json",
+    "artifacts/video_production_3d/phase_17/validation_report.json",
+    "artifacts/video_production_3d/phase_17/quarantine_report.json",
+    "artifacts/video_production_3d/phase_17/retry_report.json",
+    "artifacts/video_production_3d/phase_17/approved_track.json",
+    "artifacts/video_production_3d/phase_17/test_baseline.json",
+    "artifacts/video_production_3d/phase_17/phase_verdict.json"
+  ],
+  "gate": "VP3D_P17_AI_MOTION_VERIFIED",
+  "phase": "phase_17",
+  "summary": "The fake TextToMotion/VideoToMotion adapter's raw output went through the FULL safety/retarget/quality chain: capability fit (fps/duration/format/skeleton outside the contract failed closed before generation), skeleton remap (missing semantic bones failed closed), joint/foot/collision validation with the SAME thresholds the library/mocap and procedural validators use (foot sliding, joint limit, collision, balance, root drift, fps/duration mismatch, license and remap failures all DETECTED and blocking), Phase 15 retarget, and an approved AnimationTrack with ClipSource.AI_MOTION provenance carrying only allow-listed fields (artifact id, request id, provider, model, model version, prompt hash, seed, cost, license). There is NO direct-to-scene path: raw artifacts are quarantined inert data, direct import always raises MotionQuarantineViolationError, and malicious provider metadata (eval/exec-style markers) is flagged, stays an inert string, blocks approve and never reaches the track. Retry is per cause and budget: a transient provider failure retried within the budget and succeeded; exhaustion raised MotionRetryBudgetExceededError; validation/capability/license causes refused retry. A different seed produced a new candidate and existing candidates were never overwritten. Request hashes are deterministic (provider/model/version + prompt hash + seed + fps + duration + skeleton). No bpy, no eval/exec, no dynamic import anywhere in core or intelligence. gate_passed=True.",
+  "verdict": "PASS"
+}

@@ -1,0 +1,74 @@
+{
+  "schema_version": "1.0.0",
+  "candidate_sha": "28e65d8c78e1606512393ae334c39ef0248874e5",
+  "run_id": "r3_api_28e65d8c78e1",
+  "started_at": "2026-08-08T00:32:41.338030+00:00",
+  "completed_at": "2026-08-08T00:32:41.431386+00:00",
+  "command_or_provider": "fastapi TestClient -> API V2 workspace router",
+  "input_hashes": [
+    "03219868654a7da47b9850773c0aac212be824c2b5107a195723b87635741f79"
+  ],
+  "output_hashes": [
+    "03219868654a7da47b9850773c0aac212be824c2b5107a195723b87635741f79"
+  ],
+  "evidence_locator": "api_integration_receipt.json",
+  "status": "PASSED",
+  "api_calls": [
+    {
+      "endpoint": "GET /api/v2/video-production/workspace/snapshot",
+      "path": "/api/v2/video-production/workspace/snapshot",
+      "status_code": 200,
+      "revision_preserved": true
+    },
+    {
+      "endpoint": "POST commands APPROVE_CANDIDATE",
+      "path": "/api/v2/video-production/workspace/commands",
+      "status_code": 200,
+      "revision_bumped": true
+    },
+    {
+      "endpoint": "POST commands idempotency replay",
+      "path": "/api/v2/video-production/workspace/commands",
+      "status_code": 200,
+      "expected": true,
+      "cached_response": true,
+      "duplicate_action": false
+    },
+    {
+      "endpoint": "POST commands stale revision",
+      "path": "/api/v2/video-production/workspace/commands",
+      "status_code": 409,
+      "expected": true,
+      "stale_rejected": true
+    },
+    {
+      "endpoint": "cost block policy",
+      "path": "/api/v2/video-production/workspace/snapshot",
+      "status_code": 200,
+      "cost_block_applied": true,
+      "debited_credits": 15.0,
+      "max_approved_credits": 50.0
+    },
+    {
+      "endpoint": "GET media token",
+      "path": "/api/v2/video-production/workspace/media/tok_shot_01_a9f8",
+      "status_code": 200,
+      "authorized": true
+    },
+    {
+      "endpoint": "GET media invalid token",
+      "path": "/api/v2/video-production/workspace/media/invalid-token",
+      "status_code": 403,
+      "expected": true,
+      "rejected": true
+    },
+    {
+      "endpoint": "POST OVERRIDE_CANDIDATE empty reason (service layer)",
+      "path": "/api/v2/video-production/workspace/commands",
+      "status_code": 200,
+      "expected": true,
+      "empty_reason_rejected": true
+    }
+  ],
+  "all_2xx": true
+}

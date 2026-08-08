@@ -123,6 +123,8 @@ class WorkerContainer:
         self.production_workflow: Optional[Any] = None  # VP3D Stage A durable engine w/ executor
         self.asset_resolver: Optional[Any] = None  # VP3D Phase 5 Universal Asset Gateway (guarded)
         self.asset_trust_gate: Optional[Any] = None  # VP3D Phase 6 trust gate (guarded)
+        self.asset_normalizer: Optional[Any] = None  # VP3D Phase 7 Asset Normalizer (guarded)
+        self.normalization_config: Optional[Any] = None  # VP3D Phase 7 default config
         self.is_initialized: bool = False
 
     async def bootstrap(self) -> None:
@@ -270,6 +272,12 @@ class WorkerContainer:
         # through an APPROVE verdict.
         if os.getenv("WINDAGENT_ASSET_GATEWAY", "").lower() in ("1", "true", "yes"):
             self._register_asset_gateway()
+
+        # VP3D Phase 7 — Asset Normalization (guarded). Only the gateway's
+        # RESOLVED assets may pass through the normalizer before the Scene
+        # Compiler consumes them.
+        if os.getenv("WINDAGENT_ASSET_NORMALIZER", "").lower() in ("1", "true", "yes"):
+            self._register_asset_normalizer()
         
         self.is_initialized = True
         logger.info("WorkerContainer successfully bootstrapped (PHASE 7 - Process-specific composition).")
@@ -361,4 +369,63 @@ class WorkerContainer:
         )
         logger.info(
             "AssetResolverPort registered with trust gate (VP3D Phase 5/6, guarded)."
+        )
+
+    def _register_asset_normalizer(self) -> None:
+        """Compose the Asset Normalizer (VP3D Phase 7).
+
+        - host-side pipeline over the content-addressed store + bundle root;
+        - engine work (sandboxed import of FBX/USD/BLEND, LOD decimation,
+          deterministic preview render) uses the REAL Blender runner when a
+          policy-satisfying Blender executable is available, otherwise the
+          normalizer is still wired but every engine job fails closed.
+        """
+        from pathlib import Path as _Path
+
+        from windagent_core.domain.video_production.asset_normalization import (
+            NormalizationConfig,
+        )
+        from windagent_tools.media_assets.normalization import (
+            AssetNormalizationPipeline,
+            AssetNormalizer,
+        )
+        from windagent_tools.media_assets.normalization.bundle import (
+            AssetBundlePublisher,
+        )
+        from windagent_tools.media_assets.store import ContentAddressedStore
+
+        artifact_root = os.getenv("WINDAGENT_ARTIFACT_ROOT", "artifacts")
+        store = ContentAddressedStore(
+            _Path(artifact_root) / "video_production_3d" / "assets" / "store"
+        )
+        job_runner = None
+        executable_path = os.getenv("WINDAGENT_BLENDER_EXECUTABLE", "")
+        if executable_path and _Path(executable_path).is_file():
+            try:
+                from windagent_tools.production_engines.blender.asset_pipeline import (
+                    BlenderAssetJobRunner,
+                )
+
+                job_runner = BlenderAssetJobRunner(
+                    executable_path=executable_path,
+                    artifact_root=str(_Path(artifact_root) / "video_production_3d"),
+                    state_dir=str(
+                        _Path(artifact_root) / "video_production_3d" / "blender_state"
+                    ),
+                )
+            except Exception as exc:  # noqa: BLE001 - engine optional
+                logger.warning(f"Blender asset job runner unavailable: {exc}")
+
+        pipeline = AssetNormalizationPipeline(
+            store=store,
+            bundle_publisher=AssetBundlePublisher(
+                str(_Path(artifact_root) / "video_production_3d" / "bundles")
+            ),
+            job_runner=job_runner,
+        )
+        self.asset_normalizer = AssetNormalizer(pipeline)
+        self.normalization_config = NormalizationConfig()
+        logger.info(
+            "AssetNormalizerPort registered (VP3D Phase 7, guarded); "
+            f"engine job runner: {'blender' if job_runner else 'NONE (fail closed)'}."
         )
