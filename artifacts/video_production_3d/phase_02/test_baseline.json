@@ -4,12 +4,15 @@
   "program": "vp3d",
   "gate": "VP3D_P2_GOOGLE_FLOW_REMOVED",
   "recorded_at": "2026-08-08T00:00:00Z",
-  "baseline_sha": "9080fcb4bb6d9a6531a095c624a0f6d8796f4081",
+  "baseline_sha": "649e6faf95b6aa4f41ce4068018bc824a0b5c24f",
   "implementation": {
     "neutral_contract": "core/windagent_core/contracts/video_production/video_inspection.py",
     "worker_consumer": "core/windagent_core/contracts/video_production/production_executor.py",
     "composition_wiring": "apps/worker/windagent_worker/composition.py (WINDAGENT_BLENDER_ENGINE guard)",
-    "updated_tools": ["tools/windagent_tools/video_probe.py", "tools/windagent_tools/__init__.py"],
+    "updated_tools": [
+      "tools/windagent_tools/video_probe.py",
+      "tools/windagent_tools/__init__.py"
+    ],
     "removed_package": "tools/windagent_tools/google_flow/",
     "negative_tests": "tests/architecture/test_phase2_flow_removal_canonical.py"
   },

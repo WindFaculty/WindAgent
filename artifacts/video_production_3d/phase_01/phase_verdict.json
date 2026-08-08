@@ -4,7 +4,7 @@
   "program": "vp3d",
   "gate": "VP3D_P1_ENGINE_NEUTRAL_IR_VERIFIED",
   "recorded_at": "2026-08-07T08:00:00Z",
-  "baseline_sha": "9080fcb4bb6d9a6531a095c624a0f6d8796f4081",
+  "baseline_sha": "649e6faf95b6aa4f41ce4068018bc824a0b5c24f",
   "phase0_gate": "VP3D_P0_BASELINE_FROZEN (PASS)",
   "verdict": "PASS",
   "status": "VP3D_P1_ENGINE_NEUTRAL_IR_VERIFIED",

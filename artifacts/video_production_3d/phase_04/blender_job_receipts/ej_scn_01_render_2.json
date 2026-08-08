@@ -1,12 +1,12 @@
 {
   "blender_version": "",
   "cancel_requested": false,
-  "duration_ms": 1001.217,
+  "duration_ms": 1032.188,
   "error_snippet": "",
   "executable_path": "C:\\Program Files\\Blender Foundation\\Blender 4.5\\blender.exe",
   "exit_code": 0,
   "failure_classification": "SUCCESS",
-  "finished_at": 1786151091.5221548,
+  "finished_at": 1786151805.996016,
   "job_id": "ej_scn_01_render_2",
   "kind": "RENDER_CHUNK",
   "metadata": {
@@ -15,7 +15,7 @@
     "workspace": "D:\\code_ca_nhan\\WindAgent\\artifacts\\video_production_3d\\phase_04\\phase_04_smoke\\scn_01"
   },
   "output_hashes": {},
-  "pid": 19464,
+  "pid": 20328,
   "redacted_argv": [
     "C:\\Program Files\\Blender Foundation\\Blender 4.5\\blender.exe",
     "--background",
@@ -30,7 +30,7 @@
     "--job-spec",
     "D:\\code_ca_nhan\\WindAgent\\artifacts\\video_production_3d\\phase_04\\phase_04_smoke\\scn_01\\job_spec.json"
   ],
-  "started_at": 1786151090.5209374,
+  "started_at": 1786151804.9638276,
   "stderr_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-  "stdout_hash": "8d81e2c8305581225c67bc44acb3881f1b728ddc3071a0274653ed876a0867fc"
+  "stdout_hash": "aed4bffca04212430b4a80650d17b6d0d79706cd963dc3074f218721e5714c9c"
 }

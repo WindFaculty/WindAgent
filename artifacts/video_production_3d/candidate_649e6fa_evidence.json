@@ -1,0 +1,238 @@
+{
+  "schema_version": "1.0.0",
+  "program": "vp3d",
+  "candidate_sha": "649e6faf95b6aa4f41ce4068018bc824a0b5c24f",
+  "generated_at": "2026-08-08T08:30:00Z",
+  "branch": "fix/phase7-verification-integrity",
+  "purpose": "Reconciliation of VP3D roadmap Phases 0-6 on one clean candidate SHA. Every entry below is a REAL execution observed in the verification session (commands run on Windows/MINGW64 with Blender 4.5.12 LTS + ffmpeg 8.1.2 + Python 3.11.15). No fabricated verdicts, no placeholder hashes, no fake executables used for gate evidence.",
+  "phases": {
+    "phase_00": {
+      "gate": "VP3D_P0_BASELINE_FROZEN",
+      "verdict": "PASS",
+      "command": ".venv/Scripts/python -m pytest tests -q -p no:cacheprovider --tb=short",
+      "exit_code": 0,
+      "test_count": {
+        "passed": 2061,
+        "failed": 0,
+        "skipped": 36
+      },
+      "architecture_checker": {
+        "command": ".venv/Scripts/python scripts/check_architecture_imports.py",
+        "verdict": "PASS",
+        "violations": 0,
+        "exit_code": 0
+      },
+      "baseline_note": "Clean HEAD baseline regenerated on candidate 649e6f (was 9080fcb). test_phase27_release.py now resolves CANDIDATE_SHA from HEAD (driver @ tests/unit/verification/test_phase27_release.py), so the historical VP3D_BASELINE_001 hard-coded-SHA defect is resolved and the full suite passes 0 failures."
+    },
+    "phase_01": {
+      "gate": "VP3D_P1_ENGINE_NEUTRAL_IR_VERIFIED",
+      "verdict": "PASS",
+      "command": ".venv/Scripts/python -m pytest tests/unit/core/test_phase1_production_ir.py tests/unit/core/test_phase1_production_ir_migrator.py tests/unit/core/test_phase1_production_engine_port.py tests/architecture/test_phase1_production_ir_architecture.py tests/architecture/test_phase2_flow_removal_canonical.py -q -p no:cacheprovider",
+      "exit_code": 0,
+      "test_count": {
+        "passed": 65,
+        "failed": 0
+      },
+      "checksum_files": [
+        "artifacts/video_production_3d/phase_01/phase_verdict.json",
+        "artifacts/video_production_3d/phase_01/test_baseline.json",
+        "artifacts/video_production_3d/phase_01/schema_mapping.json"
+      ]
+    },
+    "phase_02": {
+      "gate": "VP3D_P2_GOOGLE_FLOW_REMOVED",
+      "verdict": "PASS",
+      "command": ".venv/Scripts/python -m pytest tests/unit/orchestration/test_phase17_durable_workflow.py tests/integration/test_phase2_workflow_engine_cutover.py -q -p no:cacheprovider",
+      "exit_code": 0,
+      "test_count": {
+        "passed": 51,
+        "failed": 0
+      },
+      "retirement_manifest": "artifacts/video_production_3d/phase_02/flow_removal_inventory.json",
+      "requirements_fixed": [
+        "checkpoint/recovery tracks EVERY engine job of a scene/shot batch: PendingExternalOperation.job_ids (checkpoint.py), decide_batch + decide_all_engine_jobs (recovery.py), engine.recover uses decide_batch, ingest clears pending only after ALL batch jobs ingested, cancel_batch cancels every job",
+        "retirement manifest reconciled: all 16 google_flow modules, 9 test files, 4 verification scripts deleted; neutral capability preserved at core/windagent_core/contracts/video_production/video_inspection.py"
+      ]
+    },
+    "phase_03": {
+      "gate": "VP3D_P3_BLENDER_RUNTIME_VERIFIED",
+      "verdict": "PASS",
+      "command": ".venv/Scripts/python scripts/verification/probe_blender_runtime.py --artifact-root artifacts",
+      "exit_code": 0,
+      "probe": {
+        "ready": true,
+        "ready_reason": "Blender 4.5.12 satisfies policy",
+        "version_line": "Blender 4.5.12 LTS",
+        "validation_reason_code": "READY",
+        "gpu_ready": false,
+        "gpu_reason": "no CUDA/OptiX/Metal device enumerated by Cycles; CPU-only",
+        "candidates": [
+          "C:/Program Files/Blender Foundation/Blender 4.5/blender.exe -> Blender 4.5.12 LTS (READY)",
+          "C:/Program Files/Blender Foundation/Blender 5.1/blender.exe -> Blender 5.1.2 (VERSION_MISMATCH, fail closed)"
+        ]
+      },
+      "verifier_contract": {
+        "command": "pytest tests/unit/verification/test_phase03_verifier_no_write.py",
+        "passed": 2,
+        "exit_code": 0
+      },
+      "evidence_file": "artifacts/video_production_3d/phase_03/blender_runtime_probe.json"
+    },
+    "phase_04": {
+      "gate": "VP3D_P4_DETERMINISTIC_RENDER_PASSED",
+      "verdict": "PASS",
+      "command": "VP3D_CANDIDATE_SHA=649e6faf95b6aa4f41ce4068018bc824a0b5c24f .venv/Scripts/python scripts/run_vp3d_phase4_evidence.py --artifact-root artifacts",
+      "exit_code": 0,
+      "evidence_mode": "real_executables",
+      "render_artifacts": {
+        "blender": "C:/Program Files/Blender Foundation/Blender 4.5/blender.exe (Blender 4.5.12 LTS)",
+        "blend_magic": true,
+        "png_count": 24,
+        "png_magic": true,
+        "png_dimensions_match_plan": true,
+        "png_dimensions": [
+          [
+            640,
+            360
+          ]
+        ],
+        "exr_proof_frames": 4,
+        "exr_magic": true,
+        "mp4_present": true,
+        "ffprobe_duration_seconds": "1.000000",
+        "final_mp4_sha256": "e1875b2070b7a300a09591fab1ae7c52f590e13a356e788dcc6572ed593681c0",
+        "blend_sha256": "90176f91995b8d02...",
+        "frame_hashes_distinct": true,
+        "determinism": true
+      },
+      "cancel_resume_proof": {
+        "cancelled_ok": true,
+        "frames_after_cancel": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "partial_frames_published": true,
+        "full_range_validated_after_resume": true,
+        "compile_reused_on_identical_keys": true
+      },
+      "revealed_and_fixed": "A prior independent run left rendered frames + frame_manifest.json in the shared phase_04_smoke workspace, so the cancel proof read frames_after_cancel == full (24) as already validated -> verdict False. Fixed scripts/run_vp3d_phase4_evidence.py to reset per-run render outputs before the cancel run (preserving scene.blend compile reuse). Cancel proof now partial and reproducible."
+    },
+    "phase_05": {
+      "gate": "VP3D_P5_ASSET_GATEWAY_VERIFIED",
+      "verdict": "PASS",
+      "command": ".venv/Scripts/python -m pytest tests/integration/test_phase6_asset_trust_flow.py tests/integration/test_phase5_asset_gateway_wiring.py tests/integration/test_phase5_execute_endpoint.py tests/architecture/test_phase5_asset_gateway_architecture.py tests/unit/core/test_phase5_asset_requirement.py tests/unit/core/test_phase5_canonical_contracts.py -q -p no:cacheprovider",
+      "exit_code": 0,
+      "test_count": {
+        "passed": 50,
+        "failed": 0
+      },
+      "wiring": {
+        "composition_root": "apps/worker/windagent_worker/composition.py::WorkerContainer._register_asset_gateway (guarded by WINDAGENT_ASSET_GATEWAY=1, trust gate composed)",
+        "workflow": "orchestration/windagent_orchestration/production/step_executor.py::ProductionStepExecutor(asset_gateway=...) RENDER_ASSETS resolves pending IR assets via AssetResolverPort; non-RESOLVED -> step fails closed",
+        "port_no_direct_calls": "tests/architecture/test_phase5_asset_gateway_architecture.py"
+      },
+      "checksum_files": [
+        "artifacts/video_production_3d/phase_05/phase_verdict.json",
+        "artifacts/video_production_3d/phase_05/test_receipt.json",
+        "artifacts/video_production_3d/phase_05/architecture_report.json"
+      ]
+    },
+    "phase_06": {
+      "gate": "VP3D_P6_ASSET_TRUST_PROVENANCE_VERIFIED",
+      "verdict": "PASS",
+      "command_integration": ".venv/Scripts/python -m pytest tests/integration/test_phase6_asset_trust_flow.py -q -p no:cacheprovider",
+      "command_unit": ".venv/Scripts/python -m pytest tests/unit/verification/test_phase6_asset_trust.py -q -p no:cacheprovider",
+      "exit_code": 0,
+      "test_count": {
+        "integration": 15,
+        "unit": 19,
+        "failed": 0
+      },
+      "trust_flow_enforced": [
+        "acquire -> content scan -> provenance -> trust decision -> quarantine/approve -> publish",
+        "AssetResolutionStatus.QUARANTINED added; UNKNOWN license / unverified checksum / unverified commercial use => QUARANTINED (never RESOLVED)",
+        "REJECTED license / embedded executable/script/add-on / traversal => REJECTED",
+        "QUARANTINED -> APPROVED only via promote_from_quarantine with fresh human review + evidence"
+      ],
+      "negative_matrix_tests": [
+        "test_unknown_license_quarantined_never_resolved",
+        "test_unverified_checksum_quarantines",
+        "test_no_commercial_use_quarantines",
+        "test_ssrf_private_ip_rejected",
+        "test_ssrf_hostname_resolving_to_private_ip_rejected",
+        "test_redirect_to_private_ip_rejected",
+        "test_redirect_hop_public_allowed_and_redirection_bounded",
+        "test_fake_mime_rejected_by_sniffing",
+        "test_zip_bomb_rejected_before_inflation",
+        "test_archive_path_traversal_rejected",
+        "test_gateway_receipts_never_contain_credentials",
+        "test_provenance_record_redacts_signed_url_credentials",
+        "test_conversion_lineage_full_chain",
+        "test_quarantined_to_approved_requires_fresh_human_review",
+        "test_approved_asset_publishes_resolved"
+      ],
+      "checksum_files": [
+        "artifacts/video_production_3d/phase_06/phase_verdict.json",
+        "artifacts/video_production_3d/phase_06/test_baseline.json",
+        "artifacts/video_production_3d/phase_06/contract_tests.json"
+      ]
+    }
+  },
+  "web_desktop_lanes": {
+    "web_test": {
+      "command": "cd apps/web && npm test -- --run",
+      "exit_code": 0,
+      "tests_passed": 83,
+      "files_passed": 7
+    },
+    "desktop_test": {
+      "command": "cd apps/desktop && npm test -- --run",
+      "exit_code": 0,
+      "tests_passed": 92,
+      "files_passed": 10
+    },
+    "web_typecheck_build": {
+      "command": "cd apps/web && npm run typecheck && npm run build",
+      "exit_code": 0
+    },
+    "desktop_typecheck_build": {
+      "command": "cd apps/desktop && npx tsc --noEmit && npm run build",
+      "exit_code": 0
+    }
+  },
+  "overall": {
+    "phases_pass": [
+      "phase_00",
+      "phase_01",
+      "phase_02",
+      "phase_03",
+      "phase_04",
+      "phase_05",
+      "phase_06"
+    ],
+    "verdict": "ALL PHASES PASS on candidate 649e6faf95b6aa4f41ce4068018bc824a0b5c24f"
+  },
+  "evidence_checksums_sha256": {
+    "artifacts/video_production_3d/phase_00/phase_verdict.json": "4bc9612efdf834a2d934eb45bf4912a24be5d20c055a50ecfa82ef92f166c400",
+    "artifacts/video_production_3d/phase_00/test_baseline.json": "cf1fd9c1b91a4c39e3308e49e555d18fb1ab53fd8f5053ea2c7377d67afb2182",
+    "artifacts/video_production_3d/phase_01/phase_verdict.json": "f4dfd96df27f53e8bfda58740638df533f014b42105532bb36276ab232a8b54e",
+    "artifacts/video_production_3d/phase_01/test_baseline.json": "27ce4df4e07a44030fdf7516bd2ae90246804a31c5a64ba744d1aeb0bc2e196b",
+    "artifacts/video_production_3d/phase_02/phase_verdict.json": "e5b66bc0b70289ceef0932e1465ab9a8bbb93e455e2b0e5655aedae8f83f258c",
+    "artifacts/video_production_3d/phase_02/test_baseline.json": "171a5de34d21c9dea19b30a41aaa3742b898aa17136c2e91c12436a2d7f3bd96",
+    "artifacts/video_production_3d/phase_03/blender_runtime_probe.json": "10f3ecbec9c17e355a5d4776d831fdce0f0e8d8863802d143942243ba57a892c",
+    "artifacts/video_production_3d/phase_03/phase_verdict.json": "9a025b1c51d25e2d3ad1267c8a3bbcf3fc5662c813f66a9f1efab2e31b9d349a",
+    "artifacts/video_production_3d/phase_03/test_baseline.json": "8575bf4094dfdf4f84136db38d705ef7ac23cdeb36c15377b48436c063270ff1",
+    "artifacts/video_production_3d/phase_04/determinism_report.json": "7e8a1adf4fea02b947a92fcaee772687ee7ceb2dd5d2a5d25777eca86b33fa08",
+    "artifacts/video_production_3d/phase_04/ffmpeg_receipt.json": "def74940c6e9ba588e1862cbb75d7a518566baa20babfb7e0a441685fa3ad0fe",
+    "artifacts/video_production_3d/phase_04/ffprobe_receipt.json": "f9613d51f6bdfee030ec175bce1013ee645c986c00ebd699d953ddf0312f12e7",
+    "artifacts/video_production_3d/phase_04/frame_manifest.json": "9d4fdfbdfdeb622656b3691eed7bfb91eec295197516d5842104204b49c34b9f",
+    "artifacts/video_production_3d/phase_04/phase_verdict.json": "95c70fba314c4bda8f79e69f328c1a1c98f7ecb2aa57a1f04f18834876061eee",
+    "artifacts/video_production_3d/phase_05/phase_verdict.json": "a516ff80829f5d1fadc5cffb3a746cb3b9cd164ee9bbafa9729320b622603be7",
+    "artifacts/video_production_3d/phase_06/phase_verdict.json": "8f85026e54b64fddc0343e7f6f9a8e5552e3b7673f48afa7fed6e3c3a384a648",
+    "artifacts/video_production_3d/phase_06/test_baseline.json": "31399f022d6c1be50e957f55ef1dc6f4c93ee4a5288fb8c1291e92cf490cfee9"
+  }
+}

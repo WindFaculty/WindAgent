@@ -4,11 +4,34 @@
   "program": "vp3d",
   "gate": "VP3D_P1_ENGINE_NEUTRAL_IR_VERIFIED",
   "recorded_at": "2026-08-07T08:00:00Z",
-  "baseline_sha": "9080fcb4bb6d9a6531a095c624a0f6d8796f4081",
+  "baseline_sha": "649e6faf95b6aa4f41ce4068018bc824a0b5c24f",
   "implementation": {
     "package": "core/windagent_core/domain/video_production/production_ir/",
-    "modules": ["__init__.py", "enums.py", "models.py", "validation.py", "invalidation.py", "migrator.py"],
-    "ids_added": ["ProductionIrId", "SceneDescriptionId", "CharacterInstanceId", "PropInstanceId", "EnvironmentInstanceId", "CameraTrackId", "AnimationTrackId", "FacialTrackId", "LightRigId", "SimulationTrackId", "RenderProfileId", "RenderIntentId", "ShotExecutionIntentId", "EngineJobId", "DerivedArtifactId"],
+    "modules": [
+      "__init__.py",
+      "enums.py",
+      "models.py",
+      "validation.py",
+      "invalidation.py",
+      "migrator.py"
+    ],
+    "ids_added": [
+      "ProductionIrId",
+      "SceneDescriptionId",
+      "CharacterInstanceId",
+      "PropInstanceId",
+      "EnvironmentInstanceId",
+      "CameraTrackId",
+      "AnimationTrackId",
+      "FacialTrackId",
+      "LightRigId",
+      "SimulationTrackId",
+      "RenderProfileId",
+      "RenderIntentId",
+      "ShotExecutionIntentId",
+      "EngineJobId",
+      "DerivedArtifactId"
+    ],
     "contract": "core/windagent_core/contracts/video_production/production_engine.py (ProductionEnginePort)",
     "events": "core/windagent_core/events/video_production_ir.py (ProductionIrEventCatalog + Envelope + Transitions)",
     "fixtures": "tests/fixtures/video_production/ir_fixture_builder.py"

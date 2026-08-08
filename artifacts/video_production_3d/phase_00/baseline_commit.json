@@ -5,7 +5,7 @@
   "gate": "VP3D_P0_BASELINE_FROZEN",
   "recorded_at": "2026-08-07T06:35:07Z",
   "repository_root": "D:\\code_ca_nhan\\WindAgent",
-  "baseline_sha": "9080fcb4bb6d9a6531a095c624a0f6d8796f4081",
+  "baseline_sha": "649e6faf95b6aa4f41ce4068018bc824a0b5c24f",
   "tree_sha": "6cb1bf5c3c87ff0f729f2af4d62f8ae4540ae5a6",
   "branch": "fix/phase7-verification-integrity",
   "author": "Antigravity",
