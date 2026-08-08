@@ -520,8 +520,11 @@ def build_state_machine_test_receipt() -> dict:
     expected = {
         S.DISCOVERED: {S.DOWNLOADED},
         S.DOWNLOADED: {S.VALIDATED},
-        S.VALIDATED: {S.LICENSE_UNKNOWN, S.APPROVED, S.REJECTED},
-        S.LICENSE_UNKNOWN: {S.APPROVED, S.REJECTED},
+        S.VALIDATED: {S.LICENSE_UNKNOWN, S.QUARANTINED, S.APPROVED, S.REJECTED},
+        S.LICENSE_UNKNOWN: {S.QUARANTINED, S.APPROVED, S.REJECTED},
+        # Stage C Phase 6: an untrusted asset can only be promoted by a fresh
+        # human review record (metadata alone is never sufficient).
+        S.QUARANTINED: {S.APPROVED, S.REJECTED},
         S.APPROVED: {S.BOUND_TO_PROJECT},
         S.REJECTED: {S.APPROVED},
         S.BOUND_TO_PROJECT: set(),
@@ -549,6 +552,13 @@ def build_state_machine_test_receipt() -> dict:
     _record(checks, "bound_is_terminal",
             not AssetStateMachine.can_transition(S.BOUND_TO_PROJECT, S.REJECTED),
             "BOUND_TO_PROJECT is terminal")
+    # Stage C Phase 6 fail-closed rules.
+    _record(checks, "quarantined_promotion_requires_review_record",
+            not AssetStateMachine.can_transition(S.QUARANTINED, S.APPROVED),
+            "QUARANTINED -> APPROVED without a fresh human review record is forbidden")
+    _record(checks, "quarantined_promotion_with_review_allowed",
+            AssetStateMachine.can_transition(S.QUARANTINED, S.APPROVED, new_review_record=True),
+            "QUARANTINED -> APPROVED with a fresh human review record is allowed")
 
     # require_transition raises a typed protocol error.
     _record(checks, "require_transition_raises_typed_error",

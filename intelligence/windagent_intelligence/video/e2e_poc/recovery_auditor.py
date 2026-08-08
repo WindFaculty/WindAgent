@@ -18,8 +18,8 @@ class RecoveryAuditor:
     def audit_session_recovery(
         self,
         run_id: str,
-        session_id: str = "sess_flow_poc_01",
-        job_id: str = "job_flow_video_03",
+        session_id: str = "sess_engine_poc_01",
+        job_id: str = "job_engine_render_03",
     ) -> BrowserRecoveryReceipt:
         """Simulate and audit browser recovery protocol."""
         return BrowserRecoveryReceipt(

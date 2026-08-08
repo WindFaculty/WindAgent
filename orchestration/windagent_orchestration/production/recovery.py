@@ -210,6 +210,76 @@ class ProductionRecovery:
             decisions.append(_decision_for_job_state(state, job_id))
         return decisions
 
+    def decide_batch(self, pending: PendingExternalOperation) -> RecoveryDecision:
+        """Aggregate per-job decisions into ONE run-level recovery decision.
+
+        Fail-closed aggregation over the FULL batch (VP3D — every engine job
+        of the scene/shot is tracked, never just the first):
+
+        - ANY job UNKNOWN            -> RECONCILE_UNKNOWN (never resubmit,
+                                        pause until every job is accounted for);
+        - ANY job FAILED             -> NEW_ATTEMPT (bounded retry of the
+                                        whole batch, never blind-resubmit of
+                                        unknown siblings);
+        - ANY job GENERATING         -> REATTACH_WAITING_PROVIDER (poll);
+        - ALL jobs COMPLETED         -> RESUME_AFTER_INSPECTION (ingest all).
+
+        The aggregated decision carries the per-job evidence in ``details`` so
+        the reconciliation is auditable. When the pending op is a single job
+        (or has no batch), this is exactly the single-op decision.
+        """
+        if not pending.job_ids or len(pending.job_ids) == 1:
+            decision = self.decide_from_op(pending)
+            if pending.job_ids and pending.job_ids[0] != pending.external_id:
+                decision.details["batch_job_ids"] = list(pending.job_ids)
+            return decision
+
+        decisions = self.decide_all_engine_jobs(pending)
+        per_job = [
+            {"engine_job": d.details.get("engine_job", ""), "action": d.action.value}
+            for d in decisions
+        ]
+
+        if any(d.action == RecoveryAction.RECONCILE_UNKNOWN for d in decisions):
+            return RecoveryDecision(
+                action=RecoveryAction.RECONCILE_UNKNOWN,
+                reason=(
+                    "at least one engine job in the batch has unknown state — "
+                    "pause for reconciliation, never resubmit siblings"
+                ),
+                next_state=ProductionRunState.WAITING_PROVIDER,
+                details={"batch_job_ids": list(pending.job_ids), "per_job": per_job},
+            )
+        if any(d.action == RecoveryAction.NEW_ATTEMPT for d in decisions):
+            return RecoveryDecision(
+                action=RecoveryAction.NEW_ATTEMPT,
+                reason="an engine job in the batch failed — bounded retry of the whole batch",
+                attempt_increment=True,
+                next_state=ProductionRunState.RUNNING,
+                details={"batch_job_ids": list(pending.job_ids), "per_job": per_job},
+            )
+        if any(d.action == RecoveryAction.REATTACH_WAITING_PROVIDER for d in decisions):
+            return RecoveryDecision(
+                action=RecoveryAction.REATTACH_WAITING_PROVIDER,
+                reason="an engine job in the batch is still generating — reattach poll",
+                next_state=ProductionRunState.WAITING_PROVIDER,
+                details={"batch_job_ids": list(pending.job_ids), "per_job": per_job},
+            )
+        if all(d.action == RecoveryAction.RESUME_AFTER_INSPECTION for d in decisions):
+            return RecoveryDecision(
+                action=RecoveryAction.RESUME_AFTER_INSPECTION,
+                reason="all engine jobs in the batch completed — resume ingestion",
+                next_state=ProductionRunState.RUNNING,
+                details={"batch_job_ids": list(pending.job_ids), "per_job": per_job},
+            )
+        # Unreachable with the decision vocabulary above; fail closed anyway.
+        return RecoveryDecision(
+            action=RecoveryAction.RECONCILE_UNKNOWN,
+            reason="batch state cannot be aggregated — pause for reconciliation",
+            next_state=ProductionRunState.WAITING_PROVIDER,
+            details={"batch_job_ids": list(pending.job_ids), "per_job": per_job},
+        )
+
     def decide_from_op(self, pending: PendingExternalOperation) -> RecoveryDecision:
         """Single-op reconciliation reusing the primary ``external_id`` anchor."""
         fake = ProductionCheckpoint(

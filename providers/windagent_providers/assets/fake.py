@@ -34,6 +34,7 @@ from windagent_core.domain.video_production.asset_resolution import (
     AssetProviderCapability,
     AssetResolutionRequest,
     AssetStyle,
+    AssetTrustEvidence,
     GenerationNotEnabledError,
     LicenseConstraint,
     ProviderAvailability,
@@ -74,6 +75,21 @@ def _fake_candidate(
         poly_count=10_000,
         texture_resolutions=[1024],
         metadata=dict(extra or {}),
+    )
+
+
+def _fake_trust(license_state: LicenseState) -> AssetTrustEvidence:
+    """Trust evidence for fake acquisitions (Phase 6 contract semantics).
+
+    Content hash is computed by the adapter from the payload it produced, so
+    the checksum is verified by construction. Commercial use is only claimed
+    for LICENSED candidates â€” an UNKNOWN-license candidate carries NO
+    commercial-use evidence and must be quarantined by the trust gate.
+    """
+    return AssetTrustEvidence(
+        checksum_verified=True,
+        commercial_use_verified=license_state == LicenseState.LICENSED,
+        content_scan_passed=True,
     )
 
 
@@ -135,7 +151,7 @@ class FakeLocalAssetAdapter(AssetAdapter):
             license_state=candidate.license_state,
             notes="fake local acquisition",
         )
-        return AcquiredAsset(asset=asset, acquisition=acquisition)
+        return AcquiredAsset(asset=asset, acquisition=acquisition, trust=_fake_trust(candidate.license_state))
 
 
 class FakeInternetAssetAdapter(AssetAdapter):
@@ -217,7 +233,7 @@ class FakeInternetAssetAdapter(AssetAdapter):
             license_state=candidate.license_state,
             notes="fake internet acquisition",
         )
-        return AcquiredAsset(asset=asset, acquisition=acquisition)
+        return AcquiredAsset(asset=asset, acquisition=acquisition, trust=_fake_trust(candidate.license_state))
 
 
 class FakeMeshApiAdapter(AssetAdapter):
@@ -285,7 +301,7 @@ class FakeMeshApiAdapter(AssetAdapter):
             license_state=candidate.license_state,
             notes="fake mesh api acquisition",
         )
-        return AcquiredAsset(asset=asset, acquisition=acquisition)
+        return AcquiredAsset(asset=asset, acquisition=acquisition, trust=_fake_trust(candidate.license_state))
 
 
 class FakeMeshMcpAdapter(AssetAdapter):
@@ -346,7 +362,7 @@ class FakeMeshMcpAdapter(AssetAdapter):
             license_state=candidate.license_state,
             notes="fake mesh mcp acquisition",
         )
-        return AcquiredAsset(asset=asset, acquisition=acquisition)
+        return AcquiredAsset(asset=asset, acquisition=acquisition, trust=_fake_trust(candidate.license_state))
 
 
 class FakeGeneratorAdapter(AssetAdapter):
@@ -444,7 +460,7 @@ class FakeGeneratorAdapter(AssetAdapter):
             license_state=candidate.license_state,
             notes="fake generation acquisition",
         )
-        return AcquiredAsset(asset=asset, acquisition=acquisition)
+        return AcquiredAsset(asset=asset, acquisition=acquisition, trust=_fake_trust(candidate.license_state))
 
 
 class FakeInternetSearchBackend:

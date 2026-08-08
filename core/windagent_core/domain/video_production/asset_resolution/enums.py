@@ -105,11 +105,15 @@ class AssetResolutionStatus(str, Enum):
 
     ``DISCOVERED`` means candidates were found but NOT acquired — search
     results are never usable assets. ``RESOLVED`` means the candidate was
-    acquired into a content-addressed ``ReferenceAsset``.
+    acquired into a content-addressed ``ReferenceAsset`` AND passed the trust
+    gate (license/checksum/commercial-use evidence — Phase 6). ``QUARANTINED``
+    means the asset was acquired but could not be trusted (UNKNOWN license,
+    unverified checksum or unverified commercial use) — it is never usable.
     """
 
     DISCOVERED = "DISCOVERED"
     RESOLVED = "RESOLVED"
+    QUARANTINED = "QUARANTINED"
     NOT_FOUND = "NOT_FOUND"
     REJECTED = "REJECTED"
     TIMEOUT = "TIMEOUT"

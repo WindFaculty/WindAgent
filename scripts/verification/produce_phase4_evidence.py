@@ -1,33 +1,14 @@
 """
-VP3D Phase 4 — Deterministic scene smoke test evidence (plan Stage B §4 gate).
+VP3D Phase 4 — CONTRACT-ONLY deterministic scene smoke evidence (fake executables).
 
-Produces the Phase 4 evidence bundle under:
+This script proves the pipeline MACHINERY with FAKE executables (fake blender,
+fake ffmpeg/ffprobe ports) for CI. It is NOT release/gate evidence: per the
+verification contract, a hardware/runtime gate is only certified by REAL
+executables (`scripts/run_vp3d_phase4_evidence.py`). All output lands under:
 
-    artifacts/video_production_3d/phase_04/
-    ├── scene_plan.json
-    ├── blender_job_receipts/
-    ├── frame_manifest.json
-    ├── ffmpeg_receipt.json
-    ├── ffprobe_receipt.json
-    ├── determinism_report.json
-    └── phase_verdict.json
+    artifacts/video_production_3d/phase_04_contract/
 
-Gate `VP3D_P4_DETERMINISTIC_RENDER_PASSED` requires create/reopen/render/
-cancel/resume/retry to be PROVEN and the final MP4 to need no manual Blender
-operation. Following the Phase 3 precedent, the contract suite runs in CI with
-FAKE executables (fake blender + fake ffmpeg/ffprobe ports), and the real
-hardware smoke is documented separately — on the baseline machine the pinned
-4.5.x LTS policy FAILS CLOSED against the installed Blender 5.1, which is
-itself the fail-closed behavior the plan requires (renders only after a 4.5
-LTS install is available).
-
-Usage:
-
-    uv run python scripts/verification/produce_phase4_evidence.py \
-        [--artifact-root artifacts]
-
-Exit code 0 on PASS, 2 on evidence/verdict machinery failure. The verdict JSON
-is written regardless; inspect its "verdict" field for the gate outcome.
+and NEVER touches the gate evidence directory `phase_04/`.
 """
 
 from __future__ import annotations
@@ -73,7 +54,7 @@ from windagent_tools.production_engines.blender.scene.pipeline import (
 from tests.fixtures.video_production.ir_fixture_builder import build_valid_ir
 
 GATE = "VP3D_P4_DETERMINISTIC_RENDER_PASSED"
-PHASE = "phase_04"
+PHASE = "phase_04_contract"
 
 
 # ---------------------------------------------------------------------------
@@ -366,10 +347,16 @@ async def main() -> int:
     )
 
     verdict["verdict"] = "PASS" if passed else "FAIL"
+    verdict["evidence_mode"] = "contract_tests_fake_executables"
+    verdict["gate_note"] = (
+        "CONTRACT-ONLY evidence (fake executables). This does NOT certify the "
+        "hardware/runtime gate VP3D_P4_DETERMINISTIC_RENDER_PASSED; the gate is "
+        "certified only by scripts/run_vp3d_phase4_evidence.py with real "
+        "Blender + real ffmpeg/ffprobe."
+    )
     verdict["summary"] = (
-        "Deterministic scene smoke test verified with contract tests (fake "
-        "executables in CI). Compiler locks seed/frame range/fps/color "
-        "management/resolution/samples/denoise/device; "
+        "CONTRACT-ONLY (fake executables). Compiler locks seed/frame range/fps/"
+        "color management/resolution/samples/denoise/device; "
         f"cancel/resume/retry/reuse proven "
         f"(cancel frames={len(evidence['cancel_proof']['frames_after_cancel'])}, "
         f"full range validated={evidence['resume_proof']['full_range_validated']}, "
@@ -396,11 +383,9 @@ async def main() -> int:
         f"artifacts/video_production_3d/{PHASE}/phase_verdict.json",
     ]
     verdict["real_machine_note"] = (
-        "Baseline machine runs Blender 5.1 (NOT the pinned 4.5 LTS); the "
-        "adapter readiness FAILS CLOSED on the version policy (as designed). "
-        "Real Cycles rendering and pixel parity require a 4.5 LTS install; "
-        "the contract suite above proves the pipeline with fake executables "
-        "per the plan's CI strategy."
+        "Contract-only bundle. Gate evidence is produced by "
+        "scripts/run_vp3d_phase4_evidence.py with real Blender 4.5.x LTS + real "
+        "ffmpeg/ffprobe; this directory is never used to certify the gate."
     )
     verdict["known_baseline_defect"] = (
         "tests/unit/verification/test_phase27_release.py::test_ci_run_manifest_"

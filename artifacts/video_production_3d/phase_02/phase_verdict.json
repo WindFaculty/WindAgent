@@ -3,7 +3,11 @@
   "phase": 2,
   "program": "vp3d",
   "gate": "VP3D_P2_GOOGLE_FLOW_REMOVED",
-  "recorded_at": "2026-08-07T10:00:00Z",
+  "recorded_at": "2026-08-08T00:00:00Z",
+  "verification_fixes_2026_08_08": [
+    "checkpoint/recovery now track EVERY engine job of a scene/shot batch (decide_batch, ingest-waits-for-all, cancel_batch) — see test_baseline.json batch_recovery_fix",
+    "retirement manifest completed (9 test files + 4 scripts) and Flow-token residue neutralized — see test_baseline.json retirement_manifest_completion"
+  ],
   "baseline_sha": "9080fcb4bb6d9a6531a095c624a0f6d8796f4081",
   "phase0_gate": "VP3D_P0_BASELINE_FROZEN (PASS)",
   "phase1_gate": "VP3D_P1_ENGINE_NEUTRAL_IR_VERIFIED (PASS)",

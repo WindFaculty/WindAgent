@@ -15,7 +15,7 @@ implements ``AssetAdapter``. Adapters:
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import ClassVar, List
 
 from windagent_core.domain.video_production.asset import (
@@ -26,15 +26,23 @@ from windagent_core.domain.video_production.asset_resolution import (
     AssetCandidate,
     AssetProviderCapability,
     AssetResolutionRequest,
+    AssetTrustEvidence,
 )
 
 
 @dataclass(frozen=True)
 class AcquiredAsset:
-    """Outcome of a successful adapter-level acquire."""
+    """Outcome of a successful adapter-level acquire.
+
+    ``trust`` carries the evidence the gateway's trust gate evaluates
+    (Phase 6): checksum verification, commercial-use right, trademark /
+    attribution flags and (optional) content-scan evidence. Every flag is
+    fail-closed — False unless the adapter can actually prove it.
+    """
 
     asset: ReferenceAsset
     acquisition: AssetAcquisitionRecord
+    trust: AssetTrustEvidence = field(default_factory=AssetTrustEvidence)
 
 
 class AssetAdapter(ABC):

@@ -85,6 +85,31 @@ class ProductionEngineExecutor:
         self._persist(receipt)
         return receipt
 
+    async def cancel_batch(self, job_ids: List[EngineJobId]) -> List[EngineJobReceipt]:
+        """Cancel EVERY engine job of a scene/shot batch (VP3D).
+
+        A single RENDER step fans out into one engine job per scene/shot unit;
+        cancelling only the primary ``external_id`` would leave sibling jobs
+        rendering. This cancels the full batch and persists every terminal
+        receipt for durable re-attach.
+        """
+        receipts: List[EngineJobReceipt] = []
+        for job_id in job_ids:
+            try:
+                receipt = await self.cancel_job(job_id)
+            except Exception as exc:  # fail closed: record, keep going
+                receipt = EngineJobReceipt(
+                    job_id=job_id,
+                    project_id="vp_unknown",
+                    revision_id="rev_unknown",
+                    ir_hash="",
+                    status=EngineJobStatus.FAILED,
+                    engine_name="engine",
+                    error=f"cancel failed: {exc}",
+                )
+            receipts.append(receipt)
+        return receipts
+
     async def download_artifact(
         self, job_id: EngineJobId, artifact_kind: DerivedArtifactKind
     ) -> DerivedArtifact:

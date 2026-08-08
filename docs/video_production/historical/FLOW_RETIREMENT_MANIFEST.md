@@ -14,12 +14,21 @@ else was either rewritten engine-neutral or archived here (or in
 
 | Item | Action |
 |---|---|
-| `tools/windagent_tools/google_flow/` | deleted (Stage A Phase 2) |
-| `intelligence/windagent_intelligence/video/prompt_compiler/` | deleted; types retired to `legacy_v1` |
+| `tools/windagent_tools/google_flow/` | deleted — all 16 modules (Stage A Phase 2) |
+| `intelligence/windagent_intelligence/video/prompt_compiler/` | deleted — 5 modules; types retired to `legacy_v1` |
 | `intelligence/windagent_intelligence/video/shot_planner/generation_mode.py` (`GenerationModeDecider`) | deleted |
 | `core/.../contracts/video_production/production_executor.py` | moved to orchestration layer (engine executor) |
 | `tests/unit/intelligence/test_phase11_compiler.py` | retired (subject deleted) |
+| `tests/unit/tools/test_phase13_flow_navigation.py` | retired (Flow navigation subject deleted) |
+| `tests/unit/tools/test_phase14_flow_images.py` | retired (Flow image subject deleted) |
+| `tests/unit/tools/test_phase15_flow_video.py` | retired (Flow video subject deleted) |
+| `tests/unit/tools/test_phase16_flow_human_control.py` | retired (Flow human-control subject deleted) |
+| `tests/architecture/test_phase13_flow_navigation_canonical.py` | retired (Flow navigation subject deleted) |
+| `tests/architecture/test_phase14_flow_images_canonical.py` | retired (Flow image subject deleted) |
+| `tests/architecture/test_phase15_flow_video_canonical.py` | retired (Flow video subject deleted) |
+| `tests/architecture/test_phase16_human_control_canonical.py` | retired (Flow human-control subject deleted) |
 | canonical `GenerationMode`, `Shot.generation_mode`, `GenerationModeDecision`, `FlowGenerationSpecification`, `GenerationRequest.provider/generation_mode` | retired from canonical runtime; types preserved in `legacy_v1` |
+| `run_claude_cli_naraRouter.ps1` | deleted (developer-scoped launcher for the retired Flow era) |
 
 ## 2. Archived — scripts (moved to `scripts/verification/historical/`)
 
@@ -34,6 +43,17 @@ build/test/runtime.
 | `verify_phase10_continuity.py` | imports `GenerationModeDecider` (deleted) |
 | `verify_phase11_compiler.py` | imports `GenerationModeDecider` / `GenerationMode` (deleted); compiler retired |
 | `runbook_phase24_e2e.py` | Flow-live-run runbook requiring `FLOW_SESSION`/`FLOW_ACCOUNT` credentials; Flow runtime deleted |
+
+The following Flow-era verification scripts were DELETED without archive (their
+subjects — Flow navigation/images/video/human-control — were hard-removed and
+the scripts had no independent value):
+
+| Script | Reason |
+|---|---|
+| `verify_phase13_flow_navigation.py` | subject deleted (Flow navigation); no current reference |
+| `verify_phase14_flow_images.py` | subject deleted (Flow images); no current reference |
+| `verify_phase15_flow_video.py` | subject deleted (Flow video); no current reference |
+| `verify_phase16_flow_human_control.py` | subject deleted (Flow human control); no current reference |
 
 ## 3. Archived — docs (moved to `docs/video_production/historical/`)
 
@@ -56,6 +76,7 @@ build/test/runtime.
 | `tests/unit/verification/test_phase25_reliability.py` | `CH15_ENGINE_PROJECT_DELETED` scenario id |
 | `scripts/verification/verify_phase18_artifact_invalidation.py` | sample `generation_mode` values `"TEXT_TO_VIDEO"` -> `"ENGINE_RENDER"` (opaque storage data) |
 | `intelligence/.../video/e2e_poc/poc_runner.py` | runbook steps `FLOW_IMAGE_GENERATION`/`FLOW_VIDEO_GENERATION` -> `ASSET_GENERATION`/`SHOT_RENDER_GENERATION` |
+| `intelligence/.../video/e2e_poc/recovery_auditor.py` | default `session_id="sess_flow_poc_01"`/`job_id="job_flow_video_03"` -> engine-neutral `sess_engine_poc_01`/`job_engine_render_03` (Flow token residue scan finding, 2026-08-08) |
 | `tools/windagent_tools/video_probe.py` | docstring: removed `google_flow` process-boundary reference |
 | `core/.../production_ir/enums.py`, `models.py` | docstrings no longer name generative-video modes |
 | `docs/video_production/protocol/provider_port_contract.md` | removed `tools/google_flow` adapter mention |
@@ -119,3 +140,26 @@ archived `runbook_phase24_e2e.py` and `docs/video_production/historical/**`.
 
 Residue scan (Task 4 scanner) reports 0 active violations outside the allowlists
 above. Full regression unchanged outside the retired items listed in §1–§3.
+
+### Inventory reconciliation (2026-08-08)
+
+Verified against the Stage A candidate tree:
+
+- `tools/windagent_tools/google_flow/`: 16 modules deleted (inventory matches).
+- Deleted test files: 9 total — `test_phase11_compiler.py` (unit/intelligence),
+  `test_phase13..16_flow_*.py` (unit/tools, 4), `test_phase13..16_*_canonical.py`
+  (architecture, 4). All listed in §1.
+- Deleted verification scripts: 9 total — 5 archived (§2 table 1) + 4 deleted
+  without archive (§2 table 2).
+- Archived docs: 21 files (director 2, flow_images 5, flow_video 5,
+  flow_navigation 4, flow_human_control 3, plans 2) under
+  `docs/video_production/historical/`.
+- Active runtime residue scan: `rg` for
+  `google_flow|FlowVideo|FlowImage|flow_video|flow_images|flow_navigation|
+  flow_human_control` over `*.py` outside `historical/**`, `legacy_v1/**` and the
+  bounded allowlists matches ONLY the removal-authority tests/architecture
+  files, the legacy migrator tests, and the Phase 3 handoff verifier — all
+  deliberate (§5 allowlists). One residue (`recovery_auditor.py` default
+  `job_flow_video_03`) was neutralized 2026-08-08 (§4).
+- No `FLOW_*` credential/session key or env template remains in active
+  scripts, config, or `.env*` templates.

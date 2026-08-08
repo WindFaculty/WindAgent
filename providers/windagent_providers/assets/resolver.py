@@ -28,6 +28,7 @@ from windagent_core.domain.video_production.asset_resolution import (
     AssetResolutionResult,
     AssetResolutionStatus,
     AssetResolutionError,
+    AssetTrustVerdict,
     CapabilityRejectedError,
     NoCapableAdapterError,
     ProviderTimeoutError,
@@ -35,9 +36,10 @@ from windagent_core.domain.video_production.asset_resolution import (
     ResolutionCancelledError,
 )
 from windagent_core.domain.video_production.asset_resolution.models import utc_now
+from windagent_core.contracts.video_production.asset_resolver import AssetTrustPort
 from windagent_core.domain.video_production.ids import AssetResolutionId
 
-from windagent_providers.assets.adapter import AssetAdapter
+from windagent_providers.assets.adapter import AcquiredAsset, AssetAdapter
 from windagent_providers.assets.cache import AssetResolutionCache
 from windagent_providers.assets.capability import CapabilityMatcher
 from windagent_providers.assets.execution import (
@@ -65,13 +67,42 @@ class AssetResolver:
         cache: Optional[AssetResolutionCache] = None,
         policy: Optional[ExecutionPolicy] = None,
         matcher: Optional[CapabilityMatcher] = None,
+        trust: Optional[AssetTrustPort] = None,
     ) -> None:
         self._registry = registry
         self._cache = cache or AssetResolutionCache()
         self._policy = policy or ExecutionPolicy()
         self._matcher = matcher or CapabilityMatcher()
+        self._trust = trust
         self._breakers: Dict[str, CircuitBreaker] = {}
         self._semaphores: Dict[str, asyncio.Semaphore] = {}
+
+    @property
+    def trust_gate(self) -> Optional[AssetTrustPort]:
+        """The injected trust gate (None when not wired — fail closed)."""
+        return self._trust
+
+    def _trust_verdict(
+        self,
+        acquired: AcquiredAsset,
+    ) -> AssetTrustVerdict:
+        """Run the Phase 6 trust flow for an acquisition.
+
+        Fail closed: with NO trust gate injected, no asset can ever be
+        returned as RESOLVED (quarantine everything) — an untrusted gateway
+        must not silently bless assets.
+        """
+        if self._trust is None:
+            return AssetTrustVerdict(
+                decision="QUARANTINE",
+                lifecycle_state="QUARANTINED",
+                reasons=["no trust gate injected — fail closed"],
+            )
+        return self._trust.evaluate(
+            asset=acquired.asset,
+            acquisition=acquired.acquisition,
+            evidence=acquired.trust,
+        )
 
     # ------------------------------------------------------------------
     # AssetResolverPort surface
@@ -222,25 +253,42 @@ class AssetResolver:
         duration_ms = int((time.monotonic() - started) * 1000)
         if outcome.ok:
             acquired = outcome.value
+
+            # Phase 6 trust flow: acquire -> content scan -> provenance ->
+            # trust decision -> quarantine/approve -> publish. Only APPROVE
+            # may surface as RESOLVED; an UNKNOWN-license / unverified-checksum
+            # / unverified-commercial-use asset is QUARANTINED (never usable).
+            verdict = self._trust_verdict(acquired)
+            status = (
+                AssetResolutionStatus.RESOLVED
+                if verdict.decision == "APPROVE"
+                else (
+                    AssetResolutionStatus.QUARANTINED
+                    if verdict.decision == "QUARANTINE"
+                    else AssetResolutionStatus.REJECTED
+                )
+            )
             result = AssetResolutionResult(
                 resolution_id=_make_resolution_id(),
                 requirement_hash=requirement_hash,
-                status=AssetResolutionStatus.RESOLVED,
+                status=status,
                 acquired=acquired.asset,
                 acquisition=acquired.acquisition,
                 attempts=[
                     AssetResolutionAttempt(
                         provider_id=adapter.adapter_id,
                         adapter_version=adapter.adapter_version,
-                        status=AssetResolutionStatus.RESOLVED,
+                        status=status,
                         started_at=utc_now(),
                         duration_ms=outcome.duration_ms,
+                        error_message="; ".join(verdict.reasons),
                     )
                 ],
                 provider_id=adapter.adapter_id,
                 adapter_version=adapter.adapter_version,
                 cache_hit=False,
                 duration_ms=duration_ms,
+                metadata={"trust_decision": verdict.decision, "trust_reasons": list(verdict.reasons)},
             )
             self._cache.put(cache_key, result)
             return result

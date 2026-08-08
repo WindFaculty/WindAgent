@@ -2,7 +2,7 @@
 
 - **Gate:** `VP7_ASSET_PIPELINE_VERIFIED`
 - **Status:** PASSED
-- **Generated at:** 2026-08-01T00:04:39.164787+00:00
+- **Generated at:** 2026-08-08T00:18:26.664101+00:00
 
 ## Downloader security matrix
 
@@ -23,8 +23,8 @@
 
 ## State machine
 
-- States: 7
-- Checks: 13
+- States: 8
+- Checks: 16
 - All checks pass: True
 
 ## E2E package

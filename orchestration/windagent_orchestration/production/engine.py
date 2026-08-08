@@ -535,9 +535,22 @@ class ProductionWorkflowEngine:
 
     # -- recovery --------------------------------------------------------------
     def recover(self, run_id: str, *, worker_id: str = "worker_default") -> ProductionRun:
-        """Reconcile a run from its durable checkpoint (plan 05 §8.5)."""
+        """Reconcile a run from its durable checkpoint (plan 05 §8.5).
+
+        VP3D: a RENDER step submits ONE engine job per scene/shot unit and the
+        checkpoint carries the FULL batch in ``pending_external_operation``.
+        Recovery therefore reconciles EVERY engine job of the batch — not just
+        the first — via ``ProductionRecovery.decide_batch`` (fail closed on any
+        unknown/failed sibling; never a blind resubmit).
+        """
         run = self.load(run_id)
-        decision = self.recovery.decide(run.checkpoint)
+        pending = (
+            run.checkpoint.pending_external_operation if run.checkpoint else None
+        )
+        if pending is not None and len(pending.job_ids) > 1:
+            decision = self.recovery.decide_batch(pending)
+        else:
+            decision = self.recovery.decide(run.checkpoint)
         return self._apply_recovery(run, decision, worker_id)
 
     def recover_download(
@@ -560,7 +573,15 @@ class ProductionWorkflowEngine:
         output_hashes: Dict[str, str],
         event_id: Optional[str] = None,
     ) -> ProductionRun:
-        """Idempotent ingestion of an external provider result (plan 05 §8.3)."""
+        """Idempotent ingestion of an external provider result (plan 05 §8.3).
+
+        VP3D batch semantics: when the pending operation carries multiple
+        engine jobs (``job_ids``), ONE ingested result never completes the
+        step — the pending op stays visible and the run stays WAITING_PROVIDER
+        until EVERY engine job of the batch has been ingested (tracked via
+        ``run.output_hashes``). Only then is the step completed and the
+        pending op cleared.
+        """
         run = self.load(run_id)
         if not run.outbox.ingest_external_result(external_id):
             return run  # duplicate delivery — no side effects
@@ -571,14 +592,34 @@ class ProductionWorkflowEngine:
         )
         run.outbox.append(event)
         run.output_hashes.update(output_hashes)
+
+        pending = (
+            run.checkpoint.pending_external_operation if run.checkpoint else None
+        )
+        batch_remaining: List[str] = []
+        if pending is not None and len(pending.job_ids) > 1:
+            # A result only counts toward the batch when it names one of the
+            # batch's engine jobs; anything else is recorded but never allows
+            # the step to complete (fail closed).
+            ingested = set(run.output_hashes)
+            batch_remaining = [
+                job_id for job_id in pending.job_ids if job_id not in ingested
+            ]
+
         if run.checkpoint:
             step_id = run.checkpoint.current_step
-            if step_id and step_id not in run.completed_steps:
-                run.completed_steps.append(step_id)
             run.checkpoint.output_hashes = dict(run.output_hashes)
-            run.checkpoint.pending_external_operation = None
+            if not batch_remaining:
+                if step_id and step_id not in run.completed_steps:
+                    run.completed_steps.append(step_id)
+                run.checkpoint.pending_external_operation = None
         if run.state in (ProductionRunState.WAITING_PROVIDER, ProductionRunState.RECOVERING):
-            run.transition(ProductionRunState.RUNNING, reason="external result ingested")
+            if batch_remaining:
+                # Still waiting on sibling engine jobs — do NOT leave the
+                # provider state or reschedule the step.
+                run.bump_version()
+            else:
+                run.transition(ProductionRunState.RUNNING, reason="external result ingested")
         else:
             run.bump_version()  # mutating run without a transition — bump anyway
         run.outbox.mark_published(event.event_id)

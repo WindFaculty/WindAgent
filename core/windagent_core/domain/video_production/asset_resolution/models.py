@@ -184,6 +184,42 @@ class AssetResolutionAttempt(BaseModel):
     candidates_found: int = Field(default=0, ge=0)
 
 
+class AssetTrustEvidence(BaseModel):
+    """Trust evidence carried by an acquired asset (VP3D Phase 6).
+
+    All gates fail closed: a flag is only ``True`` when there is real evidence,
+    never by default. ``checksum_verified`` means the content hash was computed
+    by OUR pipeline from the bytes we received (not a provider-declared hash);
+    ``commercial_use_verified`` means the license/usage evidence grants
+    commercial use; ``human_reviewed`` means a fresh human review record
+    exists (metadata alone never auto-approves an UNKNOWN license).
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    checksum_verified: bool = False
+    commercial_use_verified: bool = False
+    trademark: bool = False
+    requires_attribution: bool = False
+    human_reviewed: bool = False
+    content_scan_passed: Optional[bool] = None
+    scan_reasons: List[str] = Field(default_factory=list)
+
+
+class AssetTrustVerdict(BaseModel):
+    """Typed trust decision for one acquired asset (VP3D Phase 6).
+
+    ``decision`` is one of APPROVE / QUARANTINE / REJECT. Only APPROVE may
+    ever surface as ``AssetResolutionStatus.RESOLVED``.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    decision: str  # APPROVE | QUARANTINE | REJECT
+    lifecycle_state: str  # AssetLifecycleState value
+    reasons: List[str] = Field(default_factory=list)
+
+
 class AssetResolutionResult(BaseModel):
     """Typed outcome of discover or acquire through the gateway."""
 
@@ -216,5 +252,7 @@ __all__ = [
     "AssetCandidate",
     "AssetResolutionRequest",
     "AssetResolutionAttempt",
+    "AssetTrustEvidence",
+    "AssetTrustVerdict",
     "AssetResolutionResult",
 ]

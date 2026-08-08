@@ -17,11 +17,17 @@ from __future__ import annotations
 
 from typing import List, Protocol, runtime_checkable
 
+from windagent_core.domain.video_production.asset import (
+    AssetAcquisitionRecord,
+    ReferenceAsset,
+)
 from windagent_core.domain.video_production.asset_resolution.models import (
     AssetCandidate,
     AssetProviderCapability,
     AssetResolutionRequest,
     AssetResolutionResult,
+    AssetTrustEvidence,
+    AssetTrustVerdict,
 )
 
 
@@ -45,9 +51,11 @@ class AssetResolverPort(Protocol):
     ) -> AssetResolutionResult:
         """Acquire a discovered candidate into a content-addressed asset.
 
-        On success the result carries ``acquired`` (``ReferenceAsset``) and an
-        ``AssetAcquisitionRecord`` provenance. License state is carried through
-        and never auto-approved.
+        The acquired asset MUST pass the trust gate before it can be returned
+        as ``RESOLVED``: an asset with an UNKNOWN license, unverified checksum
+        or unverified commercial use is returned as ``QUARANTINED`` (never
+        usable). On success the result carries ``acquired``
+        (``ReferenceAsset``) and an ``AssetAcquisitionRecord`` provenance.
         """
         ...
 
@@ -59,4 +67,25 @@ class AssetResolverPort(Protocol):
         ...
 
 
-__all__ = ["AssetResolverPort"]
+@runtime_checkable
+class AssetTrustPort(Protocol):
+    """Trust gate every acquired asset must pass (VP3D Phase 6).
+
+    Runs the canonical trust flow for one acquisition:
+    content-scan evidence -> license/checksum/commercial-use evidence ->
+    quarantine/approve/reject decision. Only ``APPROVE`` may surface as
+    ``RESOLVED``.
+    """
+
+    def evaluate(
+        self,
+        *,
+        asset: ReferenceAsset,
+        acquisition: AssetAcquisitionRecord,
+        evidence: AssetTrustEvidence,
+    ) -> AssetTrustVerdict:
+        """Decide APPROVE / QUARANTINE / REJECT for the acquired asset."""
+        ...
+
+
+__all__ = ["AssetResolverPort", "AssetTrustPort"]

@@ -53,6 +53,8 @@ from windagent_core.domain.video_production.asset_resolution.models import (
     AssetResolutionAttempt,
     AssetResolutionRequest,
     AssetResolutionResult,
+    AssetTrustEvidence,
+    AssetTrustVerdict,
 )
 
 __all__ = [
@@ -85,5 +87,7 @@ __all__ = [
     "AssetCandidate",
     "AssetResolutionRequest",
     "AssetResolutionAttempt",
+    "AssetTrustEvidence",
+    "AssetTrustVerdict",
     "AssetResolutionResult",
 ]

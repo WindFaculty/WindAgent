@@ -14,6 +14,7 @@ Covers (Stage C Phase 5 backlog):
 """
 
 import asyncio
+import json
 import tempfile
 from pathlib import Path
 
@@ -71,6 +72,19 @@ def build_resolver(*adapters, **kwargs) -> AssetResolver:
     for adapter in adapters:
         registry.register(adapter)
     return AssetResolver(registry, **kwargs)
+
+
+def trusted_resolver(*adapters, **kwargs) -> AssetResolver:
+    """Resolver wired with the REAL Phase 6 trust gate.
+
+    RESOLVED is only reachable through an APPROVE verdict — the gate contract
+    introduced by Phase 6 (an UNKNOWN-license / unverified-checksum /
+    unverified-commercial-use asset is QUARANTINED, never usable).
+    """
+    from windagent_tools.media_assets.trust_gate import MediaAssetTrustGate
+
+    kwargs.setdefault("trust", MediaAssetTrustGate())
+    return build_resolver(*adapters, **kwargs)
 
 
 def fake_registry() -> AssetAdapterRegistry:
@@ -199,7 +213,7 @@ class TestDiscoverAndAcquire:
             assert candidate.requirement_hash == CHAR_REQUIREMENT.canonical_hash
 
     def test_acquire_promotes_candidate_to_asset(self):
-        resolver = AssetResolver(fake_registry())
+        resolver = trusted_resolver(*[a() for a in (FakeLocalAssetAdapter, FakeInternetAssetAdapter, FakeMeshApiAdapter, FakeMeshMcpAdapter)])
         discovered = asyncio.run(
             resolver.discover(AssetResolutionRequest(requirement=CHAR_REQUIREMENT))
         )
@@ -211,6 +225,7 @@ class TestDiscoverAndAcquire:
         assert len(acquired.acquired.content_hash) == 64
         assert acquired.acquisition is not None
         assert acquired.acquisition.license_state == acquired.acquired.license_state
+        assert acquired.metadata.get("trust_decision") == "APPROVE"
 
     def test_acquire_rejects_candidate_for_other_requirement(self):
         resolver = AssetResolver(fake_registry())
@@ -273,7 +288,7 @@ class TestIdempotency:
         assert asyncio.run(resolver.discover(b)).cache_hit is False
 
     def test_acquire_cache_reuses_artifact(self):
-        resolver = AssetResolver(fake_registry())
+        resolver = trusted_resolver(FakeLocalAssetAdapter())
         request = AssetResolutionRequest(requirement=CHAR_REQUIREMENT)
         discovered = asyncio.run(resolver.discover(request))
         first = asyncio.run(resolver.acquire(discovered.candidates[0], request))
@@ -504,15 +519,48 @@ class TestRealAdapters:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             (root / "teapot.glb").write_bytes(b"teapot data")
+            # A local asset only becomes RESOLVED when the library index
+            # declares license + commercial-use evidence (Phase 6 trust gate).
+            (root / "library_index.json").write_text(
+                json.dumps(
+                    {
+                        "entries": [
+                            {
+                                "file": "teapot.glb",
+                                "title": "Teapot",
+                                "kinds": ["CHARACTER", "PROP"],
+                                "license_state": "LICENSED",
+                                "commercial_use": True,
+                            }
+                        ]
+                    }
+                ),
+                encoding="utf-8",
+            )
             registry = AssetAdapterRegistry()
             registry.register(LocalAssetAdapter(root))
-            resolver = AssetResolver(registry)
+            resolver = trusted_resolver(LocalAssetAdapter(root))
             request = AssetResolutionRequest(requirement=CHAR_REQUIREMENT)
             result = asyncio.run(resolver.discover(request))
             assert result.status == AssetResolutionStatus.DISCOVERED
             acquired = asyncio.run(resolver.acquire(result.candidates[0], request))
             assert acquired.status == AssetResolutionStatus.RESOLVED
             assert acquired.acquired.source_type.value == "LOCAL_LIBRARY"
+
+    def test_local_adapter_unknown_license_quarantines(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "teapot.glb").write_bytes(b"teapot data")
+            registry = AssetAdapterRegistry()
+            registry.register(LocalAssetAdapter(root))
+            resolver = trusted_resolver(LocalAssetAdapter(root))
+            request = AssetResolutionRequest(requirement=CHAR_REQUIREMENT)
+            result = asyncio.run(resolver.discover(request))
+            acquired = asyncio.run(resolver.acquire(result.candidates[0], request))
+            # No license metadata -> UNKNOWN license -> QUARANTINED, never usable.
+            assert acquired.status == AssetResolutionStatus.QUARANTINED
+            assert acquired.acquired is not None
+            assert acquired.metadata.get("trust_decision") == "QUARANTINE"
 
     def test_local_adapter_blocks_path_traversal(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -558,13 +606,43 @@ class TestRealAdapters:
                 acquisition=FakeInternetAcquisitionBackend(),
             )
         )
-        resolver = AssetResolver(registry)
+        resolver = trusted_resolver(
+            InternetAssetAdapter(
+                search=FakeInternetSearchBackend(),
+                acquisition=FakeInternetAcquisitionBackend(),
+            )
+        )
         request = AssetResolutionRequest(requirement=CHAR_REQUIREMENT)
         result = asyncio.run(resolver.discover(request))
         assert result.status == AssetResolutionStatus.DISCOVERED
         acquired = asyncio.run(resolver.acquire(result.candidates[0], request))
         assert acquired.status == AssetResolutionStatus.RESOLVED
         assert acquired.acquired.source_type.value == "INTERNET"
+
+    def test_internet_unknown_license_candidate_quarantines(self):
+        # The fake internet adapter discovers TWO candidates: one LICENSED
+        # and one UNKNOWN-license. The UNKNOWN one must NEVER come back as
+        # RESOLVED — it is quarantined (Phase 6 fail closed).
+        registry = AssetAdapterRegistry()
+        registry.register(
+            InternetAssetAdapter(
+                search=FakeInternetSearchBackend(),
+                acquisition=FakeInternetAcquisitionBackend(),
+            )
+        )
+        resolver = trusted_resolver(
+            InternetAssetAdapter(
+                search=FakeInternetSearchBackend(),
+                acquisition=FakeInternetAcquisitionBackend(),
+            )
+        )
+        request = AssetResolutionRequest(requirement=CHAR_REQUIREMENT)
+        result = asyncio.run(resolver.discover(request))
+        unknown = [c for c in result.candidates if c.license_state.value == "UNKNOWN"]
+        assert unknown, "fixture must include an UNKNOWN-license candidate"
+        acquired = asyncio.run(resolver.acquire(unknown[0], request))
+        assert acquired.status == AssetResolutionStatus.QUARANTINED
+        assert acquired.metadata.get("trust_decision") == "QUARANTINE"
 
     def test_mesh_mcp_requires_config(self):
         registry = AssetAdapterRegistry()
@@ -591,7 +669,7 @@ class TestRealAdapters:
     def test_generator_with_backend_resolves(self):
         registry = AssetAdapterRegistry()
         registry.register(FutureGeneratorAdapter(backend=FakeGeneratorBackend()))
-        resolver = AssetResolver(registry)
+        resolver = trusted_resolver(FutureGeneratorAdapter(backend=FakeGeneratorBackend()))
         request = AssetResolutionRequest(requirement=CHAR_REQUIREMENT)
         result = asyncio.run(resolver.discover(request))
         assert result.status == AssetResolutionStatus.DISCOVERED
@@ -599,6 +677,16 @@ class TestRealAdapters:
         assert acquired.status == AssetResolutionStatus.RESOLVED
         assert acquired.acquired.source_type.value == "GENERATED"
         assert acquired.acquired.metadata.get("model") == "fake-3d-gen-1"
+
+    def test_no_trust_gate_never_resolves(self):
+        """Fail closed: a resolver without an injected trust gate can NEVER
+        return RESOLVED — untrusted assets are quarantined."""
+        resolver = AssetResolver(fake_registry())
+        request = AssetResolutionRequest(requirement=CHAR_REQUIREMENT)
+        discovered = asyncio.run(resolver.discover(request))
+        acquired = asyncio.run(resolver.acquire(discovered.candidates[0], request))
+        assert acquired.status == AssetResolutionStatus.QUARANTINED
+        assert acquired.metadata.get("trust_decision") == "QUARANTINE"
 
     def test_fake_generator_disabled_typed_rejection(self):
         adapter = FakeGeneratorAdapter(enabled=False)

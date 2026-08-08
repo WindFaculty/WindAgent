@@ -381,3 +381,200 @@ def run_sync(coro):
 
 def engine2_executor_cancel(executor: ProductionEngineExecutor, job_id: EngineJobId) -> EngineJobReceipt:
     return run_sync(executor.cancel_job(job_id))
+
+
+# ---------------------------------------------------------------------------
+# VP3D batch tracking — EVERY engine job of a scene/shot, not just the first
+# ---------------------------------------------------------------------------
+def _build_multi_shot_ir():
+    """IR with TWO scenes and TWO shots so RENDER_ASSETS/RENDER_SHOTS fan out
+    into TWO engine jobs each (the batch recovery scenario)."""
+    from windagent_core.domain.video_production.production_ir.models import (
+        ProductionIrDocument,
+    )
+
+    from tests.fixtures.video_production.ir_fixture_builder import build_valid_ir_dict
+
+    raw = build_valid_ir_dict()
+    scenes = list(raw["scenes"])
+    shots = list(raw["shots"])
+    render_intents = list(raw["render_intents"])
+
+    scene2 = dict(scenes[0], scene_id="scn_02", screenplay_scene_id="scn_02")
+    raw["scenes"] = scenes + [scene2]
+    shot2 = dict(
+        shots[0],
+        intent_id="sht_020",
+        shot_id="sht_020",
+        scene_id="scn_02",
+    )
+    raw["shots"] = shots + [shot2]
+    render2 = dict(
+        render_intents[0],
+        intent_id="ri_scn_02",
+        scene_id="scn_02",
+        shot_execution_intent_ids=["sht_020"],
+    )
+    raw["render_intents"] = render_intents + [render2]
+    return ProductionIrDocument.model_validate(raw)
+
+
+def _build_batch_engine(
+    *,
+    store_dir: Path,
+    port_state_dir: Path,
+    executor_state_dir: Path,
+    revision_to_ir=None,
+):
+    """Engine over a multi-shot IR plus a per-job inspector for recovery."""
+    from windagent_orchestration.production import ProductionRecovery
+    from windagent_orchestration.production.recovery import ProviderJobState
+
+    port = RecordingEnginePort(port_state_dir)
+    executor = ProductionEngineExecutor(port=port, state_dir=executor_state_dir)
+    ir_source = revision_to_ir or (lambda revision_id: _build_multi_shot_ir())
+    step_executor = ProductionStepExecutor(engine=executor, ir_source=ir_source)
+
+    def _inspect(job_id: str) -> ProviderJobState:
+        receipt = executor.reconcile(EngineJobId(job_id))
+        if receipt is None:
+            return ProviderJobState.UNKNOWN
+        return {
+            EngineJobStatus.COMPLETED: ProviderJobState.COMPLETED,
+            EngineJobStatus.CANCELLED: ProviderJobState.FAILED,
+            EngineJobStatus.FAILED: ProviderJobState.FAILED,
+        }.get(receipt.status, ProviderJobState.GENERATING)
+
+    recovery = ProductionRecovery(inspect_engine_job=_inspect)
+    engine = ProductionWorkflowEngine(
+        store=ProductionRunStore(store_dir),
+        executor=step_executor,
+        step_nodes=build_production_step_nodes(),
+        recovery=recovery,
+    )
+    return engine, port, executor
+
+
+class TestBatchTracksEveryEngineJob:
+    def test_render_assets_batch_carries_all_jobs_and_ingest_waits_for_all(self, tmp_path):
+        store_dir = tmp_path / "runs"
+        port_dir = tmp_path / "port_state"
+        exec_dir = tmp_path / "exec_state"
+
+        engine, port, _ = _build_batch_engine(
+            store_dir=store_dir, port_state_dir=port_dir, executor_state_dir=exec_dir
+        )
+        run = engine.create_run(
+            project_id="vp_cutover",
+            revision_id="rev_batch",
+            revision_hash="bb" * 32,
+            run_id="run_batch_assets",
+        )
+        engine.start(run.run_id)
+        _approve_required_gates(engine, run)
+
+        run = _advance_until(engine, run.run_id, "RENDER_ASSETS")
+        pending = run.checkpoint.pending_external_operation
+        # TWO scenes -> TWO engine jobs, both recorded (never just the first).
+        assert len(pending.job_ids) == 2
+        assert port.submitted_scenes == ["scn_01", "scn_02"]
+        assert pending.external_id in pending.job_ids
+
+        # Ingesting ONLY the first job must NOT complete the step: the second
+        # engine job is still unaccounted for.
+        first, second = pending.job_ids[0], pending.job_ids[1]
+        after_one = engine.ingest_external_result(
+            run.run_id, external_id=first, output_hashes={first: "a" * 64}
+        )
+        assert "RENDER_ASSETS" not in after_one.completed_steps
+        assert after_one.state == ProductionRunState.WAITING_PROVIDER
+        assert (
+            after_one.checkpoint.pending_external_operation is not None
+        ), "pending op must survive until EVERY batch job is ingested"
+
+        after_two = engine.ingest_external_result(
+            run.run_id, external_id=second, output_hashes={second: "b" * 64}
+        )
+        assert "RENDER_ASSETS" in after_two.completed_steps
+        assert after_two.checkpoint.pending_external_operation is None
+
+    def test_recover_reconciles_every_batch_job_never_first_only(self, tmp_path):
+        store_dir = tmp_path / "runs"
+        port_dir = tmp_path / "port_state"
+        exec_dir = tmp_path / "exec_state"
+
+        # Worker v1 submits the batch and dies before ingestion.
+        engine1, port1, executor1 = _build_batch_engine(
+            store_dir=store_dir, port_state_dir=port_dir, executor_state_dir=exec_dir
+        )
+        run = engine1.create_run(
+            project_id="vp_cutover",
+            revision_id="rev_batch2",
+            revision_hash="cc" * 32,
+            run_id="run_batch_recover",
+        )
+        engine1.start(run.run_id)
+        _approve_required_gates(engine1, run)
+        run = _advance_until(engine1, run.run_id, "RENDER_ASSETS")
+        pending = run.checkpoint.pending_external_operation
+        assert len(pending.job_ids) == 2
+        first, second = pending.job_ids[0], pending.job_ids[1]
+
+        # Simulate: the FIRST job completed, the SECOND is still generating.
+        completed = port1._read(EngineJobId(first))
+        port1._persist(completed.model_copy(update={"status": EngineJobStatus.COMPLETED}))
+        assert executor1.reconcile(EngineJobId(second)).status == EngineJobStatus.SUBMITTED
+
+        # Worker v2 restarts: recovery must inspect BOTH jobs and land on
+        # REATTACH (second still generating) — NOT claim completion from the
+        # first job alone.
+        engine2, port2, _ = _build_batch_engine(
+            store_dir=store_dir, port_state_dir=port_dir, executor_state_dir=exec_dir
+        )
+        assert port2.submitted_scenes == []
+        recovered = engine2.recover(run.run_id)
+        assert recovered.state == ProductionRunState.WAITING_PROVIDER
+        assert port2.submitted_scenes == []  # never a blind resubmit
+
+        # The batch only completes when BOTH jobs are ingested.
+        finished = engine2.ingest_external_result(
+            run.run_id, external_id=first, output_hashes={first: "a" * 64}
+        )
+        assert "RENDER_ASSETS" not in finished.completed_steps
+        finished = engine2.ingest_external_result(
+            run.run_id, external_id=second, output_hashes={second: "b" * 64}
+        )
+        assert "RENDER_ASSETS" in finished.completed_steps
+
+    def test_cancel_batch_cancels_every_job(self, tmp_path):
+        store_dir = tmp_path / "runs"
+        port_dir = tmp_path / "port_state"
+        exec_dir = tmp_path / "exec_state"
+
+        engine, port, executor = _build_batch_engine(
+            store_dir=store_dir, port_state_dir=port_dir, executor_state_dir=exec_dir
+        )
+        run = engine.create_run(
+            project_id="vp_cutover",
+            revision_id="rev_batch3",
+            revision_hash="dd" * 32,
+            run_id="run_batch_cancel",
+        )
+        engine.start(run.run_id)
+        _approve_required_gates(engine, run)
+        run = _advance_until(engine, run.run_id, "RENDER_ASSETS")
+        pending = run.checkpoint.pending_external_operation
+        job_ids = [EngineJobId(j) for j in pending.job_ids]
+        assert len(job_ids) == 2
+
+        receipts = run_sync(executor.cancel_batch(job_ids))
+        assert len(receipts) == 2
+        assert set(port.cancelled_job_ids) == {str(j) for j in job_ids}
+        for receipt in receipts:
+            assert receipt.status == EngineJobStatus.CANCELLED
+
+        # A retry after batch cancel starts a NEW engine job per unit — never
+        # resubmits over a cancelled one.
+        ir = _build_multi_shot_ir()
+        retry = run_sync(executor.submit_scene(ir.scenes[0], ir.render_intents[0]))
+        assert retry.job_id not in {str(j) for j in job_ids}

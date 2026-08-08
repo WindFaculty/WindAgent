@@ -37,7 +37,17 @@ import asyncio
 import hashlib
 from typing import Callable, Dict, List, Optional
 
+from windagent_core.contracts.video_production.asset_resolver import (
+    AssetResolverPort,
+)
+from windagent_core.domain.video_production.asset_resolution import (
+    AssetKind,
+    AssetRequirement,
+    AssetResolutionRequest,
+    AssetResolutionStatus,
+)
 from windagent_core.domain.video_production.production_ir.models import (
+    AssetReference,
     ProductionIrDocument,
 )
 
@@ -66,10 +76,12 @@ class ProductionStepExecutor(StepExecutorPort):
         engine: ProductionEngineExecutor,
         ir_source: Callable[[str], ProductionIrDocument],
         fallback: Optional[Callable[[str, ProductionRun], StepExecutionResult]] = None,
+        asset_gateway: Optional[AssetResolverPort] = None,
     ) -> None:
         self._engine = engine
         self._ir_source = ir_source
         self._fallback = fallback or _default_planning_step_result
+        self._asset_gateway = asset_gateway
 
     # ------------------------------------------------------------------
     # StepExecutorPort (sync) — used by the file-backed workflow engine.
@@ -86,6 +98,52 @@ class ProductionStepExecutor(StepExecutorPort):
                 status="failed",
                 error=f"RENDER step {step_id} failed: {exc}",
             )
+
+    async def _resolve_pending_ir_assets(self, ir: ProductionIrDocument) -> str:
+        """Resolve every pending IR asset reference through the gateway.
+
+        Returns an error string when ANY pending asset could not be resolved
+        to an APPROVED (RESOLVED) asset — fail closed, never proceed with a
+        QUARANTINED/REJECTED/errored acquisition.
+        """
+        if self._asset_gateway is None:
+            return ""
+        pending = collect_pending_asset_references(ir)
+        failures: List[str] = []
+        for instance_id, ref in pending:
+            kind = _ROLE_KINDS.get(ref.role, AssetKind.PROP)
+            requirement = AssetRequirement(
+                kind=kind,
+                description=f"IR asset {ref.asset_id} ({ref.role})",
+                metadata={"asset_id": str(ref.asset_id), "role": ref.role},
+            )
+            request = AssetResolutionRequest(requirement=requirement)
+            try:
+                # Canonical gateway flow: discover -> acquire (both through
+                # AssetResolverPort; the gateway never bypasses its adapters).
+                discovered = await self._asset_gateway.discover(request)
+                if not discovered.candidates:
+                    failures.append(
+                        f"{instance_id}: no candidate found for {ref.role}"
+                    )
+                    continue
+                result = await self._asset_gateway.acquire(
+                    discovered.candidates[0], request
+                )
+            except Exception as exc:  # fail closed on any gateway error
+                failures.append(f"{instance_id}: gateway error {exc}")
+                continue
+            if result.status != AssetResolutionStatus.RESOLVED:
+                failures.append(
+                    f"{instance_id}: asset resolution {result.status.value} "
+                    f"({result.metadata.get('trust_decision', 'n/a')})"
+                )
+        if failures:
+            return (
+                "RENDER_ASSETS asset gateway failed closed: "
+                + "; ".join(failures)
+            )
+        return ""
 
     # ------------------------------------------------------------------
     # Async variant — callable from an async worker (no asyncio.run bridge).
@@ -118,6 +176,20 @@ class ProductionStepExecutor(StepExecutorPort):
                     "RENDER step fails closed (no IR -> no submit)."
                 ),
             )
+
+        # VP3D Phase 5: EVERY asset need goes through the gateway
+        # (AssetResolverPort). RENDER_ASSETS first resolves any asset
+        # references the IR marks as pending; a quarantined/rejected/errored
+        # resolution fails the step closed — an untrusted asset never reaches
+        # the engine.
+        if step_id == RENDER_ASSETS:
+            resolution_error = await self._resolve_pending_ir_assets(ir)
+            if resolution_error:
+                return StepExecutionResult(
+                    step_id=step_id,
+                    status="failed",
+                    error=resolution_error,
+                )
 
         ir_hash = ir.content_hash()
         job_ids: List[str] = []
@@ -174,6 +246,43 @@ class ProductionStepExecutor(StepExecutorPort):
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+PENDING_URI_PREFIX = "pending:"
+
+_ROLE_KINDS = {
+    "CHARACTER_MESH": AssetKind.CHARACTER,
+    "SKELETON": AssetKind.CHARACTER,
+    "PROP": AssetKind.PROP,
+    "ENVIRONMENT": AssetKind.ENVIRONMENT,
+    "TEXTURE": AssetKind.TEXTURE,
+    "MATERIAL": AssetKind.MATERIAL,
+}
+
+
+def collect_pending_asset_references(
+    ir: ProductionIrDocument,
+) -> List[tuple[str, AssetReference]]:
+    """Asset references the IR marks as not-yet-acquired (pending: URIs).
+
+    Only references WITHOUT resolved bytes (empty or ``pending:`` uri) need
+    gateway acquisition; everything else is already content-addressed.
+    """
+    refs: List[tuple[str, AssetReference]] = []
+    for scene in ir.scenes:
+        for character in scene.characters:
+            if character.mesh is not None:
+                refs.append((str(character.instance_id), character.mesh))
+        for prop in scene.props:
+            refs.append((str(prop.instance_id), prop.asset))
+        for environment in scene.environment:
+            refs.append((str(environment.instance_id), environment.asset))
+    return [
+        (instance_id, ref)
+        for instance_id, ref in refs
+        if ref is not None
+        and (not ref.uri or ref.uri.startswith(PENDING_URI_PREFIX))
+    ]
+
+
 def _render_intent_for(ir: ProductionIrDocument, scene_id: object):
     for render in ir.render_intents:
         if str(render.scene_id) == str(scene_id):

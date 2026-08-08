@@ -1,14 +1,6 @@
 {
-  "backlog_completion": {
-    "1_locked_config": "DONE — ScenePlanCompiler locks seed/frame range/fps/color management/resolution/Cycles samples/denoise/device",
-    "2_job_kinds_idempotency": "DONE — COMPILE/SAVE/INSPECT/RENDER_CHUNK/ASSEMBLE/VERIFY each carry an idempotency key (inputs+config+tools)",
-    "3_atomic_frames_no_direct_mp4": "DONE — temp->validated final frames via FrameManifest; Blender never writes MP4 (FFmpeg assembles)",
-    "4_cancel_resume": "DONE — cancel mid-chunk publishes nothing (frames after cancel=6); resume to full range=True",
-    "5_retry_reuse_invalidate": "DONE — compile reuse on identical keys=True; key change invalidates via ArtifactReusePolicy",
-    "6_verify_frame_count_dimension_duration_streams_sha256": "DONE — ffprobe stream/dimension/duration checks + output SHA-256 (ffprobe_receipt.json)",
-    "7_two_run_stability": "DONE — determinism passed=True (structural stability; pixel parity only on identical hardware)"
-  },
-  "decided_at": "2026-08-07T23:18:58.789983+00:00",
+  "candidate_sha": "",
+  "decided_at": "2026-08-08T00:03:05.791135+00:00",
   "evidence_files": [
     "artifacts/video_production_3d/phase_04/scene_plan.json",
     "artifacts/video_production_3d/phase_04/blender_job_receipts/",
@@ -16,12 +8,14 @@
     "artifacts/video_production_3d/phase_04/ffmpeg_receipt.json",
     "artifacts/video_production_3d/phase_04/ffprobe_receipt.json",
     "artifacts/video_production_3d/phase_04/determinism_report.json",
+    "artifacts/video_production_3d/phase_04/phase_04_evidence.json",
     "artifacts/video_production_3d/phase_04/phase_verdict.json"
   ],
+  "evidence_mode": "real_executables",
   "gate": "VP3D_P4_DETERMINISTIC_RENDER_PASSED",
   "known_baseline_defect": "tests/unit/verification/test_phase27_release.py::test_ci_run_manifest_aggregates_all_required_lanes — pre-existing (Phase 27, unrelated).",
   "phase": "phase_04",
-  "real_machine_note": "Baseline machine runs Blender 5.1 (NOT the pinned 4.5 LTS); the adapter readiness FAILS CLOSED on the version policy (as designed). Real Cycles rendering and pixel parity require a 4.5 LTS install; the contract suite above proves the pipeline with fake executables per the plan's CI strategy.",
-  "summary": "Deterministic scene smoke test verified with contract tests (fake executables in CI). Compiler locks seed/frame range/fps/color management/resolution/samples/denoise/device; cancel/resume/retry/reuse proven (cancel frames=6, full range validated=True, compile reused=True); determinism passed=True; final MP4 SHA-256=96e02af9ffd51fdc…",
+  "summary": "Deterministic scene smoke test verified on REAL Blender 4.5.12 LTS + REAL FFmpeg. COMPILE->SAVE->INSPECT->RENDER_CHUNK->ASSEMBLE->VERIFY all completed. Valid scene.blend (BLENDER magic), 24 real PNG frames with distinct hashes at 640x360, real EXR frames (EXR magic), MP4 assembled by FFmpeg + verified by ffprobe. cancel/resume proven (frames after cancel=6, full range validated=True); compile reuse on identical keys=True; determinism passed=True; final MP4 SHA-256=e1875b2070b7a300...",
+  "unlock_conditions": [],
   "verdict": "PASS"
 }

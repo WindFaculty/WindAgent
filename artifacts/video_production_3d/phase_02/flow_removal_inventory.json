@@ -3,9 +3,9 @@
   "phase": 2,
   "program": "vp3d",
   "gate": "VP3D_P2_GOOGLE_FLOW_REMOVED",
-  "recorded_at": "2026-08-07T10:00:00Z",
+  "recorded_at": "2026-08-08T00:00:00Z",
   "baseline_sha": "9080fcb4bb6d9a6531a095c624a0f6d8796f4081",
-  "purpose": "Inventory of removed Google Flow adapter modules, tests, verification scripts, and retained engine-neutral capabilities for Stage A Phase 2.",
+  "purpose": "Complete inventory of removed Google Flow adapter modules, tests, verification scripts, docs, and retained engine-neutral capabilities for Stage A Phase 2. Reconciliation verified 2026-08-08 against the candidate tree.",
   "removed_components": {
     "package": "tools/windagent_tools/google_flow/ (all 16 modules deleted)",
     "deleted_modules": [
@@ -26,6 +26,7 @@
       "tools/windagent_tools/google_flow/video_inspection.py",
       "tools/windagent_tools/google_flow/video_operations.py"
     ],
+    "deleted_module_count": 16,
     "deleted_unit_tests": [
       "tests/unit/tools/test_phase13_flow_navigation.py",
       "tests/unit/tools/test_phase14_flow_images.py",
@@ -38,11 +39,64 @@
       "tests/architecture/test_phase15_flow_video_canonical.py",
       "tests/architecture/test_phase16_human_control_canonical.py"
     ],
+    "deleted_other_tests": [
+      "tests/unit/intelligence/test_phase11_compiler.py"
+    ],
+    "deleted_test_count": 9,
+    "archived_verification_scripts": [
+      "scripts/verification/historical/evaluate_pipeline.py",
+      "scripts/verification/historical/verify_phase9_shot_graph.py",
+      "scripts/verification/historical/verify_phase10_continuity.py",
+      "scripts/verification/historical/verify_phase11_compiler.py",
+      "scripts/verification/historical/runbook_phase24_e2e.py"
+    ],
     "deleted_verification_scripts": [
       "scripts/verification/verify_phase13_flow_navigation.py",
       "scripts/verification/verify_phase14_flow_images.py",
       "scripts/verification/verify_phase15_flow_video.py",
-      "scripts/verification/verify_phase16_human_control.py"
+      "scripts/verification/verify_phase16_flow_human_control.py"
+    ],
+    "deleted_verification_script_count": 9,
+    "archived_docs": {
+      "director": [
+        "docs/video_production/historical/director/generation_mode_decision.md",
+        "docs/video_production/historical/director/prompt_block_contract.md"
+      ],
+      "flow_human_control": [
+        "docs/video_production/historical/flow_human_control/account_safety_contract.md",
+        "docs/video_production/historical/flow_human_control/human_states_contract.md",
+        "docs/video_production/historical/flow_human_control/resume_reconciliation_contract.md"
+      ],
+      "flow_images": [
+        "docs/video_production/historical/flow_images/candidate_acquisition.md",
+        "docs/video_production/historical/flow_images/image_operations_contract.md",
+        "docs/video_production/historical/flow_images/job_idempotency_contract.md",
+        "docs/video_production/historical/flow_images/pre_submit_guard.md",
+        "docs/video_production/historical/flow_images/review_approval_contract.md"
+      ],
+      "flow_navigation": [
+        "docs/video_production/historical/flow_navigation/flow_navigation_contract.md",
+        "docs/video_production/historical/flow_navigation/flow_project_mapping.md",
+        "docs/video_production/historical/flow_navigation/flow_selector_catalog.md",
+        "docs/video_production/historical/flow_navigation/flow_state_machine.md"
+      ],
+      "flow_video": [
+        "docs/video_production/historical/flow_video/video_cancel_retry.md",
+        "docs/video_production/historical/flow_video/video_job_idempotency.md",
+        "docs/video_production/historical/flow_video/video_mode_validation.md",
+        "docs/video_production/historical/flow_video/video_operations_contract.md",
+        "docs/video_production/historical/flow_video/video_technical_validation.md"
+      ],
+      "plans": [
+        "docs/video_production/historical/plans/03_phase_08_11_director_layer.md",
+        "docs/video_production/historical/plans/04_phase_12_16_flow_browser_provider.md"
+      ]
+    },
+    "archived_doc_count": 21,
+    "retired_components": [
+      "intelligence/windagent_intelligence/video/prompt_compiler/ (5 modules; types retired to legacy_v1)",
+      "intelligence/windagent_intelligence/video/shot_planner/generation_mode.py (GenerationModeDecider)",
+      "run_claude_cli_naraRouter.ps1 (Flow-era launcher)"
     ],
     "removed_exports": [
       "tools/windagent_tools/__init__.py (removed FlowNavigator, FlowImageGenerator, FlowVideoGenerator, FlowJobRegistry, etc.)"
@@ -57,5 +111,20 @@
   "added_negative_tests": [
     "tests/architecture/test_phase2_flow_removal_canonical.py (google_flow unimportable, 0 runtime imports, 0 active config residue, fake ProductionEnginePort lifecycle)"
   ],
+  "residue_scan": {
+    "command": "rg -l 'google_flow|FlowVideo|FlowImage|flow_video|flow_images|flow_navigation|flow_human_control' --glob '*.py'",
+    "active_violations": 0,
+    "excluded_allowlists": [
+      "docs/video_production/historical/**",
+      "core/windagent_core/domain/video_production/legacy_v1/**",
+      "scripts/verification/historical/**"
+    ],
+    "neutralized_findings": [
+      "intelligence/windagent_intelligence/video/e2e_poc/recovery_auditor.py:22 job_id='job_flow_video_03' -> 'job_engine_render_03' (2026-08-08)"
+    ],
+    "bounded_matches": [
+      "tests asserting removal (architecture negative tests) and legacy migrator tests — deliberate §5 allowlists"
+    ]
+  },
   "producer": "phase-2-google-flow-removal"
 }

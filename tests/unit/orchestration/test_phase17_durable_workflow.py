@@ -652,3 +652,70 @@ def test_recovery_no_engine_inspector_surfaces_batch_not_claiming_resolved():
     assert len(decisions) == 1
     assert decisions[0].action == RecoveryAction.RECONCILE_UNKNOWN
     assert decisions[0].details.get("batch_job_ids") == ["ej_1", "ej_2"]
+
+
+def test_recovery_decide_batch_all_completed_resumes():
+    op = PendingExternalOperation(
+        step_id="RENDER_SHOTS",
+        provider="engine",
+        request_hash="h" * 64,
+        external_id="ej_1",
+        job_ids=["ej_1", "ej_2"],
+    )
+    rec = ProductionRecovery(
+        inspect_engine_job=lambda jid: ProviderJobState.COMPLETED
+    )
+    decision = rec.decide_batch(op)
+    assert decision.action == RecoveryAction.RESUME_AFTER_INSPECTION
+    assert decision.next_state == ProductionRunState.RUNNING
+    assert len(decision.details["batch_job_ids"]) == 2
+
+
+def test_recovery_decide_batch_any_generating_reattaches():
+    op = PendingExternalOperation(
+        step_id="RENDER_SHOTS",
+        provider="engine",
+        request_hash="h" * 64,
+        external_id="ej_1",
+        job_ids=["ej_1", "ej_2"],
+    )
+    states = {"ej_1": ProviderJobState.COMPLETED, "ej_2": ProviderJobState.GENERATING}
+    rec = ProductionRecovery(inspect_engine_job=lambda jid: states[jid])
+    decision = rec.decide_batch(op)
+    assert decision.action == RecoveryAction.REATTACH_WAITING_PROVIDER
+    assert decision.next_state == ProductionRunState.WAITING_PROVIDER
+    # The completed first job is never claimed as full batch completion.
+    assert any(
+        entry["engine_job"] == "ej_2" for entry in decision.details["per_job"]
+    )
+
+
+def test_recovery_decide_batch_any_failed_new_attempt():
+    op = PendingExternalOperation(
+        step_id="RENDER_SHOTS",
+        provider="engine",
+        request_hash="h" * 64,
+        external_id="ej_1",
+        job_ids=["ej_1", "ej_2"],
+    )
+    states = {"ej_1": ProviderJobState.COMPLETED, "ej_2": ProviderJobState.FAILED}
+    rec = ProductionRecovery(inspect_engine_job=lambda jid: states[jid])
+    decision = rec.decide_batch(op)
+    assert decision.action == RecoveryAction.NEW_ATTEMPT
+    assert decision.attempt_increment is True
+    assert decision.next_state == ProductionRunState.RUNNING
+
+
+def test_recovery_decide_batch_any_unknown_pauses_never_resubmits():
+    op = PendingExternalOperation(
+        step_id="RENDER_SHOTS",
+        provider="engine",
+        request_hash="h" * 64,
+        external_id="ej_1",
+        job_ids=["ej_1", "ej_2"],
+    )
+    states = {"ej_1": ProviderJobState.COMPLETED, "ej_2": ProviderJobState.UNKNOWN}
+    rec = ProductionRecovery(inspect_engine_job=lambda jid: states[jid])
+    decision = rec.decide_batch(op)
+    assert decision.action == RecoveryAction.RECONCILE_UNKNOWN
+    assert decision.next_state == ProductionRunState.WAITING_PROVIDER

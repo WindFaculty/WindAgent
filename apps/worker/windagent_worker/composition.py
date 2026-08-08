@@ -33,7 +33,6 @@ from typing import Optional, Any
 
 from windagent_storage.database.connection import DatabaseManager
 from windagent_storage.orm.models import BaseORM
-import windagent_storage.orm.v2_orchestration_models
 from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork
 from windagent_orchestration import OrchestrationV2Container
 from windagent_orchestration.task_manager.service import TaskManager
@@ -52,7 +51,6 @@ from windagent_observability.events.publisher import OutboxEventPublisher
 from windagent_storage.queue.sql_queue import SqlDurableTaskQueue
 from windagent_storage.repositories.worker_status import SqlWorkerHeartbeatRepository
 from windagent_worker.lease import DurableTaskLeaseManager
-from windagent_execution.registry import ExecutionRuntimeRegistry
 
 logger = logging.getLogger("windagent.worker.composition")
 
@@ -123,6 +121,8 @@ class WorkerContainer:
         self.production_executor: Optional[Any] = None  # VP3D Stage A consumer seam
         self.production_step_executor: Optional[Any] = None  # VP3D Stage A RENDER dispatch
         self.production_workflow: Optional[Any] = None  # VP3D Stage A durable engine w/ executor
+        self.asset_resolver: Optional[Any] = None  # VP3D Phase 5 Universal Asset Gateway (guarded)
+        self.asset_trust_gate: Optional[Any] = None  # VP3D Phase 6 trust gate (guarded)
         self.is_initialized: bool = False
 
     async def bootstrap(self) -> None:
@@ -262,6 +262,14 @@ class WorkerContainer:
                 step_nodes=build_production_step_nodes(),
             )
             logger.info("ProductionStepExecutor + ProductionWorkflowEngine wired (VP3D Stage A cutover).")
+
+        # VP3D Phase 5/6 — Universal Asset Gateway (guarded).
+        # All 3D asset acquisition goes through AssetResolverPort; nothing in
+        # the workflow/Director talks to Internet/Mesh/Blender directly. The
+        # Phase 6 trust gate is composed here so RESOLVED is only reachable
+        # through an APPROVE verdict.
+        if os.getenv("WINDAGENT_ASSET_GATEWAY", "").lower() in ("1", "true", "yes"):
+            self._register_asset_gateway()
         
         self.is_initialized = True
         logger.info("WorkerContainer successfully bootstrapped (PHASE 7 - Process-specific composition).")
@@ -313,3 +321,44 @@ class WorkerContainer:
         if not self.uow_factory:
             raise RuntimeError("WorkerContainer is not initialized.")
         return SqlUnitOfWork(self.uow_factory)
+
+    def _register_asset_gateway(self) -> None:
+        """Compose the Universal Asset Gateway (VP3D Phase 5/6).
+
+        - AssetResolverPort over the adapter registry;
+        - local library adapter over WINDAGENT_ASSET_LIBRARY_ROOT
+          (fail-closed: an absent/unlicensed library resolves to nothing
+          usable — QUARANTINED/REJECTED, never RESOLVED);
+        - Internet adapter WITHOUT injected search/acquisition backends stays
+          REQUIRES_CONFIG and every call fails closed (no unguarded network);
+        - the Phase 6 trust gate (MediaAssetTrustGate) is the ONLY path to a
+          RESOLVED verdict.
+        """
+        from pathlib import Path as _Path
+
+        from windagent_providers.assets import (
+            AssetAdapterRegistry,
+            AssetResolver,
+            InternetAssetAdapter,
+            LocalAssetAdapter,
+        )
+        from windagent_tools.media_assets.trust_gate import MediaAssetTrustGate
+
+        registry = AssetAdapterRegistry()
+        library_root = os.getenv("WINDAGENT_ASSET_LIBRARY_ROOT", "data/assets/library")
+        registry.register(LocalAssetAdapter(_Path(library_root).resolve()))
+
+        # Internet adapter: search/acquisition backends are injected from the
+        # tools-side media-asset pipeline (SSRF-safe download, MIME sniffing,
+        # content-addressed store). Not configured here until a search provider
+        # is wired -> adapter stays REQUIRES_CONFIG and every call fails closed.
+        registry.register(InternetAssetAdapter())
+
+        self.asset_trust_gate = MediaAssetTrustGate()
+        self.asset_resolver = AssetResolver(
+            registry,
+            trust=self.asset_trust_gate,
+        )
+        logger.info(
+            "AssetResolverPort registered with trust gate (VP3D Phase 5/6, guarded)."
+        )

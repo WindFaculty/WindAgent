@@ -56,6 +56,7 @@ from windagent_tools.production_engines.blender.runtime.launcher import (
     BlenderJobSpec,
 )
 from windagent_tools.production_engines.blender.runtime.supervisor import (
+    CANCEL_TOKEN_FILENAME,
     STATE_CANCELLED,
     STATE_COMPLETED,
     STATE_FAILED,
@@ -223,6 +224,13 @@ class BlenderSmokePipeline:
         """Write scene_plan.json + pinned build_scene.py into the workspace."""
         workspace = self.scene_workspace(plan.scene_id)
         workspace.mkdir(parents=True, exist_ok=True)
+        # A NEW run is a fresh attempt: a stale cancel token from a previous
+        # cancelled run must never poison the resumed run's jobs (every job
+        # would abort with "cancelled before job start"). The durable cancel
+        # applies to the in-flight process, not to future runs.
+        stale = workspace / CANCEL_TOKEN_FILENAME
+        if stale.is_file():
+            stale.unlink(missing_ok=True)
         plan_payload = plan.to_dict()
         plan_payload["output_blend_path"] = "scene.blend"
         (workspace / "scene_plan.json").write_text(

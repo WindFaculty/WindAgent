@@ -33,7 +33,24 @@ ROOT = Path(__file__).resolve().parents[3]
 VERIFY = ROOT / "scripts" / "verification" / "verify_phase27_release.py"
 FIXTURE = ROOT / "scripts" / "verification" / "fixture_phase27_release.py"
 
-CANDIDATE_SHA = "1753831c752343aa89419e807aa57058266ff75c"
+# The attestation lane requires HEAD == candidate. Resolve the candidate SHA
+# from the checked-out HEAD instead of hard-coding an ancestor commit (was
+# VP3D_BASELINE_001: a stale hard-coded SHA made this test fail at any later
+# clean HEAD even though the release-lane machinery was correct).
+def _head_sha() -> str:
+    import subprocess
+
+    proc = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        capture_output=True,
+        text=True,
+        timeout=60,
+        cwd=str(ROOT),
+    )
+    return proc.stdout.strip()
+
+
+CANDIDATE_SHA = _head_sha()
 FIXTURE_SHA = "f" * 40
 
 
