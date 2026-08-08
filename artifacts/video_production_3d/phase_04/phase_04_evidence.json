@@ -1,6 +1,6 @@
 {
   "artifact_validation": {
-    "blend_sha256": "1f1ee20cd5655af21a116c264baeae4fc4666037accae67d141e3f0adb4144f8",
+    "blend_sha256": "80656e9a7426b44473eaa28ce34f9b0ffd9668a808fda54163b3b44627a4912b",
     "blend_size_bytes": 443470,
     "checks": {
       "blend_exists": true,
