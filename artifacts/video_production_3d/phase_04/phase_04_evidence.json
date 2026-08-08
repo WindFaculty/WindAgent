@@ -1,6 +1,6 @@
 {
   "artifact_validation": {
-    "blend_sha256": "7677386f4d30456a9bad15b5ce3ba23ee0d25360293edd59f86b43be3be5683f",
+    "blend_sha256": "90176f91995b8d029166cce38fcde872501876a244a13fd19c7c47bb4e71c4a5",
     "blend_size_bytes": 443470,
     "checks": {
       "blend_exists": true,
@@ -104,7 +104,7 @@
     ],
     "partial_frames_published": true
   },
-  "candidate_sha": "",
+  "candidate_sha": "28e65d8c78e1606512393ae334c39ef0248874e5",
   "determinism_passed": true,
   "exr_proof": {
     "all_exr_magic": true,

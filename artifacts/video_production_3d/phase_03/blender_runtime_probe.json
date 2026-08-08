@@ -129,7 +129,7 @@
   },
   "phase": "phase_03",
   "probe_name": "blender_runtime",
-  "probed_at": "2026-08-07T23:50:08.857894+00:00",
+  "probed_at": "2026-08-08T00:52:43.922219+00:00",
   "readiness": {
     "ready": true,
     "reason": "Blender 4.5.12 satisfies policy"

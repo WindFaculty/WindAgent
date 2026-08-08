@@ -103,6 +103,39 @@ def _smoke_ir(scene_id: str = "scn_01") -> object:
     return ProductionIrDocument.model_validate(raw)
 
 
+def _reset_render_artifacts(workspace: Path) -> None:
+    """Reset per-run render outputs so cancel proof starts from a CLEAN state.
+
+    `BlenderSmokePipeline.run_smoke` intentionally reuses the same workspace
+    for cancel/resume/retry phases, and `prepare_workspace` clears only the
+    stale cancel token. Across two INDEPENDENT runs of this evidence script,
+    the workspace would otherwise still carry the previous run's rendered
+    frames + frame_manifest.json — which makes `FrameManifest.load()` see the
+    full range as already validated and the cancel proof (`frames_after_cancel
+    == full range`) becomes contaminated. Deleting ONLY the render outputs
+    (frames, manifest, assembled mp4) — never the pinned scene.blend or the
+    compiled plan/script, so COMPILE/INSPECT reuse still proves idempotency —
+    makes the real cancel/resume proof reproducible from an empty frame set.
+    """
+    if not workspace.is_dir():
+        return
+    for f in sorted(workspace.rglob("frame_*.png")) + sorted(
+        workspace.rglob("frame_*.exr")
+    ) + sorted(workspace.rglob("frame_*.png.tmp")) + sorted(
+        workspace.rglob("frame_*.exr.tmp")
+    ):
+        try:
+            f.unlink(missing_ok=True)
+        except OSError:
+            pass
+    for name in ("frame_manifest.json", "final.mp4"):
+        target = workspace / name
+        try:
+            target.unlink(missing_ok=True)
+        except OSError:
+            pass
+
+
 def _copy_receipts(outcomes, evidence_dir: Path) -> None:
     receipts_dir = evidence_dir / "blender_job_receipts"
     receipts_dir.mkdir(parents=True, exist_ok=True)
@@ -238,6 +271,14 @@ async def build_evidence(artifact_root: Path, candidate_sha: str) -> dict:
     shot = ir.shots[0]
     plan = pipeline.compile_plan(ir.scenes[0], ir.render_intents[0], shot)
     _write_json(evidence_dir / "scene_plan.json", plan.to_dict())
+
+    # Reset a possibly stale per-run workspace (frames/manifest/mp4 from a
+    # previous INDEPENDENT run) so the cancel proof below starts from a clean
+    # frame set. scene.blend / build_scene.py are intentionally PRESERVED so a
+    # deterministic COMPILE reuse is still proven (idempotency, not a fresh
+    # compile masking non-determinism).
+    _reset_render_artifacts(pipeline.scene_workspace(plan.scene_id))
+    _reset_render_artifacts(pipeline.scene_workspace("scn_exr"))
 
     # 1. Cancel/resume proof: run 1 cancels after the first render chunk.
     cancelled = await pipeline.run_smoke(

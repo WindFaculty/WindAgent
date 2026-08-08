@@ -1,6 +1,6 @@
 {
-  "candidate_sha": "",
-  "decided_at": "2026-08-08T00:03:05.791135+00:00",
+  "candidate_sha": "28e65d8c78e1606512393ae334c39ef0248874e5",
+  "decided_at": "2026-08-08T01:04:44.369686+00:00",
   "evidence_files": [
     "artifacts/video_production_3d/phase_04/scene_plan.json",
     "artifacts/video_production_3d/phase_04/blender_job_receipts/",
