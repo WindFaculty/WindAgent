@@ -1,7 +1,0 @@
-{
-  "frame_change_invalidates_all": true,
-  "new_input_builds": true,
-  "prop_change_invalidates_object_only": true,
-  "track_change_rebuilds_dependent": true,
-  "unchanged_input_reuses_blend": true
-}

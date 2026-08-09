@@ -1,9 +1,0 @@
-{
-  "argv": [],
-  "error": "",
-  "job_id": "ej_scn_01_assemble",
-  "kind": "ASSEMBLE",
-  "output_hash": "e1875b2070b7a300a09591fab1ae7c52f590e13a356e788dcc6572ed593681c0",
-  "returncode": 0,
-  "state": "COMPLETED"
-}

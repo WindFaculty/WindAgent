@@ -1,9 +1,0 @@
-{
-  "direct_import_blocked": true,
-  "malicious_metadata": {
-    "approve_blocked": true,
-    "detected": true,
-    "inert_string": true
-  },
-  "no_direct_to_scene_path": "the only track-producing entry is approve, which ALWAYS runs remap -> validation -> retarget; raw artifacts are inert quarantined data"
-}

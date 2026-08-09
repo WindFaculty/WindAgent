@@ -1,7 +1,0 @@
-{
-  "budget_exhausted_fails_closed": true,
-  "different_seed_new_candidate_no_overwrite": true,
-  "non_retryable_causes_refused": true,
-  "policy": "only TRANSIENT_PROVIDER retries; validation/capability/license failures never retry; budget from request/capability",
-  "transient_retried_within_budget": true
-}
