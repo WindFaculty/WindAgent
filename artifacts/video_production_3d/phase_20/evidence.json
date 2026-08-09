@@ -1,0 +1,84 @@
+{
+  "phase": "phase_20",
+  "gate": "VP3D_P20_VRAM_BUDGET_VERIFIED",
+  "gate_passed": true,
+  "backlog": {
+    "1_estimate_with_uncertainty": true,
+    "2_calibrate_safety_factor_on_fixtures": true,
+    "3_controlled_mitigation_order": true,
+    "4_derived_revisions_and_quality_impact_no_silent_mutation": true,
+    "5_block_before_render_with_recommendation": true
+  },
+  "policy": {
+    "schema_version": "vram-budget-1.0.0",
+    "safe_threshold_gb": 6.0,
+    "block_threshold_gb": 7.0,
+    "safety_factor": 1.0,
+    "calibration_records": []
+  },
+  "calibrated_policy": {
+    "schema_version": "vram-budget-1.0.0",
+    "safe_threshold_gb": 6.0,
+    "block_threshold_gb": 7.0,
+    "safety_factor": 1.0833,
+    "calibration_records": [
+      {
+        "fixture": "hero_scene",
+        "estimated_mb": 9252.49,
+        "measured_mb": 10362.79,
+        "factor": 1.12
+      },
+      {
+        "fixture": "crowd_only",
+        "estimated_mb": 6459.68,
+        "measured_mb": 6976.45,
+        "factor": 1.08
+      },
+      {
+        "fixture": "small_preview",
+        "estimated_mb": 62.24,
+        "measured_mb": 65.35,
+        "factor": 1.05
+      }
+    ]
+  },
+  "fixtures": {
+    "hero_scene_estimate_mb": 9252.49,
+    "crowd_only_estimate_mb": 6459.68,
+    "small_preview_estimate_mb": 62.24,
+    "hero_original_verdict": "BLOCK",
+    "hero_final_verdict": "SAFE",
+    "crowd_verdict": "WARNING",
+    "small_verdict": "SAFE"
+  },
+  "mitigation_chain": [
+    "texture_downscale",
+    "lod"
+  ],
+  "full_chain_fixture_steps": [
+    "texture_downscale",
+    "lod",
+    "instancing",
+    "hidden_geometry_removal",
+    "split_shot"
+  ],
+  "gate_demo": {
+    "blocked": true,
+    "final_verdict": "BLOCK",
+    "recommendation": "estimated calibrated peak VRAM 8.02 GB still exceeds hard limit 7 GB after the full mitigation chain; render blocked before launch - reduce resolution, split the shot into more segments, lower samples, or free other GPU memory before retrying"
+  },
+  "validation": {
+    "tests": "144 passed",
+    "ruff": "PASS",
+    "global_architecture_checker": "13 pre-existing/concurrent violations outside Phase 20 paths (core<->storage dependency cycle in untracked concurrent work); Phase 20-scoped architecture suite passed 4/4"
+  },
+  "evidence_files": [
+    "artifacts/video_production_3d/phase_20/resource_estimate.json",
+    "artifacts/video_production_3d/phase_20/calibration.json",
+    "artifacts/video_production_3d/phase_20/mitigation_plan.json",
+    "artifacts/video_production_3d/phase_20/budget_verdict.json",
+    "artifacts/video_production_3d/phase_20/test_baseline.json",
+    "artifacts/video_production_3d/phase_20/evidence.json",
+    "artifacts/video_production_3d/phase_20/phase_verdict.json"
+  ]
+}

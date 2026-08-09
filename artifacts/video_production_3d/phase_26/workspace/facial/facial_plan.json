@@ -1,0 +1,22 @@
+{
+  "dialogue_lines": [
+    {
+      "character_id": "cm_alice",
+      "dialogue_id": "dlg_2",
+      "scene_id": "scn_1",
+      "shot_id": "sh_2",
+      "text": "Hi, Bob!"
+    },
+    {
+      "character_id": "cm_carol",
+      "dialogue_id": "dlg_3",
+      "scene_id": "scn_2",
+      "shot_id": "sh_4",
+      "text": "Long time!"
+    }
+  ],
+  "facial_tracks": [
+    "ft_ep_evidence_run_2_0",
+    "ft_ep_evidence_run_2_1"
+  ]
+}

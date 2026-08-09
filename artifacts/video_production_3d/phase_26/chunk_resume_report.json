@@ -1,0 +1,52 @@
+{
+  "chunk_call_counts_after_cancel": {
+    "sh_1:chunk:0": 1
+  },
+  "chunk_call_counts_after_resume": {
+    "sh_1:chunk:0": 2,
+    "sh_1:chunk:1": 2,
+    "sh_2:chunk:0": 2,
+    "sh_2:chunk:1": 2,
+    "sh_3:chunk:0": 2,
+    "sh_3:chunk:1": 2,
+    "sh_4:chunk:0": 2,
+    "sh_4:chunk:1": 2,
+    "sh_5:chunk:0": 2,
+    "sh_5:chunk:1": 2
+  },
+  "chunks_rendered_before_kill": [
+    "sh_1:chunk:0"
+  ],
+  "no_duplicate_chunk_render": true,
+  "partial_rerender_proof": {
+    "rendered_on_resume": [
+      "sh_1:chunk:1",
+      "sh_2:chunk:0",
+      "sh_2:chunk:1",
+      "sh_3:chunk:0",
+      "sh_3:chunk:1",
+      "sh_4:chunk:0",
+      "sh_4:chunk:1",
+      "sh_5:chunk:0",
+      "sh_5:chunk:1"
+    ],
+    "skipped_on_resume": [
+      "sh_1:chunk:0"
+    ]
+  },
+  "run_a_render_node_status": "CANCELLED",
+  "run_a_verdict": "REJECT",
+  "run_b_chunk_statuses": {
+    "sh_1:chunk:0": "SKIPPED",
+    "sh_1:chunk:1": "COMPLETED",
+    "sh_2:chunk:0": "COMPLETED",
+    "sh_2:chunk:1": "COMPLETED",
+    "sh_3:chunk:0": "COMPLETED",
+    "sh_3:chunk:1": "COMPLETED",
+    "sh_4:chunk:0": "COMPLETED",
+    "sh_4:chunk:1": "COMPLETED",
+    "sh_5:chunk:0": "COMPLETED",
+    "sh_5:chunk:1": "COMPLETED"
+  },
+  "run_b_verdict": "PASS"
+}

@@ -1,0 +1,13 @@
+{
+  "snapshot_date": "2026-08-08",
+  "events": [
+    "session.created",
+    "session.updated",
+    "session.completed",
+    "session.failed",
+    "agent.thinking",
+    "agent.tool_call",
+    "agent.response"
+  ],
+  "status": "FROZEN"
+}

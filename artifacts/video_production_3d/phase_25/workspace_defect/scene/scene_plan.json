@@ -1,0 +1,14 @@
+{
+  "camera_intents": [
+    "b31fcf01a9453302c6f003e4220af220d3eca0f7c7914ef6c3ba604a33b7702f"
+  ],
+  "environment": {
+    "environment_id": "env_park",
+    "name": "Park"
+  },
+  "fixture": "gs_fixture_01",
+  "lighting_intents": [
+    "cda609bf5a9b8ad1d53690f4c03309b9332ea7484a86d6d4ae9b463ca6a6aa4a"
+  ],
+  "set_dressing": {}
+}

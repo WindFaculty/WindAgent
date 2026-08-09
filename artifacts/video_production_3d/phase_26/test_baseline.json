@@ -1,0 +1,31 @@
+{
+  "checkers": {
+    "check_architecture_imports": "FAIL rc=1 — 0 from episode modules (expected 0), 14 total pre-existing violations from untracked in-flight storage wiring",
+    "phase26_modules_add_arch_violations": true,
+    "ruff": "PASS"
+  },
+  "command": "D:\\code_ca_nhan\\WindAgent\\.venv\\Scripts\\python.exe -m pytest tests/unit/intelligence/test_phase26_episode.py tests/integration/test_phase26_episode_flow.py tests/architecture/test_phase26_episode_architecture.py -q -p no:cacheprovider --basetemp D:\\code_ca_nhan\\WindAgent\\artifacts\\video_production_3d\\phase_26\\pytest_phase26",
+  "gate": "VP3D_P26_MULTI_SCENE_EPISODE_VERIFIED",
+  "phase": "phase_26",
+  "producer": "phase-26-multi-scene-episode",
+  "recorded_at": "2026-08-09T03:04:20.853668+00:00",
+  "suites": [
+    {
+      "covers": "asset cache decisions (HIT/MISS/INVALIDATED/REJECTED_REUSE) + persistence, resume planner node+chunk level (partial rerender), targeted invalidation (shot/camera/audio/environment/character scope), branch scheduler critical path + idle + cycles, episode ordering stability, verdict policy fail-closed, fixture validation",
+      "file": "tests/unit/intelligence/test_phase26_episode.py"
+    },
+    {
+      "covers": "full episode pipeline (3 scenes/5 shots/3 chars/2 envs) with REAL ffmpeg MP4s + real identity/continuity/verification gates; second-run asset reuse without regeneration; kill mid-render resume with partial rerender (render leg call count frozen); targeted invalidation; blocking defect REJECT; unfinished run without media manifest REJECT",
+      "file": "tests/integration/test_phase26_episode_flow.py"
+    },
+    {
+      "covers": "episode intelligence never imports tools/providers/bpy, core episode self-contained + neutral, kernels delegated to golden_scene (no vendoring), four cache decisions defined",
+      "file": "tests/architecture/test_phase26_episode_architecture.py"
+    }
+  ],
+  "summary": {
+    "failed": 0,
+    "passed": 48,
+    "skipped": 0
+  }
+}

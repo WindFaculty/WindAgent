@@ -37,5 +37,9 @@ def initialize_bootstrap() -> BootstrapConfig:
         level=logging.INFO if config.env == "production" else logging.DEBUG,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
+    # Mute noisy third-party loggers in development
+    for noisy_logger in ("aiosqlite", "sqlalchemy.engine", "asyncio", "httpx", "httpcore"):
+        logging.getLogger(noisy_logger).setLevel(logging.WARNING)
+
     logger.info(f"Bootstrap initialized in '{config.env}' mode.")
     return config

@@ -1,9 +1,9 @@
 """
-API V2 Production Workspace Router (Phase 23 — plan 06 §18.1).
+API V2 Production Workspace Router (Stage B — Production API Foundation).
 
-Exposes endpoints for workspace snapshots, mutating command requests with
-idempotency keys and optimistic concurrency (revision_id) checks, and authorized
-media delivery.
+Exposes durable endpoints for project metadata, workspace snapshots, canonical
+command execution with idempotency & optimistic concurrency (revision_id),
+and authorized media delivery.
 """
 
 from __future__ import annotations
@@ -11,28 +11,19 @@ from __future__ import annotations
 import uuid
 from typing import Any
 
-from fastapi import APIRouter, Header, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 from pydantic import BaseModel, Field
 
-from windagent_core.domain.video_production.ids import (
-    ProductionRevisionId,
-    VideoProjectId,
-)
+from windagent_api.dependencies import get_video_production_uow
+from windagent_core.domain.video_production.command_dispatcher import CommandDispatcher
+from windagent_core.domain.video_production.query_service import ProductionQueryService
 from windagent_core.domain.video_production.workspace import (
-    CostApprovalSummary,
-    HumanTakeoverPanelState,
     WorkspaceCommandRequest,
-    WorkspaceCommandResult,
     WorkspaceCommandStatus,
     WorkspaceCommandType,
-    WorkspaceSnapshot,
 )
 
-router = APIRouter(prefix="/api/v2/video-production/workspace", tags=["production-workspace"])
-
-# In-memory idempotency cache and revision state for API router
-_IDEMPOTENCY_STORE: dict[str, dict[str, Any]] = {}
-_CURRENT_REVISION_STORE: dict[str, str] = {"vp_poc": "rev_poc_01"}
+router = APIRouter(prefix="/api/v2/video-production", tags=["production-workspace"])
 
 
 class CommandRequestSchema(BaseModel):
@@ -42,115 +33,145 @@ class CommandRequestSchema(BaseModel):
     entity_id: str
     reason: str = ""
     payload: dict[str, Any] = Field(default_factory=dict)
+    client_context: dict[str, Any] = Field(default_factory=dict)
 
 
-@router.get("/snapshot", response_model=dict[str, Any])
-def get_workspace_snapshot(
+@router.get("/projects/{project_id}", response_model=dict[str, Any])
+async def get_project_detail(
+    project_id: str,
+    uow_factory=Depends(get_video_production_uow),
+) -> dict[str, Any]:
+    """Retrieve durable production project metadata."""
+    async with uow_factory as uow:
+        query_service = ProductionQueryService(uow)
+        project = await query_service.get_project_detail(project_id)
+        if not project:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={
+                    "type": "https://windagent.io/errors/project-not-found",
+                    "title": "Project Not Found",
+                    "status": 404,
+                    "code": "PROJECT_NOT_FOUND",
+                    "detail": f"Production project '{project_id}' does not exist.",
+                },
+            )
+        return project
+
+
+@router.get("/projects/{project_id}/workspace", response_model=dict[str, Any])
+async def get_project_workspace_snapshot(
+    project_id: str,
+    revision_id: str | None = Query(None, description="Optional target revision ID"),
+    uow_factory=Depends(get_video_production_uow),
+) -> dict[str, Any]:
+    """Retrieve consolidated workspace state snapshot for a project ID."""
+    async with uow_factory as uow:
+        query_service = ProductionQueryService(uow)
+        snapshot = await query_service.get_workspace_snapshot(project_id, revision_id)
+
+        if snapshot.get("error") == "STALE_REVISION":
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail={
+                    "type": "https://windagent.io/errors/stale-revision",
+                    "title": "Stale Revision",
+                    "status": 409,
+                    "code": "REJECTED_STALE",
+                    "detail": snapshot.get("message"),
+                    "target_revision_id": revision_id,
+                    "current_revision_id": snapshot.get("current_revision_id"),
+                },
+            )
+        return snapshot
+
+
+@router.get("/workspace/snapshot", response_model=dict[str, Any])
+async def get_workspace_snapshot_by_query(
     project_id: str = Query(..., description="Target VideoProject ID"),
     revision_id: str | None = Query(None, description="Optional target revision ID"),
+    uow_factory=Depends(get_video_production_uow),
 ) -> dict[str, Any]:
-    """Retrieve consolidated workspace state snapshot."""
-    current_rev = _CURRENT_REVISION_STORE.get(project_id, "rev_poc_01")
-    if revision_id and revision_id != current_rev:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=f"Stale revision: Requested '{revision_id}', current is '{current_rev}'",
-        )
-
-    snapshot = WorkspaceSnapshot(
-        project_id=VideoProjectId(project_id),
-        revision_id=ProductionRevisionId(current_rev),
-        project_status="IN_PRODUCTION",
-        creative_brief_locked=True,
-        screenplay_locked=True,
-        total_shots=6,
-        candidates_count=12,
-        cost_summary=CostApprovalSummary(
-            project_id=VideoProjectId(project_id),
-            estimated_credits=25.0,
-            max_approved_credits=50.0,
-            reserved_credits=10.0,
-            debited_credits=15.0,
-            remaining_credits=25.0,
-        ),
-        human_takeover_state=None,
-        current_sequence=1042,
-        authorized_media_urls={
-            "shot_01": "/api/v2/video-production/workspace/media/tok_shot_01_a9f8",
-            "shot_02": "/api/v2/video-production/workspace/media/tok_shot_02_b7e6",
-        },
+    """Retrieve consolidated workspace state snapshot query parameter endpoint."""
+    return await get_project_workspace_snapshot(
+        project_id=project_id, revision_id=revision_id, uow_factory=uow_factory
     )
 
-    return {
-        "project_id": str(snapshot.project_id),
-        "revision_id": str(snapshot.revision_id),
-        "project_status": snapshot.project_status,
-        "creative_brief_locked": snapshot.creative_brief_locked,
-        "screenplay_locked": snapshot.screenplay_locked,
-        "total_shots": snapshot.total_shots,
-        "candidates_count": snapshot.candidates_count,
-        "cost_summary": {
-            "estimated_credits": snapshot.cost_summary.estimated_credits,
-            "max_approved_credits": snapshot.cost_summary.max_approved_credits,
-            "reserved_credits": snapshot.cost_summary.reserved_credits,
-            "debited_credits": snapshot.cost_summary.debited_credits,
-            "remaining_credits": snapshot.cost_summary.remaining_credits,
-            "can_proceed": snapshot.cost_summary.can_proceed,
-        },
-        "human_takeover_state": snapshot.human_takeover_state,
-        "current_sequence": snapshot.current_sequence,
-        "authorized_media_urls": snapshot.authorized_media_urls,
-    }
 
 
 @router.post("/commands", response_model=dict[str, Any])
-def execute_workspace_command(
+@router.post("/workspace/commands", response_model=dict[str, Any])
+async def execute_workspace_command(
     body: CommandRequestSchema,
     x_idempotency_key: str = Header(..., alias="X-Idempotency-Key"),
+    uow_factory=Depends(get_video_production_uow),
 ) -> dict[str, Any]:
     """Process mutating workspace actions with idempotency & revision validation."""
-    # Check idempotency cache
-    if x_idempotency_key in _IDEMPOTENCY_STORE:
-        return _IDEMPOTENCY_STORE[x_idempotency_key]
+    if not x_idempotency_key or not x_idempotency_key.strip():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "type": "https://windagent.io/errors/missing-idempotency-key",
+                "title": "Missing Idempotency Key",
+                "status": 400,
+                "code": "MISSING_IDEMPOTENCY_KEY",
+                "detail": "X-Idempotency-Key header is required for canonical mutating commands.",
+            },
+        )
 
-    current_rev = _CURRENT_REVISION_STORE.get(body.project_id, "rev_poc_01")
-    if body.target_revision_id != current_rev:
-        res = {
-            "command_id": str(uuid.uuid4()),
-            "status": WorkspaceCommandStatus.REJECTED_STALE.value,
-            "updated_revision_id": current_rev,
-            "message": f"Command rejected: Target revision '{body.target_revision_id}' is stale. Server is at '{current_rev}'",
-            "payload": {},
-        }
-        _IDEMPOTENCY_STORE[x_idempotency_key] = res
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=res)
+    cmd_request = WorkspaceCommandRequest(
+        command_id=f"cmd_{uuid.uuid4().hex[:12]}",
+        command_type=body.command_type,
+        project_id=body.project_id,
+        target_revision_id=body.target_revision_id,
+        entity_id=body.entity_id,
+        reason=body.reason,
+        idempotency_key=x_idempotency_key.strip(),
+        payload=body.payload,
+        client_context=body.client_context,
+    )
 
-    # Process command & optionally bump revision
-    new_rev = current_rev
-    if body.command_type in (
-        WorkspaceCommandType.APPROVE_CANDIDATE,
-        WorkspaceCommandType.OVERRIDE_CANDIDATE,
-    ):
-        new_rev = f"rev_poc_{uuid.uuid4().hex[:6]}"
-        _CURRENT_REVISION_STORE[body.project_id] = new_rev
+    async with uow_factory as uow:
+        dispatcher = CommandDispatcher(uow)
+        result = await dispatcher.dispatch(cmd_request)
 
-    response_data = {
-        "command_id": str(uuid.uuid4()),
-        "status": WorkspaceCommandStatus.COMPLETED.value,
-        "updated_revision_id": new_rev,
-        "message": f"Command '{body.command_type.value}' executed successfully.",
-        "payload": {"entity_id": body.entity_id, "reason": body.reason},
-    }
+        status_str = result.get("status")
+        if status_str in (
+            WorkspaceCommandStatus.REJECTED_STALE.value,
+            WorkspaceCommandStatus.REJECTED_LOCKED.value,
+            WorkspaceCommandStatus.IDEMPOTENCY_MISMATCH.value,
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail={
+                    "type": f"https://windagent.io/errors/{status_str.lower()}",
+                    "title": status_str,
+                    "status": 409,
+                    "code": status_str,
+                    "detail": result.get("message"),
+                    "target_revision_id": body.target_revision_id,
+                    "current_revision_id": result.get("updated_revision_id"),
+                    "current_sequence": result.get("current_sequence", 0),
+                },
+            )
 
-    _IDEMPOTENCY_STORE[x_idempotency_key] = response_data
-    return response_data
+        return result
 
 
-@router.get("/media/{media_token}")
+@router.get("/workspace/media/{media_token}")
 def get_authorized_media(media_token: str) -> dict[str, str]:
-    """Deliver authorized media delivery token resolution (no file paths exposed)."""
+    """Deliver authorized media delivery token resolution (no raw file paths exposed)."""
     if not media_token.startswith("tok_"):
-        raise HTTPException(status_code=403, detail="Invalid media token format")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={
+                "type": "https://windagent.io/errors/invalid-media-token",
+                "title": "Forbidden Media Access",
+                "status": 403,
+                "code": "FORBIDDEN_MEDIA_TOKEN",
+                "detail": "Invalid or expired media token format.",
+            },
+        )
     return {
         "media_token": media_token,
         "content_type": "video/mp4",

@@ -1,0 +1,88 @@
+{
+  "schema": "audio-mix-plan-1.0",
+  "plan": {
+    "mix_plan_id": "mix_phase24",
+    "policy_version": "loudness-v1",
+    "loudness_target_lufs": -16.0,
+    "peak_ceiling_db": -1.0,
+    "content_hash": "8e032391db1fec53dfd39c0d8563592e1d437cfb684a0e8924b0ff26125ef771",
+    "target_sample_rate": 48000,
+    "target_channels": 2,
+    "tracks": [
+      {
+        "kind": "MixTrackKind.DIALOGUE",
+        "source_path": "dialogue.wav",
+        "source_hash": "586ee266d531e5cd76835b4a46b8de6f0db69a05782b996b0c3013e1e8811ad3",
+        "sample_rate": 44100,
+        "channels": 1,
+        "gain_db": 0.0
+      },
+      {
+        "kind": "MixTrackKind.SFX",
+        "source_path": "sfx.wav",
+        "source_hash": "b286e56b61512c49a72712188840325365694ba8ba722f6cf9d9ccab278f3a2d",
+        "sample_rate": 48000,
+        "channels": 2,
+        "gain_db": 0.0
+      },
+      {
+        "kind": "MixTrackKind.BGM",
+        "source_path": "bgm.wav",
+        "source_hash": "c2d073b0f833b35f08c0c39833a2a81940fb306b33fb57371842af87b5c6e0bf",
+        "sample_rate": 48000,
+        "channels": 2,
+        "gain_db": 0.0
+      }
+    ],
+    "filter_ops": [
+      "aformat=sample_rates=48000:channel_layouts=stereo",
+      "aformat=sample_rates=48000:channel_layouts=stereo",
+      "aformat=sample_rates=48000:channel_layouts=stereo",
+      "[t0][t1][t2]amix=inputs=3:duration=longest:normalize=0,loudnorm=I=-16.0:TP=-1.0,alimiter=limit=0.891"
+    ]
+  },
+  "built_with": {
+    "ffmpeg": "ffmpeg version 8.1.2-full_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers"
+  },
+  "argv": [
+    "C:\\Users\\Admin\\AppData\\Local\\Microsoft\\WinGet\\Packages\\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\\ffmpeg-8.1.2-full_build\\bin\\ffmpeg.EXE",
+    "-y",
+    "-i",
+    "<ws>\\dialogue.wav",
+    "-i",
+    "<ws>\\sfx.wav",
+    "-i",
+    "<ws>\\bgm.wav",
+    "-filter_complex",
+    "[0:a]aformat=sample_rates=48000:channel_layouts=stereo[t0];[1:a]aformat=sample_rates=48000:channel_layouts=stereo[t1];[2:a]aformat=sample_rates=48000:channel_layouts=stereo[t2];[t0][t1][t2]amix=inputs=3:duration=longest:normalize=0,loudnorm=I=-16.0:TP=-1.0,alimiter=limit=0.891[aout]",
+    "-map",
+    "[aout]",
+    "-c:a",
+    "pcm_s16le",
+    "<ws>\\mix.wav"
+  ],
+  "loudness_measurement": {
+    "file": "mix.wav",
+    "integrated_lufs": -15.0,
+    "sample_peak_dbfs": -11.296569,
+    "true_peak_cap_dbfs": -1.0,
+    "true_peak_guaranteed_by": "alimiter=limit=0.891 (linear -1.0 dBFS hard cap in mix chain)",
+    "summary_tail": "\r\n\r\n  Integrated loudness:\r\n    I:         -15.0 LUFS\r\n    Threshold: -25.0 LUFS\r\n\r\n  Loudness range:\r\n    LRA:         0.0 LU\r\n    Threshold:   0.0 LUFS\r\n    LRA low:     0.0 LUFS\r\n    LRA high:    0.0 LUFS\r\n[out#0/null @ 0000023877868fc0] video:0KiB audio:1500KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: unknown\r\nsize=N/A time=00:00:02.00 bitrate=N/A speed= 212x elapsed=0:00:00.00    \r\n"
+  },
+  "streams": {
+    "video_codec": "",
+    "resolution": "NonexNone",
+    "frame_rate": 0.0,
+    "pixel_format": "",
+    "audio_codec": "pcm_s16le",
+    "audio_sample_rate": 192000,
+    "audio_channels": 2,
+    "audio_streams": 1,
+    "duration_seconds": 2.0,
+    "container": "wav"
+  },
+  "tolerance": {
+    "loudness_lufs": 1.5,
+    "true_peak_db": 0.0
+  }
+}

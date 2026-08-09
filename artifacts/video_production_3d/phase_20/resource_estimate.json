@@ -1,0 +1,148 @@
+{
+  "fixtures": {
+    "hero_scene": {
+      "items": [
+        {
+          "category": "textures",
+          "estimated_mb": 917.33,
+          "uncertainty_mb": 91.7333,
+          "method": "computed",
+          "note": "40 texture(s), RGBA x bpc x mipmap chain"
+        },
+        {
+          "category": "geometry",
+          "estimated_mb": 1529.54,
+          "uncertainty_mb": 229.4312,
+          "method": "computed",
+          "note": "3 mesh(es), 32 B/vertex"
+        },
+        {
+          "category": "modifiers",
+          "estimated_mb": 640.0,
+          "uncertainty_mb": 256.0,
+          "method": "explicit",
+          "note": "2 modifier(s)/simulation(s), explicit estimates"
+        },
+        {
+          "category": "volumes",
+          "estimated_mb": 0.0,
+          "uncertainty_mb": 0.0,
+          "method": "computed",
+          "note": "0 volume grid(s), channels x bpc"
+        },
+        {
+          "category": "render_buffers",
+          "estimated_mb": 47.46,
+          "uncertainty_mb": 2.373,
+          "method": "computed",
+          "note": "1920x1080 x 6 passes x 4 B/px"
+        },
+        {
+          "category": "acceleration_structures",
+          "estimated_mb": 6118.16,
+          "uncertainty_mb": 1223.6328,
+          "method": "computed",
+          "note": "64 B/triangle BVH"
+        }
+      ],
+      "total_mb": 9252.49,
+      "uncertainty_mb": 1274.31
+    },
+    "crowd_only": {
+      "items": [
+        {
+          "category": "textures",
+          "estimated_mb": 6400.0,
+          "uncertainty_mb": 640.0,
+          "method": "computed",
+          "note": "300 texture(s), RGBA x bpc x mipmap chain"
+        },
+        {
+          "category": "geometry",
+          "estimated_mb": 2.45,
+          "uncertainty_mb": 0.3668,
+          "method": "computed",
+          "note": "1 mesh(es), 32 B/vertex"
+        },
+        {
+          "category": "modifiers",
+          "estimated_mb": 0.0,
+          "uncertainty_mb": 0.0,
+          "method": "explicit",
+          "note": "0 modifier(s)/simulation(s), explicit estimates"
+        },
+        {
+          "category": "volumes",
+          "estimated_mb": 0.0,
+          "uncertainty_mb": 0.0,
+          "method": "computed",
+          "note": "0 volume grid(s), channels x bpc"
+        },
+        {
+          "category": "render_buffers",
+          "estimated_mb": 47.46,
+          "uncertainty_mb": 2.373,
+          "method": "computed",
+          "note": "1920x1080 x 6 passes x 4 B/px"
+        },
+        {
+          "category": "acceleration_structures",
+          "estimated_mb": 9.77,
+          "uncertainty_mb": 1.9531,
+          "method": "computed",
+          "note": "64 B/triangle BVH"
+        }
+      ],
+      "total_mb": 6459.68,
+      "uncertainty_mb": 640.01
+    },
+    "small_preview": {
+      "items": [
+        {
+          "category": "textures",
+          "estimated_mb": 32.0,
+          "uncertainty_mb": 3.2,
+          "method": "computed",
+          "note": "6 texture(s), RGBA x bpc x mipmap chain"
+        },
+        {
+          "category": "geometry",
+          "estimated_mb": 1.83,
+          "uncertainty_mb": 0.2747,
+          "method": "computed",
+          "note": "1 mesh(es), 32 B/vertex"
+        },
+        {
+          "category": "modifiers",
+          "estimated_mb": 0.0,
+          "uncertainty_mb": 0.0,
+          "method": "explicit",
+          "note": "0 modifier(s)/simulation(s), explicit estimates"
+        },
+        {
+          "category": "volumes",
+          "estimated_mb": 0.0,
+          "uncertainty_mb": 0.0,
+          "method": "computed",
+          "note": "0 volume grid(s), channels x bpc"
+        },
+        {
+          "category": "render_buffers",
+          "estimated_mb": 21.09,
+          "uncertainty_mb": 1.0547,
+          "method": "computed",
+          "note": "1280x720 x 6 passes x 4 B/px"
+        },
+        {
+          "category": "acceleration_structures",
+          "estimated_mb": 7.32,
+          "uncertainty_mb": 1.4648,
+          "method": "computed",
+          "note": "64 B/triangle BVH"
+        }
+      ],
+      "total_mb": 62.24,
+      "uncertainty_mb": 3.68
+    }
+  }
+}

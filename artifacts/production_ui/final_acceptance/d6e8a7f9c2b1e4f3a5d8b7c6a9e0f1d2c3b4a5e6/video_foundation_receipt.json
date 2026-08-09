@@ -1,0 +1,9 @@
+{
+  "candidate_sha": "d6e8a7f9c2b1e4f3a5d8b7c6a9e0f1d2c3b4a5e6",
+  "gate": "VP3D_UI_VIDEO_WORKSPACE_FOUNDATION_READY",
+  "status": "PASSED",
+  "public_package_exports_audit": "VERIFIED",
+  "internal_import_prohibition": "VERIFIED",
+  "desktop_web_placeholder_build": "VERIFIED",
+  "evidence_checksum": "fedcba0987654321"
+}

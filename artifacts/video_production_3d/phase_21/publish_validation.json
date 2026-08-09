@@ -1,0 +1,35 @@
+{
+  "expected_dimensions": {
+    "width": 1920,
+    "height": 1080
+  },
+  "cases": {
+    "valid_frame": {
+      "published": true,
+      "sha256": "99f1e8c6f32d9467e72e8f9affc92d23590c8789c3585971bfb803c2e4044576"
+    },
+    "zero_byte": {
+      "blocked": true,
+      "error": "0-byte frame rejected: D:\\code_ca_nhan\\WindAgent\\artifacts\\video_production_3d\\phase_21\\demo_workspace\\frame_0002.png.tmp"
+    },
+    "undecodable": {
+      "blocked": true,
+      "error": "undecodable frame rejected: D:\\code_ca_nhan\\WindAgent\\artifacts\\video_production_3d\\phase_21\\demo_workspace\\frame_0002.png.tmp"
+    },
+    "wrong_dimension": {
+      "blocked": true,
+      "error": "wrong dimensions 640x480, expected 1920x1080"
+    },
+    "wrong_hash": {
+      "blocked": true,
+      "error": "hash mismatch for frame_0004.png.tmp: expected deadbeef"
+    },
+    "stale_worker_publish": {
+      "blocked": true,
+      "error": "worker worker-a lost the lease on chunk ej_recovery_001:chunk-000; its frames must not be published"
+    }
+  },
+  "validated_frames": [
+    1
+  ]
+}

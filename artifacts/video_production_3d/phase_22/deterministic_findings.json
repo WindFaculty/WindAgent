@@ -1,0 +1,719 @@
+{
+  "pre_render_planted_defects": {
+    "blocked": true,
+    "findings": [
+      {
+        "code": "MISSING_TEXTURE",
+        "severity": "BLOCKING",
+        "entity": "tex_missing",
+        "frame_range": null,
+        "evidence": {
+          "registry_members": 2
+        },
+        "confidence": 1.0,
+        "suggested_repair": "asset_revision",
+        "causes": []
+      },
+      {
+        "code": "BROKEN_RIG",
+        "severity": "BLOCKING",
+        "entity": "rig_hero",
+        "frame_range": null,
+        "evidence": {
+          "missing_joints": [
+            "spine",
+            "head"
+          ],
+          "skinned": false
+        },
+        "confidence": 1.0,
+        "suggested_repair": "rig_repair",
+        "causes": []
+      },
+      {
+        "code": "CAMERA_CHARACTER_COLLISION",
+        "severity": "BLOCKING",
+        "entity": "char_hero",
+        "frame_range": [
+          60,
+          60
+        ],
+        "evidence": {
+          "camera_position": [
+            0.0,
+            1.0,
+            1.0
+          ],
+          "character_bounds": {
+            "min_x": -1.0,
+            "max_x": 1.0,
+            "min_y": 0.0,
+            "max_y": 2.0,
+            "min_z": 0.0,
+            "max_z": 2.0
+          },
+          "margin": 0.1
+        },
+        "confidence": 1.0,
+        "suggested_repair": "camera_recompile",
+        "causes": []
+      },
+      {
+        "code": "UNAPPROVED_ADDON",
+        "severity": "BLOCKING",
+        "entity": "io_evil",
+        "frame_range": null,
+        "evidence": {
+          "approved_addons": [
+            "io_export"
+          ]
+        },
+        "confidence": 1.0,
+        "suggested_repair": "asset_approval",
+        "causes": []
+      }
+    ]
+  },
+  "pre_render_clean": {
+    "blocked": false,
+    "findings": []
+  },
+  "vram_budget_gate": {
+    "blocked": true,
+    "findings": [
+      {
+        "code": "VRAM_BUDGET_EXCEEDED",
+        "severity": "BLOCKING",
+        "entity": "render",
+        "frame_range": null,
+        "evidence": {
+          "decision": {
+            "schema_version": "vram-budget-1.0.0",
+            "original_estimate": {
+              "items": [
+                {
+                  "category": "textures",
+                  "estimated_mb": 87381.33,
+                  "uncertainty_mb": 8738.1333,
+                  "method": "computed",
+                  "note": "64 texture(s), RGBA x bpc x mipmap chain"
+                },
+                {
+                  "category": "geometry",
+                  "estimated_mb": 122.07,
+                  "uncertainty_mb": 18.3105,
+                  "method": "computed",
+                  "note": "1 mesh(es), 32 B/vertex"
+                },
+                {
+                  "category": "modifiers",
+                  "estimated_mb": 0.0,
+                  "uncertainty_mb": 0.0,
+                  "method": "explicit",
+                  "note": "0 modifier(s)/simulation(s), explicit estimates"
+                },
+                {
+                  "category": "volumes",
+                  "estimated_mb": 0.0,
+                  "uncertainty_mb": 0.0,
+                  "method": "computed",
+                  "note": "0 volume grid(s), channels x bpc"
+                },
+                {
+                  "category": "render_buffers",
+                  "estimated_mb": 47.46,
+                  "uncertainty_mb": 2.373,
+                  "method": "computed",
+                  "note": "1920x1080 x 6 passes x 4 B/px"
+                },
+                {
+                  "category": "acceleration_structures",
+                  "estimated_mb": 488.28,
+                  "uncertainty_mb": 97.6562,
+                  "method": "computed",
+                  "note": "64 B/triangle BVH"
+                }
+              ],
+              "total_mb": 88039.14,
+              "uncertainty_mb": 8738.7
+            },
+            "original_verdict": "BLOCK",
+            "steps": [
+              {
+                "name": "texture_downscale",
+                "applied": true,
+                "saved_mb": 65536.0,
+                "new_total_mb": 22503.14,
+                "revision_hash": "1837c0babce8fcdc420e1dfa08a1b1a56cea863c0c8c42f30d152c16a77546d7",
+                "impacts": [
+                  {
+                    "resource": "tex_0",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_1",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_2",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_3",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_4",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_5",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_6",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_7",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_8",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_9",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_10",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_11",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_12",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_13",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_14",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_15",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_16",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_17",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_18",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_19",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_20",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_21",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_22",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_23",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_24",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_25",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_26",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_27",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_28",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_29",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_30",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_31",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_32",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_33",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_34",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_35",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_36",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_37",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_38",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_39",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_40",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_41",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_42",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_43",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_44",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_45",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_46",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_47",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_48",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_49",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_50",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_51",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_52",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_53",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_54",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_55",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_56",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_57",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_58",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_59",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_60",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_61",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_62",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  },
+                  {
+                    "resource": "tex_63",
+                    "impact": "texture_downscale",
+                    "severity": "LOW",
+                    "detail": "16384x16384 -> 8192x8192"
+                  }
+                ],
+                "verdict_after": "BLOCK"
+              },
+              {
+                "name": "lod",
+                "applied": true,
+                "saved_mb": 305.17,
+                "new_total_mb": 22197.97,
+                "revision_hash": "3ece59dc6e27ccca3a3c588a933d203b88509153a0e9f58a2253def8b3516696",
+                "impacts": [
+                  {
+                    "resource": "hero_mesh",
+                    "impact": "lod",
+                    "severity": "MEDIUM",
+                    "detail": "verts 4000000->2000000, tris 8000000->4000000"
+                  }
+                ],
+                "verdict_after": "BLOCK"
+              },
+              {
+                "name": "instancing",
+                "applied": true,
+                "saved_mb": 0.0,
+                "new_total_mb": 22197.97,
+                "revision_hash": "3ece59dc6e27ccca3a3c588a933d203b88509153a0e9f58a2253def8b3516696",
+                "impacts": [],
+                "verdict_after": "BLOCK"
+              },
+              {
+                "name": "hidden_geometry_removal",
+                "applied": true,
+                "saved_mb": 0.0,
+                "new_total_mb": 22197.97,
+                "revision_hash": "3ece59dc6e27ccca3a3c588a933d203b88509153a0e9f58a2253def8b3516696",
+                "impacts": [],
+                "verdict_after": "BLOCK"
+              },
+              {
+                "name": "split_shot",
+                "applied": true,
+                "saved_mb": 0.0,
+                "new_total_mb": 22197.97,
+                "revision_hash": "ce0d40636cf420e22968d2ef2dd7da2a840ada2dec5c62b5539bbd426870ac9a",
+                "impacts": [
+                  {
+                    "resource": "scene",
+                    "impact": "split_shot",
+                    "severity": "MEDIUM",
+                    "detail": "shot split into 2 segments; peak concurrent geometry limited to largest segment"
+                  }
+                ],
+                "verdict_after": "BLOCK"
+              }
+            ],
+            "final_estimate": {
+              "items": [
+                {
+                  "category": "textures",
+                  "estimated_mb": 21845.33,
+                  "uncertainty_mb": 2184.5333,
+                  "method": "computed",
+                  "note": "64 texture(s), RGBA x bpc x mipmap chain"
+                },
+                {
+                  "category": "geometry",
+                  "estimated_mb": 61.04,
+                  "uncertainty_mb": 9.1553,
+                  "method": "computed",
+                  "note": "1 mesh(es), 32 B/vertex"
+                },
+                {
+                  "category": "modifiers",
+                  "estimated_mb": 0.0,
+                  "uncertainty_mb": 0.0,
+                  "method": "explicit",
+                  "note": "0 modifier(s)/simulation(s), explicit estimates"
+                },
+                {
+                  "category": "volumes",
+                  "estimated_mb": 0.0,
+                  "uncertainty_mb": 0.0,
+                  "method": "computed",
+                  "note": "0 volume grid(s), channels x bpc"
+                },
+                {
+                  "category": "render_buffers",
+                  "estimated_mb": 47.46,
+                  "uncertainty_mb": 2.373,
+                  "method": "computed",
+                  "note": "1920x1080 x 6 passes x 4 B/px"
+                },
+                {
+                  "category": "acceleration_structures",
+                  "estimated_mb": 244.14,
+                  "uncertainty_mb": 48.8281,
+                  "method": "computed",
+                  "note": "64 B/triangle BVH"
+                }
+              ],
+              "total_mb": 22197.97,
+              "uncertainty_mb": 2185.1
+            },
+            "final_verdict": "BLOCK",
+            "blocked": true,
+            "recommendation": "estimated calibrated peak VRAM 21.68 GB still exceeds hard limit 7 GB after the full mitigation chain; render blocked before launch - reduce resolution, split the shot into more segments, lower samples, or free other GPU memory before retrying"
+          },
+          "recommendation": "estimated calibrated peak VRAM 21.68 GB still exceeds hard limit 7 GB after the full mitigation chain; render blocked before launch - reduce resolution, split the shot into more segments, lower samples, or free other GPU memory before retrying"
+        },
+        "confidence": 1.0,
+        "suggested_repair": "vram_mitigation",
+        "causes": []
+      }
+    ]
+  },
+  "frame_integrity": {
+    "expected_frames": 120,
+    "planted_defects": {
+      "missing_frame": 60,
+      "undecodable_frame": 61,
+      "black_frame": 62
+    },
+    "findings": [
+      {
+        "code": "FRAME_MISSING_RANGE",
+        "severity": "BLOCKING",
+        "entity": "render",
+        "frame_range": [
+          60,
+          60
+        ],
+        "evidence": {
+          "missing_frames": [
+            60
+          ]
+        },
+        "confidence": 1.0,
+        "suggested_repair": "affected_frames",
+        "causes": []
+      },
+      {
+        "code": "FRAME_COUNT_MISMATCH",
+        "severity": "BLOCKING",
+        "entity": "render",
+        "frame_range": null,
+        "evidence": {
+          "expected": 120,
+          "actual": 119
+        },
+        "confidence": 1.0,
+        "suggested_repair": "affected_frames",
+        "causes": []
+      },
+      {
+        "code": "FRAME_UNDECODABLE",
+        "severity": "BLOCKING",
+        "entity": "render",
+        "frame_range": [
+          61,
+          61
+        ],
+        "evidence": {
+          "frame": 61
+        },
+        "confidence": 1.0,
+        "suggested_repair": "affected_frames",
+        "causes": []
+      },
+      {
+        "code": "FRAME_BLACK_OR_CORRUPT",
+        "severity": "BLOCKING",
+        "entity": "render",
+        "frame_range": [
+          62,
+          62
+        ],
+        "evidence": {
+          "frame": 62,
+          "luma_mean": 1.0,
+          "black_threshold": 2.0
+        },
+        "confidence": 1.0,
+        "suggested_repair": "affected_frames",
+        "causes": []
+      }
+    ]
+  }
+}

@@ -1,0 +1,287 @@
+{
+  "rule": "blocking -> REJECT; no blocking + low confidence -> REQUIRES_HUMAN; all required dimensions pass -> APPROVE",
+  "planted_defect_bundle": {
+    "findings": [
+      {
+        "code": "MISSING_TEXTURE",
+        "severity": "BLOCKING",
+        "entity": "tex_missing",
+        "frame_range": null,
+        "evidence": {
+          "registry_members": 2
+        },
+        "confidence": 1.0,
+        "suggested_repair": "asset_revision",
+        "causes": []
+      },
+      {
+        "code": "BROKEN_RIG",
+        "severity": "BLOCKING",
+        "entity": "rig_hero",
+        "frame_range": null,
+        "evidence": {
+          "missing_joints": [
+            "spine",
+            "head"
+          ],
+          "skinned": false
+        },
+        "confidence": 1.0,
+        "suggested_repair": "rig_repair",
+        "causes": []
+      },
+      {
+        "code": "CAMERA_CHARACTER_COLLISION",
+        "severity": "BLOCKING",
+        "entity": "char_hero",
+        "frame_range": [
+          60,
+          60
+        ],
+        "evidence": {
+          "camera_position": [
+            0.0,
+            1.0,
+            1.0
+          ],
+          "character_bounds": {
+            "min_x": -1.0,
+            "max_x": 1.0,
+            "min_y": 0.0,
+            "max_y": 2.0,
+            "min_z": 0.0,
+            "max_z": 2.0
+          },
+          "margin": 0.1
+        },
+        "confidence": 1.0,
+        "suggested_repair": "camera_recompile",
+        "causes": []
+      },
+      {
+        "code": "UNAPPROVED_ADDON",
+        "severity": "BLOCKING",
+        "entity": "io_evil",
+        "frame_range": null,
+        "evidence": {
+          "approved_addons": [
+            "io_export"
+          ]
+        },
+        "confidence": 1.0,
+        "suggested_repair": "asset_approval",
+        "causes": []
+      },
+      {
+        "code": "FRAME_MISSING_RANGE",
+        "severity": "BLOCKING",
+        "entity": "render",
+        "frame_range": [
+          60,
+          60
+        ],
+        "evidence": {
+          "missing_frames": [
+            60
+          ]
+        },
+        "confidence": 1.0,
+        "suggested_repair": "affected_frames",
+        "causes": []
+      },
+      {
+        "code": "FRAME_COUNT_MISMATCH",
+        "severity": "BLOCKING",
+        "entity": "render",
+        "frame_range": null,
+        "evidence": {
+          "expected": 120,
+          "actual": 119
+        },
+        "confidence": 1.0,
+        "suggested_repair": "affected_frames",
+        "causes": []
+      },
+      {
+        "code": "FRAME_UNDECODABLE",
+        "severity": "BLOCKING",
+        "entity": "render",
+        "frame_range": [
+          61,
+          61
+        ],
+        "evidence": {
+          "frame": 61
+        },
+        "confidence": 1.0,
+        "suggested_repair": "affected_frames",
+        "causes": []
+      },
+      {
+        "code": "FRAME_BLACK_OR_CORRUPT",
+        "severity": "BLOCKING",
+        "entity": "render",
+        "frame_range": [
+          62,
+          62
+        ],
+        "evidence": {
+          "frame": 62,
+          "luma_mean": 1.0,
+          "black_threshold": 2.0
+        },
+        "confidence": 1.0,
+        "suggested_repair": "affected_frames",
+        "causes": []
+      },
+      {
+        "code": "NOISE_BURST",
+        "severity": "BLOCKING",
+        "entity": "render",
+        "frame_range": [
+          1,
+          48
+        ],
+        "evidence": {
+          "affected_windows": [
+            [
+              1,
+              8
+            ],
+            [
+              9,
+              16
+            ],
+            [
+              17,
+              24
+            ],
+            [
+              25,
+              32
+            ],
+            [
+              33,
+              40
+            ],
+            [
+              41,
+              48
+            ]
+          ],
+          "noise_threshold": 25.0
+        },
+        "confidence": 1.0,
+        "suggested_repair": "affected_frames",
+        "causes": []
+      },
+      {
+        "code": "EXPOSURE_DISCONTINUITY",
+        "severity": "WARNING",
+        "entity": "render",
+        "frame_range": [
+          25,
+          32
+        ],
+        "evidence": {
+          "affected_windows": [
+            [
+              25,
+              32
+            ]
+          ],
+          "jump_threshold": 12.0,
+          "window_means": [
+            60.0,
+            60.0,
+            60.0,
+            30.0,
+            30.0,
+            30.0
+          ]
+        },
+        "confidence": 0.6667,
+        "suggested_repair": "lighting_fix",
+        "causes": []
+      },
+      {
+        "code": "LIP_SYNC_MISMATCH",
+        "severity": "BLOCKING",
+        "entity": "facial",
+        "frame_range": null,
+        "evidence": {
+          "correlation": 0.0,
+          "min_correlation": 0.5
+        },
+        "confidence": 1.0,
+        "suggested_repair": "facial_only",
+        "causes": [
+          "audio_alignment",
+          "facial_animation"
+        ]
+      },
+      {
+        "code": "CROSS_SHOT_IDENTITY_MISMATCH",
+        "severity": "WARNING",
+        "entity": "char_hero",
+        "frame_range": null,
+        "evidence": {
+          "pinned_character_ref": "char_hero",
+          "shots": [
+            "shot_01",
+            "shot_02"
+          ],
+          "identity_scores": [
+            0.95,
+            0.45
+          ],
+          "drift": 0.5,
+          "max_drift": 0.15
+        },
+        "confidence": 1.0,
+        "suggested_repair": "human_review",
+        "causes": [
+          "asset_revision",
+          "lighting_change",
+          "facial_animation"
+        ]
+      },
+      {
+        "code": "CROSS_SHOT_LIGHTING_MISMATCH",
+        "severity": "WARNING",
+        "entity": "loc_kitchen",
+        "frame_range": null,
+        "evidence": {
+          "pinned_location_ref": "loc_kitchen",
+          "shots": [
+            "shot_01",
+            "shot_02"
+          ],
+          "lighting_refs": [
+            "light_kitchen",
+            "light_night"
+          ]
+        },
+        "confidence": 0.8,
+        "suggested_repair": "lighting_fix",
+        "causes": []
+      }
+    ],
+    "verdict": "REJECT",
+    "reason": "blocking finding exists"
+  },
+  "clean_bundle": {
+    "verdict": "APPROVE",
+    "reason": "all required dimensions pass"
+  },
+  "vlm_timeout_bundle": {
+    "verdict": "REQUIRES_HUMAN",
+    "reason": "1 finding(s) below confidence 0.6"
+  },
+  "no_false_pass": {
+    "planted_bundle_verdict": "REJECT",
+    "clean_bundle_verdict": "APPROVE",
+    "vlm_timeout_verdict": "REQUIRES_HUMAN",
+    "assertion": "planted bundle must be REJECT, clean bundle APPROVE, VLM timeout REQUIRES_HUMAN"
+  }
+}

@@ -205,7 +205,48 @@ class MediaType(str, Enum):
     VIDEO = "video"
     AUDIO = "audio"
     DOCUMENT = "document"
+    MODEL_3D = "model_3d"
     UNKNOWN = "unknown"
+
+
+class ProductionAssetKind(str, Enum):
+    """Production taxonomy by meaning (Stage D UI19)."""
+
+    CHARACTER = "CHARACTER"
+    ENVIRONMENT = "ENVIRONMENT"
+    PROP = "PROP"
+    MODEL_3D = "MODEL_3D"
+    MATERIAL = "MATERIAL"
+    TEXTURE = "TEXTURE"
+    RIG = "RIG"
+    ANIMATION = "ANIMATION"
+    FACIAL_PROFILE = "FACIAL_PROFILE"
+    VOICE_PROFILE = "VOICE_PROFILE"
+    VOICE_SAMPLE = "VOICE_SAMPLE"
+    DIALOGUE_AUDIO = "DIALOGUE_AUDIO"
+    MUSIC = "MUSIC"
+    SFX = "SFX"
+    AMBIENCE = "AMBIENCE"
+    LIGHT_RIG = "LIGHT_RIG"
+    CAMERA_RIG = "CAMERA_RIG"
+    REFERENCE_IMAGE = "REFERENCE_IMAGE"
+    STORYBOARD = "STORYBOARD"
+    DOCUMENT = "DOCUMENT"
+    OTHER = "OTHER"
+
+
+class AssetProcessingState(str, Enum):
+    """Operational/processing lifecycle state of an asset job (Stage D UI21)."""
+
+    IDLE = "IDLE"
+    DOWNLOADING = "DOWNLOADING"
+    NORMALIZING = "NORMALIZING"
+    GENERATING_PREVIEW = "GENERATING_PREVIEW"
+    VALIDATING = "VALIDATING"
+    RIGGING = "RIGGING"
+    PROCESSING = "PROCESSING"
+    FAILED = "FAILED"
+
 
 
 class DirectorialIssueCategory(str, Enum):
@@ -605,6 +646,48 @@ class PostProductionIssueCode(str, Enum):
     REPRODUCIBILITY_MISMATCH = "REPRODUCIBILITY_MISMATCH"
 
 
+class FrameSequenceIssueCode(str, Enum):
+    """Typed findings on a rendered PNG/EXR frame sequence (VP3D Phase 24).
+
+    The sequence must be contiguous, unique, readable and dimension/fps/color
+    consistent BEFORE any FFmpeg assembly starts (stage_l.md §3 backlog 1).
+    """
+
+    FRAME_MISSING = "FRAME_MISSING"
+    FRAME_DUPLICATE = "FRAME_DUPLICATE"
+    FRAME_GAP = "FRAME_GAP"
+    FRAME_CORRUPT = "FRAME_CORRUPT"
+    DIMENSION_MISMATCH = "DIMENSION_MISMATCH"
+    FPS_MISMATCH = "FPS_MISMATCH"
+    COLORSPACE_UNSPECIFIED = "COLORSPACE_UNSPECIFIED"
+
+
+class MixTrackKind(str, Enum):
+    """Role of an audio track inside a versioned mix plan (VP3D Phase 24)."""
+
+    DIALOGUE = "DIALOGUE"
+    SFX = "SFX"
+    BGM = "BGM"
+
+
+class AssemblyInvalidationScope(str, Enum):
+    """Downstream rebuild scope of one changed assembly input (stage_l §3 backlog 9).
+
+    - TIMELINE_FINAL: a rendered shot changed -> EDL timeline + final rebuild
+      (audio mix and verified sibling artifacts stay untouched);
+    - MIX_FINAL: a dialogue/SFX/BGM track changed -> audio mix + final rebuild,
+      visual frame sequences are REUSED (never re-normalized);
+    - FINAL_ONLY: subtitle changed -> final remuxed from the verified video
+      stream (copy), no frame re-encode and no mix rebuild;
+    - NONE: nothing changed -> verified deliverable reused.
+    """
+
+    TIMELINE_FINAL = "TIMELINE_FINAL"
+    MIX_FINAL = "MIX_FINAL"
+    FINAL_ONLY = "FINAL_ONLY"
+    NONE = "NONE"
+
+
 class SemanticBone(str, Enum):
     """Provider-agnostic semantic bone roles (VP3D Phase 9, backlog 1).
 
@@ -980,6 +1063,93 @@ class FacialInvalidationScope(str, Enum):
     TRACK_AND_RENDER_FINAL = "TRACK_AND_RENDER_FINAL"
 
 
+# ---------------------------------------------------------------------------
+# Stage M End-to-End (VP3D Phase 25 — Golden Scene)
+# ---------------------------------------------------------------------------
+class GoldenSceneNodeKind(str, Enum):
+    """The ten pipeline nodes of the golden scene run (stage_m.md §3)."""
+
+    SCRIPT = "SCRIPT"
+    IR = "IR"
+    ASSETS = "ASSETS"
+    SCENE = "SCENE"
+    ANIMATION_AUDIO = "ANIMATION_AUDIO"
+    FACIAL = "FACIAL"
+    RENDER = "RENDER"
+    REVIEW_REPAIR = "REVIEW_REPAIR"
+    FFMPEG = "FFMPEG"
+    FINAL = "FINAL"
+
+
+class GoldenSceneNodeStatus(str, Enum):
+    PENDING = "PENDING"
+    RUNNING = "RUNNING"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+    CANCELLED = "CANCELLED"
+    SKIPPED = "SKIPPED"
+
+
+class GoldenSceneVerdict(str, Enum):
+    PASS = "PASS"
+    REJECT = "REJECT"
+
+
+# ---------------------------------------------------------------------------
+# Stage M End-to-End (VP3D Phase 26 — Multi-Scene Episode)
+# ---------------------------------------------------------------------------
+class EpisodeVerdict(str, Enum):
+    """Verdict of a multi-scene episode production run (stage_m.md §4)."""
+
+    PASS = "PASS"
+    REJECT = "REJECT"
+
+
+class EpisodeArtifactKind(str, Enum):
+    """Kinds of artifacts the episode run produces or reuses (backlog 1)."""
+
+    CHARACTER_ASSET = "CHARACTER_ASSET"
+    ENVIRONMENT_ASSET = "ENVIRONMENT_ASSET"
+    ANIMATION_CLIP = "ANIMATION_CLIP"
+    AUDIO_ASSET = "AUDIO_ASSET"
+    SCENE_PLAN = "SCENE_PLAN"
+    RENDER_FRAMES = "RENDER_FRAMES"
+    REVIEW_REPORT = "REVIEW_REPORT"
+    SCENE_MEDIA = "SCENE_MEDIA"
+    EPISODE_MEDIA = "EPISODE_MEDIA"
+
+
+class EpisodeCacheDecision(str, Enum):
+    """Asset cache decisions (backlog 6): hit / miss / invalidated / rejected."""
+
+    HIT = "HIT"
+    MISS = "MISS"
+    INVALIDATED = "INVALIDATED"
+    REJECTED_REUSE = "REJECTED_REUSE"
+
+
+class EpisodeChunkStatus(str, Enum):
+    """Render chunk lifecycle (backlog 4 — kill/resume granularity)."""
+
+    PENDING = "PENDING"
+    RUNNING = "RUNNING"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+    CANCELLED = "CANCELLED"
+    SKIPPED = "SKIPPED"
+
+
+class EpisodeBranchKind(str, Enum):
+    """Parallel branch kinds (backlog 3 — critical path / idle)."""
+
+    ASSET_PREP = "ASSET_PREP"
+    AUDIO_PREP = "AUDIO_PREP"
+    SCENE_COMPILE = "SCENE_COMPILE"
+    RENDER = "RENDER"
+    REVIEW_REPAIR = "REVIEW_REPAIR"
+    POST_PRODUCTION = "POST_PRODUCTION"
+
+
 __all__ = [
     "ProjectStatus",
     "RevisionStatus",
@@ -998,6 +1168,8 @@ __all__ = [
     "ApprovalRole",
     "ApprovalDecisionType",
     "MediaType",
+    "ProductionAssetKind",
+    "AssetProcessingState",
     "DirectorialIssueCategory",
     "IssueSeverity",
     "ProposalStatus",
@@ -1022,6 +1194,9 @@ __all__ = [
     "ContainerFormat",
     "PostProductionVerificationStatus",
     "PostProductionIssueCode",
+    "FrameSequenceIssueCode",
+    "MixTrackKind",
+    "AssemblyInvalidationScope",
     "SemanticBone",
     "RigValidationIssueCode",
     "RigStatus",
@@ -1055,4 +1230,14 @@ __all__ = [
     "FacialFindingKind",
     "FacialRepairScope",
     "FacialInvalidationScope",
+    # Stage M End-to-End (VP3D Phase 25 — Golden Scene)
+    "GoldenSceneNodeKind",
+    "GoldenSceneNodeStatus",
+    "GoldenSceneVerdict",
+    # Stage M End-to-End (VP3D Phase 26 — Multi-Scene Episode)
+    "EpisodeVerdict",
+    "EpisodeArtifactKind",
+    "EpisodeCacheDecision",
+    "EpisodeChunkStatus",
+    "EpisodeBranchKind",
 ]

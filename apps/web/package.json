@@ -18,7 +18,12 @@
     "lucide-react": "^0.344.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-redux": "^9.3.0"
+    "react-redux": "^9.3.0",
+    "@windagent/production-contracts": "file:../../frontend/packages/production-contracts",
+    "@windagent/production-client": "file:../../frontend/packages/production-client",
+    "@windagent/production-platform": "file:../../frontend/packages/production-platform",
+    "@windagent/production-state": "file:../../frontend/packages/production-state",
+    "@windagent/production-ui": "file:../../frontend/packages/production-ui"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.4.2",

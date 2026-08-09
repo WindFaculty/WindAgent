@@ -1,0 +1,10 @@
+{
+  "asset_golden_receipt.json": "85297738234f87d950ef922cb553c2e1119353cc2604de89a934e9df3abdc82c",
+  "environment.json": "11bf3e633084007e9988597e6277b8aa544f44a64ec57271ed6c4919c11384b6",
+  "integrated_golden_receipt.json": "0b8e658ff6505816d1c8c9d6e46454477c8cf675f96f7b7faa3ff5250813578d",
+  "run_manifest.json": "d0af8994fd069343f81167ef161e0e8aee682388f0133b75a6b7d66a711ad72e",
+  "script_golden_receipt.json": "a8bb02bb73ba3f9789a52381b1f478cc62f0a4017d3c230c1aad005a930a1768",
+  "stage_gate_summary.json": "b6e83f79017d880954117dd9afd9c9a726439d505b876f21577a83f07f216866",
+  "versions.json": "6ca53bf57844f21a29dcfeb2ddc5aac6266ac79bb688d474b3211f4528164176",
+  "video_foundation_receipt.json": "1e97539e29012dc03b8b05fe9c62e2b7e2b06564eec539a3abfb08299fb13267"
+}

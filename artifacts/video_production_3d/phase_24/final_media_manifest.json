@@ -1,0 +1,136 @@
+{
+  "schema": "final-media-manifest-1.0",
+  "run_manifest": {
+    "tool_hash": "1c02a15d2016905bddffb298be36e9c05c87d95ddd94f7ce98c3622015d3f3a0",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "profile_hash": "8369fe30ad76aa109d67d75cdf904e5dd98dd4ebcd434006a7e724d23b920582",
+    "edl_hash": "08ee5d7fb10f05ea11d0d32eb3e89b2b4edafb224e668e2b24312d2e3eca7d32",
+    "mix_hash": "8e032391db1fec53dfd39c0d8563592e1d437cfb684a0e8924b0ff26125ef771",
+    "input_hashes": [
+      "006169b83b0ba7018931b4f47dc6b8d041e3410bb89df70eb2ac691056e7118c",
+      "0e8b69a6afe902e7dd8fadb51a38f0d739427c10e055051635f0bf70017e947d",
+      "0ea31f3d079a93084dd67953af83c45ce7c1abe56a4f523cb964c4e03703f973",
+      "0facf9945377341c82131370ec5c8f6bad8eb8bddbf4ebd1e3066fa36545dd21",
+      "121957d85c2040b96278fdc7ce4e5e7da0e107347a1f04ccb7452c01c4049022",
+      "13304545e82cd99e7ad7832520d177746b3f0d90d7a40481d2e0b73a5bf929de",
+      "3946f339e5d1cbbd9868ddf7b306d2bdf16af7ac6daf546c457adbf381669040",
+      "3a03e9cd8d754af569655ffefeb242d8598fc4b6a2d1f418e95a9426006f799b",
+      "3d26eb49e3f0b7cf57ace18dfb43d1949400e801cead1464ac3a9238390f7a1c",
+      "40841b5c9531bf41c652c5de3bd481d90b3c62faa54dbc57d6de3b4a50a4d49b",
+      "586ee266d531e5cd76835b4a46b8de6f0db69a05782b996b0c3013e1e8811ad3",
+      "5b19df3a81c8981d23930e597d3735f8db51c8a350fc9da6dc0ed2b85f7a440b",
+      "6abf6cc82672ba04917aefe33780db858853d49e16eecf0efc9aa9d460c58bb9",
+      "6bad4b42c788d40db6c32e13c521052053b883ef00c5a46aa3b774cb108242f4",
+      "71a70a8ffb2f508333fd1e80be91dcea7976bc8c4cbd7841b35fb9d70a448519",
+      "8511e87952de691d6abf149ccf467fe17811603c1d29aea13329b41d618b4c69",
+      "85a3d846570723ff7e7ad6f11a8253a76576a75bfad6c1e2be68422ba8adc711",
+      "88de48cc05509f98b793755d0af3c73869cd818a5a9aba0f64fde670a4caf6ca",
+      "88de48cc05509f98b793755d0af3c73869cd818a5a9aba0f64fde670a4caf6ca",
+      "88de48cc05509f98b793755d0af3c73869cd818a5a9aba0f64fde670a4caf6ca",
+      "88de48cc05509f98b793755d0af3c73869cd818a5a9aba0f64fde670a4caf6ca",
+      "88de48cc05509f98b793755d0af3c73869cd818a5a9aba0f64fde670a4caf6ca",
+      "88de48cc05509f98b793755d0af3c73869cd818a5a9aba0f64fde670a4caf6ca",
+      "88de48cc05509f98b793755d0af3c73869cd818a5a9aba0f64fde670a4caf6ca",
+      "88de48cc05509f98b793755d0af3c73869cd818a5a9aba0f64fde670a4caf6ca",
+      "88de48cc05509f98b793755d0af3c73869cd818a5a9aba0f64fde670a4caf6ca",
+      "88de48cc05509f98b793755d0af3c73869cd818a5a9aba0f64fde670a4caf6ca",
+      "88de48cc05509f98b793755d0af3c73869cd818a5a9aba0f64fde670a4caf6ca",
+      "88de48cc05509f98b793755d0af3c73869cd818a5a9aba0f64fde670a4caf6ca",
+      "88de48cc05509f98b793755d0af3c73869cd818a5a9aba0f64fde670a4caf6ca",
+      "88de48cc05509f98b793755d0af3c73869cd818a5a9aba0f64fde670a4caf6ca",
+      "88de48cc05509f98b793755d0af3c73869cd818a5a9aba0f64fde670a4caf6ca",
+      "88de48cc05509f98b793755d0af3c73869cd818a5a9aba0f64fde670a4caf6ca",
+      "88de48cc05509f98b793755d0af3c73869cd818a5a9aba0f64fde670a4caf6ca",
+      "88de48cc05509f98b793755d0af3c73869cd818a5a9aba0f64fde670a4caf6ca",
+      "88de48cc05509f98b793755d0af3c73869cd818a5a9aba0f64fde670a4caf6ca",
+      "88de48cc05509f98b793755d0af3c73869cd818a5a9aba0f64fde670a4caf6ca",
+      "88de48cc05509f98b793755d0af3c73869cd818a5a9aba0f64fde670a4caf6ca",
+      "88de48cc05509f98b793755d0af3c73869cd818a5a9aba0f64fde670a4caf6ca",
+      "88de48cc05509f98b793755d0af3c73869cd818a5a9aba0f64fde670a4caf6ca",
+      "88de48cc05509f98b793755d0af3c73869cd818a5a9aba0f64fde670a4caf6ca",
+      "88de48cc05509f98b793755d0af3c73869cd818a5a9aba0f64fde670a4caf6ca",
+      "88de48cc05509f98b793755d0af3c73869cd818a5a9aba0f64fde670a4caf6ca",
+      "88de48cc05509f98b793755d0af3c73869cd818a5a9aba0f64fde670a4caf6ca",
+      "88de48cc05509f98b793755d0af3c73869cd818a5a9aba0f64fde670a4caf6ca",
+      "88de48cc05509f98b793755d0af3c73869cd818a5a9aba0f64fde670a4caf6ca",
+      "88de48cc05509f98b793755d0af3c73869cd818a5a9aba0f64fde670a4caf6ca",
+      "8993143f7e124c62694ecb24a75438f1f6bcf7feaf894fc5584ef58efe778b61",
+      "908d556bbad8160013af4cc75e4b4dd5a245f39e1822cac9ffb7528b5da2aaca",
+      "9ea72bba08a77803719ebcea2627b1629c5d105cf098cad7bbf482a73dd18545",
+      "a4a58337b1a78b71d559ef9a97c9e174ad20af2c201fcf8567b8790676aa05b5",
+      "b286e56b61512c49a72712188840325365694ba8ba722f6cf9d9ccab278f3a2d",
+      "bcd108dcd4c8f9e345d0df59784957eafadaac7b07c01328770521edf89cb5db",
+      "c2628b846b73a8edc6d0e5d2ac2d08fa29e964687a9a65087f27a9d74caefaa8",
+      "c2d073b0f833b35f08c0c39833a2a81940fb306b33fb57371842af87b5c6e0bf",
+      "d19b78f866a28c28dad63d8caebfb902fea217aeb48f91c447822a9883c56883",
+      "d6011ed967fd2ce8978242d21b2982e3dbfa54c2499638240a1365d3fe677c75",
+      "d8e1bc58b202d58b3edf6a97cb0d162fab3f140e244d6719109079d2272d183e",
+      "dad814e3c97f61f6669dc1bee160357b497bce6b85ab5392cb3e2e85b151ab12",
+      "e24ffe40dffdaf9ac0ffdcedc78a0423c64daad4cfbb4cf3b8d35721c5f17c78",
+      "e28993d38990309b8d930bf6aadec7fccf9460befe1b4ea3937289b0cf476816",
+      "f15fce2262584cb9605bd9e64f71c0d31d3411ab11ed389843a5d55c8a526f18",
+      "f3dce2fd6f956311696ae8ce297454f9ceb464f2cd1262c36ffc3db71d5e8b4b",
+      "fe62724acb6b21d07e27b9ee644fb1456143fd70b5f96a9b549450f98a9e820e"
+    ],
+    "output_hash": "6ee1a61a0c7e34f022f46782447168db028b54d64a1529f547d3bbca8d86c72a",
+    "video_codec": "h264",
+    "resolution": "320x180",
+    "frame_rate": 30.0,
+    "pixel_format": "yuv420p",
+    "audio_codec": "aac",
+    "audio_sample_rate": 48000,
+    "audio_channels": 2,
+    "audio_streams": 1,
+    "duration_seconds": 1.9,
+    "container": "mov,mp4,m4a,3gp,3g2,mj2"
+  },
+  "artifacts": {
+    "final": {
+      "kind": "FINAL",
+      "path": "D:\\code_ca_nhan\\WindAgent\\artifacts\\video_production_3d\\phase_24\\assembly_workspace\\final_08ee5d7fb10f.mp4",
+      "sha256": "6ee1a61a0c7e34f022f46782447168db028b54d64a1529f547d3bbca8d86c72a",
+      "derived_from": [
+        "frames",
+        "mix",
+        "edl",
+        "subtitle"
+      ]
+    },
+    "proxy": {
+      "kind": "PROXY",
+      "path": "D:\\code_ca_nhan\\WindAgent\\artifacts\\video_production_3d\\phase_24\\assembly_workspace\\proxy_08ee5d7fb10f.mp4",
+      "sha256": "87b208f52df39739acc8b70d2c540d126c31b713dc49028224676a3a73ffb455",
+      "derived_from": [
+        "final"
+      ]
+    },
+    "thumbnail": {
+      "kind": "THUMBNAIL",
+      "path": "D:\\code_ca_nhan\\WindAgent\\artifacts\\video_production_3d\\phase_24\\assembly_workspace\\thumbnail_08ee5d7fb10f.jpg",
+      "sha256": "caf37f0216ce2ced6dbe19e7cd1011b8adb1968c9c815007dc3545a2d3e6595f",
+      "derived_from": [
+        "final"
+      ]
+    },
+    "subtitle": {
+      "kind": "SUBTITLE",
+      "path": "D:\\code_ca_nhan\\WindAgent\\artifacts\\video_production_3d\\phase_24\\assembly_workspace\\subtitle_vi.srt",
+      "sha256": "13304545e82cd99e7ad7832520d177746b3f0d90d7a40481d2e0b73a5bf929de",
+      "derived_from": [
+        "edl"
+      ]
+    },
+    "mix": {
+      "kind": "MIX",
+      "path": "D:\\code_ca_nhan\\WindAgent\\artifacts\\video_production_3d\\phase_24\\assembly_workspace\\mix.wav",
+      "sha256": "319338f7e074f2b879352c169691e778857262580cc1dd3e5bef09ef35e7c5b3",
+      "derived_from": [
+        "dialogue",
+        "sfx",
+        "bgm"
+      ]
+    }
+  },
+  "ffmpeg": "ffmpeg version 8.1.2-full_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers",
+  "tool_hash": "1c02a15d2016905bddffb298be36e9c05c87d95ddd94f7ce98c3622015d3f3a0"
+}

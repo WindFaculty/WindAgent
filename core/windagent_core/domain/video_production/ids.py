@@ -208,6 +208,10 @@ class PostProductionJobId(OpaqueId):
     """Identifier for a PostProductionJob aggregate (Phase 22)."""
 
 
+class FrameSequenceId(OpaqueId):
+    """Identifier for a rendered frame sequence input (VP3D Phase 24)."""
+
+
 # ---------------------------------------------------------------------------
 # Production IR (VP3D Phase 1 — engine-neutral intermediate representation)
 # ---------------------------------------------------------------------------
@@ -568,6 +572,48 @@ class ScenePlanIssueId(OpaqueId):
     """Identifier for a scene-plan validation / inspection issue (Phase 11)."""
 
 
+# ---------------------------------------------------------------------------
+# Stage M End-to-End (VP3D Phase 25 — Golden Scene)
+# ---------------------------------------------------------------------------
+class GoldenSceneRunId(OpaqueId):
+    """Identifier for one golden scene E2E production run (VP3D Phase 25)."""
+
+
+class GoldenSceneNodeId(OpaqueId):
+    """Identifier for one pipeline node execution receipt (VP3D Phase 25)."""
+
+
+class GoldenSceneArtifactId(OpaqueId):
+    """Identifier for an artifact produced by a golden scene node (Phase 25)."""
+
+
+# ---------------------------------------------------------------------------
+# Stage M End-to-End (VP3D Phase 26 — Multi-Scene Episode)
+# ---------------------------------------------------------------------------
+class EpisodeRunId(OpaqueId):
+    """Identifier for one multi-scene episode production run (VP3D Phase 26)."""
+
+
+class EpisodeSceneId(OpaqueId):
+    """Identifier for one episode scene (VP3D Phase 26)."""
+
+
+class EpisodeShotId(OpaqueId):
+    """Identifier for one episode shot (VP3D Phase 26)."""
+
+
+class EpisodeArtifactId(OpaqueId):
+    """Identifier for an artifact produced/reused by an episode run (Phase 26)."""
+
+
+class EpisodeChunkId(OpaqueId):
+    """Identifier for one render frame chunk (VP3D Phase 26)."""
+
+
+class EpisodeBranchId(OpaqueId):
+    """Identifier for one parallel branch of the episode schedule (Phase 26)."""
+
+
 __all__ = [
     "VideoProjectId",
     "ProductionRevisionId",
@@ -619,6 +665,7 @@ __all__ = [
     "SubtitleCueId",
     "EncodingProfileId",
     "PostProductionJobId",
+    "FrameSequenceId",
     "ProductionIrId",
     "SceneDescriptionId",
     "CharacterInstanceId",
@@ -664,6 +711,15 @@ __all__ = [
     "BlendInspectionReceiptId",
     "IrMappingManifestId",
     "ScenePlanIssueId",
+    "GoldenSceneRunId",
+    "GoldenSceneNodeId",
+    "GoldenSceneArtifactId",
+    "EpisodeRunId",
+    "EpisodeSceneId",
+    "EpisodeShotId",
+    "EpisodeArtifactId",
+    "EpisodeChunkId",
+    "EpisodeBranchId",
     "CameraIntentId",
     "CameraRigPlanId",
     "CameraFindingId",

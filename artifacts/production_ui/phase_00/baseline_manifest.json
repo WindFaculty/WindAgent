@@ -1,0 +1,11 @@
+{
+  "phase": "UI0",
+  "commit_sha": "7e6da5d4bc2b03bce14baf7e0a762960c75650ed",
+  "baseline_date": "2026-08-08",
+  "dirty_paths": [
+    "road_map_v2_implementation_plan.md",
+    "docs/roadmap_v2/"
+  ],
+  "accepted_baseline_status": "VALIDATED",
+  "notes": "Candidate baseline selected for Stage A Shared Production Frontend Foundation"
+}

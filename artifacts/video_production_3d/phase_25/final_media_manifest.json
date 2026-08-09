@@ -1,0 +1,67 @@
+{
+  "audio": {
+    "sha256": "645ff85c6b0eb90adee37878ee9fabc459b68bab8c027b3408447cce590233d3",
+    "wav_exists": true
+  },
+  "final_mp4": {
+    "exists": true,
+    "sha256": "560381363b87a54764eb7d0602cf63eab2065d674128127f5992b3464d47b4ab",
+    "size_bytes": 39500
+  },
+  "frames": {
+    "count": 24,
+    "png_magic_ok": true,
+    "sample_hashes": [
+      "540775f10f8154233c099df85f014671425ef6b5fbe0d4dc8a3ea319349a3cae",
+      "d795e312a802804afa7f39a0a50c7270720c2bd2b13846fc5246f2424a715724",
+      "c5875a28edc260a94494579b62b549d816aec20c488c7b54ea01112b6c9a81af",
+      "aa4f6971f7dfc13872f861298048179c373112195ce1d37194fe8d1e8b30947b",
+      "3cdfdc576b0129c6ffbc7e8d42b9df64735097f51d1d2c830cce6cdaed8b5a3d",
+      "0d7b9135e4e1af094f32aff2f12e6fdb193c7da22a28176f434bdec0f44820dd"
+    ]
+  },
+  "technical_verification": {
+    "audio_ok": true,
+    "checks": {
+      "audio": {
+        "count": 1,
+        "files": [
+          "dialogue_alice.wav"
+        ]
+      },
+      "final_mp4": {
+        "exists": true,
+        "ffprobe": {
+          "format": {
+            "duration": "1.000000"
+          },
+          "programs": [],
+          "stream_groups": [],
+          "streams": [
+            {
+              "codec_name": "h264",
+              "codec_type": "video",
+              "height": 360,
+              "width": 640
+            },
+            {
+              "codec_name": "aac",
+              "codec_type": "audio"
+            }
+          ]
+        },
+        "ftyp_ok": true,
+        "has_video_and_audio_streams": true,
+        "sha256": "560381363b87a54764eb7d0602cf63eab2065d674128127f5992b3464d47b4ab",
+        "size_bytes": 39500
+      },
+      "frames": {
+        "count": 48,
+        "distinct_hashes": 24,
+        "png_magic_ok": true
+      }
+    },
+    "final_mp4_ok": true,
+    "frames_ok": true
+  }
+}

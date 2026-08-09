@@ -1,0 +1,42 @@
+{
+  "phase": "phase_19",
+  "gate": "VP3D_P19_CYCLES_RENDERER_VERIFIED",
+  "producer": "phase-19-cycles-production-renderer",
+  "recorded_at": "2026-08-08T08:35:35.8410740Z",
+  "command": "python -m pytest tests/unit/tools/test_phase19_cycles_renderer.py tests/architecture/test_phase19_cycles_architecture.py tests/unit/tools/test_phase3_blender_adapter.py tests/unit/tools/test_phase3_blender_runtime.py tests/unit/tools/test_phase4_blender_scene.py -q -p no:cacheprovider --basetemp artifacts/video_production_3d/phase_19/pytest_phase19_05",
+  "summary": {
+    "passed": 115,
+    "failed": 0,
+    "skipped": 0
+  },
+  "suites": [
+    {
+      "file": "tests/unit/tools/test_phase19_cycles_renderer.py",
+      "collected": 23,
+      "covers": "versioned PREVIEW/FINAL/FINAL_HIGH profiles; neutral RenderIntent compilation; Cycles-only policy; persistent-data measurement evidence; OptiX/CUDA/CPU selection and explicit CPU fallback verdict; scene/shot/frame/profile/Blender/device cache identity; preview/final isolation; per-frame/chunk telemetry; trusted executor settings and actual-device mismatch"
+    },
+    {
+      "file": "tests/architecture/test_phase19_cycles_architecture.py",
+      "collected": 4,
+      "covers": "adapter boundary is bpy-free; trusted Blender executor stays stdlib-only; core never imports Blender adapter; no dynamic code execution in the profile contract"
+    },
+    {
+      "files": [
+        "tests/unit/tools/test_phase3_blender_adapter.py",
+        "tests/unit/tools/test_phase3_blender_runtime.py",
+        "tests/unit/tools/test_phase4_blender_scene.py"
+      ],
+      "collected": 88,
+      "covers": "regression coverage for runtime detection/probe, adapter job receipts, trusted executor, atomic frames, reuse, cancel/resume, FFmpeg, and deterministic smoke pipeline"
+    }
+  ],
+  "lint": {
+    "command": "python -m ruff check <Phase 19 changed Python files>",
+    "result": "PASS"
+  },
+  "global_architecture_checker": {
+    "result": "FAIL (9 pre-existing/concurrent violations outside Phase 19 paths)",
+    "command": "python scripts/check_architecture_imports.py",
+    "detail": "Violations are in untracked core command_dispatcher.py/query_service.py and the concurrent core-storage-provider dependency cycle; no Phase 19 path appears in the report. The Phase 19-scoped architecture suite passed 4/4."
+  }
+}

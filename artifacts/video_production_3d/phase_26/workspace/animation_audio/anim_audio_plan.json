@@ -1,0 +1,32 @@
+{
+  "animation_tracks": [
+    "atk_010860dcd4f6189d"
+  ],
+  "audio_cues": [
+    {
+      "channels": 2,
+      "cue_id": "cue_bgm",
+      "kind": "BGM",
+      "label": "cue_bgm",
+      "path": "bgm.wav",
+      "sample_rate": 48000,
+      "source_hash": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+    }
+  ],
+  "audio_plan": {
+    "loudness_target_lufs": -16.0,
+    "mix_plan_id": "mix_default",
+    "peak_ceiling_db": -1.0,
+    "policy_version": "loudness-v1",
+    "tracks": [
+      {
+        "channels": 2,
+        "gain_db": 0.0,
+        "sample_rate": 48000,
+        "source_hash": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "source_path": "bgm.wav",
+        "track_kind": "BGM"
+      }
+    ]
+  }
+}

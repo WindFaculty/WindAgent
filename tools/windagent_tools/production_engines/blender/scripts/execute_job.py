@@ -97,6 +97,7 @@ def write_result(
     report: dict | None = None,
     error: str = "",
     cancel_requested: bool = False,
+    output_files: list | None = None,
 ) -> None:
     payload = {
         "job_id": job_id,
@@ -106,6 +107,7 @@ def write_result(
         "blender_version": blender_version,
         "report": report or {},
         "error": error,
+        "output_files": output_files or [],
         "finished_at": time.time(),
     }
     (workspace / RESULT_FILENAME).write_text(
@@ -122,6 +124,158 @@ def sha256_file(path: Path) -> str:
         return hashlib.sha256(path.read_bytes()).hexdigest()
     except (OSError, ValueError):
         return ""
+
+
+def _peak_memory_mb() -> float | None:
+    """Best-effort process peak RSS; unavailable platforms return None."""
+    try:
+        import resource
+
+        peak = float(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
+        # Linux reports KiB; macOS reports bytes. Blender production baseline
+        # is Windows (where resource is absent), so this remains best effort.
+        if peak > 1024 * 1024 * 32:
+            return round(peak / (1024 * 1024), 3)
+        return round(peak / 1024, 3)
+    except (ImportError, AttributeError, OSError, ValueError):
+        return None
+
+
+def _set_if_present(target, attribute: str, value) -> None:
+    """Apply a Blender-version-specific setting without inventing a fallback."""
+    if hasattr(target, attribute):
+        setattr(target, attribute, value)
+
+
+def _configure_cycles_profile(profile: dict) -> str:
+    """Apply a serialized BlenderRenderProfile and return actual device class.
+
+    GPU selection fails closed when Blender does not enumerate the backend
+    compiled into the profile.  CPU fallback has already been approved (or
+    denied) by the host-side adapter; this script never makes that decision.
+    """
+    import bpy
+
+    schema_version = str(profile.get("schema_version", ""))
+    settings_version = str(profile.get("settings_version", ""))
+    if schema_version != "1.0.0" or not settings_version:
+        raise ValueError(
+            f"unsupported render profile contract schema={schema_version!r} "
+            f"settings={settings_version!r}"
+        )
+    engine = str(profile.get("engine", "")).upper()
+    if engine != "CYCLES":
+        raise ValueError(f"production renderer requires CYCLES, got {engine!r}")
+    scene = bpy.context.scene
+    scene.render.engine = "CYCLES"
+    cycles = scene.cycles
+
+    resolution = profile.get("resolution") or {}
+    scene.render.resolution_x = int(resolution.get("width", 0))
+    scene.render.resolution_y = int(resolution.get("height", 0))
+    scene.render.resolution_percentage = 100
+    scene.render.fps = int(profile.get("fps", 24))
+    cycles.samples = int(profile.get("samples", 1))
+    _set_if_present(cycles, "use_adaptive_sampling", bool(profile.get("adaptive_sampling", True)))
+    _set_if_present(cycles, "adaptive_threshold", float(profile.get("adaptive_threshold", 0.03)))
+    _set_if_present(cycles, "use_denoising", bool(profile.get("denoise", True)))
+    _set_if_present(cycles, "seed", int(profile.get("seed", 0)))
+
+    bounces = profile.get("bounce_budget") or {}
+    for source, target in (
+        ("max_bounces", "max_bounces"),
+        ("diffuse_bounces", "diffuse_bounces"),
+        ("glossy_bounces", "glossy_bounces"),
+        ("transmission_bounces", "transmission_bounces"),
+        ("volume_bounces", "volume_bounces"),
+        ("transparent_bounces", "transparent_max_bounces"),
+    ):
+        if source in bounces:
+            _set_if_present(cycles, target, int(bounces[source]))
+
+    _set_if_present(scene.render, "use_motion_blur", bool(profile.get("motion_blur", False)))
+    _set_if_present(
+        scene.render,
+        "motion_blur_shutter",
+        float(profile.get("motion_blur_shutter", 0.0)),
+    )
+    _set_if_present(scene.render, "use_persistent_data", bool(profile.get("persistent_data", False)))
+    _set_if_present(cycles, "debug_use_spatial_splits", bool(profile.get("use_spatial_splits", False)))
+
+    limits = profile.get("resource_limits") or {}
+    if limits:
+        _set_if_present(scene.render, "use_simplify", True)
+        _set_if_present(
+            scene.render,
+            "simplify_subdivision",
+            int(limits.get("max_subdivision_level", 0)),
+        )
+        _set_if_present(
+            scene.render,
+            "simplify_texture_limit",
+            str(limits.get("texture_limit_px", 0)),
+        )
+
+    color = profile.get("color_management") or {}
+    scene.render.film_transparent = bool(color.get("film_transparent", False))
+    for attribute, key in (
+        ("view_transform", "view_transform"),
+        ("look", "look"),
+        ("exposure", "exposure"),
+        ("gamma", "gamma"),
+    ):
+        if key in color:
+            try:
+                setattr(scene.view_settings, attribute, color[key])
+            except (AttributeError, TypeError, ValueError):
+                if attribute == "view_transform":
+                    raise
+
+    output_format = str(profile.get("output_format", "PNG")).upper()
+    if output_format not in ("PNG", "OPEN_EXR"):
+        raise ValueError(f"unsupported output format {output_format!r}")
+    scene.render.image_settings.file_format = output_format
+    _set_if_present(
+        scene.render.image_settings,
+        "color_depth",
+        str(profile.get("output_color_depth", "8")),
+    )
+    if output_format == "PNG":
+        _set_if_present(
+            scene.render.image_settings,
+            "compression",
+            int(profile.get("output_compression", 15)),
+        )
+    else:
+        _set_if_present(scene.render.image_settings, "exr_codec", "ZIP")
+
+    requested = str(profile.get("device", "CPU")).upper()
+    if requested == "CPU":
+        cycles.device = "CPU"
+        return "CPU"
+    if requested not in ("OPTIX", "CUDA"):
+        raise ValueError(f"profile carries unresolved Cycles device {requested!r}")
+
+    if "cycles" not in bpy.context.preferences.addons:
+        bpy.ops.preferences.addon_enable(module="cycles")
+    preferences = bpy.context.preferences.addons["cycles"].preferences
+    preferences.compute_device_type = requested
+    try:
+        preferences.get_devices()
+    except Exception:
+        pass
+    enabled = []
+    for device in preferences.devices:
+        device_type = str(getattr(device, "type", "")).upper()
+        device.use = device_type == requested
+        if device.use:
+            enabled.append(str(getattr(device, "name", device_type)))
+    if not enabled:
+        raise RuntimeError(
+            f"actual-device mismatch: profile selected {requested}, but Blender enabled none"
+        )
+    cycles.device = "GPU"
+    return requested
 
 
 def read_job_spec(workspace: Path) -> dict | None:
@@ -149,6 +303,43 @@ def _save_manifest(workspace: Path, manifest: dict) -> None:
     (workspace / FRAME_MANIFEST_FILENAME).write_text(
         json.dumps(manifest, ensure_ascii=False, sort_keys=True), encoding="utf-8"
     )
+
+
+def _prepare_render_manifest(
+    workspace: Path,
+    *,
+    job_spec: dict,
+    profile: dict,
+    frame_start: int,
+    frame_end: int,
+    extension: str,
+    resolution: dict,
+) -> None:
+    """Invalidate prior frames when any production render identity changes."""
+    manifest = _load_manifest(workspace)
+    expected = {
+        "render_profile_hash": str(job_spec.get("render_profile_hash", "")),
+        "render_cache_key": str(job_spec.get("render_cache_key", "")),
+        "artifact_class": str(profile.get("artifact_class", "")),
+    }
+    identity_changed = any(
+        value and str(manifest.get(key, "")) != value
+        for key, value in expected.items()
+    )
+    if identity_changed:
+        manifest["frames"] = []
+    manifest.update(
+        {
+            "frame_range": [frame_start, frame_end],
+            "extension": extension,
+            "expected_dimensions": {
+                "width": int(resolution.get("width", 0)),
+                "height": int(resolution.get("height", 0)),
+            },
+            **expected,
+        }
+    )
+    _save_manifest(workspace, manifest)
 
 
 def _validated_frames(workspace: Path) -> set[int]:
@@ -370,7 +561,7 @@ def run_inspect(workspace: Path, job_id: str) -> int:
             "materials": len(materials),
             "animated_objects": animated,
             "camera_names": [c.name for c in cameras],
-            "light_names": [l.name for l in lights],
+            "light_names": [light.name for light in lights],
             "material_names": [m.name for m in materials],
         }
     except Exception as exc:
@@ -396,7 +587,7 @@ def run_inspect(workspace: Path, job_id: str) -> int:
 
 
 def run_render_chunk(workspace: Path, job_id: str, job_spec: dict) -> int:
-    """Render frames [start..end] atomically, cancel-safe, resume-aware."""
+    """Render a versioned Cycles image-sequence chunk with raw telemetry."""
     build = ""
     try:
         import bpy
@@ -417,8 +608,41 @@ def run_render_chunk(workspace: Path, job_id: str, job_spec: dict) -> int:
             error="RENDER_CHUNK requires frame_start/frame_end in the job spec",
         )
         return 1
-    extension = str(job_spec.get("extension", "png"))
-    resolution = job_spec.get("resolution") or {}
+    profile = job_spec.get("render_profile") or {}
+    extension = str(
+        job_spec.get("extension")
+        or ("exr" if str(profile.get("output_format", "")).upper() == "OPEN_EXR" else "png")
+    ).lower()
+    if extension not in ("png", "exr"):
+        write_result(
+            workspace,
+            job_id=job_id,
+            kind=RENDER_CHUNK,
+            ok=False,
+            blender_version=build,
+            error=f"unsupported image-sequence extension: {extension!r}",
+        )
+        return 1
+    resolution = profile.get("resolution") or job_spec.get("resolution") or {}
+    if profile:
+        expected_extension = (
+            "exr"
+            if str(profile.get("output_format", "")).upper() == "OPEN_EXR"
+            else "png"
+        )
+        if extension != expected_extension:
+            write_result(
+                workspace,
+                job_id=job_id,
+                kind=RENDER_CHUNK,
+                ok=False,
+                blender_version=build,
+                error=(
+                    "output extension conflicts with compiled render profile: "
+                    f"{extension!r} != {expected_extension!r}"
+                ),
+            )
+            return 1
 
     blend_path = workspace / "scene.blend"
     if not blend_path.is_file():
@@ -435,12 +659,22 @@ def run_render_chunk(workspace: Path, job_id: str, job_spec: dict) -> int:
         import bpy
 
         bpy.ops.wm.open_mainfile(filepath=str(blend_path))
-        if resolution:
-            bpy.context.scene.render.resolution_x = int(resolution.get("width", 0)) or bpy.context.scene.render.resolution_x
-            bpy.context.scene.render.resolution_y = int(resolution.get("height", 0)) or bpy.context.scene.render.resolution_y
-        bpy.context.scene.render.image_settings.file_format = (
-            "PNG" if extension.lower() == "png" else "OPEN_EXR"
-        )
+        if profile:
+            actual_device = _configure_cycles_profile(profile)
+        else:
+            # Phase 4 compatibility path for old smoke specs. Production
+            # adapter jobs always carry the Phase 19 compiled profile.
+            if resolution:
+                bpy.context.scene.render.resolution_x = int(resolution.get("width", 0)) or bpy.context.scene.render.resolution_x
+                bpy.context.scene.render.resolution_y = int(resolution.get("height", 0)) or bpy.context.scene.render.resolution_y
+            bpy.context.scene.render.image_settings.file_format = (
+                "PNG" if extension == "png" else "OPEN_EXR"
+            )
+            actual_device = (
+                "CPU"
+                if str(getattr(bpy.context.scene.cycles, "device", "CPU")).upper() == "CPU"
+                else "GPU"
+            )
     except Exception as exc:
         write_result(
             workspace,
@@ -448,32 +682,80 @@ def run_render_chunk(workspace: Path, job_id: str, job_spec: dict) -> int:
             kind=RENDER_CHUNK,
             ok=False,
             blender_version=build,
-            error=f"failed to open scene for render: {exc}",
+            error=f"failed to configure scene for render: {exc}",
+            report={
+                "telemetry": {
+                    "frame_start": frame_start,
+                    "frame_end": frame_end,
+                    "requested_device": str(profile.get("device", "")),
+                    "actual_device": "",
+                    "profile_hash": str(job_spec.get("render_profile_hash", "")),
+                    "cache_key": str(job_spec.get("render_cache_key", "")),
+                    "frames": [],
+                    "failure": str(exc),
+                }
+            },
         )
         return 1
 
-    # Resume: skip frames already validated (manifest + file present).
+    # Resume is allowed only for the exact same cache/profile/artifact class.
+    # A preview manifest therefore cannot satisfy a final render by relabelling.
+    _prepare_render_manifest(
+        workspace,
+        job_spec=job_spec,
+        profile=profile,
+        frame_start=frame_start,
+        frame_end=frame_end,
+        extension=extension,
+        resolution=resolution,
+    )
     validated = _validated_frames(workspace)
     pending = [f for f in range(frame_start, frame_end + 1) if f not in validated]
 
     rendered: list[int] = []
+    frame_telemetry: list[dict] = []
     cancelled = False
+    chunk_started = time.perf_counter()
     for frame in pending:
         if cancel_requested(workspace):
             cancelled = True
             break
         temp = workspace / (FRAME_NAME_TEMPLATE.format(frame=frame, ext=extension) + TEMP_SUFFIX)
+        frame_started = time.perf_counter()
         try:
             bpy.context.scene.frame_set(frame)
             bpy.context.scene.render.filepath = str(temp)
             bpy.ops.render.render(write_still=True)
         except Exception as exc:
+            frame_telemetry.append(
+                {
+                    "frame": frame,
+                    "render_seconds": round(time.perf_counter() - frame_started, 6),
+                    "samples": int(profile.get("samples", 0)),
+                    "peak_memory_mb": _peak_memory_mb(),
+                    "device": actual_device,
+                    "failure": str(exc),
+                }
+            )
+            telemetry = {
+                "frame_start": frame_start,
+                "frame_end": frame_end,
+                "render_seconds": round(time.perf_counter() - chunk_started, 6),
+                "requested_device": str(profile.get("device", actual_device)),
+                "actual_device": actual_device,
+                "profile_hash": str(job_spec.get("render_profile_hash", "")),
+                "cache_key": str(job_spec.get("render_cache_key", "")),
+                "frames": frame_telemetry,
+                "peak_memory_mb": _peak_memory_mb(),
+                "failure": str(exc),
+            }
             write_result(
                 workspace,
                 job_id=job_id,
                 kind=RENDER_CHUNK,
                 ok=False,
                 blender_version=build,
+                report={"telemetry": telemetry},
                 error=f"render failed at frame {frame}: {exc}",
             )
             return 1
@@ -482,8 +764,53 @@ def run_render_chunk(workspace: Path, job_id: str, job_spec: dict) -> int:
             # temp was missing/empty -> nothing published (cancel-safe)
             cancelled = True
             break
+        entry["width"] = int(resolution.get("width", 0))
+        entry["height"] = int(resolution.get("height", 0))
+        manifest = _load_manifest(workspace)
+        manifest["frames"] = [
+            entry if item.get("frame") == frame else item
+            for item in manifest.get("frames", [])
+        ]
+        manifest.update(
+            {
+                "frame_range": [frame_start, frame_end],
+                "extension": extension,
+                "expected_dimensions": {
+                    "width": int(resolution.get("width", 0)),
+                    "height": int(resolution.get("height", 0)),
+                },
+                "render_profile_hash": str(job_spec.get("render_profile_hash", "")),
+                "render_cache_key": str(job_spec.get("render_cache_key", "")),
+                "artifact_class": str(profile.get("artifact_class", "")),
+                "actual_device": actual_device,
+            }
+        )
+        _save_manifest(workspace, manifest)
+        frame_telemetry.append(
+            {
+                "frame": frame,
+                "render_seconds": round(time.perf_counter() - frame_started, 6),
+                "samples": int(profile.get("samples", 0)),
+                "peak_memory_mb": _peak_memory_mb(),
+                "device": actual_device,
+                "failure": "",
+            }
+        )
         rendered.append(frame)
 
+    all_frames = _load_manifest(workspace).get("frames", [])
+    telemetry = {
+        "frame_start": frame_start,
+        "frame_end": frame_end,
+        "render_seconds": round(time.perf_counter() - chunk_started, 6),
+        "requested_device": str(profile.get("device", actual_device)),
+        "actual_device": actual_device,
+        "profile_hash": str(job_spec.get("render_profile_hash", "")),
+        "cache_key": str(job_spec.get("render_cache_key", "")),
+        "frames": frame_telemetry,
+        "peak_memory_mb": _peak_memory_mb(),
+        "failure": "cancelled" if cancelled else "",
+    }
     report = {
         "frame_start": frame_start,
         "frame_end": frame_end,
@@ -491,7 +818,21 @@ def run_render_chunk(workspace: Path, job_id: str, job_spec: dict) -> int:
         "cancelled": cancelled,
         "resumed_from_validated": sorted(validated),
         "frame_count": len(_validated_frames(workspace)),
+        "render_profile": profile,
+        "actual_device": actual_device,
+        "telemetry": telemetry,
     }
+    output_format = "EXR" if extension == "exr" else "PNG"
+    output_files = [
+        {
+            "path": str(item.get("filename", "")),
+            "sha256": str(item.get("sha256", "")),
+            "kind": "FRAME_SEQUENCE",
+            "format": output_format,
+        }
+        for item in all_frames
+        if item.get("filename")
+    ]
     write_result(
         workspace,
         job_id=job_id,
@@ -501,6 +842,7 @@ def run_render_chunk(workspace: Path, job_id: str, job_spec: dict) -> int:
         report=report,
         cancel_requested=cancelled,
         error="" if not cancelled else "cancelled mid-chunk; partial frames discarded",
+        output_files=output_files,
     )
     return 0 if not cancelled else 0  # cancel is a CLEAN stop, exit 0
 

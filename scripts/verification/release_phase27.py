@@ -664,7 +664,11 @@ PHASE_VERDICT_FILES = {
     21: "artifacts/video_production/phase_21/phase_verdict.json",
     22: "artifacts/video_production/phase_22/{sha}/phase_verdict.json",
     23: "artifacts/video_production/phase_23/{sha}/phase_verdict.json",
-    24: "artifacts/video_production/phase_24/{sha}/phase_verdict.json",
+    # Phase 24 was re-pointed to the VP3D FFmpeg Assembly evidence: the old
+    # plan-06 phase_24 (E2E POC) was retired with the docs cleanup, and the
+    # VP3D Phase 24 gate (VP3D_P24_FFMPEG_ASSEMBLY_VERIFIED) now owns the
+    # lineage slot. VP3D verdicts use "verdict": "PASS" (not "status").
+    24: "artifacts/video_production_3d/phase_24/phase_verdict.json",
     25: "artifacts/video_production/phase_25/{sha}/phase_verdict.json",
     26: "artifacts/video_production/phase_26/{sha}/phase_verdict.json",
 }
@@ -709,13 +713,18 @@ def run_evidence_validation(work: Path, candidate_sha: str) -> Dict[str, Any]:
         if path.exists():
             try:
                 verdict = json.loads(path.read_text(encoding="utf-8"))
-                entry["status"] = verdict.get("status")
+                entry["status"] = verdict.get("status") or verdict.get("verdict")
                 entry["gate"] = verdict.get("gate")
                 entry["candidate_sha"] = verdict.get("candidate_sha")
-                # Phase 21/24 are documented BLOCKED states (superseded-by-remediation
-                # and live-run precondition gating); the phase-27 gate does NOT require
-                # those to flip, but it DOES require the verdict artifact + lineage.
-                entry["passed"] = verdict.get("status") == "PASSED"
+                # Phase 21 is a documented BLOCKED state (superseded-by-
+                # remediation); the phase-27 gate does NOT require it to flip,
+                # but it DOES require the verdict artifact + lineage. Phases
+                # 22-26 carry "status": "PASSED"; the VP3D re-pointed phase 24
+                # carries "verdict": "PASS".
+                entry["passed"] = (
+                    verdict.get("status") == "PASSED"
+                    or verdict.get("verdict") == "PASS"
+                )
             except json.JSONDecodeError:
                 entry["passed"] = False
         lineage[f"phase_{phase}"] = entry

@@ -200,6 +200,32 @@ from windagent_intelligence.video.facial import (
     fake_alignment,
 )
 
+# Golden Scene End-to-End orchestration (VP3D Phase 25, Stage M)
+from windagent_intelligence.video.golden_scene import (
+    GoldenSceneFfmpegLeg,
+    GoldenSceneOrchestrator,
+    GoldenSceneRenderLeg,
+    GoldenSceneReviewRepairLeg,
+    GoldenSceneStepRunner,
+    build_default_steps,
+    default_identity_checker,
+    default_verification_checker,
+)
+
+# Multi-Scene Episode orchestration (VP3D Phase 26, Stage M)
+from windagent_intelligence.video.episode import (
+    EpisodeAssetCache,
+    EpisodeAssetGeneratorLeg,
+    EpisodeAudioSynthesisLeg,
+    EpisodeFfmpegLeg,
+    EpisodeOrchestrator,
+    EpisodeRenderLeg,
+    EpisodeReviewRepairLeg,
+    asset_expected_hash,
+    episode_identity_checker,
+    episode_verification_checker,
+)
+
 # Prompt compiler layer retired in VP3D Stage A — the runtime compiles IR
 # (ProductionIrDocument / ShotExecutionIntent) directly; see legacy_v1/SUNSET.md.
 
@@ -461,4 +487,13 @@ __all__ = [
     "VIETNAMESE_LINE_B",
     "LINE_A_PHONEMES",
     "LINE_B_PHONEMES",
+    # Golden Scene End-to-End orchestration (VP3D Phase 25, Stage M)
+    "GoldenSceneOrchestrator",
+    "GoldenSceneRenderLeg",
+    "GoldenSceneReviewRepairLeg",
+    "GoldenSceneFfmpegLeg",
+    "GoldenSceneStepRunner",
+    "build_default_steps",
+    "default_identity_checker",
+    "default_verification_checker",
 ]

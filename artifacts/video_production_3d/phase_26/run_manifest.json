@@ -1,0 +1,49 @@
+{
+  "budgets": {
+    "repairs": 3.0,
+    "wall_clock_seconds": 7200.0
+  },
+  "candidate_sha": "7e6da5d4bc2b03bce14baf7e0a762960c75650ed",
+  "created_at": "2026-08-09T03:04:21.149366+00:00",
+  "fixture_hash": "6c513e83395cdb323d7c1940fd77b4c18478b494bdcce8070d634bc251e18a9c",
+  "hardware_baseline": {
+    "cpu": "Intel Core i7-14650HX",
+    "gpu": "NVIDIA GeForce RTX 5060 Laptop GPU 8GB",
+    "os": "Windows",
+    "ram_gb": "32"
+  },
+  "manifest_hash": "de4f862d9b0904e490dea827147fc5c6d00dfc1c868ecf20959de51502cb2649",
+  "pinned_seeds": {
+    "facial": 42,
+    "render": 7
+  },
+  "run_id": "ep_evidence_run",
+  "scope": {
+    "characters": [
+      "cm_alice",
+      "cm_bob",
+      "cm_carol"
+    ],
+    "environments": [
+      "env_park",
+      "env_city"
+    ],
+    "planned_duration_seconds": 150.0,
+    "scenes": [
+      "scn_1",
+      "scn_2",
+      "scn_3"
+    ],
+    "shots": [
+      "sh_1",
+      "sh_3",
+      "sh_5",
+      "sh_2",
+      "sh_4"
+    ]
+  },
+  "tool_versions": {
+    "blender": "4.5.12 LTS",
+    "ffmpeg": "8.x"
+  }
+}

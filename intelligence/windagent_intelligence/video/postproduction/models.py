@@ -6,7 +6,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
 
 from windagent_core.domain.video_production.enums import (
     PostProductionIssueCode,
@@ -94,4 +93,51 @@ class ReproducibilityReport:
     command_manifest_matched: bool
     output_sha256: str
     previous_sha256: str = ""
+    mismatch_reasons: tuple[str, ...] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class SequenceRenderPlan:
+    """Deterministic FFmpeg plan assembled from frame sequences (VP3D Phase 24).
+
+    Every argv is a list (never shell text). The video filter graph is built
+    ONLY from the allowlisted operations in `ops_used`; no raw filter text is
+    ever accepted from callers.
+    """
+
+    edl_hash: str
+    profile: EncodingProfile
+    output_path: Path
+    staging_path: Path
+    proxy_path: Path
+    thumbnail_path: Path
+    argv_assemble: tuple[str, ...]
+    argv_proxy: tuple[str, ...]
+    argv_thumbnail: tuple[str, ...]
+    argv_remux_subtitle: tuple[str, ...]
+    filter_graph_str: str
+    ops_used: tuple[str, ...]
+    audio_mix_plan_hash: str = ""
+
+
+@dataclass(frozen=True)
+class ManifestAuditReport:
+    """Reproducibility audit over assembly manifests (stage_l §3.8).
+
+    Bit-exact output equality is REQUIRED only when tool, platform and
+    encoding profile are identical; otherwise the audit falls back to
+    manifest/technical-property equality (codec, resolution, fps, duration,
+    streams, input/EDL/mix hashes).
+    """
+
+    is_reproducible: bool
+    bit_exact: bool
+    bit_exact_required: bool
+    tool_matched: bool
+    platform_matched: bool
+    profile_matched: bool
+    input_hashes_matched: bool
+    edl_hash_matched: bool
+    mix_hash_matched: bool
+    semantic_properties_matched: bool
     mismatch_reasons: tuple[str, ...] = field(default_factory=tuple)

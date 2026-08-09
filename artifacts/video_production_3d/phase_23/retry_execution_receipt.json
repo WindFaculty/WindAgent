@@ -1,0 +1,509 @@
+{
+  "successful_repair": {
+    "repair_id": "rr_293b873861c8",
+    "signature": "293b873861c8f7decc1d811d50c7f62eefefeb8c9d8d482b2425d604931f385c",
+    "status": "SUCCEEDED",
+    "classification": {
+      "finding_code": "LIP_SYNC_MISMATCH",
+      "entity": "facial",
+      "owner": "facial",
+      "repair_unit": "facial_track",
+      "confidence": 1.0,
+      "ambiguous": false,
+      "causes": [],
+      "revised_input_key": "facial_track",
+      "revised_input_value": "facial:rev"
+    },
+    "plan": {
+      "plan_id": "rp_293b873861c8",
+      "classification": {
+        "finding_code": "LIP_SYNC_MISMATCH",
+        "entity": "facial",
+        "owner": "facial",
+        "repair_unit": "facial_track",
+        "confidence": 1.0,
+        "ambiguous": false,
+        "causes": [],
+        "revised_input_key": "facial_track",
+        "revised_input_value": "facial:rev"
+      },
+      "revised_inputs": {
+        "facial_track": "facial:rev"
+      },
+      "rerun_checks": [
+        "LIP_SYNC_MISMATCH",
+        "IDENTITY_DRIFT",
+        "FRAME_COUNT_MISMATCH",
+        "FRAME_MISSING_RANGE",
+        "FRAME_UNDECODABLE",
+        "FRAME_DIMENSION_MISMATCH",
+        "FRAME_BLACK_OR_CORRUPT",
+        "FLICKER_DETECTED",
+        "NOISE_BURST",
+        "EXPOSURE_DISCONTINUITY"
+      ],
+      "locked_artifacts": [],
+      "blocked": false,
+      "block_reason": ""
+    },
+    "invalidation": {
+      "invalidated_artifacts": [
+        "shot_01_render"
+      ],
+      "preserved_artifacts": [
+        "shot_02_render",
+        "shot_03_render",
+        "shot_04_render"
+      ],
+      "dependency_graph": {
+        "shot_01_render": [
+          "camera",
+          "facial_track",
+          "render"
+        ],
+        "shot_02_render": [
+          "camera",
+          "render"
+        ],
+        "shot_03_render": [
+          "asset",
+          "render"
+        ],
+        "shot_04_render": [
+          "render"
+        ]
+      }
+    },
+    "rerun_results": {
+      "LIP_SYNC_MISMATCH": true,
+      "IDENTITY_DRIFT": true,
+      "FRAME_COUNT_MISMATCH": true,
+      "FRAME_MISSING_RANGE": true,
+      "FRAME_UNDECODABLE": true,
+      "FRAME_DIMENSION_MISMATCH": true,
+      "FRAME_BLACK_OR_CORRUPT": true,
+      "FLICKER_DETECTED": true,
+      "NOISE_BURST": true,
+      "EXPOSURE_DISCONTINUITY": true
+    },
+    "attempts": 1,
+    "reason": ""
+  },
+  "duplicate_event_skipped": {
+    "repair_id": "rr_293b873861c8",
+    "signature": "293b873861c8f7decc1d811d50c7f62eefefeb8c9d8d482b2425d604931f385c",
+    "status": "SKIPPED_DUPLICATE",
+    "classification": {
+      "finding_code": "LIP_SYNC_MISMATCH",
+      "entity": "facial",
+      "owner": "facial",
+      "repair_unit": "facial_track",
+      "confidence": 1.0,
+      "ambiguous": false,
+      "causes": [],
+      "revised_input_key": "facial_track",
+      "revised_input_value": "facial:rev"
+    },
+    "plan": {
+      "plan_id": "rp_293b873861c8",
+      "classification": {
+        "finding_code": "LIP_SYNC_MISMATCH",
+        "entity": "facial",
+        "owner": "facial",
+        "repair_unit": "facial_track",
+        "confidence": 1.0,
+        "ambiguous": false,
+        "causes": [],
+        "revised_input_key": "facial_track",
+        "revised_input_value": "facial:rev"
+      },
+      "revised_inputs": {
+        "facial_track": "facial:rev"
+      },
+      "rerun_checks": [
+        "LIP_SYNC_MISMATCH",
+        "IDENTITY_DRIFT",
+        "FRAME_COUNT_MISMATCH",
+        "FRAME_MISSING_RANGE",
+        "FRAME_UNDECODABLE",
+        "FRAME_DIMENSION_MISMATCH",
+        "FRAME_BLACK_OR_CORRUPT",
+        "FLICKER_DETECTED",
+        "NOISE_BURST",
+        "EXPOSURE_DISCONTINUITY"
+      ],
+      "locked_artifacts": [],
+      "blocked": false,
+      "block_reason": ""
+    },
+    "invalidation": {
+      "invalidated_artifacts": [],
+      "preserved_artifacts": [
+        "shot_01_render",
+        "shot_02_render",
+        "shot_03_render",
+        "shot_04_render"
+      ],
+      "dependency_graph": {
+        "shot_01_render": [
+          "camera",
+          "facial_track",
+          "render"
+        ],
+        "shot_02_render": [
+          "camera",
+          "render"
+        ],
+        "shot_03_render": [
+          "asset",
+          "render"
+        ],
+        "shot_04_render": [
+          "render"
+        ]
+      }
+    },
+    "rerun_results": {},
+    "attempts": 1,
+    "reason": "duplicate event: signature already repaired successfully"
+  },
+  "repair_loop": {
+    "attempt_1": {
+      "repair_id": "rr_4f3fad91a36e",
+      "signature": "4f3fad91a36e837951e8db49a15501c7f32b6bded524d3ae22c72ec2fd32321a",
+      "status": "FAILED",
+      "classification": {
+        "finding_code": "NOISE_BURST",
+        "entity": "render",
+        "owner": "render",
+        "repair_unit": "affected_frames",
+        "confidence": 1.0,
+        "ambiguous": false,
+        "causes": [],
+        "revised_input_key": "render",
+        "revised_input_value": "render:rev"
+      },
+      "plan": {
+        "plan_id": "rp_4f3fad91a36e",
+        "classification": {
+          "finding_code": "NOISE_BURST",
+          "entity": "render",
+          "owner": "render",
+          "repair_unit": "affected_frames",
+          "confidence": 1.0,
+          "ambiguous": false,
+          "causes": [],
+          "revised_input_key": "render",
+          "revised_input_value": "render:rev"
+        },
+        "revised_inputs": {
+          "render": "render:rev"
+        },
+        "rerun_checks": [
+          "NOISE_BURST",
+          "VRAM_BUDGET_EXCEEDED",
+          "MOTION_QUALITY_DEGRADED",
+          "FRAME_COUNT_MISMATCH",
+          "FRAME_MISSING_RANGE",
+          "FRAME_UNDECODABLE",
+          "FRAME_DIMENSION_MISMATCH",
+          "FRAME_BLACK_OR_CORRUPT",
+          "FLICKER_DETECTED",
+          "EXPOSURE_DISCONTINUITY"
+        ],
+        "locked_artifacts": [],
+        "blocked": false,
+        "block_reason": ""
+      },
+      "invalidation": {
+        "invalidated_artifacts": [
+          "shot_01_render",
+          "shot_02_render",
+          "shot_03_render",
+          "shot_04_render"
+        ],
+        "preserved_artifacts": [],
+        "dependency_graph": {
+          "shot_01_render": [
+            "camera",
+            "facial_track",
+            "render"
+          ],
+          "shot_02_render": [
+            "camera",
+            "render"
+          ],
+          "shot_03_render": [
+            "asset",
+            "render"
+          ],
+          "shot_04_render": [
+            "render"
+          ]
+        }
+      },
+      "rerun_results": {
+        "NOISE_BURST": true,
+        "VRAM_BUDGET_EXCEEDED": true,
+        "MOTION_QUALITY_DEGRADED": true,
+        "FRAME_COUNT_MISMATCH": true,
+        "FRAME_MISSING_RANGE": true,
+        "FRAME_UNDECODABLE": true,
+        "FRAME_DIMENSION_MISMATCH": true,
+        "FRAME_BLACK_OR_CORRUPT": true,
+        "FLICKER_DETECTED": true,
+        "EXPOSURE_DISCONTINUITY": true
+      },
+      "attempts": 1,
+      "reason": "repair did not fix input"
+    },
+    "attempt_2": {
+      "repair_id": "rr_4f3fad91a36e",
+      "signature": "4f3fad91a36e837951e8db49a15501c7f32b6bded524d3ae22c72ec2fd32321a",
+      "status": "FAILED",
+      "classification": {
+        "finding_code": "NOISE_BURST",
+        "entity": "render",
+        "owner": "render",
+        "repair_unit": "affected_frames",
+        "confidence": 1.0,
+        "ambiguous": false,
+        "causes": [],
+        "revised_input_key": "render",
+        "revised_input_value": "render:rev"
+      },
+      "plan": {
+        "plan_id": "rp_4f3fad91a36e",
+        "classification": {
+          "finding_code": "NOISE_BURST",
+          "entity": "render",
+          "owner": "render",
+          "repair_unit": "affected_frames",
+          "confidence": 1.0,
+          "ambiguous": false,
+          "causes": [],
+          "revised_input_key": "render",
+          "revised_input_value": "render:rev"
+        },
+        "revised_inputs": {
+          "render": "render:rev"
+        },
+        "rerun_checks": [
+          "NOISE_BURST",
+          "VRAM_BUDGET_EXCEEDED",
+          "MOTION_QUALITY_DEGRADED",
+          "FRAME_COUNT_MISMATCH",
+          "FRAME_MISSING_RANGE",
+          "FRAME_UNDECODABLE",
+          "FRAME_DIMENSION_MISMATCH",
+          "FRAME_BLACK_OR_CORRUPT",
+          "FLICKER_DETECTED",
+          "EXPOSURE_DISCONTINUITY"
+        ],
+        "locked_artifacts": [],
+        "blocked": false,
+        "block_reason": ""
+      },
+      "invalidation": {
+        "invalidated_artifacts": [
+          "shot_01_render",
+          "shot_02_render",
+          "shot_03_render",
+          "shot_04_render"
+        ],
+        "preserved_artifacts": [],
+        "dependency_graph": {
+          "shot_01_render": [
+            "camera",
+            "facial_track",
+            "render"
+          ],
+          "shot_02_render": [
+            "camera",
+            "render"
+          ],
+          "shot_03_render": [
+            "asset",
+            "render"
+          ],
+          "shot_04_render": [
+            "render"
+          ]
+        }
+      },
+      "rerun_results": {
+        "NOISE_BURST": true,
+        "VRAM_BUDGET_EXCEEDED": true,
+        "MOTION_QUALITY_DEGRADED": true,
+        "FRAME_COUNT_MISMATCH": true,
+        "FRAME_MISSING_RANGE": true,
+        "FRAME_UNDECODABLE": true,
+        "FRAME_DIMENSION_MISMATCH": true,
+        "FRAME_BLACK_OR_CORRUPT": true,
+        "FLICKER_DETECTED": true,
+        "EXPOSURE_DISCONTINUITY": true
+      },
+      "attempts": 2,
+      "reason": "repair did not fix input"
+    },
+    "attempt_3_escalated": {
+      "repair_id": "rr_4f3fad91a36e",
+      "signature": "4f3fad91a36e837951e8db49a15501c7f32b6bded524d3ae22c72ec2fd32321a",
+      "status": "ESCALATED",
+      "classification": {
+        "finding_code": "NOISE_BURST",
+        "entity": "render",
+        "owner": "render",
+        "repair_unit": "affected_frames",
+        "confidence": 1.0,
+        "ambiguous": false,
+        "causes": [],
+        "revised_input_key": "render",
+        "revised_input_value": "render:rev"
+      },
+      "plan": {
+        "plan_id": "rp_4f3fad91a36e",
+        "classification": {
+          "finding_code": "NOISE_BURST",
+          "entity": "render",
+          "owner": "render",
+          "repair_unit": "affected_frames",
+          "confidence": 1.0,
+          "ambiguous": false,
+          "causes": [],
+          "revised_input_key": "render",
+          "revised_input_value": "render:rev"
+        },
+        "revised_inputs": {
+          "render": "render:rev"
+        },
+        "rerun_checks": [
+          "NOISE_BURST",
+          "VRAM_BUDGET_EXCEEDED",
+          "MOTION_QUALITY_DEGRADED",
+          "FRAME_COUNT_MISMATCH",
+          "FRAME_MISSING_RANGE",
+          "FRAME_UNDECODABLE",
+          "FRAME_DIMENSION_MISMATCH",
+          "FRAME_BLACK_OR_CORRUPT",
+          "FLICKER_DETECTED",
+          "EXPOSURE_DISCONTINUITY"
+        ],
+        "locked_artifacts": [],
+        "blocked": false,
+        "block_reason": ""
+      },
+      "invalidation": {
+        "invalidated_artifacts": [],
+        "preserved_artifacts": [
+          "shot_01_render",
+          "shot_02_render",
+          "shot_03_render",
+          "shot_04_render"
+        ],
+        "dependency_graph": {
+          "shot_01_render": [
+            "camera",
+            "facial_track",
+            "render"
+          ],
+          "shot_02_render": [
+            "camera",
+            "render"
+          ],
+          "shot_03_render": [
+            "asset",
+            "render"
+          ],
+          "shot_04_render": [
+            "render"
+          ]
+        }
+      },
+      "rerun_results": {},
+      "attempts": 2,
+      "reason": "repair loop detected: 2 attempts for signature 4f3fad91a36e"
+    }
+  },
+  "low_confidence_escalated_no_repair": {
+    "repair_id": "rr_7c809d683d06",
+    "signature": "7c809d683d06813d6aab93de16dcbd4ddac13835ce522e18e8afe35dc1143885",
+    "status": "ESCALATED",
+    "classification": {
+      "finding_code": "LIP_SYNC_MISMATCH",
+      "entity": "render",
+      "owner": "ambiguous",
+      "repair_unit": "human_review",
+      "confidence": 0.2,
+      "ambiguous": true,
+      "causes": [
+        "a",
+        "b"
+      ],
+      "revised_input_key": "",
+      "revised_input_value": ""
+    },
+    "plan": {
+      "plan_id": "rp_7c809d683d06",
+      "classification": {
+        "finding_code": "LIP_SYNC_MISMATCH",
+        "entity": "render",
+        "owner": "ambiguous",
+        "repair_unit": "human_review",
+        "confidence": 0.2,
+        "ambiguous": true,
+        "causes": [
+          "a",
+          "b"
+        ],
+        "revised_input_key": "",
+        "revised_input_value": ""
+      },
+      "revised_inputs": {},
+      "rerun_checks": [
+        "LIP_SYNC_MISMATCH",
+        "FRAME_COUNT_MISMATCH",
+        "FRAME_MISSING_RANGE",
+        "FRAME_UNDECODABLE",
+        "FRAME_DIMENSION_MISMATCH",
+        "FRAME_BLACK_OR_CORRUPT",
+        "FLICKER_DETECTED",
+        "NOISE_BURST",
+        "EXPOSURE_DISCONTINUITY"
+      ],
+      "locked_artifacts": [],
+      "blocked": true,
+      "block_reason": "ambiguous owner: human review required, no auto-repair"
+    },
+    "invalidation": {
+      "invalidated_artifacts": [],
+      "preserved_artifacts": [
+        "shot_01_render",
+        "shot_02_render",
+        "shot_03_render",
+        "shot_04_render"
+      ],
+      "dependency_graph": {
+        "shot_01_render": [
+          "camera",
+          "facial_track",
+          "render"
+        ],
+        "shot_02_render": [
+          "camera",
+          "render"
+        ],
+        "shot_03_render": [
+          "asset",
+          "render"
+        ],
+        "shot_04_render": [
+          "render"
+        ]
+      }
+    },
+    "rerun_results": {},
+    "attempts": 0,
+    "reason": "low confidence / ambiguous owner: human review required"
+  }
+}

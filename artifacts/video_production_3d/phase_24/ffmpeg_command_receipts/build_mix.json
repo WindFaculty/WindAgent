@@ -1,0 +1,30 @@
+{
+  "command_id": "build_mix",
+  "argv_redacted": [
+    "C:\\Users\\Admin\\AppData\\Local\\Microsoft\\WinGet\\Packages\\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\\ffmpeg-8.1.2-full_build\\bin\\ffmpeg.EXE",
+    "-y",
+    "-i",
+    "<ws>\\dialogue.wav",
+    "-i",
+    "<ws>\\sfx.wav",
+    "-i",
+    "<ws>\\bgm_v2.wav",
+    "-filter_complex",
+    "[0:a]aformat=sample_rates=48000:channel_layouts=stereo[t0];[1:a]aformat=sample_rates=48000:channel_layouts=stereo[t1];[2:a]aformat=sample_rates=48000:channel_layouts=stereo[t2];[t0][t1][t2]amix=inputs=3:duration=longest:normalize=0,loudnorm=I=-16.0:TP=-1.0,alimiter=limit=0.891[aout]",
+    "-map",
+    "[aout]",
+    "-c:a",
+    "pcm_s16le",
+    "<ws>\\mix_v2.wav"
+  ],
+  "exit_code": 0,
+  "started_at": "2026-08-08T11:22:27.001114+00:00",
+  "completed_at": "2026-08-08T11:22:27.080584+00:00",
+  "stdout_bytes": 0,
+  "stderr_bytes": 4199,
+  "stdout_tail": "",
+  "stderr_tail": "nable-libvmaf --enable-libzimg --enable-amf --enable-cuda-llvm --enable-cuvid --enable-dxva2 --enable-d3d11va --enable-d3d12va --enable-ffnvcodec --enable-libvpl --enable-nvdec --enable-nvenc --enable-vaapi --enable-libshaderc --enable-vulkan --enable-libplacebo --enable-opencl --enable-libcdio --enable-openal --enable-libgme --enable-libmodplug --enable-libopenmpt --enable-libopencore-amrwb --enable-libmp3lame --enable-libshine --enable-libtheora --enable-libtwolame --enable-libvo-amrwbenc --enable-libcodec2 --enable-libilbc --enable-libgsm --enable-liblc3 --enable-libopencore-amrnb --enable-libopus --enable-libspeex --enable-libvorbis --enable-ladspa --enable-libbs2b --enable-libflite --enable-libmysofa --enable-librubberband --enable-libsoxr --enable-chromaprint --enable-whisper\r\n  libavutil      60. 26.102 / 60. 26.102\r\n  libavcodec     62. 28.102 / 62. 28.102\r\n  libavformat    62. 12.102 / 62. 12.102\r\n  libavdevice    62.  3.102 / 62.  3.102\r\n  libavfilter    11. 14.102 / 11. 14.102\r\n  libswscale      9.  5.102 /  9.  5.102\r\n  libswresample   6.  3.102 /  6.  3.102\r\n[aist#0:0/pcm_s16le @ 000002cc2f0b3d80] Guessed Channel Layout: mono\r\nInput #0, wav, from 'D:\\code_ca_nhan\\WindAgent\\artifacts\\video_production_3d\\phase_24\\assembly_workspace\\dialogue.wav':\r\n  Metadata:\r\n    encoder         : Lavf62.12.102\r\n  Duration: 00:00:02.00, bitrate: 705 kb/s\r\n  Stream #0:0: Audio: pcm_s16le ([1][0][0][0] / 0x0001), 44100 Hz, mono, s16, 705 kb/s\r\n[aist#1:0/pcm_s16le @ 000002cc2f08d440] Guessed Channel Layout: stereo\r\nInput #1, wav, from 'D:\\code_ca_nhan\\WindAgent\\artifacts\\video_production_3d\\phase_24\\assembly_workspace\\sfx.wav':\r\n  Metadata:\r\n    encoder         : Lavf62.12.102\r\n  Duration: 00:00:01.00, bitrate: 1536 kb/s\r\n  Stream #1:0: Audio: pcm_s16le ([1][0][0][0] / 0x0001), 48000 Hz, stereo, s16, 1536 kb/s\r\n[aist#2:0/pcm_s16le @ 000002cc2f0c7e00] Guessed Channel Layout: stereo\r\nInput #2, wav, from 'D:\\code_ca_nhan\\WindAgent\\artifacts\\video_production_3d\\phase_24\\assembly_workspace\\bgm_v2.wav':\r\n  Metadata:\r\n    encoder         : Lavf62.12.102\r\n  Duration: 00:00:02.00, bitrate: 1536 kb/s\r\n  Stream #2:0: Audio: pcm_s16le ([1][0][0][0] / 0x0001), 48000 Hz, stereo, s16, 1536 kb/s\r\nStream mapping:\r\n  Stream #0:0 (pcm_s16le) -> aformat:default\r\n  Stream #1:0 (pcm_s16le) -> aformat:default\r\n  Stream #2:0 (pcm_s16le) -> aformat:default\r\n  alimiter:default -> Stream #0:0 (pcm_s16le)\r\nPress [q] to stop, [?] for help\r\nOutput #0, wav, to 'D:\\code_ca_nhan\\WindAgent\\artifacts\\video_production_3d\\phase_24\\assembly_workspace\\mix_v2.wav':\r\n  Metadata:\r\n    ISFT            : Lavf62.12.102\r\n  Stream #0:0: Audio: pcm_s16le ([1][0][0][0] / 0x0001), 192000 Hz, stereo, s16, 6144 kb/s\r\n    Metadata:\r\n      encoder         : Lavc62.28.102 pcm_s16le\r\n[out#0/wav @ 000002cc30db5580] video:0KiB audio:1500KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: 0.006641%\r\nsize=    1500KiB time=00:00:02.00 bitrate=6144.4kbits/s speed=69.1x elapsed=0:00:00.02    \r\n",
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stderr_sha256": "ea2a4aadeb9e5a7f1921d72056b8be6782f472fa462564f082bf0ea1e0dc03cd",
+  "ok": true
+}

@@ -1,26 +1,19 @@
-﻿<#
+<#
 scripts/healthcheck.ps1
-Phase 9 — Healthcheck môi trường cho WindAgent MVP.
+Healthcheck moi truong cho WindAgent.
 
-Kiểm tra:
+Kiem tra:
   [CRIT] Python >= 3.10
   [CRIT] uv (package manager cho workspace)
   [CRIT] node + npm >= 18
-  [CRIT] root workspace + apps/api + apps/worker + apps/cli manifests tồn tại
-  [CRIT] apps/desktop/package.json tồn tại
-  [OPT]  Rust + cargo + tauri CLI (cho Tauri build; Phase 9 defer OK)
-  [OPT]  Ollama chạy ở localhost:11434
-  [OPT]  Model qwen3:4b-q4 đã pull
-  [OPT]  Architecture V2 API /health/live trả OK (chỉ check nếu cổng mở)
-  [OPT]  Vite dev server chạy ở :5173
+  [CRIT] root workspace + apps/api + apps/worker + apps/cli manifests ton tai
+  [CRIT] apps/web & apps/desktop manifests ton tai
+  [OPT]  Rust + cargo + tauri CLI
+  [OPT]  Ollama chay o localhost:11434
+  [OPT]  Model qwen3:4b-q4 da pull
+  [OPT]  Architecture V2 API /health/live tra OK
+  [OPT]  Vite dev server chay o :5173
   [WARN] artifacts/logs writable
-
-Tham số:
-  -BackendUrl <url>    URL backend để probe /health (mặc định http://127.0.0.1:8765)
-  -SkipBackend         Bỏ qua probe backend (khi backend chưa chạy)
-  -Quiet               Chỉ in FAIL + summary
-
-Exit code: 0 nếu tất cả CRIT pass; 1 nếu có CRIT fail.
 #>
 [CmdletBinding()]
 param(
@@ -35,9 +28,9 @@ $ApiDir = Join-Path $RepoRoot "apps\api"
 $WorkerDir = Join-Path $RepoRoot "apps\worker"
 $CliDir = Join-Path $RepoRoot "apps\cli"
 $DesktopDir = Join-Path $RepoRoot "apps\desktop"
+$WebDir = Join-Path $RepoRoot "apps\web"
 $LogsDir = Join-Path $RepoRoot "artifacts\logs"
 
-# PowerShell 5.1 console mặc định cp1252 — set UTF-8 để in đúng tiếng Việt.
 try {
     [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
     $OutputEncoding = [System.Text.Encoding]::UTF8
@@ -96,10 +89,10 @@ if ($pythonCmd) {
     if ($maj -ge 3 -and $min -ge 10) {
         Write-Item "Python" "PASS" "CRIT" "$pyVer ($pythonCmd)"
     } else {
-        Write-Item "Python" "FAIL" "CRIT" "$pyVer — cần >= 3.10"
+        Write-Item "Python" "FAIL" "CRIT" "$pyVer - can >= 3.10"
     }
 } else {
-    Write-Item "Python" "FAIL" "CRIT" "không tìm thấy python trong PATH"
+    Write-Item "Python" "FAIL" "CRIT" "khong tim thay python trong PATH"
 }
 
 # 2. uv
@@ -117,7 +110,7 @@ if ($uvPath) {
     $uvVer = & $uvPath --version 2>&1
     Write-Item "uv" "PASS" "CRIT" "$uvVer ($uvPath)"
 } else {
-    Write-Item "uv" "FAIL" "CRIT" "chưa cài — irm https://astral.sh/uv/install.ps1 | iex"
+    Write-Item "uv" "FAIL" "CRIT" "chua cai - irm https://astral.sh/uv/install.ps1 | iex"
 }
 
 # 3. Node + npm
@@ -129,13 +122,13 @@ if (Get-Command node -ErrorAction SilentlyContinue) {
             $npmVer = & npm --version
             Write-Item "node + npm" "PASS" "CRIT" "node v$nodeVer, npm $npmVer"
         } else {
-            Write-Item "node + npm" "FAIL" "CRIT" "có node nhưng thiếu npm"
+            Write-Item "node + npm" "FAIL" "CRIT" "co node nhung thieu npm"
         }
     } else {
-        Write-Item "node + npm" "FAIL" "CRIT" "node v$nodeVer — cần >= 18"
+        Write-Item "node + npm" "FAIL" "CRIT" "node v$nodeVer - can >= 18"
     }
 } else {
-    Write-Item "node + npm" "FAIL" "CRIT" "chưa cài — https://nodejs.org/"
+    Write-Item "node + npm" "FAIL" "CRIT" "chua cai - https://nodejs.org/"
 }
 
 # 4. Canonical workspace manifests
@@ -150,14 +143,17 @@ $missingManifests = @($workspaceManifests | Where-Object { -not (Test-Path $_) }
 if ($missingManifests.Count -eq 0) {
     Write-Item "canonical workspace manifests" "PASS" "CRIT" "root + API + Worker + CLI"
 } else {
-    Write-Item "canonical workspace manifests" "FAIL" "CRIT" "thiếu: $($missingManifests -join ', ')"
+    Write-Item "canonical workspace manifests" "FAIL" "CRIT" "thieu: $($missingManifests -join ', ')"
 }
 
-# 5. package.json desktop
-if (Test-Path (Join-Path $DesktopDir "package.json")) {
-    Write-Item "apps/desktop manifest" "PASS" "CRIT" "package.json"
+# 5. Frontend manifests (apps/web & apps/desktop)
+$hasWebManifest = Test-Path (Join-Path $WebDir "package.json")
+$hasDesktopManifest = Test-Path (Join-Path $DesktopDir "package.json")
+
+if ($hasWebManifest -and $hasDesktopManifest) {
+    Write-Item "frontend manifests" "PASS" "CRIT" "apps/web & apps/desktop package.json"
 } else {
-    Write-Item "apps/desktop manifest" "FAIL" "CRIT" "thiếu package.json"
+    Write-Item "frontend manifests" "FAIL" "CRIT" "thieu package.json trong apps/web hoac apps/desktop"
 }
 
 # 7. Rust + Tauri CLI
@@ -167,7 +163,7 @@ if (Get-Command cargo -ErrorAction SilentlyContinue) {
     $hasRust = $true
     Write-Item "Rust + cargo" "PASS" "OPT" $rustVer
 } else {
-    Write-Item "Rust + cargo" "WARN" "OPT" "chưa cài — Tauri build defer; dùng Vite dev"
+    Write-Item "Rust + cargo" "WARN" "OPT" "chua cai - Tauri build defer; dung Vite dev"
 }
 $hasTauri = $false
 if (& npm exec --no -- tauri --version 2>$null) {
@@ -178,7 +174,7 @@ if (& npm exec --no -- tauri --version 2>$null) {
     }
 }
 if (-not $hasTauri) {
-    Write-Item "Tauri CLI" "WARN" "OPT" "chưa cài — 'npm install -D @tauri-apps/cli' (Phase 9 defer OK)"
+    Write-Item "Tauri CLI" "WARN" "OPT" "chua cai - 'npm install -D @tauri-apps/cli' (Phase 9 defer OK)"
 }
 
 # 8. Ollama
@@ -195,37 +191,36 @@ if ($ollama) {
             }
         }
         if ($hasQwen) {
-            Write-Item "Ollama" "PASS" "OPT" "running + qwen3:* đã pull"
+            Write-Item "Ollama" "PASS" "OPT" "running + qwen3:* da pull"
         } else {
-            Write-Item "Ollama" "WARN" "OPT" "running nhưng chưa pull qwen3:* — 'ollama pull qwen3:4b'"
+            Write-Item "Ollama" "WARN" "OPT" "running nhung chua pull qwen3:* - 'ollama pull qwen3:4b'"
         }
     } catch {
-        Write-Item "Ollama" "WARN" "OPT" "$ollama có nhưng không chạy (mở app Ollama)"
+        Write-Item "Ollama" "WARN" "OPT" "$ollama co nhung khong chay (mo app Ollama)"
     }
 } else {
-    Write-Item "Ollama" "WARN" "OPT" "chưa cài — backend sẽ dùng mock planner"
+    Write-Item "Ollama" "WARN" "OPT" "chua cai - backend se dung mock planner"
 }
 
 # 9. Backend /health
 if ($SkipBackend) {
-        Write-Item "API /health/live" "SKIP" "OPT" "bỏ qua theo -SkipBackend"
+    Write-Item "API /health/live" "SKIP" "OPT" "bo qua theo -SkipBackend"
 } else {
     try {
         $health = Invoke-RestMethod -Uri "$BackendUrl/health/live" -Method Get -TimeoutSec 3
         $status = $health.status
         if ($status -eq "live") {
-            Write-Item "API /health/live" "PASS" "OPT" "$BackendUrl/health/live → live"
+            Write-Item "API /health/live" "PASS" "OPT" "$BackendUrl/health/live -> live"
         } else {
-            Write-Item "API /health/live" "WARN" "OPT" "trả $status"
+            Write-Item "API /health/live" "WARN" "OPT" "tra $status"
         }
     } catch {
-        Write-Item "API /health/live" "WARN" "OPT" "chưa chạy ($BackendUrl) — 'scripts/dev_api.ps1'"
+        Write-Item "API /health/live" "WARN" "OPT" "chua chay ($BackendUrl) - 'scripts/dev_api.ps1'"
     }
 }
 
 # 10. Vite dev server
 if (-not $SkipBackend) {
-    # Vite mặc định bind ::1 (IPv6 localhost) — thử cả hai
     $viteHosts = @("http://localhost:5173", "http://127.0.0.1:5173")
     $viteOk = $false
     $viteLastErr = ""
@@ -233,7 +228,7 @@ if (-not $SkipBackend) {
         try {
             $resp = Invoke-WebRequest -Uri $url -Method Get -TimeoutSec 2 -UseBasicParsing
             if ($resp.StatusCode -eq 200) {
-                Write-Item "Vite dev :5173" "PASS" "OPT" "$url → running"
+                Write-Item "Vite dev :5173" "PASS" "OPT" "$url -> running"
                 $viteOk = $true
                 break
             }
@@ -242,7 +237,7 @@ if (-not $SkipBackend) {
         }
     }
     if (-not $viteOk) {
-        Write-Item "Vite dev :5173" "WARN" "OPT" "chưa chạy — 'scripts/dev_desktop.ps1' (last: $viteLastErr)"
+        Write-Item "Vite dev :5173" "WARN" "OPT" "chua chay - 'scripts/dev_frontend.ps1' (last: $viteLastErr)"
     }
 }
 
@@ -254,7 +249,7 @@ try {
     Remove-Item $probe -ErrorAction SilentlyContinue
     Write-Item "artifacts/logs writable" "PASS" "INFO" $LogsDir
 } catch {
-    Write-Item "artifacts/logs writable" "WARN" "INFO" "không ghi được: $($_.Exception.Message)"
+    Write-Item "artifacts/logs writable" "WARN" "INFO" "khong ghi duoc: $($_.Exception.Message)"
 }
 
 # --- Summary ---
@@ -264,13 +259,13 @@ Write-Host ("  PASS: {0}    WARN: {1}    SKIP: {2}    FAIL: {3}" -f $passCount, 
 
 if ($failCount -gt 0) {
     Write-Host ""
-    Write-Host "Có $failCount mục CRIT bị FAIL. Sửa các mục trên trước khi chạy MVP." -ForegroundColor Red
+    Write-Host "Co $failCount muc CRIT bi FAIL. Sua cac muc tren truoc khi chay MVP." -ForegroundColor Red
     exit 1
 } else {
     Write-Host ""
-    Write-Host "Tất cả CRIT đã PASS. MVP sẵn sàng khởi động." -ForegroundColor Green
+    Write-Host "Tat ca CRIT da PASS. MVP san sang khoi dong." -ForegroundColor Green
     Write-Host "  scripts/dev_api.ps1        # Terminal 1: API" -ForegroundColor DarkGray
-    Write-Host "  scripts/dev_desktop.ps1    # Terminal 2: frontend" -ForegroundColor DarkGray
+    Write-Host "  scripts/dev_frontend.ps1   # Terminal 2: Web UI (apps/web)" -ForegroundColor DarkGray
+    Write-Host "  scripts/dev_desktop.ps1    # Terminal 3: Desktop UI (apps/desktop)" -ForegroundColor DarkGray
     exit 0
 }
-

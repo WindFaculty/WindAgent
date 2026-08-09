@@ -1,0 +1,157 @@
+{
+  "phase": "phase_21",
+  "gate": "VP3D_P21_RENDER_RECOVERY_VERIFIED",
+  "gate_passed": true,
+  "backlog": {
+    "1_chunk_size_from_measured_time_and_recovery_overhead": true,
+    "2_idempotency_reservation_and_lease_fencing": true,
+    "3_atomic_publish_validation": true,
+    "4_crash_reconcile_and_resume_from_next_valid_frame": true,
+    "5_stale_worker_cannot_publish_after_transfer": true,
+    "6_retry_classification": true,
+    "7_oom_replan_and_no_useless_retry": true
+  },
+  "chunk_sizing": {
+    "measured_seconds_per_frame": 0.5,
+    "recovery_overhead_seconds": 10.0,
+    "recovery_fraction_budget": 0.1,
+    "suggested_chunk_frames": 200,
+    "exceeds_budget": false,
+    "shot_frames": "1-100",
+    "chunks_planned": 1
+  },
+  "lease": {
+    "reserved_before_side_effect": true,
+    "duplicate_dispatch_rejected": true,
+    "expiry_detected": "ACTIVE",
+    "transferred_to": "worker-b",
+    "stale_worker_fenced": true,
+    "new_owner_valid": true
+  },
+  "publish_validation": {
+    "valid_frame": {
+      "published": true,
+      "sha256": "99f1e8c6f32d9467e72e8f9affc92d23590c8789c3585971bfb803c2e4044576"
+    },
+    "zero_byte": {
+      "blocked": true,
+      "error": "0-byte frame rejected: D:\\code_ca_nhan\\WindAgent\\artifacts\\video_production_3d\\phase_21\\demo_workspace\\frame_0002.png.tmp"
+    },
+    "undecodable": {
+      "blocked": true,
+      "error": "undecodable frame rejected: D:\\code_ca_nhan\\WindAgent\\artifacts\\video_production_3d\\phase_21\\demo_workspace\\frame_0002.png.tmp"
+    },
+    "wrong_dimension": {
+      "blocked": true,
+      "error": "wrong dimensions 640x480, expected 1920x1080"
+    },
+    "wrong_hash": {
+      "blocked": true,
+      "error": "hash mismatch for frame_0004.png.tmp: expected deadbeef"
+    },
+    "stale_worker_publish": {
+      "blocked": true,
+      "error": "worker worker-a lost the lease on chunk ej_recovery_001:chunk-000; its frames must not be published"
+    }
+  },
+  "recovery_receipt": {
+    "crash_detected": true,
+    "lease_transferred": true,
+    "resume_frame": 28,
+    "revised_attempt": 1,
+    "frames_rendered_after_resume": [
+      28,
+      29,
+      30
+    ],
+    "final_status": "PUBLISHED",
+    "validated_frames": [
+      26,
+      27,
+      28,
+      29,
+      30
+    ],
+    "reason": "worker worker-a dead; lease transferred to worker-b (token 479c01f6...); resume from frame 28"
+  },
+  "retry_classification": {
+    "oom": {
+      "cause": "OOM",
+      "retryable": true,
+      "remaining_attempts": 2,
+      "replan": {
+        "cause": "OOM",
+        "mitigation": "texture_downscale",
+        "chunk_size_factor": 0.5,
+        "note": "OOM triggers mitigation/replan: run Phase 20 texture_downscale on the derived scene and halve the chunk size"
+      }
+    },
+    "blender_crash": {
+      "cause": "BLENDER_CRASH",
+      "retryable": true,
+      "remaining_attempts": 2,
+      "replan": null
+    },
+    "bad_asset": {
+      "cause": "BAD_ASSET",
+      "retryable": false,
+      "remaining_attempts": 0,
+      "replan": null
+    },
+    "timeout": {
+      "cause": "TIMEOUT",
+      "retryable": true,
+      "remaining_attempts": 2,
+      "replan": {
+        "cause": "TIMEOUT",
+        "mitigation": "smaller_chunk",
+        "chunk_size_factor": 0.5,
+        "note": "timeout suggests per-frame cost under-estimation; halve chunk size"
+      }
+    },
+    "disk_full": {
+      "cause": "DISK_FULL",
+      "retryable": false,
+      "remaining_attempts": 0,
+      "replan": null
+    },
+    "user_cancel": {
+      "cause": "USER_CANCEL",
+      "retryable": false,
+      "remaining_attempts": 0,
+      "replan": null
+    },
+    "unknown": {
+      "cause": "UNKNOWN",
+      "retryable": false,
+      "remaining_attempts": 0,
+      "replan": null
+    },
+    "oom_attempt_2": {
+      "cause": "OOM",
+      "retryable": true,
+      "remaining_attempts": 0,
+      "replan": {
+        "cause": "OOM",
+        "mitigation": "texture_downscale",
+        "chunk_size_factor": 0.5,
+        "note": "OOM triggers mitigation/replan: run Phase 20 texture_downscale on the derived scene and halve the chunk size"
+      }
+    }
+  },
+  "validation": {
+    "tests": "192 passed",
+    "ruff": "PASS",
+    "global_architecture_checker": "13 pre-existing/concurrent violations (core<->storage dependency cycle in untracked concurrent work) outside Phase 21 paths; Phase 21-scoped architecture suite passed 5/5"
+  },
+  "evidence_files": [
+    "artifacts/video_production_3d/phase_21/job_plan.json",
+    "artifacts/video_production_3d/phase_21/lease_recovery.json",
+    "artifacts/video_production_3d/phase_21/publish_validation.json",
+    "artifacts/video_production_3d/phase_21/recovery_receipt.json",
+    "artifacts/video_production_3d/phase_21/retry_classification.json",
+    "artifacts/video_production_3d/phase_21/test_baseline.json",
+    "artifacts/video_production_3d/phase_21/evidence.json",
+    "artifacts/video_production_3d/phase_21/phase_verdict.json"
+  ]
+}

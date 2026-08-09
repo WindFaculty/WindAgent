@@ -1,0 +1,16 @@
+{
+  "status": "KNOWN_FAILURES",
+  "suite": "pytest tests/unit/",
+  "passed": 2059,
+  "failed": 6,
+  "skipped": 3,
+  "failed_tests": [
+    "tests/unit/core/test_phase7_version_authority.py::test_checker_passes_from_repository_root",
+    "tests/unit/core/test_phase7_version_authority.py::test_checker_passes_from_subdirectory",
+    "tests/unit/verification/test_phase03_verifier_no_write.py::test_no_write_exits_zero_and_leaves_evidence_untouched",
+    "tests/unit/verification/test_phase03_verifier_no_write.py::test_verify_only_alias_exits_zero_and_leaves_evidence_untouched",
+    "tests/unit/verification/test_phase27_release.py::test_evidence_validation_lane_lineage",
+    "tests/unit/verification/test_phase27_release.py::test_ci_run_manifest_aggregates_all_required_lanes"
+  ],
+  "timestamp": "2026-08-08T08:20:10Z"
+}

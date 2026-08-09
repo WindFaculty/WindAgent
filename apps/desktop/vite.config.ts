@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import path from "path";
 
 // Vite config for the WindAgent desktop app.
 //
@@ -10,9 +11,21 @@ import react from "@vitejs/plugin-react";
 // WebSocket path is `/ws/...` which the proxy also forwards.
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    alias: {
+      '@windagent/production-contracts': path.resolve(__dirname, '../../frontend/packages/production-contracts/src/index.ts'),
+      '@windagent/production-client': path.resolve(__dirname, '../../frontend/packages/production-client/src/index.ts'),
+      '@windagent/production-platform': path.resolve(__dirname, '../../frontend/packages/production-platform/src/index.ts'),
+      '@windagent/production-state': path.resolve(__dirname, '../../frontend/packages/production-state/src/index.ts'),
+      '@windagent/production-ui': path.resolve(__dirname, '../../frontend/packages/production-ui/src/index.ts'),
+    },
+  },
   server: {
     port: 5173,
     strictPort: true,
+    fs: {
+      allow: ['..', '../../frontend'],
+    },
     proxy: {
               "/api": {
                 target: "http://127.0.0.1:8765",

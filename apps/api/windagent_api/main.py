@@ -39,7 +39,12 @@ from windagent_api.routers.v2_evals import router as v2_evals_router
 from windagent_api.routers.v2_observability import router as v2_observability_router
 from windagent_api.routers.v2_browser import router as v2_browser_router
 from windagent_api.routers.v2_production_workspace import router as v2_production_workspace_router
+from windagent_api.routers.v2_screenplay_workspace import router as v2_screenplay_workspace_router
+from windagent_api.routers.v2_assets import router as v2_assets_router
+from windagent_api.routers.v2_collaboration import router as v2_collaboration_router
 from windagent_api.routers.v2_conversations import router as v2_conversations_router
+from windagent_api.routers.v2_conflict_recovery import router as v2_conflict_recovery_router
+
 from windagent_api.routers.conversation_streams import router as conversation_streams_router
 
 logger = logging.getLogger("windagent.api.main")
@@ -146,7 +151,12 @@ app.include_router(v2_evals_router)
 app.include_router(v2_observability_router)
 app.include_router(v2_browser_router)
 app.include_router(v2_production_workspace_router)
+app.include_router(v2_screenplay_workspace_router)
+app.include_router(v2_assets_router)
+app.include_router(v2_collaboration_router)
 app.include_router(v2_conversations_router)
+app.include_router(v2_conflict_recovery_router)
+
 app.include_router(conversation_streams_router)
 
 

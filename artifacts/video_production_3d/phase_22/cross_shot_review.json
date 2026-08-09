@@ -1,0 +1,58 @@
+{
+  "pinned_references": {
+    "character_ref": "char_hero",
+    "location_ref": "loc_kitchen"
+  },
+  "planted_defects": {
+    "identity_drift": "0.95 -> 0.45 across shots",
+    "lighting_ref_change": "light_kitchen -> light_night"
+  },
+  "findings": [
+    {
+      "code": "CROSS_SHOT_IDENTITY_MISMATCH",
+      "severity": "WARNING",
+      "entity": "char_hero",
+      "frame_range": null,
+      "evidence": {
+        "pinned_character_ref": "char_hero",
+        "shots": [
+          "shot_01",
+          "shot_02"
+        ],
+        "identity_scores": [
+          0.95,
+          0.45
+        ],
+        "drift": 0.5,
+        "max_drift": 0.15
+      },
+      "confidence": 1.0,
+      "suggested_repair": "human_review",
+      "causes": [
+        "asset_revision",
+        "lighting_change",
+        "facial_animation"
+      ]
+    },
+    {
+      "code": "CROSS_SHOT_LIGHTING_MISMATCH",
+      "severity": "WARNING",
+      "entity": "loc_kitchen",
+      "frame_range": null,
+      "evidence": {
+        "pinned_location_ref": "loc_kitchen",
+        "shots": [
+          "shot_01",
+          "shot_02"
+        ],
+        "lighting_refs": [
+          "light_kitchen",
+          "light_night"
+        ]
+      },
+      "confidence": 0.8,
+      "suggested_repair": "lighting_fix",
+      "causes": []
+    }
+  ]
+}

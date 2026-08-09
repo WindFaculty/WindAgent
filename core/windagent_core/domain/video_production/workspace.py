@@ -24,6 +24,9 @@ from windagent_core.domain.video_production.ids import (
 class WorkspaceCommandType(str, Enum):
     """Mutating command types supported by API V2 workspace router."""
 
+    UPDATE_SCENE = "UPDATE_SCENE"
+    ADD_SHOT = "ADD_SHOT"
+    UPDATE_ASSET = "UPDATE_ASSET"
     APPROVE_CANDIDATE = "APPROVE_CANDIDATE"
     REJECT_CANDIDATE = "REJECT_CANDIDATE"
     OVERRIDE_CANDIDATE = "OVERRIDE_CANDIDATE"
@@ -32,13 +35,38 @@ class WorkspaceCommandType(str, Enum):
     CANCEL_JOB = "CANCEL_JOB"
     PUBLISH_DELIVERABLE = "PUBLISH_DELIVERABLE"
 
+    # Stage D Universal Asset Commands (UI23)
+    IMPORT_ASSET = "IMPORT_ASSET"
+    UPLOAD_ASSET = "UPLOAD_ASSET"
+    DISCOVER_ASSET = "DISCOVER_ASSET"
+    DOWNLOAD_ASSET = "DOWNLOAD_ASSET"
+    REQUEST_ASSET_GENERATION = "REQUEST_ASSET_GENERATION"
+    NORMALIZE_ASSET = "NORMALIZE_ASSET"
+    VALIDATE_ASSET = "VALIDATE_ASSET"
+    APPROVE_ASSET = "APPROVE_ASSET"
+    REJECT_ASSET = "REJECT_ASSET"
+    UPDATE_LICENSE = "UPDATE_LICENSE"
+    CREATE_ASSET_REVISION = "CREATE_ASSET_REVISION"
+    BIND_ASSET = "BIND_ASSET"
+    UNBIND_ASSET = "UNBIND_ASSET"
+    ARCHIVE_ASSET = "ARCHIVE_ASSET"
+
+
 
 class WorkspaceCommandStatus(str, Enum):
     """Execution outcome of a workspace mutating command."""
 
     COMPLETED = "COMPLETED"
     REJECTED_STALE = "REJECTED_STALE"
+    REJECTED_LOCKED = "REJECTED_LOCKED"
+    IDEMPOTENCY_MISMATCH = "IDEMPOTENCY_MISMATCH"
     FAILED = "FAILED"
+
+
+def compute_payload_hash(data: dict[str, Any]) -> str:
+    """Canonical SHA-256 hash of command payload for idempotency mismatch checks."""
+    canonical_str = json.dumps(data, sort_keys=True)
+    return hashlib.sha256(canonical_str.encode("utf-8")).hexdigest()
 
 
 @dataclass(frozen=True)
@@ -88,6 +116,7 @@ class WorkspaceSnapshot:
     project_id: VideoProjectId
     revision_id: ProductionRevisionId
     project_status: str
+    revision_status: str
     creative_brief_locked: bool
     screenplay_locked: bool
     total_shots: int
@@ -96,6 +125,9 @@ class WorkspaceSnapshot:
     human_takeover_state: HumanTakeoverPanelState | None
     current_sequence: int
     authorized_media_urls: dict[str, str] = field(default_factory=dict)
+    screenplay: dict[str, Any] = field(default_factory=dict)
+    asset_summary: dict[str, Any] = field(default_factory=dict)
+    pipeline_summary: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -110,6 +142,7 @@ class WorkspaceCommandRequest:
     reason: str
     idempotency_key: str
     payload: dict[str, Any] = field(default_factory=dict)
+    client_context: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -120,4 +153,6 @@ class WorkspaceCommandResult:
     status: WorkspaceCommandStatus
     updated_revision_id: ProductionRevisionId
     message: str
+    current_sequence: int = 0
     payload: dict[str, Any] = field(default_factory=dict)
+

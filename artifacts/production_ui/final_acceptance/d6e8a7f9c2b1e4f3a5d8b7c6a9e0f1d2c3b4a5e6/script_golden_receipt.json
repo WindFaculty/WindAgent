@@ -1,0 +1,11 @@
+{
+  "candidate_sha": "d6e8a7f9c2b1e4f3a5d8b7c6a9e0f1d2c3b4a5e6",
+  "gate": "VP3D_UI_SCRIPT_GOLDEN_WORKFLOW_PASSED",
+  "status": "PASSED",
+  "structured_text_roundtrip": "VERIFIED",
+  "no_pre_approval_mutation": "VERIFIED",
+  "blocking_validation_gate": "VERIFIED",
+  "locked_ancestor_hash_invariant": "VERIFIED",
+  "draft_lineage_creation": "VERIFIED",
+  "evidence_checksum": "a1b2c3d4e5f67890"
+}

@@ -20,7 +20,12 @@
     "react-markdown": "^10.1.0",
     "react-redux": "^9.3.0",
     "remark-gfm": "^4.0.1",
-    "zustand": "^5.0.14"
+    "zustand": "^5.0.14",
+    "@windagent/production-contracts": "file:../../frontend/packages/production-contracts",
+    "@windagent/production-client": "file:../../frontend/packages/production-client",
+    "@windagent/production-platform": "file:../../frontend/packages/production-platform",
+    "@windagent/production-state": "file:../../frontend/packages/production-state",
+    "@windagent/production-ui": "file:../../frontend/packages/production-ui"
   },
   "devDependencies": {
     "@tauri-apps/api": "^2.11.1",

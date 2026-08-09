@@ -12,6 +12,8 @@ import { MultiAgentWorkspace } from "./pages/MultiAgentWorkspace";
 import { MultiAgentProvider } from "./state/multiAgentStore";
 import { fetchHermesHealth, fetchHealth } from "./api/client";
 import { Endpoints } from "./pages/Endpoints";
+import { AssetWorkspace } from "./components/assets/AssetWorkspace";
+import { ProductionWorkspacePage } from "./pages/ProductionWorkspacePage";
 
 // ADR 0006 §3: MultiAgentWorkspace is the canonical (target) workspace UI;
 function useConversationId(): string {
@@ -33,11 +35,15 @@ export function App() {
   const [activeTab, setActiveTab] = useState<string>("dashboard");
   const conversationId = useConversationId();
   const [isModelsExpanded, setIsModelsExpanded] = useState<boolean>(false);
+  const [isProductionExpanded, setIsProductionExpanded] = useState<boolean>(true);
   const [refreshInterval, setRefreshInterval] = useState<string>("10s");
 
   useEffect(() => {
     if (activeTab === "models-library" || activeTab === "models-endpoints") {
       setIsModelsExpanded(true);
+    }
+    if (activeTab.startsWith("production-")) {
+      setIsProductionExpanded(true);
     }
   }, [activeTab]);
 
@@ -414,6 +420,68 @@ export function App() {
               </svg>
               Router
             </div>
+
+            {/* Production Workspace Section */}
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              <div
+                className={`nav-item ${activeTab.startsWith("production-") ? "active" : ""}`}
+                onClick={() => {
+                  setIsProductionExpanded(!isProductionExpanded);
+                  if (!activeTab.startsWith("production-")) {
+                    setActiveTab("production-script");
+                  }
+                }}
+                style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                  <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                  Production
+                </div>
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  style={{
+                    transform: isProductionExpanded ? "rotate(180deg)" : "rotate(0deg)",
+                    transition: "transform 0.2s",
+                    opacity: 0.6
+                  }}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+
+              {isProductionExpanded && (
+                <div style={{ paddingLeft: "24px", display: "flex", flexDirection: "column", gap: "2px", marginTop: "2px" }}>
+                  <div
+                    className={`nav-item ${activeTab === "production-script" ? "active" : ""}`}
+                    onClick={() => setActiveTab("production-script")}
+                    style={{ padding: "8px 12px", fontSize: "0.85rem" }}
+                  >
+                    📜 Script Workspace
+                  </div>
+                  <div
+                    className={`nav-item ${activeTab === "production-assets" ? "active" : ""}`}
+                    onClick={() => setActiveTab("production-assets")}
+                    style={{ padding: "8px 12px", fontSize: "0.85rem" }}
+                  >
+                    🎨 Asset Library
+                  </div>
+                  <div
+                    className={`nav-item ${activeTab === "production-video" ? "active" : ""}`}
+                    onClick={() => setActiveTab("production-video")}
+                    style={{ padding: "8px 12px", fontSize: "0.85rem" }}
+                  >
+                    🎬 Video Workspace
+                  </div>
+                </div>
+              )}
+            </div>
             <div
               className={`nav-item ${activeTab === "settings" ? "active" : ""}`}
               onClick={() => setActiveTab("settings")}
@@ -488,6 +556,10 @@ export function App() {
             </MultiAgentProvider>
           )}
           {activeTab === "router" && <Router />}
+          {activeTab === "asset-library" && <AssetWorkspace />}
+          {activeTab === "production-script" && <ProductionWorkspacePage initialPage="script" />}
+          {activeTab === "production-assets" && <ProductionWorkspacePage initialPage="assets" />}
+          {activeTab === "production-video" && <ProductionWorkspacePage initialPage="video" />}
           {activeTab === "settings" && <Settings />}
         </div>
       </div>

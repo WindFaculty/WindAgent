@@ -1,0 +1,42 @@
+{
+  "phase": "phase_21",
+  "gate": "VP3D_P21_RENDER_RECOVERY_VERIFIED",
+  "producer": "phase-21-fault-tolerant-render-jobs",
+  "recorded_at": "2026-08-08T09:09:25.986835+00:00",
+  "command": "D:\\code_ca_nhan\\WindAgent\\.venv\\Scripts\\python.exe -m pytest tests/unit/tools/test_phase21_render_jobs.py tests/architecture/test_phase21_render_jobs_architecture.py tests/unit/tools/test_phase19_cycles_renderer.py tests/architecture/test_phase19_cycles_architecture.py tests/unit/tools/test_phase20_vram_budget.py tests/architecture/test_phase20_vram_architecture.py tests/unit/tools/test_phase3_blender_adapter.py tests/unit/tools/test_phase3_blender_runtime.py tests/unit/tools/test_phase4_blender_scene.py -q -p no:cacheprovider --basetemp D:\\code_ca_nhan\\WindAgent\\artifacts\\video_production_3d\\phase_21\\pytest_phase21_01",
+  "summary": {
+    "passed": 192,
+    "failed": 0,
+    "skipped": 0
+  },
+  "suites": [
+    {
+      "file": "tests/unit/tools/test_phase21_render_jobs.py",
+      "covers": "chunk sizing from measured timing; job model + deterministic content hashes; idempotency reservation + duplicate dispatch; lease expiry/transfer + stale-worker fencing; atomic publish validation (0-byte/undecodable/wrong dims/wrong hash); crash reconcile + resume from next valid frame; missing frame files; changed-input-hash invalidation; retry classification matrix; adapter chunk-plan wiring"
+    },
+    {
+      "file": "tests/architecture/test_phase21_render_jobs_architecture.py",
+      "covers": "bpy-free boundary; no dynamic code execution; core never imports the Blender render-jobs kernel; adapter boundary intact"
+    },
+    {
+      "files": [
+        "tests/unit/tools/test_phase19_cycles_renderer.py",
+        "tests/architecture/test_phase19_cycles_architecture.py",
+        "tests/unit/tools/test_phase20_vram_budget.py",
+        "tests/architecture/test_phase20_vram_architecture.py",
+        "tests/unit/tools/test_phase3_blender_adapter.py",
+        "tests/unit/tools/test_phase3_blender_runtime.py",
+        "tests/unit/tools/test_phase4_blender_scene.py"
+      ],
+      "covers": "regression coverage for Cycles profiles, device policy, VRAM budget, adapter receipts, runtime, and scene pipeline"
+    }
+  ],
+  "lint": {
+    "command": "python -m ruff check <Phase 21 changed Python files>",
+    "result": "PASS"
+  },
+  "global_architecture_checker": {
+    "result": "FAIL (13 pre-existing/concurrent violations outside Phase 21 paths)",
+    "detail": "13 pre-existing/concurrent violations (core<->storage dependency cycle in untracked concurrent work) outside Phase 21 paths; Phase 21-scoped architecture suite passed 5/5"
+  }
+}

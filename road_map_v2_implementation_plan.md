@@ -15,6 +15,22 @@ Kết quả cuối cùng cần đạt được:
 
 Tài liệu này không thay thế roadmap kiến trúc. `road_map_v2.md` vẫn là nguồn quyết định sản phẩm; tài liệu này là execution plan.
 
+### 1.1 Chín kế hoạch Stage độc lập
+
+| Stage | Kế hoạch |
+| --- | --- |
+| A | [Shared Production Frontend Foundation](docs/roadmap_v2/stage_a_shared_frontend_foundation_plan.md) |
+| B | [Production API Foundation](docs/roadmap_v2/stage_b_production_api_foundation_plan.md) |
+| C | [Screenplay Workspace](docs/roadmap_v2/stage_c_screenplay_workspace_plan.md) |
+| D | [Universal Production Asset Domain](docs/roadmap_v2/stage_d_universal_asset_domain_plan.md) |
+| E | [Script ↔ Asset Integration](docs/roadmap_v2/stage_e_script_asset_integration_plan.md) |
+| F | [Human + Agent Collaboration](docs/roadmap_v2/stage_f_human_agent_collaboration_plan.md) |
+| G | [Offline, Recovery & Conflict Handling](docs/roadmap_v2/stage_g_recovery_conflict_plan.md) |
+| H | [Testing & Verification](docs/roadmap_v2/stage_h_testing_plan.md) |
+| I | [Final Acceptance](docs/roadmap_v2/stage_i_final_acceptance_plan.md) |
+
+Mỗi file trên là một kế hoạch tự chứa, có baseline, phạm vi, dependency, backlog theo UI Phase, acceptance, test, rủi ro, exit checklist và điều kiện bàn giao riêng. Phần còn lại của tài liệu này giữ vai trò master plan xuyên Stage.
+
 ---
 
 ## 2. Baseline codebase và giả định triển khai
@@ -1289,4 +1305,3 @@ Thứ tự 15 backlog item đầu tiên:
 15. chuyển event client/replay thành shared production client.
 
 Sau item 15 và khi UI7 pass, tách team thành Script track UI8–18 và Asset track UI19–33.
-

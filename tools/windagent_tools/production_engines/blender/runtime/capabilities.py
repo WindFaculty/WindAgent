@@ -14,9 +14,8 @@ enumerated: an empty device list is CPU-only, not GPU-ready.
 from __future__ import annotations
 
 import json
-import asyncio
 from dataclasses import dataclass, field
-from typing import List, Optional, Sequence
+from typing import List, Optional
 
 from windagent_tools.production_engines.blender.runtime.process import (
     BlenderProcessPort,
@@ -49,22 +48,29 @@ try:
     prefs = bpy.context.preferences.addons["cycles"].preferences
     # Force the compute backend so Cycles populates its device list (an empty
     # device list then genuinely means CPU-only — fail closed).
+    seen = set()
+    selected_backend = "NONE"
     for backend in ("OPTIX", "CUDA"):
         try:
             prefs.compute_device_type = backend
-            break
+            devices = prefs.get_devices() or getattr(prefs, "devices", []) or []
+            if isinstance(devices, tuple):
+                devices = [item for group in devices
+                           for item in (group if isinstance(group, (list, tuple)) else [group])]
+            for device in devices:
+                key = (getattr(device, "name", ""), getattr(device, "type", ""))
+                if key in seen:
+                    continue
+                seen.add(key)
+                out["cycles_devices"].append(
+                    {"name": key[0], "type": key[1],
+                     "compute": getattr(device, "compute_component_type", "")}
+                )
+                if str(key[1]).upper() == backend and selected_backend == "NONE":
+                    selected_backend = backend
         except Exception:
             continue
-    out["cycles_compute"] = getattr(prefs, "compute_device_type", "NONE")
-    try:
-        devices = getattr(prefs, "devices", None)
-        if devices is None or len(devices) == 0:
-            devices = prefs.get_devices() or []
-        out["cycles_devices"] = [{"name": d.name, "type": d.type,
-                                  "compute": getattr(d, "compute_component_type", "")}
-                                 for d in devices]
-    except Exception:
-        out["cycles_devices"] = []
+    out["cycles_compute"] = selected_backend
 except Exception:
     pass
 for cat, names in (("importers", "import_"), ("exporters", "export_")):
@@ -300,9 +306,10 @@ class BlenderGpuProbe:
                 gpu_ready=False,
                 reason="no CUDA/OptiX/Metal device enumerated by Cycles; CPU-only",
             )
-        backend = gpu_devices[0].device_type.upper()
-        if backend == "OPTIX":
-            backend = "OPTIX"
+        # Report the same preference the production selector will use; probe
+        # enumeration order is Blender/driver-dependent and not a policy.
+        available = {device.device_type.upper() for device in gpu_devices}
+        backend = "OPTIX" if "OPTIX" in available else "CUDA"
         return BlenderGpuProbeResult(
             gpu_ready=True,
             backend=backend,

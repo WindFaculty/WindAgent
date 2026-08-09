@@ -1,0 +1,46 @@
+{
+  "defect_run_verdict": "REJECT",
+  "pipeline": [
+    "SCRIPT",
+    "IR",
+    "ASSETS",
+    "SCENE",
+    "ANIMATION_AUDIO",
+    "FACIAL",
+    "RENDER",
+    "REVIEW_REPAIR",
+    "FFMPEG",
+    "FINAL"
+  ],
+  "resume_skipped_nodes": [
+    "SCRIPT",
+    "IR",
+    "ASSETS",
+    "SCENE",
+    "ANIMATION_AUDIO",
+    "FACIAL",
+    "RENDER"
+  ],
+  "run_statuses_after_cancel": {
+    "ANIMATION_AUDIO": "COMPLETED",
+    "ASSETS": "COMPLETED",
+    "FACIAL": "COMPLETED",
+    "IR": "COMPLETED",
+    "RENDER": "COMPLETED",
+    "REVIEW_REPAIR": "CANCELLED",
+    "SCENE": "COMPLETED",
+    "SCRIPT": "COMPLETED"
+  },
+  "run_statuses_after_resume": {
+    "ANIMATION_AUDIO": "SKIPPED",
+    "ASSETS": "SKIPPED",
+    "FACIAL": "SKIPPED",
+    "FFMPEG": "COMPLETED",
+    "FINAL": "COMPLETED",
+    "IR": "SKIPPED",
+    "RENDER": "SKIPPED",
+    "REVIEW_REPAIR": "COMPLETED",
+    "SCENE": "SKIPPED",
+    "SCRIPT": "SKIPPED"
+  }
+}

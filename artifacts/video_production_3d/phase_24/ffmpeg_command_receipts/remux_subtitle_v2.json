@@ -1,0 +1,32 @@
+{
+  "command_id": "remux_subtitle_v2",
+  "argv_redacted": [
+    "C:\\Users\\Admin\\AppData\\Local\\Microsoft\\WinGet\\Packages\\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\\ffmpeg-8.1.2-full_build\\bin\\ffmpeg.EXE",
+    "-y",
+    "-i",
+    "<ws>\\final_08ee5d7fb10f.mp4",
+    "-i",
+    "<ws>\\subtitle_vi_v2.srt",
+    "-map",
+    "0:v",
+    "-map",
+    "0:a",
+    "-map",
+    "1:s",
+    "-c",
+    "copy",
+    "-c:s",
+    "mov_text",
+    "<ws>\\final_staging.mp4"
+  ],
+  "exit_code": 0,
+  "started_at": "2026-08-08T11:22:27.081091+00:00",
+  "completed_at": "2026-08-08T11:22:27.110600+00:00",
+  "stdout_bytes": 0,
+  "stderr_bytes": 4806,
+  "stdout_tail": "",
+  "stderr_tail": " --enable-libspeex --enable-libvorbis --enable-ladspa --enable-libbs2b --enable-libflite --enable-libmysofa --enable-librubberband --enable-libsoxr --enable-chromaprint --enable-whisper\r\n  libavutil      60. 26.102 / 60. 26.102\r\n  libavcodec     62. 28.102 / 62. 28.102\r\n  libavformat    62. 12.102 / 62. 12.102\r\n  libavdevice    62.  3.102 / 62.  3.102\r\n  libavfilter    11. 14.102 / 11. 14.102\r\n  libswscale      9.  5.102 /  9.  5.102\r\n  libswresample   6.  3.102 /  6.  3.102\r\nInput #0, mov,mp4,m4a,3gp,3g2,mj2, from 'D:\\code_ca_nhan\\WindAgent\\artifacts\\video_production_3d\\phase_24\\assembly_workspace\\final_08ee5d7fb10f.mp4':\r\n  Metadata:\r\n    major_brand     : isom\r\n    minor_version   : 512\r\n    compatible_brands: isomiso2avc1mp41\r\n    encoder         : Lavf62.12.102\r\n  Duration: 00:00:01.90, start: 0.000000, bitrate: 204 kb/s\r\n  Stream #0:0[0x1](und): Video: h264 (High) (avc1 / 0x31637661), yuv420p(progressive), 320x180 [SAR 1:1 DAR 16:9], 57 kb/s, 30 fps, 30 tbr, 15360 tbn (default)\r\n    Metadata:\r\n      handler_name    : VideoHandler\r\n      encoder         : Lavc62.28.102 libx264\r\n  Stream #0:1[0x2](und): Audio: aac (LC) (mp4a / 0x6134706D), 48000 Hz, stereo, fltp, 128 kb/s (default)\r\n    Metadata:\r\n      handler_name    : SoundHandler\r\n  Stream #0:2[0x3](und): Subtitle: mov_text (tx3g / 0x67337874), 0 kb/s (default)\r\n    Metadata:\r\n      handler_name    : SubtitleHandler\r\nInput #1, srt, from 'D:\\code_ca_nhan\\WindAgent\\artifacts\\video_production_3d\\phase_24\\assembly_workspace\\subtitle_vi_v2.srt':\r\n  Duration: N/A, bitrate: N/A\r\n  Stream #1:0: Subtitle: subrip (srt)\r\n[sost#0:2 @ 000002125660bf40] Multiple -codec/-c/-acodec/-vcodec/-scodec/-dcodec options specified for stream 2, only the last option '-codec:s mov_text' will be used.\r\nStream mapping:\r\n  Stream #0:0 -> #0:0 (copy)\r\n  Stream #0:1 -> #0:1 (copy)\r\n  Stream #1:0 -> #0:2 (subrip (srt) -> mov_text (native))\r\nPress [q] to stop, [?] for help\r\nOutput #0, mp4, to 'D:\\code_ca_nhan\\WindAgent\\artifacts\\video_production_3d\\phase_24\\assembly_workspace\\final_staging.mp4':\r\n  Metadata:\r\n    major_brand     : isom\r\n    minor_version   : 512\r\n    compatible_brands: isomiso2avc1mp41\r\n    encoder         : Lavf62.12.102\r\n  Stream #0:0(und): Video: h264 (High) (avc1 / 0x31637661), yuv420p(progressive), 320x180 [SAR 1:1 DAR 16:9], q=2-31, 57 kb/s, 30 fps, 30 tbr, 15360 tbn (default)\r\n    Metadata:\r\n      handler_name    : VideoHandler\r\n      encoder         : Lavc62.28.102 libx264\r\n  Stream #0:1(und): Audio: aac (LC) (mp4a / 0x6134706D), 48000 Hz, stereo, fltp, 128 kb/s (default)\r\n    Metadata:\r\n      handler_name    : SoundHandler\r\n  Stream #0:2: Subtitle: mov_text (tx3g / 0x67337874)\r\n    Metadata:\r\n      encoder         : Lavc62.28.102 mov_text\r\n[out#0/mp4 @ 000002125441ef00] video:13KiB audio:30KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: 9.125228%\r\nframe=   57 fps=0.0 q=-1.0 Lsize=      47KiB time=00:00:01.83 bitrate= 211.9kbits/s speed=1.55e+03x elapsed=0:00:00.00    \r\n",
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stderr_sha256": "f7030d6a80f5af3e8543da9123793b700ce90ed604cf4b7be37fb7d99ee2bf47",
+  "ok": true
+}

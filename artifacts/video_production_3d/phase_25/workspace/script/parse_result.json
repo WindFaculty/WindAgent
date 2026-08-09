@@ -1,0 +1,14 @@
+{
+  "diagnostics": [],
+  "dialogue_texts": [
+    "Hi, Bob!"
+  ],
+  "logline": "",
+  "requires_review": false,
+  "scene_count": 1,
+  "scene_titles": [
+    "INT. PARK - DAY"
+  ],
+  "success": true,
+  "title": "GOLDEN SCENE"
+}

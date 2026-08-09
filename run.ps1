@@ -1,9 +1,9 @@
 <#
 .SYNOPSIS
-    run.ps1 - Menu khoi chay WindAgent (Frontend / API / Desktop App).
+    run.ps1 - Menu khoi chay WindAgent (Web UI / API / Desktop App).
 
 .DESCRIPTION
-    Launcher tong hop voi menu tuong tac.
+    Launcher tong hop voi menu tuong tac va ho tro truyen tham so -Option.
     Goi cac script con trong thu muc scripts/.
 
 .PARAMETER BackendPort
@@ -11,11 +11,15 @@
 
 .PARAMETER FrontendPort
     Cong Vite dev server. Mac dinh: 5173.
+
+.PARAMETER Option
+    Lua chon menu khoi chay truc tiep (1-7, 0).
 #>
 [CmdletBinding()]
 param(
-    [int] $BackendPort  = 8765,
-    [int] $FrontendPort = 5173
+    [int]    $BackendPort  = 8765,
+    [int]    $FrontendPort = 5173,
+    [string] $Option       = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -62,40 +66,39 @@ function Show-Menu {
     Write-Host "  |        W I N D A G E N T   L A U N C H E R          |" -ForegroundColor Cyan
     Write-Host "  +======================================================+" -ForegroundColor Cyan
     Write-Host ""
-    Write-Host "  -- Che do Web (truy cap qua trinh duyet) ---------------" -ForegroundColor DarkGray
+    Write-Host "  -- Che do Web App (apps/web) ----------------------------" -ForegroundColor DarkGray
     Write-Host ""
     Write-Host "  [1]  Web Dev - Mock Mode" -ForegroundColor Green
-    Write-Host "       Backend (mock model + mock GUI) + Vite UI" -ForegroundColor DarkGray
+    Write-Host "       Backend API (Mock) + Vite Web UI (apps/web)" -ForegroundColor DarkGray
     Write-Host ""
     Write-Host "  [2]  Web Dev - Real Mode" -ForegroundColor Green
-    Write-Host "       Backend (Ollama + PyAutoGUI) + Vite UI" -ForegroundColor DarkGray
+    Write-Host "       Backend API (Ollama + PyAutoGUI) + Vite Web UI (apps/web)" -ForegroundColor DarkGray
     Write-Host ""
-    Write-Host "  -- Che do Desktop App (Tauri) ---------------------------" -ForegroundColor DarkGray
+    Write-Host "  -- Che do Desktop App (apps/desktop - Tauri) ------------" -ForegroundColor DarkGray
     Write-Host ""
     Write-Host "  [3]  Desktop App - Mock Mode" -ForegroundColor Yellow
-    Write-Host "       Backend (mock) + Tauri shell" -ForegroundColor DarkGray
+    Write-Host "       Backend API (Mock) + Tauri shell (apps/desktop)" -ForegroundColor DarkGray
     Write-Host ""
     Write-Host "  [4]  Desktop App - Real Mode" -ForegroundColor Yellow
-    Write-Host "       Backend (Ollama + PyAutoGUI) + Tauri shell" -ForegroundColor DarkGray
+    Write-Host "       Backend API (Ollama + PyAutoGUI) + Tauri shell (apps/desktop)" -ForegroundColor DarkGray
     Write-Host ""
     Write-Host "  -- Tien ich -----------------------------------------------" -ForegroundColor DarkGray
     Write-Host ""
-    Write-Host "  [5]  Chi chay Backend (Mock)" -ForegroundColor Magenta
-    Write-Host "  [6]  Chi chay Frontend (Vite)" -ForegroundColor Magenta
+    Write-Host "  [5]  Chi chay Backend API (Mock)" -ForegroundColor Magenta
+    Write-Host "  [6]  Chi chay Web UI (Vite apps/web)" -ForegroundColor Magenta
     Write-Host "  [7]  Health Check moi truong" -ForegroundColor Magenta
     Write-Host ""
     Write-Host "  [0]  Thoat" -ForegroundColor DarkGray
     Write-Host ""
-    Write-Host "  +------------------------------------------------------+" -ForegroundColor DarkGray
+    Write-Host "  +------------------------------------------------------+ " -ForegroundColor DarkGray
     Write-Host ""
 }
 
-# --- Vong lap menu ---
-while ($true) {
-    Show-Menu
-    $choice = Read-Host "  Nhap lua chon"
+# --- Thuc thi khoi chay ---
+function Execute-Option {
+    param([string]$SelectedChoice)
 
-    switch ($choice.Trim()) {
+    switch ($SelectedChoice.Trim()) {
 
         "1" {
             Write-Host "`n  -> Khoi dong Web Dev - Mock Mode..." -ForegroundColor Green
@@ -103,8 +106,9 @@ while ($true) {
                 -ExtraArgs @("-Port $BackendPort") `
                 -Title "WindAgent - API (Mock)"
             Start-Sleep -Milliseconds 800
-            Write-Host "  -> Chay Frontend tai cua so nay..." -ForegroundColor Green
-            & powershell -ExecutionPolicy Bypass -File $FrontendScript -Port $FrontendPort
+            Write-Host "  -> Chay Web UI (apps/web) tai cua so nay..." -ForegroundColor Green
+            & $FrontendScript -Port $FrontendPort
+            return $false
         }
 
         "2" {
@@ -113,8 +117,9 @@ while ($true) {
                 -ExtraArgs @("-Port $BackendPort -Mock:`$false") `
                 -Title "WindAgent - API (Real)"
             Start-Sleep -Milliseconds 800
-            Write-Host "  -> Chay Frontend tai cua so nay..." -ForegroundColor Green
-            & powershell -ExecutionPolicy Bypass -File $FrontendScript -Port $FrontendPort
+            Write-Host "  -> Chay Web UI (apps/web) tai cua so nay..." -ForegroundColor Green
+            & $FrontendScript -Port $FrontendPort
+            return $false
         }
 
         "3" {
@@ -123,8 +128,9 @@ while ($true) {
                 -ExtraArgs @("-Port $BackendPort") `
                 -Title "WindAgent - API (Mock)"
             Start-Sleep -Milliseconds 800
-            Write-Host "  -> Chay Tauri shell tai cua so nay..." -ForegroundColor Yellow
-            & powershell -ExecutionPolicy Bypass -File $DesktopScript -Port $FrontendPort
+            Write-Host "  -> Chay Tauri shell (apps/desktop) tai cua so nay..." -ForegroundColor Yellow
+            & $DesktopScript -Port $FrontendPort
+            return $false
         }
 
         "4" {
@@ -133,29 +139,31 @@ while ($true) {
                 -ExtraArgs @("-Port $BackendPort -Mock:`$false") `
                 -Title "WindAgent - API (Real)"
             Start-Sleep -Milliseconds 800
-            Write-Host "  -> Chay Tauri shell tai cua so nay..." -ForegroundColor Yellow
-            & powershell -ExecutionPolicy Bypass -File $DesktopScript -Port $FrontendPort
+            Write-Host "  -> Chay Tauri shell (apps/desktop) tai cua so nay..." -ForegroundColor Yellow
+            & $DesktopScript -Port $FrontendPort
+            return $false
         }
 
         "5" {
             Write-Host "`n  -> Chi chay API (Mock)..." -ForegroundColor Magenta
-            & powershell -ExecutionPolicy Bypass -File $ApiScript -Port $BackendPort
+            & $ApiScript -Port $BackendPort
+            return $false
         }
 
         "6" {
-            Write-Host "`n  -> Chi chay Frontend (Vite)..." -ForegroundColor Magenta
-            & powershell -ExecutionPolicy Bypass -File $FrontendScript -Port $FrontendPort
+            Write-Host "`n  -> Chi chay Web UI (Vite apps/web)..." -ForegroundColor Magenta
+            & $FrontendScript -Port $FrontendPort
+            return $false
         }
 
         "7" {
             if (Test-Path $HealthScript) {
                 Write-Host "`n  -> Chay Health Check..." -ForegroundColor Magenta
-                & powershell -ExecutionPolicy Bypass -File $HealthScript
+                & $HealthScript
             } else {
                 Write-Host "`n  [!] Khong tim thay scripts\healthcheck.ps1" -ForegroundColor Red
             }
-            Write-Host "`n  Nhan phim bat ky de quay lai menu..." -ForegroundColor DarkGray
-            [void]$Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+            return $true
         }
 
         "0" {
@@ -164,8 +172,35 @@ while ($true) {
         }
 
         default {
-            Write-Host "`n  [!] Lua chon khong hop le. Thu lai." -ForegroundColor Red
+            Write-Host "`n  [!] Lua chon khong hop le: '$SelectedChoice'" -ForegroundColor Red
             Start-Sleep -Milliseconds 700
+            return $true
         }
+    }
+}
+
+# --- Neu tham so -Option duoc truyen ---
+if ($Option) {
+    [void](Execute-Option -SelectedChoice $Option)
+    exit 0
+}
+
+# --- Vong lap menu tuong tac ---
+while ($true) {
+    Show-Menu
+    try {
+        $choice = Read-Host "  Nhap lua chon"
+    } catch {
+        Write-Host "`n  [!] Terminal khong ho tro nhap tuong tac (StandardInput unreadable/non-interactive)." -ForegroundColor Yellow
+        Write-Host "  Meo: Chay voi tham so: .\run.ps1 -Option <1-7>" -ForegroundColor Cyan
+        exit 0
+    }
+
+    $shouldContinue = Execute-Option -SelectedChoice $choice
+    if ($shouldContinue -and $choice.Trim() -eq "7") {
+        Write-Host "`n  Nhan phim bat ky de quay lai menu..." -ForegroundColor DarkGray
+        try {
+            [void]$Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+        } catch { }
     }
 }

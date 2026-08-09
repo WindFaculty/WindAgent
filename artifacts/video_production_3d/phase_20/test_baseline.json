@@ -1,0 +1,40 @@
+{
+  "phase": "phase_20",
+  "gate": "VP3D_P20_VRAM_BUDGET_VERIFIED",
+  "producer": "phase-20-vram-budget-manager",
+  "recorded_at": "2026-08-08T09:00:01.954016+00:00",
+  "command": "C:\\Users\\Admin\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\python.exe -m pytest tests/unit/tools/test_phase20_vram_budget.py tests/architecture/test_phase20_vram_architecture.py tests/unit/tools/test_phase19_cycles_renderer.py tests/architecture/test_phase19_cycles_architecture.py tests/unit/tools/test_phase3_blender_adapter.py tests/unit/tools/test_phase3_blender_runtime.py tests/unit/tools/test_phase4_blender_scene.py -q -p no:cacheprovider --basetemp D:\\code_ca_nhan\\WindAgent\\artifacts\\video_production_3d\\phase_20\\pytest_phase20_01",
+  "summary": {
+    "passed": 144,
+    "failed": 0,
+    "skipped": 0
+  },
+  "suites": [
+    {
+      "file": "tests/unit/tools/test_phase20_vram_budget.py",
+      "covers": "per-category estimation with uncertainty; policy thresholds and calibration; controlled mitigation chain with derived revisions and quality impacts; adapter block-before-launch gate"
+    },
+    {
+      "file": "tests/architecture/test_phase20_vram_architecture.py",
+      "covers": "bpy-free boundary; no dynamic code execution; core never imports the Blender VRAM budget; adapter boundary intact"
+    },
+    {
+      "files": [
+        "tests/unit/tools/test_phase19_cycles_renderer.py",
+        "tests/architecture/test_phase19_cycles_architecture.py",
+        "tests/unit/tools/test_phase3_blender_adapter.py",
+        "tests/unit/tools/test_phase3_blender_runtime.py",
+        "tests/unit/tools/test_phase4_blender_scene.py"
+      ],
+      "covers": "regression coverage for Cycles profiles, device policy, adapter receipts, runtime, and scene pipeline"
+    }
+  ],
+  "lint": {
+    "command": "python -m ruff check <Phase 20 changed Python files>",
+    "result": "PASS"
+  },
+  "global_architecture_checker": {
+    "result": "FAIL (13 pre-existing/concurrent violations outside Phase 20 paths)",
+    "detail": "13 pre-existing/concurrent violations outside Phase 20 paths (core<->storage dependency cycle in untracked concurrent work); Phase 20-scoped architecture suite passed 4/4"
+  }
+}

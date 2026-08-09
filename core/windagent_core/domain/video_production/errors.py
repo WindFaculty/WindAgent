@@ -468,6 +468,98 @@ class ProceduralCompileError(ValidationError):
     retryable = False
 
 
+# ---------------------------------------------------------------------------
+# Stage M End-to-End (VP3D Phase 25 — Golden Scene)
+# ---------------------------------------------------------------------------
+class GoldenSceneBlockingDefectError(VideoProductionProtocolError):
+    """Raised when the orchestrator detects a blocking defect at a node.
+
+    The orchestrator never swallows a blocking finding: it either records it
+    on the receipt (verdict REJECT) or raises this error when the defect
+    prevents any further execution.
+    """
+
+    code = "VP_GOLDEN_SCENE_BLOCKING_DEFECT"
+    category = "VIDEO_PRODUCTION_E2E"
+    retryable = False
+
+
+class GoldenSceneResumeMismatchError(IntegrityError):
+    """Raised when a restart supplies different inputs than the checkpoint.
+
+    A golden scene run is immutable: restarting with a different fixture /
+    manifest must start a NEW run id, never silently resume the old one.
+    """
+
+    code = "VP_GOLDEN_SCENE_RESUME_MISMATCH"
+    category = "VIDEO_PRODUCTION_E2E"
+    retryable = False
+
+
+class GoldenSceneValidationError(ValidationError):
+    """Raised for an invalid golden scene fixture / manifest."""
+
+    code = "VP_GOLDEN_SCENE_INVALID"
+    category = "VIDEO_PRODUCTION_E2E"
+    retryable = False
+
+
+# ---------------------------------------------------------------------------
+# Stage M End-to-End (VP3D Phase 26 — Multi-Scene Episode)
+# ---------------------------------------------------------------------------
+class EpisodeValidationError(ValidationError):
+    """Raised for an invalid episode fixture / manifest / schedule."""
+
+    code = "VP_EPISODE_INVALID"
+    category = "VIDEO_PRODUCTION_E2E"
+    retryable = False
+
+
+class EpisodeResumeMismatchError(IntegrityError):
+    """Raised when a restart supplies different inputs than the checkpoint.
+
+    An episode run is immutable: restarting with a different fixture /
+    manifest must start a NEW run id, never silently resume the old one.
+    """
+
+    code = "VP_EPISODE_RESUME_MISMATCH"
+    category = "VIDEO_PRODUCTION_E2E"
+    retryable = False
+
+
+class EpisodeCachePolicyError(VideoProductionProtocolError):
+    """Raised when an asset cache reuse would violate a pinned policy.
+
+    The cache never silently reuses an asset whose approval state or
+    revision contract forbids reuse (backlog 1/6 — rejected reuse is an
+    explicit, recorded decision, never an implicit one).
+    """
+
+    code = "VP_EPISODE_CACHE_POLICY"
+    category = "VIDEO_PRODUCTION_E2E"
+    retryable = False
+
+
+class EpisodeOrderingMismatchError(IntegrityError):
+    """Raised when recorded episode ordering differs from the fixture.
+
+    Stable episode ordering (backlog 2): the recorded scene/shot order of a
+    run must match the fixture-derived order exactly.
+    """
+
+    code = "VP_EPISODE_ORDERING_MISMATCH"
+    category = "VIDEO_PRODUCTION_E2E"
+    retryable = False
+
+
+class EpisodeDependencyCycleError(VideoProductionProtocolError):
+    """Raised when the branch dependency graph contains a cycle (backlog 3)."""
+
+    code = "VP_EPISODE_DEPENDENCY_CYCLE"
+    category = "VIDEO_PRODUCTION_E2E"
+    retryable = False
+
+
 __all__ = [
     "VideoProductionProtocolError",
     "UnsupportedMajorVersionError",
@@ -508,4 +600,14 @@ __all__ = [
     "VisemeMapMissingPhonemeError",
     "FacialRepairError",
     "FacialBakeError",
+    # Stage M End-to-End (VP3D Phase 25 — Golden Scene)
+    "GoldenSceneBlockingDefectError",
+    "GoldenSceneResumeMismatchError",
+    "GoldenSceneValidationError",
+    # Stage M End-to-End (VP3D Phase 26 — Multi-Scene Episode)
+    "EpisodeValidationError",
+    "EpisodeResumeMismatchError",
+    "EpisodeCachePolicyError",
+    "EpisodeOrderingMismatchError",
+    "EpisodeDependencyCycleError",
 ]

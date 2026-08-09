@@ -32,7 +32,7 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Dict, List, Optional
 
@@ -54,8 +54,6 @@ from windagent_core.domain.video_production.production_ir.models import (
     SceneDescription,
     ShotExecutionIntent,
 )
-from windagent_core.contracts.video_production.production_engine import ProductionEnginePort
-
 from windagent_tools.production_engines.blender.manifest import (
     AddonGateError,
     BlenderAddonManifest,
@@ -86,6 +84,28 @@ from windagent_tools.production_engines.blender.runtime.supervisor import (
 from windagent_tools.production_engines.blender.runtime.receipts import (
     BlenderExecutionReceipt,
     BlenderFailureClassification,
+)
+from windagent_tools.production_engines.blender.rendering import (
+    CPU_FALLBACK_DENY,
+    DEVICE_AUTO,
+    BlenderCyclesDeviceSelector,
+    BlenderRenderProfileCompiler,
+    RenderDevicePolicyError,
+    RenderProfileCompileError,
+    build_render_cache_key,
+)
+from windagent_tools.production_engines.blender.render_jobs import (
+    RenderJobPolicy,
+)
+from windagent_tools.production_engines.blender.technical_review import (
+    PreRenderReviewer,
+    TechnicalReviewPolicy,
+)
+from windagent_tools.production_engines.blender.vram_budget import (
+    SceneResourceManifest,
+    VramBudgetDecision,
+    VramBudgetPolicy,
+    VramMitigationPlanner,
 )
 from windagent_tools.production_engines.blender.validator import (
     BlenderVersionPolicy,
@@ -121,6 +141,11 @@ class BlenderEngineConfig:
     heartbeat_seconds: float = 5.0
     cancel_grace_seconds: float = 10.0
     default_timeout_seconds: float = 300.0
+    requested_cycles_device: str = DEVICE_AUTO
+    cpu_fallback_policy: str = CPU_FALLBACK_DENY
+    vram_budget_policy: Optional[VramBudgetPolicy] = None
+    render_job_policy: Optional[RenderJobPolicy] = None
+    technical_review_policy: Optional[TechnicalReviewPolicy] = None
 
 
 @dataclass(frozen=True)
@@ -158,6 +183,8 @@ class BlenderEngineAdapter:
         validator: Optional[BlenderVersionValidator] = None,
         capability_probe: Optional[BlenderCapabilityProbe] = None,
         gpu_probe: Optional[BlenderGpuProbe] = None,
+        render_profile_compiler: Optional[BlenderRenderProfileCompiler] = None,
+        device_selector: Optional[BlenderCyclesDeviceSelector] = None,
         process_port: Optional[BlenderProcessPort] = None,
     ) -> None:
         self._config = config
@@ -173,6 +200,10 @@ class BlenderEngineAdapter:
             process_port=process_port
         )
         self._gpu_probe = gpu_probe or BlenderGpuProbe()
+        self._render_profile_compiler = (
+            render_profile_compiler or BlenderRenderProfileCompiler()
+        )
+        self._device_selector = device_selector or BlenderCyclesDeviceSelector()
         self._manifest = config.addon_manifest or BlenderAddonManifest.empty()
 
         self._launcher = BlenderJobLauncher(
@@ -307,8 +338,50 @@ class BlenderEngineAdapter:
             job_workspace=job_workspace,
             spec_payload=payload,
             timeout_seconds=timeout_seconds,
-            idempotency_key=f"{kind}:{payload.get('ir_hash', '')}",
+            idempotency_key=(
+                str(payload.get("render_cache_key") or "")
+                or f"{kind}:{payload.get('ir_hash', '')}"
+            ),
         )
+
+    @classmethod
+    def _unit_hash(cls, unit) -> str:
+        """Stable hash for one IR unit used by the Phase 19 cache identity."""
+        return cls._ir_hash(unit)
+
+    @staticmethod
+    def _resolved_frame_end(render: RenderIntent, units: tuple) -> int:
+        if render.frame_end >= render.frame_start:
+            return render.frame_end
+        shot = next((unit for unit in units if isinstance(unit, ShotExecutionIntent)), None)
+        if shot is not None and shot.duration_seconds > 0:
+            return max(
+                render.frame_start,
+                render.frame_start
+                + int(round(shot.duration_seconds * render.profile.frame_rate))
+                - 1,
+            )
+        return render.frame_start
+
+    def _run_vram_gate(self, manifest_data: Dict, blender_profile) -> VramBudgetDecision:
+        """Estimate + mitigate + verdict for a neutral resource manifest.
+
+        Render-buffer footprint comes from the COMPILED profile resolution so
+        the gate always matches what Blender will actually render.
+        """
+        manifest = SceneResourceManifest.from_dict(manifest_data)
+        resolution = blender_profile.resolution
+        buffers = manifest.render_buffers
+        if buffers.width <= 0 or buffers.height <= 0:
+            manifest = replace(
+                manifest,
+                render_buffers=replace(
+                    buffers,
+                    width=int(resolution.get("width", 0)),
+                    height=int(resolution.get("height", 0)),
+                ),
+            )
+        return VramMitigationPlanner().plan(manifest, self._config.vram_budget_policy)
 
     # ------------------------------------------------------------------
     # ProductionEnginePort
@@ -376,12 +449,173 @@ class BlenderEngineAdapter:
                 metadata={"gate": "addon_allowlist", "job_kind": kind},
             )
 
-        # 3. Build + run the typed job.
+        # 3. Compile the neutral RenderIntent at the adapter boundary. Device
+        # selection is fail-closed: CPU fallback is never implicit.
+        capability = readiness.capability if readiness is not None else None
+        try:
+            if capability is None:
+                raise RenderDevicePolicyError("capability report missing")
+            requested_device = str(
+                render.profile.metadata.get(
+                    "cycles_device", self._config.requested_cycles_device
+                )
+            )
+            device_selection = self._device_selector.select(
+                capability,
+                requested_device=requested_device,
+                cpu_fallback_policy=self._config.cpu_fallback_policy,
+            )
+            dependency_hashes = render.metadata.get("dependency_hashes", {})
+            blender_profile = self._render_profile_compiler.compile(
+                render,
+                device=device_selection.selected_device,
+                dependency_hashes=dependency_hashes,
+            )
+        except (RenderDevicePolicyError, RenderProfileCompileError) as exc:
+            return EngineJobReceipt(
+                job_id=job_id,
+                project_id=project_id or VideoProjectId("vp_unknown"),
+                revision_id=revision_id or ProductionRevisionId("rev_unknown"),
+                ir_hash=ir_hash,
+                status=EngineJobStatus.FAILED,
+                engine_name=self.engine_name,
+                error=f"render profile/device gate blocked job: {exc}",
+                metadata={
+                    "gate": "render_profile_device_policy",
+                    "job_kind": kind,
+                    "cpu_fallback_policy": self._config.cpu_fallback_policy,
+                },
+            )
+
+        # 3.5 VRAM budget gate (Phase 20) — block BEFORE launch with a typed
+        # recommendation when the calibrated estimate exceeds the hard limit
+        # even after the mitigation chain. No data = no gate (estimation needs
+        # a resource manifest), no blind crash/retry when blocked.
+        scene = next((unit for unit in units if isinstance(unit, SceneDescription)), None)
+        vram_decision = None
+        if self._config.vram_budget_policy is not None:
+            manifest_data = render.metadata.get("resource_manifest") or {}
+            if not manifest_data and scene is not None:
+                manifest_data = scene.metadata.get("resource_manifest") or {}
+            if manifest_data:
+                vram_decision = self._run_vram_gate(manifest_data, blender_profile)
+                if vram_decision.blocked:
+                    return EngineJobReceipt(
+                        job_id=job_id,
+                        project_id=project_id or VideoProjectId("vp_unknown"),
+                        revision_id=revision_id or ProductionRevisionId("rev_unknown"),
+                        ir_hash=ir_hash,
+                        status=EngineJobStatus.FAILED,
+                        engine_name=self.engine_name,
+                        error=f"vram budget gate blocked job: {vram_decision.recommendation}",
+                        metadata={
+                            "gate": "vram_budget",
+                            "job_kind": kind,
+                            "vram_budget_decision": vram_decision.to_dict(),
+                        },
+                    )
+
+        frame_end = self._resolved_frame_end(render, units)
+        shot = next((unit for unit in units if isinstance(unit, ShotExecutionIntent)), None)
+
+        # 3.55 Phase 22 technical review gate (Stage K §3 pre-render) - a
+        # BLOCKING deterministic finding (missing object/texture, broken rig,
+        # frame range, camera/character collision, lighting, audio timing,
+        # unapproved asset/add-on, VRAM budget) stops render submission
+        # BEFORE launch. No manifest = no gate (review needs scene data).
+        review_result = None
+        if self._config.technical_review_policy is not None:
+            review_manifest = render.metadata.get("review_manifest") or {}
+            if not review_manifest and scene is not None:
+                review_manifest = scene.metadata.get("review_manifest") or {}
+            if review_manifest:
+                review_result = PreRenderReviewer(
+                    self._config.technical_review_policy
+                ).review(review_manifest)
+                if review_result.blocked:
+                    return EngineJobReceipt(
+                        job_id=job_id,
+                        project_id=project_id or VideoProjectId("vp_unknown"),
+                        revision_id=revision_id or ProductionRevisionId("rev_unknown"),
+                        ir_hash=ir_hash,
+                        status=EngineJobStatus.FAILED,
+                        engine_name=self.engine_name,
+                        error=(
+                            "technical review gate blocked job: "
+                            + "; ".join(
+                                f.code for f in review_result.findings
+                                if f.severity == "BLOCKING"
+                            )
+                        ),
+                        metadata={
+                            "gate": "technical_review",
+                            "job_kind": kind,
+                            "review_findings": [
+                                f.to_dict() for f in review_result.findings
+                            ],
+                        },
+                    )
+
+        # 3.6 Phase 21 render-job plan: chunk the resolved frame range when a
+        # recovery policy is configured. Unmeasured renders get ONE honest
+        # chunk; measured timing sizes chunks via the scheduler. A resume
+        # offset from recovery metadata narrows the first chunk.
+        job_plan = None
+        if self._config.render_job_policy is not None:
+            scheduler = self._config.render_job_policy.scheduler
+            chunk_size = self._config.render_job_policy.chunk_size
+            if chunk_size is None:
+                chunk_size = frame_end - render.frame_start + 1
+            try:
+                ranges = scheduler.plan_chunks(
+                    render.frame_start, frame_end, chunk_size
+                )
+                job_plan = [{"frame_start": s, "frame_end": e} for s, e in ranges]
+            except Exception:
+                job_plan = None
+            resume_from = int(render.metadata.get("resume_from") or 0)
+            if resume_from and job_plan:
+                job_plan[0]["resume_from"] = max(
+                    resume_from, job_plan[0]["frame_start"]
+                )
+
+        scene_hash = (
+            self._unit_hash(scene)
+            if scene is not None
+            else str(render.metadata.get("scene_hash") or "")
+        )
+        if not scene_hash:
+            scene_hash = hashlib.sha256(str(render.scene_id).encode("utf-8")).hexdigest()
+        shot_hash = self._unit_hash(shot) if shot is not None else ""
+        blender_version = (
+            capability.build
+            or (readiness.validation.version_line if readiness.validation else "")
+        )
+        render_cache_key = build_render_cache_key(
+            scene_hash=scene_hash,
+            shot_hash=shot_hash,
+            frame_start=render.frame_start,
+            frame_end=frame_end,
+            profile=blender_profile,
+            blender_version=blender_version,
+            device_class=device_selection.selected_device,
+        )
+
+        # 4. Build + run the typed job.
         payload = {
             "ir_hash": ir_hash,
             "kind": kind,
             "units": [u.model_dump(mode="json") for u in units],
-            "render_profile": render.profile.model_dump(mode="json"),
+            "render_intent_profile": render.profile.model_dump(mode="json"),
+            "render_profile": blender_profile.to_dict(),
+            "render_profile_hash": blender_profile.profile_hash(),
+            "device_selection": device_selection.to_dict(),
+            "render_cache_key": render_cache_key,
+            "frame_start": render.frame_start,
+            "frame_end": frame_end,
+            "chunk_plan": job_plan,
+            "extension": blender_profile.extension,
+            "resolution": dict(blender_profile.resolution),
             "project_id": str(project_id or ""),
             "revision_id": str(revision_id or ""),
         }
@@ -407,8 +641,9 @@ class BlenderEngineAdapter:
                 metadata={"job_kind": kind, "gate": "workspace_validation"},
             )
 
-        # 4. Read the job result + collect output artifacts.
+        # 5. Read the job result + collect output artifacts and raw telemetry.
         output_files = self._collect_output_files(spec)
+        job_result = self._load_job_result(spec.job_id)
         status, error = self._classify(locator.state, execution_receipt)
         return EngineJobReceipt(
             job_id=job_id,
@@ -423,6 +658,17 @@ class BlenderEngineAdapter:
                 "job_kind": kind,
                 "execution_receipt": execution_receipt.to_dict(),
                 "output_files": output_files,
+                "blender_render_profile": blender_profile.to_dict(),
+                "render_profile_hash": blender_profile.profile_hash(),
+                "device_selection": device_selection.to_dict(),
+                "render_cache_key": render_cache_key,
+                "render_job_plan": job_plan,
+                "render_telemetry": (job_result.get("report", {}) or {}).get(
+                    "telemetry", {}
+                ),
+                "vram_budget_decision": (
+                    vram_decision.to_dict() if vram_decision is not None else None
+                ),
             },
         )
 
@@ -525,14 +771,21 @@ class BlenderEngineAdapter:
     def _collect_output_files(self, spec: BlenderJobSpec) -> List[Dict]:
         return self._collect_output_files_for(spec.job_id)
 
-    def _collect_output_files_for(self, job_id) -> List[Dict]:
+    def _load_job_result(self, job_id) -> Dict:
         workspace = self._artifact_root / "blender_jobs" / str(job_id)
         result_path = workspace / "job_result.json"
         if not result_path.is_file():
-            return []
+            return {}
         try:
             result = json.loads(result_path.read_text(encoding="utf-8"))
         except (OSError, ValueError):
+            return {}
+        return result if isinstance(result, dict) else {}
+
+    def _collect_output_files_for(self, job_id) -> List[Dict]:
+        workspace = self._artifact_root / "blender_jobs" / str(job_id)
+        result = self._load_job_result(job_id)
+        if not result:
             return []
 
         # execute_job.py is engine-agnostic and does not know the IR hash; the

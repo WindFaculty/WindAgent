@@ -154,3 +154,9 @@ def get_tool_registry(request: Request) -> ToolRegistry:
 
 def get_permission_engine(request: Request) -> PermissionEngine:
     return PermissionEngine()
+
+
+def get_video_production_uow(request: Request):
+    from windagent_storage.unit_of_work.video_production_uow import VideoProductionUnitOfWork
+    container = get_container(request)
+    return VideoProductionUnitOfWork(container.db.session_factory)

@@ -1,0 +1,16 @@
+{
+  "phase": "phase_24",
+  "gate": "VP3D_P24_FFMPEG_ASSEMBLY_VERIFIED",
+  "schema": "ffmpeg-assembly-1.0",
+  "backlog_completion": {
+    "1_input_normalization_png_exr": "DONE - FrameSequenceNormalizer inspects PNG/EXR sequences with fps/color metadata; missing/duplicate/gap/corrupt/wrong-dimension frames and wrong fps are BLOCKED before assembly (negative matrix in input_sequence_manifest.json proves all seven classes fail closed on REAL generated frames)",
+    "2_edit_decision_list": "DONE - EDL carries shot ordering, frame ranges, xfade transitions with frame-accurate offsets, audio offsets, subtitle track and final duration; planner rejects timeline math drift",
+    "3_audio_normalization_and_mix": "DONE - AudioMixNormalizer normalizes dialogue/SFX/BGM sample rate and channel layout (aformat 48000/stereo), mixes with amix and applies the versioned loudness/peak policy (loudnorm I=-16/TP=-1 + alimiter); REAL ebur128 measurement verifies the built mix within tolerance",
+    "4_allowlisted_argv_no_shell": "DONE - SequenceAssemblyPlanner emits argv LISTS built only from ALLOWED_FILTER_OPS; validate_argv rejects non-allowlisted filters, filter scripts and shell metacharacters; paths with spaces/Unicode/Windows separators pass as single argv elements",
+    "5_staging_verify_atomic_publish": "DONE - output lands in final_staging.mp4, ffprobe + full decode check gate the publish, AtomicPublisher publishes with os.replace and quarantines failed output; a verified deliverable is never overwritten (reuse path tested)",
+    "6_derived_artifacts": "DONE - proxy, thumbnail, subtitle and final MP4 are derived artifacts with own keys and SHA-256 in final_media_manifest.json",
+    "7_exact_hash_audit_trail": "DONE - input hashes (frames + tracks + subtitle), EDL/mix/profile hashes, ffmpeg version + tool hash, redacted argv, stdout/stderr and output hash recorded in ffmpeg_command_receipts/ and final_media_manifest.json",
+    "8_reproducibility_audit": "DONE - audit_manifest_runs: bit-exact REQUIRED only when tool + platform + profile are identical (proven by same-manifest rerun), otherwise manifest/technical-property equality (proven by a different-CRF rerun staying reproducible)",
+    "9_invalidation_scope": "DONE - AssemblyCoordinator: render shot change -> TIMELINE_FINAL (rebuild timeline+final); BGM change -> MIX_FINAL (mix+final rebuilt, visual frame hashes unchanged); subtitle change -> FINAL_ONLY remux with -c copy (no frame rerender); nothing changed -> verified deliverable reused"
+  }
+}

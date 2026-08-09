@@ -1,0 +1,27 @@
+{
+  "phase": "phase_22",
+  "gate": "VP3D_P22_TECHNICAL_REVIEW_VERIFIED",
+  "verdict": "PASS",
+  "decided_at": "2026-08-08T10:44:46.263858+00:00",
+  "summary": "Phase 22 implements the 3D technical reviewer at the Blender adapter boundary (no bpy). PreRenderReviewer runs nine deterministic gates (missing object/texture, broken rig, frame range, camera/character collision, lighting, audio timing, unapproved asset/add-on, VRAM budget via the Phase 20 kernel) and a BLOCKING finding stops render submission before launch (adapter gate technical_review). Post-render: FrameIntegrityReviewer verifies count/decode/dimension/black/missing ranges; TemporalReviewer detects flicker, noise and exposure discontinuity over sliding windows with sustained-violation escalation; ContentReviewer scores identity, lip-sync, occlusion, continuity, motion quality, lighting and camera compliance with deterministic metrics first and an optional VLM port after - a VLM timeout becomes a 0.0-confidence finding (REQUIRES_HUMAN), never a PASS; CrossShotReviewer pins character/location/lighting references. Every finding carries code, severity, entity, frame range, evidence, confidence, suggested repair scope and candidate causes for ambiguous defects. Verdict rule proven on planted defects: REJECT (defective bundle), APPROVE (clean bundle), REQUIRES_HUMAN (VLM timeout). Fixture defects planted per Stage K \u00a76 to prove no false PASS. Test matrix: 259 passed, 0 failed; Ruff PASS.",
+  "backlog_completion": {
+    "1_pre_render_gates": "DONE - deterministic checks for missing object/texture, broken rig, frame range, camera/character collision, lighting, audio timing, unapproved asset/add-on and VRAM budget; any BLOCKING finding stops render submission (adapter gate before launch)",
+    "2_frame_integrity": "DONE - FrameIntegrityReviewer verifies frame count, decode, dimension, black/corrupt frames and missing ranges with per-frame FrameProbe evidence",
+    "3_temporal_review": "DONE - TemporalReviewer detects flicker, noise and exposure discontinuity over sliding temporal windows; sustained violations escalate to BLOCKING",
+    "4_content_review_deterministic_first": "DONE - ContentReviewer runs deterministic metrics for identity, lip-sync, occlusion, continuity, motion quality, lighting and camera compliance; an optional VLM outcome merges after and a VLM timeout is a low-confidence finding, never a PASS",
+    "5_cross_shot_pinned_references": "DONE - CrossShotReviewer compares shots ONLY through pinned character / location / lighting continuity references",
+    "6_finding_structure": "DONE - every finding carries code, severity, entity, frame range, evidence, confidence, suggested repair scope and - for ambiguous defects - candidate causes instead of an auto-picked repair",
+    "7_verdict_rule": "DONE - blocking -> REJECT; no blocking but findings / low confidence / creative conflict -> REQUIRES_HUMAN (never auto-pass); every required dimension covered and clean -> APPROVE"
+  },
+  "evidence_files": [
+    "artifacts/video_production_3d/phase_22/deterministic_findings.json",
+    "artifacts/video_production_3d/phase_22/temporal_review.json",
+    "artifacts/video_production_3d/phase_22/cross_shot_review.json",
+    "artifacts/video_production_3d/phase_22/review_verdict.json",
+    "artifacts/video_production_3d/phase_22/vlm_reviewer.json",
+    "artifacts/video_production_3d/phase_22/test_baseline.json",
+    "artifacts/video_production_3d/phase_22/evidence.json",
+    "artifacts/video_production_3d/phase_22/phase_verdict.json"
+  ],
+  "known_unrelated_workspace_issue": "The repository-wide architecture checker reports 13 violations in concurrently added, non-Phase-22 core command_dispatcher/query_service/storage files (core<->storage dependency cycle). No Phase 22 path is listed; the dedicated Phase 22 architecture suite passed 6/6."
+}

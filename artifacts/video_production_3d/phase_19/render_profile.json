@@ -1,0 +1,52 @@
+{
+  "adaptive_sampling": true,
+  "adaptive_threshold": 0.1,
+  "artifact_class": "PREVIEW",
+  "bounce_budget": {
+    "diffuse_bounces": 2,
+    "glossy_bounces": 2,
+    "max_bounces": 4,
+    "transmission_bounces": 4,
+    "transparent_bounces": 4,
+    "volume_bounces": 0
+  },
+  "color_management": {
+    "exposure": 0.0,
+    "film_transparent": false,
+    "gamma": 1.0,
+    "look": "Medium High Contrast",
+    "view_transform": "AgX"
+  },
+  "denoise": true,
+  "dependency_hashes": {
+    "scene_blend": "80656e9a7426b44473eaa28ce34f9b0ffd9668a808fda54163b3b44627a4912b"
+  },
+  "device": "OPTIX",
+  "engine": "CYCLES",
+  "fps": 24,
+  "motion_blur": false,
+  "motion_blur_shutter": 0.0,
+  "name": "PREVIEW",
+  "output_color_depth": "8",
+  "output_compression": 30,
+  "output_format": "PNG",
+  "persistent_data": false,
+  "persistent_data_evidence_hash": "",
+  "post_production_contract_version": "image-sequence-1.0.0",
+  "resolution": {
+    "height": 180,
+    "width": 320
+  },
+  "resource_limits": {
+    "geometry_limit_vertices": 8000000,
+    "lod_policy": "PREVIEW",
+    "max_subdivision_level": 1,
+    "texture_limit_px": 2048
+  },
+  "samples": 4,
+  "schema_version": "1.0.0",
+  "seed": 1919,
+  "settings_version": "cycles-production-1.0.0",
+  "use_instancing": true,
+  "use_spatial_splits": false
+}

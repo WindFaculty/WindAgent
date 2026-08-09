@@ -1,0 +1,29 @@
+{
+  "backlog_completion": {
+    "1_reuse_assets_not_regenerate": "DONE - ASSETS branch resolves every character/environment through the persisted EpisodeAssetCache; the second run (new run id, same cache) reused all 5 assets - generator call count frozen at 5 entries, cache report HIT=5 MISS=0",
+    "2_continuity_and_stable_ordering": "DONE - scenes run in fixture order; episode media manifest written by FINAL in scene order; ordering hash stable across runs; identity/continuity gate (approved masters + voice profiles + real continuity ledger) PASS",
+    "3_parallel_audio_asset_branches": "DONE - ASSET_PREP and AUDIO_PREP run concurrently via asyncio.gather; real branch durations feed the EpisodeBranchScheduler which reports critical path (16.64s), parallel span (16.64s) and idle time (12.44s) in timing_profile.json",
+    "4_kill_worker_resume_chunk_partial_rerender": "DONE - render node renders 3-frame chunks; run cancelled after the first chunk (['sh_1:chunk:0']); restart SKIPPED every completed chunk (render leg call count frozen - no duplicate) and re-rendered only the missing chunks (partial rerender) - chunk_resume_report.json",
+    "5_shot_camera_audio_change_invalidates_correct_downstream": "DONE - EpisodeDependencyGraph built from the fixture; replacing shot:sh_1 / audio_cue:cue_bgm / camera:cam_3 invalidates exactly their downstream closures (render/media/final) while unrelated shots, scenes and media stay preserved - invalidation_report.json",
+    "6_cache_report_four_categories": "DONE - EpisodeCacheReport distinguishes HIT / MISS / INVALIDATED / REJECTED_REUSE per asset with totals; decisions recorded per run and persisted entries carry revision, content hash, approval state and usage count"
+  },
+  "decided_at": "2026-08-09T03:04:20.853668+00:00",
+  "evidence_files": [
+    "artifacts/video_production_3d/phase_26/run_manifest.json",
+    "artifacts/video_production_3d/phase_26/episode_ordering.json",
+    "artifacts/video_production_3d/phase_26/cache_report.json",
+    "artifacts/video_production_3d/phase_26/invalidation_report.json",
+    "artifacts/video_production_3d/phase_26/timing_profile.json",
+    "artifacts/video_production_3d/phase_26/chunk_resume_report.json",
+    "artifacts/video_production_3d/phase_26/dag_event_receipt.json",
+    "artifacts/video_production_3d/phase_26/quality_repair_report.json",
+    "artifacts/video_production_3d/phase_26/final_media_manifest.json",
+    "artifacts/video_production_3d/phase_26/production_report.json",
+    "artifacts/video_production_3d/phase_26/phase_verdict.json",
+    "artifacts/video_production_3d/phase_26/test_baseline.json"
+  ],
+  "gate": "VP3D_P26_MULTI_SCENE_EPISODE_VERIFIED",
+  "phase": "phase_26",
+  "summary": "Multi-scene episode: resume run PASS (23 nodes, 10 chunks, repairs=0), kill run REJECT, reuse run PASS (hits=5 misses=0, no regeneration=True), no-duplicate-chunk=True, critical_path=16.64s idle=12.44s. REAL Blender Cycles frames + REAL ffmpeg scene MP4s + REAL review. identity/continuity PASS, technical verification PASS. gate_passed=True.",
+  "verdict": "PASS"
+}

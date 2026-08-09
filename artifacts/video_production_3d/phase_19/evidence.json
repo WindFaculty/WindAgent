@@ -1,0 +1,83 @@
+{
+  "phase": "phase_19",
+  "gate": "VP3D_P19_CYCLES_RENDERER_VERIFIED",
+  "gate_passed": true,
+  "backlog": {
+    "1_render_intent_compiles_in_adapter": true,
+    "2_optix_cuda_cpu_probe_and_actual_device_verdict": true,
+    "3_cycles_optimizations_and_resource_limits_profiled": true,
+    "4_png_and_exr_image_sequence_contract": true,
+    "5_seed_film_dependencies_and_cache_identity_pinned": true,
+    "6_frame_and_chunk_telemetry": true,
+    "7_preview_final_cache_and_promotion_isolation": true
+  },
+  "profiles": {
+    "names": [
+      "PREVIEW",
+      "FINAL",
+      "FINAL_HIGH"
+    ],
+    "schema_version": "1.0.0",
+    "settings_version": "cycles-production-1.0.0",
+    "final_default_engine": "CYCLES",
+    "silent_eevee_fallback": false,
+    "output_formats": [
+      "PNG",
+      "OPEN_EXR"
+    ]
+  },
+  "device_policy": {
+    "preference_order": [
+      "OPTIX",
+      "CUDA"
+    ],
+    "cpu_fallback_default": "DENY",
+    "cpu_fallback_requires_explicit_allow_verdict": true,
+    "baseline_blender": "4.5.12 LTS",
+    "baseline_devices": [
+      "NVIDIA GeForce RTX 5060 Laptop GPU (OPTIX)",
+      "NVIDIA GeForce RTX 5060 Laptop GPU (CUDA)",
+      "Intel Core i7-14650HX (CPU)"
+    ],
+    "selected": "OPTIX",
+    "actual": "OPTIX",
+    "fallback_used": false
+  },
+  "real_render": {
+    "evidence": "artifacts/video_production_3d/phase_19/real_render_evidence.json",
+    "profile": "PREVIEW",
+    "format": "PNG",
+    "resolution": {
+      "width": 320,
+      "height": 180
+    },
+    "samples": 4,
+    "frame_count": 1,
+    "frame_sha256": "2621b8cd3a99cde9d2c88215e6c34f38ee2f2abff4ae71829a75bde703ce1c75",
+    "render_seconds": 1.789472,
+    "actual_device": "OPTIX",
+    "all_checks_passed": true
+  },
+  "cache_and_artifact_policy": {
+    "cache_dimensions": [
+      "scene_hash",
+      "shot_hash",
+      "frame_start",
+      "frame_end",
+      "profile_hash",
+      "artifact_class",
+      "blender_version",
+      "device_class",
+      "dependency_hashes"
+    ],
+    "preview_and_final_keys_distinct": true,
+    "preview_to_final_metadata_promotion_blocked": true,
+    "manifest_reuse_invalidated_on_identity_change": true
+  },
+  "validation": {
+    "phase_scoped_and_regression_tests": "115 passed",
+    "ruff": "PASS",
+    "real_blender_render": "PASS",
+    "global_architecture_checker": "9 unrelated concurrent violations; Phase 19 scoped architecture tests 4/4 PASS"
+  }
+}

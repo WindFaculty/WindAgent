@@ -1,0 +1,10 @@
+{
+  "app": "windagent-web",
+  "typecheck": "PASS",
+  "vitest": {
+    "status": "PASS",
+    "test_files_passed": 7,
+    "total_tests_passed": 83
+  },
+  "timestamp": "2026-08-08T08:16:16Z"
+}

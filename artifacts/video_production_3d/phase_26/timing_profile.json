@@ -1,0 +1,115 @@
+{
+  "branches": [
+    {
+      "branch_id": "asset_prep",
+      "critical": true,
+      "duration_seconds": 0.0,
+      "finish_seconds": 0.0,
+      "idle_seconds": 0.0,
+      "kind": "ASSET_PREP",
+      "start_seconds": 0.0
+    },
+    {
+      "branch_id": "audio_prep",
+      "critical": false,
+      "duration_seconds": 0.0,
+      "finish_seconds": 0.0,
+      "idle_seconds": 0.0,
+      "kind": "AUDIO_PREP",
+      "start_seconds": 0.0
+    },
+    {
+      "branch_id": "compile:scn_1",
+      "critical": false,
+      "duration_seconds": 0.0,
+      "finish_seconds": 0.0,
+      "idle_seconds": 0.0,
+      "kind": "SCENE_COMPILE",
+      "start_seconds": 0.0
+    },
+    {
+      "branch_id": "render:scn_1",
+      "critical": false,
+      "duration_seconds": 12.469000000011874,
+      "finish_seconds": 12.469000000011874,
+      "idle_seconds": 0.0,
+      "kind": "RENDER",
+      "start_seconds": 0.0
+    },
+    {
+      "branch_id": "review:scn_1",
+      "critical": false,
+      "duration_seconds": 0.0779999999795109,
+      "finish_seconds": 12.546999999991385,
+      "idle_seconds": 4.094000000011874,
+      "kind": "REVIEW_REPAIR",
+      "start_seconds": 12.469000000011874
+    },
+    {
+      "branch_id": "compile:scn_2",
+      "critical": true,
+      "duration_seconds": 0.0,
+      "finish_seconds": 0.0,
+      "idle_seconds": 0.0,
+      "kind": "SCENE_COMPILE",
+      "start_seconds": 0.0
+    },
+    {
+      "branch_id": "render:scn_2",
+      "critical": true,
+      "duration_seconds": 16.578000000008615,
+      "finish_seconds": 16.578000000008615,
+      "idle_seconds": 0.0,
+      "kind": "RENDER",
+      "start_seconds": 0.0
+    },
+    {
+      "branch_id": "review:scn_2",
+      "critical": true,
+      "duration_seconds": 0.0629999999946449,
+      "finish_seconds": 16.64100000000326,
+      "idle_seconds": 0.0,
+      "kind": "REVIEW_REPAIR",
+      "start_seconds": 16.578000000008615
+    },
+    {
+      "branch_id": "compile:scn_3",
+      "critical": false,
+      "duration_seconds": 0.0,
+      "finish_seconds": 0.0,
+      "idle_seconds": 0.0,
+      "kind": "SCENE_COMPILE",
+      "start_seconds": 0.0
+    },
+    {
+      "branch_id": "render:scn_3",
+      "critical": false,
+      "duration_seconds": 8.264999999984866,
+      "finish_seconds": 8.264999999984866,
+      "idle_seconds": 0.0,
+      "kind": "RENDER",
+      "start_seconds": 0.0
+    },
+    {
+      "branch_id": "review:scn_3",
+      "critical": false,
+      "duration_seconds": 0.03200000000651926,
+      "finish_seconds": 8.296999999991385,
+      "idle_seconds": 8.344000000011874,
+      "kind": "REVIEW_REPAIR",
+      "start_seconds": 8.264999999984866
+    },
+    {
+      "branch_id": "post",
+      "critical": false,
+      "duration_seconds": 0.0,
+      "finish_seconds": 16.64100000000326,
+      "idle_seconds": 0.0,
+      "kind": "POST_PRODUCTION",
+      "start_seconds": 16.64100000000326
+    }
+  ],
+  "critical_path_seconds": 16.64100000000326,
+  "idle_total_seconds": 12.438000000023749,
+  "parallel_span_seconds": 16.64100000000326
+}

@@ -1,0 +1,59 @@
+{
+  "facial_repair": {
+    "invalidated_artifacts": [
+      "shot_01_render"
+    ],
+    "preserved_artifacts": [
+      "shot_02_render",
+      "shot_03_render",
+      "shot_04_render"
+    ],
+    "dependency_graph": {
+      "shot_01_render": [
+        "camera",
+        "facial_track",
+        "render"
+      ],
+      "shot_02_render": [
+        "camera",
+        "render"
+      ],
+      "shot_03_render": [
+        "asset",
+        "render"
+      ],
+      "shot_04_render": [
+        "render"
+      ]
+    }
+  },
+  "camera_repair": {
+    "invalidated_artifacts": [
+      "shot_01_render",
+      "shot_02_render"
+    ],
+    "preserved_artifacts": [
+      "shot_03_render",
+      "shot_04_render"
+    ],
+    "dependency_graph": {
+      "shot_01_render": [
+        "camera",
+        "facial_track",
+        "render"
+      ],
+      "shot_02_render": [
+        "camera",
+        "render"
+      ],
+      "shot_03_render": [
+        "asset",
+        "render"
+      ],
+      "shot_04_render": [
+        "render"
+      ]
+    }
+  },
+  "rule": "only artifacts whose dependencies intersect the repaired inputs are invalidated; unrelated approved shots stay approved"
+}

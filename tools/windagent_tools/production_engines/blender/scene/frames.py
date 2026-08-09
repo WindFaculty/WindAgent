@@ -22,7 +22,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional
 
@@ -125,6 +125,11 @@ class FrameManifest:
     @property
     def frames(self) -> List[FrameEntry]:
         return [self._frames[k] for k in sorted(self._frames)]
+
+    @property
+    def content_hash(self) -> str:
+        """Input hash the manifest was pinned to (Phase 21 recovery gate)."""
+        return self._content_hash
 
     @property
     def validated_frames(self) -> List[int]:

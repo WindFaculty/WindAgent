@@ -1,0 +1,18 @@
+{
+  "registry": {
+    "leases": [
+      {
+        "idempotency_key": "ej_recovery_001:chunk-000",
+        "owner_worker_id": "worker-b",
+        "fencing_token": "77f95faddb5f2489415b8a771c5c81d2",
+        "acquired_at": 2001.0,
+        "expires_at": 2301.0,
+        "state": "ACTIVE",
+        "transferred_from": "worker-a"
+      }
+    ]
+  },
+  "duplicate_dispatch_rejected": true,
+  "stale_worker_fenced": true,
+  "new_owner_valid": true
+}

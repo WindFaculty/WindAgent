@@ -1,0 +1,1 @@
+{"content_hash": "e24a0328a3f66be80b747e0b922e5758e740b33e705b36506bf5550cc1d33efb", "expected_dimensions": {"height": 1080, "width": 1920}, "extension": "png", "frame_range": [1, 4], "frames": [{"filename": "frame_0001.png", "frame": 1, "height": 1080, "sha256": "99f1e8c6f32d9467e72e8f9affc92d23590c8789c3585971bfb803c2e4044576", "size_bytes": 32, "width": 1920}]}

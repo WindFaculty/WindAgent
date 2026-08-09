@@ -207,9 +207,10 @@ def test_evidence_validation_lane_lineage(tmp_path: Path) -> None:
     # Phases 0-20 must be present as phase_report entries.
     for phase in range(0, 21):
         assert f"phase_{phase:02d}" in lineage
-    # 21/24 are documented BLOCKED states; 22/23/25/26 must pass on candidate.
+    # 21 is a documented BLOCKED state; 22/23/24/25/26 must pass on candidate
+    # (phase_24 re-pointed to the VP3D FFmpeg Assembly evidence).
     assert lineage["phase_21"]["status"] == "BLOCKED"
-    assert lineage["phase_24"]["status"] == "BLOCKED"
+    assert lineage["phase_24"]["status"] == "PASS"
     for phase in ("phase_22", "phase_23", "phase_25", "phase_26"):
         assert lineage[phase]["status"] == "PASSED"
     assert receipt["observed"]["phase_22_23_25_26_verdicts_passed"] is True

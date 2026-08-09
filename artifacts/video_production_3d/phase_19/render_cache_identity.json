@@ -1,0 +1,15 @@
+{
+  "artifact_class": "PREVIEW",
+  "blender_version": "4.5.12 LTS",
+  "cache_key": "render-cache-1.0.0:3ec67a9b4a247e279eaa579e2ec9eefe40902d933cb8deb3cd3706aed2686436",
+  "dependency_hashes": {
+    "scene_blend": "80656e9a7426b44473eaa28ce34f9b0ffd9668a808fda54163b3b44627a4912b"
+  },
+  "device_class": "OPTIX",
+  "frame_range": [
+    1,
+    1
+  ],
+  "profile_hash": "b4419bda1bad71c3c20c03a50ce77b985cd9c5173e3d733a7311a6b41a098a59",
+  "scene_hash": "80656e9a7426b44473eaa28ce34f9b0ffd9668a808fda54163b3b44627a4912b"
+}

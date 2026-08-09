@@ -1,0 +1,46 @@
+{
+  "phase": "phase_23",
+  "gate": "VP3D_P23_INTELLIGENT_RETRY_VERIFIED",
+  "producer": "phase-23-intelligent-retry",
+  "recorded_at": "2026-08-08T10:00:31.104065+00:00",
+  "command": "D:\\code_ca_nhan\\WindAgent\\.venv\\Scripts\\python.exe -m pytest tests/unit/tools/test_phase23_intelligent_retry.py tests/architecture/test_phase23_intelligent_retry_architecture.py tests/unit/tools/test_phase22_technical_review.py tests/architecture/test_phase22_technical_review_architecture.py tests/unit/tools/test_phase21_render_jobs.py tests/architecture/test_phase21_render_jobs_architecture.py tests/unit/tools/test_phase20_vram_budget.py tests/architecture/test_phase20_vram_architecture.py tests/unit/tools/test_phase19_cycles_renderer.py tests/architecture/test_phase19_cycles_architecture.py tests/unit/tools/test_phase3_blender_adapter.py tests/unit/tools/test_phase3_blender_runtime.py tests/unit/tools/test_phase4_blender_scene.py -q -p no:cacheprovider --basetemp D:\\code_ca_nhan\\WindAgent\\artifacts\\video_production_3d\\phase_23\\pytest_phase23_01",
+  "summary": {
+    "passed": 286,
+    "failed": 0,
+    "skipped": 0
+  },
+  "suites": [
+    {
+      "file": "tests/unit/tools/test_phase23_intelligent_retry.py",
+      "covers": "finding->owner/unit mapping (asset/camera/facial/frames/audio); uncertainty kept below confidence threshold; smallest-unit plans with full related+downstream rerun sets; locked-artifact blocks; dependency-scoped invalidation preserving unrelated approved shots; signature dedupe; loop detection + cost budget; coordinator escalation; VLM timeout never passes"
+    },
+    {
+      "file": "tests/architecture/test_phase23_intelligent_retry_architecture.py",
+      "covers": "bpy-free boundary; no dynamic code execution; core never imports the retry kernel; adapter boundary intact; retry consumes findings without importing the reviewer kernel"
+    },
+    {
+      "files": [
+        "tests/unit/tools/test_phase22_technical_review.py",
+        "tests/architecture/test_phase22_technical_review_architecture.py",
+        "tests/unit/tools/test_phase21_render_jobs.py",
+        "tests/architecture/test_phase21_render_jobs_architecture.py",
+        "tests/unit/tools/test_phase20_vram_budget.py",
+        "tests/architecture/test_phase20_vram_architecture.py",
+        "tests/unit/tools/test_phase19_cycles_renderer.py",
+        "tests/architecture/test_phase19_cycles_architecture.py",
+        "tests/unit/tools/test_phase3_blender_adapter.py",
+        "tests/unit/tools/test_phase3_blender_runtime.py",
+        "tests/unit/tools/test_phase4_blender_scene.py"
+      ],
+      "covers": "regression coverage for technical review, render jobs, VRAM budget, Cycles profiles, adapter receipts, runtime and scene pipeline"
+    }
+  ],
+  "lint": {
+    "command": "python -m ruff check <Phase 23 changed Python files>",
+    "result": "PASS"
+  },
+  "global_architecture_checker": {
+    "result": "FAIL (13 pre-existing/concurrent violations outside Phase 23 paths)",
+    "detail": "13 pre-existing/concurrent violations (core<->storage dependency cycle in untracked concurrent work) outside Phase 23 paths; the dedicated Phase 23 architecture suite passed 6/6."
+  }
+}

@@ -1,9 +1,9 @@
 <#
 .SYNOPSIS
-    scripts/dev_frontend.ps1 - Khoi chay Vite dev server (React UI).
+    scripts/dev_frontend.ps1 - Khoi chay Vite dev server (React UI apps/web).
 
 .DESCRIPTION
-    Chi chay giao dien web (React + Vite) - KHONG mo Tauri shell.
+    Chi chay giao dien web (React + Vite) trong apps/web - KHONG mo Tauri shell.
     Dung cho phat trien UI thuan, truy cap qua trinh duyet.
 
     1. Kiem tra Node >= 18 va npm.
@@ -38,15 +38,15 @@ try {
 
 # --- Duong dan ---
 $RepoRoot   = Resolve-Path (Join-Path $PSScriptRoot "..")
-$DesktopDir = Join-Path $RepoRoot "apps\desktop"
+$WebDir     = Join-Path $RepoRoot "apps\web"
 
 # --- Kiem tra thu muc ---
-if (-not (Test-Path $DesktopDir)) {
-    Write-Host "[frontend] FAIL: Khong tim thay apps/desktop" -ForegroundColor Red
+if (-not (Test-Path $WebDir)) {
+    Write-Host "[frontend] FAIL: Khong tim thay apps/web" -ForegroundColor Red
     exit 1
 }
-if (-not (Test-Path (Join-Path $DesktopDir "package.json"))) {
-    Write-Host "[frontend] FAIL: Thieu apps/desktop/package.json" -ForegroundColor Red
+if (-not (Test-Path (Join-Path $WebDir "package.json"))) {
+    Write-Host "[frontend] FAIL: Thieu apps/web/package.json" -ForegroundColor Red
     exit 1
 }
 
@@ -85,16 +85,16 @@ $npmVer  = & npm --version
 Write-Host "[frontend] Node: v$nodeVer  |  npm: $npmVer" -ForegroundColor DarkGray
 
 # --- npm install neu can ---
-$nodeModules = Join-Path $DesktopDir "node_modules"
-$packageJson = Join-Path $DesktopDir "package.json"
+$nodeModules = Join-Path $WebDir "node_modules"
+$packageJson = Join-Path $WebDir "package.json"
 $needInstall = -not (Test-Path $nodeModules)
 if (-not $needInstall) {
     $needInstall = (Get-Item $packageJson).LastWriteTime -gt (Get-Item $nodeModules).LastWriteTime
 }
 
 if (-not $NoInstall -and $needInstall) {
-    Write-Host "[frontend] Cai npm packages..." -ForegroundColor Cyan
-    Push-Location $DesktopDir
+    Write-Host "[frontend] Cai npm packages cho apps/web..." -ForegroundColor Cyan
+    Push-Location $WebDir
     try {
         & npm install
         if ($LASTEXITCODE -ne 0) {
@@ -107,7 +107,7 @@ if (-not $NoInstall -and $needInstall) {
 }
 
 # --- Them node_modules/.bin vao PATH ---
-$env:PATH = "$DesktopDir\node_modules\.bin;$env:PATH"
+$env:PATH = "$WebDir\node_modules\.bin;$env:PATH"
 
 # --- Nhac nho proxy ---
 if (-not $NoProxy) {
@@ -118,14 +118,14 @@ if (-not $NoProxy) {
 # --- Khoi dong Vite ---
 Write-Host ""
 Write-Host "[frontend] =====================================================" -ForegroundColor Cyan
-Write-Host "[frontend]  Vite dev -> http://localhost:${Port}" -ForegroundColor Cyan
+Write-Host "[frontend]  Vite dev (apps/web) -> http://localhost:${Port}" -ForegroundColor Cyan
 Write-Host "[frontend]  Dung     :  Ctrl+C" -ForegroundColor DarkGray
 Write-Host "[frontend] =====================================================" -ForegroundColor Cyan
 Write-Host ""
 
-Push-Location $DesktopDir
+Push-Location $WebDir
 try {
-    $viteJs = Join-Path $DesktopDir "node_modules\vite\bin\vite.js"
+    $viteJs = Join-Path $WebDir "node_modules\vite\bin\vite.js"
     if (Test-Path $viteJs) {
         & node $viteJs --port $Port --strictPort
     } else {

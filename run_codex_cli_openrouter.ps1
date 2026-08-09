@@ -2,7 +2,7 @@
 
 $ErrorActionPreference = "Stop"
 
-$NaraApiKey = "sk-nry-OclNeHh1fqJk04syDWj9LR6ZBdwiiDgZv0gnBCpEZKg"
+$NaraApiKey = "sk-nry-"
 $Model = "deepseek/deepseek-v4-flash-0731"
 $BaseUrl = "https://openrouter.ai/api"
 

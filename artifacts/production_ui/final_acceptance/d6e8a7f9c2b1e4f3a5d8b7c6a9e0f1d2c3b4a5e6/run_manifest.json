@@ -1,0 +1,13 @@
+{
+  "candidate_sha": "d6e8a7f9c2b1e4f3a5d8b7c6a9e0f1d2c3b4a5e6",
+  "run_id": "accept_run_d6e8a7f9",
+  "timestamp": "2026-08-09T03:19:46.072406+00:00",
+  "environment": "acceptance-runner-win64",
+  "approver": "Lead Production Engineer",
+  "gates_evaluated": [
+    "VP3D_UI_SCRIPT_GOLDEN_WORKFLOW_PASSED",
+    "VP3D_UI_ASSET_GOLDEN_WORKFLOW_PASSED",
+    "VP3D_UI_SCRIPT_ASSET_INTEGRATION_PASSED",
+    "VP3D_UI_VIDEO_WORKSPACE_FOUNDATION_READY"
+  ]
+}

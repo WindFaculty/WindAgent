@@ -13,8 +13,11 @@ import json
 from dataclasses import dataclass, field
 
 from windagent_core.domain.video_production.enums import (
+    AssemblyInvalidationScope,
     ContainerFormat,
     EncodingPreset,
+    FrameSequenceIssueCode,
+    MixTrackKind,
     PostProductionIssueCode,
     PostProductionStatus,
     PostProductionVerificationStatus,
@@ -25,6 +28,7 @@ from windagent_core.domain.video_production.ids import (
     EditDecisionListId,
     EncodingProfileId,
     FinalDeliverableId,
+    FrameSequenceId,
     PostProductionJobId,
     ProductionRevisionId,
     ShotId,
@@ -109,6 +113,30 @@ class EncodingProfile:
     audio_loudness_target_lufs: float = -16.0
     audio_peak_ceiling_db: float = -1.0
 
+    @property
+    def content_hash(self) -> str:
+        """Deterministic profile pin used by the reproducibility audit."""
+        payload = {
+            "profile_id": str(self.profile_id),
+            "preset": str(self.preset),
+            "container": str(self.container),
+            "video_codec": self.video_codec,
+            "video_crf": self.video_crf,
+            "width": self.resolution_width,
+            "height": self.resolution_height,
+            "frame_rate": self.frame_rate,
+            "pixel_format": self.pixel_format,
+            "audio_codec": self.audio_codec,
+            "audio_sample_rate": self.audio_sample_rate,
+            "audio_channels": self.audio_channels,
+            "audio_bitrate_kbps": self.audio_bitrate_kbps,
+            "loudness_target_lufs": self.audio_loudness_target_lufs,
+            "peak_ceiling_db": self.audio_peak_ceiling_db,
+        }
+        return hashlib.sha256(
+            json.dumps(payload, sort_keys=True).encode("utf-8")
+        ).hexdigest()
+
     @classmethod
     def main_1080p_h264(cls) -> EncodingProfile:
         return cls(
@@ -152,7 +180,12 @@ class EncodingProfile:
 
 @dataclass(frozen=True)
 class EditDecisionItem:
-    """Item in an Edit Decision List referencing a content-addressed clip."""
+    """Item in an Edit Decision List referencing a content-addressed clip.
+
+    VP3D Phase 24 extends the item with the source frame range of a rendered
+    PNG/EXR sequence (`frame_start`/`frame_end`, 0 = not set) and the audio
+    offset of the track mix relative to the item start (seconds).
+    """
 
     shot_id: ShotId
     clip_hash: str
@@ -160,6 +193,9 @@ class EditDecisionItem:
     out_point: float = 5.0
     target_duration: float = 5.0
     transition_in: TransitionPlan | None = None
+    frame_start: int = 0
+    frame_end: int = 0
+    audio_offset_seconds: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -199,6 +235,9 @@ class EditDecisionList:
                     "in_point": item.in_point,
                     "out_point": item.out_point,
                     "target_duration": item.target_duration,
+                    "frame_start": item.frame_start,
+                    "frame_end": item.frame_end,
+                    "audio_offset_seconds": item.audio_offset_seconds,
                     "transition_in": item.transition_in.filter_expression()
                     if item.transition_in
                     else "",
@@ -280,3 +319,140 @@ class PostProductionJob:
     error_message: str = ""
     command_receipt_hashes: tuple[str, ...] = field(default_factory=tuple)
     deliverable_id: FinalDeliverableId | None = None
+
+
+# ---------------------------------------------------------------------------
+# VP3D Phase 24 — FFmpeg Assembly (stage_l.md §3)
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class FrameSequenceInput:
+    """Declared input of one rendered PNG/EXR frame sequence (stage_l §3.1).
+
+    The frame files live under `frame_dir` named `frame_<n>.<extension>`.
+    `colorspace` is REQUIRED (e.g. "sRGB", "linear", "ACEScg"): a missing
+    color declaration blocks assembly because an implicit color transform
+    would silently change the final vs the preview (stage_l §6).
+    """
+
+    sequence_id: FrameSequenceId
+    shot_id: ShotId
+    frame_dir: str
+    extension: str
+    fps: float
+    frame_start: int
+    frame_end: int
+    colorspace: str
+    transfer_curve: str = ""
+
+    @property
+    def expected_frame_count(self) -> int:
+        return max(0, self.frame_end - self.frame_start + 1)
+
+    def pattern(self) -> str:
+        return f"frame_%04d.{self.extension}"
+
+
+@dataclass(frozen=True)
+class FrameSequenceValidationResult:
+    """Outcome of sequence inspection BEFORE assembly (stage_l §3.1, §4)."""
+
+    sequence: FrameSequenceInput
+    valid: bool
+    issues: tuple[FrameSequenceIssueCode, ...] = field(default_factory=tuple)
+    missing_frames: tuple[int, ...] = field(default_factory=tuple)
+    duplicate_frames: tuple[int, ...] = field(default_factory=tuple)
+    gaps: tuple[tuple[int, int], ...] = field(default_factory=tuple)
+    corrupt_frames: tuple[int, ...] = field(default_factory=tuple)
+    observed_width: int = 0
+    observed_height: int = 0
+    frame_hashes: tuple[tuple[int, str], ...] = field(default_factory=tuple)
+
+    def frame_hash(self, frame_number: int) -> str:
+        for number, digest in self.frame_hashes:
+            if number == frame_number:
+                return digest
+        return ""
+
+
+@dataclass(frozen=True)
+class AudioMixTrack:
+    """One dialogue/SFX/BGM track in a versioned mix plan (stage_l §3.3)."""
+
+    track_kind: MixTrackKind
+    source_path: str
+    source_hash: str
+    sample_rate: int
+    channels: int
+    gain_db: float = 0.0
+
+
+@dataclass(frozen=True)
+class AudioMixPlan:
+    """Versioned loudness/peak mix policy + its tracks (stage_l §3.3)."""
+
+    mix_plan_id: AudioMixPlanId
+    tracks: tuple[AudioMixTrack, ...] = field(default_factory=tuple)
+    loudness_target_lufs: float = -16.0
+    peak_ceiling_db: float = -1.0
+    policy_version: str = "loudness-v1"
+
+    @property
+    def content_hash(self) -> str:
+        payload = {
+            "mix_plan_id": str(self.mix_plan_id),
+            "tracks": [
+                {
+                    "kind": str(t.track_kind),
+                    "source_hash": t.source_hash,
+                    "sample_rate": t.sample_rate,
+                    "channels": t.channels,
+                    "gain_db": t.gain_db,
+                }
+                for t in self.tracks
+            ],
+            "loudness_target_lufs": self.loudness_target_lufs,
+            "peak_ceiling_db": self.peak_ceiling_db,
+            "policy_version": self.policy_version,
+        }
+        return hashlib.sha256(
+            json.dumps(payload, sort_keys=True).encode("utf-8")
+        ).hexdigest()
+
+
+@dataclass(frozen=True)
+class AssemblyArtifact:
+    """Content-addressed derived output (final/proxy/thumbnail/subtitle/mix).
+
+    Named AssemblyArtifact (not DerivedArtifact) to avoid collision with the
+    production-IR DerivedArtifact exported from the same domain package.
+    """
+
+    kind: str
+    artifact_key: str
+    path: str
+    sha256: str
+    derived_from: tuple[str, ...] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class AtomicPublishReceipt:
+    """Staging -> verify -> atomic publish outcome (stage_l §3.5)."""
+
+    staged_path: str
+    published_path: str
+    output_hash: str
+    verified: bool
+    quarantine_path: str = ""
+    reused: bool = False
+
+
+@dataclass(frozen=True)
+class AssemblyInvalidationDecision:
+    """Rebuild scope decision for one changed assembly input (stage_l §3.9)."""
+
+    changed_input: str
+    scope: AssemblyInvalidationScope
+    rebuild_artifacts: tuple[str, ...] = field(default_factory=tuple)
+    preserved_artifacts: tuple[str, ...] = field(default_factory=tuple)
