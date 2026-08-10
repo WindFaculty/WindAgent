@@ -47,6 +47,8 @@ class ProductionWorker:
         execution_registry: Optional[ExecutionRuntimeRegistry] = None,
         uow_factory: Optional[Any] = None,
         heartbeat_interval_sec: float = 5.0,
+        studio_reconciler: Optional[Any] = None,
+        studio_recovery: Optional[Any] = None,
     ):
         self.name = name
         self.worker_id = WorkerId(f"wkr_{name}")
@@ -59,6 +61,12 @@ class ProductionWorker:
         self.cancellation_broadcaster = CancellationBroadcaster()
         self.uow_factory = uow_factory or (worker_container.uow_factory if worker_container else None)
         self.heartbeat_interval_sec = heartbeat_interval_sec
+        self.studio_reconciler = studio_reconciler or (
+            worker_container.studio_reconciler if worker_container else None
+        )
+        self.studio_recovery = studio_recovery or (
+            worker_container.studio_recovery if worker_container else None
+        )
         self._running = False
         self._ready = False
         self._heartbeat_task: Optional[asyncio.Task] = None
@@ -67,6 +75,9 @@ class ProductionWorker:
         self._cancellation_requested = False
         self._emitted_envelopes: List[EventEnvelope] = []
         self._sequence_counter = 0
+        # Redaction-safe worker metrics: ids + durations + status only, never
+        # prompt/content. Updated per tick; read via metrics_snapshot().
+        self.metrics: Dict[str, Any] = {"tasks": {}, "totals": {"processed": 0, "failed": 0}}
 
     @property
     def is_running(self) -> bool:
@@ -84,6 +95,10 @@ class ProductionWorker:
     def current_fencing_token(self) -> Optional[str]:
         return self._current_fencing_token
 
+    def metrics_snapshot(self) -> Dict[str, Any]:
+        """Redaction-safe metrics: ids/durations/status only, never content."""
+        return dict(self.metrics)
+
     async def start(self) -> None:
         logger.info(f"Starting Production Worker [{self.worker_id}] (runtime: {self.runtime_run_id})...")
         if self.worker_container and self.worker_container.outbox_publisher:
@@ -91,6 +106,11 @@ class ProductionWorker:
                 raise RuntimeError("Outbox publisher must be running before worker becomes ready.")
         if self.worker_container and self.worker_container.orchestration_container:
             await self.worker_container.orchestration_container.recovery_manager.recover_all_in_flight()
+        if self.studio_recovery is not None:
+            try:
+                await self.studio_recovery.recover_pending_completions()
+            except Exception as ex:
+                logger.warning(f"Studio completion recovery failed during start: {ex}")
         self._running = True
         self._ready = True
         self._cancellation_requested = False
@@ -229,11 +249,13 @@ class ProductionWorker:
             fencing_token = claimed.fencing_token
             tool_name = claimed.tool_name
             prompt = claimed.prompt
+            parameters = claimed.parameters
         else:
             raw_tid = str(claimed["task_id"])
             fencing_token = claimed.get("fencing_token", f"fence_{raw_tid}_gen_1")
             tool_name = claimed.get("tool_name", "read_file")
             prompt = claimed.get("prompt", "")
+            parameters = claimed.get("parameters", {})
 
         try:
             tid = str(TaskId(raw_tid))
@@ -243,6 +265,22 @@ class ProductionWorker:
         self._current_task_id = tid
         self._current_fencing_token = fencing_token
         self.emit_event(EventCatalog.TASK_CREATED, {"task_id": tid, "worker_id": str(self.worker_id)}, aggregate_id=tid)
+
+        # Redaction-safe metric capture (ids/durations/status only).
+        claimed_at = getattr(claimed, "acquired_at", None)
+        queue_wait_ms = (
+            max(0, int((datetime.now(timezone.utc) - claimed_at).total_seconds() * 1000))
+            if claimed_at
+            else 0
+        )
+        task_metric = {
+            "task_id": tid,
+            "task_type": tool_name,
+            "attempt": parameters.get("attempt", 1),
+            "queue_wait_ms": queue_wait_ms,
+            "status": "claimed",
+        }
+        tick_started = datetime.now(timezone.utc)
 
         # Heartbeat lease renewal with fencing token validation
         renewed = False
@@ -277,7 +315,7 @@ class ProductionWorker:
             step_run_id=tid,
             workflow_run_id=f"wf_{tid}",
             tool_name=tool_name,
-            parameters={"task_id": tid, "prompt": prompt},
+            parameters={**parameters, "task_id": tid, "prompt": prompt},
             attempt_id="att_1",
             fencing_token=fencing_token,
         )
@@ -286,6 +324,8 @@ class ProductionWorker:
         self.cancellation_broadcaster.register_handle(handle, self.execution_registry)
 
         result = await self.execution_registry.get_result(handle)
+        execution_ms = max(0, int((datetime.now(timezone.utc) - tick_started).total_seconds() * 1000))
+        task_metric["execution_ms"] = execution_ms
 
         # Validate fencing token before committing result
         try:
@@ -349,9 +389,32 @@ class ProductionWorker:
                 if fin_res.status != "COMPLETED":
                     raise RuntimeError(f"Task finalization rejected: {fin_res.error_message}")
 
-            # Lease was released atomically inside the transaction above.
-            # Do NOT call task_queue.release() again — that would be a double release.
             finalized_via_uow = True
+            finalize_ms = max(0, int((datetime.now(timezone.utc) - tick_started).total_seconds() * 1000))
+            task_metric["finalize_ms"] = finalize_ms
+            task_metric["status"] = validated_result.status.value
+            self.metrics["tasks"][tid] = task_metric
+            if validated_result.status.value == "failed":
+                self.metrics["totals"]["failed"] = self.metrics["totals"].get("failed", 0) + 1
+            else:
+                self.metrics["totals"]["processed"] = self.metrics["totals"].get("processed", 0) + 1
+
+            # Studio completion: advance the DAG ONLY through the reconciler.
+            # A crash between the finalizer commit above and this call is
+            # covered by StudioCompletionRecovery on worker start.
+            if self.studio_reconciler is not None and parameters.get("studio_envelope"):
+                try:
+                    from windagent_core.contracts.studio.models import StudioTaskResult
+
+                    studio_result = StudioTaskResult.model_validate(
+                        validated_result.result_data or {}
+                    )
+                    await self.studio_reconciler.reconcile(studio_result)
+                    task_metric["reconciled"] = True
+                except Exception as ex:
+                    logger.warning(
+                        f"Studio reconcile failed for task [{tid}] (recovery will retry): {ex}"
+                    )
 
         if not finalized_via_uow:
             # Fallback: no UoW factory configured (e.g. test/legacy mode without persistent DB).

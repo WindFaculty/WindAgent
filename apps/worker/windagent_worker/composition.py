@@ -117,6 +117,9 @@ class WorkerContainer:
         self.verification_service: Optional[VerificationService] = None
         self.outbox_publisher: Optional[OutboxEventPublisher] = None
         self.route_lock_service: Optional[RouteLockService] = None
+        self.studio_runtime: Optional[Any] = None  # Plan A A5 (guarded)
+        self.studio_reconciler: Optional[Any] = None  # Plan A A5 (guarded)
+        self.studio_recovery: Optional[Any] = None  # Plan A A5 (guarded)
         self.production_engine: Optional[Any] = None  # VP3D Phase 3 (guarded)
         self.production_executor: Optional[Any] = None  # VP3D Stage A consumer seam
         self.production_step_executor: Optional[Any] = None  # VP3D Stage A RENDER dispatch
@@ -201,6 +204,13 @@ class WorkerContainer:
         
         # Routing
         self.route_lock_service = RouteLockService(lock_repository=lock_repo, audit_repository=audit_repo)
+
+        # Plan A A5 — Studio Story worker runtime (guarded). Registers the
+        # studio.* execution capability over the frozen B handler registry;
+        # no model port is composed here (A6 owns the real provider adapter),
+        # so model-backed handlers fail closed with STUDIO_MODEL_PORT_UNAVAILABLE.
+        if os.getenv("WINDAGENT_STUDIO_RUNTIME", "").lower() in ("1", "true", "yes"):
+            self._register_studio_runtime()
         
         # Outbox: Worker OWNS the outbox publisher - publishes events to message bus
         self.outbox_publisher = OutboxEventPublisher(
@@ -334,6 +344,45 @@ class WorkerContainer:
         if not self.uow_factory:
             raise RuntimeError("WorkerContainer is not initialized.")
         return SqlUnitOfWork(self.uow_factory)
+
+    def _register_studio_runtime(self) -> None:
+        """Compose the A5 Studio worker runtime + completion recovery (guarded).
+
+        Runs only under ``WINDAGENT_STUDIO_RUNTIME=1``; the fake runtime guard
+        is detected from the composed default adapter so certification mode
+        fails closed even when ``WINDAGENT_FAKE_RUNTIME`` is set.
+        """
+        from windagent_intelligence.story.runtime_handlers import HANDLER_REGISTRY
+        from windagent_orchestration.studio.service import StudioRunService
+        from windagent_storage.studio.task_submission import StudioTaskSubmissionAdapter
+        from windagent_worker.studio_runtime import (
+            StudioCompletionRecovery,
+            StudioRuntimeAdapter,
+        )
+
+        fake_active = (
+            type(self.execution_registry.default_adapter).__name__ == "FakeRuntimeAdapter"
+        )
+        studio_runtime = StudioRuntimeAdapter(
+            handler_registry=HANDLER_REGISTRY,
+            session_factory=self.uow_factory,
+            model_port=None,
+            fake_runtime_active=fake_active,
+            worker_id="studio-worker",
+        )
+        self.execution_registry.register_capability("studio", studio_runtime)
+        self.studio_runtime = studio_runtime
+        self.studio_reconciler = StudioRunService(
+            self.uow_factory,
+            StudioTaskSubmissionAdapter(self.uow_factory),
+        )
+        self.studio_recovery = StudioCompletionRecovery(
+            self.uow_factory, self.studio_reconciler
+        )
+        logger.info(
+            "StudioRuntimeAdapter registered (Plan A A5); "
+            f"fake runtime guard: {'ACTIVE' if fake_active else 'inactive'}."
+        )
 
     def _register_asset_gateway(self) -> None:
         """Compose the Universal Asset Gateway (VP3D Phase 5/6).

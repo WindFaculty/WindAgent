@@ -43,6 +43,8 @@ class ExecutionRuntimeRegistry(ExecutionRuntimePort):
             return self._capability_map.get("browser", self.default_adapter)
         elif name_lower.startswith("hermes_") or name_lower in ("hermes", "hermes_chat"):
             return self._capability_map.get("hermes", self.default_adapter)
+        elif name_lower.startswith("studio."):
+            return self._capability_map.get("studio", self.default_adapter)
         elif name_lower.startswith("run_command") or name_lower.startswith("subproc_") or name_lower in ("exec_command", "bash"):
             return self._capability_map.get("subprocess", self.default_adapter)
         elif name_lower.startswith("agent_") or name_lower in ("reason", "plan"):

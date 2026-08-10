@@ -68,6 +68,7 @@ from windagent_core.contracts.studio.ids import (
     StudioRunId,
 )
 from windagent_core.contracts.studio.models import (
+    StudioArtifactRef,
     StudioNodeStatus,
     StudioTaskEnvelope,
     StudioTaskResult,
@@ -144,11 +145,19 @@ async def submit_runnable_nodes(
         if run is None or run["status"] in RUN_TERMINAL_STATUSES:
             return
         nodes = await uow.nodes.list(run_id)
+        by_id = {n["dag_node_id"]: n for n in nodes}
         for node in nodes:
             if node["status"] == StudioNodeStatus.RUNNABLE.value or (
                 node["status"] == StudioNodeStatus.DISPATCHED.value and node["task_id"] is None
             ):
-                envelope = service._envelope(run, node)
+                # A5: the durable envelope carries the dependency outputs the
+                # worker needs to build handler inputs (frozen task IO map).
+                input_refs: List[Dict[str, Any]] = []
+                for dep_id in node.get("depends_on", []):
+                    dep = by_id.get(dep_id)
+                    if dep is not None:
+                        input_refs.extend(dep.get("output_artifact_refs", []) or [])
+                envelope = service._envelope(run, node, input_refs=input_refs)
                 task_id = await submission.submit(envelope)
                 await uow.nodes.update_node(
                     run_id,
@@ -626,7 +635,13 @@ class StudioRunService(StudioRunOrchestratorPort):
             return ApprovalPolicy(policy_id=self._policy_id, policy_version="1")
         return policy
 
-    def _envelope(self, run: Dict[str, Any], node: Dict[str, Any]) -> StudioTaskEnvelope:
+    def _envelope(
+        self,
+        run: Dict[str, Any],
+        node: Dict[str, Any],
+        *,
+        input_refs: Optional[List[Dict[str, Any]]] = None,
+    ) -> StudioTaskEnvelope:
         return StudioTaskEnvelope(
             task_type=StudioTaskType(node["task_type"]),
             studio_run_id=StudioRunId(run["run_id"]),
@@ -638,6 +653,7 @@ class StudioRunService(StudioRunOrchestratorPort):
                 if run["dag"].get("revision_id")
                 else None
             ),
+            input_artifact_refs=[StudioArtifactRef(**ref) for ref in (input_refs or [])],
             input_hashes=list(node.get("input_hashes", [])),
             idempotency_key=f"{run['run_id']}:{node['dag_node_id']}:{node['attempt']}",
             attempt=node["attempt"],
