@@ -336,6 +336,86 @@ OUTLINE_GENERATION_OUTPUT_SCHEMA: Dict[str, Any] = {
     "additionalProperties": True,
 }
 
+SCREENPLAY_GENERATION_OUTPUT_SCHEMA: Dict[str, Any] = {
+    "$schema": JSON_SCHEMA_DIALECT,
+    "title": "ScreenplayGenerationOutput",
+    "description": (
+        "B6: structured ScreenplayDraft — the authority. Structured JSON scenes "
+        "with action/dialogue/transitions/optional narration, per-scene timing, "
+        "and stable outline/beat/canon source references. Canonical screenplay "
+        "text is a derived view, never the authority."
+    ),
+    "type": "object",
+    "required": ["draft_id", "title", "target_duration_seconds", "scenes"],
+    "properties": {
+        "draft_id": {"type": "string", "minLength": 1},
+        "title": {"type": "string", "minLength": 1},
+        "logline": {"type": "string"},
+        "language": {"type": "string"},
+        "audience_band": {"type": "string"},
+        "target_duration_seconds": {"type": "integer", "minimum": 1},
+        "tolerance_seconds": {"type": "integer", "minimum": 0},
+        "scenes": {
+            "type": "array",
+            "minItems": 3,
+            "maxItems": 12,
+            "items": {
+                "type": "object",
+                "required": [
+                    "scene_id",
+                    "order",
+                    "outline_scene_id",
+                    "location_id",
+                ],
+                "properties": {
+                    "scene_id": {"type": "string", "minLength": 1},
+                    "order": {"type": "integer", "minimum": 1},
+                    "outline_scene_id": {"type": "string", "minLength": 1},
+                    "location_id": {"type": "string", "minLength": 1},
+                    "character_ids": {
+                        "type": "array",
+                        "items": {"type": "string", "minLength": 1},
+                    },
+                    "action_description": {"type": "string"},
+                    "dialogue": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "required": [
+                                "dialogue_id",
+                                "scene_id",
+                                "character_id",
+                                "order",
+                                "text",
+                            ],
+                            "properties": {
+                                "dialogue_id": {"type": "string", "minLength": 1},
+                                "scene_id": {"type": "string", "minLength": 1},
+                                "character_id": {"type": "string", "minLength": 1},
+                                "order": {"type": "integer", "minimum": 1},
+                                "text": {"type": "string", "minLength": 1},
+                                "delivery": {"type": "string"},
+                                "estimated_seconds": {"type": "integer", "minimum": 0},
+                            },
+                            "additionalProperties": True,
+                        },
+                    },
+                    "narration": {"type": "string"},
+                    "transition": {"type": "string"},
+                    "estimated_seconds": {"type": "integer", "minimum": 0},
+                    "source_beat_ids": {
+                        "type": "array",
+                        "items": {"type": "string", "minLength": 1},
+                    },
+                },
+                "additionalProperties": True,
+            },
+        },
+        "duration_formula_version": {"type": "string"},
+    },
+    "additionalProperties": True,
+}
+
 # ---------------------------------------------------------------------------
 # Text-format specs (legacy text-output prompts, not JSON Schemas)
 # ---------------------------------------------------------------------------
@@ -369,4 +449,5 @@ __all__ = [
     "BIBLE_GENERATION_OUTPUT_SCHEMA",
     "BEATS_GENERATION_OUTPUT_SCHEMA",
     "OUTLINE_GENERATION_OUTPUT_SCHEMA",
+    "SCREENPLAY_GENERATION_OUTPUT_SCHEMA",
 ]

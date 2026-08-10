@@ -17,7 +17,7 @@ catalog + structured model boundary, B4 canon. Fixtures:
   `OutlineGenerationOutput.json` (3-12 scenes, intent, canon refs, beat
   coverage, duration budget).
 - Catalog invariants: **0 violation(s)**;
-  registered prompt count: 8.
+  registered prompt count: 9.
 
 ## 2. Golden outline set (Vietnamese rabbit/kite, ages 5-8, 240s)
 
@@ -119,8 +119,8 @@ Tolerant-parser scan (reused from B2 over `core/.../domain/story/`,
   `02680eb22a7aa673…`).
 - Corpus results: `invalid_output_corpus_results.json` (beats + outline);
   checksums: `checksums.json`.
-- Prompt manifest checksum: `9545e9541d87e5f2…`
-  (8 prompts incl. `story.beats.generate` +
+- Prompt manifest checksum: `196e5d91841aeaad…`
+  (9 prompts incl. `story.beats.generate` +
   `story.outline.structured`; B2 manifest refreshed).
 - A-side (durable task execution + approval checkpoint) and C-side (beat/
   scene display fields) halves are co-signed by their plan owners at contract

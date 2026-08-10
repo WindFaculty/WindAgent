@@ -39,6 +39,7 @@ from windagent_intelligence.story.prompts.schemas import (
     IDEA_GENERATION_OUTPUT_SCHEMA,
     OUTLINE_GENERATION_OUTPUT_SCHEMA,
     OUTLINE_OUTPUT_SCHEMA,
+    SCREENPLAY_GENERATION_OUTPUT_SCHEMA,
     SCREENPLAY_TEXT_SPEC,
 )
 
@@ -484,6 +485,63 @@ register_prompt(
             "pipeline)."
         ),
         max_tokens=3000,
+        temperature=0.7,
+    )
+)
+
+# ---------------------------------------------------------------------------
+# B6 canonical prompt: structured screenplay (non-legacy, schema-first)
+# ---------------------------------------------------------------------------
+
+_SCREENPLAY_TEMPLATE = """Write the episode screenplay as structured JSON scenes.
+
+Episode outline:
+{outline_summary}
+
+Beat sheet:
+{beats_summary}
+
+Characters: {characters}
+Locations: {locations}
+Language: {language}
+Audience: {audience_band}
+Target duration: {target_duration_seconds} seconds (tolerance {tolerance_seconds})
+
+Rules:
+1. Return EXACTLY {min_scenes}-{max_scenes} scenes, ordered 1..N with unique scene_id.
+2. Every scene: outline_scene_id references an outline scene id ONLY (one draft scene per outline scene); location_id from canon locations; character_ids from canon characters; source_beat_ids reference beat ids from the beat sheet ONLY (every beat covered by at least one scene, no unknown refs).
+3. scene_id is a NEW draft scene id (dscn_*); keep outline_scene_id separate.
+4. action_description describes the visual action; dialogue lines carry dialogue_id (unique), scene_id = the scene's own scene_id, character_id from the scene cast ONLY, order starting at 1, non-empty text; delivery is optional direction.
+5. narration is OPTIONAL (empty string when absent). transition from CUT TO:|DISSOLVE TO:|FADE IN:|FADE OUT:|MATCH CUT:.
+6. estimated_seconds per scene; the TOTAL must be within {tolerance_seconds}s of {target_duration_seconds} and inside 180-300 seconds.
+7. Scene order follows the outline causal order; every scene must have action or dialogue or narration.
+8. Respond in {language}; content must be age-appropriate and safe for ages {audience_band}.
+
+Output JSON matching the ScreenplayGenerationOutput schema: {{\\\"draft_id\\\": ..., \\\"title\\\": ..., \\\"target_duration_seconds\\\": ..., \\\"scenes\\\": [...]}}."""  # noqa: E501
+
+_SCREENPLAY_SYSTEM = (
+    "You are the WindAgent structured screenwriter. You produce the episode "
+    "ScreenplayDraft as structured JSON only (action, dialogue, narration, "
+    "timing, source refs); canonical text is rendered downstream, never "
+    "written by the model."
+)
+
+register_prompt(
+    StoryPromptEntry(
+        prompt_id="story.screenplay.structured",
+        capability="screenplay",
+        version="1.0.0",
+        template=_SCREENPLAY_TEMPLATE,
+        output_schema=SCREENPLAY_GENERATION_OUTPUT_SCHEMA,
+        system=_SCREENPLAY_SYSTEM,
+        safety=SafetyConstraints(max_output_chars=32_000),
+        legacy=False,
+        description=(
+            "B6: structured ScreenplayDraft from an EpisodeOutline "
+            "(canonical; the legacy story.screenplay.write text prompt "
+            "stays for the old pipeline)."
+        ),
+        max_tokens=4000,
         temperature=0.7,
     )
 )

@@ -31,6 +31,12 @@ from windagent_intelligence.story.outline import (  # noqa: F401
     OutlineGenerationService,
     OutlineValidationFailure,
 )
+from windagent_intelligence.story.screenplay import (  # noqa: F401
+    ScreenplayGenerationResult,
+    ScreenplayGenerationService,
+    ScreenplayValidationFailure,
+    render_screenplay_text,
+)
 from windagent_intelligence.story.prompts import (  # noqa: F401
     PROMPT_SCHEMA_VERSION,
     STORY_PROMPT_REGISTRY,
@@ -46,6 +52,7 @@ from windagent_intelligence.story.runtime_handlers import (  # noqa: F401
     IdeaEvaluateHandler,
     IdeaGenerateHandler,
     OutlineGenerateHandler,
+    ScreenplayGenerateHandler,
     registered_story_task_types,
 )
 
@@ -70,11 +77,16 @@ __all__ = [
     "OutlineGenerationResult",
     "BeatGenerationService",
     "OutlineGenerationService",
+    "ScreenplayValidationFailure",
+    "ScreenplayGenerationResult",
+    "ScreenplayGenerationService",
+    "render_screenplay_text",
     "IdeaGenerateHandler",
     "IdeaEvaluateHandler",
     "BibleGenerateHandler",
     "BeatGenerateHandler",
     "OutlineGenerateHandler",
+    "ScreenplayGenerateHandler",
     "HANDLER_REGISTRY",
     "registered_story_task_types",
 ]

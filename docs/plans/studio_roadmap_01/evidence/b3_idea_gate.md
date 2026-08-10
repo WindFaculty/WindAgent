@@ -12,7 +12,7 @@ catalog + structured model boundary. Fixtures:
 - Hash: `e5c9c9799df19dd1e9ee990ce8e43ff3c0e5ebe8a58cfc39ac2b52790a059b08`; output schema: `IdeaGenerationOutput.json`
   (3-5 candidates, required fields, age_fit/counts bounds, safety flag).
 - Catalog invariants: **0 violation(s)**;
-  registered prompt count: 8.
+  registered prompt count: 9.
 
 ## 2. Golden candidate set (Vietnamese rabbit/kite, ages 5-8, 240s)
 
@@ -86,7 +86,7 @@ Tolerant-parser scan (reused from B2 over `core/.../domain/story/`,
   `d749525a0f4fe793…`).
 - Corpus results: `invalid_output_corpus_results.json`; policy matrix:
   `selection_policy_matrix.json`; checksums: `checksums.json`.
-- Prompt manifest checksum: `9545e9541d87e5f2…` (5 prompts incl.
+- Prompt manifest checksum: `196e5d91841aeaad…` (5 prompts incl.
   `story.ideation.generate`; B2 manifest refreshed).
 - A-side (durable task execution + approval command) and C-side (UI
   comparison fields) halves are co-signed by their plan owners at contract

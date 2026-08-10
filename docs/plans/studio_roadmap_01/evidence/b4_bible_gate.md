@@ -13,7 +13,7 @@ structured model boundary, B3 ideation. Fixtures:
   (story_bible + world_bible + character_canon required; nested rule/location/
   object/character/relationship shapes).
 - Catalog invariants: **0 violation(s)**;
-  registered prompt count: 8.
+  registered prompt count: 9.
 
 ## 2. Golden bible set (Vietnamese rabbit/kite, ages 5-8, 240s)
 
@@ -100,8 +100,8 @@ Tolerant-parser scan (reused from B2 over `core/.../domain/story/`,
   `8d1b1edce5ffc583…`).
 - Corpus results: `invalid_output_corpus_results.json`; matrix:
   `cross_validation_matrix.json`; checksums: `checksums.json`.
-- Prompt manifest checksum: `9545e9541d87e5f2…`
-  (8 prompts incl. `story.bibles.generate`;
+- Prompt manifest checksum: `196e5d91841aeaad…`
+  (9 prompts incl. `story.bibles.generate`;
   B2 manifest refreshed).
 - A-side (durable task execution + approval checkpoint) and C-side (bible
   display fields) halves are co-signed by their plan owners at contract
