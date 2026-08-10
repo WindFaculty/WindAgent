@@ -2,13 +2,13 @@
 
 - Contract: studio.contract/v0.1
 - Gate: STUDIO_API_GATE
-- Verdict: **FAIL**
-- Integration SHA: `03d2cfb9fb12875ed10c5aa41beca58120d6a497`
-- Generated: 2026-08-10T03:30:59.158217+00:00
+- Verdict: **PASS**
+- Integration SHA: `20d1dd812a70f37090d00c19ef522732d1f8f7fa`
+- Generated: 2026-08-10T03:37:32.953016+00:00
 
 ## Checks
 
-- FAIL — contract_suite_passes
+- PASS — contract_suite_passes
 - PASS — frozen_endpoints_implemented
 - PASS — no_unfrozen_extra_routes
 - PASS — snapshot_matches_openapi
@@ -24,7 +24,7 @@
 
 ## Test results
 
-- `pytest tests/unit/api/test_studio_v3_api.py -q` → 2 failed, 29 passed in 13.17s
+- `pytest tests/unit/api/test_studio_v3_api.py -q` → 31 passed in 13.46s
 
 ## Composition
 

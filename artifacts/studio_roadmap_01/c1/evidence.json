@@ -3,14 +3,14 @@
   "plan": "C",
   "phase": "C1",
   "gate": "STUDIO_API_GATE",
-  "verdict": "FAIL",
-  "generated_at": "2026-08-10T03:30:59.158217+00:00",
-  "integration_sha": "03d2cfb9fb12875ed10c5aa41beca58120d6a497",
+  "verdict": "PASS",
+  "generated_at": "2026-08-10T03:37:32.953016+00:00",
+  "integration_sha": "20d1dd812a70f37090d00c19ef522732d1f8f7fa",
   "tests": {
     "command": "pytest tests/unit/api/test_studio_v3_api.py -q",
-    "exit_code": 1,
-    "summary": "2 failed, 29 passed in 13.17s",
-    "passed": false
+    "exit_code": 0,
+    "summary": "31 passed in 13.46s",
+    "passed": true
   },
   "openapi": {
     "path_count": 15,
@@ -116,7 +116,7 @@
   "missing_frozen": {},
   "extra_routes": [],
   "checks": {
-    "contract_suite_passes": false,
+    "contract_suite_passes": true,
     "frozen_endpoints_implemented": true,
     "no_unfrozen_extra_routes": true,
     "snapshot_matches_openapi": true,

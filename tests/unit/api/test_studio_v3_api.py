@@ -68,17 +68,27 @@ class TestV3ProductionComposition:
         with TestClient(app) as test_client:
             yield test_client
 
-    def test_v3_mutations_fail_closed_without_a_handoff(self, client):
+    def test_v3_mutations_run_through_real_orchestrator_seam(self, client):
+        """A4 handoff is live: the composed container wires the Studio run
+        service, so a mutating command persists through the real orchestrator
+        seam and replays idempotently (same key, same aggregate)."""
         res = client.post(
             "/api/v3/studio/series",
-            headers={"X-Idempotency-Key": _idem()},
+            headers={"X-Idempotency-Key": "idem_c1_seam_000001"},
             json={"title": "Chuỗi phim"},
         )
-        assert res.status_code == 503, res.text
+        assert res.status_code == 201, res.text
         body = res.json()
-        assert body["studio_code"] == "CAPABILITY_UNAVAILABLE"
-        assert body["status"] == 503
-        assert body["retryable"] is True
+        assert body["series_id"]
+        assert body["series_url"].startswith("/api/v3/studio/series/")
+
+        replay = client.post(
+            "/api/v3/studio/series",
+            headers={"X-Idempotency-Key": "idem_c1_seam_000001"},
+            json={"title": "Chuỗi phim (khác)"},
+        )
+        assert replay.status_code == 201, replay.text
+        assert replay.json()["series_id"] == body["series_id"]
 
     def test_v3_reads_hit_real_storage(self, client):
         res = client.get("/api/v3/studio/series")
@@ -149,7 +159,7 @@ class TestV3ProductionComposition:
         body = res.json()
         by_name = {c["name"]: c for c in body["capabilities"]}
         assert by_name["durable_db"]["status"] == "AVAILABLE"
-        assert by_name["studio_orchestration"]["status"] == "UNAVAILABLE"
+        assert by_name["studio_orchestration"]["status"] == "AVAILABLE"
         assert "A4" in by_name["studio_orchestration"]["reason"]
         assert by_name["story_engine"]["status"] == "UNAVAILABLE"
         assert body["fail_closed_flags"] == []
