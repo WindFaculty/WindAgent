@@ -3,8 +3,8 @@
 - Contract: studio.contract/v0.1
 - Gate: STUDIO_API_GATE
 - Verdict: **PASS**
-- Integration SHA: `20d1dd812a70f37090d00c19ef522732d1f8f7fa`
-- Generated: 2026-08-10T03:37:32.953016+00:00
+- Integration SHA: `c14cd116449699d13fa2fa709f6b3e57b0a4c4a3`
+- Generated: 2026-08-10T03:38:24.345129+00:00
 
 ## Checks
 
@@ -24,7 +24,7 @@
 
 ## Test results
 
-- `pytest tests/unit/api/test_studio_v3_api.py -q` → 31 passed in 13.46s
+- `pytest tests/unit/api/test_studio_v3_api.py -q` → 31 passed in 12.93s
 
 ## Composition
 

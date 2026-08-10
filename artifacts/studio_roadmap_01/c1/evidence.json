@@ -4,12 +4,12 @@
   "phase": "C1",
   "gate": "STUDIO_API_GATE",
   "verdict": "PASS",
-  "generated_at": "2026-08-10T03:37:32.953016+00:00",
-  "integration_sha": "20d1dd812a70f37090d00c19ef522732d1f8f7fa",
+  "generated_at": "2026-08-10T03:38:24.345129+00:00",
+  "integration_sha": "c14cd116449699d13fa2fa709f6b3e57b0a4c4a3",
   "tests": {
     "command": "pytest tests/unit/api/test_studio_v3_api.py -q",
     "exit_code": 0,
-    "summary": "31 passed in 13.46s",
+    "summary": "31 passed in 12.93s",
     "passed": true
   },
   "openapi": {
