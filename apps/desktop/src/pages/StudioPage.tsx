@@ -13,6 +13,11 @@ import React, { useEffect, useRef, useState } from 'react';
 import { HttpStudioApiClient } from '@windagent/studio-client';
 import { StudioStore } from '@windagent/studio-state';
 import type { StudioArtifactEnvelope } from '@windagent/studio-contracts';
+import {
+  ArtifactContentView,
+} from '../components/studio/ArtifactViews';
+import { RunProgress } from '../components/studio/RunProgress';
+import { ApprovalBar, type ApprovalDecision } from '../components/studio/ApprovalBar';
 
 type StudioRoute =
   | { view: 'list' }
@@ -40,6 +45,17 @@ const ERROR_LABEL: Record<string, string> = {
   unsupported_schema: 'Artifact schema not supported by this build.',
   unknown: 'Unexpected error.',
 };
+
+// Primary artifact type reviewed at each approval checkpoint. The submitted
+// artifact hash is the current revision content hash (server-validated); the
+// primary artifact only identifies what the UI highlights for the user.
+const CHECKPOINT_PRIMARY_ARTIFACT: Record<string, string> = {
+  IDEA: 'IdeaCandidateSet',
+  STORY_BIBLE: 'StoryBible',
+  OUTLINE: 'EpisodeOutline',
+};
+
+const CURSOR_STORAGE_KEY = 'studio.eventCursors';
 
 export const StudioPage: React.FC = () => {
   const [route, setRoute] = useState<StudioRoute>(() => parseHash(window.location.hash));
@@ -181,8 +197,107 @@ export const StudioPage: React.FC = () => {
     } else {
       const err = store.getLastError();
       setError(err ? { kind: err.kind, message: err.message } : null);
+      if (err?.kind === 'conflict') await refreshEpisode(episodeId);
     }
   };
+
+  /** Idea selection submits the exact candidate id of the served set with the
+   *  set's own revision id and content hash plus the expected version. */
+  const selectIdea = async (episodeId: string, setArtifact: StudioArtifactEnvelope, candidateId: string) => {
+    const ep = store.getEpisode(episodeId);
+    if (!ep) return;
+    const epRaw = ep as unknown as Record<string, unknown>;
+    const key = `studio_idea_${crypto.randomUUID()}`;
+    setPendingKeys((prev) => new Set(prev).add(key));
+    const result = await store.selectIdea(key, episodeId, {
+      episode_id: episodeId,
+      revision_id: setArtifact.revision_id,
+      candidate_id: candidateId,
+      expected_content_hash: setArtifact.content_hash,
+      expected_optimistic_version: Number(epRaw.optimistic_version ?? ep.version ?? 0),
+    });
+    setPendingKeys((prev) => {
+      const next = new Set(prev);
+      next.delete(key);
+      return next;
+    });
+    if (result) {
+      setError(null);
+      await refreshEpisode(episodeId);
+    } else {
+      const err = store.getLastError();
+      setError(err ? { kind: err.kind, message: err.message } : null);
+      if (err?.kind === 'conflict') await refreshEpisode(episodeId);
+    }
+  };
+
+  const submitApproval = async (
+    episodeId: string,
+    checkpoint: string,
+    decision: ApprovalDecision,
+    reason: string
+  ) => {
+    const ep = store.getEpisode(episodeId);
+    if (!ep) return;
+    const epRaw = ep as unknown as Record<string, unknown>;
+    const revision =
+      (epRaw.current_revision as Record<string, unknown> | undefined) ??
+      (epRaw.currentRevision as Record<string, unknown> | undefined);
+    const revisionId =
+      (typeof revision?.revision_id === 'string' ? revision.revision_id : null) ??
+      (typeof epRaw.current_revision_id === 'string' ? epRaw.current_revision_id : null) ??
+      ep.revision_id;
+    const revisionHash =
+      typeof revision?.content_hash === 'string' ? revision.content_hash : null;
+    if (!revisionId || !revisionHash) {
+      setError({ kind: 'unknown', message: 'No current revision on server to approve.' });
+      return;
+    }
+    const key = `studio_approval_${crypto.randomUUID()}`;
+    setPendingKeys((prev) => new Set(prev).add(key));
+    const result = await store.recordApproval(key, episodeId, {
+      episode_id: episodeId,
+      revision_id: revisionId,
+      checkpoint,
+      artifact_hash: revisionHash,
+      decision,
+      reason: reason || undefined,
+      expected_optimistic_version: Number(epRaw.optimistic_version ?? ep.version ?? 0),
+    });
+    setPendingKeys((prev) => {
+      const next = new Set(prev);
+      next.delete(key);
+      return next;
+    });
+    if (result) {
+      setError(null);
+      await refreshEpisode(episodeId);
+    } else {
+      const err = store.getLastError();
+      setError(err ? { kind: err.kind, message: err.message } : null);
+      if (err?.kind === 'conflict') await refreshEpisode(episodeId);
+    }
+  };
+
+  // Event cursor survives refresh: hydrate once on mount, persist on unload.
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(CURSOR_STORAGE_KEY);
+      if (raw) store.hydrate(JSON.parse(raw) as { eventCursors: Record<string, number> });
+    } catch {
+      // corrupt snapshot — start fresh
+    }
+    const save = () => {
+      try {
+        sessionStorage.setItem(CURSOR_STORAGE_KEY, JSON.stringify(store.serialize()));
+      } catch {
+        // storage unavailable — cursors live for the session only
+      }
+    };
+    window.addEventListener('beforeunload', save);
+    return () => window.removeEventListener('beforeunload', save);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const busy = loading !== null || pendingKeys.size > 0;
   const capabilityLabel = (name: string) => `${name}: ${capabilities[name] ?? '…'}`;
@@ -275,18 +390,64 @@ export const StudioPage: React.FC = () => {
             <dt>Awaiting approval</dt><dd>{String(episode.awaiting_checkpoint ?? '—')}</dd>
           </dl>
           <button onClick={() => void startRun(route.episodeId)} disabled={pendingKeys.size > 0}>Start / resume run</button>
+          {typeof episode.active_run_id === 'string' && episode.active_run_id && (
+            <RunProgress
+              runId={episode.active_run_id}
+              store={store}
+              onDurableChange={() => void refreshEpisode(route.episodeId)}
+            />
+          )}
+          {(() => {
+            const checkpoint =
+              typeof episode.awaiting_checkpoint === 'string' ? episode.awaiting_checkpoint : null;
+            if (checkpoint && CHECKPOINT_PRIMARY_ARTIFACT[checkpoint]) {
+              const primaryType = CHECKPOINT_PRIMARY_ARTIFACT[checkpoint];
+              const primary = artifacts.find((a) => a.artifact_type === primaryType) ?? null;
+              const revision = (episode.current_revision ?? episode.currentRevision) as
+                | Record<string, unknown>
+                | undefined;
+              const revisionId =
+                (typeof revision?.revision_id === 'string' ? revision.revision_id : null) ??
+                (typeof episode.current_revision_id === 'string' ? episode.current_revision_id : null);
+              const revisionHash =
+                typeof revision?.content_hash === 'string' ? revision.content_hash : null;
+              return (
+                <ApprovalBar
+                  checkpoint={checkpoint}
+                  artifactTitle={
+                    primary && typeof (primary.content as Record<string, unknown>)?.title === 'string'
+                      ? String((primary.content as Record<string, unknown>).title)
+                      : primary?.artifact_type ?? null
+                  }
+                  revisionId={revisionId}
+                  revisionHash={revisionHash}
+                  expectedVersion={Number(episode.optimistic_version ?? episode.version ?? 0)}
+                  disabled={pendingKeys.size > 0}
+                  onSubmit={(decision, reason) =>
+                    void submitApproval(route.episodeId, checkpoint, decision, reason)
+                  }
+                />
+              );
+            }
+            return null;
+          })()}
           <h4>Artifacts</h4>
-          <ul style={{ listStyle: 'none', padding: 0 }}>
-            {artifacts.length === 0 && !busy && <li style={{ color: '#94a3b8' }}>No artifacts yet.</li>}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {artifacts.length === 0 && !busy && <div style={{ color: '#94a3b8' }}>No artifacts yet.</div>}
             {artifacts.map((a) => (
-              <li key={a.artifact_id} style={{ marginBottom: 4 }}>
-                {a.artifact_type}{' '}
-                {store.isUnsupportedSchema(a)
-                  ? <span style={{ color: '#fbbf24' }}>— unsupported schema {a.schema_version}</span>
-                  : <span style={{ color: '#94a3b8' }}>— {a.schema_version}</span>}
-              </li>
+              <div key={a.artifact_id} style={{ border: '1px solid #1e293b', borderRadius: 8, padding: 10 }}>
+                {a.artifact_type === 'IdeaCandidateSet' ? (
+                  <ArtifactContentView
+                    artifact={a}
+                    onSelectIdea={(candidateId) => void selectIdea(route.episodeId, a, candidateId)}
+                    selectDisabled={pendingKeys.size > 0}
+                  />
+                ) : (
+                  <ArtifactContentView artifact={a} />
+                )}
+              </div>
             ))}
-          </ul>
+          </div>
         </section>
       )}
     </div>
