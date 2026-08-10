@@ -1,1949 +1,2613 @@
-Đủ thông tin để khóa kiến trúc. Tôi không còn câu hỏi kỹ thuật nào bắt buộc trước khi lập roadmap.
+# WINDAGENT STUDIO — ROADMAP 1
 
-Có một điểm cần ghi rõ ngay: mục tiêu **video 20 phút, Cycles, RTX 5060 8 GB, hoàn tất render dưới 3 giờ trên một máy** là một acceptance target khá khắt khe. 20 phút ở 24 fps tương đương 28.800 frame; ngân sách trung bình chỉ khoảng **0,375 giây/frame** nếu tính riêng render tuần tự. Vì vậy roadmap sẽ coi `≤3h` là **performance gate phải benchmark**, không mặc định tuyên bố đạt. Với Cycles, có thể cần aggressive adaptive sampling, denoise, render reuse, scene optimization, LOD và shot-level caching.
+## Story Foundation & Short Screenplay Production
 
-Tôi cũng đề xuất pin **Blender 4.5 LTS** làm baseline đầu tiên thay vì chạy theo phiên bản mới nhất; Blender liệt kê 4.5 là nhánh LTS và Python API có thể điều khiển animation, rendering, import/export và tự động hóa phần lớn Blender. ([Blender][1])
+**Baseline commit:** `9a09375700db02a64315068f008b15e43ba5f42d`
+**Target product:** WindAgent Studio
+**Roadmap scope:** Refactor nền tảng + hoàn thiện pipeline Idea → Story → Short Screenplay
+**Out of scope:** Hoàn thiện Blender/Unreal production pipeline, render episode hoàn chỉnh, final video.
 
-# Roadmap lớn: WindAgent 3D Animation Production
+---
 
-## Kiến trúc đích
+# 1. Mục tiêu tổng thể
 
-Không xây:
+Roadmap 1 chuyển WindAgent từ:
 
 ```text
-Director
+General-purpose AI Agent Framework
++
+Video Production modules
++
+Partially integrated Story modules
+```
+
+thành:
+
+```text
+WindAgent Studio
+│
+├── Runtime Kernel
+│   ├── Orchestrator
+│   ├── Worker
+│   ├── Scheduler
+│   ├── Storage
+│   ├── Events / Outbox
+│   ├── Providers
+│   ├── Model Router
+│   ├── Tools
+│   ├── Memory
+│   └── Verification
+│
+├── Studio Domain
+│   ├── SeriesProject
+│   ├── Episode
+│   ├── ProductionRevision
+│   └── ApprovalPolicy
+│
+└── Story Domain
+    ├── Idea
+    ├── Story Bible
+    ├── World Bible
+    ├── Character Canon
+    ├── Beat Sheet
+    ├── Episode Outline
+    ├── Screenplay
+    ├── Review
+    └── Lock
+```
+
+Roadmap kết thúc khi hệ thống thực hiện được pipeline thật:
+
+```text
+User Prompt
    ↓
-BlenderProvider
+SeriesProject
    ↓
-Blender
+Episode
+   ↓
+Idea Generation
+   ↓
+Idea Selection
+   ↓
+Story Development
+   ↓
+Story Bible / World Context
+   ↓
+Beat Sheet
+   ↓
+Episode Outline
+   ↓
+Short Screenplay Draft
+   ↓
+Automated Review
+   ↓
+Revision
+   ↓
+Optional Human Approval
+   ↓
+LOCKED SCREENPLAY
+   ↓
+READY_FOR_PRODUCTION
 ```
 
-Mà chuyển sang:
+Pipeline trên phải chạy thông qua:
 
 ```text
-                    WINDAGENT
-                       │
-                       ▼
-              Creative / Screenplay
-                       │
-          ┌────────────┴────────────┐
-          ▼                         ▼
-     Director Layer            Audio Pipeline
-          │                   TTS / Voice / Align
-          ▼                         │
-    Shot / Scene Intent             │
-          │                         │
-          ▼                         │
-  Production Intermediate           │
-     Representation                 │
-          │                         │
-          ├──────────────┐          │
-          ▼              ▼          ▼
-   Asset Pipeline   Animation Pipeline
-          │              │
-          └──────┬───────┘
-                 ▼
-           Scene Compiler
-                 │
-                 ▼
-         ProductionEnginePort
-                 │
-                 ▼
-         BlenderEngineAdapter
-                 │
-                 ▼
-          Blender 4.5 LTS
-                 │
-       ┌─────────┼─────────┐
-       ▼         ▼         ▼
-    .blend    frames     metadata
-                 │
-                 ▼
-             Reviewer
-                 │
-                 ▼
-          Post-production
-              FFmpeg
-                 │
-                 ▼
-             Final MP4
-```
-
-Sau này:
-
-```text
-ProductionEnginePort
-        │
-        ├── BlenderEngineAdapter
-        │
-        └── UnrealEngineAdapter
-```
-
-Và xa hơn theo lựa chọn `12C`:
-
-```text
-Blender
-  └── chủ yếu Asset Authoring / Rigging / Preparation
-
-Unreal Engine
-  └── Scene / Animation / Lighting / Final Rendering
-```
-
-Điều này đặc biệt quan trọng vì domain hiện tại vẫn chứa `GenerationMode.TEXT_TO_VIDEO`, `IMAGE_TO_VIDEO`, `VIDEO_EXTENSION`... vốn được tạo ra cho generative-video pipeline.
-
----
-
-# Stage A — Kiến trúc lại nền tảng
-
-## Phase 0 — Baseline Freeze & Blender Migration Contract
-
-Mục tiêu là đóng băng trạng thái hiện tại trước khi xóa Flow.
-
-Thực hiện:
-
-* ghi `baseline_sha`;
-* full Python tests;
-* architecture checker;
-* Web/Desktop tests;
-* video-production contract tests;
-* snapshot schema hiện tại;
-* inventory toàn bộ:
-
-  * `tools/windagent_tools/google_flow/`;
-  * `docs/video_production/flow_*`;
-  * browser runtime liên quan Flow;
-  * Flow-specific schemas;
-  * Flow-specific tests;
-  * Flow-specific evidence;
-* lập dependency map xem module nào còn import Flow.
-
-Không thay code nghiệp vụ trong phase này.
-
-**Gate**
-
-```text
-VP3D_P0_BASELINE_FROZEN
-```
-
-PASS khi baseline sạch và toàn bộ Flow dependencies đã được inventory.
-
----
-
-# Phase 1 — Canonical Production IR
-
-Đây là phase quan trọng nhất.
-
-Phải loại khỏi domain các khái niệm kiểu:
-
-```text
-TEXT_TO_VIDEO
-IMAGE_TO_VIDEO
-FRAMES_TO_VIDEO
-VIDEO_EXTENSION
-VIDEO_TO_VIDEO
-```
-
-Hiện `GenerationModeDecider` đang dựa trực tiếp vào các mode này.
-
-Thay bằng các khái niệm mô tả **ý định điện ảnh**, không mô tả provider.
-
-Ví dụ:
-
-```python
-ShotExecutionIntent
-SceneDescription
-CharacterInstance
-PropInstance
-EnvironmentInstance
-CameraTrack
-AnimationTrack
-FacialTrack
-DialogueTrack
-LightRig
-SimulationTrack
-RenderProfile
-```
-
-Shot không còn nói:
-
-```text
-IMAGE_TO_VIDEO
-```
-
-mà nói:
-
-```text
-characters:
-  - character_001
-
-action:
-  walk_to: desk_01
-
-camera:
-  shot_type: MEDIUM
-  movement: DOLLY_IN
-
-duration: 4.2
-
-dialogue:
-  track: dialogue_023
-```
-
-Engine tự quyết định cách thực hiện.
-
-### Canonical formats
-
-Theo lựa chọn của bạn:
-
-```text
-JSON/Pydantic    → metadata / production IR
-glTF             → asset interchange ưu tiên
-FBX              → skeletal/animation compatibility
-USD              → hướng dài hạn Blender ↔ Unreal
-.blend           → derived editable artifact
-```
-
-`.blend` tuyệt đối không phải source of truth.
-
-**Gate**
-
-```text
-VP3D_P1_ENGINE_NEUTRAL_IR_VERIFIED
-```
-
----
-
-# Phase 2 — Hard Removal Google Flow
-
-Bạn chọn xóa ngay nên phase này thực hiện retirement thực sự.
-
-Xóa:
-
-```text
-tools/windagent_tools/google_flow/
-```
-
-và toàn bộ:
-
-```text
-flow_navigation
-flow_video
-flow_images
-flow_human_control
-browser runtime chỉ phục vụ Flow
-Flow candidate downloader
-Flow project manager
-Flow submit guard
-Flow UI mapping
-```
-
-Các contract có giá trị chung như:
-
-* idempotency;
-* cancellation;
-* retry;
-* artifact hash;
-* candidate provenance;
-* fail-closed validation;
-
-không được xóa ý tưởng, mà chuyển vào engine-neutral runtime.
-
-Flow hiện có những guarantee này nên chúng phải được bảo tồn dưới abstraction mới.
-
-Sau phase này:
-
-```bash
-rg "google_flow"
-rg "FlowVideo"
-rg "FlowImage"
-rg "flow_video"
-```
-
-phải không còn runtime dependency.
-
-**Gate**
-
-```text
-VP3D_P2_GOOGLE_FLOW_REMOVED
-```
-
----
-
-# Stage B — Blender Runtime
-
-## Phase 3 — Blender Runtime Foundation
-
-Baseline:
-
-```text
-OS      Windows
-GPU     NVIDIA RTX 5060 Laptop 8 GB
-RAM     32 GB
-CPU     Intel Core i7-14650HX
-Engine  Blender 4.5 LTS
-Render  Cycles
-```
-
-WindAgent không bundle Blender ở giai đoạn đầu.
-
-Xây:
-
-```text
-BlenderInstallationDetector
-BlenderVersionValidator
-BlenderCapabilityProbe
-BlenderGpuProbe
-BlenderJobLauncher
-BlenderProcessSupervisor
-BlenderExecutionReceipt
-```
-
-Execution:
-
-```text
-WindAgent Worker
-    ↓
-blender.exe --background project.blend --python execute_job.py
-```
-
-Cần capture:
-
-```text
-PID
-exit_code
-stdout
-stderr
-Blender version
-GPU backend
-VRAM estimate
-start/end
-job hash
-scene hash
-output hashes
-```
-
-### Add-on security
-
-```text
-addon allowlist
-      ↓
-signed/version-pinned manifest
-      ↓
-Blender runtime
-```
-
-Agent tuyệt đối không tự cài add-on mới.
-
-Add-on ngoài allowlist:
-
-```text
-REQUIRES_HUMAN_APPROVAL
-```
-
-**Gate**
-
-```text
-VP3D_P3_BLENDER_RUNTIME_VERIFIED
-```
-
----
-
-# Phase 4 — Blender Deterministic Scene Smoke Test
-
-Chưa dùng AI.
-
-Tạo scene bằng Python:
-
-```text
-cube
-ground
-camera
-3 lights
-simple material
-animation
-```
-
-Render Cycles → image sequence → FFmpeg MP4.
-
-Test:
-
-```text
-create scene
-save .blend
-reopen .blend
-render
-cancel
-resume
-retry
-hash outputs
-```
-
-Blender manual cũng khuyến nghị render animation thành image sequence vì có thể resume từ frame cuối thay vì mất toàn bộ video khi job bị gián đoạn. ([Blender Documentation][2])
-
-Không render thẳng MP4 từ Blender trong production.
-
-Canonical path:
-
-```text
-Blender
+API V3
   ↓
-PNG/EXR frames
+OrchestratorService
   ↓
-FFmpeg
+Durable Worker
   ↓
-MP4
+Story Services
+  ↓
+Model Router / Provider
+  ↓
+Persistence
+  ↓
+Review / Verification
 ```
 
-**Gate**
-
-```text
-VP3D_P4_DETERMINISTIC_RENDER_PASSED
-```
+Không được chứng nhận bằng cách gọi trực tiếp helper hoặc test orchestrator nội bộ.
 
 ---
 
-# Stage C — Asset Production
+# 2. Các nguyên tắc kiến trúc bắt buộc
 
-## Phase 5 — Universal Asset Gateway
+## 2.1 Một orchestration authority duy nhất
 
-Agent được phép:
-
-1. tìm asset ngoài Internet;
-2. gọi Mesh API;
-3. gọi Mesh MCP;
-4. gọi future 3D generation APIs;
-5. dùng asset library local.
-
-Không để Director trực tiếp làm các việc này.
-
-Xây:
+Canonical authority:
 
 ```text
-AssetResolverPort
-    │
-    ├── LocalAssetAdapter
-    ├── InternetAssetAdapter
-    ├── MeshApiAdapter
-    ├── MeshMcpAdapter
-    └── FutureGeneratorAdapter
+OrchestratorService
 ```
 
-Canonical request:
-
-```python
-AssetRequirement(
-    type="CHARACTER",
-    description="...",
-    style="3d_cartoon",
-    topology_requirements=...,
-    rig_required=True,
-    texture_resolution=...,
-)
-```
-
----
-
-# Phase 6 — Asset Trust & Provenance
-
-Asset Internet bắt buộc có:
+Không duy trì đồng thời:
 
 ```text
-source_url
-provider
-author
-license
-license_state
-download timestamp
-SHA256
-original format
-converted format
+Generic Workflow Engine
+Production Workflow Engine
+Story Workflow Engine
 ```
 
-Asset AI:
+như ba authority độc lập.
+
+Target:
 
 ```text
-provider
-model
-prompt hash
-seed nếu có
-generation request hash
-```
-
-Asset không xác định license:
-
-```text
-QUARANTINED
-```
-
-không được dùng vào final production.
-
-Domain hiện đã có `AssetSourceType` và `LicenseState`, nên có thể mở rộng thay vì tạo subsystem khác.
-
----
-
-# Phase 7 — Asset Normalization
-
-Mọi asset phải qua:
-
-```text
-ingest
- ↓
-virus/security validation
- ↓
-format validation
- ↓
-unit normalization
- ↓
-axis normalization
- ↓
-mesh validation
- ↓
-material normalization
- ↓
-texture normalization
- ↓
-poly budget validation
- ↓
-LOD generation
- ↓
-preview render
- ↓
-approval/cache
-```
-
-Chuẩn nội bộ:
-
-```text
-1 unit = 1 meter
-Z-up canonical metadata
-PBR materials
-texture hash immutable
-```
-
-Kiểm tra:
-
-* non-manifold;
-* missing texture;
-* broken UV;
-* excessive polycount;
-* unsupported shader;
-* excessive VRAM;
-* missing normals;
-* broken skeleton.
-
-**Gate**
-
-```text
-VP3D_P7_ASSET_NORMALIZATION_VERIFIED
-```
-
----
-
-# Stage D — Character System
-
-## Phase 8 — Character Master Asset
-
-Do bạn chọn `4C`, hệ thống hỗ trợ cả nhân vật cố định lẫn sinh mới.
-
-Mỗi character:
-
-```text
-CharacterMaster
-├── canonical mesh
-├── skeleton
-├── facial rig
-├── materials
-├── textures
-├── proportions
-├── voice_profile_id
-├── animation_profile
-├── style fingerprint
-└── approved versions
-```
-
-Một nhân vật dùng xuyên nhiều episode phải dùng cùng `CharacterMasterId`.
-
-Không regenerate nhân vật mỗi shot.
-
-Điều này giải quyết continuity ở cấp 3D tốt hơn rất nhiều so với Flow.
-
----
-
-# Phase 9 — Rigging & Retargeting
-
-Tạo:
-
-```text
-SkeletonProfile
-RigProfile
-RetargetProfile
-AnimationCompatibilityProfile
-```
-
-Pipeline:
-
-```text
-generated/imported character
-        ↓
-skeleton detection
-        ↓
-rig validation
-        ↓
-retarget normalization
-        ↓
-animation test suite
-```
-
-Test tối thiểu:
-
-```text
-idle
-walk
-run
-sit
-stand
-turn
-point
-grab
-talk
-facial neutral
-```
-
-**Gate**
-
-```text
-VP3D_P9_CHARACTER_RIG_VERIFIED
-```
-
----
-
-# Stage E — Audio chạy song song
-
-## Phase 10 — Concurrent Audio Production
-
-Kiến trúc hiện tại rất phù hợp vì TTS đã được tách qua `TtsProviderPort`, cùng voice casting và forced alignment.
-
-Sau khi screenplay lock:
-
-```text
-                    Screenplay LOCKED
+                    OrchestratorService
                            │
-             ┌─────────────┴────────────┐
-             ▼                          ▼
-        Audio Pipeline              3D Pipeline
-             │                          │
-       dialogue prep                 assets
-             │                       scenes
-       voice casting               animation
+             ┌─────────────┼─────────────┐
+             │             │             │
+          Story DAG     Asset DAG    Production DAG
              │
-            TTS
+        Durable Worker
              │
-     forced alignment
+     Execution Runtime
 ```
 
-Hai nhánh chạy song song.
+`ProductionWorkflowEngine` hiện tại phải được đưa vào deprecation path.
 
-### Voice identity
+Roadmap 1 chỉ bắt buộc Story DAG được cutover hoàn toàn.
 
-Mỗi nhân vật:
+Production DAG sẽ hoàn tất migration trong Roadmap 2.
 
-```text
-CharacterMasterId
-      ↓
-VoiceProfileId
-      ↓
-TTS provider/model
-      ↓
-voice parameters
-```
-
-Mục tiêu:
-
-```text
-same character
-    =
-same voice
-```
-
-TTS open-source được đưa vào bằng adapter:
-
-```text
-TtsProviderPort
- ├── LocalTtsAdapter_A
- ├── LocalTtsAdapter_B
- └── APIAdapter
-```
-
-Không hard-code engine TTS.
+Worker hiện đã có generic `ExecutionRuntimeRegistry`, trong khi production runtime còn một đường orchestration riêng, nên việc hội tụ authority là một trong các refactor nền móng.
 
 ---
 
-# Stage F — Scene Construction
+# 3. Canonical Project Model
 
-## Phase 11 — Scene Compiler
-
-Input:
+Target hierarchy:
 
 ```text
-Production IR
-+
-approved assets
-+
-Director plan
-+
-Shot graph
-+
-continuity ledger
+SeriesProject
+│
+├── Series Bible
+├── World Bible
+├── Character Canon
+├── Visual / Narrative Style
+├── Shared Asset References
+│
+├── Episode 001
+│   ├── Idea
+│   ├── Story Development
+│   ├── ProductionRevision 1
+│   ├── ProductionRevision 2
+│   └── Locked Screenplay
+│
+├── Episode 002
+│
+└── Episode N
 ```
 
-Output:
+Không tạo một Project aggregate mới song song với model hiện có.
 
-```text
-BlenderScenePlan
-```
-
-Compiler chịu trách nhiệm:
-
-```text
-collections
-objects
-characters
-props
-world
-camera
-lighting
-animations
-materials
-frame ranges
-render configuration
-```
-
-Sau đó adapter biến:
-
-```text
-BlenderScenePlan
-      ↓
-bpy commands
-      ↓
-.blend
-```
-
-Không cho LLM trực tiếp viết arbitrary Blender Python và chạy.
-
-Agent tạo **typed plan**.
-
-Trusted compiler mới viết `bpy`.
-
-Đây là ranh giới an toàn rất quan trọng.
+Repo hiện đã có `VideoProject` và immutable `ProductionRevision`, bao gồm parent revision, content hash, lock semantics và invalidation intent. Các model này phải được **migrate và nâng cấp**, không rewrite.
 
 ---
 
-# Phase 12 — Environment & Set Dressing
+# 4. Phạm vi Roadmap 1
 
-Agent có thể:
+## IN SCOPE
 
-* chọn environment asset;
-* tạo environment mới;
-* scatter props;
-* sử dụng procedural Geometry Nodes;
-* đặt character;
-* kiểm tra collision;
-* bố trí scene.
+* sửa baseline/evidence;
+* sửa architecture boundaries cần thiết;
+* hội tụ orchestration;
+* chuyển WindAgent thành Studio-first architecture;
+* `SeriesProject`;
+* `Episode`;
+* revision model;
+* Story domain;
+* Idea generation;
+* Story Bible;
+* World Bible;
+* Character Canon;
+* Beat Sheet;
+* Episode Outline;
+* Screenplay generation;
+* screenplay validation;
+* screenplay review;
+* revision loop;
+* human approval;
+* configurable approval policy;
+* screenplay locking;
+* `/api/v3/studio`;
+* Story frontend;
+* Desktop certification;
+* real model integration;
+* deterministic testing;
+* vertical slice Idea → Locked Screenplay.
 
-Xây:
+## OUT OF SCOPE
 
-```text
-EnvironmentBuilder
-SetDressingPlanner
-PropPlacementPlanner
-SpatialConstraintValidator
-```
+Roadmap 1 không cố hoàn thiện:
 
-Ví dụ:
+* automatic 3D asset acquisition;
+* full asset generation;
+* Blender GPU rendering;
+* Unreal Engine runtime;
+* animation;
+* rigging production workflow;
+* lipsync production;
+* full TTS pipeline;
+* music/SFX production;
+* shot rendering;
+* post-production;
+* 5–20 minute episode render;
+* final MP4 certification.
 
-```text
-table không xuyên tường
-character không xuyên sàn
-chair đúng chiều
-camera không nằm trong mesh
-```
-
-**Gate** `VP3D_P12_SET_DRESSING_VERIFIED` — environment (surfaces/zones/volumes/anchors)
-+ prop placement (seeded/versioned scatter) + spatial validation (penetration,
-below-floor, out-of-bounds, camera-in-mesh, occluder, out-of-reach, duplicate,
-missing approved asset) build a deterministic `SetDressingPlan` that fails
-closed; a changed prop revision hash invalidates only the dependent scene.
+Những module đã tồn tại phải được **preserve**, không delete hoặc rewrite.
 
 ---
 
-# Stage G — Cinematography
+# 5. Target package layout
 
-## Phase 13 — Blender Camera Compiler
-
-Giữ lại phần Director/Shot Planner hiện có.
-
-Domain đang có:
+Không nhất thiết thực hiện một lần. Đây là trạng thái cuối mong muốn sau Roadmap 1.
 
 ```text
-ShotType
-CameraMovement
-CameraAngle
-CameraSide
-TransitionType
-```
+core/
+└── windagent_core/
+    └── domain/
+        ├── studio/
+        │   ├── series_project.py
+        │   ├── episode.py
+        │   ├── revision.py
+        │   ├── approval_policy.py
+        │   ├── states.py
+        │   ├── events.py
+        │   └── errors.py
+        │
+        └── story/
+            ├── idea.py
+            ├── story_bible.py
+            ├── world_bible.py
+            ├── character_canon.py
+            ├── beat_sheet.py
+            ├── episode_outline.py
+            ├── screenplay.py
+            ├── screenplay_review.py
+            ├── screenplay_lock.py
+            ├── continuity.py
+            ├── states.py
+            └── events.py
 
-nên phần này tái sử dụng được tốt.
 
-Compiler chuyển:
+intelligence/
+└── windagent_intelligence/
+    └── story/
+        ├── ideation/
+        ├── development/
+        ├── outline/
+        ├── screenplay/
+        ├── review/
+        └── prompts/
 
-```text
-DOLLY
-PAN
-TILT
-TRACK
-CRANE
-STATIC
-```
 
-thành Blender camera rigs.
+orchestration/
+└── windagent_orchestration/
+    └── studio/
+        ├── story_dag.py
+        ├── story_handlers.py
+        ├── episode_execution.py
+        └── transition_policy.py
 
-Thêm:
 
-```text
-lens
-sensor
-DOF
-focus target
-camera path
-look-at constraint
-safe framing
-```
+apps/api/
+└── windagent_api/
+    └── routers/
+        └── v3/
+            └── studio/
+                ├── projects.py
+                ├── episodes.py
+                ├── ideas.py
+                ├── story.py
+                ├── screenplay.py
+                ├── reviews.py
+                └── runs.py
 
-Automatic validation:
 
-```text
-180-degree rule
-head room
-look room
-subject visibility
-occlusion
-camera collision
+frontend/packages/
+├── studio-contracts/
+├── studio-client/
+├── studio-state/
+├── story-ui/
+└── studio-shell/
 ```
 
 ---
 
-# Phase 14 — Lighting System
-
-Phim hoạt hình 3D nên dùng lighting preset thay vì agent tự tạo mọi thứ từ đầu.
-
-Ví dụ:
+# 6. Execution Waves
 
 ```text
-CARTOON_DAY
-CARTOON_NIGHT
-INTERIOR_SOFT
-MAGIC_FOREST
-SUNSET
-DRAMATIC
-COMEDY_BRIGHT
-```
-
-Director chọn intention:
-
-```text
-mood = HAPPY
-time = MORNING
-style = CHILDREN_3D
-```
-
-Lighting compiler chọn rig.
-
-Sau này Unreal có thể map cùng intent sang Lumen lighting.
-
----
-
-# Stage H — Animation
-
-## Phase 15 — Animation Layer V1: Library + Mocap
-
-Dù bạn chọn D, không nên triển khai cả 3 hướng cùng lúc ngay phase đầu.
-
-Thứ tự triển khai:
-
-```text
-Animation Library
-       ↓
-Mocap Retargeting
-       ↓
-Procedural
-       ↓
-AI Motion Generation
-```
-
-Các clip cơ bản:
-
-```text
-idle
-walk
-run
-jump
-sit
-stand
-talk
-laugh
-cry
-point
-wave
-pick-up
-put-down
-```
-
-Director chỉ phát:
-
-```text
-AnimationIntent(
-    actor="char_01",
-    action="walk",
-    destination="chair_03",
-    emotion="happy"
-)
+WAVE 0
+Baseline Truth
+      │
+      ▼
+WAVE 1
+Architecture Foundation
+      │
+      ▼
+WAVE 2
+Studio Domain
+      │
+      ├──────────────┐
+      ▼              ▼
+WAVE 3A          WAVE 3B
+Story Domain     Story Intelligence
+      └──────┬───────┘
+             ▼
+WAVE 4
+Story Runtime
+             │
+             ▼
+WAVE 5
+Review + Lock
+             │
+      ┌──────┴──────┐
+      ▼             ▼
+WAVE 6A         WAVE 6B
+API V3          Frontend
+      └──────┬──────┘
+             ▼
+WAVE 7
+Vertical Slice
+             │
+             ▼
+WAVE 8
+Certification
 ```
 
 ---
 
-# Phase 16 — Procedural Animation
+# PHASE S0 — CURRENT TRUTH BASELINE
 
-Sau khi library ổn định:
+## Mục tiêu
+
+Xác định trạng thái thật của commit:
 
 ```text
-look-at
-head tracking
-eye tracking
-hand IK
-foot IK
-walk path
-object grabbing
-sitting alignment
-turning
-idle variation
+9a09375700db02a64315068f008b15e43ba5f42d
 ```
 
-Blender procedural layer tự tạo transition.
+trước khi sửa bất cứ thứ gì.
 
 ---
 
-# Phase 17 — AI Motion Adapter
+## S0.1 Freeze baseline
 
-Sau đó mới thêm:
+Ghi lại:
 
-```text
-TextToMotionPort
-VideoToMotionPort
-MotionGenerationPort
-```
+* commit SHA;
+* branch;
+* Python version;
+* Node version;
+* OS;
+* database backend;
+* Blender detection;
+* Unreal detection nếu có;
+* git status;
+* tracked/untracked changes.
 
-AI output không bao giờ được đưa thẳng vào scene.
-
-Phải qua:
-
-```text
-motion
- ↓
-skeleton remap
- ↓
-joint-limit validation
- ↓
-foot sliding detection
- ↓
-collision detection
- ↓
-retarget
-```
-
-**Gate**
+Artifact:
 
 ```text
-VP3D_P17_AI_MOTION_VERIFIED
+artifacts/studio_refactor/roadmap_01/phase_s0/
+    baseline_environment.json
+    baseline_git_state.json
 ```
 
 ---
 
-# Stage I — Facial Animation
+## S0.2 Run live architecture validation
 
-## Phase 18 — Lip-sync / Facial Pipeline
+Không dùng artifact PASS cũ làm source of truth.
 
-Audio đã tồn tại trước animation final nên:
-
-```text
-TTS
- ↓
-forced alignment
- ↓
-phoneme timing
- ↓
-viseme sequence
- ↓
-emotion curve
- ↓
-facial rig
-```
-
-Input:
+Chạy live:
 
 ```text
-word timestamps
-phonemes
-emotion
-speaker
+architecture checker
+dependency checker
+version checker
+import checker
+scaffold checker
+artifact schema checker
 ```
 
-Output:
+Mọi FAIL phải được ghi lại.
 
-```text
-FacialAnimationTrack
-```
-
-Ngoài miệng:
-
-```text
-blink
-eyebrow
-eyes
-head motion
-emotion
-```
-
-Điều này sẽ làm nhân vật bớt cảm giác robot đáng kể.
+Không auto-fix.
 
 ---
 
-# Stage J — Rendering
+## S0.3 Full regression baseline
 
-## Phase 19 — Cycles Production Renderer
-
-Bạn chọn Cycles làm default.
-
-Profiles:
+Chạy:
 
 ```text
-PREVIEW
-FINAL
-FINAL_HIGH
+Python tests
+Frontend tests
+Desktop tests
+CLI tests
+API tests
+Storage tests
+Architecture tests
 ```
 
-Nhưng:
+Các test production/Blender không chạy được vì environment phải được:
 
 ```text
-FINAL default = Cycles
+SKIPPED_WITH_REASON
 ```
 
-Không tự chuyển sang Eevee nếu không được user cho phép.
-
-RTX 5060:
-
-```text
-Cycles
- ↓
-OptiX/CUDA capability probe
- ↓
-GPU rendering
-```
-
-Các tối ưu bắt buộc:
-
-* adaptive sampling;
-* denoise;
-* persistent data khi có lợi;
-* texture budget;
-* geometry budget;
-* BVH optimization;
-* instancing;
-* asset reuse;
-* motion blur budget;
-* light bounce budget;
-* transparent bounce budget;
-* LOD.
+không được biến thành PASS.
 
 ---
 
-# Phase 20 — VRAM Budget Manager
+## S0.4 Evidence drift report
 
-8 GB VRAM là constraint quan trọng.
-
-Tạo:
+So sánh:
 
 ```text
-SceneResourceEstimator
-VramBudgetPolicy
-TextureBudgetPolicy
-GeometryBudgetPolicy
-```
-
-Ví dụ:
-
-```text
-SAFE         < 6.0 GB estimated
-WARNING      6.0–7.0 GB
-BLOCK        > 7.0 GB
-```
-
-Không cố sử dụng đủ 8 GB vì Windows, Blender và driver còn chiếm VRAM.
-
-Khi quá budget:
-
-```text
-lower texture resolution
-use LOD
-instance meshes
-remove hidden geometry
-split shot
-```
-
-không crash rồi retry mù.
-
----
-
-# Phase 21 — Fault-tolerant Render Jobs
-
-Render theo:
-
-```text
-episode
-  ↓
-scene
-  ↓
-shot
-  ↓
-frame chunk
-```
-
-Ví dụ:
-
-```text
-shot_001/
-   frames/
-      000001.png
-      ...
-```
-
-Job crash ở frame 121:
-
-```text
-resume frame 122
-```
-
-Không render lại frame 1.
-
-Receipt từng chunk:
-
-```text
-scene_hash
-shot_hash
-frame_start
-frame_end
-render_config_hash
-asset_hashes
-Blender version
-GPU
-duration
-output hashes
-```
-
----
-
-# Stage K — Quality Review
-
-## Phase 22 — 3D Technical Reviewer
-
-Reviewer hiện tại đang review media output; giữ lại nhưng thêm reviewer 3D trước render.
-
-### Pre-render review
-
-Kiểm tra:
-
-```text
-missing object
-missing texture
-broken rig
-camera collision
-character collision
-light missing
-wrong frame range
-audio timing mismatch
-VRAM overflow
-```
-
-### Post-render review
-
-Kiểm tra:
-
-```text
-black frames
-broken frames
-flicker
-character identity
-lip sync
-occlusion
-continuity
-lighting consistency
-motion quality
-```
-
----
-
-# Phase 23 — Intelligent Retry
-
-Không phải lỗi nào cũng rerender toàn scene.
-
-Ví dụ:
-
-```text
-lip-sync issue
-→ regenerate facial track only
-
-camera issue
-→ camera compile again
-
-missing texture
-→ asset fix
-
-bad motion
-→ regenerate animation
-
-render noise
-→ rerender affected frames
+committed evidence
+vs
+live execution
 ```
 
 Tạo:
 
 ```text
-FailureClassifier
-RepairPlanner
-InvalidationPlanner
+evidence_drift_report.json
+```
+
+Phân loại:
+
+```text
+CURRENT
+STALE
+MISSING
+INVALID
+ENVIRONMENT_BOUND
 ```
 
 ---
 
-# Stage L — Post-production
-
-## Phase 24 — FFmpeg Assembly
-
-Phần hiện tại giữ gần như nguyên vẹn vì đã có:
+## Gate
 
 ```text
-InputNormalizer
-AssemblyPlanner
-FfmpegRunner
-MediaVerifier
-ReproducibilityAuditor
+WIND_STUDIO_S0_CURRENT_TRUTH_CAPTURED
 ```
 
-Pipeline:
+Gate này **có thể PASS ngay cả khi tests/checkers FAIL**, miễn là trạng thái thật đã được capture chính xác.
+
+---
+
+# PHASE S1 — EVIDENCE & VERSION AUTHORITY REPAIR
+
+## Mục tiêu
+
+Không để refactor dựa trên evidence sai.
+
+---
+
+## S1.1 Single version authority
+
+Loại bỏ version literals rải rác.
+
+Canonical source ví dụ:
 
 ```text
-rendered image sequence
-        +
-dialogue
-        +
-music
-        +
-SFX
-        ↓
-FFmpeg assembly
-        ↓
-subtitle
-        ↓
-final verification
-        ↓
+windagent_version
+```
+
+API, CLI, Worker, Desktop phải derive từ authority này.
+
+---
+
+## S1.2 Evidence storage policy
+
+Git chỉ lưu:
+
+```text
+manifest
+summary
+verdict
+schema
+small deterministic reports
+```
+
+Không commit:
+
+```text
+render frames
 MP4
+EXR
+large logs
+Blender runtime state
+large receipts
+temporary workspaces
+```
+
+Raw runtime evidence → CI artifact storage.
+
+Commit `9a093...` đã xóa nhiều runtime Blender receipts, cho thấy cơ chế cũ không phù hợp để duy trì lâu dài.
+
+---
+
+## S1.3 Fresh evidence generation
+
+Mỗi CI run phải regenerate:
+
+```text
+architecture_report
+version_report
+test_matrix
+artifact_manifest
+runtime_smoke_report
+```
+
+Artifact phải chứa:
+
+```text
+source_commit_sha
+generated_at
+tool_version
+environment
 ```
 
 ---
 
-# Stage M — End-to-End
-
-## Phase 25 — 30–60 Second Golden Scene
-
-Không test ngay 20 phút.
-
-Golden test đầu tiên:
+## Gate
 
 ```text
-2 characters
-1 environment
-dialogue
-walk animation
-interaction
-camera movement
-lighting
-lip-sync
-Cycles render
-audio
-FFmpeg
+WIND_STUDIO_S1_EVIDENCE_AUTHORITY_VERIFIED
+```
+
+Required:
+
+```text
+no stale PASS
+version checker PASS
+evidence schema PASS
+```
+
+---
+
+# PHASE S2 — ORCHESTRATION CONVERGENCE FOUNDATION
+
+## Mục tiêu
+
+Chuẩn bị một orchestration authority duy nhất.
+
+---
+
+## S2.1 Inventory orchestration authorities
+
+Lập graph:
+
+```text
+OrchestratorService
+DurablePlanScheduler
+WorkflowEngine
+ProductionWorkflowEngine
+ExecutionRuntimeRegistry
+ProductionStepExecutor
+ProductionEngineExecutor
+Worker task loop
+```
+
+Đánh dấu:
+
+```text
+AUTHORITY
+EXECUTOR
+ADAPTER
+LEGACY
+```
+
+---
+
+## S2.2 Canonical responsibility
+
+Sau refactor:
+
+### OrchestratorService
+
+chịu trách nhiệm:
+
+* DAG;
+* dependencies;
+* state transitions;
+* retries policy;
+* pause/resume;
+* approval wait states.
+
+### Worker
+
+chịu trách nhiệm:
+
+* durable dequeue;
+* lease;
+* fencing;
+* dispatch;
+* heartbeat;
+* finalize;
+* recovery.
+
+### Execution Runtime
+
+chịu trách nhiệm:
+
+* execute one task;
+* model/tool/provider invocation.
+
+Không service nào khác được tạo DAG độc lập.
+
+---
+
+## S2.3 ProductionWorkflowEngine deprecation contract
+
+Chưa xóa code production.
+
+Thêm marker:
+
+```text
+DEPRECATED_ORCHESTRATION_AUTHORITY
+```
+
+Cấm feature mới depend trực tiếp lên nó.
+
+Roadmap 2 mới hoàn tất production migration.
+
+---
+
+## S2.4 Story execution namespace
+
+Định nghĩa task types:
+
+```text
+studio.story.idea.generate
+studio.story.idea.evaluate
+studio.story.bible.generate
+studio.story.beats.generate
+studio.story.outline.generate
+studio.story.screenplay.generate
+studio.story.screenplay.review
+studio.story.screenplay.revise
+studio.story.screenplay.lock
+```
+
+---
+
+## Gate
+
+```text
+WIND_STUDIO_S2_SINGLE_ORCHESTRATION_AUTHORITY_DEFINED
+```
+
+Architecture test phải đảm bảo Story code không import:
+
+```text
+ProductionWorkflowEngine
+legacy WorkflowEngine
+```
+
+---
+
+# PHASE S3 — STUDIO PROJECT DOMAIN
+
+## Mục tiêu
+
+Biến `VideoProject` thành project model phù hợp sản xuất series.
+
+---
+
+## S3.1 Introduce SeriesProject
+
+Canonical:
+
+```text
+SeriesProject
+```
+
+Fields tối thiểu:
+
+```text
+series_id
+title
+description
+status
+
+target_audience
+language
+genre
+tone
+
+created_at
+updated_at
+
+current_bible_revision
+approval_policy
+
+metadata
+```
+
+---
+
+## S3.2 Compatibility migration
+
+Current:
+
+```text
+VideoProject
+```
+
+Target:
+
+```text
+SeriesProject
+```
+
+Trong migration window:
+
+```python
+VideoProject -> deprecated compatibility facade
+```
+
+Không tạo database duplicate.
+
+---
+
+## S3.3 Episode aggregate
+
+Tạo:
+
+```text
+Episode
+```
+
+Fields:
+
+```text
+episode_id
+series_id
+
+title
+logline
+
+target_duration
+target_audience
+
+state
+
+active_revision_id
+
+created_at
+updated_at
+```
+
+---
+
+## S3.4 Episode state machine
+
+Canonical states:
+
+```text
+DRAFT
+↓
+IDEATION
+↓
+IDEA_SELECTED
+↓
+STORY_DEVELOPMENT
+↓
+OUTLINE_READY
+↓
+SCREENPLAY_DRAFT
+↓
+SCREENPLAY_REVIEW
+↓
+SCREENPLAY_APPROVAL
+↓
+SCREENPLAY_LOCKED
+↓
+READY_FOR_PRODUCTION
+```
+
+Không được nhảy state tùy ý.
+
+---
+
+## S3.5 Upgrade ProductionRevision
+
+`ProductionRevision` phải gắn với:
+
+```text
+series_id
+episode_id
+revision_id
+parent_revision_id
+content_hash
+created_by
+created_at
+locked
+invalidation_intent
+```
+
+Current immutable revision mechanism phải được reuse.
+
+---
+
+## S3.6 ApprovalPolicy
+
+Per-Series hoặc per-Episode:
+
+```text
+AUTO
+HUMAN_REQUIRED
+QUALITY_GATE_ONLY
+```
+
+Cho các checkpoint:
+
+```text
+IDEA
+STORY_BIBLE
+OUTLINE
+SCREENPLAY
+```
+
+Ví dụ:
+
+```json
+{
+  "idea": "AUTO",
+  "story_bible": "AUTO",
+  "outline": "HUMAN_REQUIRED",
+  "screenplay": "HUMAN_REQUIRED"
+}
+```
+
+---
+
+## Gate
+
+```text
+WIND_STUDIO_S3_STUDIO_DOMAIN_CANONICAL
+```
+
+Tests bắt buộc:
+
+* create SeriesProject;
+* create Episode;
+* derive revision;
+* cannot mutate locked revision;
+* invalid transition rejected;
+* approval policy respected.
+
+---
+
+# PHASE S4 — STORY DOMAIN EXTRACTION
+
+## Mục tiêu
+
+Tách creative-story logic khỏi `video_production`.
+
+---
+
+## S4.1 Inventory existing story logic
+
+Phân loại:
+
+```text
+KEEP
+MOVE
+MERGE
+DEPRECATE
+DELETE
+```
+
+Các nhóm cần rà:
+
+```text
+screenplay
+ideation
+character
+narrator
+brief expander
+outline
+social research
+reviewer
+summarizer
+reporter
+```
+
+---
+
+## S4.2 Compatibility-first move
+
+Không bulk move toàn bộ code trong một commit.
+
+Pattern:
+
+```text
+new canonical module
+       ↑
+compatibility facade
+       ↑
+old imports
+```
+
+Sau khi imports cũ = 0 mới remove facade.
+
+---
+
+## S4.3 Story entities
+
+Tạo canonical entities.
+
+### IdeaCandidate
+
+```text
+idea_id
+title
+premise
+logline
+theme
+target_audience
+genre
+estimated_duration
+characters
+setting
+hook
+scores
+```
+
+### StoryBible
+
+```text
+premise
+theme
+core_conflict
+tone
+story_rules
+character_arcs
+episode_constraints
+```
+
+### WorldBible
+
+```text
+world_summary
+locations
+rules
+culture
+technology_or_magic
+continuity_constraints
+```
+
+### CharacterCanon
+
+```text
+character_id
+name
+role
+personality
+motivation
+fear
+strength
+weakness
+speech_style
+relationships
+visual_identity_ref
+continuity_rules
+```
+
+### BeatSheet
+
+```text
+beats[]
+```
+
+Mỗi beat:
+
+```text
+purpose
+conflict
+turn
+character_change
+estimated_duration
+```
+
+### EpisodeOutline
+
+```text
+acts
+sequences
+scenes
+story_progression
+```
+
+---
+
+## Gate
+
+```text
+WIND_STUDIO_S4_STORY_DOMAIN_EXTRACTED
+```
+
+Condition:
+
+```text
+story canonical modules do not depend on Blender
+story canonical modules do not depend on production engine
+```
+
+---
+
+# PHASE S5 — STORY INTELLIGENCE PIPELINE
+
+## Mục tiêu
+
+Biến các module creative hiện có thành một pipeline thực sự.
+
+---
+
+# S5.1 Model roles
+
+Không hardcode provider.
+
+Canonical roles:
+
+```text
+IDEATION_MODEL
+STORY_ARCHITECT_MODEL
+SCREENPLAY_MODEL
+REVIEW_MODEL
+REVISION_MODEL
+```
+
+Model Router chọn provider/model.
+
+Domain không biết:
+
+```text
+Gemini
+OpenRouter
+Ollama
+DeepSeek
+Qwen
+```
+
+---
+
+# S5.2 Structured generation contract
+
+Mọi generation step phải trả structured output.
+
+Không chấp nhận raw prose rồi parse tùy tiện nếu contract quan trọng.
+
+Ví dụ:
+
+```text
+IdeaCandidate[]
+StoryBible
+BeatSheet
+EpisodeOutline
+ScreenplayDraft
+ReviewReport
+```
+
+Use:
+
+```text
+schema validation
+retry on schema error
+```
+
+---
+
+# S5.3 Prompt versioning
+
+Prompt không nằm rải trong source.
+
+Target:
+
+```text
+intelligence/story/prompts/
+    idea/
+    bible/
+    outline/
+    screenplay/
+    review/
+```
+
+Mỗi prompt có:
+
+```text
+prompt_id
+version
+role
+input_schema
+output_schema
+```
+
+---
+
+# PHASE S6 — IDEA PIPELINE
+
+## Mục tiêu
+
+Tạo được một idea đủ tốt và ổn định trước khi viết screenplay.
+
+---
+
+## S6.1 Input Creative Brief
+
+Minimum:
+
+```text
+target audience
+genre
+episode duration
+language
+theme optional
+characters optional
+setting optional
+constraints optional
+```
+
+---
+
+## S6.2 Idea generation
+
+Generate:
+
+```text
+3–5 IdeaCandidate
+```
+
+Không generate một idea duy nhất.
+
+---
+
+## S6.3 Idea evaluation
+
+Score tối thiểu:
+
+```text
+originality
+clarity
+emotional potential
+audience fit
+character potential
+production feasibility
+episode-duration fit
+```
+
+---
+
+## S6.4 Candidate selection
+
+Có hai modes:
+
+```text
+AUTO_SELECT
+HUMAN_SELECT
+```
+
+AUTO:
+
+```text
+quality score + policy
+```
+
+HUMAN:
+
+API/UI hiển thị candidates.
+
+---
+
+## S6.5 Idea lock
+
+Selected idea tạo immutable:
+
+```text
+SelectedIdea
+```
+
+và revision.
+
+---
+
+## Gate
+
+```text
+WIND_STUDIO_S6_IDEA_PIPELINE_VERIFIED
+```
+
+Acceptance:
+
+Từ một brief phải tạo:
+
+```text
+>=3 valid ideas
+```
+
+và chọn được:
+
+```text
+1 canonical idea
+```
+
+không sửa database trực tiếp.
+
+---
+
+# PHASE S7 — STORY DEVELOPMENT
+
+## Mục tiêu
+
+Chuyển idea thành cấu trúc câu chuyện đủ chắc trước screenplay.
+
+---
+
+## S7.1 Story Bible generation
+
+Input:
+
+```text
+SelectedIdea
+Series Bible
+existing character canon
+```
+
+Output:
+
+```text
+StoryBible
+```
+
+---
+
+## S7.2 World Bible
+
+Nếu Series đã có WorldBible:
+
+```text
+reuse
+```
+
+Nếu chưa có:
+
+```text
+generate minimum viable WorldBible
+```
+
+Không regenerate WorldBible mỗi episode nếu không cần.
+
+---
+
+## S7.3 Character handling
+
+Rules:
+
+```text
+existing recurring character
+→ use CharacterCanon
+
+new character
+→ propose → approve → add canon
+```
+
+Screenplay validator không được hardcode character IDs.
+
+---
+
+## S7.4 Beat Sheet generation
+
+Target short screenplay:
+
+Ví dụ 3–8 phút:
+
+```text
+5–12 beats
+```
+
+Không hardcode exact count.
+
+Quality constraints:
+
+```text
+clear setup
+conflict
+progression
+turn
+resolution
+```
+
+---
+
+## S7.5 Episode Outline
+
+BeatSheet → scenes.
+
+Mỗi scene:
+
+```text
+scene_id
+location
+time
+characters
+objective
+conflict
+turn
+estimated_duration
+story_value
+```
+
+---
+
+## Gate
+
+```text
+WIND_STUDIO_S7_STORY_DEVELOPMENT_VERIFIED
+```
+
+Phải prove:
+
+```text
+Idea
+→ StoryBible
+→ BeatSheet
+→ EpisodeOutline
+```
+
+và mọi artifact cùng revision chain.
+
+---
+
+# PHASE S8 — SCREENPLAY GENERATION
+
+## Mục tiêu
+
+Sinh được screenplay ngắn thực sự có thể đọc và đánh giá.
+
+---
+
+## S8.1 Screenplay contract
+
+Một scene:
+
+```text
+Scene Heading
+Action
+Character
+Dialogue
+Parenthetical optional
+Transition optional
+```
+
+Canonical structured representation phải tồn tại bên cạnh formatted script.
+
+---
+
+## S8.2 Screenplay generation
+
+Input:
+
+```text
+Series Bible
+World Bible
+Character Canon
+Story Bible
+Beat Sheet
+Episode Outline
+target duration
+```
+
+Không cho model tự bỏ qua upstream artifacts.
+
+---
+
+## S8.3 Duration estimator
+
+Ước lượng:
+
+```text
+dialogue duration
+action duration
+scene duration
+total runtime
+```
+
+Tolerance ban đầu:
+
+```text
+±20%
+```
+
+---
+
+## S8.4 Continuity validation
+
+Validate:
+
+```text
+character existence
+location existence
+character consistency
+world rules
+timeline
+props
+scene order
+unresolved references
+```
+
+---
+
+## S8.5 Production feasibility check — basic
+
+Roadmap 1 chưa production video nhưng screenplay phải tránh output bất khả thi.
+
+Basic flags:
+
+```text
+excessive unique locations
+excessive unique characters
+extreme crowd requirement
+impossible scene duration
+ambiguous physical action
+missing setting information
+```
+
+Không block creative choice tuyệt đối.
+
+Chỉ report risk.
+
+---
+
+## Gate
+
+```text
+WIND_STUDIO_S8_SHORT_SCREENPLAY_GENERATED
 ```
 
 Acceptance:
 
 ```text
-Script
- ↓
-Assets
- ↓
-Scene
- ↓
-Animation
- ↓
-Audio
- ↓
-Render
- ↓
-Review
- ↓
-Final video
-```
-
-không thao tác Blender thủ công.
-
-**Gate**
-
-```text
-VP3D_P25_GOLDEN_SCENE_E2E_PASSED
+structured screenplay valid
+formatted screenplay valid
+runtime estimate available
+all characters resolved
+all scenes linked to outline
 ```
 
 ---
 
-# Phase 26 — 2–3 Minute Episode
+# PHASE S9 — STORY REVIEW & REVISION LOOP
 
-Tăng lên:
+## Mục tiêu
 
-```text
-3+ scenes
-5+ shots
-2–4 characters
-multiple environments
-```
-
-Test:
-
-* asset reuse;
-* continuity;
-* cache;
-* restart;
-* failed render;
-* partial rerender;
-* TTS concurrency.
+Không coi model-generated screenplay là kết quả cuối ngay lập tức.
 
 ---
 
-# Phase 27 — 5-Minute Production Acceptance
+## S9.1 Minimum Review Framework
 
-Đây là milestone đầu tiên thực tế.
+Không cần làm 16-phase eval lớn ngay.
 
-Target:
-
-```text
-1080p
-24fps
-Cycles
-RTX 5060 8GB
-32GB RAM
-single machine
-```
-
-Đo:
+V1 reviewer phải đánh giá:
 
 ```text
-preproduction time
-asset generation time
-scene compilation
-animation time
-render time
-post-production
-total wall clock
-GPU utilization
-peak VRAM
+premise coherence
+plot coherence
+character consistency
+continuity
+pacing
+dialogue quality
+scene purpose
+emotional progression
+target audience suitability
+production feasibility
 ```
 
 ---
 
-# Phase 28 — Performance Optimization
+## S9.2 ReviewReport
 
-Chỉ tối ưu dựa trên profiling.
-
-Không tối ưu cảm tính.
-
-Cần artifact:
+Output:
 
 ```text
-performance_profile.json
-gpu_profile.json
-scene_complexity.json
-asset_cache_report.json
-render_time_by_shot.json
-```
-
-Tìm:
-
-```text
-slowest shots
-largest assets
-largest textures
-largest BVH
-highest sample counts
-most expensive lights
+overall_score
+dimension_scores
+blocking_findings[]
+warnings[]
+suggestions[]
+revision_required
 ```
 
 ---
 
-# Phase 29 — 10-Minute Episode Acceptance
-
-Target thứ hai.
-
-Yêu cầu:
+## S9.3 Severity
 
 ```text
-asset-ready
-≤ 3h preferred
+BLOCKING
+MAJOR
+MINOR
+SUGGESTION
 ```
-
-Nếu >3h:
-
-```text
-PERFORMANCE_GATE_FAILED
-```
-
-không fake PASS.
 
 ---
 
-# Phase 30 — 20-Minute Episode Acceptance
+## S9.4 Automatic revision
 
-Đây mới là production target cuối.
-
-20 phút × 24fps:
+Nếu:
 
 ```text
-28,800 frames
+BLOCKING > 0
 ```
 
-Để ≤3 giờ:
+hoặc score dưới threshold:
 
 ```text
-10,800 seconds / 28,800
-≈ 0.375 s/frame
+ScreenplayDraft
+→ Review
+→ Revision
+→ Review
 ```
 
-Vì vậy Cycles ở target này có nguy cơ là blocker.
+Max iterations configurable.
 
-Roadmap nên đặt gate:
+Ví dụ default:
 
 ```text
-VP3D_P30_20MIN_THROUGHPUT_TARGET
+3
 ```
 
-Verdict có thể:
-
-```text
-PASS
-DEGRADED
-BLOCKED_BY_RENDER_THROUGHPUT
-```
-
-Nếu Cycles không đạt, hệ thống **không tự đổi Eevee** vì bạn đã chọn Cycles mặc định. Khi đó mới đưa ra benchmark để bạn quyết định:
-
-* chấp nhận lâu hơn;
-* giảm fps;
-* giảm resolution;
-* giảm Cycles quality;
-* cho phép hybrid Eevee/Cycles;
-* nâng GPU;
-* hoặc chuyển sớm sang Unreal.
+Không infinite retry.
 
 ---
 
-# Stage N — Workspace / Human Editing
+## S9.5 Revision diff
 
-## Phase 31 — Blender Manual Override
-
-Đúng theo đề xuất trước:
+Mỗi revision phải lưu:
 
 ```text
-Production IR = source of truth
-.blend = editable derived artifact
+parent_revision
+changed_scenes
+change_reason
+review_findings_addressed
 ```
 
-Người dùng có thể mở `.blend`.
+---
 
-Manual changes phải được ghi:
+## Gate
 
 ```text
-ManualOverrideManifest
+WIND_STUDIO_S9_SCREENPLAY_REVIEW_LOOP_VERIFIED
 ```
+
+---
+
+# PHASE S10 — HUMAN APPROVAL & SCREENPLAY LOCK
+
+## Mục tiêu
+
+Biến screenplay thành canonical production input.
+
+---
+
+## S10.1 Approval behavior
+
+Theo `ApprovalPolicy`.
 
 Ví dụ:
 
 ```text
-camera manually modified
-light manually modified
-character manually repositioned
-```
+AUTO
+→ lock nếu quality gate PASS
 
-WindAgent không được regenerate đè lên override mà không cảnh báo.
+HUMAN_REQUIRED
+→ WAITING_FOR_APPROVAL
 
----
-
-# Phase 32 — Asset Library & Episode Reuse
-
-Đây là phase cực quan trọng nếu làm series hoạt hình.
-
-Library:
-
-```text
-characters/
-environments/
-props/
-animations/
-voices/
-materials/
-lighting/
-camera_rigs/
-facial_profiles/
-```
-
-Episode sau ưu tiên:
-
-```text
-REUSE
-```
-
-thay vì generation.
-
-Đây cũng là yếu tố chính để giữ target `<3h`.
-
----
-
-# Stage O — Production Hardening
-
-## Phase 33 — Security & Add-on Governance
-
-Allowlist:
-
-```yaml
-blender_addons:
-  - id
-  - version
-  - sha256
-  - source
-  - permissions
-  - approved_at
-```
-
-Nếu agent tìm được add-on mới:
-
-```text
-DISCOVER
-   ↓
-QUARANTINE
-   ↓
-REQUEST USER APPROVAL
-```
-
-Chỉ sau approval mới sử dụng.
-
----
-
-# Phase 34 — Reproducibility
-
-Một production job phải lưu:
-
-```text
-WindAgent SHA
-Blender version
-Python script hashes
-asset hashes
-animation hashes
-voice model
-TTS version
-render settings
-random seeds
-FFmpeg version
-```
-
-Từ đó có thể tái tạo một shot.
-
----
-
-# Phase 35 — Full Flow Purge Certification
-
-Dù Flow đã bị xóa từ Phase 2, phase này chứng minh không còn residue.
-
-Check:
-
-```text
-Google Flow imports = 0
-browser Flow runtime = 0
-Flow schemas = 0
-Flow config = 0
-Flow tests = 0
-Flow docs runtime references = 0
-Flow credentials = 0
-```
-
-Historical evidence có thể giữ trong archive.
-
-**Gate**
-
-```text
-GOOGLE_FLOW_FULLY_RETIRED
+QUALITY_GATE_ONLY
+→ auto nếu score đạt threshold
 ```
 
 ---
 
-# Stage P — Chuẩn bị Unreal
+## S10.2 Human commands
 
-## Phase 36 — Engine-neutral Export Layer
-
-Trước khi chạm Unreal, kiểm tra mọi thứ có thể export:
+Support:
 
 ```text
-SceneDescription
-CharacterInstance
-CameraTrack
-AnimationTrack
-FacialTrack
-LightRig
-RenderIntent
+approve
+reject
+request_revision
+edit
+unlock-derived-revision
 ```
 
-Blender không được leak vào domain như:
+Không sửa locked screenplay trực tiếp.
 
-```python
-bpy.Object
-bpy.Scene
-bpy.Material
-```
+---
 
-Các loại đó chỉ tồn tại trong:
+## S10.3 Screenplay lock
+
+Lock tạo:
 
 ```text
-BlenderEngineAdapter
+LockedScreenplayReceipt
+```
+
+Fields:
+
+```text
+series_id
+episode_id
+revision_id
+screenplay_hash
+approved_by
+approved_at
+review_report_id
 ```
 
 ---
 
-# Phase 37 — USD/glTF Interchange
+## S10.4 Episode transition
 
-Canonical:
+Sau lock:
 
 ```text
-WindAgent IR
-   ↓
-USD / glTF / FBX
-   ↓
-Blender
+SCREENPLAY_LOCKED
+        ↓
+READY_FOR_PRODUCTION
+```
+
+Đây là boundary chính giữa:
+
+```text
+Roadmap 1
 ```
 
 và:
 
 ```text
-WindAgent IR
-   ↓
-USD / glTF / FBX
-   ↓
+Roadmap 2
+```
+
+---
+
+## Gate
+
+```text
+WIND_STUDIO_S10_LOCKED_SCREENPLAY_CANONICAL
+```
+
+---
+
+# PHASE S11 — API V3 STUDIO
+
+## Mục tiêu
+
+Không tiếp tục mở rộng `/api/v2/video-production`.
+
+Repo đã có Production Workspace API V2 khá đầy đủ với project lookup, workspace snapshot, optimistic concurrency và idempotent commands. Logic tốt phải được reuse thay vì bỏ.
+
+---
+
+## Base
+
+```text
+/api/v3/studio
+```
+
+---
+
+## S11.1 Projects
+
+```text
+POST /series
+GET  /series
+GET  /series/{series_id}
+PATCH /series/{series_id}
+```
+
+---
+
+## S11.2 Episodes
+
+```text
+POST /series/{series_id}/episodes
+
+GET /episodes/{episode_id}
+GET /episodes/{episode_id}/state
+GET /episodes/{episode_id}/revisions
+```
+
+---
+
+## S11.3 Idea
+
+```text
+POST /episodes/{episode_id}/idea/generate
+GET  /episodes/{episode_id}/ideas
+POST /episodes/{episode_id}/ideas/{idea_id}/select
+```
+
+---
+
+## S11.4 Story
+
+```text
+POST /episodes/{episode_id}/story/develop
+
+GET /episodes/{episode_id}/story-bible
+GET /episodes/{episode_id}/beat-sheet
+GET /episodes/{episode_id}/outline
+```
+
+---
+
+## S11.5 Screenplay
+
+```text
+POST /episodes/{episode_id}/screenplay/generate
+
+GET /episodes/{episode_id}/screenplay
+
+POST /episodes/{episode_id}/screenplay/review
+POST /episodes/{episode_id}/screenplay/revise
+POST /episodes/{episode_id}/screenplay/approve
+POST /episodes/{episode_id}/screenplay/reject
+POST /episodes/{episode_id}/screenplay/lock
+```
+
+---
+
+## S11.6 Async run API
+
+Long-running operations không giữ HTTP request mở.
+
+```text
+POST
+→ run_id
+```
+
+Poll/stream:
+
+```text
+GET /runs/{run_id}
+GET /runs/{run_id}/events
+```
+
+Later:
+
+```text
+SSE/WebSocket
+```
+
+---
+
+## S11.7 Concurrency
+
+Reuse existing:
+
+```text
+revision_id
+idempotency key
+optimistic concurrency
+```
+
+---
+
+## V2 Sunset
+
+V2:
+
+```text
+/api/v2/video-production
+```
+
+status:
+
+```text
+DEPRECATED
+```
+
+Roadmap 1 chưa bắt buộc delete.
+
+---
+
+## Gate
+
+```text
+WIND_STUDIO_S11_API_V3_STORY_VERIFIED
+```
+
+---
+
+# PHASE S12 — STORY FRONTEND
+
+## Product surfaces
+
+Roadmap 1 frontend chỉ cần:
+
+```text
+Studio Home
+Series
+Episode
+Story
+Screenplay
+```
+
+Không cần Production UI hoàn chỉnh.
+
+---
+
+## S12.1 Studio Home
+
+Hiển thị:
+
+```text
+series
+episodes
+status
+latest revision
+```
+
+---
+
+## S12.2 Episode Story Workspace
+
+Tabs:
+
+```text
+IDEA
+STORY
+OUTLINE
+SCREENPLAY
+REVIEW
+```
+
+---
+
+## S12.3 Idea UI
+
+Hiển thị candidate cards:
+
+```text
+title
+logline
+premise
+scores
+select
+regenerate
+```
+
+---
+
+## S12.4 Story UI
+
+Cho xem/edit:
+
+```text
+Story Bible
+Character Canon
+Beat Sheet
+Outline
+```
+
+---
+
+## S12.5 Screenplay UI
+
+Editor tối thiểu:
+
+```text
+scene list
+script content
+review findings
+revision
+approve
+lock
+```
+
+---
+
+## S12.6 Remove fake runtime from production path
+
+Frontend hiện có cả `HttpProductionApiClient` và `FakeProductionApiClient`; real client vẫn hardcode một số behavior như `vp_001` và synthesized revision.
+
+Production build:
+
+```text
+Fake client forbidden
+```
+
+Fake client chỉ được import từ:
+
+```text
+tests/
+stories/
+fixtures/
+```
+
+---
+
+## S12.7 No hardcoded project
+
+Cấm:
+
+```text
+proj-alpha
+vp_001
+```
+
+trong runtime UI.
+
+---
+
+## Desktop certification
+
+Desktop/Tauri:
+
+```text
+REQUIRED
+```
+
+Web:
+
+```text
+BUILD + TEST REQUIRED
+FULL PRODUCT CERTIFICATION NOT REQUIRED
+```
+
+---
+
+## Gate
+
+```text
+WIND_STUDIO_S12_STORY_UI_LIVE
+```
+
+---
+
+# PHASE S13 — STORY VERTICAL SLICE
+
+Đây là phase quan trọng nhất Roadmap 1.
+
+---
+
+# Test Case A — Basic children's animation story
+
+Input ví dụ:
+
+```text
+Một chú thỏ nhỏ làm mất chiếc diều yêu thích
+và cùng người bạn sóc đi tìm nó.
+Đối tượng: trẻ em 5–8 tuổi.
+Thời lượng mục tiêu: 3–5 phút.
+```
+
+Không hardcode output.
+
+---
+
+## Required runtime path
+
+```text
+Desktop/API
+      ↓
+POST /api/v3/studio/series
+      ↓
+Create Episode
+      ↓
+OrchestratorService
+      ↓
+Idea Generation Task
+      ↓
+Worker
+      ↓
+Model Router
+      ↓
+Idea Candidates
+      ↓
+Selection
+      ↓
+Story Development DAG
+      ↓
+Story Bible
+      ↓
+Beat Sheet
+      ↓
+Outline
+      ↓
+Screenplay Generation
+      ↓
+Review
+      ↓
+Revision if needed
+      ↓
+Approval Policy
+      ↓
+Lock
+      ↓
+READY_FOR_PRODUCTION
+```
+
+---
+
+## Không được phép
+
+Vertical slice không được:
+
+```text
+call StoryWriter directly from test
+call helper orchestrator directly
+insert DB rows manually
+use FakeProductionApiClient
+use hardcoded screenplay
+skip worker
+skip persistence
+```
+
+---
+
+## Required artifacts
+
+```text
+series_project.json
+episode.json
+selected_idea.json
+story_bible.json
+world_bible.json
+character_canon.json
+beat_sheet.json
+episode_outline.json
+screenplay_draft.json
+review_report.json
+final_screenplay.json
+screenplay_lock_receipt.json
+run_manifest.json
+```
+
+---
+
+## Gate
+
+```text
+WIND_STUDIO_S13_REAL_STORY_VERTICAL_SLICE_PASS
+```
+
+---
+
+# PHASE S14 — FAILURE & RECOVERY TESTING
+
+## Test scenarios
+
+### Provider timeout
+
+Expected:
+
+```text
+retry
+then deterministic failure state
+```
+
+### Invalid model JSON
+
+Expected:
+
+```text
+schema rejection
+retry
+```
+
+### Worker crash
+
+Expected:
+
+```text
+lease recovery
+resume/re-run safely
+```
+
+### Duplicate request
+
+Expected:
+
+```text
+idempotent
+```
+
+### Stale revision
+
+Expected:
+
+```text
+409 / conflict
+```
+
+### Locked screenplay mutation
+
+Expected:
+
+```text
+reject
+```
+
+### Human approval timeout
+
+Expected:
+
+```text
+WAITING_FOR_APPROVAL
+```
+
+Không fail job.
+
+---
+
+## Gate
+
+```text
+WIND_STUDIO_S14_STORY_RUNTIME_RESILIENT
+```
+
+---
+
+# PHASE S15 — ROADMAP 1 FINAL CERTIFICATION
+
+## Full test matrix
+
+Required:
+
+```text
+Python full suite
+Frontend tests
+Desktop tests
+API V3 contract tests
+Story domain tests
+Story DAG tests
+Worker recovery tests
+Provider adapter contract tests
+Architecture checker
+Version checker
+Artifact validator
+```
+
+---
+
+# Final certification requirements
+
+## Architecture
+
+```text
+PASS
+```
+
+Story domain không depend:
+
+```text
+Blender
 Unreal
-```
-
-Asset library không phải migrate lại khi Unreal xuất hiện.
-
----
-
-# Stage Q — Unreal Engine
-
-## Phase 38 — Unreal Adapter PoC
-
-Chưa thay Blender.
-
-Một scene đã tạo bởi WindAgent:
-
-```text
-WindAgent IR
-      ↓
-UnrealEngineAdapter
-      ↓
-Unreal project
-      ↓
-camera
-animation
-lighting
-render
-```
-
-So sánh với Blender.
-
-Tài liệu Epic hiện đang phục vụ bộ Unreal Engine 5.8, nhưng khi bắt đầu phase này nên pin một phiên bản cụ thể thay vì chạy theo latest. ([Epic Games Developers][3])
-
----
-
-# Phase 39 — Blender → Unreal Asset Pipeline
-
-Theo lựa chọn `12C`:
-
-Blender chuyển dần thành:
-
-```text
-model creation
-asset cleanup
-UV
-rig
-animation preparation
-```
-
-Unreal đảm nhiệm:
-
-```text
-scene
-lighting
-camera
-render
+filesystem adapters
+database concrete implementation
+FastAPI
+React
 ```
 
 ---
 
-# Phase 40 — Unreal Production Renderer
+## Runtime
 
-Khi Unreal đạt parity:
+Idea → Locked Screenplay chạy qua real:
+
+```text
+API
+OrchestratorService
+Worker
+Provider
+Storage
+```
+
+---
+
+## Frontend
+
+Không:
+
+```text
+Fake runtime client
+hardcoded project
+mock success fallback
+```
+
+trong production build.
+
+---
+
+## Story
+
+Một short episode phải có:
+
+```text
+Idea
+Story Bible
+Character Canon
+Beat Sheet
+Episode Outline
+Screenplay
+Review
+Locked Screenplay
+```
+
+---
+
+## Revision
+
+Locked screenplay:
+
+```text
+immutable
+hash verified
+revision traceable
+```
+
+---
+
+## Evidence
+
+Fresh evidence phải cùng commit SHA.
+
+---
+
+# FINAL VERDICT
+
+Chỉ được công bố:
+
+```text
+WIND_STUDIO_ROADMAP_1_STORY_FOUNDATION_CERTIFIED
+```
+
+khi toàn bộ các điều kiện trên PASS.
+
+---
+
+# 7. Những phase có thể chạy song song
+
+Sau S3:
+
+```text
+                    S3 Studio Domain
+                          │
+             ┌────────────┴────────────┐
+             ▼                         ▼
+       S4 Story Domain         S5 Story Intelligence
+             │                         │
+             └────────────┬────────────┘
+                          ▼
+                       S6 Idea
+```
+
+Sau khi contract Story ổn định:
+
+```text
+S7 Story Development
+        │
+        ├───────────────┐
+        ▼               ▼
+   S8 Screenplay      S11 API skeleton
+        │               │
+        ▼               ▼
+   S9 Review          S12 UI skeleton
+```
+
+Sau S10 + S11 + S12:
+
+```text
+S13 Vertical Slice
+```
+
+---
+
+# 8. Critical Path
+
+Critical path đề xuất:
+
+```text
+S0 Truth
+ ↓
+S1 Evidence
+ ↓
+S2 Orchestration
+ ↓
+S3 Studio Domain
+ ↓
+S4 Story Domain
+ ↓
+S6 Idea
+ ↓
+S7 Story Development
+ ↓
+S8 Screenplay
+ ↓
+S9 Review
+ ↓
+S10 Lock
+ ↓
+S11 API
+ ↓
+S12 UI
+ ↓
+S13 Vertical Slice
+ ↓
+S14 Recovery
+ ↓
+S15 Certification
+```
+
+---
+
+# 9. Migration rules
+
+Trong toàn Roadmap 1 áp dụng:
+
+## Rule 1
+
+```text
+MOVE > REWRITE
+```
+
+## Rule 2
+
+Module đang hoạt động phải có compatibility facade trước khi đổi import path.
+
+## Rule 3
+
+Không delete code chỉ vì "có vẻ không dùng".
+
+Cần chứng minh:
+
+```text
+0 runtime caller
+0 API caller
+0 frontend caller
+0 test dependency
+0 migration dependency
+```
+
+## Rule 4
+
+Không cleanup generic runtime trước khi Story runtime chạy thành công.
+
+## Rule 5
+
+Không mở rộng Blender/Unreal feature trong Roadmap 1 trừ thay đổi bắt buộc để giữ architecture/build/test.
+
+## Rule 6
+
+Không sửa CI ngoài scope chỉ để làm gate xanh.
+
+Root cause phải được phân loại trước.
+
+---
+
+# 10. Phần VP3D trong Roadmap 1
+
+Code hiện có:
+
+```text
+Blender adapter
+ProductionEnginePort
+Production Engine Executor
+Asset pipeline
+Director
+Animation
+Camera
+Lighting
+Audio
+Review
+Retry
+```
+
+được đặt vào trạng thái:
+
+```text
+PRESERVE
+ISOLATE
+REGRESSION TEST
+```
+
+Không đặt trạng thái:
+
+```text
+DELETE
+REWRITE
+EXPAND
+```
+
+Roadmap 2 mới tiếp tục.
+
+---
+
+# 11. Blender + Unreal architecture requirement
+
+Mặc dù chưa triển khai sản xuất video trong Roadmap 1, architecture phải giữ:
 
 ```text
 ProductionEnginePort
         │
         ├── BlenderEngineAdapter
-        └── UnrealEngineAdapter ← default render
+        └── UnrealEngineAdapter
 ```
 
-Sau đó mới cân nhắc:
+Không để Story domain import engine.
+
+`RuntimeCapabilityProfile` được định nghĩa tối thiểu:
 
 ```text
-Blender scene rendering → deprecated
+BLENDER_AVAILABLE
+UNREAL_AVAILABLE
+FFMPEG_AVAILABLE
+GPU_AVAILABLE
+TTS_AVAILABLE
 ```
 
-nhưng Blender vẫn tồn tại cho asset authoring.
+Roadmap 1 chỉ cần capability discovery foundation.
+
+Roadmap 2 sẽ biến Blender + Unreal thành production-ready adapters.
 
 ---
 
-# Thứ tự dependency thực tế
+# 12. Definition of Done cho Roadmap 1
 
-Không nên triển khai 40 phase hoàn toàn tuần tự.
+Người dùng phải có thể:
 
-Critical path:
+1. mở WindAgent Studio;
+2. tạo một Series;
+3. tạo Episode;
+4. nhập creative brief;
+5. yêu cầu AI sinh nhiều idea;
+6. chọn hoặc để AI chọn idea;
+7. tạo Story Bible;
+8. tạo Beat Sheet;
+9. tạo Outline;
+10. sinh screenplay ngắn;
+11. xem automated review;
+12. sửa hoặc cho AI revise;
+13. approve;
+14. lock screenplay;
+15. nhìn thấy Episode:
 
 ```text
-P0
- ↓
-P1
- ↓
-P2
- ↓
-P3
- ↓
-P4
- ↓
-P5 ─ P7
- ↓
-P8 ─ P9
- ↓
-P11
- ↓
-P13
- ↓
-P15
- ↓
-P18
- ↓
-P19 ─ P21
- ↓
-P22
- ↓
-P24
- ↓
-P25
+READY_FOR_PRODUCTION
 ```
 
-Trong khi đó sau screenplay lock:
+Và toàn bộ quá trình phải:
 
 ```text
-              ┌─ Asset Generation
-              │
-Screenplay ───┼─ TTS / Alignment
-              │
-              ├─ Environment
-              │
-              └─ Animation preparation
-```
-
-chạy song song.
-
-Đây là cách giảm wall-clock time hiệu quả nhất.
-
----
-
-# Kiến trúc package tôi đề xuất
-
-```text
-core/
-└── domain/
-    └── video_production/
-        ├── production_ir/
-        ├── scene/
-        ├── animation/
-        ├── asset/
-        ├── render/
-        └── engine/
-
-intelligence/
-└── video/
-    ├── director/
-    ├── shot_planner/
-    ├── continuity/
-    ├── scene_planner/
-    ├── animation_planner/
-    ├── asset_planner/
-    ├── lighting/
-    ├── audio/
-    ├── reviewers/
-    └── postproduction/
-
-tools/
-└── windagent_tools/
-    └── production_engines/
-        ├── base/
-        ├── blender/
-        │   ├── runtime/
-        │   ├── compiler/
-        │   ├── assets/
-        │   ├── rigging/
-        │   ├── animation/
-        │   ├── camera/
-        │   ├── lighting/
-        │   └── rendering/
-        │
-        └── unreal/          # future
-
-providers/
-└── assets/
-    ├── mesh_api/
-    ├── mesh_mcp/
-    ├── internet/
-    └── local/
-
-workspace/
-└── artifacts/
+durable
+revisioned
+recoverable
+auditable
+provider-independent
+UI-accessible
 ```
 
 ---
 
-# Thay đổi lớn nhất đối với code hiện tại
+# 13. Handoff contract sang Roadmap 2
 
-Tôi chia thành ba nhóm.
+Roadmap 1 không tạo video.
 
-**Giữ gần như nguyên vẹn:**
+Nó phải bàn giao cho Roadmap 2 một artifact ổn định:
 
 ```text
-ideation
-screenplay
-entity extraction
-style design
+LockedScreenplayPackage
+```
+
+Bao gồm:
+
+```text
+series_id
+episode_id
+revision_id
+
+series_bible_ref
+world_bible_ref
+character_canon_ref
+
+selected_idea_ref
+story_bible_ref
+beat_sheet_ref
+outline_ref
+
+screenplay_ref
+screenplay_hash
+
+review_report_ref
+approval_receipt_ref
+
+target_duration
+target_audience
+language
+
+production_constraints
+```
+
+Roadmap 2 bắt đầu tại:
+
+```text
+LockedScreenplayPackage
+          ↓
+Scene Breakdown
+          ↓
+Shot Planning
+          ↓
+Asset Requirements
+          ↓
 Director
-shot graph
-continuity
-audio
-review concepts
-post-production
-workspace
-artifact storage
-durable workflow
+          ↓
+Audio
+          ↓
+Blender / Unreal
+          ↓
+Render
+          ↓
+Final Video
 ```
 
-Pre-production hiện đã được thiết kế provider-neutral, đây là lợi thế lớn.  Audio cũng đã đi qua TTS port.  Post-production đã tách FFmpeg execution riêng.
-
-**Viết lại mạnh:**
-
-```text
-GenerationMode
-PromptCompiler phần video generation
-reference-binding semantics
-generation job
-candidate generation
-asset generation workflow
-```
-
-**Xóa:**
-
-```text
-google_flow/
-flow navigation
-flow image
-flow video
-flow human-control
-Flow browser provider
-Flow credential/config
-```
+Roadmap 1 tuyệt đối không cần giả vờ hoàn thiện các bước này.
 
 ---
 
-# Các milestone chính
+# 14. Success Criterion
 
-| Milestone | Kết quả                                 |
-| --------- | --------------------------------------- |
-| M1        | Google Flow bị xóa                      |
-| M2        | Engine-neutral Production IR            |
-| M3        | Blender headless chạy ổn định           |
-| M4        | Asset Mesh API/MCP + Internet hoạt động |
-| M5        | Character + rig + reuse                 |
-| M6        | Scene compiler                          |
-| M7        | Animation + TTS + lip-sync              |
-| M8        | Cycles deterministic renderer           |
-| M9        | 30–60s E2E                              |
-| M10       | 5 phút E2E                              |
-| M11       | 10 phút production                      |
-| M12       | 20 phút production                      |
-| M13       | Unreal-ready IR                         |
-| M14       | Unreal PoC                              |
-| M15       | Unreal trở thành renderer chính         |
-
-## Phán quyết kiến trúc
-
-Với yêu cầu bạn vừa chốt, tôi sẽ coi kiến trúc chính thức là:
+Thành công của Roadmap 1 không phải:
 
 ```text
-VideoClaw-derived Preproduction concepts
-            +
-WindAgent Director
-            +
-WindAgent Production IR
-            +
-3D Asset Intelligence
-            +
-Blender Production Engine
-            +
-WindAgent Audio / Review / FFmpeg
+"We have lots of story classes."
 ```
 
-Google Flow **không còn nằm trong kiến trúc mục tiêu**.
-
-Blender cũng **không trở thành một provider kiểu Flow**. Nó trở thành implementation đầu tiên của `ProductionEnginePort`.
-
-Đây là quyết định quan trọng nhất của roadmap, vì nó cho phép vài tháng sau chuyển:
+cũng không phải:
 
 ```text
-Blender final rendering
-        ↓
-Unreal final rendering
+"All unit tests pass."
 ```
 
-mà không phải viết lại screenplay, Director, shot graph, audio, asset library, character master hay production workflow.
+mà là:
 
-Về mặt triển khai, tôi khuyến nghị bắt đầu chính thức từ **Phase 0 → Phase 4 trước**, chưa chạm Mesh API/MCP hay character generation. Khi deterministic Blender kernel đã chứng minh `WindAgent → .blend → Cycles frames → FFmpeg → video` hoạt động hoàn toàn tự động, lúc đó mới mở rộng lên asset/rig/animation.
+```text
+REAL USER INPUT
+      ↓
+REAL STUDIO API
+      ↓
+REAL ORCHESTRATOR
+      ↓
+REAL WORKER
+      ↓
+REAL MODEL
+      ↓
+REAL STORY ARTIFACTS
+      ↓
+REAL REVIEW
+      ↓
+REAL REVISION
+      ↓
+LOCKED SCREENPLAY
+```
 
-[1]: https://www.blender.org/get-involved/Dashboard/?utm_source=chatgpt.com "Dashboard — Blender"
-[2]: https://docs.blender.org/manual/es/latest/render/output/introduction.html?utm_source=chatgpt.com "Introducción - Blender 4.5 LTS Manual"
-[3]: https://dev.epicgames.com/documentation/en-us/unreal-engine/install-unreal-engine?utm_source=chatgpt.com "Install Unreal Engine | Unreal Engine 5.8 Documentation | Epic Developer Community"
+với trạng thái cuối:
+
+```text
+EPISODE_READY_FOR_PRODUCTION
+```
+
+và verdict:
+
+```text
+WIND_STUDIO_ROADMAP_1_STORY_FOUNDATION_CERTIFIED
+```
