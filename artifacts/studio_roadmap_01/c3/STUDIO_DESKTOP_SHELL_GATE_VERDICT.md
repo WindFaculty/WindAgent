@@ -2,8 +2,8 @@
 
 - Gate: STUDIO_DESKTOP_SHELL_GATE
 - Verdict: **PASS**
-- Integration SHA: `fe833d11cf0798f40b44bd9772df465c69ea7f6c`
-- Generated: 2026-08-10T05:33:33.686776+00:00
+- Integration SHA: `f60874e9aa6fffa26339eca67a6d34315a19d777`
+- Generated: 2026-08-10T05:34:14.427329+00:00
 
 ## Checks
 
@@ -18,7 +18,7 @@
 ## Test results
 
 - `C:\Users\Admin\AppData\Local\hermes\node\npx.cmd vitest run --no-color` (desktop_vitest) → Tests  112 passed (112)
-- `C:\Users\Admin\AppData\Local\hermes\hermes-agent\venv\Scripts\python.exe -m pytest -q tests/unit/api/test_studio_v3_api.py tests/unit/api/test_openapi_snapshot.py --no-header` (python_v3_contracts) → 33 passed in 15.78s
+- `C:\Users\Admin\AppData\Local\hermes\hermes-agent\venv\Scripts\python.exe -m pytest -q tests/unit/api/test_studio_v3_api.py tests/unit/api/test_openapi_snapshot.py --no-header` (python_v3_contracts) → 33 passed in 15.60s
 
 ## Scans
 
