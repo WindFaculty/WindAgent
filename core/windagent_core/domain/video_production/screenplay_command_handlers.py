@@ -11,13 +11,15 @@ import uuid
 from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field
 
-from windagent_storage.unit_of_work.video_production_uow import VideoProductionUnitOfWork
+from windagent_core.contracts.video_production.video_production_uow import (
+    VideoProductionUnitOfWorkPort,
+)
 
 
 class ScreenplayCommandHandler:
     """Command handler processing structured screenplay mutation requests."""
 
-    def __init__(self, uow: VideoProductionUnitOfWork) -> None:
+    def __init__(self, uow: VideoProductionUnitOfWorkPort) -> None:
         self.uow = uow
 
     async def handle_command(

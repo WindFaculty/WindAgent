@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://windagent.io/contracts/studio/rabbit-kite-scenario/v0.1",
+  "title": "StudioRabbitKiteScenario",
+  "description": "Mandatory real vertical slice input and expectation rules. Fixture-only: the input may seed a certification run, but no canned generated artifact from it may be used by production or as run output.",
+  "type": "object",
+  "required": ["fixture_only", "scenario_id", "language", "audience", "target_duration_seconds", "premise", "expectations"],
+  "properties": {
+    "fixture_only": {
+      "const": true
+    },
+    "scenario_id": {
+      "type": "string"
+    },
+    "language": {
+      "type": "string",
+      "description": "Language of the creative output."
+    },
+    "audience": {
+      "type": "object",
+      "required": ["min_age", "max_age"],
+      "properties": {
+        "min_age": {
+          "type": "integer"
+        },
+        "max_age": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "target_duration_seconds": {
+      "type": "object",
+      "required": ["min", "max"],
+      "properties": {
+        "min": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "max": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "premise": {
+      "type": "string",
+      "description": "Creative premise, e.g. a rabbit and a kite."
+    },
+    "expectations": {
+      "type": "object",
+      "required": ["candidate_count_min", "candidate_count_max", "revision_count_min", "terminal_state"],
+      "properties": {
+        "candidate_count_min": {
+          "type": "integer"
+        },
+        "candidate_count_max": {
+          "type": "integer"
+        },
+        "revision_count_min": {
+          "type": "integer",
+          "description": "At least one genuine review finding must lead to at least one immutable revision."
+        },
+        "terminal_state": {
+          "type": "string",
+          "enum": ["READY_FOR_PRODUCTION"]
+        },
+        "content_checks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

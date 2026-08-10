@@ -260,10 +260,10 @@ class TestAlembicHeadIntegrity:
         assert len(heads) == 1, f"revision graph must stay linear, got heads={heads}"
         # Intentional tripwire (GAP D): bump this only when a new migration is
         # appended to the chain — the test exists to fail loudly on drift.
-        assert heads[0] == "0009_immutable_plan_revisions"
+        assert heads[0] == "0011_studio_run_nodes"
 
     def test_verify_single_head_passes_on_linear_chain(self):
-        assert verify_single_head() == "0009_immutable_plan_revisions"
+        assert verify_single_head() == "0011_studio_run_nodes"
 
     def test_verify_single_head_raises_on_multiple_heads(self, monkeypatch):
         monkeypatch.setattr(
@@ -278,8 +278,8 @@ class TestAlembicHeadIntegrity:
 
     def test_current_matches_head_after_upgrade(self, fresh_db: str):
         alembic_upgrade_head(fresh_db)
-        assert alembic_current(fresh_db) == ("0009_immutable_plan_revisions",)
-        assert verify_single_head(fresh_db) == "0009_immutable_plan_revisions"
+        assert alembic_current(fresh_db) == ("0011_studio_run_nodes",)
+        assert verify_single_head(fresh_db) == "0011_studio_run_nodes"
 
     def test_current_empty_after_downgrade_base(self, fresh_db: str):
         alembic_upgrade_head(fresh_db)
@@ -406,7 +406,6 @@ class TestKeyRotation:
     def test_reencrypt_keeps_plaintext_and_current_version_untouched(self, monkeypatch):
         from windagent_storage.security.encryption import (
             encrypt,
-            key_version_of,
             reencrypt_to_current,
         )
 

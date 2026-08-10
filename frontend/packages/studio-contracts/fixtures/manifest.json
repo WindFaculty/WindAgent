@@ -1,0 +1,114 @@
+{
+  "manifest_version": 1,
+  "contract_version": "studio.contract/v0.1",
+  "artifact_schema_version": "studio.artifact/v1alpha1",
+  "generator": {
+    "name": "json-schema-to-typescript",
+    "tool": "json-schema-to-typescript@15"
+  },
+  "notes": "All instances in this directory are fixture_only: true. Stored golden outputs used for unit/UI tests may not be used by production composition or injected as real-slice run output.",
+  "fixtures": [
+    {
+      "id": "episode-state.valid",
+      "file": "episode-state.valid.json",
+      "schema": "studio.episode-state.schema.json",
+      "kind": "valid"
+    },
+    {
+      "id": "episode-state.progression",
+      "file": "episode-state.progression.json",
+      "schema": "studio.episode-state.schema.json",
+      "kind": "vocabulary"
+    },
+    {
+      "id": "run-status.valid",
+      "file": "run-status.valid.json",
+      "schema": "studio.run-status.schema.json",
+      "kind": "vocabulary"
+    },
+    {
+      "id": "approval-mode.all",
+      "file": "approval-mode.all.json",
+      "schema": "studio.approval-mode.schema.json",
+      "kind": "vocabulary"
+    },
+    {
+      "id": "error-payload.idempotency-mismatch",
+      "file": "error-payload.idempotency-mismatch.json",
+      "schema": "studio.error-payload.schema.json",
+      "kind": "valid"
+    },
+    {
+      "id": "error-payload.stale-revision",
+      "file": "error-payload.stale-revision.json",
+      "schema": "studio.error-payload.schema.json",
+      "kind": "valid"
+    },
+    {
+      "id": "error-payload.provider-unavailable",
+      "file": "error-payload.provider-unavailable.json",
+      "schema": "studio.error-payload.schema.json",
+      "kind": "valid"
+    },
+    {
+      "id": "error-payload.capability-unavailable",
+      "file": "error-payload.capability-unavailable.json",
+      "schema": "studio.error-payload.schema.json",
+      "kind": "valid"
+    },
+    {
+      "id": "idempotency-headers.valid",
+      "file": "idempotency-headers.valid.json",
+      "schema": "studio.idempotency-headers.schema.json",
+      "kind": "vocabulary"
+    },
+    {
+      "id": "series.valid",
+      "file": "series.valid.json",
+      "schema": "studio.series.schema.json",
+      "kind": "valid"
+    },
+    {
+      "id": "episode.valid",
+      "file": "episode.valid.json",
+      "schema": "studio.episode.schema.json",
+      "kind": "valid"
+    },
+    {
+      "id": "episode.locked",
+      "file": "episode.locked.json",
+      "schema": "studio.episode.schema.json",
+      "kind": "valid"
+    },
+    {
+      "id": "run-resource.waiting",
+      "file": "run-resource.waiting.json",
+      "schema": "studio.run-resource.schema.json",
+      "kind": "valid"
+    },
+    {
+      "id": "artifact-envelope.screenplay",
+      "file": "artifact-envelope.screenplay.json",
+      "schema": "studio.artifact-envelope.schema.json",
+      "kind": "valid"
+    },
+    {
+      "id": "artifact-envelope.unknown-version",
+      "file": "artifact-envelope.unknown-version.json",
+      "schema": "studio.artifact-envelope.schema.json",
+      "kind": "negative-unsupported-version"
+    },
+    {
+      "id": "malformed.episode",
+      "file": "malformed.episode.json",
+      "schema": "studio.episode.schema.json",
+      "kind": "negative-malformed"
+    },
+    {
+      "id": "rabbit-kite-scenario.input",
+      "file": "rabbit-kite-scenario.input.json",
+      "schema": "studio.rabbit-kite-scenario.schema.json",
+      "kind": "valid"
+    }
+  ]
+}

@@ -719,3 +719,24 @@ def test_recovery_decide_batch_any_unknown_pauses_never_resubmits():
     decision = rec.decide_batch(op)
     assert decision.action == RecoveryAction.RECONCILE_UNKNOWN
     assert decision.next_state == ProductionRunState.WAITING_PROVIDER
+
+
+def test_production_engine_rejects_story_step_node(tmp_path):
+    store = ProductionRunStore(state_dir=str(Path(tmp_path) / "runs"))
+    story_node = ProductionStepNode(step_id="studio.story.review")
+    with pytest.raises(DomainError, match="Story step 'studio.story.review' rejected"):
+        ProductionWorkflowEngine(
+            store=store,
+            executor=_fake_executor(),
+            step_nodes=[story_node],
+        )
+
+
+def test_production_engine_accepts_legacy_step_nodes(tmp_path):
+    store = ProductionRunStore(state_dir=str(Path(tmp_path) / "runs"))
+    engine = ProductionWorkflowEngine(
+        store=store,
+        executor=_fake_executor(),
+        step_nodes=_step_nodes(),
+    )
+    assert engine.step_nodes

@@ -59,6 +59,19 @@ from windagent_storage.security.encryption import decrypt
 from windagent_execution.registry import ExecutionRuntimeRegistry
 from windagent_execution.worktree.context import WorktreeContextManager
 from windagent_orchestration.orchestrator_service import OrchestratorService
+from windagent_orchestration.studio.service import StudioRunService
+from windagent_api.services.studio_application_service import StudioApplicationService
+from windagent_api.services.studio_capability_provider import ApiRuntimeCapabilityProvider
+from windagent_api.services.studio_storage_adapter import (
+    SqlApprovalReadAdapter,
+    SqlArtifactReadAdapter,
+    SqlEpisodeReadAdapter,
+    SqlRevisionReadAdapter,
+    SqlRunQueryAdapter,
+    SqlEventQueryAdapter,
+    SqlSeriesReadAdapter,
+)
+from windagent_storage.studio.task_submission import StudioTaskSubmissionAdapter
 from windagent_orchestration.release.rollout import MultiAgentReleasePolicy
 from windagent_observability.release_metrics import ReleaseTelemetry
 from windagent_providers.routing.endpoint_adapter_resolver import EndpointAdapterResolver
@@ -99,6 +112,8 @@ class ApplicationContainer:
         self.worktree_manager: Optional[WorktreeContextManager] = None
         self.provider_execution_coordinator: Optional[EndpointExecutionCoordinator] = None
         self.orchestrator_service: Optional[OrchestratorService] = None
+        self.studio_application_service: Optional[StudioApplicationService] = None
+        self.studio_capability_provider: Optional[ApiRuntimeCapabilityProvider] = None
         self.tool_registry: Optional[ToolRegistry] = None
         self.plugin_registry: Optional[PluginRegistry] = None
         self.skill_registry: Optional[SkillRegistry] = None
@@ -238,6 +253,10 @@ class ApplicationContainer:
             attempt_log=SQLRouteAttemptRepository(sync_factory()),
             release_telemetry=self.release_telemetry,
         )
+        self.studio_task_submission = StudioTaskSubmissionAdapter(self.db.session_factory)
+        self.studio_run_service = StudioRunService(
+            self.db.session_factory, self.studio_task_submission
+        )
         self.orchestrator_service = OrchestratorService(
             self.db.session_factory,
             self.execution_registry,
@@ -246,9 +265,29 @@ class ApplicationContainer:
             self.worktree_manager,
             self.release_policy,
             self.release_telemetry,
+            studio_run_extension=self.studio_run_service,
         )
         self.worker_status_query = SqlWorkerStatusQuery(
             SqlWorkerHeartbeatRepository(self.db.session_factory)
+        )
+
+        # Plan C1: Studio V3 surface. The capability provider observes this
+        # container; the application service binds Plan A ports at handoff.
+        # A3 persistence is real: reads go through SQL adapters. Command
+        # authority awaits the A4 orchestrator seam, so writes fail closed
+        # with CAPABILITY_UNAVAILABLE — no fake or fallback is ever composed.
+        self.studio_capability_provider = ApiRuntimeCapabilityProvider(self)
+        studio_reads = SqlSeriesReadAdapter(self.db.session_factory)
+        self.studio_application_service = StudioApplicationService(
+            orchestrator=self.studio_run_service,
+            run_query=SqlRunQueryAdapter(self.db.session_factory),
+            event_query=SqlEventQueryAdapter(self.db.session_factory),
+            capability=self.studio_capability_provider,
+            series_repo=studio_reads,
+            episodes_repo=SqlEpisodeReadAdapter(self.db.session_factory),
+            revisions_repo=SqlRevisionReadAdapter(self.db.session_factory),
+            artifacts_repo=SqlArtifactReadAdapter(self.db.session_factory),
+            approvals_repo=SqlApprovalReadAdapter(self.db.session_factory),
         )
 
         # Outbox: API submits events via get_uow().record_outbox_event() only.

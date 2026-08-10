@@ -100,3 +100,42 @@ def test_dag_10k_validation_performance_gate():
     duration_ms = WorkflowValidator.validate_definition(wf)
     print(f"10,000 node DAG validation duration: {duration_ms:.2f} ms")
     assert duration_ms <= 500.0, f"10k DAG validation gate failed: {duration_ms:.2f} ms > 500 ms"
+
+
+def test_workflow_engine_rejects_story_node_tool_name():
+    wf = WorkflowDefinition(id="wf_story", name="Story Workflow")
+    wf.add_node(WorkflowNode(id="node_1", name="Idea", tool_name="studio.story.idea.generate"))
+    engine = WorkflowEngine()
+    with pytest.raises(ValueError, match="Story task rejected"):
+        engine.initialize_run("run_story", wf)
+
+
+def test_workflow_engine_rejects_story_node_id():
+    wf = WorkflowDefinition(id="wf_story_2", name="Story Workflow 2")
+    wf.add_node(WorkflowNode(id="studio.story.bible.generate", name="Bible", tool_name="noop"))
+    engine = WorkflowEngine()
+    with pytest.raises(ValueError, match="Story task rejected"):
+        engine.initialize_run("run_story_2", wf)
+
+
+def test_workflow_engine_rejects_story_params_reference():
+    wf = WorkflowDefinition(id="wf_story_3", name="Story Workflow 3")
+    wf.add_node(
+        WorkflowNode(
+            id="node_3",
+            name="Review",
+            tool_name="noop",
+            params={"task_type": "studio.story.review"},
+        )
+    )
+    engine = WorkflowEngine()
+    with pytest.raises(ValueError, match="Story task rejected"):
+        engine.initialize_run("run_story_3", wf)
+
+
+def test_workflow_engine_accepts_legacy_nodes():
+    wf = WorkflowDefinition(id="wf_legacy", name="Legacy Workflow")
+    wf.add_node(WorkflowNode(id="root", name="Root", tool_name="init"))
+    engine = WorkflowEngine()
+    state = engine.initialize_run("run_legacy", wf)
+    assert state["run_id"] == "run_legacy"

@@ -1,0 +1,119 @@
+{
+  "$defs": {
+    "Beat": {
+      "additionalProperties": true,
+      "description": "One narrative beat with a target-seconds allocation.",
+      "properties": {
+        "beat_id": {
+          "title": "Beat Id",
+          "type": "string"
+        },
+        "character_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Character Ids",
+          "type": "array"
+        },
+        "description": {
+          "minLength": 1,
+          "title": "Description",
+          "type": "string"
+        },
+        "emotional_beat": {
+          "default": "",
+          "title": "Emotional Beat",
+          "type": "string"
+        },
+        "location_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Location Id"
+        },
+        "order": {
+          "minimum": 1,
+          "title": "Order",
+          "type": "integer"
+        },
+        "role": {
+          "default": "rising",
+          "title": "Role",
+          "type": "string"
+        },
+        "target_seconds": {
+          "minimum": 0,
+          "title": "Target Seconds",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "beat_id",
+        "order",
+        "description",
+        "target_seconds"
+      ],
+      "title": "Beat",
+      "type": "object"
+    }
+  },
+  "additionalProperties": true,
+  "description": "Ordered beats allocating the total episode duration.",
+  "properties": {
+    "artifact_type": {
+      "default": "BeatSheet",
+      "title": "Artifact Type",
+      "type": "string"
+    },
+    "beat_sheet_id": {
+      "title": "Beat Sheet Id",
+      "type": "string"
+    },
+    "beats": {
+      "items": {
+        "$ref": "#/$defs/Beat"
+      },
+      "title": "Beats",
+      "type": "array"
+    },
+    "duration_formula_version": {
+      "default": "duration_formula/v1",
+      "title": "Duration Formula Version",
+      "type": "string"
+    },
+    "schema_version": {
+      "default": "studio.artifact/v1alpha1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "title": {
+      "minLength": 1,
+      "title": "Title",
+      "type": "string"
+    },
+    "tolerance_seconds": {
+      "default": 15,
+      "minimum": 0,
+      "title": "Tolerance Seconds",
+      "type": "integer"
+    },
+    "total_target_seconds": {
+      "exclusiveMinimum": 0,
+      "title": "Total Target Seconds",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "beat_sheet_id",
+    "title",
+    "total_target_seconds"
+  ],
+  "title": "BeatSheet",
+  "type": "object"
+}

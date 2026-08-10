@@ -1,0 +1,18 @@
+{
+  "schema": "studio.errors/v1",
+  "contract_version": "studio.contract/v0.1",
+  "errors": [
+    {"code": "NOT_FOUND", "http_status": 404, "description": "Resource does not exist."},
+    {"code": "VALIDATION_ERROR", "http_status": 422, "description": "Request payload failed validation."},
+    {"code": "STALE_REVISION", "http_status": 409, "description": "Expected revision/version does not match current state."},
+    {"code": "ARTIFACT_HASH_MISMATCH", "http_status": 409, "description": "Artifact content hash does not match the expected canonical hash."},
+    {"code": "LOCKED_REVISION", "http_status": 409, "description": "Operation rejected because the revision is locked."},
+    {"code": "IDEMPOTENCY_MISMATCH", "http_status": 409, "description": "Repeated idempotency key used with a different normalized request."},
+    {"code": "INVALID_TRANSITION", "http_status": 409, "description": "Episode state transition is not allowed."},
+    {"code": "APPROVAL_REQUIRED", "http_status": 409, "description": "Disallowed command because approval is required; normal waiting is represented in the run resource."},
+    {"code": "CAPABILITY_UNAVAILABLE", "http_status": 503, "description": "Required runtime capability is unavailable; no silent fallback."},
+    {"code": "PROVIDER_UNAVAILABLE", "http_status": 503, "description": "Provider endpoint unavailable."},
+    {"code": "INTERNAL_ERROR", "http_status": 500, "description": "Internal error with redacted detail."}
+  ],
+  "idempotency_rule": "All mutating endpoints require an idempotency key and expected revision/version where applicable. A repeated key with the same normalized request returns the original result; a different request returns IDEMPOTENCY_MISMATCH."
+}

@@ -1,0 +1,15 @@
+{
+  "fixture_id": "studio-contracts/error-payload.capability-unavailable",
+  "purpose": "Typed 503 fail-closed capability payload. No mock/fake success is permitted; retryable is true only when a safe retry exists.",
+  "type": "https://windagent.io/errors/capability-unavailable",
+  "title": "Capability Unavailable",
+  "status": 503,
+  "detail": "No real provider/model route is currently available for story generation.",
+  "code": "CAPABILITY_UNAVAILABLE",
+  "details": {
+    "capability": "STORY_GENERATION",
+    "configured_route": null
+  },
+  "correlation_id": "corr-002",
+  "retryable": true
+}

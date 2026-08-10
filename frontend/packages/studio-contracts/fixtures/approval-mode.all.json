@@ -1,0 +1,12 @@
+{
+  "fixture_id": "studio-contracts/approval-mode.all",
+  "purpose": "All approval modes across all checkpoint positions from the frozen Roadmap 1 policy.",
+  "modes": ["AUTO", "HUMAN_REQUIRED", "QUALITY_GATE_ONLY"],
+  "checkpoints": ["IDEA", "STORY_BIBLE", "OUTLINE", "SCREENPLAY"],
+  "policy": [
+    { "checkpoint": "IDEA", "mode": "HUMAN_REQUIRED" },
+    { "checkpoint": "STORY_BIBLE", "mode": "QUALITY_GATE_ONLY" },
+    { "checkpoint": "OUTLINE", "mode": "QUALITY_GATE_ONLY" },
+    { "checkpoint": "SCREENPLAY", "mode": "HUMAN_REQUIRED" }
+  ]
+}

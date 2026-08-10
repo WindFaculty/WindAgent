@@ -1,0 +1,60 @@
+{
+  "additionalProperties": true,
+  "description": "Bounded revision request bound to a reviewed draft and its findings.",
+  "properties": {
+    "accepted_finding_codes": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Accepted Finding Codes",
+      "type": "array"
+    },
+    "artifact_type": {
+      "default": "RevisionProposal",
+      "title": "Artifact Type",
+      "type": "string"
+    },
+    "draft_id": {
+      "title": "Draft Id",
+      "type": "string"
+    },
+    "iteration_number": {
+      "default": 1,
+      "minimum": 1,
+      "title": "Iteration Number",
+      "type": "integer"
+    },
+    "maximum_iterations": {
+      "default": 3,
+      "minimum": 1,
+      "title": "Maximum Iterations",
+      "type": "integer"
+    },
+    "proposal_id": {
+      "title": "Proposal Id",
+      "type": "string"
+    },
+    "review_report_id": {
+      "title": "Review Report Id",
+      "type": "string"
+    },
+    "revision_reason": {
+      "minLength": 1,
+      "title": "Revision Reason",
+      "type": "string"
+    },
+    "schema_version": {
+      "default": "studio.artifact/v1alpha1",
+      "title": "Schema Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "proposal_id",
+    "draft_id",
+    "review_report_id",
+    "revision_reason"
+  ],
+  "title": "RevisionProposal",
+  "type": "object"
+}

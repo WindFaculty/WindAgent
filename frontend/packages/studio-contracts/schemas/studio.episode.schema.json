@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://windagent.io/contracts/studio/episode/v0.1/",
+  "title": "StudioEpisode",
+  "description": "Studio Episode read resource. The API and desktop use the exact episode state values from studio.contract/v0.1. Capability summary is explicit so the UI fails closed instead of faking execution.",
+  "type": "object",
+  "required": [
+    "id",
+    "series_id",
+    "title",
+    "state",
+    "version",
+    "revision_id",
+    "created_at",
+    "updated_at",
+    "capabilities"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "series_id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "brief": {
+      "type": ["string", "null"],
+      "description": "Creative brief text. May contain long Vietnamese text."
+    },
+    "state": {
+      "$ref": "studio.episode-state.schema.json#/$defs/state"
+    },
+    "version": {
+      "type": "integer",
+      "description": "Aggregate version; mutations must send Expected-Version."
+    },
+    "revision_id": {
+      "type": ["string", "null"],
+      "description": "Current ProductionRevision id, or null when no revision exists."
+    },
+    "approved_at": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "capabilities": {
+      "type": "object",
+      "required": ["ready", "reasons"],
+      "properties": {
+        "ready": {
+          "type": "boolean",
+          "description": "True only when a real provider/model route is configured and available."
+        },
+        "reasons": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Explicit reasons when not ready; never a fake fallback."
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

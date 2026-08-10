@@ -1,0 +1,149 @@
+{
+  "schema": "story_artifact_registry/v1",
+  "contract_version": "studio.contract/v0.1",
+  "artifact_schema_version": "studio.artifact/v1alpha1",
+  "registry": {
+    "CreativeBrief": {
+      "content_model": "CreativeBrief",
+      "schema_file": "schemas/CreativeBrief.json",
+      "validation_codes": [
+        "FIELD_EMPTY",
+        "SAFETY_PROHIBITED"
+      ],
+      "description": "Normalized creative direction (B3)."
+    },
+    "IdeaCandidateSet": {
+      "content_model": "IdeaCandidateSet",
+      "schema_file": "schemas/IdeaCandidateSet.json",
+      "validation_codes": [
+        "IDEA_COUNT",
+        "IDEA_DUPLICATE",
+        "IDEA_REQUIRED_FIELD",
+        "SAFETY_PROHIBITED",
+        "SAFETY_AGE_UNSUITABLE"
+      ],
+      "description": "3-5 distinct scored idea candidates (B3)."
+    },
+    "SelectedIdea": {
+      "content_model": "SelectedIdea",
+      "schema_file": "schemas/SelectedIdea.json",
+      "validation_codes": [
+        "REF_MISSING",
+        "FIELD_EMPTY"
+      ],
+      "description": "Hash-bound selected idea (selection is an A command)."
+    },
+    "StoryBible": {
+      "content_model": "StoryBible",
+      "schema_file": "schemas/StoryBible.json",
+      "validation_codes": [
+        "FIELD_EMPTY",
+        "FIELD_TOO_LONG"
+      ],
+      "description": "Premise/theme/tone/arc/stakes/rules (S6)."
+    },
+    "WorldBible": {
+      "content_model": "WorldBible",
+      "schema_file": "schemas/WorldBible.json",
+      "validation_codes": [
+        "ID_UNIQUE",
+        "WORLD_RULE_COMPLIANCE",
+        "FIELD_EMPTY"
+      ],
+      "description": "Setting, rules, recurring locations/objects (S6)."
+    },
+    "CharacterCanon": {
+      "content_model": "CharacterCanon",
+      "schema_file": "schemas/CharacterCanon.json",
+      "validation_codes": [
+        "ID_UNIQUE",
+        "DUPLICATE_NAME",
+        "REF_MISSING",
+        "RELATIONSHIP_CYCLE",
+        "UNKNOWN_REF_KIND",
+        "FIELD_EMPTY"
+      ],
+      "description": "Stable-ID character canon with relationships (S6)."
+    },
+    "BeatSheet": {
+      "content_model": "BeatSheet",
+      "schema_file": "schemas/BeatSheet.json",
+      "validation_codes": [
+        "ORDER_SEQUENCE",
+        "ID_UNIQUE",
+        "DURATION_SUM",
+        "REF_MISSING"
+      ],
+      "description": "Ordered beats with target-seconds allocation (S7)."
+    },
+    "EpisodeOutline": {
+      "content_model": "EpisodeOutline",
+      "schema_file": "schemas/EpisodeOutline.json",
+      "validation_codes": [
+        "ORDER_SEQUENCE",
+        "ID_UNIQUE",
+        "DURATION_SUM",
+        "DURATION_BOUND",
+        "BEAT_ORPHAN",
+        "SCENE_ORPHAN",
+        "CAUSAL_ORDER",
+        "REF_MISSING"
+      ],
+      "description": "Production-aware scenes fitting 180-300 s (S7)."
+    },
+    "ScreenplayDraft": {
+      "content_model": "ScreenplayDraft",
+      "schema_file": "schemas/ScreenplayDraft.json",
+      "validation_codes": [
+        "ID_UNIQUE",
+        "ORDER_SEQUENCE",
+        "DIALOGUE_ATTRIBUTION",
+        "DIALOGUE_EMPTY",
+        "BEAT_COVERAGE",
+        "DURATION_SUM",
+        "DURATION_BOUND",
+        "REF_MISSING",
+        "FIELD_EMPTY"
+      ],
+      "description": "Authoritative structured screenplay draft (S8)."
+    },
+    "ReviewReport": {
+      "content_model": "ReviewReport",
+      "schema_file": "schemas/ReviewReport.json",
+      "validation_codes": [
+        "REVIEW_VERDICT",
+        "REVISION_BUDGET"
+      ],
+      "description": "Aggregated review findings + verdict (S9)."
+    },
+    "RevisionProposal": {
+      "content_model": "RevisionProposal",
+      "schema_file": "schemas/RevisionProposal.json",
+      "validation_codes": [
+        "REVISION_STALE",
+        "REVISION_BUDGET"
+      ],
+      "description": "Bounded revision request (S9)."
+    },
+    "LockedScreenplayReceipt": {
+      "content_model": "LockedScreenplayReceipt",
+      "schema_file": "schemas/LockedScreenplayReceipt.json",
+      "validation_codes": [
+        "LOCK_STATE"
+      ],
+      "description": "A-issued READY_FOR_PRODUCTION receipt (S10)."
+    },
+    "LockedScreenplayPackage": {
+      "content_model": "LockedScreenplayPackage",
+      "schema_file": "schemas/LockedScreenplayPackage.json",
+      "validation_codes": [
+        "MANIFEST_MISSING_REF",
+        "MANIFEST_HASH",
+        "MANIFEST_DUPLICATE",
+        "LOCK_STATE",
+        "REF_MISSING"
+      ],
+      "description": "Immutable lock-ready package with lineage manifest (S10)."
+    }
+  }
+}

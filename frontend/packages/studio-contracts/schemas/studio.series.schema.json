@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://windagent.io/contracts/studio/series/v0.1",
+  "title": "StudioSeries",
+  "description": "SeriesProject read resource. Canonical hierarchy is SeriesProject -> Episode -> ProductionRevision.",
+  "type": "object",
+  "required": ["id", "title", "created_at", "updated_at", "episode_count"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Server-issued stable ID. Never a hardcoded sample identifier."
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": ["string", "null"]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "episode_count": {
+      "type": "integer",
+      "minimum": 0
+    }
+  },
+  "additionalProperties": false
+}

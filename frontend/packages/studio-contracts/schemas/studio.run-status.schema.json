@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://windagent.io/contracts/studio/run-status/v0.1",
+  "title": "StudioRunStatus",
+  "description": "Durable Studio run status. HTTP success must not imply durable completion: long-running commands return 202 plus a run resource and the desktop observes run state/events. Dependency unavailability and human approval waits are run statuses/wait reasons and must not be mislabeled success.",
+  "type": "string",
+  "$defs": {
+    "status": {
+      "type": "string",
+      "enum": [
+        "QUEUED",
+        "RUNNING",
+        "WAITING_FOR_APPROVAL",
+        "RETRYING",
+        "COMPLETED",
+        "FAILED",
+        "CANCELLED"
+      ]
+    }
+  },
+  "enum": [
+    "QUEUED",
+    "RUNNING",
+    "WAITING_FOR_APPROVAL",
+    "RETRYING",
+    "COMPLETED",
+    "FAILED",
+    "CANCELLED"
+  ]
+}

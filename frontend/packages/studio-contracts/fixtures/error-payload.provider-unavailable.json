@@ -1,0 +1,15 @@
+{
+  "fixture_id": "studio-contracts/error-payload.provider-unavailable",
+  "purpose": "Typed 503 PROVIDER_UNAVAILABLE payload. Fail-closed: no mock/fake success is permitted; retryable is true only when a safe retry exists.",
+  "type": "https://windagent.io/errors/provider-unavailable",
+  "title": "Provider Unavailable",
+  "status": 503,
+  "detail": "Provider endpoint unavailable.",
+  "code": "PROVIDER_UNAVAILABLE",
+  "details": {
+    "capability": "STORY_GENERATION",
+    "configured_route": "route-01"
+  },
+  "correlation_id": "corr-004",
+  "retryable": true
+}

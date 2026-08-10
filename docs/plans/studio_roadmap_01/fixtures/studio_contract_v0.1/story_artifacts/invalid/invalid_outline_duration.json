@@ -1,0 +1,64 @@
+{
+  "schema_version": "studio.artifact/v1alpha1",
+  "artifact_type": "EpisodeOutline",
+  "outline_id": "ol_bad",
+  "title": "Outline quá dài",
+  "language": "vi",
+  "audience_band": "5-8",
+  "target_duration_seconds": 240,
+  "tolerance_seconds": 15,
+  "scenes": [
+    {
+      "scene_id": "s1",
+      "order": 1,
+      "intent": "Cảnh 1",
+      "location_id": "loc_field",
+      "character_ids": [
+        "ch_rabbit"
+      ],
+      "estimated_seconds": 100,
+      "beat_refs": [
+        "b1"
+      ]
+    },
+    {
+      "scene_id": "s2",
+      "order": 2,
+      "intent": "Cảnh 2",
+      "location_id": "loc_field",
+      "character_ids": [
+        "ch_rabbit"
+      ],
+      "estimated_seconds": 100,
+      "beat_refs": [
+        "b2"
+      ]
+    },
+    {
+      "scene_id": "s3",
+      "order": 3,
+      "intent": "Cảnh 3",
+      "location_id": "loc_field",
+      "character_ids": [
+        "ch_rabbit"
+      ],
+      "estimated_seconds": 100,
+      "beat_refs": [
+        "b3"
+      ]
+    },
+    {
+      "scene_id": "s4",
+      "order": 4,
+      "intent": "Cảnh 4",
+      "location_id": "loc_field",
+      "character_ids": [
+        "ch_rabbit"
+      ],
+      "estimated_seconds": 100,
+      "beat_refs": [
+        "b4"
+      ]
+    }
+  ]
+}

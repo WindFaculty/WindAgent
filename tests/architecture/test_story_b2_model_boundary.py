@@ -1,12 +1,15 @@
-"""B2 architecture boundary: story model boundary stays provider/storage-free.
+"""B2/B3 architecture boundary: story model boundary stays provider/storage-free.
 
-The story intelligence package (prompt catalog + structured invocation) may
-consume ONLY the frozen provider-neutral seam (``video.ports`` /
-``video.prompts`` PromptSpec primitive) and the extracted legacy PromptSpec
-constants (the catalog registers them by reference so template/hash equality
-with the live pipeline is enforced, not duplicated). It must never import
-tolerant free-text parsers, the director, infrastructure, or A's runtime
-contracts.
+The story intelligence package (prompt catalog + structured invocation +
+B3 pipeline services/handlers) may consume ONLY the frozen provider-neutral
+seam (``video.ports`` / ``video.prompts`` PromptSpec primitive), the
+extracted legacy PromptSpec constants (registered by reference so
+template/hash equality with the live pipeline is enforced, not duplicated),
+and A's FROZEN contract layer (``contracts.studio`` task types + error
+contract; B3 handlers map frozen ``StudioTaskType`` values per plan B
+inputs). It must never import tolerant free-text parsers, the director,
+infrastructure, or A's runtime implementation (storage/orchestration/worker/
+queue/providers).
 """
 
 from __future__ import annotations
@@ -30,7 +33,6 @@ FORBIDDEN_IMPORT_MARKERS = (
     "worker",
     "queue",
     "providers",
-    "contracts.studio",
     "video.parsing",  # tolerant free-text parsers: never canonical authority
     "video.director",
 )

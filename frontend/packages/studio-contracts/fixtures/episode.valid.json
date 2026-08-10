@@ -1,0 +1,18 @@
+{
+  "fixture_id": "studio-contracts/episode.valid",
+  "purpose": "Valid Episode read resource in IDEA_REVIEW with explicit capability summary.",
+  "id": "ep_9c81d2e0",
+  "series_id": "series_5f2c9a41",
+  "title": "Chiec Dieu Cua Tho",
+  "brief": "Má»™t cÃ¢u chuyá»‡n vá» chÃº thá» vÃ  chiáº¿c diá»u, dÃ nh cho tráº» em tá»« 5 Ä‘áº¿n 8 tuá»•i, thá»i lÆ°á»£ng tá»« 3 Ä‘áº¿n 5 phÃºt.",
+  "state": "IDEA_REVIEW",
+  "version": 3,
+  "revision_id": "rev-0001",
+  "approved_at": null,
+  "created_at": "2026-08-09T10:05:00Z",
+  "updated_at": "2026-08-09T10:06:00Z",
+  "capabilities": {
+    "ready": true,
+    "reasons": []
+  }
+}

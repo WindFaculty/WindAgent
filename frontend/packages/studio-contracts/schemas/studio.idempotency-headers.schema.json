@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://windagent.io/contracts/studio/idempotency-headers/v0.1",
+  "title": "StudioIdempotencyHeaders",
+  "description": "Header contract for mutating /api/v3/studio commands. The client generates one idempotency key per user intent and preserves it across network retry. Same key/same normalized request hash returns the original result; same key/different hash is 409 IDEMPOTENCY_MISMATCH. Mutations additionally require expected revision/version/hash.",
+  "type": "object",
+  "required": ["Idempotency-Key"],
+  "properties": {
+    "Idempotency-Key": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 128,
+      "description": "Client-generated key per user intent, stable across retries."
+    },
+    "Expected-Revision": {
+      "type": "string",
+      "description": "Expected ProductionRevision ID for decisions."
+    },
+    "Expected-Version": {
+      "type": "integer",
+      "description": "Expected aggregate version for optimistic concurrency."
+    },
+    "Expected-Hash": {
+      "type": "string",
+      "description": "Expected content hash of the artifact being decided upon (e.g. exact candidate set hash, reviewed screenplay hash)."
+    }
+  },
+  "additionalProperties": false
+}

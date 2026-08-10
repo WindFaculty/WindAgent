@@ -6,15 +6,19 @@ quality/error taxonomy (§3 error codes). Fixtures: `fixtures/studio_contract_v0
 ## 1. Prompt catalog manifest
 
 - Prompt schema version: `studio.prompt/v1alpha1`.
-- Registered prompts: **4** — all declare output
+- Registered prompts: **8** — all declare output
   schemas and safety constraints (`validate_registry_invariants()` empty).
 - Catalog invariants: **clean** (0 violations).
 
 | Prompt ID | Version | Hash | Kind | Output format | Max tokens | Schema |
 |---|---|---|---|---|---|---|
+| `story.beats.generate` | `1.0.0` | `bca226b8978a…` | canonical | json | 2500 | `BeatGenerationOutput.json` |
+| `story.bibles.generate` | `1.0.0` | `32ee532d14f3…` | canonical | json | 3000 | `BibleGenerationOutput.json` |
 | `story.brief_expansion.expand` | `1.0.0` | `2a882ce066c5…` | legacy | json | 1200 | `BriefExpansionOutput.json` |
 | `story.continuation.continue` | `1.0.0` | `f233d9b02c5c…` | legacy | text | 3000 | `canonical_screenplay_text_v1.json` |
+| `story.ideation.generate` | `1.0.0` | `e5c9c9799df1…` | canonical | json | 2500 | `IdeaGenerationOutput.json` |
 | `story.outline.generate` | `1.0.0` | `34b418e63b04…` | legacy | json | 1500 | `OutlineOutput.json` |
+| `story.outline.structured` | `1.0.0` | `e7c28852c170…` | canonical | json | 3000 | `OutlineGenerationOutput.json` |
 | `story.screenplay.write` | `1.0.0` | `d546496f9718…` | legacy | text | 4000 | `canonical_screenplay_text_v1.json` |
 
 Extracted legacy prompts keep template/hash equality with their live
@@ -22,7 +26,7 @@ Extracted legacy prompts keep template/hash equality with their live
 
 ## 2. Schema bundle
 
-- **3** schema files under `story_prompts/schemas/`,
+- **7** schema files under `story_prompts/schemas/`,
   checksummed in `story_prompts/checksums.json`.
 - JSON prompts validate via `jsonschema` Draft 2020-12; text-format legacy
   prompts declare a format spec (size/safety enforced at the boundary).
@@ -87,7 +91,7 @@ None.
 
 **`STRUCTURED_MODEL_GATE`: PASS (B-side evidence).**
 
-- Manifest: `story_prompts/prompt_manifest.json` (checksum `4eb5b1a1cfe8cfc8…`).
+- Manifest: `story_prompts/prompt_manifest.json` (checksum `9545e9541d87e5f2…`).
 - Schema checksums: `story_prompts/checksums.json`.
 - Corpus results: `story_prompts/invalid_output_corpus_results.json`.
 - C/A halves (runtime model-route lock, TypeScript schema consumption) are

@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://windagent.io/contracts/studio/run-resource/v0.1/",
+  "title": "StudioRunResource",
+  "description": "Durable run resource returned by long-running commands (202). Poll/event read models are the authority for progress; HTTP success never implies durable completion.",
+  "type": "object",
+  "required": ["run_id", "status", "episode_id", "command_type", "started_at"],
+  "properties": {
+    "run_id": {
+      "type": "string"
+    },
+    "status": {
+      "$ref": "studio.run-status.schema.json#/$defs/status"
+    },
+    "episode_id": {
+      "type": "string"
+    },
+    "command_type": {
+      "type": "string",
+      "enum": [
+        "START_STORY_RUN",
+        "SELECT_IDEA",
+        "APPROVE",
+        "REJECT",
+        "REQUEST_REVISION",
+        "LOCK_SCREENPLAY",
+        "DERIVE_REVISION"
+      ]
+    },
+    "wait_reason": {
+      "type": ["string", "null"],
+      "enum": [null, "APPROVAL_REQUIRED", "PROVIDER_UNAVAILABLE", "DEPENDENCY_RETRY", "REVISION_REQUIRED"],
+      "description": "Why the run waits. Approval/provider waits are statuses, not success."
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "finished_at": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "result_uri": {
+      "type": ["string", "null"],
+      "description": "Link to the durable result resource once available."
+    }
+  },
+  "additionalProperties": false
+}

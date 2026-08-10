@@ -1,0 +1,46 @@
+{
+  "schema": "story_artifact_checksums/v1",
+  "generated_at": "2026-08-09T00:00:00Z",
+  "golden": {
+    "CreativeBrief.json": "be6ec7e3bf37d866918cf771dfd1144439cf558492d70ea2c4a3d97d87ac0a37",
+    "IdeaCandidateSet.json": "5149a3901101620e2cbc94d1a8ee4054d0e29312502dace1ac344a154be00f96",
+    "SelectedIdea.json": "c730fea6e122c74ddcf044e7e6a5a3b41144252001e919bb3a61f978149defd1",
+    "StoryBible.json": "c1bf100a8f45e30917c76720b6ccba35d0bf5cd286433e080e60d418095d01d6",
+    "WorldBible.json": "032137b66f8744de85c5758abe0a999281d5a8b95648c216ee35fe8d2b80dbd6",
+    "CharacterCanon.json": "976b87c179387fa892cbe33c9e1d0f7f8c665da64c83e5e36a513370f373f110",
+    "BeatSheet.json": "98b3f4a561264b09e2a390342595a94220a4ba2156092937521b5f2192277eda",
+    "EpisodeOutline.json": "844ff83991a8a264ae1fff5e70fb19dd4192a5843ce1fde3c43cc6be34106adc",
+    "ScreenplayDraft.json": "f39f834e4dd1af9214e35e540dd4d867d9052d06b3b58dfe5c3404e6d52ff32c",
+    "ReviewReport.json": "84942a27f27d2f3541c176533df25886eb8a1448fcab3d0f88f416c143cb91ce",
+    "RevisionProposal.json": "938c67f85438b76800d552cc7cb807393a175b61ada6cd3817de7761890a0db0",
+    "LockedScreenplayReceipt.json": "847a2709fa90e687c618402ee6e0153629eb557f9bf7c1d6434dc91d64d3f5f6",
+    "LockedScreenplayPackage.json": "48e78a7a760040b3d30c69cdf00cb5c9bf8f5209b51880e78f7da701c19a7271"
+  },
+  "invalid": {
+    "invalid_idea_set_two_candidates.json": "510cfd767b07b7afe27fe8eee2a4d6b17ba1798cb078672c6870a622473803c4",
+    "invalid_idea_set_duplicate_ids.json": "626c46933f35e046019726657f3ab55581ed054feec5be6ad9c96e196fc63064",
+    "invalid_schema_version_v2.json": "cc1674548d659b1d9d4d97e1c0c670567d51c96445f522a88817e25d70595d48",
+    "invalid_unknown_artifact_type.json": "e3a2b1d8a31b7b1ed961555354fa75718d5035ca5d5121053205efce38e47425",
+    "invalid_malformed_json.json": "056aca995bcc4aaca9047ec040f21dfefe3a54ae564df40d05f066781751f2b1",
+    "invalid_dialogue_attribution.json": "160f4ca0c0da3fa8db654c504fce13b0fb2668c75b6fa6e5a53b88796ce1b098",
+    "invalid_outline_duration.json": "4e7f2dedd4739363fef5b14f7d9a826898bc7ddfedf0a0af8eaa30198cf88953",
+    "invalid_package_missing_lineage.json": "828f45e0c8f6c2ce44a80d6fd739ea4ce8f90251c2715c856b7fcf0c9e47c00d",
+    "invalid_envelope_field_leak.json": "b8759b1dab15b551abeffc715d9dfb10d94998fb0c15b710a2905b49839efe6c",
+    "invalid_long_text.json": "70ce7c57b6e27b2d723cb8e84a5fd2acc5d004c991fb8b7bbb2a82e21c53379e"
+  },
+  "schemas": {
+    "CreativeBrief.json": "23d9ba9ea32f6409a69445c0454245ccaeeab94d93817ff907c871dc879eb96f",
+    "IdeaCandidateSet.json": "552fc2ccca6e81cc1028706f77775e274cb0c78b13afa8b7041b86a81f77ca1f",
+    "SelectedIdea.json": "aa6fb99049ea8c03fb0bda2058c0f0558d0ce56bfe6cfc80c1e0fe84a334e974",
+    "StoryBible.json": "125d9ede3c397bc7fdb5521c3895552b72f981b141af994c4683f5c9c7dffcf3",
+    "WorldBible.json": "ea9a499b84abdc79f711b0809084fb870c9b750ba6b54ac71571a1f1743dd868",
+    "CharacterCanon.json": "89be0a0f0a79e51e477919cbfc1e18dd77bf80028ad96e9edf46b9f83a1ce0e3",
+    "BeatSheet.json": "d007ef5a315bc32633a9ba1275c53f7afdb72316bd9be381c3ec2facdca2a799",
+    "EpisodeOutline.json": "eb341d55b9d3ce587639c7d1b53abdfcff8a2de253b0d04c93c076b974f6d70c",
+    "ScreenplayDraft.json": "15e2423be5a2c86901f193d45e8c0217c4cb2008e6d30c4d9fd713485248b116",
+    "ReviewReport.json": "dfde2507d8350d93771db3cc7a49296ee6f19b4c82eff7a50380b38bd9ee14d9",
+    "RevisionProposal.json": "1961d257b9f7b09ed95dff30bb1b2e372e417ef63812f4a16e63c1aeaf0fd660",
+    "LockedScreenplayReceipt.json": "e75f3e5cfe17c24050540895fa421f61b451cb50c892d14c49a2a39204d00a8b",
+    "LockedScreenplayPackage.json": "b39fd16c9905c82028093c42d9a597b588217d1ace3619197326081a0e9cafb5"
+  }
+}

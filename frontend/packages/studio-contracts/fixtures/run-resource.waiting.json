@@ -1,0 +1,12 @@
+{
+  "fixture_id": "studio-contracts/run-resource.waiting",
+  "purpose": "Durable run resource returned with 202 while a human approval checkpoint is required.",
+  "run_id": "run_04f1a7b3",
+  "status": "WAITING_FOR_APPROVAL",
+  "episode_id": "ep_9c81d2e0",
+  "command_type": "START_STORY_RUN",
+  "wait_reason": "APPROVAL_REQUIRED",
+  "started_at": "2026-08-09T10:06:00Z",
+  "finished_at": null,
+  "result_uri": null
+}

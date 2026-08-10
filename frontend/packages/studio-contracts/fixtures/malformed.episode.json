@@ -1,0 +1,11 @@
+{
+  "fixture_id": "studio-contracts/malformed.episode",
+  "purpose": "Negative fixture: malformed Episode missing required fields and carrying an invalid state value. Validation must fail with a stable 422 VALIDATION_ERROR.",
+  "id": "ep_bad",
+  "series_id": "series_5f2c9a41",
+  "title": "",
+  "state": "NOT_A_REAL_STATE",
+  "capabilities": {
+    "ready": false
+  }
+}

@@ -70,6 +70,273 @@ OUTLINE_OUTPUT_SCHEMA: Dict[str, Any] = {
 }
 
 # ---------------------------------------------------------------------------
+# B3 canonical (non-legacy) output schemas
+# ---------------------------------------------------------------------------
+
+IDEA_GENERATION_OUTPUT_SCHEMA: Dict[str, Any] = {
+    "$schema": JSON_SCHEMA_DIALECT,
+    "title": "IdeaGenerationOutput",
+    "description": (
+        "B3 ideation: exactly 3-5 distinct, age-appropriate idea candidates "
+        "for one normalized CreativeBrief. Model output is untrusted data; "
+        "the boundary validates this schema BEFORE domain construction."
+    ),
+    "type": "object",
+    "required": ["language", "candidates"],
+    "properties": {
+        "language": {"type": "string", "minLength": 1},
+        "notes": {"type": "string"},
+        "candidates": {
+            "type": "array",
+            "minItems": 3,
+            "maxItems": 5,
+            "items": {
+                "type": "object",
+                "required": [
+                    "candidate_id",
+                    "title",
+                    "summary",
+                    "premise",
+                    "logline",
+                    "themes",
+                    "age_fit",
+                    "estimated_seconds",
+                    "scene_count",
+                    "character_count",
+                    "location_count",
+                    "safety_ok",
+                ],
+                "properties": {
+                    "candidate_id": {"type": "string", "minLength": 1},
+                    "title": {"type": "string", "minLength": 1},
+                    "summary": {"type": "string"},
+                    "premise": {"type": "string"},
+                    "logline": {"type": "string"},
+                    "themes": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                    },
+                    "age_fit": {"type": "number", "minimum": 0.0, "maximum": 1.0},
+                    "estimated_seconds": {"type": "integer", "minimum": 1},
+                    "scene_count": {"type": "integer", "minimum": 1},
+                    "character_count": {"type": "integer", "minimum": 1},
+                    "location_count": {"type": "integer", "minimum": 1},
+                    "safety_ok": {"type": "boolean"},
+                },
+            },
+        },
+    },
+    "additionalProperties": True,
+}
+
+BIBLE_GENERATION_OUTPUT_SCHEMA: Dict[str, Any] = {
+    "$schema": JSON_SCHEMA_DIALECT,
+    "title": "BibleGenerationOutput",
+    "description": (
+        "B4 canon: StoryBible + WorldBible + CharacterCanon as one consistent "
+        "set. The three artifacts validate and promote together; downstream "
+        "fixtures reference canon IDs, not free-form names alone."
+    ),
+    "type": "object",
+    "required": ["story_bible", "world_bible", "character_canon"],
+    "properties": {
+        "story_bible": {
+            "type": "object",
+            "required": ["bible_id", "title", "premise"],
+            "properties": {
+                "bible_id": {"type": "string", "minLength": 1},
+                "title": {"type": "string", "minLength": 1},
+                "premise": {"type": "string", "minLength": 1},
+                "theme": {"type": "string"},
+                "tone": {"type": "string"},
+                "arc_summary": {"type": "string"},
+                "stakes": {"type": "string"},
+                "story_rules": {"type": "array", "items": {"type": "string"}},
+                "language": {"type": "string"},
+            },
+            "additionalProperties": True,
+        },
+        "world_bible": {
+            "type": "object",
+            "required": ["world_id", "setting"],
+            "properties": {
+                "world_id": {"type": "string", "minLength": 1},
+                "setting": {"type": "string", "minLength": 1},
+                "physical_rules": {"type": "array", "items": {"$ref": "#/$defs/world_rule"}},
+                "story_rules": {"type": "array", "items": {"$ref": "#/$defs/world_rule"}},
+                "recurring_locations": {"type": "array", "items": {"$ref": "#/$defs/location"}},
+                "recurring_objects": {"type": "array", "items": {"$ref": "#/$defs/object"}},
+                "style_constraints": {"type": "object", "additionalProperties": {"type": "string"}},
+                "language": {"type": "string"},
+            },
+            "additionalProperties": True,
+        },
+        "character_canon": {
+            "type": "object",
+            "required": ["canon_id", "characters"],
+            "properties": {
+                "canon_id": {"type": "string", "minLength": 1},
+                "language": {"type": "string"},
+                "characters": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {"$ref": "#/$defs/character"},
+                },
+            },
+            "additionalProperties": True,
+        },
+    },
+    "$defs": {
+        "world_rule": {
+            "type": "object",
+            "required": ["rule_id", "statement"],
+            "properties": {
+                "rule_id": {"type": "string", "minLength": 1},
+                "statement": {"type": "string", "minLength": 1},
+                "kind": {"type": "string"},
+            },
+            "additionalProperties": True,
+        },
+        "location": {
+            "type": "object",
+            "required": ["location_id", "name"],
+            "properties": {
+                "location_id": {"type": "string", "minLength": 1},
+                "name": {"type": "string", "minLength": 1},
+            },
+            "additionalProperties": True,
+        },
+        "object": {
+            "type": "object",
+            "required": ["prop_id", "name"],
+            "properties": {
+                "prop_id": {"type": "string", "minLength": 1},
+                "name": {"type": "string", "minLength": 1},
+            },
+            "additionalProperties": True,
+        },
+        "character": {
+            "type": "object",
+            "required": ["character_id", "name"],
+            "properties": {
+                "character_id": {"type": "string", "minLength": 1},
+                "name": {"type": "string", "minLength": 1},
+                "role": {"type": "string"},
+                "goal": {"type": "string"},
+                "traits": {"type": "array", "items": {"type": "string"}},
+                "relationships": {
+                    "type": "array",
+                    "items": {"$ref": "#/$defs/relationship"},
+                },
+                "age_band": {"type": "string"},
+            },
+            "additionalProperties": True,
+        },
+        "relationship": {
+            "type": "object",
+            "required": ["from_id", "to_id"],
+            "properties": {
+                "from_id": {"type": "string", "minLength": 1},
+                "to_id": {"type": "string", "minLength": 1},
+                "kind": {"type": "string"},
+            },
+            "additionalProperties": True,
+        },
+    },
+    "additionalProperties": True,
+}
+
+BEATS_GENERATION_OUTPUT_SCHEMA: Dict[str, Any] = {
+    "$schema": JSON_SCHEMA_DIALECT,
+    "title": "BeatGenerationOutput",
+    "description": (
+        "B5: ordered BeatSheet allocating the episode duration budget. "
+        "Beats reference canon character/location IDs and use the frozen "
+        "beat-role vocabulary."
+    ),
+    "type": "object",
+    "required": ["beat_sheet_id", "title", "beats", "total_target_seconds"],
+    "properties": {
+        "beat_sheet_id": {"type": "string", "minLength": 1},
+        "title": {"type": "string", "minLength": 1},
+        "beats": {
+            "type": "array",
+            "minItems": 4,
+            "maxItems": 12,
+            "items": {
+                "type": "object",
+                "required": ["beat_id", "order", "description", "target_seconds"],
+                "properties": {
+                    "beat_id": {"type": "string", "minLength": 1},
+                    "order": {"type": "integer", "minimum": 1},
+                    "role": {"type": "string"},
+                    "description": {"type": "string", "minLength": 1},
+                    "emotional_beat": {"type": "string"},
+                    "character_ids": {"type": "array", "items": {"type": "string"}},
+                    "location_id": {"type": "string"},
+                    "target_seconds": {"type": "integer", "minimum": 0},
+                },
+                "additionalProperties": True,
+            },
+        },
+        "total_target_seconds": {"type": "integer", "minimum": 1},
+        "tolerance_seconds": {"type": "integer", "minimum": 0},
+        "duration_formula_version": {"type": "string"},
+    },
+    "additionalProperties": True,
+}
+
+OUTLINE_GENERATION_OUTPUT_SCHEMA: Dict[str, Any] = {
+    "$schema": JSON_SCHEMA_DIALECT,
+    "title": "OutlineGenerationOutput",
+    "description": (
+        "B5: EpisodeOutline — production-aware scenes fitting the 180-300 s "
+        "budget; every scene traces to beats and canon IDs."
+    ),
+    "type": "object",
+    "required": ["outline_id", "title", "target_duration_seconds", "scenes"],
+    "properties": {
+        "outline_id": {"type": "string", "minLength": 1},
+        "title": {"type": "string", "minLength": 1},
+        "language": {"type": "string"},
+        "audience_band": {"type": "string"},
+        "target_duration_seconds": {"type": "integer", "minimum": 1},
+        "tolerance_seconds": {"type": "integer", "minimum": 0},
+        "scenes": {
+            "type": "array",
+            "minItems": 3,
+            "maxItems": 12,
+            "items": {
+                "type": "object",
+                "required": [
+                    "scene_id",
+                    "order",
+                    "intent",
+                    "location_id",
+                    "estimated_seconds",
+                    "beat_refs",
+                ],
+                "properties": {
+                    "scene_id": {"type": "string", "minLength": 1},
+                    "order": {"type": "integer", "minimum": 1},
+                    "intent": {"type": "string", "minLength": 1},
+                    "location_id": {"type": "string", "minLength": 1},
+                    "character_ids": {"type": "array", "items": {"type": "string"}},
+                    "conflict_change": {"type": "string"},
+                    "visual_action": {"type": "string"},
+                    "dialogue_budget_seconds": {"type": "integer", "minimum": 0},
+                    "estimated_seconds": {"type": "integer", "minimum": 0},
+                    "beat_refs": {"type": "array", "items": {"type": "string"}},
+                },
+                "additionalProperties": True,
+            },
+        },
+        "duration_formula_version": {"type": "string"},
+    },
+    "additionalProperties": True,
+}
+
+# ---------------------------------------------------------------------------
 # Text-format specs (legacy text-output prompts, not JSON Schemas)
 # ---------------------------------------------------------------------------
 
@@ -99,4 +366,7 @@ __all__ = [
     "OUTLINE_OUTPUT_SCHEMA",
     "SCREENPLAY_TEXT_SPEC",
     "CONTINUATION_TEXT_SPEC",
+    "BIBLE_GENERATION_OUTPUT_SCHEMA",
+    "BEATS_GENERATION_OUTPUT_SCHEMA",
+    "OUTLINE_GENERATION_OUTPUT_SCHEMA",
 ]

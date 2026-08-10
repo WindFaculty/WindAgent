@@ -46,6 +46,9 @@ from windagent_api.routers.v2_conversations import router as v2_conversations_ro
 from windagent_api.routers.v2_conflict_recovery import router as v2_conflict_recovery_router
 
 from windagent_api.routers.conversation_streams import router as conversation_streams_router
+from windagent_api.routers.v3.studio.aggregator import router as v3_studio_router
+from windagent_api.routers.v3.studio.errors import studio_error_handler
+from windagent_core.contracts.studio.errors import StudioError
 
 logger = logging.getLogger("windagent.api.main")
 
@@ -117,6 +120,11 @@ async def domain_exception_handler(request: Request, exc: DomainError) -> JSONRe
     )
 
 
+@app.exception_handler(StudioError)
+async def studio_exception_handler(request: Request, exc: StudioError) -> JSONResponse:
+    return studio_error_handler(request, exc)
+
+
 @app.exception_handler(WindAgentError)
 async def base_windagent_exception_handler(request: Request, exc: WindAgentError) -> JSONResponse:
     return JSONResponse(
@@ -158,6 +166,21 @@ app.include_router(v2_conversations_router)
 app.include_router(v2_conflict_recovery_router)
 
 app.include_router(conversation_streams_router)
+
+# Additive V3 Studio surface (Plan C1). V2 routes stay registered and reachable.
+app.include_router(v3_studio_router)
+
+
+# V2 deprecation metadata: additive headers only. V2 is not removed or
+# redirected; clients learn the successor surface without behavior change.
+@app.middleware("http")
+async def v2_deprecation_metadata(request: Request, call_next):
+    response = await call_next(request)
+    if request.url.path.startswith("/api/v2"):
+        response.headers["Deprecation"] = "true"
+        response.headers["X-WindAgent-Deprecation"] = "v2"
+        response.headers["X-WindAgent-V3-Studio"] = "/api/v3/studio"
+    return response
 
 
 # API V1 Tombstone Handler - Returns 410 Gone for all /api/v1/* requests

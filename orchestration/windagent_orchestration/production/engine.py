@@ -24,6 +24,11 @@ Fail-closed properties enforced here (gate VP17):
 - the engine NEVER selects a candidate and NEVER approves anything itself
   (§8.4); cancel stops new scheduling and never claims provider-side
   cancellation without evidence (§8.6).
+
+DEPRECATED AUTHORITY (studio.contract/v0.1, authority rule 5): this engine may
+serve existing VP3D production paths only. Plan A fences it: ``step_nodes``
+referencing the Studio namespace (``studio.`` / ``studio.story.*``) are rejected
+at construction. New Story runs belong to ``OrchestratorService``.
 """
 
 from __future__ import annotations
@@ -273,7 +278,11 @@ class ProductionUnitOfWork:
 
 
 class ProductionWorkflowEngine:
-    """Orchestrator for the durable production workflow (plan 05 §8)."""
+    """Orchestrator for the durable production workflow (plan 05 §8).
+
+    DEPRECATED for Story: this is a legacy VP3D authority. It rejects
+    ``ProductionStepNode`` entries whose step_id uses the Studio namespace.
+    """
 
     def __init__(
         self,
@@ -285,11 +294,26 @@ class ProductionWorkflowEngine:
         step_nodes: Optional[List[ProductionStepNode]] = None,
         clock: Optional[ClockFn] = None,
     ) -> None:
+        nodes = list(step_nodes or [])
+        # STORY-FENCE-START
+        # Fence (authority rule 5): this line names the Studio namespace only
+        # to reject Story steps in this legacy engine. Do not add Story logic.
+        for node in nodes:
+            if str(node.step_id).startswith(("studio.", "studio.story.")):
+                raise DomainError(
+                    message=(
+                        f"Story step '{node.step_id}' rejected by legacy "
+                        "ProductionWorkflowEngine (authority rule 5); Story "
+                        "runs belong to OrchestratorService."
+                    ),
+                    code="WINDAGENT_ERR_STORY_LEGACY_ENGINE",
+                )
+        # STORY-FENCE-END
         self.store = store
         self.scheduler = scheduler or ProductionScheduler(provider_concurrency=1)
         self.recovery = recovery or ProductionRecovery()
         self.executor = executor
-        self.step_nodes = list(step_nodes or [])
+        self.step_nodes = nodes
         self._clock = clock or time.time
         self.uow = ProductionUnitOfWork(store)
 

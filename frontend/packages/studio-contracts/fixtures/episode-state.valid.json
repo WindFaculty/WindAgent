@@ -1,0 +1,6 @@
+{
+  "fixture_id": "studio-contracts/episode-state.valid",
+  "purpose": "A single valid episode state instance with optimistic concurrency version.",
+  "state": "SCREENPLAY_REVIEW",
+  "version": 7
+}

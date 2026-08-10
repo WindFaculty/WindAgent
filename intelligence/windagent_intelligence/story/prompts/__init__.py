@@ -28,9 +28,12 @@ from windagent_intelligence.story.prompts.registry import (
     validate_registry_invariants,
 )
 from windagent_intelligence.story.prompts.schemas import (
+    BIBLE_GENERATION_OUTPUT_SCHEMA,
+    BEATS_GENERATION_OUTPUT_SCHEMA,
     BRIEF_EXPANSION_OUTPUT_SCHEMA,
     CONTINUATION_TEXT_SPEC,
     JSON_SCHEMA_DIALECT,
+    OUTLINE_GENERATION_OUTPUT_SCHEMA,
     OUTLINE_OUTPUT_SCHEMA,
     SCREENPLAY_TEXT_SPEC,
 )
@@ -64,6 +67,9 @@ __all__ = [
     "OUTLINE_OUTPUT_SCHEMA",
     "SCREENPLAY_TEXT_SPEC",
     "CONTINUATION_TEXT_SPEC",
+    "BIBLE_GENERATION_OUTPUT_SCHEMA",
+    "BEATS_GENERATION_OUTPUT_SCHEMA",
+    "OUTLINE_GENERATION_OUTPUT_SCHEMA",
     "StoryModelError",
     "StoryProviderTransientError",
     "StoryEmptyResponseError",

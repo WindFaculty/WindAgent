@@ -1,0 +1,10 @@
+{
+  "fixture_id": "studio-contracts/series.valid",
+  "purpose": "Valid SeriesProject read resource with a server-issued id (no sample identifier).",
+  "id": "series_5f2c9a41",
+  "title": "Tho va Con Dieu",
+  "description": "Vietnamese short-story series for ages 5-8.",
+  "created_at": "2026-08-09T10:00:00Z",
+  "updated_at": "2026-08-09T10:00:00Z",
+  "episode_count": 1
+}

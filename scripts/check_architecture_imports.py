@@ -39,6 +39,8 @@ COMPOSITION_ROOT_FILES = {
     "lease.py",
     # Repository pattern files — infrastructure layer, ORM access is intentional
     "repository.py",
+    # API storage adapters — session-per-call infra over SQL repositories
+    "studio_storage_adapter.py",
     # Recovery / reconciler — directly queries ORM for crash recovery, by design
     "reconciler.py",
 }

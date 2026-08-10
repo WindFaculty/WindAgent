@@ -35,6 +35,10 @@ class OrchestrationV2Container:
         )
         self.checkpoint_manager = CheckpointManager(uow_factory=uow_factory)
         self.workflow_engine = WorkflowEngine(checkpoint_manager=self.checkpoint_manager)
+        logger.warning(
+            "DEPRECATED AUTHORITY: WorkflowEngine composed for legacy orchestration paths. "
+            "It rejects Studio (studio.story.*) tasks; new Story runs belong to OrchestratorService."
+        )
         self.task_manager = TaskManager(
             uow_factory=uow_factory,
             scheduler=self.scheduler,

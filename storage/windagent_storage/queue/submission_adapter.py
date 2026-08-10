@@ -76,6 +76,7 @@ class SqlWorkSubmissionAdapter(WorkSubmissionPort):
                     payload_json=payload_json,
                     schema_version="2.0",
                     sequence_number=1,
+                    deduplication_key=request.idempotency_key,
                     created_at=now_naive,
                     available_at=now_naive,
                     status="pending",

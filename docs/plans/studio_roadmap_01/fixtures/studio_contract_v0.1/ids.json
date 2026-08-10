@@ -1,0 +1,33 @@
+{
+  "schema": "studio.ids/v1",
+  "contract_version": "studio.contract/v0.1",
+  "hierarchy": ["SeriesProject", "Episode", "ProductionRevision"],
+  "identities": [
+    {
+      "name": "SeriesProjectId",
+      "meaning": "Canonical Studio series/project identifier",
+      "compatibility": "Existing VideoProjectId values remain readable; conversion is explicit and lossless during migration. No second project row is created."
+    },
+    {
+      "name": "EpisodeId",
+      "meaning": "Creative Studio episode aggregate ID",
+      "compatibility": "Distinct from VP3D EpisodeRunId, EpisodeSceneId, and EpisodeFixture."
+    },
+    {
+      "name": "ProductionRevisionId",
+      "meaning": "Immutable revision lineage ID",
+      "compatibility": "Reuse existing type and parent/hash semantics; add series/episode association through the canonical repository."
+    },
+    {
+      "name": "ArtifactId",
+      "meaning": "Immutable content-addressed story artifact reference",
+      "compatibility": "Artifact content may be stored separately, but identity includes schema version and content hash."
+    },
+    {
+      "name": "StudioRunId",
+      "meaning": "Orchestrator-owned DAG/run identity",
+      "compatibility": "Durable task IDs are children of a Studio run and never replace the aggregate ID."
+    }
+  ],
+  "rule_video_project": "VideoProject remains a V2 compatibility facade/read path during deprecation; it is not a competing aggregate."
+}

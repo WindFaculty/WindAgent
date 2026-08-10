@@ -1,0 +1,130 @@
+{
+  "$defs": {
+    "CharacterCanonEntry": {
+      "additionalProperties": true,
+      "description": "One canon character: stable ID, role, goals, traits, relationships.",
+      "properties": {
+        "age_band": {
+          "default": "",
+          "title": "Age Band",
+          "type": "string"
+        },
+        "appearance": {
+          "default": "",
+          "title": "Appearance",
+          "type": "string"
+        },
+        "character_id": {
+          "title": "Character Id",
+          "type": "string"
+        },
+        "goal": {
+          "default": "",
+          "title": "Goal",
+          "type": "string"
+        },
+        "name": {
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "relationships": {
+          "items": {
+            "$ref": "#/$defs/CharacterRelationship"
+          },
+          "title": "Relationships",
+          "type": "array"
+        },
+        "role": {
+          "default": "supporting",
+          "title": "Role",
+          "type": "string"
+        },
+        "traits": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Traits",
+          "type": "array"
+        },
+        "voice": {
+          "default": "",
+          "title": "Voice",
+          "type": "string"
+        }
+      },
+      "required": [
+        "character_id",
+        "name"
+      ],
+      "title": "CharacterCanonEntry",
+      "type": "object"
+    },
+    "CharacterRelationship": {
+      "additionalProperties": true,
+      "description": "A directed relationship between two canon characters.",
+      "properties": {
+        "description": {
+          "default": "",
+          "title": "Description",
+          "type": "string"
+        },
+        "from_id": {
+          "title": "From Id",
+          "type": "string"
+        },
+        "kind": {
+          "default": "friend",
+          "title": "Kind",
+          "type": "string"
+        },
+        "to_id": {
+          "title": "To Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "from_id",
+        "to_id"
+      ],
+      "title": "CharacterRelationship",
+      "type": "object"
+    }
+  },
+  "additionalProperties": true,
+  "description": "Full character canon with stable IDs and cross-references.",
+  "properties": {
+    "artifact_type": {
+      "default": "CharacterCanon",
+      "title": "Artifact Type",
+      "type": "string"
+    },
+    "canon_id": {
+      "minLength": 1,
+      "title": "Canon Id",
+      "type": "string"
+    },
+    "characters": {
+      "items": {
+        "$ref": "#/$defs/CharacterCanonEntry"
+      },
+      "title": "Characters",
+      "type": "array"
+    },
+    "language": {
+      "default": "vi",
+      "title": "Language",
+      "type": "string"
+    },
+    "schema_version": {
+      "default": "studio.artifact/v1alpha1",
+      "title": "Schema Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "canon_id"
+  ],
+  "title": "CharacterCanon",
+  "type": "object"
+}

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://windagent.io/contracts/studio/approval-mode/v0.1",
+  "title": "StudioApprovalMode",
+  "description": "Approval policy mode at each configured checkpoint. Modes are AUTO, HUMAN_REQUIRED, and QUALITY_GATE_ONLY at checkpoint positions IDEA, STORY_BIBLE, OUTLINE, and SCREENPLAY.",
+  "type": "object",
+  "required": ["checkpoint", "mode"],
+  "properties": {
+    "checkpoint": {
+      "type": "string",
+      "enum": ["IDEA", "STORY_BIBLE", "OUTLINE", "SCREENPLAY"]
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["AUTO", "HUMAN_REQUIRED", "QUALITY_GATE_ONLY"]
+    }
+  },
+  "additionalProperties": false
+}

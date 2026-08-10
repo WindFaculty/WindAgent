@@ -1,0 +1,28 @@
+{
+  "fixture_id": "studio-contracts/rabbit-kite-scenario.input",
+  "purpose": "Mandatory real vertical slice input. fixture_only: true - this input may seed a certification run, but no canned generated artifact from it may be used by production or injected as run output.",
+  "fixture_only": true,
+  "scenario_id": "rabbit-kite-v1",
+  "language": "Vietnamese",
+  "audience": {
+    "min_age": 5,
+    "max_age": 8
+  },
+  "target_duration_seconds": {
+    "min": 180,
+    "max": 300
+  },
+  "premise": "a rabbit and a kite",
+  "expectations": {
+    "candidate_count_min": 3,
+    "candidate_count_max": 5,
+    "revision_count_min": 1,
+    "terminal_state": "READY_FOR_PRODUCTION",
+    "content_checks": [
+      "vietnamese_language",
+      "rabbit_kite_premise",
+      "age_safety_5_to_8",
+      "duration_180_to_300_seconds"
+    ]
+  }
+}

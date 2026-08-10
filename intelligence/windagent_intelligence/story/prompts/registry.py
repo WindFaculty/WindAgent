@@ -32,8 +32,12 @@ from windagent_intelligence.video.prompts import PromptSpec
 from windagent_intelligence.video.screenplay.writer import SCREENPLAY_PROMPT_V1
 
 from windagent_intelligence.story.prompts.schemas import (
+    BIBLE_GENERATION_OUTPUT_SCHEMA,
+    BEATS_GENERATION_OUTPUT_SCHEMA,
     BRIEF_EXPANSION_OUTPUT_SCHEMA,
     CONTINUATION_TEXT_SPEC,
+    IDEA_GENERATION_OUTPUT_SCHEMA,
+    OUTLINE_GENERATION_OUTPUT_SCHEMA,
     OUTLINE_OUTPUT_SCHEMA,
     SCREENPLAY_TEXT_SPEC,
 )
@@ -286,6 +290,201 @@ register_prompt(
         max_tokens=3000,
         max_output_chars=20_000,
         description="Continue a screenplay in canonical text format (legacy; B6/B7).",
+    )
+)
+
+# ---------------------------------------------------------------------------
+# B3 canonical prompt: ideation (non-legacy, schema-first)
+# ---------------------------------------------------------------------------
+
+_IDEATION_TEMPLATE = """Create {target_count} DISTINCT, age-appropriate story idea candidates for one episode.
+
+Creative brief:
+- Title: {title}
+- Genre: {genre}
+- Logline: {logline}
+- Tone: {tone}
+- Audience: {audience} (ages {audience_min_age}-{audience_max_age})
+- Language: {language}
+- Theme: {theme}
+- Target duration: {target_duration_seconds} seconds
+- Constraints: {constraints}
+- Prohibited content (NEVER include, even implicitly): {prohibited_content}
+
+Rules:
+1. Return EXACTLY {target_count} candidates (between 3 and 5), each with a unique candidate_id.
+2. Every candidate must be safe and age-appropriate for ages {audience_min_age}-{audience_max_age}.
+3. Every candidate must fit roughly {target_duration_seconds} seconds of animation.
+4. Respond in {language} for title/summary/premise/logline.
+5. age_fit is a 0.0-1.0 estimate of fit for the audience band.
+6. estimated_seconds/scene_count/character_count/location_count are production-feasibility estimates.
+7. safety_ok must be true; if a candidate cannot be made safe, do not include it.
+8. Candidates must be distinct from each other in premise and title.
+
+Output JSON matching the IdeaGenerationOutput schema: {{"language": ..., "candidates": [...]}}."""
+
+_IDEATION_SYSTEM = (
+    "You are the WindAgent story ideation engine. You produce exactly 3-5 "
+    "distinct, safe, age-appropriate idea candidates as structured JSON only."
+)
+
+register_prompt(
+    StoryPromptEntry(
+        prompt_id="story.ideation.generate",
+        capability="ideation",
+        version="1.0.0",
+        template=_IDEATION_TEMPLATE,
+        output_schema=IDEA_GENERATION_OUTPUT_SCHEMA,
+        system=_IDEATION_SYSTEM,
+        safety=SafetyConstraints(max_output_chars=12_000),
+        legacy=False,
+        description=(
+            "B3: generate 3-5 distinct, age-appropriate idea candidates for "
+            "a normalized CreativeBrief (structured JSON, schema-first)."
+        ),
+        max_tokens=2500,
+        temperature=0.8,
+    )
+)
+
+# ---------------------------------------------------------------------------
+# B4 canonical prompt: bibles/canon (non-legacy, schema-first)
+# ---------------------------------------------------------------------------
+
+_BIBLES_TEMPLATE = """Expand the selected idea into THREE internally consistent canon artifacts for one episode.
+
+Selected idea:
+- Title: {title}
+- Summary: {summary}
+- Language: {language}
+- Audience: ages {audience_min_age}-{audience_max_age}
+
+Rules:
+1. StoryBible: premise and arc_summary required (beginning -> middle -> end); theme, tone, stakes, and at most 20 story_rules.
+2. WorldBible: setting required; physical_rules and story_rules carry unique rule_id and kind (physics|social|magic|constraint); recurring_locations and recurring_objects carry unique ids.
+3. CharacterCanon: canon_id + at least one character; every character has a unique character_id and name; role from protagonist|deuteragonist|supporting|antagonist; relationships reference EXISTING character ids only, never self-loops.
+4. Use stable Story IDs: bible_*/world_*/ch_*/loc_*/prop_* prefixes.
+5. Character age_band must match the audience band (e.g. {audience_min_age}-{audience_max_age}).
+6. Respond in {language}; all prose must be age-appropriate and safe for ages {audience_min_age}-{audience_max_age}. Prohibited content never appears, even implicitly.
+
+Output JSON matching the BibleGenerationOutput schema: {{\"story_bible\": ..., \"world_bible\": ..., \"character_canon\": ...}}."""
+
+_BIBLES_SYSTEM = (
+    "You are the WindAgent story canon engine. You produce StoryBible, "
+    "WorldBible, and CharacterCanon as ONE consistent structured JSON set; "
+    "all cross-references use stable canon IDs."
+)
+
+register_prompt(
+    StoryPromptEntry(
+        prompt_id="story.bibles.generate",
+        capability="bibles",
+        version="1.0.0",
+        template=_BIBLES_TEMPLATE,
+        output_schema=BIBLE_GENERATION_OUTPUT_SCHEMA,
+        system=_BIBLES_SYSTEM,
+        safety=SafetyConstraints(max_output_chars=24_000),
+        legacy=False,
+        description=(
+            "B4: expand a SelectedIdea into StoryBible + WorldBible + "
+            "CharacterCanon as one cross-validated set (structured JSON, "
+            "schema-first)."
+        ),
+        max_tokens=3000,
+        temperature=0.7,
+    )
+)
+
+# ---------------------------------------------------------------------------
+# B5 canonical prompts: beats + outline (non-legacy, schema-first)
+# ---------------------------------------------------------------------------
+
+_BEATS_TEMPLATE = """Turn the canon into an ordered beat sheet that fits the episode duration budget.
+
+Canon:
+- Title: {title}
+- Premise: {premise}
+- Arc: {arc_summary}
+- Characters: {characters}
+- Locations: {locations}
+- Language: {language}
+- Audience: ages {audience_min_age}-{audience_max_age}
+- Target duration: {target_duration_seconds} seconds (tolerance {tolerance_seconds})
+
+Rules:
+1. Return EXACTLY {min_beats}-{max_beats} beats, ordered 1..N with unique beat_id.
+2. role from hook|setup|rising|climax|falling|resolution; emotional_beat progresses across beats.
+3. character_ids reference canon character IDs ONLY; location_id references a canon location ID.
+4. target_seconds sum must be within {tolerance_seconds}s of {target_duration_seconds}.
+5. Respond in {language}; content must be age-appropriate and safe for ages {audience_min_age}-{audience_max_age}.
+
+Output JSON matching the BeatGenerationOutput schema: {{\"beat_sheet_id\": ..., \"title\": ..., \"total_target_seconds\": ..., \"beats\": [...]}}."""
+
+_BEATS_SYSTEM = (
+    "You are the WindAgent story structure engine. You produce an ordered "
+    "BeatSheet as structured JSON only; every reference uses stable canon IDs."
+)
+
+register_prompt(
+    StoryPromptEntry(
+        prompt_id="story.beats.generate",
+        capability="beats",
+        version="1.0.0",
+        template=_BEATS_TEMPLATE,
+        output_schema=BEATS_GENERATION_OUTPUT_SCHEMA,
+        system=_BEATS_SYSTEM,
+        safety=SafetyConstraints(max_output_chars=16_000),
+        legacy=False,
+        description=(
+            "B5: allocate the 180-300 s budget across an ordered BeatSheet "
+            "referencing canon IDs (structured JSON, schema-first)."
+        ),
+        max_tokens=2500,
+        temperature=0.7,
+    )
+)
+
+_OUTLINE_TEMPLATE = """Plan the episode scenes from the beat sheet.
+
+Beat sheet:
+{beats_summary}
+
+Language: {language}
+Audience: {audience_band}
+Target duration: {target_duration_seconds} seconds (tolerance {tolerance_seconds})
+
+Rules:
+1. Return EXACTLY {min_scenes}-{max_scenes} scenes, ordered 1..N with unique scene_id.
+2. Every scene: intent required; location_id from canon locations; character_ids from canon characters; beat_refs reference beat ids from the beat sheet ONLY (every beat covered by at least one scene, no unknown refs).
+3. estimated_seconds per scene; the TOTAL must be within {tolerance_seconds}s of {target_duration_seconds} and inside 180-300 seconds.
+4. Scene order must follow the beat causal order.
+5. dialogue_budget_seconds must not exceed estimated_seconds.
+6. Respond in {language}; content must be age-appropriate and safe for ages {audience_band}.
+
+Output JSON matching the OutlineGenerationOutput schema: {{\"outline_id\": ..., \"title\": ..., \"target_duration_seconds\": ..., \"scenes\": [...]}}."""
+
+_OUTLINE_SYSTEM = (
+    "You are the WindAgent episode planner. You produce an EpisodeOutline as "
+    "structured JSON only; every scene traces to beats and canon IDs."
+)
+
+register_prompt(
+    StoryPromptEntry(
+        prompt_id="story.outline.structured",
+        capability="outline",
+        version="1.0.0",
+        template=_OUTLINE_TEMPLATE,
+        output_schema=OUTLINE_GENERATION_OUTPUT_SCHEMA,
+        system=_OUTLINE_SYSTEM,
+        safety=SafetyConstraints(max_output_chars=20_000),
+        legacy=False,
+        description=(
+            "B5: structured EpisodeOutline from a BeatSheet (canonical; the "
+            "legacy story.outline.generate prompt stays for the old "
+            "pipeline)."
+        ),
+        max_tokens=3000,
+        temperature=0.7,
     )
 )
 

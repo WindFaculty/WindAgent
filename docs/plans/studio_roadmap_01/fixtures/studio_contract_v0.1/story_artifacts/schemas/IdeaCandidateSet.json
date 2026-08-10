@@ -1,0 +1,155 @@
+{
+  "$defs": {
+    "IdeaCandidate": {
+      "additionalProperties": true,
+      "description": "A single idea candidate with deterministic score dimensions.",
+      "properties": {
+        "age_fit": {
+          "default": 0.0,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Age Fit",
+          "type": "number"
+        },
+        "artifact_type": {
+          "default": "IdeaCandidate",
+          "title": "Artifact Type",
+          "type": "string"
+        },
+        "brief_adherence": {
+          "default": 0.0,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Brief Adherence",
+          "type": "number"
+        },
+        "candidate_id": {
+          "minLength": 1,
+          "title": "Candidate Id",
+          "type": "string"
+        },
+        "content": {
+          "additionalProperties": true,
+          "title": "Content",
+          "type": "object"
+        },
+        "logline": {
+          "default": "",
+          "title": "Logline",
+          "type": "string"
+        },
+        "premise": {
+          "default": "",
+          "title": "Premise",
+          "type": "string"
+        },
+        "safety_ok": {
+          "default": true,
+          "title": "Safety Ok",
+          "type": "boolean"
+        },
+        "schema_version": {
+          "default": "studio.artifact/v1alpha1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "score": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Score"
+        },
+        "score_dimensions": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "title": "Score Dimensions",
+          "type": "object"
+        },
+        "summary": {
+          "default": "",
+          "title": "Summary",
+          "type": "string"
+        },
+        "themes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Themes",
+          "type": "array"
+        },
+        "title": {
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "candidate_id",
+        "title"
+      ],
+      "title": "IdeaCandidate",
+      "type": "object"
+    }
+  },
+  "additionalProperties": true,
+  "description": "A frozen candidate set containing exactly 3-5 distinct candidates.",
+  "properties": {
+    "artifact_type": {
+      "default": "IdeaCandidateSet",
+      "title": "Artifact Type",
+      "type": "string"
+    },
+    "candidates": {
+      "items": {
+        "$ref": "#/$defs/IdeaCandidate"
+      },
+      "title": "Candidates",
+      "type": "array"
+    },
+    "evaluated": {
+      "default": false,
+      "title": "Evaluated",
+      "type": "boolean"
+    },
+    "recommended_candidate_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Recommended Candidate Id"
+    },
+    "schema_version": {
+      "default": "studio.artifact/v1alpha1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "scoring_rubric_version": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Scoring Rubric Version"
+    }
+  },
+  "title": "IdeaCandidateSet",
+  "type": "object"
+}

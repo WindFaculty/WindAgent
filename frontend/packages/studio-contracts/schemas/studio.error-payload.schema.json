@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://windagent.io/contracts/studio/error-payload/v0.1",
+  "title": "StudioErrorPayload",
+  "description": "RFC 7807 style error payload used by /api/v3/studio. Error payloads are redacted and stable; internal exception strings and provider credentials never cross the boundary.",
+  "type": "object",
+  "required": ["type", "title", "status", "detail", "code"],
+  "properties": {
+    "type": {
+      "type": "string",
+      "description": "Stable problem-detail type URI."
+    },
+    "title": {
+      "type": "string"
+    },
+    "status": {
+      "type": "integer",
+      "enum": [404, 409, 422, 500, 503],
+      "description": "Canonical HTTP status per the frozen bootstrap error contract (studio_contract_v0.1/errors.json)."
+    },
+    "detail": {
+      "type": "string",
+      "description": "Redacted human-readable detail."
+    },
+    "code": {
+      "type": "string",
+      "enum": [
+        "NOT_FOUND",
+        "VALIDATION_ERROR",
+        "STALE_REVISION",
+        "ARTIFACT_HASH_MISMATCH",
+        "LOCKED_REVISION",
+        "IDEMPOTENCY_MISMATCH",
+        "INVALID_TRANSITION",
+        "APPROVAL_REQUIRED",
+        "CAPABILITY_UNAVAILABLE",
+        "PROVIDER_UNAVAILABLE",
+        "INTERNAL_ERROR"
+      ],
+      "description": "Stable machine-readable error code frozen in studio_contract_v0.1/errors.json."
+    },
+    "details": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Optional stable field/issue details. Never contains secrets."
+    },
+    "correlation_id": {
+      "type": "string"
+    },
+    "retryable": {
+      "type": "boolean",
+      "description": "Only set when a retry is known safe. Capability/provider unavailability is typed and fail-closed, never fake success."
+    }
+  },
+  "additionalProperties": false
+}

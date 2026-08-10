@@ -1,0 +1,33 @@
+{
+  "schema_version": "studio.artifact/v1alpha1",
+  "artifact_type": "ScreenplayDraft",
+  "draft_id": "draft_bad",
+  "title": "Bản thảo lỗi",
+  "language": "vi",
+  "audience_band": "5-8",
+  "target_duration_seconds": 240,
+  "tolerance_seconds": 15,
+  "scenes": [
+    {
+      "scene_id": "dscn_bad",
+      "order": 1,
+      "outline_scene_id": "s1",
+      "location_id": "loc_field",
+      "character_ids": [
+        "ch_rabbit"
+      ],
+      "action_description": "Thỏ con đứng trên đồng.",
+      "dialogue": [
+        {
+          "dialogue_id": "dl_bad",
+          "scene_id": "dscn_bad",
+          "character_id": "ch_kite",
+          "order": 1,
+          "text": "Mình bay đây!",
+          "estimated_seconds": 5
+        }
+      ],
+      "estimated_seconds": 30
+    }
+  ]
+}

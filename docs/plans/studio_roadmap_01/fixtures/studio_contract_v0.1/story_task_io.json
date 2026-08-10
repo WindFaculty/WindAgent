@@ -1,0 +1,64 @@
+{
+  "schema": "studio.story_task_io/v1",
+  "contract_version": "studio.contract/v0.1",
+  "artifact_schema_version": "studio.artifact/v1alpha1",
+  "purpose": "Plan B B0 content proposal: maps each frozen Studio story task type to its immutable input/output artifact types so Plan A envelopes, Plan B handlers, and Plan C schemas agree before implementation-specific shapes are invented.",
+  "status": "proposal-awaiting-a-approval",
+  "selection_rule": "Idea selection and human approval are synchronous/idempotent commands that unblock an orchestrator node; they are not hidden model tasks and they never appear in this task map.",
+  "tasks": [
+    {
+      "task_type": "studio.story.idea.generate",
+      "input_artifact_types": ["CreativeBrief"],
+      "output_artifact_types": ["IdeaCandidateSet"],
+      "note": "IdeaCandidateSet contains 3-5 distinct, age-appropriate IdeaCandidate records and score dimensions."
+    },
+    {
+      "task_type": "studio.story.idea.evaluate",
+      "input_artifact_types": ["IdeaCandidateSet"],
+      "output_artifact_types": ["IdeaCandidateSet"],
+      "note": "Evaluation annotates the set with deterministic score dimensions; selection is the human/approval command, not this task."
+    },
+    {
+      "task_type": "studio.story.bible.generate",
+      "input_artifact_types": ["SelectedIdea"],
+      "output_artifact_types": ["StoryBible", "WorldBible", "CharacterCanon"],
+      "note": "The three bibles validate and promote as one consistent set; downstream fixtures reference canon IDs, not free-form names alone."
+    },
+    {
+      "task_type": "studio.story.beats.generate",
+      "input_artifact_types": ["StoryBible", "WorldBible", "CharacterCanon"],
+      "output_artifact_types": ["BeatSheet"],
+      "note": "BeatSheet references character/world IDs and allocates the 180-300 second target budget among beats."
+    },
+    {
+      "task_type": "studio.story.outline.generate",
+      "input_artifact_types": ["BeatSheet"],
+      "output_artifact_types": ["EpisodeOutline"],
+      "note": "EpisodeOutline carries scene intent, location, characters, conflict/change, dialogue budget and estimated seconds."
+    },
+    {
+      "task_type": "studio.story.screenplay.generate",
+      "input_artifact_types": ["EpisodeOutline"],
+      "output_artifact_types": ["ScreenplayDraft"],
+      "note": "Structured JSON draft is authority; canonical screenplay text is a derived view."
+    },
+    {
+      "task_type": "studio.story.review",
+      "input_artifact_types": ["ScreenplayDraft"],
+      "output_artifact_types": ["ReviewReport"],
+      "note": "ReviewReport aggregates deterministic findings + model-assisted narrative review with stable codes/severity/location/evidence."
+    },
+    {
+      "task_type": "studio.story.revise",
+      "input_artifact_types": ["ScreenplayDraft", "ReviewReport"],
+      "output_artifact_types": ["RevisionProposal", "ScreenplayDraft"],
+      "note": "Produces a new immutable draft plus a structural/semantic diff; never mutates the reviewed draft."
+    },
+    {
+      "task_type": "studio.story.lock",
+      "input_artifact_types": ["ScreenplayDraft", "ReviewReport"],
+      "output_artifact_types": ["LockedScreenplayReceipt", "LockedScreenplayPackage"],
+      "note": "A-issued LockedScreenplayReceipt is the authority; the package references immutable approved artifacts plus a manifest/checksums."
+    }
+  ]
+}

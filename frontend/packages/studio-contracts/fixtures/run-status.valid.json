@@ -1,0 +1,15 @@
+{
+  "fixture_id": "studio-contracts/run-status.valid",
+  "purpose": "A durable run status instance proving approval waits are explicit statuses, not success.",
+  "status": "WAITING_FOR_APPROVAL",
+  "wait_reason": "APPROVAL_REQUIRED",
+  "all_statuses": [
+    "QUEUED",
+    "RUNNING",
+    "WAITING_FOR_APPROVAL",
+    "RETRYING",
+    "COMPLETED",
+    "FAILED",
+    "CANCELLED"
+  ]
+}

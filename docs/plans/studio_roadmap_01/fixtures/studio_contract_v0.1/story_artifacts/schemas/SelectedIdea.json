@@ -1,0 +1,77 @@
+{
+  "additionalProperties": true,
+  "description": "Hash-bound selection result; selection itself is an A command.\n\n``candidate_id`` references a candidate inside the source\n``IdeaCandidateSet`` artifact (identified by ``source_set_id``); hash\nbinding lives on the A envelope input refs, never inside this content.",
+  "properties": {
+    "artifact_type": {
+      "default": "SelectedIdea",
+      "title": "Artifact Type",
+      "type": "string"
+    },
+    "candidate_id": {
+      "minLength": 1,
+      "title": "Candidate Id",
+      "type": "string"
+    },
+    "rationale": {
+      "default": "",
+      "title": "Rationale",
+      "type": "string"
+    },
+    "schema_version": {
+      "default": "studio.artifact/v1alpha1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "score": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Score"
+    },
+    "score_dimensions": {
+      "additionalProperties": {
+        "type": "number"
+      },
+      "title": "Score Dimensions",
+      "type": "object"
+    },
+    "selected_idea_id": {
+      "title": "Selected Idea Id",
+      "type": "string"
+    },
+    "selection_policy": {
+      "default": "AUTO_WHEN_POLICY_ALLOWS",
+      "title": "Selection Policy",
+      "type": "string"
+    },
+    "source_set_id": {
+      "minLength": 1,
+      "title": "Source Set Id",
+      "type": "string"
+    },
+    "summary": {
+      "default": "",
+      "title": "Summary",
+      "type": "string"
+    },
+    "title": {
+      "minLength": 1,
+      "title": "Title",
+      "type": "string"
+    }
+  },
+  "required": [
+    "selected_idea_id",
+    "source_set_id",
+    "candidate_id",
+    "title"
+  ],
+  "title": "SelectedIdea",
+  "type": "object"
+}

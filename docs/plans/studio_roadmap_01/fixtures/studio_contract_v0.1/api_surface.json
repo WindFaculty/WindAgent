@@ -1,0 +1,22 @@
+{
+  "schema": "studio.api_surface/v1",
+  "contract_version": "studio.contract/v0.1",
+  "base_path": "/api/v3/studio",
+  "resources": [
+    {"resource": "Series collection", "method": "POST", "path": "/series", "intent": "Create without sample IDs."},
+    {"resource": "Series collection", "method": "GET", "path": "/series", "intent": "List without sample IDs."},
+    {"resource": "Series detail", "method": "GET", "path": "/series/{series_id}", "intent": "Canonical aggregate plus links."},
+    {"resource": "Episodes", "method": "POST", "path": "/series/{series_id}/episodes", "intent": "Create creative episode."},
+    {"resource": "Episodes", "method": "GET", "path": "/series/{series_id}/episodes", "intent": "List creative episodes."},
+    {"resource": "Episode detail", "method": "GET", "path": "/episodes/{episode_id}", "intent": "State, current revision, approvals, artifact summary, run link."},
+    {"resource": "Start/continue Story run", "method": "POST", "path": "/episodes/{episode_id}/runs", "intent": "Idempotently ask the orchestrator to start or resume; returns 202 and run resource."},
+    {"resource": "Run status", "method": "GET", "path": "/runs/{run_id}", "intent": "DAG/task progress, wait reason, retryability, latest event cursor."},
+    {"resource": "Run events", "method": "GET", "path": "/runs/{run_id}/events", "query": "after=", "intent": "Pollable canonical event stream/read model; transport may later add SSE without changing event shape."},
+    {"resource": "Idea decision", "method": "POST", "path": "/episodes/{episode_id}/idea-selection", "intent": "Bind selected candidate to revision/hash/idempotency key."},
+    {"resource": "Approval decision", "method": "POST", "path": "/episodes/{episode_id}/approvals", "intent": "Bind decision to checkpoint/revision/artifact hash."},
+    {"resource": "Artifacts", "method": "GET", "path": "/episodes/{episode_id}/artifacts", "intent": "Versioned typed artifact views."},
+    {"resource": "Artifacts", "method": "GET", "path": "/artifacts/{artifact_id}", "intent": "Versioned typed artifact view."},
+    {"resource": "Revision derivation", "method": "POST", "path": "/episodes/{episode_id}/revisions", "intent": "Derive from a locked or current revision; never mutate locked content."},
+    {"resource": "Screenplay lock", "method": "POST", "path": "/episodes/{episode_id}/screenplay-lock", "intent": "Idempotent lock command; returns receipt or conflict."}
+  ]
+}

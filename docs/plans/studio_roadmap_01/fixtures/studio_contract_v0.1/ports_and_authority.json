@@ -1,0 +1,25 @@
+{
+  "schema": "studio.ports_and_authority/v1",
+  "contract_version": "studio.contract/v0.1",
+  "ports": [
+    "SeriesProjectRepositoryPort",
+    "EpisodeRepositoryPort",
+    "ProductionRevisionRepositoryPort",
+    "StoryArtifactRepositoryPort",
+    "ApprovalRepositoryPort",
+    "StudioUnitOfWorkPort",
+    "StudioRunOrchestratorPort",
+    "StudioTaskSubmissionPort",
+    "StudioRunQueryPort",
+    "StudioEventQueryPort",
+    "RuntimeCapabilityPort",
+    "PreproductionModelPort"
+  ],
+  "authority_rules": [
+    "API application services call StudioRunOrchestratorPort; they do not construct a DAG or submit individual model tasks directly.",
+    "OrchestratorService creates/advances the Story DAG and uses StudioTaskSubmissionPort for durable nodes.",
+    "Worker runtime handlers execute one frozen task type, persist artifacts through ports/UoW, and return StudioTaskResult.",
+    "Durable completion is reconciled back into the orchestrator before the next dependent node becomes runnable.",
+    "WorkflowEngine and ProductionWorkflowEngine receive no new Story imports, task types, states, or routes."
+  ]
+}

@@ -1,0 +1,135 @@
+{
+  "$defs": {
+    "OutlineScene": {
+      "additionalProperties": true,
+      "description": "One planned scene inside an episode outline.",
+      "properties": {
+        "beat_refs": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Beat Refs",
+          "type": "array"
+        },
+        "character_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Character Ids",
+          "type": "array"
+        },
+        "conflict_change": {
+          "default": "",
+          "title": "Conflict Change",
+          "type": "string"
+        },
+        "dialogue_budget_seconds": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Dialogue Budget Seconds",
+          "type": "integer"
+        },
+        "estimated_seconds": {
+          "minimum": 0,
+          "title": "Estimated Seconds",
+          "type": "integer"
+        },
+        "intent": {
+          "minLength": 1,
+          "title": "Intent",
+          "type": "string"
+        },
+        "location_id": {
+          "title": "Location Id",
+          "type": "string"
+        },
+        "order": {
+          "minimum": 1,
+          "title": "Order",
+          "type": "integer"
+        },
+        "scene_id": {
+          "title": "Scene Id",
+          "type": "string"
+        },
+        "visual_action": {
+          "default": "",
+          "title": "Visual Action",
+          "type": "string"
+        }
+      },
+      "required": [
+        "scene_id",
+        "order",
+        "intent",
+        "location_id",
+        "estimated_seconds"
+      ],
+      "title": "OutlineScene",
+      "type": "object"
+    }
+  },
+  "additionalProperties": true,
+  "description": "Production-aware narrative structure fitting the duration budget.",
+  "properties": {
+    "artifact_type": {
+      "default": "EpisodeOutline",
+      "title": "Artifact Type",
+      "type": "string"
+    },
+    "audience_band": {
+      "default": "5-8",
+      "title": "Audience Band",
+      "type": "string"
+    },
+    "duration_formula_version": {
+      "default": "duration_formula/v1",
+      "title": "Duration Formula Version",
+      "type": "string"
+    },
+    "language": {
+      "default": "vi",
+      "title": "Language",
+      "type": "string"
+    },
+    "outline_id": {
+      "title": "Outline Id",
+      "type": "string"
+    },
+    "scenes": {
+      "items": {
+        "$ref": "#/$defs/OutlineScene"
+      },
+      "title": "Scenes",
+      "type": "array"
+    },
+    "schema_version": {
+      "default": "studio.artifact/v1alpha1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "target_duration_seconds": {
+      "exclusiveMinimum": 0,
+      "title": "Target Duration Seconds",
+      "type": "integer"
+    },
+    "title": {
+      "minLength": 1,
+      "title": "Title",
+      "type": "string"
+    },
+    "tolerance_seconds": {
+      "default": 15,
+      "minimum": 0,
+      "title": "Tolerance Seconds",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "outline_id",
+    "title",
+    "target_duration_seconds"
+  ],
+  "title": "EpisodeOutline",
+  "type": "object"
+}

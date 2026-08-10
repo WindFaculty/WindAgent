@@ -1,0 +1,7 @@
+{
+  "schema_version": "studio.artifact/v1alpha1",
+  "artifact_type": "CreativeBrief",
+  "brief_id": "br_leak",
+  "title": "X",
+  "content_hash": "abc123"
+}

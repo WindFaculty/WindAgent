@@ -9,13 +9,15 @@ from __future__ import annotations
 import uuid
 from typing import Any
 
-from windagent_storage.unit_of_work.video_production_uow import VideoProductionUnitOfWork
+from windagent_core.contracts.video_production.video_production_uow import (
+    VideoProductionUnitOfWorkPort,
+)
 
 
 class ProductionQueryService:
     """Application query service for durable workspace snapshot projections."""
 
-    def __init__(self, uow: VideoProductionUnitOfWork) -> None:
+    def __init__(self, uow: VideoProductionUnitOfWorkPort) -> None:
         self.uow = uow
 
     async def get_project_detail(self, project_id: str) -> dict[str, Any] | None:

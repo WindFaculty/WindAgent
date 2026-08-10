@@ -1,0 +1,14 @@
+{
+  "fixture_id": "studio-contracts/error-payload.stale-revision",
+  "purpose": "Typed 409 STALE_REVISION payload. The client must refetch and display server truth; a stale approval/lock must never be applied.",
+  "type": "https://windagent.io/errors/stale-revision",
+  "title": "Stale Revision",
+  "status": 409,
+  "detail": "Expected revision/version does not match current state.",
+  "code": "STALE_REVISION",
+  "details": {
+    "expected_revision": "rev-0003",
+    "current_revision": "rev-0004"
+  },
+  "correlation_id": "corr-003"
+}

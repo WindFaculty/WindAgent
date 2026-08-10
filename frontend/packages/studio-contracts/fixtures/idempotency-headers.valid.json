@@ -1,0 +1,11 @@
+{
+  "fixture_id": "studio-contracts/idempotency-headers.valid",
+  "purpose": "Valid mutating-command headers. Key is per user intent and preserved across transport retries; expected hash binds the exact candidate set / reviewed artifact.",
+  "headers": {
+    "Idempotency-Key": "key-7f3a9c42e81b",
+    "Expected-Revision": "rev-0003",
+    "Expected-Version": 7,
+    "Expected-Hash": "sha256:c3d4e5f6a7b8"
+  },
+  "retry_policy": "preserve_key_across_network_retries"
+}

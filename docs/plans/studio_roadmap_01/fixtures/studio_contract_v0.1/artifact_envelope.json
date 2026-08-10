@@ -1,0 +1,46 @@
+{
+  "schema": "studio.artifact_envelope/v1",
+  "contract_version": "studio.contract/v0.1",
+  "artifact_schema_version": "studio.artifact/v1alpha1",
+  "envelope_fields": [
+    "artifact_id",
+    "artifact_type",
+    "schema_version",
+    "series_id",
+    "episode_id",
+    "revision_id",
+    "content_hash",
+    "input_artifact_refs",
+    "prompt_id",
+    "prompt_version",
+    "prompt_hash",
+    "model_route_id",
+    "provider_id",
+    "model_id",
+    "created_at",
+    "created_by",
+    "content"
+  ],
+  "immutability_rule": "Every artifact uses an immutable envelope.",
+  "artifact_types": [
+    "CreativeBrief",
+    "IdeaCandidateSet",
+    "SelectedIdea",
+    "StoryBible",
+    "WorldBible",
+    "CharacterCanon",
+    "BeatSheet",
+    "EpisodeOutline",
+    "ScreenplayDraft",
+    "ReviewReport",
+    "RevisionProposal",
+    "LockedScreenplayReceipt",
+    "LockedScreenplayPackage"
+  ],
+  "idea_candidate_set_rule": "IdeaCandidateSet contains 3-5 IdeaCandidate records and score dimensions.",
+  "ownership": {
+    "plan_a": "Envelope, identity, hash, repository, and lock invariants.",
+    "plan_b": "Content schemas.",
+    "plan_c": "Consumes schemas and does not redefine them in TypeScript."
+  }
+}

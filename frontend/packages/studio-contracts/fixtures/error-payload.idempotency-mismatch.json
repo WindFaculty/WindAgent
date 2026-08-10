@@ -1,0 +1,15 @@
+{
+  "fixture_id": "studio-contracts/error-payload.idempotency-mismatch",
+  "purpose": "Typed 409 idempotency mismatch payload. The client must never auto-generate a new key for the same ambiguous action.",
+  "type": "https://windagent.io/errors/idempotency-mismatch",
+  "title": "Idempotency Mismatch",
+  "status": 409,
+  "detail": "Idempotency key was already used with a different request hash.",
+  "code": "IDEMPOTENCY_MISMATCH",
+  "details": {
+    "expected_key": "key-7f3a...",
+    "received_hash": "sha256:a1b2...",
+    "stored_hash": "sha256:c3d4..."
+  },
+  "correlation_id": "corr-001"
+}

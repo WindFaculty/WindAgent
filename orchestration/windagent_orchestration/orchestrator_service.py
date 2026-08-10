@@ -148,7 +148,12 @@ class _LiveRun:
 
 
 class OrchestratorService:
-    """Creates plans and supervises independent runtime sessions per node."""
+    """Creates plans and supervises independent runtime sessions per node.
+
+    Sole new Story orchestration authority (studio.contract/v0.1). Public
+    behavior is stable; ``studio_run_extension`` is the Plan A seam that later
+    Studio phases use to route Studio run commands through this service.
+    """
 
     def __init__(
         self,
@@ -159,6 +164,7 @@ class OrchestratorService:
         worktree_manager: Any | None = None,
         release_policy: MultiAgentReleasePolicy | None = None,
         release_telemetry: Any | None = None,
+        studio_run_extension: Any | None = None,
     ) -> None:
         self._session_factory = session_factory
         self._execution_registry = execution_registry
@@ -169,6 +175,9 @@ class OrchestratorService:
         self._worktree_manager = worktree_manager
         self._release_policy = release_policy
         self._release_telemetry = release_telemetry
+        # Extension seam for Studio run commands (Plan A A4). Inert until a
+        # Studio phase wires it; existing callers never see it.
+        self._studio_run_extension = studio_run_extension
         self._plan_scheduler = DurablePlanScheduler(session_factory)
         self._live_runs: dict[str, _LiveRun] = {}
         self._registry_lock = asyncio.Lock()

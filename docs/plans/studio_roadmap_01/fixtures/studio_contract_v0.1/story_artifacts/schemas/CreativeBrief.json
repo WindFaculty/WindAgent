@@ -1,0 +1,103 @@
+{
+  "additionalProperties": true,
+  "description": "Normalized creative direction for one episode (B3 normalization target).\n\nPreserves every pinned legacy field (``brief_id``, ``title``, ``genre``,\n``logline``, ``tone``, ``audience``, ``target_duration_seconds``,\n``aspect_ratio``, ``production_constraints``) and adds the frozen\nnormalized fields: ``language``, audience band, ``theme``, ``constraints``,\n``prohibited_content``.",
+  "properties": {
+    "artifact_type": {
+      "default": "CreativeBrief",
+      "title": "Artifact Type",
+      "type": "string"
+    },
+    "aspect_ratio": {
+      "default": "16:9",
+      "title": "Aspect Ratio",
+      "type": "string"
+    },
+    "audience": {
+      "default": "",
+      "title": "Audience",
+      "type": "string"
+    },
+    "audience_max_age": {
+      "default": 99,
+      "minimum": 0,
+      "title": "Audience Max Age",
+      "type": "integer"
+    },
+    "audience_min_age": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Audience Min Age",
+      "type": "integer"
+    },
+    "brief_id": {
+      "title": "Brief Id",
+      "type": "string"
+    },
+    "constraints": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Constraints",
+      "type": "array"
+    },
+    "genre": {
+      "default": "",
+      "title": "Genre",
+      "type": "string"
+    },
+    "language": {
+      "default": "vi",
+      "title": "Language",
+      "type": "string"
+    },
+    "logline": {
+      "default": "",
+      "title": "Logline",
+      "type": "string"
+    },
+    "production_constraints": {
+      "additionalProperties": true,
+      "title": "Production Constraints",
+      "type": "object"
+    },
+    "prohibited_content": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Prohibited Content",
+      "type": "array"
+    },
+    "schema_version": {
+      "default": "studio.artifact/v1alpha1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "target_duration_seconds": {
+      "default": 240,
+      "exclusiveMinimum": 0,
+      "title": "Target Duration Seconds",
+      "type": "integer"
+    },
+    "theme": {
+      "default": "",
+      "title": "Theme",
+      "type": "string"
+    },
+    "title": {
+      "minLength": 1,
+      "title": "Title",
+      "type": "string"
+    },
+    "tone": {
+      "default": "",
+      "title": "Tone",
+      "type": "string"
+    }
+  },
+  "required": [
+    "brief_id",
+    "title"
+  ],
+  "title": "CreativeBrief",
+  "type": "object"
+}

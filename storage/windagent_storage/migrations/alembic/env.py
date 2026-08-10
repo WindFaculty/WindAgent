@@ -30,6 +30,7 @@ if str(_REPO_ROOT) not in sys.path:
 from windagent_storage.orm.models import BaseORM  # noqa: E402
 import windagent_storage.orm.v2_orchestration_models  # noqa: E402,F401  (registers V2 orchestration tables)
 import windagent_storage.orm.v3_models  # noqa: E402,F401  (registers V3 provider/routing tables)
+import windagent_storage.video_production.video_production_models  # noqa: E402,F401  (registers V2 video production tables)
 
 config = context.config
 

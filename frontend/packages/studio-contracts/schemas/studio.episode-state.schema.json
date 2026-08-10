@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://windagent.io/contracts/studio/episode-state/v0.1",
+  "title": "StudioEpisodeState",
+  "description": "Canonical Studio Episode lifecycle state. Frozen at studio.contract/v0.1. Normal progression is DRAFT -> IDEA_REVIEW -> STORY_BIBLE_REVIEW -> OUTLINE_REVIEW -> SCREENPLAY_REVIEW -> (REVISING -> SCREENPLAY_REVIEW)* -> LOCKED -> READY_FOR_PRODUCTION. FAILED and CANCELLED are explicit terminal outcomes.",
+  "type": "object",
+  "$defs": {
+    "state": {
+      "type": "string",
+      "enum": [
+        "DRAFT",
+        "IDEA_REVIEW",
+        "STORY_BIBLE_REVIEW",
+        "OUTLINE_REVIEW",
+        "SCREENPLAY_REVIEW",
+        "REVISING",
+        "LOCKED",
+        "READY_FOR_PRODUCTION",
+        "FAILED",
+        "CANCELLED"
+      ]
+    }
+  },
+  "required": ["state", "version"],
+  "properties": {
+    "state": {
+      "$ref": "#/$defs/state"
+    },
+    "version": {
+      "type": "integer",
+      "description": "Optimistic concurrency version of the Episode aggregate. Mutations require an expected version."
+    }
+  },
+  "additionalProperties": false
+}

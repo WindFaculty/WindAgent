@@ -1,0 +1,193 @@
+{
+  "$defs": {
+    "DraftDialogueLine": {
+      "additionalProperties": true,
+      "description": "One dialogue line inside a structured draft scene.\n\nField vocabulary mirrors the legacy ``DialogueLine`` (lossless mapping);\ncharacter/scene refs use canonical Story IDs.",
+      "properties": {
+        "character_id": {
+          "title": "Character Id",
+          "type": "string"
+        },
+        "delivery": {
+          "default": "",
+          "title": "Delivery",
+          "type": "string"
+        },
+        "dialogue_id": {
+          "title": "Dialogue Id",
+          "type": "string"
+        },
+        "estimated_seconds": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Estimated Seconds",
+          "type": "integer"
+        },
+        "order": {
+          "minimum": 1,
+          "title": "Order",
+          "type": "integer"
+        },
+        "scene_id": {
+          "title": "Scene Id",
+          "type": "string"
+        },
+        "text": {
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "dialogue_id",
+        "scene_id",
+        "character_id",
+        "order",
+        "text"
+      ],
+      "title": "DraftDialogueLine",
+      "type": "object"
+    },
+    "DraftScene": {
+      "additionalProperties": true,
+      "description": "One structured screenplay scene with timing and source refs.",
+      "properties": {
+        "action_description": {
+          "default": "",
+          "title": "Action Description",
+          "type": "string"
+        },
+        "character_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Character Ids",
+          "type": "array"
+        },
+        "dialogue": {
+          "items": {
+            "$ref": "#/$defs/DraftDialogueLine"
+          },
+          "title": "Dialogue",
+          "type": "array"
+        },
+        "estimated_seconds": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Estimated Seconds",
+          "type": "integer"
+        },
+        "location_id": {
+          "title": "Location Id",
+          "type": "string"
+        },
+        "narration": {
+          "default": "",
+          "title": "Narration",
+          "type": "string"
+        },
+        "order": {
+          "minimum": 1,
+          "title": "Order",
+          "type": "integer"
+        },
+        "outline_scene_id": {
+          "title": "Outline Scene Id",
+          "type": "string"
+        },
+        "scene_id": {
+          "title": "Scene Id",
+          "type": "string"
+        },
+        "source_beat_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Source Beat Ids",
+          "type": "array"
+        },
+        "transition": {
+          "default": "CUT TO:",
+          "title": "Transition",
+          "type": "string"
+        }
+      },
+      "required": [
+        "scene_id",
+        "order",
+        "outline_scene_id",
+        "location_id"
+      ],
+      "title": "DraftScene",
+      "type": "object"
+    }
+  },
+  "additionalProperties": true,
+  "description": "The authoritative structured screenplay draft (3-5 minute episode).",
+  "properties": {
+    "artifact_type": {
+      "default": "ScreenplayDraft",
+      "title": "Artifact Type",
+      "type": "string"
+    },
+    "audience_band": {
+      "default": "5-8",
+      "title": "Audience Band",
+      "type": "string"
+    },
+    "draft_id": {
+      "title": "Draft Id",
+      "type": "string"
+    },
+    "duration_formula_version": {
+      "default": "duration_formula/v1",
+      "title": "Duration Formula Version",
+      "type": "string"
+    },
+    "language": {
+      "default": "vi",
+      "title": "Language",
+      "type": "string"
+    },
+    "logline": {
+      "default": "",
+      "title": "Logline",
+      "type": "string"
+    },
+    "scenes": {
+      "items": {
+        "$ref": "#/$defs/DraftScene"
+      },
+      "title": "Scenes",
+      "type": "array"
+    },
+    "schema_version": {
+      "default": "studio.artifact/v1alpha1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "target_duration_seconds": {
+      "exclusiveMinimum": 0,
+      "title": "Target Duration Seconds",
+      "type": "integer"
+    },
+    "title": {
+      "minLength": 1,
+      "title": "Title",
+      "type": "string"
+    },
+    "tolerance_seconds": {
+      "default": 15,
+      "minimum": 0,
+      "title": "Tolerance Seconds",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "draft_id",
+    "title",
+    "target_duration_seconds"
+  ],
+  "title": "ScreenplayDraft",
+  "type": "object"
+}

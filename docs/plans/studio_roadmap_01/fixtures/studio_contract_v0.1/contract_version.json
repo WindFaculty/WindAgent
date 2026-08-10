@@ -1,0 +1,7 @@
+{
+  "schema": "studio.contract_version/v1",
+  "contract": "studio.contract/v0.1",
+  "artifact_schema": "studio.artifact/v1alpha1",
+  "baseline_sha": "9a09375700db02a64315068f008b15e43ba5f42d",
+  "notes": "Frozen by the contract freeze gate. Breaking changes require a version bump, updated fixtures, both plan-owner approvals, and an integration note."
+}

@@ -1,0 +1,41 @@
+{
+  "schema": "studio.revision_and_approval/v1",
+  "contract_version": "studio.contract/v0.1",
+  "production_revision_v0_1_fields": [
+    "revision_id",
+    "series_id",
+    "episode_id",
+    "parent_revision_id",
+    "creator",
+    "actor",
+    "created_at",
+    "content_hash",
+    "state",
+    "status",
+    "lock_state",
+    "invalidation_intent",
+    "summary",
+    "metadata",
+    "optimistic_version"
+  ],
+  "approval_policy_v0_1_fields": [
+    "policy_id",
+    "policy_version",
+    "checkpoint_to_mode_map",
+    "quality_thresholds",
+    "max_review_revision_iterations",
+    "required_approver_roles",
+    "effective_time"
+  ],
+  "approval_decision_binding": [
+    "aggregate_id",
+    "revision_id",
+    "artifact_hash",
+    "checkpoint",
+    "actor",
+    "decision",
+    "reason",
+    "timestamp"
+  ],
+  "stale_rejection_rule": "A stale hash or revision is rejected."
+}

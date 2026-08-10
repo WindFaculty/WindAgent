@@ -1,0 +1,14 @@
+{
+  "schema_version": "studio.artifact/v1alpha1",
+  "artifact_type": "LockedScreenplayPackage",
+  "package_id": "pkg_bad",
+  "receipt_id": "rcpt_bad",
+  "title": "Gói thiếu dòng dõi",
+  "manifest": [
+    {
+      "artifact_type": "ScreenplayDraft",
+      "artifact_id": "a1",
+      "content_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
+  ]
+}

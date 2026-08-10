@@ -1,0 +1,16 @@
+{
+  "fixture_id": "studio-contracts/episode-state.progression",
+  "purpose": "Full canonical episode state progression from the frozen cross-plan contract, including the REVISING loop and terminal outcomes.",
+  "states": [
+    "DRAFT",
+    "IDEA_REVIEW",
+    "STORY_BIBLE_REVIEW",
+    "OUTLINE_REVIEW",
+    "SCREENPLAY_REVIEW",
+    "REVISING",
+    "SCREENPLAY_REVIEW",
+    "LOCKED",
+    "READY_FOR_PRODUCTION"
+  ],
+  "terminal_states": ["FAILED", "CANCELLED"]
+}

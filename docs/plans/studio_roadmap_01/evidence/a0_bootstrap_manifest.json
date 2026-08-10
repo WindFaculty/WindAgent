@@ -1,0 +1,196 @@
+{
+  "baseline_failures": [
+    {
+      "classification": "pre-existing",
+      "detail": "Hardcoded product version literal in scripts/verification/produce_script_eval_phase0_baseline.py (matches the canonical product version string); desktop package version differs from canonical product_version (may be intentional).",
+      "evidence": "live rerun during A0 and A1",
+      "name": "check_version_consistency.py",
+      "owner": "Plan A",
+      "retirement_gate": "PLAN_A_HANDOFF_GATE",
+      "retirement_phase": "A7",
+      "status": "FAIL"
+    },
+    {
+      "classification": "pre-existing",
+      "detail": "Shared frontend/packages/production-ui test runner fails with 'describe is not defined' before test execution; fixed by Plan C in a standalone commit.",
+      "evidence": "recorded in 00_CURRENT_CODEBASE_FINDINGS.md baseline verification record (3 suites fail before test execution)",
+      "name": "production-ui test runner setup",
+      "owner": "Plan C",
+      "retirement_gate": "STORY_UI_GATE",
+      "retirement_phase": "C",
+      "status": "FAIL"
+    },
+    {
+      "classification": "pre-existing",
+      "detail": "4 API tests expect GET /api/v2/events but the router registers /api/v2/video-production/events (v2_events.py). V2 surface decision: alias route or update tests, without altering existing V2 behavior.",
+      "evidence": "live rerun during A1; identical failures reproduced at baseline HEAD",
+      "name": "pytest_v2_api_events_contract",
+      "owner": "Plan C",
+      "retirement_gate": "STORY_UI_GATE",
+      "retirement_phase": "C",
+      "status": "FAIL"
+    },
+    {
+      "classification": "pre-existing",
+      "detail": "tests/integration/test_phase_g25_session_recovery.py::test_multi_session_isolation fails with websockets.exceptions.InvalidStatus HTTP 403 during the WebSocket handshake.",
+      "evidence": "live rerun during A1; reproduced at baseline HEAD",
+      "name": "pytest_session_recovery_isolation",
+      "owner": "Plan C",
+      "retirement_gate": "STORY_UI_GATE",
+      "retirement_phase": "C",
+      "status": "FAIL"
+    }
+  ],
+  "baseline_sha": "9a09375700db02a64315068f008b15e43ba5f42d",
+  "branch": "chore/cleanup-stale-md-docs",
+  "commands": [
+    {
+      "classification": "fresh",
+      "command": "git diff --check",
+      "exit_code": 0,
+      "finished_at": "2026-08-09T13:01:56+00:00",
+      "name": "git_diff_check",
+      "status": "PASS",
+      "stderr_tail": "",
+      "stdout_tail": ""
+    },
+    {
+      "classification": "fresh",
+      "command": "git status --short",
+      "exit_code": 0,
+      "finished_at": "2026-08-09T13:01:57+00:00",
+      "name": "git_status_short",
+      "status": "PASS",
+      "stderr_tail": "",
+      "stdout_tail": "n_uow.py\n?? docs/plans/\n?? frontend/packages/production-ui/vitest.config.ts\n?? frontend/packages/studio-contracts/\n?? scripts/check_no_story_in_legacy_engines.py\n?? scripts/check_openapi_snapshot.py\n?? scripts/verification/produce_a0_bootstrap_manifest.py\n?? tests/architecture/test_no_story_in_legacy_engines.py\n?? tests/contracts/test_studio_contract_fixtures_v0_1.py\n?? tests/fixtures/studio_contracts/\n?? tests/unit/api/test_openapi_snapshot.py\n?? tests/unit/api/test_studio_contract_fixtures.py\n"
+    },
+    {
+      "classification": "fresh",
+      "command": "C:\\Users\\Admin\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\python.exe D:\\code_ca_nhan\\WindAgent\\scripts\\check_architecture_imports.py",
+      "exit_code": 0,
+      "finished_at": "2026-08-09T13:02:00+00:00",
+      "name": "check_architecture_imports.py",
+      "status": "PASS",
+      "stderr_tail": "",
+      "stdout_tail": "Architecture policy: PASS (0 violations)\nZero boundary violations detected\n"
+    },
+    {
+      "classification": "pre-existing",
+      "command": "C:\\Users\\Admin\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\python.exe D:\\code_ca_nhan\\WindAgent\\scripts\\check_version_consistency.py",
+      "exit_code": 1,
+      "finished_at": "2026-08-09T13:02:03+00:00",
+      "name": "check_version_consistency.py",
+      "status": "FAIL",
+      "stderr_tail": "",
+      "stdout_tail": "ckage version... PASS\n  Checking Desktop package version... PASS\n  Checking Hardcoded version scan... FAIL\n\nWARNINGS:\n  - Desktop package version 0.6.0 != product_version 0.3.0 (may be intentional)\n\nERRORS:\n  - Potential hardcoded product version literal in scripts\\verification\\produce_script_eval_phase0_baseline.py: '0.3.0' (use import from windagent_core.version instead)\n\nReport written to D:\\code_ca_nhan\\WindAgent\\artifacts\\ci\\version_consistency_report.json\nVERSION CONSISTENCY CHECK: FAILED\n"
+    },
+    {
+      "classification": "fresh",
+      "command": "C:\\Users\\Admin\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\python.exe D:\\code_ca_nhan\\WindAgent\\scripts\\check_event_taxonomy.py",
+      "exit_code": 0,
+      "finished_at": "2026-08-09T13:02:06+00:00",
+      "name": "check_event_taxonomy.py",
+      "status": "PASS",
+      "stderr_tail": "",
+      "stdout_tail": "Scanned 1252 Python files for Event Taxonomy.\nCanonical Event Catalog contains 68 registered event types.\n[PASS] Event Taxonomy Check PASSED: 100% events match EventCatalog.\n"
+    },
+    {
+      "classification": "fresh",
+      "command": "C:\\Users\\Admin\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\python.exe D:\\code_ca_nhan\\WindAgent\\scripts\\check_duplicate_canonical_models.py",
+      "exit_code": 0,
+      "finished_at": "2026-08-09T13:02:08+00:00",
+      "name": "check_duplicate_canonical_models.py",
+      "status": "PASS",
+      "stderr_tail": "",
+      "stdout_tail": "Phase 5 Duplicate Canonical Model Scan across 1057 Python files:\n[PASS] Zero duplicate canonical model definitions.\n"
+    },
+    {
+      "classification": "fresh",
+      "command": "C:\\Users\\Admin\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\python.exe D:\\code_ca_nhan\\WindAgent\\scripts\\check_video_workspace_architecture.py",
+      "exit_code": 0,
+      "finished_at": "2026-08-09T13:02:08+00:00",
+      "name": "check_video_workspace_architecture.py",
+      "status": "PASS",
+      "stderr_tail": "",
+      "stdout_tail": "==================================================\nUI50 Architectural Audit: Video Workspace Public API Boundary\n==================================================\n[OK] Verified: frontend\\packages\\production-ui\\src\\components\\VideoWorkspacePlaceholder.tsx imports only clean, public APIs.\nGate Status: VP3D_UI_VIDEO_WORKSPACE_FOUNDATION_READY = PASSED\n"
+    },
+    {
+      "classification": "fresh",
+      "command": "C:\\Users\\Admin\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\python.exe D:\\code_ca_nhan\\WindAgent\\scripts\\check_no_legacy_orchestration.py",
+      "exit_code": 0,
+      "finished_at": "2026-08-09T13:02:09+00:00",
+      "name": "check_no_legacy_orchestration.py",
+      "status": "PASS",
+      "stderr_tail": "",
+      "stdout_tail": "PASS: Zero legacy orchestration imports found across codebase.\n"
+    },
+    {
+      "classification": "fresh",
+      "command": "C:\\Users\\Admin\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\python.exe D:\\code_ca_nhan\\WindAgent\\scripts\\check_no_story_in_legacy_engines.py",
+      "exit_code": 0,
+      "finished_at": "2026-08-09T13:02:09+00:00",
+      "name": "check_no_story_in_legacy_engines.py",
+      "status": "PASS",
+      "stderr_tail": "",
+      "stdout_tail": "PASS: Zero Story imports/task/event references inside legacy orchestration engines.\n"
+    },
+    {
+      "classification": "fresh",
+      "command": "C:\\Users\\Admin\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\python.exe -m pytest -q D:\\code_ca_nhan\\WindAgent\\tests\\contracts\\test_studio_contract_fixtures_v0_1.py D:\\code_ca_nhan\\WindAgent\\tests\\architecture\\test_no_story_in_legacy_engines.py D:\\code_ca_nhan\\WindAgent\\tests\\unit\\orchestration\\test_workflow_engine.py D:\\code_ca_nhan\\WindAgent\\tests\\unit\\orchestration\\test_phase17_durable_workflow.py",
+      "exit_code": 0,
+      "finished_at": "2026-08-09T13:02:14+00:00",
+      "name": "pytest_a0_fixture_and_checker_tests",
+      "status": "PASS",
+      "stderr_tail": "",
+      "stdout_tail": "........................................................................ [ 87%]\n..........                                                               [100%]\n82 passed in 4.01s\n"
+    },
+    {
+      "classification": "pre-existing",
+      "command": "C:\\Users\\Admin\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\python.exe -m pytest -q D:\\code_ca_nhan\\WindAgent\\tests\\unit\\api\\test_api_v2.py D:\\code_ca_nhan\\WindAgent\\tests\\unit\\api\\test_phase11_api_worker_cli_websocket.py D:\\code_ca_nhan\\WindAgent\\tests\\unit\\api\\test_phase25_api_cutover.py",
+      "exit_code": 1,
+      "finished_at": "2026-08-09T13:02:21+00:00",
+      "name": "pytest_v2_api_events_contract",
+      "status": "FAIL",
+      "stderr_tail": "",
+      "stdout_tail": "solation is disabled\n=========================== short test summary info ===========================\nFAILED tests/unit/api/test_api_v2.py::test_api_v2_all_resources_endpoints - a...\nFAILED tests/unit/api/test_phase11_api_worker_cli_websocket.py::test_api_v2_events_no_mock_domain_events\nFAILED tests/unit/api/test_phase25_api_cutover.py::test_all_14_canonical_v2_routers_accessible\nFAILED tests/unit/api/test_phase25_api_cutover.py::test_event_stream_last_sequence_replay\n4 failed, 9 passed in 7.29s\n"
+    },
+    {
+      "classification": "pre-existing",
+      "command": "C:\\Users\\Admin\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\python.exe -m pytest -q D:\\code_ca_nhan\\WindAgent\\tests\\integration\\test_phase_g25_session_recovery.py",
+      "exit_code": 1,
+      "finished_at": "2026-08-09T13:02:26+00:00",
+      "name": "pytest_session_recovery_isolation",
+      "status": "FAIL",
+      "stderr_tail": "",
+      "stdout_tail": "ocal\\hermes\\hermes-agent\\venv\\Lib\\site-packages\\websockets\\legacy\\server.py:1178: DeprecationWarning: remove second argument of ws_handler\n    warnings.warn(\"remove second argument of ws_handler\", DeprecationWarning)\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n=========================== short test summary info ===========================\nFAILED tests/integration/test_phase_g25_session_recovery.py::test_multi_session_isolation\n1 failed, 3 passed, 3 warnings in 3.85s\n"
+    }
+  ],
+  "contract_version": "studio.contract/v0.1",
+  "fixture_checksums": {
+    "docs/plans/studio_roadmap_01/evidence/a0_bootstrap_manifest.schema.json": "f44dcd0590963915acb134efb4586c89e6c1100266821a880a2803b154fdd9fe",
+    "docs/plans/studio_roadmap_01/fixtures/studio_contract_v0.1/api_surface.json": "dabb4c827877f5136f4a0a21ebcc08e437126beb43f61d0ed8889c6d258bd2c6",
+    "docs/plans/studio_roadmap_01/fixtures/studio_contract_v0.1/artifact_envelope.json": "9853ec532e67c508cf90e21c5e9d9941022893c5a3d9dd2b42543885a9eb6da1",
+    "docs/plans/studio_roadmap_01/fixtures/studio_contract_v0.1/contract_version.json": "5ef0095ba8cff20a32972cee2e595ca7527fd92756520c1a3f2fce8f9a001044",
+    "docs/plans/studio_roadmap_01/fixtures/studio_contract_v0.1/episode_lifecycle.json": "8f5dfb5378b0e4293805fa6207cc65a362abe806259cc16f157fb0333f9c7289",
+    "docs/plans/studio_roadmap_01/fixtures/studio_contract_v0.1/errors.json": "d3971350bd37456363ed9ebf1ad3a931f8a45b9aea98c73a6f66ec07ac1aa951",
+    "docs/plans/studio_roadmap_01/fixtures/studio_contract_v0.1/events.json": "6f434d29c02a45beb120d0c5499075f48b96def129d00facaae91b5e3ea374b8",
+    "docs/plans/studio_roadmap_01/fixtures/studio_contract_v0.1/ids.json": "fd29c14a3526b8cdee7b97035274662a3fdd7cfa927ee6ae5aed13cf092d448b",
+    "docs/plans/studio_roadmap_01/fixtures/studio_contract_v0.1/ports_and_authority.json": "f576049d5f5c4a78c45aa4792c7fd7ff85839c12af6ca2921d2efa64f1d059b1",
+    "docs/plans/studio_roadmap_01/fixtures/studio_contract_v0.1/revision_and_approval.json": "57e6bb481c49f6edf90be8c439984e983c3e8580a7056d2664d15971f62c68ae",
+    "docs/plans/studio_roadmap_01/fixtures/studio_contract_v0.1/tasks.json": "ff21754644d3a7422220a80d53fda48bf3e2ccc4742afa47333c1a7738cb5781"
+  },
+  "generated_at": "2026-08-09T13:02:26+00:00",
+  "generator": {
+    "git_version": "git version 2.55.0.windows.2",
+    "pytest_version": "pytest 9.1.1",
+    "python_version": "3.11.15",
+    "script": "scripts/verification/produce_a0_bootstrap_manifest.py",
+    "sha256": "16be8ff414e94fcf0f2c7842e4cfe7adeb05211b00411e19c3eec5e591713bfb"
+  },
+  "manifest_version": "a0/v1",
+  "notes": [
+    "Worktree remains untouched; existing user changes to road_map.md and road_map_v2_implementation_plan.md are preserved.",
+    "Raw command logs belong in CI artifact storage; this committed manifest carries only deterministic metadata, checksums, and baseline classifications.",
+    "No historical evidence regenerated and no historic PASS reports copied forward."
+  ]
+}

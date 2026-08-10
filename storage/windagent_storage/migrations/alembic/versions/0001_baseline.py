@@ -17,6 +17,7 @@ from alembic import op
 from windagent_storage.orm.models import BaseORM
 import windagent_storage.orm.v2_orchestration_models  # noqa: F401  (registers tables)
 import windagent_storage.orm.v3_models  # noqa: F401  (registers tables)
+import windagent_storage.video_production.video_production_models  # noqa: F401  (registers V2 video production tables)
 
 # revision identifiers, used by Alembic.
 revision = "0001_baseline"

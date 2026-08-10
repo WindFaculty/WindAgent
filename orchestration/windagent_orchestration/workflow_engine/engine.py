@@ -1,6 +1,12 @@
 """
 Core Workflow Engine for Orchestration V2.
 Manages DAG execution, fan-out/fan-in node readiness, conditional edge evaluation, checkpoints, and resume.
+
+DEPRECATED AUTHORITY (studio.contract/v0.1, authority rule 5): this engine may
+serve existing non-Studio paths but must never receive Story tasks. Plan A
+fences it: any node referencing the Studio namespace (``studio.`` /
+``studio.story.*``) is rejected at run initialization. New Studio runs belong to
+``OrchestratorService``.
 """
 
 from __future__ import annotations
@@ -15,14 +21,48 @@ from windagent_orchestration.workflow_engine.checkpoints import CheckpointManage
 
 logger = logging.getLogger("windagent.orchestration.workflow_engine")
 
+# STORY-FENCE-START
+# Fence (authority rule 5): these lines name the Studio namespace only to
+# reject Story tasks in this legacy engine. Do not add Story logic here.
+STORY_NAMESPACE_PREFIXES = ("studio.", "studio.story.")
+
+
+def _assert_no_story_node(definition: WorkflowDefinition) -> None:
+    """Reject Story task references inside a legacy workflow definition.
+
+    Authority rule 5: ``WorkflowEngine`` receives no new Story imports, task
+    types, states, or routes. A node whose id/name/tool_name uses the Studio
+    namespace, or whose parameters reference a ``studio.story.*`` task type, is
+    a Story node and is rejected before any run state is created.
+    """
+    for node_id, node in (definition.nodes or {}).items():
+        markers = [node_id, node.name, node.tool_name]
+        if any(str(marker).startswith(STORY_NAMESPACE_PREFIXES) for marker in markers):
+            raise ValueError(
+                f"Story task rejected by legacy WorkflowEngine: node '{node_id}' "
+                f"uses Studio namespace {[m for m in markers if m]}"
+            )
+        param_values = [
+            str(value) for value in (node.params or {}).values() if isinstance(value, (str, list, tuple))
+        ]
+        if any("studio.story." in value for value in param_values):
+            raise ValueError(
+                f"Story task rejected by legacy WorkflowEngine: node '{node_id}' "
+                "parameters reference a studio.story.* task type"
+            )
+# STORY-FENCE-END
+
 
 class WorkflowEngine:
+    """Legacy DAG engine — existing paths only; rejects new Story tasks."""
+
     def __init__(self, checkpoint_manager: Optional[CheckpointManager] = None, uow_factory: Optional[Any] = None):
         self.checkpoint_manager = checkpoint_manager or CheckpointManager()
         self.uow_factory = uow_factory or getattr(self.checkpoint_manager, "uow_factory", None)
         self._active_runs: Dict[str, Dict[str, Any]] = {}
 
     def initialize_run(self, run_id: str, definition: WorkflowDefinition) -> Dict[str, Any]:
+        _assert_no_story_node(definition)
         graph = WorkflowGraph(definition)
         graph.detect_cycles()
 

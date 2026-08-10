@@ -3,7 +3,7 @@ Command Dispatcher for Video Production API V2 Foundation (Stage B).
 
 Executes mutating workspace commands with idempotency enforcement, optimistic
 concurrency revision checks, locked revision invariant checks, and atomic event
-logging inside VideoProductionUnitOfWork.
+logging inside a VideoProductionUnitOfWorkPort.
 """
 
 from __future__ import annotations
@@ -12,19 +12,21 @@ import json
 import uuid
 from typing import Any
 
+from windagent_core.contracts.video_production.video_production_uow import (
+    VideoProductionUnitOfWorkPort,
+)
 from windagent_core.domain.video_production.workspace import (
     WorkspaceCommandRequest,
     WorkspaceCommandResult,
     WorkspaceCommandStatus,
     compute_payload_hash,
 )
-from windagent_storage.unit_of_work.video_production_uow import VideoProductionUnitOfWork
 
 
 class CommandDispatcher:
     """Dispatches workspace command requests with durable invariants."""
 
-    def __init__(self, uow: VideoProductionUnitOfWork) -> None:
+    def __init__(self, uow: VideoProductionUnitOfWorkPort) -> None:
         self.uow = uow
 
     async def dispatch(self, request: WorkspaceCommandRequest) -> dict[str, Any]:

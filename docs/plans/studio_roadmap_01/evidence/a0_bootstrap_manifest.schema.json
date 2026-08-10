@@ -1,0 +1,75 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Studio A0 Bootstrap Manifest",
+  "description": "Deterministic record of the Plan A A0 acceptance run: pinned SHA, tool versions, executed commands with exit status, fixture/artifact checksums, and baseline failure classifications with owner and retirement gate.",
+  "type": "object",
+  "required": [
+    "manifest_version",
+    "contract_version",
+    "baseline_sha",
+    "branch",
+    "generated_at",
+    "generator",
+    "commands",
+    "baseline_failures",
+    "fixture_checksums"
+  ],
+  "properties": {
+    "manifest_version": {"const": "a0/v1"},
+    "contract_version": {"const": "studio.contract/v0.1"},
+    "baseline_sha": {"type": "string", "pattern": "^[a-f0-9]{40}$"},
+    "branch": {"type": "string"},
+    "generated_at": {"type": "string", "description": "RFC3339 timestamp of the generation run."},
+    "generator": {
+      "type": "object",
+      "required": ["script", "sha256", "python_version", "git_version", "pytest_version"],
+      "properties": {
+        "script": {"type": "string"},
+        "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "python_version": {"type": "string"},
+        "git_version": {"type": "string"},
+        "pytest_version": {"type": "string"}
+      }
+    },
+    "commands": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "command", "exit_code", "status", "classification", "finished_at"],
+        "properties": {
+          "name": {"type": "string"},
+          "command": {"type": "string"},
+          "exit_code": {"type": "integer"},
+          "status": {"enum": ["PASS", "FAIL", "SKIPPED", "ERROR"]},
+          "classification": {"type": "string", "description": "pre-existing or fresh"},
+          "finished_at": {"type": "string"},
+          "stdout_tail": {"type": "string"},
+          "stderr_tail": {"type": "string"}
+        }
+      }
+    },
+    "baseline_failures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "status", "classification", "owner", "retirement_gate", "evidence", "retirement_phase"],
+        "properties": {
+          "name": {"type": "string"},
+          "status": {"enum": ["FAIL", "WARN", "PARTIAL"]},
+          "classification": {"const": "pre-existing"},
+          "owner": {"type": "string"},
+          "retirement_gate": {"type": "string"},
+          "retirement_phase": {"type": "string"},
+          "evidence": {"type": "string"},
+          "detail": {"type": "string"}
+        }
+      }
+    },
+    "fixture_checksums": {
+      "type": "object",
+      "description": "SHA-256 of every frozen contract fixture and the manifest schema.",
+      "additionalProperties": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+    },
+    "notes": {"type": "array", "items": {"type": "string"}}
+  }
+}

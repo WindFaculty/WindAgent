@@ -1,0 +1,167 @@
+{
+  "$defs": {
+    "RecurringLocation": {
+      "additionalProperties": true,
+      "description": "A recurring location referenced by stable Story ID.",
+      "properties": {
+        "atmosphere": {
+          "default": "",
+          "title": "Atmosphere",
+          "type": "string"
+        },
+        "description": {
+          "default": "",
+          "title": "Description",
+          "type": "string"
+        },
+        "lighting": {
+          "default": "",
+          "title": "Lighting",
+          "type": "string"
+        },
+        "location_id": {
+          "title": "Location Id",
+          "type": "string"
+        },
+        "name": {
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "location_id",
+        "name"
+      ],
+      "title": "RecurringLocation",
+      "type": "object"
+    },
+    "RecurringObject": {
+      "additionalProperties": true,
+      "description": "A recurring object/prop referenced by stable Story ID.",
+      "properties": {
+        "description": {
+          "default": "",
+          "title": "Description",
+          "type": "string"
+        },
+        "name": {
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "prop_id": {
+          "title": "Prop Id",
+          "type": "string"
+        },
+        "significance": {
+          "default": "",
+          "title": "Significance",
+          "type": "string"
+        }
+      },
+      "required": [
+        "prop_id",
+        "name"
+      ],
+      "title": "RecurringObject",
+      "type": "object"
+    },
+    "WorldRule": {
+      "additionalProperties": true,
+      "description": "A deterministic world/story rule with a stable ID.",
+      "properties": {
+        "kind": {
+          "default": "physics",
+          "title": "Kind",
+          "type": "string"
+        },
+        "rule_id": {
+          "minLength": 1,
+          "title": "Rule Id",
+          "type": "string"
+        },
+        "statement": {
+          "minLength": 1,
+          "title": "Statement",
+          "type": "string"
+        }
+      },
+      "required": [
+        "rule_id",
+        "statement"
+      ],
+      "title": "WorldRule",
+      "type": "object"
+    }
+  },
+  "additionalProperties": true,
+  "description": "Setting, physical/story rules, recurring locations and objects.",
+  "properties": {
+    "artifact_type": {
+      "default": "WorldBible",
+      "title": "Artifact Type",
+      "type": "string"
+    },
+    "language": {
+      "default": "vi",
+      "title": "Language",
+      "type": "string"
+    },
+    "physical_rules": {
+      "items": {
+        "$ref": "#/$defs/WorldRule"
+      },
+      "title": "Physical Rules",
+      "type": "array"
+    },
+    "recurring_locations": {
+      "items": {
+        "$ref": "#/$defs/RecurringLocation"
+      },
+      "title": "Recurring Locations",
+      "type": "array"
+    },
+    "recurring_objects": {
+      "items": {
+        "$ref": "#/$defs/RecurringObject"
+      },
+      "title": "Recurring Objects",
+      "type": "array"
+    },
+    "schema_version": {
+      "default": "studio.artifact/v1alpha1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "setting": {
+      "minLength": 1,
+      "title": "Setting",
+      "type": "string"
+    },
+    "story_rules": {
+      "items": {
+        "$ref": "#/$defs/WorldRule"
+      },
+      "title": "Story Rules",
+      "type": "array"
+    },
+    "style_constraints": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "Style Constraints",
+      "type": "object"
+    },
+    "world_id": {
+      "title": "World Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "world_id",
+    "setting"
+  ],
+  "title": "WorldBible",
+  "type": "object"
+}

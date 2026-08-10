@@ -1,0 +1,159 @@
+{
+  "$defs": {
+    "DimensionResult": {
+      "description": "One quality dimension outcome inside a review report.",
+      "properties": {
+        "blocking": {
+          "default": false,
+          "title": "Blocking",
+          "type": "boolean"
+        },
+        "dimension": {
+          "title": "Dimension",
+          "type": "string"
+        },
+        "note": {
+          "default": "",
+          "title": "Note",
+          "type": "string"
+        },
+        "score": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Score",
+          "type": "number"
+        }
+      },
+      "required": [
+        "dimension",
+        "score"
+      ],
+      "title": "DimensionResult",
+      "type": "object"
+    },
+    "ReviewFinding": {
+      "description": "One review finding (frozen shape from the B0 taxonomy).",
+      "properties": {
+        "code": {
+          "minLength": 1,
+          "title": "Code",
+          "type": "string"
+        },
+        "dimension": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Dimension"
+        },
+        "evidence": {
+          "default": "",
+          "title": "Evidence",
+          "type": "string"
+        },
+        "location": {
+          "default": "",
+          "title": "Location",
+          "type": "string"
+        },
+        "remediation": {
+          "default": "",
+          "title": "Remediation",
+          "type": "string"
+        },
+        "severity": {
+          "$ref": "#/$defs/ValidationSeverity",
+          "default": "WARNING"
+        },
+        "source": {
+          "default": "deterministic",
+          "title": "Source",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code"
+      ],
+      "title": "ReviewFinding",
+      "type": "object"
+    },
+    "ValidationSeverity": {
+      "enum": [
+        "INFO",
+        "WARNING",
+        "BLOCKING"
+      ],
+      "title": "ValidationSeverity",
+      "type": "string"
+    }
+  },
+  "additionalProperties": true,
+  "description": "Aggregated, explainable review of one screenplay draft.",
+  "properties": {
+    "artifact_type": {
+      "default": "ReviewReport",
+      "title": "Artifact Type",
+      "type": "string"
+    },
+    "dimensions": {
+      "items": {
+        "$ref": "#/$defs/DimensionResult"
+      },
+      "title": "Dimensions",
+      "type": "array"
+    },
+    "draft_id": {
+      "title": "Draft Id",
+      "type": "string"
+    },
+    "findings": {
+      "items": {
+        "$ref": "#/$defs/ReviewFinding"
+      },
+      "title": "Findings",
+      "type": "array"
+    },
+    "maximum_iterations": {
+      "default": 3,
+      "minimum": 1,
+      "title": "Maximum Iterations",
+      "type": "integer"
+    },
+    "quality_summary": {
+      "default": "",
+      "title": "Quality Summary",
+      "type": "string"
+    },
+    "report_id": {
+      "title": "Report Id",
+      "type": "string"
+    },
+    "review_iteration": {
+      "default": 1,
+      "minimum": 1,
+      "title": "Review Iteration",
+      "type": "integer"
+    },
+    "schema_version": {
+      "default": "studio.artifact/v1alpha1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "verdict": {
+      "default": "REVIEW_REQUIRED",
+      "title": "Verdict",
+      "type": "string"
+    }
+  },
+  "required": [
+    "report_id",
+    "draft_id"
+  ],
+  "title": "ReviewReport",
+  "type": "object"
+}

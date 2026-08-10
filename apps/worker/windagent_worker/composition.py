@@ -263,6 +263,11 @@ class WorkerContainer:
                 executor=self.production_step_executor,
                 step_nodes=build_production_step_nodes(),
             )
+            logger.warning(
+                "DEPRECATED AUTHORITY: ProductionWorkflowEngine composed behind "
+                "WINDAGENT_BLENDER_ENGINE for VP3D paths. It rejects Studio "
+                "(studio.story.*) steps; new Story runs belong to OrchestratorService."
+            )
             logger.info("ProductionStepExecutor + ProductionWorkflowEngine wired (VP3D Stage A cutover).")
 
         # VP3D Phase 5/6 — Universal Asset Gateway (guarded).

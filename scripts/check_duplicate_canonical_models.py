@@ -91,6 +91,14 @@ EXCLUDED_PATH_PARTS = (
     ("apps", "api", "windagent_api", "adapters", "legacy_event_mappers.py"),
 )
 
+# Prefix (directory-tree) exclusion: any file under this path is skipped.
+# Plan B bootstrap (studio_roadmap_01): core/windagent_core/domain/story/**
+# holds B-owned story content models (ideation/bibles). The canonical
+# video-production models (CreativeBrief etc.) stay canonical for V2;
+# Plan B reconciles/canonicalizes its story models in its own phases.
+# Plan A owns this checker and excludes the B-owned tree until then.
+STORY_BOOTSTRAP_TREE = ("core", "windagent_core", "domain", "story")
+
 
 def should_skip(path: Path, root: Path = ROOT_DIR) -> bool:
     try:
@@ -104,6 +112,8 @@ def should_skip(path: Path, root: Path = ROOT_DIR) -> bool:
     for excl in EXCLUDED_PATH_PARTS:
         if len(parts) >= len(excl) and parts[-len(excl):] == excl:
             return True
+    if len(parts) >= len(STORY_BOOTSTRAP_TREE) and parts[: len(STORY_BOOTSTRAP_TREE)] == STORY_BOOTSTRAP_TREE:
+        return True
     return False
 
 

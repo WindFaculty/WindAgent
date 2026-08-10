@@ -19,12 +19,18 @@ from windagent_intelligence.story.prompts.schemas import BRIEF_EXPANSION_OUTPUT_
 
 def test_registry_has_extracted_legacy_prompts():
     assert registered_prompt_ids() == [
+        "story.bibles.generate",
         "story.brief_expansion.expand",
         "story.continuation.continue",
+        "story.ideation.generate",
         "story.outline.generate",
         "story.screenplay.write",
     ]
-    assert all(entry.legacy for entry in STORY_PROMPT_REGISTRY.values())
+    assert all(
+        entry.legacy
+        for entry in STORY_PROMPT_REGISTRY.values()
+        if entry.prompt_id not in ("story.ideation.generate", "story.bibles.generate")
+    )
 
 
 def test_prompt_ids_follow_story_capability_name_pattern():

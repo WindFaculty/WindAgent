@@ -1,0 +1,26 @@
+{
+  "schema": "studio.episode_lifecycle/v1",
+  "contract_version": "studio.contract/v0.1",
+  "states": [
+    "DRAFT",
+    "IDEA_REVIEW",
+    "STORY_BIBLE_REVIEW",
+    "OUTLINE_REVIEW",
+    "SCREENPLAY_REVIEW",
+    "REVISING",
+    "LOCKED",
+    "READY_FOR_PRODUCTION",
+    "FAILED",
+    "CANCELLED"
+  ],
+  "terminal_success": ["READY_FOR_PRODUCTION"],
+  "single_terminal_success_rule": "READY_FOR_PRODUCTION is the single terminal success enum value for Roadmap 1.",
+  "ready_event_rule": "The externally named milestone/event may qualify the aggregate as studio.episode.ready_for_production; no second state value is introduced.",
+  "approval_checkpoints": ["IDEA", "STORY_BIBLE", "OUTLINE", "SCREENPLAY"],
+  "approval_modes": ["AUTO", "HUMAN_REQUIRED", "QUALITY_GATE_ONLY"],
+  "lock_transition": {
+    "sequence": ["SCREENPLAY_REVIEW", "LOCKED", "READY_FOR_PRODUCTION"],
+    "rule": "A successful screenplay lock transitions SCREENPLAY_REVIEW -> LOCKED -> READY_FOR_PRODUCTION atomically or through an idempotently resumable two-command sequence; implementation must document which."
+  },
+  "post_lock_rule": "Content mutation after lock always derives a new ProductionRevision with the locked revision as parent."
+}

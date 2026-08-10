@@ -1,0 +1,53 @@
+{
+  "schema": "studio.tasks/v1",
+  "contract_version": "studio.contract/v0.1",
+  "task_types": [
+    "studio.story.idea.generate",
+    "studio.story.idea.evaluate",
+    "studio.story.bible.generate",
+    "studio.story.beats.generate",
+    "studio.story.outline.generate",
+    "studio.story.screenplay.generate",
+    "studio.story.review",
+    "studio.story.revise",
+    "studio.story.lock"
+  ],
+  "synchronous_commands_rule": "Idea selection and human approval are synchronous/idempotent commands that unblock an orchestrator node; they are not hidden model tasks.",
+  "studio_task_envelope_minimum_fields": [
+    "contract_version",
+    "task_type",
+    "task_id",
+    "studio_run_id",
+    "dag_node_id",
+    "series_id",
+    "episode_id",
+    "revision_id",
+    "input_artifact_refs",
+    "input_hashes",
+    "approval_policy_id",
+    "approval_policy_version",
+    "idempotency_key",
+    "correlation_id",
+    "causation_id",
+    "attempt",
+    "deadline",
+    "requested_capabilities",
+    "payload"
+  ],
+  "studio_task_result_minimum_fields": [
+    "contract_version",
+    "task_id",
+    "studio_run_id",
+    "dag_node_id",
+    "status",
+    "output_artifact_refs",
+    "output_hashes",
+    "quality_summary",
+    "route_provenance",
+    "usage",
+    "next_episode_state",
+    "emitted_event_refs",
+    "error"
+  ],
+  "compatibility_rule": "The current WorkSubmission/queue fact shape remains accepted. Studio submissions add a discriminated versioned envelope in parameters or an additive typed field until the SQL migration is live. Claiming and finalization must preserve unknown fields across retries. The eventual adapter must not turn an arbitrary user prompt into a Story task without a frozen task type and aggregate context."
+}

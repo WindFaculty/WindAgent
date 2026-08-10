@@ -1,0 +1,38 @@
+{
+  "schema": "studio.events/v1",
+  "contract_version": "studio.contract/v0.1",
+  "event_types": [
+    "studio.series.created",
+    "studio.episode.created",
+    "studio.revision.derived",
+    "studio.artifact.created",
+    "studio.idea.candidates_generated",
+    "studio.idea.selected",
+    "studio.approval.requested",
+    "studio.approval.recorded",
+    "studio.story.review_completed",
+    "studio.story.revision_requested",
+    "studio.screenplay.locked",
+    "studio.episode.ready_for_production",
+    "studio.run.failed",
+    "studio.run.cancelled"
+  ],
+  "naming_rule": "Event names use lower-case dot notation at the Studio boundary.",
+  "event_envelope_fields": [
+    "event_id",
+    "event_type",
+    "schema_version",
+    "aggregate_id",
+    "aggregate_type",
+    "sequence",
+    "occurred_at",
+    "correlation_id",
+    "causation_id",
+    "studio_run_id",
+    "revision_ref",
+    "artifact_refs",
+    "payload"
+  ],
+  "payload_rule": "Payload is redaction-safe.",
+  "publication_rule": "Task finalization publishes through the transactional outbox; consumer read models must be idempotent by event ID and sequence."
+}

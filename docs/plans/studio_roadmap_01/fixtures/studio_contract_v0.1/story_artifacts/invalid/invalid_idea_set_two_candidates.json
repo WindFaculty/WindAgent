@@ -1,0 +1,15 @@
+{
+  "schema_version": "studio.artifact/v1alpha1",
+  "artifact_type": "IdeaCandidateSet",
+  "candidates": [
+    {
+      "candidate_id": "c1",
+      "title": "T1"
+    },
+    {
+      "candidate_id": "c2",
+      "title": "T2"
+    }
+  ],
+  "evaluated": false
+}
