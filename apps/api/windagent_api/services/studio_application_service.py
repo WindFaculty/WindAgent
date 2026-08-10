@@ -319,10 +319,11 @@ class StudioApplicationService:
     @staticmethod
     def _series_view(series: Any) -> Dict[str, Any]:
         return {
-            "series_id": str(series.series_id),
+            "id": str(series.series_id),
             "title": series.title,
             "description": series.description,
             "episode_ids": [str(e) for e in series.episode_ids],
+            "episode_count": len(series.episode_ids),
             "created_at": series.created_at.isoformat(),
             "updated_at": series.updated_at.isoformat(),
             "metadata": series.metadata,
@@ -343,11 +344,12 @@ class StudioApplicationService:
 
     def _episode_view(self, episode: Any) -> Dict[str, Any]:
         return {
-            "episode_id": str(episode.episode_id),
+            "id": str(episode.episode_id),
             "series_id": str(episode.series_id),
             "title": episode.title,
             "episode_number": episode.episode_number,
             "state": episode.state.value,
+            "version": episode.optimistic_version,
             "optimistic_version": episode.optimistic_version,
             "current_revision_id": (
                 str(episode.current_revision_id) if episode.current_revision_id else None

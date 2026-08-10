@@ -14,6 +14,7 @@ import { fetchHermesHealth, fetchHealth } from "./api/client";
 import { Endpoints } from "./pages/Endpoints";
 import { AssetWorkspace } from "./components/assets/AssetWorkspace";
 import { ProductionWorkspacePage } from "./pages/ProductionWorkspacePage";
+import { StudioPage } from "./pages/StudioPage";
 
 // ADR 0006 §3: MultiAgentWorkspace is the canonical (target) workspace UI;
 function useConversationId(): string {
@@ -421,6 +422,16 @@ export function App() {
               Router
             </div>
 
+            <div
+              className={`nav-item ${activeTab === "studio" ? "active" : ""}`}
+              onClick={() => setActiveTab("studio")}
+            >
+              <svg className="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 5a2 2 0 012-2h4a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm10 0a2 2 0 012-2h2a2 2 0 012 2v9a2 2 0 01-2 2h-2a2 2 0 01-2-2V5z" />
+              </svg>
+              Studio
+            </div>
+
             {/* Production Workspace Section */}
             <div style={{ display: "flex", flexDirection: "column" }}>
               <div
@@ -556,6 +567,7 @@ export function App() {
             </MultiAgentProvider>
           )}
           {activeTab === "router" && <Router />}
+          {activeTab === "studio" && <StudioPage />}
           {activeTab === "asset-library" && <AssetWorkspace />}
           {activeTab === "production-script" && <ProductionWorkspacePage initialPage="script" />}
           {activeTab === "production-assets" && <ProductionWorkspacePage initialPage="assets" />}

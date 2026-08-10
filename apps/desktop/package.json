@@ -25,7 +25,10 @@
     "@windagent/production-client": "file:../../frontend/packages/production-client",
     "@windagent/production-platform": "file:../../frontend/packages/production-platform",
     "@windagent/production-state": "file:../../frontend/packages/production-state",
-    "@windagent/production-ui": "file:../../frontend/packages/production-ui"
+    "@windagent/production-ui": "file:../../frontend/packages/production-ui",
+    "@windagent/studio-client": "file:../../frontend/packages/studio-client",
+    "@windagent/studio-state": "file:../../frontend/packages/studio-state",
+    "@windagent/studio-contracts": "file:../../frontend/packages/studio-contracts"
   },
   "devDependencies": {
     "@tauri-apps/api": "^2.11.1",

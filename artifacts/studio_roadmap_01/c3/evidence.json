@@ -1,0 +1,38 @@
+{
+  "evidence_id": "c3-studio-desktop-shell-gate",
+  "plan": "C",
+  "phase": "C3",
+  "gate": "STUDIO_DESKTOP_SHELL_GATE",
+  "verdict": "PASS",
+  "generated_at": "2026-08-10T05:33:33.686776+00:00",
+  "integration_sha": "fe833d11cf0798f40b44bd9772df465c69ea7f6c",
+  "tests": {
+    "desktop_vitest": {
+      "command": "C:\\Users\\Admin\\AppData\\Local\\hermes\\node\\npx.cmd vitest run --no-color",
+      "exit_code": 0,
+      "summary": "Tests  112 passed (112)",
+      "passed": true
+    },
+    "python_v3_contracts": {
+      "command": "C:\\Users\\Admin\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\python.exe -m pytest -q tests/unit/api/test_studio_v3_api.py tests/unit/api/test_openapi_snapshot.py --no-header",
+      "exit_code": 0,
+      "summary": "33 passed in 15.78s",
+      "passed": true
+    }
+  },
+  "scans": {
+    "fake_hits": [],
+    "sample_id_hits": []
+  },
+  "checks": {
+    "desktop_suite_passes": true,
+    "python_v3_contract_suite_passes": true,
+    "studio_shell_uses_real_client": true,
+    "hash_route_navigation_present": true,
+    "no_fake_in_studio_shell": true,
+    "no_sample_ids_in_studio_shell": true,
+    "studio_nav_wired_in_app": true
+  },
+  "studio_page_sha256": "3906d16ef09707528a2e1906e4ab143b4d9bd652c833666a04a272b5843b28f8",
+  "composition_note": "StudioPage composes HttpStudioApiClient over VITE_API_BASE or http://localhost:8000; V2 ProductionWorkspacePage keeps its legacy fake client behind the compatibility route (baseline defect, retired at STORY_UI_GATE per 90_MASTER_ACCEPTANCE_GATES.md)."
+}

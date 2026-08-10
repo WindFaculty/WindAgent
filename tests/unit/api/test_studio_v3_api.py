@@ -136,14 +136,14 @@ class TestV3ProductionComposition:
             assert listed.status_code == 200, listed.text
             items = listed.json()["items"]
             assert len(items) == 1
-            assert items[0]["series_id"] == "series_real_0001"
+            assert items[0]["id"] == "series_real_0001"
             assert items[0]["title"] == "Chuỗi phim thỏ và diều (thật)"
 
             episodes = test_client.get(
                 "/api/v3/studio/series/series_real_0001/episodes"
             )
             assert episodes.status_code == 200, episodes.text
-            assert episodes.json()["items"][0]["episode_id"] == "episode_real_0001"
+            assert episodes.json()["items"][0]["id"] == "episode_real_0001"
 
             detail = test_client.get("/api/v3/studio/episodes/episode_real_0001")
             assert detail.status_code == 200, detail.text
@@ -250,7 +250,7 @@ class TestV3ContractWithFakes:
         created = self._create_series(client).json()
         listed = client.get("/api/v3/studio/series")
         assert listed.status_code == 200
-        assert any(i["series_id"] == created["series_id"] for i in listed.json()["items"])
+        assert any(i["id"] == created["series_id"] for i in listed.json()["items"])
         detail = client.get(f"/api/v3/studio/series/{created['series_id']}")
         assert detail.status_code == 200
         assert detail.json()["title"] == created["title"]
@@ -278,13 +278,13 @@ class TestV3ContractWithFakes:
 
         listed = client.get(f"/api/v3/studio/series/{series_id}/episodes")
         assert listed.status_code == 200
-        assert any(i["episode_id"] == episode_id for i in listed.json()["items"])
+        assert any(i["id"] == episode_id for i in listed.json()["items"])
 
         detail = client.get(f"/api/v3/studio/episodes/{episode_id}")
         assert detail.status_code == 200
         view = detail.json()
         assert view["state"] == "DRAFT"
-        assert view["optimistic_version"] == 0
+        assert view["version"] == 0
         assert view["series_id"] == series_id
         assert "artifact_summary" in view and "approvals" in view
         assert view["run_url"] is None
