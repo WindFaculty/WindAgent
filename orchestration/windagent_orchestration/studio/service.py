@@ -35,7 +35,9 @@ from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from typing import Any, AsyncIterator, Dict, List, Optional
 
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+# Session factory is an opaque ``Any`` here on purpose: the orchestration layer
+# must stay ORM-free (architecture checker forbids sqlalchemy imports).
+AsyncSessionFactory = Any
 
 from windagent_core.contracts.studio.commands import (
     CreateEpisodeCommand,
@@ -119,7 +121,7 @@ def _id_from_key(prefix: str, idempotency_key: str) -> str:
 
 
 async def submit_runnable_nodes(
-    session_factory: async_sessionmaker[AsyncSession],
+    session_factory: AsyncSessionFactory,
     submission: StudioTaskSubmissionPort,
     run_id: StudioRunId,
     *,
@@ -176,7 +178,7 @@ class StudioRunService(StudioRunOrchestratorPort):
 
     def __init__(
         self,
-        session_factory: async_sessionmaker[AsyncSession],
+        session_factory: AsyncSessionFactory,
         submission: StudioTaskSubmissionPort,
         *,
         retry_budget: int = DEFAULT_RETRY_BUDGET,
@@ -516,7 +518,8 @@ class StudioRunService(StudioRunOrchestratorPort):
                 else:
                     episode = self._episode_update(episode, awaiting_checkpoint=None)
                 await uow.episodes.save(episode)
-                await self._advance_dependents(uow, run["run_id"], nodes)
+                fresh_nodes = await uow.nodes.list(run["run_id"])
+                await self._advance_dependents(uow, run["run_id"], fresh_nodes)
                 await uow.commit()
             else:
                 await uow.nodes.update_node(
@@ -668,8 +671,8 @@ class StudioRunService(StudioRunOrchestratorPort):
                 changed = True
         return changed
 
+    @staticmethod
     async def _finish_run_failed(
-        self,
         uow: StudioUnitOfWork,
         run_id: StudioRunId,
         episode: Episode,
@@ -687,9 +690,9 @@ class StudioRunService(StudioRunOrchestratorPort):
             metadata={**run.get("metadata", {}), "failure_reason": reason},
         )
         if not EpisodeStateMachine.is_terminal(episode.state):
-            episode = self._episode_transition(episode, EpisodeState.FAILED)
+            episode = StudioRunService._episode_transition(episode, EpisodeState.FAILED)
             await uow.episodes.save(episode)
-        await self._emit(
+        await StudioRunService._emit(
             uow,
             StudioEventCatalog.RUN_FAILED,
             run_id=run_id,
@@ -766,7 +769,7 @@ class StudioCompletionReconciler:
 
     def __init__(
         self,
-        session_factory: async_sessionmaker[AsyncSession],
+        session_factory: AsyncSessionFactory,
         submission: StudioTaskSubmissionPort,
         *,
         retry_budget: int = DEFAULT_RETRY_BUDGET,
@@ -999,16 +1002,23 @@ class StudioCompletionReconciler:
             return
         fresh = await uow.nodes.list(run_id)
         statuses = {n["status"] for n in fresh}
-        all_terminal = statuses and statuses <= StudioNodeStatus.terminal()
-        if not all_terminal:
-            return
         episode = await uow.episodes.get(run["episode_id"])
-        if StudioNodeStatus.FAILED.value in statuses or StudioNodeStatus.CANCELLED.value in statuses:
+        if (
+            StudioNodeStatus.FAILED.value in statuses
+            or StudioNodeStatus.CANCELLED.value in statuses
+        ):
             reason = next(
-                (n.get("error") or "node failed" for n in fresh if n["status"] != StudioNodeStatus.SUCCEEDED.value),
+                (
+                    n.get("error") or "node failed"
+                    for n in fresh
+                    if n["status"] != StudioNodeStatus.SUCCEEDED.value
+                ),
                 "run failed",
             )
             await StudioRunService._finish_run_failed(uow, run_id, episode, reason)
+            return
+        all_terminal = statuses and statuses <= StudioNodeStatus.terminal()
+        if not all_terminal:
             return
         # All nodes succeeded: lock the screenplay and finish the run.
         await uow.runs.save(
@@ -1022,6 +1032,7 @@ class StudioCompletionReconciler:
         if episode is not None:
             if episode.state != EpisodeState.LOCKED:
                 episode = StudioRunService._episode_transition(episode, EpisodeState.LOCKED)
+                await uow.episodes.save(episode)
                 await StudioRunService._emit(
                     uow,
                     StudioEventCatalog.SCREENPLAY_LOCKED,

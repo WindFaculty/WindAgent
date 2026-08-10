@@ -9,6 +9,7 @@ import json
 import uuid
 import logging
 from datetime import datetime, timezone
+from typing import Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
@@ -23,8 +24,21 @@ logger = logging.getLogger("windagent.storage.queue.submission")
 class SqlWorkSubmissionAdapter(WorkSubmissionPort):
     """Adapter that writes task run and outbox event TaskSubmitted in a single transaction."""
 
-    def __init__(self, session_factory: async_sessionmaker[AsyncSession]):
+    def __init__(self, session_factory: async_sessionmaker[AsyncSession], dedup_prefix: Optional[str] = None):
         self._session_factory = session_factory
+        self._dedup_prefix = dedup_prefix
+
+    def _dedup_key(self, idempotency_key: Optional[str]) -> Optional[str]:
+        """Outbox deduplication key, namespaced when a prefix is configured.
+
+        The generic path (prefix None) writes no dedup key — V2 idempotency is
+        handled by the API layer, and the outbox column is unique. Studio
+        submissions configure a prefix so their (run, node, attempt) keys can
+        never collide with V2 traffic.
+        """
+        if not idempotency_key or not self._dedup_prefix:
+            return None
+        return f"{self._dedup_prefix}:{idempotency_key}"
 
     async def submit(self, request: WorkSubmission) -> str:
         """Atomically saves task run record and inserts TaskSubmitted outbox event."""
@@ -76,7 +90,7 @@ class SqlWorkSubmissionAdapter(WorkSubmissionPort):
                     payload_json=payload_json,
                     schema_version="2.0",
                     sequence_number=1,
-                    deduplication_key=request.idempotency_key,
+                    deduplication_key=self._dedup_key(request.idempotency_key),
                     created_at=now_naive,
                     available_at=now_naive,
                     status="pending",

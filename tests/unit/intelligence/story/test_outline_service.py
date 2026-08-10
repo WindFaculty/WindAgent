@@ -86,10 +86,14 @@ def test_invalid_canon_rejected_before_provider_call():
     port = FixtureModelPort(responses={"beats": json.dumps(GOLDEN_BEAT_SHEET, ensure_ascii=False)})
     service = BeatGenerationService(StoryModelBoundary(port))
     # Canon with a relationship to an unknown character fails cross-validation.
+    from windagent_core.domain.story.bibles import CharacterRelationship
+
     bad_canon = GOLDEN_CANON.model_copy(update={
         "characters": [
             entry.model_copy(update={
-                "relationships": [{"from_id": entry.character_id, "to_id": "ch_ghost", "kind": "friend"}]
+                "relationships": [CharacterRelationship(
+                    from_id=entry.character_id, to_id="ch_ghost", kind="friend"
+                )]
             }) if entry.character_id.value == "ch_rabbit" else entry
             for entry in GOLDEN_CANON.characters
         ]
@@ -123,7 +127,8 @@ def test_beat_unknown_character_ref_blocks():
 
 def test_outline_orphan_beat_blocks():
     data = json.loads(json.dumps(GOLDEN_EPISODE_OUTLINE, ensure_ascii=False))
-    data["scenes"][0]["beat_refs"] = ["b1", "b1"]  # b2-b4 orphaned
+    for scene in data["scenes"]:
+        scene["beat_refs"] = ["b1"]  # b2-b4 orphaned everywhere
     with pytest.raises(OutlineValidationFailure) as exc:
         _run(_outline_service(json.dumps(data, ensure_ascii=False)).generate(
             BeatSheet(**GOLDEN_BEAT_SHEET), canon=GOLDEN_CANON, world=GOLDEN_WORLD

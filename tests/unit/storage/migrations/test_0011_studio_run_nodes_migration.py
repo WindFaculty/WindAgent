@@ -94,9 +94,9 @@ def test_upgrade_is_idempotent_and_downgrade_rehearsal_preserves_data(temp_db_pa
                 text(
                     "INSERT INTO studio_run_nodes (run_id, dag_node_id, task_type, status, "
                     "attempt, depends_on_json, input_hashes_json, output_hashes_json, "
-                    "output_artifact_refs_json, version, updated_at) VALUES "
+                    "output_artifact_refs_json, gate, version, updated_at) VALUES "
                     "('run_rehearsal', 'idea.generate', 'studio.story.idea.generate', "
-                    "'DISPATCHED', 1, '[]', '[]', '[]', '[]', 3, '2026-01-01 00:00:00')"
+                    "'DISPATCHED', 1, '[]', '[]', '[]', '[]', 0, 3, '2026-01-01 00:00:00')"
                 )
             )
     finally:

@@ -1,0 +1,147 @@
+{
+  "architecture_checker": {
+    "command": "python scripts/check_architecture_imports.py",
+    "exit_code": 0,
+    "tail": "Zero boundary violations detected"
+  },
+  "checks": {
+    "architecture_checker_green": true,
+    "completion_advanced_only_through_reconciliation": true,
+    "dag_task_correlation_persisted": true,
+    "fresh_upgrade_reaches_0011": true,
+    "orchestration_test_suite_passes": true,
+    "root_dispatched_with_committed_identity": true
+  },
+  "contract": "studio.contract/v0.1",
+  "gate": "DURABLE_ORCHESTRATION_GATE",
+  "generated_at": "2026-08-10T04:54:35.755758+00:00",
+  "git": {
+    "branch": "chore/cleanup-stale-md-docs"
+  },
+  "live_run": {
+    "dispatched_with_committed_identity": true,
+    "episode_id": "ep_79a7d37768418955",
+    "events": [
+      {
+        "count": 1,
+        "event_type": "studio.run.started"
+      },
+      {
+        "count": 1,
+        "event_type": "studio.task.completed"
+      },
+      {
+        "count": 2,
+        "event_type": "studio.task.submitted"
+      }
+    ],
+    "node_correlation": [
+      {
+        "attempt": 1,
+        "dag_node_id": "beats.generate",
+        "has_envelope": false,
+        "node_status": "PENDING",
+        "queue_state": null,
+        "task_id": null
+      },
+      {
+        "attempt": 1,
+        "dag_node_id": "bible.generate",
+        "has_envelope": false,
+        "node_status": "PENDING",
+        "queue_state": null,
+        "task_id": null
+      },
+      {
+        "attempt": 1,
+        "dag_node_id": "idea.evaluate",
+        "has_envelope": true,
+        "node_status": "DISPATCHED",
+        "queue_state": "pending",
+        "task_id": "stsk_2ab5b490ec50"
+      },
+      {
+        "attempt": 1,
+        "dag_node_id": "idea.generate",
+        "has_envelope": true,
+        "node_status": "SUCCEEDED",
+        "queue_state": "pending",
+        "task_id": "stsk_ccf5ab262e39"
+      },
+      {
+        "attempt": 1,
+        "dag_node_id": "lock",
+        "has_envelope": false,
+        "node_status": "PENDING",
+        "queue_state": null,
+        "task_id": null
+      },
+      {
+        "attempt": 1,
+        "dag_node_id": "outline.generate",
+        "has_envelope": false,
+        "node_status": "PENDING",
+        "queue_state": null,
+        "task_id": null
+      },
+      {
+        "attempt": 1,
+        "dag_node_id": "review",
+        "has_envelope": false,
+        "node_status": "PENDING",
+        "queue_state": null,
+        "task_id": null
+      },
+      {
+        "attempt": 1,
+        "dag_node_id": "screenplay.generate",
+        "has_envelope": false,
+        "node_status": "PENDING",
+        "queue_state": null,
+        "task_id": null
+      }
+    ],
+    "reconciled": {
+      "dag_node_id": "idea.generate",
+      "duplicate": false,
+      "run_id": "run_ce2d66f7e96a4b9a"
+    },
+    "run_id": "run_ce2d66f7e96a4b9a"
+  },
+  "migration": {
+    "current_after_upgrade": [
+      "0011_studio_run_nodes"
+    ],
+    "down_revision": "0010_studio_persistence",
+    "file": "storage/windagent_storage/migrations/alembic/versions/0011_studio_run_nodes.py",
+    "heads": [
+      "0011_studio_run_nodes"
+    ],
+    "revision": "0011_studio_run_nodes",
+    "sha256": "9442f1e9bb6dfe95ffdeb02eab235242aeff19e8e880cf71bdb3050da21ec172",
+    "studio_run_nodes_columns": [
+      "attempt",
+      "checkpoint",
+      "dag_node_id",
+      "depends_on_json",
+      "error",
+      "gate",
+      "input_hashes_json",
+      "output_artifact_refs_json",
+      "output_hashes_json",
+      "run_id",
+      "status",
+      "task_id",
+      "task_type",
+      "updated_at",
+      "version"
+    ]
+  },
+  "orchestration_tests": {
+    "command": "pytest tests/unit/orchestration/test_studio_run_service.py tests/unit/storage/migrations/test_0011_studio_run_nodes_migration.py tests/architecture/test_studio_a4_orchestration_boundary.py -q",
+    "exit_code": 0,
+    "tail": "22 passed in 8.50s"
+  },
+  "phase": "A4",
+  "verdict": "PASS"
+}

@@ -281,15 +281,16 @@ async def test_start_run_persists_dag_and_dispatches_only_root(db, service):
     async with db.session_factory() as session:
         row = (
             await session.execute(
-                text("SELECT facts_json, idempotency_key FROM task_runs WHERE id = :tid"),
+                text("SELECT facts_json FROM task_runs WHERE id = :tid"),
                 {"tid": root["task_id"]},
             )
         ).first()
     import json
 
     assert row is not None
-    assert json.loads(row[0])["tool_name"] == "studio.story.idea.generate"
-    assert row[1] == f"{result.run_id}:{NODE_IDEA_GENERATE}:1"
+    facts = json.loads(row[0])
+    assert facts["tool_name"] == "studio.story.idea.generate"
+    assert facts["parameters"]["idempotency_key"] == f"{result.run_id}:{NODE_IDEA_GENERATE}:1"
     # episode carries the active run
     episode = await _episode_state(db, episode_id)
     assert episode == EpisodeState.DRAFT
@@ -659,6 +660,11 @@ async def test_gated_happy_path_reaches_ready_for_production(db, service):
 
 @pytest.mark.asyncio
 async def test_auto_happy_path_skips_gates(db, service):
+    from windagent_storage.unit_of_work.studio_uow import StudioUnitOfWork
+
+    async with StudioUnitOfWork(db.session_factory) as uow:
+        await uow.approvals.save_policy(_auto_policy())
+        await uow.commit()
     _, episode_id = await _seed_episode(db, service)
     started = await service.start_or_resume_run(
         StartRunCommand(idempotency_key="a4-auto-1", episode_id=episode_id)

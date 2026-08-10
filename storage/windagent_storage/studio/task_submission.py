@@ -26,7 +26,8 @@ class StudioTaskSubmissionAdapter(StudioTaskSubmissionPort):
 
     def __init__(self, session_factory: async_sessionmaker[AsyncSession]) -> None:
         self._session_factory = session_factory
-        self._wrapped = SqlWorkSubmissionAdapter(session_factory)
+        self._wrapped = SqlWorkSubmissionAdapter(session_factory, dedup_prefix="studio_submit")
+        self._dedup_prefix = "studio_submit"
 
     async def submit(self, envelope: StudioTaskEnvelope) -> str:
         """Submit durably; returns the committed task identity.
@@ -65,7 +66,7 @@ class StudioTaskSubmissionAdapter(StudioTaskSubmissionPort):
     async def _find_by_idempotency_key(self, idempotency_key: str) -> str | None:
         async with self._session_factory() as session:
             record = await SqlOutboxRepository(session).get_by_deduplication_key(
-                idempotency_key
+                f"{self._dedup_prefix}:{idempotency_key}"
             )
         if record is None:
             return None

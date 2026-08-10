@@ -184,11 +184,15 @@ def test_handlers_match_frozen_task_types():
         StudioTaskType.IDEA_GENERATE.value,
         StudioTaskType.IDEA_EVALUATE.value,
         StudioTaskType.BIBLE_GENERATE.value,
+        StudioTaskType.BEATS_GENERATE.value,
+        StudioTaskType.OUTLINE_GENERATE.value,
     }
     assert set(HANDLER_REGISTRY) == {
         StudioTaskType.IDEA_GENERATE,
         StudioTaskType.IDEA_EVALUATE,
         StudioTaskType.BIBLE_GENERATE,
+        StudioTaskType.BEATS_GENERATE,
+        StudioTaskType.OUTLINE_GENERATE,
     }
 
 
