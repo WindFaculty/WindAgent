@@ -320,6 +320,28 @@ describe('RunProgress (C4)', () => {
     await new Promise((resolve) => setTimeout(resolve, 60));
     expect(runCalls).toBe(callsAtTerminal);
   });
+
+  it('surfaces mid-run network loss and clears on recovery', async () => {
+    let ticks = 0;
+    let recovered = false;
+    const fetchImpl: FetchFn = async (input) => {
+      const url = String(input);
+      if (url.includes('/runs/run_1/events')) {
+        return jsonResponse(200, { events: [], next_after: 0 });
+      }
+      ticks += 1;
+      if (ticks >= 2 && !recovered) throw new TypeError('network down');
+      return jsonResponse(200, runResource({ status: 'RUNNING' }));
+    };
+    const store = makeStore(fetchImpl);
+    render(<RunProgress runId="run_1" store={store} intervalMs={20} onDurableChange={() => undefined} />);
+    expect(await screen.findByText('RUNNING')).toBeInTheDocument();
+    // polling ticks keep failing => banner stays until the network recovers
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('Run status unreachable'));
+    expect(ticks).toBeGreaterThanOrEqual(2);
+    recovered = true;
+    await waitFor(() => expect(screen.queryByRole('alert')).not.toBeInTheDocument(), { timeout: 2000 });
+  });
 });
 
 // -- page-level integration -------------------------------------------------

@@ -61,6 +61,7 @@ export function RunProgress({
 }) {
   const [run, setRun] = useState<StudioRunResource | null>(null);
   const [events, setEvents] = useState<Array<{ sequence: number; event_type: string }>>([]);
+  const [pollError, setPollError] = useState(false);
   const seenSequences = useRef<Set<number>>(new Set());
   const durableRef = useRef(onDurableChange);
   durableRef.current = onDurableChange;
@@ -68,7 +69,11 @@ export function RunProgress({
   useEffect(() => {
     const stop = store.pollRun(runId, {
       intervalMs,
-      onStatus: (next) => setRun(next),
+      onStatus: (next) => {
+        setRun(next);
+        setPollError(false); // recovery: any successful tick clears the banner
+      },
+      onError: () => setPollError(true),
       onEvent: (pageEvents: RunEventsPage['events']) => {
         const fresh = pageEvents.filter((e) => !seenSequences.current.has(e.sequence));
         for (const e of fresh) seenSequences.current.add(e.sequence);
@@ -99,6 +104,11 @@ export function RunProgress({
   const wait = run.wait_reason ? WAIT_LABEL[run.wait_reason] : null;
   return (
     <section aria-label="Run progress" style={{ border: '1px solid #334155', borderRadius: 8, padding: 10, margin: '8px 0' }}>
+      {pollError && (
+        <div role="alert" style={{ color: '#fca5a5', marginBottom: 6 }}>
+          Run status unreachable — retrying…
+        </div>
+      )}
       <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
         <span style={{ color: STATUS_COLOR[run.status] ?? '#e2e8f0', fontWeight: 600 }}>{run.status}</span>
         <span style={MUTED}>{run.command_type}</span>

@@ -241,7 +241,7 @@ export class StudioStore {
    */
   pollRun(
     runId: string,
-    opts: { intervalMs?: number; onEvent?: (events: RunEventsPage['events']) => void; onStatus?: (run: StudioRunResource) => void } = {}
+    opts: { intervalMs?: number; onEvent?: (events: RunEventsPage['events']) => void; onStatus?: (run: StudioRunResource) => void; onError?: (err: unknown) => void } = {}
   ): () => void {
     this.stopPolling(runId);
     const intervalMs = opts.intervalMs ?? 2_000;
@@ -265,6 +265,7 @@ export class StudioStore {
         }
       } catch (err) {
         this.recordError(err);
+        opts.onError?.(err);
       }
     };
     void tick();
