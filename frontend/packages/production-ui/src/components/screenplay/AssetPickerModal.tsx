@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { ProductionAssetBindingDTO, AssetEligibilityResultDTO } from '@windagent/production-contracts';
 
 interface AssetPickerModalProps {
   isOpen: boolean;

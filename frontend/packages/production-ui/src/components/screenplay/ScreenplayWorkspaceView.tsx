@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import {
   ScreenplayReadModelDTO,
   SceneReadDTO,
@@ -51,7 +51,6 @@ export interface ScreenplayWorkspaceViewProps {
 export const ScreenplayWorkspaceView: React.FC<ScreenplayWorkspaceViewProps> = ({
   readModel,
   selectedSceneId,
-  selectedDialogueId,
   editorMode,
   saveStatus,
   canUndo,

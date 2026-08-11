@@ -27,7 +27,8 @@ from windagent_api.routers.v2_sessions import router as v2_sessions_router
 from windagent_api.routers.v2_tasks import router as v2_tasks_router
 from windagent_api.routers.v2_runs import router as v2_runs_router
 from windagent_api.routers.v2_workflows import router as v2_workflows_router
-from windagent_api.routers.v2_events import router as v2_events_router
+from windagent_api.routers.v2_events import v2_events_router
+from windagent_api.routers.v2_events import v2_events_legacy_router
 from windagent_api.routers.v2_providers import router as v2_providers_router
 from windagent_api.routers.v2_tools import router as v2_tools_router
 from windagent_api.routers.v2_permissions import router as v2_permissions_router
@@ -148,6 +149,7 @@ app.include_router(v2_tasks_router)
 app.include_router(v2_runs_router)
 app.include_router(v2_workflows_router)
 app.include_router(v2_events_router)
+app.include_router(v2_events_legacy_router)
 app.include_router(v2_providers_router)
 app.include_router(v2_tools_router)
 app.include_router(v2_permissions_router)

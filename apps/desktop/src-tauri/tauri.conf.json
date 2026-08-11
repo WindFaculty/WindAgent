@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "WindAgent",
-  "version": "0.6.0",
+  "version": "0.3.0",
   "identifier": "com.windagent.desktop",
   "build": {
     "beforeDevCommand": "npm run dev",

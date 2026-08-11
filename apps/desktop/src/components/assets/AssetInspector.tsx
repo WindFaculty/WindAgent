@@ -178,7 +178,7 @@ export const AssetInspector: React.FC<{ assetId: string; onRefresh: () => void }
             {activeRevision?.media_type === "model_3d" ? (
               <ThreeDPreviewViewer glbUri={activeRevision?.preview_artifacts?.glb_uri} />
             ) : (
-              <NonThreeDPreviewViewer mediaType={activeRevision?.media_type || "image"} artifacts={activeRevision?.preview_artifacts} />
+              <NonThreeDPreviewViewer mediaType={activeRevision?.media_type || "image"} />
             )}
           </div>
         )}

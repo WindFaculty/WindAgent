@@ -60,6 +60,15 @@ export interface AssetEligibilityResultDTO {
   warning_reasons: string[];
 }
 
+export interface SelectedFile {
+  id: string;
+  name: string;
+  size: number;
+  type: string;
+  path?: string;
+  fileObject?: File;
+}
+
 export interface AssetRequirementDTO {
   requirement_id: string;
   project_id: string;
@@ -69,10 +78,10 @@ export interface AssetRequirementDTO {
   role_key: string;
   required_kind: string;
   required_media: string;
-  description: string;
-  severity: 'BLOCKING' | 'WARNING';
-  status: 'OPEN' | 'RESOLVING' | 'FULFILLED' | 'STALE';
-  candidate_asset_ids: string[];
+  description?: string;
+  severity?: 'BLOCKING' | 'WARNING' | 'INFO';
+  status?: 'OPEN' | 'ACTIVE' | 'FULFILLED' | 'RESOLVING' | 'STALE';
+  candidate_asset_ids?: string[];
 }
 
 export type WorkspaceCommandType =

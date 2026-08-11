@@ -104,7 +104,7 @@ export const ActivityTimelinePanel: React.FC<ActivityTimelinePanelProps> = ({
                     {act.summary}
                   </div>
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 4, pt: 4, borderTop: '1px solid #334155' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 4, paddingTop: 4, borderTop: '1px solid #334155' }}>
                     <div style={{ fontSize: 11, color: '#94a3b8', display: 'flex', gap: 12 }}>
                       <span>Actor: <code style={{ color: '#38bdf8' }}>{act.actor}</code></span>
                       <span>Rev: <code style={{ color: '#a5f3fc' }}>{act.revision_id}</code></span>

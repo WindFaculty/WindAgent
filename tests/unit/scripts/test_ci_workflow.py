@@ -21,6 +21,7 @@ REQUIRED_JOBS = {
     "web-test-windows",
     "desktop-test",
     "desktop-test-windows",
+    "studio-roadmap-gates",
 }
 
 

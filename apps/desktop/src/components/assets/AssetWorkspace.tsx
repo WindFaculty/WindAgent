@@ -198,7 +198,7 @@ export const AssetWorkspace: React.FC<{ projectId?: string }> = ({ projectId = "
                       cursor: "pointer",
                       display: "flex",
                       flexDirection: "column",
-                      justify: "space-between",
+                      justifyContent: "space-between",
                     }}
                   >
                     <div style={{ height: "100px", background: "#0f172a", borderRadius: "4px", display: "flex", alignItems: "center", justifyContent: "center", color: "#64748b" }}>

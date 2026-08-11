@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-export const NonThreeDPreviewViewer: React.FC<{ mediaType: string; artifacts?: Record<string, any> }> = ({ mediaType, artifacts }) => {
+export const NonThreeDPreviewViewer: React.FC<{ mediaType: string }> = ({ mediaType }) => {
   const [isPlaying, setIsPlaying] = useState(false);
 
   if (mediaType === "audio") {

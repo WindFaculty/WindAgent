@@ -4607,6 +4607,187 @@
         ]
       }
     },
+    "/api/v2/events": {
+      "get": {
+        "operationId": "list_events_api_v2_events_get",
+        "parameters": [
+          {
+            "description": "Filter by project ID",
+            "in": "query",
+            "name": "project_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by project ID",
+              "title": "Project Id"
+            }
+          },
+          {
+            "description": "Filter by aggregate ID",
+            "in": "query",
+            "name": "aggregate_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by aggregate ID",
+              "title": "Aggregate Id"
+            }
+          },
+          {
+            "description": "Minimum sequence number for event replay",
+            "in": "query",
+            "name": "min_sequence",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "description": "Minimum sequence number for event replay",
+              "title": "Min Sequence",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Alias for min_sequence replay cursor",
+            "in": "query",
+            "name": "last_sequence",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Alias for min_sequence replay cursor",
+              "title": "Last Sequence"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/EventResponse"
+                  },
+                  "title": "Response List Events Api V2 Events Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Events",
+        "tags": [
+          "Production Events V2",
+          "Production Events V2"
+        ]
+      }
+    },
+    "/api/v2/events/stream": {
+      "get": {
+        "description": "Server-Sent Events (SSE) stream supporting reconnect, project scoping, and last_sequence replay.",
+        "operationId": "sse_event_stream_api_v2_events_stream_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "project_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Project Id"
+            }
+          },
+          {
+            "description": "Replay missed events starting after last_sequence",
+            "in": "query",
+            "name": "last_sequence",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "description": "Replay missed events starting after last_sequence",
+              "title": "Last Sequence",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "aggregate_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Aggregate Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Sse Event Stream",
+        "tags": [
+          "Production Events V2",
+          "Production Events V2"
+        ]
+      }
+    },
     "/api/v2/memory": {
       "get": {
         "operationId": "list_memory_records_api_v2_memory_get",
@@ -6814,6 +6995,7 @@
         },
         "summary": "List Events",
         "tags": [
+          "Production Events V2",
           "Production Events V2"
         ]
       }
@@ -6890,6 +7072,7 @@
         },
         "summary": "Sse Event Stream",
         "tags": [
+          "Production Events V2",
           "Production Events V2"
         ]
       }

@@ -196,6 +196,7 @@ Parallelism: screenplay renderer, findings/diff views, and lock receipt view may
 
 | Required item | Execution detail |
 |---|---|
+| Status | DONE — `RELEASE_CANDIDATE_GATE` PASS; see `artifacts/studio_roadmap_01/c6/RELEASE_CANDIDATE_GATE_VERDICT.md`. |
 | Objective | Make the integrated API/desktop surface reproducible, secure, and regression-safe before real-slice certification. |
 | Inspection | Python/frontend/desktop test matrices, Tauri build config, API URL/auth/CORS, logging/redaction, source maps, bundle dependency graph, V2 route snapshots, version sources, and CI artifact conventions. |
 | Steps | 1. Run API, generated-contract, client/state/UI, desktop, and Tauri build/test matrices. 2. Run production-bundle scans for fakes/sample IDs/dev endpoints/secrets. 3. Validate auth/authorization, redacted errors/logs, request size/rate/timeout behavior. 4. Test API/worker/desktop restart and network loss. 5. Re-run V2 compatibility and shared package suites. 6. Resolve version source/drift with A; do not fake checker evidence. 7. Add deterministic CI jobs/evidence uploads as the sole CI-workflow editor. |
@@ -295,3 +296,5 @@ Plan C is accepted only when:
 ## Plan C final verdict target
 
 Do not claim this verdict from planning alone. The implementation branch may report `WIND_STUDIO_PLAN_C_PRODUCT_INTEGRATION_READY` only after `FINAL_CERTIFICATION_GATE` passes. Otherwise it reports the first failed gate and does not promote Roadmap 1.
+
+Current standing (2026-08-11): C0–C6 all PASS, `RELEASE_CANDIDATE_GATE` with 13/13 checks (checkers, desktop vitest/build, Tauri release binary, bundle/source scans clean, V2 regression, session recovery, studio security/redaction, contracts/consumer, full matrix 3521 passed / 10 A7-classified pre-existing outside Plan C, CI studio job wired). C-owned baseline failures retired: desktop version drift, `/api/v2/events` contract family, session-recovery WS 403. Remaining: C7 real vertical slice, C8 recovery slice, C9 final certification.

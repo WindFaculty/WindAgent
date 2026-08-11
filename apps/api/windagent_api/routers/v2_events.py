@@ -18,10 +18,52 @@ from windagent_api.dependencies import get_video_production_uow
 from windagent_core.events.envelope import EventEnvelope
 
 logger = logging.getLogger("windagent.api.events")
-router = APIRouter(prefix="/api/v2/video-production/events", tags=["Production Events V2"])
+router = APIRouter(tags=["Production Events V2"])
+
+# Canonical surface: /api/v2/events. Legacy video-production-scoped prefix
+# retained for compatibility, same handlers, no behavior change.
+v2_events_router = APIRouter(prefix="/api/v2/events", tags=["Production Events V2"])
+v2_events_router.include_router(router)
+v2_events_legacy_router = APIRouter(prefix="/api/v2/video-production/events", tags=["Production Events V2"])
+v2_events_legacy_router.include_router(router)
 
 # Production in-memory fallback store holding canonical EventEnvelopes
 _DURABLE_EVENT_STORE: List[EventEnvelope] = []
+
+
+@router.websocket("/ws")
+async def events_websocket(
+    websocket: WebSocket,
+    aggregate_id: str = Query(..., description="Aggregate whose events this socket streams"),
+) -> None:
+    """Stream recorded events for one aggregate, with heartbeat pings.
+
+    Cursor is the envelope sequence; reconnect replays strictly after it.
+    Memory store is the fallback surface (SSE/list endpoints already expose
+    the same envelopes); durable DB-backed streams stay on conversation
+    sockets / v2 outbox replay.
+    """
+    await websocket.accept()
+    cursor = 0
+    try:
+        while True:
+            for env in _DURABLE_EVENT_STORE:
+                seq = env.sequence
+                if env.aggregate_id == aggregate_id and seq > cursor:
+                    cursor = seq
+                    await websocket.send_json(
+                        {
+                            "event_type": env.event_type,
+                            "aggregate_id": env.aggregate_id,
+                            "sequence": seq,
+                            "payload": env.payload,
+                        }
+                    )
+            # ponytail: heartbeat doubles as cursor keepalive, not an event
+            await websocket.send_json({"type": "ping", "sequence": cursor})
+            await asyncio.sleep(0.05)
+    except WebSocketDisconnect:
+        return
 
 
 def record_event_durable(envelope: EventEnvelope) -> None:

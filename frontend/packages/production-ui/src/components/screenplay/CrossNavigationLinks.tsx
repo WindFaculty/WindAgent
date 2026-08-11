@@ -17,7 +17,6 @@ export const CrossNavigationLinks: React.FC<CrossNavigationLinksProps> = ({
   sceneId,
   entityId,
   assetId,
-  requirementId,
   onNavigate,
 }) => {
   const handleOpenAsset = () => {

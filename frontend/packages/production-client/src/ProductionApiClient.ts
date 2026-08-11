@@ -220,7 +220,7 @@ export class ProductionSyncClient {
   private dedupeCache = new Set<string>();
 
   constructor(
-    private projectId: string,
+    _projectId: string,
     private onEvent: (event: ProductionEventEnvelope) => void,
     private onStateChange: (state: SyncState) => void,
     private onSnapshotResync: () => void

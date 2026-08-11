@@ -1,6 +1,6 @@
 [package]
 name = "windagent-desktop"
-version = "0.6.0"
+version = "0.3.0"
 description = "WindAgent desktop shell"
 authors = ["WindAgent contributors"]
 license = "Proprietary"

@@ -1,6 +1,6 @@
 {
   "name": "windagent-desktop",
-  "version": "0.6.0",
+  "version": "0.3.0",
   "private": true,
   "description": "WindAgent Tauri + React desktop app (Phase 6)",
   "type": "module",

@@ -1,0 +1,99 @@
+{
+  "bundle_scan": {},
+  "checkers": {
+    "command": "D:\\code_ca_nhan\\WindAgent\\.venv\\Scripts\\python.exe scripts/studio_roadmap/run_ci_checkers.py",
+    "exit_code": 0,
+    "tail": "ALL CHECKERS PASSED"
+  },
+  "checks": {
+    "bundle_scan_clean": true,
+    "checkers_green": true,
+    "ci_studio_job_wired": true,
+    "desktop_build_green": true,
+    "desktop_vitest_green": true,
+    "full_matrix_only_known_failures": true,
+    "no_unknown_failures": true,
+    "session_recovery_green": true,
+    "source_scan_clean": true,
+    "studio_contracts_consumer_green": true,
+    "studio_security_redaction_green": true,
+    "tauri_release_binary_present": true,
+    "v2_api_regression_green": true
+  },
+  "ci_workflow": {
+    "final_evidence_wired": true,
+    "studio_job_present": true
+  },
+  "contract": "studio.contract/v0.1",
+  "desktop_matrix": {
+    "build": {
+      "command": "npm.cmd run build",
+      "exit_code": 0,
+      "tail": "\u001b[32m\u2713 built in 1.07s\u001b[39m"
+    },
+    "bundle_checksum": "89b961b564386d7b679716aae8438519c7e2878c4add7c14a9de9ac5e927cc0b",
+    "bundle_files": 6,
+    "tauri_binary": {
+      "path": "D:\\code_ca_nhan\\WindAgent\\apps\\desktop\\src-tauri\\target\\release\\windagent-desktop.exe",
+      "sha256": "8121b3190cfdc32ba7d1a7903203cbef22500823fea1258f4fa0ea814f1774b2",
+      "size_bytes": 8955392
+    },
+    "vitest": {
+      "command": "npm.cmd test",
+      "exit_code": 0,
+      "tail": "\u001b[2m   Duration \u001b[22m 1.96s\u001b[2m (transform 1.19s, setup 1.11s, import 2.86s, tests 1.40s, environment 4.75s)\u001b[22m"
+    }
+  },
+  "full_matrix": {
+    "failed": [
+      "tests/architecture/test_phase00_single_workspace_contract.py::test_phase0_docs_exist",
+      "tests/architecture/test_phase06_kernel_canonical.py::test_kernel_never_launches_or_imports_upstream",
+      "tests/integration/test_phase14_two_process_e2e.py::test_api_worker_durable_runtime_two_process",
+      "tests/regression/test_cutover_defects.py::test_def_006_startup_recovery_not_wired",
+      "tests/unit/intelligence/test_phase23_workspace.py::test_api_v2_workspace_endpoints",
+      "tests/unit/intelligence/test_phase23_workspace.py::test_workspace_snapshot",
+      "tests/unit/verification/test_phase03_verifier_no_write.py::test_no_write_exits_zero_and_leaves_evidence_untouched",
+      "tests/unit/verification/test_phase03_verifier_no_write.py::test_verify_only_alias_exits_zero_and_leaves_evidence_untouched",
+      "tests/unit/verification/test_phase26_security.py::test_se11_api_idempotency_and_stale_revision",
+      "tests/unit/verification/test_phase27_release.py::test_evidence_validation_lane_lineage"
+    ],
+    "failed_count": 10,
+    "present": true,
+    "total": 3567,
+    "unknown": []
+  },
+  "gate": "RELEASE_CANDIDATE_GATE",
+  "generated_at": "2026-08-11T04:31:53.511509+00:00",
+  "git": {
+    "branch": "chore/cleanup-stale-md-docs",
+    "head_sha": "bf8b1407dfe0b9cd68b6a1c7195fa508625e70d6"
+  },
+  "phase": "C6",
+  "source_scan": {},
+  "suites": {
+    "session_recovery": {
+      "exit_code": 0,
+      "failed": [],
+      "tail": "4 passed in 14.94s"
+    },
+    "studio_contracts_consumer": {
+      "exit_code": 0,
+      "failed": [],
+      "tail": "70 passed, 1 warning in 13.38s"
+    },
+    "studio_security_redaction": {
+      "exit_code": 1,
+      "failed": [
+        "tests/unit/verification/test_phase26_security.py::test_se11_api_idempotency_and_stale_revision"
+      ],
+      "tail": "1 failed, 85 passed, 2 warnings in 5.26s"
+    },
+    "v2_api_regression": {
+      "exit_code": 0,
+      "failed": [],
+      "tail": "18 passed, 1 warning in 9.92s"
+    }
+  },
+  "unknown_failures": [],
+  "verdict": "PASS"
+}

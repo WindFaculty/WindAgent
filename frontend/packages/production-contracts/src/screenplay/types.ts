@@ -150,7 +150,7 @@ export interface ValidationIssueDTO {
   remediation_hint: string;
 }
 
-export interface AssetRequirementDTO {
+export interface ScreenplayAssetRequirementDTO {
   requirement_id: string;
   asset_type: 'CHARACTER' | 'LOCATION' | 'PROP';
   ref_id: string;
@@ -167,5 +167,5 @@ export interface ScreenplayValidationReportDTO {
   warning_count: number;
   info_count: number;
   issues: ValidationIssueDTO[];
-  asset_requirements: AssetRequirementDTO[];
+  asset_requirements: ScreenplayAssetRequirementDTO[];
 }

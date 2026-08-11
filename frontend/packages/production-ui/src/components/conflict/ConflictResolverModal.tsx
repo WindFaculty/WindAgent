@@ -61,7 +61,7 @@ export const ConflictResolverModal: React.FC<ConflictResolverModalProps> = ({
             backgroundColor: '#fafafa',
             borderBottom: '1px solid #f0f0f0',
             display: 'flex',
-            justify: 'space-between',
+            justifyContent: 'space-between',
             alignItems: 'center',
           }}
         >
@@ -178,7 +178,7 @@ export const ConflictResolverModal: React.FC<ConflictResolverModalProps> = ({
             backgroundColor: '#fafafa',
             borderTop: '1px solid #f0f0f0',
             display: 'flex',
-            justify: 'space-between',
+            justifyContent: 'space-between',
             alignItems: 'center',
           }}
         >
