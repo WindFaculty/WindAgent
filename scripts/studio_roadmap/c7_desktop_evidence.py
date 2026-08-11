@@ -171,7 +171,13 @@ def capture_c7_desktop_evidence(
 
     npm = "npm.cmd"
     output_dir.mkdir(parents=True, exist_ok=True)
-    log_dir = REPO_ROOT / ".tmp" / "studio-c7" / "desktop"
+    log_dir = (
+        REPO_ROOT
+        / ".tmp"
+        / "studio-c7"
+        / "desktop"
+        / f"{episode_id}-{run_id}"
+    )
     log_dir.mkdir(parents=True, exist_ok=True)
     stdout_path = log_dir / "tauri.stdout.log"
     stderr_path = log_dir / "tauri.stderr.log"

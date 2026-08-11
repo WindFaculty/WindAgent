@@ -118,6 +118,7 @@ class EndpointSelector:
         equivalence = binding.get("equivalence_level", "")
         enabled = binding.get("is_active", True)
         credential_ciphertext = binding.get("credential_ciphertext")
+        protocol_mode = str(binding.get("protocol_mode") or "openai").lower()
 
         if not all(
             [endpoint_id, binding_id, provider_model_id, provider_name, base_url]
@@ -131,8 +132,9 @@ class EndpointSelector:
         if equivalence != "exact_revision":
             return None
 
-        # Credential validity check (empty ciphertext means missing credential).
-        if not credential_ciphertext:
+        # Ollama commonly runs as a credentialless local service.  Every other
+        # supported protocol remains fail-closed when its credential is absent.
+        if not credential_ciphertext and protocol_mode != "ollama":
             return None
 
         # Endpoint state filters.
@@ -147,7 +149,7 @@ class EndpointSelector:
             base_url=base_url,
             credential_ciphertext=credential_ciphertext,
             is_exact_revision=True,
-            protocol_mode=str(binding.get("protocol_mode") or "openai"),
+            protocol_mode=protocol_mode,
         )
 
     async def _score_candidate(

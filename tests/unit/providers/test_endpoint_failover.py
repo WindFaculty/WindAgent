@@ -52,6 +52,7 @@ def _binding(
     credential_ciphertext: str = "enc:v1:test",
     equivalence_level: str = "exact_revision",
     is_active: bool = True,
+    protocol_mode: str = "openai",
 ) -> Dict[str, Any]:
     return {
         "endpoint_id": endpoint_id,
@@ -63,6 +64,7 @@ def _binding(
         "credential_ciphertext": credential_ciphertext,
         "equivalence_level": equivalence_level,
         "is_active": is_active,
+        "protocol_mode": protocol_mode,
     }
 
 
@@ -321,6 +323,39 @@ async def test_non_exact_revision_bindings_not_failover_eligible():
     ]
     candidates = await selector.select_candidates(bindings)
     assert [c.endpoint_id for c in candidates] == ["ep-exact"]
+
+
+@pytest.mark.asyncio
+async def test_credentialless_ollama_binding_is_eligible_but_openai_is_not():
+    state = InMemoryEndpointStateManager()
+    selector = EndpointSelector(state, InMemoryQuotaStateManager())
+    bindings = [
+        _binding(
+            "ep-openai-anonymous",
+            "cm-local",
+            "model-a",
+            "openai",
+            "https://openai.invalid/v1",
+            credential_ciphertext="",
+        ),
+        _binding(
+            "ep-ollama-anonymous",
+            "cm-local",
+            "ornith:9b",
+            "ollama-local",
+            "http://127.0.0.1:11434/v1",
+            credential_ciphertext="",
+            protocol_mode="ollama",
+        ),
+    ]
+
+    candidates = await selector.select_candidates(bindings)
+
+    assert [candidate.endpoint_id for candidate in candidates] == [
+        "ep-ollama-anonymous"
+    ]
+    assert candidates[0].credential_ciphertext == ""
+    assert candidates[0].protocol_mode == "ollama"
 
 
 # ──────────────────────────────────────────────

@@ -39,3 +39,22 @@ def test_resolver_rejects_protocols_without_a_supported_transport() -> None:
                 base_url="https://example.test/v1",
             )
         )
+
+
+def test_resolver_does_not_decrypt_missing_ollama_credential() -> None:
+    ciphertexts: list[str] = []
+    resolver = EndpointAdapterResolver(
+        lambda ciphertext: ciphertexts.append(ciphertext) or "unexpected"
+    )
+
+    transport = resolver(
+        SimpleNamespace(
+            protocol_mode="ollama",
+            credential_ciphertext=None,
+            provider_name="ollama-local",
+            base_url="http://127.0.0.1:11434/v1",
+        )
+    )
+
+    assert ciphertexts == []
+    assert transport.api_key == ""

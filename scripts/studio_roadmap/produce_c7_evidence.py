@@ -306,7 +306,11 @@ def main() -> int:
         db_url=args.db,
         api_base=args.api,
         canonical_model=CANONICAL_MODEL,
-        log_dir=RAW_DIR / "processes",
+        log_dir=(
+            RAW_DIR
+            / "processes"
+            / f"{head[:12]}-{hashlib.sha256(args.db.encode('utf-8')).hexdigest()[:12]}"
+        ),
     )
     stage = "process.start"
     failure: Exception | None = None

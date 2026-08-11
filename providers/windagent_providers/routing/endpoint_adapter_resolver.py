@@ -32,5 +32,5 @@ class EndpointAdapterResolver:
         return OpenAICompatibleTransport(
             provider_name=str(candidate.provider_name),
             base_url=str(candidate.base_url),
-            api_key=self._decrypt_credentials(ciphertext),
+            api_key=self._decrypt_credentials(ciphertext) if ciphertext else "",
         )
