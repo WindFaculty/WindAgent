@@ -55,6 +55,23 @@ flowchart LR
 
 No API or story handler advances the DAG directly. No legacy engine receives a new Story dependency.
 
+## Execution status (live)
+
+Updated 2026-08-11. Phases A0–A6 are complete with fresh gate verdicts; A7 (foundation regression and handoff) is the only remaining Plan A phase.
+
+| Phase | Gate | Status | Evidence |
+|---|---|---|---|
+| A0 | `CONTRACT_FREEZE_GATE` | PASS | `docs/plans/studio_roadmap_01/evidence/a0_bootstrap_manifest.json` (+ `.schema.json`) |
+| A1 | `STUDIO_ARCHITECTURE_GATE` | PASS | `docs/plans/studio_roadmap_01/evidence/a1_boundary_repair.md` |
+| A2 | `STUDIO_DOMAIN_INTEGRATION_GATE` | PASS | `docs/plans/studio_roadmap_01/evidence/a2_domain_integration.md` |
+| A3 | `STUDIO_PERSISTENCE_GATE` | PASS | `artifacts/studio_roadmap_01/a3/STUDIO_PERSISTENCE_GATE_VERDICT.md` — migration `0010_studio_persistence` (sha256 `c1550613…`) |
+| A4 | `DURABLE_ORCHESTRATION_GATE` | PASS | `artifacts/studio_roadmap_01/a4/DURABLE_ORCHESTRATION_GATE_VERDICT.md` — integration `e8de750`, migration `0011_studio_run_nodes` |
+| A5 | `STORY_WORKER_GATE` | PASS | `artifacts/studio_roadmap_01/a5/STORY_WORKER_GATE_VERDICT.md` — integration `e93457d` |
+| A6 | `REAL_MODEL_RUNTIME_GATE` | PASS | `artifacts/studio_roadmap_01/a6/REAL_MODEL_RUNTIME_GATE_VERDICT.md` — integration `cbb8b45` |
+| A7 | `PLAN_A_HANDOFF_GATE` | PASS | `artifacts/studio_roadmap_01/a7/PLAN_A_HANDOFF_GATE_VERDICT.md` + `evidence/a7_foundation_handoff.md` — integration `fa3c2ac`, full matrix 3515 passed / 16 classified pre-existing, all 14 checks green |
+
+Plan A is complete: `WIND_STUDIO_PLAN_A_FOUNDATION_READY` is claimable with A7 evidence (see final verdict section). Remaining branch-wide pre-existing failures are classified with owners and retirement gates in the A7 handoff manifest — none owned by Plan A.
+
 ## Ownership and dependencies
 
 ### Owned modules and expected files
@@ -215,6 +232,7 @@ Parallelism inside A6: capability discovery and provider-adapter error mapping c
 
 | Required item | Execution detail |
 |---|---|
+| Status | DONE — `PLAN_A_HANDOFF_GATE` PASS at `fa3c2ac`; see Execution status + `evidence/a7_foundation_handoff.md`. |
 | Objective | Prove A is a stable platform for B/C integration and has not damaged V2 or VP3D. |
 | Inspection | Review every A-owned diff, schema compatibility, public exports, runtime feature flags, docs, evidence freshness, open baseline failures, and consumer contract status. |
 | Steps | 1. Run full relevant Python tests and all architecture/taxonomy/version/duplicate/workspace checks. 2. Run migration and recovery rehearsal. 3. Run V2 API and VP3D/Blender contract tests. 4. Run A→B and A→C consumer suites. 5. Publish a versioned handoff manifest with contract versions, migration head, event/task registries, known limitations, and rollback commands. |
@@ -267,3 +285,5 @@ Plan A is accepted only when:
 ## Plan A final verdict target
 
 Do not claim this verdict from planning alone. The implementation branch may report `WIND_STUDIO_PLAN_A_FOUNDATION_READY` only after `PLAN_A_HANDOFF_GATE` passes with fresh evidence. Otherwise it reports the first failed gate and remains blocked from final integration.
+
+Current standing (2026-08-11): gates A0–A7 all PASS with committed verdicts, `PLAN_A_HANDOFF_GATE` at `fa3c2ac` (14/14 checks, full matrix 3515 passed, 16 classified pre-existing failures with owners/retirement gates outside Plan A). `WIND_STUDIO_PLAN_A_FOUNDATION_READY` is claimable on this branch. Known branch-wide failures stay open until their named retirement gates (C6 / FINAL_CERTIFICATION_GATE).

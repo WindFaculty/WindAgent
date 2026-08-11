@@ -22,6 +22,8 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+from windagent_core.version import PRODUCT_VERSION
+
 _ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(_ROOT))
 
@@ -84,7 +86,7 @@ def build_baseline_manifest() -> dict:
             },
         },
         "windagent": {
-            "product_version": "0.3.0",  # pyproject.toml; core/windagent_core/version.py fallback
+            "product_version": PRODUCT_VERSION,  # core/windagent_core/version.py
             "architecture_generation": "v2",
             "api_version": "v2",
             "provider_protocol_version": "1.0.0",
@@ -194,7 +196,7 @@ def main() -> int:
         "summary": "Baseline frozen: git SHA pinned, WindAgent version + config surface recorded, model/temperature/seed captured, existing prompt surface hashed (script-eval story/character/reviewer/system prompts NOT_DEFINED until Phase 1), runtime environment captured. Prompts/models must not change mid-evaluation; any change requires re-freeze.",
         "conditions": [
             "git head SHA + tree SHA pinned",
-            "windagent product version 0.3.0 (architecture v2)",
+            f"windagent product version {PRODUCT_VERSION} (architecture v2)",
             "model manifest: mock/mock-gpt-4o defaults, temperature unconfigured, seed unsupported",
             "prompt surface hashed; eval-specific prompts NOT_DEFINED (pending Phase 1)",
             "environment snapshot captured (OS/python/toolchain/hardware)",
