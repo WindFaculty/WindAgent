@@ -33,6 +33,7 @@ from scripts.studio_roadmap.c8_recovery_harness import (  # noqa: E402
     assert_recovery_report,
     run_recovery_slice,
 )
+from scripts.studio_roadmap.certification_launcher import configure_utf8_stdio  # noqa: E402
 
 SECRET_PATTERNS = (
     re.compile(r"sk-[A-Za-z0-9]{16,}"),
@@ -213,6 +214,7 @@ def _write(evidence: Dict[str, Any]) -> None:
 
 
 def main() -> int:
+    configure_utf8_stdio()
     parser = argparse.ArgumentParser()
     parser.add_argument("--api", default="http://127.0.0.1:8878")
     parser.add_argument(

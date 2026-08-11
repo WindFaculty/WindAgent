@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import io
 import json
 import sys
 import time
@@ -22,6 +23,7 @@ from scripts.studio_roadmap.c8_recovery_harness import (
 from scripts.studio_roadmap.certification_launcher import (
     CertificationLauncher,
     CertificationProcessError,
+    configure_utf8_stdio,
     prepare_certification_database,
     sanitize_environment,
 )
@@ -164,6 +166,22 @@ def test_certification_environment_manifest_is_redaction_safe() -> None:
         "WINDAGENT_DATABASE_URL": "postgresql://db.local/wind",
         "WINDAGENT_CERTIFICATION_MODE": "1",
     }
+
+
+def test_certification_console_streams_are_forced_to_utf8() -> None:
+    stdout_bytes = io.BytesIO()
+    stderr_bytes = io.BytesIO()
+    stdout = io.TextIOWrapper(stdout_bytes, encoding="cp1252")
+    stderr = io.TextIOWrapper(stderr_bytes, encoding="cp1252")
+
+    configure_utf8_stdio(stdout, stderr)
+    stdout.write("đề")
+    stderr.write("thỏ")
+    stdout.flush()
+    stderr.flush()
+
+    assert stdout_bytes.getvalue().decode("utf-8") == "đề"
+    assert stderr_bytes.getvalue().decode("utf-8") == "thỏ"
 
 
 def test_c7_failure_details_are_redacted_before_persistence() -> None:

@@ -35,6 +35,7 @@ from scripts.studio_roadmap.c7_slice_harness import (  # noqa: E402
 from scripts.studio_roadmap.certification_launcher import (  # noqa: E402
     CertificationLauncher,
     CertificationProcessError,
+    configure_utf8_stdio,
     prepare_certification_database,
 )
 
@@ -220,6 +221,7 @@ def _base_evidence(head: str, dirty: List[str], source_dirty: List[str]) -> Dict
 
 
 def main() -> int:
+    configure_utf8_stdio()
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--api", default=os.getenv("WINDAGENT_API_BASE", "http://127.0.0.1:8878")

@@ -28,6 +28,7 @@ CONTRACT = "studio.contract/v0.1"
 
 sys.path.insert(0, str(REPO_ROOT))
 
+from scripts.studio_roadmap.certification_launcher import configure_utf8_stdio  # noqa: E402
 from scripts.studio_roadmap.produce_c6_evidence import KNOWN_FAILURES  # noqa: E402
 
 
@@ -510,6 +511,7 @@ def _write_outputs(evidence: Dict[str, Any]) -> None:
 
 
 def main() -> int:
+    configure_utf8_stdio()
     parser = argparse.ArgumentParser()
     parser.add_argument("--reviewer", default=os.getenv("WINDAGENT_CERT_REVIEWER", ""))
     parser.add_argument("--preflight-only", action="store_true")

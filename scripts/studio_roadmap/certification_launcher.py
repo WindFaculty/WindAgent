@@ -35,6 +35,17 @@ CERTIFICATION_ENV_KEYS = (
     "WINDAGENT_SOURCE_SHA",
     "OLLAMA_BASE_URL",
 )
+
+
+def configure_utf8_stdio(*streams: Any) -> None:
+    """Make certification console output Unicode-safe on Windows hosts."""
+    targets = streams or (sys.stdout, sys.stderr)
+    for stream in targets:
+        reconfigure = getattr(stream, "reconfigure", None)
+        if callable(reconfigure):
+            reconfigure(encoding="utf-8", errors="backslashreplace")
+
+
 SECRET_MARKERS = ("authorization", "credential", "password", "secret", "token", "api_key")
 
 
