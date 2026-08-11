@@ -62,6 +62,7 @@ from windagent_core.contracts.studio.errors import (
     StudioValidationError,
 )
 from windagent_core.contracts.studio.ids import (
+    ArtifactId,
     EpisodeId,
     ProductionRevisionId,
     SeriesProjectId,
@@ -84,6 +85,7 @@ from windagent_core.domain.studio.approval import (
     ApprovalPolicy,
     ApprovalPolicyService,
 )
+from windagent_core.domain.studio.artifact import StoryArtifactEnvelope
 from windagent_core.domain.studio.episode import Episode
 from windagent_core.domain.studio.lifecycle import (
     ApprovalCheckpoint,
@@ -94,9 +96,18 @@ from windagent_core.domain.studio.lifecycle import (
 from windagent_core.domain.studio.revision import (
     StudioInvalidationIntent,
     StudioLockState,
+    StudioProductionRevision,
     StudioRevisionService,
 )
 from windagent_core.domain.studio.series import SeriesProject
+from windagent_core.domain.story.ideation.models import IdeaCandidateSet, SelectedIdea
+from windagent_core.domain.story.ids import (
+    LockedScreenplayReceiptId,
+    ScreenplayDraftId,
+    SelectedIdeaId,
+)
+from windagent_core.domain.story.review.models import LockedScreenplayReceipt
+from windagent_core.domain.story.screenplay import ScreenplayDraft
 from windagent_core.events.studio import StudioEventCatalog, StudioEventEnvelope
 from windagent_orchestration.studio.dag import (
     NODE_LOCK,
@@ -157,7 +168,17 @@ async def submit_runnable_nodes(
                     dep = by_id.get(dep_id)
                     if dep is not None:
                         input_refs.extend(dep.get("output_artifact_refs", []) or [])
-                envelope = service._envelope(run, node, input_refs=input_refs)
+                # Full-DAG auto-drive (C7, B9 co-signed A-side half): the
+                # orchestrator completes the inputs/payload the frozen task map
+                # requires but the DAG edges cannot carry — SelectedIdea for
+                # bible.generate (selection replay) and the A-issued receipt
+                # for studio.story.lock. Purely core-domain logic; nothing is
+                # invented or faked, the worker still executes every handler.
+                augmented = await service._augment_node_inputs(uow, run, node, input_refs)
+                input_refs = augmented["input_refs"]
+                envelope = service._envelope(
+                    run, node, input_refs=input_refs, payload=augmented["payload"]
+                )
                 task_id = await submission.submit(envelope)
                 await uow.nodes.update_node(
                     run_id,
@@ -282,6 +303,15 @@ class StudioRunService(StudioRunOrchestratorPort):
                     await uow.commit()
             if resume_run_id is None:
                 policy = await self._load_policy(uow)
+                if episode.current_revision_id is None:
+                    # Full-DAG auto-drive (C7): a fresh episode has no revision,
+                    # but every Story run is bound to one (select/approve/lock
+                    # commands are revision-scoped). Seed revision 1 from the
+                    # episode's stable identity before the DAG is built.
+                    seeded = self._seed_initial_revision(episode)
+                    await uow.revisions.save(seeded)
+                    episode = episode.attach_revision(seeded.revision_id)
+                    await uow.episodes.save(episode)
                 dag = build_story_dag(
                     episode_id=command.episode_id,
                     revision_id=episode.current_revision_id,
@@ -394,6 +424,14 @@ class StudioRunService(StudioRunOrchestratorPort):
                 expected_parent_version=command.expected_optimistic_version,
             )
             await uow.revisions.save(revision)
+            # Full-DAG auto-drive (C7): a derived revision becomes the
+            # episode's current revision so the next run regenerates under it.
+            # Locked episodes stay locked (derive-after-lock is a separate
+            # read-only path; a new run there is rejected by the lifecycle).
+            episode = await uow.episodes.get(command.episode_id)
+            if episode is not None and not episode.is_locked:
+                episode = episode.attach_revision(revision.revision_id)
+                await uow.episodes.save(episode)
             await self._emit(
                 uow,
                 StudioEventCatalog.REVISION_DERIVED,
@@ -641,6 +679,7 @@ class StudioRunService(StudioRunOrchestratorPort):
         node: Dict[str, Any],
         *,
         input_refs: Optional[List[Dict[str, Any]]] = None,
+        payload: Optional[Dict[str, Any]] = None,
     ) -> StudioTaskEnvelope:
         return StudioTaskEnvelope(
             task_type=StudioTaskType(node["task_type"]),
@@ -657,8 +696,196 @@ class StudioRunService(StudioRunOrchestratorPort):
             input_hashes=list(node.get("input_hashes", [])),
             idempotency_key=f"{run['run_id']}:{node['dag_node_id']}:{node['attempt']}",
             attempt=node["attempt"],
-            payload={},
+            payload=payload or {},
         )
+
+    # -- full-DAG auto-drive (C7) ------------------------------------------
+
+    @staticmethod
+    def _seed_initial_revision(episode: Episode) -> Any:
+        """Revision 1 for a fresh episode: deterministic id + content hash.
+
+        The content hash is derived from the episode's stable identity and
+        brief metadata, so select/approve/lock commands can bind to it without
+        any client-supplied value (the server is the authority).
+        """
+        identity = hashlib.sha256(
+            (
+                f"{episode.episode_id}|{episode.series_id}|{episode.title}|"
+                f"{episode.episode_number}|{episode.metadata}"
+            ).encode("utf-8")
+        ).hexdigest()
+        return StudioProductionRevision(
+            revision_id=ProductionRevisionId(f"rev_{episode.episode_id.value}_1"),
+            series_id=episode.series_id,
+            episode_id=episode.episode_id,
+            creator="orchestrator:auto-seed",
+            actor="orchestrator:auto-seed",
+            content_hash=identity,
+            metadata={"seeded_by": "orchestrator:auto-seed", "seed": "episode-identity"},
+        )
+
+    async def _augment_node_inputs(
+        self,
+        uow: StudioUnitOfWork,
+        run: Dict[str, Any],
+        node: Dict[str, Any],
+        input_refs: List[Dict[str, Any]],
+    ) -> Dict[str, Any]:
+        """Complete frozen-task inputs/payload the DAG edges cannot carry.
+
+        Returns ``{"input_refs": [...], "payload": {...}}``. Fail-open here is
+        deliberate: missing context still reaches the worker, which fails
+        closed with the typed taxonomy (STUDIO_INPUT_ARTIFACT_MISSING).
+        """
+        task_type = node["task_type"]
+        payload: Dict[str, Any] = {}
+        if task_type == StudioTaskType.BIBLE_GENERATE.value:
+            input_refs = await self._inject_selected_idea(uow, run, input_refs)
+        elif task_type == StudioTaskType.LOCK.value:
+            input_refs, payload = await self._lock_inputs(uow, run, input_refs)
+        return {"input_refs": input_refs, "payload": payload}
+
+    async def _inject_selected_idea(
+        self,
+        uow: StudioUnitOfWork,
+        run: Dict[str, Any],
+        input_refs: List[Dict[str, Any]],
+    ) -> List[Dict[str, Any]]:
+        """Replay the selection command for bible.generate.
+
+        User selection (revision metadata ``selected_candidate_id``, written
+        by the public ``select_idea`` command) wins; otherwise the live
+        scoring recommendation already carried by the evaluated candidate set
+        (produced by the idea.evaluate node) is used. The SelectedIdea is
+        persisted as a content-addressed artifact so the lock lineage can
+        reference it, exactly like the B9 chain replay.
+        """
+        if any(r["artifact_type"] == "SelectedIdea" for r in input_refs):
+            return input_refs
+        set_ref = next(
+            (r for r in input_refs if r["artifact_type"] == "IdeaCandidateSet"), None
+        )
+        if set_ref is None:
+            return input_refs
+        set_artifact = await uow.artifacts.get(ArtifactId(set_ref["artifact_id"]))
+        if set_artifact is None:
+            return input_refs
+        try:
+            candidate_set = IdeaCandidateSet.model_validate(set_artifact.content)
+        except Exception:  # noqa: BLE001 — malformed upstream artifact fails closed at the worker
+            return input_refs
+        selected_id: Optional[str] = None
+        run_rev = run["dag"].get("revision_id")
+        if run_rev:
+            revision = await uow.revisions.get(ProductionRevisionId(run_rev))
+            if revision is not None:
+                selected_id = (revision.metadata or {}).get("selected_candidate_id")
+        source_set = candidate_set
+        if selected_id is None:
+            selected_id = candidate_set.recommended_candidate_id
+        if not selected_id:
+            return input_refs
+        candidate = next(
+            (c for c in source_set.candidates if c.candidate_id == selected_id), None
+        )
+        if candidate is None:
+            return input_refs
+        selected = SelectedIdea(
+            selected_idea_id=SelectedIdeaId(
+                f"sel_{run['run_id'][:12]}_{selected_id[:24]}"
+            ),
+            source_set_id=str(set_ref["artifact_id"]),
+            candidate_id=selected_id,
+            title=candidate.title,
+            summary=candidate.summary,
+            rationale=(
+                "Orchestrator selection replay: user-selected candidate "
+                "(select_idea) or live scoring recommendation."
+            ),
+            score=candidate.age_fit,
+            selection_policy="AUTO_WHEN_POLICY_ALLOWS",
+        )
+        artifact = StoryArtifactEnvelope(
+            artifact_id=ArtifactId(f"art_{selected.content_hash()[:16]}"),
+            artifact_type="SelectedIdea",
+            series_id=SeriesProjectId(run["series_id"]),
+            episode_id=EpisodeId(run["episode_id"]),
+            revision_id=(
+                ProductionRevisionId(run_rev) if run_rev else None
+            ),
+            content_hash=selected.content_hash(),
+            input_artifact_refs=[ArtifactId(str(set_ref["artifact_id"]))],
+            created_by="orchestrator:auto-selection",
+            content=selected.to_canonical_dict(),
+        )
+        await uow.artifacts.save(artifact)
+        return [
+            *input_refs,
+            {
+                "artifact_id": str(artifact.artifact_id),
+                "artifact_type": "SelectedIdea",
+                "content_hash": artifact.content_hash,
+            },
+        ]
+
+    async def _lock_inputs(
+        self,
+        uow: StudioUnitOfWork,
+        run: Dict[str, Any],
+        input_refs: List[Dict[str, Any]],
+    ) -> tuple[List[Dict[str, Any]], Dict[str, Any]]:
+        """Complete the lock node's inputs and issue the A-issued receipt.
+
+        The DAG edge into ``lock`` only carries the review node's outputs
+        (ReviewReport); the frozen task IO map also needs the ScreenplayDraft,
+        which the orchestrator completes from the screenplay.generate node's
+        outputs. The receipt (A authority, B9 co-signed) binds that draft plus
+        the approval mode/policy; the worker's lock handler validates it and
+        assembles the immutable package from the live lineage hashes.
+        """
+        draft_ref = next(
+            (r for r in input_refs if r["artifact_type"] == "ScreenplayDraft"), None
+        )
+        if draft_ref is None:
+            nodes = await uow.nodes.list(run["run_id"])
+            by_id = {n["dag_node_id"]: n for n in nodes}
+            screenplay_node = by_id.get("screenplay.generate")
+            if screenplay_node is not None:
+                draft_ref = next(
+                    (
+                        r
+                        for r in screenplay_node.get("output_artifact_refs", []) or []
+                        if r["artifact_type"] == "ScreenplayDraft"
+                    ),
+                    None,
+                )
+                if draft_ref is not None:
+                    input_refs = [*input_refs, dict(draft_ref)]
+        if draft_ref is None:
+            return input_refs, {}
+        draft_artifact = await uow.artifacts.get(ArtifactId(draft_ref["artifact_id"]))
+        if draft_artifact is None:
+            return input_refs, {}
+        try:
+            draft = ScreenplayDraft.model_validate(draft_artifact.content)
+        except Exception:  # noqa: BLE001 — malformed upstream artifact fails closed at the worker
+            return input_refs, {}
+        policy = await self._load_policy(uow)
+        mode = policy.mode_for(ApprovalCheckpoint.SCREENPLAY)
+        receipt = LockedScreenplayReceipt(
+            receipt_id=LockedScreenplayReceiptId(
+                f"rcpt_{run['run_id'][:12]}_{draft.draft_id.value[:24]}"
+            ),
+            draft_id=draft.draft_id,
+            approval_mode=mode.value,
+            policy_id=policy.policy_id,
+            issued_at=utc_now(),
+        )
+        return input_refs, {
+            "receipt": receipt.to_canonical_dict(),
+            "receipt_artifact_id": f"art_{receipt.receipt_id.value}",
+        }
 
     async def _submit_runnable_nodes(self, run_id: StudioRunId) -> None:
         """Durable dispatch: queue commit first, node identity second."""

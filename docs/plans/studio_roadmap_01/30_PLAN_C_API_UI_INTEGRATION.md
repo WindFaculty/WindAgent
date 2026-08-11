@@ -298,3 +298,9 @@ Plan C is accepted only when:
 Do not claim this verdict from planning alone. The implementation branch may report `WIND_STUDIO_PLAN_C_PRODUCT_INTEGRATION_READY` only after `FINAL_CERTIFICATION_GATE` passes. Otherwise it reports the first failed gate and does not promote Roadmap 1.
 
 Current standing (2026-08-11): C0–C6 all PASS, `RELEASE_CANDIDATE_GATE` with 13/13 checks (checkers, desktop vitest/build, Tauri release binary, bundle/source scans clean, V2 regression, session recovery, studio security/redaction, contracts/consumer, full matrix 3521 passed / 10 A7-classified pre-existing outside Plan C, CI studio job wired). C-owned baseline failures retired: desktop version drift, `/api/v2/events` contract family, session-recovery WS 403. Remaining: C7 real vertical slice, C8 recovery slice, C9 final certification.
+
+Implementation update (2026-08-11): the C8 managed failure/recovery harness and
+C9 one-SHA certification/evidence runner are implemented. Their committed
+reports remain `BLOCKED` (never synthetic PASS) until C7 produces same-SHA PASS
+evidence, the integration worktree is clean, C8 completes the real recovery
+slice, and C9 receives reviewer sign-off and completes its fresh matrix.

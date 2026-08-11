@@ -1,0 +1,76 @@
+{
+  "blockers": [
+    "source_worktree_dirty",
+    "c7_evidence_missing"
+  ],
+  "checks": {},
+  "contract": "studio.contract/v0.1",
+  "environment": {
+    "platform": "Windows-10-10.0.26200-SP0",
+    "python": "3.11.15",
+    "raw_log_retention": ".tmp/studio-c8 (local/CI artifact only; not gate authority)"
+  },
+  "gate": "RECOVERY_VERTICAL_SLICE_GATE",
+  "generated_at": "2026-08-11T06:43:06.819426+00:00",
+  "integration_sha": "026c82c6ea2553054aaef2a7895bbc7534ad7340",
+  "phase": "C8",
+  "preflight": {
+    "blockers": [
+      "source_worktree_dirty",
+      "c7_evidence_missing"
+    ],
+    "c7_integration_sha": "",
+    "c7_path": "artifacts/studio_roadmap_01/c7/evidence.json",
+    "c7_present": false,
+    "c7_verdict": null,
+    "dirty_paths": [
+      "apps/api/windagent_api/services/studio_capability_provider.py",
+      "artifacts/architecture_v2_runtime_cutover/phase_13/import_graph.json",
+      "artifacts/production_ui/final_acceptance/d6e8a7f9c2b1e4f3a5d8b7c6a9e0f1d2c3b4a5e6/checksums.json",
+      "artifacts/production_ui/final_acceptance/d6e8a7f9c2b1e4f3a5d8b7c6a9e0f1d2c3b4a5e6/run_manifest.json",
+      "artifacts/video_production/script_eval/phase_00_baseline/baseline_manifest.json",
+      "artifacts/video_production/script_eval/phase_00_baseline/baseline_verdict.json",
+      "artifacts/video_production/script_eval/phase_00_baseline/environment.json",
+      "docs/plans/studio_roadmap_01/20_PLAN_B_STORY_SCREENPLAY_PIPELINE.md",
+      "docs/plans/studio_roadmap_01/30_PLAN_C_API_UI_INTEGRATION.md",
+      "orchestration/windagent_orchestration/studio/service.py",
+      "artifacts/studio_roadmap_01/c8/",
+      "artifacts/studio_roadmap_01/c9/",
+      "ornith_test.json",
+      "scripts/studio_roadmap/c7_slice_harness.py",
+      "scripts/studio_roadmap/c8_recovery_harness.py",
+      "scripts/studio_roadmap/produce_c7_evidence.py",
+      "scripts/studio_roadmap/produce_c8_evidence.py",
+      "scripts/studio_roadmap/produce_c9_evidence.py",
+      "tests/unit/api/test_studio_capability_recovery.py",
+      "tests/unit/orchestration/test_studio_full_dag_auto_drive.py",
+      "tests/unit/scripts/test_studio_c8_c9_certification.py"
+    ],
+    "head_sha": "026c82c6ea2553054aaef2a7895bbc7534ad7340",
+    "series_id": null,
+    "source_dirty_paths": [
+      "apps/api/windagent_api/services/studio_capability_provider.py",
+      "artifacts/architecture_v2_runtime_cutover/phase_13/import_graph.json",
+      "artifacts/production_ui/final_acceptance/d6e8a7f9c2b1e4f3a5d8b7c6a9e0f1d2c3b4a5e6/checksums.json",
+      "artifacts/production_ui/final_acceptance/d6e8a7f9c2b1e4f3a5d8b7c6a9e0f1d2c3b4a5e6/run_manifest.json",
+      "artifacts/video_production/script_eval/phase_00_baseline/baseline_manifest.json",
+      "artifacts/video_production/script_eval/phase_00_baseline/baseline_verdict.json",
+      "artifacts/video_production/script_eval/phase_00_baseline/environment.json",
+      "docs/plans/studio_roadmap_01/20_PLAN_B_STORY_SCREENPLAY_PIPELINE.md",
+      "docs/plans/studio_roadmap_01/30_PLAN_C_API_UI_INTEGRATION.md",
+      "orchestration/windagent_orchestration/studio/service.py",
+      "artifacts/studio_roadmap_01/c9/",
+      "ornith_test.json",
+      "scripts/studio_roadmap/c7_slice_harness.py",
+      "scripts/studio_roadmap/c8_recovery_harness.py",
+      "scripts/studio_roadmap/produce_c7_evidence.py",
+      "scripts/studio_roadmap/produce_c8_evidence.py",
+      "scripts/studio_roadmap/produce_c9_evidence.py",
+      "tests/unit/api/test_studio_capability_recovery.py",
+      "tests/unit/orchestration/test_studio_full_dag_auto_drive.py",
+      "tests/unit/scripts/test_studio_c8_c9_certification.py"
+    ],
+    "source_worktree_clean": false
+  },
+  "verdict": "BLOCKED"
+}

@@ -258,6 +258,30 @@ Parallelism: package manifest/lineage validator and approval-policy scenario tes
 | Gate | `PLAN_B_HANDOFF_GATE` and joint `SCREENPLAY_RUNTIME_GATE`: full chain reaches a lock-ready package through the real runtime seam; C schemas compile. |
 | Rollback | Unregister B handlers and stop new Story runs; persisted immutable artifacts/runs remain diagnosable/resumable. |
 
+## Execution status (verified 2026-08-11)
+
+All ten phases are implemented and every gate verdict is PASS with fresh
+committed evidence. The contract suite is green on the current branch:
+`tests/contracts/test_story_b0_consumer_freeze.py` through
+`test_story_b9_handoff_gate.py` — **117 passed** (re-run 2026-08-11).
+
+| Phase | Gate | Verdict | Evidence | Landed in |
+|---|---|---|---|---|
+| B0 | `B_CONTRACT_CONSUMER_GATE` | PASS | `evidence/b0_reuse_ledger.md`, `b0_consumer_contract_report.md`, `b0_registry_and_schema_freeze.md`, `b0_quality_and_error_taxonomy.md` | 03d2cfb |
+| B1 | `STORY_ARTIFACT_CONTRACT_GATE` | PASS | `evidence/b1_artifact_contract_gate.md`, `b1_validation_code_catalog.md` | 03d2cfb |
+| B2 | `STRUCTURED_MODEL_GATE` | PASS | `evidence/b2_prompt_catalog_gate.md` | cbe3a47 |
+| B3 | `IDEA_GATE` | PASS | `evidence/b3_idea_gate.md` | 03d2cfb |
+| B4 | `STORY_BIBLE_GATE` | PASS | `evidence/b4_bible_gate.md` | 03d2cfb |
+| B5 | `OUTLINE_GATE` | PASS | `evidence/b5_outline_gate.md` | 03d2cfb |
+| B6 | `SCREENPLAY_DRAFT_GATE` | PASS | `evidence/b6_screenplay_draft_gate.md` | ede73c8 |
+| B7 | `STORY_REVIEW_GATE` | PASS | `evidence/b7_review_gate.md` | b737753 |
+| B8 | `LOCKED_SCREENPLAY_GATE` | PASS | `evidence/b8_lock_gate.md` | 7c65c6e |
+| B9 | `PLAN_B_HANDOFF_GATE` + `SCREENPLAY_RUNTIME_GATE` | PASS | `evidence/b9_handoff_gate.md` | fa3c2ac |
+
+Note: B0/B1/B3–B5 implementation and evidence were folded into the C1-era
+commit 03d2cfb; their gate docs carry the verdicts and re-verification is
+covered by the standing contract suite above.
+
 ## Parallel and sequential execution within Plan B
 
 Hard sequence: `B0 -> B1 -> B2 -> B3 -> B4 -> B5 -> B6 -> B7 -> B8 -> B9`. Implementation can overlap after contract bases:
@@ -302,6 +326,14 @@ Plan B is accepted only when:
 - C consumes the schema bundle without manual domain duplication.
 - The Vietnamese rabbit/kite scenario can generate a lock-ready package from real provider output; no canned final content is used.
 
-## Plan B final verdict target
+## Plan B final verdict
 
-Do not claim this verdict from planning alone. The implementation branch may report `WIND_STUDIO_PLAN_B_STORY_PIPELINE_READY` only after `PLAN_B_HANDOFF_GATE` and `SCREENPLAY_RUNTIME_GATE` pass with fresh evidence. Otherwise it reports the first failed gate.
+`WIND_STUDIO_PLAN_B_STORY_PIPELINE_READY` — **CLAIMED** at `fa3c2ac` (2026-08-11).
+
+Both prerequisites passed with fresh evidence: `PLAN_B_HANDOFF_GATE` and
+`SCREENPLAY_RUNTIME_GATE` (`evidence/b9_handoff_gate.md`), and all ten phase
+gates are PASS (see Execution status above). The Vietnamese rabbit/kite slice
+(ages 5–8, 180–300 s) reached a lock-ready `LockedScreenplayPackage` through
+the real SQL queue + worker seam with A-issued receipt authority; C schemas
+compile (C0/C2 gates). No gate failed. Contract suite re-verified 2026-08-11:
+117 passed.

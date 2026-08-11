@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import TYPE_CHECKING, Any, List
+from typing import TYPE_CHECKING, List
 
 from windagent_core.contracts.studio.capabilities import (
     CapabilityStatus,
@@ -43,18 +43,20 @@ class ApiRuntimeCapabilityProvider:
         self.container = container
 
     async def get_capabilities(self) -> RuntimeCapabilityProfile:
+        worker = await self._worker()
+        model_route = self._model_route()
         capabilities: List[RuntimeCapability] = [
             self._durable_db(),
             self._queue(),
             self._outbox(),
-            await self._worker(),
-            self._model_route(),
+            worker,
+            model_route,
             self._studio_orchestration(),
-            self._story_engine(),
+            self._story_engine(worker=worker, model_route=model_route),
         ]
         return RuntimeCapabilityProfile(
             capabilities=capabilities,
-            fail_closed_flags=[],  # no fake/mock/bypass is ever composed
+            fail_closed_flags=self._fail_closed_flags(),
             certification_mode=os.getenv("WINDAGENT_CERTIFICATION_MODE") == "1",
         )
 
@@ -140,6 +142,18 @@ class ApiRuntimeCapabilityProvider:
         )
 
     def _model_route(self) -> RuntimeCapability:
+        route_enabled = os.getenv("WINDAGENT_STUDIO_MODEL_ROUTE", "").lower() in (
+            "1",
+            "true",
+            "yes",
+        )
+        if not route_enabled:
+            return RuntimeCapability(
+                name=_MODEL_ROUTE,
+                status=CapabilityStatus.UNAVAILABLE,
+                source="providers.registry.canonical_registry",
+                reason="WINDAGENT_STUDIO_MODEL_ROUTE is not enabled; real model execution fails closed",
+            )
         registry = self.container.provider_registry
         if registry is None:
             return RuntimeCapability(
@@ -148,13 +162,64 @@ class ApiRuntimeCapabilityProvider:
                 source="composition.ApplicationContainer.provider_registry",
                 reason="provider registry not composed",
             )
+        canonical_model = os.getenv("WINDAGENT_STUDIO_CANONICAL_MODEL", "").strip()
         durable = bool(getattr(registry, "is_durable", False))
+        if not canonical_model:
+            return RuntimeCapability(
+                name=_MODEL_ROUTE,
+                status=CapabilityStatus.DEGRADED,
+                source="providers.registry.canonical_registry",
+                reason="registry composed but no certification canonical model is selected",
+                metadata={"registry_durable": durable},
+            )
+        resolver = getattr(registry, "get_exact_equivalent_endpoints", None)
+        if resolver is None:
+            return RuntimeCapability(
+                name=_MODEL_ROUTE,
+                status=CapabilityStatus.UNAVAILABLE,
+                source="providers.registry.canonical_registry",
+                reason="registry cannot resolve exact provider bindings",
+                metadata={
+                    "registry_durable": durable,
+                    "canonical_model": canonical_model,
+                },
+            )
+        try:
+            bindings = list(resolver(canonical_model))
+        except Exception as ex:  # pragma: no cover - defensive probe
+            logger.warning("model route capability probe failed: %s", ex)
+            return RuntimeCapability(
+                name=_MODEL_ROUTE,
+                status=CapabilityStatus.UNAVAILABLE,
+                source="providers.registry.canonical_registry",
+                reason=f"provider binding lookup raised: {type(ex).__name__}",
+                metadata={
+                    "registry_durable": durable,
+                    "canonical_model": canonical_model,
+                },
+            )
+        if not bindings:
+            return RuntimeCapability(
+                name=_MODEL_ROUTE,
+                status=CapabilityStatus.UNAVAILABLE,
+                source="providers.registry.canonical_registry",
+                reason="no enabled exact-revision provider binding for canonical model",
+                metadata={
+                    "registry_durable": durable,
+                    "canonical_model": canonical_model,
+                    "binding_count": 0,
+                },
+            )
         return RuntimeCapability(
             name=_MODEL_ROUTE,
             status=CapabilityStatus.AVAILABLE,
             source="providers.registry.canonical_registry",
-            reason="registry composed; route/model validation is certification-scoped (A6)",
-            metadata={"registry_durable": durable},
+            reason="durable registry resolved enabled exact-revision provider binding(s)",
+            metadata={
+                "registry_durable": durable,
+                "canonical_model": canonical_model,
+                "binding_count": len(bindings),
+            },
         )
 
     def _studio_orchestration(self) -> RuntimeCapability:
@@ -181,13 +246,61 @@ class ApiRuntimeCapabilityProvider:
             reason="Studio run authority awaits Plan A A4 handoff; V3 commands fail closed",
         )
 
-    def _story_engine(self) -> RuntimeCapability:
+    def _story_engine(
+        self,
+        *,
+        worker: RuntimeCapability,
+        model_route: RuntimeCapability,
+    ) -> RuntimeCapability:
+        runtime_enabled = os.getenv("WINDAGENT_STUDIO_RUNTIME", "").lower() in (
+            "1",
+            "true",
+            "yes",
+        )
+        if not runtime_enabled:
+            return RuntimeCapability(
+                name=_STORY_ENGINE,
+                status=CapabilityStatus.UNAVAILABLE,
+                source="worker story handlers",
+                reason="WINDAGENT_STUDIO_RUNTIME is not enabled for this runtime profile",
+            )
+        if worker.status != CapabilityStatus.AVAILABLE:
+            return RuntimeCapability(
+                name=_STORY_ENGINE,
+                status=CapabilityStatus.UNAVAILABLE,
+                source="worker story handlers",
+                reason="no live durable worker heartbeat for Story task execution",
+            )
+        if model_route.status != CapabilityStatus.AVAILABLE:
+            return RuntimeCapability(
+                name=_STORY_ENGINE,
+                status=CapabilityStatus.UNAVAILABLE,
+                source="worker story handlers",
+                reason="real model route is unavailable; Story execution fails closed",
+            )
         return RuntimeCapability(
             name=_STORY_ENGINE,
-            status=CapabilityStatus.UNAVAILABLE,
+            status=CapabilityStatus.AVAILABLE,
             source="worker story handlers",
-            reason="durable Story task handlers await Plan A A5 handoff",
+            reason="Studio runtime enabled with a live durable worker and real model binding",
         )
+
+    @staticmethod
+    def _fail_closed_flags() -> List[str]:
+        """Report unsafe certification composition without exposing secrets."""
+
+        if os.getenv("WINDAGENT_CERTIFICATION_MODE") != "1":
+            return []
+        flags: List[str] = []
+        if os.getenv("WINDAGENT_FAKE_RUNTIME", "").lower() in ("1", "true", "yes"):
+            flags.append("fake_runtime_active")
+        if os.getenv("WINDAGENT_MODEL_BACKEND", "").lower() in ("mock", "fake", "fixture"):
+            flags.append("non_real_model_backend_active")
+        if os.getenv("WINDAGENT_STUDIO_RUNTIME", "").lower() in ("1", "true", "yes") and os.getenv(
+            "WINDAGENT_STUDIO_MODEL_ROUTE", ""
+        ).lower() not in ("1", "true", "yes"):
+            flags.append("studio_model_route_disabled")
+        return flags
 
 
 __all__ = ["ApiRuntimeCapabilityProvider"]

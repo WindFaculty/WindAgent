@@ -1,0 +1,334 @@
+{
+  "blockers": [
+    "reviewer_signoff_missing",
+    "source_worktree_dirty",
+    "upstream_gate_not_pass:REAL_VERTICAL_SLICE_GATE",
+    "upstream_gate_not_pass:RECOVERY_VERTICAL_SLICE_GATE"
+  ],
+  "checks": {},
+  "contract": "studio.contract/v0.1",
+  "gate": "FINAL_CERTIFICATION_GATE",
+  "generated_at": "2026-08-11T06:43:14.703956+00:00",
+  "integration_sha": "026c82c6ea2553054aaef2a7895bbc7534ad7340",
+  "master_gate_table": [
+    {
+      "evidence": "docs/plans/studio_roadmap_01/evidence/a0_bootstrap_manifest.json",
+      "evidence_sha256": "a8d4b641119512f48902eee19010eef8553892e416e172d862025f71ac1c197b",
+      "gate": "PARALLEL_BOOTSTRAP_GATE",
+      "limitation": "upstream_evidence",
+      "order": 0,
+      "owner": "A+B+C+integration",
+      "result": "PASS",
+      "source_sha": ""
+    },
+    {
+      "evidence": "docs/plans/studio_roadmap_01/evidence/a1_boundary_repair.md",
+      "evidence_sha256": "f8c7fe91e94772d80dbef35881d693fe02031b95e25aad469ac3ed5dba21c562",
+      "gate": "STUDIO_ARCHITECTURE_GATE",
+      "limitation": "upstream_markdown_evidence",
+      "order": 1,
+      "owner": "A",
+      "result": "PASS",
+      "source_sha": "historical-checksummed"
+    },
+    {
+      "evidence": "docs/plans/studio_roadmap_01/evidence/a2_domain_integration.md",
+      "evidence_sha256": "32ff01e46f557a2c0140180e0eb614f2ab0b57daebdb0d253c6451c86ec77cfd",
+      "gate": "STUDIO_DOMAIN_INTEGRATION_GATE",
+      "limitation": "upstream_markdown_evidence",
+      "order": 2,
+      "owner": "A; B/C",
+      "result": "PASS",
+      "source_sha": "historical-checksummed"
+    },
+    {
+      "evidence": "docs/plans/studio_roadmap_01/evidence/b1_artifact_contract_gate.md",
+      "evidence_sha256": "f65d89e0659e6c20bb6fa21345ab535844f7b26fbb8b5cad2b4f44ae3df0659c",
+      "gate": "STORY_ARTIFACT_CONTRACT_GATE",
+      "limitation": "upstream_markdown_evidence",
+      "order": 3,
+      "owner": "B; A/C",
+      "result": "PASS",
+      "source_sha": "historical-checksummed"
+    },
+    {
+      "evidence": "artifacts/studio_roadmap_01/a3/evidence.json",
+      "evidence_sha256": "822647b443ef8a7a26bbb70d0cd987a0f72f44b1736fc75d8e067933db4f3fc1",
+      "gate": "STUDIO_PERSISTENCE_GATE",
+      "limitation": "upstream_evidence",
+      "order": 4,
+      "owner": "A",
+      "result": "PASS",
+      "source_sha": ""
+    },
+    {
+      "evidence": "artifacts/studio_roadmap_01/a4/evidence.json",
+      "evidence_sha256": "f5f6228c464bfb3d0142e19fbd0add9c746cd03df793a0caebcc4f6916d69e26",
+      "gate": "DURABLE_ORCHESTRATION_GATE",
+      "limitation": "upstream_evidence",
+      "order": 5,
+      "owner": "A",
+      "result": "PASS",
+      "source_sha": ""
+    },
+    {
+      "evidence": "docs/plans/studio_roadmap_01/evidence/b2_prompt_catalog_gate.md",
+      "evidence_sha256": "b3fbc60109da4a10d7d85b689ed80fe698e4fb5f17598096e397e48ed6959d16",
+      "gate": "STRUCTURED_MODEL_GATE",
+      "limitation": "upstream_markdown_evidence",
+      "order": 6,
+      "owner": "B",
+      "result": "PASS",
+      "source_sha": "historical-checksummed"
+    },
+    {
+      "evidence": "docs/plans/studio_roadmap_01/evidence/b3_idea_gate.md",
+      "evidence_sha256": "c70440e1dcd704bc78914d4b04bb5401d5a17202276cca468932984aa8c72242",
+      "gate": "IDEA_GATE",
+      "limitation": "upstream_markdown_evidence",
+      "order": 7,
+      "owner": "B+A",
+      "result": "PASS",
+      "source_sha": "historical-checksummed"
+    },
+    {
+      "evidence": "docs/plans/studio_roadmap_01/evidence/b4_bible_gate.md",
+      "evidence_sha256": "26ed0c9d6c7eab205b11ce6b0d9caf7308abceb2d0920fb8ac7c0e5697c14565",
+      "gate": "STORY_BIBLE_GATE",
+      "limitation": "upstream_markdown_evidence",
+      "order": 8,
+      "owner": "B",
+      "result": "PASS",
+      "source_sha": "historical-checksummed"
+    },
+    {
+      "evidence": "docs/plans/studio_roadmap_01/evidence/b5_outline_gate.md",
+      "evidence_sha256": "40f8d53ee0ef0b27d75906938b69c498fb497742c2745cdeb4101d8d30e418dc",
+      "gate": "OUTLINE_GATE",
+      "limitation": "upstream_markdown_evidence",
+      "order": 9,
+      "owner": "B",
+      "result": "PASS",
+      "source_sha": "historical-checksummed"
+    },
+    {
+      "evidence": "artifacts/studio_roadmap_01/a5/evidence.json",
+      "evidence_sha256": "6a8f1f4f880bfe1a8db60ff768d22c10fb368a5bffec01567d62e0330fe3c155",
+      "gate": "STORY_WORKER_GATE",
+      "limitation": "upstream_evidence",
+      "order": 10,
+      "owner": "A+B",
+      "result": "PASS",
+      "source_sha": ""
+    },
+    {
+      "evidence": "artifacts/studio_roadmap_01/a6/evidence.json",
+      "evidence_sha256": "450d43d6148039781e2797db4e18487bd24d9ac46f5cd7c526f4f324d1ac5656",
+      "gate": "REAL_MODEL_RUNTIME_GATE",
+      "limitation": "upstream_evidence",
+      "order": 11,
+      "owner": "A+B",
+      "result": "PASS",
+      "source_sha": ""
+    },
+    {
+      "evidence": "docs/plans/studio_roadmap_01/evidence/b6_screenplay_draft_gate.md",
+      "evidence_sha256": "62b1c1ddf74aefbad7e589bc976cd09cc1b7fa45901cca8d5a7bd0fe4340f0bc",
+      "gate": "SCREENPLAY_DRAFT_GATE",
+      "limitation": "upstream_markdown_evidence",
+      "order": 12,
+      "owner": "B",
+      "result": "PASS",
+      "source_sha": "historical-checksummed"
+    },
+    {
+      "evidence": "docs/plans/studio_roadmap_01/evidence/b7_review_gate.md",
+      "evidence_sha256": "cc9be6ac7f1b2e5595828e43dae78086bb5aa13994af326d9a02958516a582de",
+      "gate": "STORY_REVIEW_GATE",
+      "limitation": "upstream_markdown_evidence",
+      "order": 13,
+      "owner": "B",
+      "result": "PASS",
+      "source_sha": "historical-checksummed"
+    },
+    {
+      "evidence": "artifacts/studio_roadmap_01/a7/evidence.json",
+      "evidence_sha256": "7b32614858f12a1ab54f513a41023cd3b3f7b35dd3151a8b127db5365095cfc0",
+      "gate": "SCREENPLAY_RUNTIME_GATE",
+      "limitation": "historic evidence; accepted only with recorded checksum and fresh C9 matrix",
+      "order": 14,
+      "owner": "A+B",
+      "result": "PASS",
+      "source_sha": "fa3c2ac708d2b96cc6c6eb3b5c4607fb60c7af87"
+    },
+    {
+      "evidence": "docs/plans/studio_roadmap_01/evidence/b8_lock_gate.md",
+      "evidence_sha256": "3d407026c640e69318fe66b28f82b19a44df29ec7da812ea0b70b527329946ba",
+      "gate": "LOCKED_SCREENPLAY_GATE",
+      "limitation": "upstream_markdown_evidence",
+      "order": 15,
+      "owner": "A+B",
+      "result": "PASS",
+      "source_sha": "historical-checksummed"
+    },
+    {
+      "evidence": "artifacts/studio_roadmap_01/c1/evidence.json",
+      "evidence_sha256": "3c9e12a357564d938769b50ca2143bfd1012ccd6b0b6a60099c8ea7c7796d89c",
+      "gate": "STUDIO_API_GATE",
+      "limitation": "historic evidence; accepted only with recorded checksum and fresh C9 matrix",
+      "order": 16,
+      "owner": "C+A",
+      "result": "PASS",
+      "source_sha": "c14cd116449699d13fa2fa709f6b3e57b0a4c4a3"
+    },
+    {
+      "evidence": "artifacts/studio_roadmap_01/c2/evidence.json",
+      "evidence_sha256": "f8d131e7087d142a3b42a698d3dac379c291e7df4fa8332bb39e27f27be0ac0b",
+      "gate": "STUDIO_CLIENT_STATE_GATE",
+      "limitation": "historic evidence; accepted only with recorded checksum and fresh C9 matrix",
+      "order": 17,
+      "owner": "C",
+      "result": "PASS",
+      "source_sha": "ae4c5a0190f92d7798190d6241582a27f60bfc8b"
+    },
+    {
+      "evidence": "artifacts/studio_roadmap_01/c3/evidence.json",
+      "evidence_sha256": "25aedea3bcfc3c06c0d437c424e6bfb531c60387fcd99c904b99850ec5fdc686",
+      "gate": "STUDIO_DESKTOP_SHELL_GATE",
+      "limitation": "historic evidence; accepted only with recorded checksum and fresh C9 matrix",
+      "order": 18,
+      "owner": "C",
+      "result": "PASS",
+      "source_sha": "f60874e9aa6fffa26339eca67a6d34315a19d777"
+    },
+    {
+      "evidence": "artifacts/studio_roadmap_01/c4/evidence.json",
+      "evidence_sha256": "1628093e1bccd04caec71b4cdaa2201e11d30e9de853896a796e729dfb478c9e",
+      "gate": "STORY_UI_GATE",
+      "limitation": "historic evidence; accepted only with recorded checksum and fresh C9 matrix",
+      "order": 19,
+      "owner": "C+B",
+      "result": "PASS",
+      "source_sha": "7667079bce68241032e6efa7fb5e830ad9bbf0e2"
+    },
+    {
+      "evidence": "artifacts/studio_roadmap_01/c5/evidence.json",
+      "evidence_sha256": "12f3b437c01526dd6473782a078e31c20b47ceb82cfafb1dd2b49876435b3ac9",
+      "gate": "API_UI_INTEGRATION_GATE",
+      "limitation": "historic evidence; accepted only with recorded checksum and fresh C9 matrix",
+      "order": 20,
+      "owner": "C+A+B",
+      "result": "PASS",
+      "source_sha": "68e3e65cd6a508d249b32cb73b9cf6e364649ce2"
+    },
+    {
+      "evidence": "artifacts/studio_roadmap_01/a7/evidence.json",
+      "evidence_sha256": "7b32614858f12a1ab54f513a41023cd3b3f7b35dd3151a8b127db5365095cfc0",
+      "gate": "PLAN_A_HANDOFF_GATE",
+      "limitation": "historic evidence; accepted only with recorded checksum and fresh C9 matrix",
+      "order": 21,
+      "owner": "A",
+      "result": "PASS",
+      "source_sha": "fa3c2ac708d2b96cc6c6eb3b5c4607fb60c7af87"
+    },
+    {
+      "evidence": "docs/plans/studio_roadmap_01/evidence/b9_handoff_gate.md",
+      "evidence_sha256": "f87e50234f4c8e4f01e4645785f2cd0aeb35f2e3828b73534d81b9c6c57c7345",
+      "gate": "PLAN_B_HANDOFF_GATE",
+      "limitation": "upstream_markdown_evidence",
+      "order": 22,
+      "owner": "B",
+      "result": "PASS",
+      "source_sha": "historical-checksummed"
+    },
+    {
+      "evidence": "artifacts/studio_roadmap_01/c6/evidence.json",
+      "evidence_sha256": "578dcace3c53362faf6f0b4dc4fb471d27dcc31731fab1c9eb536f6d7ea12a70",
+      "gate": "RELEASE_CANDIDATE_GATE",
+      "limitation": "historic evidence; accepted only with recorded checksum and fresh C9 matrix",
+      "order": 23,
+      "owner": "C/integration",
+      "result": "PASS",
+      "source_sha": "bf8b1407dfe0b9cd68b6a1c7195fa508625e70d6"
+    },
+    {
+      "evidence": "artifacts/studio_roadmap_01/c7/evidence.json",
+      "evidence_sha256": null,
+      "gate": "REAL_VERTICAL_SLICE_GATE",
+      "limitation": "certification evidence is absent or belongs to another integration SHA",
+      "order": 24,
+      "owner": "C integration",
+      "result": "BLOCKED",
+      "source_sha": null
+    },
+    {
+      "evidence": "artifacts/studio_roadmap_01/c8/evidence.json",
+      "evidence_sha256": "e2fdb97d5a0fabd2b11a8f9cbeb994a9b7662e0ce1f87a952bab2a88d8143686",
+      "gate": "RECOVERY_VERTICAL_SLICE_GATE",
+      "limitation": "upstream_evidence",
+      "order": 25,
+      "owner": "C integration",
+      "result": "BLOCKED",
+      "source_sha": "026c82c6ea2553054aaef2a7895bbc7534ad7340"
+    }
+  ],
+  "phase": "C9",
+  "preflight": {
+    "blockers": [
+      "reviewer_signoff_missing",
+      "source_worktree_dirty",
+      "upstream_gate_not_pass:REAL_VERTICAL_SLICE_GATE",
+      "upstream_gate_not_pass:RECOVERY_VERTICAL_SLICE_GATE"
+    ],
+    "branch": "chore/cleanup-stale-md-docs",
+    "dirty_paths": [
+      "apps/api/windagent_api/services/studio_capability_provider.py",
+      "artifacts/architecture_v2_runtime_cutover/phase_13/import_graph.json",
+      "artifacts/production_ui/final_acceptance/d6e8a7f9c2b1e4f3a5d8b7c6a9e0f1d2c3b4a5e6/checksums.json",
+      "artifacts/production_ui/final_acceptance/d6e8a7f9c2b1e4f3a5d8b7c6a9e0f1d2c3b4a5e6/run_manifest.json",
+      "artifacts/video_production/script_eval/phase_00_baseline/baseline_manifest.json",
+      "artifacts/video_production/script_eval/phase_00_baseline/baseline_verdict.json",
+      "artifacts/video_production/script_eval/phase_00_baseline/environment.json",
+      "docs/plans/studio_roadmap_01/20_PLAN_B_STORY_SCREENPLAY_PIPELINE.md",
+      "docs/plans/studio_roadmap_01/30_PLAN_C_API_UI_INTEGRATION.md",
+      "orchestration/windagent_orchestration/studio/service.py",
+      "artifacts/studio_roadmap_01/c8/",
+      "artifacts/studio_roadmap_01/c9/",
+      "ornith_test.json",
+      "scripts/studio_roadmap/c7_slice_harness.py",
+      "scripts/studio_roadmap/c8_recovery_harness.py",
+      "scripts/studio_roadmap/produce_c7_evidence.py",
+      "scripts/studio_roadmap/produce_c8_evidence.py",
+      "scripts/studio_roadmap/produce_c9_evidence.py",
+      "tests/unit/api/test_studio_capability_recovery.py",
+      "tests/unit/orchestration/test_studio_full_dag_auto_drive.py",
+      "tests/unit/scripts/test_studio_c8_c9_certification.py"
+    ],
+    "head_sha": "026c82c6ea2553054aaef2a7895bbc7534ad7340",
+    "reviewer": "",
+    "source_dirty_paths": [
+      "apps/api/windagent_api/services/studio_capability_provider.py",
+      "artifacts/architecture_v2_runtime_cutover/phase_13/import_graph.json",
+      "artifacts/production_ui/final_acceptance/d6e8a7f9c2b1e4f3a5d8b7c6a9e0f1d2c3b4a5e6/checksums.json",
+      "artifacts/production_ui/final_acceptance/d6e8a7f9c2b1e4f3a5d8b7c6a9e0f1d2c3b4a5e6/run_manifest.json",
+      "artifacts/video_production/script_eval/phase_00_baseline/baseline_manifest.json",
+      "artifacts/video_production/script_eval/phase_00_baseline/baseline_verdict.json",
+      "artifacts/video_production/script_eval/phase_00_baseline/environment.json",
+      "docs/plans/studio_roadmap_01/20_PLAN_B_STORY_SCREENPLAY_PIPELINE.md",
+      "docs/plans/studio_roadmap_01/30_PLAN_C_API_UI_INTEGRATION.md",
+      "orchestration/windagent_orchestration/studio/service.py",
+      "ornith_test.json",
+      "scripts/studio_roadmap/c7_slice_harness.py",
+      "scripts/studio_roadmap/c8_recovery_harness.py",
+      "scripts/studio_roadmap/produce_c7_evidence.py",
+      "scripts/studio_roadmap/produce_c8_evidence.py",
+      "scripts/studio_roadmap/produce_c9_evidence.py",
+      "tests/unit/api/test_studio_capability_recovery.py",
+      "tests/unit/orchestration/test_studio_full_dag_auto_drive.py",
+      "tests/unit/scripts/test_studio_c8_c9_certification.py"
+    ],
+    "source_worktree_clean": false
+  },
+  "reviewer": "",
+  "verdict": "BLOCKED"
+}
