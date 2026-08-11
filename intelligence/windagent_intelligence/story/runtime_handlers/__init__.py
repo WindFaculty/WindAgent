@@ -9,6 +9,10 @@ from windagent_intelligence.story.runtime_handlers.idea import (
     IdeaEvaluateHandler,
     IdeaGenerateHandler,
 )
+from windagent_intelligence.story.runtime_handlers.lock import (
+    LOCK_HANDLER_REGISTRY,
+    LockHandler,
+)
 from windagent_intelligence.story.runtime_handlers.outline import (
     OUTLINE_HANDLER_REGISTRY,
     BeatGenerateHandler,
@@ -25,13 +29,14 @@ from windagent_intelligence.story.runtime_handlers.screenplay import (
 )
 
 #: Combined handler surface (B3 idea + B4 bible + B5 outline + B6 screenplay +
-#: B7 review/revise); grows per phase.
+#: B7 review/revise + B8 lock); grows per phase.
 HANDLER_REGISTRY: dict = {
     **_IDEA_HANDLER_REGISTRY,
     **BIBLE_HANDLER_REGISTRY,
     **OUTLINE_HANDLER_REGISTRY,
     **SCREENPLAY_HANDLER_REGISTRY,
     **REVIEW_HANDLER_REGISTRY,
+    **LOCK_HANDLER_REGISTRY,
 }
 
 
@@ -49,5 +54,6 @@ __all__ = [
     "ScreenplayGenerateHandler",
     "ReviewHandler",
     "ReviseHandler",
+    "LockHandler",
     "registered_story_task_types",
 ]

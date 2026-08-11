@@ -12,6 +12,12 @@
   immutable draft, re-validates it, and produces the structural diff. Never
   mutates the reviewed draft; the iteration budget stops the loop
   deterministically (separate from provider retries).
+- ``LockService`` — S10 lock assembly: validates approval policy/checkpoint,
+  review threshold, iteration status, and complete lineage, then assembles
+  the immutable ``LockedScreenplayPackage`` from A-issued refs
+  ``(artifact_id, content_hash, revision_id)`` — never copied mutable state.
+  The A-issued ``LockedScreenplayReceipt`` is the authority; the A atomic
+  lock transition itself stays an A checkpoint command outside this service.
 """
 
 from __future__ import annotations
@@ -21,16 +27,26 @@ from typing import Any, Dict, List, Optional
 
 from windagent_core.contracts.studio.errors import StudioValidationError
 from windagent_core.domain.story.bibles import CharacterCanon, WorldBible
-from windagent_core.domain.story.ids import ReviewReportId, RevisionProposalId
+from windagent_core.domain.story.ids import (
+    LockedScreenplayPackageId,
+    ReviewReportId,
+    RevisionProposalId,
+)
 from windagent_core.domain.story.outline import BeatSheet, EpisodeOutline
 from windagent_core.domain.story.review import (
+    READY_FOR_PRODUCTION,
     DimensionResult,
+    LockedScreenplayPackage,
+    LockedScreenplayReceipt,
+    PackageArtifactRef,
     ReviewFinding,
     ReviewReport,
     RevisionProposal,
     StoryDiff,
     aggregate_findings,
     build_story_diff,
+    REQUIRED_PACKAGE_ARTIFACTS,
+    validate_locked_package,
     validate_review_report,
     validate_revision_proposal,
     validate_story_diff,
@@ -39,7 +55,11 @@ from windagent_core.domain.story.screenplay import (
     ScreenplayDraft,
     validate_screenplay_draft,
 )
-from windagent_core.domain.story.validation import ValidationSeverity
+from windagent_core.domain.story.validation import (
+    ValidationIssue,
+    ValidationSeverity,
+    ValidationSource,
+)
 from windagent_intelligence.story.prompts import (
     StoryModelBoundary,
     StoryModelProvenance,
@@ -47,19 +67,28 @@ from windagent_intelligence.story.prompts import (
 
 __all__ = [
     "REVIEW_POLICY_VERSION",
+    "LOCK_POLICY_VERSION",
+    "APPROVAL_MODES",
     "DIMENSION_THRESHOLD",
     "DEFAULT_MAXIMUM_ITERATIONS",
     "ReviewValidationFailure",
     "ReviseValidationFailure",
+    "LockValidationFailure",
     "ReviewResult",
     "RevisionResult",
+    "LockResult",
     "ReviewService",
     "ReviseService",
+    "LockService",
 ]
 
 REVIEW_POLICY_VERSION = "review_policy/v1"
+LOCK_POLICY_VERSION = "lock_policy/v1"
 DIMENSION_THRESHOLD = 0.5
 DEFAULT_MAXIMUM_ITERATIONS = 3
+
+#: Approval modes that can produce an A-issued lock receipt (studio lifecycle).
+APPROVAL_MODES = frozenset({"AUTO", "HUMAN_REQUIRED", "QUALITY_GATE_ONLY"})
 
 _MODEL_DIMENSIONS = (
     ("narrative_score", "narrative"),
@@ -107,6 +136,13 @@ class ReviewValidationFailure(StudioValidationError):
 
 class ReviseValidationFailure(StudioValidationError):
     """Revision was refused (stale/budget/identical) or output failed (typed)."""
+
+    def __init__(self, message: str, *, details: Optional[Dict[str, Any]] = None) -> None:
+        super().__init__(message, details=details)
+
+
+class LockValidationFailure(StudioValidationError):
+    """Lock was refused (stale receipt/approval/hash/lineage) or package failed (typed)."""
 
     def __init__(self, message: str, *, details: Optional[Dict[str, Any]] = None) -> None:
         super().__init__(message, details=details)
@@ -413,3 +449,177 @@ class ReviseService:
             provenance=result.provenance,
             validation=new_validation.summary(),
         )
+
+
+@dataclass(frozen=True)
+class LockResult:
+    """Outcome of a lock assembly: the A-issued receipt + the immutable package."""
+
+    receipt: LockedScreenplayReceipt
+    package: LockedScreenplayPackage
+    validation: Dict[str, Any]
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "receipt": self.receipt.to_canonical_dict(),
+            "package": self.package.to_canonical_dict(),
+            "package_content_hash": self.package.content_hash(),
+            "package_summary": self.package.to_summary(),
+            "validation": self.validation,
+        }
+
+
+class LockService:
+    """S10 lock assembly: approval/lineage validation + immutable package.
+
+    Deterministic and provider-free. The A-issued ``LockedScreenplayReceipt``
+    is the authority; this service validates it (state, approval mode,
+    policy binding, draft binding), validates the review threshold and
+    iteration status, verifies every lineage ref hash against the live
+    canonical content, and assembles ``LockedScreenplayPackage`` from the
+    immutable refs — never from copied mutable state (rule 7). The A atomic
+    lock transition (``READY_FOR_PRODUCTION``) is requested by A's
+    orchestrator command outside this service; post-lock mutation is refused
+    here by hash binding and requires a derived revision instead.
+    """
+
+    def assemble(
+        self,
+        *,
+        draft: ScreenplayDraft,
+        report: ReviewReport,
+        receipt: LockedScreenplayReceipt,
+        lineage_refs: List[PackageArtifactRef],
+        title: Optional[str] = None,
+    ) -> LockResult:
+        issues = self._validate(draft, report, receipt, lineage_refs)
+        if issues:
+            raise LockValidationFailure(
+                "Lock refused: approval/lineage validation failed.",
+                details={
+                    "policy": LOCK_POLICY_VERSION,
+                    "issues": [i.to_dict() for i in issues],
+                },
+            )
+
+        refs_by_type = {r.artifact_type: r for r in lineage_refs}
+        manifest = sorted(refs_by_type.values(), key=lambda r: (r.artifact_type, r.artifact_id))
+        package = LockedScreenplayPackage(
+            package_id=LockedScreenplayPackageId(
+                f"pkg_{receipt.receipt_id.value}_{draft.draft_id.value}"
+            ),
+            receipt_id=receipt.receipt_id,
+            title=title or draft.title,
+            manifest=manifest,
+            # Deterministic: the package binds to the receipt instant, so the
+            # same inputs always assemble to the same immutable package.
+            assembled_at=receipt.issued_at,
+        )
+        package_validation = validate_locked_package(package, receipt)
+        if not package_validation.is_pass():
+            raise LockValidationFailure(
+                "Assembled LockedScreenplayPackage failed validation.",
+                details={"issues": [i.to_dict() for i in package_validation.issues]},
+            )
+        return LockResult(
+            receipt=receipt,
+            package=package,
+            validation=package_validation.summary(),
+        )
+
+    def _validate(
+        self,
+        draft: ScreenplayDraft,
+        report: ReviewReport,
+        receipt: LockedScreenplayReceipt,
+        lineage_refs: List[PackageArtifactRef],
+    ) -> List[Any]:
+        """Deterministic refusal checks; returns blocking issues (typed)."""
+        issues: List[Any] = []
+
+        def _issue(code: str, location: str, evidence: str) -> ValidationIssue:
+            return ValidationIssue(
+                code=code,
+                severity=ValidationSeverity.BLOCKING,
+                location=location,
+                evidence=evidence,
+                source=ValidationSource.DETERMINISTIC,
+            )
+
+        # 1. Receipt authority: state, draft binding, approval mode/policy.
+        if receipt.state != READY_FOR_PRODUCTION:
+            issues.append(_issue(
+                "LOCK_STATE", "receipt/state",
+                f"receipt state {receipt.state!r} is not {READY_FOR_PRODUCTION}",
+            ))
+        if receipt.draft_id != draft.draft_id:
+            issues.append(_issue(
+                "RECEIPT_DRAFT_MISMATCH", "receipt/draft_id",
+                f"receipt binds draft {receipt.draft_id} but lock targets {draft.draft_id}",
+            ))
+        if receipt.approval_mode not in APPROVAL_MODES:
+            issues.append(_issue(
+                "APPROVAL_MODE", "receipt/approval_mode",
+                f"unknown approval mode {receipt.approval_mode!r}",
+            ))
+        if receipt.approval_mode == "HUMAN_REQUIRED" and not receipt.policy_id:
+            issues.append(_issue(
+                "APPROVAL_POLICY", "receipt/policy_id",
+                "HUMAN_REQUIRED lock must bind an approval policy id",
+            ))
+
+        # 2. Review threshold + iteration status (final report authority).
+        if report.draft_id != draft.draft_id:
+            issues.append(_issue(
+                "REVIEW_STALE", "report/draft_id",
+                f"report reviews {report.draft_id} but lock targets {draft.draft_id}",
+            ))
+        if not report.is_pass:
+            issues.append(_issue(
+                "REVIEW_THRESHOLD", "report/verdict",
+                f"verdict {report.verdict!r} is not PASS/PASS_WITH_WARNINGS or has blocking findings",
+            ))
+        if receipt.approval_mode == "AUTO" and report.verdict != "PASS":
+            issues.append(_issue(
+                "APPROVAL_MODE", "report/verdict",
+                "AUTO approval requires a clean PASS (no warnings)",
+            ))
+        if report.review_iteration > report.maximum_iterations:
+            issues.append(_issue(
+                "REVISION_BUDGET", "report/review_iteration",
+                f"iteration {report.review_iteration} exceeds maximum {report.maximum_iterations}",
+            ))
+
+        # 3. Complete lineage: required types present, no duplicates, hash binding.
+        refs_by_type: Dict[str, PackageArtifactRef] = {}
+        seen_ids: List[str] = []
+        for ref in lineage_refs:
+            if ref.artifact_id in seen_ids:
+                issues.append(_issue(
+                    "MANIFEST_DUPLICATE", f"manifest/{ref.artifact_type}",
+                    f"duplicate lineage ref {ref.artifact_id}",
+                ))
+            seen_ids.append(ref.artifact_id)
+            refs_by_type[ref.artifact_type] = ref
+        missing = sorted(REQUIRED_PACKAGE_ARTIFACTS - set(refs_by_type))
+        if missing:
+            issues.append(_issue(
+                "MANIFEST_MISSING_REF", "manifest",
+                f"lineage incomplete; missing artifact types: {missing}",
+            ))
+        for model, artifact_type in (
+            (draft, "ScreenplayDraft"),
+            (report, "ReviewReport"),
+            (receipt, "LockedScreenplayReceipt"),
+        ):
+            ref = refs_by_type.get(artifact_type)
+            if ref is None:
+                continue
+            live_hash = model.content_hash()
+            if ref.content_hash != live_hash:
+                issues.append(_issue(
+                    "HASH_MISMATCH", f"manifest/{artifact_type}",
+                    f"A ref hash {ref.content_hash[:16]}… != live canonical hash "
+                    f"{live_hash[:16]}… (post-lock mutation requires a derived revision)",
+                ))
+        return issues
