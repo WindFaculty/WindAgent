@@ -41,6 +41,7 @@ from windagent_core.domain.models import (
 )
 from windagent_storage.orm.models import (
     ExecutionEventORM,
+    OutboxRecordORM,
     SessionORM,
     TaskORM,
 )
@@ -544,6 +545,26 @@ class SqlOutboxWriter:
         import uuid
 
         repo = SqlOutboxRepository(self._session)
+        # Outbox sequence is per-aggregate monotonic (UNIQUE constraint on
+        # aggregate_id + sequence_number). The events table allocates its own
+        # sequence and rewrites the envelope (SqlEventStore.append), so the
+        # envelope value is NOT a safe outbox sequence: the submission's
+        # TaskSubmitted row already holds 1 for this aggregate. Allocate the
+        # next sequence from the outbox table itself — the only authority.
+        from sqlalchemy import func, select
+
+        agg_id = (
+            str(event.session_id) if event.session_id else str(event.aggregate_id)
+        )
+        # This workspace deliberately disables SQLAlchemy autoflush.  Make
+        # earlier outbox writes in the same transaction visible to MAX();
+        # otherwise a batch allocates sequence 1 for every pending row.
+        await self._session.flush()
+        stmt = select(func.max(OutboxRecordORM.sequence_number)).where(
+            OutboxRecordORM.aggregate_id == agg_id
+        )
+        max_seq = (await self._session.execute(stmt)).scalar() or 0
+        sequence = max_seq + 1
         # Use idempotency_key from event metadata if present, or fallback to event_id + aggregate_id + sequence
         metadata_key = (
             event.metadata.get("idempotency_key")
@@ -574,7 +595,7 @@ class SqlOutboxWriter:
             event_type=event.event_type,
             payload_json=serialized,
             schema_version=1,
-            sequence_number=event.sequence,
+            sequence_number=sequence,
             created_at=utc_now(),
             available_at=utc_now(),
             attempt_count=0,

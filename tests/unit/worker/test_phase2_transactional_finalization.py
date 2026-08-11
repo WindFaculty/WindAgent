@@ -142,6 +142,84 @@ async def test_atomic_finalization_happy_path(db_manager):
 
 
 @pytest.mark.asyncio
+async def test_finalization_after_submission_outbox_sequence_no_collision(db_manager):
+    """Studio crash regression: TaskSubmitted outbox row (seq 1) + terminal
+    event finalization must allocate the NEXT outbox sequence, not reuse 1.
+
+    The UNIQUE(aggregate_id, sequence_number) constraint on v2_outbox_records
+    made the worker die on the terminal-event insert whenever the submission
+    wrote its TaskSubmitted row first (both claimed sequence 1).
+    """
+    now = datetime.now(timezone.utc)
+    async with SqlUnitOfWork(db_manager.session_factory) as uow:
+        task = TaskRunORM(id="task-200", session_id="sess-200", state="running", version=1)
+        await _seed_step_run(uow.session, "step-200")
+        lease = ExecutionLeaseORM(
+            lease_id="lease-200",
+            step_run_id="step-200",
+            run_id="task-200",
+            worker_id="wkr-1",
+            fencing_token="fence-200",
+            status="active",
+            expires_at=now,
+            idempotency_key="key-200",
+        )
+        uow.session.add(task)
+        uow.session.add(lease)
+        # Submission side: TaskSubmitted outbox row, hardcoded sequence 1 —
+        # exactly what SqlWorkSubmissionAdapter writes before execution.
+        sub = OutboxRecordORM(
+            id="outbox_sub_200",
+            event_id="evt-sub-200",
+            aggregate_id="task-200",
+            aggregate_type="task",
+            event_type="TaskSubmitted",
+            payload_json="{}",
+            schema_version=1,
+            sequence_number=1,
+            created_at=now,
+            available_at=now,
+            attempt_count=0,
+            status="pending",
+            deduplication_key="studio_submit:run_x:idea.generate:1",
+        )
+        uow.session.add(sub)
+        await uow.commit()
+
+    # Finalize the same task: previously crashed with UNIQUE constraint
+    # failure on (aggregate_id, sequence_number); now allocates sequence 2.
+    async with SqlUnitOfWork(db_manager.session_factory) as uow:
+        req = FinalizeTaskExecutionRequest(
+            task_id="task-200",
+            worker_id="wkr-1",
+            lease_id="lease-200",
+            fencing_token="fence-200",
+            expected_task_version=1,
+            execution_result={"output": "success_data"},
+            result_artifacts=[],
+            terminal_event={"event_type": "task_completed", "task_id": "task-200"},
+            attempt_id="att-1",
+            fencing_generation=1,
+            terminal_state="completed",
+        )
+        res = await uow.finalize_task_execution(req)
+        assert res.status == "COMPLETED"
+
+    async with SqlUnitOfWork(db_manager.session_factory) as uow:
+        rows = (
+            await uow.session.execute(
+                select(OutboxRecordORM)
+                .where(OutboxRecordORM.aggregate_id == "task-200")
+                .order_by(OutboxRecordORM.sequence_number)
+            )
+        ).scalars().all()
+        seqs = [r.sequence_number for r in rows]
+        assert seqs == [1, 2], f"expected [1, 2], got {seqs}"
+        terminal = [r for r in rows if r.event_type == "task_completed"]
+        assert len(terminal) == 1
+
+
+@pytest.mark.asyncio
 async def test_cas_stale_result_rejection(db_manager):
     """CAS check: A late result with stale version is rejected with STALE_RESULT_REJECTED."""
     async with SqlUnitOfWork(db_manager.session_factory) as uow:
