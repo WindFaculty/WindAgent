@@ -35,6 +35,7 @@ from scripts.studio_roadmap.c7_slice_harness import (  # noqa: E402
 from scripts.studio_roadmap.certification_launcher import (  # noqa: E402
     CertificationLauncher,
     CertificationProcessError,
+    prepare_certification_database,
 )
 
 SECRET_PATTERNS = (
@@ -272,6 +273,7 @@ def main() -> int:
         return 2
 
     try:
+        prepare_certification_database(args.db)
         evidence["runtime_seed"] = asyncio.run(seed_runtime(args.db))
     except Exception as exc:
         evidence = _blocked_evidence(evidence, stage="runtime.seed", failure=exc)

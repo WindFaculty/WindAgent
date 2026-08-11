@@ -91,6 +91,24 @@ def sanitize_environment(env: Dict[str, str]) -> Dict[str, str]:
     return manifest
 
 
+def prepare_certification_database(db_url: str) -> Optional[Path]:
+    """Create only the parent directory for a file-backed certification DB."""
+
+    prefixes = ("sqlite+aiosqlite:///", "sqlite:///")
+    prefix = next((item for item in prefixes if db_url.startswith(item)), None)
+    if prefix is None:
+        return None
+    raw = db_url[len(prefix) :]
+    if not raw or raw == ":memory:":
+        raise ValueError("certification requires a file-backed SQLite database")
+    path = Path(raw)
+    if not path.is_absolute():
+        path = REPO_ROOT / path
+    path = path.resolve()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    return path
+
+
 @dataclass
 class ProcessReceipt:
     name: str
@@ -144,6 +162,7 @@ class CertificationLauncher:
     ) -> None:
         if db_url in {"", "sqlite+aiosqlite:///:memory:", "sqlite:///:memory:"}:
             raise ValueError("certification requires an explicit durable database URL")
+        prepare_certification_database(db_url)
         self.db_url = db_url
         self.api_base = api_base.rstrip("/")
         self.canonical_model = canonical_model.strip()
@@ -421,5 +440,6 @@ __all__ = [
     "CertificationProcessError",
     "ProcessReceipt",
     "git_sha",
+    "prepare_certification_database",
     "sanitize_environment",
 ]

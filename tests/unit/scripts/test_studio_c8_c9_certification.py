@@ -22,6 +22,7 @@ from scripts.studio_roadmap.c8_recovery_harness import (
 from scripts.studio_roadmap.certification_launcher import (
     CertificationLauncher,
     CertificationProcessError,
+    prepare_certification_database,
     sanitize_environment,
 )
 from scripts.studio_roadmap.produce_c9_evidence import evidence_sha, evidence_verdict
@@ -39,6 +40,18 @@ def test_c8_sqlite_path_is_resolved_inside_repository() -> None:
     path = sqlite_path_from_url("sqlite+aiosqlite:///certification.db")
     assert path.is_absolute()
     assert path.name == "certification.db"
+
+
+def test_certification_database_parent_is_prepared_without_creating_db(tmp_path) -> None:
+    db_path = tmp_path / "fresh-namespace" / "certification.db"
+
+    observed = prepare_certification_database(
+        f"sqlite+aiosqlite:///{db_path.as_posix()}"
+    )
+
+    assert observed == db_path.resolve()
+    assert db_path.parent.is_dir()
+    assert not db_path.exists()
 
 
 def test_c8_duplicate_artifact_detection_is_revision_scoped() -> None:
