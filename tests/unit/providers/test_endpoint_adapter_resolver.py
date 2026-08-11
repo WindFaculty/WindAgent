@@ -58,3 +58,5 @@ def test_resolver_does_not_decrypt_missing_ollama_credential() -> None:
 
     assert ciphertexts == []
     assert transport.api_key == ""
+    assert transport.stream_generate is True
+    assert transport.default_payload == {"think": False}

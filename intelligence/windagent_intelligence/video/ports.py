@@ -32,6 +32,7 @@ class ModelCompletionRequest:
     temperature: float = 0.7
     max_tokens: int = 2048
     prompt_spec: Optional[PromptSpec] = None
+    structured_output_schema: Optional[dict] = None
     metadata: dict = field(default_factory=dict)
 
 

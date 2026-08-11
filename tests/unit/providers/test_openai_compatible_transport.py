@@ -62,6 +62,53 @@ async def test_non_stream_completion_success():
 
 
 @pytest.mark.asyncio
+async def test_streamed_generate_accumulates_content_usage_and_request_id():
+    sse_body = (
+        'data: {"id":"chatcmpl-real-1","model":"ornith:9b","choices":'
+        '[{"delta":{"content":"{\\"ok\\":"},"finish_reason":null}]}\n\n'
+        'data: {"id":"chatcmpl-real-1","model":"ornith:9b","choices":'
+        '[{"delta":{"content":"true}"},"finish_reason":"stop"}]}\n\n'
+        'data: {"id":"chatcmpl-real-1","model":"ornith:9b","choices":[],"usage":'
+        '{"prompt_tokens":7,"completion_tokens":3,"total_tokens":10}}\n\n'
+        'data: [DONE]\n\n'
+    )
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        payload = json.loads(request.content)
+        assert payload["stream"] is True
+        assert payload["stream_options"] == {"include_usage": True}
+        assert payload["think"] is False
+        assert payload["response_format"]["type"] == "json_schema"
+        return httpx.Response(
+            200,
+            text=sse_body,
+            headers={"content-type": "text/event-stream"},
+        )
+
+    mock_client = httpx.AsyncClient(transport=httpx.MockTransport(handler))
+    transport = OpenAICompatibleTransport(
+        provider_name="ollama-local",
+        http_client=mock_client,
+        stream_generate=True,
+        default_payload={"think": False},
+    )
+    request = ProviderRequest(
+        messages=[{"role": "user", "content": "Return JSON"}],
+        structured_output_schema={"type": "object", "required": ["ok"]},
+    )
+
+    response = await transport.generate(request, model_id="ornith:9b")
+
+    assert response.text == '{"ok":true}'
+    assert response.structured_output == {"ok": True}
+    assert response.provider_model_id == "ornith:9b"
+    assert response.provider_request_id == "chatcmpl-real-1"
+    assert response.usage.prompt_tokens == 7
+    assert response.usage.completion_tokens == 3
+    assert response.raw_metadata["streamed_generation"] is True
+
+
+@pytest.mark.asyncio
 async def test_stream_completion_fragmented_sse_and_tool_calls():
     # SSE stream simulation with fragmented chunks and tool call deltas
     sse_body = (

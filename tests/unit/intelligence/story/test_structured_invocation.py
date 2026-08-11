@@ -40,6 +40,7 @@ async def test_happy_path_parses_and_records_provenance():
     assert prov.capability == "brief_expansion"
     assert prov.provider == "fixture"
     assert prov.repair_count == 0
+    assert port.requests[0].structured_output_schema == BRIEF_EXPANSION_OUTPUT_SCHEMA
     assert "usage" in prov.to_dict()
     # provenance never carries raw content
     assert "content" not in prov.to_dict()
@@ -182,6 +183,7 @@ async def test_text_output_prompt_returns_text_payload():
     )
     assert result.data["text"].startswith("## Episode 1")
     assert result.provenance.repair_count == 0
+    assert port.requests[0].structured_output_schema is None
 
 
 def test_error_code_mapping_covers_taxonomy():

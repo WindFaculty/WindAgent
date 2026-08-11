@@ -234,6 +234,7 @@ class RouteLockedModelPort:
             system_instruction=request.system,
             temperature=request.temperature,
             max_tokens=request.max_tokens,
+            structured_output_schema=request.structured_output_schema,
             request_id=metadata.get("task_id") or receipt.route_lock_id,
             idempotency_key=metadata.get("idempotency_key")
             or f"studio:{receipt.route_lock_id}:{receipt.canonical_model_id}",

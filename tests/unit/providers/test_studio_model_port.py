@@ -123,7 +123,13 @@ class StubProviderAdapter:
         )
 
 
-def _request(*, capability: str = "ideation", user: str = "hello", **meta) -> ModelCompletionRequest:
+def _request(
+    *,
+    capability: str = "ideation",
+    user: str = "hello",
+    structured_output_schema: dict | None = None,
+    **meta,
+) -> ModelCompletionRequest:
     return ModelCompletionRequest(
         capability=capability,
         system="system",
@@ -131,6 +137,7 @@ def _request(*, capability: str = "ideation", user: str = "hello", **meta) -> Mo
         canonical_model="canonical/story",
         temperature=0.5,
         max_tokens=512,
+        structured_output_schema=structured_output_schema,
         metadata={"prompt_id": "story.ideation.generate", **meta},
     )
 
@@ -195,7 +202,10 @@ async def test_explicit_route_lock_id_wins_as_scope():
 
 async def test_complete_maps_request_and_returns_provenance():
     port, _, stub, attempts = _build_port()
-    result = await port.complete(_request(user="hello model"))
+    output_schema = {"type": "object", "required": ["ok"]}
+    result = await port.complete(
+        _request(user="hello model", structured_output_schema=output_schema)
+    )
     assert isinstance(result, ModelCompletionResult)
     assert result.provider == "stub-provider"
     assert result.content == '{"ok": true}'
@@ -209,6 +219,7 @@ async def test_complete_maps_request_and_returns_provenance():
     assert provider_request.system_instruction == "system"
     assert provider_request.temperature == 0.5
     assert provider_request.max_tokens == 512
+    assert provider_request.structured_output_schema == output_schema
     assert model_id == "stub-model-1"
     assert attempts.attempts and attempts.attempts[-1]["status"] == "success"
 

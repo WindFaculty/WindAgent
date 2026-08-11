@@ -50,6 +50,8 @@ class OpenAICompatibleTransport:
         default_headers: Optional[Dict[str, str]] = None,
         timeout_seconds: float = 30.0,
         http_client: Optional[httpx.AsyncClient] = None,
+        stream_generate: bool = False,
+        default_payload: Optional[Dict[str, Any]] = None,
     ):
         self.provider_name = provider_name
         self.base_url = base_url.rstrip("/")
@@ -57,6 +59,8 @@ class OpenAICompatibleTransport:
         self.default_headers = default_headers or {}
         self.timeout_seconds = timeout_seconds
         self._custom_client = http_client
+        self.stream_generate = stream_generate
+        self.default_payload = dict(default_payload or {})
 
     def _build_headers(self) -> Dict[str, str]:
         headers = {"Content-Type": "application/json", **self.default_headers}
@@ -79,6 +83,7 @@ class OpenAICompatibleTransport:
             "model": model_id,
             "messages": request.messages.copy(),
             "stream": stream,
+            **self.default_payload,
         }
 
         if request.system_instruction:
@@ -171,6 +176,9 @@ class OpenAICompatibleTransport:
         self, request: ProviderRequest, model_id: str
     ) -> ProviderResponse:
         """Executes a synchronous completion call."""
+        if self.stream_generate:
+            return await self._generate_streamed(request, model_id)
+
         start_time = time.perf_counter()
         url = f"{self.base_url}/chat/completions"
         payload = self._build_payload(request, model_id, stream=False)
@@ -258,6 +266,141 @@ class OpenAICompatibleTransport:
                     "status_code": resp.status_code,
                     "headers": dict(resp.headers),
                     "response_id": data.get("id"),
+                },
+            )
+        except httpx.TimeoutException as exc:
+            raise TimeoutFailure(
+                f"Timeout connecting to {self.base_url}", provider_id=self.provider_name
+            ) from exc
+        except httpx.RequestError as exc:
+            raise NetworkFailure(
+                f"Network error connecting to {self.base_url}: {str(exc)}",
+                provider_id=self.provider_name,
+            ) from exc
+        finally:
+            if should_close:
+                await client.aclose()
+
+    async def _generate_streamed(
+        self, request: ProviderRequest, model_id: str
+    ) -> ProviderResponse:
+        """Accumulate SSE generation while retaining the 30s inactivity timeout."""
+        start_time = time.perf_counter()
+        url = f"{self.base_url}/chat/completions"
+        payload = self._build_payload(request, model_id, stream=True)
+        payload["stream_options"] = {"include_usage": True}
+        client = self._get_client()
+        should_close = self._custom_client is None
+        content_parts: List[str] = []
+        accumulated_tool_calls: Dict[int, Dict[str, Any]] = {}
+        usage_data: Dict[str, Any] = {}
+        provider_model_id = model_id
+        provider_request_id: Optional[str] = None
+        finish_reason = FinishReason.STOP.value
+        response_headers: Dict[str, str] = {}
+
+        try:
+            async with client.stream(
+                "POST", url, json=payload, headers=self._build_headers()
+            ) as resp:
+                if resp.status_code != 200:
+                    error_text = await resp.aread()
+                    raise self._map_http_error(
+                        resp.status_code,
+                        error_text.decode("utf-8", errors="replace"),
+                        resp.headers,
+                    )
+                content_type = resp.headers.get("content-type", "")
+                if "text/event-stream" not in content_type:
+                    raise ProtocolMismatchFailure(
+                        f"Unexpected streaming content-type from provider: {content_type}",
+                        provider_id=self.provider_name,
+                    )
+                response_headers = dict(resp.headers)
+                provider_request_id = resp.headers.get("x-request-id")
+                async for line in resp.aiter_lines():
+                    line = line.strip()
+                    if not line or line.startswith(":") or not line.startswith("data:"):
+                        continue
+                    data_text = line[5:].strip()
+                    if data_text == "[DONE]":
+                        continue
+                    try:
+                        data = json.loads(data_text)
+                    except Exception as exc:
+                        raise MalformedResponseFailure(
+                            "Provider returned malformed SSE JSON",
+                            provider_id=self.provider_name,
+                        ) from exc
+
+                    provider_request_id = provider_request_id or data.get("id")
+                    provider_model_id = data.get("model") or provider_model_id
+                    if data.get("usage"):
+                        usage_data = data["usage"]
+                    choices = data.get("choices") or []
+                    if not choices:
+                        continue
+                    choice = choices[0]
+                    delta = choice.get("delta") or {}
+                    if delta.get("content"):
+                        content_parts.append(delta["content"])
+                    for tool_delta in delta.get("tool_calls") or []:
+                        index = int(tool_delta.get("index", 0))
+                        current = accumulated_tool_calls.setdefault(
+                            index,
+                            {
+                                "id": tool_delta.get("id"),
+                                "type": tool_delta.get("type", "function"),
+                                "function": {"name": "", "arguments": ""},
+                            },
+                        )
+                        if tool_delta.get("id"):
+                            current["id"] = tool_delta["id"]
+                        function_delta = tool_delta.get("function") or {}
+                        current["function"]["name"] += function_delta.get("name") or ""
+                        current["function"]["arguments"] += (
+                            function_delta.get("arguments") or ""
+                        )
+                    if choice.get("finish_reason"):
+                        finish_reason = choice["finish_reason"]
+
+            text_content = "".join(content_parts)
+            structured_out = None
+            if request.structured_output_schema and text_content:
+                try:
+                    structured_out = json.loads(text_content)
+                except Exception:
+                    pass
+            details = usage_data.get("completion_tokens_details") or {}
+            prompt_details = usage_data.get("prompt_tokens_details") or {}
+            tool_calls = [
+                accumulated_tool_calls[index]
+                for index in sorted(accumulated_tool_calls)
+            ]
+            if tool_calls:
+                finish_reason = FinishReason.TOOL_CALLS.value
+            total_latency_ms = (time.perf_counter() - start_time) * 1000.0
+            return ProviderResponse(
+                canonical_model_id=model_id,
+                provider_model_id=provider_model_id,
+                endpoint_id=f"ep-{self.provider_name}",
+                text=text_content,
+                tool_calls=tool_calls,
+                structured_output=structured_out,
+                finish_reason=finish_reason,
+                usage=ProviderUsage(
+                    prompt_tokens=usage_data.get("prompt_tokens", 0),
+                    completion_tokens=usage_data.get("completion_tokens", 0),
+                    cached_tokens=prompt_details.get("cached_tokens", 0),
+                    reasoning_tokens=details.get("reasoning_tokens", 0),
+                ),
+                provider_request_id=provider_request_id,
+                total_latency_ms=total_latency_ms,
+                raw_metadata={
+                    "status_code": 200,
+                    "headers": response_headers,
+                    "response_id": provider_request_id,
+                    "streamed_generation": True,
                 },
             )
         except httpx.TimeoutException as exc:

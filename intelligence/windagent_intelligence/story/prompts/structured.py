@@ -31,6 +31,7 @@ from typing import Any, Dict, Optional
 from jsonschema import Draft202012Validator
 
 from windagent_intelligence.story.prompts.registry import (
+    OUTPUT_FORMAT_JSON,
     OUTPUT_FORMAT_TEXT,
     STORY_PROMPT_REGISTRY,
     SafetyConstraints,
@@ -222,6 +223,9 @@ class StoryModelBoundary:
             temperature=entry.temperature,
             max_tokens=entry.max_tokens,
             prompt_spec=entry.to_prompt_spec(),
+            structured_output_schema=(
+                entry.output_schema if entry.output_format == OUTPUT_FORMAT_JSON else None
+            ),
             metadata={"prompt_id": entry.prompt_id},
         )
         try:
