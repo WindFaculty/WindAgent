@@ -433,12 +433,16 @@ class StudioRuntimeAdapter(ExecutionRuntimePort):
         provenance = getattr(result, "provenance", None)
         route = None
         if provenance is not None and getattr(provenance, "prompt_id", None):
+            usage = dict(getattr(provenance, "usage", {}) or {})
             route = StudioRouteProvenance(
                 prompt_id=provenance.prompt_id,
                 prompt_version=getattr(provenance, "prompt_version", None),
                 prompt_hash=getattr(provenance, "prompt_hash", None),
                 provider_id=getattr(provenance, "provider", None),
-                usage=dict(getattr(provenance, "usage", {}) or {}),
+                model_route_id=(
+                    getattr(provenance, "route_lock_id", None) or usage.get("route_lock_id")
+                ),
+                usage=usage,
             )
         outputs = _outputs_from(result, OUTPUT_NAMES_BY_TASK[task_type])
         return outputs, route

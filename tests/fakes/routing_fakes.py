@@ -170,6 +170,10 @@ class InMemoryBindingStore(EndpointBindingRepositoryPort):
 class InMemoryLockStore(RouteLockRepositoryPort):
     """Dev/test-only in-memory fallback implementing the route lock port."""
 
+    #: Declares non-durability so RouteLockService.is_durable is honest
+    #: without importing tests from production code.
+    durable = False
+
     def __init__(self):
         self._locks: Dict[str, RouteLockRecord] = {}
         self._lock_by_id: Dict[str, RouteLockRecord] = {}

@@ -123,6 +123,13 @@ class RouteLockService:
         self._lock_repo = lock_repository
         self._audit_repo = audit_repository
         self._attempt_repo = attempt_repository
+        #: Durability is decided by injection: a lock repository was composed
+        #: (cross-process durable) vs. the in-memory dev/test fallback. A
+        #: repository may declare ``durable = False`` (test fakes); never
+        #: derived from module identity or test imports.
+        self._durable = lock_repository is not None and bool(
+            getattr(lock_repository, "durable", True)
+        )
         if self._lock_repo is None:
             warnings.warn(
                 "RouteLockService running IN-MEMORY (dev/test only). "
@@ -143,8 +150,7 @@ class RouteLockService:
 
     @property
     def is_durable(self) -> bool:
-        from tests.fakes.routing_fakes import InMemoryLockStore
-        return not isinstance(self._lock_repo, InMemoryLockStore)
+        return self._durable
 
     def record_attempt(
         self,

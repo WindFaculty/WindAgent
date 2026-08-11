@@ -117,6 +117,10 @@ class WorkerContainer:
         self.verification_service: Optional[VerificationService] = None
         self.outbox_publisher: Optional[OutboxEventPublisher] = None
         self.route_lock_service: Optional[RouteLockService] = None
+        self.provider_execution_coordinator: Optional[Any] = None  # Plan A A6
+        self.studio_route_lock_service: Optional[RouteLockService] = None  # Plan A A6
+        self.studio_model_port: Optional[Any] = None  # Plan A A6 (guarded)
+        self.studio_capability_probe: Optional[Any] = None  # Plan A A6 (guarded)
         self.studio_runtime: Optional[Any] = None  # Plan A A5 (guarded)
         self.studio_reconciler: Optional[Any] = None  # Plan A A5 (guarded)
         self.studio_recovery: Optional[Any] = None  # Plan A A5 (guarded)
@@ -205,10 +209,21 @@ class WorkerContainer:
         # Routing
         self.route_lock_service = RouteLockService(lock_repository=lock_repo, audit_repository=audit_repo)
 
+        # Plan A A6 — real Studio model route (guarded by the studio runtime
+        # switch). Composes the canonical coordinator over the same durable
+        # endpoint/lock repos as the API process; the RouteLockedModelPort is
+        # the real PreproductionModelPort handed to B handlers. The canonical
+        # model is a compatibility input (WINDAGENT_STUDIO_CANONICAL_MODEL),
+        # never hidden domain policy.
+        if os.getenv("WINDAGENT_STUDIO_RUNTIME", "").lower() in ("1", "true", "yes"):
+            self._register_studio_provider_route(
+                sync_factory, lock_repo, audit_repo, binding_repo
+            )
+
         # Plan A A5 — Studio Story worker runtime (guarded). Registers the
         # studio.* execution capability over the frozen B handler registry;
-        # no model port is composed here (A6 owns the real provider adapter),
-        # so model-backed handlers fail closed with STUDIO_MODEL_PORT_UNAVAILABLE.
+        # without WINDAGENT_STUDIO_MODEL_ROUTE=1 the model port stays None and
+        # model-backed handlers fail closed with STUDIO_MODEL_PORT_UNAVAILABLE.
         if os.getenv("WINDAGENT_STUDIO_RUNTIME", "").lower() in ("1", "true", "yes"):
             self._register_studio_runtime()
         
@@ -345,15 +360,78 @@ class WorkerContainer:
             raise RuntimeError("WorkerContainer is not initialized.")
         return SqlUnitOfWork(self.uow_factory)
 
+    def _register_studio_provider_route(self, sync_factory, lock_repo, audit_repo, binding_repo) -> None:
+        """Compose the real A6 provider adapter: coordinator + studio route lock.
+
+        Only runs under ``WINDAGENT_STUDIO_RUNTIME=1``. The coordinator is the
+        same canonical execution path as the API process (durable endpoint
+        registry/state/quota/attempt repos); the studio route lock reuses the
+        durable lock repo under a Studio ruleset. The model port is composed
+        ONLY when ``WINDAGENT_STUDIO_MODEL_ROUTE=1`` — otherwise handlers fail
+        closed with STUDIO_MODEL_PORT_UNAVAILABLE (no mock fallback).
+        """
+        from windagent_providers.routing.endpoint_adapter_resolver import (
+            EndpointAdapterResolver,
+        )
+        from windagent_providers.routing.execution_coordinator import (
+            EndpointExecutionCoordinator,
+        )
+        from windagent_storage.repositories.v3_repositories import (
+            SQLEndpointRegistryRepository,
+            SQLEndpointStateRepository,
+            SQLQuotaStateRepository,
+            SQLRouteAttemptRepository,
+        )
+        from windagent_storage.security.encryption import decrypt
+
+        self.provider_execution_coordinator = EndpointExecutionCoordinator(
+            adapter_resolver=EndpointAdapterResolver(decrypt),
+            endpoint_registry=SQLEndpointRegistryRepository(sync_factory()),
+            endpoint_state=SQLEndpointStateRepository(sync_factory()),
+            quota_state=SQLQuotaStateRepository(sync_factory()),
+            attempt_log=SQLRouteAttemptRepository(sync_factory()),
+        )
+        if os.getenv("WINDAGENT_STUDIO_MODEL_ROUTE", "").lower() in ("1", "true", "yes"):
+            from windagent_worker.studio_model_port import (
+                RouteLockedModelPort,
+                build_studio_ruleset,
+            )
+
+            canonical_model = os.getenv("WINDAGENT_STUDIO_CANONICAL_MODEL", "") or None
+            self.studio_route_lock_service = RouteLockService(
+                ruleset=build_studio_ruleset(canonical_model),
+                lock_repository=lock_repo,
+                audit_repository=audit_repo,
+            )
+            self.studio_model_port = RouteLockedModelPort(
+                self.studio_route_lock_service,
+                self.provider_execution_coordinator,
+                canonical_model=canonical_model,
+            )
+            logger.info(
+                "RouteLockedModelPort composed (Plan A A6); "
+                f"canonical model: {canonical_model or 'default'}."
+            )
+        else:
+            self.studio_model_port = None
+            logger.info(
+                "WINDAGENT_STUDIO_MODEL_ROUTE unset; model-backed Studio tasks fail closed "
+                "(STUDIO_MODEL_PORT_UNAVAILABLE)."
+            )
+
     def _register_studio_runtime(self) -> None:
         """Compose the A5 Studio worker runtime + completion recovery (guarded).
 
         Runs only under ``WINDAGENT_STUDIO_RUNTIME=1``; the fake runtime guard
         is detected from the composed default adapter so certification mode
-        fails closed even when ``WINDAGENT_FAKE_RUNTIME`` is set.
+        fails closed even when ``WINDAGENT_FAKE_RUNTIME`` is set. The A6
+        capability probe observes the real composition (durable DB, queue,
+        model route, Blender, story handlers) with certification fail-closed
+        flags.
         """
         from windagent_intelligence.story.runtime_handlers import HANDLER_REGISTRY
         from windagent_orchestration.studio.service import StudioRunService
+        from windagent_providers.studio import WorkerRuntimeCapabilityProbe
         from windagent_storage.studio.task_submission import StudioTaskSubmissionAdapter
         from windagent_worker.studio_runtime import (
             StudioCompletionRecovery,
@@ -366,7 +444,7 @@ class WorkerContainer:
         studio_runtime = StudioRuntimeAdapter(
             handler_registry=HANDLER_REGISTRY,
             session_factory=self.uow_factory,
-            model_port=None,
+            model_port=self.studio_model_port,
             fake_runtime_active=fake_active,
             worker_id="studio-worker",
         )
@@ -379,9 +457,19 @@ class WorkerContainer:
         self.studio_recovery = StudioCompletionRecovery(
             self.uow_factory, self.studio_reconciler
         )
+        self.studio_capability_probe = WorkerRuntimeCapabilityProbe(
+            db=self.db,
+            task_queue=self.task_queue,
+            route_lock_service=self.studio_route_lock_service,
+            coordinator=self.provider_execution_coordinator,
+            handler_registry=HANDLER_REGISTRY,
+            model_port=self.studio_model_port,
+            fake_runtime_active=fake_active,
+        )
         logger.info(
-            "StudioRuntimeAdapter registered (Plan A A5); "
-            f"fake runtime guard: {'ACTIVE' if fake_active else 'inactive'}."
+            "StudioRuntimeAdapter registered (Plan A A5/A6); "
+            f"fake runtime guard: {'ACTIVE' if fake_active else 'inactive'}; "
+            f"real model port: {'composed' if self.studio_model_port else 'NONE (fail closed)'}."
         )
 
     def _register_asset_gateway(self) -> None:

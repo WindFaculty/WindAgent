@@ -154,8 +154,9 @@ def _envelope(
 
 
 async def _adapter(db, **kwargs) -> StudioRuntimeAdapter:
+    registry = kwargs.pop("handler_registry", HANDLER_REGISTRY)
     return StudioRuntimeAdapter(
-        handler_registry=HANDLER_REGISTRY,
+        handler_registry=registry,
         session_factory=db.session_factory,
         **kwargs,
     )
@@ -273,9 +274,15 @@ async def test_unsupported_contract_rejected(db, studio):
 
 async def test_unregistered_task_type_rejected(db, studio):
     series_id, episode_id = await _seed_episode(db, studio)
-    adapter = await _adapter(db)
+    # Registry WITHOUT the lock handler: LOCK is a frozen type but its handler
+    # may land in a later B phase (B8), so an unregistered type must still fail
+    # closed regardless of which handlers are currently registered.
+    registry_without_lock = {
+        k: v for k, v in HANDLER_REGISTRY.items() if k != StudioTaskType.LOCK
+    }
+    adapter = await _adapter(db, handler_registry=registry_without_lock)
     envelope = _envelope(
-        StudioTaskType.LOCK,  # frozen type, handler lands in a later B phase
+        StudioTaskType.LOCK,  # frozen type, handler not in this registry
         episode_id=episode_id,
         series_id=series_id,
     )
