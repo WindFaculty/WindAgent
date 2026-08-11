@@ -33,9 +33,11 @@ import urllib.request
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 BRIEF = {
+    "brief_id": "br_c7_rabbit_kite",
+    "title": "Thỏ và chiếc diều",
     "premise": (
         "Một chú thỏ con nhặt được chiếc diều giấy lạc đường và cùng bạn bè "
         "trả diều về cho chủ của nó."
@@ -302,7 +304,9 @@ def _provider_preflight() -> Dict[str, Any]:
     }
 
 
-def _certification_preflight(api_base: str, hop) -> Dict[str, Any]:
+def _certification_preflight(
+    api_base: str, hop, health_check: Callable[[], None]
+) -> Dict[str, Any]:
     """Fail before Series creation unless the live topology attests C7 authority."""
 
     deadline = time.monotonic() + 60
@@ -310,6 +314,7 @@ def _certification_preflight(api_base: str, hop) -> Dict[str, Any]:
     profile: Dict[str, Any] = {}
     capabilities: Dict[str, Dict[str, Any]] = {}
     while time.monotonic() < deadline:
+        health_check()
         try:
             status, profile = _get(api_base, "/api/v3/studio/capabilities")
         except OSError:
@@ -384,7 +389,9 @@ def _certification_preflight(api_base: str, hop) -> Dict[str, Any]:
             if identity.get("provider_model_id") != PROVIDER_MODEL:
                 raise SliceError(f"worker attests an unexpected provider model: {identity}")
 
+    health_check()
     provider = _provider_preflight()
+    health_check()
     safe_profile = {**profile, "provider_preflight": provider}
     hop(
         "certification.preflight",
@@ -396,7 +403,13 @@ def _certification_preflight(api_base: str, hop) -> Dict[str, Any]:
     return safe_profile
 
 
-def run_slice(api_base: str, *, db_url: str, log=print) -> Dict[str, Any]:
+def run_slice(
+    api_base: str,
+    *,
+    db_url: str,
+    log=print,
+    health_check: Optional[Callable[[], None]] = None,
+) -> Dict[str, Any]:
     """Drive the full public-API workflow; returns the correlation report."""
     trace: List[Dict[str, Any]] = []
     log(f"[c7] slice start {utc_now_iso()}")
@@ -406,9 +419,12 @@ def run_slice(api_base: str, *, db_url: str, log=print) -> Dict[str, Any]:
         trace.append(entry)
         log(f"[c7] {name}: {json.dumps(fields, ensure_ascii=False)[:220]}")
 
-    capability_profile = _certification_preflight(api_base, hop)
+    guard = health_check or (lambda: None)
+    guard()
+    capability_profile = _certification_preflight(api_base, hop, guard)
 
     # 1. Series + Episode with the mandatory brief.
+    guard()
     status, series = _request(
         api_base, "POST", "/api/v3/studio/series",
         {"title": "Chuyện đồng quê", "description": "Certification slice C7", "metadata": {}},
@@ -419,6 +435,7 @@ def run_slice(api_base: str, *, db_url: str, log=print) -> Dict[str, Any]:
     series_id = series["series_id"]
     hop("series.created", series_id=series_id)
 
+    guard()
     status, episode = _request(
         api_base, "POST", f"/api/v3/studio/series/{series_id}/episodes",
         {
@@ -434,6 +451,7 @@ def run_slice(api_base: str, *, db_url: str, log=print) -> Dict[str, Any]:
     episode_id = episode["episode_id"]
     hop("episode.created", episode_id=episode_id)
 
+    guard()
     status, run = _request(
         api_base,
         "POST",
@@ -446,7 +464,7 @@ def run_slice(api_base: str, *, db_url: str, log=print) -> Dict[str, Any]:
     run_id = run["run_id"]
     hop("run.started", run_id=run_id, resuming=run.get("resuming"))
 
-    outcome = _drive_run(api_base, episode_id, run_id, 1, hop, log)
+    outcome = _drive_run(api_base, episode_id, run_id, 1, hop, log, guard)
     if outcome["status"] != "COMPLETED":
         raise SliceError(
             f"single-run quality workflow ended {outcome['status']}; "
@@ -464,7 +482,15 @@ def run_slice(api_base: str, *, db_url: str, log=print) -> Dict[str, Any]:
     )
 
 
-def _drive_run(api_base: str, episode_id: str, run_id: str, attempt: int, hop, log) -> Dict[str, Any]:
+def _drive_run(
+    api_base: str,
+    episode_id: str,
+    run_id: str,
+    attempt: int,
+    hop,
+    log,
+    health_check: Callable[[], None],
+) -> Dict[str, Any]:
     """Poll the run and act at every approval checkpoint (real commands)."""
     revision_id: Optional[str] = None
     revision_hash: Optional[str] = None
@@ -476,6 +502,7 @@ def _drive_run(api_base: str, episode_id: str, run_id: str, attempt: int, hop, l
     last_state = None
 
     while time.time() < deadline:
+        health_check()
         status, ep = _get(api_base, f"/api/v3/studio/episodes/{episode_id}")
         if status != 200:
             raise SliceError(f"episode read failed: {status} {ep}")

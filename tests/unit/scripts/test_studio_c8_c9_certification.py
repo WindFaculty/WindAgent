@@ -26,6 +26,7 @@ from scripts.studio_roadmap.certification_launcher import (
     sanitize_environment,
 )
 from scripts.studio_roadmap.produce_c9_evidence import evidence_sha, evidence_verdict
+from windagent_core.domain.story.ideation.models import CreativeBrief
 from scripts.studio_roadmap.produce_c7_evidence import (
     _blocked_evidence as c7_blocked_evidence,
     _redact_secrets as c7_redact_secrets,
@@ -250,6 +251,27 @@ def test_c7_logical_operation_uses_stable_idempotency_key() -> None:
     assert c7_slice_harness._idem("approve-ep-rev-IDEA") == c7_slice_harness._idem(
         "approve-ep-rev-IDEA"
     )
+
+
+def test_c7_certification_brief_is_a_complete_canonical_brief() -> None:
+    brief = CreativeBrief.model_validate(c7_slice_harness.BRIEF)
+
+    assert str(brief.brief_id) == "br_c7_rabbit_kite"
+    assert brief.title == "Thỏ và chiếc diều"
+
+
+def test_launcher_guard_is_injected_into_long_running_operation(tmp_path) -> None:
+    launcher = CertificationLauncher(
+        db_url="sqlite+aiosqlite:///cert.db",
+        log_dir=tmp_path,
+    )
+
+    def operation(health_check):
+        launcher._unexpected = {"process": "worker", "failure": "process_exited"}
+        health_check()
+
+    with pytest.raises(CertificationProcessError, match="first broken process hop"):
+        launcher.run_guarded(operation)
 
 
 def test_c7_approval_retry_reuses_key_and_never_swallows_409(monkeypatch) -> None:

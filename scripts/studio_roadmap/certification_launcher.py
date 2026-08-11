@@ -391,10 +391,14 @@ class CertificationLauncher:
                 first_broken_hop=dict(self._unexpected),
             )
 
-    def run_guarded(self, operation: Callable[[], Any]) -> Any:
+    def run_guarded(
+        self, operation: Callable[[Callable[[], None]], Any]
+    ) -> Any:
+        """Run an operation that cooperatively checks the topology watchdog."""
+
         self.raise_if_unhealthy()
         try:
-            result = operation()
+            result = operation(self.raise_if_unhealthy)
         except Exception:
             self.raise_if_unhealthy()
             raise

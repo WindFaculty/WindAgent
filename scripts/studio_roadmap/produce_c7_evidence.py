@@ -314,18 +314,21 @@ def main() -> int:
         launcher.start_all()
         stage = "c7.public_vertical_slice"
         report = launcher.run_guarded(
-            lambda: run_slice(args.api, db_url=args.db)
+            lambda health_check: run_slice(
+                args.api, db_url=args.db, health_check=health_check
+            )
         )
         assert_report(report)
         evidence.update(report)
         stage = "desktop.tauri_display"
         evidence["desktop"] = launcher.run_guarded(
-            lambda: capture_c7_desktop_evidence(
+            lambda health_check: capture_c7_desktop_evidence(
                 api_base=args.api,
                 episode_id=report["episode_id"],
                 run_id=report["run_id"],
                 output_dir=EVIDENCE_DIR,
                 timeout_seconds=args.desktop_timeout,
+                health_check=health_check,
             )
         )
         if evidence["desktop"].get("pass") is not True:

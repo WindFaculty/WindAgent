@@ -11,7 +11,7 @@ import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Callable, Dict, Optional
 
 from scripts.studio_roadmap.c7_slice_harness import SliceError, _get
 
@@ -155,10 +155,14 @@ def capture_c7_desktop_evidence(
     run_id: str,
     output_dir: Path,
     timeout_seconds: float = 300,
+    health_check: Optional[Callable[[], None]] = None,
 ) -> Dict[str, Any]:
     """Launch Tauri, prove server-backed visible state, and capture its window."""
 
+    guard = health_check or (lambda: None)
+    guard()
     tool_versions = probe_c7_desktop_environment()
+    guard()
     status, episode = _get(api_base, f"/api/v3/studio/episodes/{episode_id}")
     if status != 200:
         raise SliceError(f"desktop evidence episode read failed: {status} {episode}")
@@ -204,6 +208,7 @@ def capture_c7_desktop_evidence(
                 "ReviewReport",
             }
             while time.monotonic() < deadline:
+                guard()
                 if process.poll() is not None:
                     raise SliceError(
                         f"Tauri dev process exited before evidence: {process.returncode}"
