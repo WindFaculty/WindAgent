@@ -572,6 +572,30 @@ async def test_b_handler_crosses_worker_queue_finalizer_reconciler(db, service):
     await worker.stop()
 
 
+async def test_failed_studio_result_is_reconciled_into_durable_retry(db, service):
+    """A provider failure must leave a fresh retry, not a forever-DISPATCHED node."""
+
+    _, _, run_id = await _start_run_with_brief(db, service, brief=BRIEF_DICT)
+    worker = await _make_worker(
+        db,
+        studio_reconciler=service,
+        model_port=FixtureModelPort(reject=True),
+    )
+    await worker.start()
+
+    tick = await worker.poll_and_execute_tick()
+
+    assert tick["status"] == "failed"
+    node = await _node(db, run_id, "idea.generate")
+    assert node["status"] == "DISPATCHED"
+    assert node["attempt"] == 2
+    assert node["task_id"] != tick["task_id"]
+    metrics = worker.metrics_snapshot()["tasks"][tick["task_id"]]
+    assert metrics["reconciled"] is True
+    assert worker._cancellation_requested is False
+    await worker.stop()
+
+
 async def test_malformed_studio_result_is_finalized_as_failure_without_dag_advance(
     db, service
 ):

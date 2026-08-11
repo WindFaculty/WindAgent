@@ -407,6 +407,13 @@ class ProductionWorker:
             aggregate_id=tid,
         )
 
+        # Execution is over. Stop advertising/renewing the active lease before
+        # atomic finalization releases it, otherwise a concurrent heartbeat can
+        # observe the intentional release as a fencing takeover and poison the
+        # next task with a spurious cancellation request.
+        self._current_task_id = None
+        self._current_fencing_token = None
+
         # ------------------------------------------------------------------ #
         # Atomic Task Finalization (Phase 2 — ban_ke_hoach.md §2.1):
         # Task state CAS, result, artifact refs, terminal event, transactional
@@ -463,7 +470,6 @@ class ProductionWorker:
             if (
                 self.studio_reconciler is not None
                 and studio_result is not None
-                and terminal_state == "completed"
             ):
                 try:
                     await self.studio_reconciler.reconcile(studio_result)
