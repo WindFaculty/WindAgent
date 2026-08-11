@@ -10,6 +10,14 @@ import {
   BeatsView,
   OutlineView,
   UnsupportedArtifactView,
+  ScreenplayView,
+  ReviewReportView,
+  RevisionProposalView,
+  LockReceiptView,
+  LockPackageView,
+  ScreenplayDiffView,
+  diffScreenplays,
+  type ScreenplayDraftContent,
 } from '../components/studio/ArtifactViews';
 import { RunProgress } from '../components/studio/RunProgress';
 import { ApprovalBar } from '../components/studio/ApprovalBar';
@@ -226,8 +234,8 @@ describe('ArtifactViews (C4)', () => {
   });
 
   it('dispatches unknown v1alpha1 types to a generic read-only view', () => {
-    render(<ArtifactContentView artifact={envelope({ artifact_type: 'ScreenplayDraft', content: { scenes: [] } })} />);
-    expect(screen.getByText(/ScreenplayDraft persisted/)).toBeInTheDocument();
+    render(<ArtifactContentView artifact={envelope({ artifact_type: 'CreativeBrief', content: { title: 'Brief' } })} />);
+    expect(screen.getByText(/CreativeBrief persisted/)).toBeInTheDocument();
   });
 });
 
@@ -341,6 +349,146 @@ describe('RunProgress (C4)', () => {
     expect(ticks).toBeGreaterThanOrEqual(2);
     recovered = true;
     await waitFor(() => expect(screen.queryByRole('alert')).not.toBeInTheDocument(), { timeout: 2000 });
+  });
+});
+
+// -- C5: screenplay, review, revision, lock ---------------------------------
+
+const DRAFT_V1: ScreenplayDraftContent = {
+  title: 'Con thỏ và cánh diều',
+  logline: 'Thỏ con nhặt được cánh diều giấy; nhờ sự kiên trì, cánh diều bay cao.',
+  target_duration_seconds: 240,
+  scenes: [
+    {
+      scene_id: 'dscn1', order: 1, outline_scene_id: 's1', location_id: 'loc_river', estimated_seconds: 40,
+      action_description: 'Thỏ con chạy ra bờ sông, nhìn thấy cánh diều giấy nằm trên bãi cỏ.',
+      character_ids: ['ch_rabbit'], source_beat_ids: ['b1'], transition: 'CUT TO:',
+      dialogue: [{ dialogue_id: 'dlg1', scene_id: 'dscn1', character_id: 'ch_rabbit', order: 1, text: 'Ơ, cánh diều xinh quá!', delivery: 'ngạc nhiên', estimated_seconds: 5 }],
+    },
+    {
+      scene_id: 'dscn2', order: 2, outline_scene_id: 's2', location_id: 'loc_field', estimated_seconds: 80,
+      action_description: 'Thỏ con chạy trên cánh đồng, cánh diều bay thấp phía sau.',
+      character_ids: ['ch_rabbit', 'ch_kite'], source_beat_ids: ['b2'],
+      dialogue: [{ dialogue_id: 'dlg2', scene_id: 'dscn2', character_id: 'ch_kite', order: 1, text: 'Thả nhẹ tay thôi, thỏ ơi!', estimated_seconds: 8 }],
+    },
+  ],
+};
+
+const DRAFT_V2: ScreenplayDraftContent = {
+  ...DRAFT_V1,
+  scenes: [
+    DRAFT_V1.scenes![0],
+    {
+      ...DRAFT_V1.scenes![1],
+      dialogue: [{ dialogue_id: 'dlg2', scene_id: 'dscn2', character_id: 'ch_kite', order: 1, text: 'Thả nhẹ tay thôi, thỏ ơi! Đừng vội!', estimated_seconds: 8 }],
+    },
+    {
+      scene_id: 'dscn3', order: 3, outline_scene_id: 's3', location_id: 'loc_field', estimated_seconds: 60,
+      action_description: 'Cơn gió lớn, cánh diều suýt bay mất.',
+      character_ids: ['ch_rabbit'], source_beat_ids: ['b3'],
+      dialogue: [],
+    },
+  ],
+};
+
+const REVIEW_REPORT = envelope({
+  artifact_type: 'ReviewReport',
+  content: {
+    report_id: 'rr_1', draft_id: 'draft_1', verdict: 'REVIEW_REQUIRED',
+    quality_summary: 'Draft ổn nhưng cao trào chưa đủ rõ.',
+    review_iteration: 1, maximum_iterations: 3,
+    dimensions: [{ dimension: 'CLARITY', score: 0.7, blocking: false }, { dimension: 'EMOTIONAL_ARC', score: 0.4, blocking: true }],
+    findings: [
+      { code: 'CLIMAX_WEAK', severity: 'BLOCKING', dimension: 'EMOTIONAL_ARC', location: 'dscn3', evidence: 'Cao trào chỉ một câu hành động.', remediation: 'Thêm một nhịp lo lắng trước khi diều bay.', source: 'deterministic' },
+      { code: 'DIALOGUE_LENGTH', severity: 'WARNING', location: 'dscn2', evidence: 'Câu thoại dài hơn 40 ký tự.', source: 'provider_llm' },
+    ],
+  },
+});
+
+const REVISION_PROPOSAL = envelope({
+  artifact_type: 'RevisionProposal',
+  content: {
+    proposal_id: 'rp_1', draft_id: 'draft_1', review_report_id: 'rr_1',
+    revision_reason: 'Tăng cường cao trào theo finding CLIMAX_WEAK.',
+    accepted_finding_codes: ['CLIMAX_WEAK'],
+    iteration_number: 2, maximum_iterations: 3,
+  },
+});
+
+const LOCK_RECEIPT = envelope({
+  artifact_type: 'LockedScreenplayReceipt',
+  content: {
+    receipt_id: 'rcpt_1', draft_id: 'draft_1', state: 'READY_FOR_PRODUCTION',
+    issued_at: '2026-01-02T00:00:00Z', policy_id: 'policy_v1', approval_mode: 'HUMAN_REQUIRED',
+  },
+});
+
+const LOCK_PACKAGE = envelope({
+  artifact_type: 'LockedScreenplayPackage',
+  content: {
+    package_id: 'pkg_1', receipt_id: 'rcpt_1', assembled_at: '2026-01-02T00:00:00Z',
+    manifest: [
+      { artifact_type: 'ScreenplayDraft', artifact_id: 'art_draft', content_hash: HASH, revision_id: 'rev_1' },
+      { artifact_type: 'EpisodeOutline', artifact_id: 'art_outline', content_hash: HASH, revision_id: 'rev_1' },
+    ],
+  },
+});
+
+function screenplayEnvelope(overrides: Partial<StudioArtifactEnvelope> & { content: ScreenplayDraftContent }): StudioArtifactEnvelope {
+  return envelope({ artifact_type: 'ScreenplayDraft', ...overrides });
+}
+
+describe('Screenplay and review views (C5)', () => {
+  it('renders scenes with action, dialogue, timing, and traceability', () => {
+    render(<ScreenplayView artifact={screenplayEnvelope({ content: DRAFT_V1 })} />);
+    expect(screen.getByText(/Scene 1: loc_river · 0:40/)).toBeInTheDocument();
+    expect(screen.getByText(/outline s1 · beats b1 · chars ch_rabbit/)).toBeInTheDocument();
+    expect(screen.getByText('Ơ, cánh diều xinh quá!')).toBeInTheDocument();
+    expect(screen.getByText(/ngạc nhiên/)).toBeInTheDocument();
+    expect(screen.getByText('Scene total: 2:00')).toBeInTheDocument();
+    expect(screen.getByText('CUT TO:')).toBeInTheDocument();
+  });
+
+  it('renders review findings with code, severity, location, and iteration budget', () => {
+    render(<ReviewReportView artifact={REVIEW_REPORT} />);
+    expect(screen.getByText('REVIEW_REQUIRED')).toBeInTheDocument();
+    expect(screen.getByText('Iteration 1/3')).toBeInTheDocument();
+    expect(screen.getByText('CLIMAX_WEAK')).toBeInTheDocument();
+    expect(screen.getByText('BLOCKING')).toBeInTheDocument();
+    expect(screen.getByText('at dscn3')).toBeInTheDocument();
+    expect(screen.getByText(/Thêm một nhịp lo lắng/)).toBeInTheDocument();
+  });
+
+  it('renders revision proposal with reason, accepted findings, and budget', () => {
+    render(<RevisionProposalView artifact={REVISION_PROPOSAL} />);
+    expect(screen.getByText(/Tăng cường cao trào theo finding CLIMAX_WEAK\./)).toBeInTheDocument();
+    expect(screen.getByText(/Addresses: CLIMAX_WEAK/)).toBeInTheDocument();
+    expect(screen.getByText('Iteration 2/3')).toBeInTheDocument();
+  });
+
+  it('renders lock receipt state and package lineage with checksums', () => {
+    render(<LockReceiptView artifact={LOCK_RECEIPT} />);
+    expect(screen.getByText('READY_FOR_PRODUCTION')).toBeInTheDocument();
+    expect(screen.getByText('rcpt_1')).toBeInTheDocument();
+    render(<LockPackageView artifact={LOCK_PACKAGE} />);
+    expect(screen.getByText(/lineage & checksums/i)).toBeInTheDocument();
+    expect(screen.getByText(/EpisodeOutline/)).toBeInTheDocument();
+    expect(screen.getAllByText(/hash aaaaaaaaaaaa/).length).toBeGreaterThan(0);
+  });
+
+  it('diffs drafts at scene and dialogue level', () => {
+    const diffs = diffScreenplays(DRAFT_V1, DRAFT_V2);
+    expect(diffs.some((d) => d.change_type === 'ADDED' && d.title.includes('Scene 3'))).toBe(true);
+    const modified = diffs.find((d) => d.change_type === 'MODIFIED' && d.title.includes('Scene 2'));
+    expect(modified).toBeTruthy();
+    expect(modified!.changes.some((c) => c.field_name === 'dialogue[dlg2].text' && c.old_value.includes('Thả nhẹ tay thôi') && c.new_value.includes('Đừng vội'))).toBe(true);
+  });
+
+  it('renders the diff view with before/after markers', () => {
+    render(<ScreenplayDiffView before={DRAFT_V1} after={DRAFT_V2} />);
+    expect(screen.getByText('ADDED')).toBeInTheDocument();
+    expect(screen.getByText('MODIFIED')).toBeInTheDocument();
+    expect(screen.getByText(/Thả nhẹ tay thôi, thỏ ơi! Đừng vội!/)).toBeInTheDocument();
   });
 });
 
@@ -517,5 +665,71 @@ describe('StudioPage story workflow (C4)', () => {
     const saved = sessionStorage.getItem('studio.eventCursors');
     expect(saved).toBeTruthy();
     expect(JSON.parse(String(saved))).toEqual({ eventCursors: { run_1: 1 } });
+  });
+
+  it('submits hash-bound lock command from SCREENPLAY_REVIEW state', async () => {
+    fetchMock.mockImplementation(async (input: string | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url.endsWith('/api/v3/studio/capabilities')) return jsonResponse(200, CAPABILITIES);
+      if (url.endsWith('/api/v3/studio/series')) return jsonResponse(200, { items: [{ id: 'srs_1', title: 'S', episode_count: 1 }] });
+      if (url.includes('/screenplay-lock')) return jsonResponse(200, { episode_id: 'ep_1', revision_id: 'rev_1', lock_receipt_artifact_id: 'art_rcpt', state: 'LOCKED' });
+      if (url.includes('/series/srs_1/episodes')) return jsonResponse(200, { items: [episode({ state: 'SCREENPLAY_REVIEW' })] });
+      if (url.includes('/episodes/ep_1/artifacts')) return jsonResponse(200, { items: [screenplayEnvelope({ content: DRAFT_V1 })] });
+      if (url.includes('/api/v3/studio/episodes/ep_1')) return jsonResponse(200, episode({ state: 'SCREENPLAY_REVIEW' }));
+      throw new Error(`unmocked URL: ${url}`);
+    });
+    await openEpisode();
+    fireEvent.click(await screen.findByRole('button', { name: 'Lock screenplay' }));
+    await waitFor(() => {
+      const call = fetchMock.mock.calls.find(([u]) => String(u).includes('/screenplay-lock'));
+      expect(call).toBeTruthy();
+      const [, init] = call as unknown as [string | URL, RequestInit];
+      const body = JSON.parse(String(init.body));
+      expect(body).toMatchObject({
+        episode_id: 'ep_1',
+        revision_id: 'rev_1',
+        expected_content_hash: REV_HASH,
+        expected_optimistic_version: 3,
+      });
+    });
+  });
+
+  it('shows approval controls at SCREENPLAY checkpoint', async () => {
+    fetchMock.mockImplementation(async (input: string | URL) => {
+      const url = String(input);
+      if (url.endsWith('/api/v3/studio/capabilities')) return jsonResponse(200, CAPABILITIES);
+      if (url.endsWith('/api/v3/studio/series')) return jsonResponse(200, { items: [{ id: 'srs_1', title: 'S', episode_count: 1 }] });
+      if (url.includes('/series/srs_1/episodes')) return jsonResponse(200, { items: [episode({ state: 'SCREENPLAY_REVIEW' })] });
+      if (url.includes('/episodes/ep_1/artifacts')) return jsonResponse(200, { items: [screenplayEnvelope({ content: DRAFT_V1 })] });
+      if (url.includes('/api/v3/studio/episodes/ep_1')) return jsonResponse(200, episode({ state: 'SCREENPLAY_REVIEW', awaiting_checkpoint: 'SCREENPLAY' }));
+      throw new Error(`unmocked URL: ${url}`);
+    });
+    await openEpisode();
+    expect(await screen.findByRole('button', { name: 'Approve SCREENPLAY' })).toBeInTheDocument();
+    expect(screen.getByText(/Scene 1: loc_river · 0:40/)).toBeInTheDocument();
+  });
+
+  it('renders locked episode read-only with receipt and package lineage', async () => {
+    fetchMock.mockImplementation(async (input: string | URL) => {
+      const url = String(input);
+      if (url.endsWith('/api/v3/studio/capabilities')) return jsonResponse(200, CAPABILITIES);
+      if (url.endsWith('/api/v3/studio/series')) return jsonResponse(200, { items: [{ id: 'srs_1', title: 'S', episode_count: 1 }] });
+      if (url.includes('/series/srs_1/episodes')) return jsonResponse(200, { items: [episode({ state: 'READY_FOR_PRODUCTION' })] });
+      if (url.includes('/episodes/ep_1/artifacts')) {
+        return jsonResponse(200, { items: [screenplayEnvelope({ content: DRAFT_V1 }), LOCK_RECEIPT, LOCK_PACKAGE] });
+      }
+      if (url.includes('/api/v3/studio/episodes/ep_1')) return jsonResponse(200, episode({ state: 'READY_FOR_PRODUCTION' }));
+      throw new Error(`unmocked URL: ${url}`);
+    });
+    render(<StudioPage />);
+    const link = await screen.findByRole('link', { name: /^S \(1/ });
+    fireEvent.click(link);
+    const epLink = await screen.findByRole('link', { name: /Ep ep_1/ });
+    fireEvent.click(epLink);
+    expect(await screen.findByText(/content is locked and read-only/)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Start \/ resume run/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Approve/ })).not.toBeInTheDocument();
+    expect(screen.getAllByText('READY_FOR_PRODUCTION').length).toBeGreaterThan(0);
+    expect(screen.getByText(/lineage & checksums/i)).toBeInTheDocument();
   });
 });

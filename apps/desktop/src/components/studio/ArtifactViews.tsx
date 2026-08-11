@@ -139,6 +139,83 @@ interface EpisodeOutlineContent {
   duration_formula_version?: string;
 }
 
+interface ScreenplayDialogue {
+  dialogue_id?: string;
+  scene_id?: string;
+  character_id?: string;
+  order?: number;
+  text?: string;
+  delivery?: string;
+  estimated_seconds?: number;
+}
+interface ScreenplayScene {
+  scene_id?: string;
+  order?: number;
+  outline_scene_id?: string;
+  location_id?: string;
+  estimated_seconds?: number;
+  action_description?: string;
+  narration?: string;
+  transition?: string;
+  character_ids?: string[];
+  source_beat_ids?: string[];
+  dialogue?: ScreenplayDialogue[];
+}
+export interface ScreenplayDraftContent {
+  title?: string;
+  logline?: string;
+  scenes?: ScreenplayScene[];
+  target_duration_seconds?: number;
+  tolerance_seconds?: number;
+  audience_band?: string;
+  language?: string;
+}
+
+interface ReviewFinding {
+  code?: string;
+  dimension?: string | null;
+  severity?: string;
+  location?: string;
+  evidence?: string;
+  remediation?: string;
+  source?: string;
+}
+interface ReviewReportContent {
+  report_id?: string;
+  draft_id?: string;
+  verdict?: string;
+  quality_summary?: string;
+  review_iteration?: number;
+  maximum_iterations?: number;
+  dimensions?: Array<{ dimension?: string; score?: number; blocking?: boolean; note?: string }>;
+  findings?: ReviewFinding[];
+}
+
+interface RevisionProposalContent {
+  proposal_id?: string;
+  draft_id?: string;
+  review_report_id?: string;
+  revision_reason?: string;
+  accepted_finding_codes?: string[];
+  iteration_number?: number;
+  maximum_iterations?: number;
+}
+
+interface LockReceiptContent {
+  receipt_id?: string;
+  draft_id?: string;
+  state?: string;
+  issued_at?: string;
+  policy_id?: string;
+  approval_mode?: string;
+}
+interface LockPackageContent {
+  package_id?: string;
+  receipt_id?: string;
+  assembled_at?: string;
+  manifest?: Array<{ artifact_type?: string; artifact_id?: string; content_hash?: string; revision_id?: string | null }>;
+}
+
 // -- small presentational helpers ------------------------------------------
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -451,6 +528,235 @@ export function OutlineView({ artifact }: { artifact: StudioArtifactEnvelope }) 
   );
 }
 
+// -- screenplay, review, revision, lock -------------------------------------
+
+const SEVERITY_COLOR: Record<string, string> = {
+  INFO: '#94a3b8',
+  WARNING: '#fbbf24',
+  BLOCKING: '#fca5a5',
+};
+
+export function ScreenplayView({ artifact }: { artifact: StudioArtifactEnvelope }) {
+  const c = artifact.content as ScreenplayDraftContent;
+  const scenes = c.scenes ?? [];
+  const total = scenes.reduce((sum, s) => sum + (s.estimated_seconds ?? 0), 0);
+  return (
+    <div>
+      <ArtifactHeader artifact={artifact} />
+      <div style={{ fontWeight: 600 }}>{c.title ?? 'Screenplay draft'}</div>
+      {c.logline && <div style={{ ...LONG_TEXT, ...MUTED }}>{c.logline}</div>}
+      {c.audience_band && <div style={MUTED}>Audience {c.audience_band}{c.language ? ` · ${c.language}` : ''}</div>}
+      <ol style={{ margin: '8px 0 0', paddingLeft: 20 }}>
+        {scenes.map((s) => (
+          <li key={s.scene_id ?? s.order} style={{ marginBottom: 12 }}>
+            <div style={{ fontWeight: 600, fontSize: 13 }}>
+              Scene {s.order}: {s.location_id ?? '—'} · {fmtSeconds(s.estimated_seconds)}
+            </div>
+            <div style={{ ...MUTED, fontSize: 12 }}>
+              outline {s.outline_scene_id ?? '—'}
+              {s.source_beat_ids && s.source_beat_ids.length > 0 ? ` · beats ${s.source_beat_ids.join(', ')}` : ''}
+              {s.character_ids && s.character_ids.length > 0 ? ` · chars ${s.character_ids.join(', ')}` : ''}
+            </div>
+            {s.action_description && <div style={LONG_TEXT}>{s.action_description}</div>}
+            {s.narration && <div style={{ ...LONG_TEXT, ...MUTED }}>{s.narration}</div>}
+            {(s.dialogue ?? []).map((d) => (
+              <div key={d.dialogue_id ?? d.order} style={{ marginTop: 6, paddingLeft: 12, borderLeft: '2px solid #334155' }}>
+                <div style={{ fontSize: 12 }}>
+                  <b>{d.character_id ?? '—'}</b>
+                  {d.delivery ? <span style={MUTED}> ({d.delivery})</span> : null}
+                  <span style={MUTED}> · {fmtSeconds(d.estimated_seconds)}</span>
+                </div>
+                <div style={LONG_TEXT}>{d.text}</div>
+              </div>
+            ))}
+            {s.transition && <div style={{ ...MUTED, fontSize: 12, marginTop: 4 }}>{s.transition}</div>}
+          </li>
+        ))}
+      </ol>
+      {scenes.length > 0 && <div style={MUTED}>Scene total: {fmtSeconds(total)}</div>}
+    </div>
+  );
+}
+
+export function ReviewReportView({ artifact }: { artifact: StudioArtifactEnvelope }) {
+  const c = artifact.content as ReviewReportContent;
+  const findings = c.findings ?? [];
+  return (
+    <div>
+      <ArtifactHeader artifact={artifact} />
+      <Provenance artifact={artifact} />
+      <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+        <b>{c.verdict ?? 'REVIEW_REQUIRED'}</b>
+        {typeof c.review_iteration === 'number' && typeof c.maximum_iterations === 'number' && (
+          <span style={MUTED}>Iteration {c.review_iteration}/{c.maximum_iterations}</span>
+        )}
+      </div>
+      {c.quality_summary && <div style={LONG_TEXT}>{c.quality_summary}</div>}
+      {c.dimensions && c.dimensions.length > 0 && (
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', margin: '8px 0' }}>
+          {c.dimensions.map((d) => (
+            <span key={d.dimension} style={{ fontSize: 13, color: d.blocking ? '#fca5a5' : '#94a3b8' }}>
+              {d.dimension}: {typeof d.score === 'number' ? d.score.toFixed(2) : '—'}
+              {d.blocking ? ' (blocking)' : ''}
+            </span>
+          ))}
+        </div>
+      )}
+      {findings.length > 0 && (
+        <ul style={{ listStyle: 'none', padding: 0, margin: '8px 0 0' }}>
+          {findings.map((f, i) => (
+            <li key={f.code ?? i} style={{ border: '1px solid #334155', borderRadius: 6, padding: 8, marginBottom: 6 }}>
+              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', fontSize: 13 }}>
+                <b>{f.code}</b>
+                <span style={{ color: SEVERITY_COLOR[f.severity ?? 'INFO'] ?? '#94a3b8' }}>{f.severity ?? 'INFO'}</span>
+                {f.dimension && <span style={MUTED}>{f.dimension}</span>}
+                {f.location && <span style={MUTED}>at {f.location}</span>}
+                {f.source && f.source !== 'deterministic' && <span style={MUTED}>source {f.source}</span>}
+              </div>
+              {f.evidence && <div style={{ ...LONG_TEXT, fontSize: 13 }}>{f.evidence}</div>}
+              {f.remediation && <div style={{ ...LONG_TEXT, ...MUTED, fontSize: 13 }}>Fix: {f.remediation}</div>}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+export function RevisionProposalView({ artifact }: { artifact: StudioArtifactEnvelope }) {
+  const c = artifact.content as RevisionProposalContent;
+  return (
+    <div>
+      <ArtifactHeader artifact={artifact} />
+      <div style={{ fontWeight: 600 }}>Revision proposal</div>
+      {c.revision_reason && <div style={LONG_TEXT}>{c.revision_reason}</div>}
+      {c.accepted_finding_codes && c.accepted_finding_codes.length > 0 && (
+        <div style={MUTED}>Addresses: {c.accepted_finding_codes.join(', ')}</div>
+      )}
+      {typeof c.iteration_number === 'number' && typeof c.maximum_iterations === 'number' && (
+        <div style={MUTED}>Iteration {c.iteration_number}/{c.maximum_iterations}</div>
+      )}
+    </div>
+  );
+}
+
+export function LockReceiptView({ artifact }: { artifact: StudioArtifactEnvelope }) {
+  const c = artifact.content as LockReceiptContent;
+  return (
+    <div>
+      <ArtifactHeader artifact={artifact} />
+      <div style={{ color: '#4ade80', fontWeight: 600 }}>{c.state ?? 'READY_FOR_PRODUCTION'}</div>
+      <dl style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '2px 12px', margin: '6px 0 0', fontSize: 13 }}>
+        <dt style={{ color: '#94a3b8' }}>Receipt</dt><dd style={{ margin: 0 }}>{c.receipt_id}</dd>
+        <dt style={{ color: '#94a3b8' }}>Draft</dt><dd style={{ margin: 0 }}>{c.draft_id}</dd>
+        {c.issued_at && <><dt style={{ color: '#94a3b8' }}>Issued</dt><dd style={{ margin: 0 }}>{c.issued_at}</dd></>}
+        {c.policy_id && <><dt style={{ color: '#94a3b8' }}>Policy</dt><dd style={{ margin: 0 }}>{c.policy_id}</dd></>}
+        {c.approval_mode && <><dt style={{ color: '#94a3b8' }}>Approval mode</dt><dd style={{ margin: 0 }}>{c.approval_mode}</dd></>}
+      </dl>
+    </div>
+  );
+}
+
+export function LockPackageView({ artifact }: { artifact: StudioArtifactEnvelope }) {
+  const c = artifact.content as LockPackageContent;
+  const manifest = c.manifest ?? [];
+  return (
+    <div>
+      <ArtifactHeader artifact={artifact} />
+      <div style={{ fontWeight: 600 }}>Locked package — lineage &amp; checksums</div>
+      {c.package_id && <div style={MUTED}>package {c.package_id}{c.assembled_at ? ` · assembled ${c.assembled_at}` : ''}</div>}
+      <ul style={{ listStyle: 'none', padding: 0, margin: '6px 0 0', fontSize: 13 }}>
+        {manifest.map((m) => (
+          <li key={m.artifact_id ?? m.artifact_type} style={{ marginBottom: 4 }}>
+            {m.artifact_type} <span style={MUTED}>({m.artifact_id})</span> hash {m.content_hash?.slice(0, 12)}…
+            {m.revision_id ? <span style={MUTED}> · rev {m.revision_id}</span> : null}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+interface SceneDiff {
+  change_type: 'ADDED' | 'DELETED' | 'MODIFIED';
+  title: string;
+  changes: Array<{ field_name: string; old_value: string; new_value: string }>;
+}
+
+/** Minimal before/after diff between two structured drafts (scene + dialogue level). */
+export function diffScreenplays(before: ScreenplayDraftContent, after: ScreenplayDraftContent): SceneDiff[] {
+  const beforeScenes = before.scenes ?? [];
+  const afterScenes = after.scenes ?? [];
+  const byId = (scenes: ScreenplayScene[]) => new Map(scenes.map((s) => [s.scene_id ?? `${s.order}`, s]));
+  const bMap = byId(beforeScenes);
+  const aMap = byId(afterScenes);
+  const diffs: SceneDiff[] = [];
+  for (const [id, a] of aMap) {
+    const b = bMap.get(id);
+    if (!b) {
+      diffs.push({ change_type: 'ADDED', title: `Scene ${a.order}: ${a.location_id ?? id}`, changes: [] });
+      continue;
+    }
+    const changes: SceneDiff['changes'] = [];
+    const pair = (field: string, oldV: unknown, newV: unknown) => {
+      const o = String(oldV ?? '');
+      const n = String(newV ?? '');
+      if (o !== n) changes.push({ field_name: field, old_value: o, new_value: n });
+    };
+    pair('action_description', b.action_description, a.action_description);
+    pair('narration', b.narration, a.narration);
+    const bD = new Map((b.dialogue ?? []).map((d) => [d.dialogue_id ?? `${d.order}`, d]));
+    for (const d of a.dialogue ?? []) {
+      const key = d.dialogue_id ?? `${d.order}`;
+      if (!bD.has(key)) {
+        changes.push({ field_name: `dialogue[${key}]`, old_value: '', new_value: d.text ?? '' });
+      } else {
+        pair(`dialogue[${key}].text`, bD.get(key)?.text, d.text);
+        pair(`dialogue[${key}].delivery`, bD.get(key)?.delivery, d.delivery);
+      }
+    }
+    for (const [key, d] of bD) {
+      if (!(a.dialogue ?? []).some((x) => (x.dialogue_id ?? `${x.order}`) === key)) {
+        changes.push({ field_name: `dialogue[${key}]`, old_value: d.text ?? '', new_value: '' });
+      }
+    }
+    if (changes.length > 0) {
+      diffs.push({ change_type: 'MODIFIED', title: `Scene ${a.order}: ${a.location_id ?? id}`, changes });
+    }
+  }
+  for (const [id, b] of bMap) {
+    if (!aMap.has(id)) {
+      diffs.push({ change_type: 'DELETED', title: `Scene ${b.order}: ${b.location_id ?? id}`, changes: [] });
+    }
+  }
+  return diffs;
+}
+
+export function ScreenplayDiffView({ before, after }: { before: ScreenplayDraftContent; after: ScreenplayDraftContent }) {
+  const diffs = diffScreenplays(before, after);
+  const color = (t: SceneDiff['change_type']) => (t === 'ADDED' ? '#4ade80' : t === 'DELETED' ? '#fca5a5' : '#fbbf24');
+  return (
+    <div>
+      <div style={{ ...MUTED, fontSize: 12, marginBottom: 6 }}>
+        Revision diff — before/after (immutable server drafts)
+      </div>
+      {diffs.length === 0 && <div style={MUTED}>No structural differences between the two drafts.</div>}
+      {diffs.map((d, i) => (
+        <div key={i} style={{ borderLeft: `3px solid ${color(d.change_type)}`, padding: '4px 10px', marginBottom: 6 }}>
+          <span style={{ fontWeight: 600, fontSize: 13 }}>{d.change_type}</span>{' '}
+          <span style={MUTED}>{d.title}</span>
+          {d.changes.map((c, j) => (
+            <div key={j} style={{ fontSize: 12, marginTop: 2 }}>
+              <code>{c.field_name}</code>: <span style={{ color: '#fca5a5' }}>{c.old_value || '∅'}</span> →{' '}
+              <span style={{ color: '#4ade80' }}>{c.new_value || '∅'}</span>
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // -- generic fallback for artifacts without a dedicated C4 view -------------
 
 export function GenericArtifactView({ artifact }: { artifact: StudioArtifactEnvelope }) {
@@ -513,6 +819,16 @@ export function ArtifactContentView({
       return <BeatsView artifact={safe} />;
     case 'EpisodeOutline':
       return <OutlineView artifact={safe} />;
+    case 'ScreenplayDraft':
+      return <ScreenplayView artifact={safe} />;
+    case 'ReviewReport':
+      return <ReviewReportView artifact={safe} />;
+    case 'RevisionProposal':
+      return <RevisionProposalView artifact={safe} />;
+    case 'LockedScreenplayReceipt':
+      return <LockReceiptView artifact={safe} />;
+    case 'LockedScreenplayPackage':
+      return <LockPackageView artifact={safe} />;
     default:
       return <GenericArtifactView artifact={safe} />;
   }

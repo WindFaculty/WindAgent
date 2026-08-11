@@ -15,6 +15,8 @@ import { StudioStore } from '@windagent/studio-state';
 import type { StudioArtifactEnvelope } from '@windagent/studio-contracts';
 import {
   ArtifactContentView,
+  ScreenplayDiffView,
+  type ScreenplayDraftContent,
 } from '../components/studio/ArtifactViews';
 import { RunProgress } from '../components/studio/RunProgress';
 import { ApprovalBar, type ApprovalDecision } from '../components/studio/ApprovalBar';
@@ -53,7 +55,10 @@ const CHECKPOINT_PRIMARY_ARTIFACT: Record<string, string> = {
   IDEA: 'IdeaCandidateSet',
   STORY_BIBLE: 'StoryBible',
   OUTLINE: 'EpisodeOutline',
+  SCREENPLAY: 'ScreenplayDraft',
 };
+
+const READ_ONLY_STATES = new Set(['LOCKED', 'READY_FOR_PRODUCTION']);
 
 const CURSOR_STORAGE_KEY = 'studio.eventCursors';
 
@@ -279,6 +284,47 @@ export const StudioPage: React.FC = () => {
     }
   };
 
+  /** Hash-bound lock command: submits the exact current revision content hash. */
+  const lockScreenplay = async (episodeId: string) => {
+    const ep = store.getEpisode(episodeId);
+    if (!ep) return;
+    const epRaw = ep as unknown as Record<string, unknown>;
+    const revision =
+      (epRaw.current_revision as Record<string, unknown> | undefined) ??
+      (epRaw.currentRevision as Record<string, unknown> | undefined);
+    const revisionId =
+      (typeof revision?.revision_id === 'string' ? revision.revision_id : null) ??
+      (typeof epRaw.current_revision_id === 'string' ? epRaw.current_revision_id : null) ??
+      ep.revision_id;
+    const revisionHash =
+      typeof revision?.content_hash === 'string' ? revision.content_hash : null;
+    if (!revisionId || !revisionHash) {
+      setError({ kind: 'unknown', message: 'No current revision on server to lock.' });
+      return;
+    }
+    const key = `studio_lock_${crypto.randomUUID()}`;
+    setPendingKeys((prev) => new Set(prev).add(key));
+    const result = await store.lockScreenplay(key, episodeId, {
+      episode_id: episodeId,
+      revision_id: revisionId,
+      expected_content_hash: revisionHash,
+      expected_optimistic_version: Number(epRaw.optimistic_version ?? ep.version ?? 0),
+    });
+    setPendingKeys((prev) => {
+      const next = new Set(prev);
+      next.delete(key);
+      return next;
+    });
+    if (result) {
+      setError(null);
+      await refreshEpisode(episodeId);
+    } else {
+      const err = store.getLastError();
+      setError(err ? { kind: err.kind, message: err.message } : null);
+      if (err?.kind === 'conflict') await refreshEpisode(episodeId);
+    }
+  };
+
   // Event cursor survives refresh: hydrate once on mount, persist on unload.
   useEffect(() => {
     try {
@@ -389,7 +435,38 @@ export const StudioPage: React.FC = () => {
             <dt>Run</dt><dd>{String(episode.active_run_id ?? '—')}</dd>
             <dt>Awaiting approval</dt><dd>{String(episode.awaiting_checkpoint ?? '—')}</dd>
           </dl>
-          <button onClick={() => void startRun(route.episodeId)} disabled={pendingKeys.size > 0}>Start / resume run</button>
+          {(() => {
+            const readOnly = READ_ONLY_STATES.has(String(episode.state));
+            if (readOnly) {
+              return (
+                <div role="note" aria-label="Locked episode" style={{ color: '#4ade80', margin: '8px 0' }}>
+                  {String(episode.state)} — content is locked and read-only. Corrections derive a new
+                  revision through a new run.
+                </div>
+              );
+            }
+            return null;
+          })()}
+          {(() => {
+            const readOnly = READ_ONLY_STATES.has(String(episode.state));
+            if (readOnly) return null;
+            return (
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '8px 0' }}>
+                <button onClick={() => void startRun(route.episodeId)} disabled={pendingKeys.size > 0}>
+                  Start / resume run
+                </button>
+                {String(episode.state) === 'SCREENPLAY_REVIEW' && (
+                  <button
+                    onClick={() => void lockScreenplay(route.episodeId)}
+                    disabled={pendingKeys.size > 0}
+                    aria-label="Lock screenplay"
+                  >
+                    Lock screenplay
+                  </button>
+                )}
+              </div>
+            );
+          })()}
           {typeof episode.active_run_id === 'string' && episode.active_run_id && (
             <RunProgress
               runId={episode.active_run_id}
@@ -400,40 +477,56 @@ export const StudioPage: React.FC = () => {
           {(() => {
             const checkpoint =
               typeof episode.awaiting_checkpoint === 'string' ? episode.awaiting_checkpoint : null;
-            if (checkpoint && CHECKPOINT_PRIMARY_ARTIFACT[checkpoint]) {
-              const primaryType = CHECKPOINT_PRIMARY_ARTIFACT[checkpoint];
-              const primary = artifacts.find((a) => a.artifact_type === primaryType) ?? null;
-              const revision = (episode.current_revision ?? episode.currentRevision) as
-                | Record<string, unknown>
-                | undefined;
-              const revisionId =
-                (typeof revision?.revision_id === 'string' ? revision.revision_id : null) ??
-                (typeof episode.current_revision_id === 'string' ? episode.current_revision_id : null);
-              const revisionHash =
-                typeof revision?.content_hash === 'string' ? revision.content_hash : null;
-              return (
-                <ApprovalBar
-                  checkpoint={checkpoint}
-                  artifactTitle={
-                    primary && typeof (primary.content as Record<string, unknown>)?.title === 'string'
-                      ? String((primary.content as Record<string, unknown>).title)
-                      : primary?.artifact_type ?? null
-                  }
-                  revisionId={revisionId}
-                  revisionHash={revisionHash}
-                  expectedVersion={Number(episode.optimistic_version ?? episode.version ?? 0)}
-                  disabled={pendingKeys.size > 0}
-                  onSubmit={(decision, reason) =>
-                    void submitApproval(route.episodeId, checkpoint, decision, reason)
-                  }
-                />
-              );
+            if (!checkpoint || READ_ONLY_STATES.has(String(episode.state)) || !CHECKPOINT_PRIMARY_ARTIFACT[checkpoint]) {
+              return null;
             }
-            return null;
+            const primaryType = CHECKPOINT_PRIMARY_ARTIFACT[checkpoint];
+            const primary = artifacts.find((a) => a.artifact_type === primaryType) ?? null;
+            const revision = (episode.current_revision ?? episode.currentRevision) as
+              | Record<string, unknown>
+              | undefined;
+            const revisionId =
+              (typeof revision?.revision_id === 'string' ? revision.revision_id : null) ??
+              (typeof episode.current_revision_id === 'string' ? episode.current_revision_id : null);
+            const revisionHash =
+              typeof revision?.content_hash === 'string' ? revision.content_hash : null;
+            return (
+              <ApprovalBar
+                checkpoint={checkpoint}
+                artifactTitle={
+                  primary && typeof (primary.content as Record<string, unknown>)?.title === 'string'
+                    ? String((primary.content as Record<string, unknown>).title)
+                    : primary?.artifact_type ?? null
+                }
+                revisionId={revisionId}
+                revisionHash={revisionHash}
+                expectedVersion={Number(episode.optimistic_version ?? episode.version ?? 0)}
+                disabled={pendingKeys.size > 0}
+                onSubmit={(decision, reason) =>
+                  void submitApproval(route.episodeId, checkpoint, decision, reason)
+                }
+              />
+            );
           })()}
           <h4>Artifacts</h4>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {artifacts.length === 0 && !busy && <div style={{ color: '#94a3b8' }}>No artifacts yet.</div>}
+            {(() => {
+              const drafts = artifacts
+                .filter((a) => a.artifact_type === 'ScreenplayDraft')
+                .sort((a, b) => String(b.created_at ?? '').localeCompare(String(a.created_at ?? '')));
+              if (drafts.length >= 2) {
+                return (
+                  <div style={{ border: '1px solid #1e293b', borderRadius: 8, padding: 10 }}>
+                    <ScreenplayDiffView
+                      before={drafts[1].content as unknown as ScreenplayDraftContent}
+                      after={drafts[0].content as unknown as ScreenplayDraftContent}
+                    />
+                  </div>
+                );
+              }
+              return null;
+            })()}
             {artifacts.map((a) => (
               <div key={a.artifact_id} style={{ border: '1px solid #1e293b', borderRadius: 8, padding: 10 }}>
                 {a.artifact_type === 'IdeaCandidateSet' ? (
