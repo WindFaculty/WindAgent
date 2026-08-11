@@ -4,19 +4,19 @@
   "phase": "C4",
   "gate": "STORY_UI_GATE",
   "verdict": "PASS",
-  "generated_at": "2026-08-10T05:51:33.012041+00:00",
-  "integration_sha": "6d507af9e6e7ec40d8f3052823177bbe6ed9c4ec",
+  "generated_at": "2026-08-11T00:14:55.582882+00:00",
+  "integration_sha": "7667079bce68241032e6efa7fb5e830ad9bbf0e2",
   "tests": {
     "desktop_vitest": {
       "command": "C:\\Users\\Admin\\AppData\\Local\\hermes\\node\\npx.cmd vitest run --no-color",
       "exit_code": 0,
-      "summary": "Tests  132 passed (132)",
+      "summary": "Tests  133 passed (133)",
       "passed": true
     },
     "python_v3_contracts": {
       "command": "C:\\Users\\Admin\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\python.exe -m pytest -q tests/unit/api/test_studio_v3_api.py tests/unit/api/test_openapi_snapshot.py --no-header",
       "exit_code": 0,
-      "summary": "33 passed in 16.88s",
+      "summary": "33 passed in 154.33s (0:02:34)",
       "passed": true
     }
   },
@@ -47,9 +47,9 @@
   "file_sha256": {
     "StudioPage.tsx": "b9b605bf2073ead21872c6d08decef561d9bead02abad15f9ee6a51d0a26c9a2",
     "ArtifactViews.tsx": "97b861f00a5866421c6f061f821a255113a46736a8899e186097d3b02e6651f7",
-    "RunProgress.tsx": "461fb6893339fff8f4cdc5ebfe64a262bb63a5fbf4acd59faf7d3c68a6e3ea77",
+    "RunProgress.tsx": "52e12205308f47eb5cb9e34d7125be597d9ab16b6effceb315325962422bec31",
     "ApprovalBar.tsx": "84511eabcf9c27796d176ac71a3d4783603d725c0d86b3a186d2633c19a13ab9",
-    "studioStoryTests.test.tsx": "b7216cb0c340667f1821230bb77001b73e744072bce61572d1375202063862dc"
+    "studioStoryTests.test.tsx": "f29c64c85c694debd8478e87005ab5fcaf3d3ef590a07304720d8710f74d3dc6"
   },
   "composition_note": "Studio story UI observes durable run state/events and server artifacts only; no local stage advance, no synthesized artifact, no fake client. Approval and selection commands carry exact revision/hash/version from server state; stale conflicts refetch server truth; event cursor persists across refresh."
 }
