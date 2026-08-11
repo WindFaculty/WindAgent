@@ -49,7 +49,7 @@ def test_abandoned_task_recovery():
 
 
 @pytest.mark.asyncio
-async def test_production_worker_lifecycle_and_tick():
+async def test_production_worker_lifecycle_and_fail_closed_tick():
     mgr = TaskLeaseManager()
     mgr.add_pending_task("task_tick", "Tick test", "feature")
 
@@ -60,8 +60,11 @@ async def test_production_worker_lifecycle_and_tick():
 
     # Poll and execute tick
     tick_result = await worker.poll_and_execute_tick()
-    assert tick_result["status"] == "completed"
+    assert tick_result["status"] == "failed"
     assert tick_result["task_id"] == "task_tick"
+    assert tick_result["error"] == (
+        "TOOL_RUNTIME_UNAVAILABLE: no ToolRegistry execution authority"
+    )
 
     await worker.stop()
     assert worker.is_running is False

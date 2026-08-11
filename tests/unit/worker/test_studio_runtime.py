@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 from datetime import datetime, timezone
+from types import SimpleNamespace
 
 import pytest
 from sqlalchemy import text
@@ -164,6 +165,52 @@ async def _adapter(db, **kwargs) -> StudioRuntimeAdapter:
         session_factory=db.session_factory,
         **kwargs,
     )
+
+
+async def test_screenplay_runtime_passes_exact_upstream_validation_inputs():
+    captured = {}
+    draft = object()
+
+    class CapturingHandler:
+        async def handle(self, outline, **kwargs):
+            captured["outline"] = outline
+            captured.update(kwargs)
+            return SimpleNamespace(draft=draft, provenance=None)
+
+    adapter = object.__new__(StudioRuntimeAdapter)
+    envelope = _envelope(
+        StudioTaskType.SCREENPLAY_GENERATE,
+        episode_id=EpisodeId("ep_runtime_mapping"),
+        series_id=SeriesProjectId("series_runtime_mapping"),
+    )
+    inputs = {
+        "EpisodeOutline": object(),
+        "BeatSheet": object(),
+        "CharacterCanon": object(),
+        "WorldBible": object(),
+        "CreativeBrief": SimpleNamespace(
+            target_duration_seconds=240,
+            language="vi",
+            audience_min_age=5,
+            audience_max_age=8,
+        ),
+    }
+
+    outputs, provenance = await adapter._run_handler(  # noqa: SLF001
+        CapturingHandler(),
+        StudioTaskType.SCREENPLAY_GENERATE.value,
+        envelope,
+        inputs,
+    )
+
+    assert outputs == [draft]
+    assert provenance is None
+    assert captured["outline"] is inputs["EpisodeOutline"]
+    assert captured["beat_sheet"] is inputs["BeatSheet"]
+    assert captured["canon"] is inputs["CharacterCanon"]
+    assert captured["world"] is inputs["WorldBible"]
+    assert captured["target_duration_seconds"] == 240
+    assert captured["audience_band"] == "5-8"
 
 
 async def _dispatch(adapter: StudioRuntimeAdapter, envelope: StudioTaskEnvelope, task_id: str) -> dict:

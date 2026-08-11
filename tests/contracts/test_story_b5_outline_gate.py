@@ -22,7 +22,6 @@ from scripts.verification.produce_b5_evidence import (
 )
 
 from windagent_core.contracts.studio.models import StudioTaskType
-from windagent_core.domain.story.bibles import CharacterCanon, WorldBible
 from windagent_core.domain.story.outline import (
     BeatSheet,
     EpisodeOutline,
@@ -36,7 +35,6 @@ from windagent_intelligence.story import (
 from windagent_intelligence.story.prompts import (
     prompt_for,
     prompt_manifest,
-    registered_prompt_ids,
     validate_registry_invariants,
 )
 
@@ -76,14 +74,14 @@ def load(name: str):
 
 def test_outline_prompts_registered_non_legacy_schema_first():
     beats = prompt_for("story.beats.generate")
-    assert beats.version == "1.0.0"
+    assert beats.version == "1.0.1"
     assert beats.legacy is False
     assert beats.output_format == "json"
     assert beats.output_schema["title"] == "BeatGenerationOutput"
     assert beats.output_schema["properties"]["beats"]["minItems"] == 4
 
     outline = prompt_for("story.outline.structured")
-    assert outline.version == "1.0.0"
+    assert outline.version == "1.0.1"
     assert outline.legacy is False
     assert outline.output_format == "json"
     assert outline.output_schema["title"] == "OutlineGenerationOutput"

@@ -100,8 +100,13 @@ class OpenAICompatibleTransport:
             payload["top_p"] = request.top_p
         if request.seed is not None:
             payload["seed"] = request.seed
-        if request.max_output_tokens is not None:
-            payload["max_tokens"] = request.max_output_tokens
+        output_limit = (
+            request.max_output_tokens
+            if request.max_output_tokens is not None
+            else request.max_tokens
+        )
+        if output_limit is not None:
+            payload["max_tokens"] = output_limit
         if request.stop_sequences:
             payload["stop"] = request.stop_sequences
         if request.tools:

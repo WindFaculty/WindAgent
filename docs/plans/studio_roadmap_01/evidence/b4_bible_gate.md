@@ -7,9 +7,9 @@ structured model boundary, B3 ideation. Fixtures:
 
 ## 1. Bible generation prompt (B4 canonical, non-legacy)
 
-- Prompt: `story.bibles.generate` v1.0.0 — schema-first JSON,
+- Prompt: `story.bibles.generate` v1.0.1 — schema-first JSON,
   `legacy=False`.
-- Hash: `32ee532d14f3ceb64dc002a6f266f925ee002ee481b6f092c8b72ee16282dbc8`; output schema: `BibleGenerationOutput.json`
+- Hash: `272db437a28024ad3bef56667583504aa73e54cda12e80500e3586517a564f5a`; output schema: `BibleGenerationOutput.json`
   (story_bible + world_bible + character_canon required; nested rule/location/
   object/character/relationship shapes).
 - Catalog invariants: **0 violation(s)**;
@@ -97,10 +97,10 @@ Tolerant-parser scan (reused from B2 over `core/.../domain/story/`,
 **`STORY_BIBLE_GATE`: PASS (B-side evidence).**
 
 - Golden: `bible_set_golden.json` (checksum
-  `8d1b1edce5ffc583…`).
+  `5730bd99809d7abb…`).
 - Corpus results: `invalid_output_corpus_results.json`; matrix:
   `cross_validation_matrix.json`; checksums: `checksums.json`.
-- Prompt manifest checksum: `5b73333515489421…`
+- Prompt manifest checksum: `7bbbfc8a4cdea4e8…`
   (11 prompts incl. `story.bibles.generate`;
   B2 manifest refreshed).
 - A-side (durable task execution + approval checkpoint) and C-side (bible

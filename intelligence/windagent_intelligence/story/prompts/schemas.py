@@ -158,13 +158,18 @@ BIBLE_GENERATION_OUTPUT_SCHEMA: Dict[str, Any] = {
         },
         "world_bible": {
             "type": "object",
-            "required": ["world_id", "setting"],
+            "required": ["world_id", "setting", "recurring_locations"],
             "properties": {
                 "world_id": {"type": "string", "minLength": 1},
                 "setting": {"type": "string", "minLength": 1},
                 "physical_rules": {"type": "array", "items": {"$ref": "#/$defs/world_rule"}},
                 "story_rules": {"type": "array", "items": {"$ref": "#/$defs/world_rule"}},
-                "recurring_locations": {"type": "array", "items": {"$ref": "#/$defs/location"}},
+                "recurring_locations": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 6,
+                    "items": {"$ref": "#/$defs/location"},
+                },
                 "recurring_objects": {"type": "array", "items": {"$ref": "#/$defs/object"}},
                 "style_constraints": {"type": "object", "additionalProperties": {"type": "string"}},
                 "language": {"type": "string"},
@@ -265,7 +270,13 @@ BEATS_GENERATION_OUTPUT_SCHEMA: Dict[str, Any] = {
             "maxItems": 12,
             "items": {
                 "type": "object",
-                "required": ["beat_id", "order", "description", "target_seconds"],
+                "required": [
+                    "beat_id",
+                    "order",
+                    "description",
+                    "location_id",
+                    "target_seconds",
+                ],
                 "properties": {
                     "beat_id": {"type": "string", "minLength": 1},
                     "order": {"type": "integer", "minimum": 1},
@@ -273,7 +284,7 @@ BEATS_GENERATION_OUTPUT_SCHEMA: Dict[str, Any] = {
                     "description": {"type": "string", "minLength": 1},
                     "emotional_beat": {"type": "string"},
                     "character_ids": {"type": "array", "items": {"type": "string"}},
-                    "location_id": {"type": "string"},
+                    "location_id": {"type": "string", "minLength": 1},
                     "target_seconds": {"type": "integer", "minimum": 0},
                 },
                 "additionalProperties": True,

@@ -37,7 +37,7 @@ Fixtures: `fixtures/studio_contract_v0.1/story_review/` (corpora/golden) and
   0 findings, hash `d8e50550164f97e2…`.
 - Weak review `report_draft_rabbit_kite_1_pass_with_warnings`: verdict **PASS_WITH_WARNINGS**
   (age_fit 0.4 < 0.5 -> `MODEL_DIMENSION_SCORE` warning), hash
-  `006f523820477084…`.
+  `43e6018808e63084…`.
 - Revision proposal `proposal_draft_rabbit_kite_2`: iteration
   2/3, accepted
   codes `['MODEL_DIMENSION_SCORE']`, bound to report
@@ -111,11 +111,11 @@ Tolerant-parser scan (reused from B2 over `core/.../domain/story/`,
 **`STORY_REVIEW_GATE`: PASS (B-side evidence).**
 
 - Golden loop: `review_loop_golden.json` (checksum
-  `2a152f3ca21189e0…`) — clean
+  `423f8efd29f8f679…`) — clean
   PASS, warning-level findings, bounded revision with immutable diff.
 - Corpus results: `invalid_output_corpus_results.json`; checksums:
   `checksums.json`.
-- Prompt manifest checksum: `5b73333515489421…`
+- Prompt manifest checksum: `7bbbfc8a4cdea4e8…`
   (11 prompts incl. `story.review.assess` +
   `story.revise.rewrite`; B2 manifest refreshed).
 - A-side (durable task execution + approval checkpoint) and C-side

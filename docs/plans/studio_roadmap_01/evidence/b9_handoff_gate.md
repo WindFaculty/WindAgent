@@ -28,7 +28,7 @@ artifact hashes of this run.
 | `beats.generate` | `studio.story.beats.generate` | StoryBible,WorldBible,CharacterCanon | BeatSheet | f64db297f2ba |
 | `outline.generate` | `studio.story.outline.generate` | BeatSheet | EpisodeOutline | 6e6653b711b7 |
 | `screenplay.generate` | `studio.story.screenplay.generate` | EpisodeOutline | ScreenplayDraft | dde24760a196 |
-| `review` | `studio.story.review` | ScreenplayDraft | ReviewReport | 006f52382047 |
+| `review` | `studio.story.review` | ScreenplayDraft | ReviewReport | 43e6018808e6 |
 | `revise` | `studio.story.revise` | ScreenplayDraft,ReviewReport | RevisionProposal,ScreenplayDraft | 945a117ded7b,7e0f33992a53 |
 | `review2` | `studio.story.review` | ScreenplayDraft | ReviewReport | ba691b70e50b |
 | `lock` | `studio.story.lock` | ScreenplayDraft,ReviewReport | LockedScreenplayReceipt,LockedScreenplayPackage | 2c1b11fa6bb0,305c803b0fe3 |
@@ -64,7 +64,7 @@ Tolerant-parser scan (B2, whole story tree):
 **`PLAN_B_HANDOFF_GATE` + `SCREENPLAY_RUNTIME_GATE`: PASS (B-side evidence).**
 
 - Chain: `chain_run.json` (checksum
-  `096c822918acb948…`).
+  `76f1243badee4c96…`).
 - Manifest: `handler_manifest.json`; checksums: `checksums.json`.
 - A-side (full-DAG auto-drive with receipt issuance at the lock node) and
   C-side (consumer schemas) halves are co-signed by their plan owners at

@@ -948,6 +948,20 @@ class StudioRunService(StudioRunOrchestratorPort):
         payload: Dict[str, Any] = {}
         if task_type == StudioTaskType.BIBLE_GENERATE.value:
             input_refs = await self._inject_selected_idea(uow, run, input_refs)
+        elif task_type == StudioTaskType.OUTLINE_GENERATE.value:
+            input_refs = await self._inject_run_artifacts(
+                uow,
+                run,
+                input_refs,
+                {"CharacterCanon", "WorldBible"},
+            )
+        elif task_type == StudioTaskType.SCREENPLAY_GENERATE.value:
+            input_refs = await self._inject_run_artifacts(
+                uow,
+                run,
+                input_refs,
+                {"BeatSheet", "CharacterCanon", "WorldBible"},
+            )
         elif task_type == StudioTaskType.REVIEW.value:
             policy = await self._load_policy(uow)
             payload = {
@@ -964,6 +978,36 @@ class StudioRunService(StudioRunOrchestratorPort):
         elif task_type == StudioTaskType.LOCK.value:
             input_refs, payload = await self._lock_inputs(uow, run, input_refs)
         return {"input_refs": input_refs, "payload": payload}
+
+    @staticmethod
+    async def _inject_run_artifacts(
+        uow: StudioUnitOfWork,
+        run: Dict[str, Any],
+        input_refs: List[Dict[str, Any]],
+        artifact_types: set[str],
+    ) -> List[Dict[str, Any]]:
+        """Attach exact upstream artifacts already produced by this run.
+
+        Linear DAG edges carry only the immediate predecessor's outputs. Some
+        handlers also need earlier canon/structure artifacts for deterministic
+        cross-validation. Those refs must come from this run's durable nodes;
+        never from a latest-artifact lookup across revisions or episodes.
+        """
+        present = {ref["artifact_type"] for ref in input_refs}
+        wanted = artifact_types - present
+        if not wanted:
+            return input_refs
+        nodes = await uow.nodes.list(run["run_id"])
+        additions: List[Dict[str, Any]] = []
+        for node in nodes:
+            for ref in node.get("output_artifact_refs", []) or []:
+                artifact_type = ref.get("artifact_type")
+                if artifact_type in wanted:
+                    additions.append(ref)
+                    wanted.remove(artifact_type)
+            if not wanted:
+                break
+        return [*input_refs, *additions]
 
     async def _inject_reviewed_draft(
         self,

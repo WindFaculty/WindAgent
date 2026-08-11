@@ -7,13 +7,13 @@ catalog + structured model boundary, B4 canon. Fixtures:
 
 ## 1. Outline generation prompts (B5 canonical, non-legacy)
 
-- Prompt: `story.beats.generate` v1.0.0 — schema-first JSON,
-  `legacy=False`. Hash: `bca226b8978a3e4e63271ea8efd26cf7b0288bfc66c137fd9c8bf91e175cd560`; output schema:
+- Prompt: `story.beats.generate` v1.0.1 — schema-first JSON,
+  `legacy=False`. Hash: `61cec0219c03c012f8097ef51ea2ef1dc8e4b86a68379b4064f7fb976d5d549e`; output schema:
   `BeatGenerationOutput.json` (4-12 beats, order, roles, canon refs, budget).
-- Prompt: `story.outline.structured` v1.0.0 — schema-first
+- Prompt: `story.outline.structured` v1.0.1 — schema-first
   JSON, `legacy=False` (canonical successor of the legacy
   `story.outline.generate` prompt, which stays for the old pipeline).
-  Hash: `e7c28852c170c00a4b4290a4ebabe5366753363c92a599574b9b80662928da2e`; output schema:
+  Hash: `5e27338f8e8502b99ca7f4fa0009cc58c93d7ce86a888a9b08a958d51b58f486`; output schema:
   `OutlineGenerationOutput.json` (3-12 scenes, intent, canon refs, beat
   coverage, duration budget).
 - Catalog invariants: **0 violation(s)**;
@@ -116,10 +116,10 @@ Tolerant-parser scan (reused from B2 over `core/.../domain/story/`,
 **`OUTLINE_GATE`: PASS (B-side evidence).**
 
 - Golden: `outline_set_golden.json` (checksum
-  `02680eb22a7aa673…`).
+  `f5ba6600f62d3cb3…`).
 - Corpus results: `invalid_output_corpus_results.json` (beats + outline);
   checksums: `checksums.json`.
-- Prompt manifest checksum: `5b73333515489421…`
+- Prompt manifest checksum: `7bbbfc8a4cdea4e8…`
   (11 prompts incl. `story.beats.generate` +
   `story.outline.structured`; B2 manifest refreshed).
 - A-side (durable task execution + approval checkpoint) and C-side (beat/

@@ -8,20 +8,14 @@ provider.
 
 from __future__ import annotations
 
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 from windagent_core.domain.story.bibles.models import CharacterCanon, WorldBible
-from windagent_core.domain.story.outline.duration import (
-    MAX_EPISODE_SECONDS,
-    MIN_EPISODE_SECONDS,
-    duration_issues,
-)
+from windagent_core.domain.story.outline.duration import duration_issues
 from windagent_core.domain.story.outline.models import (
     BEAT_ROLES,
-    Beat,
     BeatSheet,
     EpisodeOutline,
-    OutlineScene,
 )
 from windagent_core.domain.story.validation import (
     ValidationIssue,
@@ -70,6 +64,7 @@ def _check_ordering(
 def validate_beat_sheet(
     beat_sheet: BeatSheet,
     canon: Optional[CharacterCanon] = None,
+    world: Optional[WorldBible] = None,
 ) -> ValidationReport:
     issues: List[ValidationIssue] = []
     if not (MIN_BEATS <= len(beat_sheet.beats) <= MAX_BEATS):
@@ -85,6 +80,7 @@ def validate_beat_sheet(
         issues.append(_issue("ID_UNIQUE", json_pointer("beats"), "duplicate beat ids"))
 
     char_ids = {c.character_id for c in canon.characters} if canon else None
+    location_ids = {loc.location_id for loc in world.recurring_locations} if world else None
     for index, beat in enumerate(beat_sheet.beats):
         pointer = json_pointer("beats", index)
         if beat.role not in BEAT_ROLES:
@@ -101,6 +97,12 @@ def validate_beat_sheet(
                     "REF_MISSING", json_pointer(pointer, "character_ids"),
                     f"unknown character refs: {unknown}",
                 ))
+        if location_ids is not None and beat.location_id not in location_ids:
+            location_value = beat.location_id.value if beat.location_id is not None else None
+            issues.append(_issue(
+                "REF_MISSING", json_pointer(pointer, "location_id"),
+                f"unknown location {location_value!r}",
+            ))
 
     findings = duration_issues(
         total_seconds=beat_sheet.allocated_seconds,
@@ -135,7 +137,9 @@ def validate_episode_outline(
         issues.append(_issue("ID_UNIQUE", json_pointer("scenes"), "duplicate scene ids"))
 
     canon_chars = {c.character_id for c in canon.characters} if canon else None
-    world_locs = {l.location_id for l in world.recurring_locations} if world else None
+    world_locs = {
+        location.location_id for location in world.recurring_locations
+    } if world else None
 
     for index, scene in enumerate(outline.scenes):
         pointer = json_pointer("scenes", index)

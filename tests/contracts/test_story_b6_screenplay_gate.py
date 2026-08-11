@@ -36,7 +36,6 @@ from windagent_intelligence.story import (
 from windagent_intelligence.story.prompts import (
     prompt_for,
     prompt_manifest,
-    registered_prompt_ids,
     validate_registry_invariants,
 )
 from windagent_intelligence.story.screenplay.renderer import render_screenplay_text
@@ -77,7 +76,7 @@ def load(name: str):
 
 def test_screenplay_prompt_registered_non_legacy_schema_first():
     entry = prompt_for("story.screenplay.structured")
-    assert entry.version == "1.0.0"
+    assert entry.version == "1.0.1"
     assert entry.legacy is False
     assert entry.output_format == "json"
     assert entry.output_schema["title"] == "ScreenplayGenerationOutput"
@@ -171,7 +170,10 @@ def test_rendered_sample_deterministic_and_committed():
     first = render_screenplay_text(
         draft,
         character_names={c.character_id.value: c.name for c in GOLDEN_CANON.characters},
-        location_names={l.location_id.value: l.name for l in GOLDEN_WORLD.recurring_locations},
+        location_names={
+            location.location_id.value: location.name
+            for location in GOLDEN_WORLD.recurring_locations
+        },
     )
     assert first == sample
     assert "## Scene 1 | Dòng sông" in sample

@@ -364,7 +364,7 @@ Selected idea:
 
 Rules:
 1. StoryBible: premise and arc_summary required (beginning -> middle -> end); theme, tone, stakes, and at most 20 story_rules.
-2. WorldBible: setting required; physical_rules and story_rules carry unique rule_id and kind (physics|social|magic|constraint); recurring_locations and recurring_objects carry unique ids.
+2. WorldBible: setting and 1-6 recurring_locations are required; physical_rules and story_rules carry unique rule_id and kind (physics|social|magic|constraint); recurring_locations and recurring_objects carry unique ids.
 3. CharacterCanon: canon_id + at least one character; every character has a unique character_id and name; role from protagonist|deuteragonist|supporting|antagonist; relationships reference EXISTING character ids only, never self-loops.
 4. Use stable Story IDs: bible_*/world_*/ch_*/loc_*/prop_* prefixes.
 5. Character age_band must match the audience band (e.g. {audience_min_age}-{audience_max_age}).
@@ -382,7 +382,7 @@ register_prompt(
     StoryPromptEntry(
         prompt_id="story.bibles.generate",
         capability="bibles",
-        version="1.0.0",
+        version="1.0.1",
         template=_BIBLES_TEMPLATE,
         output_schema=BIBLE_GENERATION_OUTPUT_SCHEMA,
         system=_BIBLES_SYSTEM,
@@ -415,7 +415,7 @@ Canon:
 - Target duration: {target_duration_seconds} seconds (tolerance {tolerance_seconds})
 
 Rules:
-1. Return EXACTLY {min_beats}-{max_beats} beats, ordered 1..N with unique beat_id.
+1. Return between {min_beats} and {max_beats} beats, ordered 1..N with unique beat_id.
 2. role from hook|setup|rising|climax|falling|resolution; emotional_beat progresses across beats.
 3. character_ids reference canon character IDs ONLY; location_id references a canon location ID.
 4. target_seconds sum must be within {tolerance_seconds}s of {target_duration_seconds}.
@@ -432,7 +432,7 @@ register_prompt(
     StoryPromptEntry(
         prompt_id="story.beats.generate",
         capability="beats",
-        version="1.0.0",
+        version="1.0.1",
         template=_BEATS_TEMPLATE,
         output_schema=BEATS_GENERATION_OUTPUT_SCHEMA,
         system=_BEATS_SYSTEM,
@@ -452,14 +452,17 @@ _OUTLINE_TEMPLATE = """Plan the episode scenes from the beat sheet.
 Beat sheet:
 {beats_summary}
 
+Allowed character IDs (copy exactly): {characters}
+Allowed location IDs (copy exactly): {locations}
+
 Language: {language}
 Audience: {audience_band}
 Target duration: {target_duration_seconds} seconds (tolerance {tolerance_seconds})
 
 Rules:
-1. Return EXACTLY {min_scenes}-{max_scenes} scenes, ordered 1..N with unique scene_id.
-2. Every scene: intent required; location_id from canon locations; character_ids from canon characters; beat_refs reference beat ids from the beat sheet ONLY (every beat covered by at least one scene, no unknown refs).
-3. estimated_seconds per scene; the TOTAL must be within {tolerance_seconds}s of {target_duration_seconds} and inside 180-300 seconds.
+1. Return one scene per beat (there will be between {min_scenes} and {max_scenes}), ordered 1..N with unique scene_id.
+2. For each beat, copy its beat_id into beat_refs, its location_id into location_id, and its character_ids into character_ids. Never invent or translate an ID.
+3. Copy each beat's target_seconds into the corresponding scene's estimated_seconds so the TOTAL stays within {tolerance_seconds}s of {target_duration_seconds} and inside 180-300 seconds.
 4. Scene order must follow the beat causal order.
 5. dialogue_budget_seconds must not exceed estimated_seconds.
 6. Respond in {language}; content must be age-appropriate and safe for ages {audience_band}.
@@ -475,7 +478,7 @@ register_prompt(
     StoryPromptEntry(
         prompt_id="story.outline.structured",
         capability="outline",
-        version="1.0.0",
+        version="1.0.1",
         template=_OUTLINE_TEMPLATE,
         output_schema=OUTLINE_GENERATION_OUTPUT_SCHEMA,
         system=_OUTLINE_SYSTEM,
@@ -510,12 +513,12 @@ Audience: {audience_band}
 Target duration: {target_duration_seconds} seconds (tolerance {tolerance_seconds})
 
 Rules:
-1. Return EXACTLY {min_scenes}-{max_scenes} scenes, ordered 1..N with unique scene_id.
-2. Every scene: outline_scene_id references an outline scene id ONLY (one draft scene per outline scene); location_id from canon locations; character_ids from canon characters; source_beat_ids reference beat ids from the beat sheet ONLY (every beat covered by at least one scene, no unknown refs).
+1. Return exactly one draft scene per outline scene (the count will be between {min_scenes} and {max_scenes}), ordered 1..N with unique scene_id.
+2. For every outline scene, copy outline scene_id into outline_scene_id, location_id into location_id, character_ids into character_ids, beat_refs into source_beat_ids, and estimated_seconds into estimated_seconds. Never invent or translate a referenced ID.
 3. scene_id is a NEW draft scene id (dscn_*); keep outline_scene_id separate.
 4. action_description describes the visual action; dialogue lines carry dialogue_id (unique), scene_id = the scene's own scene_id, character_id from the scene cast ONLY, order starting at 1, non-empty text; delivery is optional direction.
 5. narration is OPTIONAL (empty string when absent). transition from CUT TO:|DISSOLVE TO:|FADE IN:|FADE OUT:|MATCH CUT:.
-6. estimated_seconds per scene; the TOTAL must be within {tolerance_seconds}s of {target_duration_seconds} and inside 180-300 seconds.
+6. Copy target_duration_seconds and tolerance_seconds exactly as given; copied per-scene timing must keep the TOTAL within {tolerance_seconds}s of {target_duration_seconds} and inside 180-300 seconds.
 7. Scene order follows the outline causal order; every scene must have action or dialogue or narration.
 8. Respond in {language}; content must be age-appropriate and safe for ages {audience_band}.
 
@@ -532,7 +535,7 @@ register_prompt(
     StoryPromptEntry(
         prompt_id="story.screenplay.structured",
         capability="screenplay",
-        version="1.0.0",
+        version="1.0.1",
         template=_SCREENPLAY_TEMPLATE,
         output_schema=SCREENPLAY_GENERATION_OUTPUT_SCHEMA,
         system=_SCREENPLAY_SYSTEM,

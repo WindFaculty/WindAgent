@@ -383,6 +383,14 @@ async def test_lock_envelope_carries_draft_input_and_a_issued_receipt(db, servic
     )
     await _complete_node(db, started.run_id, NODE_BEATS, ["BeatSheet"], [{"title": "Nhịp truyện"}])
     await _complete_node(db, started.run_id, NODE_OUTLINE, ["EpisodeOutline"], [{"title": "Dàn ý"}])
+    outline_envelope = await _queue_envelope(db, started.run_id, NODE_OUTLINE)
+    assert {
+        ref["artifact_type"] for ref in outline_envelope["input_artifact_refs"]
+    } == {"BeatSheet", "CharacterCanon", "WorldBible"}
+    screenplay_envelope = await _queue_envelope(db, started.run_id, NODE_SCREENPLAY)
+    assert {
+        ref["artifact_type"] for ref in screenplay_envelope["input_artifact_refs"]
+    } == {"EpisodeOutline", "BeatSheet", "CharacterCanon", "WorldBible"}
     await _complete_node(db, started.run_id, NODE_SCREENPLAY, ["ScreenplayDraft"], [draft.to_canonical_dict()])
     report = ReviewReport(
         report_id="report_1",

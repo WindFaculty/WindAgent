@@ -61,6 +61,26 @@ def test_outline_happy_path():
     assert result.provenance.prompt_id == "story.outline.structured"
 
 
+def test_outline_prompt_carries_exact_allowed_canon_ids():
+    port = FixtureModelPort(
+        responses={"outline": json.dumps(GOLDEN_EPISODE_OUTLINE, ensure_ascii=False)}
+    )
+    service = OutlineGenerationService(StoryModelBoundary(port))
+    _run(
+        service.generate(
+            BeatSheet(**GOLDEN_BEAT_SHEET),
+            canon=GOLDEN_CANON,
+            world=GOLDEN_WORLD,
+        )
+    )
+
+    rendered = port.requests[0].user
+    for character in GOLDEN_CANON.characters:
+        assert character.character_id.value in rendered
+    for location in GOLDEN_WORLD.recurring_locations:
+        assert location.location_id.value in rendered
+
+
 def test_beat_generation_is_idempotent():
     first = _run(_beat_service(json.dumps(GOLDEN_BEAT_SHEET, ensure_ascii=False)).generate(
         GOLDEN_STORY, GOLDEN_WORLD, GOLDEN_CANON
@@ -123,6 +143,24 @@ def test_beat_unknown_character_ref_blocks():
         ))
     codes = {i["code"] for i in exc.value.details["issues"]}
     assert "REF_MISSING" in codes
+
+
+def test_beat_missing_or_unknown_location_ref_blocks():
+    for location_id in (None, "loc_ghost"):
+        data = json.loads(json.dumps(GOLDEN_BEAT_SHEET, ensure_ascii=False))
+        data["beats"][0]["location_id"] = location_id
+        expected_exception = StorySchemaFailure if location_id is None else OutlineValidationFailure
+        with pytest.raises(expected_exception) as exc:
+            _run(
+                _beat_service(json.dumps(data, ensure_ascii=False)).generate(
+                    GOLDEN_STORY,
+                    GOLDEN_WORLD,
+                    GOLDEN_CANON,
+                )
+            )
+        if isinstance(exc.value, OutlineValidationFailure):
+            codes = {issue["code"] for issue in exc.value.details["issues"]}
+            assert "REF_MISSING" in codes
 
 
 def test_outline_orphan_beat_blocks():

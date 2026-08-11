@@ -397,14 +397,9 @@ class StudioRuntimeAdapter(ExecutionRuntimePort):
             raise StudioInputArtifactMissing(
                 f"{envelope.task_type.value} missing input artifacts: {', '.join(missing)}"
             )
-        if envelope.task_type.value in (
-            "studio.story.idea.generate",
-            "studio.story.idea.evaluate",
-            "studio.story.bible.generate",
-        ):
-            brief = _brief_from(episode, envelope)
-            if brief is not None:
-                inputs["CreativeBrief"] = brief
+        brief = _brief_from(episode, envelope)
+        if brief is not None:
+            inputs["CreativeBrief"] = brief
         return inputs
 
     def _lock_receipt_from(self, envelope: StudioTaskEnvelope) -> LockedScreenplayReceipt:
@@ -482,6 +477,9 @@ class StudioRuntimeAdapter(ExecutionRuntimePort):
         elif task_type == "studio.story.screenplay.generate":
             result = await handler.handle(
                 inputs["EpisodeOutline"],
+                beat_sheet=inputs.get("BeatSheet"),
+                canon=inputs.get("CharacterCanon"),
+                world=inputs.get("WorldBible"),
                 target_duration_seconds=brief.target_duration_seconds if brief else None,
                 language=brief.language if brief else "vi",
                 audience_band=(

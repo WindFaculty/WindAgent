@@ -19,6 +19,22 @@ from windagent_providers.nvidia import NvidiaNimAdapter
 from windagent_providers.mistral import MistralProviderAdapter
 
 
+def test_payload_uses_canonical_max_tokens_and_prefers_explicit_output_limit():
+    transport = OpenAICompatibleTransport(api_key="sk-testkey")
+
+    payload = transport._build_payload(  # noqa: SLF001 - transport contract regression
+        ProviderRequest(prompt="bounded", max_tokens=4000),
+        "ornith:9b",
+    )
+    assert payload["max_tokens"] == 4000
+
+    payload = transport._build_payload(  # noqa: SLF001 - precedence is intentional
+        ProviderRequest(prompt="bounded", max_tokens=4000, max_output_tokens=1200),
+        "ornith:9b",
+    )
+    assert payload["max_tokens"] == 1200
+
+
 @pytest.mark.asyncio
 async def test_non_stream_completion_success():
     def handler(request: httpx.Request) -> httpx.Response:

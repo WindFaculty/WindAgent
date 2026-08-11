@@ -145,7 +145,11 @@ class BeatGenerationService:
             route_lock_id=route_lock_id,
         )
         beat_sheet = BeatSheet(**result.data)
-        report = validate_beat_sheet(beat_sheet, canon=character_canon)
+        report = validate_beat_sheet(
+            beat_sheet,
+            canon=character_canon,
+            world=world_bible,
+        )
         if not report.is_pass():
             raise OutlineValidationFailure(
                 "BeatSheet failed validation; structure is never auto-fixed.",
@@ -181,6 +185,8 @@ class OutlineGenerationService:
             "story.outline.structured",
             variables={
                 "beats_summary": _beats_summary(beat_sheet),
+                "characters": _characters_summary(canon) if canon else "",
+                "locations": _locations_summary(world) if world else "",
                 "language": language,
                 "audience_band": audience_band,
                 "target_duration_seconds": target,

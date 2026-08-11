@@ -24,7 +24,7 @@ Fixtures: `fixtures/studio_contract_v0.1/story_lock/` (golden + corpus).
 
 - **AUTO** — receipt `rcpt_auto_draft_rabbit_kite` (policy `—`), package `pkg_rcpt_auto_draft_rabbit_kite_draft_rabbit_kite`, 11 manifest refs, hash `012e7bfffc7528aa…`, idempotent=True.
 - **HUMAN_REQUIRED** — receipt `rcpt_human_required_draft_rabbit_kite` (policy `approval_policy_v1`), package `pkg_rcpt_human_required_draft_rabbit_kite_draft_rabbit_kite`, 11 manifest refs, hash `2a258ccfce33c368…`, idempotent=True.
-- **QUALITY_GATE_ONLY** — receipt `rcpt_quality_gate_only_draft_rabbit_kite` (policy `—`), package `pkg_rcpt_quality_gate_only_draft_rabbit_kite_draft_rabbit_kite`, 11 manifest refs, hash `b9f6c46f42628945…`, idempotent=True.
+- **QUALITY_GATE_ONLY** — receipt `rcpt_quality_gate_only_draft_rabbit_kite` (policy `—`), package `pkg_rcpt_quality_gate_only_draft_rabbit_kite_draft_rabbit_kite`, 11 manifest refs, hash `a9a7bf64eefa79c3…`, idempotent=True.
 
 - Every package passes `validate_locked_package` with the issued receipt and
   exposes a presentation-safe `to_summary()` (manifest count + types).
@@ -67,7 +67,7 @@ Tolerant-parser scan (reused from B2 over `core/.../domain/story/`,
 
 **`LOCKED_SCREENPLAY_GATE`: PASS (B-side evidence).**
 
-- Golden: `lock_golden.json` (checksum `c15cb58c349a49fd…`)
+- Golden: `lock_golden.json` (checksum `9b51694022947fff…`)
   — valid immutable package + receipt under all three approval modes.
 - Corpus: `invalid_lock_results.json` (checksum
   `958c17e8648c3adc…`);
