@@ -79,9 +79,12 @@ class OpenAICompatibleTransport:
     def _build_payload(
         self, request: ProviderRequest, model_id: str, stream: bool = False
     ) -> Dict[str, Any]:
+        messages = request.messages.copy()
+        if request.prompt and not messages:
+            messages.append({"role": "user", "content": request.prompt})
         payload: Dict[str, Any] = {
             "model": model_id,
-            "messages": request.messages.copy(),
+            "messages": messages,
             "stream": stream,
             **self.default_payload,
         }

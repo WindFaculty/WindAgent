@@ -76,6 +76,10 @@ async def test_streamed_generate_accumulates_content_usage_and_request_id():
     def handler(request: httpx.Request) -> httpx.Response:
         payload = json.loads(request.content)
         assert payload["stream"] is True
+        assert payload["messages"][-1] == {
+            "role": "user",
+            "content": "Return JSON",
+        }
         assert payload["stream_options"] == {"include_usage": True}
         assert payload["think"] is False
         assert payload["response_format"]["type"] == "json_schema"
@@ -93,7 +97,7 @@ async def test_streamed_generate_accumulates_content_usage_and_request_id():
         default_payload={"think": False},
     )
     request = ProviderRequest(
-        messages=[{"role": "user", "content": "Return JSON"}],
+        prompt="Return JSON",
         structured_output_schema={"type": "object", "required": ["ok"]},
     )
 
