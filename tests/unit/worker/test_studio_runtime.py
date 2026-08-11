@@ -10,6 +10,7 @@ duplicate delivery, restart recovery, and redaction-safe worker metrics.
 from __future__ import annotations
 
 import json
+from datetime import datetime, timezone
 
 import pytest
 from sqlalchemy import text
@@ -30,6 +31,7 @@ from windagent_core.contracts.studio.models import (
     StudioTaskType,
 )
 from windagent_core.domain.story.ideation.models import CreativeBrief, IdeaCandidate, IdeaCandidateSet
+from windagent_core.domain.story.review import LockedScreenplayReceipt, PackageArtifactRef
 from windagent_core.domain.studio.artifact import StoryArtifactEnvelope
 from windagent_execution.registry import ExecutionRuntimeRegistry
 from windagent_intelligence.story.prompts.fixture import FixtureModelPort
@@ -673,3 +675,224 @@ async def test_worker_restart_claims_expired_lease(db, service):
     assert tick2["task_id"] == task_id
     assert worker2.current_fencing_token != crashed.fencing_token
     await worker2.stop()
+
+
+# ---------------------------------------------------------------------------
+# B9: screenplay/review/revise/lock through the worker seam
+# ---------------------------------------------------------------------------
+
+
+async def _seed_artifact(db, model) -> StoryArtifactEnvelope:
+    envelope = StoryArtifactEnvelope(
+        artifact_id=ArtifactId(f"art_{model.content_hash()[:16]}"),
+        artifact_type=model.artifact_type,
+        series_id=SeriesProjectId("srs_b9"),
+        episode_id=EpisodeId("ep_b9"),
+        content_hash=model.content_hash(),
+        content=model.to_canonical_dict(),
+    )
+    return await _save_artifact(db, envelope)
+
+
+async def _dispatch_ok(adapter, envelope: StudioTaskEnvelope, task_id: str) -> dict:
+    result = await _dispatch(adapter, envelope, task_id)
+    data = result.result_data or {}
+    assert data.get("status") == StudioTaskStatus.SUCCEEDED.value, result.error
+    return data
+
+
+def _tail_chain_env(
+    task_type: StudioTaskType,
+    *,
+    episode_id: EpisodeId,
+    series_id: SeriesProjectId,
+    input_refs: list[StudioArtifactRef],
+    payload: dict | None = None,
+    node_id: str = "tail",
+) -> StudioTaskEnvelope:
+    return StudioTaskEnvelope(
+        task_type=task_type,
+        studio_run_id=StudioRunId("run_b9_tail"),
+        dag_node_id=node_id,
+        series_id=series_id,
+        episode_id=episode_id,
+        input_artifact_refs=input_refs,
+        idempotency_key=f"b9-tail-{task_type.value}-{len(input_refs)}",
+        payload=payload or {},
+    )
+
+
+async def test_tail_chain_screenplay_review_revise_lock(db, studio):
+    """B9: outline -> screenplay -> review -> revise -> review -> lock runs
+    through the runtime seam; the final package references persisted refs."""
+    from scripts.verification.produce_b5_evidence import GOLDEN_EPISODE_OUTLINE
+    from scripts.verification.produce_b6_evidence import GOLDEN_SCREENPLAY_DRAFT
+    from scripts.verification.produce_b7_evidence import (
+        GOLDEN_REVIEW_CLEAN,
+        GOLDEN_REVIEW_WEAK,
+        GOLDEN_REVISION_RESPONSE,
+    )
+
+    from windagent_core.domain.story.outline import EpisodeOutline
+
+    series_id, episode_id = await _seed_episode(db, studio, brief=BRIEF_DICT)
+    outline = await _seed_artifact(db, EpisodeOutline(**GOLDEN_EPISODE_OUTLINE))
+    port = FixtureModelPort(responses={
+        "screenplay": json.dumps(GOLDEN_SCREENPLAY_DRAFT, ensure_ascii=False),
+        "review": json.dumps(GOLDEN_REVIEW_WEAK, ensure_ascii=False),
+        "revise": json.dumps(GOLDEN_REVISION_RESPONSE, ensure_ascii=False),
+    })
+    adapter = await _adapter(db, model_port=port)
+
+    # screenplay.generate: EpisodeOutline -> ScreenplayDraft
+    data = await _dispatch_ok(adapter, _tail_chain_env(
+        StudioTaskType.SCREENPLAY_GENERATE, episode_id=episode_id, series_id=series_id,
+        input_refs=[StudioArtifactRef(
+            artifact_id=outline.artifact_id, artifact_type="EpisodeOutline",
+            content_hash=outline.content_hash,
+        )],
+        node_id="screenplay.generate",
+    ), "b9t1")
+    refs = {r["artifact_type"]: r for r in data["output_artifact_refs"]}
+    draft_ref = refs["ScreenplayDraft"]
+
+    def _ref(artifact_type: str) -> StudioArtifactRef:
+        return StudioArtifactRef(
+            artifact_id=refs[artifact_type]["artifact_id"],
+            artifact_type=artifact_type,
+            content_hash=refs[artifact_type]["content_hash"],
+        )
+
+    # review (weak) -> ReviewReport with findings
+    data = await _dispatch_ok(adapter, _tail_chain_env(
+        StudioTaskType.REVIEW, episode_id=episode_id, series_id=series_id,
+        input_refs=[_ref("ScreenplayDraft")], node_id="review",
+    ), "b9t2")
+    refs.update({r["artifact_type"]: r for r in data["output_artifact_refs"]})
+
+    # revise -> new draft + proposal
+    data = await _dispatch_ok(adapter, _tail_chain_env(
+        StudioTaskType.REVISE, episode_id=episode_id, series_id=series_id,
+        input_refs=[_ref("ScreenplayDraft"), _ref("ReviewReport")], node_id="revise",
+    ), "b9t3")
+    refs.update({r["artifact_type"]: r for r in data["output_artifact_refs"]})
+    assert refs["ScreenplayDraft"]["content_hash"] != draft_ref["content_hash"]
+
+    # review (clean) on the revised draft -> PASS
+    port.responses["review"] = json.dumps(GOLDEN_REVIEW_CLEAN, ensure_ascii=False)
+    data = await _dispatch_ok(adapter, _tail_chain_env(
+        StudioTaskType.REVIEW, episode_id=episode_id, series_id=series_id,
+        input_refs=[_ref("ScreenplayDraft")], node_id="review2",
+    ), "b9t4")
+    refs.update({r["artifact_type"]: r for r in data["output_artifact_refs"]})
+
+    # lock: A-issued receipt + real lineage refs in payload
+    lineage = [
+        PackageArtifactRef(artifact_type="CreativeBrief", artifact_id="art_brief",
+                           content_hash="a" * 64),
+        PackageArtifactRef(artifact_type="SelectedIdea", artifact_id="art_sel",
+                           content_hash="b" * 64),
+        PackageArtifactRef(artifact_type="StoryBible", artifact_id="art_sb",
+                           content_hash="c" * 64),
+        PackageArtifactRef(artifact_type="WorldBible", artifact_id="art_wb",
+                           content_hash="d" * 64),
+        PackageArtifactRef(artifact_type="CharacterCanon", artifact_id="art_cc",
+                           content_hash="e" * 64),
+        PackageArtifactRef(artifact_type="BeatSheet", artifact_id="art_bs",
+                           content_hash="f" * 64),
+        PackageArtifactRef(artifact_type="EpisodeOutline", artifact_id=outline.artifact_id.value,
+                           content_hash=outline.content_hash),
+    ]
+    data = await _dispatch_ok(adapter, _tail_chain_env(
+        StudioTaskType.LOCK, episode_id=episode_id, series_id=series_id,
+        input_refs=[_ref("ScreenplayDraft"), _ref("ReviewReport")],
+        payload={
+            "receipt": LockedScreenplayReceipt(
+                receipt_id="rcpt_b9_tail",
+                draft_id="draft_rabbit_kite_r2",
+                approval_mode="AUTO",
+                issued_at=datetime(2026, 8, 11, tzinfo=timezone.utc),
+            ).to_canonical_dict(),
+            "lineage_refs": [r.model_dump(mode="json") for r in lineage],
+        },
+        node_id="lock",
+    ), "b9t5")
+    output_types = {r["artifact_type"] for r in data["output_artifact_refs"]}
+    assert output_types == {"LockedScreenplayReceipt", "LockedScreenplayPackage"}
+    package_ref = next(r for r in data["output_artifact_refs"] if r["artifact_type"] == "LockedScreenplayPackage")
+    async with StudioUnitOfWork(db.session_factory) as uow:
+        stored = await uow.artifacts.get(ArtifactId(package_ref["artifact_id"]))
+    assert stored is not None and stored.content_hash == package_ref["content_hash"]
+
+
+async def test_lock_fails_closed_without_receipt_payload(db, studio):
+    from scripts.verification.produce_b6_evidence import GOLDEN_SCREENPLAY_DRAFT
+
+    from windagent_core.domain.story.screenplay import ScreenplayDraft
+
+    series_id, episode_id = await _seed_episode(db, studio, brief=BRIEF_DICT)
+    draft = await _seed_artifact(db, ScreenplayDraft(**GOLDEN_SCREENPLAY_DRAFT))
+    adapter = await _adapter(db)
+    result = await _dispatch(adapter, _tail_chain_env(
+        StudioTaskType.LOCK, episode_id=episode_id, series_id=series_id,
+        input_refs=[StudioArtifactRef(
+            artifact_id=draft.artifact_id, artifact_type="ScreenplayDraft",
+            content_hash=draft.content_hash,
+        )],
+        payload={},
+    ), "b9t6")
+    data = result.result_data or {}
+    assert data.get("status") == StudioTaskStatus.FAILED.value
+    assert data.get("error", "").startswith("STUDIO_INPUT_ARTIFACT_MISSING")
+    assert await _artifact_count(db) == 1  # seeded draft only; no lock side effects
+
+
+async def test_lock_refuses_stale_lineage_hash(db, studio):
+    from scripts.verification.produce_b6_evidence import GOLDEN_SCREENPLAY_DRAFT
+
+    from windagent_core.domain.story.review import ReviewReport
+    from windagent_core.domain.story.screenplay import ScreenplayDraft
+
+    series_id, episode_id = await _seed_episode(db, studio, brief=BRIEF_DICT)
+    draft = await _seed_artifact(db, ScreenplayDraft(**GOLDEN_SCREENPLAY_DRAFT))
+    report = await _seed_artifact(db, ReviewReport(
+        report_id="report_b9_clean",
+        draft_id=GOLDEN_SCREENPLAY_DRAFT["draft_id"],
+        review_iteration=1,
+        verdict="PASS",
+    ))
+    receipt = LockedScreenplayReceipt(
+        receipt_id="rcpt_b9_stale",
+        draft_id=GOLDEN_SCREENPLAY_DRAFT["draft_id"],
+        approval_mode="AUTO",
+        issued_at=datetime(2026, 8, 11, tzinfo=timezone.utc),
+    )
+    adapter = await _adapter(db)
+    # Envelope ref hash does NOT match the live artifact -> hash binding fails.
+    result = await _dispatch(adapter, _tail_chain_env(
+        StudioTaskType.LOCK, episode_id=episode_id, series_id=series_id,
+        input_refs=[
+            StudioArtifactRef(
+                artifact_id=draft.artifact_id, artifact_type="ScreenplayDraft",
+                content_hash="a" * 64,
+            ),
+            StudioArtifactRef(
+                artifact_id=report.artifact_id, artifact_type="ReviewReport",
+                content_hash=report.content_hash,
+            ),
+        ],
+        payload={
+            "receipt": receipt.to_canonical_dict(),
+            "lineage_refs": [
+                PackageArtifactRef(
+                    artifact_type="LockedScreenplayReceipt",
+                    artifact_id="art_rcpt",
+                    content_hash=receipt.content_hash(),
+                )
+            ],
+        },
+    ), "b9t7")
+    data = result.result_data or {}
+    assert data.get("status") == StudioTaskStatus.FAILED.value
+    assert "LockValidationFailure" in data.get("error", "")
+    assert await _artifact_count(db) == 2  # no package persisted

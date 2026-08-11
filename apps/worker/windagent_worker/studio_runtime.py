@@ -50,6 +50,12 @@ from windagent_core.domain.story.ideation.models import (
     SelectedIdea,
 )
 from windagent_core.domain.story.outline.models import BeatSheet, EpisodeOutline
+from windagent_core.domain.story.review import (
+    LockedScreenplayReceipt,
+    PackageArtifactRef,
+    ReviewReport,
+)
+from windagent_core.domain.story.screenplay import ScreenplayDraft
 from windagent_storage.unit_of_work.studio_uow import StudioUnitOfWork
 
 logger = logging.getLogger("windagent.worker.studio")
@@ -98,6 +104,8 @@ INPUT_MODEL_BY_TYPE: Dict[str, Any] = {
     "CharacterCanon": CharacterCanon,
     "BeatSheet": BeatSheet,
     "EpisodeOutline": EpisodeOutline,
+    "ScreenplayDraft": ScreenplayDraft,
+    "ReviewReport": ReviewReport,
 }
 
 #: frozen task type -> ordered input artifact types (story_task_io.json).
@@ -107,6 +115,10 @@ INPUT_TYPES_BY_TASK: Dict[str, List[str]] = {
     "studio.story.bible.generate": ["SelectedIdea"],
     "studio.story.beats.generate": ["StoryBible", "WorldBible", "CharacterCanon"],
     "studio.story.outline.generate": ["BeatSheet"],
+    "studio.story.screenplay.generate": ["EpisodeOutline"],
+    "studio.story.review": ["ScreenplayDraft"],
+    "studio.story.revise": ["ScreenplayDraft", "ReviewReport"],
+    "studio.story.lock": ["ScreenplayDraft", "ReviewReport"],
 }
 
 #: frozen task type -> output model extractor from the handler result.
@@ -120,6 +132,10 @@ OUTPUT_NAMES_BY_TASK: Dict[str, List[str]] = {
     "studio.story.bible.generate": ["story_bible", "world_bible", "character_canon"],
     "studio.story.beats.generate": ["beat_sheet"],
     "studio.story.outline.generate": ["episode_outline"],
+    "studio.story.screenplay.generate": ["draft"],
+    "studio.story.review": ["report"],
+    "studio.story.revise": ["proposal", "new_draft"],
+    "studio.story.lock": ["receipt", "package"],
 }
 
 #: task types whose handler needs a provider-neutral model port.
@@ -129,6 +145,9 @@ MODEL_PORT_TASK_TYPES = frozenset(
         "studio.story.bible.generate",
         "studio.story.beats.generate",
         "studio.story.outline.generate",
+        "studio.story.screenplay.generate",
+        "studio.story.review",
+        "studio.story.revise",
     }
 )
 
@@ -388,6 +407,39 @@ class StudioRuntimeAdapter(ExecutionRuntimePort):
                 inputs["CreativeBrief"] = brief
         return inputs
 
+    def _lock_receipt_from(self, envelope: StudioTaskEnvelope) -> LockedScreenplayReceipt:
+        """A-issued receipt travels in the envelope payload (A authority)."""
+        payload = envelope.payload or {}
+        raw = payload.get("receipt")
+        if not isinstance(raw, dict):
+            raise StudioInputArtifactMissing("studio.story.lock requires an A-issued receipt in payload")
+        return LockedScreenplayReceipt.model_validate(raw)
+
+    def _lock_lineage_from(self, envelope: StudioTaskEnvelope) -> List[PackageArtifactRef]:
+        """Lineage = payload refs (upstream artifacts) + envelope input refs
+        (draft/report, hash-bound by A) + the issued receipt ref. Never
+        copies mutable state; the lock handler re-verifies every hash."""
+        payload = envelope.payload or {}
+        by_type: Dict[str, PackageArtifactRef] = {}
+        for raw in payload.get("lineage_refs", []):
+            ref = PackageArtifactRef.model_validate(raw)
+            by_type[ref.artifact_type] = ref
+        for ref in envelope.input_artifact_refs:
+            by_type[ref.artifact_type] = PackageArtifactRef(
+                artifact_type=ref.artifact_type,
+                artifact_id=ref.artifact_id.value,
+                content_hash=ref.content_hash,
+                revision_id=envelope.revision_id.value if envelope.revision_id else None,
+            )
+        receipt = self._lock_receipt_from(envelope)
+        receipt_id = (payload.get("receipt_artifact_id") or f"art_{receipt.receipt_id.value}")
+        by_type["LockedScreenplayReceipt"] = PackageArtifactRef(
+            artifact_type="LockedScreenplayReceipt",
+            artifact_id=receipt_id,
+            content_hash=receipt.content_hash(),
+        )
+        return list(by_type.values())
+
     async def _run_handler(
         self,
         handler: Any,
@@ -426,6 +478,34 @@ class StudioRuntimeAdapter(ExecutionRuntimePort):
                 audience_band=(
                     f"{brief.audience_min_age}-{brief.audience_max_age}" if brief else "5-8"
                 ),
+            )
+        elif task_type == "studio.story.screenplay.generate":
+            result = await handler.handle(
+                inputs["EpisodeOutline"],
+                target_duration_seconds=brief.target_duration_seconds if brief else None,
+                language=brief.language if brief else "vi",
+                audience_band=(
+                    f"{brief.audience_min_age}-{brief.audience_max_age}" if brief else "5-8"
+                ),
+            )
+        elif task_type == "studio.story.review":
+            result = await handler.handle(inputs["ScreenplayDraft"])
+        elif task_type == "studio.story.revise":
+            result = await handler.handle(
+                inputs["ScreenplayDraft"],
+                inputs["ReviewReport"],
+                language=brief.language if brief else "vi",
+                audience_band=(
+                    f"{brief.audience_min_age}-{brief.audience_max_age}" if brief else "5-8"
+                ),
+            )
+        elif task_type == "studio.story.lock":
+            result = await handler.handle(
+                inputs["ScreenplayDraft"],
+                inputs["ReviewReport"],
+                self._lock_receipt_from(envelope),
+                lineage_refs=self._lock_lineage_from(envelope),
+                title=(envelope.payload or {}).get("title"),
             )
         else:
             raise StudioUnsupportedTaskType(f"no execution mapping for {task_type}")
