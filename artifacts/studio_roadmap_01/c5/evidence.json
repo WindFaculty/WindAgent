@@ -1,0 +1,45 @@
+{
+  "evidence_id": "c5-api-ui-integration-gate",
+  "plan": "C",
+  "phase": "C5",
+  "gate": "API_UI_INTEGRATION_GATE",
+  "verdict": "PASS",
+  "generated_at": "2026-08-11T00:36:21.730585+00:00",
+  "integration_sha": "68e3e65cd6a508d249b32cb73b9cf6e364649ce2",
+  "tests": {
+    "desktop_vitest": {
+      "command": "C:\\Users\\Admin\\AppData\\Local\\hermes\\node\\npx.cmd vitest run --no-color",
+      "exit_code": 0,
+      "summary": "Tests  142 passed (142)",
+      "passed": true
+    },
+    "python_v3_contracts": {
+      "command": "C:\\Users\\Admin\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\python.exe -m pytest -q tests/unit/api/test_studio_v3_api.py tests/unit/api/test_openapi_snapshot.py --no-header",
+      "exit_code": 0,
+      "summary": "33 passed in 71.46s (0:01:11)",
+      "passed": true
+    }
+  },
+  "scans": {
+    "fake_and_sample_id_hits": []
+  },
+  "checks": {
+    "desktop_suite_passes": true,
+    "python_v3_contract_suite_passes": true,
+    "screenplay_views_present": true,
+    "screenplay_renders_traceability": true,
+    "review_findings_render_code_severity_location": true,
+    "diff_compares_before_after_drafts": true,
+    "hash_bound_lock_command": true,
+    "screenplay_checkpoint_wired": true,
+    "post_lock_read_only": true,
+    "c5_workflow_tests_present": true,
+    "no_fake_or_sample_ids_in_studio_sources": true
+  },
+  "file_sha256": {
+    "StudioPage.tsx": "ad515175faa2031b610b6fea64666683a971e99eacb2c3f5431f973c83ffc097",
+    "ArtifactViews.tsx": "94a514f443fc403c24ba51fcb86563ce27638a057a8adf6152452f5fc6693424",
+    "studioStoryTests.test.tsx": "0e9b8b29530eaf134896ae09e4802ba3bc93cdabcf43c9cb241318ee303951e6"
+  },
+  "composition_note": "Screenplay/review/revision/lock UI renders server artifacts only: structured draft with canon/beat traceability, review findings with code/severity/location, immutable before/after revision diff, lock receipt + package lineage. Lock and approval commands carry the exact server revision content hash and expected version; after lock the episode view is read-only and corrections route through a new run. No local stage advance, no synthesized artifact, no fake client."
+}
