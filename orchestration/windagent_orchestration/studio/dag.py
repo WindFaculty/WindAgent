@@ -12,11 +12,10 @@ WAITING_APPROVAL when it completes; only ``record_approval`` (APPROVED)
 resumes its dependents. ``gate=false`` (checkpoint mode AUTO) advances the
 DAG immediately.
 
-The REVIEW/REVISE/LOCK task types exist in the frozen catalog; revision loops
-and the lock step are driven by B-phase handlers through the same durable
-path. This builder emits the canonical linear pipeline; rejection at a gate
-is a durable FAILED run (a new run over a derived revision is the B-phase
-revision workflow).
+The tail contains an explicit conditional quality branch. A clean initial
+review skips ``revise`` and ``review.revised`` without inventing task success;
+a blocking policy finding drives those nodes through the durable worker before
+the exact revised screenplay can be reviewed and locked.
 """
 
 from __future__ import annotations
@@ -38,6 +37,8 @@ NODE_BEATS_GENERATE = "beats.generate"
 NODE_OUTLINE_GENERATE = "outline.generate"
 NODE_SCREENPLAY_GENERATE = "screenplay.generate"
 NODE_REVIEW = "review"
+NODE_REVISE = "revise.1"
+NODE_REVIEW_REVISED = "review.revised.1"
 NODE_LOCK = "lock"
 
 # node id -> (task type, approval checkpoint of the stage, if any)
@@ -49,6 +50,8 @@ _PIPELINE: List[tuple[str, StudioTaskType, Optional[ApprovalCheckpoint]]] = [
     (NODE_OUTLINE_GENERATE, StudioTaskType.OUTLINE_GENERATE, ApprovalCheckpoint.OUTLINE),
     (NODE_SCREENPLAY_GENERATE, StudioTaskType.SCREENPLAY_GENERATE, None),
     (NODE_REVIEW, StudioTaskType.REVIEW, ApprovalCheckpoint.SCREENPLAY),
+    (NODE_REVISE, StudioTaskType.REVISE, None),
+    (NODE_REVIEW_REVISED, StudioTaskType.REVIEW, ApprovalCheckpoint.SCREENPLAY),
     (NODE_LOCK, StudioTaskType.LOCK, None),
 ]
 
@@ -141,6 +144,8 @@ __all__ = [
     "NODE_OUTLINE_GENERATE",
     "NODE_SCREENPLAY_GENERATE",
     "NODE_REVIEW",
+    "NODE_REVISE",
+    "NODE_REVIEW_REVISED",
     "NODE_LOCK",
     "build_story_dag",
     "initial_node_states",

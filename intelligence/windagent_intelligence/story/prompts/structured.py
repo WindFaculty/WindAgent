@@ -22,6 +22,7 @@ internally and fails terminal on a second failure.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 from dataclasses import dataclass, field
@@ -34,7 +35,6 @@ from windagent_intelligence.story.prompts.registry import (
     STORY_PROMPT_REGISTRY,
     SafetyConstraints,
     StoryPromptEntry,
-    prompt_for,
 )
 from windagent_intelligence.video.ports import (
     ModelCompletionRequest,
@@ -112,6 +112,13 @@ class StoryModelProvenance:
     usage: Dict[str, Any] = field(default_factory=dict)
     repair_count: int = 0
     route_lock_id: Optional[str] = None
+    canonical_model_id: Optional[str] = None
+    provider_model_id: Optional[str] = None
+    endpoint_id: Optional[str] = None
+    provider_binding_id: Optional[str] = None
+    provider_attempt_id: Optional[str] = None
+    provider_request_id: Optional[str] = None
+    output_schema_contract: Optional[str] = None
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -124,6 +131,13 @@ class StoryModelProvenance:
             "usage": dict(self.usage),
             "repair_count": self.repair_count,
             "route_lock_id": self.route_lock_id,
+            "canonical_model_id": self.canonical_model_id,
+            "provider_model_id": self.provider_model_id,
+            "endpoint_id": self.endpoint_id,
+            "provider_binding_id": self.provider_binding_id,
+            "provider_attempt_id": self.provider_attempt_id,
+            "provider_request_id": self.provider_request_id,
+            "output_schema_contract": self.output_schema_contract,
         }
 
 
@@ -242,6 +256,15 @@ class StoryModelBoundary:
             repair_count = 0
         else:
             data, repair_count = self._parse_structured(entry, content, repair=repair)
+        usage = dict(result.usage or {})
+        schema_hash = hashlib.sha256(
+            json.dumps(
+                entry.output_schema,
+                sort_keys=True,
+                separators=(",", ":"),
+                ensure_ascii=False,
+            ).encode("utf-8")
+        ).hexdigest()
         provenance = StoryModelProvenance(
             prompt_id=entry.prompt_id,
             prompt_version=entry.version,
@@ -249,9 +272,16 @@ class StoryModelBoundary:
             capability=entry.capability,
             provider=result.provider,
             finish_reason=result.finish_reason,
-            usage=dict(result.usage or {}),
+            usage=usage,
             repair_count=repair_count,
-            route_lock_id=route_lock_id,
+            route_lock_id=route_lock_id or usage.get("route_lock_id"),
+            canonical_model_id=usage.get("canonical_model_id"),
+            provider_model_id=usage.get("provider_model_id"),
+            endpoint_id=usage.get("endpoint_id"),
+            provider_binding_id=usage.get("provider_binding_id"),
+            provider_attempt_id=usage.get("provider_attempt_id"),
+            provider_request_id=usage.get("provider_request_id"),
+            output_schema_contract=f"{entry.output_format}:sha256:{schema_hash}",
         )
         return StructuredModelResult(data=data, provenance=provenance)
 

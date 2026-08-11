@@ -397,6 +397,8 @@ class TestV3ContractWithFakes:
         )
         assert res.status_code == 200, res.text
         assert res.json()["candidate_id"] == "candidate_rabbit_kite"
+        assert res.json()["optimistic_version"] == 1
+        assert res.json()["content_hash"] == HASH
 
         # Same key + same body replays the original result.
         replay = client.post(
@@ -406,6 +408,35 @@ class TestV3ContractWithFakes:
         )
         assert replay.status_code == 200
         assert replay.json() == res.json()
+
+        stale = client.post(
+            f"/api/v3/studio/episodes/{episode_id}/approvals",
+            headers={"X-Idempotency-Key": _idem()},
+            json={
+                "episode_id": episode_id,
+                "revision_id": "revision_0001",
+                "checkpoint": "IDEA",
+                "artifact_hash": HASH,
+                "decision": "APPROVED",
+                "expected_optimistic_version": 0,
+            },
+        )
+        assert stale.status_code == 409
+        assert stale.json()["studio_code"] == "STALE_REVISION"
+
+        fresh = client.post(
+            f"/api/v3/studio/episodes/{episode_id}/approvals",
+            headers={"X-Idempotency-Key": _idem()},
+            json={
+                "episode_id": episode_id,
+                "revision_id": "revision_0001",
+                "checkpoint": "IDEA",
+                "artifact_hash": HASH,
+                "decision": "APPROVED",
+                "expected_optimistic_version": 1,
+            },
+        )
+        assert fresh.status_code == 200
 
     def test_select_idea_hash_mismatch_409(self, client):
         series_id = self._create_series(client).json()["series_id"]

@@ -35,7 +35,6 @@ from windagent_core.contracts.studio.commands import (
 )
 from windagent_core.contracts.studio.errors import (
     StudioCapabilityUnavailableError,
-    StudioInternalError,
     StudioValidationError,
 )
 from windagent_core.contracts.studio.ids import (
@@ -440,6 +439,13 @@ class StudioApplicationService:
             "model_route_id": artifact.model_route_id,
             "provider_id": artifact.provider_id,
             "model_id": artifact.model_id,
+            "canonical_model_id": artifact.canonical_model_id,
+            "provider_model_id": artifact.provider_model_id,
+            "endpoint_id": artifact.endpoint_id,
+            "provider_binding_id": artifact.provider_binding_id,
+            "provider_attempt_id": artifact.provider_attempt_id,
+            "provider_request_id": artifact.provider_request_id,
+            "output_schema_contract": artifact.output_schema_contract,
             "created_at": artifact.created_at.isoformat(),
             "created_by": artifact.created_by,
             "content": artifact.content,

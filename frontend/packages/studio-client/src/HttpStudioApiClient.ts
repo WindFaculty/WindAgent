@@ -85,6 +85,9 @@ export interface IdeaSelected {
   episode_id: string;
   candidate_id: string;
   revision_id: string;
+  content_hash: string;
+  optimistic_version: number;
+  replayed: boolean;
 }
 
 export interface ApprovalRecorded {

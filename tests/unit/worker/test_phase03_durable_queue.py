@@ -6,15 +6,14 @@ lease renewal, lease expiry reclaim, fencing token generation, and rollback safe
 
 from __future__ import annotations
 
-import asyncio
-from datetime import datetime, timezone, timedelta
 import pytest
 from sqlalchemy import select
 
 from windagent_core.contracts.workers.models import WorkSubmission
+from windagent_execution.registry import ExecutionRuntimeRegistry
 from windagent_storage.database.connection import DatabaseManager
 from windagent_storage.orm.models import BaseORM, OutboxRecordORM
-from windagent_storage.orm.v2_orchestration_models import TaskRunORM, ExecutionLeaseORM
+from windagent_storage.orm.v2_orchestration_models import TaskRunORM
 import windagent_storage.orm.v2_orchestration_models  # noqa: F401
 from windagent_storage.queue.submission_adapter import SqlWorkSubmissionAdapter
 from windagent_storage.queue.sql_queue import SqlDurableTaskQueue
@@ -83,7 +82,7 @@ async def test_worker_claims_sql_task_atomically(db_manager):
 async def test_two_workers_concurrent_claim(db_manager):
     """Two workers competing for a single task result in exactly one successful claim."""
     submitter = SqlWorkSubmissionAdapter(db_manager.session_factory)
-    task_id = await submitter.submit(WorkSubmission(prompt="Single available task"))
+    await submitter.submit(WorkSubmission(prompt="Single available task"))
 
     queue = SqlDurableTaskQueue(db_manager.session_factory)
 
@@ -99,7 +98,7 @@ async def test_two_workers_concurrent_claim(db_manager):
 async def test_task_non_reclaimable_before_lease_expiry(db_manager):
     """Claimed task cannot be reclaimed before its lease expires."""
     submitter = SqlWorkSubmissionAdapter(db_manager.session_factory)
-    task_id = await submitter.submit(WorkSubmission(prompt="Active lease task"))
+    await submitter.submit(WorkSubmission(prompt="Active lease task"))
 
     queue = SqlDurableTaskQueue(db_manager.session_factory)
     c1 = await queue.claim_next(worker_id="wkr_01", lease_ttl_seconds=60)
@@ -114,7 +113,7 @@ async def test_task_non_reclaimable_before_lease_expiry(db_manager):
 async def test_task_reclaimable_after_lease_expiry(db_manager):
     """Expired lease allows a new worker to reclaim task with incremented generation and new fencing token."""
     submitter = SqlWorkSubmissionAdapter(db_manager.session_factory)
-    task_id = await submitter.submit(WorkSubmission(prompt="Long running task"))
+    await submitter.submit(WorkSubmission(prompt="Long running task"))
 
     queue = SqlDurableTaskQueue(db_manager.session_factory)
     # Claim with 0 second TTL to simulate immediate expiry
@@ -128,7 +127,7 @@ async def test_task_reclaimable_after_lease_expiry(db_manager):
     assert c2.worker_id == "wkr_recoverer"
     assert c2.lease_generation == 2
     assert c2.fencing_token != c1.fencing_token
-    assert f"gen_2" in c2.fencing_token
+    assert "gen_2" in c2.fencing_token
 
 
 @pytest.mark.asyncio
@@ -157,7 +156,11 @@ async def test_production_worker_durable_tick(db_manager):
     task_id = await submitter.submit(WorkSubmission(prompt="Worker tick test"))
 
     queue = SqlDurableTaskQueue(db_manager.session_factory)
-    worker = ProductionWorker(name="durable-test-worker", task_queue=queue)
+    worker = ProductionWorker(
+        name="durable-test-worker",
+        task_queue=queue,
+        execution_registry=ExecutionRuntimeRegistry(allow_tool_simulation=True),
+    )
     await worker.start()
 
     tick_res = await worker.poll_and_execute_tick()

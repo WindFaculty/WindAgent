@@ -33,11 +33,24 @@ function useConversationId(): string {
 
 export function App() {
   // Page routing
-  const [activeTab, setActiveTab] = useState<string>("dashboard");
+  const certificationEpisodeId =
+    (typeof import.meta !== "undefined" &&
+      (import.meta as any).env?.VITE_STUDIO_CERTIFICATION_EPISODE_ID) ||
+    "";
+  const [activeTab, setActiveTab] = useState<string>(
+    certificationEpisodeId ? "studio" : "dashboard",
+  );
   const conversationId = useConversationId();
   const [isModelsExpanded, setIsModelsExpanded] = useState<boolean>(false);
   const [isProductionExpanded, setIsProductionExpanded] = useState<boolean>(true);
   const [refreshInterval, setRefreshInterval] = useState<string>("10s");
+
+  useEffect(() => {
+    if (certificationEpisodeId) {
+      const route = `#/studio/episodes/${encodeURIComponent(certificationEpisodeId)}`;
+      if (window.location.hash !== route) window.location.hash = route;
+    }
+  }, [certificationEpisodeId]);
 
   useEffect(() => {
     if (activeTab === "models-library" || activeTab === "models-endpoints") {

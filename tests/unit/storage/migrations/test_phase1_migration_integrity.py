@@ -19,7 +19,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, inspect, text
 
 from windagent_storage.migrations.runner import (
     MultipleMigrationHeadsError,
@@ -84,6 +84,25 @@ class TestAlembicUpgrade:
         alembic_upgrade_head(fresh_db)
         alembic_upgrade_head(fresh_db)  # must not raise
         assert "conversations" in _table_names(fresh_db)
+
+    def test_studio_artifact_provider_provenance_columns_exist(self, fresh_db: str):
+        alembic_upgrade_head(fresh_db)
+        engine = create_engine(fresh_db)
+        try:
+            columns = {
+                item["name"] for item in inspect(engine).get_columns("studio_artifacts")
+            }
+        finally:
+            engine.dispose()
+        assert {
+            "canonical_model_id",
+            "provider_model_id",
+            "endpoint_id",
+            "provider_binding_id",
+            "provider_attempt_id",
+            "provider_request_id",
+            "output_schema_contract",
+        } <= columns
 
     def test_downgrade_base_resets_test_db(self, fresh_db: str):
         alembic_upgrade_head(fresh_db)
@@ -260,10 +279,10 @@ class TestAlembicHeadIntegrity:
         assert len(heads) == 1, f"revision graph must stay linear, got heads={heads}"
         # Intentional tripwire (GAP D): bump this only when a new migration is
         # appended to the chain — the test exists to fail loudly on drift.
-        assert heads[0] == "0011_studio_run_nodes"
+        assert heads[0] == "0012_studio_artifact_provenance"
 
     def test_verify_single_head_passes_on_linear_chain(self):
-        assert verify_single_head() == "0011_studio_run_nodes"
+        assert verify_single_head() == "0012_studio_artifact_provenance"
 
     def test_verify_single_head_raises_on_multiple_heads(self, monkeypatch):
         monkeypatch.setattr(
@@ -278,8 +297,8 @@ class TestAlembicHeadIntegrity:
 
     def test_current_matches_head_after_upgrade(self, fresh_db: str):
         alembic_upgrade_head(fresh_db)
-        assert alembic_current(fresh_db) == ("0011_studio_run_nodes",)
-        assert verify_single_head(fresh_db) == "0011_studio_run_nodes"
+        assert alembic_current(fresh_db) == ("0012_studio_artifact_provenance",)
+        assert verify_single_head(fresh_db) == "0012_studio_artifact_provenance"
 
     def test_current_empty_after_downgrade_base(self, fresh_db: str):
         alembic_upgrade_head(fresh_db)

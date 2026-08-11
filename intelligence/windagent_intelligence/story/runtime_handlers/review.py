@@ -59,6 +59,7 @@ class ReviewHandler:
         world: Optional[WorldBible] = None,
         review_iteration: int = 1,
         maximum_iterations: int = 3,
+        quality_threshold: Optional[float] = None,
         route_lock_id: Optional[str] = None,
     ) -> ReviewResult:
         return await self.service.generate(
@@ -69,6 +70,7 @@ class ReviewHandler:
             world=world,
             review_iteration=review_iteration,
             maximum_iterations=maximum_iterations,
+            quality_threshold=quality_threshold,
             route_lock_id=route_lock_id,
         )
 

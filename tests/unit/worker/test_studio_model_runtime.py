@@ -13,7 +13,6 @@ non-durable model route, missing handlers).
 from __future__ import annotations
 
 import json
-import os
 
 import pytest
 from sqlalchemy import text
@@ -43,6 +42,10 @@ from windagent_providers.studio import (
 from windagent_worker.studio_model_port import (
     RouteLockedModelPort,
     build_studio_ruleset,
+)
+from windagent_worker.composition import (
+    CertificationPreflightError,
+    WorkerContainer,
 )
 from windagent_storage.database.connection import DatabaseManager
 from windagent_storage.orm.models import BaseORM
@@ -241,6 +244,13 @@ async def test_worker_handler_invokes_real_route_and_persists_provenance():
         assert route.prompt_id == "story.ideation.generate"
         assert route.provider_id == "stub-provider"
         assert route.model_route_id  # the route lock id
+        assert route.canonical_model_id == "canonical/a6-story"
+        assert route.provider_model_id == "stub-model-1"
+        assert route.model_id == "stub-model-1"
+        assert route.endpoint_id == "ep-a6-stub"
+        assert route.provider_binding_id == "bind-a6-stub"
+        assert route.provider_attempt_id == "attempt_1"
+        assert route.output_schema_contract.startswith("json:sha256:")
         assert route.usage["prompt_tokens"] == 13
         assert route.usage["completion_tokens"] == 29
 
@@ -249,13 +259,23 @@ async def test_worker_handler_invokes_real_route_and_persists_provenance():
             row = (
                 await session.execute(
                     text(
-                        "SELECT model_route_id, provider_id, model_id, prompt_id "
+                        "SELECT model_route_id, provider_id, model_id, prompt_id, "
+                        "canonical_model_id, provider_model_id, endpoint_id, "
+                        "provider_binding_id, provider_attempt_id, "
+                        "output_schema_contract "
                         "FROM studio_artifacts LIMIT 1"
                     )
                 )
             ).one()
         assert row.model_route_id == route.model_route_id
         assert row.provider_id == "stub-provider"
+        assert row.model_id == "stub-model-1"
+        assert row.canonical_model_id == "canonical/a6-story"
+        assert row.provider_model_id == "stub-model-1"
+        assert row.endpoint_id == "ep-a6-stub"
+        assert row.provider_binding_id == "bind-a6-stub"
+        assert row.provider_attempt_id == route.provider_attempt_id
+        assert row.output_schema_contract == route.output_schema_contract
         assert row.prompt_id == "story.ideation.generate"
 
         # Redaction: the persisted route receipt never contains prompt content.
@@ -379,3 +399,25 @@ async def test_clean_certification_profile_has_no_flags(monkeypatch):
     assert "fake_runtime" not in profile.fail_closed_flags
     assert "fixture_model_port" not in profile.fail_closed_flags
     assert "non_durable_model_route" in profile.fail_closed_flags
+
+
+def test_certification_worker_preflight_rejects_incomplete_composition(monkeypatch):
+    monkeypatch.setenv("WINDAGENT_CERTIFICATION_MODE", "1")
+    monkeypatch.delenv("WIND_STUDIO_CERTIFICATION", raising=False)
+    monkeypatch.delenv("WINDAGENT_STUDIO_RUNTIME", raising=False)
+    monkeypatch.delenv("WINDAGENT_STUDIO_MODEL_ROUTE", raising=False)
+    monkeypatch.delenv("WINDAGENT_STUDIO_CANONICAL_MODEL", raising=False)
+    monkeypatch.delenv("WINDAGENT_DATABASE_URL", raising=False)
+
+    container = WorkerContainer()
+    with pytest.raises(CertificationPreflightError) as exc_info:
+        container.validate_certification_preflight()
+
+    message = str(exc_info.value)
+    assert "WINDAGENT_STUDIO_RUNTIME=1" in message
+    assert "WINDAGENT_STUDIO_MODEL_ROUTE=1" in message
+    assert "canonical model" in message
+    assert "durable DB" in message
+    assert "StudioRuntimeAdapter" in message
+    assert "StudioCompletionReconciler" in message
+    assert "RouteLockedModelPort" in message

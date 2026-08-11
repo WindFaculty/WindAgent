@@ -15,7 +15,7 @@ from datetime import datetime, timezone
 import pytest
 from sqlalchemy import text
 
-from windagent_core.contracts.execution import ExecutionRequest
+from windagent_core.contracts.execution import ExecutionRequest, RuntimeStatusEnum
 from windagent_core.contracts.finalization import FinalizeTaskExecutionRequest, StaleResultRejectedError
 from windagent_core.contracts.studio.commands import (
     CreateEpisodeCommand,
@@ -26,14 +26,16 @@ from windagent_core.contracts.studio.ids import ArtifactId, EpisodeId, SeriesPro
 from windagent_core.contracts.studio.models import (
     StudioArtifactRef,
     StudioTaskEnvelope,
-    StudioTaskResult,
     StudioTaskStatus,
     StudioTaskType,
 )
-from windagent_core.domain.story.ideation.models import CreativeBrief, IdeaCandidate, IdeaCandidateSet
+from windagent_core.contracts.studio.errors import StudioCapabilityUnavailableError
+from windagent_core.domain.story.ideation.models import IdeaCandidate, IdeaCandidateSet
 from windagent_core.domain.story.review import LockedScreenplayReceipt, PackageArtifactRef
 from windagent_core.domain.studio.artifact import StoryArtifactEnvelope
 from windagent_execution.registry import ExecutionRuntimeRegistry
+from windagent_execution.adapters.fake_runtime_adapter import FakeRuntimeAdapter
+from windagent_execution.adapters.tool_runtime import ToolRuntimeAdapter
 from windagent_intelligence.story.prompts.fixture import FixtureModelPort
 from windagent_intelligence.story.runtime_handlers import HANDLER_REGISTRY
 from windagent_orchestration.studio.service import StudioRunService
@@ -451,6 +453,55 @@ async def test_registry_routes_studio_capability(db, studio):
     assert registry.resolve_adapter("read_file") is not adapter
 
 
+def test_registry_rejects_unregistered_studio_capability():
+    registry = ExecutionRuntimeRegistry(allow_tool_simulation=True)
+    with pytest.raises(StudioCapabilityUnavailableError):
+        registry.resolve_adapter("studio.story.idea.generate")
+
+
+async def test_tool_runtime_never_simulates_studio_success():
+    adapter = ToolRuntimeAdapter(allow_simulation=True)
+    request = ExecutionRequest(
+        step_run_id="studio-task-no-runtime",
+        workflow_run_id="studio-run-no-runtime",
+        tool_name="studio.story.idea.generate",
+        parameters={"studio_envelope": {}},
+    )
+    handle = await adapter.dispatch(request)
+    result = await adapter.get_result(handle)
+    assert result.status == RuntimeStatusEnum.FAILED
+    assert result.result_data is None
+    assert "STUDIO_CAPABILITY_UNAVAILABLE" in (result.error or "")
+
+
+async def test_explicit_generic_simulation_remains_available_outside_certification():
+    adapter = ToolRuntimeAdapter(allow_simulation=True)
+    request = ExecutionRequest(
+        step_run_id="generic-dev-task",
+        workflow_run_id="generic-dev-run",
+        tool_name="read_file",
+        parameters={"path": "README.md"},
+    )
+    handle = await adapter.dispatch(request)
+    result = await adapter.get_result(handle)
+    assert result.status == RuntimeStatusEnum.COMPLETED
+    assert "Executed tool [read_file]" in (result.result_data or {}).get("output", "")
+
+
+async def test_generic_simulation_is_forbidden_in_certification(monkeypatch):
+    monkeypatch.setenv("WINDAGENT_CERTIFICATION_MODE", "1")
+    adapter = ToolRuntimeAdapter(allow_simulation=True)
+    request = ExecutionRequest(
+        step_run_id="generic-cert-task",
+        workflow_run_id="generic-cert-run",
+        tool_name="read_file",
+    )
+    handle = await adapter.dispatch(request)
+    result = await adapter.get_result(handle)
+    assert result.status == RuntimeStatusEnum.FAILED
+    assert "CERTIFICATION_VIOLATION" in (result.error or "")
+
+
 # ---------------------------------------------------------------------------
 # E2E: real SQL queue -> independent worker -> UoW -> finalizer -> reconciler
 # ---------------------------------------------------------------------------
@@ -518,6 +569,38 @@ async def test_b_handler_crosses_worker_queue_finalizer_reconciler(db, service):
     assert (await _node(db, run_id, "idea.evaluate"))["status"] == "WAITING_APPROVAL"
     assert (await worker.poll_and_execute_tick())["status"] == "idle"
     assert worker.metrics_snapshot()["totals"]["processed"] == 2
+    await worker.stop()
+
+
+async def test_malformed_studio_result_is_finalized_as_failure_without_dag_advance(
+    db, service
+):
+    """A generic runtime-shaped payload can never become canonical Studio success."""
+
+    _, _, run_id = await _start_run_with_brief(db, service, brief=BRIEF_DICT)
+    registry = ExecutionRuntimeRegistry()
+    registry.register_capability("studio", FakeRuntimeAdapter(default_mode="success"))
+    worker = ProductionWorker(
+        name="malformed-studio-result-worker",
+        task_queue=SqlDurableTaskQueue(db.session_factory),
+        execution_registry=registry,
+        uow_factory=db.session_factory,
+        studio_reconciler=service,
+    )
+    await worker.start()
+
+    tick = await worker.poll_and_execute_tick()
+    assert tick["status"] == "failed"
+    assert "STUDIO_RESULT_INVALID" in tick["error"]
+    assert (await _node(db, run_id, "idea.generate"))["status"] == "DISPATCHED"
+    assert await _artifact_count(db) == 0
+
+    from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork
+
+    async with SqlUnitOfWork(db.session_factory) as uow:
+        task = await uow.task_runs.get_by_id(tick["task_id"])
+    assert task is not None
+    assert task["state"] == "failed"
     await worker.stop()
 
 

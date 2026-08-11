@@ -13,7 +13,7 @@ Plan B review/revision/lock content models (studio.artifact/v1alpha1): S9-S10.
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -25,10 +25,7 @@ from windagent_core.domain.story.ids import (
     RevisionProposalId,
     ScreenplayDraftId,
 )
-from windagent_core.domain.story.validation import (
-    ValidationIssue,
-    ValidationSeverity,
-)
+from windagent_core.domain.story.validation import ValidationSeverity
 
 __all__ = [
     "ReviewFinding",
@@ -63,6 +60,9 @@ class ReviewFinding(BaseModel):
     remediation: str = ""
     source: str = "deterministic"  # deterministic | model | human
     dimension: Optional[str] = None
+    threshold: Optional[float] = None
+    actual_score: Optional[float] = None
+    provenance: Optional[Dict[str, Any]] = None
 
 
 class DimensionResult(BaseModel):

@@ -262,6 +262,17 @@ class RouteLockedModelPort:
                 #: Route lock id is provenance (an id, never content/secrets);
                 #: artifact envelopes persist it as model_route_id.
                 "route_lock_id": receipt.route_lock_id,
+                "canonical_model_id": response.canonical_model_id
+                or receipt.canonical_model_id,
+                "provider_model_id": response.provider_model_id,
+                "endpoint_id": response.endpoint_id,
+                "provider_binding_id": response.raw_metadata.get(
+                    "provider_binding_id"
+                ),
+                "provider_attempt_id": response.raw_metadata.get(
+                    "provider_attempt_id"
+                ),
+                "provider_request_id": response.provider_request_id,
             },
         )
 

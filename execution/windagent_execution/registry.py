@@ -10,6 +10,7 @@ from typing import Dict, Optional
 from windagent_core.contracts.execution import (
     ExecutionRuntimePort, ExecutionRequest, ExecutionHandle, RuntimeStatus, ExecutionResult
 )
+from windagent_core.contracts.studio.errors import StudioCapabilityUnavailableError
 from windagent_execution.adapters.tool_runtime import ToolRuntimeAdapter
 from windagent_execution.adapters.browser_runtime import BrowserRuntimeAdapter
 from windagent_execution.adapters.local_agent import LocalAgentRuntimeAdapter
@@ -21,8 +22,15 @@ logger = logging.getLogger("windagent.execution.registry")
 class ExecutionRuntimeRegistry(ExecutionRuntimePort):
     """Canonical registry mapping execution capabilities and tool names to durable runtime adapters."""
 
-    def __init__(self, default_adapter: Optional[ExecutionRuntimePort] = None) -> None:
-        self.default_adapter = default_adapter or ToolRuntimeAdapter()
+    def __init__(
+        self,
+        default_adapter: Optional[ExecutionRuntimePort] = None,
+        *,
+        allow_tool_simulation: bool = False,
+    ) -> None:
+        self.default_adapter = default_adapter or ToolRuntimeAdapter(
+            allow_simulation=allow_tool_simulation
+        )
         self._capability_map: Dict[str, ExecutionRuntimePort] = {
             "tool": self.default_adapter,
             "browser": BrowserRuntimeAdapter(),
@@ -44,7 +52,13 @@ class ExecutionRuntimeRegistry(ExecutionRuntimePort):
         elif name_lower.startswith("hermes_") or name_lower in ("hermes", "hermes_chat"):
             return self._capability_map.get("hermes", self.default_adapter)
         elif name_lower.startswith("studio."):
-            return self._capability_map.get("studio", self.default_adapter)
+            adapter = self._capability_map.get("studio")
+            if adapter is None:
+                raise StudioCapabilityUnavailableError(
+                    "Studio runtime capability is not registered; generic fallback is forbidden.",
+                    details={"tool_name": tool_name, "capability": "studio"},
+                )
+            return adapter
         elif name_lower.startswith("run_command") or name_lower.startswith("subproc_") or name_lower in ("exec_command", "bash"):
             return self._capability_map.get("subprocess", self.default_adapter)
         elif name_lower.startswith("agent_") or name_lower in ("reason", "plan"):

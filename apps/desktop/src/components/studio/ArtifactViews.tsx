@@ -230,9 +230,16 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 function Provenance({ artifact }: { artifact: StudioArtifactEnvelope }) {
   const parts: string[] = [];
   if (artifact.provider_id) parts.push(`provider ${artifact.provider_id}`);
-  if (artifact.model_id) parts.push(`model ${artifact.model_id}`);
+  if (artifact.canonical_model_id) parts.push(`canonical ${artifact.canonical_model_id}`);
+  if (artifact.provider_model_id) parts.push(`model ${artifact.provider_model_id}`);
+  else if (artifact.model_id) parts.push(`model ${artifact.model_id}`);
+  if (artifact.endpoint_id) parts.push(`endpoint ${artifact.endpoint_id}`);
+  if (artifact.provider_binding_id) parts.push(`binding ${artifact.provider_binding_id}`);
   if (artifact.model_route_id) parts.push(`route ${artifact.model_route_id}`);
+  if (artifact.provider_attempt_id) parts.push(`attempt ${artifact.provider_attempt_id}`);
   if (artifact.prompt_id) parts.push(`prompt ${artifact.prompt_id}`);
+  if (artifact.prompt_version) parts.push(`prompt version ${artifact.prompt_version}`);
+  if (artifact.output_schema_contract) parts.push(`schema ${artifact.output_schema_contract}`);
   if (parts.length === 0) return null;
   return (
     <div style={{ ...MUTED, fontSize: 12, marginTop: 6 }}>

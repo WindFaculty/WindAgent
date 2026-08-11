@@ -20,13 +20,20 @@ from windagent_core.contracts.studio.commands import (
     CreateEpisodeCommand,
     CreateSeriesCommand,
     DeriveRevisionCommand,
+    RecordApprovalCommand,
     SelectIdeaCommand,
     StartRunCommand,
 )
 from windagent_core.contracts.studio.ids import ArtifactId, EpisodeId, SeriesProjectId, StudioRunId
 from windagent_core.contracts.studio.models import StudioTaskResult, StudioTaskStatus
 from windagent_core.domain.story.ideation.models import IdeaCandidate, IdeaCandidateSet, SelectedIdea
-from windagent_core.domain.story.review.models import LockedScreenplayReceipt
+from windagent_core.domain.story.review.models import (
+    LockedScreenplayReceipt,
+    ReviewFinding,
+    ReviewReport,
+)
+from windagent_core.domain.story.validation import ValidationSeverity
+from windagent_core.events.studio import StudioEventCatalog
 from windagent_core.domain.studio.approval import ApprovalPolicy
 from windagent_core.domain.studio.artifact import StoryArtifactEnvelope
 from windagent_core.domain.studio.lifecycle import ApprovalCheckpoint, ApprovalMode
@@ -34,6 +41,8 @@ from windagent_orchestration.studio.dag import (
     NODE_BIBLE_GENERATE,
     NODE_IDEA_EVALUATE,
     NODE_LOCK,
+    NODE_REVIEW_REVISED,
+    NODE_REVISE,
 )
 from windagent_orchestration.studio.service import StudioRunService
 from windagent_storage.database.connection import DatabaseManager
@@ -78,6 +87,27 @@ async def _auto_policy(db):
                 checkpoint_to_mode_map={
                     checkpoint: ApprovalMode.AUTO for checkpoint in ApprovalCheckpoint
                 },
+            )
+        )
+        await uow.commit()
+
+
+async def _human_screenplay_threshold_policy(db):
+    async with StudioUnitOfWork(db.session_factory) as uow:
+        await uow.approvals.save_policy(
+            ApprovalPolicy(
+                policy_id="studio.default",
+                policy_version="quality-1",
+                checkpoint_to_mode_map={
+                    checkpoint: (
+                        ApprovalMode.HUMAN_REQUIRED
+                        if checkpoint == ApprovalCheckpoint.SCREENPLAY
+                        else ApprovalMode.AUTO
+                    )
+                    for checkpoint in ApprovalCheckpoint
+                },
+                quality_thresholds={ApprovalCheckpoint.SCREENPLAY: 0.8},
+                max_review_revision_iterations=2,
             )
         )
         await uow.commit()
@@ -290,16 +320,20 @@ async def test_bible_envelope_user_selection_wins(db, service):
         revision = await uow.revisions.get(run["dag"]["revision_id"])
         revision_hash = revision.content_hash
         revision_version = revision.optimistic_version
-    await service.select_idea(
-        SelectIdeaCommand(
-            idempotency_key="c7-sel1",
-            episode_id=episode_id,
-            revision_id=run["dag"]["revision_id"],
-            candidate_id="cand_gio_mua",
-            expected_content_hash=revision_hash,
-            expected_optimistic_version=revision_version,
-        )
+    command = SelectIdeaCommand(
+        idempotency_key="c7-sel1",
+        episode_id=episode_id,
+        revision_id=run["dag"]["revision_id"],
+        candidate_id="cand_gio_mua",
+        expected_content_hash=revision_hash,
+        expected_optimistic_version=revision_version,
     )
+    selected_result = await service.select_idea(command)
+    assert selected_result.optimistic_version == revision_version + 1
+    assert selected_result.content_hash == revision_hash
+    replayed_result = await service.select_idea(command)
+    assert replayed_result.replayed is True
+    assert replayed_result.optimistic_version == revision_version + 1
     await _complete_node(
         db, started.run_id, "idea.generate", ["IdeaCandidateSet"], [_set().to_canonical_dict()]
     )
@@ -350,7 +384,18 @@ async def test_lock_envelope_carries_draft_input_and_a_issued_receipt(db, servic
     await _complete_node(db, started.run_id, NODE_BEATS, ["BeatSheet"], [{"title": "Nhịp truyện"}])
     await _complete_node(db, started.run_id, NODE_OUTLINE, ["EpisodeOutline"], [{"title": "Dàn ý"}])
     await _complete_node(db, started.run_id, NODE_SCREENPLAY, ["ScreenplayDraft"], [draft.to_canonical_dict()])
-    await _complete_node(db, started.run_id, NODE_REVIEW, ["ReviewReport"], [{"report_id": "report_1"}])
+    report = ReviewReport(
+        report_id="report_1",
+        draft_id=draft.draft_id,
+        verdict="PASS",
+    )
+    await _complete_node(
+        db,
+        started.run_id,
+        NODE_REVIEW,
+        ["ReviewReport"],
+        [report.to_canonical_dict()],
+    )
 
     envelope = await _queue_envelope(db, started.run_id, NODE_LOCK)
     types = {r["artifact_type"] for r in envelope["input_artifact_refs"]}
@@ -363,3 +408,169 @@ async def test_lock_envelope_carries_draft_input_and_a_issued_receipt(db, servic
     assert receipt.state == "READY_FOR_PRODUCTION"
     assert receipt.approval_mode == "AUTO"
     assert receipt.policy_id == "studio.default"
+
+
+async def test_human_rejection_revises_inside_same_run_and_locks_revised_hash(
+    db, service
+):
+    from windagent_core.domain.story.screenplay import ScreenplayDraft
+
+    await _human_screenplay_threshold_policy(db)
+    _, episode_id = await _seed_episode(db, service)
+    started = await service.start_or_resume_run(
+        StartRunCommand(
+            idempotency_key="c7-quality-revision",
+            episode_id=episode_id,
+        )
+    )
+    initial_draft = ScreenplayDraft(
+        draft_id="draft_quality_initial",
+        title="Initial screenplay",
+        language="en",
+        audience_band="8-12",
+        target_duration_seconds=240,
+        scenes=[],
+    )
+    for node_id, artifact_types, contents in (
+        ("idea.generate", ["IdeaCandidateSet"], [_set().to_canonical_dict()]),
+        (NODE_IDEA_EVALUATE, ["IdeaCandidateSet"], [_set().to_canonical_dict()]),
+        (
+            NODE_BIBLE_GENERATE,
+            ["StoryBible", "WorldBible", "CharacterCanon"],
+            [{"title": "Bible", "logline": "Story"}, {}, {}],
+        ),
+        (NODE_BEATS, ["BeatSheet"], [{"title": "Beats"}]),
+        (NODE_OUTLINE, ["EpisodeOutline"], [{"title": "Outline"}]),
+        (
+            NODE_SCREENPLAY,
+            ["ScreenplayDraft"],
+            [initial_draft.to_canonical_dict()],
+        ),
+    ):
+        await _complete_node(db, started.run_id, node_id, artifact_types, contents)
+
+    blocking_report = ReviewReport(
+        report_id="report_quality_initial",
+        draft_id=initial_draft.draft_id,
+        verdict="REVIEW_REQUIRED",
+        review_iteration=1,
+        maximum_iterations=2,
+        findings=[
+            ReviewFinding(
+                code="QUALITY_THRESHOLD_VIOLATION",
+                severity=ValidationSeverity.BLOCKING,
+                location="dimensions/age_fit",
+                evidence="age_fit score 0.4 below threshold 0.8",
+                remediation="Revise age fit.",
+                source="model",
+                dimension="age_fit",
+                threshold=0.8,
+                actual_score=0.4,
+                provenance={"model_attempt_id": "attempt-review-1"},
+            )
+        ],
+    )
+    await _complete_node(
+        db,
+        started.run_id,
+        NODE_REVIEW,
+        ["ReviewReport"],
+        [blocking_report.to_canonical_dict()],
+    )
+    async with StudioUnitOfWork(db.session_factory) as uow:
+        episode = await uow.episodes.get(episode_id)
+        initial_revision = await uow.revisions.get(episode.current_revision_id)
+    rejected = await service.record_approval(
+        RecordApprovalCommand(
+            idempotency_key="c7-quality-reject",
+            episode_id=episode_id,
+            revision_id=initial_revision.revision_id,
+            checkpoint=ApprovalCheckpoint.SCREENPLAY.value,
+            artifact_hash=initial_revision.content_hash,
+            actor="owner",
+            decision="REJECTED",
+            reason="Policy threshold finding requires revision",
+            expected_optimistic_version=initial_revision.optimistic_version,
+        )
+    )
+    assert rejected.next_state == "REVISING"
+    revise_envelope = await _queue_envelope(db, started.run_id, NODE_REVISE)
+    assert {ref["artifact_type"] for ref in revise_envelope["input_artifact_refs"]} == {
+        "ReviewReport",
+        "ScreenplayDraft",
+    }
+
+    revised_draft = initial_draft.model_copy(
+        update={"draft_id": "draft_quality_revised", "title": "Revised screenplay"}
+    )
+    await _complete_node(
+        db,
+        started.run_id,
+        NODE_REVISE,
+        ["ScreenplayDraft"],
+        [revised_draft.to_canonical_dict()],
+    )
+    revised_report = ReviewReport(
+        report_id="report_quality_revised",
+        draft_id=revised_draft.draft_id,
+        verdict="PASS",
+        review_iteration=2,
+        maximum_iterations=2,
+    )
+    await _complete_node(
+        db,
+        started.run_id,
+        NODE_REVIEW_REVISED,
+        ["ReviewReport"],
+        [revised_report.to_canonical_dict()],
+    )
+    async with StudioUnitOfWork(db.session_factory) as uow:
+        episode = await uow.episodes.get(episode_id)
+        revised_revision = await uow.revisions.get(episode.current_revision_id)
+    approved = await service.record_approval(
+        RecordApprovalCommand(
+            idempotency_key="c7-quality-approve-revised",
+            episode_id=episode_id,
+            revision_id=revised_revision.revision_id,
+            checkpoint=ApprovalCheckpoint.SCREENPLAY.value,
+            artifact_hash=revised_revision.content_hash,
+            actor="owner",
+            decision="APPROVED",
+            reason="Revised draft passed the second review",
+            expected_optimistic_version=revised_revision.optimistic_version,
+        )
+    )
+    assert approved.awaiting_approval is False
+    lock_envelope = await _queue_envelope(db, started.run_id, NODE_LOCK)
+    lock_draft_ref = next(
+        ref
+        for ref in lock_envelope["input_artifact_refs"]
+        if ref["artifact_type"] == "ScreenplayDraft"
+    )
+    assert lock_draft_ref["content_hash"] != initial_draft.content_hash()
+    await _complete_node(
+        db,
+        started.run_id,
+        NODE_LOCK,
+        ["LockedScreenplayPackage"],
+        [{"package_id": "pkg_quality_revised"}],
+    )
+    async with StudioUnitOfWork(db.session_factory) as uow:
+        run = await uow.runs.get(started.run_id)
+        episode = await uow.episodes.get(episode_id)
+        revision = await uow.revisions.get(episode.current_revision_id)
+    async with db.session_factory() as session:
+        event_rows = await session.execute(
+            text(
+                "SELECT event_type FROM studio_events "
+                "WHERE studio_run_id = :run_id"
+            ),
+            {"run_id": str(started.run_id)},
+        )
+    assert run["status"] == "COMPLETED"
+    assert len(run["metadata"]["revision_chain"]) == 2
+    assert revision.content_hash == lock_draft_ref["content_hash"]
+    assert episode.state.value == "READY_FOR_PRODUCTION"
+    event_types = {row[0] for row in event_rows}
+    assert StudioEventCatalog.STORY_REVISION_REQUESTED in event_types
+    assert StudioEventCatalog.RUN_FAILED not in event_types

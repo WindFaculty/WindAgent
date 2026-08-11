@@ -122,6 +122,7 @@ class ApplicationContainer:
         self.memory_query_service: Optional[MemoryQueryService] = None
         self.verification_query_service: Optional[VerificationQueryService] = None
         self.worker_status_query: Optional[WorkerStatusQueryPort] = None
+        self.worker_heartbeat_repo: Optional[SqlWorkerHeartbeatRepository] = None
         self.task_submission: Optional[SqlWorkSubmissionAdapter] = None
         self.is_initialized: bool = False
 
@@ -267,9 +268,8 @@ class ApplicationContainer:
             self.release_telemetry,
             studio_run_extension=self.studio_run_service,
         )
-        self.worker_status_query = SqlWorkerStatusQuery(
-            SqlWorkerHeartbeatRepository(self.db.session_factory)
-        )
+        self.worker_heartbeat_repo = SqlWorkerHeartbeatRepository(self.db.session_factory)
+        self.worker_status_query = SqlWorkerStatusQuery(self.worker_heartbeat_repo)
 
         # Plan C1: Studio V3 surface. The capability provider observes this
         # container; the application service binds Plan A ports at handoff.

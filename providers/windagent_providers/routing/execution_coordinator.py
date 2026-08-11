@@ -168,16 +168,14 @@ class EndpointExecutionCoordinator:
                 )
                 # Normalize canonical_model_id to the locked model.
                 response.canonical_model_id = canonical_model_id
+                response.provider_model_id = (
+                    response.provider_model_id or candidate.provider_model_id
+                )
                 response.endpoint_id = candidate.endpoint_id
-                response.raw_metadata = {
-                    **response.raw_metadata,
-                    "route_lock_id": route_lock_id,
-                    "provider_binding_id": candidate.binding_id,
-                }
                 latency_ms = (time.perf_counter() - start) * 1000.0
 
                 await self._state.record_success(candidate.endpoint_id, latency_ms)
-                await self._record_attempt(
+                provider_attempt_id = await self._record_attempt(
                     route_lock_id=route_lock_id,
                     turn_id=turn_id,
                     attempt_index=attempt_index,
@@ -187,6 +185,12 @@ class EndpointExecutionCoordinator:
                     completion_tokens=response.usage.completion_tokens,
                     endpoint_id=candidate.endpoint_id,
                 )
+                response.raw_metadata = {
+                    **response.raw_metadata,
+                    "route_lock_id": route_lock_id,
+                    "provider_binding_id": candidate.binding_id,
+                    "provider_attempt_id": provider_attempt_id,
+                }
                 # Phase 9: write through to response cache.
                 if (
                     self._response_cache is not None
@@ -373,8 +377,8 @@ class EndpointExecutionCoordinator:
         error_class: Optional[str] = None,
         prompt_tokens: int = 0,
         completion_tokens: int = 0,
-    ) -> None:
-        await self._attempts.record_attempt(
+    ) -> str:
+        return await self._attempts.record_attempt(
             route_lock_id=route_lock_id,
             turn_id=turn_id,
             attempt_index=attempt_index,

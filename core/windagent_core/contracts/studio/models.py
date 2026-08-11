@@ -55,6 +55,7 @@ class StudioNodeStatus(str, Enum):
     SUCCEEDED: terminal success (directly, or after an approval gate passed).
     FAILED: terminal failure (retry budget exhausted or approval rejected).
     CANCELLED: terminal cancellation (run cancelled or superseded).
+    SKIPPED: terminal branch bypass; no task was submitted or completed.
     WAITING_APPROVAL: durable approval-gate wait; only approval resumes it.
     """
 
@@ -64,11 +65,14 @@ class StudioNodeStatus(str, Enum):
     SUCCEEDED = "SUCCEEDED"
     FAILED = "FAILED"
     CANCELLED = "CANCELLED"
+    SKIPPED = "SKIPPED"
     WAITING_APPROVAL = "WAITING_APPROVAL"
 
     @classmethod
     def terminal(cls) -> frozenset[str]:
-        return frozenset({cls.SUCCEEDED.value, cls.FAILED.value, cls.CANCELLED.value})
+        return frozenset(
+            {cls.SUCCEEDED.value, cls.FAILED.value, cls.CANCELLED.value, cls.SKIPPED.value}
+        )
 
 
 class StudioTaskType(str, Enum):
@@ -104,6 +108,13 @@ class StudioRouteProvenance(BaseModel):
     model_route_id: Optional[str] = None
     provider_id: Optional[str] = None
     model_id: Optional[str] = None
+    canonical_model_id: Optional[str] = None
+    provider_model_id: Optional[str] = None
+    endpoint_id: Optional[str] = None
+    provider_binding_id: Optional[str] = None
+    provider_attempt_id: Optional[str] = None
+    provider_request_id: Optional[str] = None
+    output_schema_contract: Optional[str] = None
     prompt_id: Optional[str] = None
     prompt_version: Optional[str] = None
     prompt_hash: Optional[str] = None

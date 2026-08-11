@@ -1,16 +1,35 @@
 from __future__ import annotations
 
 import json
+import sys
+import time
 
 import pytest
 
-from scripts.studio_roadmap.c7_slice_harness import SliceError
+from scripts.studio_roadmap import c7_slice_harness
+from scripts.studio_roadmap.c7_slice_harness import (
+    MODEL_PROVENANCE_FIELDS,
+    SliceError,
+    _correlation_checks,
+    _genuine_revision_checks,
+    assert_report,
+)
 from scripts.studio_roadmap.c8_recovery_harness import (
     _artifact_duplicate_keys,
     assert_recovery_report,
     sqlite_path_from_url,
 )
+from scripts.studio_roadmap.certification_launcher import (
+    CertificationLauncher,
+    CertificationProcessError,
+    sanitize_environment,
+)
 from scripts.studio_roadmap.produce_c9_evidence import evidence_sha, evidence_verdict
+from scripts.studio_roadmap.produce_c7_evidence import (
+    _redact_secrets as c7_redact_secrets,
+    _redaction_safe as c7_redaction_safe,
+    _source_dirty_paths as c7_source_dirty,
+)
 from scripts.studio_roadmap.produce_c8_evidence import _source_dirty_paths as c8_source_dirty
 from scripts.studio_roadmap.produce_c9_evidence import _source_dirty_paths as c9_source_dirty
 
@@ -105,8 +124,319 @@ def test_certification_reports_do_not_make_the_source_tree_dirty() -> None:
         "artifacts/studio_roadmap_01/c9/evidence.json",
         "apps/api/windagent_api/main.py",
     ]
+    assert c7_source_dirty(paths) == [
+        "artifacts/studio_roadmap_01/c8/evidence.json",
+        "artifacts/studio_roadmap_01/c9/evidence.json",
+        "apps/api/windagent_api/main.py",
+    ]
     assert c8_source_dirty(paths) == [
         "artifacts/studio_roadmap_01/c9/evidence.json",
         "apps/api/windagent_api/main.py",
     ]
     assert c9_source_dirty(paths) == ["apps/api/windagent_api/main.py"]
+
+
+def test_certification_environment_manifest_is_redaction_safe() -> None:
+    manifest = sanitize_environment(
+        {
+            "WINDAGENT_DATABASE_URL": "postgresql://user:password@db.local/wind?token=secret",
+            "WINDAGENT_CERTIFICATION_MODE": "1",
+            "UNRELATED_API_KEY": "must-not-appear",
+        }
+    )
+
+    assert manifest == {
+        "WINDAGENT_DATABASE_URL": "postgresql://db.local/wind",
+        "WINDAGENT_CERTIFICATION_MODE": "1",
+    }
+
+
+def test_c7_failure_details_are_redacted_before_persistence() -> None:
+    payload = {
+        "first_broken_hop": {
+            "detail": "provider failed with Authorization='super-secret-value'",
+        }
+    }
+
+    redacted = c7_redact_secrets(payload)
+
+    assert redacted["first_broken_hop"]["detail"] == "provider failed with [REDACTED]"
+    assert c7_redaction_safe(redacted) is True
+
+
+def test_launcher_records_unexpected_exit_as_first_broken_hop(tmp_path, monkeypatch) -> None:
+    launcher = CertificationLauncher(
+        db_url="sqlite+aiosqlite:///cert.db",
+        log_dir=tmp_path,
+        poll_interval=0.01,
+    )
+    monkeypatch.setattr(
+        launcher,
+        "_command",
+        lambda _name: [sys.executable, "-c", "import sys; sys.stderr.write('boom\\n'); sys.exit(7)"],
+    )
+
+    launcher.start("worker")
+    deadline = time.monotonic() + 2
+    error = None
+    while time.monotonic() < deadline:
+        try:
+            launcher.raise_if_unhealthy()
+        except CertificationProcessError as exc:
+            error = exc
+            break
+        time.sleep(0.01)
+    launcher.stop_all()
+
+    assert error is not None
+    assert error.first_broken_hop["failure"] == "process_exited"
+    assert error.first_broken_hop["exit_code"] == 7
+    receipt = json.loads((tmp_path / "process-receipts.json").read_text(encoding="utf-8"))
+    assert receipt["first_broken_hop"]["process"] == "worker"
+    assert receipt["processes"][0]["unexpected_exit"] is True
+    assert receipt["processes"][0]["stderr_tail"] == ["boom"]
+
+
+def test_c7_logical_operation_uses_stable_idempotency_key() -> None:
+    assert c7_slice_harness._idem("approve-ep-rev-IDEA") == c7_slice_harness._idem(
+        "approve-ep-rev-IDEA"
+    )
+
+
+def test_c7_approval_retry_reuses_key_and_never_swallows_409(monkeypatch) -> None:
+    observed_keys = []
+
+    def conflict(_api, _method, _path, _body, idem):
+        observed_keys.append(idem)
+        return 409, {"studio_code": "STALE_REVISION"}
+
+    monkeypatch.setattr(c7_slice_harness, "_request", conflict)
+    arguments = (
+        "http://api",
+        "ep-1",
+        "rev-1",
+        "a" * 64,
+        2,
+        "IDEA",
+        lambda *_args, **_kwargs: None,
+    )
+
+    with pytest.raises(SliceError, match="approval at IDEA failed: 409"):
+        c7_slice_harness._approve(*arguments)
+    with pytest.raises(SliceError, match="approval at IDEA failed: 409"):
+        c7_slice_harness._approve(*arguments)
+
+    assert observed_keys[0] == observed_keys[1]
+
+
+def _c7_genuine_report() -> dict:
+    return {
+        "checks": {},
+        "current_revision_id": "rev_new",
+        "artifacts": [],
+        "durable_evidence": {
+            "revisions": [
+                {
+                    "revision_id": "rev_seed",
+                    "parent_revision_id": None,
+                    "content_hash": "0" * 64,
+                    "metadata": {},
+                }
+            ],
+            "events": [],
+            "approvals": [],
+        },
+    }
+
+
+def test_c7_initial_revision_alone_fails_genuine_revision_requirement() -> None:
+    report = _c7_genuine_report()
+    _genuine_revision_checks(report)
+    assert report["checks"]["canonical_derived_revision_chain"]["pass"] is False
+
+
+def test_c7_warning_does_not_count_as_revision_causing_finding() -> None:
+    report = _c7_genuine_report()
+    report["artifacts"] = [
+        {
+            "artifact_id": "art_report",
+            "artifact_type": "ReviewReport",
+            "created_at": "2026-01-01T00:00:00Z",
+            "content": {
+                "report_id": "report_1",
+                "draft_id": "draft_1",
+                "verdict": "PASS_WITH_WARNINGS",
+                "findings": [
+                    {
+                        "code": "QUALITY_NOTE",
+                        "severity": "WARNING",
+                        "source": "model",
+                    }
+                ],
+            },
+        },
+        {
+            "artifact_id": "art_proposal",
+            "artifact_type": "RevisionProposal",
+            "created_at": "2026-01-01T00:00:01Z",
+            "content": {
+                "proposal_id": "proposal_1",
+                "draft_id": "draft_1",
+                "review_report_id": "report_1",
+                "accepted_finding_codes": ["QUALITY_NOTE"],
+            },
+        },
+    ]
+    _genuine_revision_checks(report)
+    assert report["checks"]["genuine_blocking_policy_finding"]["pass"] is False
+
+
+def _c7_correlation_report() -> dict:
+    artifacts = []
+    nodes = []
+    tasks = []
+    leases = []
+    attempts = []
+    public_events = []
+    for index in range(9):
+        task_id = f"stsk_{index}"
+        node_id = f"node.{index}"
+        artifact_id = f"art_{index}"
+        provenance = {field: f"{field}_{index}" for field in MODEL_PROVENANCE_FIELDS}
+        provenance.update(
+            {
+                "model_id": provenance["provider_model_id"],
+                "artifact_id": artifact_id,
+                "artifact_type": "ReviewReport",
+                "content_hash": f"{index + 1:064x}",
+                "content": {},
+            }
+        )
+        artifacts.append(provenance)
+        nodes.append(
+            {
+                "run_id": "run_1",
+                "dag_node_id": node_id,
+                "task_type": "studio.story.review",
+                "status": "SUCCEEDED",
+                "task_id": task_id,
+                "attempt": 1,
+                "output_artifact_refs": [
+                    {
+                        "artifact_id": artifact_id,
+                        "content_hash": provenance["content_hash"],
+                    }
+                ],
+            }
+        )
+        tasks.append(
+            {
+                "task_id": task_id,
+                "facts": {
+                    "studio_run_id": "run_1",
+                    "dag_node_id": node_id,
+                    "attempt": 1,
+                },
+            }
+        )
+        leases.append(
+            {
+                "task_id": task_id,
+                "dag_node_id": node_id,
+                "lease_generation": 1,
+                "fencing_token_digest": f"sha256:{index:016x}",
+            }
+        )
+        attempts.append(
+            {
+                "provider_attempt_id": provenance["provider_attempt_id"],
+                "task_id": task_id,
+                "route_lock_id": provenance["model_route_id"],
+                "provider_binding_id": provenance["provider_binding_id"],
+                "status": "success",
+            }
+        )
+        public_events.append(
+            {"event_type": "studio.task.completed", "payload": {"task_id": task_id}}
+        )
+    event = {
+        "event_id": "evt_1",
+        "event_type": "studio.run.completed",
+        "aggregate_id": "run_1",
+        "sequence": 1,
+        "studio_run_id": "run_1",
+    }
+    return {
+        "checks": {},
+        "run_id": "run_1",
+        "artifacts": artifacts,
+        "public_events": public_events,
+        "durable_evidence": {
+            "nodes": nodes,
+            "tasks": tasks,
+            "leases": leases,
+            "provider_attempts": attempts,
+            "events": [event],
+            "outbox": [
+                {
+                    "event_id": "evt_1",
+                    "event_type": event["event_type"],
+                    "aggregate_id": event["aggregate_id"],
+                    "sequence_number": 1,
+                }
+            ],
+        },
+    }
+
+
+def test_c7_missing_model_id_fails_provider_provenance() -> None:
+    report = _c7_correlation_report()
+    report["artifacts"][0]["model_id"] = None
+    _correlation_checks(report)
+    assert report["checks"]["model_stage_provider_attempt_correlation"]["pass"] is False
+
+
+def test_c7_missing_provider_attempt_fails_correlation() -> None:
+    report = _c7_correlation_report()
+    report["durable_evidence"]["provider_attempts"] = []
+    _correlation_checks(report)
+    assert report["checks"]["model_stage_provider_attempt_correlation"]["pass"] is False
+
+
+def test_c7_broken_task_correlation_fails() -> None:
+    report = _c7_correlation_report()
+    report["durable_evidence"]["tasks"][0]["facts"]["studio_run_id"] = "run_other"
+    _correlation_checks(report)
+    assert report["checks"]["dag_node_task_correlation"]["pass"] is False
+
+
+def test_c7_missing_lease_and_outbox_fail() -> None:
+    report = _c7_correlation_report()
+    report["durable_evidence"]["leases"] = []
+    report["durable_evidence"]["outbox"] = []
+    _correlation_checks(report)
+    assert report["checks"]["task_claim_lease_fence_correlation"]["pass"] is False
+    assert (
+        report["checks"]["outbox_domain_event_correlation_and_ordering"]["pass"]
+        is False
+    )
+
+
+def test_c7_redaction_failure_is_never_accepted() -> None:
+    report = _c7_correlation_report()
+    report.update(
+        {
+            "artifacts": [],
+            "durable_evidence": {
+                **report["durable_evidence"],
+                "revisions": [],
+                "approvals": [],
+            },
+            "current_revision_id": None,
+            "episode_state": "READY_FOR_PRODUCTION",
+            "run_status": "COMPLETED",
+            "redaction_safe": False,
+        }
+    )
+    with pytest.raises(SliceError, match="redaction_safe"):
+        assert_report(report)

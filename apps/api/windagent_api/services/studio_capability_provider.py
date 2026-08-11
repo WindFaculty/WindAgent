@@ -1,25 +1,18 @@
-"""
-Real runtime capability probe for /api/v3/studio (Plan C1).
-
-Implements ``RuntimeCapabilityPort`` by observing the actual API composition:
-database manager, durable queue adapter, worker heartbeat query, provider
-registry, and the OrchestratorService Studio seam. No fake/mock fallback:
-a component that is not composed or not reporting healthy is reported
-UNAVAILABLE/DEGRADED with an honest reason. Plan A deepens individual probes
-(A3 persistence, A4 orchestration seam, A5 worker runtime, A6 model route);
-this provider only ever reports what the API process can observe today.
-"""
+"""Worker-attested runtime capability provider for the Studio V3 API."""
 
 from __future__ import annotations
 
 import logging
 import os
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, List
 
+from windagent_core.config.certification import certification_mode_enabled
 from windagent_core.contracts.studio.capabilities import (
     CapabilityStatus,
     RuntimeCapability,
     RuntimeCapabilityProfile,
+    WorkerRuntimeAttestation,
 )
 
 if TYPE_CHECKING:
@@ -36,28 +29,35 @@ _QUEUE = "queue"
 _OUTBOX = "outbox"
 
 
+@dataclass
+class _WorkerEvidence:
+    active_count: int = 0
+    active_leases: int = 0
+    eligible: list[WorkerRuntimeAttestation] = field(default_factory=list)
+    rejected: list[dict[str, str]] = field(default_factory=list)
+
+
 class ApiRuntimeCapabilityProvider:
-    """Observes the live ApplicationContainer and reports typed capabilities."""
+    """Aggregate fresh durable worker attestations without trusting API env as worker truth."""
 
     def __init__(self, container: "ApplicationContainer") -> None:
         self.container = container
 
     async def get_capabilities(self) -> RuntimeCapabilityProfile:
-        worker = await self._worker()
-        model_route = self._model_route()
+        evidence = await self._worker_evidence()
         capabilities: List[RuntimeCapability] = [
             self._durable_db(),
             self._queue(),
             self._outbox(),
-            worker,
-            model_route,
+            self._worker(evidence),
+            self._model_route(evidence),
             self._studio_orchestration(),
-            self._story_engine(worker=worker, model_route=model_route),
+            self._story_engine(evidence),
         ]
         return RuntimeCapabilityProfile(
             capabilities=capabilities,
-            fail_closed_flags=self._fail_closed_flags(),
-            certification_mode=os.getenv("WINDAGENT_CERTIFICATION_MODE") == "1",
+            fail_closed_flags=self._fail_closed_flags(evidence),
+            certification_mode=certification_mode_enabled(),
         )
 
     def _durable_db(self) -> RuntimeCapability:
@@ -108,117 +108,138 @@ class ApiRuntimeCapabilityProvider:
             reason="outbox submission rides the SQL unit of work",
         )
 
-    async def _worker(self) -> RuntimeCapability:
-        query = self.container.worker_status_query
-        if query is None:
-            return RuntimeCapability(
-                name=_WORKER,
-                status=CapabilityStatus.UNAVAILABLE,
-                source="composition.ApplicationContainer.worker_status_query",
-                reason="worker heartbeat query not composed",
-            )
+    async def _worker_evidence(self) -> _WorkerEvidence:
+        repository = getattr(self.container, "worker_heartbeat_repo", None)
+        evidence = _WorkerEvidence()
+        if repository is None:
+            evidence.rejected.append({"worker_id": "", "reason": "heartbeat_repository_missing"})
+            return evidence
         try:
-            status = await query.get_status(stale_after_seconds=30)
+            workers = await repository.get_active_workers(stale_after_seconds=30)
         except Exception as ex:  # pragma: no cover - defensive probe
             logger.warning("worker capability probe failed: %s", ex)
-            return RuntimeCapability(
-                name=_WORKER,
-                status=CapabilityStatus.UNAVAILABLE,
-                source="storage.repositories.worker_status",
-                reason=f"heartbeat probe raised: {type(ex).__name__}",
+            evidence.rejected.append(
+                {"worker_id": "", "reason": f"heartbeat_probe_{type(ex).__name__}"}
             )
-        if status.available:
+            return evidence
+
+        evidence.active_count = len(workers)
+        evidence.active_leases = sum(worker.active_leases for worker in workers)
+        api_sha = os.getenv("WINDAGENT_SOURCE_SHA", "").strip()
+        expected_model = os.getenv("WINDAGENT_STUDIO_CANONICAL_MODEL", "").strip()
+        api_certification = certification_mode_enabled()
+        for worker in workers:
+            raw = worker.metadata.get("studio_runtime_attestation")
+            if not isinstance(raw, dict):
+                evidence.rejected.append(
+                    {"worker_id": worker.worker_id, "reason": "missing_studio_attestation"}
+                )
+                continue
+            try:
+                attestation = WorkerRuntimeAttestation.model_validate(raw)
+            except Exception as ex:
+                evidence.rejected.append(
+                    {
+                        "worker_id": worker.worker_id,
+                        "reason": f"invalid_studio_attestation_{type(ex).__name__}",
+                    }
+                )
+                continue
+            reason = ""
+            if attestation.worker_id != worker.worker_id:
+                reason = "worker_id_mismatch"
+            elif not attestation.is_story_eligible:
+                reason = "studio_runtime_ineligible"
+            elif api_certification and not attestation.certification_mode:
+                reason = "certification_mode_mismatch"
+            elif api_certification and (not api_sha or attestation.source_sha != api_sha):
+                reason = "source_sha_mismatch"
+            elif api_certification and (
+                not expected_model or attestation.canonical_model != expected_model
+            ):
+                reason = "canonical_model_mismatch"
+            if reason:
+                evidence.rejected.append({"worker_id": worker.worker_id, "reason": reason})
+            else:
+                evidence.eligible.append(attestation)
+        return evidence
+
+    @staticmethod
+    def _attestation_summary(attestation: WorkerRuntimeAttestation) -> dict:
+        return {
+            "worker_id": attestation.worker_id,
+            "source_sha": attestation.source_sha,
+            "process_version": attestation.process_version,
+            "certification_mode": attestation.certification_mode,
+            "runtime_adapter": attestation.runtime_adapter,
+            "completion_reconciler": attestation.completion_reconciler,
+            "completion_recovery": attestation.completion_recovery,
+            "handler_count": len(attestation.handler_names),
+            "handler_names": attestation.handler_names,
+            "handler_digest": attestation.handler_digest,
+            "model_port_type": attestation.model_port_type,
+            "canonical_model": attestation.canonical_model,
+            "provider_route_ready": attestation.provider_route_ready,
+            "durable_route_lock": attestation.durable_route_lock,
+            "endpoint_binding_identities": attestation.endpoint_binding_identities,
+            "fake_runtime": attestation.fake_runtime,
+        }
+
+    def _worker(self, evidence: _WorkerEvidence) -> RuntimeCapability:
+        metadata = {
+            "active_worker_count": evidence.active_count,
+            "active_leases": evidence.active_leases,
+            "eligible_studio_worker_count": len(evidence.eligible),
+            "eligible_studio_workers": [
+                self._attestation_summary(attestation) for attestation in evidence.eligible
+            ],
+            "rejected_workers": evidence.rejected,
+            "api_source_sha": os.getenv("WINDAGENT_SOURCE_SHA", "").strip() or None,
+        }
+        if evidence.active_count:
             return RuntimeCapability(
                 name=_WORKER,
                 status=CapabilityStatus.AVAILABLE,
-                source="storage.repositories.worker_status",
-                reason=f"{status.active_workers} active worker(s), {status.active_leases} lease(s)",
+                source="storage.worker_heartbeat.studio_runtime_attestation",
+                reason=(
+                    f"{evidence.active_count} fresh worker(s); "
+                    f"{len(evidence.eligible)} eligible Studio worker(s)"
+                ),
+                metadata=metadata,
             )
         return RuntimeCapability(
             name=_WORKER,
             status=CapabilityStatus.UNAVAILABLE,
-            source="storage.repositories.worker_status",
+            source="storage.worker_heartbeat.studio_runtime_attestation",
             reason="no active worker heartbeat; durable execution is not running",
+            metadata=metadata,
         )
 
-    def _model_route(self) -> RuntimeCapability:
-        route_enabled = os.getenv("WINDAGENT_STUDIO_MODEL_ROUTE", "").lower() in (
-            "1",
-            "true",
-            "yes",
-        )
-        if not route_enabled:
+    def _model_route(self, evidence: _WorkerEvidence) -> RuntimeCapability:
+        if not evidence.eligible:
             return RuntimeCapability(
                 name=_MODEL_ROUTE,
                 status=CapabilityStatus.UNAVAILABLE,
-                source="providers.registry.canonical_registry",
-                reason="WINDAGENT_STUDIO_MODEL_ROUTE is not enabled; real model execution fails closed",
+                source="worker.studio_runtime_attestation",
+                reason="no eligible worker attests a real durable provider route",
+                metadata={"eligible_studio_worker_count": 0},
             )
-        registry = self.container.provider_registry
-        if registry is None:
-            return RuntimeCapability(
-                name=_MODEL_ROUTE,
-                status=CapabilityStatus.UNAVAILABLE,
-                source="composition.ApplicationContainer.provider_registry",
-                reason="provider registry not composed",
-            )
-        canonical_model = os.getenv("WINDAGENT_STUDIO_CANONICAL_MODEL", "").strip()
-        durable = bool(getattr(registry, "is_durable", False))
-        if not canonical_model:
-            return RuntimeCapability(
-                name=_MODEL_ROUTE,
-                status=CapabilityStatus.DEGRADED,
-                source="providers.registry.canonical_registry",
-                reason="registry composed but no certification canonical model is selected",
-                metadata={"registry_durable": durable},
-            )
-        resolver = getattr(registry, "get_exact_equivalent_endpoints", None)
-        if resolver is None:
-            return RuntimeCapability(
-                name=_MODEL_ROUTE,
-                status=CapabilityStatus.UNAVAILABLE,
-                source="providers.registry.canonical_registry",
-                reason="registry cannot resolve exact provider bindings",
-                metadata={
-                    "registry_durable": durable,
-                    "canonical_model": canonical_model,
-                },
-            )
-        try:
-            bindings = list(resolver(canonical_model))
-        except Exception as ex:  # pragma: no cover - defensive probe
-            logger.warning("model route capability probe failed: %s", ex)
-            return RuntimeCapability(
-                name=_MODEL_ROUTE,
-                status=CapabilityStatus.UNAVAILABLE,
-                source="providers.registry.canonical_registry",
-                reason=f"provider binding lookup raised: {type(ex).__name__}",
-                metadata={
-                    "registry_durable": durable,
-                    "canonical_model": canonical_model,
-                },
-            )
-        if not bindings:
-            return RuntimeCapability(
-                name=_MODEL_ROUTE,
-                status=CapabilityStatus.UNAVAILABLE,
-                source="providers.registry.canonical_registry",
-                reason="no enabled exact-revision provider binding for canonical model",
-                metadata={
-                    "registry_durable": durable,
-                    "canonical_model": canonical_model,
-                    "binding_count": 0,
-                },
-            )
+        identities = [
+            identity
+            for attestation in evidence.eligible
+            for identity in attestation.endpoint_binding_identities
+        ]
         return RuntimeCapability(
             name=_MODEL_ROUTE,
             status=CapabilityStatus.AVAILABLE,
-            source="providers.registry.canonical_registry",
-            reason="durable registry resolved enabled exact-revision provider binding(s)",
+            source="worker.studio_runtime_attestation",
+            reason="eligible worker attests a durable route and exact provider binding",
             metadata={
-                "registry_durable": durable,
-                "canonical_model": canonical_model,
-                "binding_count": len(bindings),
+                "canonical_models": sorted(
+                    {attestation.canonical_model for attestation in evidence.eligible}
+                ),
+                "binding_count": len(identities),
+                "endpoint_binding_identities": identities,
             },
         )
 
@@ -243,63 +264,47 @@ class ApiRuntimeCapabilityProvider:
             name=_STUDIO_ORCHESTRATION,
             status=CapabilityStatus.UNAVAILABLE,
             source="orchestration.orchestrator_service.studio_run_extension",
-            reason="Studio run authority awaits Plan A A4 handoff; V3 commands fail closed",
+            reason="Studio run authority seam is not wired; V3 commands fail closed",
         )
 
-    def _story_engine(
-        self,
-        *,
-        worker: RuntimeCapability,
-        model_route: RuntimeCapability,
-    ) -> RuntimeCapability:
-        runtime_enabled = os.getenv("WINDAGENT_STUDIO_RUNTIME", "").lower() in (
-            "1",
-            "true",
-            "yes",
-        )
-        if not runtime_enabled:
+    @staticmethod
+    def _story_engine(evidence: _WorkerEvidence) -> RuntimeCapability:
+        if not evidence.eligible:
             return RuntimeCapability(
                 name=_STORY_ENGINE,
                 status=CapabilityStatus.UNAVAILABLE,
-                source="worker story handlers",
-                reason="WINDAGENT_STUDIO_RUNTIME is not enabled for this runtime profile",
-            )
-        if worker.status != CapabilityStatus.AVAILABLE:
-            return RuntimeCapability(
-                name=_STORY_ENGINE,
-                status=CapabilityStatus.UNAVAILABLE,
-                source="worker story handlers",
-                reason="no live durable worker heartbeat for Story task execution",
-            )
-        if model_route.status != CapabilityStatus.AVAILABLE:
-            return RuntimeCapability(
-                name=_STORY_ENGINE,
-                status=CapabilityStatus.UNAVAILABLE,
-                source="worker story handlers",
-                reason="real model route is unavailable; Story execution fails closed",
+                source="worker.studio_runtime_attestation",
+                reason="no fresh eligible worker attests the complete Story runtime",
+                metadata={"rejected_workers": evidence.rejected},
             )
         return RuntimeCapability(
             name=_STORY_ENGINE,
             status=CapabilityStatus.AVAILABLE,
-            source="worker story handlers",
-            reason="Studio runtime enabled with a live durable worker and real model binding",
+            source="worker.studio_runtime_attestation",
+            reason="fresh eligible worker attests the complete Story runtime",
+            metadata={
+                "worker_ids": [attestation.worker_id for attestation in evidence.eligible],
+                "handler_digests": [
+                    attestation.handler_digest for attestation in evidence.eligible
+                ],
+            },
         )
 
     @staticmethod
-    def _fail_closed_flags() -> List[str]:
+    def _fail_closed_flags(evidence: _WorkerEvidence) -> List[str]:
         """Report unsafe certification composition without exposing secrets."""
 
-        if os.getenv("WINDAGENT_CERTIFICATION_MODE") != "1":
+        if not certification_mode_enabled():
             return []
         flags: List[str] = []
         if os.getenv("WINDAGENT_FAKE_RUNTIME", "").lower() in ("1", "true", "yes"):
             flags.append("fake_runtime_active")
         if os.getenv("WINDAGENT_MODEL_BACKEND", "").lower() in ("mock", "fake", "fixture"):
             flags.append("non_real_model_backend_active")
-        if os.getenv("WINDAGENT_STUDIO_RUNTIME", "").lower() in ("1", "true", "yes") and os.getenv(
-            "WINDAGENT_STUDIO_MODEL_ROUTE", ""
-        ).lower() not in ("1", "true", "yes"):
-            flags.append("studio_model_route_disabled")
+        if not evidence.eligible:
+            flags.append("no_eligible_studio_worker")
+        if any(item["reason"] == "source_sha_mismatch" for item in evidence.rejected):
+            flags.append("worker_source_sha_mismatch")
         return flags
 
 

@@ -83,6 +83,25 @@ def test_review_weak_score_creates_warning_finding():
     assert age_fit.score == 0.4
 
 
+def test_review_policy_threshold_creates_genuine_blocking_finding():
+    result = _run(
+        _review_service(_weak_response()).generate(
+            GOLDEN_DRAFT,
+            quality_threshold=0.8,
+        )
+    )
+    assert result.report.verdict == "REVIEW_REQUIRED"
+    finding = next(
+        f
+        for f in result.report.blocking_findings
+        if f.code == "QUALITY_THRESHOLD_VIOLATION" and f.dimension == "age_fit"
+    )
+    assert finding.source == "model"
+    assert finding.threshold == 0.8
+    assert finding.actual_score == 0.4
+    assert finding.provenance
+
+
 def test_review_blocking_deterministic_finding_requires_review():
     from windagent_core.domain.story.screenplay import ScreenplayDraft
 

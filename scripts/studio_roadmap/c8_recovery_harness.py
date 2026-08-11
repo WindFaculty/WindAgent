@@ -15,10 +15,7 @@ import json
 import os
 import socket
 import sqlite3
-import subprocess
-import sys
 import time
-from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable, Dict, Iterable, List, Optional
 from urllib.parse import urlsplit
@@ -33,6 +30,7 @@ from scripts.studio_roadmap.c7_slice_harness import (
     _request,
     utc_now_iso,
 )
+from scripts.studio_roadmap.certification_launcher import CertificationLauncher
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 TERMINAL_RUN_STATES = {"COMPLETED", "FAILED", "CANCELLED"}
@@ -70,122 +68,63 @@ def _redact_fence(token: Optional[str]) -> Optional[str]:
     return f"sha256:{hashlib.sha256(token.encode()).hexdigest()[:16]}"
 
 
-@dataclass
 class ManagedTopology:
     """Launch and stop only certification-owned API/worker subprocesses."""
 
-    db_url: str
-    api_base: str = "http://127.0.0.1:8878"
-    log_dir: Path = REPO_ROOT / ".tmp" / "studio-c8"
-    api_process: Optional[subprocess.Popen] = field(default=None, init=False)
-    worker_process: Optional[subprocess.Popen] = field(default=None, init=False)
-    _handles: List[Any] = field(default_factory=list, init=False)
-    process_timeline: List[Dict[str, Any]] = field(default_factory=list, init=False)
-
-    def _environment(self) -> Dict[str, str]:
-        env = os.environ.copy()
-        env.update(
-            {
-                "WINDAGENT_DATABASE_URL": self.db_url,
-                "WINDAGENT_CERTIFICATION_MODE": "1",
-                "WINDAGENT_STUDIO_RUNTIME": "1",
-                "WINDAGENT_STUDIO_MODEL_ROUTE": "1",
-                "WINDAGENT_STUDIO_CANONICAL_MODEL": CANONICAL_MODEL,
-                "PYTHONUNBUFFERED": "1",
-            }
+    def __init__(
+        self,
+        db_url: str,
+        api_base: str = "http://127.0.0.1:8878",
+        log_dir: Path = REPO_ROOT / ".tmp" / "studio-c8",
+    ) -> None:
+        self.db_url = db_url
+        self.api_base = api_base
+        self.log_dir = log_dir
+        self.process_timeline: List[Dict[str, Any]] = []
+        self._launcher = CertificationLauncher(
+            db_url=db_url,
+            api_base=api_base,
+            canonical_model=CANONICAL_MODEL,
+            log_dir=log_dir,
         )
-        for unsafe in ("WINDAGENT_FAKE_RUNTIME", "WINDAGENT_MODEL_BACKEND"):
-            env.pop(unsafe, None)
-        return env
 
-    def _log_handle(self, name: str):
-        self.log_dir.mkdir(parents=True, exist_ok=True)
-        handle = (self.log_dir / f"{name}.log").open("a", encoding="utf-8")
-        self._handles.append(handle)
-        return handle
+    def _pid(self, name: str) -> Optional[int]:
+        return self._launcher.pid(name)
 
     def start_api(self) -> None:
-        if self.api_process and self.api_process.poll() is None:
+        if self._pid("api") is not None:
             return
-        parsed = urlsplit(self.api_base)
-        log = self._log_handle("api")
-        self.api_process = subprocess.Popen(
-            [
-                sys.executable,
-                "-m",
-                "uvicorn",
-                "windagent_api.main:app",
-                "--host",
-                parsed.hostname or "127.0.0.1",
-                "--port",
-                str(parsed.port or 8878),
-            ],
-            cwd=REPO_ROOT,
-            env=self._environment(),
-            stdout=log,
-            stderr=subprocess.STDOUT,
-        )
-        self.process_timeline.append({"at": utc_now_iso(), "action": "api.started", "pid": self.api_process.pid})
-        _wait_for(
-            lambda: _get(self.api_base, "/api/v3/studio/capabilities")[0] == 200,
-            timeout=60,
-            interval=0.5,
-            label="managed API readiness",
+        self._launcher.start_api()
+        self.process_timeline.append(
+            {"at": utc_now_iso(), "action": "api.started", "pid": self._pid("api")}
         )
 
     def start_worker(self) -> None:
-        if self.worker_process and self.worker_process.poll() is None:
+        if self._pid("worker") is not None:
             return
-        log = self._log_handle("worker")
-        self.worker_process = subprocess.Popen(
-            [sys.executable, "-m", "windagent_worker"],
-            cwd=REPO_ROOT,
-            env=self._environment(),
-            stdout=log,
-            stderr=subprocess.STDOUT,
-        )
+        self._launcher.start_worker()
         self.process_timeline.append(
-            {"at": utc_now_iso(), "action": "worker.started", "pid": self.worker_process.pid}
+            {"at": utc_now_iso(), "action": "worker.started", "pid": self._pid("worker")}
         )
-
-    @staticmethod
-    def _stop(process: Optional[subprocess.Popen], *, force: bool) -> None:
-        if process is None or process.poll() is not None:
-            return
-        if force:
-            process.kill()
-        else:
-            process.terminate()
-        try:
-            process.wait(timeout=15)
-        except subprocess.TimeoutExpired:
-            process.kill()
-            process.wait(timeout=10)
 
     def stop_api(self) -> None:
-        if self.api_process and self.api_process.poll() is None:
+        pid = self._pid("api")
+        if pid is not None:
             self.process_timeline.append(
-                {"at": utc_now_iso(), "action": "api.stopped", "pid": self.api_process.pid}
+                {"at": utc_now_iso(), "action": "api.stopped", "pid": pid}
             )
-        self._stop(self.api_process, force=False)
-        self.api_process = None
+        self._launcher.stop("api")
 
     def kill_worker(self) -> None:
-        if self.worker_process and self.worker_process.poll() is None:
+        pid = self._pid("worker")
+        if pid is not None:
             self.process_timeline.append(
-                {"at": utc_now_iso(), "action": "worker.killed", "pid": self.worker_process.pid}
+                {"at": utc_now_iso(), "action": "worker.killed", "pid": pid}
             )
-        self._stop(self.worker_process, force=True)
-        self.worker_process = None
+        self._launcher.stop("worker", force=True)
 
     def close(self) -> None:
-        self._stop(self.worker_process, force=False)
-        self._stop(self.api_process, force=False)
-        self.worker_process = None
-        self.api_process = None
-        for handle in self._handles:
-            handle.close()
-        self._handles.clear()
+        self._launcher.stop_all()
 
 
 def _send_and_drop_response(api_base: str, path: str, body: dict, idem: str) -> None:
@@ -346,7 +285,11 @@ def _approve(
             "reason": reason,
             "expected_optimistic_version": revision["optimistic_version"],
         },
-        idem=_idem(f"c8-approve-{checkpoint}-{episode_id}"),
+        idem=_idem(
+            "c8-approve-"
+            f"{checkpoint}-{episode_id}-{revision['revision_id']}-"
+            f"{decision}-{revision['optimistic_version']}"
+        ),
     )
 
 
@@ -383,12 +326,11 @@ def _exercise_stale_approval(api_base: str, episode_id: str) -> Dict[str, Any]:
 def _drive_to_terminal(
     api_base: str, series_id: str, episode_id: str, initial_run_id: str, *, timeout: int = 2700
 ) -> tuple[str, List[str]]:
-    """Drive remaining public approval commands, deriving revisions if review rejects."""
+    """Drive remaining public commands; quality revision stays in one run."""
 
     run_id = initial_run_id
     run_ids = [run_id]
     deadline = time.monotonic() + timeout
-    revision_attempt = 1
     while time.monotonic() < deadline:
         status, ep = _get(api_base, f"/api/v3/studio/episodes/{episode_id}")
         if status != 200:
@@ -400,43 +342,11 @@ def _drive_to_terminal(
         run_status = run.get("status")
         if run_status == "COMPLETED":
             return run_id, run_ids
-        if run_status in {"FAILED", "CANCELLED"}:
-            if revision_attempt >= 3:
-                raise SliceError(f"recovery run failed after {revision_attempt} attempts")
-            current = _revision(ep)
-            derived_status, derived = _request(
-                api_base,
-                "POST",
-                f"/api/v3/studio/episodes/{episode_id}/revisions",
-                {
-                    "episode_id": episode_id,
-                    "series_id": series_id,
-                    "parent_revision_id": current["revision_id"],
-                    "new_content_hash": hashlib.sha256(
-                        f"c8-revision:{episode_id}:{revision_attempt + 1}".encode()
-                    ).hexdigest(),
-                    "actor": "certification",
-                    "invalidation_intent": "REVISION",
-                    "summary": "Real review finding requires a new immutable revision",
-                    "expected_optimistic_version": current["optimistic_version"],
-                },
-                idem=_idem(f"c8-derive-{episode_id}-{revision_attempt}"),
+        if run_status in {"FAILED", "CANCELLED", "REVISION_REQUIRED"}:
+            raise SliceError(
+                f"recovery run reached non-success terminal state {run_status}; "
+                "quality revision must complete inside the original run"
             )
-            if derived_status != 201:
-                raise SliceError(f"revision derivation failed: {derived_status} {derived}")
-            revision_attempt += 1
-            start_status, started = _request(
-                api_base,
-                "POST",
-                f"/api/v3/studio/episodes/{episode_id}/runs",
-                {},
-                idem=_idem(f"c8-run-{episode_id}-{revision_attempt}"),
-            )
-            if start_status != 202:
-                raise SliceError(f"replacement run failed: {start_status} {started}")
-            run_id = started["run_id"]
-            run_ids.append(run_id)
-            continue
         if awaiting:
             current = _revision(ep)
             if awaiting == "IDEA":

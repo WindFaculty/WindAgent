@@ -40,6 +40,9 @@ async def select_idea(
         "episode_id": str(result.episode_id),
         "candidate_id": result.candidate_id,
         "revision_id": str(result.revision_id),
+        "content_hash": result.content_hash,
+        "optimistic_version": result.optimistic_version,
+        "replayed": result.replayed,
     }
 
 

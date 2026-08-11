@@ -16,7 +16,6 @@ from typing import Any, Dict, List, Optional
 import asyncio
 from windagent_core.contracts.workers import WorkerHeartbeat, WorkerHealth
 from windagent_core.domain.types import WorkerId, RuntimeRunId, TaskId, EventId
-from windagent_core.domain.lifecycle import TaskState, TaskLifecycle, utc_now
 from windagent_core.events.envelope import EventEnvelope
 from windagent_core.events.catalog import EventCatalog
 from windagent_core.contracts.execution import ExecutionRequest, RuntimeStatusEnum
@@ -66,6 +65,9 @@ class ProductionWorker:
         )
         self.studio_recovery = studio_recovery or (
             worker_container.studio_recovery if worker_container else None
+        )
+        self.studio_capability_probe = (
+            worker_container.studio_capability_probe if worker_container else None
         )
         self._running = False
         self._ready = False
@@ -146,13 +148,25 @@ class ProductionWorker:
     async def record_heartbeat(self) -> None:
         """Records worker heartbeat into SQL repository and renews active task lease."""
         active_leases = 1 if self._current_task_id else 0
+        metadata: Dict[str, Any] = {"runtime_run_id": str(self.runtime_run_id)}
+        if self.studio_capability_probe is not None:
+            try:
+                attestation = await self.studio_capability_probe.get_attestation(
+                    worker_id=str(self.worker_id)
+                )
+                metadata["studio_runtime_attestation"] = attestation.model_dump(mode="json")
+            except Exception as ex:
+                logger.warning(
+                    "Studio capability attestation failed closed: %s", type(ex).__name__
+                )
+                metadata["studio_runtime_attestation_error"] = type(ex).__name__
         hb = WorkerHeartbeat(
             worker_id=str(self.worker_id),
             runtime_type="production_worker",
             health=WorkerHealth.HEALTHY,
             active_leases=active_leases,
             last_heartbeat_at=datetime.now(timezone.utc),
-            metadata={"runtime_run_id": str(self.runtime_run_id)},
+            metadata=metadata,
         )
         if self.heartbeat_repo is not None and hasattr(self.heartbeat_repo, "record_heartbeat"):
             try:
@@ -344,11 +358,52 @@ class ProductionWorker:
             self._current_fencing_token = None
             return {"status": "fencing_violation", "task_id": raw_tid, "error": str(err)}
 
+        # Canonical finalization authority is derived from the runtime status,
+        # never from the fact that dispatch returned. Studio tasks add a
+        # stronger contract check: a successful terminal write is forbidden
+        # until the payload conforms to StudioTaskResult.
+        studio_result = None
+        result_payload = dict(validated_result.result_data or {})
+        terminal_state = (
+            "completed"
+            if validated_result.status == RuntimeStatusEnum.COMPLETED
+            else "failed"
+        )
+        terminal_error = validated_result.error
+        if parameters.get("studio_envelope"):
+            try:
+                from windagent_core.contracts.studio.models import (
+                    StudioTaskResult,
+                    StudioTaskStatus,
+                )
+
+                studio_result = StudioTaskResult.model_validate(result_payload)
+                if studio_result.status != StudioTaskStatus.SUCCEEDED:
+                    terminal_state = "failed"
+                    terminal_error = studio_result.error
+            except Exception as ex:
+                terminal_state = "failed"
+                terminal_error = (
+                    "STUDIO_RESULT_INVALID: successful Studio finalization requires "
+                    f"StudioTaskResult ({type(ex).__name__})"
+                )
+                result_payload = {
+                    "error_code": "STUDIO_RESULT_INVALID",
+                    "error": terminal_error,
+                    "task_id": tid,
+                }
+
+        terminal_event = (
+            EventCatalog.TASK_COMPLETED
+            if terminal_state == "completed"
+            else EventCatalog.TASK_FAILED
+        )
+
         # Diagnostic emit: records intent in the in-memory observer list ONLY.
         # The durable terminal event is written atomically inside finalize_task_execution() below.
         self.emit_event(
-            EventCatalog.TASK_COMPLETED,
-            {"task_id": tid, "status": validated_result.status.value},
+            terminal_event,
+            {"task_id": tid, "status": terminal_state},
             aggregate_id=tid,
         )
 
@@ -374,16 +429,19 @@ class ProductionWorker:
                     lease_id=str(self._current_task_id),
                     fencing_token=fencing_token,
                     expected_task_version=expected_version,
-                    execution_result=dict(validated_result.result_data or {}),
+                    execution_result=result_payload,
                     result_artifacts=[],
                     terminal_event={
-                        "event_type": EventCatalog.TASK_COMPLETED.value if hasattr(EventCatalog.TASK_COMPLETED, "value") else "task_completed",
+                        "event_type": terminal_event.value
+                        if hasattr(terminal_event, "value")
+                        else terminal_event,
                         "task_id": tid,
-                        "status": validated_result.status.value,
+                        "status": terminal_state,
+                        "error": terminal_error,
                     },
                     attempt_id="att_1",
                     fencing_generation=1,
-                    terminal_state="completed",
+                    terminal_state=terminal_state,
                 )
                 fin_res = await uow.finalize_task_execution(req)
                 if fin_res.status != "COMPLETED":
@@ -392,9 +450,9 @@ class ProductionWorker:
             finalized_via_uow = True
             finalize_ms = max(0, int((datetime.now(timezone.utc) - tick_started).total_seconds() * 1000))
             task_metric["finalize_ms"] = finalize_ms
-            task_metric["status"] = validated_result.status.value
+            task_metric["status"] = terminal_state
             self.metrics["tasks"][tid] = task_metric
-            if validated_result.status.value == "failed":
+            if terminal_state == "failed":
                 self.metrics["totals"]["failed"] = self.metrics["totals"].get("failed", 0) + 1
             else:
                 self.metrics["totals"]["processed"] = self.metrics["totals"].get("processed", 0) + 1
@@ -402,13 +460,12 @@ class ProductionWorker:
             # Studio completion: advance the DAG ONLY through the reconciler.
             # A crash between the finalizer commit above and this call is
             # covered by StudioCompletionRecovery on worker start.
-            if self.studio_reconciler is not None and parameters.get("studio_envelope"):
+            if (
+                self.studio_reconciler is not None
+                and studio_result is not None
+                and terminal_state == "completed"
+            ):
                 try:
-                    from windagent_core.contracts.studio.models import StudioTaskResult
-
-                    studio_result = StudioTaskResult.model_validate(
-                        validated_result.result_data or {}
-                    )
                     await self.studio_reconciler.reconcile(studio_result)
                     task_metric["reconciled"] = True
                 except Exception as ex:
@@ -427,7 +484,10 @@ class ProductionWorker:
         self._current_task_id = None
         self._current_fencing_token = None
 
-        return {"status": "completed", "task_id": raw_tid, "processed": 1}
+        response = {"status": terminal_state, "task_id": raw_tid, "processed": 1}
+        if terminal_error:
+            response["error"] = terminal_error
+        return response
 
     async def noop_consumer_tick(self) -> dict:
         """Executes a single no-op tick for consumer verification."""

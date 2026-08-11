@@ -23,9 +23,9 @@ from __future__ import annotations
 
 import inspect
 import logging
-import os
 from typing import Any, Callable, Dict, List, Optional
 
+from windagent_core.config.certification import certification_mode_enabled
 from windagent_core.contracts.execution import (
     ExecutionHandle,
     ExecutionRequest,
@@ -74,7 +74,7 @@ _METRIC_SAFE_FIELDS = ("task_id", "task_type", "attempt", "status", "dag_node_id
 
 def certification_enabled() -> bool:
     """Certification mode rejects fake runtimes and fixture providers."""
-    return os.getenv("WIND_STUDIO_CERTIFICATION", "").lower() in ("1", "true", "yes")
+    return certification_mode_enabled()
 
 
 def is_studio_task(tool_name: str) -> bool:
@@ -489,7 +489,12 @@ class StudioRuntimeAdapter(ExecutionRuntimePort):
                 ),
             )
         elif task_type == "studio.story.review":
-            result = await handler.handle(inputs["ScreenplayDraft"])
+            result = await handler.handle(
+                inputs["ScreenplayDraft"],
+                review_iteration=int((envelope.payload or {}).get("review_iteration", 1)),
+                maximum_iterations=int((envelope.payload or {}).get("maximum_iterations", 3)),
+                quality_threshold=(envelope.payload or {}).get("quality_threshold"),
+            )
         elif task_type == "studio.story.revise":
             result = await handler.handle(
                 inputs["ScreenplayDraft"],
@@ -519,6 +524,22 @@ class StudioRuntimeAdapter(ExecutionRuntimePort):
                 prompt_version=getattr(provenance, "prompt_version", None),
                 prompt_hash=getattr(provenance, "prompt_hash", None),
                 provider_id=getattr(provenance, "provider", None),
+                model_id=getattr(provenance, "provider_model_id", None),
+                canonical_model_id=getattr(provenance, "canonical_model_id", None),
+                provider_model_id=getattr(provenance, "provider_model_id", None),
+                endpoint_id=getattr(provenance, "endpoint_id", None),
+                provider_binding_id=getattr(
+                    provenance, "provider_binding_id", None
+                ),
+                provider_attempt_id=getattr(
+                    provenance, "provider_attempt_id", None
+                ),
+                provider_request_id=getattr(
+                    provenance, "provider_request_id", None
+                ),
+                output_schema_contract=getattr(
+                    provenance, "output_schema_contract", None
+                ),
                 model_route_id=(
                     getattr(provenance, "route_lock_id", None) or usage.get("route_lock_id")
                 ),
@@ -569,6 +590,25 @@ class StudioRuntimeAdapter(ExecutionRuntimePort):
                 model_route_id=getattr(provenance, "model_route_id", None),
                 provider_id=provenance.provider_id if provenance else None,
                 model_id=provenance.model_id if provenance else None,
+                canonical_model_id=(
+                    provenance.canonical_model_id if provenance else None
+                ),
+                provider_model_id=(
+                    provenance.provider_model_id if provenance else None
+                ),
+                endpoint_id=provenance.endpoint_id if provenance else None,
+                provider_binding_id=(
+                    provenance.provider_binding_id if provenance else None
+                ),
+                provider_attempt_id=(
+                    provenance.provider_attempt_id if provenance else None
+                ),
+                provider_request_id=(
+                    provenance.provider_request_id if provenance else None
+                ),
+                output_schema_contract=(
+                    provenance.output_schema_contract if provenance else None
+                ),
                 created_by=f"worker:{self._worker_id}:task:{handle.step_run_id}:fence:{handle.fencing_token[:8]}",
                 content=content,
             )

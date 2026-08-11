@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -65,6 +65,13 @@ class StoryArtifactEnvelope(BaseModel):
     model_route_id: Optional[str] = None
     provider_id: Optional[str] = None
     model_id: Optional[str] = None
+    canonical_model_id: Optional[str] = None
+    provider_model_id: Optional[str] = None
+    endpoint_id: Optional[str] = None
+    provider_binding_id: Optional[str] = None
+    provider_attempt_id: Optional[str] = None
+    provider_request_id: Optional[str] = None
+    output_schema_contract: Optional[str] = None
     created_at: datetime = Field(default_factory=utc_now)
     created_by: str = Field(default_factory=lambda: "system")
     content: Any = Field(default_factory=dict)

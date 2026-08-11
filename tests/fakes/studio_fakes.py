@@ -153,6 +153,9 @@ class FakeStudioOrchestrator(_IdempotencyMixin):
         episode = self._episodes.get(str(command.episode_id))
         if episode is None:
             raise StudioNotFoundError("Episode does not exist.", details={"episode_id": str(command.episode_id)})
+        prior = self._idem.get(command.idempotency_key)
+        if prior is not None:
+            return self._replay(command, prior["result"])
         if command.expected_content_hash != self.idea_hash:
             raise StudioArtifactHashMismatchError(
                 "Artifact content hash does not match the expected canonical hash.",
@@ -172,10 +175,16 @@ class FakeStudioOrchestrator(_IdempotencyMixin):
                     "current_version": episode.optimistic_version,
                 },
             )
+        updated = episode.model_copy(
+            update={"optimistic_version": episode.optimistic_version + 1}
+        )
+        self._episodes[str(command.episode_id)] = updated
         result = SelectIdeaResult(
             episode_id=command.episode_id,
             candidate_id=command.candidate_id,
             revision_id=command.revision_id,
+            content_hash=self.idea_hash,
+            optimistic_version=updated.optimistic_version,
         )
         replayed = self._replay(command, result)
         self._selected[str(command.episode_id)] = command.candidate_id

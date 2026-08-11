@@ -67,6 +67,27 @@
     "model_id": {
       "type": ["string", "null"]
     },
+    "canonical_model_id": {
+      "type": ["string", "null"]
+    },
+    "provider_model_id": {
+      "type": ["string", "null"]
+    },
+    "endpoint_id": {
+      "type": ["string", "null"]
+    },
+    "provider_binding_id": {
+      "type": ["string", "null"]
+    },
+    "provider_attempt_id": {
+      "type": ["string", "null"]
+    },
+    "provider_request_id": {
+      "type": ["string", "null"]
+    },
+    "output_schema_contract": {
+      "type": ["string", "null"]
+    },
     "status": {
       "type": "string",
       "enum": ["DRAFT", "VALIDATED", "APPROVED", "SUPERSEDED"]

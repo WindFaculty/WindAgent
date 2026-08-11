@@ -35,10 +35,6 @@ from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from typing import Any, AsyncIterator, Dict, List, Optional
 
-# Session factory is an opaque ``Any`` here on purpose: the orchestration layer
-# must stay ORM-free (architecture checker forbids sqlalchemy imports).
-AsyncSessionFactory = Any
-
 from windagent_core.contracts.studio.commands import (
     CreateEpisodeCommand,
     CreateEpisodeResult,
@@ -57,6 +53,7 @@ from windagent_core.contracts.studio.commands import (
 )
 from windagent_core.contracts.studio.errors import (
     StudioArtifactHashMismatchError,
+    StudioIdempotencyMismatchError,
     StudioNotFoundError,
     StudioStaleNodeError,
     StudioValidationError,
@@ -80,6 +77,7 @@ from windagent_core.contracts.studio.ports import (
     StudioRunOrchestratorPort,
     StudioTaskSubmissionPort,
 )
+from windagent_core.config.certification import certification_mode_enabled
 from windagent_core.domain.studio.approval import (
     ApprovalDecisionValue,
     ApprovalPolicy,
@@ -103,24 +101,31 @@ from windagent_core.domain.studio.series import SeriesProject
 from windagent_core.domain.story.ideation.models import IdeaCandidateSet, SelectedIdea
 from windagent_core.domain.story.ids import (
     LockedScreenplayReceiptId,
-    ScreenplayDraftId,
     SelectedIdeaId,
 )
-from windagent_core.domain.story.review.models import LockedScreenplayReceipt
+from windagent_core.domain.story.review.models import LockedScreenplayReceipt, ReviewReport
 from windagent_core.domain.story.screenplay import ScreenplayDraft
+from windagent_core.domain.story.validation import ValidationSeverity
 from windagent_core.events.studio import StudioEventCatalog, StudioEventEnvelope
 from windagent_orchestration.studio.dag import (
-    NODE_LOCK,
+    NODE_REVIEW,
+    NODE_REVIEW_REVISED,
+    NODE_REVISE,
     build_story_dag,
     dependencies_terminal,
     initial_node_states,
 )
-from windagent_storage.studio.run_nodes import SqlStudioRunNodeRepository
 from windagent_storage.unit_of_work.studio_uow import StudioUnitOfWork
+
+# Session factory is an opaque ``Any`` here on purpose: the orchestration layer
+# must stay ORM-free (architecture checker forbids sqlalchemy imports).
+AsyncSessionFactory = Any
 
 DEFAULT_APPROVAL_POLICY_ID = "studio.default"
 DEFAULT_RETRY_BUDGET = 3
-RUN_TERMINAL_STATUSES = frozenset({"COMPLETED", "FAILED", "CANCELLED"})
+RUN_TERMINAL_STATUSES = frozenset(
+    {"COMPLETED", "FAILED", "CANCELLED", "REVISION_REQUIRED"}
+)
 
 
 def utc_now() -> datetime:
@@ -363,6 +368,34 @@ class StudioRunService(StudioRunOrchestratorPort):
 
     async def select_idea(self, command: SelectIdeaCommand) -> SelectIdeaResult:
         async with self._uow() as uow:
+            existing = await uow.revisions.get(command.revision_id)
+            if existing is None:
+                raise StudioNotFoundError(
+                    f"Revision {command.revision_id!s} does not exist.",
+                    details={"revision_id": str(command.revision_id)},
+                )
+            selection_key = existing.metadata.get("idea_selection_idempotency_key")
+            if selection_key == command.idempotency_key:
+                matches = (
+                    existing.metadata.get("selected_candidate_id") == command.candidate_id
+                    and existing.metadata.get("idea_selection_content_hash")
+                    == command.expected_content_hash
+                    and existing.metadata.get("idea_selection_base_version")
+                    == command.expected_optimistic_version
+                )
+                if not matches:
+                    raise StudioIdempotencyMismatchError(
+                        "Repeated idea-selection key used with a different request.",
+                        details={"idempotency_key": command.idempotency_key},
+                    )
+                return SelectIdeaResult(
+                    episode_id=command.episode_id,
+                    candidate_id=command.candidate_id,
+                    revision_id=command.revision_id,
+                    content_hash=existing.content_hash,
+                    optimistic_version=existing.optimistic_version,
+                    replayed=True,
+                )
             revision = await self._revision_for_approval(
                 uow, command.episode_id, command.revision_id, command.expected_optimistic_version
             )
@@ -380,6 +413,9 @@ class StudioRunService(StudioRunOrchestratorPort):
                     "metadata": {
                         **revision.metadata,
                         "selected_candidate_id": command.candidate_id,
+                        "idea_selection_idempotency_key": command.idempotency_key,
+                        "idea_selection_content_hash": command.expected_content_hash,
+                        "idea_selection_base_version": command.expected_optimistic_version,
                     },
                     "optimistic_version": revision.optimistic_version + 1,
                 }
@@ -397,6 +433,8 @@ class StudioRunService(StudioRunOrchestratorPort):
             episode_id=command.episode_id,
             candidate_id=command.candidate_id,
             revision_id=command.revision_id,
+            content_hash=updated.content_hash,
+            optimistic_version=updated.optimistic_version,
         )
 
     async def derive_revision(self, command: DeriveRevisionCommand) -> DeriveRevisionResult:
@@ -407,6 +445,28 @@ class StudioRunService(StudioRunOrchestratorPort):
                     f"Parent revision {command.parent_revision_id!s} does not exist.",
                     details={"revision_id": str(command.parent_revision_id)},
                 )
+            source_artifact: Optional[StoryArtifactEnvelope] = None
+            if certification_mode_enabled():
+                source_artifact = next(
+                    (
+                        artifact
+                        for artifact in await uow.artifacts.list_for_episode(
+                            command.episode_id
+                        )
+                        if artifact.artifact_type.value == "ScreenplayDraft"
+                        and artifact.content_hash == command.new_content_hash
+                    ),
+                    None,
+                )
+                if source_artifact is None:
+                    raise StudioValidationError(
+                        "Certification revision hash must bind a persisted "
+                        "canonical ScreenplayDraft artifact.",
+                        details={
+                            "episode_id": str(command.episode_id),
+                            "content_hash": command.new_content_hash,
+                        },
+                    )
             intent = (
                 StudioInvalidationIntent(command.invalidation_intent)
                 if command.invalidation_intent
@@ -423,6 +483,17 @@ class StudioRunService(StudioRunOrchestratorPort):
                 summary=command.summary,
                 expected_parent_version=command.expected_optimistic_version,
             )
+            if source_artifact is not None:
+                revision = revision.model_copy(
+                    update={
+                        "metadata": {
+                            **revision.metadata,
+                            "source_screenplay_artifact_id": str(
+                                source_artifact.artifact_id
+                            ),
+                        }
+                    }
+                )
             await uow.revisions.save(revision)
             # Full-DAG auto-drive (C7): a derived revision becomes the
             # episode's current revision so the next run regenerates under it.
@@ -485,6 +556,8 @@ class StudioRunService(StudioRunOrchestratorPort):
 
     async def record_approval(self, command: RecordApprovalCommand) -> RecordApprovalResult:
         approved = command.decision.upper() == ApprovalDecisionValue.APPROVED.value
+        submit_after_commit = approved
+        next_state: Optional[str] = None
         async with self._uow() as uow:
             episode = await uow.episodes.get(command.episode_id)
             if episode is None:
@@ -532,6 +605,16 @@ class StudioRunService(StudioRunOrchestratorPort):
                 submitted_artifact_hash=command.artifact_hash,
                 expected_optimistic_version=command.expected_optimistic_version,
             )
+            review_report: Optional[ReviewReport] = None
+            if command.checkpoint == ApprovalCheckpoint.SCREENPLAY.value:
+                review_report = await self._review_report_for_gate(uow, target)
+                if approved and not review_report.is_pass:
+                    raise StudioValidationError(
+                        "A screenplay with blocking review findings cannot be approved.",
+                        details={"review_report_id": str(review_report.report_id)},
+                    )
+                if not approved:
+                    self._require_policy_revision_finding(policy, review_report)
             await uow.approvals.record_decision(decision)
             if approved:
                 await uow.nodes.update_node(
@@ -552,18 +635,22 @@ class StudioRunService(StudioRunOrchestratorPort):
                         "actor": command.actor,
                     },
                 )
-                if command.checkpoint == ApprovalCheckpoint.SCREENPLAY.value:
-                    episode = self._episode_transition(episode, EpisodeState.LOCKED)
-                    await self._emit(
-                        uow,
-                        StudioEventCatalog.SCREENPLAY_LOCKED,
-                        run_id=run["run_id"],
-                        aggregate_id=str(command.episode_id),
-                        revision_ref=str(revision.revision_id),
-                        payload={},
-                    )
-                else:
-                    episode = self._episode_update(episode, awaiting_checkpoint=None)
+                episode = self._episode_update(episode, awaiting_checkpoint=None)
+                if target["dag_node_id"] == NODE_REVIEW:
+                    for branch_node_id in (NODE_REVISE, NODE_REVIEW_REVISED):
+                        branch = next(
+                            n for n in nodes if n["dag_node_id"] == branch_node_id
+                        )
+                        if branch["status"] == StudioNodeStatus.PENDING.value:
+                            await uow.nodes.update_node(
+                                run["run_id"],
+                                branch_node_id,
+                                expected_version=branch["version"],
+                                values={
+                                    "status": StudioNodeStatus.SKIPPED.value,
+                                    "error": "quality_revision_branch_not_required",
+                                },
+                            )
                 await uow.episodes.save(episode)
                 fresh_nodes = await uow.nodes.list(run["run_id"])
                 await self._advance_dependents(uow, run["run_id"], fresh_nodes)
@@ -573,7 +660,15 @@ class StudioRunService(StudioRunOrchestratorPort):
                     run["run_id"],
                     target["dag_node_id"],
                     expected_version=target["version"],
-                    values={"status": StudioNodeStatus.FAILED.value, "error": command.reason},
+                    values={
+                        "status": (
+                            StudioNodeStatus.SUCCEEDED.value
+                            if command.checkpoint
+                            == ApprovalCheckpoint.SCREENPLAY.value
+                            else StudioNodeStatus.FAILED.value
+                        ),
+                        "error": command.reason,
+                    },
                 )
                 await self._emit(
                     uow,
@@ -587,20 +682,131 @@ class StudioRunService(StudioRunOrchestratorPort):
                         "actor": command.actor,
                     },
                 )
-                await self._finish_run_failed(uow, run["run_id"], episode, command.reason)
+                if command.checkpoint != ApprovalCheckpoint.SCREENPLAY.value:
+                    await self._finish_run_failed(uow, run["run_id"], episode, command.reason)
+                    next_state = EpisodeState.FAILED.value
+                else:
+                    assert review_report is not None
+                    revising_state = (
+                        episode.state
+                        if episode.state == EpisodeState.REVISING
+                        else EpisodeStateMachine.transition(
+                            episode.state, EpisodeState.REVISING
+                        )
+                    )
+                    episode = self._episode_update(
+                        episode,
+                        state=revising_state,
+                        awaiting_checkpoint=None,
+                    )
+                    await uow.episodes.save(episode)
+                    next_state = EpisodeState.REVISING.value
+                    await self._emit(
+                        uow,
+                        StudioEventCatalog.STORY_REVISION_REQUESTED,
+                        run_id=run["run_id"],
+                        aggregate_id=str(command.episode_id),
+                        revision_ref=str(revision.revision_id),
+                        payload={
+                            "review_report_id": str(review_report.report_id),
+                            "draft_id": str(review_report.draft_id),
+                            "review_iteration": review_report.review_iteration,
+                            "finding_codes": [
+                                finding.code
+                                for finding in review_report.blocking_findings
+                            ],
+                            "reason": command.reason,
+                        },
+                    )
+                    if target["dag_node_id"] == NODE_REVIEW:
+                        fresh_nodes = await uow.nodes.list(run["run_id"])
+                        await self._advance_dependents(uow, run["run_id"], fresh_nodes)
+                        submit_after_commit = True
+                    else:
+                        await uow.runs.save(
+                            run["run_id"],
+                            series_id=run["series_id"],
+                            episode_id=run["episode_id"],
+                            dag=run["dag"],
+                            status="REVISION_REQUIRED",
+                            metadata={
+                                **run.get("metadata", {}),
+                                "revision_required": {
+                                    "review_report_id": str(review_report.report_id),
+                                    "review_iteration": review_report.review_iteration,
+                                    "reason": command.reason,
+                                },
+                            },
+                        )
                 await uow.commit()
-        if approved:
+        if submit_after_commit:
             await self._submit_runnable_nodes(run["run_id"])
         return RecordApprovalResult(
             episode_id=command.episode_id,
             checkpoint=command.checkpoint,
-            next_state=(
-                EpisodeState.LOCKED.value
-                if approved and command.checkpoint == ApprovalCheckpoint.SCREENPLAY.value
-                else None
+            next_state=next_state,
+            awaiting_approval=(
+                not approved
+                and command.checkpoint != ApprovalCheckpoint.SCREENPLAY.value
             ),
-            awaiting_approval=not approved,
         )
+
+    @staticmethod
+    async def _review_report_for_gate(
+        uow: StudioUnitOfWork, target: Dict[str, Any]
+    ) -> ReviewReport:
+        report_ref = next(
+            (
+                ref
+                for ref in target.get("output_artifact_refs", []) or []
+                if ref["artifact_type"] == "ReviewReport"
+            ),
+            None,
+        )
+        if report_ref is None:
+            raise StudioValidationError(
+                "A screenplay approval gate must reference its persisted ReviewReport."
+            )
+        artifact = await uow.artifacts.get(ArtifactId(report_ref["artifact_id"]))
+        if artifact is None:
+            raise StudioValidationError(
+                "The screenplay ReviewReport is missing.",
+                details={"artifact_id": str(report_ref["artifact_id"])},
+            )
+        report = ReviewReport.model_validate(artifact.content)
+        if artifact.content_hash != report_ref["content_hash"]:
+            raise StudioValidationError(
+                "The screenplay ReviewReport reference does not match persisted authority.",
+                details={"artifact_id": str(report_ref["artifact_id"])},
+            )
+        return report
+
+    @staticmethod
+    def _require_policy_revision_finding(
+        policy: ApprovalPolicy, report: ReviewReport
+    ) -> None:
+        threshold = policy.quality_threshold_for(ApprovalCheckpoint.SCREENPLAY)
+        qualifying = [
+            finding
+            for finding in report.findings
+            if finding.code == "QUALITY_THRESHOLD_VIOLATION"
+            and finding.severity == ValidationSeverity.BLOCKING
+            and finding.threshold == threshold
+            and finding.actual_score is not None
+            and threshold is not None
+            and finding.actual_score < threshold
+            and finding.source == "model"
+            and finding.provenance
+        ]
+        if report.verdict != "REVIEW_REQUIRED" or not qualifying:
+            raise StudioValidationError(
+                "Revision requires a genuine blocking policy-threshold finding.",
+                details={
+                    "review_report_id": str(report.report_id),
+                    "verdict": report.verdict,
+                    "policy_threshold": threshold,
+                },
+            )
 
     async def cancel_run(self, run_id: StudioRunId, actor: str, reason: str = "") -> Dict[str, Any]:
         async with self._uow() as uow:
@@ -742,9 +948,63 @@ class StudioRunService(StudioRunOrchestratorPort):
         payload: Dict[str, Any] = {}
         if task_type == StudioTaskType.BIBLE_GENERATE.value:
             input_refs = await self._inject_selected_idea(uow, run, input_refs)
+        elif task_type == StudioTaskType.REVIEW.value:
+            policy = await self._load_policy(uow)
+            payload = {
+                "quality_threshold": policy.quality_threshold_for(
+                    ApprovalCheckpoint.SCREENPLAY
+                ),
+                "maximum_iterations": policy.max_review_revision_iterations,
+                "review_iteration": (
+                    2 if node["dag_node_id"] == NODE_REVIEW_REVISED else 1
+                ),
+            }
+        elif task_type == StudioTaskType.REVISE.value:
+            input_refs = await self._inject_reviewed_draft(uow, run, input_refs)
         elif task_type == StudioTaskType.LOCK.value:
             input_refs, payload = await self._lock_inputs(uow, run, input_refs)
         return {"input_refs": input_refs, "payload": payload}
+
+    async def _inject_reviewed_draft(
+        self,
+        uow: StudioUnitOfWork,
+        run: Dict[str, Any],
+        input_refs: List[Dict[str, Any]],
+    ) -> List[Dict[str, Any]]:
+        """Bind revise to the exact draft named by its durable ReviewReport."""
+        report_ref = next(
+            (r for r in input_refs if r["artifact_type"] == "ReviewReport"), None
+        )
+        if report_ref is None:
+            return input_refs
+        report_artifact = await uow.artifacts.get(ArtifactId(report_ref["artifact_id"]))
+        if report_artifact is None:
+            return input_refs
+        try:
+            report = ReviewReport.model_validate(report_artifact.content)
+        except Exception:  # noqa: BLE001 -- malformed artifact fails closed in the worker
+            return input_refs
+        artifacts = await uow.artifacts.list_for_episode(EpisodeId(run["episode_id"]))
+        for artifact in artifacts:
+            artifact_type = getattr(artifact.artifact_type, "value", str(artifact.artifact_type))
+            if artifact_type != "ScreenplayDraft":
+                continue
+            try:
+                draft = ScreenplayDraft.model_validate(artifact.content)
+            except Exception:  # noqa: BLE001 -- skip unrelated malformed historical artifacts
+                continue
+            if draft.draft_id != report.draft_id:
+                continue
+            return [
+                *input_refs,
+                {
+                    "artifact_id": str(artifact.artifact_id),
+                    "artifact_type": "ScreenplayDraft",
+                    "content_hash": artifact.content_hash,
+                    "schema_version": artifact.schema_version,
+                },
+            ]
+        return input_refs
 
     async def _inject_selected_idea(
         self,
@@ -844,24 +1104,23 @@ class StudioRunService(StudioRunOrchestratorPort):
         the approval mode/policy; the worker's lock handler validates it and
         assembles the immutable package from the live lineage hashes.
         """
+        if not any(r["artifact_type"] == "ReviewReport" for r in input_refs):
+            nodes = await uow.nodes.list(run["run_id"])
+            initial_review = next(
+                (n for n in nodes if n["dag_node_id"] == NODE_REVIEW), None
+            )
+            if initial_review is not None:
+                input_refs = [
+                    *input_refs,
+                    *(
+                        initial_review.get("output_artifact_refs", [])
+                        or []
+                    ),
+                ]
+        input_refs = await self._inject_reviewed_draft(uow, run, input_refs)
         draft_ref = next(
             (r for r in input_refs if r["artifact_type"] == "ScreenplayDraft"), None
         )
-        if draft_ref is None:
-            nodes = await uow.nodes.list(run["run_id"])
-            by_id = {n["dag_node_id"]: n for n in nodes}
-            screenplay_node = by_id.get("screenplay.generate")
-            if screenplay_node is not None:
-                draft_ref = next(
-                    (
-                        r
-                        for r in screenplay_node.get("output_artifact_refs", []) or []
-                        if r["artifact_type"] == "ScreenplayDraft"
-                    ),
-                    None,
-                )
-                if draft_ref is not None:
-                    input_refs = [*input_refs, dict(draft_ref)]
         if draft_ref is None:
             return input_refs, {}
         draft_artifact = await uow.artifacts.get(ArtifactId(draft_ref["artifact_id"]))
@@ -1111,6 +1370,11 @@ class StudioCompletionReconciler:
     ) -> None:
         output_hashes = list(result.output_hashes)
         output_refs = [r.model_dump() for r in result.output_artifact_refs]
+        if node["task_type"] in {
+            StudioTaskType.SCREENPLAY_GENERATE.value,
+            StudioTaskType.REVISE.value,
+        }:
+            await self._bind_screenplay_revision(uow, run, node, output_refs)
         gate = bool(node.get("gate", False))
         checkpoint = node.get("checkpoint")
         if gate and checkpoint:
@@ -1144,6 +1408,7 @@ class StudioCompletionReconciler:
                 payload={"checkpoint": checkpoint, "dag_node_id": node["dag_node_id"]},
             )
         else:
+            checkpoint_episode: Optional[Episode] = None
             await uow.nodes.update_node(
                 run["run_id"],
                 node["dag_node_id"],
@@ -1157,10 +1422,31 @@ class StudioCompletionReconciler:
             if checkpoint:
                 episode = await uow.episodes.get(run["episode_id"])
                 if episode is not None:
-                    review_state = CHECKPOINT_TO_REVIEW_STATE[ApprovalCheckpoint(checkpoint)]
-                    if episode.state != review_state:
-                        episode = StudioRunService._episode_transition(episode, review_state)
-                        await uow.episodes.save(episode)
+                    checkpoint_episode = episode
+                    auto_screenplay_review = (
+                        node["task_type"] == StudioTaskType.REVIEW.value
+                        and checkpoint == ApprovalCheckpoint.SCREENPLAY.value
+                    )
+                    if not auto_screenplay_review:
+                        review_state = CHECKPOINT_TO_REVIEW_STATE[
+                            ApprovalCheckpoint(checkpoint)
+                        ]
+                        if episode.state != review_state:
+                            episode = StudioRunService._episode_transition(
+                                episode, review_state
+                            )
+                            await uow.episodes.save(episode)
+                        checkpoint_episode = episode
+            if (
+                node["task_type"] == StudioTaskType.REVIEW.value
+                and checkpoint == ApprovalCheckpoint.SCREENPLAY.value
+            ):
+                report = await StudioRunService._review_report_for_gate(
+                    uow, {"output_artifact_refs": output_refs}
+                )
+                await self._resolve_auto_review(
+                    uow, run, node, report, episode=checkpoint_episode
+                )
         await StudioRunService._emit(
             uow,
             StudioEventCatalog.TASK_COMPLETED,
@@ -1172,6 +1458,214 @@ class StudioCompletionReconciler:
                 "task_id": result.task_id,
                 "status": result.status.value,
                 "output_hashes": output_hashes,
+            },
+        )
+
+    async def _resolve_auto_review(
+        self,
+        uow: StudioUnitOfWork,
+        run: Dict[str, Any],
+        node: Dict[str, Any],
+        report: ReviewReport,
+        *,
+        episode: Optional[Episode],
+    ) -> None:
+        """Resolve an AUTO screenplay gate from its durable report."""
+        if report.is_pass:
+            if episode is None:
+                episode = await uow.episodes.get(EpisodeId(run["episode_id"]))
+            if episode is None:
+                raise StudioNotFoundError(
+                    "The reviewed screenplay episode no longer exists.",
+                    details={"episode_id": str(run["episode_id"])},
+                )
+            if episode.state != EpisodeState.SCREENPLAY_REVIEW:
+                episode = StudioRunService._episode_transition(
+                    episode, EpisodeState.SCREENPLAY_REVIEW
+                )
+                await uow.episodes.save(episode)
+            if node["dag_node_id"] == NODE_REVIEW:
+                nodes = await uow.nodes.list(run["run_id"])
+                for branch_node_id in (NODE_REVISE, NODE_REVIEW_REVISED):
+                    branch = next(
+                        n for n in nodes if n["dag_node_id"] == branch_node_id
+                    )
+                    if branch["status"] == StudioNodeStatus.PENDING.value:
+                        await uow.nodes.update_node(
+                            run["run_id"],
+                            branch_node_id,
+                            expected_version=branch["version"],
+                            values={
+                                "status": StudioNodeStatus.SKIPPED.value,
+                                "error": "quality_revision_branch_not_required",
+                            },
+                        )
+            return
+        policy = await uow.approvals.get_policy(self._policy_id)
+        if policy is None:
+            policy = ApprovalPolicy(policy_id=self._policy_id, policy_version="1")
+        StudioRunService._require_policy_revision_finding(policy, report)
+        if episode is None:
+            episode = await uow.episodes.get(EpisodeId(run["episode_id"]))
+        if episode is None:
+            raise StudioNotFoundError(
+                "The reviewed screenplay episode no longer exists.",
+                details={"episode_id": str(run["episode_id"])},
+            )
+        revising_state = (
+            episode.state
+            if episode.state == EpisodeState.REVISING
+            else EpisodeStateMachine.transition(episode.state, EpisodeState.REVISING)
+        )
+        episode = StudioRunService._episode_update(
+            episode,
+            state=revising_state,
+            awaiting_checkpoint=None,
+        )
+        await uow.episodes.save(episode)
+        await StudioRunService._emit(
+            uow,
+            StudioEventCatalog.STORY_REVISION_REQUESTED,
+            run_id=run["run_id"],
+            aggregate_id=str(run["episode_id"]),
+            revision_ref=run["dag"].get("revision_id"),
+            payload={
+                "review_report_id": str(report.report_id),
+                "draft_id": str(report.draft_id),
+                "review_iteration": report.review_iteration,
+                "finding_codes": [f.code for f in report.blocking_findings],
+                "decision": "AUTO_POLICY",
+            },
+        )
+        if node["dag_node_id"] == NODE_REVIEW_REVISED:
+            await uow.runs.save(
+                run["run_id"],
+                series_id=run["series_id"],
+                episode_id=run["episode_id"],
+                dag=run["dag"],
+                status="REVISION_REQUIRED",
+                metadata={
+                    **run.get("metadata", {}),
+                    "revision_required": {
+                        "review_report_id": str(report.report_id),
+                        "review_iteration": report.review_iteration,
+                        "reason": "AUTO_POLICY_THRESHOLD",
+                    },
+                },
+            )
+            run["status"] = "REVISION_REQUIRED"
+
+    async def _bind_screenplay_revision(
+        self,
+        uow: StudioUnitOfWork,
+        run: Dict[str, Any],
+        node: Dict[str, Any],
+        output_refs: List[Dict[str, Any]],
+    ) -> None:
+        """Make a persisted screenplay artifact the run's revision authority."""
+        draft_ref = next(
+            (r for r in output_refs if r["artifact_type"] == "ScreenplayDraft"),
+            None,
+        )
+        if draft_ref is None:
+            raise StudioValidationError(
+                "A successful screenplay task must persist a ScreenplayDraft artifact.",
+                details={"dag_node_id": node["dag_node_id"]},
+            )
+        draft_artifact = await uow.artifacts.get(ArtifactId(draft_ref["artifact_id"]))
+        if draft_artifact is None:
+            raise StudioValidationError(
+                "The screenplay revision source is missing.",
+                details={"artifact_id": str(draft_ref["artifact_id"])},
+            )
+        draft = ScreenplayDraft.model_validate(draft_artifact.content)
+        if draft_artifact.content_hash != draft_ref["content_hash"]:
+            raise StudioValidationError(
+                "The screenplay artifact reference does not match persisted authority.",
+                details={"artifact_id": str(draft_ref["artifact_id"])},
+            )
+        parent_id = run["dag"].get("revision_id")
+        parent = (
+            await uow.revisions.get(ProductionRevisionId(parent_id))
+            if parent_id
+            else None
+        )
+        if parent is None:
+            raise StudioNotFoundError(
+                "The run has no canonical parent revision for screenplay binding.",
+                details={"run_id": str(run["run_id"]), "revision_id": parent_id},
+            )
+        revised = node["task_type"] == StudioTaskType.REVISE.value
+        revision = StudioRevisionService.derive_revision(
+            parent=parent,
+            series_id=SeriesProjectId(run["series_id"]),
+            episode_id=EpisodeId(run["episode_id"]),
+            new_content_hash=draft_artifact.content_hash,
+            creator="orchestrator:screenplay-artifact",
+            actor="orchestrator:screenplay-artifact",
+            invalidation_intent=(
+                StudioInvalidationIntent.DOWNSTREAM if revised else None
+            ),
+            summary=(
+                "Revision produced from blocking review findings."
+                if revised
+                else "Initial screenplay artifact bound to production revision."
+            ),
+        ).model_copy(
+            update={
+                "metadata": {
+                    "source_screenplay_artifact_id": str(draft_artifact.artifact_id),
+                    "source_screenplay_draft_id": str(draft.draft_id),
+                    "source_dag_node_id": node["dag_node_id"],
+                    "source_output_artifact_ids": [
+                        str(ref["artifact_id"]) for ref in output_refs
+                    ],
+                }
+            }
+        )
+        await uow.revisions.save(revision)
+        episode = await uow.episodes.get(EpisodeId(run["episode_id"]))
+        if episode is None:
+            raise StudioNotFoundError(
+                "The screenplay run episode no longer exists.",
+                details={"episode_id": str(run["episode_id"])},
+            )
+        await uow.episodes.save(episode.attach_revision(revision.revision_id))
+        dag = {**run["dag"], "revision_id": str(revision.revision_id)}
+        metadata = {
+            **run.get("metadata", {}),
+            "revision_chain": [
+                *(run.get("metadata", {}).get("revision_chain", [])),
+                {
+                    "revision_id": str(revision.revision_id),
+                    "parent_revision_id": str(parent.revision_id),
+                    "content_hash": revision.content_hash,
+                    "source_artifact_id": str(draft_artifact.artifact_id),
+                    "dag_node_id": node["dag_node_id"],
+                },
+            ],
+        }
+        await uow.runs.save(
+            run["run_id"],
+            series_id=run["series_id"],
+            episode_id=run["episode_id"],
+            dag=dag,
+            status=run["status"],
+            metadata=metadata,
+        )
+        run["dag"] = dag
+        run["metadata"] = metadata
+        await StudioRunService._emit(
+            uow,
+            StudioEventCatalog.REVISION_DERIVED,
+            run_id=run["run_id"],
+            aggregate_id=str(run["episode_id"]),
+            revision_ref=str(revision.revision_id),
+            payload={
+                "parent_revision_id": str(parent.revision_id),
+                "source_artifact_id": str(draft_artifact.artifact_id),
+                "source_dag_node_id": node["dag_node_id"],
+                "content_hash": revision.content_hash,
             },
         )
 
@@ -1228,6 +1722,8 @@ class StudioCompletionReconciler:
         run: Dict[str, Any],
         nodes: List[Dict[str, Any]],
     ) -> None:
+        if run["status"] in RUN_TERMINAL_STATUSES:
+            return
         by_id = {n["dag_node_id"]: n for n in nodes}
         run_id = run["run_id"]
         for node in nodes:
@@ -1241,8 +1737,6 @@ class StudioCompletionReconciler:
                     expected_version=node["version"],
                     values={"status": StudioNodeStatus.RUNNABLE.value},
                 )
-        if run["status"] in RUN_TERMINAL_STATUSES:
-            return
         fresh = await uow.nodes.list(run_id)
         statuses = {n["status"] for n in fresh}
         episode = await uow.episodes.get(run["episode_id"])

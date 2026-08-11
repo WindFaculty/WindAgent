@@ -221,6 +221,7 @@ class ReviewService:
         world: Optional[WorldBible] = None,
         review_iteration: int = 1,
         maximum_iterations: int = DEFAULT_MAXIMUM_ITERATIONS,
+        quality_threshold: Optional[float] = None,
         route_lock_id: Optional[str] = None,
     ) -> ReviewResult:
         deterministic_report = validate_screenplay_draft(
@@ -261,21 +262,41 @@ class ReviewService:
         )
         data = result.data
 
+        applied_threshold = (
+            quality_threshold if quality_threshold is not None else DIMENSION_THRESHOLD
+        )
+        model_provenance = result.provenance.to_dict()
         for field, dimension in _MODEL_DIMENSIONS:
             score = float(data[field])
-            if score < DIMENSION_THRESHOLD:
+            if score < applied_threshold:
                 findings.append(ReviewFinding(
-                    code="MODEL_DIMENSION_SCORE",
-                    severity=ValidationSeverity.WARNING,
+                    code=(
+                        "QUALITY_THRESHOLD_VIOLATION"
+                        if quality_threshold is not None
+                        else "MODEL_DIMENSION_SCORE"
+                    ),
+                    severity=(
+                        ValidationSeverity.BLOCKING
+                        if quality_threshold is not None
+                        else ValidationSeverity.WARNING
+                    ),
                     location=f"dimensions/{dimension}",
-                    evidence=f"{dimension} score {score} below threshold {DIMENSION_THRESHOLD}",
+                    evidence=f"{dimension} score {score} below threshold {applied_threshold}",
                     remediation=_REMEDIATION_BY_CODE["MODEL_DIMENSION_SCORE"],
                     source="model",
                     dimension=dimension,
+                    threshold=applied_threshold,
+                    actual_score=score,
+                    provenance=model_provenance,
                 ))
 
         findings = aggregate_findings(findings)
-        dimensions = self._dimensions(findings, data)
+        dimensions = self._dimensions(
+            findings,
+            data,
+            quality_threshold=quality_threshold,
+            applied_threshold=applied_threshold,
+        )
 
         blocking = [f for f in findings if f.severity == ValidationSeverity.BLOCKING]
         warnings = [f for f in findings if f.severity == ValidationSeverity.WARNING]
@@ -296,7 +317,7 @@ class ReviewService:
             quality_summary=(
                 f"{len(findings)} findings ({len(blocking)} blocking, {len(warnings)} "
                 f"warnings); policy {REVIEW_POLICY_VERSION}, dimension threshold "
-                f"{DIMENSION_THRESHOLD}."
+                f"{applied_threshold}."
             ),
             maximum_iterations=maximum_iterations,
         )
@@ -313,7 +334,13 @@ class ReviewService:
         )
 
     @staticmethod
-    def _dimensions(findings: List[ReviewFinding], model_data: Dict[str, Any]) -> List[DimensionResult]:
+    def _dimensions(
+        findings: List[ReviewFinding],
+        model_data: Dict[str, Any],
+        *,
+        quality_threshold: Optional[float],
+        applied_threshold: float,
+    ) -> List[DimensionResult]:
         dimensions: List[DimensionResult] = []
         by_dimension: Dict[str, List[ReviewFinding]] = {}
         for finding in findings:
@@ -338,7 +365,7 @@ class ReviewService:
             dimensions.append(DimensionResult(
                 dimension=dimension,
                 score=score,
-                blocking=score < DIMENSION_THRESHOLD,
+                blocking=quality_threshold is not None and score < applied_threshold,
                 note="model-assisted (secondary)",
             ))
         return dimensions

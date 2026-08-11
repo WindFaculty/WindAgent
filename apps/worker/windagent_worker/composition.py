@@ -31,6 +31,11 @@ import logging
 import os
 from typing import Optional, Any
 
+from windagent_core.config.certification import (
+    certification_mode_conflict,
+    certification_mode_enabled,
+)
+from windagent_core.contracts.studio.capabilities import REQUIRED_STORY_TASK_HANDLERS
 from windagent_storage.database.connection import DatabaseManager
 from windagent_storage.orm.models import BaseORM
 from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork
@@ -53,6 +58,16 @@ from windagent_storage.repositories.worker_status import SqlWorkerHeartbeatRepos
 from windagent_worker.lease import DurableTaskLeaseManager
 
 logger = logging.getLogger("windagent.worker.composition")
+
+_TRUE_VALUES = frozenset({"1", "true", "yes", "on"})
+
+
+class CertificationPreflightError(RuntimeError):
+    """Worker composition cannot satisfy the certification profile."""
+
+
+def _env_enabled(name: str) -> bool:
+    return os.getenv(name, "").strip().lower() in _TRUE_VALUES
 
 
 def _load_ir_document(artifact_root: str, revision_id: str):
@@ -104,7 +119,9 @@ class WorkerContainer:
         self.db: Optional[DatabaseManager] = None
         self.uow_factory: Optional[Any] = None
         self.event_dispatcher: Optional[EventDispatcher] = None
+        self.task_queue: Optional[SqlDurableTaskQueue] = None
         self.lease_manager: Optional[DurableTaskLeaseManager] = None
+        self.heartbeat_repo: Optional[SqlWorkerHeartbeatRepository] = None
         self.orchestration_container: Optional[OrchestrationV2Container] = None
         self.task_manager: Optional[TaskManager] = None
         self.execution_registry: Optional[ExecutionRuntimeRegistry] = None
@@ -113,14 +130,15 @@ class WorkerContainer:
         self.workflow_registry: Optional[WorkflowRegistry] = None
         self.intelligence_pipeline: Optional[IntelligencePipeline] = None
         self.context_service: Optional[ContextService] = None
-        self.memory_service: Optional[MemoryService] = None
-        self.verification_service: Optional[VerificationService] = None
+        self.memory_service: Optional[MemoryQueryService] = None
+        self.verification_service: Optional[VerificationQueryService] = None
         self.outbox_publisher: Optional[OutboxEventPublisher] = None
         self.route_lock_service: Optional[RouteLockService] = None
         self.provider_execution_coordinator: Optional[Any] = None  # Plan A A6
         self.studio_route_lock_service: Optional[RouteLockService] = None  # Plan A A6
         self.studio_model_port: Optional[Any] = None  # Plan A A6 (guarded)
         self.studio_capability_probe: Optional[Any] = None  # Plan A A6 (guarded)
+        self.studio_endpoint_bindings: list[dict[str, Any]] = []
         self.studio_runtime: Optional[Any] = None  # Plan A A5 (guarded)
         self.studio_reconciler: Optional[Any] = None  # Plan A A5 (guarded)
         self.studio_recovery: Optional[Any] = None  # Plan A A5 (guarded)
@@ -154,6 +172,10 @@ class WorkerContainer:
             # Phase 1 (G1.1): canonical Alembic migration workflow.
             await self.db.upgrade_to_head(BaseORM.metadata)
         except Exception as ex:
+            if certification_mode_enabled():
+                raise CertificationPreflightError(
+                    f"Certification database migration failed: {type(ex).__name__}"
+                ) from ex
             logger.warning(f"Database migration warning: {ex}")
         
         self.uow_factory = self.db.session_factory
@@ -226,6 +248,8 @@ class WorkerContainer:
         # model-backed handlers fail closed with STUDIO_MODEL_PORT_UNAVAILABLE.
         if os.getenv("WINDAGENT_STUDIO_RUNTIME", "").lower() in ("1", "true", "yes"):
             self._register_studio_runtime()
+
+        self.validate_certification_preflight()
         
         # Outbox: Worker OWNS the outbox publisher - publishes events to message bus
         self.outbox_publisher = OutboxEventPublisher(
@@ -360,6 +384,65 @@ class WorkerContainer:
             raise RuntimeError("WorkerContainer is not initialized.")
         return SqlUnitOfWork(self.uow_factory)
 
+    def validate_certification_preflight(self) -> None:
+        """Fail startup unless the real Studio certification stack is composed."""
+
+        if not certification_mode_enabled():
+            return
+
+        missing: list[str] = []
+        if certification_mode_conflict():
+            missing.append("consistent certification flag")
+        if not _env_enabled("WINDAGENT_STUDIO_RUNTIME"):
+            missing.append("WINDAGENT_STUDIO_RUNTIME=1")
+        if not _env_enabled("WINDAGENT_STUDIO_MODEL_ROUTE"):
+            missing.append("WINDAGENT_STUDIO_MODEL_ROUTE=1")
+        if not os.getenv("WINDAGENT_STUDIO_CANONICAL_MODEL", "").strip():
+            missing.append("canonical model")
+        configured_db = os.getenv("WINDAGENT_DATABASE_URL", "").strip()
+        if not configured_db or ":memory:" in configured_db.lower():
+            missing.append("durable WINDAGENT_DATABASE_URL")
+        if self.db is None or self.uow_factory is None:
+            missing.append("durable DB")
+        if not isinstance(self.task_queue, SqlDurableTaskQueue):
+            missing.append("durable queue")
+        if type(self.studio_runtime).__name__ != "StudioRuntimeAdapter":
+            missing.append("StudioRuntimeAdapter")
+        try:
+            resolved = self.execution_registry.resolve_adapter(
+                "studio.story.idea.generate"
+            )
+            if resolved is not self.studio_runtime:
+                missing.append("registered studio capability")
+        except Exception:
+            missing.append("registered studio capability")
+        reconciler = getattr(self.studio_reconciler, "_reconciler", None)
+        if type(reconciler).__name__ != "StudioCompletionReconciler":
+            missing.append("StudioCompletionReconciler")
+        if type(self.studio_recovery).__name__ != "StudioCompletionRecovery":
+            missing.append("StudioCompletionRecovery")
+        if type(self.studio_model_port).__name__ != "RouteLockedModelPort":
+            missing.append("RouteLockedModelPort")
+        if self.studio_route_lock_service is None:
+            missing.append("durable route lock")
+        if self.provider_execution_coordinator is None:
+            missing.append("provider execution coordinator")
+        handlers = getattr(self.studio_runtime, "_handler_registry", {}) or {}
+        registered_handlers = {
+            getattr(task_type, "value", str(task_type)) for task_type in handlers
+        }
+        if not REQUIRED_STORY_TASK_HANDLERS <= registered_handlers:
+            missing.append("required story handlers")
+        if not self.studio_endpoint_bindings:
+            missing.append("enabled exact provider binding")
+        if _env_enabled("WINDAGENT_FAKE_RUNTIME"):
+            missing.append("fake runtime disabled")
+
+        if missing:
+            raise CertificationPreflightError(
+                "Certification worker preflight failed: " + ", ".join(missing)
+            )
+
     def _register_studio_provider_route(self, sync_factory, lock_repo, audit_repo, binding_repo) -> None:
         """Compose the real A6 provider adapter: coordinator + studio route lock.
 
@@ -398,6 +481,11 @@ class WorkerContainer:
             )
 
             canonical_model = os.getenv("WINDAGENT_STUDIO_CANONICAL_MODEL", "") or None
+            self.studio_endpoint_bindings = (
+                binding_repo.get_exact_equivalent_endpoints(canonical_model)
+                if canonical_model
+                else []
+            )
             self.studio_route_lock_service = RouteLockService(
                 ruleset=build_studio_ruleset(canonical_model),
                 lock_repository=lock_repo,
@@ -464,6 +552,11 @@ class WorkerContainer:
             coordinator=self.provider_execution_coordinator,
             handler_registry=HANDLER_REGISTRY,
             model_port=self.studio_model_port,
+            studio_runtime=studio_runtime,
+            completion_reconciler=getattr(self.studio_reconciler, "_reconciler", None),
+            completion_recovery=self.studio_recovery,
+            canonical_model=os.getenv("WINDAGENT_STUDIO_CANONICAL_MODEL", ""),
+            endpoint_bindings=self.studio_endpoint_bindings,
             fake_runtime_active=fake_active,
         )
         logger.info(

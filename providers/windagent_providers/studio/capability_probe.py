@@ -8,7 +8,7 @@ the registered Story engine handlers. Every entry carries source/reason/
 timestamp; nothing is invented — a component that is not composed or not
 reporting healthy is DEGRADED/UNAVAILABLE with an honest reason.
 
-The certification profile (``WIND_STUDIO_CERTIFICATION=1``) fails closed:
+The certification profile (``WINDAGENT_CERTIFICATION_MODE=1``) fails closed:
 fake runtime, fixture model port, non-durable model route, and missing story
 handlers are reported as ``fail_closed_flags``; ``is_fail_closed_ok`` is
 False while any flag is active. Flags are also reported outside certification
@@ -17,14 +17,18 @@ False while any flag is active. Flags are also reported outside certification
 
 from __future__ import annotations
 
+import hashlib
+import importlib.metadata
 import os
 import shutil
-from typing import Any, Dict, List, Optional
+from typing import Any, List, Optional
 
+from windagent_core.config.certification import certification_mode_enabled
 from windagent_core.contracts.studio.capabilities import (
     CapabilityStatus,
     RuntimeCapability,
     RuntimeCapabilityProfile,
+    WorkerRuntimeAttestation,
 )
 
 _BLENDER_ENV = "WINDAGENT_BLENDER_EXECUTABLE"
@@ -42,6 +46,11 @@ class WorkerRuntimeCapabilityProbe:
         coordinator: Any = None,
         handler_registry: Any = None,
         model_port: Any = None,
+        studio_runtime: Any = None,
+        completion_reconciler: Any = None,
+        completion_recovery: Any = None,
+        canonical_model: Optional[str] = None,
+        endpoint_bindings: Optional[List[dict[str, Any]]] = None,
         fake_runtime_active: bool = False,
         blender_executable_env: str = _BLENDER_ENV,
         certification_mode: Optional[bool] = None,
@@ -52,10 +61,15 @@ class WorkerRuntimeCapabilityProbe:
         self._coordinator = coordinator
         self._handler_registry = handler_registry
         self._model_port = model_port
+        self._studio_runtime = studio_runtime
+        self._completion_reconciler = completion_reconciler
+        self._completion_recovery = completion_recovery
+        self._canonical_model = canonical_model or ""
+        self._endpoint_bindings = endpoint_bindings or []
         self._fake_runtime_active = fake_runtime_active
         self._blender_executable_env = blender_executable_env
         self._certification_mode = (
-            os.getenv("WIND_STUDIO_CERTIFICATION", "").lower() in ("1", "true", "yes")
+            certification_mode_enabled()
             if certification_mode is None
             else certification_mode
         )
@@ -76,6 +90,53 @@ class WorkerRuntimeCapabilityProbe:
             capabilities=capabilities,
             fail_closed_flags=flags,
             certification_mode=self._certification_mode,
+        )
+
+    async def get_attestation(self, *, worker_id: str) -> WorkerRuntimeAttestation:
+        """Describe this worker's real Studio authority for durable heartbeat publication."""
+
+        profile = await self.get_capabilities()
+        handler_names = sorted(
+            getattr(task_type, "value", str(task_type))
+            for task_type in (self._handler_registry or {})
+        )
+        handler_digest = hashlib.sha256("\n".join(handler_names).encode()).hexdigest()
+        identities = [
+            {
+                "binding_id": str(binding.get("id") or ""),
+                "endpoint_id": str(binding.get("endpoint_id") or ""),
+                "provider_model_id": str(binding.get("provider_model_id") or ""),
+            }
+            for binding in self._endpoint_bindings
+            if binding.get("id") and binding.get("endpoint_id") and binding.get("provider_model_id")
+        ]
+        try:
+            process_version = importlib.metadata.version("windagent-worker")
+        except importlib.metadata.PackageNotFoundError:
+            process_version = "workspace"
+        return WorkerRuntimeAttestation(
+            worker_id=worker_id,
+            source_sha=os.getenv("WINDAGENT_SOURCE_SHA", "unknown"),
+            process_version=process_version,
+            certification_mode=self._certification_mode,
+            runtime_adapter=type(self._studio_runtime).__name__ if self._studio_runtime else "",
+            completion_reconciler=(
+                type(self._completion_reconciler).__name__
+                if self._completion_reconciler
+                else ""
+            ),
+            completion_recovery=(
+                type(self._completion_recovery).__name__ if self._completion_recovery else ""
+            ),
+            handler_names=handler_names,
+            handler_digest=handler_digest,
+            model_port_type=type(self._model_port).__name__ if self._model_port else "",
+            canonical_model=self._canonical_model,
+            provider_route_ready=bool(identities),
+            durable_route_lock=bool(getattr(self._route_lock_service, "is_durable", False)),
+            endpoint_binding_identities=identities,
+            fake_runtime=self._fake_runtime_active,
+            capability_profile=profile,
         )
 
     # -- per-capability probes ---------------------------------------------
@@ -223,7 +284,17 @@ class WorkerRuntimeCapabilityProbe:
             status=CapabilityStatus.AVAILABLE,
             source="windagent_intelligence.story.runtime_handlers.HANDLER_REGISTRY",
             reason=f"{count} frozen task handler(s) registered",
-            metadata={"handler_count": count},
+            metadata={
+                "handler_count": count,
+                "handler_digest": hashlib.sha256(
+                    "\n".join(
+                        sorted(
+                            getattr(task_type, "value", str(task_type))
+                            for task_type in registry
+                        )
+                    ).encode()
+                ).hexdigest(),
+            },
         )
 
     def _unreal(self) -> RuntimeCapability:

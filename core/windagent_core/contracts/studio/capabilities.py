@@ -16,6 +16,20 @@ from typing import Any, Dict, List
 from pydantic import BaseModel, ConfigDict, Field
 
 CAPABILITY_SCHEMA_VERSION = "studio.capability/v1"
+WORKER_ATTESTATION_SCHEMA_VERSION = "studio.worker-attestation/v1"
+REQUIRED_STORY_TASK_HANDLERS = frozenset(
+    {
+        "studio.story.idea.generate",
+        "studio.story.idea.evaluate",
+        "studio.story.bible.generate",
+        "studio.story.beats.generate",
+        "studio.story.outline.generate",
+        "studio.story.screenplay.generate",
+        "studio.story.review",
+        "studio.story.revise",
+        "studio.story.lock",
+    }
+)
 
 
 def utc_now() -> datetime:
@@ -81,11 +95,58 @@ class RuntimeCapabilityProfile(BaseModel):
         return self.model_dump(mode="json")
 
 
+class WorkerRuntimeAttestation(BaseModel):
+    """Redaction-safe statement of the runtime composed by one live worker."""
+
+    model_config = ConfigDict(frozen=True)
+
+    schema_version: str = WORKER_ATTESTATION_SCHEMA_VERSION
+    generated_at: datetime = Field(default_factory=utc_now)
+    worker_id: str = Field(min_length=1)
+    source_sha: str = Field(min_length=1)
+    process_version: str = Field(min_length=1)
+    certification_mode: bool = False
+    runtime_adapter: str = ""
+    completion_reconciler: str = ""
+    completion_recovery: str = ""
+    handler_names: List[str] = Field(default_factory=list)
+    handler_digest: str = ""
+    model_port_type: str = ""
+    canonical_model: str = ""
+    provider_route_ready: bool = False
+    durable_route_lock: bool = False
+    endpoint_binding_identities: List[Dict[str, str]] = Field(default_factory=list)
+    fake_runtime: bool = False
+    capability_profile: RuntimeCapabilityProfile
+
+    @property
+    def is_story_eligible(self) -> bool:
+        """True only for a fully composed, real Story execution authority."""
+
+        return (
+            self.runtime_adapter == "StudioRuntimeAdapter"
+            and self.completion_reconciler == "StudioCompletionReconciler"
+            and self.completion_recovery == "StudioCompletionRecovery"
+            and REQUIRED_STORY_TASK_HANDLERS <= set(self.handler_names)
+            and bool(self.handler_digest)
+            and self.model_port_type == "RouteLockedModelPort"
+            and bool(self.canonical_model)
+            and self.provider_route_ready
+            and self.durable_route_lock
+            and bool(self.endpoint_binding_identities)
+            and not self.fake_runtime
+            and self.capability_profile.is_fail_closed_ok
+        )
+
+
 __all__ = [
     "CAPABILITY_SCHEMA_VERSION",
+    "WORKER_ATTESTATION_SCHEMA_VERSION",
+    "REQUIRED_STORY_TASK_HANDLERS",
     "utc_now",
     "CapabilityStatus",
     "CapabilityKind",
     "RuntimeCapability",
     "RuntimeCapabilityProfile",
+    "WorkerRuntimeAttestation",
 ]

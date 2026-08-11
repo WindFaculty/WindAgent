@@ -15,27 +15,37 @@ from sqlalchemy import text
 from windagent_core.contracts.studio.commands import (
     CreateEpisodeCommand,
     CreateSeriesCommand,
+    DeriveRevisionCommand,
     RecordApprovalCommand,
     StartRunCommand,
 )
 from windagent_core.contracts.studio.errors import (
     StudioNotFoundError,
     StudioStaleNodeError,
+    StudioValidationError,
 )
-from windagent_core.contracts.studio.ids import EpisodeId, SeriesProjectId, StudioRunId
+from windagent_core.contracts.studio.ids import (
+    ArtifactId,
+    EpisodeId,
+    SeriesProjectId,
+    StudioRunId,
+)
 from windagent_core.contracts.studio.models import (
+    StudioArtifactRef,
     StudioNodeStatus,
     StudioTaskResult,
     StudioTaskStatus,
 )
 from windagent_core.domain.studio.approval import ApprovalPolicy
+from windagent_core.domain.studio.artifact import StoryArtifactEnvelope
 from windagent_core.domain.studio.lifecycle import (
     ApprovalCheckpoint,
     ApprovalMode,
     EpisodeState,
 )
 from windagent_core.domain.studio.revision import StudioProductionRevision
-from windagent_core.domain.studio.series import SeriesProject
+from windagent_core.domain.story.review.models import ReviewReport
+from windagent_core.domain.story.screenplay import ScreenplayDraft
 from windagent_core.events.studio import StudioEventCatalog
 from windagent_orchestration.studio.dag import (
     NODE_BEATS_GENERATE,
@@ -45,6 +55,8 @@ from windagent_orchestration.studio.dag import (
     NODE_LOCK,
     NODE_OUTLINE_GENERATE,
     NODE_REVIEW,
+    NODE_REVIEW_REVISED,
+    NODE_REVISE,
     NODE_SCREENPLAY_GENERATE,
     build_story_dag,
 )
@@ -118,15 +130,71 @@ async def _task_id(db, run_id: StudioRunId, node_id: str) -> str:
     return node["task_id"]
 
 
+async def _success_refs(db, run_id: StudioRunId, node_id: str) -> list[StudioArtifactRef]:
+    from windagent_storage.unit_of_work.studio_uow import StudioUnitOfWork
+
+    async with StudioUnitOfWork(db.session_factory) as uow:
+        run = await uow.runs.get(run_id)
+        if node_id in {NODE_SCREENPLAY_GENERATE, NODE_REVISE}:
+            draft = ScreenplayDraft(
+                draft_id=f"draft_{run_id}_{node_id.replace('.', '_')}",
+                title="Durable screenplay",
+                language="en",
+                audience_band="8-12",
+                target_duration_seconds=240,
+                scenes=[],
+            )
+            model = draft
+        elif node_id in {NODE_REVIEW, NODE_REVIEW_REVISED}:
+            artifacts = await uow.artifacts.list_for_episode(EpisodeId(run["episode_id"]))
+            draft_artifact = next(
+                artifact
+                for artifact in reversed(artifacts)
+                if getattr(artifact.artifact_type, "value", str(artifact.artifact_type))
+                == "ScreenplayDraft"
+            )
+            draft = ScreenplayDraft.model_validate(draft_artifact.content)
+            model = ReviewReport(
+                report_id=f"report_{run_id}_{node_id.replace('.', '_')}",
+                draft_id=draft.draft_id,
+                verdict="PASS",
+            )
+        else:
+            return []
+        content_hash = model.content_hash()
+        artifact = StoryArtifactEnvelope(
+            artifact_id=ArtifactId(f"art_{content_hash[:16]}_{node_id.replace('.', '_')}"),
+            artifact_type=model.artifact_type,
+            series_id=run["series_id"],
+            episode_id=run["episode_id"],
+            revision_id=run["dag"].get("revision_id"),
+            content_hash=content_hash,
+            content=model.to_canonical_dict(),
+        )
+        await uow.artifacts.save(artifact)
+        await uow.commit()
+    return [
+        StudioArtifactRef(
+            artifact_id=artifact.artifact_id,
+            artifact_type=model.artifact_type,
+            content_hash=content_hash,
+        )
+    ]
+
+
 async def _complete(service, db, run_id: StudioRunId, node_id: str, *, status=StudioTaskStatus.SUCCEEDED, error=None):
     task_id = await _task_id(db, run_id, node_id)
+    refs = await _success_refs(db, run_id, node_id) if status == StudioTaskStatus.SUCCEEDED else []
     result = StudioTaskResult(
         task_id=task_id,
         studio_run_id=run_id,
         dag_node_id=node_id,
         status=status,
         error=error,
-        output_hashes=[HASH64] if status == StudioTaskStatus.SUCCEEDED else [],
+        output_hashes=[ref.content_hash for ref in refs] or (
+            [HASH64] if status == StudioTaskStatus.SUCCEEDED else []
+        ),
+        output_artifact_refs=refs,
     )
     return await service.reconcile(result)
 
@@ -209,15 +277,7 @@ async def test_dag_deterministic_same_input_same_output(db):
         episode_id=EpisodeId("ep_x"), revision_id=None, policy=_auto_policy()
     )
     assert first == second
-    assert first["order"] == [
-        NODE_IDEA_GENERATE,
-        NODE_IDEA_EVALUATE,
-        NODE_BIBLE_GENERATE,
-        NODE_OUTLINE_GENERATE,
-        NODE_SCREENPLAY_GENERATE,
-        NODE_REVIEW,
-        NODE_LOCK,
-    ] or set(first["order"]) == {
+    assert set(first["order"]) == {
         "idea.generate",
         "idea.evaluate",
         "bible.generate",
@@ -225,6 +285,8 @@ async def test_dag_deterministic_same_input_same_output(db):
         "outline.generate",
         "screenplay.generate",
         "review",
+        "revise.1",
+        "review.revised.1",
         "lock",
     }
     # every node's dependencies come earlier in topo order
@@ -270,6 +332,8 @@ async def test_start_run_persists_dag_and_dispatches_only_root(db, service):
         "outline.generate",
         "screenplay.generate",
         "review",
+        "revise.1",
+        "review.revised.1",
         "lock",
     }
     root = await _node(db, result.run_id, NODE_IDEA_GENERATE)
@@ -623,15 +687,25 @@ async def _drive_gated_run(db, service, episode_id, revision):
         if checkpoint:
             node = await _node(db, started.run_id, node_id)
             assert node["status"] == StudioNodeStatus.WAITING_APPROVAL.value, node_id
+            approval_revision = revision
+            if checkpoint == ApprovalCheckpoint.SCREENPLAY.value:
+                from windagent_storage.unit_of_work.studio_uow import StudioUnitOfWork
+
+                async with StudioUnitOfWork(db.session_factory) as uow:
+                    episode = await uow.episodes.get(episode_id)
+                    approval_revision = await uow.revisions.get(
+                        episode.current_revision_id
+                    )
             await service.record_approval(
                 RecordApprovalCommand(
                     idempotency_key=f"a4-approve-{node_id}",
                     episode_id=episode_id,
-                    revision_id=revision.revision_id,
+                    revision_id=approval_revision.revision_id,
                     checkpoint=checkpoint,
-                    artifact_hash=HASH64,
+                    artifact_hash=approval_revision.content_hash,
                     actor="owner",
                     decision="APPROVED",
+                    expected_optimistic_version=approval_revision.optimistic_version,
                 )
             )
     return started
@@ -685,3 +759,27 @@ async def test_auto_happy_path_skips_gates(db, service):
     assert (await _episode_state(db, episode_id)) == EpisodeState.READY_FOR_PRODUCTION
     events = await _event_types(db, started.run_id)
     assert StudioEventCatalog.APPROVAL_REQUESTED not in events
+
+
+@pytest.mark.asyncio
+async def test_certification_rejects_arbitrary_unbound_revision_hash(
+    db, service, monkeypatch
+):
+    series_id, episode_id = await _seed_episode(db, service)
+    parent = await _seed_revision(db, episode_id)
+    monkeypatch.setenv("WINDAGENT_CERTIFICATION_MODE", "1")
+
+    with pytest.raises(
+        StudioValidationError,
+        match="must bind a persisted canonical ScreenplayDraft",
+    ):
+        await service.derive_revision(
+            DeriveRevisionCommand(
+                idempotency_key="c7-unbound-revision",
+                episode_id=episode_id,
+                series_id=series_id,
+                parent_revision_id=parent.revision_id,
+                new_content_hash="f" * 64,
+                actor="certification",
+            )
+        )

@@ -36,6 +36,13 @@ export interface StudioArtifactEnvelope {
   model_route_id?: string | null;
   provider_id?: string | null;
   model_id?: string | null;
+  canonical_model_id?: string | null;
+  provider_model_id?: string | null;
+  endpoint_id?: string | null;
+  provider_binding_id?: string | null;
+  provider_attempt_id?: string | null;
+  provider_request_id?: string | null;
+  output_schema_contract?: string | null;
   status?: "DRAFT" | "VALIDATED" | "APPROVED" | "SUPERSEDED";
   created_at: string;
   created_by?: string | null;

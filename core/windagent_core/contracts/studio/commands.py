@@ -9,7 +9,7 @@ expected revision/version where applicable.
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -90,6 +90,9 @@ class SelectIdeaResult(BaseModel):
     episode_id: EpisodeId
     candidate_id: str
     revision_id: ProductionRevisionId
+    content_hash: str = Field(min_length=64, max_length=64)
+    optimistic_version: int = Field(ge=1)
+    replayed: bool = False
 
 
 class RecordApprovalCommand(StudioCommand):
