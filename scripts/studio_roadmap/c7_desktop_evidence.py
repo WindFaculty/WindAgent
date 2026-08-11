@@ -133,6 +133,21 @@ def _stop_tree(process: subprocess.Popen[Any]) -> None:
             process.kill()
 
 
+def probe_c7_desktop_environment() -> Dict[str, str]:
+    """Fail before Series creation unless the real Tauri toolchain is available."""
+
+    if sys.platform != "win32":
+        raise SliceError(f"real Tauri screenshot capture is unsupported on {sys.platform}")
+    npm = "npm.cmd"
+    return {
+        "node": _version(["node", "--version"]),
+        "npm": _version([npm, "--version"]),
+        "cargo": _version(["cargo", "--version"]),
+        "rustc": _version(["rustc", "--version"]),
+        "tauri_cli": _version([npm, "run", "tauri", "--", "--version"]),
+    }
+
+
 def capture_c7_desktop_evidence(
     *,
     api_base: str,
@@ -143,8 +158,7 @@ def capture_c7_desktop_evidence(
 ) -> Dict[str, Any]:
     """Launch Tauri, prove server-backed visible state, and capture its window."""
 
-    if sys.platform != "win32":
-        raise SliceError(f"real Tauri screenshot capture is unsupported on {sys.platform}")
+    tool_versions = probe_c7_desktop_environment()
     status, episode = _get(api_base, f"/api/v3/studio/episodes/{episode_id}")
     if status != 200:
         raise SliceError(f"desktop evidence episode read failed: {status} {episode}")
@@ -152,13 +166,6 @@ def capture_c7_desktop_evidence(
         raise SliceError("desktop evidence requires a READY_FOR_PRODUCTION episode")
 
     npm = "npm.cmd"
-    tool_versions = {
-        "node": _version(["node", "--version"]),
-        "npm": _version([npm, "--version"]),
-        "cargo": _version(["cargo", "--version"]),
-        "rustc": _version(["rustc", "--version"]),
-        "tauri_cli": _version([npm, "run", "tauri", "--", "--version"]),
-    }
     output_dir.mkdir(parents=True, exist_ok=True)
     log_dir = REPO_ROOT / ".tmp" / "studio-c7" / "desktop"
     log_dir.mkdir(parents=True, exist_ok=True)
@@ -244,4 +251,4 @@ def capture_c7_desktop_evidence(
     }
 
 
-__all__ = ["capture_c7_desktop_evidence"]
+__all__ = ["capture_c7_desktop_evidence", "probe_c7_desktop_environment"]

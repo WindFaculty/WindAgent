@@ -6,7 +6,7 @@ import time
 
 import pytest
 
-from scripts.studio_roadmap import c7_slice_harness
+from scripts.studio_roadmap import c7_desktop_evidence, c7_slice_harness
 from scripts.studio_roadmap.c7_slice_harness import (
     MODEL_PROVENANCE_FIELDS,
     SliceError,
@@ -162,6 +162,25 @@ def test_c7_failure_details_are_redacted_before_persistence() -> None:
 
     assert redacted["first_broken_hop"]["detail"] == "provider failed with [REDACTED]"
     assert c7_redaction_safe(redacted) is True
+
+
+def test_c7_desktop_toolchain_is_probed_before_slice(monkeypatch) -> None:
+    monkeypatch.setattr(c7_desktop_evidence.sys, "platform", "win32")
+    monkeypatch.setattr(
+        c7_desktop_evidence,
+        "_version",
+        lambda command: f"available:{command[0]}",
+    )
+
+    observed = c7_desktop_evidence.probe_c7_desktop_environment()
+
+    assert observed == {
+        "node": "available:node",
+        "npm": "available:npm.cmd",
+        "cargo": "available:cargo",
+        "rustc": "available:rustc",
+        "tauri_cli": "available:npm.cmd",
+    }
 
 
 def test_launcher_records_unexpected_exit_as_first_broken_hop(tmp_path, monkeypatch) -> None:

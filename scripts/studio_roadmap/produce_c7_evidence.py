@@ -23,6 +23,7 @@ sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.studio_roadmap.c7_desktop_evidence import (  # noqa: E402
     capture_c7_desktop_evidence,
+    probe_c7_desktop_environment,
 )
 from scripts.studio_roadmap.c7_slice_harness import (  # noqa: E402
     CANONICAL_MODEL,
@@ -229,6 +230,29 @@ def main() -> int:
         )
         _write(evidence)
         print(json.dumps({"verdict": "BLOCKED", "paths": source_dirty}))
+        return 2
+
+    try:
+        evidence["desktop_preflight"] = probe_c7_desktop_environment()
+    except Exception as exc:
+        broken = {
+            "stage": "desktop.preflight",
+            "failure": type(exc).__name__,
+            "detail": str(exc),
+        }
+        evidence.update(
+            {
+                "verdict": "BLOCKED",
+                "checks": {},
+                "first_broken_hop": broken,
+            }
+        )
+        redaction_safe = _redaction_safe(evidence)
+        if not redaction_safe:
+            evidence = _redact_secrets(evidence)
+        evidence["redaction_safe"] = redaction_safe
+        _write(evidence)
+        print(json.dumps({"verdict": "BLOCKED", "first_broken_hop": broken}))
         return 2
 
     evidence["runtime_seed"] = asyncio.run(seed_runtime(args.db))
