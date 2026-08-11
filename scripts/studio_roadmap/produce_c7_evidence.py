@@ -128,6 +128,28 @@ def _redact_secrets(value: Any) -> Any:
     return value
 
 
+def _blocked_evidence(
+    evidence: Dict[str, Any], *, stage: str, failure: Exception
+) -> Dict[str, Any]:
+    broken = {
+        "stage": stage,
+        "failure": type(failure).__name__,
+        "detail": str(failure),
+    }
+    evidence.update(
+        {
+            "verdict": "BLOCKED",
+            "checks": evidence.get("checks", {}),
+            "first_broken_hop": broken,
+        }
+    )
+    redaction_safe = _redaction_safe(evidence)
+    if not redaction_safe:
+        evidence = _redact_secrets(evidence)
+    evidence["redaction_safe"] = redaction_safe
+    return evidence
+
+
 def _write(evidence: Dict[str, Any]) -> None:
     EVIDENCE_DIR.mkdir(parents=True, exist_ok=True)
     evidence_path = EVIDENCE_DIR / "evidence.json"
@@ -235,27 +257,34 @@ def main() -> int:
     try:
         evidence["desktop_preflight"] = probe_c7_desktop_environment()
     except Exception as exc:
-        broken = {
-            "stage": "desktop.preflight",
-            "failure": type(exc).__name__,
-            "detail": str(exc),
-        }
-        evidence.update(
-            {
-                "verdict": "BLOCKED",
-                "checks": {},
-                "first_broken_hop": broken,
-            }
+        evidence = _blocked_evidence(
+            evidence, stage="desktop.preflight", failure=exc
         )
-        redaction_safe = _redaction_safe(evidence)
-        if not redaction_safe:
-            evidence = _redact_secrets(evidence)
-        evidence["redaction_safe"] = redaction_safe
         _write(evidence)
-        print(json.dumps({"verdict": "BLOCKED", "first_broken_hop": broken}))
+        print(
+            json.dumps(
+                {
+                    "verdict": "BLOCKED",
+                    "first_broken_hop": evidence["first_broken_hop"],
+                }
+            )
+        )
         return 2
 
-    evidence["runtime_seed"] = asyncio.run(seed_runtime(args.db))
+    try:
+        evidence["runtime_seed"] = asyncio.run(seed_runtime(args.db))
+    except Exception as exc:
+        evidence = _blocked_evidence(evidence, stage="runtime.seed", failure=exc)
+        _write(evidence)
+        print(
+            json.dumps(
+                {
+                    "verdict": "BLOCKED",
+                    "first_broken_hop": evidence["first_broken_hop"],
+                }
+            )
+        )
+        return 2
     if args.seed_only:
         evidence.update(
             {

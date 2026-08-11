@@ -26,6 +26,7 @@ from scripts.studio_roadmap.certification_launcher import (
 )
 from scripts.studio_roadmap.produce_c9_evidence import evidence_sha, evidence_verdict
 from scripts.studio_roadmap.produce_c7_evidence import (
+    _blocked_evidence as c7_blocked_evidence,
     _redact_secrets as c7_redact_secrets,
     _redaction_safe as c7_redaction_safe,
     _source_dirty_paths as c7_source_dirty,
@@ -162,6 +163,22 @@ def test_c7_failure_details_are_redacted_before_persistence() -> None:
 
     assert redacted["first_broken_hop"]["detail"] == "provider failed with [REDACTED]"
     assert c7_redaction_safe(redacted) is True
+
+
+def test_c7_pre_series_failure_is_blocked_with_first_broken_hop() -> None:
+    evidence = c7_blocked_evidence(
+        {"checks": {}},
+        stage="runtime.seed",
+        failure=RuntimeError("database unavailable"),
+    )
+
+    assert evidence["verdict"] == "BLOCKED"
+    assert evidence["first_broken_hop"] == {
+        "stage": "runtime.seed",
+        "failure": "RuntimeError",
+        "detail": "database unavailable",
+    }
+    assert evidence["redaction_safe"] is True
 
 
 def test_c7_desktop_toolchain_is_probed_before_slice(monkeypatch) -> None:
