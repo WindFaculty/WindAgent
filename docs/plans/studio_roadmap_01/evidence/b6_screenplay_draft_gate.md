@@ -17,7 +17,7 @@ sample) and `.../story_prompts/` (prompt manifest).
   view rendered deterministically by `render_screenplay_text` (same draft ->
   same bytes; dialogue ordered by `order`; display names from canon).
 - Catalog invariants: **0 violation(s)**;
-  registered prompt count: 9.
+  registered prompt count: 11.
 
 ## 2. Golden draft (Vietnamese rabbit/kite, ages 5-8, 240s)
 
@@ -111,8 +111,8 @@ Tolerant-parser scan (reused from B2 over `core/.../domain/story/`,
 - Rendered sample: `rendered_sample.txt` (deterministic derived text view).
 - Corpus results: `invalid_output_corpus_results.json`; checksums:
   `checksums.json`.
-- Prompt manifest checksum: `196e5d91841aeaad…`
-  (9 prompts incl. `story.screenplay.structured`;
+- Prompt manifest checksum: `5b73333515489421…`
+  (11 prompts incl. `story.screenplay.structured`;
   B2 manifest refreshed).
 - A-side (durable task execution + approval checkpoint) and C-side (draft/
   text display fields) halves are co-signed by their plan owners at contract

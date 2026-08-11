@@ -416,6 +416,38 @@ SCREENPLAY_GENERATION_OUTPUT_SCHEMA: Dict[str, Any] = {
     "additionalProperties": True,
 }
 
+REVIEW_OUTPUT_SCHEMA: Dict[str, Any] = {
+    "$schema": JSON_SCHEMA_DIALECT,
+    "title": "ReviewOutput",
+    "description": (
+        "B7: model-assisted narrative review dimensions for one ScreenplayDraft. "
+        "Deterministic format/duration/continuity findings come from the "
+        "validation suite; the model only scores subjective narrative quality "
+        "(secondary signal, never the gate authority)."
+    ),
+    "type": "object",
+    "required": ["narrative_score", "age_fit_score", "language_score", "notes"],
+    "properties": {
+        "narrative_score": {"type": "number", "minimum": 0.0, "maximum": 1.0},
+        "age_fit_score": {"type": "number", "minimum": 0.0, "maximum": 1.0},
+        "language_score": {"type": "number", "minimum": 0.0, "maximum": 1.0},
+        "notes": {"type": "array", "items": {"type": "string"}},
+    },
+    "additionalProperties": True,
+}
+
+#: Revision output is a fresh ScreenplayDraft: same shape as generation, new
+#: title so the committed schema file is distinct.
+REVISION_OUTPUT_SCHEMA: Dict[str, Any] = {
+    **SCREENPLAY_GENERATION_OUTPUT_SCHEMA,
+    "title": "ScreenplayRevisionOutput",
+    "description": (
+        "B7: a NEW immutable ScreenplayDraft produced by the bounded revision "
+        "task. Same structured scene shape as generation output; the draft_id "
+        "must differ from the reviewed draft (the diff proves the change)."
+    ),
+}
+
 # ---------------------------------------------------------------------------
 # Text-format specs (legacy text-output prompts, not JSON Schemas)
 # ---------------------------------------------------------------------------
@@ -450,4 +482,6 @@ __all__ = [
     "BEATS_GENERATION_OUTPUT_SCHEMA",
     "OUTLINE_GENERATION_OUTPUT_SCHEMA",
     "SCREENPLAY_GENERATION_OUTPUT_SCHEMA",
+    "REVIEW_OUTPUT_SCHEMA",
+    "REVISION_OUTPUT_SCHEMA",
 ]

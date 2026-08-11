@@ -222,6 +222,8 @@ def test_handlers_match_frozen_task_types():
         StudioTaskType.BEATS_GENERATE.value,
         StudioTaskType.OUTLINE_GENERATE.value,
         StudioTaskType.SCREENPLAY_GENERATE.value,
+        StudioTaskType.REVIEW.value,
+        StudioTaskType.REVISE.value,
     }
     assert set(HANDLER_REGISTRY) == {
         StudioTaskType.IDEA_GENERATE,
@@ -230,6 +232,8 @@ def test_handlers_match_frozen_task_types():
         StudioTaskType.BEATS_GENERATE,
         StudioTaskType.OUTLINE_GENERATE,
         StudioTaskType.SCREENPLAY_GENERATE,
+        StudioTaskType.REVIEW,
+        StudioTaskType.REVISE,
     }
 
 

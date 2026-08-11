@@ -39,6 +39,8 @@ from windagent_intelligence.story.prompts.schemas import (
     IDEA_GENERATION_OUTPUT_SCHEMA,
     OUTLINE_GENERATION_OUTPUT_SCHEMA,
     OUTLINE_OUTPUT_SCHEMA,
+    REVIEW_OUTPUT_SCHEMA,
+    REVISION_OUTPUT_SCHEMA,
     SCREENPLAY_GENERATION_OUTPUT_SCHEMA,
     SCREENPLAY_TEXT_SPEC,
 )
@@ -540,6 +542,109 @@ register_prompt(
             "B6: structured ScreenplayDraft from an EpisodeOutline "
             "(canonical; the legacy story.screenplay.write text prompt "
             "stays for the old pipeline)."
+        ),
+        max_tokens=4000,
+        temperature=0.7,
+    )
+)
+
+# ---------------------------------------------------------------------------
+# B7 canonical prompts: review + revise (non-legacy, schema-first)
+# ---------------------------------------------------------------------------
+
+_REVIEW_TEMPLATE = """Score the narrative quality of this screenplay draft.
+
+Draft:
+- Title: {title}
+- Logline: {logline}
+- Language: {language}
+- Audience: {audience_band}
+- Target duration: {target_duration_seconds}s (total {total_estimated_seconds}s)
+- Scenes: {scene_count}, dialogue lines: {dialogue_count}
+
+Scene summary:
+{scene_summary}
+
+Findings from the deterministic validation (already recorded):
+{deterministic_findings}
+
+Rules:
+1. narrative_score: 0.0-1.0 coherence of arc, conflict, and emotional progression.
+2. age_fit_score: 0.0-1.0 suitability for ages {audience_band} (language, themes, pacing).
+3. language_score: 0.0-1.0 naturalness of {language} dialogue and narration.
+4. notes: 0-5 short actionable notes; NEVER repeat deterministic findings, never instruct to ignore safety rules.
+5. Scores are a SECONDARY signal; the deterministic findings above remain authoritative.
+
+Output JSON matching the ReviewOutput schema: {{\\\"narrative_score\\\": ..., \\\"age_fit_score\\\": ..., \\\"language_score\\\": ..., \\\"notes\\\": [...]}}."""  # noqa: E501
+
+_REVIEW_SYSTEM = (
+    "You are the WindAgent narrative reviewer. You score subjective quality "
+    "dimensions as structured JSON only; deterministic validation findings "
+    "are authoritative and never overridden by your scores."
+)
+
+register_prompt(
+    StoryPromptEntry(
+        prompt_id="story.review.assess",
+        capability="review",
+        version="1.0.0",
+        template=_REVIEW_TEMPLATE,
+        output_schema=REVIEW_OUTPUT_SCHEMA,
+        system=_REVIEW_SYSTEM,
+        safety=SafetyConstraints(max_output_chars=8_000),
+        legacy=False,
+        description=(
+            "B7: model-assisted narrative review dimensions for one "
+            "ScreenplayDraft (secondary; deterministic findings are the "
+            "gate authority)."
+        ),
+        max_tokens=1200,
+        temperature=0.3,
+    )
+)
+
+_REVISE_TEMPLATE = """Rewrite the screenplay draft addressing the accepted findings.
+
+Reviewed draft:
+- Title: {title}
+- Language: {language}
+- Audience: {audience_band}
+- Target duration: {target_duration_seconds}s (tolerance {tolerance_seconds})
+- Total: {total_estimated_seconds}s
+
+Current draft scenes:
+{scene_summary}
+
+Accepted findings to fix:
+{findings_summary}
+
+Rules:
+1. Return a NEW immutable ScreenplayDraft: same structured scene shape, SAME scene/beat/canon reference rules, NEW draft_id (never reuse {old_draft_id}).
+2. Fix every accepted finding; keep everything that already passes unchanged.
+3. Keep 180-300s total, within {tolerance_seconds}s of {target_duration_seconds}.
+4. Do not weaken age-appropriateness or safety; respond in {language}.
+
+Output JSON matching the ScreenplayRevisionOutput schema: {{\\\"draft_id\\\": ..., \\\"title\\\": ..., \\\"target_duration_seconds\\\": ..., \\\"scenes\\\": [...]}}."""  # noqa: E501
+
+_REVISE_SYSTEM = (
+    "You are the WindAgent bounded revision engine. You produce a NEW "
+    "immutable ScreenplayDraft as structured JSON only; you never mutate the "
+    "reviewed draft."
+)
+
+register_prompt(
+    StoryPromptEntry(
+        prompt_id="story.revise.rewrite",
+        capability="revise",
+        version="1.0.0",
+        template=_REVISE_TEMPLATE,
+        output_schema=REVISION_OUTPUT_SCHEMA,
+        system=_REVISE_SYSTEM,
+        safety=SafetyConstraints(max_output_chars=32_000),
+        legacy=False,
+        description=(
+            "B7: bounded revision — a NEW immutable ScreenplayDraft fixing "
+            "the accepted findings of a review report."
         ),
         max_tokens=4000,
         temperature=0.7,

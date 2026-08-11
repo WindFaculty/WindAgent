@@ -45,6 +45,17 @@ from windagent_intelligence.story.prompts import (  # noqa: F401
     registered_prompt_ids,
     validate_registry_invariants,
 )
+from windagent_intelligence.story.review import (  # noqa: F401
+    DEFAULT_MAXIMUM_ITERATIONS,
+    DIMENSION_THRESHOLD,
+    REVIEW_POLICY_VERSION,
+    ReviewResult,
+    ReviewService,
+    ReviewValidationFailure,
+    RevisionResult,
+    ReviseService,
+    ReviseValidationFailure,
+)
 from windagent_intelligence.story.runtime_handlers import (  # noqa: F401
     HANDLER_REGISTRY,
     BeatGenerateHandler,
@@ -53,6 +64,8 @@ from windagent_intelligence.story.runtime_handlers import (  # noqa: F401
     IdeaGenerateHandler,
     OutlineGenerateHandler,
     ScreenplayGenerateHandler,
+    ReviewHandler,
+    ReviseHandler,
     registered_story_task_types,
 )
 
@@ -81,12 +94,23 @@ __all__ = [
     "ScreenplayGenerationResult",
     "ScreenplayGenerationService",
     "render_screenplay_text",
+    "REVIEW_POLICY_VERSION",
+    "DIMENSION_THRESHOLD",
+    "DEFAULT_MAXIMUM_ITERATIONS",
+    "ReviewValidationFailure",
+    "ReviewResult",
+    "ReviewService",
+    "ReviseValidationFailure",
+    "RevisionResult",
+    "ReviseService",
     "IdeaGenerateHandler",
     "IdeaEvaluateHandler",
     "BibleGenerateHandler",
     "BeatGenerateHandler",
     "OutlineGenerateHandler",
     "ScreenplayGenerateHandler",
+    "ReviewHandler",
+    "ReviseHandler",
     "HANDLER_REGISTRY",
     "registered_story_task_types",
 ]

@@ -26,6 +26,8 @@ def test_registry_has_extracted_legacy_prompts():
         "story.ideation.generate",
         "story.outline.generate",
         "story.outline.structured",
+        "story.review.assess",
+        "story.revise.rewrite",
         "story.screenplay.structured",
         "story.screenplay.write",
     ]
@@ -39,6 +41,8 @@ def test_registry_has_extracted_legacy_prompts():
             "story.beats.generate",
             "story.outline.structured",
             "story.screenplay.structured",
+            "story.review.assess",
+            "story.revise.rewrite",
         )
     )
 

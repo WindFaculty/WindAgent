@@ -6,7 +6,7 @@ quality/error taxonomy (§3 error codes). Fixtures: `fixtures/studio_contract_v0
 ## 1. Prompt catalog manifest
 
 - Prompt schema version: `studio.prompt/v1alpha1`.
-- Registered prompts: **9** — all declare output
+- Registered prompts: **11** — all declare output
   schemas and safety constraints (`validate_registry_invariants()` empty).
 - Catalog invariants: **clean** (0 violations).
 
@@ -19,6 +19,8 @@ quality/error taxonomy (§3 error codes). Fixtures: `fixtures/studio_contract_v0
 | `story.ideation.generate` | `1.0.0` | `e5c9c9799df1…` | canonical | json | 2500 | `IdeaGenerationOutput.json` |
 | `story.outline.generate` | `1.0.0` | `34b418e63b04…` | legacy | json | 1500 | `OutlineOutput.json` |
 | `story.outline.structured` | `1.0.0` | `e7c28852c170…` | canonical | json | 3000 | `OutlineGenerationOutput.json` |
+| `story.review.assess` | `1.0.0` | `a6afb1b34d7a…` | canonical | json | 1200 | `ReviewOutput.json` |
+| `story.revise.rewrite` | `1.0.0` | `8751909c1407…` | canonical | json | 4000 | `ScreenplayRevisionOutput.json` |
 | `story.screenplay.structured` | `1.0.0` | `1224d92899b8…` | canonical | json | 4000 | `ScreenplayGenerationOutput.json` |
 | `story.screenplay.write` | `1.0.0` | `d546496f9718…` | legacy | text | 4000 | `canonical_screenplay_text_v1.json` |
 
@@ -27,7 +29,7 @@ Extracted legacy prompts keep template/hash equality with their live
 
 ## 2. Schema bundle
 
-- **8** schema files under `story_prompts/schemas/`,
+- **10** schema files under `story_prompts/schemas/`,
   checksummed in `story_prompts/checksums.json`.
 - JSON prompts validate via `jsonschema` Draft 2020-12; text-format legacy
   prompts declare a format spec (size/safety enforced at the boundary).
@@ -92,7 +94,7 @@ None.
 
 **`STRUCTURED_MODEL_GATE`: PASS (B-side evidence).**
 
-- Manifest: `story_prompts/prompt_manifest.json` (checksum `196e5d91841aeaad…`).
+- Manifest: `story_prompts/prompt_manifest.json` (checksum `5b73333515489421…`).
 - Schema checksums: `story_prompts/checksums.json`.
 - Corpus results: `story_prompts/invalid_output_corpus_results.json`.
 - C/A halves (runtime model-route lock, TypeScript schema consumption) are
