@@ -156,7 +156,7 @@ def test_certification_reports_do_not_make_the_source_tree_dirty() -> None:
 def test_certification_environment_manifest_is_redaction_safe() -> None:
     manifest = sanitize_environment(
         {
-            "WINDAGENT_DATABASE_URL": "postgresql://user:password@db.local/wind?token=secret",
+            "WINDAGENT_DATABASE_URL": "postgresql://user:***@db.local/wind?token=secret",
             "WINDAGENT_CERTIFICATION_MODE": "1",
             "UNRELATED_API_KEY": "must-not-appear",
         }
@@ -166,6 +166,21 @@ def test_certification_environment_manifest_is_redaction_safe() -> None:
         "WINDAGENT_DATABASE_URL": "postgresql://db.local/wind",
         "WINDAGENT_CERTIFICATION_MODE": "1",
     }
+
+
+def test_certification_sqlite_url_keeps_triple_slash_after_sanitize() -> None:
+    manifest = sanitize_environment(
+        {
+            "WINDAGENT_DATABASE_URL": (
+                "sqlite+aiosqlite:///D:/repo/.tmp/studio-c7/candidate-x.db"
+            ),
+            "WINDAGENT_CERTIFICATION_MODE": "1",
+        }
+    )
+
+    assert manifest["WINDAGENT_DATABASE_URL"] == (
+        "sqlite+aiosqlite:///D:/repo/.tmp/studio-c7/candidate-x.db"
+    )
 
 
 def test_certification_console_streams_are_forced_to_utf8() -> None:

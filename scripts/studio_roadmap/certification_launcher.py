@@ -79,6 +79,10 @@ def _sanitize_url(value: str) -> str:
         return "<redacted-invalid-url>"
     if not parsed.scheme:
         return value
+    # ponytail: file-backed sqlite URLs carry no credentials and the
+    # urlsplit/urlunsplit roundtrip drops a slash from "///" absolute paths.
+    if parsed.scheme.startswith("sqlite"):
+        return value
     host = parsed.hostname or ""
     if parsed.port:
         host = f"{host}:{parsed.port}"
