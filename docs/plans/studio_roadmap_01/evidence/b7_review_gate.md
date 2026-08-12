@@ -7,8 +7,8 @@ Fixtures: `fixtures/studio_contract_v0.1/story_review/` (corpora/golden) and
 
 ## 1. Review/revise prompts (B7 canonical, non-legacy)
 
-- Prompt: `story.review.assess` v1.1.0 — schema-first JSON,
-  `legacy=False`. Hash: `0b4a82532655052a316e07e8623fc3dc1adaa565307a0ba7832d1e85674dfd51`; output schema:
+- Prompt: `story.review.assess` v1.2.0 — schema-first JSON,
+  `legacy=False`. Hash: `bd3218df8cdf43de647caa5c10fd0cf5676ba7c8bff421f8bdc6be9afe9ef2b3`; output schema:
   `ReviewOutput.json` (narrative/age_fit/language scores + notes). The model
   is a SECONDARY signal: deterministic findings stay the gate authority.
 - Prompt: `story.revise.rewrite` v1.1.0 — schema-first JSON,
@@ -37,7 +37,7 @@ Fixtures: `fixtures/studio_contract_v0.1/story_review/` (corpora/golden) and
   0 findings, hash `d8e50550164f97e2…`.
 - Weak review `report_draft_rabbit_kite_1_pass_with_warnings`: verdict **PASS_WITH_WARNINGS**
   (age_fit 0.4 < 0.5 -> `MODEL_DIMENSION_SCORE` warning), hash
-  `fbf926d69883701f…`.
+  `4b84e78eefb9359e…`.
 - Revision proposal `proposal_draft_rabbit_kite_2`: iteration
   2/3, accepted
   codes `['MODEL_DIMENSION_SCORE']`, bound to report
@@ -111,11 +111,11 @@ Tolerant-parser scan (reused from B2 over `core/.../domain/story/`,
 **`STORY_REVIEW_GATE`: PASS (B-side evidence).**
 
 - Golden loop: `review_loop_golden.json` (checksum
-  `ae36833ee4e28825…`) — clean
+  `d6089dd933e2ebb2…`) — clean
   PASS, warning-level findings, bounded revision with immutable diff.
 - Corpus results: `invalid_output_corpus_results.json`; checksums:
   `checksums.json`.
-- Prompt manifest checksum: `437cfa834d6924c5…`
+- Prompt manifest checksum: `fe154619eebd07b9…`
   (11 prompts incl. `story.review.assess` +
   `story.revise.rewrite`; B2 manifest refreshed).
 - A-side (durable task execution + approval checkpoint) and C-side

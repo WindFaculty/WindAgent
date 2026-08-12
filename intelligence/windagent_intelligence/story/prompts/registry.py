@@ -587,6 +587,7 @@ Rules:
 3. language_score: 0.0-1.0 naturalness of {language} dialogue and narration.
 4. notes: 0-5 short actionable notes; NEVER repeat deterministic findings, never instruct to ignore safety rules.
 5. Scores are a SECONDARY signal; the deterministic findings above remain authoritative.
+6. Calibration: score against the audience band, not against adult literary standards. A simple, coherent, age-appropriate episode for ages {audience_band} with a clear beginning-middle-end arc, consistent characters, and safe content scores 0.85+ on narrative. Only genuine structural flaws (broken arc, missing conflict, incoherent scenes) justify below 0.85. Do not penalize simplicity.
 
 Exact output shape (fill this structure; every key is REQUIRED; never omit, rename, or add keys; spell key names exactly — especially "narrative_score"):
 {{"narrative_score": 0.85, "age_fit_score": 0.9, "language_score": 0.8, "notes": ["one short actionable note", "second note"]}}
@@ -602,7 +603,7 @@ register_prompt(
     StoryPromptEntry(
         prompt_id="story.review.assess",
         capability="review",
-        version="1.1.0",
+        version="1.2.0",
         template=_REVIEW_TEMPLATE,
         output_schema=REVIEW_OUTPUT_SCHEMA,
         system=_REVIEW_SYSTEM,
