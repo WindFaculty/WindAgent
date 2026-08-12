@@ -13,7 +13,7 @@ quality/error taxonomy (§3 error codes). Fixtures: `fixtures/studio_contract_v0
 | Prompt ID | Version | Hash | Kind | Output format | Max tokens | Schema |
 |---|---|---|---|---|---|---|
 | `story.beats.generate` | `1.1.0` | `4f4290e5a133…` | canonical | json | 2500 | `BeatGenerationOutput.json` |
-| `story.bibles.generate` | `1.7.0` | `f5ab9c1d52ca…` | canonical | json | 3000 | `BibleGenerationOutput.json` |
+| `story.bibles.generate` | `1.8.0` | `f7afff48a1d1…` | canonical | json | 3000 | `BibleGenerationOutput.json` |
 | `story.brief_expansion.expand` | `1.0.0` | `2a882ce066c5…` | legacy | json | 1200 | `BriefExpansionOutput.json` |
 | `story.continuation.continue` | `1.0.0` | `f233d9b02c5c…` | legacy | text | 3000 | `canonical_screenplay_text_v1.json` |
 | `story.ideation.generate` | `1.1.0` | `84e5cf22fdde…` | canonical | json | 2500 | `IdeaGenerationOutput.json` |
@@ -94,7 +94,7 @@ None.
 
 **`STRUCTURED_MODEL_GATE`: PASS (B-side evidence).**
 
-- Manifest: `story_prompts/prompt_manifest.json` (checksum `db08885da1e5858d…`).
+- Manifest: `story_prompts/prompt_manifest.json` (checksum `437cfa834d6924c5…`).
 - Schema checksums: `story_prompts/checksums.json`.
 - Corpus results: `story_prompts/invalid_output_corpus_results.json`.
 - C/A halves (runtime model-route lock, TypeScript schema consumption) are

@@ -367,7 +367,7 @@ Selected idea:
 Rules:
 1. StoryBible: bible_id (bible_* prefix), title, premise, theme, tone, arc_summary as ONE STRING (beginning -> middle -> end), stakes, and at most 20 story_rules as an array of plain STRINGS.
 2. WorldBible: world_id (world_* prefix), setting, 1-6 recurring_locations each with location_id (loc_* prefix) and name; physical_rules and story_rules are arrays of objects with rule_id (rule_* prefix), statement (the rule text), kind (physics|social|magic|constraint).
-3. CharacterCanon: canon_id (canon_* prefix) + at least one character; every character has a unique character_id (ch_* prefix) and name; role exactly one of: protagonist, deuteragonist, supporting, antagonist (never "mentor", never Vietnamese); relationship kind exactly one of: friend, family, rival, mentor, neighbor, other (never Vietnamese); every relationship object has ALL THREE keys from_id, to_id, kind — if you cannot fill all three, OMIT the relationship (empty [] is better); from_id/to_id must match a character_id in this same output; NEVER add the reverse direction of a relationship you already added (no 2-cycles); keep relationships mostly empty.
+3. CharacterCanon: canon_id (canon_* prefix) + at least one character; every character has a unique character_id (ch_* prefix) and name; role exactly one of: protagonist, deuteragonist, supporting, antagonist (never "mentor", never Vietnamese). EVERY character MUST have "relationships": [] — do not create a single relationship object, empty arrays only; relationship objects are not allowed in this output.
 4. Character age_band must match the audience band (e.g. {audience_min_age}-{audience_max_age}).
 5. Respond in {language}; all prose must be age-appropriate and safe for ages {audience_min_age}-{audience_max_age}. Prohibited content never appears, even implicitly.
 
@@ -385,7 +385,7 @@ register_prompt(
     StoryPromptEntry(
         prompt_id="story.bibles.generate",
         capability="bibles",
-        version="1.7.0",
+        version="1.8.0",
         template=_BIBLES_TEMPLATE,
         output_schema=BIBLE_GENERATION_OUTPUT_SCHEMA,
         system=_BIBLES_SYSTEM,
