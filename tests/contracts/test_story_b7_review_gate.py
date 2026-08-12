@@ -76,14 +76,14 @@ def load(name: str):
 
 def test_review_prompts_registered_non_legacy_schema_first():
     review = prompt_for("story.review.assess")
-    assert review.version == "1.0.1"
+    assert review.version == "1.1.0"
     assert review.legacy is False
     assert review.output_format == "json"
     assert review.output_schema["title"] == "ReviewOutput"
     assert "narrative_score" in review.output_schema["properties"]
 
     revise = prompt_for("story.revise.rewrite")
-    assert revise.version == "1.0.1"
+    assert revise.version == "1.1.0"
     assert revise.legacy is False
     assert revise.output_format == "json"
     assert revise.output_schema["title"] == "ScreenplayRevisionOutput"

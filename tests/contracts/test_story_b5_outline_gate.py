@@ -74,14 +74,14 @@ def load(name: str):
 
 def test_outline_prompts_registered_non_legacy_schema_first():
     beats = prompt_for("story.beats.generate")
-    assert beats.version == "1.0.1"
+    assert beats.version == "1.1.0"
     assert beats.legacy is False
     assert beats.output_format == "json"
     assert beats.output_schema["title"] == "BeatGenerationOutput"
     assert beats.output_schema["properties"]["beats"]["minItems"] == 4
 
     outline = prompt_for("story.outline.structured")
-    assert outline.version == "1.0.2"
+    assert outline.version == "1.1.0"
     assert outline.legacy is False
     assert outline.output_format == "json"
     assert outline.output_schema["title"] == "OutlineGenerationOutput"

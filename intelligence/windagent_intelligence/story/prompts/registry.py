@@ -365,14 +365,15 @@ Selected idea:
 - Audience: ages {audience_min_age}-{audience_max_age}
 
 Rules:
-1. StoryBible: premise and arc_summary required (beginning -> middle -> end); theme, tone, stakes, and at most 20 story_rules.
-2. WorldBible: setting and 1-6 recurring_locations are required; physical_rules and story_rules carry unique rule_id and kind (physics|social|magic|constraint); recurring_locations and recurring_objects carry unique ids.
-3. CharacterCanon: canon_id + at least one character; every character has a unique character_id and name; role from protagonist|deuteragonist|supporting|antagonist; relationships reference EXISTING character ids only, never self-loops.
-4. Use stable Story IDs: bible_*/world_*/ch_*/loc_*/prop_* prefixes.
-5. Character age_band must match the audience band (e.g. {audience_min_age}-{audience_max_age}).
-6. Respond in {language}; all prose must be age-appropriate and safe for ages {audience_min_age}-{audience_max_age}. Prohibited content never appears, even implicitly.
+1. StoryBible: bible_id (bible_* prefix), title, premise, theme, tone, arc_summary as ONE STRING (beginning -> middle -> end), stakes, and at most 20 story_rules as an array of plain STRINGS.
+2. WorldBible: world_id (world_* prefix), setting, 1-6 recurring_locations each with location_id (loc_* prefix) and name; physical_rules and story_rules are arrays of objects with rule_id (rule_* prefix), statement (the rule text), kind (physics|social|magic|constraint).
+3. CharacterCanon: canon_id (canon_* prefix) + at least one character; every character has a unique character_id (ch_* prefix) and name; role from protagonist|deuteragonist|supporting|antagonist; relationships are objects with from_id/to_id referencing EXISTING character ids only, never self-loops.
+4. Character age_band must match the audience band (e.g. {audience_min_age}-{audience_max_age}).
+5. Respond in {language}; all prose must be age-appropriate and safe for ages {audience_min_age}-{audience_max_age}. Prohibited content never appears, even implicitly.
 
-Output JSON matching the BibleGenerationOutput schema: {{\"story_bible\": ..., \"world_bible\": ..., \"character_canon\": ...}}."""
+Exact output shape (fill this structure; every key is REQUIRED; never omit, rename, or add keys — spell key names exactly, especially "bible_id", "world_id", "statement", "location_id"):
+{{"story_bible": {{"bible_id": "bible_001", "title": "...", "premise": "...", "theme": "...", "tone": "...", "arc_summary": "beginning ... middle ... end (ONE string)", "stakes": "...", "story_rules": ["rule one as plain string", "rule two as plain string"], "language": "{language}"}}, "world_bible": {{"world_id": "world_001", "setting": "...", "physical_rules": [{{"rule_id": "rule_p1", "statement": "...", "kind": "physics"}}], "story_rules": [{{"rule_id": "rule_s1", "statement": "...", "kind": "social"}}], "recurring_locations": [{{"location_id": "loc_001", "name": "..."}}], "recurring_objects": [{{"prop_id": "prop_001", "name": "..."}}], "style_constraints": {{}}, "language": "{language}"}}, "character_canon": {{"canon_id": "canon_001", "language": "{language}", "characters": [{{"character_id": "ch_001", "name": "...", "role": "protagonist", "goal": "...", "traits": ["..."], "relationships": [{{"from_id": "ch_001", "to_id": "ch_002", "kind": "friend"}}], "age_band": "{audience_min_age}-{audience_max_age}"}}]}}}}
+Output ONLY the raw JSON object — no markdown code fences, no commentary, no trailing text."""
 
 _BIBLES_SYSTEM = (
     "You are the WindAgent story canon engine. You produce StoryBible, "
@@ -384,7 +385,7 @@ register_prompt(
     StoryPromptEntry(
         prompt_id="story.bibles.generate",
         capability="bibles",
-        version="1.0.1",
+        version="1.1.0",
         template=_BIBLES_TEMPLATE,
         output_schema=BIBLE_GENERATION_OUTPUT_SCHEMA,
         system=_BIBLES_SYSTEM,
@@ -423,7 +424,9 @@ Rules:
 4. target_seconds sum must be within {tolerance_seconds}s of {target_duration_seconds}.
 5. Respond in {language}; content must be age-appropriate and safe for ages {audience_min_age}-{audience_max_age}.
 
-Output JSON matching the BeatGenerationOutput schema: {{\"beat_sheet_id\": ..., \"title\": ..., \"total_target_seconds\": ..., \"beats\": [...]}}."""
+Exact output shape (fill this structure; every key is REQUIRED; never omit, rename, or add keys; spell key names exactly — especially "beat_id", "total_target_seconds"):
+{{"beat_sheet_id": "bs_001", "title": "...", "total_target_seconds": {target_duration_seconds}, "beats": [{{"beat_id": "bt_001", "order": 1, "role": "hook", "description": "one short non-empty description", "emotional_beat": "...", "character_ids": ["ch_001"], "location_id": "loc_001", "target_seconds": 30}}]}}
+Return exactly as many beats as needed to fill the budget; every beat must include "order". Output ONLY the raw JSON object — no markdown code fences, no commentary, no trailing text."""
 
 _BEATS_SYSTEM = (
     "You are the WindAgent story structure engine. You produce an ordered "
@@ -434,7 +437,7 @@ register_prompt(
     StoryPromptEntry(
         prompt_id="story.beats.generate",
         capability="beats",
-        version="1.0.1",
+        version="1.1.0",
         template=_BEATS_TEMPLATE,
         output_schema=BEATS_GENERATION_OUTPUT_SCHEMA,
         system=_BEATS_SYSTEM,
@@ -469,7 +472,9 @@ Rules:
 5. dialogue_budget_seconds must not exceed estimated_seconds.
 6. Respond in {language}; content must be age-appropriate and safe for ages {audience_band}.
 
-Output JSON matching the OutlineGenerationOutput schema: {{\"outline_id\": ..., \"title\": ..., \"target_duration_seconds\": ..., \"scenes\": [...]}}."""
+Exact output shape (fill this structure; every key is REQUIRED; never omit, rename, or add keys; spell key names exactly — especially "scene_id", "beat_refs"):
+{{"outline_id": "ol_001", "title": "...", "target_duration_seconds": {target_duration_seconds}, "scenes": [{{"scene_id": "sc_001", "order": 1, "intent": "one short non-empty intent", "location_id": "loc_001", "character_ids": ["ch_001"], "conflict_change": "...", "visual_action": "...", "dialogue_budget_seconds": 10, "estimated_seconds": 30, "beat_refs": ["bt_001"]}}]}}
+Copy the per-beat numbers (order, target_seconds -> estimated_seconds, location_id, character_ids, beat_refs) VERBATIM from the beat ledger above — they are already correct. Return exactly as many scenes as there are beats. Every scene must include "order". Output ONLY the raw JSON object — no markdown code fences, no commentary, no trailing text."""
 
 _OUTLINE_SYSTEM = (
     "You are the WindAgent episode planner. You produce an EpisodeOutline as "
@@ -480,7 +485,7 @@ register_prompt(
     StoryPromptEntry(
         prompt_id="story.outline.structured",
         capability="outline",
-        version="1.0.2",
+        version="1.1.0",
         template=_OUTLINE_TEMPLATE,
         output_schema=OUTLINE_GENERATION_OUTPUT_SCHEMA,
         system=_OUTLINE_SYSTEM,
@@ -583,7 +588,9 @@ Rules:
 4. notes: 0-5 short actionable notes; NEVER repeat deterministic findings, never instruct to ignore safety rules.
 5. Scores are a SECONDARY signal; the deterministic findings above remain authoritative.
 
-Output JSON matching the ReviewOutput schema: {{"narrative_score": ..., "age_fit_score": ..., "language_score": ..., "notes": [...]}}."""  # noqa: E501
+Exact output shape (fill this structure; every key is REQUIRED; never omit, rename, or add keys; spell key names exactly — especially "narrative_score"):
+{{"narrative_score": 0.85, "age_fit_score": 0.9, "language_score": 0.8, "notes": ["one short actionable note", "second note"]}}
+Scores are 0.0-1.0 numbers; notes is an array of strings. Output ONLY the raw JSON object — no markdown code fences, no commentary, no trailing text."""  # noqa: E501
 
 _REVIEW_SYSTEM = (
     "You are the WindAgent narrative reviewer. You score subjective quality "
@@ -595,7 +602,7 @@ register_prompt(
     StoryPromptEntry(
         prompt_id="story.review.assess",
         capability="review",
-        version="1.0.1",
+        version="1.1.0",
         template=_REVIEW_TEMPLATE,
         output_schema=REVIEW_OUTPUT_SCHEMA,
         system=_REVIEW_SYSTEM,
@@ -632,7 +639,9 @@ Rules:
 3. Keep 180-300s total, within {tolerance_seconds}s of {target_duration_seconds}.
 4. Do not weaken age-appropriateness or safety; respond in {language}.
 
-Output JSON matching the ScreenplayRevisionOutput schema: {{"draft_id": ..., "title": ..., "target_duration_seconds": ..., "scenes": [...]}}."""  # noqa: E501
+Exact output shape (fill this structure; every key is REQUIRED; never omit, rename, or add keys; spell key names exactly — especially "draft_id", "dialogue_id"):
+{{"draft_id": "dscn_<invent a FRESH id, never reuse {old_draft_id} or example ids>", "title": "...", "target_duration_seconds": {target_duration_seconds}, "scenes": [{{"scene_id": "dscn_001", "order": 1, "outline_scene_id": "sc_001", "location_id": "lc_01", "character_ids": ["char_001"], "action_description": "one short non-empty action sentence", "dialogue": [{{"dialogue_id": "dlg_001", "scene_id": "dscn_001", "character_id": "char_001", "order": 1, "text": "one non-empty line"}}], "narration": "", "transition": "CUT TO:", "estimated_seconds": 25, "source_beat_ids": ["bt_001"]}}]}}
+Copy the per-scene numbers VERBATIM from the draft above — they are already correct. Return exactly as many scenes as the draft has. Every scene and every dialogue line must include "order". Output ONLY the raw JSON object — no markdown code fences, no commentary, no trailing text."""  # noqa: E501
 
 _REVISE_SYSTEM = (
     "You are the WindAgent bounded revision engine. You produce a NEW "
@@ -644,7 +653,7 @@ register_prompt(
     StoryPromptEntry(
         prompt_id="story.revise.rewrite",
         capability="revise",
-        version="1.0.1",
+        version="1.1.0",
         template=_REVISE_TEMPLATE,
         output_schema=REVISION_OUTPUT_SCHEMA,
         system=_REVISE_SYSTEM,
