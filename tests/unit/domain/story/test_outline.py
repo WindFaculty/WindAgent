@@ -95,9 +95,21 @@ def test_beat_duration_sum_mismatch_blocks():
 
 
 def test_outline_passes_and_fits_bounds():
-    report = validate_episode_outline(_outline())
+    report = validate_episode_outline(_outline(), beat_sheet=_beat_sheet())
     assert report.is_pass(), report.summary()
     assert MIN_EPISODE_SECONDS <= _outline().total_estimated_seconds <= MAX_EPISODE_SECONDS
+
+
+def test_outline_scene_must_copy_its_source_beat_contract():
+    scenes = list(_outline().scenes)
+    scenes[1] = scenes[1].model_copy(update={"location_id": StoryLocationId("loc_other")})
+
+    report = validate_episode_outline(
+        _outline().model_copy(update={"scenes": scenes}),
+        beat_sheet=_beat_sheet(),
+    )
+
+    assert any(issue.code == "ID_STABILITY" for issue in report.issues)
 
 
 def test_outline_duration_outside_180_300_blocks():

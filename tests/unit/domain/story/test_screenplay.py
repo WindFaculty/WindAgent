@@ -109,13 +109,17 @@ def _beat_sheet() -> BeatSheet:
 
 
 def _outline() -> EpisodeOutline:
+    timings = [40, 80, 60, 60]
     return EpisodeOutline(
         outline_id=EpisodeOutlineId.generate("ol"),
         title="Con thỏ và cánh diều",
         target_duration_seconds=240,
         scenes=[
             OutlineScene(scene_id=OutlineSceneId(f"s{i}"), order=i, intent=f"Scene {i}",
-                         location_id=FIELD, character_ids=[RABBIT, KITE], estimated_seconds=60)
+                         location_id=FIELD,
+                         character_ids=[RABBIT] if i == 1 else [RABBIT, KITE],
+                         estimated_seconds=timings[i - 1],
+                         beat_refs=[BeatId(f"b{i}")])
             for i in range(1, 5)
         ],
     )
@@ -141,7 +145,10 @@ def test_dialogue_scene_binding_stability():
     draft = _draft().model_copy(update={
         "scenes": [
             s.model_copy(update={
-                "dialogue": [l.model_copy(update={"scene_id": DraftSceneId("other")}) for l in s.dialogue]
+                "dialogue": [
+                    line.model_copy(update={"scene_id": DraftSceneId("other")})
+                    for line in s.dialogue
+                ]
             }) for s in _draft().scenes
         ]
     })
@@ -153,7 +160,9 @@ def test_empty_dialogue_text_blocks():
     draft = _draft().model_copy(update={
         "scenes": [
             s.model_copy(update={
-                "dialogue": [l.model_copy(update={"text": "   "}) for l in s.dialogue]
+                "dialogue": [
+                    line.model_copy(update={"text": "   "}) for line in s.dialogue
+                ]
             }) for s in _draft().scenes
         ]
     })
@@ -191,6 +200,18 @@ def test_unknown_outline_scene_blocks():
     })
     report = validate_screenplay_draft(draft, outline=_outline())
     assert any(i.code == "REF_MISSING" for i in report.issues)
+
+
+def test_draft_scene_must_copy_its_outline_contract():
+    scenes = list(_draft().scenes)
+    scenes[1] = scenes[1].model_copy(update={"estimated_seconds": 79})
+
+    report = validate_screenplay_draft(
+        _draft().model_copy(update={"scenes": scenes}),
+        outline=_outline(),
+    )
+
+    assert any(i.code == "ID_STABILITY" for i in report.issues)
 
 
 def test_from_video_screenplay_reports_loss():

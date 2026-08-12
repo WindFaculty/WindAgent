@@ -15,7 +15,6 @@ from windagent_core.domain.story.outline.duration import duration_issues
 from windagent_core.domain.story.outline.models import BeatSheet, EpisodeOutline
 from windagent_core.domain.story.screenplay.models import (
     TRANSITIONS,
-    DraftScene,
     ScreenplayDraft,
 )
 from windagent_core.domain.story.validation import (
@@ -61,7 +60,9 @@ def validate_screenplay_draft(
         ))
 
     canon_chars = {c.character_id for c in canon.characters} if canon else None
-    world_locs = {l.location_id for l in world.recurring_locations} if world else None
+    world_locs = {
+        location.location_id for location in world.recurring_locations
+    } if world else None
 
     for scene_index, scene in enumerate(draft.scenes):
         pointer = json_pointer("scenes", scene_index)
@@ -142,12 +143,54 @@ def validate_screenplay_draft(
     # -- OUTLINE TRACEABILITY -------------------------------------------------
     if outline is not None:
         outline_scene_ids = {s.scene_id for s in outline.scenes}
-        for scene in draft.scenes:
+        outline_scenes = {scene.scene_id: scene for scene in outline.scenes}
+        referenced_outline_ids = [scene.outline_scene_id for scene in draft.scenes]
+        if len(draft.scenes) != len(outline.scenes):
+            issues.append(_issue(
+                "ID_STABILITY",
+                json_pointer("scenes"),
+                "draft must contain exactly one scene per outline scene",
+            ))
+        if len(referenced_outline_ids) != len(set(referenced_outline_ids)):
+            issues.append(_issue(
+                "ID_STABILITY",
+                json_pointer("scenes"),
+                "outline_scene_id must be referenced exactly once",
+            ))
+        for scene_index, scene in enumerate(draft.scenes):
+            pointer = json_pointer("scenes", scene_index)
             if scene.outline_scene_id not in outline_scene_ids:
                 issues.append(_issue(
                     "REF_MISSING", json_pointer("scenes", scene.scene_id.value, "outline_scene_id"),
                     f"unknown outline scene {scene.outline_scene_id.value}",
                 ))
+                continue
+            outline_scene = outline_scenes[scene.outline_scene_id]
+            comparisons = (
+                ("order", scene.order, outline_scene.order),
+                ("location_id", scene.location_id, outline_scene.location_id),
+                ("character_ids", scene.character_ids, outline_scene.character_ids),
+                ("source_beat_ids", scene.source_beat_ids, outline_scene.beat_refs),
+                ("estimated_seconds", scene.estimated_seconds, outline_scene.estimated_seconds),
+            )
+            for field_name, observed, expected in comparisons:
+                if observed != expected:
+                    issues.append(_issue(
+                        "ID_STABILITY",
+                        json_pointer(pointer, field_name),
+                        f"draft {field_name} does not match its outline scene",
+                    ))
+        missing_outline_ids = sorted(
+            scene_id.value
+            for scene_id in outline_scene_ids
+            if scene_id not in referenced_outline_ids
+        )
+        if missing_outline_ids:
+            issues.append(_issue(
+                "ID_STABILITY",
+                json_pointer("scenes"),
+                f"outline scenes not represented in draft: {missing_outline_ids}",
+            ))
 
     # -- DURATION --------------------------------------------------------------
     findings = duration_issues(

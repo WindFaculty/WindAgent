@@ -30,6 +30,7 @@ from typing import Any, Dict, Optional
 
 from jsonschema import Draft202012Validator
 
+from windagent_core.contracts.studio.errors import StudioValidationError
 from windagent_intelligence.story.prompts.registry import (
     OUTPUT_FORMAT_JSON,
     OUTPUT_FORMAT_TEXT,
@@ -92,6 +93,8 @@ def story_error_code(exc: BaseException) -> str:
     """Map any exception to a B0 taxonomy code (unknown -> UNKNOWN)."""
     if isinstance(exc, StoryModelError):
         return exc.code
+    if isinstance(exc, StudioValidationError):
+        return "STORY_VALIDATION_FAILURE"
     return "STORY_UNKNOWN_ERROR"
 
 

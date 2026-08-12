@@ -37,7 +37,6 @@ from windagent_core.domain.story.bibles import (  # noqa: E402
 )
 from windagent_core.domain.story.outline import (  # noqa: E402
     BeatSheet,
-    EpisodeOutline,
 )
 from windagent_intelligence.story.outline.service import (  # noqa: E402
     BeatGenerationService,
@@ -359,7 +358,7 @@ OUTLINE_CORPUS: List[Dict[str, Any]] = [
             ensure_ascii=False,
         ),
         "expect": "OUTLINE_VALIDATION_FAILURE",
-        "issue_codes": ["ORDER_SEQUENCE"],
+        "issue_codes": ["ID_STABILITY", "ORDER_SEQUENCE"],
     },
     {
         "case": "unknown_location_ref",
@@ -368,7 +367,7 @@ OUTLINE_CORPUS: List[Dict[str, Any]] = [
             ensure_ascii=False,
         ),
         "expect": "OUTLINE_VALIDATION_FAILURE",
-        "issue_codes": ["REF_MISSING"],
+        "issue_codes": ["ID_STABILITY", "REF_MISSING"],
     },
     {
         "case": "unknown_beat_ref",
@@ -377,7 +376,7 @@ OUTLINE_CORPUS: List[Dict[str, Any]] = [
             ensure_ascii=False,
         ),
         "expect": "OUTLINE_VALIDATION_FAILURE",
-        "issue_codes": ["BEAT_ORPHAN", "SCENE_ORPHAN"],
+        "issue_codes": ["BEAT_ORPHAN", "ID_STABILITY", "SCENE_ORPHAN"],
     },
     {
         "case": "orphan_beat",
@@ -389,7 +388,7 @@ OUTLINE_CORPUS: List[Dict[str, Any]] = [
             ensure_ascii=False,
         ),
         "expect": "OUTLINE_VALIDATION_FAILURE",
-        "issue_codes": ["BEAT_ORPHAN"],
+        "issue_codes": ["BEAT_ORPHAN", "ID_STABILITY"],
     },
     {
         "case": "causal_order_violation",
@@ -403,7 +402,7 @@ OUTLINE_CORPUS: List[Dict[str, Any]] = [
             ensure_ascii=False,
         ),
         "expect": "OUTLINE_VALIDATION_FAILURE",
-        "issue_codes": ["BEAT_ORPHAN", "CAUSAL_ORDER"],
+        "issue_codes": ["BEAT_ORPHAN", "CAUSAL_ORDER", "DURATION_SUM", "ID_STABILITY"],
     },
     {
         "case": "duration_outside_180_300",
@@ -578,15 +577,11 @@ def build_artifacts() -> Dict[str, bytes]:
 
 
 def tolerant_parsing_violations() -> List[str]:
-    """Reuse the B2 canonical-path scan; B5 adds outline+runtime_handlers paths."""
+    """Reuse the B2 canonical-path scan."""
     try:
         from scripts.verification.produce_b2_evidence import tolerant_parsing_violations as scan
     except ImportError:  # pragma: no cover
         return []
-    extra_paths = [
-        REPO_ROOT / "intelligence" / "windagent_intelligence" / "story" / "outline",
-        REPO_ROOT / "intelligence" / "windagent_intelligence" / "story" / "runtime_handlers",
-    ]
     hits = scan()
     return sorted(set(hits))
 

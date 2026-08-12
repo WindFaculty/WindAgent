@@ -90,6 +90,24 @@ def redact(value: Any) -> Any:
     return value
 
 
+def _safe_failure_detail(exc: BaseException) -> str:
+    """Expose only typed validation issue codes, never model or prompt content."""
+    issue_codes: List[str] = []
+    details = getattr(exc, "details", None)
+    if isinstance(details, dict):
+        issues = details.get("issues")
+        if isinstance(issues, list):
+            for issue in issues:
+                if not isinstance(issue, dict):
+                    continue
+                code = str(issue.get("code", ""))
+                if code and code.isascii() and code.replace("_", "").isalnum():
+                    issue_codes.append(code[:64])
+    unique_codes = sorted(set(issue_codes))[:8]
+    suffix = f"[{','.join(unique_codes)}]" if unique_codes else ""
+    return f"{type(exc).__name__}{suffix}"
+
+
 # ---------------------------------------------------------------------------
 # Task-type contract tables (frozen against story_task_io.json + B handlers)
 # ---------------------------------------------------------------------------
@@ -342,7 +360,11 @@ class StudioRuntimeAdapter(ExecutionRuntimePort):
 
                 code = story_error_code(exc)
                 return self._fail(
-                    handle, code, type(exc).__name__, envelope=envelope, task_id=durable_task_id
+                    handle,
+                    code,
+                    _safe_failure_detail(exc),
+                    envelope=envelope,
+                    task_id=durable_task_id,
                 )
 
             if self._cancel_check():

@@ -18,10 +18,10 @@ quality/error taxonomy (§3 error codes). Fixtures: `fixtures/studio_contract_v0
 | `story.continuation.continue` | `1.0.0` | `f233d9b02c5c…` | legacy | text | 3000 | `canonical_screenplay_text_v1.json` |
 | `story.ideation.generate` | `1.0.0` | `e5c9c9799df1…` | canonical | json | 2500 | `IdeaGenerationOutput.json` |
 | `story.outline.generate` | `1.0.0` | `34b418e63b04…` | legacy | json | 1500 | `OutlineOutput.json` |
-| `story.outline.structured` | `1.0.1` | `5e27338f8e85…` | canonical | json | 3000 | `OutlineGenerationOutput.json` |
-| `story.review.assess` | `1.0.0` | `a6afb1b34d7a…` | canonical | json | 1200 | `ReviewOutput.json` |
-| `story.revise.rewrite` | `1.0.0` | `8751909c1407…` | canonical | json | 4000 | `ScreenplayRevisionOutput.json` |
-| `story.screenplay.structured` | `1.0.1` | `a1cc75686682…` | canonical | json | 4000 | `ScreenplayGenerationOutput.json` |
+| `story.outline.structured` | `1.0.2` | `3e468ffabec6…` | canonical | json | 3000 | `OutlineGenerationOutput.json` |
+| `story.review.assess` | `1.0.1` | `fc1b8f326d5a…` | canonical | json | 1200 | `ReviewOutput.json` |
+| `story.revise.rewrite` | `1.0.1` | `e5b9b4270e28…` | canonical | json | 4000 | `ScreenplayRevisionOutput.json` |
+| `story.screenplay.structured` | `1.0.2` | `49f459768383…` | canonical | json | 4000 | `ScreenplayGenerationOutput.json` |
 | `story.screenplay.write` | `1.0.0` | `d546496f9718…` | legacy | text | 4000 | `canonical_screenplay_text_v1.json` |
 
 Extracted legacy prompts keep template/hash equality with their live
@@ -94,7 +94,7 @@ None.
 
 **`STRUCTURED_MODEL_GATE`: PASS (B-side evidence).**
 
-- Manifest: `story_prompts/prompt_manifest.json` (checksum `7bbbfc8a4cdea4e8…`).
+- Manifest: `story_prompts/prompt_manifest.json` (checksum `aaf0e4b9ff77caba…`).
 - Schema checksums: `story_prompts/checksums.json`.
 - Corpus results: `story_prompts/invalid_output_corpus_results.json`.
 - C/A halves (runtime model-route lock, TypeScript schema consumption) are

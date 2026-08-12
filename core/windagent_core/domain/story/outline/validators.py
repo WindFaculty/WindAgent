@@ -161,8 +161,15 @@ def validate_episode_outline(
     # Beat coverage: every beat referenced >= 1 scene; no unknown beat refs.
     if beat_sheet is not None:
         beat_ids = {b.beat_id for b in beat_sheet.beats}
+        beats_by_id = {beat.beat_id: beat for beat in beat_sheet.beats}
         referenced: set = set()
-        for scene in outline.scenes:
+        if len(outline.scenes) != len(beat_sheet.beats):
+            issues.append(_issue(
+                "ID_STABILITY",
+                json_pointer("scenes"),
+                "outline must contain exactly one scene per beat",
+            ))
+        for index, scene in enumerate(outline.scenes):
             unknown = [b.value for b in scene.beat_refs if b not in beat_ids]
             if unknown:
                 issues.append(_issue(
@@ -170,6 +177,39 @@ def validate_episode_outline(
                     f"unknown beat refs: {unknown}", severity=ValidationSeverity.WARNING,
                 ))
             referenced.update(scene.beat_refs)
+            pointer = json_pointer("scenes", index)
+            if len(scene.beat_refs) != 1 or scene.beat_refs[0] not in beats_by_id:
+                issues.append(_issue(
+                    "ID_STABILITY",
+                    json_pointer(pointer, "beat_refs"),
+                    "each outline scene must copy exactly one known beat",
+                ))
+                continue
+            beat = beats_by_id[scene.beat_refs[0]]
+            if scene.order != beat.order:
+                issues.append(_issue(
+                    "ID_STABILITY",
+                    json_pointer(pointer, "order"),
+                    f"scene order {scene.order} does not match beat order {beat.order}",
+                ))
+            if scene.location_id != beat.location_id:
+                issues.append(_issue(
+                    "ID_STABILITY",
+                    json_pointer(pointer, "location_id"),
+                    "scene location_id does not match its source beat",
+                ))
+            if scene.character_ids != beat.character_ids:
+                issues.append(_issue(
+                    "ID_STABILITY",
+                    json_pointer(pointer, "character_ids"),
+                    "scene character_ids do not match its source beat",
+                ))
+            if scene.estimated_seconds != beat.target_seconds:
+                issues.append(_issue(
+                    "DURATION_SUM",
+                    json_pointer(pointer, "estimated_seconds"),
+                    "scene estimated_seconds does not match its source beat",
+                ))
         orphan = sorted(b.beat_id.value for b in beat_sheet.beats if b.beat_id not in referenced)
         if orphan:
             issues.append(_issue(

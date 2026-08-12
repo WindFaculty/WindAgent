@@ -317,7 +317,7 @@ SCREENPLAY_CORPUS: List[Dict[str, Any]] = [
             ensure_ascii=False,
         ),
         "expect": "SCREENPLAY_VALIDATION_FAILURE",
-        "issue_codes": ["ORDER_SEQUENCE"],
+        "issue_codes": ["ID_STABILITY", "ORDER_SEQUENCE"],
     },
     {
         "case": "unknown_location_ref",
@@ -328,7 +328,7 @@ SCREENPLAY_CORPUS: List[Dict[str, Any]] = [
             ensure_ascii=False,
         ),
         "expect": "SCREENPLAY_VALIDATION_FAILURE",
-        "issue_codes": ["REF_MISSING"],
+        "issue_codes": ["ID_STABILITY", "REF_MISSING"],
     },
     {
         "case": "unknown_outline_scene_ref",
@@ -339,7 +339,7 @@ SCREENPLAY_CORPUS: List[Dict[str, Any]] = [
             ensure_ascii=False,
         ),
         "expect": "SCREENPLAY_VALIDATION_FAILURE",
-        "issue_codes": ["REF_MISSING"],
+        "issue_codes": ["ID_STABILITY", "REF_MISSING"],
     },
     {
         "case": "unknown_character_ref",
@@ -350,7 +350,7 @@ SCREENPLAY_CORPUS: List[Dict[str, Any]] = [
             ensure_ascii=False,
         ),
         "expect": "SCREENPLAY_VALIDATION_FAILURE",
-        "issue_codes": ["DIALOGUE_ATTRIBUTION", "REF_MISSING"],  # cast swap also breaks dialogue attribution
+        "issue_codes": ["DIALOGUE_ATTRIBUTION", "ID_STABILITY", "REF_MISSING"],  # cast swap also breaks dialogue attribution
     },
     {
         "case": "dialogue_attribution_mismatch",
@@ -432,7 +432,7 @@ SCREENPLAY_CORPUS: List[Dict[str, Any]] = [
             ensure_ascii=False,
         ),
         "expect": "SCREENPLAY_VALIDATION_FAILURE",
-        "issue_codes": ["BEAT_COVERAGE"],
+        "issue_codes": ["BEAT_COVERAGE", "ID_STABILITY"],
     },
     {
         "case": "unknown_beat_ref",
@@ -443,7 +443,7 @@ SCREENPLAY_CORPUS: List[Dict[str, Any]] = [
             ensure_ascii=False,
         ),
         "expect": "SCREENPLAY_VALIDATION_FAILURE",
-        "issue_codes": ["BEAT_COVERAGE"],
+        "issue_codes": ["BEAT_COVERAGE", "ID_STABILITY"],
     },
     {
         "case": "duration_outside_180_300",
@@ -459,7 +459,7 @@ SCREENPLAY_CORPUS: List[Dict[str, Any]] = [
             ensure_ascii=False,
         ),
         "expect": "SCREENPLAY_VALIDATION_FAILURE",
-        "issue_codes": ["DURATION_BOUND", "DURATION_SUM"],
+        "issue_codes": ["DURATION_BOUND", "DURATION_SUM", "ID_STABILITY"],
     },
     {
         "case": "unicode_vietnamese",
@@ -543,7 +543,17 @@ def golden_screenplay_set() -> Dict[str, Any]:
             world=GOLDEN_WORLD,
         )
         rendered = result.rendered_text
-        assert render_screenplay_text(result.draft, character_names={c.character_id.value: c.name for c in GOLDEN_CANON.characters}, location_names={l.location_id.value: l.name for l in GOLDEN_WORLD.recurring_locations}) == rendered
+        assert render_screenplay_text(
+            result.draft,
+            character_names={
+                character.character_id.value: character.name
+                for character in GOLDEN_CANON.characters
+            },
+            location_names={
+                location.location_id.value: location.name
+                for location in GOLDEN_WORLD.recurring_locations
+            },
+        ) == rendered
         return {
             "draft": result.draft.to_canonical_dict(),
             "rendered_text": rendered,
@@ -592,15 +602,11 @@ def build_artifacts() -> Dict[str, bytes]:
 
 
 def tolerant_parsing_violations() -> List[str]:
-    """Reuse the B2 canonical-path scan; B6 adds screenplay+runtime_handlers paths."""
+    """Reuse the B2 canonical-path scan."""
     try:
         from scripts.verification.produce_b2_evidence import tolerant_parsing_violations as scan
     except ImportError:  # pragma: no cover
         return []
-    extra_paths = [
-        REPO_ROOT / "intelligence" / "windagent_intelligence" / "story" / "screenplay",
-        REPO_ROOT / "intelligence" / "windagent_intelligence" / "story" / "runtime_handlers",
-    ]
     hits = scan()
     return sorted(set(hits))
 

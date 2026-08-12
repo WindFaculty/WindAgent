@@ -10,10 +10,10 @@ catalog + structured model boundary, B4 canon. Fixtures:
 - Prompt: `story.beats.generate` v1.0.1 — schema-first JSON,
   `legacy=False`. Hash: `61cec0219c03c012f8097ef51ea2ef1dc8e4b86a68379b4064f7fb976d5d549e`; output schema:
   `BeatGenerationOutput.json` (4-12 beats, order, roles, canon refs, budget).
-- Prompt: `story.outline.structured` v1.0.1 — schema-first
+- Prompt: `story.outline.structured` v1.0.2 — schema-first
   JSON, `legacy=False` (canonical successor of the legacy
   `story.outline.generate` prompt, which stays for the old pipeline).
-  Hash: `5e27338f8e8502b99ca7f4fa0009cc58c93d7ce86a888a9b08a958d51b58f486`; output schema:
+  Hash: `3e468ffabec6c098ac7b55946e883fee4a5473db9d6a0af3ca6d1c5e9efe5816`; output schema:
   `OutlineGenerationOutput.json` (3-12 scenes, intent, canon refs, beat
   coverage, duration budget).
 - Catalog invariants: **0 violation(s)**;
@@ -71,11 +71,11 @@ by `produce_b5_evidence.py --check` and
 | `missing_scenes` | `error` | `STORY_SCHEMA_FAILURE` | — |
 | `scene_missing_intent` | `error` | `STORY_SCHEMA_FAILURE` | — |
 | `duplicate_scene_ids` | `error` | `OUTLINE_VALIDATION_FAILURE` | ID_UNIQUE |
-| `scene_order_not_starting_at_1` | `error` | `OUTLINE_VALIDATION_FAILURE` | ORDER_SEQUENCE |
-| `unknown_location_ref` | `error` | `OUTLINE_VALIDATION_FAILURE` | REF_MISSING |
-| `unknown_beat_ref` | `error` | `OUTLINE_VALIDATION_FAILURE` | BEAT_ORPHAN,SCENE_ORPHAN |
-| `orphan_beat` | `error` | `OUTLINE_VALIDATION_FAILURE` | BEAT_ORPHAN |
-| `causal_order_violation` | `error` | `OUTLINE_VALIDATION_FAILURE` | BEAT_ORPHAN,CAUSAL_ORDER |
+| `scene_order_not_starting_at_1` | `error` | `OUTLINE_VALIDATION_FAILURE` | ID_STABILITY,ORDER_SEQUENCE |
+| `unknown_location_ref` | `error` | `OUTLINE_VALIDATION_FAILURE` | ID_STABILITY,REF_MISSING |
+| `unknown_beat_ref` | `error` | `OUTLINE_VALIDATION_FAILURE` | BEAT_ORPHAN,ID_STABILITY,SCENE_ORPHAN |
+| `orphan_beat` | `error` | `OUTLINE_VALIDATION_FAILURE` | BEAT_ORPHAN,ID_STABILITY |
+| `causal_order_violation` | `error` | `OUTLINE_VALIDATION_FAILURE` | BEAT_ORPHAN,CAUSAL_ORDER,DURATION_SUM,ID_STABILITY |
 | `duration_outside_180_300` | `error` | `OUTLINE_VALIDATION_FAILURE` | DURATION_BOUND,DURATION_SUM |
 | `too_few_scenes` | `error` | `STORY_SCHEMA_FAILURE` | — |
 | `unicode_vietnamese` | `ok` | `—` | — |
@@ -116,10 +116,10 @@ Tolerant-parser scan (reused from B2 over `core/.../domain/story/`,
 **`OUTLINE_GATE`: PASS (B-side evidence).**
 
 - Golden: `outline_set_golden.json` (checksum
-  `f5ba6600f62d3cb3…`).
+  `49c600d60f54cfee…`).
 - Corpus results: `invalid_output_corpus_results.json` (beats + outline);
   checksums: `checksums.json`.
-- Prompt manifest checksum: `7bbbfc8a4cdea4e8…`
+- Prompt manifest checksum: `aaf0e4b9ff77caba…`
   (11 prompts incl. `story.beats.generate` +
   `story.outline.structured`; B2 manifest refreshed).
 - A-side (durable task execution + approval checkpoint) and C-side (beat/

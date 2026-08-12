@@ -81,7 +81,7 @@ def test_outline_prompts_registered_non_legacy_schema_first():
     assert beats.output_schema["properties"]["beats"]["minItems"] == 4
 
     outline = prompt_for("story.outline.structured")
-    assert outline.version == "1.0.1"
+    assert outline.version == "1.0.2"
     assert outline.legacy is False
     assert outline.output_format == "json"
     assert outline.output_schema["title"] == "OutlineGenerationOutput"

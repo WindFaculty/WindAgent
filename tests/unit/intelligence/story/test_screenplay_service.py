@@ -86,6 +86,19 @@ def test_screenplay_generation_is_idempotent():
     assert first.rendered_text == second.rendered_text
 
 
+def test_screenplay_prompt_uses_a_valid_json_structural_ledger():
+    port = FixtureModelPort(responses={"screenplay": _valid_response()})
+    service = ScreenplayGenerationService(StoryModelBoundary(port))
+
+    _run(service.generate(GOLDEN_OUTLINE))
+
+    prompt = port.requests[0].user
+    assert '"outline_scene_id":"s1"' in prompt
+    assert '"source_beat_ids":["b1"]' in prompt
+    assert r'{\"draft_id\"' not in prompt
+    assert '{"draft_id": ..., "title": ...' in prompt
+
+
 def test_markdown_fence_repaired_once():
     response = "```json\n" + _valid_response() + "\n```"
     result = _run(_service(response).generate(GOLDEN_OUTLINE))
@@ -136,11 +149,11 @@ def test_invalid_outline_fails_before_provider_call():
     [
         ("empty_scene", lambda s: {**s, "action_description": "", "dialogue": [], "narration": ""}, ["FIELD_EMPTY"]),
         ("duplicate_ids", lambda s: {**s, "scene_id": "dscn2"}, ["ID_STABILITY", "ID_UNIQUE"]),
-        ("order_gap", lambda s: {**s, "order": 2}, ["ORDER_SEQUENCE"]),
-        ("unknown_location", lambda s: {**s, "location_id": "loc_ghost"}, ["REF_MISSING"]),
-        ("unknown_outline_scene", lambda s: {**s, "outline_scene_id": "s9"}, ["REF_MISSING"]),
-        ("unknown_beat", lambda s: {**s, "source_beat_ids": ["b9"]}, ["BEAT_COVERAGE"]),
-        ("orphan_beat", lambda s: {**s, "source_beat_ids": []}, ["BEAT_COVERAGE"]),
+        ("order_gap", lambda s: {**s, "order": 2}, ["ID_STABILITY", "ORDER_SEQUENCE"]),
+        ("unknown_location", lambda s: {**s, "location_id": "loc_ghost"}, ["ID_STABILITY", "REF_MISSING"]),
+        ("unknown_outline_scene", lambda s: {**s, "outline_scene_id": "s9"}, ["ID_STABILITY", "REF_MISSING"]),
+        ("unknown_beat", lambda s: {**s, "source_beat_ids": ["b9"]}, ["BEAT_COVERAGE", "ID_STABILITY"]),
+        ("orphan_beat", lambda s: {**s, "source_beat_ids": []}, ["BEAT_COVERAGE", "ID_STABILITY"]),
         ("bad_transition", lambda s: {**s, "transition": "SMASH CUT:"}, ["FORMAT_VALIDITY"]),
         ("bad_attribution", lambda s: {**s, "dialogue": [{**s["dialogue"][0], "character_id": "ch_kite"}]}, ["DIALOGUE_ATTRIBUTION"]),
         ("dialogue_foreign_scene", lambda s: {**s, "dialogue": [{**s["dialogue"][0], "scene_id": "dscn2"}]}, ["ID_STABILITY"]),
@@ -168,7 +181,7 @@ def test_duration_outside_180_300_fails_closed():
     with pytest.raises(ScreenplayValidationFailure) as exc:
         _run(service.generate(GOLDEN_OUTLINE, beat_sheet=GOLDEN_BEATS))
     codes = {i["code"] for i in (exc.value.details or {}).get("issues", [])}
-    assert set(codes) == {"DURATION_BOUND", "DURATION_SUM"}
+    assert set(codes) == {"DURATION_BOUND", "DURATION_SUM", "ID_STABILITY"}
 
 
 # ---------------------------------------------------------------------------
@@ -209,7 +222,10 @@ def test_renderer_orders_dialogue_and_keeps_unicode():
 def test_renderer_matches_service_rendered_text():
     with_names = {
         "character_names": {c.character_id.value: c.name for c in GOLDEN_CANON.characters},
-        "location_names": {l.location_id.value: l.name for l in GOLDEN_WORLD.recurring_locations},
+        "location_names": {
+            location.location_id.value: location.name
+            for location in GOLDEN_WORLD.recurring_locations
+        },
     }
     result = _run(_service(_valid_response()).generate(
         GOLDEN_OUTLINE, canon=GOLDEN_CANON, world=GOLDEN_WORLD

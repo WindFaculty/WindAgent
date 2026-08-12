@@ -12,6 +12,7 @@ with a typed ``ScreenplayValidationFailure``.
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from typing import Any, Dict, Optional
 
@@ -68,15 +69,19 @@ class ScreenplayGenerationResult:
 
 
 def _outline_summary(outline: EpisodeOutline) -> str:
-    lines = []
-    for scene in outline.scenes:
-        lines.append(
-            f"- {scene.scene_id.value}|order {scene.order}|loc {scene.location_id.value}"
-            f"|chars {','.join(c.value for c in scene.character_ids)}"
-            f"|beats {','.join(b.value for b in scene.beat_refs)}"
-            f"|{scene.estimated_seconds}s|{scene.intent}"
-        )
-    return "\n".join(lines)
+    ledger = [
+        {
+            "order": scene.order,
+            "outline_scene_id": scene.scene_id.value,
+            "location_id": scene.location_id.value,
+            "character_ids": [character_id.value for character_id in scene.character_ids],
+            "source_beat_ids": [beat_id.value for beat_id in scene.beat_refs],
+            "estimated_seconds": scene.estimated_seconds,
+            "intent": scene.intent,
+        }
+        for scene in outline.scenes
+    ]
+    return json.dumps(ledger, ensure_ascii=False, separators=(",", ":"))
 
 
 def _beats_summary(beat_sheet: BeatSheet) -> str:

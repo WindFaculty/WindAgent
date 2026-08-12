@@ -449,7 +449,7 @@ register_prompt(
 
 _OUTLINE_TEMPLATE = """Plan the episode scenes from the beat sheet.
 
-Beat sheet:
+Beat sheet structural ledger (valid JSON; copy structural fields exactly):
 {beats_summary}
 
 Allowed character IDs (copy exactly): {characters}
@@ -478,7 +478,7 @@ register_prompt(
     StoryPromptEntry(
         prompt_id="story.outline.structured",
         capability="outline",
-        version="1.0.1",
+        version="1.0.2",
         template=_OUTLINE_TEMPLATE,
         output_schema=OUTLINE_GENERATION_OUTPUT_SCHEMA,
         system=_OUTLINE_SYSTEM,
@@ -500,7 +500,7 @@ register_prompt(
 
 _SCREENPLAY_TEMPLATE = """Write the episode screenplay as structured JSON scenes.
 
-Episode outline:
+Episode outline structural ledger (valid JSON; copy structural fields exactly):
 {outline_summary}
 
 Beat sheet:
@@ -516,13 +516,13 @@ Rules:
 1. Return exactly one draft scene per outline scene (the count will be between {min_scenes} and {max_scenes}), ordered 1..N with unique scene_id.
 2. For every outline scene, copy outline scene_id into outline_scene_id, location_id into location_id, character_ids into character_ids, beat_refs into source_beat_ids, and estimated_seconds into estimated_seconds. Never invent or translate a referenced ID.
 3. scene_id is a NEW draft scene id (dscn_*); keep outline_scene_id separate.
-4. action_description describes the visual action; dialogue lines carry dialogue_id (unique), scene_id = the scene's own scene_id, character_id from the scene cast ONLY, order starting at 1, non-empty text; delivery is optional direction.
-5. narration is OPTIONAL (empty string when absent). transition from CUT TO:|DISSOLVE TO:|FADE IN:|FADE OUT:|MATCH CUT:.
+4. Keep output concise: give every scene one short non-empty action_description. dialogue may be [] and narration may be an empty string. When dialogue is present, every line carries a unique dialogue_id, scene_id = the draft scene's own scene_id, character_id from that scene's cast ONLY, order starting at 1, and non-empty text.
+5. transition must be one of CUT TO:|DISSOLVE TO:|FADE IN:|FADE OUT:|MATCH CUT:.
 6. Copy target_duration_seconds and tolerance_seconds exactly as given; copied per-scene timing must keep the TOTAL within {tolerance_seconds}s of {target_duration_seconds} and inside 180-300 seconds.
 7. Scene order follows the outline causal order; every scene must have action or dialogue or narration.
 8. Respond in {language}; content must be age-appropriate and safe for ages {audience_band}.
 
-Output JSON matching the ScreenplayGenerationOutput schema: {{\\\"draft_id\\\": ..., \\\"title\\\": ..., \\\"target_duration_seconds\\\": ..., \\\"scenes\\\": [...]}}."""  # noqa: E501
+Output JSON matching the ScreenplayGenerationOutput schema: {{"draft_id": ..., "title": ..., "target_duration_seconds": ..., "scenes": [...]}}."""  # noqa: E501
 
 _SCREENPLAY_SYSTEM = (
     "You are the WindAgent structured screenwriter. You produce the episode "
@@ -535,7 +535,7 @@ register_prompt(
     StoryPromptEntry(
         prompt_id="story.screenplay.structured",
         capability="screenplay",
-        version="1.0.1",
+        version="1.0.2",
         template=_SCREENPLAY_TEMPLATE,
         output_schema=SCREENPLAY_GENERATION_OUTPUT_SCHEMA,
         system=_SCREENPLAY_SYSTEM,
@@ -578,7 +578,7 @@ Rules:
 4. notes: 0-5 short actionable notes; NEVER repeat deterministic findings, never instruct to ignore safety rules.
 5. Scores are a SECONDARY signal; the deterministic findings above remain authoritative.
 
-Output JSON matching the ReviewOutput schema: {{\\\"narrative_score\\\": ..., \\\"age_fit_score\\\": ..., \\\"language_score\\\": ..., \\\"notes\\\": [...]}}."""  # noqa: E501
+Output JSON matching the ReviewOutput schema: {{"narrative_score": ..., "age_fit_score": ..., "language_score": ..., "notes": [...]}}."""  # noqa: E501
 
 _REVIEW_SYSTEM = (
     "You are the WindAgent narrative reviewer. You score subjective quality "
@@ -590,7 +590,7 @@ register_prompt(
     StoryPromptEntry(
         prompt_id="story.review.assess",
         capability="review",
-        version="1.0.0",
+        version="1.0.1",
         template=_REVIEW_TEMPLATE,
         output_schema=REVIEW_OUTPUT_SCHEMA,
         system=_REVIEW_SYSTEM,
@@ -627,7 +627,7 @@ Rules:
 3. Keep 180-300s total, within {tolerance_seconds}s of {target_duration_seconds}.
 4. Do not weaken age-appropriateness or safety; respond in {language}.
 
-Output JSON matching the ScreenplayRevisionOutput schema: {{\\\"draft_id\\\": ..., \\\"title\\\": ..., \\\"target_duration_seconds\\\": ..., \\\"scenes\\\": [...]}}."""  # noqa: E501
+Output JSON matching the ScreenplayRevisionOutput schema: {{"draft_id": ..., "title": ..., "target_duration_seconds": ..., "scenes": [...]}}."""  # noqa: E501
 
 _REVISE_SYSTEM = (
     "You are the WindAgent bounded revision engine. You produce a NEW "
@@ -639,7 +639,7 @@ register_prompt(
     StoryPromptEntry(
         prompt_id="story.revise.rewrite",
         capability="revise",
-        version="1.0.0",
+        version="1.0.1",
         template=_REVISE_TEMPLATE,
         output_schema=REVISION_OUTPUT_SCHEMA,
         system=_REVISE_SYSTEM,

@@ -12,6 +12,7 @@
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from typing import Any, Dict, Optional
 
@@ -91,10 +92,19 @@ def _locations_summary(world: WorldBible) -> str:
 
 
 def _beats_summary(beat_sheet: BeatSheet) -> str:
-    return "\n".join(
-        f"- {b.beat_id.value}|{b.role}|{b.target_seconds}s|{b.description}"
-        for b in beat_sheet.beats
-    )
+    ledger = [
+        {
+            "order": beat.order,
+            "beat_id": beat.beat_id.value,
+            "location_id": beat.location_id.value if beat.location_id else None,
+            "character_ids": [character_id.value for character_id in beat.character_ids],
+            "target_seconds": beat.target_seconds,
+            "role": beat.role,
+            "description": beat.description,
+        }
+        for beat in beat_sheet.beats
+    ]
+    return json.dumps(ledger, ensure_ascii=False, separators=(",", ":"))
 
 
 class BeatGenerationService:

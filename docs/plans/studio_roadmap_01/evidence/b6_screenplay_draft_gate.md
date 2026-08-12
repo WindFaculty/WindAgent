@@ -7,9 +7,9 @@ sample) and `.../story_prompts/` (prompt manifest).
 
 ## 1. Structured screenplay prompt (B6 canonical, non-legacy)
 
-- Prompt: `story.screenplay.structured` v1.0.1 — schema-first JSON,
+- Prompt: `story.screenplay.structured` v1.0.2 — schema-first JSON,
   `legacy=False` (canonical successor of the legacy `story.screenplay.write`
-  TEXT prompt, which stays for the old pipeline). Hash: `a1cc75686682351ad6f8320b87ff3ffd3f37ace7acd0a581fc13f907fc5f56ca`;
+  TEXT prompt, which stays for the old pipeline). Hash: `49f459768383c59f0785d2f4237cfd3d09ce4e3d0ad20d3c2a724dd30e4c0824`;
   output schema: `ScreenplayGenerationOutput.json` (3-12 scenes, action,
   dialogue with attribution, optional narration, transitions, per-scene
   timing, outline/beat/canon source refs).
@@ -52,17 +52,17 @@ by `produce_b6_evidence.py --check` and
 | `too_few_scenes` | `error` | `STORY_SCHEMA_FAILURE` | — |
 | `scene_without_content` | `error` | `SCREENPLAY_VALIDATION_FAILURE` | FIELD_EMPTY |
 | `duplicate_scene_ids` | `error` | `SCREENPLAY_VALIDATION_FAILURE` | ID_STABILITY,ID_UNIQUE |
-| `scene_order_not_starting_at_1` | `error` | `SCREENPLAY_VALIDATION_FAILURE` | ORDER_SEQUENCE |
-| `unknown_location_ref` | `error` | `SCREENPLAY_VALIDATION_FAILURE` | REF_MISSING |
-| `unknown_outline_scene_ref` | `error` | `SCREENPLAY_VALIDATION_FAILURE` | REF_MISSING |
-| `unknown_character_ref` | `error` | `SCREENPLAY_VALIDATION_FAILURE` | DIALOGUE_ATTRIBUTION,REF_MISSING |
+| `scene_order_not_starting_at_1` | `error` | `SCREENPLAY_VALIDATION_FAILURE` | ID_STABILITY,ORDER_SEQUENCE |
+| `unknown_location_ref` | `error` | `SCREENPLAY_VALIDATION_FAILURE` | ID_STABILITY,REF_MISSING |
+| `unknown_outline_scene_ref` | `error` | `SCREENPLAY_VALIDATION_FAILURE` | ID_STABILITY,REF_MISSING |
+| `unknown_character_ref` | `error` | `SCREENPLAY_VALIDATION_FAILURE` | DIALOGUE_ATTRIBUTION,ID_STABILITY,REF_MISSING |
 | `dialogue_attribution_mismatch` | `error` | `SCREENPLAY_VALIDATION_FAILURE` | DIALOGUE_ATTRIBUTION |
 | `dialogue_scene_id_mismatch` | `error` | `SCREENPLAY_VALIDATION_FAILURE` | ID_STABILITY |
 | `dialogue_empty_text` | `error` | `STORY_SCHEMA_FAILURE` | — |
 | `unknown_transition` | `error` | `SCREENPLAY_VALIDATION_FAILURE` | FORMAT_VALIDITY |
-| `orphan_beat` | `error` | `SCREENPLAY_VALIDATION_FAILURE` | BEAT_COVERAGE |
-| `unknown_beat_ref` | `error` | `SCREENPLAY_VALIDATION_FAILURE` | BEAT_COVERAGE |
-| `duration_outside_180_300` | `error` | `SCREENPLAY_VALIDATION_FAILURE` | DURATION_BOUND,DURATION_SUM |
+| `orphan_beat` | `error` | `SCREENPLAY_VALIDATION_FAILURE` | BEAT_COVERAGE,ID_STABILITY |
+| `unknown_beat_ref` | `error` | `SCREENPLAY_VALIDATION_FAILURE` | BEAT_COVERAGE,ID_STABILITY |
+| `duration_outside_180_300` | `error` | `SCREENPLAY_VALIDATION_FAILURE` | DURATION_BOUND,DURATION_SUM,ID_STABILITY |
 | `unicode_vietnamese` | `ok` | `—` | — |
 | `prompt_injection_in_field` | `ok` | `—` | — |
 
@@ -107,11 +107,11 @@ Tolerant-parser scan (reused from B2 over `core/.../domain/story/`,
 **`SCREENPLAY_DRAFT_GATE`: PASS (B-side evidence).**
 
 - Golden: `screenplay_set_golden.json` (checksum
-  `c7e04d51553facbc…`).
+  `a28e11dec572f384…`).
 - Rendered sample: `rendered_sample.txt` (deterministic derived text view).
 - Corpus results: `invalid_output_corpus_results.json`; checksums:
   `checksums.json`.
-- Prompt manifest checksum: `7bbbfc8a4cdea4e8…`
+- Prompt manifest checksum: `aaf0e4b9ff77caba…`
   (11 prompts incl. `story.screenplay.structured`;
   B2 manifest refreshed).
 - A-side (durable task execution + approval checkpoint) and C-side (draft/

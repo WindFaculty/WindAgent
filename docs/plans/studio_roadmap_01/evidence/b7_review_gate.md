@@ -7,12 +7,12 @@ Fixtures: `fixtures/studio_contract_v0.1/story_review/` (corpora/golden) and
 
 ## 1. Review/revise prompts (B7 canonical, non-legacy)
 
-- Prompt: `story.review.assess` v1.0.0 — schema-first JSON,
-  `legacy=False`. Hash: `a6afb1b34d7a0338d740debc0c615432e3c8bb8d75b058dc548eded1bac36dd9`; output schema:
+- Prompt: `story.review.assess` v1.0.1 — schema-first JSON,
+  `legacy=False`. Hash: `fc1b8f326d5a7fb7407bf83736fdee0f243b70904f4f603ee460e5c71eb1b21a`; output schema:
   `ReviewOutput.json` (narrative/age_fit/language scores + notes). The model
   is a SECONDARY signal: deterministic findings stay the gate authority.
-- Prompt: `story.revise.rewrite` v1.0.0 — schema-first JSON,
-  `legacy=False`. Hash: `8751909c140798fe98fa103c51d8efa4ad0ba972fab8a32501b9ff2a2df9a039`; output schema:
+- Prompt: `story.revise.rewrite` v1.0.1 — schema-first JSON,
+  `legacy=False`. Hash: `e5b9b4270e288bfd2659e0134a795ebf23b3d9b4173f49ef8f6c302697ffeb8c`; output schema:
   `ScreenplayRevisionOutput.json` (NEW immutable draft; same scene shape as
   generation).
 - Catalog invariants: **0 violation(s)**;
@@ -37,7 +37,7 @@ Fixtures: `fixtures/studio_contract_v0.1/story_review/` (corpora/golden) and
   0 findings, hash `d8e50550164f97e2…`.
 - Weak review `report_draft_rabbit_kite_1_pass_with_warnings`: verdict **PASS_WITH_WARNINGS**
   (age_fit 0.4 < 0.5 -> `MODEL_DIMENSION_SCORE` warning), hash
-  `43e6018808e63084…`.
+  `0f180896df76f9db…`.
 - Revision proposal `proposal_draft_rabbit_kite_2`: iteration
   2/3, accepted
   codes `['MODEL_DIMENSION_SCORE']`, bound to report
@@ -111,11 +111,11 @@ Tolerant-parser scan (reused from B2 over `core/.../domain/story/`,
 **`STORY_REVIEW_GATE`: PASS (B-side evidence).**
 
 - Golden loop: `review_loop_golden.json` (checksum
-  `423f8efd29f8f679…`) — clean
+  `dfb37c337f2dfc0a…`) — clean
   PASS, warning-level findings, bounded revision with immutable diff.
 - Corpus results: `invalid_output_corpus_results.json`; checksums:
   `checksums.json`.
-- Prompt manifest checksum: `7bbbfc8a4cdea4e8…`
+- Prompt manifest checksum: `aaf0e4b9ff77caba…`
   (11 prompts incl. `story.review.assess` +
   `story.revise.rewrite`; B2 manifest refreshed).
 - A-side (durable task execution + approval checkpoint) and C-side

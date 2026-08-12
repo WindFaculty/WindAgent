@@ -30,7 +30,10 @@ from windagent_core.contracts.studio.models import (
     StudioTaskStatus,
     StudioTaskType,
 )
-from windagent_core.contracts.studio.errors import StudioCapabilityUnavailableError
+from windagent_core.contracts.studio.errors import (
+    StudioCapabilityUnavailableError,
+    StudioValidationError,
+)
 from windagent_core.domain.story.ideation.models import IdeaCandidate, IdeaCandidateSet
 from windagent_core.domain.story.review import LockedScreenplayReceipt, PackageArtifactRef
 from windagent_core.domain.studio.artifact import StoryArtifactEnvelope
@@ -53,12 +56,29 @@ from windagent_worker.studio_runtime import (
     UNREGISTERED_TASK_TYPE,
     StudioCompletionRecovery,
     StudioRuntimeAdapter,
+    _safe_failure_detail,
 )
 
 import windagent_storage.orm.studio_models  # noqa: F401
 import windagent_storage.orm.v2_orchestration_models  # noqa: F401
 
 HASH64 = "a" * 64
+
+
+def test_validation_failure_detail_exposes_only_issue_codes() -> None:
+    failure = StudioValidationError(
+        "raw model content must not be persisted",
+        details={
+            "issues": [
+                {"code": "DURATION_SUM", "evidence": "secret prose"},
+                {"code": "REF_MISSING", "evidence": "more secret prose"},
+            ]
+        },
+    )
+
+    assert _safe_failure_detail(failure) == (
+        "StudioValidationError[DURATION_SUM,REF_MISSING]"
+    )
 
 BRIEF_DICT = {
     "brief_id": "brf_a5_1",

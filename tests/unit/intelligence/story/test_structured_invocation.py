@@ -187,6 +187,7 @@ async def test_text_output_prompt_returns_text_payload():
 
 
 def test_error_code_mapping_covers_taxonomy():
+    from windagent_core.contracts.studio.errors import StudioValidationError
     from windagent_intelligence.story.prompts.structured import (
         StoryEmptyResponseError,
         StoryModelError,
@@ -213,4 +214,5 @@ def test_error_code_mapping_covers_taxonomy():
     for cls in classes:
         assert story_error_code(cls("boom")) in expected
     assert story_error_code(StoryModelError("boom")) == "STORY_UNKNOWN_ERROR"
+    assert story_error_code(StudioValidationError("boom")) == "STORY_VALIDATION_FAILURE"
     assert story_error_code(ValueError("boom")) == "STORY_UNKNOWN_ERROR"

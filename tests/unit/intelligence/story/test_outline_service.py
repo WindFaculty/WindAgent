@@ -75,6 +75,10 @@ def test_outline_prompt_carries_exact_allowed_canon_ids():
     )
 
     rendered = port.requests[0].user
+    assert '"beat_id":"b1"' in rendered
+    assert '"location_id":"loc_river"' in rendered
+    assert '"character_ids":["ch_rabbit"]' in rendered
+    assert '"target_seconds":40' in rendered
     for character in GOLDEN_CANON.characters:
         assert character.character_id.value in rendered
     for location in GOLDEN_WORLD.recurring_locations:
@@ -191,13 +195,16 @@ def test_three_five_minute_boundaries():
     # 180s and 300s targets pass when the outline fits; 240s baseline already covered.
     for target, factor in ((180, 0.75), (300, 1.25)):
         data = json.loads(json.dumps(GOLDEN_EPISODE_OUTLINE, ensure_ascii=False))
+        beat_data = json.loads(json.dumps(GOLDEN_BEAT_SHEET, ensure_ascii=False))
         data["target_duration_seconds"] = target
-        for scene in data["scenes"]:
+        beat_data["total_target_seconds"] = target
+        for scene, beat in zip(data["scenes"], beat_data["beats"]):
             scene["estimated_seconds"] = int(scene["estimated_seconds"] * factor)
+            beat["target_seconds"] = scene["estimated_seconds"]
         total = sum(s["estimated_seconds"] for s in data["scenes"])
         if abs(total - target) <= 15 and 180 <= total <= 300:
             result = _run(_outline_service(json.dumps(data, ensure_ascii=False)).generate(
-                BeatSheet(**GOLDEN_BEAT_SHEET), canon=GOLDEN_CANON, world=GOLDEN_WORLD
+                BeatSheet(**beat_data), canon=GOLDEN_CANON, world=GOLDEN_WORLD
             ))
             assert result.validation["pass"] is True
 
