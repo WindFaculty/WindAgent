@@ -34,6 +34,18 @@
     "ReviewFinding": {
       "description": "One review finding (frozen shape from the B0 taxonomy).",
       "properties": {
+        "actual_score": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Actual Score"
+        },
         "code": {
           "minLength": 1,
           "title": "Code",
@@ -61,6 +73,19 @@
           "title": "Location",
           "type": "string"
         },
+        "provenance": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Provenance"
+        },
         "remediation": {
           "default": "",
           "title": "Remediation",
@@ -74,6 +99,18 @@
           "default": "deterministic",
           "title": "Source",
           "type": "string"
+        },
+        "threshold": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Threshold"
         }
       },
       "required": [

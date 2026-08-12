@@ -168,6 +168,31 @@ def test_certification_environment_manifest_is_redaction_safe() -> None:
     }
 
 
+def test_sanitize_url_removes_postgres_credentials() -> None:
+    url = "postgresql://test-user:test-password-sentinel@db.local/wind?token=test-token-sentinel"
+    manifest = sanitize_environment({"WINDAGENT_DATABASE_URL": url})
+
+    assert manifest["WINDAGENT_DATABASE_URL"] == "postgresql://db.local/wind"
+    assert "test-password-sentinel" not in manifest["WINDAGENT_DATABASE_URL"]
+    assert "test-token-sentinel" not in manifest["WINDAGENT_DATABASE_URL"]
+
+
+def test_sanitize_url_removes_postgres_query() -> None:
+    manifest = sanitize_environment(
+        {"WINDAGENT_DATABASE_URL": "postgresql://db.local/wind?sslmode=require&token=test-token-sentinel"}
+    )
+
+    assert manifest["WINDAGENT_DATABASE_URL"] == "postgresql://db.local/wind"
+
+
+def test_sanitize_url_removes_postgres_fragment_and_keeps_port() -> None:
+    manifest = sanitize_environment(
+        {"WINDAGENT_DATABASE_URL": "postgresql://db.local:5433/wind#frag-sentinel"}
+    )
+
+    assert manifest["WINDAGENT_DATABASE_URL"] == "postgresql://db.local:5433/wind"
+
+
 def test_certification_sqlite_url_keeps_triple_slash_after_sanitize() -> None:
     manifest = sanitize_environment(
         {
@@ -181,6 +206,47 @@ def test_certification_sqlite_url_keeps_triple_slash_after_sanitize() -> None:
     assert manifest["WINDAGENT_DATABASE_URL"] == (
         "sqlite+aiosqlite:///D:/repo/.tmp/studio-c7/candidate-x.db"
     )
+
+
+def test_sanitize_url_removes_sqlite_query() -> None:
+    manifest = sanitize_environment(
+        {"WINDAGENT_DATABASE_URL": "sqlite+aiosqlite:///D:/repo/cert.db?token=test-token-sentinel"}
+    )
+
+    assert manifest["WINDAGENT_DATABASE_URL"] == "sqlite+aiosqlite:///D:/repo/cert.db"
+    assert "test-token-sentinel" not in manifest["WINDAGENT_DATABASE_URL"]
+
+
+def test_sanitize_url_removes_sqlite_fragment() -> None:
+    manifest = sanitize_environment(
+        {"WINDAGENT_DATABASE_URL": "sqlite+aiosqlite:///D:/repo/cert.db#frag-sentinel"}
+    )
+
+    assert manifest["WINDAGENT_DATABASE_URL"] == "sqlite+aiosqlite:///D:/repo/cert.db"
+
+
+def test_sanitize_url_removes_sqlite_userinfo_and_keeps_triple_slash() -> None:
+    manifest = sanitize_environment(
+        {"WINDAGENT_DATABASE_URL": "sqlite+aiosqlite://test-user:test-password-sentinel@/D:/repo/cert.db"}
+    )
+
+    assert manifest["WINDAGENT_DATABASE_URL"] == "sqlite+aiosqlite:///D:/repo/cert.db"
+    assert "test-password-sentinel" not in manifest["WINDAGENT_DATABASE_URL"]
+
+
+def test_sanitize_url_fails_closed_on_invalid_url() -> None:
+    manifest = sanitize_environment(
+        {"WINDAGENT_DATABASE_URL": "postgresql://test-user:test-password-sentinel@[broken"}
+    )
+
+    assert manifest["WINDAGENT_DATABASE_URL"] == "<redacted-invalid-url>"
+    assert "test-password-sentinel" not in manifest["WINDAGENT_DATABASE_URL"]
+
+
+def test_sanitize_url_leaves_non_url_values_untouched() -> None:
+    manifest = sanitize_environment({"WINDAGENT_CERTIFICATION_MODE": "1"})
+
+    assert manifest["WINDAGENT_CERTIFICATION_MODE"] == "1"
 
 
 def test_certification_console_streams_are_forced_to_utf8() -> None:

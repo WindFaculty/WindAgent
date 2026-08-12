@@ -73,20 +73,42 @@ def _package_version(distribution: str) -> str:
 
 
 def _sanitize_url(value: str) -> str:
+    """Strip credentials/query/fragment from a URL for receipt manifests.
+
+    Invariant:
+    - preserve scheme, host:port, and exact path
+    - drop userinfo (credentials), query, and fragment
+    - keep file-backed sqlite triple-slash semantics ("///abs/path"),
+      which the urlsplit/urlunsplit roundtrip only preserves when the
+      rebuilt netloc is empty
+    """
     try:
         parsed = urlsplit(value)
     except ValueError:
         return "<redacted-invalid-url>"
     if not parsed.scheme:
         return value
-    # ponytail: file-backed sqlite URLs carry no credentials and the
-    # urlsplit/urlunsplit roundtrip drops a slash from "///" absolute paths.
     if parsed.scheme.startswith("sqlite"):
-        return value
-    host = parsed.hostname or ""
+        # File-backed sqlite has no host; any netloc content would be
+        # credential-like userinfo. Rebuild from the ORIGINAL string (not
+        # urlunsplit, which drops a slash from "///D:/..." Windows paths
+        # because the path does not start with "//") and only slice off
+        # fragment, query, and userinfo.
+        stripped = value
+        if "#" in stripped:
+            stripped = stripped.split("#", 1)[0]
+        if "?" in stripped:
+            stripped = stripped.split("?", 1)[0]
+        if parsed.username is not None or parsed.password is not None:
+            sep = stripped.find("://")
+            at = stripped.rfind("@")
+            if sep != -1 and at != -1 and at > sep:
+                stripped = stripped[: sep + 3] + stripped[at + 1 :]
+        return stripped
+    netloc = parsed.hostname or ""
     if parsed.port:
-        host = f"{host}:{parsed.port}"
-    return urlunsplit((parsed.scheme, host, parsed.path, "", ""))
+        netloc = f"{netloc}:{parsed.port}"
+    return urlunsplit((parsed.scheme, netloc, parsed.path, "", ""))
 
 
 def sanitize_environment(env: Dict[str, str]) -> Dict[str, str]:
