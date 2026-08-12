@@ -52,6 +52,7 @@ class OpenAICompatibleTransport:
         http_client: Optional[httpx.AsyncClient] = None,
         stream_generate: bool = False,
         default_payload: Optional[Dict[str, Any]] = None,
+        supports_response_format: bool = True,
     ):
         self.provider_name = provider_name
         self.base_url = base_url.rstrip("/")
@@ -61,6 +62,13 @@ class OpenAICompatibleTransport:
         self._custom_client = http_client
         self.stream_generate = stream_generate
         self.default_payload = dict(default_payload or {})
+        #: Provider-side JSON-schema enforcement hint. Ollama's json_schema
+        #: mode distorts structural copying (drifted character_ids) and can
+        #: return empty content on streamed long outputs; the story boundary
+        #: still validates the response against the schema post-hoc
+        #: (STORY_SCHEMA_FAILURE, fail-closed), so dropping the hint changes
+        #: nothing about enforcement.
+        self.supports_response_format = supports_response_format
 
     def _build_headers(self) -> Dict[str, str]:
         headers = {"Content-Type": "application/json", **self.default_headers}
@@ -113,7 +121,7 @@ class OpenAICompatibleTransport:
             payload["tools"] = request.tools
         if request.tool_choice:
             payload["tool_choice"] = request.tool_choice
-        if request.structured_output_schema:
+        if request.structured_output_schema and self.supports_response_format:
             payload["response_format"] = {
                 "type": "json_schema",
                 "json_schema": {
@@ -300,6 +308,7 @@ class OpenAICompatibleTransport:
         client = self._get_client()
         should_close = self._custom_client is None
         content_parts: List[str] = []
+        reasoning_parts: List[str] = []
         accumulated_tool_calls: Dict[int, Dict[str, Any]] = {}
         usage_data: Dict[str, Any] = {}
         provider_model_id = model_id
@@ -352,6 +361,13 @@ class OpenAICompatibleTransport:
                     delta = choice.get("delta") or {}
                     if delta.get("content"):
                         content_parts.append(delta["content"])
+                    # Ollama's OpenAI shim sometimes streams the whole
+                    # generation under "reasoning" (think-disabled qwen3.5);
+                    # keep it as a fallback so streamed answers are never
+                    # silently dropped to empty content.
+                    reasoning = delta.get("reasoning") or delta.get("reasoning_content")
+                    if reasoning:
+                        reasoning_parts.append(reasoning)
                     for tool_delta in delta.get("tool_calls") or []:
                         index = int(tool_delta.get("index", 0))
                         current = accumulated_tool_calls.setdefault(
@@ -372,7 +388,7 @@ class OpenAICompatibleTransport:
                     if choice.get("finish_reason"):
                         finish_reason = choice["finish_reason"]
 
-            text_content = "".join(content_parts)
+            text_content = "".join(content_parts) or "".join(reasoning_parts)
             structured_out = None
             if request.structured_output_schema and text_content:
                 try:

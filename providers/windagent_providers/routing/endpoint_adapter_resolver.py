@@ -35,4 +35,11 @@ class EndpointAdapterResolver:
             api_key=self._decrypt_credentials(ciphertext) if ciphertext else "",
             stream_generate=protocol_mode == "ollama",
             default_payload={"think": False} if protocol_mode == "ollama" else None,
+            # Ollama json_schema mode drifts structural copies and can emit
+            # empty streamed content; the story boundary enforces the schema
+            # post-hoc regardless (STORY_SCHEMA_FAILURE, fail-closed).
+            supports_response_format=protocol_mode != "ollama",
+            # Local model reloads after idle: first-token latency can exceed
+            # the 30s default read timeout.
+            timeout_seconds=300.0 if protocol_mode == "ollama" else 30.0,
         )

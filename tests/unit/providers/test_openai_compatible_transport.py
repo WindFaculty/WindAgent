@@ -35,6 +35,55 @@ def test_payload_uses_canonical_max_tokens_and_prefers_explicit_output_limit():
     assert payload["max_tokens"] == 1200
 
 
+def test_non_ollama_transport_keeps_json_schema_response_format():
+    transport = OpenAICompatibleTransport(api_key="sk-testkey")
+
+    payload = transport._build_payload(  # noqa: SLF001 - transport contract regression
+        ProviderRequest(prompt="Return JSON", max_tokens=4000, structured_output_schema={"type": "object"}),
+        "gpt-4o",
+    )
+    assert payload["response_format"]["type"] == "json_schema"
+
+
+def test_streamed_generate_falls_back_to_reasoning_deltas_when_content_empty():
+    sse_body = (
+        'data: {"id":"chatcmpl-real-1","model":"ornith:9b","choices":'
+        '[{"delta":{"reasoning":"{\\"ok\\":"},"finish_reason":null}]}\n\n'
+        'data: {"id":"chatcmpl-real-1","model":"ornith:9b","choices":'
+        '[{"delta":{"reasoning":"true}"},"finish_reason":"stop"}]}\n\n'
+        'data: {"id":"chatcmpl-real-1","model":"ornith:9b","choices":[],"usage":'
+        '{"prompt_tokens":7,"completion_tokens":3,"total_tokens":10}}\n\n'
+        'data: [DONE]\n\n'
+    )
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            200,
+            text=sse_body,
+            headers={"content-type": "text/event-stream"},
+        )
+
+    mock_client = httpx.AsyncClient(transport=httpx.MockTransport(handler))
+    transport = OpenAICompatibleTransport(
+        provider_name="ollama-local",
+        http_client=mock_client,
+        stream_generate=True,
+        default_payload={"think": False},
+        supports_response_format=False,
+    )
+
+    async def run() -> str:
+        response = await transport.generate(
+            ProviderRequest(prompt="Return JSON", max_tokens=50),
+            "ornith:9b",
+        )
+        return response.text
+
+    import asyncio
+
+    assert asyncio.run(run()) == '{"ok":true}'
+
+
 @pytest.mark.asyncio
 async def test_non_stream_completion_success():
     def handler(request: httpx.Request) -> httpx.Response:
@@ -98,7 +147,9 @@ async def test_streamed_generate_accumulates_content_usage_and_request_id():
         }
         assert payload["stream_options"] == {"include_usage": True}
         assert payload["think"] is False
-        assert payload["response_format"]["type"] == "json_schema"
+        # Ollama protocol drops the provider-side json_schema hint (compat
+        # knob); the story boundary still validates post-hoc, fail-closed.
+        assert "response_format" not in payload
         return httpx.Response(
             200,
             text=sse_body,
@@ -111,6 +162,7 @@ async def test_streamed_generate_accumulates_content_usage_and_request_id():
         http_client=mock_client,
         stream_generate=True,
         default_payload={"think": False},
+        supports_response_format=False,
     )
     request = ProviderRequest(
         prompt="Return JSON",
@@ -164,27 +216,35 @@ async def test_stream_completion_fragmented_sse_and_tool_calls():
 @pytest.mark.asyncio
 async def test_error_status_code_mappings():
     # 401 AuthenticationFailure
-    handler_401 = lambda r: httpx.Response(401, json={"error": {"message": "Invalid API key sk-secret12345"}})
+    def handler_401(r: httpx.Request) -> httpx.Response:
+        return httpx.Response(401, json={"error": {"message": "Invalid API key sk-secret12345"}})
+
     t_401 = OpenAICompatibleTransport(http_client=httpx.AsyncClient(transport=httpx.MockTransport(handler_401)))
     with pytest.raises(AuthenticationFailure) as exc_info:
         await t_401.generate(ProviderRequest(), model_id="gpt-4o")
     assert "sk-secret12345" not in str(exc_info.value)  # Secret redacted
 
     # 404 ModelNotFoundFailure
-    handler_404 = lambda r: httpx.Response(404, json={"error": {"message": "Model not found"}})
+    def handler_404(r: httpx.Request) -> httpx.Response:
+        return httpx.Response(404, json={"error": {"message": "Model not found"}})
+
     t_404 = OpenAICompatibleTransport(http_client=httpx.AsyncClient(transport=httpx.MockTransport(handler_404)))
     with pytest.raises(ModelNotFoundFailure):
         await t_404.generate(ProviderRequest(), model_id="nonexistent-model")
 
     # 429 RateLimitFailure
-    handler_429 = lambda r: httpx.Response(429, json={"error": {"message": "Rate limit exceeded"}}, headers={"retry-after": "5"})
+    def handler_429(r: httpx.Request) -> httpx.Response:
+        return httpx.Response(429, json={"error": {"message": "Rate limit exceeded"}}, headers={"retry-after": "5"})
+
     t_429 = OpenAICompatibleTransport(http_client=httpx.AsyncClient(transport=httpx.MockTransport(handler_429)))
     with pytest.raises(RateLimitFailure) as exc_429:
         await t_429.generate(ProviderRequest(), model_id="gpt-4o")
     assert exc_429.value.retryable is True
 
     # 503 ProviderUnavailableFailure
-    handler_503 = lambda r: httpx.Response(503, json={"error": {"message": "Server overloaded"}})
+    def handler_503(r: httpx.Request) -> httpx.Response:
+        return httpx.Response(503, json={"error": {"message": "Server overloaded"}})
+
     t_503 = OpenAICompatibleTransport(http_client=httpx.AsyncClient(transport=httpx.MockTransport(handler_503)))
     with pytest.raises(ProviderUnavailableFailure):
         await t_503.generate(ProviderRequest(), model_id="gpt-4o")
