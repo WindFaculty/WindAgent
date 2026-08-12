@@ -21,7 +21,7 @@ quality/error taxonomy (§3 error codes). Fixtures: `fixtures/studio_contract_v0
 | `story.outline.structured` | `1.0.2` | `3e468ffabec6…` | canonical | json | 3000 | `OutlineGenerationOutput.json` |
 | `story.review.assess` | `1.0.1` | `fc1b8f326d5a…` | canonical | json | 1200 | `ReviewOutput.json` |
 | `story.revise.rewrite` | `1.0.1` | `e5b9b4270e28…` | canonical | json | 4000 | `ScreenplayRevisionOutput.json` |
-| `story.screenplay.structured` | `1.0.2` | `49f459768383…` | canonical | json | 4000 | `ScreenplayGenerationOutput.json` |
+| `story.screenplay.structured` | `1.0.3` | `a3f71de56fbf…` | canonical | json | 4000 | `ScreenplayGenerationOutput.json` |
 | `story.screenplay.write` | `1.0.0` | `d546496f9718…` | legacy | text | 4000 | `canonical_screenplay_text_v1.json` |
 
 Extracted legacy prompts keep template/hash equality with their live
@@ -94,7 +94,7 @@ None.
 
 **`STRUCTURED_MODEL_GATE`: PASS (B-side evidence).**
 
-- Manifest: `story_prompts/prompt_manifest.json` (checksum `aaf0e4b9ff77caba…`).
+- Manifest: `story_prompts/prompt_manifest.json` (checksum `02e0f550a7d76c64…`).
 - Schema checksums: `story_prompts/checksums.json`.
 - Corpus results: `story_prompts/invalid_output_corpus_results.json`.
 - C/A halves (runtime model-route lock, TypeScript schema consumption) are

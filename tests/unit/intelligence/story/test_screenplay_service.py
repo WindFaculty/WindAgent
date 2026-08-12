@@ -96,7 +96,9 @@ def test_screenplay_prompt_uses_a_valid_json_structural_ledger():
     assert '"outline_scene_id":"s1"' in prompt
     assert '"source_beat_ids":["b1"]' in prompt
     assert r'{\"draft_id\"' not in prompt
-    assert '{"draft_id": ..., "title": ...' in prompt
+    assert '"draft_id": "dscn_<invent a fresh id' in prompt
+    assert '"dialogue_id": "dlg_001"' in prompt
+    assert "Output ONLY the raw JSON object" in prompt
 
 
 def test_markdown_fence_repaired_once():

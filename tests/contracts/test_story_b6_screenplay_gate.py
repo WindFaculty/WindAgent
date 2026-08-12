@@ -76,7 +76,7 @@ def load(name: str):
 
 def test_screenplay_prompt_registered_non_legacy_schema_first():
     entry = prompt_for("story.screenplay.structured")
-    assert entry.version == "1.0.2"
+    assert entry.version == "1.0.3"
     assert entry.legacy is False
     assert entry.output_format == "json"
     assert entry.output_schema["title"] == "ScreenplayGenerationOutput"

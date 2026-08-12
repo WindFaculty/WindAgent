@@ -522,20 +522,23 @@ Rules:
 7. Scene order follows the outline causal order; every scene must have action or dialogue or narration.
 8. Respond in {language}; content must be age-appropriate and safe for ages {audience_band}.
 
-Output JSON matching the ScreenplayGenerationOutput schema: {{"draft_id": ..., "title": ..., "target_duration_seconds": ..., "scenes": [...]}}."""  # noqa: E501
+Exact output shape (fill this structure; every key is REQUIRED; never omit, rename, or add keys; spell key names exactly — especially "dialogue_id"):
+{{"draft_id": "dscn_<invent a fresh id, never reuse example ids>", "title": "...", "target_duration_seconds": {target_duration_seconds}, "scenes": [{{"scene_id": "dscn_001", "order": 1, "outline_scene_id": "sc_001", "location_id": "lc_01", "character_ids": ["char_001"], "action_description": "one short non-empty action sentence", "dialogue": [{{"dialogue_id": "dlg_001", "scene_id": "dscn_001", "character_id": "char_001", "order": 1, "text": "one non-empty line"}}], "narration": "", "transition": "CUT TO:", "estimated_seconds": 25, "source_beat_ids": ["bt_001"]}}]}}
+Copy the per-scene numbers (order, estimated_seconds, location_id, character_ids, source_beat_ids) VERBATIM from the outline ledger above — they are already correct. Return exactly as many scenes as the outline ledger has. Every scene and every dialogue line must include "order". Output ONLY the raw JSON object — no markdown code fences, no commentary, no trailing text."""  # noqa: E501
 
 _SCREENPLAY_SYSTEM = (
     "You are the WindAgent structured screenwriter. You produce the episode "
     "ScreenplayDraft as structured JSON only (action, dialogue, narration, "
     "timing, source refs); canonical text is rendered downstream, never "
-    "written by the model."
+    "written by the model. Reply with the raw JSON object only: no markdown "
+    "code fences, no commentary, no trailing text."
 )
 
 register_prompt(
     StoryPromptEntry(
         prompt_id="story.screenplay.structured",
         capability="screenplay",
-        version="1.0.2",
+        version="1.0.3",
         template=_SCREENPLAY_TEMPLATE,
         output_schema=SCREENPLAY_GENERATION_OUTPUT_SCHEMA,
         system=_SCREENPLAY_SYSTEM,
@@ -547,7 +550,7 @@ register_prompt(
             "stays for the old pipeline)."
         ),
         max_tokens=4000,
-        temperature=0.7,
+        temperature=0.3,
     )
 )
 

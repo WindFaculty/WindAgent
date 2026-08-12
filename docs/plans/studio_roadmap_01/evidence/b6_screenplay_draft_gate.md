@@ -7,9 +7,9 @@ sample) and `.../story_prompts/` (prompt manifest).
 
 ## 1. Structured screenplay prompt (B6 canonical, non-legacy)
 
-- Prompt: `story.screenplay.structured` v1.0.2 — schema-first JSON,
+- Prompt: `story.screenplay.structured` v1.0.3 — schema-first JSON,
   `legacy=False` (canonical successor of the legacy `story.screenplay.write`
-  TEXT prompt, which stays for the old pipeline). Hash: `49f459768383c59f0785d2f4237cfd3d09ce4e3d0ad20d3c2a724dd30e4c0824`;
+  TEXT prompt, which stays for the old pipeline). Hash: `a3f71de56fbf88dff090925ab2bf2129ede2ef955bf948efc288d0a49f5b2420`;
   output schema: `ScreenplayGenerationOutput.json` (3-12 scenes, action,
   dialogue with attribution, optional narration, transitions, per-scene
   timing, outline/beat/canon source refs).
@@ -107,11 +107,11 @@ Tolerant-parser scan (reused from B2 over `core/.../domain/story/`,
 **`SCREENPLAY_DRAFT_GATE`: PASS (B-side evidence).**
 
 - Golden: `screenplay_set_golden.json` (checksum
-  `a28e11dec572f384…`).
+  `297ef40c5736d6fe…`).
 - Rendered sample: `rendered_sample.txt` (deterministic derived text view).
 - Corpus results: `invalid_output_corpus_results.json`; checksums:
   `checksums.json`.
-- Prompt manifest checksum: `aaf0e4b9ff77caba…`
+- Prompt manifest checksum: `02e0f550a7d76c64…`
   (11 prompts incl. `story.screenplay.structured`;
   B2 manifest refreshed).
 - A-side (durable task execution + approval checkpoint) and C-side (draft/

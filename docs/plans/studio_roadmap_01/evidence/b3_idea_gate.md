@@ -86,7 +86,7 @@ Tolerant-parser scan (reused from B2 over `core/.../domain/story/`,
   `b98bbbe49d77f0f2…`).
 - Corpus results: `invalid_output_corpus_results.json`; policy matrix:
   `selection_policy_matrix.json`; checksums: `checksums.json`.
-- Prompt manifest checksum: `aaf0e4b9ff77caba…` (5 prompts incl.
+- Prompt manifest checksum: `02e0f550a7d76c64…` (5 prompts incl.
   `story.ideation.generate`; B2 manifest refreshed).
 - A-side (durable task execution + approval command) and C-side (UI
   comparison fields) halves are co-signed by their plan owners at contract
