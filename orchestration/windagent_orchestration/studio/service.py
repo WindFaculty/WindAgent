@@ -103,7 +103,11 @@ from windagent_core.domain.story.ids import (
     LockedScreenplayReceiptId,
     SelectedIdeaId,
 )
-from windagent_core.domain.story.review.models import LockedScreenplayReceipt, ReviewReport
+from windagent_core.domain.story.review import (
+    REQUIRED_PACKAGE_ARTIFACTS,
+    LockedScreenplayReceipt,
+    ReviewReport,
+)
 from windagent_core.domain.story.screenplay import ScreenplayDraft
 from windagent_core.domain.story.validation import ValidationSeverity
 from windagent_core.events.studio import StudioEventCatalog, StudioEventEnvelope
@@ -1174,6 +1178,35 @@ class StudioRunService(StudioRunOrchestratorPort):
             draft = ScreenplayDraft.model_validate(draft_artifact.content)
         except Exception:  # noqa: BLE001 — malformed upstream artifact fails closed at the worker
             return input_refs, {}
+        # Complete the lock lineage with every required package type. The DAG
+        # edge only carries ReviewReport (+ the reviewed draft above); the
+        # immutable package manifest needs the full 9-type lineage
+        # (SelectedIdea lives in episode artifacts — it is A-side state, not
+        # a DAG node output). Types already bound above are never replaced.
+        missing_types = REQUIRED_PACKAGE_ARTIFACTS - {
+            r["artifact_type"] for r in input_refs
+        }
+        if missing_types:
+            episode_artifacts = await uow.artifacts.list_for_episode(
+                EpisodeId(run["episode_id"])
+            )
+            for artifact in episode_artifacts:
+                artifact_type = str(artifact.artifact_type.value)
+                if artifact_type not in missing_types:
+                    continue
+                input_refs.append(
+                    {
+                        "artifact_type": artifact_type,
+                        "artifact_id": str(artifact.artifact_id),
+                        "content_hash": artifact.content_hash,
+                        "revision_id": (
+                            str(artifact.revision_id)
+                            if artifact.revision_id is not None
+                            else None
+                        ),
+                    }
+                )
+                missing_types.remove(artifact_type)
         policy = await self._load_policy(uow)
         mode = policy.mode_for(ApprovalCheckpoint.SCREENPLAY)
         receipt = LockedScreenplayReceipt(
@@ -1188,6 +1221,11 @@ class StudioRunService(StudioRunOrchestratorPort):
         return input_refs, {
             "receipt": receipt.to_canonical_dict(),
             "receipt_artifact_id": f"art_{receipt.receipt_id.value}",
+            "lineage_refs": [
+                ref
+                for ref in input_refs
+                if ref["artifact_type"] in REQUIRED_PACKAGE_ARTIFACTS
+            ],
         }
 
     async def _submit_runnable_nodes(self, run_id: StudioRunId) -> None:

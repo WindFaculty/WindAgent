@@ -762,6 +762,105 @@ async def test_auto_happy_path_skips_gates(db, service):
 
 
 @pytest.mark.asyncio
+async def test_lock_task_payload_carries_full_9_type_lineage(db, service):
+    """C7 vertical-slice regression: the lock envelope must carry the full
+    package lineage (9 required artifact types). The DAG edge only carries
+    ReviewReport; upstream types (SelectedIdea etc.) are A-side episode
+    artifacts. Without them the worker's LockService fails closed with
+    MANIFEST_MISSING_REF after a PASS review (reached only when a real
+    model passes the quality gate)."""
+    from windagent_core.domain.story.review import REQUIRED_PACKAGE_ARTIFACTS
+    from windagent_storage.unit_of_work.studio_uow import StudioUnitOfWork
+
+    import json  # used below for the queue payload
+    from windagent_core.domain.studio.approval import ApprovalDecisionValue
+
+    _, episode_id = await _seed_episode(db, service)
+    revision = await _seed_revision(db, episode_id)
+    started = await service.start_or_resume_run(
+        StartRunCommand(idempotency_key=f"a4-locklineage-{episode_id}", episode_id=episode_id)
+    )
+    run_id = started.run_id
+    # Production runs persist upstream artifacts (SelectedIdea etc.) as
+    # A-side episode artifacts; mock completions in this suite return no
+    # refs, so seed them explicitly — the lock lineage must pick them up.
+    async with StudioUnitOfWork(db.session_factory) as uow:
+        run = await uow.runs.get(run_id)
+        for i, artifact_type in enumerate(
+            [
+                "SelectedIdea",
+                "StoryBible",
+                "WorldBible",
+                "CharacterCanon",
+                "BeatSheet",
+                "EpisodeOutline",
+            ]
+        ):
+            await uow.artifacts.save(
+                StoryArtifactEnvelope(
+                    artifact_id=ArtifactId(f"art_lineage_{i}"),
+                    artifact_type=artifact_type,
+                    series_id=run["series_id"],
+                    episode_id=episode_id,
+                    revision_id=revision.revision_id,
+                    content_hash=f"{i}" * 64,
+                    content={"artifact_type": artifact_type},
+                )
+            )
+        await uow.commit()
+    for node_id, checkpoint in [
+        (NODE_IDEA_GENERATE, None),
+        (NODE_IDEA_EVALUATE, ApprovalCheckpoint.IDEA.value),
+        (NODE_BIBLE_GENERATE, ApprovalCheckpoint.STORY_BIBLE.value),
+        (NODE_BEATS_GENERATE, None),
+        (NODE_OUTLINE_GENERATE, ApprovalCheckpoint.OUTLINE.value),
+        (NODE_SCREENPLAY_GENERATE, None),
+        (NODE_REVIEW, ApprovalCheckpoint.SCREENPLAY.value),
+    ]:
+        await _complete(service, db, run_id, node_id)
+        if checkpoint:
+            approval_revision = revision
+            if checkpoint == ApprovalCheckpoint.SCREENPLAY.value:
+                async with StudioUnitOfWork(db.session_factory) as uow:
+                    episode = await uow.episodes.get(episode_id)
+                    approval_revision = await uow.revisions.get(
+                        episode.current_revision_id
+                    )
+            await service.record_approval(
+                RecordApprovalCommand(
+                    idempotency_key=f"a4-locklineage-approve-{node_id}",
+                    run_id=run_id,
+                    episode_id=episode_id,
+                    revision_id=approval_revision.revision_id,
+                    checkpoint=checkpoint,
+                    artifact_hash=approval_revision.content_hash,
+                    actor="owner",
+                    decision=ApprovalDecisionValue.APPROVED.value,
+                    expected_optimistic_version=approval_revision.optimistic_version,
+                )
+            )
+    # Mock review PASSes, so revise/review.revised are SKIPPED and the lock
+    # node is dispatched immediately after the review approval.
+    lock = await _node(db, run_id, NODE_LOCK)
+    assert lock["status"] in (StudioNodeStatus.RUNNABLE.value, StudioNodeStatus.DISPATCHED.value), lock
+    task_id = lock["task_id"]
+    async with db.session_factory() as session:
+        row = (
+            await session.execute(
+                text("SELECT facts_json FROM task_runs WHERE id = :tid"),
+                {"tid": task_id},
+            )
+        ).scalar_one()
+    envelope = json.loads(row)["parameters"]["studio_envelope"]
+    lineage = envelope["payload"]["lineage_refs"]
+    types = {ref["artifact_type"] for ref in lineage}
+    # The receipt ref is added by the worker (A-issued); A supplies the rest.
+    assert types == set(REQUIRED_PACKAGE_ARTIFACTS) - {"LockedScreenplayReceipt"}, types
+    for ref in lineage:
+        assert ref["artifact_id"] and ref["content_hash"]
+
+
+@pytest.mark.asyncio
 async def test_certification_rejects_arbitrary_unbound_revision_hash(
     db, service, monkeypatch
 ):
