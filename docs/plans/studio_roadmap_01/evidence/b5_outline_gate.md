@@ -119,7 +119,7 @@ Tolerant-parser scan (reused from B2 over `core/.../domain/story/`,
   `49c600d60f54cfee…`).
 - Corpus results: `invalid_output_corpus_results.json` (beats + outline);
   checksums: `checksums.json`.
-- Prompt manifest checksum: `02e0f550a7d76c64…`
+- Prompt manifest checksum: `da41b029a78ecb4d…`
   (11 prompts incl. `story.beats.generate` +
   `story.outline.structured`; B2 manifest refreshed).
 - A-side (durable task execution + approval checkpoint) and C-side (beat/

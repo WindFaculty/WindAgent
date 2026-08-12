@@ -7,9 +7,9 @@ catalog + structured model boundary. Fixtures:
 
 ## 1. Idea generation prompt (B3 canonical, non-legacy)
 
-- Prompt: `story.ideation.generate` v1.0.0 — schema-first JSON,
+- Prompt: `story.ideation.generate` v1.1.0 — schema-first JSON,
   `legacy=False`.
-- Hash: `e5c9c9799df19dd1e9ee990ce8e43ff3c0e5ebe8a58cfc39ac2b52790a059b08`; output schema: `IdeaGenerationOutput.json`
+- Hash: `84e5cf22fdde139055f856eb440c247d76ea8f05d9cb000c44f84e6547582e03`; output schema: `IdeaGenerationOutput.json`
   (3-5 candidates, required fields, age_fit/counts bounds, safety flag).
 - Catalog invariants: **0 violation(s)**;
   registered prompt count: 11.
@@ -83,10 +83,10 @@ Tolerant-parser scan (reused from B2 over `core/.../domain/story/`,
 **`IDEA_GATE`: PASS (B-side evidence).**
 
 - Golden: `idea_candidates_golden.json` (checksum
-  `b98bbbe49d77f0f2…`).
+  `80e687b8bfc99655…`).
 - Corpus results: `invalid_output_corpus_results.json`; policy matrix:
   `selection_policy_matrix.json`; checksums: `checksums.json`.
-- Prompt manifest checksum: `02e0f550a7d76c64…` (5 prompts incl.
+- Prompt manifest checksum: `da41b029a78ecb4d…` (5 prompts incl.
   `story.ideation.generate`; B2 manifest refreshed).
 - A-side (durable task execution + approval command) and C-side (UI
   comparison fields) halves are co-signed by their plan owners at contract

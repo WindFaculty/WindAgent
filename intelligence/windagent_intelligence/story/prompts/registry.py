@@ -315,16 +315,18 @@ Creative brief:
 - Prohibited content (NEVER include, even implicitly): {prohibited_content}
 
 Rules:
-1. Return EXACTLY {target_count} candidates (between 3 and 5), each with a unique candidate_id.
+1. Return EXACTLY {target_count} candidates (between 3 and 5), each with a unique candidate_id ("c1", "c2", ...).
 2. Every candidate must be safe and age-appropriate for ages {audience_min_age}-{audience_max_age}.
 3. Every candidate must fit roughly {target_duration_seconds} seconds of animation.
 4. Respond in {language} for title/summary/premise/logline.
-5. age_fit is a 0.0-1.0 estimate of fit for the audience band.
-6. estimated_seconds/scene_count/character_count/location_count are production-feasibility estimates.
+5. age_fit is a 0.0-1.0 estimate of fit for the audience band (use 0.7-1.0).
+6. estimated_seconds should be near {target_duration_seconds}; scene_count/character_count/location_count are production-feasibility estimates (positive integers).
 7. safety_ok must be true; if a candidate cannot be made safe, do not include it.
 8. Candidates must be distinct from each other in premise and title.
 
-Output JSON matching the IdeaGenerationOutput schema: {{"language": ..., "candidates": [...]}}."""
+Exact output shape (fill this structure; every key is REQUIRED for EVERY candidate; never omit, rename, or add keys; spell key names exactly — especially "candidate_id", "safety_ok"):
+{{"language": "{language}", "candidates": [{{"candidate_id": "c1", "title": "...", "summary": "...", "premise": "...", "logline": "...", "themes": ["..."], "age_fit": 0.9, "estimated_seconds": {target_duration_seconds}, "scene_count": 5, "character_count": 2, "location_count": 2, "safety_ok": true}}]}}
+Repeat the candidate object EXACTLY {target_count} times inside the "candidates" array, once per idea, with "c1", "c2", ... as candidate_id. Output ONLY the raw JSON object — no markdown code fences, no commentary, no trailing text."""
 
 _IDEATION_SYSTEM = (
     "You are the WindAgent story ideation engine. You produce exactly 3-5 "
@@ -335,7 +337,7 @@ register_prompt(
     StoryPromptEntry(
         prompt_id="story.ideation.generate",
         capability="ideation",
-        version="1.0.0",
+        version="1.1.0",
         template=_IDEATION_TEMPLATE,
         output_schema=IDEA_GENERATION_OUTPUT_SCHEMA,
         system=_IDEATION_SYSTEM,

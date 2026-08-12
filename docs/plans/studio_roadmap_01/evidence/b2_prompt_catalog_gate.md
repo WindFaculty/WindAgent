@@ -16,7 +16,7 @@ quality/error taxonomy (§3 error codes). Fixtures: `fixtures/studio_contract_v0
 | `story.bibles.generate` | `1.0.1` | `272db437a280…` | canonical | json | 3000 | `BibleGenerationOutput.json` |
 | `story.brief_expansion.expand` | `1.0.0` | `2a882ce066c5…` | legacy | json | 1200 | `BriefExpansionOutput.json` |
 | `story.continuation.continue` | `1.0.0` | `f233d9b02c5c…` | legacy | text | 3000 | `canonical_screenplay_text_v1.json` |
-| `story.ideation.generate` | `1.0.0` | `e5c9c9799df1…` | canonical | json | 2500 | `IdeaGenerationOutput.json` |
+| `story.ideation.generate` | `1.1.0` | `84e5cf22fdde…` | canonical | json | 2500 | `IdeaGenerationOutput.json` |
 | `story.outline.generate` | `1.0.0` | `34b418e63b04…` | legacy | json | 1500 | `OutlineOutput.json` |
 | `story.outline.structured` | `1.0.2` | `3e468ffabec6…` | canonical | json | 3000 | `OutlineGenerationOutput.json` |
 | `story.review.assess` | `1.0.1` | `fc1b8f326d5a…` | canonical | json | 1200 | `ReviewOutput.json` |
@@ -94,7 +94,7 @@ None.
 
 **`STRUCTURED_MODEL_GATE`: PASS (B-side evidence).**
 
-- Manifest: `story_prompts/prompt_manifest.json` (checksum `02e0f550a7d76c64…`).
+- Manifest: `story_prompts/prompt_manifest.json` (checksum `da41b029a78ecb4d…`).
 - Schema checksums: `story_prompts/checksums.json`.
 - Corpus results: `story_prompts/invalid_output_corpus_results.json`.
 - C/A halves (runtime model-route lock, TypeScript schema consumption) are
