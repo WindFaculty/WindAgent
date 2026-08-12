@@ -1,0 +1,21 @@
+{
+  "source_sha": "6b8f35e",
+  "generated_at": "2026-08-12T14:48:14.753407+00:00",
+  "google_api_key": "present (never persisted)",
+  "models": [
+    "gemini-3.5-flash-lite",
+    "gemma-4-31b-it"
+  ],
+  "language_threshold": 0.85,
+  "reliability_spread_max": 0.05,
+  "reliability_spread_preferred": 0.03,
+  "prompt_registry_version": "v1.2.0 (review/revise) / v1.0.3 (screenplay) — unchanged",
+  "frozen_input": {
+    "kind": "EpisodeOutline from S2 ornith diagnostic run",
+    "hash": "abaa3ae64a90d6e92152505006517e14d33199f57f309ac165d6ec1382cb28a0"
+  },
+  "fixed_artifact": {
+    "kind": "ScreenplayDraft initial (S2 run)",
+    "draft_id": "dscn_001"
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "status": "PASS",
+  "generated_at": "2026-08-12T14:02:08.392390+00:00",
+  "source_sha": "6b8f35e",
+  "note": "no API key or response content is stored; error text is secret-redacted",
+  "models": [
+    {
+      "model": "gemini-3.5-flash-lite",
+      "authentication": "PASS",
+      "model_accessible": "PASS",
+      "response_non_empty": "PASS",
+      "actual_model": "gemini-3.5-flash-lite",
+      "probe_prompt_hash": "005e8b8c77cb28597c6ce497b4bbfc44d0eac01fc9dbb5f9e3811ea82dc6e069",
+      "checks": {
+        "list_models": {
+          "ok": true,
+          "listed": 50
+        },
+        "generate": {
+          "ok": true,
+          "finish_reason": "stop",
+          "latency_ms": 897.6,
+          "prompt_tokens": 29,
+          "completion_tokens": 7,
+          "response_hash": "c0b0f042f6df7b7575cb63394a90911a3be18ba41417f178c73104acea8e1c87"
+        },
+        "sampling_params": {
+          "ok": true,
+          "note": "temperature=0.3 accepted by API"
+        }
+      },
+      "errors": [],
+      "response_preview": "Con thỏ đang ăn cỏ."
+    },
+    {
+      "model": "gemma-4-31b-it",
+      "authentication": "PASS",
+      "model_accessible": "PASS",
+      "response_non_empty": "PASS",
+      "actual_model": "gemma-4-31b-it",
+      "probe_prompt_hash": "005e8b8c77cb28597c6ce497b4bbfc44d0eac01fc9dbb5f9e3811ea82dc6e069",
+      "checks": {
+        "list_models": {
+          "ok": true,
+          "listed": 50
+        },
+        "generate": {
+          "ok": true,
+          "finish_reason": "length",
+          "latency_ms": 2831.4,
+          "prompt_tokens": 29,
+          "completion_tokens": 0,
+          "response_hash": "fdf092d02b3a2ea4f2a949ba212b50a3620b974d29616045661ee0f3541b7167"
+        },
+        "sampling_params": {
+          "ok": true,
+          "note": "temperature=0.3 accepted by API"
+        }
+      },
+      "errors": [],
+      "response_preview": "*   Input: \"Trả lời đúng một câu tiếng Việt: con thỏ đang làm gì?\" (Answer in on"
+    }
+  ]
+}

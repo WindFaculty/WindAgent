@@ -61,7 +61,7 @@ from windagent_providers.google import GoogleGeminiProviderAdapter  # noqa: E402
 GEMINI = "gemini-3.5-flash-lite"
 GEMMA = "gemma-4-31b-it"
 MODELS = [GEMINI, GEMMA]
-SOURCE_SHA = "694362c741b2005632d5efc03898c02710f02386"
+SOURCE_SHA = "6b8f35e"
 OUT_DIR = REPO_ROOT / "artifacts" / "studio_roadmap_01" / "c7" / "google_qualification"
 FROZEN_OUTLINE_PATH = REPO_ROOT / ".tmp" / "c7_frozen_outline.json"
 FIXED_DRAFT_PATH = REPO_ROOT / ".tmp" / "c7_fixed_draft.json"
