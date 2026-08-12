@@ -367,12 +367,12 @@ Selected idea:
 Rules:
 1. StoryBible: bible_id (bible_* prefix), title, premise, theme, tone, arc_summary as ONE STRING (beginning -> middle -> end), stakes, and at most 20 story_rules as an array of plain STRINGS.
 2. WorldBible: world_id (world_* prefix), setting, 1-6 recurring_locations each with location_id (loc_* prefix) and name; physical_rules and story_rules are arrays of objects with rule_id (rule_* prefix), statement (the rule text), kind (physics|social|magic|constraint).
-3. CharacterCanon: canon_id (canon_* prefix) + at least one character; every character has a unique character_id (ch_* prefix) and name; role from protagonist|deuteragonist|supporting|antagonist; relationships are objects with from_id/to_id referencing EXISTING character ids only, never self-loops.
+3. CharacterCanon: canon_id (canon_* prefix) + at least one character; every character has a unique character_id (ch_* prefix) and name; role exactly one of: protagonist, deuteragonist, supporting, antagonist (never "mentor", never Vietnamese); relationship kind exactly one of: friend, family, rival, mentor, neighbor, other (never Vietnamese); every relationship object has ALL THREE keys from_id, to_id, kind — if you cannot fill all three, OMIT the relationship (empty [] is better); from_id/to_id must match a character_id in this same output; NEVER add the reverse direction of a relationship you already added (no 2-cycles); keep relationships mostly empty.
 4. Character age_band must match the audience band (e.g. {audience_min_age}-{audience_max_age}).
 5. Respond in {language}; all prose must be age-appropriate and safe for ages {audience_min_age}-{audience_max_age}. Prohibited content never appears, even implicitly.
 
 Exact output shape (fill this structure; every key is REQUIRED; never omit, rename, or add keys — spell key names exactly, especially "bible_id", "world_id", "statement", "location_id"):
-{{"story_bible": {{"bible_id": "bible_001", "title": "...", "premise": "...", "theme": "...", "tone": "...", "arc_summary": "beginning ... middle ... end (ONE string)", "stakes": "...", "story_rules": ["rule one as plain string", "rule two as plain string"], "language": "{language}"}}, "world_bible": {{"world_id": "world_001", "setting": "...", "physical_rules": [{{"rule_id": "rule_p1", "statement": "...", "kind": "physics"}}], "story_rules": [{{"rule_id": "rule_s1", "statement": "...", "kind": "social"}}], "recurring_locations": [{{"location_id": "loc_001", "name": "..."}}], "recurring_objects": [{{"prop_id": "prop_001", "name": "..."}}], "style_constraints": {{}}, "language": "{language}"}}, "character_canon": {{"canon_id": "canon_001", "language": "{language}", "characters": [{{"character_id": "ch_001", "name": "...", "role": "protagonist", "goal": "...", "traits": ["..."], "relationships": [{{"from_id": "ch_001", "to_id": "ch_002", "kind": "friend"}}], "age_band": "{audience_min_age}-{audience_max_age}"}}]}}}}
+{{"story_bible": {{"bible_id": "bible_001", "title": "...", "premise": "...", "theme": "...", "tone": "...", "arc_summary": "beginning ... middle ... end (ONE string)", "stakes": "...", "story_rules": ["rule one as plain string", "rule two as plain string"], "language": "{language}"}}, "world_bible": {{"world_id": "world_001", "setting": "...", "physical_rules": [{{"rule_id": "rule_p1", "statement": "...", "kind": "physics"}}], "story_rules": [{{"rule_id": "rule_s1", "statement": "...", "kind": "social"}}], "recurring_locations": [{{"location_id": "loc_001", "name": "..."}}], "recurring_objects": [{{"prop_id": "prop_001", "name": "..."}}], "style_constraints": {{}}, "language": "{language}"}}, "character_canon": {{"canon_id": "canon_001", "language": "{language}", "characters": [{{"character_id": "ch_001", "name": "...", "role": "protagonist", "goal": "...", "traits": ["..."], "relationships": [], "age_band": "{audience_min_age}-{audience_max_age}"}}]}}}}
 Output ONLY the raw JSON object — no markdown code fences, no commentary, no trailing text."""
 
 _BIBLES_SYSTEM = (
@@ -385,7 +385,7 @@ register_prompt(
     StoryPromptEntry(
         prompt_id="story.bibles.generate",
         capability="bibles",
-        version="1.1.0",
+        version="1.7.0",
         template=_BIBLES_TEMPLATE,
         output_schema=BIBLE_GENERATION_OUTPUT_SCHEMA,
         system=_BIBLES_SYSTEM,
@@ -397,7 +397,7 @@ register_prompt(
             "schema-first)."
         ),
         max_tokens=3000,
-        temperature=0.7,
+        temperature=0.4,
     )
 )
 

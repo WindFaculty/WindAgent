@@ -76,7 +76,7 @@ def load(name: str):
 
 def test_bible_prompt_registered_non_legacy_schema_first():
     entry = prompt_for("story.bibles.generate")
-    assert entry.version == "1.1.0"
+    assert entry.version == "1.7.0"
     assert entry.legacy is False
     assert entry.output_format == "json"
     assert entry.output_schema["title"] == "BibleGenerationOutput"
