@@ -49,7 +49,7 @@ BRIEF = {
 }
 
 CANONICAL_MODEL = "windagent/story-default"
-PROVIDER_MODEL = "ornith:9b"
+PROVIDER_MODEL = os.getenv("WINDAGENT_STUDIO_PROVIDER_MODEL", "").strip() or "ornith:9b"
 ENDPOINT_URL = "http://127.0.0.1:11434/v1"
 POLICY_ID = "studio.default"
 SCREENPLAY_QUALITY_THRESHOLD = 0.85
