@@ -129,6 +129,43 @@ async def test_google_gemini_native_generate_and_stream():
 
 
 @pytest.mark.asyncio
+async def test_google_gemini_uses_single_turn_prompt_field():
+    """Canonical ProviderRequest carries user text in ``prompt`` with
+    messages=[] (RouteLockedModelPort). Without this the API rejects the
+    call with "contents is not specified"."""
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        payload = json.loads(request.content)
+        parts = payload["contents"][0]["parts"]
+        assert payload["contents"][0]["role"] == "user"
+        assert parts[0]["text"] == "Viết kịch bản tiếng Việt"
+        assert payload["systemInstruction"]["parts"][0]["text"] == "Bạn là biên kịch"
+        return httpx.Response(
+            200,
+            json={
+                "candidates": [{"content": {"parts": [{"text": "ok"}]}, "finishReason": "STOP"}],
+                "usageMetadata": {"promptTokenCount": 3, "candidatesTokenCount": 1},
+            },
+        )
+
+    mock_client = httpx.AsyncClient(transport=httpx.MockTransport(handler))
+    gemini = GoogleGeminiProviderAdapter(api_key="AIzaSyTestKey", http_client=mock_client)
+
+    req = ProviderRequest(
+        model_id="gemini-3.5-flash-lite",
+        prompt="Viết kịch bản tiếng Việt",
+        messages=[],
+        system_instruction="Bạn là biên kịch",
+        temperature=None,
+        max_output_tokens=64,
+    )
+    resp = await gemini.generate(req, model_id="gemini-3.5-flash-lite")
+
+    assert resp.text == "ok"
+    assert resp.provider_model_id == "gemini-3.5-flash-lite"
+
+
+@pytest.mark.asyncio
 async def test_ollama_native_generate_stream_and_tokens_per_sec():
     def handler(request: httpx.Request) -> httpx.Response:
         assert request.url.path == "/api/chat"

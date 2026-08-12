@@ -5,23 +5,24 @@ from __future__ import annotations
 from typing import Any, Callable
 
 from windagent_providers.base.errors import ProviderUnavailableFailure
+from windagent_providers.google import GoogleGeminiProviderAdapter
 from windagent_providers.openai_compatible.transport import OpenAICompatibleTransport
 class EndpointAdapterResolver:
     """Build an adapter from a routed endpoint without persisting credentials.
 
-    The current conversation execution path supports OpenAI-compatible and
-    Ollama endpoints.  Other protocol modes fail as a normal provider attempt,
-    allowing an exact-equivalent binding to continue while never switching the
-    canonical model.
+    The current conversation execution path supports OpenAI-compatible,
+    Ollama and native Google Gemini endpoints.  Other protocol modes fail as
+    a normal provider attempt, allowing an exact-equivalent binding to
+    continue while never switching the canonical model.
     """
 
-    _SUPPORTED_PROTOCOLS = {"openai", "openai_compatible", "ollama"}
+    _SUPPORTED_PROTOCOLS = {"openai", "openai_compatible", "ollama", "google"}
 
     def __init__(self, decrypt_credentials: Callable[[str], str]) -> None:
         """Receive credential decryption from the composition boundary."""
         self._decrypt_credentials = decrypt_credentials
 
-    def __call__(self, candidate: Any) -> OpenAICompatibleTransport:
+    def __call__(self, candidate: Any) -> Any:
         protocol_mode = str(getattr(candidate, "protocol_mode", "openai")).lower()
         if protocol_mode not in self._SUPPORTED_PROTOCOLS:
             raise ProviderUnavailableFailure(
@@ -29,6 +30,16 @@ class EndpointAdapterResolver:
                 provider_id=str(candidate.provider_name),
             )
         ciphertext = candidate.credential_ciphertext or ""
+        if protocol_mode == "google":
+            # Native Gemini generateContent adapter. Long structured story
+            # generations (full screenplay JSON) routinely exceed the 30s
+            # default read timeout, so the Google path uses the same 300s
+            # ceiling as local Ollama.
+            return GoogleGeminiProviderAdapter(
+                api_key=self._decrypt_credentials(ciphertext) if ciphertext else "",
+                base_url=str(candidate.base_url),
+                timeout_seconds=300.0,
+            )
         return OpenAICompatibleTransport(
             provider_name=str(candidate.provider_name),
             base_url=str(candidate.base_url),

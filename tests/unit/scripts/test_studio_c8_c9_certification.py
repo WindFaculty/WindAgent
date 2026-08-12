@@ -168,6 +168,19 @@ def test_certification_environment_manifest_is_redaction_safe() -> None:
     }
 
 
+def test_certification_manifest_redacts_google_api_key() -> None:
+    manifest = sanitize_environment(
+        {
+            "GOOGLE_API_KEY": "AIzaSy-sentinel-key-value",
+            "WINDAGENT_STUDIO_PROVIDER_VENDOR": "google",
+        }
+    )
+
+    assert manifest["GOOGLE_API_KEY"] == "<redacted>"
+    assert "AIzaSy" not in json.dumps(manifest)
+    assert manifest["WINDAGENT_STUDIO_PROVIDER_VENDOR"] == "google"
+
+
 def test_sanitize_url_removes_postgres_credentials() -> None:
     url = "postgresql://test-user:test-password-sentinel@db.local/wind?token=test-token-sentinel"
     manifest = sanitize_environment({"WINDAGENT_DATABASE_URL": url})

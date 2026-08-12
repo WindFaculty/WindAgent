@@ -74,6 +74,12 @@ class GoogleGeminiProviderAdapter:
                 {"role": gemini_role, "parts": [{"text": str(content_str)}]}
             )
 
+        # Canonical provider requests carry the single-turn user text in
+        # ``prompt`` (RouteLockedModelPort sets messages=[]); without this the
+        # API rejects the call with "contents is not specified".
+        if not contents and (request.prompt or "").strip():
+            contents.append({"role": "user", "parts": [{"text": request.prompt}]})
+
         # Add image parts if provided
         if request.image_parts:
             for img in request.image_parts:

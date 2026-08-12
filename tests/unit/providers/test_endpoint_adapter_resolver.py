@@ -60,3 +60,21 @@ def test_resolver_does_not_decrypt_missing_ollama_credential() -> None:
     assert transport.api_key == ""
     assert transport.stream_generate is True
     assert transport.default_payload == {"think": False, "num_ctx": 16384}
+
+
+def test_resolver_builds_native_google_adapter() -> None:
+    resolver = EndpointAdapterResolver(lambda ciphertext: f"dec-{ciphertext}")
+
+    adapter = resolver(
+        SimpleNamespace(
+            protocol_mode="google",
+            credential_ciphertext="enc-google",
+            provider_name="google",
+            base_url="https://generativelanguage.googleapis.com/v1beta",
+        )
+    )
+
+    assert type(adapter).__name__ == "GoogleGeminiProviderAdapter"
+    assert adapter.api_key == "dec-enc-google"
+    assert adapter.base_url == "https://generativelanguage.googleapis.com/v1beta"
+    assert adapter.timeout_seconds == 300.0

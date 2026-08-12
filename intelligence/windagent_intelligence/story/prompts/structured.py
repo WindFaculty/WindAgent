@@ -173,9 +173,14 @@ def _loads_or_repair(content: str) -> tuple[Optional[Dict[str, Any]], int]:
     1. fence-extraction (```json block);
     2. leading-object extraction: models sometimes append commentary after a
        complete JSON object — ``raw_decode`` takes the JSON prefix and drops
-       the trailing junk, never guessing what the junk means.
+       the trailing junk, never guessing what the junk means;
+    3. first-brace scan: some models (e.g. gemma via the Gemini API) emit
+       commentary BEFORE the JSON object — and that commentary may itself
+       contain small ``{...}`` examples. Scan every ``{`` and keep the
+       candidate whose ``raw_decode`` consumes the MOST content (the real
+       object dominates any inline example). Syntax-only, never semantic.
 
-    Returns ``(data, repair_count)`` or ``(None, attempts)`` when both fail.
+    Returns ``(data, repair_count)`` or ``(None, attempts)`` when all fail.
     """
     try:
         return json.loads(content), 0
@@ -193,6 +198,26 @@ def _loads_or_repair(content: str) -> tuple[Optional[Dict[str, Any]], int]:
             return obj, 1
     except (json.JSONDecodeError, TypeError):
         pass
+    # Commentary-before-object repair: parse at every ``{`` and keep the
+    # largest valid object (JSON is self-delimiting; inline commentary
+    # examples are always smaller than the requested payload).
+    decoder = json.JSONDecoder()
+    best: Optional[Dict[str, Any]] = None
+    best_end = -1
+    start = 0
+    for _ in range(50):
+        brace = content.find("{", start)
+        if brace == -1:
+            break
+        try:
+            obj, end = decoder.raw_decode(content[brace:])
+            if isinstance(obj, dict) and brace + end > best_end:
+                best, best_end = obj, brace + end
+        except (json.JSONDecodeError, TypeError):
+            pass
+        start = brace + 1
+    if best is not None:
+        return best, 1
     return None, 1
 
 

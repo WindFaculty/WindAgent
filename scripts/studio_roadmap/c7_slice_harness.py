@@ -50,7 +50,11 @@ BRIEF = {
 
 CANONICAL_MODEL = "windagent/story-default"
 PROVIDER_MODEL = os.getenv("WINDAGENT_STUDIO_PROVIDER_MODEL", "").strip() or "ornith:9b"
+#: Provider vendor for certification runs: "ollama" (default, local) or
+#: "google" (native Gemini API). Never falls back silently between them.
+PROVIDER_VENDOR = os.getenv("WINDAGENT_STUDIO_PROVIDER_VENDOR", "").strip().lower() or "ollama"
 ENDPOINT_URL = "http://127.0.0.1:11434/v1"
+GOOGLE_ENDPOINT_URL = "https://generativelanguage.googleapis.com/v1beta"
 POLICY_ID = "studio.default"
 SCREENPLAY_QUALITY_THRESHOLD = 0.85
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -141,17 +145,203 @@ def _idem(prefix: str) -> str:
 # ---------------------------------------------------------------------------
 
 
-async def seed_runtime(db_url: str) -> Dict[str, Any]:
-    """Migrate the cert DB and seed the real Ollama route + approval policy."""
-    from windagent_storage.database.connection import DatabaseManager
-    from windagent_storage.database.sync_factory import make_sync_session_factory
-    from windagent_storage.orm.models import BaseORM
+def _seed_ollama_runtime(session: Any, seeded: Dict[str, Any]) -> None:
+    """Seed the local Ollama route (credential-less OpenAI-compatible)."""
     from windagent_storage.orm.v3_models import (
         CanonicalModelV3ORM,
         EndpointModelBindingORM,
         ProviderEndpointORM,
         ProviderVendorORM,
     )
+
+    if session.query(ProviderVendorORM).filter_by(id="ollama-local").first() is None:
+        session.add(
+            ProviderVendorORM(
+                id="ollama-local",
+                name="ollama-local",
+                vendor_type="local",
+                supports_model_discovery=True,
+                supports_openai_compatible=True,
+                enabled=True,
+            )
+        )
+        session.flush()  # FK parents must land before the binding row
+        seeded["vendor"] = True
+    if session.query(ProviderEndpointORM).filter_by(id="ep_ollama_local").first() is None:
+        session.add(
+            ProviderEndpointORM(
+                id="ep_ollama_local",
+                vendor_id="ollama-local",
+                credential_id=None,
+                base_url=ENDPOINT_URL,
+                protocol_mode="ollama",
+                configured_protocol="openai",
+                detected_protocol="openai",
+                protocol_confidence=1.0,
+                region="local",
+                priority=100,
+                weight=100,
+                enabled=True,
+                test_status="pass",
+            )
+        )
+        session.flush()
+        seeded["endpoint"] = True
+    if session.query(CanonicalModelV3ORM).filter_by(id=CANONICAL_MODEL).first() is None:
+        session.add(
+            CanonicalModelV3ORM(
+                id=CANONICAL_MODEL,
+                vendor="ollama-local",
+                family="qwen",
+                canonical_name=CANONICAL_MODEL,
+                revision="latest",
+                context_window=262144,
+                capabilities_json="[]",
+                enabled=True,
+            )
+        )
+        session.flush()
+        seeded["model"] = True
+    if (
+        session.query(EndpointModelBindingORM)
+        .filter_by(id=f"bind_ollama_{PROVIDER_MODEL}")
+        .first()
+        is None
+    ):
+        session.add(
+            EndpointModelBindingORM(
+                id=f"bind_ollama_{PROVIDER_MODEL}",
+                endpoint_id="ep_ollama_local",
+                canonical_model_id=CANONICAL_MODEL,
+                provider_model_id=PROVIDER_MODEL,
+                model_revision="latest",
+                equivalence_level="exact_revision",
+                capabilities_json="[]",
+                pricing_overrides_json="{}",
+                enabled=True,
+                priority=100,
+            )
+        )
+        session.flush()
+        seeded["binding"] = True
+
+
+def _seed_google_runtime(session: Any, seeded: Dict[str, Any]) -> None:
+    """Seed the native Google Gemini route (encrypted API key at rest).
+
+    Requires ``GOOGLE_API_KEY`` (the credential) and
+    ``WINDAGENT_ENCRYPTION_KEY`` (to encrypt it at rest). Fail closed when
+    either is missing — never seeds a plaintext credential.
+    """
+    from windagent_storage.orm.v3_models import (
+        CanonicalModelV3ORM,
+        EndpointModelBindingORM,
+        ProviderCredentialORM,
+        ProviderEndpointORM,
+        ProviderVendorORM,
+    )
+    from windagent_storage.security.encryption import encrypt
+
+    api_key = os.getenv("GOOGLE_API_KEY", "").strip()
+    if not api_key:
+        raise ValueError(
+            "GOOGLE_API_KEY is required when WINDAGENT_STUDIO_PROVIDER_VENDOR=google"
+        )
+    if not os.getenv("WINDAGENT_ENCRYPTION_KEY", "").strip():
+        raise ValueError(
+            "WINDAGENT_ENCRYPTION_KEY is required to seed the Google credential at rest"
+        )
+    if session.query(ProviderVendorORM).filter_by(id="google").first() is None:
+        session.add(
+            ProviderVendorORM(
+                id="google",
+                name="google-gemini",
+                vendor_type="cloud",
+                supports_model_discovery=True,
+                supports_openai_compatible=False,
+                enabled=True,
+            )
+        )
+        session.flush()
+        seeded["vendor"] = True
+    if session.query(ProviderCredentialORM).filter_by(id="cred_google").first() is None:
+        session.add(
+            ProviderCredentialORM(
+                id="cred_google",
+                vendor_id="google",
+                label="google api key",
+                secret_ciphertext=encrypt(api_key),
+                secret_version=1,
+                is_env_ref=False,
+                enabled=True,
+            )
+        )
+        session.flush()
+        seeded["credential"] = True
+    if session.query(ProviderEndpointORM).filter_by(id="ep_google").first() is None:
+        session.add(
+            ProviderEndpointORM(
+                id="ep_google",
+                vendor_id="google",
+                credential_id="cred_google",
+                base_url=GOOGLE_ENDPOINT_URL,
+                protocol_mode="google",
+                configured_protocol="google",
+                detected_protocol="google",
+                protocol_confidence=1.0,
+                region="cloud",
+                priority=100,
+                weight=100,
+                enabled=True,
+                test_status="pass",
+            )
+        )
+        session.flush()
+        seeded["endpoint"] = True
+    if session.query(CanonicalModelV3ORM).filter_by(id=CANONICAL_MODEL).first() is None:
+        session.add(
+            CanonicalModelV3ORM(
+                id=CANONICAL_MODEL,
+                vendor="google",
+                family="gemini",
+                canonical_name=CANONICAL_MODEL,
+                revision="latest",
+                context_window=1000000,
+                capabilities_json="[]",
+                enabled=True,
+            )
+        )
+        session.flush()
+        seeded["model"] = True
+    if (
+        session.query(EndpointModelBindingORM)
+        .filter_by(id=f"bind_google_{PROVIDER_MODEL}")
+        .first()
+        is None
+    ):
+        session.add(
+            EndpointModelBindingORM(
+                id=f"bind_google_{PROVIDER_MODEL}",
+                endpoint_id="ep_google",
+                canonical_model_id=CANONICAL_MODEL,
+                provider_model_id=PROVIDER_MODEL,
+                model_revision="latest",
+                equivalence_level="exact_revision",
+                capabilities_json="[]",
+                pricing_overrides_json="{}",
+                enabled=True,
+                priority=100,
+            )
+        )
+        session.flush()
+        seeded["binding"] = True
+
+
+async def seed_runtime(db_url: str) -> Dict[str, Any]:
+    """Migrate the cert DB and seed the real Ollama route + approval policy."""
+    from windagent_storage.database.connection import DatabaseManager
+    from windagent_storage.database.sync_factory import make_sync_session_factory
+    from windagent_storage.orm.models import BaseORM
     import windagent_storage.orm.studio_models  # noqa: F401
     import windagent_storage.orm.v2_orchestration_models  # noqa: F401
     import windagent_storage.orm.v3_models  # noqa: F401
@@ -161,78 +351,22 @@ async def seed_runtime(db_url: str) -> Dict[str, Any]:
     await db.close()
 
     session_factory = make_sync_session_factory(db_url)
-    seeded: Dict[str, Any] = {"vendor": False, "endpoint": False, "model": False, "binding": False}
+    seeded: Dict[str, Any] = {
+        "vendor": False,
+        "endpoint": False,
+        "model": False,
+        "binding": False,
+    }
+    if PROVIDER_VENDOR not in ("ollama", "google"):
+        raise ValueError(
+            f"unsupported WINDAGENT_STUDIO_PROVIDER_VENDOR={PROVIDER_VENDOR!r} "
+            "(expected 'ollama' or 'google')"
+        )
     with session_factory() as session:
-        if session.query(ProviderVendorORM).filter_by(id="ollama-local").first() is None:
-            session.add(
-                ProviderVendorORM(
-                    id="ollama-local",
-                    name="ollama-local",
-                    vendor_type="local",
-                    supports_model_discovery=True,
-                    supports_openai_compatible=True,
-                    enabled=True,
-                )
-            )
-            session.flush()  # FK parents must land before the binding row
-            seeded["vendor"] = True
-        if session.query(ProviderEndpointORM).filter_by(id="ep_ollama_local").first() is None:
-            session.add(
-                ProviderEndpointORM(
-                    id="ep_ollama_local",
-                    vendor_id="ollama-local",
-                    credential_id=None,
-                    base_url=ENDPOINT_URL,
-                    protocol_mode="ollama",
-                    configured_protocol="openai",
-                    detected_protocol="openai",
-                    protocol_confidence=1.0,
-                    region="local",
-                    priority=100,
-                    weight=100,
-                    enabled=True,
-                    test_status="pass",
-                )
-            )
-            session.flush()
-            seeded["endpoint"] = True
-        if session.query(CanonicalModelV3ORM).filter_by(id=CANONICAL_MODEL).first() is None:
-            session.add(
-                CanonicalModelV3ORM(
-                    id=CANONICAL_MODEL,
-                    vendor="ollama-local",
-                    family="qwen",
-                    canonical_name=CANONICAL_MODEL,
-                    revision="latest",
-                    context_window=262144,
-                    capabilities_json="[]",
-                    enabled=True,
-                )
-            )
-            session.flush()
-            seeded["model"] = True
-        if (
-            session.query(EndpointModelBindingORM)
-            .filter_by(id=f"bind_ollama_{PROVIDER_MODEL}")
-            .first()
-            is None
-        ):
-            session.add(
-                EndpointModelBindingORM(
-                    id=f"bind_ollama_{PROVIDER_MODEL}",
-                    endpoint_id="ep_ollama_local",
-                    canonical_model_id=CANONICAL_MODEL,
-                    provider_model_id=PROVIDER_MODEL,
-                    model_revision="latest",
-                    equivalence_level="exact_revision",
-                    capabilities_json="[]",
-                    pricing_overrides_json="{}",
-                    enabled=True,
-                    priority=100,
-                )
-            )
-            session.flush()
-            seeded["binding"] = True
+        if PROVIDER_VENDOR == "google":
+            _seed_google_runtime(session, seeded)
+        else:
+            _seed_ollama_runtime(session, seeded)
         session.commit()
 
     # The policy is fixed before the Episode exists. The real review model's
@@ -278,7 +412,30 @@ def _latest_artifact(artifacts: List[Dict[str, Any]], artifact_type: str) -> Opt
 
 
 def _provider_preflight() -> Dict[str, Any]:
-    """Prove the configured local provider is reachable and exposes the bound model."""
+    """Prove the configured provider is reachable and exposes the bound model."""
+
+    if PROVIDER_VENDOR == "google":
+        import asyncio
+
+        from windagent_providers.google import GoogleGeminiProviderAdapter
+
+        api_key = os.getenv("GOOGLE_API_KEY", "").strip()
+        adapter = GoogleGeminiProviderAdapter(api_key=api_key, timeout_seconds=60.0)
+        try:
+            discovered = asyncio.run(adapter.list_models())
+        except Exception as exc:
+            raise SliceError(f"provider preflight failed: {type(exc).__name__}: {exc}") from exc
+        model_ids = sorted(m.raw_model_id for m in discovered)
+        if PROVIDER_MODEL not in model_ids:
+            raise SliceError(
+                f"provider preflight did not expose bound model {PROVIDER_MODEL!r}: {model_ids}"
+            )
+        return {
+            "endpoint": GOOGLE_ENDPOINT_URL,
+            "provider_model_id": PROVIDER_MODEL,
+            "listed_model_count": len(model_ids),
+            "reachable": True,
+        }
 
     request = urllib.request.Request(f"{ENDPOINT_URL.rstrip('/')}/models", method="GET")
     try:

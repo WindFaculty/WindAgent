@@ -56,6 +56,22 @@ async def test_markdown_fenced_json_repaired_once():
     assert result.provenance.repair_count == 1
 
 
+async def test_commentary_before_json_repaired_once():
+    # gemma via the Gemini API emits a bullet-point summary BEFORE the JSON
+    # object; the bounded repair must scan past it AND past any small inline
+    # "{...}" example inside the commentary, and parse the real object.
+    prefixed = (
+        "*   Role: screenwriter.\n"
+        '*   Example: {"dialogue_id": "dlg_000", "text": "x"}\n'
+        f"{VALID_BRIEF}\n"
+    )
+    port = FixtureModelPort({"brief_expansion": prefixed})
+    boundary = StoryModelBoundary(port)
+    result = await boundary.invoke(BRIEF_ID, variables={"idea": "x"})
+    assert result.data["title"] == "Con thỏ và cánh diều"
+    assert result.provenance.repair_count == 1
+
+
 async def test_broken_json_fails_terminal_after_one_repair():
     broken = '{"title": "X", "logline": "y", }'  # trailing comma, not repairable
     port = FixtureModelPort({"brief_expansion": broken})
