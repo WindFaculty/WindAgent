@@ -167,22 +167,33 @@ def _extract_fenced_json(content: str) -> Optional[str]:
 
 
 def _loads_or_repair(content: str) -> tuple[Optional[Dict[str, Any]], int]:
-    """Parse JSON; on direct failure try exactly ONE fence-extraction repair.
+    """Parse JSON; on direct failure try exactly ONE bounded repair.
+
+    Repair options (first that yields valid JSON, still one repair):
+    1. fence-extraction (```json block);
+    2. leading-object extraction: models sometimes append commentary after a
+       complete JSON object — ``raw_decode`` takes the JSON prefix and drops
+       the trailing junk, never guessing what the junk means.
 
     Returns ``(data, repair_count)`` or ``(None, attempts)`` when both fail.
-    Never guesses semantics; a second repair is a registry violation.
     """
     try:
         return json.loads(content), 0
     except (json.JSONDecodeError, TypeError):
         pass
     fenced = _extract_fenced_json(content)
-    if fenced is None:
-        return None, 1
+    if fenced is not None:
+        try:
+            return json.loads(fenced), 1
+        except (json.JSONDecodeError, TypeError):
+            pass
     try:
-        return json.loads(fenced), 1
+        obj, _idx = json.JSONDecoder().raw_decode(content.lstrip())
+        if isinstance(obj, dict):
+            return obj, 1
     except (json.JSONDecodeError, TypeError):
-        return None, 1
+        pass
+    return None, 1
 
 
 # ---------------------------------------------------------------------------

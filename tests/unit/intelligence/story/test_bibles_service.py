@@ -61,6 +61,15 @@ def test_markdown_fenced_json_repaired_once():
     assert result.provenance.repair_count == 1
 
 
+def test_trailing_commentary_after_json_repaired_once():
+    response = (
+        json.dumps(GOLDEN_BIBLE_RESPONSE, ensure_ascii=False)
+        + "\nĐây là bộ canon hoàn chỉnh cho tập phim."
+    )
+    result = _run(_service(response).generate(GOLDEN_SELECTED_IDEA))
+    assert result.provenance.repair_count == 1
+
+
 def test_not_json_fails_schema():
     with pytest.raises(StorySchemaFailure):
         _run(_service("just prose").generate(GOLDEN_SELECTED_IDEA))
