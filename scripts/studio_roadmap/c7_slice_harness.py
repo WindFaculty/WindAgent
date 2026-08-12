@@ -564,7 +564,7 @@ def _drive_run(
                 ],
                 "warnings": [f.get("code") for f in report.get("findings", []) if f.get("severity") == "WARNING"],
             }
-            hop(f"review.report(attempt={attempt})", report_id=report.get("report_id"), **report_summary)
+            hop(f"review.report(attempt={attempt})", **report_summary)
             if report.get("verdict") in ("PASS", "PASS_WITH_WARNINGS"):
                 _approve(api_base, episode_id, revision_id, revision_hash, revision_version, "SCREENPLAY", hop)
                 checkpoint_actions.append(f"SCREENPLAY:{report_id}:APPROVED")
