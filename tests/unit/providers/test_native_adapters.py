@@ -95,6 +95,8 @@ async def test_anthropic_native_generate_and_stream():
 async def test_google_gemini_native_generate_and_stream():
     def handler(request: httpx.Request) -> httpx.Response:
         assert "/models/gemini-1.5-pro:generateContent" in request.url.path
+        assert "key=" not in request.url.query.decode()
+        assert request.headers["x-goog-api-key"] == "AIzaSyTestKey"
         payload = json.loads(request.content)
         assert payload["contents"][0]["role"] == "user"
 

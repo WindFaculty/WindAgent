@@ -52,7 +52,13 @@ class GoogleGeminiProviderAdapter:
         self._custom_client = http_client
 
     def _build_headers(self) -> Dict[str, str]:
-        return {"Content-Type": "application/json"}
+        headers = {"Content-Type": "application/json"}
+        if self.api_key:
+            # Auth via header, never the query string: httpx INFO logs the
+            # request URL, so a ``?key=`` query parameter leaks the credential
+            # into process logs and evidence tails.
+            headers["x-goog-api-key"] = self.api_key
+        return headers
 
     def _get_client(self) -> httpx.AsyncClient:
         if self._custom_client:
@@ -176,7 +182,7 @@ class GoogleGeminiProviderAdapter:
         """Executes a synchronous completion call using Gemini generateContent API."""
         start_time = time.perf_counter()
         clean_model = model_id.replace("models/", "")
-        url = f"{self.base_url}/models/{clean_model}:generateContent?key={self.api_key or ''}"
+        url = f"{self.base_url}/models/{clean_model}:generateContent"
         payload = self._build_gemini_payload(request)
 
         client = self._get_client()
@@ -262,7 +268,7 @@ class GoogleGeminiProviderAdapter:
     ) -> AsyncIterator[ProviderStreamEvent]:
         """Executes a streaming completion call using Gemini streamGenerateContent API."""
         clean_model = model_id.replace("models/", "")
-        url = f"{self.base_url}/models/{clean_model}:streamGenerateContent?key={self.api_key or ''}"
+        url = f"{self.base_url}/models/{clean_model}:streamGenerateContent"
         payload = self._build_gemini_payload(request)
 
         client = self._get_client()
@@ -328,7 +334,7 @@ class GoogleGeminiProviderAdapter:
 
     async def list_models(self) -> List[DiscoveredModel]:
         """Queries Google Gemini /v1beta/models endpoint."""
-        url = f"{self.base_url}/models?key={self.api_key or ''}"
+        url = f"{self.base_url}/models"
         client = self._get_client()
         should_close = self._custom_client is None
 

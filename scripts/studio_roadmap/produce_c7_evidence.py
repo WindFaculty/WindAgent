@@ -46,6 +46,9 @@ SECRET_PATTERNS = (
         r"(api[_-]?key|password|secret|authorization)\s*[:=]\s*['\"][^'\"]{8,}['\"]",
         re.I,
     ),
+    # Query-string credentials (e.g. legacy Gemini ?key=) captured in
+    # process log tails — URL text, not a labeled assignment.
+    re.compile(r"[?&]key=[A-Za-z0-9._-]{8,}"),
 )
 
 
