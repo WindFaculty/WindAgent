@@ -111,7 +111,7 @@ Tolerant-parser scan (reused from B2 over `core/.../domain/story/`,
 - Rendered sample: `rendered_sample.txt` (deterministic derived text view).
 - Corpus results: `invalid_output_corpus_results.json`; checksums:
   `checksums.json`.
-- Prompt manifest checksum: `fe154619eebd07b9…`
+- Prompt manifest checksum: `ae3a52c10941ee7e…`
   (11 prompts incl. `story.screenplay.structured`;
   B2 manifest refreshed).
 - A-side (durable task execution + approval checkpoint) and C-side (draft/

@@ -341,13 +341,13 @@ register_prompt(
         template=_IDEATION_TEMPLATE,
         output_schema=IDEA_GENERATION_OUTPUT_SCHEMA,
         system=_IDEATION_SYSTEM,
-        safety=SafetyConstraints(max_output_chars=12_000),
+        safety=SafetyConstraints(max_output_chars=24_000),
         legacy=False,
         description=(
             "B3: generate 3-5 distinct, age-appropriate idea candidates for "
             "a normalized CreativeBrief (structured JSON, schema-first)."
         ),
-        max_tokens=2500,
+        max_tokens=6000,
         temperature=0.8,
     )
 )
@@ -389,14 +389,14 @@ register_prompt(
         template=_BIBLES_TEMPLATE,
         output_schema=BIBLE_GENERATION_OUTPUT_SCHEMA,
         system=_BIBLES_SYSTEM,
-        safety=SafetyConstraints(max_output_chars=24_000),
+        safety=SafetyConstraints(max_output_chars=32_000),
         legacy=False,
         description=(
             "B4: expand a SelectedIdea into StoryBible + WorldBible + "
             "CharacterCanon as one cross-validated set (structured JSON, "
             "schema-first)."
         ),
-        max_tokens=3000,
+        max_tokens=8000,
         temperature=0.4,
     )
 )
@@ -441,13 +441,13 @@ register_prompt(
         template=_BEATS_TEMPLATE,
         output_schema=BEATS_GENERATION_OUTPUT_SCHEMA,
         system=_BEATS_SYSTEM,
-        safety=SafetyConstraints(max_output_chars=16_000),
+        safety=SafetyConstraints(max_output_chars=32_000),
         legacy=False,
         description=(
             "B5: allocate the 180-300 s budget across an ordered BeatSheet "
             "referencing canon IDs (structured JSON, schema-first)."
         ),
-        max_tokens=2500,
+        max_tokens=8000,
         temperature=0.7,
     )
 )
@@ -489,14 +489,14 @@ register_prompt(
         template=_OUTLINE_TEMPLATE,
         output_schema=OUTLINE_GENERATION_OUTPUT_SCHEMA,
         system=_OUTLINE_SYSTEM,
-        safety=SafetyConstraints(max_output_chars=20_000),
+        safety=SafetyConstraints(max_output_chars=32_000),
         legacy=False,
         description=(
             "B5: structured EpisodeOutline from a BeatSheet (canonical; the "
             "legacy story.outline.generate prompt stays for the old "
             "pipeline)."
         ),
-        max_tokens=3000,
+        max_tokens=8000,
         temperature=0.7,
     )
 )
@@ -556,7 +556,7 @@ register_prompt(
             "(canonical; the legacy story.screenplay.write text prompt "
             "stays for the old pipeline)."
         ),
-        max_tokens=4000,
+        max_tokens=8000,
         temperature=0.3,
     )
 )
@@ -607,14 +607,14 @@ register_prompt(
         template=_REVIEW_TEMPLATE,
         output_schema=REVIEW_OUTPUT_SCHEMA,
         system=_REVIEW_SYSTEM,
-        safety=SafetyConstraints(max_output_chars=8_000),
+        safety=SafetyConstraints(max_output_chars=12_000),
         legacy=False,
         description=(
             "B7: model-assisted narrative review dimensions for one "
             "ScreenplayDraft (secondary; deterministic findings are the "
             "gate authority)."
         ),
-        max_tokens=1200,
+        max_tokens=3000,
         temperature=0.3,
     )
 )
@@ -664,7 +664,7 @@ register_prompt(
             "B7: bounded revision — a NEW immutable ScreenplayDraft fixing "
             "the accepted findings of a review report."
         ),
-        max_tokens=4000,
+        max_tokens=8000,
         temperature=0.7,
     )
 )

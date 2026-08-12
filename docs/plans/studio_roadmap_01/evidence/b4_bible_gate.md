@@ -100,7 +100,7 @@ Tolerant-parser scan (reused from B2 over `core/.../domain/story/`,
   `2d10e387021cf4b1…`).
 - Corpus results: `invalid_output_corpus_results.json`; matrix:
   `cross_validation_matrix.json`; checksums: `checksums.json`.
-- Prompt manifest checksum: `fe154619eebd07b9…`
+- Prompt manifest checksum: `ae3a52c10941ee7e…`
   (11 prompts incl. `story.bibles.generate`;
   B2 manifest refreshed).
 - A-side (durable task execution + approval checkpoint) and C-side (bible

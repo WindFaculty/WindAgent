@@ -34,7 +34,10 @@ class EndpointAdapterResolver:
             base_url=str(candidate.base_url),
             api_key=self._decrypt_credentials(ciphertext) if ciphertext else "",
             stream_generate=protocol_mode == "ollama",
-            default_payload={"think": False} if protocol_mode == "ollama" else None,
+            # Ollama default context (4096) truncates long structured prompts
+            # (canon ledgers + output skeletons); the model then burns the
+            # budget on reasoning and finishes with length-truncated JSON.
+            default_payload={"think": False, "num_ctx": 16384} if protocol_mode == "ollama" else None,
             # Ollama json_schema mode drifts structural copies and can emit
             # empty streamed content; the story boundary enforces the schema
             # post-hoc regardless (STORY_SCHEMA_FAILURE, fail-closed).

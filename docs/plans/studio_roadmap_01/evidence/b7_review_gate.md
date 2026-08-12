@@ -115,7 +115,7 @@ Tolerant-parser scan (reused from B2 over `core/.../domain/story/`,
   PASS, warning-level findings, bounded revision with immutable diff.
 - Corpus results: `invalid_output_corpus_results.json`; checksums:
   `checksums.json`.
-- Prompt manifest checksum: `fe154619eebd07b9…`
+- Prompt manifest checksum: `ae3a52c10941ee7e…`
   (11 prompts incl. `story.review.assess` +
   `story.revise.rewrite`; B2 manifest refreshed).
 - A-side (durable task execution + approval checkpoint) and C-side

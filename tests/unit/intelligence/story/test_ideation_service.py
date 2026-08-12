@@ -166,7 +166,7 @@ def test_generate_fenced_json_repaired_once():
 
 
 def test_generate_propagates_boundary_safety_failure():
-    service = _service("x" * 20_000)  # exceeds max_output_chars 12_000
+    service = _service("x" * 30_000)  # exceeds max_output_chars 24_000
     with pytest.raises(Exception) as exc:
         _run(lambda: service.generate(_brief()))
     assert exc.value.__class__.__name__ == "StorySafetyFailure"
