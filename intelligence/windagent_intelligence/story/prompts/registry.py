@@ -628,21 +628,21 @@ Reviewed draft:
 - Target duration: {target_duration_seconds}s (tolerance {tolerance_seconds})
 - Total: {total_estimated_seconds}s
 
-Current draft scenes:
-{scene_summary}
+Current draft (full structured JSON — every scene, dialogue line, and narration verbatim):
+{draft_json}
 
 Accepted findings to fix:
 {findings_summary}
 
 Rules:
 1. Return a NEW immutable ScreenplayDraft: same structured scene shape, SAME scene/beat/canon reference rules, NEW draft_id (never reuse {old_draft_id}).
-2. Fix every accepted finding; keep everything that already passes unchanged.
+2. Fix every accepted finding; keep everything that already passes EXACTLY as written in the current draft above (same dialogue text, narration, and action).
 3. Keep 180-300s total, within {tolerance_seconds}s of {target_duration_seconds}.
 4. Do not weaken age-appropriateness or safety; respond in {language}.
 
 Exact output shape (fill this structure; every key is REQUIRED; never omit, rename, or add keys; spell key names exactly — especially "draft_id", "dialogue_id"):
 {{"draft_id": "dscn_<invent a FRESH id, never reuse {old_draft_id} or example ids>", "title": "...", "target_duration_seconds": {target_duration_seconds}, "scenes": [{{"scene_id": "dscn_001", "order": 1, "outline_scene_id": "sc_001", "location_id": "lc_01", "character_ids": ["char_001"], "action_description": "one short non-empty action sentence", "dialogue": [{{"dialogue_id": "dlg_001", "scene_id": "dscn_001", "character_id": "char_001", "order": 1, "text": "one non-empty line"}}], "narration": "", "transition": "CUT TO:", "estimated_seconds": 25, "source_beat_ids": ["bt_001"]}}]}}
-Copy the per-scene numbers VERBATIM from the draft above — they are already correct. Return exactly as many scenes as the draft has. Every scene and every dialogue line must include "order". Output ONLY the raw JSON object — no markdown code fences, no commentary, no trailing text."""  # noqa: E501
+Copy the per-scene numbers VERBATIM from the current draft above — they are already correct. Return exactly as many scenes as the draft has. Every scene and every dialogue line must include "order". Output ONLY the raw JSON object — no markdown code fences, no commentary, no trailing text."""  # noqa: E501
 
 _REVISE_SYSTEM = (
     "You are the WindAgent bounded revision engine. You produce a NEW "
@@ -654,7 +654,7 @@ register_prompt(
     StoryPromptEntry(
         prompt_id="story.revise.rewrite",
         capability="revise",
-        version="1.1.0",
+        version="1.2.0",
         template=_REVISE_TEMPLATE,
         output_schema=REVISION_OUTPUT_SCHEMA,
         system=_REVISE_SYSTEM,

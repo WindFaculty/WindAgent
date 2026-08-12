@@ -433,7 +433,10 @@ class ReviseService:
                 "target_duration_seconds": draft.target_duration_seconds,
                 "tolerance_seconds": tolerance_seconds,
                 "total_estimated_seconds": draft.total_estimated_seconds,
-                "scene_summary": _scene_summary(draft),
+                # The full draft, not a digest: a bounded revision must see
+                # every scene/dialogue/narration verbatim to keep passing
+                # content unchanged (digests regress untouched content).
+                "draft_json": draft.model_dump_json().replace("{", "{{").replace("}", "}}"),
                 "findings_summary": _findings_summary(report.findings),
                 "old_draft_id": draft.draft_id.value,
             },

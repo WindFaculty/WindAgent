@@ -83,7 +83,7 @@ def test_review_prompts_registered_non_legacy_schema_first():
     assert "narrative_score" in review.output_schema["properties"]
 
     revise = prompt_for("story.revise.rewrite")
-    assert revise.version == "1.1.0"
+    assert revise.version == "1.2.0"
     assert revise.legacy is False
     assert revise.output_format == "json"
     assert revise.output_schema["title"] == "ScreenplayRevisionOutput"

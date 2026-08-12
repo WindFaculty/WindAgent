@@ -209,6 +209,20 @@ def test_revise_old_draft_never_mutated():
     assert GOLDEN_DRAFT.content_hash() == before
 
 
+def test_revise_prompt_receives_full_draft_not_truncated_digest():
+    port = FixtureModelPort(responses={"revise": json.dumps(GOLDEN_REVISION_RESPONSE, ensure_ascii=False)})
+    _run(ReviseService(StoryModelBoundary(port)).generate(GOLDEN_DRAFT, _weak_report()))
+    rendered = port.requests[0].user
+    # Full dialogue text of a passing line must be visible verbatim so the
+    # bounded revision can keep it unchanged (the old 60-char digest was
+    # regressing untouched content).
+    assert "Ơ, cánh diều xinh quá!" in rendered
+    # Full-draft JSON marker: only present in the injected draft_json
+    # (never in the output-shape template).
+    assert '"duration_formula_version"' in rendered
+    assert "{scene_summary}" not in rendered
+
+
 # ---------------------------------------------------------------------------
 # Stale proposal binding
 # ---------------------------------------------------------------------------
