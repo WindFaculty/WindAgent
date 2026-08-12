@@ -1,0 +1,425 @@
+{
+  "artifact": "dscn_001",
+  "artifact_hash": "992e4ab534441357e0bd5038b848387020ed50fc30d5b7b95557d89d3939153b",
+  "evaluations": [
+    {
+      "eval_id": "rel-gemini-01",
+      "reviewer_model": "gemini-3.5-flash-lite",
+      "prompt_id": "story.review.assess",
+      "prompt_version": "1.2.0",
+      "review_prompt_hash": "bd3218df8cdf43de647caa5c10fd0cf5676ba7c8bff421f8bdc6be9afe9ef2b3",
+      "system_prompt_hash": "276a88bac5eb0e83391ec782f90dac967b7d1d20ff0b196232473a747d712258",
+      "input_artifact": "dscn_001",
+      "error": null,
+      "latency_ms": 1190.8,
+      "retry_attempts": 1,
+      "language_score": 0.9,
+      "narrative_score": 0.88,
+      "age_fit_score": 0.95,
+      "notes": [
+        "Cốt truyện rõ ràng, có mở đầu, cao trào và kết thúc phù hợp với lứa tuổi 5-8.",
+        "Bài học về tình bạn và sự đoàn kết được truyền tải tự nhiên qua các nhân vật động vật.",
+        "Nhịp độ phân bổ thời lượng giữa các cảnh hợp lý, giúp duy trì sự chú ý của trẻ nhỏ."
+      ],
+      "response_hash": "25bd04c203741387dc2786f6e241513d23c0cdbb4f449f6265e0096af0d3c1af",
+      "finish_reason": "stop",
+      "usage": {
+        "prompt_tokens": 917,
+        "completion_tokens": 113,
+        "total_tokens": 1030,
+        "latency_ms": 1190.6,
+        "provider_model_id": "gemini-3.5-flash-lite",
+        "endpoint_id": "ep-google",
+        "canonical_model_id": "gemini-3.5-flash-lite",
+        "provider_request_id": null,
+        "raw_response": "{\"narrative_score\": 0.88, \"age_fit_score\": 0.95, \"language_score\": 0.9, \"notes\": [\"Cốt truyện rõ ràng, có mở đầu, cao trào và kết thúc phù hợp với lứa tuổi 5-8.\", \"Bài học về tình bạn và sự đoàn kết được truyền tải tự nhiên qua các nhân vật động vật.\", \"Nhịp độ phân bổ thời lượng giữa các cảnh hợp lý, giúp duy trì sự chú ý của trẻ nhỏ.\"]}",
+        "response_hash": "c6754ec8fdf7bf801eb40e63aa3b4be9d238504f5ba9335b7fe78ab0d02b195d"
+      },
+      "notes_correlation": {
+        "notes_count": 3,
+        "content_token_hits": 0,
+        "correlates_with_content": false
+      }
+    },
+    {
+      "eval_id": "rel-gemini-02",
+      "reviewer_model": "gemini-3.5-flash-lite",
+      "prompt_id": "story.review.assess",
+      "prompt_version": "1.2.0",
+      "review_prompt_hash": "bd3218df8cdf43de647caa5c10fd0cf5676ba7c8bff421f8bdc6be9afe9ef2b3",
+      "system_prompt_hash": "276a88bac5eb0e83391ec782f90dac967b7d1d20ff0b196232473a747d712258",
+      "input_artifact": "dscn_001",
+      "error": null,
+      "latency_ms": 1303.4,
+      "retry_attempts": 1,
+      "language_score": 0.85,
+      "narrative_score": 0.88,
+      "age_fit_score": 0.92,
+      "notes": [
+        "Cốt truyện rõ ràng, có mở đầu, thắt nút và giải quyết vấn đề phù hợp lứa tuổi 5-8.",
+        "Thông điệp về tình bạn và sự đoàn kết được thể hiện tốt qua hành động của các nhân vật.",
+        "Các phân cảnh được phân bổ thời gian hợp lý với tổng thời lượng 240 giây.",
+        "Có thể bổ sung thêm lời thoại đơn giản để tăng tính tương tác cho các nhân vật nhí."
+      ],
+      "response_hash": "df1ad7fa298ba8d78b6dd4ce81952ed0338749d98411e4d4251b9b36cd47033c",
+      "finish_reason": "stop",
+      "usage": {
+        "prompt_tokens": 917,
+        "completion_tokens": 135,
+        "total_tokens": 1052,
+        "latency_ms": 1303.1,
+        "provider_model_id": "gemini-3.5-flash-lite",
+        "endpoint_id": "ep-google",
+        "canonical_model_id": "gemini-3.5-flash-lite",
+        "provider_request_id": null,
+        "raw_response": "{\"narrative_score\": 0.88, \"age_fit_score\": 0.92, \"language_score\": 0.85, \"notes\": [\"Cốt truyện rõ ràng, có mở đầu, thắt nút và giải quyết vấn đề phù hợp lứa tuổi 5-8.\", \"Thông điệp về tình bạn và sự đoàn kết được thể hiện tốt qua hành động của các nhân vật.\", \"Các phân cảnh được phân bổ thời gian hợp lý với tổng thời lượng 240 giây.\", \"Có thể bổ sung thêm lời thoại đơn giản để tăng tính tương tác cho các nhân vật nhí.\"]}",
+        "response_hash": "15ef0e6cbab1624ad2d2b1f19d7b1f2b9e0a09da262c99fdfd3e30f00c2155f1"
+      },
+      "notes_correlation": {
+        "notes_count": 4,
+        "content_token_hits": 0,
+        "correlates_with_content": false
+      }
+    },
+    {
+      "eval_id": "rel-gemini-03",
+      "reviewer_model": "gemini-3.5-flash-lite",
+      "prompt_id": "story.review.assess",
+      "prompt_version": "1.2.0",
+      "review_prompt_hash": "bd3218df8cdf43de647caa5c10fd0cf5676ba7c8bff421f8bdc6be9afe9ef2b3",
+      "system_prompt_hash": "276a88bac5eb0e83391ec782f90dac967b7d1d20ff0b196232473a747d712258",
+      "input_artifact": "dscn_001",
+      "error": null,
+      "latency_ms": 1304.3,
+      "retry_attempts": 1,
+      "language_score": 0.85,
+      "narrative_score": 0.88,
+      "age_fit_score": 0.92,
+      "notes": [
+        "Cốt truyện rõ ràng, có mở đầu, thắt nút (diều vướng cây) và giải quyết (bạn bè giúp đỡ) phù hợp lứa tuổi 5-8.",
+        "Thông điệp về tinh thần đoàn kết và tình bạn được truyền tải tốt qua các hành động của nhân vật.",
+        "Các cảnh có nhịp độ hợp lý, tuy nhiên cần bổ sung chi tiết hành động cụ thể hơn trong kịch bản phân cảnh.",
+        "Nên thêm một vài câu thoại ngắn hoặc âm thanh vui nhộn để tăng tính tương tác cho thiếu nhi."
+      ],
+      "response_hash": "2cacff085a896a97685a603cce5e897db5998f4979b0621051595e8017e0f239",
+      "finish_reason": "stop",
+      "usage": {
+        "prompt_tokens": 917,
+        "completion_tokens": 158,
+        "total_tokens": 1075,
+        "latency_ms": 1304.0,
+        "provider_model_id": "gemini-3.5-flash-lite",
+        "endpoint_id": "ep-google",
+        "canonical_model_id": "gemini-3.5-flash-lite",
+        "provider_request_id": null,
+        "raw_response": "{\"narrative_score\": 0.88, \"age_fit_score\": 0.92, \"language_score\": 0.85, \"notes\": [\"Cốt truyện rõ ràng, có mở đầu, thắt nút (diều vướng cây) và giải quyết (bạn bè giúp đỡ) phù hợp lứa tuổi 5-8.\", \"Thông điệp về tinh thần đoàn kết và tình bạn được truyền tải tốt qua các hành động của nhân vật.\", \"Các cảnh có nhịp độ hợp lý, tuy nhiên cần bổ sung chi tiết hành động cụ thể hơn trong kịch bản phân cảnh.\", \"Nên thêm một vài câu thoại ngắn hoặc âm thanh vui nhộn để tăng tính tương tác cho thiếu nhi.\"]}",
+        "response_hash": "a26b7eec559db2a22a020e3469b95b8ebbc883b3a4dd7697817f16b3ace0ea03"
+      },
+      "notes_correlation": {
+        "notes_count": 4,
+        "content_token_hits": 1,
+        "correlates_with_content": false
+      }
+    },
+    {
+      "eval_id": "rel-gemini-04",
+      "reviewer_model": "gemini-3.5-flash-lite",
+      "prompt_id": "story.review.assess",
+      "prompt_version": "1.2.0",
+      "review_prompt_hash": "bd3218df8cdf43de647caa5c10fd0cf5676ba7c8bff421f8bdc6be9afe9ef2b3",
+      "system_prompt_hash": "276a88bac5eb0e83391ec782f90dac967b7d1d20ff0b196232473a747d712258",
+      "input_artifact": "dscn_001",
+      "error": null,
+      "latency_ms": 1299.6,
+      "retry_attempts": 1,
+      "language_score": 0.85,
+      "narrative_score": 0.88,
+      "age_fit_score": 0.92,
+      "notes": [
+        "Cốt truyện rõ ràng, có mở đầu, thắt nút và giải quyết vấn đề phù hợp lứa tuổi 5-8.",
+        "Bài học về tinh thần đoàn kết và giúp đỡ lẫn nhau được thể hiện tốt qua các nhân vật.",
+        "Cần bổ sung thêm chi tiết cụ thể hơn về hành động của từng bạn nhỏ trong cảnh gỡ diều để tăng tính sinh động."
+      ],
+      "response_hash": "8565144826bd80be40044a57181a4de6ce0e1be44454396a594cfccb7e17cbe0",
+      "finish_reason": "stop",
+      "usage": {
+        "prompt_tokens": 917,
+        "completion_tokens": 121,
+        "total_tokens": 1038,
+        "latency_ms": 1299.4,
+        "provider_model_id": "gemini-3.5-flash-lite",
+        "endpoint_id": "ep-google",
+        "canonical_model_id": "gemini-3.5-flash-lite",
+        "provider_request_id": null,
+        "raw_response": "{\"narrative_score\": 0.88, \"age_fit_score\": 0.92, \"language_score\": 0.85, \"notes\": [\"Cốt truyện rõ ràng, có mở đầu, thắt nút và giải quyết vấn đề phù hợp lứa tuổi 5-8.\", \"Bài học về tinh thần đoàn kết và giúp đỡ lẫn nhau được thể hiện tốt qua các nhân vật.\", \"Cần bổ sung thêm chi tiết cụ thể hơn về hành động của từng bạn nhỏ trong cảnh gỡ diều để tăng tính sinh động.\"]}",
+        "response_hash": "09034d62e69659d86575e45d572e79642f7ee359758e936de491b35b6f9e80d4"
+      },
+      "notes_correlation": {
+        "notes_count": 3,
+        "content_token_hits": 1,
+        "correlates_with_content": true
+      }
+    },
+    {
+      "eval_id": "rel-gemini-05",
+      "reviewer_model": "gemini-3.5-flash-lite",
+      "prompt_id": "story.review.assess",
+      "prompt_version": "1.2.0",
+      "review_prompt_hash": "bd3218df8cdf43de647caa5c10fd0cf5676ba7c8bff421f8bdc6be9afe9ef2b3",
+      "system_prompt_hash": "276a88bac5eb0e83391ec782f90dac967b7d1d20ff0b196232473a747d712258",
+      "input_artifact": "dscn_001",
+      "error": null,
+      "latency_ms": 1101.7,
+      "retry_attempts": 1,
+      "language_score": 0.85,
+      "narrative_score": 0.88,
+      "age_fit_score": 0.92,
+      "notes": [
+        "Cốt truyện đơn giản, rõ ràng, phù hợp với lứa tuổi 5-8.",
+        "Xây dựng tình huống gặp khó khăn và sự giúp đỡ từ bạn bè mang tính giáo dục cao.",
+        "Các cảnh diễn tiến logic từ khởi đầu đến cao trào và giải quyết vấn đề."
+      ],
+      "response_hash": "062a2dc74f080556b764c9959761763dd528698b23f91a565bf9fdd3a9e07b11",
+      "finish_reason": "stop",
+      "usage": {
+        "prompt_tokens": 917,
+        "completion_tokens": 102,
+        "total_tokens": 1019,
+        "latency_ms": 1101.4,
+        "provider_model_id": "gemini-3.5-flash-lite",
+        "endpoint_id": "ep-google",
+        "canonical_model_id": "gemini-3.5-flash-lite",
+        "provider_request_id": null,
+        "raw_response": "{\"narrative_score\": 0.88, \"age_fit_score\": 0.92, \"language_score\": 0.85, \"notes\": [\"Cốt truyện đơn giản, rõ ràng, phù hợp với lứa tuổi 5-8.\", \"Xây dựng tình huống gặp khó khăn và sự giúp đỡ từ bạn bè mang tính giáo dục cao.\", \"Các cảnh diễn tiến logic từ khởi đầu đến cao trào và giải quyết vấn đề.\"]}",
+        "response_hash": "24f0d985a4d8f79275037163d8045f251bc36ae2554af8b5502ce898c5240dd3"
+      },
+      "notes_correlation": {
+        "notes_count": 3,
+        "content_token_hits": 1,
+        "correlates_with_content": true
+      }
+    },
+    {
+      "eval_id": "rel-gemini-06",
+      "reviewer_model": "gemini-3.5-flash-lite",
+      "prompt_id": "story.review.assess",
+      "prompt_version": "1.2.0",
+      "review_prompt_hash": "bd3218df8cdf43de647caa5c10fd0cf5676ba7c8bff421f8bdc6be9afe9ef2b3",
+      "system_prompt_hash": "276a88bac5eb0e83391ec782f90dac967b7d1d20ff0b196232473a747d712258",
+      "input_artifact": "dscn_001",
+      "error": null,
+      "latency_ms": 1305.8,
+      "retry_attempts": 1,
+      "language_score": 0.85,
+      "narrative_score": 0.88,
+      "age_fit_score": 0.92,
+      "notes": [
+        "The narrative arc is clear and follows a classic problem-resolution structure suitable for young children.",
+        "Character collaboration in scene 6 and 7 provides a positive social message for the 5-8 age group.",
+        "Ensure scene summaries are fully completed without trailing cutoffs in the text."
+      ],
+      "response_hash": "0234c216a31be8df98ae85e4c31c5d1200d2dceb42eb4aa5915b5b15453eb393",
+      "finish_reason": "stop",
+      "usage": {
+        "prompt_tokens": 917,
+        "completion_tokens": 98,
+        "total_tokens": 1015,
+        "latency_ms": 1305.6,
+        "provider_model_id": "gemini-3.5-flash-lite",
+        "endpoint_id": "ep-google",
+        "canonical_model_id": "gemini-3.5-flash-lite",
+        "provider_request_id": null,
+        "raw_response": "{\"narrative_score\": 0.88, \"age_fit_score\": 0.92, \"language_score\": 0.85, \"notes\": [\"The narrative arc is clear and follows a classic problem-resolution structure suitable for young children.\", \"Character collaboration in scene 6 and 7 provides a positive social message for the 5-8 age group.\", \"Ensure scene summaries are fully completed without trailing cutoffs in the text.\"]}",
+        "response_hash": "07edefeac915b2b127fba2a2a4160198b77243b73a8353734c411acc11f926e5"
+      },
+      "notes_correlation": {
+        "notes_count": 3,
+        "content_token_hits": 0,
+        "correlates_with_content": false
+      }
+    },
+    {
+      "eval_id": "rel-gemini-07",
+      "reviewer_model": "gemini-3.5-flash-lite",
+      "prompt_id": "story.review.assess",
+      "prompt_version": "1.2.0",
+      "review_prompt_hash": "bd3218df8cdf43de647caa5c10fd0cf5676ba7c8bff421f8bdc6be9afe9ef2b3",
+      "system_prompt_hash": "276a88bac5eb0e83391ec782f90dac967b7d1d20ff0b196232473a747d712258",
+      "input_artifact": "dscn_001",
+      "error": null,
+      "latency_ms": 1312.9,
+      "retry_attempts": 1,
+      "language_score": 0.85,
+      "narrative_score": 0.88,
+      "age_fit_score": 0.92,
+      "notes": [
+        "Cốt truyện rõ ràng, có mở đầu, thắt nút (diều vướng cây) và cao trào giải quyết vấn đề phù hợp lứa tuổi 5-8.",
+        "Thông điệp về tình bạn và tinh thần đoàn kết được thể hiện tốt qua các nhân vật hỗ trợ.",
+        "Mô tả hành động của từng nhân vật trong cảnh 7 cần được hoàn thiện chi tiết hơn để rõ ràng phần kết quả."
+      ],
+      "response_hash": "7c464c47a4d9d8fb57097a51b91c226a3c0a9a151b21c82a069144de27752969",
+      "finish_reason": "stop",
+      "usage": {
+        "prompt_tokens": 917,
+        "completion_tokens": 130,
+        "total_tokens": 1047,
+        "latency_ms": 1312.7,
+        "provider_model_id": "gemini-3.5-flash-lite",
+        "endpoint_id": "ep-google",
+        "canonical_model_id": "gemini-3.5-flash-lite",
+        "provider_request_id": null,
+        "raw_response": "{\"narrative_score\": 0.88, \"age_fit_score\": 0.92, \"language_score\": 0.85, \"notes\": [\"Cốt truyện rõ ràng, có mở đầu, thắt nút (diều vướng cây) và cao trào giải quyết vấn đề phù hợp lứa tuổi 5-8.\", \"Thông điệp về tình bạn và tinh thần đoàn kết được thể hiện tốt qua các nhân vật hỗ trợ.\", \"Mô tả hành động của từng nhân vật trong cảnh 7 cần được hoàn thiện chi tiết hơn để rõ ràng phần kết quả.\"]}",
+        "response_hash": "939668234a5e032a1545cf8c7cc7df2fee60b85fdd52e65c268337a6cccc037f"
+      },
+      "notes_correlation": {
+        "notes_count": 3,
+        "content_token_hits": 1,
+        "correlates_with_content": true
+      }
+    },
+    {
+      "eval_id": "rel-gemini-08",
+      "reviewer_model": "gemini-3.5-flash-lite",
+      "prompt_id": "story.review.assess",
+      "prompt_version": "1.2.0",
+      "review_prompt_hash": "bd3218df8cdf43de647caa5c10fd0cf5676ba7c8bff421f8bdc6be9afe9ef2b3",
+      "system_prompt_hash": "276a88bac5eb0e83391ec782f90dac967b7d1d20ff0b196232473a747d712258",
+      "input_artifact": "dscn_001",
+      "error": null,
+      "latency_ms": 1197.0,
+      "retry_attempts": 1,
+      "language_score": 0.85,
+      "narrative_score": 0.88,
+      "age_fit_score": 0.92,
+      "notes": [
+        "Cốt truyện rõ ràng, có mở đầu, thắt nút (diều vướng cây) và giải quyết nút thắt nhờ tinh thần đoàn kết.",
+        "Phù hợp hoàn hảo với lứa tuổi 5-8 với bài học về tình bạn và sự sẻ chia.",
+        "Các cảnh diễn tả hành động trực quan, dễ hiểu đối với phim hoạt hình ngắn không thoại."
+      ],
+      "response_hash": "a4cfd97b138cbf8a04f3637ba061e9e3b422a817d5762d9524206c109820e54e",
+      "finish_reason": "stop",
+      "usage": {
+        "prompt_tokens": 917,
+        "completion_tokens": 119,
+        "total_tokens": 1036,
+        "latency_ms": 1196.8,
+        "provider_model_id": "gemini-3.5-flash-lite",
+        "endpoint_id": "ep-google",
+        "canonical_model_id": "gemini-3.5-flash-lite",
+        "provider_request_id": null,
+        "raw_response": "{\"narrative_score\": 0.88, \"age_fit_score\": 0.92, \"language_score\": 0.85, \"notes\": [\"Cốt truyện rõ ràng, có mở đầu, thắt nút (diều vướng cây) và giải quyết nút thắt nhờ tinh thần đoàn kết.\", \"Phù hợp hoàn hảo với lứa tuổi 5-8 với bài học về tình bạn và sự sẻ chia.\", \"Các cảnh diễn tả hành động trực quan, dễ hiểu đối với phim hoạt hình ngắn không thoại.\"]}",
+        "response_hash": "649017c7a6232f57ae6435940cfe36b5d94be43a10a2532487f8eb9427043ee0"
+      },
+      "notes_correlation": {
+        "notes_count": 3,
+        "content_token_hits": 1,
+        "correlates_with_content": true
+      }
+    },
+    {
+      "eval_id": "rel-gemini-09",
+      "reviewer_model": "gemini-3.5-flash-lite",
+      "prompt_id": "story.review.assess",
+      "prompt_version": "1.2.0",
+      "review_prompt_hash": "bd3218df8cdf43de647caa5c10fd0cf5676ba7c8bff421f8bdc6be9afe9ef2b3",
+      "system_prompt_hash": "276a88bac5eb0e83391ec782f90dac967b7d1d20ff0b196232473a747d712258",
+      "input_artifact": "dscn_001",
+      "error": null,
+      "latency_ms": 1205.9,
+      "retry_attempts": 1,
+      "language_score": 0.85,
+      "narrative_score": 0.88,
+      "age_fit_score": 0.92,
+      "notes": [
+        "Cốt truyện rõ ràng, có mở đầu, thắt nút (diều vướng cây) và giải quyết bằng tình bạn.",
+        "Phù hợp hoàn hảo với lứa tuổi 5-8 với bài học về sự hợp sức giúp đỡ lẫn nhau.",
+        "Cần bổ sung thêm chi tiết cụ thể về cách các bạn cùng nhau gỡ diều ở phân cảnh cuối để tăng tính sinh động."
+      ],
+      "response_hash": "2ec7e814e57fbe24b3fc9b318a0f858d14f67503e1eb08aa33e0529e02dd1635",
+      "finish_reason": "stop",
+      "usage": {
+        "prompt_tokens": 917,
+        "completion_tokens": 124,
+        "total_tokens": 1041,
+        "latency_ms": 1205.7,
+        "provider_model_id": "gemini-3.5-flash-lite",
+        "endpoint_id": "ep-google",
+        "canonical_model_id": "gemini-3.5-flash-lite",
+        "provider_request_id": null,
+        "raw_response": "{\"narrative_score\": 0.88, \"age_fit_score\": 0.92, \"language_score\": 0.85, \"notes\": [\"Cốt truyện rõ ràng, có mở đầu, thắt nút (diều vướng cây) và giải quyết bằng tình bạn.\", \"Phù hợp hoàn hảo với lứa tuổi 5-8 với bài học về sự hợp sức giúp đỡ lẫn nhau.\", \"Cần bổ sung thêm chi tiết cụ thể về cách các bạn cùng nhau gỡ diều ở phân cảnh cuối để tăng tính sinh động.\"]}",
+        "response_hash": "a1518dd289cd631b2caf3648eacb46ad7149a10cbc738aff3d5cad71a9c38689"
+      },
+      "notes_correlation": {
+        "notes_count": 3,
+        "content_token_hits": 2,
+        "correlates_with_content": true
+      }
+    },
+    {
+      "eval_id": "rel-gemini-10",
+      "reviewer_model": "gemini-3.5-flash-lite",
+      "prompt_id": "story.review.assess",
+      "prompt_version": "1.2.0",
+      "review_prompt_hash": "bd3218df8cdf43de647caa5c10fd0cf5676ba7c8bff421f8bdc6be9afe9ef2b3",
+      "system_prompt_hash": "276a88bac5eb0e83391ec782f90dac967b7d1d20ff0b196232473a747d712258",
+      "input_artifact": "dscn_001",
+      "error": null,
+      "latency_ms": 1307.9,
+      "retry_attempts": 1,
+      "language_score": 0.85,
+      "narrative_score": 0.88,
+      "age_fit_score": 0.92,
+      "notes": [
+        "Cốt truyện rõ ràng, có mở đầu, thắt nút (diều vướng cây) và giải quyết (bạn bè giúp đỡ) phù hợp lứa tuổi 5-8.",
+        "Thông điệp về tình bạn và sự đoàn kết được truyền tải tự nhiên qua các phân cảnh.",
+        "Nên bổ sung thêm một chút chi tiết biểu cảm ở cảnh 5 và cảnh 7 để tăng tính sinh động cho hoạt hình."
+      ],
+      "response_hash": "64bd6ea2c22b01b83e241332884bc3ee81fbbaf9ad636eae65c1622cd4e72176",
+      "finish_reason": "stop",
+      "usage": {
+        "prompt_tokens": 917,
+        "completion_tokens": 131,
+        "total_tokens": 1048,
+        "latency_ms": 1307.7,
+        "provider_model_id": "gemini-3.5-flash-lite",
+        "endpoint_id": "ep-google",
+        "canonical_model_id": "gemini-3.5-flash-lite",
+        "provider_request_id": null,
+        "raw_response": "{\"narrative_score\": 0.88, \"age_fit_score\": 0.92, \"language_score\": 0.85, \"notes\": [\"Cốt truyện rõ ràng, có mở đầu, thắt nút (diều vướng cây) và giải quyết (bạn bè giúp đỡ) phù hợp lứa tuổi 5-8.\", \"Thông điệp về tình bạn và sự đoàn kết được truyền tải tự nhiên qua các phân cảnh.\", \"Nên bổ sung thêm một chút chi tiết biểu cảm ở cảnh 5 và cảnh 7 để tăng tính sinh động cho hoạt hình.\"]}",
+        "response_hash": "8f72c98df7a24813b43158c47668b683bb8156788398e29ce6b532b3e45e1b8b"
+      },
+      "notes_correlation": {
+        "notes_count": 3,
+        "content_token_hits": 1,
+        "correlates_with_content": true
+      }
+    }
+  ],
+  "language_stats": {
+    "mean": 0.855,
+    "median": 0.85,
+    "min": 0.85,
+    "max": 0.9,
+    "spread": 0.05,
+    "std": 0.0158,
+    "n": 10
+  },
+  "narrative_stats": {
+    "mean": 0.88,
+    "median": 0.88,
+    "min": 0.88,
+    "max": 0.88,
+    "spread": 0.0,
+    "std": 0.0,
+    "n": 10
+  },
+  "reviewer_reliable": true,
+  "reviewer_preferred": false,
+  "notes_correlation": {
+    "aggregate": {
+      "notes_count": 32,
+      "content_token_hits": 8,
+      "correlates_with_content": false
+    }
+  }
+}

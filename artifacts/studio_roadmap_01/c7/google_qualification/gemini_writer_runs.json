@@ -11,209 +11,7 @@
     "system_prompt_hash": "6eab0c6eb6391d881dc87e98694120b4711e0adde7388834d043c81d7cf809a5",
     "thinking_level": "not_supported_by_adapter (evidence, not faked)",
     "temperature_sent": "no",
-    "error": null,
-    "latency_ms": 9510.7,
-    "retry_attempts": 1,
-    "parsed_response": {
-      "schema_version": "studio.artifact/v1alpha1",
-      "artifact_type": "ScreenplayDraft",
-      "draft_id": "dscn_ep_01",
-      "title": "Thỏ Nhím Và Chiếc Diều Bay Xanh",
-      "logline": "",
-      "language": "vi",
-      "audience_band": "5-8",
-      "target_duration_seconds": 240,
-      "tolerance_seconds": 15,
-      "scenes": [
-        {
-          "scene_id": "dscn_001",
-          "order": 1,
-          "outline_scene_id": "sc_001",
-          "location_id": "loc_001",
-          "character_ids": [
-            "ch_001"
-          ],
-          "action_description": " Thỏ Nhím bước ra đối trên đỉnh đồi xanh mướt, với nụ cười rạng rỡ trên môi.",
-          "dialogue": [],
-          "narration": "Mỗi ngày, Thỏ Nhím đều thích thả diều trên đỉnh đồi xanh mướt.",
-          "transition": "FADE IN:",
-          "estimated_seconds": 20,
-          "source_beat_ids": [
-            "bt_001"
-          ]
-        },
-        {
-          "scene_id": "dscn_002",
-          "order": 2,
-          "outline_scene_id": "sc_002",
-          "location_id": "loc_001",
-          "character_ids": [
-            "ch_001"
-          ],
-          "action_description": " Thỏ Nhím cầm chặt chiếc diều giấy rồi vui vẻ chạy lên đỉnh đồi khi cơn gió nhẹ nhàng thổi qua.",
-          "dialogue": [],
-          "narration": "Bé chuản bị kỹ càng cho chế tác và cảm nhận ngọn gió mát lành.",
-          "transition": "CUT TO:",
-          "estimated_seconds": 25,
-          "source_beat_ids": [
-            "bt_002"
-          ]
-        },
-        {
-          "scene_id": "dscn_003",
-          "order": 3,
-          "outline_scene_id": "sc_003",
-          "location_id": "loc_001",
-          "character_ids": [
-            "ch_001"
-          ],
-          "action_description": " Thỏ Nhím thả dây cho chiếc diều bay vút lên trời cao, cười toe toét nhìn theo.",
-          "dialogue": [],
-          "narration": "Chiếc diều vũng vự bay múa giữa không trung một cách thích thú.",
-          "transition": "CUT TO:",
-          "estimated_seconds": 35,
-          "source_beat_ids": [
-            "bt_003"
-          ]
-        },
-        {
-          "scene_id": "dscn_004",
-          "order": 4,
-          "outline_scene_id": "sc_004",
-          "location_id": "loc_001",
-          "character_ids": [
-            "ch_001"
-          ],
-          "action_description": " Một cơn gió to bất ngờ ập tới, làm sợi dây diều vướng vào cành cây cao khiến Thỏ Nhím hồảng sƣ̣.",
-          "dialogue": [],
-          "narration": "Bỗng nhiên, trời nổi gió lớn khiến mọi thứ chệch choạng.",
-          "transition": "CUT TO:",
-          "estimated_seconds": 50,
-          "source_beat_ids": [
-            "bt_004"
-          ]
-        },
-        {
-          "scene_id": "dscn_005",
-          "order": 5,
-          "outline_scene_id": "sc_005",
-          "location_id": "loc_001",
-          "character_ids": [
-            "ch_001"
-          ],
-          "action_description": " Thỏ Nhím cố gắng giật mạnh dây nhưng diều vẫn mắc kết, khuôn mặt bé rất buồn bã.",
-          "dialogue": [],
-          "narration": "Bé cố gắng vùng vựy nhưng chẳng thể gỡ xuống, và cảm thấy thất vọng.",
-          "transition": "CUT TO:",
-          "estimated_seconds": 35,
-          "source_beat_ids": [
-            "bt_005"
-          ]
-        },
-        {
-          "scene_id": "dscn_006",
-          "order": 6,
-          "outline_scene_id": "sc_006",
-          "location_id": "loc_001",
-          "character_ids": [
-            "ch_001",
-            "ch_002",
-            "ch_003",
-            "ch_004"
-          ],
-          "action_description": " Mèo Mướp, Gấu Trắng và Chó Vàng hốt hoảng chạy đến tìm cách giúp đỡ Thỏ Nhím.",
-          "dialogue": [],
-          "narration": "May quá, các bạn nhỏ đã đến kịp lúc cùng nhau chung tay.",
-          "transition": "CUT TO:",
-          "estimated_seconds": 25,
-          "source_beat_ids": [
-            "bt_006"
-          ]
-        },
-        {
-          "scene_id": "dscn_007",
-          "order": 7,
-          "outline_scene_id": "sc_007",
-          "location_id": "loc_001",
-          "character_ids": [
-            "ch_001",
-            "ch_002",
-            "ch_003",
-            "ch_004"
-          ],
-          "action_description": " Mèo Mướp dùng móng vuốt, Gấu Trắng dùng sức lực còn Chó Vàng dùng hàm răng cùng gỡ sợi dây.",
-          "dialogue": [],
-          "narration": "Mỗi bạn dùng một tài năng riêng để giúp Thỏ Nhím.",
-          "transition": "CUT TO:",
-          "estimated_seconds": 35,
-          "source_beat_ids": [
-            "bt_007"
-          ]
-        },
-        {
-          "scene_id": "dscn_008",
-          "order": 8,
-          "outline_scene_id": "sc_008",
-          "location_id": "loc_001",
-          "character_ids": [
-            "ch_001",
-            "ch_002",
-            "ch_003",
-            "ch_004"
-          ],
-          "action_description": " Chiếc diều bung bay lên cao tận tầng mây, tất cả cùng hô reo nhảy múa vui sướng.",
-          "dialogue": [],
-          "narration": "Chiếc diều lại bay cao, tình bạn thì thêm khếng khít và gắn bó.",
-          "transition": "FADE OUT:",
-          "estimated_seconds": 15,
-          "source_beat_ids": [
-            "bt_008"
-          ]
-        }
-      ],
-      "duration_formula_version": "duration_formula/v1"
-    },
-    "response_hash": "5070f6dcc3b71880933eca3e9075529dbf466a405b9558854360d71eadb7ca21",
-    "finish_reason": "stop",
-    "usage": {
-      "prompt_tokens": 1544,
-      "completion_tokens": 2710,
-      "total_tokens": 4254,
-      "latency_ms": 9509.8,
-      "provider_model_id": "gemini-3.5-flash-lite",
-      "endpoint_id": "ep-google",
-      "canonical_model_id": "gemini-3.5-flash-lite",
-      "provider_request_id": null,
-      "raw_response": "{\"draft_id\": \"dscn_ep_01\", \"title\": \"Th\\u1ecf Nh\\u00edm V\\u00e0 Chi\\u1ebfc Di\\u1ec1u Bay Xanh\", \"target_duration_seconds\": 240, \"scenes\": [{\"scene_id\": \"dscn_001\", \"order\": 1, \"outline_scene_id\": \"sc_001\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \" Th\\u1ecf Nh\\u00edm b\\u01b0\\u1edbc ra \\u0111\\u1ed1i tr\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i xanh m\\u01b0\\u1edbt, v\\u1edbi n\\u1ee5 c\\u01b0\\u1eddi r\\u1ea1ng r\\u1ee1 tr\\u00ean m\\u00f4i.\", \"dialogue\": [], \"narration\": \"M\\u1ed7i ng\\u00e0y, Th\\u1ecf Nh\\u00edm \\u0111\\u1ec1u th\\u00edch th\\u1ea3 di\\u1ec1u tr\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i xanh m\\u01b0\\u1edbt.\", \"transition\": \"FADE IN:\", \"estimated_seconds\": 20, \"source_beat_ids\": [\"bt_001\"]}, {\"scene_id\": \"dscn_002\", \"order\": 2, \"outline_scene_id\": \"sc_002\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \" Th\\u1ecf Nh\\u00edm c\\u1ea7m ch\\u1eb7t chi\\u1ebfc di\\u1ec1u gi\\u1ea5y r\\u1ed3i vui v\\u1ebb ch\\u1ea1y l\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i khi c\\u01a1n gi\\u00f3 nh\\u1eb9 nh\\u00e0ng th\\u1ed5i qua.\", \"dialogue\": [], \"narration\": \"B\\u00e9 chu\\u1ea3n b\\u1ecb k\\u1ef9 c\\u00e0ng cho ch\\u1ebf t\\u00e1c v\\u00e0 c\\u1ea3m nh\\u1eadn ng\\u1ecdn gi\\u00f3 m\\u00e1t l\\u00e0nh.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 25, \"source_beat_ids\": [\"bt_002\"]}, {\"scene_id\": \"dscn_003\", \"order\": 3, \"outline_scene_id\": \"sc_003\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \" Th\\u1ecf Nh\\u00edm th\\u1ea3 d\\u00e2y cho chi\\u1ebfc di\\u1ec1u bay v\\u00fat l\\u00ean tr\\u1eddi cao, c\\u01b0\\u1eddi toe to\\u00e9t nh\\u00ecn theo.\", \"dialogue\": [], \"narration\": \"Chi\\u1ebfc di\\u1ec1u v\\u0169ng v\\u1ef1 bay m\\u00faa gi\\u1eefa kh\\u00f4ng trung m\\u1ed9t c\\u00e1ch th\\u00edch th\\u00fa.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_003\"]}, {\"scene_id\": \"dscn_004\", \"order\": 4, \"outline_scene_id\": \"sc_004\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \" M\\u1ed9t c\\u01a1n gi\\u00f3 to b\\u1ea5t ng\\u1edd \\u1eadp t\\u1edbi, l\\u00e0m s\\u1ee3i d\\u00e2y di\\u1ec1u v\\u01b0\\u1edbng v\\u00e0o c\\u00e0nh c\\u00e2y cao khi\\u1ebfn Th\\u1ecf Nh\\u00edm h\\u00f4\\u0300a\\u0309ng s\\u01a3\\u0323.\", \"dialogue\": [], \"narration\": \"B\\u1ed7ng nhi\\u00ean, tr\\u1eddi n\\u1ed5i gi\\u00f3 l\\u1edbn khi\\u1ebfn m\\u1ecdi th\\u1ee9 ch\\u1ec7ch cho\\u1ea1ng.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 50, \"source_beat_ids\": [\"bt_004\"]}, {\"scene_id\": \"dscn_005\", \"order\": 5, \"outline_scene_id\": \"sc_005\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \" Th\\u1ecf Nh\\u00edm c\\u1ed1 g\\u1eafng gi\\u1eadt m\\u1ea1nh d\\u00e2y nh\\u01b0ng di\\u1ec1u v\\u1eabn m\\u1eafc k\\u1ebft, khu\\u00f4n m\\u1eb7t b\\u00e9 r\\u1ea5t bu\\u1ed3n b\\u00e3.\", \"dialogue\": [], \"narration\": \"B\\u00e9 c\\u1ed1 g\\u1eafng v\\u00f9ng v\\u1ef1y nh\\u01b0ng ch\\u1eb3ng th\\u1ec3 g\\u1ee1 xu\\u1ed1ng, v\\u00e0 c\\u1ea3m th\\u1ea5y th\\u1ea5t v\\u1ecdng.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_005\"]}, {\"scene_id\": \"dscn_006\", \"order\": 6, \"outline_scene_id\": \"sc_006\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \" M\\u00e8o M\\u01b0\\u1edbp, G\\u1ea5u Tr\\u1eafng v\\u00e0 Ch\\u00f3 V\\u00e0ng h\\u1ed1t ho\\u1ea3ng ch\\u1ea1y \\u0111\\u1ebfn t\\u00ecm c\\u00e1ch gi\\u00fap \\u0111\\u1ee1 Th\\u1ecf Nh\\u00edm.\", \"dialogue\": [], \"narration\": \"May qu\\u00e1, c\\u00e1c b\\u1ea1n nh\\u1ecf \\u0111\\u00e3 \\u0111\\u1ebfn k\\u1ecbp l\\u00fac c\\u00f9ng nhau chung tay.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 25, \"source_beat_ids\": [\"bt_006\"]}, {\"scene_id\": \"dscn_007\", \"order\": 7, \"outline_scene_id\": \"sc_007\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \" M\\u00e8o M\\u01b0\\u1edbp d\\u00f9ng m\\u00f3ng vu\\u1ed1t, G\\u1ea5u Tr\\u1eafng d\\u00f9ng s\\u1ee9c l\\u1ef1c c\\u00f2n Ch\\u00f3 V\\u00e0ng d\\u00f9ng h\\u00e0m r\\u0103ng c\\u00f9ng g\\u1ee1 s\\u1ee3i d\\u00e2y.\", \"dialogue\": [], \"narration\": \"M\\u1ed7i b\\u1ea1n d\\u00f9ng m\\u1ed9t t\\u00e0i n\\u0103ng ri\\u00eang \\u0111\\u1ec3 gi\\u00fap Th\\u1ecf Nh\\u00edm.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_007\"]}, {\"scene_id\": \"dscn_008\", \"order\": 8, \"outline_scene_id\": \"sc_008\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \" Chi\\u1ebfc di\\u1ec1u bung bay l\\u00ean cao t\\u1eadn t\\u1ea7ng m\\u00e2y, t\\u1ea5t c\\u1ea3 c\\u00f9ng h\\u00f4 reo nh\\u1ea3y m\\u00faa vui s\\u01b0\\u1edbng.\", \"dialogue\": [], \"narration\": \"Chi\\u1ebfc di\\u1ec1u l\\u1ea1i bay cao, t\\u00ecnh b\\u1ea1n th\\u00ec th\\u00eam kh\\u1ebfng kh\\u00edt v\\u00e0 g\\u1eafn b\\u00f3.\", \"transition\": \"FADE OUT:\", \"estimated_seconds\": 15, \"source_beat_ids\": [\"bt_008\"]}]}",
-      "response_hash": "5070f6dcc3b71880933eca3e9075529dbf466a405b9558854360d71eadb7ca21"
-    },
-    "repair_count": 0,
-    "raw_response": "{\"draft_id\": \"dscn_ep_01\", \"title\": \"Th\\u1ecf Nh\\u00edm V\\u00e0 Chi\\u1ebfc Di\\u1ec1u Bay Xanh\", \"target_duration_seconds\": 240, \"scenes\": [{\"scene_id\": \"dscn_001\", \"order\": 1, \"outline_scene_id\": \"sc_001\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \" Th\\u1ecf Nh\\u00edm b\\u01b0\\u1edbc ra \\u0111\\u1ed1i tr\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i xanh m\\u01b0\\u1edbt, v\\u1edbi n\\u1ee5 c\\u01b0\\u1eddi r\\u1ea1ng r\\u1ee1 tr\\u00ean m\\u00f4i.\", \"dialogue\": [], \"narration\": \"M\\u1ed7i ng\\u00e0y, Th\\u1ecf Nh\\u00edm \\u0111\\u1ec1u th\\u00edch th\\u1ea3 di\\u1ec1u tr\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i xanh m\\u01b0\\u1edbt.\", \"transition\": \"FADE IN:\", \"estimated_seconds\": 20, \"source_beat_ids\": [\"bt_001\"]}, {\"scene_id\": \"dscn_002\", \"order\": 2, \"outline_scene_id\": \"sc_002\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \" Th\\u1ecf Nh\\u00edm c\\u1ea7m ch\\u1eb7t chi\\u1ebfc di\\u1ec1u gi\\u1ea5y r\\u1ed3i vui v\\u1ebb ch\\u1ea1y l\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i khi c\\u01a1n gi\\u00f3 nh\\u1eb9 nh\\u00e0ng th\\u1ed5i qua.\", \"dialogue\": [], \"narration\": \"B\\u00e9 chu\\u1ea3n b\\u1ecb k\\u1ef9 c\\u00e0ng cho ch\\u1ebf t\\u00e1c v\\u00e0 c\\u1ea3m nh\\u1eadn ng\\u1ecdn gi\\u00f3 m\\u00e1t l\\u00e0nh.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 25, \"source_beat_ids\": [\"bt_002\"]}, {\"scene_id\": \"dscn_003\", \"order\": 3, \"outline_scene_id\": \"sc_003\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \" Th\\u1ecf Nh\\u00edm th\\u1ea3 d\\u00e2y cho chi\\u1ebfc di\\u1ec1u bay v\\u00fat l\\u00ean tr\\u1eddi cao, c\\u01b0\\u1eddi toe to\\u00e9t nh\\u00ecn theo.\", \"dialogue\": [], \"narration\": \"Chi\\u1ebfc di\\u1ec1u v\\u0169ng v\\u1ef1 bay m\\u00faa gi\\u1eefa kh\\u00f4ng trung m\\u1ed9t c\\u00e1ch th\\u00edch th\\u00fa.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_003\"]}, {\"scene_id\": \"dscn_004\", \"order\": 4, \"outline_scene_id\": \"sc_004\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \" M\\u1ed9t c\\u01a1n gi\\u00f3 to b\\u1ea5t ng\\u1edd \\u1eadp t\\u1edbi, l\\u00e0m s\\u1ee3i d\\u00e2y di\\u1ec1u v\\u01b0\\u1edbng v\\u00e0o c\\u00e0nh c\\u00e2y cao khi\\u1ebfn Th\\u1ecf Nh\\u00edm h\\u00f4\\u0300a\\u0309ng s\\u01a3\\u0323.\", \"dialogue\": [], \"narration\": \"B\\u1ed7ng nhi\\u00ean, tr\\u1eddi n\\u1ed5i gi\\u00f3 l\\u1edbn khi\\u1ebfn m\\u1ecdi th\\u1ee9 ch\\u1ec7ch cho\\u1ea1ng.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 50, \"source_beat_ids\": [\"bt_004\"]}, {\"scene_id\": \"dscn_005\", \"order\": 5, \"outline_scene_id\": \"sc_005\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \" Th\\u1ecf Nh\\u00edm c\\u1ed1 g\\u1eafng gi\\u1eadt m\\u1ea1nh d\\u00e2y nh\\u01b0ng di\\u1ec1u v\\u1eabn m\\u1eafc k\\u1ebft, khu\\u00f4n m\\u1eb7t b\\u00e9 r\\u1ea5t bu\\u1ed3n b\\u00e3.\", \"dialogue\": [], \"narration\": \"B\\u00e9 c\\u1ed1 g\\u1eafng v\\u00f9ng v\\u1ef1y nh\\u01b0ng ch\\u1eb3ng th\\u1ec3 g\\u1ee1 xu\\u1ed1ng, v\\u00e0 c\\u1ea3m th\\u1ea5y th\\u1ea5t v\\u1ecdng.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_005\"]}, {\"scene_id\": \"dscn_006\", \"order\": 6, \"outline_scene_id\": \"sc_006\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \" M\\u00e8o M\\u01b0\\u1edbp, G\\u1ea5u Tr\\u1eafng v\\u00e0 Ch\\u00f3 V\\u00e0ng h\\u1ed1t ho\\u1ea3ng ch\\u1ea1y \\u0111\\u1ebfn t\\u00ecm c\\u00e1ch gi\\u00fap \\u0111\\u1ee1 Th\\u1ecf Nh\\u00edm.\", \"dialogue\": [], \"narration\": \"May qu\\u00e1, c\\u00e1c b\\u1ea1n nh\\u1ecf \\u0111\\u00e3 \\u0111\\u1ebfn k\\u1ecbp l\\u00fac c\\u00f9ng nhau chung tay.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 25, \"source_beat_ids\": [\"bt_006\"]}, {\"scene_id\": \"dscn_007\", \"order\": 7, \"outline_scene_id\": \"sc_007\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \" M\\u00e8o M\\u01b0\\u1edbp d\\u00f9ng m\\u00f3ng vu\\u1ed1t, G\\u1ea5u Tr\\u1eafng d\\u00f9ng s\\u1ee9c l\\u1ef1c c\\u00f2n Ch\\u00f3 V\\u00e0ng d\\u00f9ng h\\u00e0m r\\u0103ng c\\u00f9ng g\\u1ee1 s\\u1ee3i d\\u00e2y.\", \"dialogue\": [], \"narration\": \"M\\u1ed7i b\\u1ea1n d\\u00f9ng m\\u1ed9t t\\u00e0i n\\u0103ng ri\\u00eang \\u0111\\u1ec3 gi\\u00fap Th\\u1ecf Nh\\u00edm.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_007\"]}, {\"scene_id\": \"dscn_008\", \"order\": 8, \"outline_scene_id\": \"sc_008\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \" Chi\\u1ebfc di\\u1ec1u bung bay l\\u00ean cao t\\u1eadn t\\u1ea7ng m\\u00e2y, t\\u1ea5t c\\u1ea3 c\\u00f9ng h\\u00f4 reo nh\\u1ea3y m\\u00faa vui s\\u01b0\\u1edbng.\", \"dialogue\": [], \"narration\": \"Chi\\u1ebfc di\\u1ec1u l\\u1ea1i bay cao, t\\u00ecnh b\\u1ea1n th\\u00ec th\\u00eam kh\\u1ebfng kh\\u00edt v\\u00e0 g\\u1eafn b\\u00f3.\", \"transition\": \"FADE OUT:\", \"estimated_seconds\": 15, \"source_beat_ids\": [\"bt_008\"]}]}",
-    "checks": {
-      "scene_count": 8,
-      "dialogue_count": 0,
-      "missing_dialogue": true,
-      "empty_dialogue_lines": 0,
-      "generic_dialogue_lines": 0,
-      "narration_like_dialogue_lines": 0,
-      "short_dialogue_lines": 0,
-      "duplicate_dialogue_lines": 0,
-      "truncated": false,
-      "json_repair_needed": false,
-      "ascii_letter_ratio": 0.0,
-      "english_word_ratio": 0.0,
-      "unnatural_vietnamese_flag": false
-    },
-    "validation": {
-      "artifact_type": "ScreenplayDraft",
-      "pass": true,
-      "counts": {
-        "blocking": 0,
-        "warnings": 0,
-        "info": 0
-      },
-      "codes": []
-    }
+    "error": "StorySchemaFailure: model output does not match the declared schema."
   },
   {
     "run_id": "gemini-3-5-flash-lite-w02",
@@ -228,7 +26,7 @@
     "thinking_level": "not_supported_by_adapter (evidence, not faked)",
     "temperature_sent": "no",
     "error": null,
-    "latency_ms": 8288.2,
+    "latency_ms": 10148.9,
     "retry_attempts": 1,
     "parsed_response": {
       "schema_version": "studio.artifact/v1alpha1",
@@ -249,9 +47,9 @@
           "character_ids": [
             "ch_001"
           ],
-          "action_description": "Thỏ Nhím bước lên đỉnh đồi xanh mướt với chiếc diều trên tay.",
+          "action_description": "Thỏ Nhím hân hoan đứng trên đỉnh đồi xanh mướt, tay cầm chiếc diều nhỏ xinh.",
           "dialogue": [],
-          "narration": "Mỗi ngày, Thỏ Nhím lại thích thú thả diều trên đỉnh đồi xanh mướt.",
+          "narration": "Mỗi ngày, Thỏ Nhím lại thích thú lên đỉnh đồi xanh mướt để thả diều.",
           "transition": "FADE IN:",
           "estimated_seconds": 20,
           "source_beat_ids": [
@@ -266,9 +64,9 @@
           "character_ids": [
             "ch_001"
           ],
-          "action_description": "Thỏ Nhím kiểm tra cẩn thận dây diều và hân hoan chạy lên đỉnh đồi.",
+          "action_description": "Thỏ Nhím cẩn thận kiểm tra diều và vui vẻ chạy bước lên đỉnh đồi khi gió thổi nhếng nhẹ.",
           "dialogue": [],
-          "narration": "Bé chuẩn bị kỹ càng và chạy vui vẻ khi gió nhẹ nhàng thổi qua.",
+          "narration": "Bé chuẩn bị diều thật kỹ rồi vui vẻ chạy lên đỉnh đồi trong gió mát.",
           "transition": "CUT TO:",
           "estimated_seconds": 25,
           "source_beat_ids": [
@@ -283,9 +81,9 @@
           "character_ids": [
             "ch_001"
           ],
-          "action_description": "Thỏ Nhím thả diều bay cao và cười rạng rỡ nhìn theo.",
+          "action_description": "Thỏ Nhím thả diều bay vút lên trời cao và cười rạng rỡ.",
           "dialogue": [],
-          "narration": "Chiếc diều vũ vơ bay múa giữa không trung trong niềm vui sướng của Thỏ Nhím.",
+          "narration": "Chiếc diều vươn cao, bay múa nhẹ nhàng trong nụ cƳời hạnh phúc của Thỏ Nhím.",
           "transition": "CUT TO:",
           "estimated_seconds": 35,
           "source_beat_ids": [
@@ -300,9 +98,9 @@
           "character_ids": [
             "ch_001"
           ],
-          "action_description": "Cơn gió ập tới làm diều vướng vào cành cây lớn.",
+          "action_description": "Một cơn gió thổi thót mạnh làm sợi dây diều vướng lên cành cây lớn, khiến Thỏ Nhím giật mình.",
           "dialogue": [],
-          "narration": "Bỗng một cơn gió lớn thổi mạnh, khiến dây diều mắc kẾt trên cây to và Thỏ Nhím hoảng hốt.",
+          "narration": "Bỗng cơn gió lớn ú ù thổi tới, dây diều vướng chặt vào cành cây to.",
           "transition": "CUT TO:",
           "estimated_seconds": 50,
           "source_beat_ids": [
@@ -317,9 +115,9 @@
           "character_ids": [
             "ch_001"
           ],
-          "action_description": "Thỏ Nhím rất cố gắng kéo mà vẫn bất thành, cúu bé buồn bã.",
+          "action_description": "Thỏ Nhím cố gắng gục dây nhưng diều vẫn kết chặt, bé buồn bãi cúi đầu.",
           "dialogue": [],
-          "narration": "Bé lực bất lực nhìn chiếc diều và cảm thấy thất vọng rất nhiều.",
+          "narration": "Dù dùng sức kéo mạnh, Thỏ Nhím vẫn không lấy lại được diều và thấy thất vọng.",
           "transition": "CUT TO:",
           "estimated_seconds": 35,
           "source_beat_ids": [
@@ -337,9 +135,9 @@
             "ch_003",
             "ch_004"
           ],
-          "action_description": "Mèo Mướp, Gấu Trắng và Chó Vàng đến ngay cạnh Thỏ Nhím để giúp đỡ.",
+          "action_description": "Mèo Mướp, Gấu Trắng và Chó Vàng đồng loạt hướng về phía Thỏ Nhím để giúp đỡ.",
           "dialogue": [],
-          "narration": "Các người bạn tốt bụng nhanh chóng tập hợp lại.",
+          "narration": "Thấy bạn buồn, Mèo Mướp, Gấu Trắng và Chó Vàng háo hứng chạy đến sẵn sàng giúp.",
           "transition": "CUT TO:",
           "estimated_seconds": 25,
           "source_beat_ids": [
@@ -357,9 +155,9 @@
             "ch_003",
             "ch_004"
           ],
-          "action_description": "Mỗi bạn dùng một cách khác nhau để gỡ dây diều xuống.",
+          "action_description": "Mỗi người dùng cách của mình: Mèo trèo cây, Gấu đẩy thân, Chó gỡ dây.",
           "dialogue": [],
-          "narration": "Mèo Mướp dùng móng vuốt, Gấu Trắng dùng sức lực, và Chó Vàng cũng hết lình giúp sức.",
+          "narration": "Mèo dùng móng vuốt, Gấu dùng sức lớn còn Chó dùng hàm răng gỡ dây diều.",
           "transition": "CUT TO:",
           "estimated_seconds": 35,
           "source_beat_ids": [
@@ -377,9 +175,9 @@
             "ch_003",
             "ch_004"
           ],
-          "action_description": "Chiếc diều thoát ra và bay vút lên cao trong tiếng reo hò.",
+          "action_description": "Chiếc diều thoát ra và bay vút lên cao, các bạn nhảy cỡng hô vang vủi.",
           "dialogue": [],
-          "narration": "Tất cả cùng vợt vì niềm vui và sự đoàn kết.",
+          "narration": "Chiếc diều lại bay cao vút, Thỏ Nhím và các bạn cười reo vui vì đã thắng lợi khó khăn.",
           "transition": "FADE OUT:",
           "estimated_seconds": 15,
           "source_beat_ids": [
@@ -389,22 +187,22 @@
       ],
       "duration_formula_version": "duration_formula/v1"
     },
-    "response_hash": "b911fa1e92dd39b60364126f1ce1c27adbddbfb5c237faa545902815f56ee264",
+    "response_hash": "7de973f1c0babadcf8298afcb2b1127d8d9be9d30adda1832f8945c3ad26a03b",
     "finish_reason": "stop",
     "usage": {
       "prompt_tokens": 1544,
-      "completion_tokens": 2474,
-      "total_tokens": 4018,
-      "latency_ms": 8287.2,
+      "completion_tokens": 2850,
+      "total_tokens": 4394,
+      "latency_ms": 10148.0,
       "provider_model_id": "gemini-3.5-flash-lite",
       "endpoint_id": "ep-google",
       "canonical_model_id": "gemini-3.5-flash-lite",
       "provider_request_id": null,
-      "raw_response": "{\"draft_id\": \"dscn_draft_01\", \"title\": \"Th\\u1ecf Nh\\u00edm v\\u00e0 Chuy\\u1ebfn Th\\u1ea3 Di\\u1ec1u\", \"target_duration_seconds\": 240, \"scenes\": [{\"scene_id\": \"dscn_001\", \"order\": 1, \"outline_scene_id\": \"sc_001\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u00edm b\\u01b0\\u1edbc l\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i xanh m\\u01b0\\u1edbt v\\u1edbi chi\\u1ebfc di\\u1ec1u tr\\u00ean tay.\", \"dialogue\": [], \"narration\": \"M\\u1ed7i ng\\u00e0y, Th\\u1ecf Nh\\u00edm l\\u1ea1i th\\u00edch th\\u00fa th\\u1ea3 di\\u1ec1u tr\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i xanh m\\u01b0\\u1edbt.\", \"transition\": \"FADE IN:\", \"estimated_seconds\": 20, \"source_beat_ids\": [\"bt_001\"]}, {\"scene_id\": \"dscn_002\", \"order\": 2, \"outline_scene_id\": \"sc_002\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u00edm ki\\u1ec3m tra c\\u1ea9n th\\u1eadn d\\u00e2y di\\u1ec1u v\\u00e0 h\\u00e2n hoan ch\\u1ea1y l\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i.\", \"dialogue\": [], \"narration\": \"B\\u00e9 chu\\u1ea9n b\\u1ecb k\\u1ef9 c\\u00e0ng v\\u00e0 ch\\u1ea1y vui v\\u1ebb khi gi\\u00f3 nh\\u1eb9 nh\\u00e0ng th\\u1ed5i qua.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 25, \"source_beat_ids\": [\"bt_002\"]}, {\"scene_id\": \"dscn_003\", \"order\": 3, \"outline_scene_id\": \"sc_003\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u00edm th\\u1ea3 di\\u1ec1u bay cao v\\u00e0 c\\u01b0\\u1eddi r\\u1ea1ng r\\u1ee1 nh\\u00ecn theo.\", \"dialogue\": [], \"narration\": \"Chi\\u1ebfc di\\u1ec1u v\\u0169 v\\u01a1 bay m\\u00faa gi\\u1eefa kh\\u00f4ng trung trong ni\\u1ec1m vui s\\u01b0\\u1edbng c\\u1ee7a Th\\u1ecf Nh\\u00edm.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_003\"]}, {\"scene_id\": \"dscn_004\", \"order\": 4, \"outline_scene_id\": \"sc_004\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"C\\u01a1n gi\\u00f3 \\u1eadp t\\u1edbi l\\u00e0m di\\u1ec1u v\\u01b0\\u1edbng v\\u00e0o c\\u00e0nh c\\u00e2y l\\u1edbn.\", \"dialogue\": [], \"narration\": \"B\\u1ed7ng m\\u1ed9t c\\u01a1n gi\\u00f3 l\\u1edbn th\\u1ed5i m\\u1ea1nh, khi\\u1ebfn d\\u00e2y di\\u1ec1u m\\u1eafc k\\u1ebet tr\\u00ean c\\u00e2y to v\\u00e0 Th\\u1ecf Nh\\u00edm ho\\u1ea3ng h\\u1ed1t.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 50, \"source_beat_ids\": [\"bt_004\"]}, {\"scene_id\": \"dscn_005\", \"order\": 5, \"outline_scene_id\": \"sc_005\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u00edm r\\u1ea5t c\\u1ed1 g\\u1eafng k\\u00e9o m\\u00e0 v\\u1eabn b\\u1ea5t th\\u00e0nh, c\\u00fau b\\u00e9 bu\\u1ed3n b\\u00e3.\", \"dialogue\": [], \"narration\": \"B\\u00e9 l\\u1ef1c b\\u1ea5t l\\u1ef1c nh\\u00ecn chi\\u1ebfc di\\u1ec1u v\\u00e0 c\\u1ea3m th\\u1ea5y th\\u1ea5t v\\u1ecdng r\\u1ea5t nhi\\u1ec1u.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_005\"]}, {\"scene_id\": \"dscn_006\", \"order\": 6, \"outline_scene_id\": \"sc_006\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \"M\\u00e8o M\\u01b0\\u1edbp, G\\u1ea5u Tr\\u1eafng v\\u00e0 Ch\\u00f3 V\\u00e0ng \\u0111\\u1ebfn ngay c\\u1ea1nh Th\\u1ecf Nh\\u00edm \\u0111\\u1ec3 gi\\u00fap \\u0111\\u1ee1.\", \"dialogue\": [], \"narration\": \"C\\u00e1c ng\\u01b0\\u1eddi b\\u1ea1n t\\u1ed1t b\\u1ee5ng nhanh ch\\u00f3ng t\\u1eadp h\\u1ee3p l\\u1ea1i.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 25, \"source_beat_ids\": [\"bt_006\"]}, {\"scene_id\": \"dscn_007\", \"order\": 7, \"outline_scene_id\": \"sc_007\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \"M\\u1ed7i b\\u1ea1n d\\u00f9ng m\\u1ed9t c\\u00e1ch kh\\u00e1c nhau \\u0111\\u1ec3 g\\u1ee1 d\\u00e2y di\\u1ec1u xu\\u1ed1ng.\", \"dialogue\": [], \"narration\": \"M\\u00e8o M\\u01b0\\u1edbp d\\u00f9ng m\\u00f3ng vu\\u1ed1t, G\\u1ea5u Tr\\u1eafng d\\u00f9ng s\\u1ee9c l\\u1ef1c, v\\u00e0 Ch\\u00f3 V\\u00e0ng c\\u0169ng h\\u1ebft l\\u00ecnh gi\\u00fap s\\u1ee9c.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_007\"]}, {\"scene_id\": \"dscn_008\", \"order\": 8, \"outline_scene_id\": \"sc_008\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \"Chi\\u1ebfc di\\u1ec1u tho\\u00e1t ra v\\u00e0 bay v\\u00fat l\\u00ean cao trong ti\\u1ebfng reo h\\u00f2.\", \"dialogue\": [], \"narration\": \"T\\u1ea5t c\\u1ea3 c\\u00f9ng v\\u1ee3t v\\u00ec ni\\u1ec1m vui v\\u00e0 s\\u1ef1 \\u0111o\\u00e0n k\\u1ebft.\", \"transition\": \"FADE OUT:\", \"estimated_seconds\": 15, \"source_beat_ids\": [\"bt_008\"]}]}",
-      "response_hash": "b911fa1e92dd39b60364126f1ce1c27adbddbfb5c237faa545902815f56ee264"
+      "raw_response": "{\"draft_id\": \"dscn_draft_01\", \"title\": \"Th\\u1ecf Nh\\u00edm v\\u00e0 Chuy\\u1ebfn Th\\u1ea3 Di\\u1ec1u\", \"target_duration_seconds\": 240, \"scenes\": [{\"scene_id\": \"dscn_001\", \"order\": 1, \"outline_scene_id\": \"sc_001\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u00edm h\\u00e2n hoan \\u0111\\u1ee9ng tr\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i xanh m\\u01b0\\u1edbt, tay c\\u1ea7m chi\\u1ebfc di\\u1ec1u nh\\u1ecf xinh.\", \"dialogue\": [], \"narration\": \"M\\u1ed7i ng\\u00e0y, Th\\u1ecf Nh\\u00edm l\\u1ea1i th\\u00edch th\\u00fa l\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i xanh m\\u01b0\\u1edbt \\u0111\\u1ec3 th\\u1ea3 di\\u1ec1u.\", \"transition\": \"FADE IN:\", \"estimated_seconds\": 20, \"source_beat_ids\": [\"bt_001\"]}, {\"scene_id\": \"dscn_002\", \"order\": 2, \"outline_scene_id\": \"sc_002\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u00edm c\\u1ea9n th\\u1eadn ki\\u1ec3m tra di\\u1ec1u v\\u00e0 vui v\\u1ebb ch\\u1ea1y b\\u01b0\\u1edbc l\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i khi gi\\u00f3 th\\u1ed5i nh\\u1ebfng nh\\u1eb9.\", \"dialogue\": [], \"narration\": \"B\\u00e9 chu\\u1ea9n b\\u1ecb di\\u1ec1u th\\u1eadt k\\u1ef9 r\\u1ed3i vui v\\u1ebb ch\\u1ea1y l\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i trong gi\\u00f3 m\\u00e1t.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 25, \"source_beat_ids\": [\"bt_002\"]}, {\"scene_id\": \"dscn_003\", \"order\": 3, \"outline_scene_id\": \"sc_003\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u00edm th\\u1ea3 di\\u1ec1u bay v\\u00fat l\\u00ean tr\\u1eddi cao v\\u00e0 c\\u01b0\\u1eddi r\\u1ea1ng r\\u1ee1.\", \"dialogue\": [], \"narration\": \"Chi\\u1ebfc di\\u1ec1u v\\u01b0\\u01a1n cao, bay m\\u00faa nh\\u1eb9 nh\\u00e0ng trong n\\u1ee5 c\\u01b3ời h\\u1ea1nh ph\\u00fac c\\u1ee7a Th\\u1ecf Nh\\u00edm.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_003\"]}, {\"scene_id\": \"dscn_004\", \"order\": 4, \"outline_scene_id\": \"sc_004\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"M\\u1ed9t c\\u01a1n gi\\u00f3 th\\u1ed5i th\\u00f3t m\\u1ea1nh l\\u00e0m s\\u1ee3i d\\u00e2y di\\u1ec1u v\\u01b0\\u1edbng l\\u00ean c\\u00e0nh c\\u00e2y l\\u1edbn, khi\\u1ebfn Th\\u1ecf Nh\\u00edm gi\\u1eadt m\\u00ecnh.\", \"dialogue\": [], \"narration\": \"B\\u1ed7ng c\\u01a1n gi\\u00f3 l\\u1edbn \\u00fa \\u00f9 th\\u1ed5i t\\u1edbi, d\\u00e2y di\\u1ec1u v\\u01b0\\u1edbng ch\\u1eb7t v\\u00e0o c\\u00e0nh c\\u00e2y to.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 50, \"source_beat_ids\": [\"bt_004\"]}, {\"scene_id\": \"dscn_005\", \"order\": 5, \"outline_scene_id\": \"sc_005\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u00edm c\\u1ed1 g\\u1eafng g\\u1ee5c d\\u00e2y nh\\u01b0ng di\\u1ec1u v\\u1eabn k\\u1ebft ch\\u1eb7t, b\\u00e9 bu\\u1ed3n b\\u00e3i c\\u00fai \\u0111\\u1ea7u.\", \"dialogue\": [], \"narration\": \"D\\u00f9 d\\u00f9ng s\\u1ee9c k\\u00e9o m\\u1ea1nh, Th\\u1ecf Nh\\u00edm v\\u1eabn kh\\u00f4ng l\\u1ea5y l\\u1ea1i \\u0111\\u01b0\\u1ee3c di\\u1ec1u v\\u00e0 th\\u1ea5y th\\u1ea5t v\\u1ecdng.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_005\"]}, {\"scene_id\": \"dscn_006\", \"order\": 6, \"outline_scene_id\": \"sc_006\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \"M\\u00e8o M\\u01b0\\u1edbp, G\\u1ea5u Tr\\u1eafng v\\u00e0 Ch\\u00f3 V\\u00e0ng \\u0111\\u1ed3ng lo\\u1ea1t h\\u01b0\\u1edbng v\\u1ec1 ph\\u00eda Th\\u1ecf Nh\\u00edm \\u0111\\u1ec3 gi\\u00fap \\u0111\\u1ee1.\", \"dialogue\": [], \"narration\": \"Th\\u1ea5y b\\u1ea1n bu\\u1ed3n, M\\u00e8o M\\u01b0\\u1edbp, G\\u1ea5u Tr\\u1eafng v\\u00e0 Ch\\u00f3 V\\u00e0ng h\\u00e1o h\\u1ee9ng ch\\u1ea1y \\u0111\\u1ebfn s\\u1eb5n s\\u00e0ng gi\\u00fap.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 25, \"source_beat_ids\": [\"bt_006\"]}, {\"scene_id\": \"dscn_007\", \"order\": 7, \"outline_scene_id\": \"sc_007\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \"M\\u1ed7i ng\\u01b0\\u1eddi d\\u00f9ng c\\u00e1ch c\\u1ee7a m\\u00ecnh: M\\u00e8o tr\\u00e8o c\\u00e2y, G\\u1ea5u \\u0111\\u1ea9y th\\u00e2n, Ch\\u00f3 g\\u1ee1 d\\u00e2y.\", \"dialogue\": [], \"narration\": \"M\\u00e8o d\\u00f9ng m\\u00f3ng vu\\u1ed1t, G\\u1ea5u d\\u00f9ng s\\u1ee9c l\\u1edbn c\\u00f2n Ch\\u00f3 d\\u00f9ng h\\u00e0m r\\u0103ng g\\u1ee1 d\\u00e2y di\\u1ec1u.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_007\"]}, {\"scene_id\": \"dscn_008\", \"order\": 8, \"outline_scene_id\": \"sc_008\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \"Chi\\u1ebfc di\\u1ec1u tho\\u00e1t ra v\\u00e0 bay v\\u00fat l\\u00ean cao, c\\u00e1c b\\u1ea1n nh\\u1ea3y c\\u1ee1ng h\\u00f4 vang v\\u1ee7i.\", \"dialogue\": [], \"narration\": \"Chi\\u1ebfc di\\u1ec1u l\\u1ea1i bay cao v\\u00fat, Th\\u1ecf Nh\\u00edm v\\u00e0 c\\u00e1c b\\u1ea1n c\\u01b0\\u1eddi reo vui v\\u00ec \\u0111\\u00e3 th\\u1eafng l\\u1ee3i kh\\u00f3 kh\\u0103n.\", \"transition\": \"FADE OUT:\", \"estimated_seconds\": 15, \"source_beat_ids\": [\"bt_008\"]}]}",
+      "response_hash": "7de973f1c0babadcf8298afcb2b1127d8d9be9d30adda1832f8945c3ad26a03b"
     },
     "repair_count": 0,
-    "raw_response": "{\"draft_id\": \"dscn_draft_01\", \"title\": \"Th\\u1ecf Nh\\u00edm v\\u00e0 Chuy\\u1ebfn Th\\u1ea3 Di\\u1ec1u\", \"target_duration_seconds\": 240, \"scenes\": [{\"scene_id\": \"dscn_001\", \"order\": 1, \"outline_scene_id\": \"sc_001\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u00edm b\\u01b0\\u1edbc l\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i xanh m\\u01b0\\u1edbt v\\u1edbi chi\\u1ebfc di\\u1ec1u tr\\u00ean tay.\", \"dialogue\": [], \"narration\": \"M\\u1ed7i ng\\u00e0y, Th\\u1ecf Nh\\u00edm l\\u1ea1i th\\u00edch th\\u00fa th\\u1ea3 di\\u1ec1u tr\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i xanh m\\u01b0\\u1edbt.\", \"transition\": \"FADE IN:\", \"estimated_seconds\": 20, \"source_beat_ids\": [\"bt_001\"]}, {\"scene_id\": \"dscn_002\", \"order\": 2, \"outline_scene_id\": \"sc_002\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u00edm ki\\u1ec3m tra c\\u1ea9n th\\u1eadn d\\u00e2y di\\u1ec1u v\\u00e0 h\\u00e2n hoan ch\\u1ea1y l\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i.\", \"dialogue\": [], \"narration\": \"B\\u00e9 chu\\u1ea9n b\\u1ecb k\\u1ef9 c\\u00e0ng v\\u00e0 ch\\u1ea1y vui v\\u1ebb khi gi\\u00f3 nh\\u1eb9 nh\\u00e0ng th\\u1ed5i qua.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 25, \"source_beat_ids\": [\"bt_002\"]}, {\"scene_id\": \"dscn_003\", \"order\": 3, \"outline_scene_id\": \"sc_003\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u00edm th\\u1ea3 di\\u1ec1u bay cao v\\u00e0 c\\u01b0\\u1eddi r\\u1ea1ng r\\u1ee1 nh\\u00ecn theo.\", \"dialogue\": [], \"narration\": \"Chi\\u1ebfc di\\u1ec1u v\\u0169 v\\u01a1 bay m\\u00faa gi\\u1eefa kh\\u00f4ng trung trong ni\\u1ec1m vui s\\u01b0\\u1edbng c\\u1ee7a Th\\u1ecf Nh\\u00edm.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_003\"]}, {\"scene_id\": \"dscn_004\", \"order\": 4, \"outline_scene_id\": \"sc_004\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"C\\u01a1n gi\\u00f3 \\u1eadp t\\u1edbi l\\u00e0m di\\u1ec1u v\\u01b0\\u1edbng v\\u00e0o c\\u00e0nh c\\u00e2y l\\u1edbn.\", \"dialogue\": [], \"narration\": \"B\\u1ed7ng m\\u1ed9t c\\u01a1n gi\\u00f3 l\\u1edbn th\\u1ed5i m\\u1ea1nh, khi\\u1ebfn d\\u00e2y di\\u1ec1u m\\u1eafc k\\u1ebet tr\\u00ean c\\u00e2y to v\\u00e0 Th\\u1ecf Nh\\u00edm ho\\u1ea3ng h\\u1ed1t.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 50, \"source_beat_ids\": [\"bt_004\"]}, {\"scene_id\": \"dscn_005\", \"order\": 5, \"outline_scene_id\": \"sc_005\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u00edm r\\u1ea5t c\\u1ed1 g\\u1eafng k\\u00e9o m\\u00e0 v\\u1eabn b\\u1ea5t th\\u00e0nh, c\\u00fau b\\u00e9 bu\\u1ed3n b\\u00e3.\", \"dialogue\": [], \"narration\": \"B\\u00e9 l\\u1ef1c b\\u1ea5t l\\u1ef1c nh\\u00ecn chi\\u1ebfc di\\u1ec1u v\\u00e0 c\\u1ea3m th\\u1ea5y th\\u1ea5t v\\u1ecdng r\\u1ea5t nhi\\u1ec1u.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_005\"]}, {\"scene_id\": \"dscn_006\", \"order\": 6, \"outline_scene_id\": \"sc_006\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \"M\\u00e8o M\\u01b0\\u1edbp, G\\u1ea5u Tr\\u1eafng v\\u00e0 Ch\\u00f3 V\\u00e0ng \\u0111\\u1ebfn ngay c\\u1ea1nh Th\\u1ecf Nh\\u00edm \\u0111\\u1ec3 gi\\u00fap \\u0111\\u1ee1.\", \"dialogue\": [], \"narration\": \"C\\u00e1c ng\\u01b0\\u1eddi b\\u1ea1n t\\u1ed1t b\\u1ee5ng nhanh ch\\u00f3ng t\\u1eadp h\\u1ee3p l\\u1ea1i.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 25, \"source_beat_ids\": [\"bt_006\"]}, {\"scene_id\": \"dscn_007\", \"order\": 7, \"outline_scene_id\": \"sc_007\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \"M\\u1ed7i b\\u1ea1n d\\u00f9ng m\\u1ed9t c\\u00e1ch kh\\u00e1c nhau \\u0111\\u1ec3 g\\u1ee1 d\\u00e2y di\\u1ec1u xu\\u1ed1ng.\", \"dialogue\": [], \"narration\": \"M\\u00e8o M\\u01b0\\u1edbp d\\u00f9ng m\\u00f3ng vu\\u1ed1t, G\\u1ea5u Tr\\u1eafng d\\u00f9ng s\\u1ee9c l\\u1ef1c, v\\u00e0 Ch\\u00f3 V\\u00e0ng c\\u0169ng h\\u1ebft l\\u00ecnh gi\\u00fap s\\u1ee9c.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_007\"]}, {\"scene_id\": \"dscn_008\", \"order\": 8, \"outline_scene_id\": \"sc_008\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \"Chi\\u1ebfc di\\u1ec1u tho\\u00e1t ra v\\u00e0 bay v\\u00fat l\\u00ean cao trong ti\\u1ebfng reo h\\u00f2.\", \"dialogue\": [], \"narration\": \"T\\u1ea5t c\\u1ea3 c\\u00f9ng v\\u1ee3t v\\u00ec ni\\u1ec1m vui v\\u00e0 s\\u1ef1 \\u0111o\\u00e0n k\\u1ebft.\", \"transition\": \"FADE OUT:\", \"estimated_seconds\": 15, \"source_beat_ids\": [\"bt_008\"]}]}",
+    "raw_response": "{\"draft_id\": \"dscn_draft_01\", \"title\": \"Th\\u1ecf Nh\\u00edm v\\u00e0 Chuy\\u1ebfn Th\\u1ea3 Di\\u1ec1u\", \"target_duration_seconds\": 240, \"scenes\": [{\"scene_id\": \"dscn_001\", \"order\": 1, \"outline_scene_id\": \"sc_001\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u00edm h\\u00e2n hoan \\u0111\\u1ee9ng tr\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i xanh m\\u01b0\\u1edbt, tay c\\u1ea7m chi\\u1ebfc di\\u1ec1u nh\\u1ecf xinh.\", \"dialogue\": [], \"narration\": \"M\\u1ed7i ng\\u00e0y, Th\\u1ecf Nh\\u00edm l\\u1ea1i th\\u00edch th\\u00fa l\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i xanh m\\u01b0\\u1edbt \\u0111\\u1ec3 th\\u1ea3 di\\u1ec1u.\", \"transition\": \"FADE IN:\", \"estimated_seconds\": 20, \"source_beat_ids\": [\"bt_001\"]}, {\"scene_id\": \"dscn_002\", \"order\": 2, \"outline_scene_id\": \"sc_002\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u00edm c\\u1ea9n th\\u1eadn ki\\u1ec3m tra di\\u1ec1u v\\u00e0 vui v\\u1ebb ch\\u1ea1y b\\u01b0\\u1edbc l\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i khi gi\\u00f3 th\\u1ed5i nh\\u1ebfng nh\\u1eb9.\", \"dialogue\": [], \"narration\": \"B\\u00e9 chu\\u1ea9n b\\u1ecb di\\u1ec1u th\\u1eadt k\\u1ef9 r\\u1ed3i vui v\\u1ebb ch\\u1ea1y l\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i trong gi\\u00f3 m\\u00e1t.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 25, \"source_beat_ids\": [\"bt_002\"]}, {\"scene_id\": \"dscn_003\", \"order\": 3, \"outline_scene_id\": \"sc_003\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u00edm th\\u1ea3 di\\u1ec1u bay v\\u00fat l\\u00ean tr\\u1eddi cao v\\u00e0 c\\u01b0\\u1eddi r\\u1ea1ng r\\u1ee1.\", \"dialogue\": [], \"narration\": \"Chi\\u1ebfc di\\u1ec1u v\\u01b0\\u01a1n cao, bay m\\u00faa nh\\u1eb9 nh\\u00e0ng trong n\\u1ee5 c\\u01b3ời h\\u1ea1nh ph\\u00fac c\\u1ee7a Th\\u1ecf Nh\\u00edm.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_003\"]}, {\"scene_id\": \"dscn_004\", \"order\": 4, \"outline_scene_id\": \"sc_004\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"M\\u1ed9t c\\u01a1n gi\\u00f3 th\\u1ed5i th\\u00f3t m\\u1ea1nh l\\u00e0m s\\u1ee3i d\\u00e2y di\\u1ec1u v\\u01b0\\u1edbng l\\u00ean c\\u00e0nh c\\u00e2y l\\u1edbn, khi\\u1ebfn Th\\u1ecf Nh\\u00edm gi\\u1eadt m\\u00ecnh.\", \"dialogue\": [], \"narration\": \"B\\u1ed7ng c\\u01a1n gi\\u00f3 l\\u1edbn \\u00fa \\u00f9 th\\u1ed5i t\\u1edbi, d\\u00e2y di\\u1ec1u v\\u01b0\\u1edbng ch\\u1eb7t v\\u00e0o c\\u00e0nh c\\u00e2y to.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 50, \"source_beat_ids\": [\"bt_004\"]}, {\"scene_id\": \"dscn_005\", \"order\": 5, \"outline_scene_id\": \"sc_005\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u00edm c\\u1ed1 g\\u1eafng g\\u1ee5c d\\u00e2y nh\\u01b0ng di\\u1ec1u v\\u1eabn k\\u1ebft ch\\u1eb7t, b\\u00e9 bu\\u1ed3n b\\u00e3i c\\u00fai \\u0111\\u1ea7u.\", \"dialogue\": [], \"narration\": \"D\\u00f9 d\\u00f9ng s\\u1ee9c k\\u00e9o m\\u1ea1nh, Th\\u1ecf Nh\\u00edm v\\u1eabn kh\\u00f4ng l\\u1ea5y l\\u1ea1i \\u0111\\u01b0\\u1ee3c di\\u1ec1u v\\u00e0 th\\u1ea5y th\\u1ea5t v\\u1ecdng.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_005\"]}, {\"scene_id\": \"dscn_006\", \"order\": 6, \"outline_scene_id\": \"sc_006\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \"M\\u00e8o M\\u01b0\\u1edbp, G\\u1ea5u Tr\\u1eafng v\\u00e0 Ch\\u00f3 V\\u00e0ng \\u0111\\u1ed3ng lo\\u1ea1t h\\u01b0\\u1edbng v\\u1ec1 ph\\u00eda Th\\u1ecf Nh\\u00edm \\u0111\\u1ec3 gi\\u00fap \\u0111\\u1ee1.\", \"dialogue\": [], \"narration\": \"Th\\u1ea5y b\\u1ea1n bu\\u1ed3n, M\\u00e8o M\\u01b0\\u1edbp, G\\u1ea5u Tr\\u1eafng v\\u00e0 Ch\\u00f3 V\\u00e0ng h\\u00e1o h\\u1ee9ng ch\\u1ea1y \\u0111\\u1ebfn s\\u1eb5n s\\u00e0ng gi\\u00fap.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 25, \"source_beat_ids\": [\"bt_006\"]}, {\"scene_id\": \"dscn_007\", \"order\": 7, \"outline_scene_id\": \"sc_007\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \"M\\u1ed7i ng\\u01b0\\u1eddi d\\u00f9ng c\\u00e1ch c\\u1ee7a m\\u00ecnh: M\\u00e8o tr\\u00e8o c\\u00e2y, G\\u1ea5u \\u0111\\u1ea9y th\\u00e2n, Ch\\u00f3 g\\u1ee1 d\\u00e2y.\", \"dialogue\": [], \"narration\": \"M\\u00e8o d\\u00f9ng m\\u00f3ng vu\\u1ed1t, G\\u1ea5u d\\u00f9ng s\\u1ee9c l\\u1edbn c\\u00f2n Ch\\u00f3 d\\u00f9ng h\\u00e0m r\\u0103ng g\\u1ee1 d\\u00e2y di\\u1ec1u.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_007\"]}, {\"scene_id\": \"dscn_008\", \"order\": 8, \"outline_scene_id\": \"sc_008\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \"Chi\\u1ebfc di\\u1ec1u tho\\u00e1t ra v\\u00e0 bay v\\u00fat l\\u00ean cao, c\\u00e1c b\\u1ea1n nh\\u1ea3y c\\u1ee1ng h\\u00f4 vang v\\u1ee7i.\", \"dialogue\": [], \"narration\": \"Chi\\u1ebfc di\\u1ec1u l\\u1ea1i bay cao v\\u00fat, Th\\u1ecf Nh\\u00edm v\\u00e0 c\\u00e1c b\\u1ea1n c\\u01b0\\u1eddi reo vui v\\u00ec \\u0111\\u00e3 th\\u1eafng l\\u1ee3i kh\\u00f3 kh\\u0103n.\", \"transition\": \"FADE OUT:\", \"estimated_seconds\": 15, \"source_beat_ids\": [\"bt_008\"]}]}",
     "checks": {
       "scene_count": 8,
       "dialogue_count": 0,
@@ -444,13 +242,13 @@
     "thinking_level": "not_supported_by_adapter (evidence, not faked)",
     "temperature_sent": "no",
     "error": null,
-    "latency_ms": 6661.9,
+    "latency_ms": 8340.1,
     "retry_attempts": 1,
     "parsed_response": {
       "schema_version": "studio.artifact/v1alpha1",
       "artifact_type": "ScreenplayDraft",
       "draft_id": "dscn_draft_01",
-      "title": "Thỏ Nhím Và Chiếc Diều Bay",
+      "title": "Thỏ Nhím và Chiếc Diều Xanh",
       "logline": "",
       "language": "vi",
       "audience_band": "5-8",
@@ -465,9 +263,9 @@
           "character_ids": [
             "ch_001"
           ],
-          "action_description": "Thỏ Nhím ngắm nhìn trời xanh trên đỉnh đồi.",
+          "action_description": "Thỏ Nhím bước lên đỉnh đồi xanh mướt với nụ cười rạng rỡ trên môi.",
           "dialogue": [],
-          "narration": "Thỏ Nhím rất thích thả diều mỗi ngày trên đỉnh đồi xanh mướt.",
+          "narration": "Mỗi ngày, Thỏ Nhím đều thích thả diều trên đỉnh đồi xanh mướt.",
           "transition": "FADE IN:",
           "estimated_seconds": 20,
           "source_beat_ids": [
@@ -482,9 +280,9 @@
           "character_ids": [
             "ch_001"
           ],
-          "action_description": "Thỏ Nhím cầm diều và chạy lên đỉnh đồi.",
+          "action_description": "Thỏ Nhím cẩn thận chuẩn bị diều rồi vui vẻ chạy lên đỉnh đồi khi gió nhẹ thổi.",
           "dialogue": [],
-          "narration": "Bé chuẮnchymal kỹ chiếc diều và chạy vui vẻ khi gió thổi nhẹ nhàng.",
+          "narration": "Bé chuẩn bị chiếc diều thật kự và chạy thật nhanh lên đỉnh đồi.",
           "transition": "CUT TO:",
           "estimated_seconds": 25,
           "source_beat_ids": [
@@ -499,9 +297,9 @@
           "character_ids": [
             "ch_001"
           ],
-          "action_description": "Chiếc diều bay lên cao, Thỏ Nhím cười toe toét.",
+          "action_description": "Thỏ Nhím thả diều bay cao và cười toe toét nhìn diều múa lượn.",
           "dialogue": [],
-          "narration": "Thỏ Nhím thả diều lên trời cao và cười thật tươi.",
+          "narration": "Chiếc diều vươn cao trên bầu trời trong xanh.",
           "transition": "CUT TO:",
           "estimated_seconds": 35,
           "source_beat_ids": [
@@ -516,9 +314,9 @@
           "character_ids": [
             "ch_001"
           ],
-          "action_description": "Cơn gió lớn thổi và diều vướng cành cây.",
+          "action_description": "Một cơn gió lớn thổi mạnh làm dây diều vướng vào cành cây.",
           "dialogue": [],
-          "narration": "Đột nhiên cơn gió lớn thổi mạnh, làm sợi dây vướng vào cành cây to.",
+          "narration": "Bỗng cơn gió lớn đến, kếi diều vướng lên cây cao khiến Thỏ Nhím hoảng sợ.",
           "transition": "CUT TO:",
           "estimated_seconds": 50,
           "source_beat_ids": [
@@ -533,9 +331,9 @@
           "character_ids": [
             "ch_001"
           ],
-          "action_description": "Thỏ Nhím buồn bã vì không lấy lại được diều.",
+          "action_description": "Thỏ Nhím cố gắng kéo mạnh nhưng diều vẫn kết chặt, bé buồn bãi thất vọng.",
           "dialogue": [],
-          "narration": "Bé cố gắng kéo mạnh nhưng không thành công, cảm thấy rất buồn.",
+          "narration": "Bé cố gắng hết sợc nhưng vẫn không lấy lại được diều.",
           "transition": "CUT TO:",
           "estimated_seconds": 35,
           "source_beat_ids": [
@@ -553,9 +351,9 @@
             "ch_003",
             "ch_004"
           ],
-          "action_description": "Mèo Mướp, Gấu Trắng và Chó Vàng đến giúp.",
+          "action_description": "Mèo Mướp, Gấu Trắng và Chó Vàng đồng loạt chạy đến giúp đỡ Thỏ Nhím.",
           "dialogue": [],
-          "narration": "Các bạn như Mèo Mướp, Gấu Trắng và Chó Vàng đã chạy đến.",
+          "narration": "Các bạn nhỏ nhanh chóng chạy đến để cùng nhau giúp đỡ.",
           "transition": "CUT TO:",
           "estimated_seconds": 25,
           "source_beat_ids": [
@@ -573,9 +371,9 @@
             "ch_003",
             "ch_004"
           ],
-          "action_description": "Các bạn cùng nhau gỡ sợi dây diều.",
+          "action_description": "Mỗi bạn dùng một cách riêng rẽ dây cho diều thoát.",
           "dialogue": [],
-          "narration": "Mỗi bạn một tay cùng gỡ sợi dây bằng cách riêng.",
+          "narration": "Mèo dùng móng, Gấu dùng sức, Chó dùng răng cùng nhau tháo gỡ sợi dây.",
           "transition": "CUT TO:",
           "estimated_seconds": 35,
           "source_beat_ids": [
@@ -593,9 +391,9 @@
             "ch_003",
             "ch_004"
           ],
-          "action_description": "Chiếc diều bay cao, các bạn reo hò.",
+          "action_description": "Chiếc diều bay vút lên trời cao, các bạn nhảy múa reo hò vui mừng.",
           "dialogue": [],
-          "narration": "Chiếc diều lại bay vút lên cao trong niềm vui sướng.",
+          "narration": "Diều bay cao trở lại, mang theo niềm vui và tình bạn thân thiết.",
           "transition": "FADE OUT:",
           "estimated_seconds": 15,
           "source_beat_ids": [
@@ -605,22 +403,22 @@
       ],
       "duration_formula_version": "duration_formula/v1"
     },
-    "response_hash": "6f4d5291bd063911ed289d079a60dd0c71eb255663c6b2487e5be2b8aa2df268",
+    "response_hash": "8884b74002b9494e63d4d988a9c726e51f6640bc24d1f6a1304cdc7c8c3f6b2d",
     "finish_reason": "stop",
     "usage": {
       "prompt_tokens": 1544,
-      "completion_tokens": 2181,
-      "total_tokens": 3725,
-      "latency_ms": 6661.0,
+      "completion_tokens": 2503,
+      "total_tokens": 4047,
+      "latency_ms": 8339.0,
       "provider_model_id": "gemini-3.5-flash-lite",
       "endpoint_id": "ep-google",
       "canonical_model_id": "gemini-3.5-flash-lite",
       "provider_request_id": null,
-      "raw_response": "{\"draft_id\": \"dscn_draft_01\", \"title\": \"Th\\u1ecf Nh\\u00edm V\\u00e0 Chi\\u1ebfc Di\\u1ec1u Bay\", \"target_duration_seconds\": 240, \"scenes\": [{\"scene_id\": \"dscn_001\", \"order\": 1, \"outline_scene_id\": \"sc_001\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u00edm ng\\u1eafm nh\\u00ecn tr\\u1eddi xanh tr\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i.\", \"dialogue\": [], \"narration\": \"Th\\u1ecf Nh\\u00edm r\\u1ea5t th\\u00edch th\\u1ea3 di\\u1ec1u m\\u1ed7i ng\\u00e0y tr\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i xanh m\\u01b0\\u1edbt.\", \"transition\": \"FADE IN:\", \"estimated_seconds\": 20, \"source_beat_ids\": [\"bt_001\"]}, {\"scene_id\": \"dscn_002\", \"order\": 2, \"outline_scene_id\": \"sc_002\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u00edm c\\u1ea7m di\\u1ec1u v\\u00e0 ch\\u1ea1y l\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i.\", \"dialogue\": [], \"narration\": \"B\\u00e9 chu\\u1eaenchymal k\\u1ef9 chi\\u1ebfc di\\u1ec1u v\\u00e0 ch\\u1ea1y vui v\\u1ebb khi gi\\u00f3 th\\u1ed5i nh\\u1eb9 nh\\u00e0ng.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 25, \"source_beat_ids\": [\"bt_002\"]}, {\"scene_id\": \"dscn_003\", \"order\": 3, \"outline_scene_id\": \"sc_003\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Chi\\u1ebfc di\\u1ec1u bay l\\u00ean cao, Th\\u1ecf Nh\\u00edm c\\u01b0\\u1eddi toe to\\u00e9t.\", \"dialogue\": [], \"narration\": \"Th\\u1ecf Nh\\u00edm th\\u1ea3 di\\u1ec1u l\\u00ean tr\\u1eddi cao v\\u00e0 c\\u01b0\\u1eddi th\\u1eadt t\\u01b0\\u01a1i.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_003\"]}, {\"scene_id\": \"dscn_004\", \"order\": 4, \"outline_scene_id\": \"sc_004\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"C\\u01a1n gi\\u00f3 l\\u1edbn th\\u1ed5i v\\u00e0 di\\u1ec1u v\\u01b0\\u1edbng c\\u00e0nh c\\u00e2y.\", \"dialogue\": [], \"narration\": \"\\u0110\\u1ed9t nhi\\u00ean c\\u01a1n gi\\u00f3 l\\u1edbn th\\u1ed5i m\\u1ea1nh, l\\u00e0m s\\u1ee3i d\\u00e2y v\\u01b0\\u1edbng v\\u00e0o c\\u00e0nh c\\u00e2y to.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 50, \"source_beat_ids\": [\"bt_004\"]}, {\"scene_id\": \"dscn_005\", \"order\": 5, \"outline_scene_id\": \"sc_005\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u00edm bu\\u1ed3n b\\u00e3 v\\u00ec kh\\u00f4ng l\\u1ea5y l\\u1ea1i \\u0111\\u01b0\\u1ee3c di\\u1ec1u.\", \"dialogue\": [], \"narration\": \"B\\u00e9 c\\u1ed1 g\\u1eafng k\\u00e9o m\\u1ea1nh nh\\u01b0ng kh\\u00f4ng th\\u00e0nh c\\u00f4ng, c\\u1ea3m th\\u1ea5y r\\u1ea5t bu\\u1ed3n.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_005\"]}, {\"scene_id\": \"dscn_006\", \"order\": 6, \"outline_scene_id\": \"sc_006\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \"M\\u00e8o M\\u01b0\\u1edbp, G\\u1ea5u Tr\\u1eafng v\\u00e0 Ch\\u00f3 V\\u00e0ng \\u0111\\u1ebfn gi\\u00fap.\", \"dialogue\": [], \"narration\": \"C\\u00e1c b\\u1ea1n nh\\u01b0 M\\u00e8o M\\u01b0\\u1edbp, G\\u1ea5u Tr\\u1eafng v\\u00e0 Ch\\u00f3 V\\u00e0ng \\u0111\\u00e3 ch\\u1ea1y \\u0111\\u1ebfn.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 25, \"source_beat_ids\": [\"bt_006\"]}, {\"scene_id\": \"dscn_007\", \"order\": 7, \"outline_scene_id\": \"sc_007\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \"C\\u00e1c b\\u1ea1n c\\u00f9ng nhau g\\u1ee1 s\\u1ee3i d\\u00e2y di\\u1ec1u.\", \"dialogue\": [], \"narration\": \"M\\u1ed7i b\\u1ea1n m\\u1ed9t tay c\\u00f9ng g\\u1ee1 s\\u1ee3i d\\u00e2y b\\u1eb1ng c\\u00e1ch ri\\u00eang.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_007\"]}, {\"scene_id\": \"dscn_008\", \"order\": 8, \"outline_scene_id\": \"sc_008\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \"Chi\\u1ebfc di\\u1ec1u bay cao, c\\u00e1c b\\u1ea1n reo h\\u00f2.\", \"dialogue\": [], \"narration\": \"Chi\\u1ebfc di\\u1ec1u l\\u1ea1i bay v\\u00fat l\\u00ean cao trong ni\\u1ec1m vui s\\u01b0\\u1edbng.\", \"transition\": \"FADE OUT:\", \"estimated_seconds\": 15, \"source_beat_ids\": [\"bt_008\"]}]}",
-      "response_hash": "6f4d5291bd063911ed289d079a60dd0c71eb255663c6b2487e5be2b8aa2df268"
+      "raw_response": "{\"draft_id\": \"dscn_draft_01\", \"title\": \"Th\\u1ecf Nh\\u00edm v\\u00e0 Chi\\u1ebfc Di\\u1ec1u Xanh\", \"target_duration_seconds\": 240, \"scenes\": [{\"scene_id\": \"dscn_001\", \"order\": 1, \"outline_scene_id\": \"sc_001\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u00edm b\\u01b0\\u1edbc l\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i xanh m\\u01b0\\u1edbt v\\u1edbi n\\u1ee5 c\\u01b0\\u1eddi r\\u1ea1ng r\\u1ee1 tr\\u00ean m\\u00f4i.\", \"dialogue\": [], \"narration\": \"M\\u1ed7i ng\\u00e0y, Th\\u1ecf Nh\\u00edm \\u0111\\u1ec1u th\\u00edch th\\u1ea3 di\\u1ec1u tr\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i xanh m\\u01b0\\u1edbt.\", \"transition\": \"FADE IN:\", \"estimated_seconds\": 20, \"source_beat_ids\": [\"bt_001\"]}, {\"scene_id\": \"dscn_002\", \"order\": 2, \"outline_scene_id\": \"sc_002\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u00edm c\\u1ea9n th\\u1eadn chu\\u1ea9n b\\u1ecb di\\u1ec1u r\\u1ed3i vui v\\u1ebb ch\\u1ea1y l\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i khi gi\\u00f3 nh\\u1eb9 th\\u1ed5i.\", \"dialogue\": [], \"narration\": \"B\\u00e9 chu\\u1ea9n b\\u1ecb chi\\u1ebfc di\\u1ec1u th\\u1eadt k\\u1ef1 v\\u00e0 ch\\u1ea1y th\\u1eadt nhanh l\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 25, \"source_beat_ids\": [\"bt_002\"]}, {\"scene_id\": \"dscn_003\", \"order\": 3, \"outline_scene_id\": \"sc_003\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u00edm th\\u1ea3 di\\u1ec1u bay cao v\\u00e0 c\\u01b0\\u1eddi toe to\\u00e9t nh\\u00ecn di\\u1ec1u m\\u00faa l\\u01b0\\u1ee3n.\", \"dialogue\": [], \"narration\": \"Chi\\u1ebfc di\\u1ec1u v\\u01b0\\u01a1n cao tr\\u00ean b\\u1ea7u tr\\u1eddi trong xanh.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_003\"]}, {\"scene_id\": \"dscn_004\", \"order\": 4, \"outline_scene_id\": \"sc_004\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"M\\u1ed9t c\\u01a1n gi\\u00f3 l\\u1edbn th\\u1ed5i m\\u1ea1nh l\\u00e0m d\\u00e2y di\\u1ec1u v\\u01b0\\u1edbng v\\u00e0o c\\u00e0nh c\\u00e2y.\", \"dialogue\": [], \"narration\": \"B\\u1ed7ng c\\u01a1n gi\\u00f3 l\\u1edbn \\u0111\\u1ebfn, k\\u1ebfi di\\u1ec1u v\\u01b0\\u1edbng l\\u00ean c\\u00e2y cao khi\\u1ebfn Th\\u1ecf Nh\\u00edm ho\\u1ea3ng s\\u1ee3.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 50, \"source_beat_ids\": [\"bt_004\"]}, {\"scene_id\": \"dscn_005\", \"order\": 5, \"outline_scene_id\": \"sc_005\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u00edm c\\u1ed1 g\\u1eafng k\\u00e9o m\\u1ea1nh nh\\u01b0ng di\\u1ec1u v\\u1eabn k\\u1ebft ch\\u1eb7t, b\\u00e9 bu\\u1ed3n b\\u00e3i th\\u1ea5t v\\u1ecdng.\", \"dialogue\": [], \"narration\": \"B\\u00e9 c\\u1ed1 g\\u1eafng h\\u1ebft s\\u1ee3c nh\\u01b0ng v\\u1eabn kh\\u00f4ng l\\u1ea5y l\\u1ea1i \\u0111\\u01b0\\u1ee3c di\\u1ec1u.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_005\"]}, {\"scene_id\": \"dscn_006\", \"order\": 6, \"outline_scene_id\": \"sc_006\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \"M\\u00e8o M\\u01b0\\u1edbp, G\\u1ea5u Tr\\u1eafng v\\u00e0 Ch\\u00f3 V\\u00e0ng \\u0111\\u1ed3ng lo\\u1ea1t ch\\u1ea1y \\u0111\\u1ebfn gi\\u00fap \\u0111\\u1ee1 Th\\u1ecf Nh\\u00edm.\", \"dialogue\": [], \"narration\": \"C\\u00e1c b\\u1ea1n nh\\u1ecf nhanh ch\\u00f3ng ch\\u1ea1y \\u0111\\u1ebfn \\u0111\\u1ec3 c\\u00f9ng nhau gi\\u00fap \\u0111\\u1ee1.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 25, \"source_beat_ids\": [\"bt_006\"]}, {\"scene_id\": \"dscn_007\", \"order\": 7, \"outline_scene_id\": \"sc_007\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \"M\\u1ed7i b\\u1ea1n d\\u00f9ng m\\u1ed9t c\\u00e1ch ri\\u00eang r\\u1ebd d\\u00e2y cho di\\u1ec1u tho\\u00e1t.\", \"dialogue\": [], \"narration\": \"M\\u00e8o d\\u00f9ng m\\u00f3ng, G\\u1ea5u d\\u00f9ng s\\u1ee9c, Ch\\u00f3 d\\u00f9ng r\\u0103ng c\\u00f9ng nhau th\\u00e1o g\\u1ee1 s\\u1ee3i d\\u00e2y.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_007\"]}, {\"scene_id\": \"dscn_008\", \"order\": 8, \"outline_scene_id\": \"sc_008\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \"Chi\\u1ebfc di\\u1ec1u bay v\\u00fat l\\u00ean tr\\u1eddi cao, c\\u00e1c b\\u1ea1n nh\\u1ea3y m\\u00faa reo h\\u00f2 vui m\\u1eebng.\", \"dialogue\": [], \"narration\": \"Di\\u1ec1u bay cao tr\\u1edf l\\u1ea1i, mang theo ni\\u1ec1m vui v\\u00e0 t\\u00ecnh b\\u1ea1n th\\u00e2n thi\\u1ebft.\", \"transition\": \"FADE OUT:\", \"estimated_seconds\": 15, \"source_beat_ids\": [\"bt_008\"]}]}",
+      "response_hash": "8884b74002b9494e63d4d988a9c726e51f6640bc24d1f6a1304cdc7c8c3f6b2d"
     },
     "repair_count": 0,
-    "raw_response": "{\"draft_id\": \"dscn_draft_01\", \"title\": \"Th\\u1ecf Nh\\u00edm V\\u00e0 Chi\\u1ebfc Di\\u1ec1u Bay\", \"target_duration_seconds\": 240, \"scenes\": [{\"scene_id\": \"dscn_001\", \"order\": 1, \"outline_scene_id\": \"sc_001\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u00edm ng\\u1eafm nh\\u00ecn tr\\u1eddi xanh tr\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i.\", \"dialogue\": [], \"narration\": \"Th\\u1ecf Nh\\u00edm r\\u1ea5t th\\u00edch th\\u1ea3 di\\u1ec1u m\\u1ed7i ng\\u00e0y tr\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i xanh m\\u01b0\\u1edbt.\", \"transition\": \"FADE IN:\", \"estimated_seconds\": 20, \"source_beat_ids\": [\"bt_001\"]}, {\"scene_id\": \"dscn_002\", \"order\": 2, \"outline_scene_id\": \"sc_002\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u00edm c\\u1ea7m di\\u1ec1u v\\u00e0 ch\\u1ea1y l\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i.\", \"dialogue\": [], \"narration\": \"B\\u00e9 chu\\u1eaenchymal k\\u1ef9 chi\\u1ebfc di\\u1ec1u v\\u00e0 ch\\u1ea1y vui v\\u1ebb khi gi\\u00f3 th\\u1ed5i nh\\u1eb9 nh\\u00e0ng.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 25, \"source_beat_ids\": [\"bt_002\"]}, {\"scene_id\": \"dscn_003\", \"order\": 3, \"outline_scene_id\": \"sc_003\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Chi\\u1ebfc di\\u1ec1u bay l\\u00ean cao, Th\\u1ecf Nh\\u00edm c\\u01b0\\u1eddi toe to\\u00e9t.\", \"dialogue\": [], \"narration\": \"Th\\u1ecf Nh\\u00edm th\\u1ea3 di\\u1ec1u l\\u00ean tr\\u1eddi cao v\\u00e0 c\\u01b0\\u1eddi th\\u1eadt t\\u01b0\\u01a1i.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_003\"]}, {\"scene_id\": \"dscn_004\", \"order\": 4, \"outline_scene_id\": \"sc_004\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"C\\u01a1n gi\\u00f3 l\\u1edbn th\\u1ed5i v\\u00e0 di\\u1ec1u v\\u01b0\\u1edbng c\\u00e0nh c\\u00e2y.\", \"dialogue\": [], \"narration\": \"\\u0110\\u1ed9t nhi\\u00ean c\\u01a1n gi\\u00f3 l\\u1edbn th\\u1ed5i m\\u1ea1nh, l\\u00e0m s\\u1ee3i d\\u00e2y v\\u01b0\\u1edbng v\\u00e0o c\\u00e0nh c\\u00e2y to.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 50, \"source_beat_ids\": [\"bt_004\"]}, {\"scene_id\": \"dscn_005\", \"order\": 5, \"outline_scene_id\": \"sc_005\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u00edm bu\\u1ed3n b\\u00e3 v\\u00ec kh\\u00f4ng l\\u1ea5y l\\u1ea1i \\u0111\\u01b0\\u1ee3c di\\u1ec1u.\", \"dialogue\": [], \"narration\": \"B\\u00e9 c\\u1ed1 g\\u1eafng k\\u00e9o m\\u1ea1nh nh\\u01b0ng kh\\u00f4ng th\\u00e0nh c\\u00f4ng, c\\u1ea3m th\\u1ea5y r\\u1ea5t bu\\u1ed3n.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_005\"]}, {\"scene_id\": \"dscn_006\", \"order\": 6, \"outline_scene_id\": \"sc_006\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \"M\\u00e8o M\\u01b0\\u1edbp, G\\u1ea5u Tr\\u1eafng v\\u00e0 Ch\\u00f3 V\\u00e0ng \\u0111\\u1ebfn gi\\u00fap.\", \"dialogue\": [], \"narration\": \"C\\u00e1c b\\u1ea1n nh\\u01b0 M\\u00e8o M\\u01b0\\u1edbp, G\\u1ea5u Tr\\u1eafng v\\u00e0 Ch\\u00f3 V\\u00e0ng \\u0111\\u00e3 ch\\u1ea1y \\u0111\\u1ebfn.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 25, \"source_beat_ids\": [\"bt_006\"]}, {\"scene_id\": \"dscn_007\", \"order\": 7, \"outline_scene_id\": \"sc_007\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \"C\\u00e1c b\\u1ea1n c\\u00f9ng nhau g\\u1ee1 s\\u1ee3i d\\u00e2y di\\u1ec1u.\", \"dialogue\": [], \"narration\": \"M\\u1ed7i b\\u1ea1n m\\u1ed9t tay c\\u00f9ng g\\u1ee1 s\\u1ee3i d\\u00e2y b\\u1eb1ng c\\u00e1ch ri\\u00eang.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_007\"]}, {\"scene_id\": \"dscn_008\", \"order\": 8, \"outline_scene_id\": \"sc_008\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \"Chi\\u1ebfc di\\u1ec1u bay cao, c\\u00e1c b\\u1ea1n reo h\\u00f2.\", \"dialogue\": [], \"narration\": \"Chi\\u1ebfc di\\u1ec1u l\\u1ea1i bay v\\u00fat l\\u00ean cao trong ni\\u1ec1m vui s\\u01b0\\u1edbng.\", \"transition\": \"FADE OUT:\", \"estimated_seconds\": 15, \"source_beat_ids\": [\"bt_008\"]}]}",
+    "raw_response": "{\"draft_id\": \"dscn_draft_01\", \"title\": \"Th\\u1ecf Nh\\u00edm v\\u00e0 Chi\\u1ebfc Di\\u1ec1u Xanh\", \"target_duration_seconds\": 240, \"scenes\": [{\"scene_id\": \"dscn_001\", \"order\": 1, \"outline_scene_id\": \"sc_001\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u00edm b\\u01b0\\u1edbc l\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i xanh m\\u01b0\\u1edbt v\\u1edbi n\\u1ee5 c\\u01b0\\u1eddi r\\u1ea1ng r\\u1ee1 tr\\u00ean m\\u00f4i.\", \"dialogue\": [], \"narration\": \"M\\u1ed7i ng\\u00e0y, Th\\u1ecf Nh\\u00edm \\u0111\\u1ec1u th\\u00edch th\\u1ea3 di\\u1ec1u tr\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i xanh m\\u01b0\\u1edbt.\", \"transition\": \"FADE IN:\", \"estimated_seconds\": 20, \"source_beat_ids\": [\"bt_001\"]}, {\"scene_id\": \"dscn_002\", \"order\": 2, \"outline_scene_id\": \"sc_002\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u00edm c\\u1ea9n th\\u1eadn chu\\u1ea9n b\\u1ecb di\\u1ec1u r\\u1ed3i vui v\\u1ebb ch\\u1ea1y l\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i khi gi\\u00f3 nh\\u1eb9 th\\u1ed5i.\", \"dialogue\": [], \"narration\": \"B\\u00e9 chu\\u1ea9n b\\u1ecb chi\\u1ebfc di\\u1ec1u th\\u1eadt k\\u1ef1 v\\u00e0 ch\\u1ea1y th\\u1eadt nhanh l\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 25, \"source_beat_ids\": [\"bt_002\"]}, {\"scene_id\": \"dscn_003\", \"order\": 3, \"outline_scene_id\": \"sc_003\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u00edm th\\u1ea3 di\\u1ec1u bay cao v\\u00e0 c\\u01b0\\u1eddi toe to\\u00e9t nh\\u00ecn di\\u1ec1u m\\u00faa l\\u01b0\\u1ee3n.\", \"dialogue\": [], \"narration\": \"Chi\\u1ebfc di\\u1ec1u v\\u01b0\\u01a1n cao tr\\u00ean b\\u1ea7u tr\\u1eddi trong xanh.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_003\"]}, {\"scene_id\": \"dscn_004\", \"order\": 4, \"outline_scene_id\": \"sc_004\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"M\\u1ed9t c\\u01a1n gi\\u00f3 l\\u1edbn th\\u1ed5i m\\u1ea1nh l\\u00e0m d\\u00e2y di\\u1ec1u v\\u01b0\\u1edbng v\\u00e0o c\\u00e0nh c\\u00e2y.\", \"dialogue\": [], \"narration\": \"B\\u1ed7ng c\\u01a1n gi\\u00f3 l\\u1edbn \\u0111\\u1ebfn, k\\u1ebfi di\\u1ec1u v\\u01b0\\u1edbng l\\u00ean c\\u00e2y cao khi\\u1ebfn Th\\u1ecf Nh\\u00edm ho\\u1ea3ng s\\u1ee3.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 50, \"source_beat_ids\": [\"bt_004\"]}, {\"scene_id\": \"dscn_005\", \"order\": 5, \"outline_scene_id\": \"sc_005\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u00edm c\\u1ed1 g\\u1eafng k\\u00e9o m\\u1ea1nh nh\\u01b0ng di\\u1ec1u v\\u1eabn k\\u1ebft ch\\u1eb7t, b\\u00e9 bu\\u1ed3n b\\u00e3i th\\u1ea5t v\\u1ecdng.\", \"dialogue\": [], \"narration\": \"B\\u00e9 c\\u1ed1 g\\u1eafng h\\u1ebft s\\u1ee3c nh\\u01b0ng v\\u1eabn kh\\u00f4ng l\\u1ea5y l\\u1ea1i \\u0111\\u01b0\\u1ee3c di\\u1ec1u.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_005\"]}, {\"scene_id\": \"dscn_006\", \"order\": 6, \"outline_scene_id\": \"sc_006\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \"M\\u00e8o M\\u01b0\\u1edbp, G\\u1ea5u Tr\\u1eafng v\\u00e0 Ch\\u00f3 V\\u00e0ng \\u0111\\u1ed3ng lo\\u1ea1t ch\\u1ea1y \\u0111\\u1ebfn gi\\u00fap \\u0111\\u1ee1 Th\\u1ecf Nh\\u00edm.\", \"dialogue\": [], \"narration\": \"C\\u00e1c b\\u1ea1n nh\\u1ecf nhanh ch\\u00f3ng ch\\u1ea1y \\u0111\\u1ebfn \\u0111\\u1ec3 c\\u00f9ng nhau gi\\u00fap \\u0111\\u1ee1.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 25, \"source_beat_ids\": [\"bt_006\"]}, {\"scene_id\": \"dscn_007\", \"order\": 7, \"outline_scene_id\": \"sc_007\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \"M\\u1ed7i b\\u1ea1n d\\u00f9ng m\\u1ed9t c\\u00e1ch ri\\u00eang r\\u1ebd d\\u00e2y cho di\\u1ec1u tho\\u00e1t.\", \"dialogue\": [], \"narration\": \"M\\u00e8o d\\u00f9ng m\\u00f3ng, G\\u1ea5u d\\u00f9ng s\\u1ee9c, Ch\\u00f3 d\\u00f9ng r\\u0103ng c\\u00f9ng nhau th\\u00e1o g\\u1ee1 s\\u1ee3i d\\u00e2y.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_007\"]}, {\"scene_id\": \"dscn_008\", \"order\": 8, \"outline_scene_id\": \"sc_008\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \"Chi\\u1ebfc di\\u1ec1u bay v\\u00fat l\\u00ean tr\\u1eddi cao, c\\u00e1c b\\u1ea1n nh\\u1ea3y m\\u00faa reo h\\u00f2 vui m\\u1eebng.\", \"dialogue\": [], \"narration\": \"Di\\u1ec1u bay cao tr\\u1edf l\\u1ea1i, mang theo ni\\u1ec1m vui v\\u00e0 t\\u00ecnh b\\u1ea1n th\\u00e2n thi\\u1ebft.\", \"transition\": \"FADE OUT:\", \"estimated_seconds\": 15, \"source_beat_ids\": [\"bt_008\"]}]}",
     "checks": {
       "scene_count": 8,
       "dialogue_count": 0,
@@ -660,12 +458,12 @@
     "thinking_level": "not_supported_by_adapter (evidence, not faked)",
     "temperature_sent": "no",
     "error": null,
-    "latency_ms": 9581.3,
+    "latency_ms": 9642.0,
     "retry_attempts": 1,
     "parsed_response": {
       "schema_version": "studio.artifact/v1alpha1",
       "artifact_type": "ScreenplayDraft",
-      "draft_id": "dscn_ep001",
+      "draft_id": "dscn_draft_01",
       "title": "Thỏ Như và Chiếc Diều Xanh",
       "logline": "",
       "language": "vi",
@@ -681,10 +479,10 @@
           "character_ids": [
             "ch_001"
           ],
-          "action_description": " Thỏ Nhím bước ra đống đồi xanh mướt, tay cầm chiếc diều giấy vui tươi.",
+          "action_description": "Thỏ Nhím bước ra đồi xanh mướt, vẫy tay chào nắng và mang theo chúc diều xinh xắn.",
           "dialogue": [],
-          "narration": "Mỗi ngày, Thỏ Nhím lại thích thả diều trên đỉnh đồi xanh mướt.",
-          "transition": "CUT TO:",
+          "narration": "Mỗi ngày, Thỏ Nhím lại thích thú thả diều trên địu xanh mướt.",
+          "transition": "FADE IN:",
           "estimated_seconds": 20,
           "source_beat_ids": [
             "bt_001"
@@ -698,9 +496,9 @@
           "character_ids": [
             "ch_001"
           ],
-          "action_description": "Thỏ Nhím cẩn thận kiểm tra cánh diều rồi hào hứng chạy lên đỉnh đồi khi gió thổi nhẹ nhàng.",
+          "action_description": "Thỏ Nhím cẩn thận gỡ dây diều và vui vẻ chạy lên đỉnh đồi khi gió thổi nhếng nhà.",
           "dialogue": [],
-          "narration": "Bé chuẮnchymal rất kỹ càng và chạy thật nhanh lên ngọn đồi.",
+          "narration": "Cúc bé chuẩn bị kự càng chiếc diều cho một buổi chiều lòng lóng gió.",
           "transition": "CUT TO:",
           "estimated_seconds": 25,
           "source_beat_ids": [
@@ -715,19 +513,9 @@
           "character_ids": [
             "ch_001"
           ],
-          "action_description": "Thỏ Nhím thả diều bay vùt lên trời cao và cười toe toét nhìn theo.",
-          "dialogue": [
-            {
-              "dialogue_id": "dlg_001",
-              "scene_id": "dscn_003",
-              "character_id": "ch_001",
-              "order": 1,
-              "text": "Diều ơi, bay cao lên nào!",
-              "delivery": "",
-              "estimated_seconds": 0
-            }
-          ],
-          "narration": "Chiếc diều nhảy múa nhịp nhàng giữa bầu trời trong xanh.",
+          "action_description": "Thỏ Nhím thả diều bay vút lên trời cao, miệng cười toe toét hạnh phúc.",
+          "dialogue": [],
+          "narration": "Chiếc diều vũ vũ trên không trung, mang theo tiếng cười trong trếng.",
           "transition": "CUT TO:",
           "estimated_seconds": 35,
           "source_beat_ids": [
@@ -742,19 +530,9 @@
           "character_ids": [
             "ch_001"
           ],
-          "action_description": "Một cơn gió to thổi thót, sợi dây vướng chặt vào cành cây lớn.",
-          "dialogue": [
-            {
-              "dialogue_id": "dlg_002",
-              "scene_id": "dscn_004",
-              "character_id": "ch_001",
-              "order": 1,
-              "text": "Ôi không, diều của mình!",
-              "delivery": "",
-              "estimated_seconds": 0
-            }
-          ],
-          "narration": "Bỗng cơn gió lớn úp tới, làm sợi dây vướng vào cành cây.",
+          "action_description": "Một cơn gió lớn úp đến khiến diều lao chao và vước vào cành cây to.",
+          "dialogue": [],
+          "narration": "Bỗng cơn gió mạnh thổi thói, làm sợi dây vước vào cành cây cao khiến Thỏ Nhím hóang sợ.",
           "transition": "CUT TO:",
           "estimated_seconds": 50,
           "source_beat_ids": [
@@ -769,9 +547,9 @@
           "character_ids": [
             "ch_001"
           ],
-          "action_description": "Thỏ Nhím gước người kéo mạnh nhưng diều vẫn kết chặt trên cây, bé buồn bãi.",
+          "action_description": "Thỏ Nhím cố gắng giḟt sợi dây nhưng vô vọng, đôi tai rủ xuống vì buồn bã.",
           "dialogue": [],
-          "narration": "Bé cố gắng hết sức nhưng không thể gỡ xuống, nước mắt rướm rướm.",
+          "narration": "Cúc bé thấy thất vọng và cười mốc bắt đầu rơi xuống mắt.",
           "transition": "CUT TO:",
           "estimated_seconds": 35,
           "source_beat_ids": [
@@ -789,19 +567,9 @@
             "ch_003",
             "ch_004"
           ],
-          "action_description": "Mèo Mướp, Gấu Trắng và Chó Vàng hốt hoảng chạy đến gần Thỏ Nhím.",
-          "dialogue": [
-            {
-              "dialogue_id": "dlg_003",
-              "scene_id": "dscn_006",
-              "character_id": "ch_002",
-              "order": 1,
-              "text": "Đừng lo, chúng tôi đến giúp bạn đây!",
-              "delivery": "",
-              "estimated_seconds": 0
-            }
-          ],
-          "narration": "Các bạn nhìn thấy và nhanh chóng tìm cách giúp đỡ.",
+          "action_description": "Mèo Mướp, Gấu Trắng và Chó Vàng hốt hoảng chạy đến và ngỏ ý muốn giúp đỡ.",
+          "dialogue": [],
+          "narration": "May quá, các bạn nhỏ đã kịp thời có mặt để sèn tay cứu giúp.",
           "transition": "CUT TO:",
           "estimated_seconds": 25,
           "source_beat_ids": [
@@ -819,9 +587,9 @@
             "ch_003",
             "ch_004"
           ],
-          "action_description": "Mèo trèo cây, Gấu đẩy thân, Chó gỡ dây bằng răng trong sự cố gắng tập thể.",
+          "action_description": "Mỗi bạn dùng một tài lẻ riêng: Mèo leo cây, Gấu đẩy thân, Chó dùng răng gỡ dây.",
           "dialogue": [],
-          "narration": "Mỗi người một tay cùng nhau tháo gỡ sợi dây vướng rối.",
+          "narration": "Sự hợp lực đoàn kết giúp các bạn dần tháo gỡ nút thắt.",
           "transition": "CUT TO:",
           "estimated_seconds": 35,
           "source_beat_ids": [
@@ -839,19 +607,9 @@
             "ch_003",
             "ch_004"
           ],
-          "action_description": "Chiếc diều bung ra bay vùt lên, các bạn nhảy cỡng reo hò.",
-          "dialogue": [
-            {
-              "dialogue_id": "dlg_004",
-              "scene_id": "dscn_008",
-              "character_id": "ch_001",
-              "order": 1,
-              "text": "Hoan hô, diều bay lên rồi! Cảm ơn các bạn nhé!",
-              "delivery": "",
-              "estimated_seconds": 0
-            }
-          ],
-          "narration": "Chiếc diều lại bay cao, tình bạn giúp các bạn thêm khẾ khoắn.",
+          "action_description": "Chiếc diều bung cánh bay vút lên trời, các bạn cùng reo hò nhảy múa vui mừng.",
+          "dialogue": [],
+          "narration": "Diều lại bay cao! Thỏ Nhím và các bạn cười vang cả một vùng đồi.",
           "transition": "FADE OUT:",
           "estimated_seconds": 15,
           "source_beat_ids": [
@@ -861,26 +619,26 @@
       ],
       "duration_formula_version": "duration_formula/v1"
     },
-    "response_hash": "9cda9c2b3044968bb2a5db590af624a94a2fd9c4ffc6f94b7634c89b61bdf7b1",
+    "response_hash": "adf97936152f22e477a27864dde4ecf5236b2e4d4b9b8988942c70d61821650a",
     "finish_reason": "stop",
     "usage": {
       "prompt_tokens": 1544,
-      "completion_tokens": 2913,
-      "total_tokens": 4457,
-      "latency_ms": 9580.3,
+      "completion_tokens": 2663,
+      "total_tokens": 4207,
+      "latency_ms": 9641.1,
       "provider_model_id": "gemini-3.5-flash-lite",
       "endpoint_id": "ep-google",
       "canonical_model_id": "gemini-3.5-flash-lite",
       "provider_request_id": null,
-      "raw_response": "{\"draft_id\": \"dscn_ep001\", \"title\": \"Th\\u1ecf Nh\\u01b0 v\\u00e0 Chi\\u1ebfc Di\\u1ec1u Xanh\", \"target_duration_seconds\": 240, \"scenes\": [{\"scene_id\": \"dscn_001\", \"order\": 1, \"outline_scene_id\": \"sc_001\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \" Th\\u1ecf Nh\\u00edm b\\u01b0\\u1edbc ra \\u0111\\u1ed1ng \\u0111\\u1ed3i xanh m\\u01b0\\u1edbt, tay c\\u1ea7m chi\\u1ebfc di\\u1ec1u gi\\u1ea5y vui t\\u01b0\\u01a1i.\", \"dialogue\": [], \"narration\": \"M\\u1ed7i ng\\u00e0y, Th\\u1ecf Nh\\u00edm l\\u1ea1i th\\u00edch th\\u1ea3 di\\u1ec1u tr\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i xanh m\\u01b0\\u1edbt.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 20, \"source_beat_ids\": [\"bt_001\"]}, {\"scene_id\": \"dscn_002\", \"order\": 2, \"outline_scene_id\": \"sc_002\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u00edm c\\u1ea9n th\\u1eadn ki\\u1ec3m tra c\\u00e1nh di\\u1ec1u r\\u1ed3i h\\u00e0o h\\u1ee9ng ch\\u1ea1y l\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i khi gi\\u00f3 th\\u1ed5i nh\\u1eb9 nh\\u00e0ng.\", \"dialogue\": [], \"narration\": \"B\\u00e9 chu\\u1eaenchymal r\\u1ea5t k\\u1ef9 c\\u00e0ng v\\u00e0 ch\\u1ea1y th\\u1eadt nhanh l\\u00ean ng\\u1ecdn \\u0111\\u1ed3i.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 25, \"source_beat_ids\": [\"bt_002\"]}, {\"scene_id\": \"dscn_003\", \"order\": 3, \"outline_scene_id\": \"sc_003\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u00edm th\\u1ea3 di\\u1ec1u bay v\\u00f9t l\\u00ean tr\\u1eddi cao v\\u00e0 c\\u01b0\\u1eddi toe to\\u00e9t nh\\u00ecn theo.\", \"dialogue\": [{\"dialogue_id\": \"dlg_001\", \"scene_id\": \"dscn_003\", \"character_id\": \"ch_001\", \"order\": 1, \"text\": \"Di\\u1ec1u \\u01a1i, bay cao l\\u00ean n\\u00e0o!\"}], \"narration\": \"Chi\\u1ebfc di\\u1ec1u nh\\u1ea3y m\\u00faa nh\\u1ecbp nh\\u00e0ng gi\\u1eefa b\\u1ea7u tr\\u1eddi trong xanh.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_003\"]}, {\"scene_id\": \"dscn_004\", \"order\": 4, \"outline_scene_id\": \"sc_004\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"M\\u1ed9t c\\u01a1n gi\\u00f3 to th\\u1ed5i th\\u00f3t, s\\u1ee3i d\\u00e2y v\\u01b0\\u1edbng ch\\u1eb7t v\\u00e0o c\\u00e0nh c\\u00e2y l\\u1edbn.\", \"dialogue\": [{\"dialogue_id\": \"dlg_002\", \"scene_id\": \"dscn_004\", \"character_id\": \"ch_001\", \"order\": 1, \"text\": \"\\u00d4i kh\\u00f4ng, di\\u1ec1u c\\u1ee7a m\\u00ecnh!\"}], \"narration\": \"B\\u1ed7ng c\\u01a1n gi\\u00f3 l\\u1edbn \\u00fap t\\u1edbi, l\\u00e0m s\\u1ee3i d\\u00e2y v\\u01b0\\u1edbng v\\u00e0o c\\u00e0nh c\\u00e2y.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 50, \"source_beat_ids\": [\"bt_004\"]}, {\"scene_id\": \"dscn_005\", \"order\": 5, \"outline_scene_id\": \"sc_005\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u00edm g\\u01b0\\u1edbc ng\\u01b0\\u1eddi k\\u00e9o m\\u1ea1nh nh\\u01b0ng di\\u1ec1u v\\u1eabn k\\u1ebft ch\\u1eb7t tr\\u00ean c\\u00e2y, b\\u00e9 bu\\u1ed3n b\\u00e3i.\", \"dialogue\": [], \"narration\": \"B\\u00e9 c\\u1ed1 g\\u1eafng h\\u1ebft s\\u1ee9c nh\\u01b0ng kh\\u00f4ng th\\u1ec3 g\\u1ee1 xu\\u1ed1ng, n\\u01b0\\u1edbc m\\u1eaft r\\u01b0\\u1edbm r\\u01b0\\u1edbm.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_005\"]}, {\"scene_id\": \"dscn_006\", \"order\": 6, \"outline_scene_id\": \"sc_006\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \"M\\u00e8o M\\u01b0\\u1edbp, G\\u1ea5u Tr\\u1eafng v\\u00e0 Ch\\u00f3 V\\u00e0ng h\\u1ed1t ho\\u1ea3ng ch\\u1ea1y \\u0111\\u1ebfn g\\u1ea7n Th\\u1ecf Nh\\u00edm.\", \"dialogue\": [{\"dialogue_id\": \"dlg_003\", \"scene_id\": \"dscn_006\", \"character_id\": \"ch_002\", \"order\": 1, \"text\": \"\\u0110\\u1eebng lo, ch\\u00fang t\\u00f4i \\u0111\\u1ebfn gi\\u00fap b\\u1ea1n \\u0111\\u00e2y!\"}], \"narration\": \"C\\u00e1c b\\u1ea1n nh\\u00ecn th\\u1ea5y v\\u00e0 nhanh ch\\u00f3ng t\\u00ecm c\\u00e1ch gi\\u00fap \\u0111\\u1ee1.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 25, \"source_beat_ids\": [\"bt_006\"]}, {\"scene_id\": \"dscn_007\", \"order\": 7, \"outline_scene_id\": \"sc_007\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \"M\\u00e8o tr\\u00e8o c\\u00e2y, G\\u1ea5u \\u0111\\u1ea9y th\\u00e2n, Ch\\u00f3 g\\u1ee1 d\\u00e2y b\\u1eb1ng r\\u0103ng trong s\\u1ef1 c\\u1ed1 g\\u1eafng t\\u1eadp th\\u1ec3.\", \"dialogue\": [], \"narration\": \"M\\u1ed7i ng\\u01b0\\u1eddi m\\u1ed9t tay c\\u00f9ng nhau th\\u00e1o g\\u1ee1 s\\u1ee3i d\\u00e2y v\\u01b0\\u1edbng r\\u1ed1i.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_007\"]}, {\"scene_id\": \"dscn_008\", \"order\": 8, \"outline_scene_id\": \"sc_008\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \"Chi\\u1ebfc di\\u1ec1u bung ra bay v\\u00f9t l\\u00ean, c\\u00e1c b\\u1ea1n nh\\u1ea3y c\\u1ee1ng reo h\\u00f2.\", \"dialogue\": [{\"dialogue_id\": \"dlg_004\", \"scene_id\": \"dscn_008\", \"character_id\": \"ch_001\", \"order\": 1, \"text\": \"Hoan h\\u00f4, di\\u1ec1u bay l\\u00ean r\\u1ed3i! C\\u1ea3m \\u01a1n c\\u00e1c b\\u1ea1n nh\\u00e9!\"}], \"narration\": \"Chi\\u1ebfc di\\u1ec1u l\\u1ea1i bay cao, t\\u00ecnh b\\u1ea1n gi\\u00fap c\\u00e1c b\\u1ea1n th\\u00eam kh\\u1ebe kho\\u1eafn.\", \"transition\": \"FADE OUT:\", \"estimated_seconds\": 15, \"source_beat_ids\": [\"bt_008\"]}]}",
-      "response_hash": "9cda9c2b3044968bb2a5db590af624a94a2fd9c4ffc6f94b7634c89b61bdf7b1"
+      "raw_response": "{\"draft_id\": \"dscn_draft_01\", \"title\": \"Th\\u1ecf Nh\\u01b0 v\\u00e0 Chi\\u1ebfc Di\\u1ec1u Xanh\", \"target_duration_seconds\": 240, \"scenes\": [{\"scene_id\": \"dscn_001\", \"order\": 1, \"outline_scene_id\": \"sc_001\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u00edm b\\u01b0\\u1edbc ra \\u0111\\u1ed3i xanh m\\u01b0\\u1edbt, v\\u1eaby tay ch\\u00e0o n\\u1eafng v\\u00e0 mang theo ch\\u00fac di\\u1ec1u xinh x\\u1eafn.\", \"dialogue\": [], \"narration\": \"M\\u1ed7i ng\\u00e0y, Th\\u1ecf Nh\\u00edm l\\u1ea1i th\\u00edch th\\u00fa th\\u1ea3 di\\u1ec1u tr\\u00ean \\u0111\\u1ecbu xanh m\\u01b0\\u1edbt.\", \"transition\": \"FADE IN:\", \"estimated_seconds\": 20, \"source_beat_ids\": [\"bt_001\"]}, {\"scene_id\": \"dscn_002\", \"order\": 2, \"outline_scene_id\": \"sc_002\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u00edm c\\u1ea9n th\\u1eadn g\\u1ee1 d\\u00e2y di\\u1ec1u v\\u00e0 vui v\\u1ebb ch\\u1ea1y l\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i khi gi\\u00f3 th\\u1ed5i nh\\u1ebfng nh\\u00e0.\", \"dialogue\": [], \"narration\": \"C\\u00fac b\\u00e9 chu\\u1ea9n b\\u1ecb k\\u1ef1 c\\u00e0ng chi\\u1ebfc di\\u1ec1u cho m\\u1ed9t bu\\u1ed5i chi\\u1ec1u l\\u00f2ng l\\u00f3ng gi\\u00f3.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 25, \"source_beat_ids\": [\"bt_002\"]}, {\"scene_id\": \"dscn_003\", \"order\": 3, \"outline_scene_id\": \"sc_003\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u00edm th\\u1ea3 di\\u1ec1u bay v\\u00fat l\\u00ean tr\\u1eddi cao, mi\\u1ec7ng c\\u01b0\\u1eddi toe to\\u00e9t h\\u1ea1nh ph\\u00fac.\", \"dialogue\": [], \"narration\": \"Chi\\u1ebfc di\\u1ec1u v\\u0169 v\\u0169 tr\\u00ean kh\\u00f4ng trung, mang theo ti\\u1ebfng c\\u01b0\\u1eddi trong tr\\u1ebfng.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_003\"]}, {\"scene_id\": \"dscn_004\", \"order\": 4, \"outline_scene_id\": \"sc_004\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"M\\u1ed9t c\\u01a1n gi\\u00f3 l\\u1edbn \\u00fap \\u0111\\u1ebfn khi\\u1ebfn di\\u1ec1u lao chao v\\u00e0 v\\u01b0\\u1edbc v\\u00e0o c\\u00e0nh c\\u00e2y to.\", \"dialogue\": [], \"narration\": \"B\\u1ed7ng c\\u01a1n gi\\u00f3 m\\u1ea1nh th\\u1ed5i th\\u00f3i, l\\u00e0m s\\u1ee3i d\\u00e2y v\\u01b0\\u1edbc v\\u00e0o c\\u00e0nh c\\u00e2y cao khi\\u1ebfn Th\\u1ecf Nh\\u00edm h\\u00f3ang s\\u1ee3.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 50, \"source_beat_ids\": [\"bt_004\"]}, {\"scene_id\": \"dscn_005\", \"order\": 5, \"outline_scene_id\": \"sc_005\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u00edm c\\u1ed1 g\\u1eafng gi\\u1e1ft s\\u1ee3i d\\u00e2y nh\\u01b0ng v\\u00f4 v\\u1ecdng, \\u0111\\u00f4i tai r\\u1ee7 xu\\u1ed1ng v\\u00ec bu\\u1ed3n b\\u00e3.\", \"dialogue\": [], \"narration\": \"C\\u00fac b\\u00e9 th\\u1ea5y th\\u1ea5t v\\u1ecdng v\\u00e0 c\\u01b0\\u1eddi m\\u1ed1c b\\u1eaft \\u0111\\u1ea7u r\\u01a1i xu\\u1ed1ng m\\u1eaft.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_005\"]}, {\"scene_id\": \"dscn_006\", \"order\": 6, \"outline_scene_id\": \"sc_006\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \"M\\u00e8o M\\u01b0\\u1edbp, G\\u1ea5u Tr\\u1eafng v\\u00e0 Ch\\u00f3 V\\u00e0ng h\\u1ed1t ho\\u1ea3ng ch\\u1ea1y \\u0111\\u1ebfn v\\u00e0 ng\\u1ecf \\u00fd mu\\u1ed1n gi\\u00fap \\u0111\\u1ee1.\", \"dialogue\": [], \"narration\": \"May qu\\u00e1, c\\u00e1c b\\u1ea1n nh\\u1ecf \\u0111\\u00e3 k\\u1ecbp th\\u1eddi c\\u00f3 m\\u1eb7t \\u0111\\u1ec3 s\\u00e8n tay c\\u1ee9u gi\\u00fap.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 25, \"source_beat_ids\": [\"bt_006\"]}, {\"scene_id\": \"dscn_007\", \"order\": 7, \"outline_scene_id\": \"sc_007\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \"M\\u1ed7i b\\u1ea1n d\\u00f9ng m\\u1ed9t t\\u00e0i l\\u1ebb ri\\u00eang: M\\u00e8o leo c\\u00e2y, G\\u1ea5u \\u0111\\u1ea9y th\\u00e2n, Ch\\u00f3 d\\u00f9ng r\\u0103ng g\\u1ee1 d\\u00e2y.\", \"dialogue\": [], \"narration\": \"S\\u1ef1 h\\u1ee3p l\\u1ef1c \\u0111o\\u00e0n k\\u1ebft gi\\u00fap c\\u00e1c b\\u1ea1n d\\u1ea7n th\\u00e1o g\\u1ee1 n\\u00fat th\\u1eaft.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_007\"]}, {\"scene_id\": \"dscn_008\", \"order\": 8, \"outline_scene_id\": \"sc_008\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \"Chi\\u1ebfc di\\u1ec1u bung c\\u00e1nh bay v\\u00fat l\\u00ean tr\\u1eddi, c\\u00e1c b\\u1ea1n c\\u00f9ng reo h\\u00f2 nh\\u1ea3y m\\u00faa vui m\\u1eebng.\", \"dialogue\": [], \"narration\": \"Di\\u1ec1u l\\u1ea1i bay cao! Th\\u1ecf Nh\\u00edm v\\u00e0 c\\u00e1c b\\u1ea1n c\\u01b0\\u1eddi vang c\\u1ea3 m\\u1ed9t v\\u00f9ng \\u0111\\u1ed3i.\", \"transition\": \"FADE OUT:\", \"estimated_seconds\": 15, \"source_beat_ids\": [\"bt_008\"]}]}",
+      "response_hash": "adf97936152f22e477a27864dde4ecf5236b2e4d4b9b8988942c70d61821650a"
     },
     "repair_count": 0,
-    "raw_response": "{\"draft_id\": \"dscn_ep001\", \"title\": \"Th\\u1ecf Nh\\u01b0 v\\u00e0 Chi\\u1ebfc Di\\u1ec1u Xanh\", \"target_duration_seconds\": 240, \"scenes\": [{\"scene_id\": \"dscn_001\", \"order\": 1, \"outline_scene_id\": \"sc_001\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \" Th\\u1ecf Nh\\u00edm b\\u01b0\\u1edbc ra \\u0111\\u1ed1ng \\u0111\\u1ed3i xanh m\\u01b0\\u1edbt, tay c\\u1ea7m chi\\u1ebfc di\\u1ec1u gi\\u1ea5y vui t\\u01b0\\u01a1i.\", \"dialogue\": [], \"narration\": \"M\\u1ed7i ng\\u00e0y, Th\\u1ecf Nh\\u00edm l\\u1ea1i th\\u00edch th\\u1ea3 di\\u1ec1u tr\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i xanh m\\u01b0\\u1edbt.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 20, \"source_beat_ids\": [\"bt_001\"]}, {\"scene_id\": \"dscn_002\", \"order\": 2, \"outline_scene_id\": \"sc_002\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u00edm c\\u1ea9n th\\u1eadn ki\\u1ec3m tra c\\u00e1nh di\\u1ec1u r\\u1ed3i h\\u00e0o h\\u1ee9ng ch\\u1ea1y l\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i khi gi\\u00f3 th\\u1ed5i nh\\u1eb9 nh\\u00e0ng.\", \"dialogue\": [], \"narration\": \"B\\u00e9 chu\\u1eaenchymal r\\u1ea5t k\\u1ef9 c\\u00e0ng v\\u00e0 ch\\u1ea1y th\\u1eadt nhanh l\\u00ean ng\\u1ecdn \\u0111\\u1ed3i.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 25, \"source_beat_ids\": [\"bt_002\"]}, {\"scene_id\": \"dscn_003\", \"order\": 3, \"outline_scene_id\": \"sc_003\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u00edm th\\u1ea3 di\\u1ec1u bay v\\u00f9t l\\u00ean tr\\u1eddi cao v\\u00e0 c\\u01b0\\u1eddi toe to\\u00e9t nh\\u00ecn theo.\", \"dialogue\": [{\"dialogue_id\": \"dlg_001\", \"scene_id\": \"dscn_003\", \"character_id\": \"ch_001\", \"order\": 1, \"text\": \"Di\\u1ec1u \\u01a1i, bay cao l\\u00ean n\\u00e0o!\"}], \"narration\": \"Chi\\u1ebfc di\\u1ec1u nh\\u1ea3y m\\u00faa nh\\u1ecbp nh\\u00e0ng gi\\u1eefa b\\u1ea7u tr\\u1eddi trong xanh.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_003\"]}, {\"scene_id\": \"dscn_004\", \"order\": 4, \"outline_scene_id\": \"sc_004\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"M\\u1ed9t c\\u01a1n gi\\u00f3 to th\\u1ed5i th\\u00f3t, s\\u1ee3i d\\u00e2y v\\u01b0\\u1edbng ch\\u1eb7t v\\u00e0o c\\u00e0nh c\\u00e2y l\\u1edbn.\", \"dialogue\": [{\"dialogue_id\": \"dlg_002\", \"scene_id\": \"dscn_004\", \"character_id\": \"ch_001\", \"order\": 1, \"text\": \"\\u00d4i kh\\u00f4ng, di\\u1ec1u c\\u1ee7a m\\u00ecnh!\"}], \"narration\": \"B\\u1ed7ng c\\u01a1n gi\\u00f3 l\\u1edbn \\u00fap t\\u1edbi, l\\u00e0m s\\u1ee3i d\\u00e2y v\\u01b0\\u1edbng v\\u00e0o c\\u00e0nh c\\u00e2y.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 50, \"source_beat_ids\": [\"bt_004\"]}, {\"scene_id\": \"dscn_005\", \"order\": 5, \"outline_scene_id\": \"sc_005\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u00edm g\\u01b0\\u1edbc ng\\u01b0\\u1eddi k\\u00e9o m\\u1ea1nh nh\\u01b0ng di\\u1ec1u v\\u1eabn k\\u1ebft ch\\u1eb7t tr\\u00ean c\\u00e2y, b\\u00e9 bu\\u1ed3n b\\u00e3i.\", \"dialogue\": [], \"narration\": \"B\\u00e9 c\\u1ed1 g\\u1eafng h\\u1ebft s\\u1ee9c nh\\u01b0ng kh\\u00f4ng th\\u1ec3 g\\u1ee1 xu\\u1ed1ng, n\\u01b0\\u1edbc m\\u1eaft r\\u01b0\\u1edbm r\\u01b0\\u1edbm.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_005\"]}, {\"scene_id\": \"dscn_006\", \"order\": 6, \"outline_scene_id\": \"sc_006\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \"M\\u00e8o M\\u01b0\\u1edbp, G\\u1ea5u Tr\\u1eafng v\\u00e0 Ch\\u00f3 V\\u00e0ng h\\u1ed1t ho\\u1ea3ng ch\\u1ea1y \\u0111\\u1ebfn g\\u1ea7n Th\\u1ecf Nh\\u00edm.\", \"dialogue\": [{\"dialogue_id\": \"dlg_003\", \"scene_id\": \"dscn_006\", \"character_id\": \"ch_002\", \"order\": 1, \"text\": \"\\u0110\\u1eebng lo, ch\\u00fang t\\u00f4i \\u0111\\u1ebfn gi\\u00fap b\\u1ea1n \\u0111\\u00e2y!\"}], \"narration\": \"C\\u00e1c b\\u1ea1n nh\\u00ecn th\\u1ea5y v\\u00e0 nhanh ch\\u00f3ng t\\u00ecm c\\u00e1ch gi\\u00fap \\u0111\\u1ee1.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 25, \"source_beat_ids\": [\"bt_006\"]}, {\"scene_id\": \"dscn_007\", \"order\": 7, \"outline_scene_id\": \"sc_007\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \"M\\u00e8o tr\\u00e8o c\\u00e2y, G\\u1ea5u \\u0111\\u1ea9y th\\u00e2n, Ch\\u00f3 g\\u1ee1 d\\u00e2y b\\u1eb1ng r\\u0103ng trong s\\u1ef1 c\\u1ed1 g\\u1eafng t\\u1eadp th\\u1ec3.\", \"dialogue\": [], \"narration\": \"M\\u1ed7i ng\\u01b0\\u1eddi m\\u1ed9t tay c\\u00f9ng nhau th\\u00e1o g\\u1ee1 s\\u1ee3i d\\u00e2y v\\u01b0\\u1edbng r\\u1ed1i.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_007\"]}, {\"scene_id\": \"dscn_008\", \"order\": 8, \"outline_scene_id\": \"sc_008\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \"Chi\\u1ebfc di\\u1ec1u bung ra bay v\\u00f9t l\\u00ean, c\\u00e1c b\\u1ea1n nh\\u1ea3y c\\u1ee1ng reo h\\u00f2.\", \"dialogue\": [{\"dialogue_id\": \"dlg_004\", \"scene_id\": \"dscn_008\", \"character_id\": \"ch_001\", \"order\": 1, \"text\": \"Hoan h\\u00f4, di\\u1ec1u bay l\\u00ean r\\u1ed3i! C\\u1ea3m \\u01a1n c\\u00e1c b\\u1ea1n nh\\u00e9!\"}], \"narration\": \"Chi\\u1ebfc di\\u1ec1u l\\u1ea1i bay cao, t\\u00ecnh b\\u1ea1n gi\\u00fap c\\u00e1c b\\u1ea1n th\\u00eam kh\\u1ebe kho\\u1eafn.\", \"transition\": \"FADE OUT:\", \"estimated_seconds\": 15, \"source_beat_ids\": [\"bt_008\"]}]}",
+    "raw_response": "{\"draft_id\": \"dscn_draft_01\", \"title\": \"Th\\u1ecf Nh\\u01b0 v\\u00e0 Chi\\u1ebfc Di\\u1ec1u Xanh\", \"target_duration_seconds\": 240, \"scenes\": [{\"scene_id\": \"dscn_001\", \"order\": 1, \"outline_scene_id\": \"sc_001\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u00edm b\\u01b0\\u1edbc ra \\u0111\\u1ed3i xanh m\\u01b0\\u1edbt, v\\u1eaby tay ch\\u00e0o n\\u1eafng v\\u00e0 mang theo ch\\u00fac di\\u1ec1u xinh x\\u1eafn.\", \"dialogue\": [], \"narration\": \"M\\u1ed7i ng\\u00e0y, Th\\u1ecf Nh\\u00edm l\\u1ea1i th\\u00edch th\\u00fa th\\u1ea3 di\\u1ec1u tr\\u00ean \\u0111\\u1ecbu xanh m\\u01b0\\u1edbt.\", \"transition\": \"FADE IN:\", \"estimated_seconds\": 20, \"source_beat_ids\": [\"bt_001\"]}, {\"scene_id\": \"dscn_002\", \"order\": 2, \"outline_scene_id\": \"sc_002\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u00edm c\\u1ea9n th\\u1eadn g\\u1ee1 d\\u00e2y di\\u1ec1u v\\u00e0 vui v\\u1ebb ch\\u1ea1y l\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i khi gi\\u00f3 th\\u1ed5i nh\\u1ebfng nh\\u00e0.\", \"dialogue\": [], \"narration\": \"C\\u00fac b\\u00e9 chu\\u1ea9n b\\u1ecb k\\u1ef1 c\\u00e0ng chi\\u1ebfc di\\u1ec1u cho m\\u1ed9t bu\\u1ed5i chi\\u1ec1u l\\u00f2ng l\\u00f3ng gi\\u00f3.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 25, \"source_beat_ids\": [\"bt_002\"]}, {\"scene_id\": \"dscn_003\", \"order\": 3, \"outline_scene_id\": \"sc_003\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u00edm th\\u1ea3 di\\u1ec1u bay v\\u00fat l\\u00ean tr\\u1eddi cao, mi\\u1ec7ng c\\u01b0\\u1eddi toe to\\u00e9t h\\u1ea1nh ph\\u00fac.\", \"dialogue\": [], \"narration\": \"Chi\\u1ebfc di\\u1ec1u v\\u0169 v\\u0169 tr\\u00ean kh\\u00f4ng trung, mang theo ti\\u1ebfng c\\u01b0\\u1eddi trong tr\\u1ebfng.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_003\"]}, {\"scene_id\": \"dscn_004\", \"order\": 4, \"outline_scene_id\": \"sc_004\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"M\\u1ed9t c\\u01a1n gi\\u00f3 l\\u1edbn \\u00fap \\u0111\\u1ebfn khi\\u1ebfn di\\u1ec1u lao chao v\\u00e0 v\\u01b0\\u1edbc v\\u00e0o c\\u00e0nh c\\u00e2y to.\", \"dialogue\": [], \"narration\": \"B\\u1ed7ng c\\u01a1n gi\\u00f3 m\\u1ea1nh th\\u1ed5i th\\u00f3i, l\\u00e0m s\\u1ee3i d\\u00e2y v\\u01b0\\u1edbc v\\u00e0o c\\u00e0nh c\\u00e2y cao khi\\u1ebfn Th\\u1ecf Nh\\u00edm h\\u00f3ang s\\u1ee3.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 50, \"source_beat_ids\": [\"bt_004\"]}, {\"scene_id\": \"dscn_005\", \"order\": 5, \"outline_scene_id\": \"sc_005\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u00edm c\\u1ed1 g\\u1eafng gi\\u1e1ft s\\u1ee3i d\\u00e2y nh\\u01b0ng v\\u00f4 v\\u1ecdng, \\u0111\\u00f4i tai r\\u1ee7 xu\\u1ed1ng v\\u00ec bu\\u1ed3n b\\u00e3.\", \"dialogue\": [], \"narration\": \"C\\u00fac b\\u00e9 th\\u1ea5y th\\u1ea5t v\\u1ecdng v\\u00e0 c\\u01b0\\u1eddi m\\u1ed1c b\\u1eaft \\u0111\\u1ea7u r\\u01a1i xu\\u1ed1ng m\\u1eaft.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_005\"]}, {\"scene_id\": \"dscn_006\", \"order\": 6, \"outline_scene_id\": \"sc_006\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \"M\\u00e8o M\\u01b0\\u1edbp, G\\u1ea5u Tr\\u1eafng v\\u00e0 Ch\\u00f3 V\\u00e0ng h\\u1ed1t ho\\u1ea3ng ch\\u1ea1y \\u0111\\u1ebfn v\\u00e0 ng\\u1ecf \\u00fd mu\\u1ed1n gi\\u00fap \\u0111\\u1ee1.\", \"dialogue\": [], \"narration\": \"May qu\\u00e1, c\\u00e1c b\\u1ea1n nh\\u1ecf \\u0111\\u00e3 k\\u1ecbp th\\u1eddi c\\u00f3 m\\u1eb7t \\u0111\\u1ec3 s\\u00e8n tay c\\u1ee9u gi\\u00fap.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 25, \"source_beat_ids\": [\"bt_006\"]}, {\"scene_id\": \"dscn_007\", \"order\": 7, \"outline_scene_id\": \"sc_007\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \"M\\u1ed7i b\\u1ea1n d\\u00f9ng m\\u1ed9t t\\u00e0i l\\u1ebb ri\\u00eang: M\\u00e8o leo c\\u00e2y, G\\u1ea5u \\u0111\\u1ea9y th\\u00e2n, Ch\\u00f3 d\\u00f9ng r\\u0103ng g\\u1ee1 d\\u00e2y.\", \"dialogue\": [], \"narration\": \"S\\u1ef1 h\\u1ee3p l\\u1ef1c \\u0111o\\u00e0n k\\u1ebft gi\\u00fap c\\u00e1c b\\u1ea1n d\\u1ea7n th\\u00e1o g\\u1ee1 n\\u00fat th\\u1eaft.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_007\"]}, {\"scene_id\": \"dscn_008\", \"order\": 8, \"outline_scene_id\": \"sc_008\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \"Chi\\u1ebfc di\\u1ec1u bung c\\u00e1nh bay v\\u00fat l\\u00ean tr\\u1eddi, c\\u00e1c b\\u1ea1n c\\u00f9ng reo h\\u00f2 nh\\u1ea3y m\\u00faa vui m\\u1eebng.\", \"dialogue\": [], \"narration\": \"Di\\u1ec1u l\\u1ea1i bay cao! Th\\u1ecf Nh\\u00edm v\\u00e0 c\\u00e1c b\\u1ea1n c\\u01b0\\u1eddi vang c\\u1ea3 m\\u1ed9t v\\u00f9ng \\u0111\\u1ed3i.\", \"transition\": \"FADE OUT:\", \"estimated_seconds\": 15, \"source_beat_ids\": [\"bt_008\"]}]}",
     "checks": {
       "scene_count": 8,
-      "dialogue_count": 4,
-      "missing_dialogue": false,
+      "dialogue_count": 0,
+      "missing_dialogue": true,
       "empty_dialogue_lines": 0,
       "generic_dialogue_lines": 0,
       "narration_like_dialogue_lines": 0,
@@ -888,7 +646,7 @@
       "duplicate_dialogue_lines": 0,
       "truncated": false,
       "json_repair_needed": false,
-      "ascii_letter_ratio": 0.7083,
+      "ascii_letter_ratio": 0.0,
       "english_word_ratio": 0.0,
       "unnatural_vietnamese_flag": false
     },
@@ -916,7 +674,7 @@
     "thinking_level": "not_supported_by_adapter (evidence, not faked)",
     "temperature_sent": "no",
     "error": null,
-    "latency_ms": 9743.9,
+    "latency_ms": 9623.1,
     "retry_attempts": 1,
     "parsed_response": {
       "schema_version": "studio.artifact/v1alpha1",
@@ -937,10 +695,10 @@
           "character_ids": [
             "ch_001"
           ],
-          "action_description": "Thỏ Nh̀m vui vẻ đứng trên đỉnh đồi xanh mướt, nhìn ngắm trời cao và chuẩn bị thả diều.",
+          "action_description": "Thỏ Nh̀m vui vẻ đứng trên đỉnh đồi xanh mướt, nhìn ngắm trời mây và chờ đợi những cơn gió.",
           "dialogue": [],
-          "narration": "Mỗi ngày, Thỏ Nh̀m đều thích lên đỉnh đồi xanh mướt để thả diều.",
-          "transition": "CUT TO:",
+          "narration": "Mỗi ngày, Thỏ Nh̀m lại thích thú đến trên đỉnh đồi xanh mướt để thả diều.",
+          "transition": "FADE IN:",
           "estimated_seconds": 20,
           "source_beat_ids": [
             "bt_001"
@@ -954,9 +712,9 @@
           "character_ids": [
             "ch_001"
           ],
-          "action_description": "Thỏ Nh̀m cầm chặt chiếc diều có hình vẽ xinh xắn, hôn nhï chạy về phía đỉnh đồi khi cơn gió nhẹ thổi qua.",
+          "action_description": "Thỏ Nh̀m cẩn thận chuẩn bị chiẾc diều và hân hoan chạy lên đỉnh đồi khi gió thổi nhẹ nhàng.",
           "dialogue": [],
-          "narration": "Bé chuẩn bị diều thật kỹ rồi vui vẻ chạy lên đỉnh đồi.",
+          "narration": "Bé chuẩn bị chiẾc diều thật kỹ rồi chạy thật nhanh lên đỉnh đồi.",
           "transition": "CUT TO:",
           "estimated_seconds": 25,
           "source_beat_ids": [
@@ -971,9 +729,9 @@
           "character_ids": [
             "ch_001"
           ],
-          "action_description": "Thỏ Nh̀m thả diều bay lên cao, cười toe toét nhìn chiếc diều vi vu trong gió.",
+          "action_description": "Thỏ Nh̀m thả diều bay cao và cười toe toét nhìn diều nhảy múa.",
           "dialogue": [],
-          "narration": "Chiếc diều bay vút lên trời cao trong niềm vui sướng của Thỏ Nh̀m.",
+          "narration": "ChiẾc diều vút bay lên trời cao trong niềm vui sướng của Thỏ Nh̀m.",
           "transition": "CUT TO:",
           "estimated_seconds": 35,
           "source_beat_ids": [
@@ -988,9 +746,9 @@
           "character_ids": [
             "ch_001"
           ],
-          "action_description": "Cơn gió lớn đột ngột thổi mạnh, làm sợi dây diều vướng chặt vào cành cây to.",
+          "action_description": "Cơn gió lớn đột ngột thổi mạnh, làm dây diều vướng vào cành cây.",
           "dialogue": [],
-          "narration": "Bỗng một cơn gió lớn ập tới, khiến sợi dây diều vướng vào cành cây lớn.",
+          "narration": "Ôi không, cơn gió lớn đã làm chiẾc diều mắc kết trên cây cao!",
           "transition": "CUT TO:",
           "estimated_seconds": 50,
           "source_beat_ids": [
@@ -1005,9 +763,9 @@
           "character_ids": [
             "ch_001"
           ],
-          "action_description": "Thỏ Nh̀m cố gắng kéo mạnh dây diều nhưng vô vọng, bé bướl và cảm thấy rất buồn.",
+          "action_description": "Thỏ Nh̀m cố gắng kéo mạnh dây diều nhưng bất lực, bé rươm rướm nƱớc mắt vì buồn.",
           "dialogue": [],
-          "narration": "Thỏ Nh̀m cố sức kéo nhưng không thể gỡ xuống, bé buồn bä rủ.",
+          "narration": "Thỏ Nh̀m cố gắng hết sức nhưng không thể gỡ xuống được, bé buồn bã và thất vọng.",
           "transition": "CUT TO:",
           "estimated_seconds": 35,
           "source_beat_ids": [
@@ -1025,9 +783,9 @@
             "ch_003",
             "ch_004"
           ],
-          "action_description": "Mèo Mướp, Gấu Trắng và Chó Vàng hướng về phía Thỏ Nh̀m và nhanh chóng đến giúp đỡ.",
+          "action_description": "Mèo Mướp, Gấu Trắng và Chó Vàng chạy đến và ngỏ ý muốn giúp đỡ Thỏ Nh̀m.",
           "dialogue": [],
-          "narration": "May quá, Mèo Mướp, Gấu Trắng và Chó Vàng đã chạy đến kịp thời.",
+          "narration": "May quá, các bạn Mèo Mướp, Gấu Trắng và Chó Vàng đã kịp thời đến cạnh.",
           "transition": "CUT TO:",
           "estimated_seconds": 25,
           "source_beat_ids": [
@@ -1045,9 +803,9 @@
             "ch_003",
             "ch_004"
           ],
-          "action_description": "Mỗi người một tay dùng sức mạnh riêng: Mèo dùng móng vuốt, Gấu dùng tay lớn, Chó dùng răng cắt gỡ dây.",
+          "action_description": "Các bạn cùng hợp sức: Mèo dùng móng, Gấu dùng sức, Chó dùng răng để gỡ sợi dây.",
           "dialogue": [],
-          "narration": "Các bạn đông lực hợp sức, mỗi người một cách để giúp Thỏ Nh̀m.",
+          "narration": "Mỗi bạn một tay, cùng nhau tìm cách gỡ rối cho chiẾc diều.",
           "transition": "CUT TO:",
           "estimated_seconds": 35,
           "source_beat_ids": [
@@ -1065,9 +823,9 @@
             "ch_003",
             "ch_004"
           ],
-          "action_description": "Chiếc diều thoát khỏi cành cây, bay vút lên cao trở lại trong tiếng reo hò vui vẻ.",
+          "action_description": "ChiẾc diều thoát ra và bay vút lên trời cao, các bạn nhảy cỡng reo hò.",
           "dialogue": [],
-          "narration": "Chiếc diều bay cao trở lại, các bạn cùng nhau nhảy mú reo hò.",
+          "narration": "Diều lại bay cao! Tất cả cùng nhau reo hò vui vẻ vì đã vượt qua khó khăn.",
           "transition": "FADE OUT:",
           "estimated_seconds": 15,
           "source_beat_ids": [
@@ -1077,22 +835,22 @@
       ],
       "duration_formula_version": "duration_formula/v1"
     },
-    "response_hash": "8a9d2ca084a756d0f9a8e7b96fcb4e9003e74d6e56933512e870a1930c74016e",
+    "response_hash": "4b29c1d7f12e14e28110c768e884150817a12c5256e30e1b7c45076ddc848ad9",
     "finish_reason": "stop",
     "usage": {
       "prompt_tokens": 1544,
       "completion_tokens": 2787,
       "total_tokens": 4331,
-      "latency_ms": 9743.0,
+      "latency_ms": 9622.1,
       "provider_model_id": "gemini-3.5-flash-lite",
       "endpoint_id": "ep-google",
       "canonical_model_id": "gemini-3.5-flash-lite",
       "provider_request_id": null,
-      "raw_response": "{\"draft_id\": \"dscn_ep_01\", \"title\": \"Th\\u1ecf Nh\\u0300m Th\\u1ea3 Di\\u1ec1u\", \"target_duration_seconds\": 240, \"scenes\": [{\"scene_id\": \"dscn_001\", \"order\": 1, \"outline_scene_id\": \"sc_001\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u0300m vui v\\u1ebb \\u0111\\u1ee9ng tr\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i xanh m\\u01b0\\u1edbt, nh\\u00ecn ng\\u1eafm tr\\u1eddi cao v\\u00e0 chu\\u1ea9n b\\u1ecb th\\u1ea3 di\\u1ec1u.\", \"dialogue\": [], \"narration\": \"M\\u1ed7i ng\\u00e0y, Th\\u1ecf Nh\\u0300m \\u0111\\u1ec1u th\\u00edch l\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i xanh m\\u01b0\\u1edbt \\u0111\\u1ec3 th\\u1ea3 di\\u1ec1u.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 20, \"source_beat_ids\": [\"bt_001\"]}, {\"scene_id\": \"dscn_002\", \"order\": 2, \"outline_scene_id\": \"sc_002\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u0300m c\\u1ea7m ch\\u1eb7t chi\\u1ebfc di\\u1ec1u c\\u00f3 h\\u00ecnh v\\u1ebd xinh x\\u1eafn, h\\u00f4n nh\\u00ef ch\\u1ea1y v\\u1ec1 ph\\u00eda \\u0111\\u1ec9nh \\u0111\\u1ed3i khi c\\u01a1n gi\\u00f3 nh\\u1eb9 th\\u1ed5i qua.\", \"dialogue\": [], \"narration\": \"B\\u00e9 chu\\u1ea9n b\\u1ecb di\\u1ec1u th\\u1eadt k\\u1ef9 r\\u1ed3i vui v\\u1ebb ch\\u1ea1y l\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 25, \"source_beat_ids\": [\"bt_002\"]}, {\"scene_id\": \"dscn_003\", \"order\": 3, \"outline_scene_id\": \"sc_003\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u0300m th\\u1ea3 di\\u1ec1u bay l\\u00ean cao, c\\u01b0\\u1eddi toe to\\u00e9t nh\\u00ecn chi\\u1ebfc di\\u1ec1u vi vu trong gi\\u00f3.\", \"dialogue\": [], \"narration\": \"Chi\\u1ebfc di\\u1ec1u bay v\\u00fat l\\u00ean tr\\u1eddi cao trong ni\\u1ec1m vui s\\u01b0\\u1edbng c\\u1ee7a Th\\u1ecf Nh\\u0300m.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_003\"]}, {\"scene_id\": \"dscn_004\", \"order\": 4, \"outline_scene_id\": \"sc_004\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"C\\u01a1n gi\\u00f3 l\\u1edbn \\u0111\\u1ed9t ng\\u1ed9t th\\u1ed5i m\\u1ea1nh, l\\u00e0m s\\u1ee3i d\\u00e2y di\\u1ec1u v\\u01b0\\u1edbng ch\\u1eb7t v\\u00e0o c\\u00e0nh c\\u00e2y to.\", \"dialogue\": [], \"narration\": \"B\\u1ed7ng m\\u1ed9t c\\u01a1n gi\\u00f3 l\\u1edbn \\u1eadp t\\u1edbi, khi\\u1ebfn s\\u1ee3i d\\u00e2y di\\u1ec1u v\\u01b0\\u1edbng v\\u00e0o c\\u00e0nh c\\u00e2y l\\u1edbn.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 50, \"source_beat_ids\": [\"bt_004\"]}, {\"scene_id\": \"dscn_005\", \"order\": 5, \"outline_scene_id\": \"sc_005\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u0300m c\\u1ed1 g\\u1eafng k\\u00e9o m\\u1ea1nh d\\u00e2y di\\u1ec1u nh\\u01b0ng v\\u00f4 v\\u1ecdng, b\\u00e9 b\\u01b0\\u1edbl v\\u00e0 c\\u1ea3m th\\u1ea5y r\\u1ea5t bu\\u1ed3n.\", \"dialogue\": [], \"narration\": \"Th\\u1ecf Nh\\u0300m c\\u1ed1 s\\u1ee9c k\\u00e9o nh\\u01b0ng kh\\u00f4ng th\\u1ec3 g\\u1ee1 xu\\u1ed1ng, b\\u00e9 bu\\u1ed3n b\\u00e4 r\\u1ee7.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_005\"]}, {\"scene_id\": \"dscn_006\", \"order\": 6, \"outline_scene_id\": \"sc_006\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \"M\\u00e8o M\\u01b0\\u1edbp, G\\u1ea5u Tr\\u1eafng v\\u00e0 Ch\\u00f3 V\\u00e0ng h\\u01b0\\u1edbng v\\u1ec1 ph\\u00eda Th\\u1ecf Nh\\u0300m v\\u00e0 nhanh ch\\u00f3ng \\u0111\\u1ebfn gi\\u00fap \\u0111\\u1ee1.\", \"dialogue\": [], \"narration\": \"May qu\\u00e1, M\\u00e8o M\\u01b0\\u1edbp, G\\u1ea5u Tr\\u1eafng v\\u00e0 Ch\\u00f3 V\\u00e0ng \\u0111\\u00e3 ch\\u1ea1y \\u0111\\u1ebfn k\\u1ecbp th\\u1eddi.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 25, \"source_beat_ids\": [\"bt_006\"]}, {\"scene_id\": \"dscn_007\", \"order\": 7, \"outline_scene_id\": \"sc_007\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \"M\\u1ed7i ng\\u01b0\\u1eddi m\\u1ed9t tay d\\u00f9ng s\\u1ee9c m\\u1ea1nh ri\\u00eang: M\\u00e8o d\\u00f9ng m\\u00f3ng vu\\u1ed1t, G\\u1ea5u d\\u00f9ng tay l\\u1edbn, Ch\\u00f3 d\\u00f9ng r\\u0103ng c\\u1eaft g\\u1ee1 d\\u00e2y.\", \"dialogue\": [], \"narration\": \"C\\u00e1c b\\u1ea1n \\u0111\\u00f4ng l\\u1ef1c h\\u1ee3p s\\u1ee9c, m\\u1ed7i ng\\u01b0\\u1eddi m\\u1ed9t c\\u00e1ch \\u0111\\u1ec3 gi\\u00fap Th\\u1ecf Nh\\u0300m.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_007\"]}, {\"scene_id\": \"dscn_008\", \"order\": 8, \"outline_scene_id\": \"sc_008\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \"Chi\\u1ebfc di\\u1ec1u tho\\u00e1t kh\\u1ecfi c\\u00e0nh c\\u00e2y, bay v\\u00fat l\\u00ean cao tr\\u1edf l\\u1ea1i trong ti\\u1ebfng reo h\\u00f2 vui v\\u1ebb.\", \"dialogue\": [], \"narration\": \"Chi\\u1ebfc di\\u1ec1u bay cao tr\\u1edf l\\u1ea1i, c\\u00e1c b\\u1ea1n c\\u00f9ng nhau nh\\u1ea3y m\\u00fa reo h\\u00f2.\", \"transition\": \"FADE OUT:\", \"estimated_seconds\": 15, \"source_beat_ids\": [\"bt_008\"]}]}",
-      "response_hash": "8a9d2ca084a756d0f9a8e7b96fcb4e9003e74d6e56933512e870a1930c74016e"
+      "raw_response": "{\"draft_id\": \"dscn_ep_01\", \"title\": \"Th\\u1ecf Nh\\u0300m Th\\u1ea3 Di\\u1ec1u\", \"target_duration_seconds\": 240, \"scenes\": [{\"scene_id\": \"dscn_001\", \"order\": 1, \"outline_scene_id\": \"sc_001\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u0300m vui v\\u1ebb \\u0111\\u1ee9ng tr\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i xanh m\\u01b0\\u1edbt, nh\\u00ecn ng\\u1eafm tr\\u1eddi m\\u00e2y v\\u00e0 ch\\u1edd \\u0111\\u1ee3i nh\\u1eefng c\\u01a1n gi\\u00f3.\", \"dialogue\": [], \"narration\": \"M\\u1ed7i ng\\u00e0y, Th\\u1ecf Nh\\u0300m l\\u1ea1i th\\u00edch th\\u00fa \\u0111\\u1ebfn tr\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i xanh m\\u01b0\\u1edbt \\u0111\\u1ec3 th\\u1ea3 di\\u1ec1u.\", \"transition\": \"FADE IN:\", \"estimated_seconds\": 20, \"source_beat_ids\": [\"bt_001\"]}, {\"scene_id\": \"dscn_002\", \"order\": 2, \"outline_scene_id\": \"sc_002\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u0300m c\\u1ea9n th\\u1eadn chu\\u1ea9n b\\u1ecb chi\\u1ebec di\\u1ec1u v\\u00e0 h\\u00e2n hoan ch\\u1ea1y l\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i khi gi\\u00f3 th\\u1ed5i nh\\u1eb9 nh\\u00e0ng.\", \"dialogue\": [], \"narration\": \"B\\u00e9 chu\\u1ea9n b\\u1ecb chi\\u1ebec di\\u1ec1u th\\u1eadt k\\u1ef9 r\\u1ed3i ch\\u1ea1y th\\u1eadt nhanh l\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 25, \"source_beat_ids\": [\"bt_002\"]}, {\"scene_id\": \"dscn_003\", \"order\": 3, \"outline_scene_id\": \"sc_003\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u0300m th\\u1ea3 di\\u1ec1u bay cao v\\u00e0 c\\u01b0\\u1eddi toe to\\u00e9t nh\\u00ecn di\\u1ec1u nh\\u1ea3y m\\u00faa.\", \"dialogue\": [], \"narration\": \"Chi\\u1ebec di\\u1ec1u v\\u00fat bay l\\u00ean tr\\u1eddi cao trong ni\\u1ec1m vui s\\u01b0\\u1edbng c\\u1ee7a Th\\u1ecf Nh\\u0300m.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_003\"]}, {\"scene_id\": \"dscn_004\", \"order\": 4, \"outline_scene_id\": \"sc_004\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"C\\u01a1n gi\\u00f3 l\\u1edbn \\u0111\\u1ed9t ng\\u1ed9t th\\u1ed5i m\\u1ea1nh, l\\u00e0m d\\u00e2y di\\u1ec1u v\\u01b0\\u1edbng v\\u00e0o c\\u00e0nh c\\u00e2y.\", \"dialogue\": [], \"narration\": \"\\u00d4i kh\\u00f4ng, c\\u01a1n gi\\u00f3 l\\u1edbn \\u0111\\u00e3 l\\u00e0m chi\\u1ebec di\\u1ec1u m\\u1eafc k\\u1ebft tr\\u00ean c\\u00e2y cao!\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 50, \"source_beat_ids\": [\"bt_004\"]}, {\"scene_id\": \"dscn_005\", \"order\": 5, \"outline_scene_id\": \"sc_005\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u0300m c\\u1ed1 g\\u1eafng k\\u00e9o m\\u1ea1nh d\\u00e2y di\\u1ec1u nh\\u01b0ng b\\u1ea5t l\\u1ef1c, b\\u00e9 r\\u01b0\\u01a1m r\\u01b0\\u1edbm n\\u01b1\\u1edbc m\\u1eaft v\\u00ec bu\\u1ed3n.\", \"dialogue\": [], \"narration\": \"Th\\u1ecf Nh\\u0300m c\\u1ed1 g\\u1eafng h\\u1ebft s\\u1ee9c nh\\u01b0ng kh\\u00f4ng th\\u1ec3 g\\u1ee1 xu\\u1ed1ng \\u0111\\u01b0\\u1ee3c, b\\u00e9 bu\\u1ed3n b\\u00e3 v\\u00e0 th\\u1ea5t v\\u1ecdng.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_005\"]}, {\"scene_id\": \"dscn_006\", \"order\": 6, \"outline_scene_id\": \"sc_006\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \"M\\u00e8o M\\u01b0\\u1edbp, G\\u1ea5u Tr\\u1eafng v\\u00e0 Ch\\u00f3 V\\u00e0ng ch\\u1ea1y \\u0111\\u1ebfn v\\u00e0 ng\\u1ecf \\u00fd mu\\u1ed1n gi\\u00fap \\u0111\\u1ee1 Th\\u1ecf Nh\\u0300m.\", \"dialogue\": [], \"narration\": \"May qu\\u00e1, c\\u00e1c b\\u1ea1n M\\u00e8o M\\u01b0\\u1edbp, G\\u1ea5u Tr\\u1eafng v\\u00e0 Ch\\u00f3 V\\u00e0ng \\u0111\\u00e3 k\\u1ecbp th\\u1eddi \\u0111\\u1ebfn c\\u1ea1nh.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 25, \"source_beat_ids\": [\"bt_006\"]}, {\"scene_id\": \"dscn_007\", \"order\": 7, \"outline_scene_id\": \"sc_007\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \"C\\u00e1c b\\u1ea1n c\\u00f9ng h\\u1ee3p s\\u1ee9c: M\\u00e8o d\\u00f9ng m\\u00f3ng, G\\u1ea5u d\\u00f9ng s\\u1ee9c, Ch\\u00f3 d\\u00f9ng r\\u0103ng \\u0111\\u1ec3 g\\u1ee1 s\\u1ee3i d\\u00e2y.\", \"dialogue\": [], \"narration\": \"M\\u1ed7i b\\u1ea1n m\\u1ed9t tay, c\\u00f9ng nhau t\\u00ecm c\\u00e1ch g\\u1ee1 r\\u1ed1i cho chi\\u1ebec di\\u1ec1u.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_007\"]}, {\"scene_id\": \"dscn_008\", \"order\": 8, \"outline_scene_id\": \"sc_008\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \"Chi\\u1ebec di\\u1ec1u tho\\u00e1t ra v\\u00e0 bay v\\u00fat l\\u00ean tr\\u1eddi cao, c\\u00e1c b\\u1ea1n nh\\u1ea3y c\\u1ee1ng reo h\\u00f2.\", \"dialogue\": [], \"narration\": \"Di\\u1ec1u l\\u1ea1i bay cao! T\\u1ea5t c\\u1ea3 c\\u00f9ng nhau reo h\\u00f2 vui v\\u1ebb v\\u00ec \\u0111\\u00e3 v\\u01b0\\u1ee3t qua kh\\u00f3 kh\\u0103n.\", \"transition\": \"FADE OUT:\", \"estimated_seconds\": 15, \"source_beat_ids\": [\"bt_008\"]}]}",
+      "response_hash": "4b29c1d7f12e14e28110c768e884150817a12c5256e30e1b7c45076ddc848ad9"
     },
     "repair_count": 0,
-    "raw_response": "{\"draft_id\": \"dscn_ep_01\", \"title\": \"Th\\u1ecf Nh\\u0300m Th\\u1ea3 Di\\u1ec1u\", \"target_duration_seconds\": 240, \"scenes\": [{\"scene_id\": \"dscn_001\", \"order\": 1, \"outline_scene_id\": \"sc_001\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u0300m vui v\\u1ebb \\u0111\\u1ee9ng tr\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i xanh m\\u01b0\\u1edbt, nh\\u00ecn ng\\u1eafm tr\\u1eddi cao v\\u00e0 chu\\u1ea9n b\\u1ecb th\\u1ea3 di\\u1ec1u.\", \"dialogue\": [], \"narration\": \"M\\u1ed7i ng\\u00e0y, Th\\u1ecf Nh\\u0300m \\u0111\\u1ec1u th\\u00edch l\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i xanh m\\u01b0\\u1edbt \\u0111\\u1ec3 th\\u1ea3 di\\u1ec1u.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 20, \"source_beat_ids\": [\"bt_001\"]}, {\"scene_id\": \"dscn_002\", \"order\": 2, \"outline_scene_id\": \"sc_002\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u0300m c\\u1ea7m ch\\u1eb7t chi\\u1ebfc di\\u1ec1u c\\u00f3 h\\u00ecnh v\\u1ebd xinh x\\u1eafn, h\\u00f4n nh\\u00ef ch\\u1ea1y v\\u1ec1 ph\\u00eda \\u0111\\u1ec9nh \\u0111\\u1ed3i khi c\\u01a1n gi\\u00f3 nh\\u1eb9 th\\u1ed5i qua.\", \"dialogue\": [], \"narration\": \"B\\u00e9 chu\\u1ea9n b\\u1ecb di\\u1ec1u th\\u1eadt k\\u1ef9 r\\u1ed3i vui v\\u1ebb ch\\u1ea1y l\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 25, \"source_beat_ids\": [\"bt_002\"]}, {\"scene_id\": \"dscn_003\", \"order\": 3, \"outline_scene_id\": \"sc_003\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u0300m th\\u1ea3 di\\u1ec1u bay l\\u00ean cao, c\\u01b0\\u1eddi toe to\\u00e9t nh\\u00ecn chi\\u1ebfc di\\u1ec1u vi vu trong gi\\u00f3.\", \"dialogue\": [], \"narration\": \"Chi\\u1ebfc di\\u1ec1u bay v\\u00fat l\\u00ean tr\\u1eddi cao trong ni\\u1ec1m vui s\\u01b0\\u1edbng c\\u1ee7a Th\\u1ecf Nh\\u0300m.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_003\"]}, {\"scene_id\": \"dscn_004\", \"order\": 4, \"outline_scene_id\": \"sc_004\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"C\\u01a1n gi\\u00f3 l\\u1edbn \\u0111\\u1ed9t ng\\u1ed9t th\\u1ed5i m\\u1ea1nh, l\\u00e0m s\\u1ee3i d\\u00e2y di\\u1ec1u v\\u01b0\\u1edbng ch\\u1eb7t v\\u00e0o c\\u00e0nh c\\u00e2y to.\", \"dialogue\": [], \"narration\": \"B\\u1ed7ng m\\u1ed9t c\\u01a1n gi\\u00f3 l\\u1edbn \\u1eadp t\\u1edbi, khi\\u1ebfn s\\u1ee3i d\\u00e2y di\\u1ec1u v\\u01b0\\u1edbng v\\u00e0o c\\u00e0nh c\\u00e2y l\\u1edbn.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 50, \"source_beat_ids\": [\"bt_004\"]}, {\"scene_id\": \"dscn_005\", \"order\": 5, \"outline_scene_id\": \"sc_005\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u0300m c\\u1ed1 g\\u1eafng k\\u00e9o m\\u1ea1nh d\\u00e2y di\\u1ec1u nh\\u01b0ng v\\u00f4 v\\u1ecdng, b\\u00e9 b\\u01b0\\u1edbl v\\u00e0 c\\u1ea3m th\\u1ea5y r\\u1ea5t bu\\u1ed3n.\", \"dialogue\": [], \"narration\": \"Th\\u1ecf Nh\\u0300m c\\u1ed1 s\\u1ee9c k\\u00e9o nh\\u01b0ng kh\\u00f4ng th\\u1ec3 g\\u1ee1 xu\\u1ed1ng, b\\u00e9 bu\\u1ed3n b\\u00e4 r\\u1ee7.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_005\"]}, {\"scene_id\": \"dscn_006\", \"order\": 6, \"outline_scene_id\": \"sc_006\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \"M\\u00e8o M\\u01b0\\u1edbp, G\\u1ea5u Tr\\u1eafng v\\u00e0 Ch\\u00f3 V\\u00e0ng h\\u01b0\\u1edbng v\\u1ec1 ph\\u00eda Th\\u1ecf Nh\\u0300m v\\u00e0 nhanh ch\\u00f3ng \\u0111\\u1ebfn gi\\u00fap \\u0111\\u1ee1.\", \"dialogue\": [], \"narration\": \"May qu\\u00e1, M\\u00e8o M\\u01b0\\u1edbp, G\\u1ea5u Tr\\u1eafng v\\u00e0 Ch\\u00f3 V\\u00e0ng \\u0111\\u00e3 ch\\u1ea1y \\u0111\\u1ebfn k\\u1ecbp th\\u1eddi.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 25, \"source_beat_ids\": [\"bt_006\"]}, {\"scene_id\": \"dscn_007\", \"order\": 7, \"outline_scene_id\": \"sc_007\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \"M\\u1ed7i ng\\u01b0\\u1eddi m\\u1ed9t tay d\\u00f9ng s\\u1ee9c m\\u1ea1nh ri\\u00eang: M\\u00e8o d\\u00f9ng m\\u00f3ng vu\\u1ed1t, G\\u1ea5u d\\u00f9ng tay l\\u1edbn, Ch\\u00f3 d\\u00f9ng r\\u0103ng c\\u1eaft g\\u1ee1 d\\u00e2y.\", \"dialogue\": [], \"narration\": \"C\\u00e1c b\\u1ea1n \\u0111\\u00f4ng l\\u1ef1c h\\u1ee3p s\\u1ee9c, m\\u1ed7i ng\\u01b0\\u1eddi m\\u1ed9t c\\u00e1ch \\u0111\\u1ec3 gi\\u00fap Th\\u1ecf Nh\\u0300m.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_007\"]}, {\"scene_id\": \"dscn_008\", \"order\": 8, \"outline_scene_id\": \"sc_008\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \"Chi\\u1ebfc di\\u1ec1u tho\\u00e1t kh\\u1ecfi c\\u00e0nh c\\u00e2y, bay v\\u00fat l\\u00ean cao tr\\u1edf l\\u1ea1i trong ti\\u1ebfng reo h\\u00f2 vui v\\u1ebb.\", \"dialogue\": [], \"narration\": \"Chi\\u1ebfc di\\u1ec1u bay cao tr\\u1edf l\\u1ea1i, c\\u00e1c b\\u1ea1n c\\u00f9ng nhau nh\\u1ea3y m\\u00fa reo h\\u00f2.\", \"transition\": \"FADE OUT:\", \"estimated_seconds\": 15, \"source_beat_ids\": [\"bt_008\"]}]}",
+    "raw_response": "{\"draft_id\": \"dscn_ep_01\", \"title\": \"Th\\u1ecf Nh\\u0300m Th\\u1ea3 Di\\u1ec1u\", \"target_duration_seconds\": 240, \"scenes\": [{\"scene_id\": \"dscn_001\", \"order\": 1, \"outline_scene_id\": \"sc_001\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u0300m vui v\\u1ebb \\u0111\\u1ee9ng tr\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i xanh m\\u01b0\\u1edbt, nh\\u00ecn ng\\u1eafm tr\\u1eddi m\\u00e2y v\\u00e0 ch\\u1edd \\u0111\\u1ee3i nh\\u1eefng c\\u01a1n gi\\u00f3.\", \"dialogue\": [], \"narration\": \"M\\u1ed7i ng\\u00e0y, Th\\u1ecf Nh\\u0300m l\\u1ea1i th\\u00edch th\\u00fa \\u0111\\u1ebfn tr\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i xanh m\\u01b0\\u1edbt \\u0111\\u1ec3 th\\u1ea3 di\\u1ec1u.\", \"transition\": \"FADE IN:\", \"estimated_seconds\": 20, \"source_beat_ids\": [\"bt_001\"]}, {\"scene_id\": \"dscn_002\", \"order\": 2, \"outline_scene_id\": \"sc_002\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u0300m c\\u1ea9n th\\u1eadn chu\\u1ea9n b\\u1ecb chi\\u1ebec di\\u1ec1u v\\u00e0 h\\u00e2n hoan ch\\u1ea1y l\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i khi gi\\u00f3 th\\u1ed5i nh\\u1eb9 nh\\u00e0ng.\", \"dialogue\": [], \"narration\": \"B\\u00e9 chu\\u1ea9n b\\u1ecb chi\\u1ebec di\\u1ec1u th\\u1eadt k\\u1ef9 r\\u1ed3i ch\\u1ea1y th\\u1eadt nhanh l\\u00ean \\u0111\\u1ec9nh \\u0111\\u1ed3i.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 25, \"source_beat_ids\": [\"bt_002\"]}, {\"scene_id\": \"dscn_003\", \"order\": 3, \"outline_scene_id\": \"sc_003\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u0300m th\\u1ea3 di\\u1ec1u bay cao v\\u00e0 c\\u01b0\\u1eddi toe to\\u00e9t nh\\u00ecn di\\u1ec1u nh\\u1ea3y m\\u00faa.\", \"dialogue\": [], \"narration\": \"Chi\\u1ebec di\\u1ec1u v\\u00fat bay l\\u00ean tr\\u1eddi cao trong ni\\u1ec1m vui s\\u01b0\\u1edbng c\\u1ee7a Th\\u1ecf Nh\\u0300m.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_003\"]}, {\"scene_id\": \"dscn_004\", \"order\": 4, \"outline_scene_id\": \"sc_004\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"C\\u01a1n gi\\u00f3 l\\u1edbn \\u0111\\u1ed9t ng\\u1ed9t th\\u1ed5i m\\u1ea1nh, l\\u00e0m d\\u00e2y di\\u1ec1u v\\u01b0\\u1edbng v\\u00e0o c\\u00e0nh c\\u00e2y.\", \"dialogue\": [], \"narration\": \"\\u00d4i kh\\u00f4ng, c\\u01a1n gi\\u00f3 l\\u1edbn \\u0111\\u00e3 l\\u00e0m chi\\u1ebec di\\u1ec1u m\\u1eafc k\\u1ebft tr\\u00ean c\\u00e2y cao!\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 50, \"source_beat_ids\": [\"bt_004\"]}, {\"scene_id\": \"dscn_005\", \"order\": 5, \"outline_scene_id\": \"sc_005\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\"], \"action_description\": \"Th\\u1ecf Nh\\u0300m c\\u1ed1 g\\u1eafng k\\u00e9o m\\u1ea1nh d\\u00e2y di\\u1ec1u nh\\u01b0ng b\\u1ea5t l\\u1ef1c, b\\u00e9 r\\u01b0\\u01a1m r\\u01b0\\u1edbm n\\u01b1\\u1edbc m\\u1eaft v\\u00ec bu\\u1ed3n.\", \"dialogue\": [], \"narration\": \"Th\\u1ecf Nh\\u0300m c\\u1ed1 g\\u1eafng h\\u1ebft s\\u1ee9c nh\\u01b0ng kh\\u00f4ng th\\u1ec3 g\\u1ee1 xu\\u1ed1ng \\u0111\\u01b0\\u1ee3c, b\\u00e9 bu\\u1ed3n b\\u00e3 v\\u00e0 th\\u1ea5t v\\u1ecdng.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_005\"]}, {\"scene_id\": \"dscn_006\", \"order\": 6, \"outline_scene_id\": \"sc_006\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \"M\\u00e8o M\\u01b0\\u1edbp, G\\u1ea5u Tr\\u1eafng v\\u00e0 Ch\\u00f3 V\\u00e0ng ch\\u1ea1y \\u0111\\u1ebfn v\\u00e0 ng\\u1ecf \\u00fd mu\\u1ed1n gi\\u00fap \\u0111\\u1ee1 Th\\u1ecf Nh\\u0300m.\", \"dialogue\": [], \"narration\": \"May qu\\u00e1, c\\u00e1c b\\u1ea1n M\\u00e8o M\\u01b0\\u1edbp, G\\u1ea5u Tr\\u1eafng v\\u00e0 Ch\\u00f3 V\\u00e0ng \\u0111\\u00e3 k\\u1ecbp th\\u1eddi \\u0111\\u1ebfn c\\u1ea1nh.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 25, \"source_beat_ids\": [\"bt_006\"]}, {\"scene_id\": \"dscn_007\", \"order\": 7, \"outline_scene_id\": \"sc_007\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \"C\\u00e1c b\\u1ea1n c\\u00f9ng h\\u1ee3p s\\u1ee9c: M\\u00e8o d\\u00f9ng m\\u00f3ng, G\\u1ea5u d\\u00f9ng s\\u1ee9c, Ch\\u00f3 d\\u00f9ng r\\u0103ng \\u0111\\u1ec3 g\\u1ee1 s\\u1ee3i d\\u00e2y.\", \"dialogue\": [], \"narration\": \"M\\u1ed7i b\\u1ea1n m\\u1ed9t tay, c\\u00f9ng nhau t\\u00ecm c\\u00e1ch g\\u1ee1 r\\u1ed1i cho chi\\u1ebec di\\u1ec1u.\", \"transition\": \"CUT TO:\", \"estimated_seconds\": 35, \"source_beat_ids\": [\"bt_007\"]}, {\"scene_id\": \"dscn_008\", \"order\": 8, \"outline_scene_id\": \"sc_008\", \"location_id\": \"loc_001\", \"character_ids\": [\"ch_001\", \"ch_002\", \"ch_003\", \"ch_004\"], \"action_description\": \"Chi\\u1ebec di\\u1ec1u tho\\u00e1t ra v\\u00e0 bay v\\u00fat l\\u00ean tr\\u1eddi cao, c\\u00e1c b\\u1ea1n nh\\u1ea3y c\\u1ee1ng reo h\\u00f2.\", \"dialogue\": [], \"narration\": \"Di\\u1ec1u l\\u1ea1i bay cao! T\\u1ea5t c\\u1ea3 c\\u00f9ng nhau reo h\\u00f2 vui v\\u1ebb v\\u00ec \\u0111\\u00e3 v\\u01b0\\u1ee3t qua kh\\u00f3 kh\\u0103n.\", \"transition\": \"FADE OUT:\", \"estimated_seconds\": 15, \"source_beat_ids\": [\"bt_008\"]}]}",
     "checks": {
       "scene_count": 8,
       "dialogue_count": 0,
