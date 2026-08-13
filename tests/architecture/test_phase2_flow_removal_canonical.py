@@ -22,7 +22,6 @@ from windagent_core.domain.video_production.ids import (
     DerivedArtifactId,
     EngineJobId,
     ProductionRevisionId,
-    ShotId,
     VideoProjectId,
 )
 from windagent_core.domain.video_production.production_ir import (
@@ -374,7 +373,7 @@ class TestPhase2FlowRemoval:
             for mod in _imported_modules(content):
                 if "google_flow" in mod:
                     violations.append(f"{path.relative_to(ROOT)} imports {mod}")
-        assert not violations, f"Found google_flow runtime imports:\n" + "\n".join(violations)
+        assert not violations, "Found google_flow runtime imports:\n" + "\n".join(violations)
 
     def test_no_flow_credentials_in_active_configs(self):
         """Proves active configs contain 0 Flow credential/session keys."""
@@ -386,7 +385,7 @@ class TestPhase2FlowRemoval:
                 for term in FLOW_KEY_TERMS:
                     if term in text:
                         residue.append(f"{cfg.relative_to(ROOT)} contains {term}")
-        assert not residue, f"Found Flow config residue:\n" + "\n".join(residue)
+        assert not residue, "Found Flow config residue:\n" + "\n".join(residue)
 
     def test_google_gemini_llm_provider_intact(self):
         """Proves Google Gemini LLM provider was NOT deleted when removing Flow."""
