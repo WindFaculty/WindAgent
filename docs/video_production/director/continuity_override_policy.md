@@ -3,7 +3,7 @@
 - **Gate:** `VP10_CONTINUITY_LEDGER_VERIFIED`
 - **Owner:** `HumanContinuityOverride` in
   `core/windagent_core/domain/video_production/continuity.py`
-- **Ratified by:** [`03_phase_08_11_director_layer.md`](../plans/03_phase_08_11_director_layer.md) §19.3
+- **Ratified by:** `../../intelligence/windagent_intelligence/video/director/` (plan 03 đã retired) §19.3
 
 ## 1. Purpose
 

@@ -1,7 +1,7 @@
 # Browser Runtime Contract (Phase 12)
 
 **Gate:** `VP12_BROWSER_RUNTIME_VERIFIED`
-**Plan:** [04_phase_12_16_flow_browser_provider.md](../plans/04_phase_12_16_flow_browser_provider.md) §7–§10
+**Plan:** `../../tools/windagent_tools/browser/` (plan 04 đã retired) §7–§10
 **Location:** `tools/windagent_tools/browser/`
 
 ## 1. Purpose
@@ -9,7 +9,7 @@
 `BrowserRuntime` is the durable, bounded browser worker for WindAgent. It owns
 one persistent browser session mapped 1:1 to one Chrome profile, executes only
 typed bounded operations, records redacted evidence for every action, and
-classifies session health without ever touching Flow production (gate §10).
+classifies session health without ever touching external generation production (gate §10).
 
 The runtime **extends the existing `tools/windagent_tools/browser/` boundary**
 (`agent_browser.py` command runner, URL validation, audit redaction,
@@ -90,17 +90,17 @@ A session is `HEALTHY` only when **all** of:
 5. session not in `HUMAN_REQUIRED` state (then `DEGRADED`).
 
 An empty domain allowlist fails closed (nothing is allowed until the runtime
-is explicitly configured with Flow domains).
+is explicitly configured with allowed domains).
 
 ## 8. Testability (gate §10)
 
-No Chrome or Flow production is required: the runtime accepts a fake process
+No Chrome or external generation production is required: the runtime accepts a fake process
 port (`AgentBrowserProcessPort`) and a fake client factory. Tests cover
 timeout, cancel, lock collision, domain allowlist, deny-class operations,
 evidence redaction, worker restart/reattach and health classification.
 
 ## 9. Out of scope for Phase 12
 
-- Real Flow navigation (Phase 13), image generation (Phase 14), video
-  generation (Phase 15), human takeover (Phase 16).
+- Flow-era navigation/image/video generation/human takeover flows (retired
+  with the Flow browser runtime).
 - Raw model-generated browser commands are never accepted (plan §8.4).

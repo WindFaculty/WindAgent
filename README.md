@@ -90,12 +90,15 @@ canonical-to-legacy imports.
 
 ## Documentation
 
-- [Implementation plan](ban_ke_hoach.md)
+- [Current roadmap — WindAgent Studio Roadmap 1](road_map.md)
+- [3D Animation production plan](docs/video_production/3d_animation_plans/README.md)
+- [API V2 contract](docs/api_contract.md)
+- [Event protocol](docs/event_protocol.md)
+- [Model provider registry](docs/model_provider_registry.md)
 - [API V2 package](apps/api/README.md)
 - [Worker package](apps/worker/README.md)
 - [CLI package](apps/cli/README.md)
 - [Desktop client](apps/desktop/README.md)
-- [Event protocol](docs/event_protocol.md)
 
 ## License
 

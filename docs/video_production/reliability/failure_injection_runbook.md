@@ -42,7 +42,7 @@ python scripts/verification/fixture_phase25_reliability.py --out-dir /tmp/fix
 
 | Scenario | Injection point | Expected behavior | Receipt |
 |---|---|---|---|
-| CH01 Kill worker khi Flow generating | Sau submit đã xác nhận | Lease hết, worker mới reconcile cùng job, không resubmit | CH01_WORKER_KILL_GENERATING |
+| CH01 Kill worker khi provider generating | Sau submit đã xác nhận | Lease hết, worker mới reconcile cùng job, không resubmit | CH01_WORKER_KILL_GENERATING |
 | CH02 Kill browser sau submit | Job active | Workflow pause/recover, reattach/inspect | CH02_BROWSER_KILL_AFTER_SUBMIT |
 | CH03 Mất mạng | Navigation/poll/download | Bounded retry, state durable, không click submit lại | CH03_NETWORK_LOSS |
 | CH04 Session hết hạn | Trước hoặc sau submit | Human login required, safe resume | CH04_SESSION_EXPIRY |
@@ -56,7 +56,7 @@ python scripts/verification/fixture_phase25_reliability.py --out-dir /tmp/fix
 | CH12 Duplicate event | Event ingestion | Một state transition/ledger effect | CH12_DUPLICATE_EVENT |
 | CH13 Lease expiry | Worker đang giữ step | Stale write bị reject | CH13_LEASE_EXPIRY |
 | CH14 Stale worker write | Sau reassignment | Optimistic version/lease chặn | CH14_STALE_WORKER_WRITE |
-| CH15 Flow project bị xóa | Navigation/recovery | Terminal/manual decision, không tự thay project | CH15_FLOW_PROJECT_DELETED |
+| CH15 External project bị xóa | Navigation/recovery | Terminal/manual decision, không tự thay project | CH15_FLOW_PROJECT_DELETED |
 
 ## 4. Reproducibility
 

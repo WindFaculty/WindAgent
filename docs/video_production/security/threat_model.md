@@ -9,7 +9,7 @@ scenario in the security test matrix (§15).
 
 | Asset | Where it lives | Why it matters |
 |---|---|---|
-| Flow account / session / profile / cookie | browser profile store | account takeover → cost abuse, data exposure |
+| Browser account / session / profile / cookie | browser profile store | account takeover → cost abuse, data exposure |
 | API / provider secrets | environment, state encryption store | secret leak → impersonation, billing abuse |
 | Project screenplay / media (unreleased) | content-addressed store | IP / embargo leak |
 | Real-person likeness / voice | audio assets, consent metadata | privacy / right-of-publicity |
@@ -22,7 +22,7 @@ scenario in the security test matrix (§15).
 ```text
 internet assets        → downloader quarantine          (SE05)
 model output           → structured validator           (SE07)
-browser UI             → Flow adapter / state machine   (SE03, SE08, SE09, SE10)
+browser UI             → browser runtime adapter / state machine   (SE03, SE08, SE09, SE10)
 browser profile        → worker / session store         (SE02)
 media files            → decoder / FFmpeg sandbox       (SE06, SE08)
 API clients            → authorization / domain cmds    (SE11, SE12)

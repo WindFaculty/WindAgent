@@ -2,7 +2,7 @@
 
 ## 1. Phạm vi và nguồn chuẩn
 
-Bộ tài liệu này phân rã `road_map.md` thành các kế hoạch triển khai nhỏ cho 17 Stage, bao phủ toàn bộ Phase 0–40. `road_map.md` là authority về định hướng kiến trúc; các file trong thư mục này là authority về thứ tự thực thi, đầu ra, kiểm thử và điều kiện đóng gate.
+Bộ tài liệu này là kế hoạch triển khai cho chương trình WindAgent 3D Animation (VP3D), 17 Stage bao phủ toàn bộ Phase 0–40. Trước đây phân rã từ `road_map.md` (bản 3D animation roadmap cũ); hiện tại `road_map.md` đã chuyển thành Studio Roadmap 1, nên thư mục này là authority về thứ tự thực thi, đầu ra, kiểm thử và điều kiện đóng gate của chương trình 3D.
 
 Nếu roadmap thay đổi làm mâu thuẫn với một kế hoạch Stage, phải cập nhật kế hoạch đó trước khi triển khai code. Các kế hoạch Flow cũ trong `docs/video_production/plans/` chỉ là hồ sơ của kiến trúc trước và không được dùng để điều phối chương trình 3D mới.
 

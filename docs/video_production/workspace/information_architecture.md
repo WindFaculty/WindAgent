@@ -19,7 +19,7 @@ The workspace interface is organized into three primary vertical slices:
 ### Slice 2 — Director & Generation Supervision
 - **Storyboard & Shot Board**: Shot sequence graph, dependency status, camera decisions, prompt block inspection, and shot state tracking.
 - **Continuity Inspector**: Cross-shot character appearance consistency, prop preservation, time-of-day alignment, and active continuity issue flags.
-- **Flow Session & Generation Queue**: Active browser session status, worker pool health, pending generation jobs, and current retry attempts.
+- **Browser Session & Generation Queue**: Active browser session status, worker pool health, pending generation jobs, and current retry attempts.
 
 ### Slice 3 — Review, Cost & Delivery
 - **Candidate Comparison Panel**: Side-by-side video/image candidate comparison, per-dimension evaluation scores, defect flags, confidence rating, and human approval/override actions.

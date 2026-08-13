@@ -3,7 +3,7 @@
 - **Gate:** `VP10_CONTINUITY_LEDGER_VERIFIED`
 - **Owner:** `ContinuityLedgerValidator` in
   `core/windagent_core/domain/video_production/continuity.py`
-- **Ratified by:** [`03_phase_08_11_director_layer.md`](../plans/03_phase_08_11_director_layer.md) §18-§20
+- **Ratified by:** `../../intelligence/windagent_intelligence/video/director/` (plan 03 đã retired) §18-§20
 
 `ContinuityLedgerValidator` is the deterministic rule engine. Blocking defects
 fail closed: a revision with a blocking continuity issue cannot be rendered

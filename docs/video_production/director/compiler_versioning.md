@@ -1,7 +1,7 @@
 # Compiler Versioning & Reproducibility (Phase 11)
 
-> Kế hoạch: `docs/video_production/plans/03_phase_08_11_director_layer.md` §24.2, §24.5.
-> Module: `intelligence/windagent_intelligence/video/prompt_compiler/`.
+> Module: `core/windagent_core/domain/video_production/prompt_compiler.py`.
+> Evidence: `artifacts/video_production/phase_11/prompt_hash_receipt.json`.
 
 ## 1. Phiên bản
 

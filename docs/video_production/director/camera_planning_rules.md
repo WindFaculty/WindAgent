@@ -2,7 +2,7 @@
 
 - **Gate:** `VP9_SHOT_GRAPH_AND_CAMERA_PLAN_VERIFIED`
 - **Owner:** `intelligence/windagent_intelligence/video/shot_planner/camera.py`
-- **Ratified by:** [`03_phase_08_11_director_layer.md`](../plans/03_phase_08_11_director_layer.md) §14.2
+- **Ratified by:** `../../intelligence/windagent_intelligence/video/director/` (plan 03 đã retired) §14.2
 
 ## 1. Decision rules
 

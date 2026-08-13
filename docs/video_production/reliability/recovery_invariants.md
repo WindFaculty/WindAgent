@@ -41,9 +41,7 @@ ALL of the following:
   atomic commit (CH11).
 - **I6 — stale-write rejection**: unexpired lease rejects another worker
   (CH13); on-disk version CAS rejects a stale writer (CH14).
-- **I7 — human states typed**: human login/CAPTCHA/account challenges are
-  typed `FlowHumanState` records with redacted evidence, reason and
-  safe-resume state (CH04/CH09).
+- **I7 — human states typed**: human-required/error states are typed records with redacted evidence, reason and safe-resume state (CH04/CH09).
 - **I8 — bounded budgets**: `ProductionRecovery.decide_download_retry` and
   `GenerationBudgetPolicy.can_submit` bound retries and credits; exhaustion is
   terminal, never a blind loop.
@@ -57,5 +55,5 @@ closed — the Phase 25 verifier reports BLOCKED/FAILED, never PASSED.
 ## 4. Controlled environment receipts
 
 Browser/session scenarios (CH02, CH04, CH05, CH09, CH15) must carry a
-`controlled_environment` block describing the mock browser/account used; live
-Flow is never used in PR CI (plan §4).
+`controlled_environment` block describing the mock browser/account used; the
+retired Flow browser runtime is never used in PR CI.

@@ -2,14 +2,14 @@
 
 - **Gate:** `VP8_DIRECTOR_FOUNDATION_VERIFIED`
 - **Owner:** WindAgent Director Layer (`intelligence/windagent_intelligence/video/director/`)
-- **Ratified by:** [`03_phase_08_11_director_layer.md`](../plans/03_phase_08_11_director_layer.md) §7–§10
+- **Ratified by:** `../../intelligence/windagent_intelligence/video/director/` (plan 03 đã retired) §7–§10
 
 ## 1. Purpose
 
 The Director turns a locked `VideoProductionPackage` into a provider-agnostic
 `CinematicPlan` that can be validated and reviewed independently before any
 rendering. The Director decides *how to tell and how to shoot*; it does NOT
-submit Flow generations, does NOT mutate the locked screenplay, and does NOT
+submit external generation jobs, does NOT mutate the locked screenplay, and does NOT
 hold project/revision authority.
 
 ## 2. Port contract

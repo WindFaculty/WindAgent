@@ -2,7 +2,7 @@
 
 - **Gate:** `VP8_DIRECTOR_FOUNDATION_VERIFIED`
 - **Owner:** `intelligence/windagent_intelligence/video/director/revision.py`
-- **Ratified by:** [`03_phase_08_11_director_layer.md`](../plans/03_phase_08_11_director_layer.md) §9.3
+- **Ratified by:** `../../intelligence/windagent_intelligence/video/director/` (plan 03 đã retired) §9.3
 
 ## 1. Invariant
 

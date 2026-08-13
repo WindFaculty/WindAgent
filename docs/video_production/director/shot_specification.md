@@ -2,7 +2,7 @@
 
 - **Gate:** `VP9_SHOT_GRAPH_AND_CAMERA_PLAN_VERIFIED`
 - **Owner:** WindAgent Director Layer (`intelligence/windagent_intelligence/video/shot_planner/`)
-- **Ratified by:** [`03_phase_08_11_director_layer.md`](../plans/03_phase_08_11_director_layer.md) §14.1
+- **Ratified by:** `../../intelligence/windagent_intelligence/video/director/` (plan 03 đã retired) §14.1
 
 ## 1. Purpose
 

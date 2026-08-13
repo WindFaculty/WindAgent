@@ -878,7 +878,7 @@ def build_open_release_findings(candidate_sha: str) -> Dict[str, Any]:
                       "(web matches 0.3.0); the version-consistency lane treats web/desktop "
                       "as warnings.",
             "mitigation": "Desktop version is pinned in its own release track; recorded in "
-                          "support_matrix.md and release_0_1_notes.md as a known divergence.",
+                          "artifacts/video_production/final/known_limitations.md as a known divergence.",
             "owner": "release-owner",
             "release_decision": "acceptable-for-0.1",
         },

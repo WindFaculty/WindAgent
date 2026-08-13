@@ -11,7 +11,7 @@ Gate: `VP26_SECURITY_VERIFIED` — scenario **SE13** provides the evidence;
 | Generated media (frames/clips/final cut) | deliverable production | artifact retention policy |
 | Rejected candidates | audit of generation decisions | short TTL → GC under retention |
 | Screenshots | browser verification / debugging | bounded, redacted, workspace-scoped |
-| Browser profile / session state | authenticated Flow runs | `BrowserStateRetentionPolicy` (age/count/size) |
+| Browser profile / session state | authenticated browser runs | `BrowserStateRetentionPolicy` (age/count/size) |
 | Logs / events / evidence | auditability | evidence manifest retention (365 d default) |
 
 Purpose is explicit per workflow; data is only collected for the purpose it

@@ -105,7 +105,6 @@ ALLOWED_FILES = (
     ROOT / "core" / "windagent_core" / "domain" / "video_production" / "production_ir" / "migrator.py",
     ROOT / "docs" / "video_production" / "protocol" / "video_production_package_v1.schema.json",
     ROOT / "docs" / "video_production" / "protocol" / "video_production_package_v1.md",
-    ROOT / "docs" / "blender_3d_animation_roadmap.md",
     ROOT / "docs" / "video_production" / "3d_animation_plans" / "stage_a_foundation_architecture.md",
     ROOT / "road_map.md",
 )

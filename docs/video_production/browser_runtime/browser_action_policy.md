@@ -40,7 +40,7 @@ policy is deterministic and fully offline.
 ## 4. Fail-closed rules
 
 - An **empty domain allowlist** denies every `OPEN_URL` (nothing is allowed
-  until explicitly configured with Flow domains).
+  until explicitly configured with allowed domains).
 - An **empty approved asset store** denies every `UPLOAD`.
 - An **unknown operation** is denied (`default_deny=True`).
 - The runtime has **no execution branch** for deny-class operations: even a

@@ -48,8 +48,8 @@ completion.
 
 - `ProductionWorkflowEngine.recover()` / `recover_download()` apply
   `RecoveryDecision` from the durable checkpoint;
-- `FlowJobRegistry.reconcile()` applies the same never-blind-resubmit policy
-  for browser/provider jobs (CH05/CH15);
+- External job registry reconciliation (`ProductionRecovery`) applies the
+  same never-blind-resubmit policy as the durable intent flow:
 - the outbox journal guarantees an event is only published after the state
   commit lands (single atomic write, CH11).
 

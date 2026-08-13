@@ -42,14 +42,14 @@ credits (plan §20.2).
 
 - backup/migration plan ready before release;
 - browser runtime/profile setup documented;
-- Flow login/takeover procedure (human states, CH04/CH09);
+- browser login/takeover procedure (human states, CH04/CH09);
 - credit/budget configuration enforced by `GenerationBudgetPolicy` (CH08).
 
 ### 4.2 During an incident
 
 1. Open the circuit (`ProviderCircuitBreaker`) for duplicate-cost / account /
    artifact-corruption risk before any new run.
-2. Pause/disable the Flow provider via feature flag/composition option —
+2. Pause/disable the external provider via feature flag/composition option —
    evidence and project data are never deleted.
 3. Let the active run pause/reconcile; never blind-resubmit.
 
@@ -67,7 +67,7 @@ credits (plan §20.2).
 
 ### 4.4 Rollback / disable
 
-- feature flag to stop the Flow provider without deleting project/artifact
+- feature flag to stop the external provider without deleting project/artifact
   evidence;
 - active runs pause and reconcile;
 - API/provider port remains for future providers;

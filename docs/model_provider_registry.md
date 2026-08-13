@@ -1,23 +1,61 @@
 # Model Provider Registry
 
-Tài liệu này chi tiết hóa cấu hình đăng ký của 8 API Providers được tích hợp sẵn trong hệ thống quản lý mô hình (Model Registry) của **WindAgent**.
+Tài liệu mô tả hệ thống provider/model hiện tại của WindAgent (Provider
+Subsystem V3). Nguồn chuẩn: `providers/windagent_providers/`.
 
-| Provider ID | Site Name | API Source | Base URL | Quota Mode | Key Env | Discovery | Recommended Router Usage | Notes |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **agentrouter** | AgentRouter | `agentrouter` | `https://agentrouter.org/v1` | `ONE_TIME_CREDIT` | `AGENTROUTER_API_KEY` | Không | Chỉ dùng làm dự phòng (fallback) hoặc tác vụ cực khó. | Cần kích hoạt thủ công sau khi thêm key và probe thành công. |
-| **bluesminds** | BluesMinds | `bluesminds` | `https://api.bluesminds.com/v1` | `ONE_TIME_CREDIT` | `BLUESMINDS_API_KEY` | Có | Dự phòng (fallback), không dùng cho request lặp lại hoặc chat nhẹ. | Unified LLM Gateway. Quản lý hạn mức dạng Credit. |
-| **zenmux** | ZenMux PAYG | `zenmux` | `https://api.zenmux.ai/v1` | `TOKEN_BUDGET` | `ZENMUX_API_KEY` | Có | Thích hợp cho các tác vụ xử lý hàng loạt (batch) hoặc context dài. | Hỗ trợ Management API kiểm tra số dư. |
-| **mistral** | Mistral.ai | `mistral` | `https://api.mistral.ai/v1` | `TOKEN_BUDGET` | `MISTRAL_API_KEY` | Có | Định tuyến các tác vụ Lập trình (Coding) thông qua model Codestral. | Hạn mức tính theo giây, phút, tháng tùy theo gói đăng ký. |
-| **nararouter** | NaraRouter | `nararouter` | `https://router.bynara.id/v1` | `TOKEN_BUDGET` | `NARAROUTER_API_KEY` | Có | Thích hợp cho các tác vụ chạy hàng ngày có chu kỳ. | Hạn mức Tokens reset theo ngày (Daily token budget). |
-| **openrouter** | OpenRouter | `openrouter` | `https://openrouter.ai/api/v1` | `RPM_RPD` | `OPENROUTER_API_KEY` | Có | Ưu tiên các model free (đuôi `:free`) cho các tác vụ chat thông thường. | Free quota phụ thuộc vào Credit trong tài khoản. |
-| **nvidia_nim** | NVIDIA NIM | `nvidia` | `https://integrate.api.nvidia.com/v1` | `RPM_RPD` | `NVIDIA_API_KEY` | Có | Định tuyến cho tác vụ suy luận nặng (heavy reasoning/research). | Tốc độ cao nhưng giới hạn RPM nghiêm ngặt. |
-| **google_ai_studio** | Google AI Studio | `google` | `https://generativelanguage.googleapis.com` | `RPM_RPD` | `GOOGLE_AI_STUDIO_API_KEY` | Có | Thích hợp cho GUI Agent (Vision) và các tác vụ context lớn (Flash). | Cần dùng client Google API riêng biệt. Có Free tier rất lớn. |
+## 1. Kiến trúc
 
----
+- **Adapters**: mỗi provider một adapter riêng trong `providers/windagent_providers/<vendor>/adapter.py`,
+  tuân theo `base/provider.py` + `base/contracts.py` (`DiscoveredModel`, capabilities).
+- **Canonical Model Registry**: `registry/canonical_registry.py` —
+  `CanonicalModelRegistryService` quản lý model canonical + endpoint binding.
+  Production dùng SQL repository (`EndpointBindingRepositoryPort`); dev/test
+  fallback in-memory (không dùng cho production).
+- **Routing**: `routing/` định tuyến theo canonical model, equivalence level,
+  fallback chain; `studio/capability_probe.py` probe năng lực provider.
+- **Discovery**: snapshot discovery từ endpoint được đăng ký.
 
-## Nguyên tắc định tuyến mặc định của Router:
-1. **Local/Ollama**: Ưu tiên cao nhất cho chat thông thường, lập kế hoạch đơn giản để đảm bảo bảo mật dữ liệu và không tiêu tốn quota.
-2. **Google Gemini Flash / Lite (Free tier)**: Phân hệ GUI (Vision) và xử lý ngữ cảnh cực dài (long-context) nhờ vào token limit khổng lồ và tốc độ nhanh.
-3. **OpenRouter Free models**: Dành cho tác vụ phụ trợ (general chat / fallback chains) khi các mô hình cục bộ hoặc Free Gemini bị nghẽn.
-4. **NVIDIA NIM / Google Pro**: Dành cho các tác vụ Nghiên cứu/Suy luận nâng cao (Researcher, Reasoner) cần độ chính xác cao.
-5. **Mistral / Codestral**: Chỉ định riêng cho các tác vụ viết code hoặc review code (Coder).
+## 2. Danh sách provider adapters
+
+| Adapter | Package | Ghi chú |
+|---|---|---|
+| Google Gemini | `providers/windagent_providers/google/` | Auth bằng header `x-goog-api-key` (không bao giờ qua query string). Env: `GOOGLE_API_KEY` / `GEMINI_API_KEY` |
+| Ollama | `providers/windagent_providers/ollama/` | Local models; env `OLLAMA_BASE_URL`; hỗ trợ route không cần credential và stream structured output |
+| OpenRouter | `providers/windagent_providers/openrouter/` | Gateway đa model |
+| OpenAI | `providers/windagent_providers/openai/` | OpenAI-compatible |
+| OpenAI-compatible | `providers/windagent_providers/openai_compatible/` | Generic OpenAI-compatible endpoint |
+| Anthropic | `providers/windagent_providers/anthropic/` | Claude family |
+| Mistral | `providers/windagent_providers/mistral/` | Mistral/Codestral |
+| NVIDIA NIM | `providers/windagent_providers/nvidia/` | NIM hosted inference |
+| Local | `providers/windagent_providers/local/` | Model chạy local |
+| Assets | `providers/windagent_providers/assets/` | Asset gateway (`mesh_api.py`, `redaction.py`) |
+
+API key được inject qua constructor adapter (composition root đọc từ env),
+không hardcode trong code. Không expose key ra response/log (xem
+`base/secret_redaction.py`, `core/windagent_core/security/redaction.py`).
+
+## 3. Env vars chính
+
+| Env | Mục đích |
+|---|---|
+| `GOOGLE_API_KEY` / `GEMINI_API_KEY` | Google Gemini auth (`x-goog-api-key`) |
+| `OLLAMA_BASE_URL` | Base URL Ollama local |
+| `WINDAGENT_DATABASE_URL` | Storage durable (canonical registry, events) |
+| `WINDAGENT_STUDIO_CANONICAL_MODEL` | Canonical model cho Studio runtime |
+| `WINDAGENT_STUDIO_MODEL_ROUTE` | Route cho Studio model calls |
+| `WINDAGENT_STUDIO_RUNTIME` | Studio runtime mode (real/fake) |
+| `WINDAGENT_BLENDER_ENGINE` / `WINDAGENT_BLENDER_EXECUTABLE` | Blender production engine |
+| `WINDAGENT_ENV` | Environment mode |
+
+## 4. API surface
+
+- `GET /api/v2/providers` — danh sách provider (`ModelProviderInfo`)
+- `GET /api/v2/providers/health` — health từng provider
+
+## 5. Lưu ý
+
+- Model pin/version: mô tả model cụ thể (tên, context window) tại
+  `core/windagent_core/domain/types.py` + canonical registry; không hardcode
+  snapshot model list vào tài liệu này vì nó thay đổi theo discovery.
+- Provider đã gỡ (agentrouter, bluesminds, zenmux, nararouter, model registry
+  cũ) không còn tồn tại trong code.

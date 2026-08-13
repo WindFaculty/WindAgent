@@ -4,7 +4,7 @@
 - **Owner:** `core/windagent_core/domain/video_production/continuity.py` (models +
   validator) and `intelligence/windagent_intelligence/video/continuity/service.py`
   (builder)
-- **Ratified by:** [`03_phase_08_11_director_layer.md`](../plans/03_phase_08_11_director_layer.md) §17-§21
+- **Ratified by:** `../../intelligence/windagent_intelligence/video/director/` (plan 03 đã retired) §17-§21
 
 ## 1. Purpose
 

@@ -6,7 +6,7 @@ Stage A tạo ranh giới kiến trúc mới trước khi thêm Blender: đóng 
 
 ## 2. Điều kiện đầu vào
 
-- `road_map.md` được chấp nhận làm authority.
+- Authority: `docs/video_production/3d_animation_plans/README.md` + các kế hoạch Stage (bản `road_map.md` cũ đã được thay thế bởi Studio Roadmap 1; 3D animation track không còn phụ thuộc nó).
 - Worktree được kiểm kê; thay đổi của người dùng không bị ghi đè.
 - Xác định candidate SHA và bộ command baseline thực sự chạy được trên Windows.
 - Phân biệt Google Gemini model provider chung với Google Flow browser runtime; Phase 2 chỉ retire Flow.

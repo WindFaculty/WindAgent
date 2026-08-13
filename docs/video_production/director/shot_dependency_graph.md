@@ -4,7 +4,7 @@
 - **Owner:** `core/windagent_core/domain/video_production/shot_graph.py` (models +
   validator) and `intelligence/windagent_intelligence/video/shot_planner/graph.py`
   (builder)
-- **Ratified by:** [`03_phase_08_11_director_layer.md`](../plans/03_phase_08_11_director_layer.md) §13
+- **Ratified by:** `../../intelligence/windagent_intelligence/video/director/` (plan 03 đã retired) §13
 
 ## 1. Edge semantics
 
