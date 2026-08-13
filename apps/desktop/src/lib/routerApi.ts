@@ -9,10 +9,10 @@
  */
 
 // ---------------------------------------------------------------------------
-// Base URL — configurable via environment variables
+// Base URL — single authority (UI0-INFRA-01): see lib/apiBase.ts
 // ---------------------------------------------------------------------------
-const API_BASE = (typeof import.meta !== "undefined" && (import.meta as any).env?.VITE_API_BASE) || "";
-
+import { API_BASE } from "./apiBase";
+export { API_BASE };
 // ---------------------------------------------------------------------------
 // Shared helpers
 // ---------------------------------------------------------------------------

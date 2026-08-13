@@ -1,0 +1,61 @@
+{
+  "generated_at": "2026-08-13T02:15:19Z",
+  "phase": "UI0.1",
+  "environment": { "node": "v22.23.1", "npm": "10.9.8", "os": "Windows 10" },
+  "suites": [
+    {
+      "suite": "desktop vitest (apps/desktop)",
+      "command": "cd apps/desktop && npm test",
+      "result_before_ui0_changes": "13 files / 142 tests pass",
+      "result_after_ui0_changes": "14 files / 144 tests pass (added src/lib/apiBase.test.ts)",
+      "result": "PASS",
+      "note": "Includes Studio deep-link tests (src/test/studioShellTests.test.tsx), Studio story tests (src/test/studioStoryTests.test.tsx), production package tests (src/test/productionPackageTests.test.ts), routerApi unit tests."
+    },
+    {
+      "suite": "frontend packages vitest (frontend/packages/*)",
+      "command": "cd frontend/packages/<pkg> && npx vitest run",
+      "results": {
+        "studio-contracts": { "tests": 9, "result": "PASS" },
+        "studio-client": { "tests": 11, "result": "PASS" },
+        "studio-state": { "tests": 9, "result": "PASS" },
+        "production-platform": { "tests": 5, "result": "PASS" },
+        "production-state": { "tests": 8, "result": "PASS" },
+        "production-ui": { "tests": 17, "result": "PASS" }
+      },
+      "total": { "files": 11, "tests": 59, "result": "PASS" }
+    },
+    {
+      "suite": "web vitest (apps/web)",
+      "command": "cd apps/web && npm test",
+      "result": "6 files / 70 tests PASS"
+    },
+    {
+      "suite": "desktop e2e (apps/desktop/e2e)",
+      "command": "n/a",
+      "result": "NOT PART OF BASELINE",
+      "note": "Files staged for deletion on cleanup branch (desktop_golden_flow.spec.ts, desktop_negative_lanes.spec.ts); inventory recorded them DELETED before UI0."
+    },
+    {
+      "suite": "web e2e (apps/web/e2e)",
+      "command": "n/a",
+      "result": "NOT PART OF BASELINE",
+      "note": "Staged for deletion (browser_golden_flow.spec.ts, browser_negative_lanes.spec.ts)."
+    },
+    {
+      "suite": "backend studio suites (pytest)",
+      "command": "CI studio-roadmap-gates job (tests/contracts, tests/unit/domain/studio, tests/unit/api/test_studio_v3_api.py)",
+      "result": "NOT RE-RUN IN UI0",
+      "note": "Frozen by roadmap gate evidence; UI0 scope is desktop/frontend presentation. No UI0 change touches backend."
+    }
+  ],
+  "coverage_of_ui0_1_requirements": {
+    "desktop_tests": "apps/desktop vitest 144/144",
+    "frontend_package_tests": "6 packages, 59 tests, all pass",
+    "desktop_typecheck": "tsc -b --noEmit clean",
+    "desktop_build": "vite build OK (569.92 kB main chunk; chunk-size warning pre-existing)",
+    "web_build": "typecheck + build PASS after UI0-INFRA-02 (was red at HEAD)",
+    "studio_deep_link_tests": "studioShellTests.test.tsx inside desktop suite",
+    "studio_story_tests": "studioStoryTests.test.tsx inside desktop suite",
+    "production_package_tests": "productionPackageTests.test.ts + 5 production-* packages inside desktop/package suites"
+  }
+}

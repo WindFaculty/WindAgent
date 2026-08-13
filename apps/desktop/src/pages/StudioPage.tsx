@@ -21,14 +21,12 @@ import {
 import { RunProgress } from '../components/studio/RunProgress';
 import { ApprovalBar, type ApprovalDecision } from '../components/studio/ApprovalBar';
 
+import { API_BASE } from '../lib/apiBase';
+
 type StudioRoute =
   | { view: 'list' }
   | { view: 'series'; seriesId: string }
   | { view: 'episode'; episodeId: string };
-
-const API_BASE =
-  (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_API_BASE) ||
-  'http://localhost:8000';
 
 function parseHash(hash: string): StudioRoute {
   const parts = hash.replace(/^#\/?/, '').split('/').filter(Boolean);

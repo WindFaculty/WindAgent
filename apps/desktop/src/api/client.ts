@@ -12,15 +12,14 @@ import type {
   Workflow,
 } from "./types";
 
-const BASE_URL = "http://127.0.0.1:8765";
-const WS_URL = "ws://127.0.0.1:8765";
+import { API_BASE, WS_BASE } from "../lib/apiBase";
 
 export function resolveApiUrl(path: string): string {
-  return path.startsWith("/") ? `${BASE_URL}${path}` : path;
+  return path.startsWith("/") ? `${API_BASE}${path}` : path;
 }
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
-  const url = `${BASE_URL}${path}`;
+  const url = `${API_BASE}${path}`;
   const response = await fetch(url, {
     ...options,
     headers: {
@@ -485,7 +484,7 @@ export function connectWs(
 ): WsHandle {
   const params = new URLSearchParams({ aggregate_id: sessionId });
   if (afterSeq !== undefined) params.set("last_sequence", String(afterSeq));
-  const wsUrl = `${WS_URL}/api/v2/events/ws?${params}`;
+  const wsUrl = `${WS_BASE}/api/v2/events/ws?${params}`;
   logDebug(`WebSocket connecting to ${wsUrl}`);
   
   const ws = new WebSocket(wsUrl);
@@ -529,7 +528,7 @@ export function connectConversationWs(
   afterSequence = 0,
 ): WsHandle {
   const params = new URLSearchParams({ after_sequence: String(afterSequence) });
-  const wsUrl = `${WS_URL}/ws/conversations/${encodeURIComponent(conversationId)}?${params}`;
+  const wsUrl = `${WS_BASE}/ws/conversations/${encodeURIComponent(conversationId)}?${params}`;
   logDebug(`Conversation WebSocket connecting to ${wsUrl}`);
 
   const ws = new WebSocket(wsUrl);
