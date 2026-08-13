@@ -141,9 +141,9 @@ class TestPhase7WorkerComposition:
         assert "CanonicalModelRegistryService" in content
         assert "IntelligencePipeline" in content
         assert "ContextService" in content
-        assert "MemoryService" in content
+        assert "MemoryQueryService" in content
         assert "WorkflowRegistry" in content
-        assert "VerificationService" in content
+        assert "VerificationQueryService" in content
         assert "OutboxEventPublisher" in content
         assert "EventDispatcher" in content
 

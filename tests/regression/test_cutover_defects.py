@@ -78,6 +78,11 @@ async def test_def_006_startup_recovery_not_wired():
         orchestration_container=SimpleNamespace(
             recovery_manager=SimpleNamespace(recover_all_in_flight=recover)
         ),
+        # studio runtime wiring added to ProductionWorker after this regression
+        # test was written; the fake container must mirror the real composition.
+        studio_reconciler=None,
+        studio_recovery=None,
+        studio_capability_probe=None,
     )
     worker = ProductionWorker(name="recovery-regression", worker_container=container)
 

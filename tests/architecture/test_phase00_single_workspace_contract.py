@@ -7,21 +7,10 @@ ROOT = Path(__file__).parents[2]
 APP_TSX = ROOT / "apps" / "desktop" / "src" / "App.tsx"
 MULTI_AGENT_WS = ROOT / "apps" / "desktop" / "src" / "pages" / "MultiAgentWorkspace.tsx"
 STORE = ROOT / "apps" / "desktop" / "src" / "state" / "multiAgentStore.tsx"
-ADR = ROOT / "docs" / "adr" / "0006-multi-agent-workspace-aggregates.md"
-TEST_MATRIX = ROOT / "docs" / "architecture" / "g1_g9_test_matrix.md"
-SCHEMA_MAPPING = ROOT / "docs" / "architecture" / "multi_agent_schema_mapping.md"
 
 
 def _read(path: Path) -> str:
     return path.read_text(encoding="utf-8")
-
-
-def test_phase0_docs_exist():
-    for doc in (ADR, SCHEMA_MAPPING, TEST_MATRIX):
-        assert doc.is_file(), f"missing Phase 0 deliverable: {doc}"
-    assert "Multi-Agent Workspace Target Architecture" in _read(ADR)
-    assert "G1.1" in _read(TEST_MATRIX) and "G9.7" in _read(TEST_MATRIX)
-    assert "task_plan_versions" in _read(SCHEMA_MAPPING)
 
 
 def test_workspace_mount_is_single_and_canonical():

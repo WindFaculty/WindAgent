@@ -1,0 +1,18 @@
+{
+  "repository": "WindAgent",
+  "branch": "chore/cleanup-stale-md-docs",
+  "head": "40bb97c87f7e2e63cb35352ed0b4a8a0d25ada5d",
+  "python_collected": 3654,
+  "frontend_collected": 284,
+  "web_collected": 83,
+  "desktop_collected": 142,
+  "packages_collected": 59,
+  "e2e_collected": 0,
+  "passed": 3373,
+  "failed": 17,
+  "skipped": 5,
+  "xfail": 0,
+  "xpass": 0,
+  "errors": 0,
+  "note": "python run = `uv run pytest tests/architecture tests/unit tests/regression tests/integration` (CI canonical). frontend = npm test in apps/web + apps/desktop + frontend root workspaces."
+}

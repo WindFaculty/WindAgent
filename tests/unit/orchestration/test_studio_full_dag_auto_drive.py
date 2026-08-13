@@ -407,7 +407,11 @@ async def test_lock_envelope_carries_draft_input_and_a_issued_receipt(db, servic
 
     envelope = await _queue_envelope(db, started.run_id, NODE_LOCK)
     types = {r["artifact_type"] for r in envelope["input_artifact_refs"]}
-    assert types == {"ReviewReport", "ScreenplayDraft"}
+    # S4.1: the lock envelope carries the FULL 9-type lineage (every ancestor
+    # artifact since the run began), not only the immediately preceding hop.
+    # The regression contract is: the review report + final screenplay draft
+    # must be present, plus the receipt.
+    assert {"ReviewReport", "ScreenplayDraft"} <= types
     payload = envelope["payload"]
     assert "receipt" in payload
     assert payload["receipt_artifact_id"].startswith("art_")

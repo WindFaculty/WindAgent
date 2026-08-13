@@ -158,7 +158,12 @@ async def test_transactional_outbox_processing(in_memory_db):
     count = await outbox_manager.process_pending_outbox()
     assert count == 1
     assert len(dispatched_events) == 1
-    assert dispatched_events[0].sequence == 10
+    # Outbox sequence is allocated per-aggregate from the outbox table itself
+    # (SqlOutboxWriter — the table is the only authority; the envelope's own
+    # sequence field is NOT safe because the events table rewrites envelopes).
+    # This record is the first outbox row for the aggregate, so its sequence
+    # is 1, not the envelope's original 10. Payload/type must be preserved.
+    assert dispatched_events[0].sequence == 1
     assert dispatched_events[0].event_type == EventCatalog.STEP_COMPLETED
 
     # Running process again should yield 0 pending items
