@@ -8,12 +8,13 @@ Date: 2026-08-13
 ## Summary
 
 - files_before: 253 (docs/)
-- files_after: 225
-- deleted: 20 (17 doc files + 2 root road_map_v2 files đã xóa sẵn trong worktree từ trước + 1 di chuyển kèm rename)
+- files_after: 232
+- deleted: 19 (blender roadmap + 9 roadmap_v2 stages + 5 release + 4 e2e_poc)
 - moved to artifacts/documentation_cleanup/: 2 (bao_cao_tong_quan_2026-08-07.md, cleanup_classification_2026-08-08.md)
 - rewritten: 4 (api_contract, event_protocol, model_provider_registry, safety_policy)
 - patched (REWRITE nhỏ / link fix): 20 files (9 director/browser link fix, 6 cluster Flow-era cleanup, 2 3d_animation_plans authority, compiler_versioning, recovery_invariants, threat_model)
 - created: 0 docs mới (giữ cấu trúc canonical hiện có)
+- NOTE: mid-session, một agent song song (Antigravity) commit 40bb97c đã cuốn 11 file docs (blender doc, roadmap_v2 stages, 2 moves) — nội dung giống hệt quyết định audit này; commit docs chính thức là 5c2ad23.
 
 ## Kept (canonical)
 

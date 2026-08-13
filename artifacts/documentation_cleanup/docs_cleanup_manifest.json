@@ -3,7 +3,7 @@
   "branch": "chore/cleanup-stale-md-docs",
   "head_before": "400291d9707284879ea20a0d52420444f1969b33",
   "files_before": 253,
-  "files_after": 225,
+  "files_after": 232,
   "kept": [
     "docs/plans/studio_roadmap_01/**",
     "docs/video_production/3d_animation_plans/**",
