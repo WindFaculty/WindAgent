@@ -1,0 +1,58 @@
+{
+ "hypotheses": [
+  {
+   "hypothesis": "Google provider slow",
+   "evidence_for": "outline.generate single POST 40m34s then 200 OK; route_attempts_v3 shows 1 attempt success; no timeout/failure rows; ep_google circuit closed, 4 consecutive successes",
+   "evidence_against": "previous 3 generations completed in <1min; same endpoint fast in 130-call qualification",
+   "verdict": "CONFIRMED (trigger)"
+  },
+  {
+   "hypothesis": "HTTP client hung",
+   "evidence_for": "40m34s call exceeds configured 300s read timeout — cap did not fire",
+   "evidence_against": "no TimeoutFailure in route_attempts_v3; no retries; call completed normally",
+   "verdict": "REJECTED as failure mode (cap ineffective for total duration, but call did complete; classification PROVIDER_SLOW)"
+  },
+  {
+   "hypothesis": "Missing timeout enforcement",
+   "evidence_for": "envelope.deadline=null in ALL tasks; no runtime deadline; TimeoutEvaluator unused for tasks; no task/run timeout code path",
+   "evidence_against": "harness enforces 45-min wall clock at certification layer",
+   "verdict": "CONFIRMED (product defect)"
+  },
+  {
+   "hypothesis": "Cancellation missing",
+   "evidence_for": "cancellation_requests empty; no cancel path invoked; runtime cancel is cooperative no-op",
+   "evidence_against": "none",
+   "verdict": "CONFIRMED (product defect, secondary)"
+  },
+  {
+   "hypothesis": "Finalizer not called",
+   "evidence_for": "task stsk_f9744f96e90e remains state=running; no task_execution_results_v2 row; worker killed mid-generation",
+   "evidence_against": "none",
+   "verdict": "CONFIRMED (consequence of kill)"
+  },
+  {
+   "hypothesis": "Reconciler defect",
+   "evidence_for": "no path closes stale RUNNING runs; recovery only re-drives terminal completions",
+   "evidence_against": "reconciler correct for its designed scope (results it receives)",
+   "verdict": "CONFIRMED (scope gap: no stale-run reconciliation)"
+  },
+  {
+   "hypothesis": "Stale lease",
+   "evidence_for": "lease active at kill; expired unowned 17:35:05; outline lease renewals stopped 16:53:16->17:32:49 (anomaly)",
+   "evidence_against": "no second worker existed to reclaim",
+   "verdict": "CONFIRMED (latent; not the direct cause here)"
+  },
+  {
+   "hypothesis": "Artifact-only stale status",
+   "evidence_for": "none — zombie confirmed in DB (studio_runs.status=RUNNING)",
+   "evidence_against": "DB rows show RUNNING",
+   "verdict": "REJECTED"
+  }
+ ],
+ "conclusion": {
+  "PRIMARY_ROOT_CAUSE": "RUNTIME_TIMEOUT_RECONCILIATION_DEFECT",
+  "TRIGGER": "PROVIDER_RELIABILITY (single generation 40m34s; second generation in-flight at 45-min harness deadline)",
+  "confidence": 0.95,
+  "case": "C (combined): provider latency triggered it; WindAgent lifecycle defect allowed the zombie"
+ }
+}

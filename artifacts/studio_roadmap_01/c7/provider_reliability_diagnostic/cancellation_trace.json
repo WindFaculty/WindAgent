@@ -1,0 +1,8 @@
+{
+ "cancellation_requests_table_rows": 0,
+ "CANCELLATION_REQUESTED": "NO",
+ "CANCELLATION_ACKNOWLEDGED": "NO",
+ "abandon_mechanism": "process kill by launcher (certification_launcher.py:455 process.terminate()/kill())",
+ "worker_graceful_stop": "NOT_OBSERVED — worker.stderr.log ends mid-task at seq=11, no shutdown lines",
+ "late_result_fencing": "N/A in this attempt (no result ever arrived); enforced via finalizer CAS + fencing token (post-fix tests cover)"
+}

@@ -1,0 +1,28 @@
+{
+ "goal": "No provider call may leave a C7 attempt in RUNNING state after its authoritative deadline",
+ "files": [
+  {
+   "path": "orchestration/windagent_orchestration/studio/service.py",
+   "change": "run_deadline() helper (run created_at + WINDAGENT_STUDIO_RUN_DEADLINE_SECONDS, default 2700); envelope now carries deadline=run_deadline(run)"
+  },
+  {
+   "path": "apps/worker/windagent_worker/studio_runtime.py",
+   "change": "STUDIO_RUN_DEADLINE_EXCEEDED code; pre-execution deadline check (instant fail); asyncio.wait_for(handler, remaining) — cancels/abandons in-flight provider request on expiry"
+  },
+  {
+   "path": "scripts/studio_roadmap/certification_launcher.py",
+   "change": "WINDAGENT_STUDIO_RUN_DEADLINE_SECONDS=2550 (42.5 min < harness 45 min) so the runtime terminalizes before the harness kill"
+  },
+  {
+   "path": "tests/unit/worker/test_studio_run_deadline.py",
+   "change": "8 new tests (new file)"
+  }
+ ],
+ "explicitly_not_changed": [
+  "google model",
+  "quality threshold",
+  "prompts",
+  "harness 45-min deadline",
+  "retry budget"
+ ]
+}

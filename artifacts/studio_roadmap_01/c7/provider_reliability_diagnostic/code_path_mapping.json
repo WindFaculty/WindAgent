@@ -1,0 +1,52 @@
+{
+ "rows": [
+  {
+   "evidence_event": "run created",
+   "expected": "orchestration/studio/service.py start_or_resume_run",
+   "actual": "same",
+   "result": "OK"
+  },
+  {
+   "evidence_event": "task submitted with envelope",
+   "expected": "service.py submit_runnable_nodes -> _envelope",
+   "actual": "same (envelope.deadline=null)",
+   "result": "DEADLINE NEVER SET"
+  },
+  {
+   "evidence_event": "worker claims task",
+   "expected": "storage/queue/sql_queue.py claim_next (lease TTL 30s)",
+   "actual": "same",
+   "result": "OK"
+  },
+  {
+   "evidence_event": "heartbeat renews lease",
+   "expected": "runner.py record_heartbeat every 5s",
+   "actual": "same, but renewals stopped during 40-min outline call (anomaly)",
+   "result": "ANOMALY"
+  },
+  {
+   "evidence_event": "provider generation",
+   "expected": "studio_runtime.py _run_handler -> handler -> RouteLockedModelPort.complete -> coordinator -> GoogleGeminiProviderAdapter.generate (timeout 300s)",
+   "actual": "same; call ran 40m34s and returned 200",
+   "result": "NO TOTAL-DURATION CAP"
+  },
+  {
+   "evidence_event": "harness deadline expires",
+   "expected": "c7_slice_harness.py:750 raise SliceError",
+   "actual": "same",
+   "result": "OK (harness side)"
+  },
+  {
+   "evidence_event": "process termination",
+   "expected": "certification_launcher.py _terminate",
+   "actual": "same; exit 1, unexpected_exit=false",
+   "result": "KILL WITHOUT TERMINALIZATION"
+  },
+  {
+   "evidence_event": "run terminalized after deadline",
+   "expected": "canonical terminal state",
+   "actual": "NO CODE PATH EXISTS",
+   "result": "ZOMBIE RUNNING"
+  }
+ ]
+}

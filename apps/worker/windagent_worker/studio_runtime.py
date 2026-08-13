@@ -21,8 +21,10 @@ The independent worker executes frozen Story task types through this adapter:
 
 from __future__ import annotations
 
+import asyncio
 import inspect
 import logging
+from datetime import datetime, timezone
 from typing import Any, Callable, Dict, List, Optional
 
 from windagent_core.config.certification import certification_mode_enabled
@@ -67,6 +69,10 @@ ENVELOPE_INVALID = "STUDIO_ENVELOPE_INVALID"
 UNREGISTERED_TASK_TYPE = "STUDIO_UNREGISTERED_TASK_TYPE"
 CERTIFICATION_VIOLATION = "STUDIO_CERTIFICATION_VIOLATION"
 MODEL_PORT_UNAVAILABLE = "STUDIO_MODEL_PORT_UNAVAILABLE"
+#: Envelope deadline reached while the task was still executing (or about to).
+#: The run deadline is authoritative: no provider call may leave a Studio run
+#: in RUNNING past it (C7 attempt-8 forensic finding).
+STUDIO_RUN_DEADLINE_EXCEEDED = "STUDIO_RUN_DEADLINE_EXCEEDED"
 
 #: Envelope fields that are fine in worker metrics/events (ids + status only).
 _METRIC_SAFE_FIELDS = ("task_id", "task_type", "attempt", "status", "dag_node_id", "studio_run_id")
@@ -352,8 +358,41 @@ class StudioRuntimeAdapter(ExecutionRuntimePort):
                 return self._cancel(handle, envelope, task_id=durable_task_id)
 
             try:
-                outputs, provenance = await self._run_handler(
-                    handler, task_type, envelope, inputs
+                deadline = envelope.deadline
+                remaining = (
+                    (deadline - datetime.now(timezone.utc)).total_seconds()
+                    if deadline is not None
+                    else None
+                )
+                if remaining is not None and remaining <= 0:
+                    # Deadline already gone (e.g. retry dispatched after the
+                    # run budget): fail fast, never start a doomed provider call.
+                    return self._fail(
+                        handle,
+                        STUDIO_RUN_DEADLINE_EXCEEDED,
+                        f"run deadline already passed (remaining {remaining:.1f}s)",
+                        envelope=envelope,
+                        task_id=durable_task_id,
+                    )
+                if remaining is not None:
+                    # Hard cap on provider generation: wait_for cancels the
+                    # handler on expiry, which abandons the in-flight provider
+                    # request (httpx client closes in the adapter finally).
+                    outputs, provenance = await asyncio.wait_for(
+                        self._run_handler(handler, task_type, envelope, inputs),
+                        timeout=remaining,
+                    )
+                else:
+                    outputs, provenance = await self._run_handler(
+                        handler, task_type, envelope, inputs
+                    )
+            except asyncio.TimeoutError:
+                return self._fail(
+                    handle,
+                    STUDIO_RUN_DEADLINE_EXCEEDED,
+                    f"run deadline exceeded during provider generation (budget {remaining:.0f}s); request abandoned",
+                    envelope=envelope,
+                    task_id=durable_task_id,
                 )
             except Exception as exc:  # noqa: BLE001 — mapped through the B taxonomy
                 from windagent_intelligence.story.prompts.structured import story_error_code

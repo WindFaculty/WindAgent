@@ -1,0 +1,116 @@
+{
+ "run_id": "run_cff7ff8fbebc4007",
+ "db": "candidate-7984dbe-gemma31b-6.db",
+ "process_dir": ".tmp/studio-c7/processes/7984dbe7b699-020aca3de782",
+ "integration_sha": "7984dbe7b69936f015a67c4be9e690a366a88396",
+ "provider": {
+  "vendor": "google",
+  "model": "gemma-4-31b-it",
+  "endpoint": "generateContent (non-streaming)"
+ },
+ "events": [
+  {
+   "t": "16:49:30.8",
+   "event": "harness starts (versions.generated_at)",
+   "evidence": "evidence.json versions"
+  },
+  {
+   "t": "16:49:32.4",
+   "event": "api process starts (pid 5668)",
+   "evidence": "process-receipts"
+  },
+  {
+   "t": "16:49:33.7",
+   "event": "worker process starts (pid 16352); recovery leader lease acquired by node_b08f30 (API)",
+   "evidence": "worker.stderr.log; recovery_leader_leases"
+  },
+  {
+   "t": "16:49:36.1",
+   "event": "run_cff7ff8fbebc4007 created; studio.run.started; 10-node DAG",
+   "evidence": "studio_events; studio_runs"
+  },
+  {
+   "t": "16:49:36.2",
+   "event": "idea.generate claimed (stsk_380101024ce6)",
+   "evidence": "worker.stderr.log"
+  },
+  {
+   "t": "16:50:32.4",
+   "event": "idea.generate SUCCEEDED (POST 200; 532 in / 841 out tokens)",
+   "evidence": "studio_run_nodes; task_execution_results_v2"
+  },
+  {
+   "t": "16:50:32.9",
+   "event": "idea.evaluate SUCCEEDED (pure handler)",
+   "evidence": "studio_run_nodes"
+  },
+  {
+   "t": "16:50:33.7",
+   "event": "harness approves IDEA checkpoint",
+   "evidence": "studio_approval_decisions"
+  },
+  {
+   "t": "16:50:34.1",
+   "event": "bible.generate claimed (stsk_05d64af3760e)",
+   "evidence": "execution_leases"
+  },
+  {
+   "t": "16:51:19.1",
+   "event": "bible.generate SUCCEEDED (POST 200)",
+   "evidence": "studio_run_nodes"
+  },
+  {
+   "t": "16:51:20.8",
+   "event": "harness approves STORY_BIBLE; beats.generate claimed (stsk_3bac3c963344)",
+   "evidence": "studio_approval_decisions; execution_leases"
+  },
+  {
+   "t": "16:52:14.6",
+   "event": "beats.generate SUCCEEDED (POST 200)",
+   "evidence": "studio_run_nodes"
+  },
+  {
+   "t": "16:52:15.1",
+   "event": "outline.generate claimed (stsk_7a3da288d1c5); provider POST starts",
+   "evidence": "execution_leases"
+  },
+  {
+   "t": "16:53:16.5",
+   "event": "LAST lease renewal for outline task (expires 16:53:46); renewals then stop until task end (ANOMALY, see report)",
+   "evidence": "execution_leases"
+  },
+  {
+   "t": "17:32:49.2",
+   "event": "outline.generate SUCCEEDED — single POST returned HTTP 200 after ~40m34s (route attempt 4: attempt_index 0, status success)",
+   "evidence": "studio_run_nodes; route_attempts_v3; worker.stderr.log POST line"
+  },
+  {
+   "t": "17:32:51.3",
+   "event": "harness approves OUTLINE; screenplay.generate submitted+claimed (stsk_f9744f96e90e); node DISPATCHED; provider POST starts",
+   "evidence": "studio_approval_decisions; studio_run_nodes; worker.stderr.log seq=11"
+  },
+  {
+   "t": "17:34:32",
+   "event": "harness 45-min wall deadline expires (harness start 16:49:30.8 + 45*60)",
+   "evidence": "c7_slice_harness.py:658"
+  },
+  {
+   "t": "17:34:35.1",
+   "event": "last worker heartbeat (lease active, expires 17:35:05)",
+   "evidence": "worker_registrations; execution_leases"
+  },
+  {
+   "t": "17:34:37.7",
+   "event": "harness raises SliceError 'run run_cff7ff8fbebc4007 did not reach a terminal state (last RUNNING)'; launcher terminates api+worker (exit 1, unexpected_exit=false); evidence.json written",
+   "evidence": "c7_slice_harness.py:750-751; process-receipts; evidence.json"
+  }
+ ],
+ "aftermath": {
+  "studio_runs.status": "RUNNING (zombie; updated_at never moved from creation)",
+  "studio_run_nodes.screenplay.generate": "DISPATCHED",
+  "execution_leases.stsk_f9744f96e90e": "active (expired 17:35:05 without owner)",
+  "task_runs.stsk_f9744f96e90e": "running",
+  "cancellation_requests": "empty",
+  "recovery": "none ran after kill (leader lease expired 16:50:03)"
+ }
+}

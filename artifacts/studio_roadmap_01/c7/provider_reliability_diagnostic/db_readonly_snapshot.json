@@ -1,0 +1,450 @@
+{
+ "captured_at": "2026-08-13T00:38:23.214982+00:00",
+ "db": "D:/code_ca_nhan/WindAgent/.tmp/studio-c7/candidate-7984dbe-gemma31b-6.db",
+ "access": "READ_ONLY (mode=ro); no mutation",
+ "studio_runs": [
+  {
+   "run_id": "run_cff7ff8fbebc4007",
+   "series_id": "srs_04ac5322437a8806",
+   "episode_id": "ep_cbf24f521e4c670b",
+   "status": "RUNNING",
+   "created_at": "2026-08-12 16:49:36.125236",
+   "updated_at": "2026-08-12 16:49:36.125236"
+  }
+ ],
+ "studio_run_nodes": [
+  {
+   "run_id": "run_cff7ff8fbebc4007",
+   "dag_node_id": "idea.generate",
+   "task_type": "studio.story.idea.generate",
+   "status": "SUCCEEDED",
+   "task_id": "stsk_380101024ce6",
+   "attempt": 1,
+   "gate": 0,
+   "error": null,
+   "updated_at": "2026-08-12 16:50:32.406909"
+  },
+  {
+   "run_id": "run_cff7ff8fbebc4007",
+   "dag_node_id": "idea.evaluate",
+   "task_type": "studio.story.idea.evaluate",
+   "status": "SUCCEEDED",
+   "task_id": "stsk_4c95ea4f95f0",
+   "attempt": 1,
+   "gate": 1,
+   "error": null,
+   "updated_at": "2026-08-12 16:50:33.746196"
+  },
+  {
+   "run_id": "run_cff7ff8fbebc4007",
+   "dag_node_id": "bible.generate",
+   "task_type": "studio.story.bible.generate",
+   "status": "SUCCEEDED",
+   "task_id": "stsk_05d64af3760e",
+   "attempt": 1,
+   "gate": 1,
+   "error": null,
+   "updated_at": "2026-08-12 16:51:20.779660"
+  },
+  {
+   "run_id": "run_cff7ff8fbebc4007",
+   "dag_node_id": "beats.generate",
+   "task_type": "studio.story.beats.generate",
+   "status": "SUCCEEDED",
+   "task_id": "stsk_3bac3c963344",
+   "attempt": 1,
+   "gate": 0,
+   "error": null,
+   "updated_at": "2026-08-12 16:52:14.602956"
+  },
+  {
+   "run_id": "run_cff7ff8fbebc4007",
+   "dag_node_id": "outline.generate",
+   "task_type": "studio.story.outline.generate",
+   "status": "SUCCEEDED",
+   "task_id": "stsk_7a3da288d1c5",
+   "attempt": 1,
+   "gate": 1,
+   "error": null,
+   "updated_at": "2026-08-12 17:32:51.280605"
+  },
+  {
+   "run_id": "run_cff7ff8fbebc4007",
+   "dag_node_id": "screenplay.generate",
+   "task_type": "studio.story.screenplay.generate",
+   "status": "DISPATCHED",
+   "task_id": "stsk_f9744f96e90e",
+   "attempt": 1,
+   "gate": 0,
+   "error": null,
+   "updated_at": "2026-08-12 17:32:51.312597"
+  },
+  {
+   "run_id": "run_cff7ff8fbebc4007",
+   "dag_node_id": "review",
+   "task_type": "studio.story.review",
+   "status": "PENDING",
+   "task_id": null,
+   "attempt": 1,
+   "gate": 1,
+   "error": null,
+   "updated_at": "2026-08-12 16:49:36.125236"
+  },
+  {
+   "run_id": "run_cff7ff8fbebc4007",
+   "dag_node_id": "revise.1",
+   "task_type": "studio.story.revise",
+   "status": "PENDING",
+   "task_id": null,
+   "attempt": 1,
+   "gate": 0,
+   "error": null,
+   "updated_at": "2026-08-12 16:49:36.125236"
+  },
+  {
+   "run_id": "run_cff7ff8fbebc4007",
+   "dag_node_id": "review.revised.1",
+   "task_type": "studio.story.review",
+   "status": "PENDING",
+   "task_id": null,
+   "attempt": 1,
+   "gate": 1,
+   "error": null,
+   "updated_at": "2026-08-12 16:49:36.125236"
+  },
+  {
+   "run_id": "run_cff7ff8fbebc4007",
+   "dag_node_id": "lock",
+   "task_type": "studio.story.lock",
+   "status": "PENDING",
+   "task_id": null,
+   "attempt": 1,
+   "gate": 0,
+   "error": null,
+   "updated_at": "2026-08-12 16:49:36.125236"
+  }
+ ],
+ "execution_leases": [
+  {
+   "lease_id": "lease_stsk_380101024ce6_6341c74c",
+   "step_run_id": "stsk_380101024ce6",
+   "worker_id": "wkr_default-worker",
+   "status": "completed",
+   "expires_at": "2026-08-12 16:51:00.486552",
+   "lease_generation": 1,
+   "fencing_token": "fence_stsk_380101024ce6_gen_1_7965ad",
+   "created_at": "2026-08-12 16:49:36.185247",
+   "updated_at": "2026-08-12 16:50:30.486552"
+  },
+  {
+   "lease_id": "lease_stsk_4c95ea4f95f0_5caa25db",
+   "step_run_id": "stsk_4c95ea4f95f0",
+   "worker_id": "wkr_default-worker",
+   "status": "completed",
+   "expires_at": "2026-08-12 16:51:02.957478",
+   "lease_generation": 1,
+   "fencing_token": "fence_stsk_4c95ea4f95f0_gen_1_489089",
+   "created_at": "2026-08-12 16:50:32.940607",
+   "updated_at": "2026-08-12 16:50:32.957478"
+  },
+  {
+   "lease_id": "lease_stsk_05d64af3760e_55810426",
+   "step_run_id": "stsk_05d64af3760e",
+   "worker_id": "wkr_default-worker",
+   "status": "completed",
+   "expires_at": "2026-08-12 16:51:45.782274",
+   "lease_generation": 1,
+   "fencing_token": "fence_stsk_05d64af3760e_gen_1_475bb5",
+   "created_at": "2026-08-12 16:50:34.097562",
+   "updated_at": "2026-08-12 16:51:15.782274"
+  },
+  {
+   "lease_id": "lease_stsk_3bac3c963344_4739d01f",
+   "step_run_id": "stsk_3bac3c963344",
+   "worker_id": "wkr_default-worker",
+   "status": "completed",
+   "expires_at": "2026-08-12 16:52:41.162272",
+   "lease_generation": 1,
+   "fencing_token": "fence_stsk_3bac3c963344_gen_1_67e143",
+   "created_at": "2026-08-12 16:51:21.207381",
+   "updated_at": "2026-08-12 16:52:11.162272"
+  },
+  {
+   "lease_id": "lease_stsk_7a3da288d1c5_721b740f",
+   "step_run_id": "stsk_7a3da288d1c5",
+   "worker_id": "wkr_default-worker",
+   "status": "completed",
+   "expires_at": "2026-08-12 16:53:46.541813",
+   "lease_generation": 1,
+   "fencing_token": "fence_stsk_7a3da288d1c5_gen_1_4138c9",
+   "created_at": "2026-08-12 16:52:15.147494",
+   "updated_at": "2026-08-12 16:53:16.541813"
+  },
+  {
+   "lease_id": "lease_stsk_f9744f96e90e_2b65c444",
+   "step_run_id": "stsk_f9744f96e90e",
+   "worker_id": "wkr_default-worker",
+   "status": "active",
+   "expires_at": "2026-08-12 17:35:05.080339",
+   "lease_generation": 1,
+   "fencing_token": "fence_stsk_f9744f96e90e_gen_1_7a6fa0",
+   "created_at": "2026-08-12 17:32:51.346154",
+   "updated_at": "2026-08-12 17:34:35.080339"
+  }
+ ],
+ "recovery_leader_leases": [
+  {
+   "lease_name": "recovery_leader",
+   "leader_id": "node_b08f30",
+   "expires_at": "2026-08-12 16:50:03.734843",
+   "created_at": "2026-08-12 16:49:33.734843",
+   "updated_at": "2026-08-12 16:49:33.734843"
+  }
+ ],
+ "worker_registrations": [
+  {
+   "worker_id": "wkr_default-worker",
+   "runtime_type": "production_worker",
+   "health": "healthy",
+   "active_leases": 1,
+   "last_heartbeat_at": "2026-08-12 17:34:35.077286"
+  }
+ ],
+ "task_runs": [
+  {
+   "id": "stsk_380101024ce6",
+   "session_id": "run_run_cff7ff8fbebc4007",
+   "state": "completed",
+   "retry_count": 0,
+   "last_error": null,
+   "created_at": "2026-08-12 16:49:36.156863",
+   "updated_at": "2026-08-12 16:50:32.376290"
+  },
+  {
+   "id": "stsk_4c95ea4f95f0",
+   "session_id": "run_run_cff7ff8fbebc4007",
+   "state": "completed",
+   "retry_count": 0,
+   "last_error": null,
+   "created_at": "2026-08-12 16:50:32.432465",
+   "updated_at": "2026-08-12 16:50:32.996737"
+  },
+  {
+   "id": "stsk_05d64af3760e",
+   "session_id": "run_run_cff7ff8fbebc4007",
+   "state": "completed",
+   "retry_count": 0,
+   "last_error": null,
+   "created_at": "2026-08-12 16:50:33.771712",
+   "updated_at": "2026-08-12 16:51:19.099423"
+  },
+  {
+   "id": "stsk_3bac3c963344",
+   "session_id": "run_run_cff7ff8fbebc4007",
+   "state": "completed",
+   "retry_count": 0,
+   "last_error": null,
+   "created_at": "2026-08-12 16:51:20.805504",
+   "updated_at": "2026-08-12 16:52:14.577406"
+  },
+  {
+   "id": "stsk_7a3da288d1c5",
+   "session_id": "run_run_cff7ff8fbebc4007",
+   "state": "completed",
+   "retry_count": 0,
+   "last_error": null,
+   "created_at": "2026-08-12 16:52:14.625095",
+   "updated_at": "2026-08-12 17:32:49.239728"
+  },
+  {
+   "id": "stsk_f9744f96e90e",
+   "session_id": "run_run_cff7ff8fbebc4007",
+   "state": "running",
+   "retry_count": 0,
+   "last_error": null,
+   "created_at": "2026-08-12 17:32:51.308605",
+   "updated_at": "2026-08-12 17:32:51.346154"
+  }
+ ],
+ "route_attempts_v3": [
+  {
+   "id": 1,
+   "route_lock_id": "lock-847e7554e75f",
+   "agent_session_id": null,
+   "turn_id": "lock-847e7554e75f",
+   "attempt_index": 0,
+   "provider_binding_id": "bind_google_gemma-4-31b-it",
+   "status": "success",
+   "http_status": null,
+   "error_class": null,
+   "started_at": "2026-08-12 16:50:32.357241",
+   "first_token_at": null,
+   "finished_at": "2026-08-12 16:50:32.351403",
+   "prompt_tokens": 532,
+   "completion_tokens": 841,
+   "partial_artifact_id": null
+  },
+  {
+   "id": 2,
+   "route_lock_id": "lock-309e4aaa74d7",
+   "agent_session_id": null,
+   "turn_id": "lock-309e4aaa74d7",
+   "attempt_index": 0,
+   "provider_binding_id": "bind_google_gemma-4-31b-it",
+   "status": "success",
+   "http_status": null,
+   "error_class": null,
+   "started_at": "2026-08-12 16:51:19.078923",
+   "first_token_at": null,
+   "finished_at": "2026-08-12 16:51:19.073841",
+   "prompt_tokens": 776,
+   "completion_tokens": 671,
+   "partial_artifact_id": null
+  },
+  {
+   "id": 3,
+   "route_lock_id": "lock-572db8c379e9",
+   "agent_session_id": null,
+   "turn_id": "lock-572db8c379e9",
+   "attempt_index": 0,
+   "provider_binding_id": "bind_google_gemma-4-31b-it",
+   "status": "success",
+   "http_status": null,
+   "error_class": null,
+   "started_at": "2026-08-12 16:52:14.544307",
+   "first_token_at": null,
+   "finished_at": "2026-08-12 16:52:14.539307",
+   "prompt_tokens": 567,
+   "completion_tokens": 814,
+   "partial_artifact_id": null
+  },
+  {
+   "id": 4,
+   "route_lock_id": "lock-8e9fc23978fd",
+   "agent_session_id": null,
+   "turn_id": "lock-8e9fc23978fd",
+   "attempt_index": 0,
+   "provider_binding_id": "bind_google_gemma-4-31b-it",
+   "status": "success",
+   "http_status": null,
+   "error_class": null,
+   "started_at": "2026-08-12 17:32:49.205208",
+   "first_token_at": null,
+   "finished_at": "2026-08-12 17:32:49.193211",
+   "prompt_tokens": 1149,
+   "completion_tokens": 1124,
+   "partial_artifact_id": null
+  }
+ ],
+ "endpoint_runtime_state": [
+  {
+   "endpoint_id": "ep_google",
+   "circuit_state": "closed",
+   "consecutive_successes": 4,
+   "consecutive_failures": 0,
+   "cooldown_until": null,
+   "last_429_at": null,
+   "last_failure_at": null,
+   "success_rate": 1.0,
+   "updated_at": "2026-08-12 17:32:49.192207"
+  }
+ ],
+ "cancellation_requests": [],
+ "studio_approval_decisions": [
+  {
+   "checkpoint": "IDEA",
+   "decision": "APPROVED",
+   "reason": "certification IDEA",
+   "timestamp": "2026-08-12 16:50:33.745196"
+  },
+  {
+   "checkpoint": "STORY_BIBLE",
+   "decision": "APPROVED",
+   "reason": "certification STORY_BIBLE",
+   "timestamp": "2026-08-12 16:51:20.779660"
+  },
+  {
+   "checkpoint": "OUTLINE",
+   "decision": "APPROVED",
+   "reason": "certification OUTLINE",
+   "timestamp": "2026-08-12 17:32:51.279605"
+  }
+ ],
+ "studio_events_tail": [
+  {
+   "event_type": "studio.approval.recorded",
+   "studio_run_id": "run_cff7ff8fbebc4007",
+   "occurred_at": "2026-08-12 17:32:51.280605"
+  },
+  {
+   "event_type": "studio.task.completed",
+   "studio_run_id": "run_cff7ff8fbebc4007",
+   "occurred_at": "2026-08-12 17:32:49.292726"
+  },
+  {
+   "event_type": "studio.approval.requested",
+   "studio_run_id": "run_cff7ff8fbebc4007",
+   "occurred_at": "2026-08-12 17:32:49.290727"
+  },
+  {
+   "event_type": "studio.task.completed",
+   "studio_run_id": "run_cff7ff8fbebc4007",
+   "occurred_at": "2026-08-12 16:52:14.603957"
+  },
+  {
+   "event_type": "studio.approval.recorded",
+   "studio_run_id": "run_cff7ff8fbebc4007",
+   "occurred_at": "2026-08-12 16:51:20.779660"
+  },
+  {
+   "event_type": "studio.task.completed",
+   "studio_run_id": "run_cff7ff8fbebc4007",
+   "occurred_at": "2026-08-12 16:51:19.123423"
+  },
+  {
+   "event_type": "studio.approval.requested",
+   "studio_run_id": "run_cff7ff8fbebc4007",
+   "occurred_at": "2026-08-12 16:51:19.121424"
+  },
+  {
+   "event_type": "studio.task.submitted",
+   "studio_run_id": "run_cff7ff8fbebc4007",
+   "occurred_at": "2026-08-12 17:32:51.312597"
+  },
+  {
+   "event_type": "studio.approval.recorded",
+   "studio_run_id": "run_cff7ff8fbebc4007",
+   "occurred_at": "2026-08-12 16:50:33.747196"
+  },
+  {
+   "event_type": "studio.task.submitted",
+   "studio_run_id": "run_cff7ff8fbebc4007",
+   "occurred_at": "2026-08-12 16:52:14.629106"
+  },
+  {
+   "event_type": "studio.idea.selected",
+   "studio_run_id": null,
+   "occurred_at": "2026-08-12 16:50:33.702682"
+  },
+  {
+   "event_type": "studio.task.submitted",
+   "studio_run_id": "run_cff7ff8fbebc4007",
+   "occurred_at": "2026-08-12 16:51:20.809508"
+  },
+  {
+   "event_type": "studio.task.completed",
+   "studio_run_id": "run_cff7ff8fbebc4007",
+   "occurred_at": "2026-08-12 16:50:33.023737"
+  },
+  {
+   "event_type": "studio.task.submitted",
+   "studio_run_id": "run_cff7ff8fbebc4007",
+   "occurred_at": "2026-08-12 16:50:33.774712"
+  },
+  {
+   "event_type": "studio.task.submitted",
+   "studio_run_id": "run_cff7ff8fbebc4007",
+   "occurred_at": "2026-08-12 16:50:32.436471"
+  }
+ ]
+}

@@ -1,0 +1,41 @@
+{
+ "A_provider_request": {
+  "request_sent": true,
+  "provider_acked": "YES — previous 4 POSTs all 200 OK; outline POST 200 OK at 17:32:49",
+  "request_id": "provider_request_id = null in all route provenance records (no request-id capture)",
+  "connection_open_45min": "OUTLINE call held connection ~40m34s and completed 200 OK; screenplay call in-flight 106s at kill (duration unbounded)",
+  "response_headers": "HTTP/1.1 200 OK (httpx INFO log)",
+  "partial_response": "NOT_OBSERVED",
+  "finish_reason": "STOP (route attempt 4 success)",
+  "http_error": "none",
+  "socket_timeout": "none observed — adapter configured timeout_seconds=300.0 (endpoint_adapter_resolver.py:41) but 40m34s call succeeded; total-duration cap effectively absent (either byte trickle kept read budget alive or cap bypassed; NOT_OBSERVED at artifact level)",
+  "client_timeout": "NONE at runtime level (envelope.deadline=null; no asyncio cap; no task/run deadline)",
+  "classification": "PROVIDER_SLOW (real server-side latency; single attempt, zero retries, zero timeout failures in route_attempts_v3)"
+ },
+ "B_deadline_ownership": {
+  "deadline_source": "certification harness only — c7_slice_harness.py:658 deadline = time.time() + 45*60",
+  "deadline_value": "2700s (45 min) wall clock from harness start",
+  "who_starts_timer": "harness (_drive_run)",
+  "who_observes_timeout": "harness (poll loop) — raises SliceError at c7_slice_harness.py:750",
+  "who_owns_cancellation": "nobody — launcher terminates child processes (certification_launcher.py _terminate: terminate() then kill())",
+  "runtime_enforcement": "NONE — StudioTaskEnvelope.deadline field exists (core/contracts/studio/models.py:146) but is never set (null in every task) and never read; TimeoutEvaluator (orchestration/retry/deadline.py) used only by RetryPolicy for retry budgeting"
+ },
+ "C_cancellation": {
+  "CANCELLATION_REQUESTED": "NO",
+  "CANCELLATION_ACKNOWLEDGED": "NO",
+  "cancellation_requests_table": "empty",
+  "cancel_path": "runner.cancel() -> cancellation_broadcaster (cooperative, between phases only; studio_runtime.cancel() is a no-op by design — 'no provider process to kill in the A5 seam')",
+  "provider_abandonment": "ONLY via OS process kill (TCP reset); Google-side generation may continue"
+ },
+ "D_state_machine": {
+  "expected_terminal_states": [
+   "COMPLETED",
+   "FAILED",
+   "CANCELLED",
+   "REVISION_REQUIRED"
+  ],
+  "actual_terminal_state": "NONE — run still RUNNING",
+  "why": "run transitions only via StudioCompletionReconciler.handle_task_result on a durable task result; worker was killed mid-generation so no result ever arrived; no timeout transition exists; StudioCompletionRecovery only re-drives reconciler for ALREADY-TERMINAL completions (crash window finalize->reconcile); no stale-RUNNING reconciler; recovery leader lease (30s TTL) expired 16:50:03 and nothing re-acquired it",
+  "lease": "stsk_f9744f96e90e lease active at kill, expired 17:35:05 unowned; a future worker could reclaim the task but no worker was restarted"
+ }
+}

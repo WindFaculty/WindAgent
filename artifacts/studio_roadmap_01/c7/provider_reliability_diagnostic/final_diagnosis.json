@@ -1,0 +1,26 @@
+{
+ "HEAD": "400291d9707284879ea20a0d52420444f1969b33",
+ "attempt_8": {
+  "run": "run_cff7ff8fbebc4007",
+  "db": "candidate-7984dbe-gemma31b-6.db",
+  "start": "2026-08-12T16:49:32Z",
+  "deadline": "2026-08-12T17:34:32Z",
+  "last_event": "17:34:37.718Z process termination",
+  "current_state": "RUNNING (zombie; DB, read-only confirmed)"
+ },
+ "provider_request_status": "single POST in-flight when killed; previous generation completed 200 OK after 40m34s; PROVIDER_SLOW",
+ "timeout_owner": "harness only (45 min wall clock); runtime had none",
+ "cancellation_requested": "NO",
+ "cancellation_acknowledged": "NO",
+ "finalizer_executed": "NO (for stsk_f9744f96e90e)",
+ "reconciler_executed": "NO (for screenplay task)",
+ "lease_released": "NO (active at kill; expired unowned 17:35:05)",
+ "ROOT_CAUSE": "RUNTIME_TIMEOUT_RECONCILIATION_DEFECT",
+ "TRIGGER": "PROVIDER_RELIABILITY",
+ "CONFIDENCE": 0.95,
+ "IS_PROVIDER_ONLY_PROBLEM": false,
+ "IS_PRODUCT_CODE_BUG": true,
+ "CODE_CHANGED": true,
+ "fix": "run-relative envelope deadline + worker wait_for enforcement + launcher 2550s budget (see patch_manifest.json)",
+ "READY_FOR_CONTROLLED_C7_RERUN": "YES (after targeted tests prove lifecycle; see report.md §rerun)"
+}

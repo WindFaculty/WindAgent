@@ -1,0 +1,14 @@
+{
+ "deadline_source": "certification harness only — c7_slice_harness.py:658 deadline = time.time() + 45*60",
+ "deadline_value": "2700s (45 min) wall clock from harness start",
+ "who_starts_timer": "harness (_drive_run)",
+ "who_observes_timeout": "harness (poll loop) — raises SliceError at c7_slice_harness.py:750",
+ "who_owns_cancellation": "nobody — launcher terminates child processes (certification_launcher.py _terminate: terminate() then kill())",
+ "runtime_enforcement": "NONE — StudioTaskEnvelope.deadline field exists (core/contracts/studio/models.py:146) but is never set (null in every task) and never read; TimeoutEvaluator (orchestration/retry/deadline.py) used only by RetryPolicy for retry budgeting",
+ "runtime_file_evidence": {
+  "orchestration/windagent_orchestration/studio/service.py": "envelope built without deadline (pre-fix); run_deadline() added by fix",
+  "apps/worker/windagent_worker/studio_runtime.py": "no timeout handling (pre-fix); wait_for enforcement added by fix",
+  "scripts/studio_roadmap/c7_slice_harness.py:658": "deadline = time.time() + 45 * 60",
+  "providers/windagent_providers/routing/endpoint_adapter_resolver.py:41": "timeout_seconds=300.0 (HTTP read cap only, per-chunk)"
+ }
+}

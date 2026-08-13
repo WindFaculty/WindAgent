@@ -29,10 +29,11 @@ A2 contract surface kept fail-closed (no fake fallback).
 from __future__ import annotations
 
 import hashlib
+import os
 import sys
 import uuid
 from contextlib import asynccontextmanager
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any, AsyncIterator, Dict, List, Optional
 
 from windagent_core.contracts.studio.commands import (
@@ -134,6 +135,26 @@ RUN_TERMINAL_STATUSES = frozenset(
 
 def utc_now() -> datetime:
     return datetime.now(timezone.utc)
+
+
+#: Default per-run execution budget. The worker fails any task whose envelope
+#: deadline is reached, so a slow/hung provider can never leave a run in
+#: RUNNING past its authoritative deadline (C7 attempt-8 forensic finding).
+RUN_DEADLINE_SECONDS_DEFAULT = 2700
+
+
+def run_deadline(run: Dict[str, Any]) -> datetime:
+    """Absolute deadline for every task of ``run``: run start + budget.
+
+    Run-relative (not per-task): a chain of slow tasks can never outlive the
+    run deadline, because each envelope carries the SAME absolute deadline and
+    the worker fails any task that would cross it.
+    """
+    budget = int(
+        os.getenv("WINDAGENT_STUDIO_RUN_DEADLINE_SECONDS", RUN_DEADLINE_SECONDS_DEFAULT)
+    )
+    created = run.get("created_at") or utc_now()
+    return created + timedelta(seconds=max(1, budget))
 
 
 def _id_from_key(prefix: str, idempotency_key: str) -> str:
@@ -906,6 +927,7 @@ class StudioRunService(StudioRunOrchestratorPort):
             input_hashes=list(node.get("input_hashes", [])),
             idempotency_key=f"{run['run_id']}:{node['dag_node_id']}:{node['attempt']}",
             attempt=node["attempt"],
+            deadline=run_deadline(run),
             payload=payload or {},
         )
 

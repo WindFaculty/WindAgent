@@ -232,6 +232,11 @@ class CertificationLauncher:
                 "WINDAGENT_STUDIO_RUNTIME": "1",
                 "WINDAGENT_STUDIO_MODEL_ROUTE": "1",
                 "WINDAGENT_STUDIO_CANONICAL_MODEL": self.canonical_model,
+                # Runtime run deadline (42.5 min) must expire BEFORE the
+                # harness wall-clock deadline (45 min) so the worker
+                # terminalizes the run (FAILED) instead of being killed with
+                # the run still RUNNING (C7 attempt-8 forensic finding).
+                "WINDAGENT_STUDIO_RUN_DEADLINE_SECONDS": "2550",
                 "WINDAGENT_SOURCE_SHA": self.candidate_sha,
                 "PYTHONUNBUFFERED": "1",
             }
