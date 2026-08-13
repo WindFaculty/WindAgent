@@ -1,0 +1,9 @@
+{
+ "batch": "E",
+ "scope": "dead package/dependency declarations",
+ "files": [],
+ "result": "NONE — @windagent/production-state has zero importers (vite aliases + package.json dep only) but is ROADMAP_2_PRESERVED: REPORT ONLY per task rule 25",
+ "reported": [
+  "frontend/packages/production-state/"
+ ]
+}

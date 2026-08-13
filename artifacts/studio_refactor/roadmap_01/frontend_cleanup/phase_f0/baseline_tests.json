@@ -1,0 +1,72 @@
+{
+  "captured_at": "2026-08-13T03:04:57.316749Z",
+  "results": [
+    {
+      "suite": "apps/desktop vitest",
+      "cmd": "npm test (apps/desktop)",
+      "exit": 0,
+      "files": 15,
+      "tests": 159,
+      "passed": 159,
+      "failed": 0
+    },
+    {
+      "suite": "apps/web vitest",
+      "cmd": "npm test (apps/web)",
+      "exit": 0,
+      "files": 6,
+      "tests": 70,
+      "passed": 70,
+      "failed": 0
+    },
+    {
+      "suite": "@windagent/production-platform",
+      "exit": 0,
+      "files": 1,
+      "tests": 5
+    },
+    {
+      "suite": "@windagent/production-state",
+      "exit": 0,
+      "files": 2,
+      "tests": 8
+    },
+    {
+      "suite": "@windagent/production-ui",
+      "exit": 0,
+      "files": 5,
+      "tests": 17
+    },
+    {
+      "suite": "@windagent/story-ui",
+      "exit": 0,
+      "files": 4,
+      "tests": 21
+    },
+    {
+      "suite": "@windagent/studio-client",
+      "exit": 0,
+      "files": 1,
+      "tests": 11
+    },
+    {
+      "suite": "@windagent/studio-contracts",
+      "exit": 0,
+      "files": 1,
+      "tests": 9
+    },
+    {
+      "suite": "@windagent/studio-shell",
+      "exit": 0,
+      "files": 2,
+      "tests": 9
+    },
+    {
+      "suite": "@windagent/studio-state",
+      "exit": 0,
+      "files": 1,
+      "tests": 9
+    }
+  ],
+  "notes": "frontend workspace `npm run test` exits 1 because production-client/production-contracts have NO test script (pre-existing config, not a test failure). All 8 packages WITH test scripts PASS."
+}

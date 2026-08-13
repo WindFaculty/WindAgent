@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WindAgent Desktop Inventory — Roadmap 1 Baseline</title>
+<style>
+  :root {
+    --bg: #0b0f19; --panel: #0d1220; --panel2: #141b2e; --border: #1a2438;
+    --text: #e2e8f0; --muted: #94a3b8; --primary: #3b82f6; --green: #10b981;
+    --amber: #f59e0b; --red: #ef4444; --violet: #8b5cf6;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body { background: var(--bg); color: var(--text); font-family: "Segoe UI", system-ui, sans-serif; line-height: 1.55; padding: 32px 16px; }
+  .wrap { max-width: 1080px; margin: 0 auto; }
+  h1 { font-size: 1.6rem; margin-bottom: 4px; }
+  h2 { font-size: 1.15rem; margin: 32px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border); color: var(--primary); }
+  h3 { font-size: 1rem; margin: 16px 0 8px; color: var(--text); }
+  .sub { color: var(--muted); font-size: .9rem; margin-bottom: 20px; }
+  .badge { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: .78rem; font-weight: 600; margin-right: 6px; }
+  .b-green { background: rgba(16,185,129,.12); color: var(--green); border: 1px solid rgba(16,185,129,.3); }
+  .b-amber { background: rgba(245,158,11,.12); color: var(--amber); border: 1px solid rgba(245,158,11,.3); }
+  .b-red { background: rgba(239,68,68,.12); color: var(--red); border: 1px solid rgba(239,68,68,.3); }
+  .b-blue { background: rgba(59,130,246,.12); color: var(--primary); border: 1px solid rgba(59,130,246,.3); }
+  .b-gray { background: rgba(148,163,184,.12); color: var(--muted); border: 1px solid rgba(148,163,184,.3); }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; margin-bottom: 12px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 800px) { .grid2 { grid-template-columns: 1fr; } }
+  table { width: 100%; border-collapse: collapse; font-size: .86rem; }
+  th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: .78rem; text-transform: uppercase; letter-spacing: .04em; }
+  code, .path { font-family: Consolas, monospace; font-size: .82rem; color: #7dd3fc; background: rgba(59,130,246,.08); padding: 1px 5px; border-radius: 4px; }
+  .score { font-size: 2.4rem; font-weight: 700; color: var(--amber); }
+  .bar { height: 8px; border-radius: 4px; background: var(--panel2); overflow: hidden; margin-top: 4px; }
+  .bar > i { display: block; height: 100%; background: linear-gradient(90deg, var(--primary), var(--violet)); }
+  .mono { font-family: Consolas, monospace; font-size: .8rem; white-space: pre; color: var(--muted); }
+  ul { padding-left: 20px; } li { margin-bottom: 6px; }
+  .foot { margin-top: 40px; padding-top: 12px; border-top: 1px solid var(--border); color: var(--muted); font-size: .82rem; }
+  .kv { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .kv > div { background: var(--panel2); border: 1px solid var(--border); border-radius: 8px; padding: 8px 14px; font-size: .85rem; }
+  .kv b { color: var(--text); display: block; font-size: .72rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>WindAgent Desktop Inventory</h1>
+<div class="sub">Roadmap 1 redesign baseline · read-only audit · <code>artifacts/studio_refactor/roadmap_01/desktop_inventory/</code> · HEAD b36e84f</div>
+
+<div class="kv">
+  <div><b>Status</b><span class="badge b-green">COMPLETE</span></div>
+  <div><b>Roadmap 1 alignment</b><span class="score">57/100</span></div>
+  <div><b>Source modified</b><span class="badge b-gray">NONE</span></div>
+  <div><b>Desktop tests</b><span class="badge b-green">142/142 pass</span></div>
+  <div><b>Studio path</b><span class="badge b-green">REAL (V3)</span></div>
+  <div><b>Production path</b><span class="badge b-red">FAKE-WIRED</span></div>
+</div>
+
+<h2>Architecture Summary</h2>
+<div class="card">
+Tauri 2 thin shell (2 IPC telemetry commands, no business logic, no sidecar bundling) + React 18 app in <code>apps/desktop</code>. <code>apps/web</code> = browser re-export of same App via <code>@desktop</code> alias (own clients/state dead). Routing = <code>activeTab</code> useState switch + hash routing for Studio only. Studio stack real end-to-end: <code>HttpStudioApiClient</code> → <code>/api/v3/studio</code> → <code>StudioStore</code> → <code>StudioPage</code> (series/episode/run/idea/approval/lock, server-authority, zero fakes). Production = <code>FakeProductionApiClient</code> + <code>proj-alpha</code> + 3 placeholders + hardcoded statuses; rich screenplay suite dead export. System pages mixed: Agents stub-broken, Browser/Files/Memory hardcoded demo, Router/Models/MultiAgentWorkspace real. Backend + worker = external processes, manual start, no supervisor; <code>sidecar_manager.py</code> orphan.
+</div>
+
+<h2>Roadmap 1 Alignment Scorecard</h2>
+<div class="card">
+<table>
+  <tr><th>Area</th><th style="width:70px">Score</th><th style="width:14%">Max</th><th style="width:30%">Bar</th><th>Evidence</th></tr>
+  <tr><td>Shell / Desktop foundation</td><td>9</td><td>/10</td><td><div class="bar"><i style="width:90%"></i></div></td><td>Thin clean shell, real sysinfo/NVML telemetry</td></tr>
+  <tr><td>Routing / navigation</td><td>3</td><td>/10</td><td><div class="bar"><i style="width:30%"></i></div></td><td>No router lib, hardcoded nav, dead <code>asset-library</code> tab</td></tr>
+  <tr><td>Studio project UI</td><td>6</td><td>/15</td><td><div class="bar"><i style="width:40%"></i></div></td><td>Real CRUD, minimal presentation</td></tr>
+  <tr><td>Episode UI</td><td>5</td><td>/15</td><td><div class="bar"><i style="width:33%"></i></div></td><td>Detail page, no workspace tabs</td></tr>
+  <tr><td>Story workflow UI</td><td>9</td><td>/15</td><td><div class="bar"><i style="width:60%"></i></div></td><td>Viewers + approval + run progress real; no editors</td></tr>
+  <tr><td>Screenplay / review UI</td><td>7</td><td>/15</td><td><div class="bar"><i style="width:47%"></i></div></td><td>Read view + diff + review + lock real; no editor UX</td></tr>
+  <tr><td>API / client readiness</td><td>10</td><td>/10</td><td><div class="bar"><i style="width:100%"></i></div></td><td>Frozen-contract client + store, production-grade</td></tr>
+  <tr><td>State / runtime integration</td><td>4</td><td>/5</td><td><div class="bar"><i style="width:80%"></i></div></td><td>Store excellent; global patchwork + port mismatch</td></tr>
+  <tr><td>Desktop certification support</td><td>4</td><td>/5</td><td><div class="bar"><i style="width:80%"></i></div></td><td>C3-C5 gates + cert deep-link; no frontend studio suite in studio CI job</td></tr>
+  <tr><td><b>Total</b></td><td><b>57</b></td><td><b>/100</b></td><td><div class="bar"><i style="width:57%"></i></div></td><td>Presentation layer = the missing work; data layer done</td></tr>
+</table>
+</div>
+
+<h2>Runtime Topology</h2>
+<div class="card">
+<div class="mono">WindAgent Desktop (Tauri shell + webview)          [IN_PROCESS]
+  ├── HTTP/WS → 127.0.0.1:8765   V2 REST + WS   (client.ts, real)
+  ├── HTTP    → localhost:8000   /api/v3/studio (StudioPage default — PORT MISMATCH, needs VITE_API_BASE)
+  └── IPC     → get_system_metrics (sysinfo + NVML, 2s)
+        ↓
+FastAPI backend (uvicorn :8765, manual start)     [EXTERNAL_PROCESS]
+        ↓ outbox / worker lease
+Worker (python -m windagent_worker, manual start) [EXTERNAL_PROCESS]
+        ↓
+Provider (Ollama / cloud adapter — mock default)  [OPTIONAL]
+
+Hermes runtime: UNWIRED — fetchHermesHealth() hardcoded {enabled:false}</div>
+</div>
+
+<h2>Routing Inventory</h2>
+<div class="card">
+<table>
+  <tr><th>Tab</th><th>Page</th><th>Data source</th><th>Status</th></tr>
+  <tr><td>dashboard</td><td>Dashboard</td><td>props from App (metrics)</td><td><span class="badge b-green">ACTIVE</span></td></tr>
+  <tr><td>agents</td><td>Agents</td><td>fetchAgents() → v2Unavailable stub</td><td><span class="badge b-red">BROKEN</span></td></tr>
+  <tr><td>workspace</td><td>MultiAgentWorkspace</td><td>/api/v2/conversations/* + WS</td><td><span class="badge b-green">ACTIVE</span></td></tr>
+  <tr><td>workflows</td><td>Workflows</td><td>local state only</td><td><span class="badge b-gray">PLACEHOLDER</span></td></tr>
+  <tr><td>browser</td><td>Browser</td><td>hardcoded demo UI (32 mock matches)</td><td><span class="badge b-amber">FAKE</span></td></tr>
+  <tr><td>files</td><td>Files</td><td>hardcoded rows</td><td><span class="badge b-amber">FAKE</span></td></tr>
+  <tr><td>memory</td><td>Memory</td><td>hardcoded rows</td><td><span class="badge b-amber">FAKE</span></td></tr>
+  <tr><td>models-library / models-endpoints</td><td>Models / Endpoints</td><td>/api/v2/providers/health (real) / local</td><td><span class="badge b-green">ACTIVE</span> / <span class="badge b-gray">PLACEHOLDER</span></td></tr>
+  <tr><td>router</td><td>Router Console</td><td>/api/models/routing/* (real, legacy surface)</td><td><span class="badge b-green">ACTIVE</span></td></tr>
+  <tr><td>studio</td><td>Studio</td><td>HttpStudioApiClient → /api/v3/studio/* (REAL)</td><td><span class="badge b-green">ACTIVE</span></td></tr>
+  <tr><td>asset-library</td><td>AssetWorkspace</td><td>/api/v2/video-production/assets (real)</td><td><span class="badge b-amber">HIDDEN</span> — dead tab, nav never sets it</td></tr>
+  <tr><td>production-script / -assets / -video</td><td>ProductionShell</td><td>FakeProductionApiClient + placeholders</td><td><span class="badge b-red">FAKE</span></td></tr>
+  <tr><td>settings</td><td>Settings</td><td>local state</td><td><span class="badge b-gray">PLACEHOLDER</span></td></tr>
+</table>
+</div>
+
+<h2>Studio vs Production — Real or Fake</h2>
+<div class="grid2">
+<div class="card">
+<h3>Studio (Roadmap 1) — REAL</h3>
+<ul>
+  <li><code>HttpStudioApiClient</code> — frozen <code>/api/v3/studio</code>, idempotency keys, 15s timeout, typed errors</li>
+  <li><code>StudioStore</code> — server-authority, pending markers, event cursors, 2s run polling</li>
+  <li>Series/Episode CRUD + Start run + idea select + ApprovalBar + Lock (hash-bound) + read-only LOCKED/READY_FOR_PRODUCTION</li>
+  <li>Artifact viewers: Idea, StoryBible, WorldBible, CharacterCanon, Beats, Outline, Screenplay, Review, Revision, Lock, Diff</li>
+  <li>Hash routes: <code>#/studio</code>, <code>#/studio/series/&lt;id&gt;</code>, <code>#/studio/episodes/&lt;id&gt;</code></li>
+</ul>
+</div>
+<div class="card">
+<h3>Production (Roadmap 2) — FAKE-WIRED</h3>
+<ul>
+  <li><code>ProductionWorkspacePage.tsx:13</code> — <code>projectId: 'proj-alpha'</code> hardcoded</li>
+  <li><code>ProductionWorkspacePage.tsx:21</code> — <code>new FakeProductionApiClient()</code> hardcoded; comment claims HTTP fallback, none exists</li>
+  <li><code>ProductionApiClient.ts:45</code> — Http client <code>listProjects()</code> hardcodes <code>getProject('vp_001')</code>; zero app callers</li>
+  <li><code>ProductionShell</code> renders 3 placeholders with hardcoded <code>syncStatus="synced"</code>, <code>backendStatus="online"</code></li>
+  <li>Rich screenplay suite (ScreenplayWorkspaceView, StructuredEditor, SceneTree, conflict/recovery panels) = dead exports, tests only</li>
+  <li>Verdict: PRESERVE / ISOLATE / ROADMAP_2 — do not redesign now</li>
+</ul>
+</div>
+</div>
+
+<h2>Key Findings</h2>
+<div class="card">
+<ul>
+  <li><b>Studio real (C2-C5).</b> Full story read path: idea → bible → outline → screenplay → review → lock → READY_FOR_PRODUCTION. Redesign = presentation only; no backend/shell changes needed.</li>
+  <li><b>Production fake-wired.</b> <code>proj-alpha</code> + <code>FakeProductionApiClient</code> + placeholders + hardcoded statuses. Http client exists but unreachable.</li>
+  <li><b>Hermes badge lies.</b> <code>fetchHermesHealth()</code> returns literal <code>{enabled:false, reachable:false}</code> — can never show connected. 22 <code>v2Unavailable</code> dead-end stubs (agent registry, permissions, pause/resume/retry, task-node editing).</li>
+  <li><b>Port mismatch.</b> Studio default <code>localhost:8000</code> vs backend default <code>8765</code> — Studio offline unless <code>VITE_API_BASE</code> set (only C7 cert script sets it).</li>
+  <li><b>No supervisor.</b> <code>sidecar_manager.py</code> orphan (zero callers); backend/worker not bundled in installer, not restarted, orphaned on desktop close.</li>
+  <li><b>Demo pages.</b> Browser/Files/Memory/Workflows/Endpoints/Settings = hardcoded UI. Sidebar version <code>v1.2.0</code> vs real <code>0.3.0</code>; fake user WindUser/Administrator.</li>
+  <li><b>State patchwork.</b> useState + useReducer (legacy) + Zustand + Context + class store (StudioStore). Redux (production-state) dead export.</li>
+</ul>
+</div>
+
+<h2>Redesign Impact — Top 10</h2>
+<div class="card">
+<table>
+  <tr><th>#</th><th>File / package</th><th>Action</th><th>Why</th></tr>
+  <tr><td>1</td><td><code>apps/desktop/src/App.tsx</code></td><td>Modify (decompose)</td><td>Shell god-file: header, hardcoded sidebar, activeTab routing, health/metrics polling</td></tr>
+  <tr><td>2</td><td><code>apps/desktop/src/pages/StudioPage.tsx</code></td><td>Modify</td><td>Studio surface; action layer reusable, render needs workspace structure</td></tr>
+  <tr><td>3</td><td><code>apps/desktop/src/components/studio/ArtifactViews.tsx</code></td><td>Modify / extract</td><td>800-line renderer suite → story-ui package</td></tr>
+  <tr><td>4</td><td><code>apps/desktop/src/styles.css</code></td><td>Modify (extend)</td><td>4826-line global sheet, :root tokens exist, kill inline hex</td></tr>
+  <tr><td>5</td><td><code>frontend/packages/story-ui</code></td><td>Create (new)</td><td>Roadmap target package — migrate studio components in</td></tr>
+  <tr><td>6</td><td><code>frontend/packages/studio-shell</code></td><td>Create (new)</td><td>Roadmap target package — extract shell/layout/nav from App.tsx</td></tr>
+  <tr><td>7</td><td><code>RunProgress.tsx + ApprovalBar.tsx</code></td><td>Wrap/restyle</td><td>Story status + approval primitives, logic server-authority, reusable</td></tr>
+  <tr><td>8</td><td><code>apps/desktop/src/api/client.ts</code></td><td>Modify (stubs)</td><td>22 dead-end stubs + 2 hardcoded stubs; SYSTEM pages depend on it</td></tr>
+  <tr><td>9</td><td><code>ProductionWorkspacePage.tsx + ProductionShell</code></td><td>Collapse</td><td>Hide behind PRODUCTION group for Roadmap 1; fake client stays until Roadmap 2</td></tr>
+  <tr><td>10</td><td>SYSTEM pages + <code>apps/web</code></td><td>Regroup / ripple</td><td>All pages stay reachable under SYSTEM group; web build re-exports same App</td></tr>
+</table>
+<p style="margin-top:10px; font-size:.85rem; color:var(--muted)">Reuse unchanged: <code>@windagent/studio-contracts</code> (frozen), <code>studio-client</code>, <code>studio-state</code>, <code>src-tauri/*</code>, theme.tsx, WS managers. Must not touch: frozen fixtures/schemas, v3 backend, worker runtime, gate tests, CI desktop jobs.</p>
+</div>
+
+<h2>Design System</h2>
+<div class="card">
+<code>styles.css</code> single global stylesheet: dark theme tokens in <code>:root</code> (<code>--bg-dark #0b0f19</code>, <code>--color-primary #3b82f6</code>, success/warning/danger/accent + glows). No Tailwind/modules/SCSS, no component lib, no icon lib (inline SVG + emoji), no chart lib (SVG polylines). production-ui bypasses tokens with inline hex. Redesign: reuse + extend existing tokens, replace ad-hoc styling.
+</div>
+
+<h2>Recommended Migration Order</h2>
+<div class="card">
+<ol>
+  <li>Extract studio-shell layout (header/sidebar/nav data) from App.tsx</li>
+  <li>Move <code>components/studio/*</code> → story-ui package (pure moves)</li>
+  <li>Data-driven nav groups STUDIO / PRODUCTION / SYSTEM — nothing deleted</li>
+  <li>Episode Workspace tabs over existing views (Overview/Idea/Story/Outline/Screenplay/Review/Revisions/Activity)</li>
+  <li>Design token pass — kill inline hex</li>
+  <li>Fix <code>VITE_API_BASE</code> / port 8000-8765 mismatch (infra)</li>
+  <li>Collapse Production behind group until Roadmap 2</li>
+</ol>
+</div>
+
+<h2>Artifacts</h2>
+<div class="card">
+<p style="font-size:.85rem; margin-bottom:8px;">All under <code>artifacts/studio_refactor/roadmap_01/desktop_inventory/</code>:</p>
+<table>
+  <tr><th>File</th><th>Content</th></tr>
+  <tr><td><code>desktop_structure_report.md</code></td><td>Main report — 26 sections, full evidence</td></tr>
+  <tr><td><code>desktop_redesign_impact_map.md</code></td><td>A-E impact map (modify / reuse / wrap / preserve / do-not-touch)</td></tr>
+  <tr><td><code>desktop_runtime_graph.md</code>, <code>desktop_process_topology.md</code></td><td>Graphs A/B/C + process classes + lifecycle</td></tr>
+  <tr><td><code>tauri_runtime_report.md</code>, <code>state_management_report.md</code></td><td>Shell + state audit</td></tr>
+  <tr><td><code>story_frontend_gap_matrix.md</code>, <code>desktop_roadmap_mapping.md</code></td><td>Roadmap 1 S12 readiness + package mapping</td></tr>
+  <tr><td><code>desktop_build_pipeline.md</code></td><td>Dev/build/CI commands</td></tr>
+  <tr><td><code>frontend_package_inventory.json</code>, <code>route_inventory.json</code>, <code>navigation_inventory.json</code>, <code>component_inventory.json</code>, <code>api_client_inventory.json</code>, <code>desktop_endpoint_inventory.json</code>, <code>hardcoded_fake_runtime_audit.json</code>, <code>desktop_test_inventory.json</code></td><td>Structured inventories (8 JSON)</td></tr>
+  <tr><td><code>desktop_tree.txt</code></td><td>Source tree listing</td></tr>
+</table>
+</div>
+
+<div class="foot">Generated 2026-08-13 · read-only audit — no source files modified · all findings REPORT ONLY · desktop tests: 13 files / 142 pass (vitest, verified 08:13:39)</div>
+
+</div>
+</body>
+</html>

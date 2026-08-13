@@ -1,0 +1,44 @@
+{
+  "captured_at": "2026-08-13T03:04:57.316749Z",
+  "results": [
+    {
+      "target": "apps/desktop build (tsc -b && vite build)",
+      "exit": 0,
+      "status": "PASS"
+    },
+    {
+      "target": "apps/desktop type-check (tsc -b --noEmit)",
+      "exit": 0,
+      "status": "PASS"
+    },
+    {
+      "target": "apps/web build (tsc && vite build)",
+      "exit": 0,
+      "status": "PASS"
+    },
+    {
+      "target": "apps/web typecheck (tsc --noEmit)",
+      "exit": 0,
+      "status": "PASS"
+    },
+    {
+      "target": "frontend workspaces typecheck",
+      "exit": 2,
+      "status": "BASELINE_FAILURE (pre-existing, parallel-agent WIP)",
+      "failures": [
+        "production-platform: src/__tests__/architecture.test.ts(31,37) TS2554 Expected 0 arguments, but got 1.",
+        "production-state: src/slices/projectContextSlice.ts(8,3) TS2305 no exported member 'SelectedEntity' from production-contracts.",
+        "story-ui: 4 test files TS2739 missing revision_id/created_at in StudioArtifactEnvelope literals."
+      ]
+    },
+    {
+      "target": "frontend workspaces build (npm run build --workspaces)",
+      "exit": 2,
+      "status": "BASELINE_FAILURE (pre-existing): packages have no `build` script; real build gates = desktop/web vite builds.",
+      "failures": [
+        "Missing script: build — production-client, production-contracts, production-platform, ... (no build script defined)"
+      ]
+    }
+  ],
+  "gate": "WIND_STUDIO_FRONTEND_CLEANUP_BASELINE_CAPTURED: PASS — desktop/web/packages real gates green; workspace-typecheck failures are pre-existing parallel-agent WIP (story-ui untracked, production-* typecheck) recorded above."
+}

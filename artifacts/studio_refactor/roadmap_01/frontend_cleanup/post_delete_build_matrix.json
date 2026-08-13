@@ -1,0 +1,30 @@
+{
+ "captured_at": "2026-08-13T03:45:41.831483Z",
+ "results": [
+  {
+   "target": "apps/desktop type-check",
+   "exit": 0,
+   "status": "PASS"
+  },
+  {
+   "target": "apps/desktop build (tsc -b && vite build)",
+   "exit": 0,
+   "status": "PASS"
+  },
+  {
+   "target": "apps/web typecheck",
+   "exit": 0,
+   "status": "PASS"
+  },
+  {
+   "target": "apps/web build (tsc && vite build)",
+   "exit": 0,
+   "status": "PASS"
+  },
+  {
+   "target": "frontend workspaces build",
+   "exit": 2,
+   "status": "BASELINE_FAILURE (pre-existing: packages define no build script)"
+  }
+ ]
+}

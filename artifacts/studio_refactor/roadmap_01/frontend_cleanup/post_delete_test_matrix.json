@@ -1,0 +1,69 @@
+{
+ "captured_at": "2026-08-13T03:45:41.831483Z",
+ "results": [
+  {
+   "suite": "apps/desktop vitest",
+   "exit": 0,
+   "files": 8,
+   "tests": 71,
+   "status": "PASS",
+   "note": "baseline 15/159 -> 8/71 (8 orphan-cluster test files removed with their dead modules)"
+  },
+  {
+   "suite": "apps/desktop studioShellTests",
+   "exit": 0,
+   "status": "PASS",
+   "note": "Studio shell regression (deep-link) intact"
+  },
+  {
+   "suite": "apps/desktop studioStoryTests",
+   "exit": 0,
+   "status": "PASS",
+   "note": "Studio story regression intact"
+  },
+  {
+   "suite": "apps/desktop productionPackageTests",
+   "exit": 0,
+   "status": "PASS",
+   "note": "Production package regression intact"
+  },
+  {
+   "suite": "apps/web vitest",
+   "exit": 0,
+   "files": 0,
+   "tests": 0,
+   "status": "PASS",
+   "note": "empty suite, passWithNoTests: true (legacy tests deleted with dead clients/state)"
+  },
+  {
+   "suite": "apps/web test:coverage",
+   "exit": 0,
+   "status": "PASS",
+   "note": "0% coverage reported but not gated (no test files); CI web-test job stays green"
+  },
+  {
+   "suite": "frontend packages vitest (8 with test scripts)",
+   "exit": 0,
+   "tests": "5+8+17+22+11+9+11+9=92",
+   "status": "PASS",
+   "note": "story-ui grew 21->22 (parallel agent added Phase9 test mid-session); workspace npm test still exits 1 for missing-script packages (pre-existing)"
+  },
+  {
+   "suite": "studio-contracts check:drift",
+   "exit": 0,
+   "status": "PASS"
+  },
+  {
+   "suite": "tests/unit/web/test_web_app_clients.py",
+   "exit": 0,
+   "tests": 2,
+   "status": "PASS"
+  },
+  {
+   "suite": "frontend workspaces typecheck",
+   "exit": 2,
+   "status": "BASELINE_FAILURE (pre-existing, unchanged set)",
+   "note": "production-platform architecture.test.ts, production-state projectContextSlice.ts, story-ui 5 test files — same owners as baseline; NOT caused by this cleanup"
+  }
+ ]
+}

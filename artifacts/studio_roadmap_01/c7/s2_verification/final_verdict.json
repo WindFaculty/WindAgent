@@ -1,0 +1,15 @@
+{
+  "verdict": "BLOCKED",
+  "verdict_case": "C7_PROVIDER_MODEL_QUALITY_BLOCKED",
+  "s2_sha": "16602f3b777e103f7565dcfb44abf0682b0cb550",
+  "s3_sha": "694362c741b2005632d5efc03898c02710f02386",
+  "s2_full_regression": "PASS",
+  "s2_full_regression_detail": "3590 passed / 15 failed (identical pre-existing baseline set) / 36 skipped; zero new failures vs S1",
+  "c7": "FAIL",
+  "c8": "NOT_RUN_BY_STOP_CONDITION",
+  "c9": "NOT_RUN_BY_STOP_CONDITION",
+  "blocker_class": "PROVIDER_MODEL_QUALITY",
+  "blocker_evidence": "All 8 root-cause layers PASS; ornith:9b language score 0.75-0.80 < 0.85 across 3 independent runs; qwen3.5:latest fails ideation 3/3; deepseek-v4-flash:cloud subscription-gated.",
+  "final_verdict": "BLOCKED",
+  "final_verdict_reason": "No available provider/model meets the C7 quality gate without changing evaluator or threshold. Truthfulness over PASS."
+}

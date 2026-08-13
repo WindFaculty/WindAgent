@@ -1,0 +1,22 @@
+{
+  "phase": "A",
+  "s2_sha": "16602f3b777e103f7565dcfb44abf0682b0cb550",
+  "head_sha_at_verification": "694362c741b2005632d5efc03898c02710f02386",
+  "head_note": "S3 = S2 + env-driven provider model override (certification harness only, no product code change)",
+  "branch": "chore/cleanup-stale-md-docs",
+  "worktree": "clean (only untracked artifacts/studio_roadmap_01/c7/ certification evidence)",
+  "remote_visibility": "LOCAL_ONLY",
+  "remote_note": "S2 (16602f3) and S3 (694362c) not present on GitHub remote; local-only commits. Not a technical blocker for local verification.",
+  "commits_after_s2": [
+    {
+      "sha": "694362c741b2005632d5efc03898c02710f02386",
+      "message": "feat(certification): env-driven provider model for qualification runs",
+      "files": [
+        "scripts/studio_roadmap/c7_slice_harness.py",
+        "scripts/studio_roadmap/certification_launcher.py"
+      ]
+    }
+  ],
+  "git_status_short": "?? artifacts/studio_roadmap_01/c7/",
+  "verified_at": "2026-08-12T13:05:00Z"
+}

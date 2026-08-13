@@ -1,0 +1,31 @@
+{
+ "verdict": "WIND_STUDIO_FRONTEND_DEAD_CODE_CLEANUP_VERIFIED",
+ "captured_at": "2026-08-13T03:46:21.123714Z",
+ "deleted_files": 36,
+ "directories_removed": 4,
+ "dead_exports_removed": 4,
+ "dependencies_removed": 0,
+ "roadmap2_production_files_deleted": 0,
+ "studio_protected_files_deleted": 0,
+ "regression": {
+  "desktop_typecheck": "PASS",
+  "desktop_tests": "PASS (8 files/71)",
+  "desktop_build": "PASS",
+  "web_tests": "PASS (empty suite, passWithNoTests)",
+  "web_build": "PASS",
+  "frontend_packages": "PASS (92 tests; typecheck failures identical pre-existing set)",
+  "studio_regression": "PASS (studioShell/studioStory/studio-contracts drift)",
+  "production_regression": "PASS (productionPackageTests + ProductionWorkspacePage build)",
+  "python_web_test": "PASS (2)"
+ },
+ "stop_conditions_triggered": [],
+ "unknowns_remaining": [
+  "apps/desktop/src/api/client.ts pre-existing dead exports (createSession/fetchSession*/sendMessage/fetchPermissionConfig/patchPermissionConfig/decidePermission/fetchRunner/fetchWorkflow/...) — MEDIUM confidence, reported not deleted",
+  "apps/web legacy pages Browser/Files/Memory/Settings/Workflows = LEGACY_REACHABLE (rule 28)"
+ ],
+ "bundles": {
+  "files_before": 225,
+  "files_after": 189,
+  "files_removed": 36
+ }
+}

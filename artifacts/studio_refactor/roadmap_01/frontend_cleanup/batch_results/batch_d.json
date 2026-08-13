@@ -1,0 +1,6 @@
+{
+ "batch": "D",
+ "scope": "dead assets",
+ "files": [],
+ "result": "N/A — zero frontend assets found (no public/ dirs; src-tauri icons/capabilities protected; studio-contracts fixtures = test/drift assets, protected)"
+}

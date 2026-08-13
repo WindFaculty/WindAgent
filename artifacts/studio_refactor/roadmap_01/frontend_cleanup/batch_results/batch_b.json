@@ -1,0 +1,25 @@
+{
+ "batch": "B",
+ "scope": "apps/web legacy clients + state (dead since web became @desktop/App re-export)",
+ "files": [
+  "apps/web/src/clients/api_client.ts",
+  "apps/web/src/clients/artifact_client.ts",
+  "apps/web/src/clients/event_stream_client.ts",
+  "apps/web/src/clients/permission_client.ts",
+  "apps/web/src/clients/provider_client.ts",
+  "apps/web/src/clients/__tests__/api_client.test.ts",
+  "apps/web/src/clients/__tests__/artifact_client.test.ts",
+  "apps/web/src/clients/__tests__/event_stream_client.test.ts",
+  "apps/web/src/clients/__tests__/permission_client.test.ts",
+  "apps/web/src/clients/__tests__/provider_client.test.ts",
+  "apps/web/src/state/state_recovery.ts",
+  "apps/web/src/state/__tests__/state_recovery.test.ts"
+ ],
+ "followup": "web vitest suite became legitimately empty -> passWithNoTests: true added to apps/web/vite.config.ts (test exit 0, coverage exit 0)",
+ "gate": {
+  "web_typecheck": 0,
+  "web_tests": "empty suite, exit 0 (passWithNoTests)",
+  "web_build": 0
+ },
+ "result": "PASS"
+}

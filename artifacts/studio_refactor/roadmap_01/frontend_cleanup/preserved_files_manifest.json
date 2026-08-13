@@ -1,0 +1,57 @@
+[
+ {
+  "path": "frontend/packages/production-state/",
+  "classification": "ROADMAP_2_PRESERVED",
+  "reason": "Production UI preserved for Roadmap 2 — zero importers today (DEAD_PACKAGE-looking) but production code is REPORT ONLY per task rule 25."
+ },
+ {
+  "path": "frontend/packages/production-contracts/src/routing/routingCodec.ts",
+  "classification": "ROADMAP_2_PRESERVED",
+  "reason": "Dead export inside production-contracts — REPORT ONLY per rule 25."
+ },
+ {
+  "path": "apps/desktop/src/components/studio/ApprovalBar.tsx",
+  "classification": "ROADMAP_2_PRESERVED",
+  "reason": "Studio protected (rule 26): zero current importers but state-dependent reachability (approval flow) not ruled out; actively modified by parallel agent."
+ },
+ {
+  "path": "apps/desktop/src/components/studio/ArtifactViews.tsx",
+  "classification": "ROADMAP_2_PRESERVED",
+  "reason": "Studio protected (rule 26): artifact renderer, state-dependent reachability."
+ },
+ {
+  "path": "apps/desktop/src/components/studio/RunProgress.tsx",
+  "classification": "ROADMAP_2_PRESERVED",
+  "reason": "Studio protected (rule 26): run progress, state-dependent reachability."
+ },
+ {
+  "path": "apps/desktop/src/components/assets/**",
+  "classification": "ROADMAP_2_PRESERVED",
+  "reason": "Production/asset pipeline (rule 4 + 25): AssetWorkspace imported by App.tsx; siblings wired through it."
+ },
+ {
+  "path": "apps/desktop/src/components/ui/**",
+  "classification": "SHARED_ACTIVE",
+  "reason": "Design-system primitives, untracked WIP of parallel agent, imported by StudioPage."
+ },
+ {
+  "path": "frontend/packages/story-ui/ + studio-shell/",
+  "classification": "SHARED_ACTIVE",
+  "reason": "Untracked packages, imported by desktop (story-ui x4, studio-shell x1). Typecheck failures pre-existing (parallel WIP)."
+ },
+ {
+  "path": "apps/desktop/src/api/client.ts (createSession/fetchSession/sendMessage/fetchPermissionConfig/... exports)",
+  "classification": "UNKNOWN",
+  "reason": "Pre-existing dead-looking exports inside LEGACY_REACHABLE live file. Not orphaned by this task's deletions — MEDIUM confidence, rule 18 says report only. Possible future consumers (parallel agent UI work)."
+ },
+ {
+  "path": "apps/desktop/src/state/theme.tsx, multiAgentStore.tsx, services/conversationSocketManager.ts",
+  "classification": "LEGACY_REACHABLE",
+  "reason": "Live: main.tsx / MultiAgentWorkspace / multiAgentStore import them."
+ },
+ {
+  "path": "frontend/packages/studio-contracts/fixtures/*",
+  "classification": "SHARED_ACTIVE",
+  "reason": "Test/drift assets used by check-drift.mjs + tests/unit/api/test_studio_contract_fixtures.py — protected."
+ }
+]

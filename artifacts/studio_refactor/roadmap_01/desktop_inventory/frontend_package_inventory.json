@@ -1,0 +1,143 @@
+{
+  "generated_at": "2026-08-13T00:00:00Z",
+  "head": "b36e84f",
+  "note": "Desktop frontend packages. apps/desktop is the app shell; apps/web is a browser re-export of the same App via @desktop alias. frontend/packages are shared TS source packages (workspace: frontend/package.json workspaces packages/*).",
+  "packages": [
+    {
+      "name": "windagent-desktop",
+      "path": "apps/desktop",
+      "purpose": "Tauri 2 + React 18 desktop app. Own vite/vitest config. The ONLY app bundle that loads the full UI.",
+      "runtime": "app (dev + production)",
+      "used_by_desktop": true,
+      "used_by_web": false,
+      "shared": false,
+      "legacy": false,
+      "deps": ["react 18.3", "@reduxjs/toolkit 2", "react-redux 9", "zustand 5", "react-markdown", "remark-gfm", "@tauri-apps/api 2", "file:../../frontend/packages/* (8 packages)"],
+      "devDeps": ["vite 5", "vitest 4", "happy-dom", "@testing-library/react 16", "@tauri-apps/cli 2", "typescript 5.6"]
+    },
+    {
+      "name": "windagent-web",
+      "path": "apps/web",
+      "purpose": "Browser-targeted Vite app. App.tsx re-exports desktop App via alias @desktop -> ../desktop/src. Its own src/clients/* + src/state/state_recovery.ts are NOT imported by the app (only by their own tests) - dead leftovers of a Phase-13 web app.",
+      "runtime": "dev-only browser build",
+      "used_by_desktop": false,
+      "used_by_web": true,
+      "shared": false,
+      "legacy": true,
+      "deps": ["react 18.2", "@reduxjs/toolkit", "lucide-react", "5x production-* file packages"]
+    },
+    {
+      "name": "@windagent/production-contracts",
+      "path": "frontend/packages/production-contracts",
+      "purpose": "TS types + routing codecs for the production workspace (project, revision, screenplay, commands, events).",
+      "runtime": "source-only, bundled into apps",
+      "used_by_desktop": true,
+      "used_by_web": true,
+      "shared": true,
+      "legacy": false,
+      "roadmap_1_status": "PRESERVE (production domain stays for Roadmap 2)"
+    },
+    {
+      "name": "@windagent/production-client",
+      "path": "frontend/packages/production-client",
+      "purpose": "ProductionApiClient interface + HttpProductionApiClient (/api/v2/video-production/*) + FakeProductionApiClient (in-memory proj-alpha/proj-beta) + ProductionSyncClient.",
+      "runtime": "source-only",
+      "used_by_desktop": true,
+      "used_by_web": true,
+      "shared": true,
+      "legacy": false,
+      "notes": "HttpProductionApiClient.listProjects() hardcodes getProject('vp_001'). Fake client used by ProductionWorkspacePage; Http client has ZERO app callers.",
+      "roadmap_1_status": "PRESERVE/ISOLATE (fake client is the desktop wiring today)"
+    },
+    {
+      "name": "@windagent/production-platform",
+      "path": "frontend/packages/production-platform",
+      "purpose": "ProductionPlatformAdapter port + adapters: TauriDesktopAdapter (file dialog), BrowserWebAdapter, FakeTestAdapter, DesktopStorageRecoveryAdapter, WebStorageRecoveryAdapter.",
+      "runtime": "source-only",
+      "used_by_desktop": true,
+      "used_by_web": true,
+      "shared": true,
+      "legacy": false,
+      "roadmap_1_status": "PRESERVE"
+    },
+    {
+      "name": "@windagent/production-state",
+      "path": "frontend/packages/production-state",
+      "purpose": "Redux Toolkit store: projectContextSlice, screenplaySlice, bindingSlice, recoverySlice, useUnsavedChangesGuard.",
+      "runtime": "source-only",
+      "used_by_desktop": false,
+      "used_by_web": false,
+      "shared": true,
+      "legacy": false,
+      "notes": "No app importer found (tests only) - dead export until a production screen mounts it.",
+      "roadmap_1_status": "PRESERVE_FOR_ROADMAP_2"
+    },
+    {
+      "name": "@windagent/production-ui",
+      "path": "frontend/packages/production-ui",
+      "purpose": "ProductionShell (project switcher + 3 module tabs) + rich screenplay/collaboration/conflict/recovery component suite + 3 placeholders (ScriptEditorPlaceholder, AssetLibraryPlaceholder, VideoWorkspacePlaceholder).",
+      "runtime": "source-only",
+      "used_by_desktop": true,
+      "used_by_web": false,
+      "shared": true,
+      "legacy": false,
+      "notes": "ProductionShell renders the 3 PLACEHOLDERS; ScreenplayWorkspaceView, StructuredEditor, SceneTree, SceneInspector, ConflictResolverModal, SemanticDiffViewer etc. are exported but imported by NOTHING outside tests (dead exports, TEST_ONLY). ProductionHeader gets hardcoded syncStatus='synced' backendStatus='online'.",
+      "roadmap_1_status": "PRESERVE_FOR_ROADMAP_2; placeholders = current production UI"
+    },
+    {
+      "name": "@windagent/studio-contracts",
+      "path": "frontend/packages/studio-contracts",
+      "purpose": "Frozen studio.contract/v0.1 TS types generated from JSON schemas (series, episode, episode-state, artifact-envelope, run-resource, run-status, error-payload, approval-mode, idempotency-headers, rabbit-kite-scenario) + fixtures. Scripts: generate-contracts.mjs, check-drift.mjs.",
+      "runtime": "source-only",
+      "used_by_desktop": true,
+      "used_by_web": false,
+      "shared": true,
+      "legacy": false,
+      "roadmap_1_status": "KEEP (frozen contract)"
+    },
+    {
+      "name": "@windagent/studio-client",
+      "path": "frontend/packages/studio-client",
+      "purpose": "HttpStudioApiClient - real HTTP client for /api/v3/studio. Idempotency key required on mutations, 15s timeout, typed StudioApiError/StudioNetworkError/StudioTimeoutError, GET retry once.",
+      "runtime": "source-only",
+      "used_by_desktop": true,
+      "used_by_web": false,
+      "shared": true,
+      "legacy": false,
+      "roadmap_1_status": "KEEP"
+    },
+    {
+      "name": "@windagent/studio-state",
+      "path": "frontend/packages/studio-state",
+      "purpose": "StudioStore - class-based server-authority state/query layer: Maps for series/episodes/runs/artifacts, capabilities, pending-command markers, run polling (2s interval, cursor from server next_after), sessionStorage cursor hydration, error classification.",
+      "runtime": "source-only",
+      "used_by_desktop": true,
+      "used_by_web": false,
+      "shared": true,
+      "legacy": false,
+      "roadmap_1_status": "KEEP"
+    },
+    {
+      "name": "story-ui",
+      "path": null,
+      "purpose": "Roadmap 1 target package for story workflow UI components.",
+      "runtime": null,
+      "used_by_desktop": false,
+      "used_by_web": false,
+      "shared": false,
+      "legacy": false,
+      "roadmap_1_status": "NOT_IMPLEMENTED"
+    },
+    {
+      "name": "studio-shell",
+      "path": null,
+      "purpose": "Roadmap 1 target package for the Studio shell/layout.",
+      "runtime": null,
+      "used_by_desktop": false,
+      "used_by_web": false,
+      "shared": false,
+      "legacy": false,
+      "roadmap_1_status": "NOT_IMPLEMENTED"
+    }
+  ]
+}

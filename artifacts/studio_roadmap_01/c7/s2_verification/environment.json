@@ -1,0 +1,30 @@
+{
+  "phase": "A",
+  "s2_sha": "16602f3b777e103f7565dcfb44abf0682b0cb550",
+  "python_version": "3.11.15",
+  "os": "Windows-10-10.0.26200-SP0",
+  "platform": "win32",
+  "provider_config": {
+    "vendor": "ollama-local",
+    "endpoint_id": "ep_ollama_local",
+    "endpoint_url": "http://127.0.0.1:11434/v1",
+    "protocol_mode": "ollama",
+    "canonical_model": "windagent/story-default",
+    "binding_id": "bind_ollama_ornith:9b (S2 run) / bind_ollama_qwen3.5:latest (qualification run)",
+    "default_provider_model": "ornith:9b",
+    "qualification_provider_model": "qwen3.5:latest",
+    "model_route_env": "WINDAGENT_STUDIO_MODEL_ROUTE=1",
+    "provider_models_listed_via_ollama": ["qwen3.5:latest", "deepseek-v4-flash:cloud", "ornith:9b"]
+  },
+  "environment_variables": {
+    "WINDAGENT_CERTIFICATION_MODE": "1",
+    "WINDAGENT_STUDIO_RUNTIME": "1",
+    "WINDAGENT_STUDIO_MODEL_ROUTE": "1",
+    "WINDAGENT_STUDIO_CANONICAL_MODEL": "windagent/story-default",
+    "WINDAGENT_STUDIO_PROVIDER_MODEL": "SET per run (ornith:9b default / qwen3.5:latest qualification)",
+    "GOOGLE_API_KEY": "PRESENT",
+    "OPENROUTER_API_KEY": "PRESENT"
+  },
+  "secret_values_note": "No plaintext API keys/tokens recorded; only PRESENT markers.",
+  "verified_at": "2026-08-12T13:05:00Z"
+}

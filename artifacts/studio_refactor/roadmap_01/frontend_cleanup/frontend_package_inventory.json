@@ -1,0 +1,153 @@
+{
+ "captured_at": "2026-08-13T03:45:26.977869Z",
+ "packages": {
+  "@windagent/production-client": {
+   "path": "frontend/packages/production-client/package.json",
+   "version": "0.1.0",
+   "scripts": [
+    "typecheck"
+   ],
+   "workspace_deps": []
+  },
+  "@windagent/production-contracts": {
+   "path": "frontend/packages/production-contracts/package.json",
+   "version": "0.1.0",
+   "scripts": [
+    "typecheck"
+   ],
+   "workspace_deps": []
+  },
+  "@windagent/production-platform": {
+   "path": "frontend/packages/production-platform/package.json",
+   "version": "0.1.0",
+   "scripts": [
+    "typecheck",
+    "test"
+   ],
+   "workspace_deps": []
+  },
+  "@windagent/production-state": {
+   "path": "frontend/packages/production-state/package.json",
+   "version": "0.1.0",
+   "scripts": [
+    "typecheck",
+    "test"
+   ],
+   "workspace_deps": []
+  },
+  "@windagent/production-ui": {
+   "path": "frontend/packages/production-ui/package.json",
+   "version": "0.1.0",
+   "scripts": [
+    "typecheck",
+    "test"
+   ],
+   "workspace_deps": []
+  },
+  "@windagent/story-ui": {
+   "path": "frontend/packages/story-ui/package.json",
+   "version": "0.1.0",
+   "scripts": [
+    "typecheck",
+    "test"
+   ],
+   "workspace_deps": []
+  },
+  "@windagent/studio-client": {
+   "path": "frontend/packages/studio-client/package.json",
+   "version": "0.1.0",
+   "scripts": [
+    "typecheck",
+    "test"
+   ],
+   "workspace_deps": []
+  },
+  "@windagent/studio-contracts": {
+   "path": "frontend/packages/studio-contracts/package.json",
+   "version": "0.1.0",
+   "scripts": [
+    "typecheck",
+    "test",
+    "generate:contracts",
+    "check:drift"
+   ],
+   "workspace_deps": []
+  },
+  "@windagent/studio-shell": {
+   "path": "frontend/packages/studio-shell/package.json",
+   "version": "0.1.0",
+   "scripts": [
+    "typecheck",
+    "test"
+   ],
+   "workspace_deps": []
+  },
+  "@windagent/studio-state": {
+   "path": "frontend/packages/studio-state/package.json",
+   "version": "0.1.0",
+   "scripts": [
+    "typecheck",
+    "test"
+   ],
+   "workspace_deps": []
+  },
+  "windagent-desktop": {
+   "path": "apps/desktop/package.json",
+   "version": "0.3.0",
+   "scripts": [
+    "dev",
+    "build",
+    "preview",
+    "type-check",
+    "tauri",
+    "test",
+    "test:watch"
+   ],
+   "workspace_deps": [
+    "@windagent/production-client",
+    "@windagent/production-contracts",
+    "@windagent/production-platform",
+    "@windagent/production-state",
+    "@windagent/production-ui",
+    "@windagent/story-ui",
+    "@windagent/studio-client",
+    "@windagent/studio-contracts",
+    "@windagent/studio-shell",
+    "@windagent/studio-state"
+   ]
+  },
+  "windagent-web": {
+   "path": "apps/web/package.json",
+   "version": "0.3.0",
+   "scripts": [
+    "dev",
+    "build",
+    "lint",
+    "test",
+    "test:watch",
+    "test:coverage",
+    "typecheck",
+    "preview"
+   ],
+   "workspace_deps": [
+    "@windagent/production-client",
+    "@windagent/production-contracts",
+    "@windagent/production-platform",
+    "@windagent/production-state",
+    "@windagent/production-ui"
+   ]
+  }
+ },
+ "classifications": {
+  "@windagent/studio-contracts": "ACTIVE_PACKAGE (desktop + story-ui + drift checker)",
+  "@windagent/studio-client": "ACTIVE_PACKAGE (StudioPage)",
+  "@windagent/studio-state": "ACTIVE_PACKAGE (StudioPage)",
+  "@windagent/studio-shell": "ACTIVE_PACKAGE (App.tsx, parallel WIP)",
+  "@windagent/story-ui": "ACTIVE_PACKAGE (desktop x4, parallel WIP)",
+  "@windagent/production-contracts": "ACTIVE_PACKAGE (ProductionWorkspacePage + 4 packages depend on it)",
+  "@windagent/production-client": "ACTIVE_PACKAGE (ProductionWorkspacePage)",
+  "@windagent/production-platform": "ACTIVE_PACKAGE (ProductionWorkspacePage)",
+  "@windagent/production-ui": "ACTIVE_PACKAGE (ProductionWorkspacePage)",
+  "@windagent/production-state": "ROADMAP_2_PACKAGE (0 importers — REPORT ONLY)"
+ }
+}

@@ -1,0 +1,12 @@
+{
+  "c8": {
+    "status": "NOT_RUN",
+    "reason": "C7_STOP_CONDITION",
+    "detail": "C7(S2) = FAIL (quality gate, PROVIDER_MODEL_QUALITY blocker). Per stop condition, C8 not executed."
+  },
+  "c9": {
+    "status": "NOT_RUN",
+    "reason": "C7_STOP_CONDITION",
+    "detail": "C8 not run; C9 requires C7+C8 PASS on same SHA."
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "entry_points": [
+    "apps/desktop/index.html",
+    "apps/desktop/src/main.tsx",
+    "apps/web/index.html",
+    "apps/web/src/main.tsx"
+  ],
+  "note": "main.tsx files + index.html. Vite dev/build uses these; Tauri uses index.html."
+}

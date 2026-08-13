@@ -1,0 +1,31 @@
+{
+  "generated_at": "2026-08-13T00:00:00Z",
+  "navigation_style": "HARDCODED in apps/desktop/src/App.tsx (JSX divs + inline SVG icons, onClick setActiveTab). No config, no permission checks, no feature flags, no menu data structure.",
+  "groups": [
+    {
+      "group": "Main",
+      "items": [
+        { "label": "Dashboard", "tab": "dashboard", "icon": "inline svg (grid)", "source": "App.tsx:311-319", "roadmap_1": "KEEP (system/home dashboard)" },
+        { "label": "Agents", "tab": "agents", "icon": "inline svg (users)", "source": "App.tsx:320-328", "roadmap_1": "MOVE to SYSTEM group" },
+        { "label": "Agent Workspace", "tab": "workspace", "icon": "inline svg (terminal)", "source": "App.tsx:329-337", "roadmap_1": "KEEP (system)" },
+        { "label": "Workflows", "tab": "workflows", "icon": "inline svg (git-branch)", "source": "App.tsx:339-347", "roadmap_1": "MOVE to SYSTEM group" },
+        { "label": "Browser", "tab": "browser", "icon": "inline svg (globe)", "source": "App.tsx:348-356", "roadmap_1": "MOVE to SYSTEM group" },
+        { "label": "Files", "tab": "files", "icon": "inline svg (folder)", "source": "App.tsx:357-365", "roadmap_1": "MOVE to SYSTEM group" },
+        { "label": "Memory", "tab": "memory", "icon": "inline svg (chip)", "source": "App.tsx:366-374", "roadmap_1": "MOVE to SYSTEM group" },
+        { "label": "Models", "tab": "models-library|models-endpoints", "icon": "inline svg + chevron (expandable)", "source": "App.tsx:375-427", "roadmap_1": "MOVE to SYSTEM group; keep expandable submenu" },
+        { "label": "Router", "tab": "router", "icon": "inline svg (shuffle)", "source": "App.tsx:428-436", "roadmap_1": "MOVE to SYSTEM group" },
+        { "label": "Studio", "tab": "studio", "icon": "inline svg (film)", "source": "App.tsx:438-446", "roadmap_1": "KEEP + PROMOTE to first-class Studio section" },
+        { "label": "Production", "tab": "production-* (expandable)", "icon": "inline svg + chevron", "source": "App.tsx:448-508", "roadmap_1": "HIDE_FOR_ROADMAP_1 (or keep as collapsed PRODUCTION group; Roadmap 1 is Studio-first)" },
+        { "label": "Script Workspace", "tab": "production-script", "icon": "emoji 📜", "source": "App.tsx:485-491", "roadmap_1": "PRODUCTION_ROADMAP_2" },
+        { "label": "Asset Library", "tab": "production-assets", "icon": "emoji 🎨", "source": "App.tsx:492-498", "roadmap_1": "PRODUCTION_ROADMAP_2" },
+        { "label": "Video Workspace", "tab": "production-video", "icon": "emoji 🎬", "source": "App.tsx:499-505", "roadmap_1": "PRODUCTION_ROADMAP_2" },
+        { "label": "Settings", "tab": "settings", "icon": "inline svg (gear)", "source": "App.tsx:509-518", "roadmap_1": "KEEP (SYSTEM group)" }
+      ]
+    }
+  ],
+  "sidebar_bottom": "version box 'WindAgent v1.2.0' (HARDCODED - mismatches tauri.conf 0.3.0) + fake user 'WindUser'/'Administrator' (App.tsx:521-542)",
+  "active_route_logic": "activeTab === tab string compare; studio tab active regardless of hash sub-route",
+  "expansion_state": "isModelsExpanded / isProductionExpanded useState; auto-expand on tab match (App.tsx:55-62)",
+  "hidden_items": ["asset-library tab rendered at App.tsx:584 but no nav item sets it - dead tab"],
+  "roadmap_1_recommendation": "Extract nav config to data-driven structure (studio-shell package) with groups STUDIO / PRODUCTION / SYSTEM; studio-first ordering; keep all existing pages reachable behind SYSTEM group."
+}

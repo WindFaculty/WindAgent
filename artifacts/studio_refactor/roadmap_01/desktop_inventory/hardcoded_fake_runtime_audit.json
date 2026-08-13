@@ -1,0 +1,33 @@
+{
+  "generated_at": "2026-08-13T00:00:00Z",
+  "findings": [
+    { "pattern": "proj-alpha", "location": "apps/desktop/src/pages/ProductionWorkspacePage.tsx:13", "classification": "PRODUCTION_RISK (fake project id wired into live production tab)", "detail": "route.projectId hardcoded 'proj-alpha' matching FakeProductionApiClient fixture" },
+    { "pattern": "proj-alpha", "location": "frontend/packages/production-ui/src/components/ProductionShell.tsx:70,186,193,200", "classification": "PRODUCTION_RISK", "detail": "fallback projectId 'proj-alpha' when route/currentProject missing" },
+    { "pattern": "vp_001", "location": "frontend/packages/production-client/src/ProductionApiClient.ts:45", "classification": "PRODUCTION_RISK (hardcoded id in Http client listProjects)", "detail": "HttpProductionApiClient.listProjects() = getProject('vp_001') - even the REAL client cannot list real projects" },
+    { "pattern": "FakeProductionApiClient", "location": "apps/desktop/src/pages/ProductionWorkspacePage.tsx:21", "classification": "PRODUCTION_RISK (fake client hardcoded as the production data source)", "detail": "Comment claims fallback to HTTP when server active; no fallback exists" },
+    { "pattern": "prj_default", "location": "apps/desktop/src/components/assets/AssetWorkspace.tsx:26", "classification": "DEV_ONLY (hardcoded default project id)", "detail": "dead tab component default" },
+    { "pattern": "127.0.0.1:8765 / ws://127.0.0.1:8765", "location": "apps/desktop/src/api/client.ts:15-16", "classification": "VALID_LOCAL_RUNTIME", "detail": "V2 API base matches dev_api.ps1 default; NOT configurable via env" },
+    { "pattern": "localhost:8000", "location": "apps/desktop/src/pages/StudioPage.tsx:31", "classification": "PRODUCTION_RISK (port mismatch)", "detail": "Studio default API base 8000 but backend default port 8765; requires VITE_API_BASE to be set (only set by C7 certification script)" },
+    { "pattern": "localhost:5173", "location": "apps/desktop/src-tauri/tauri.conf.json:8", "classification": "VALID_LOCAL_RUNTIME", "detail": "devUrl matches vite dev server" },
+    { "pattern": "fetchHermesHealth hardcoded", "location": "apps/desktop/src/api/client.ts:75-90", "classification": "PRODUCTION_RISK (stub lies)", "detail": "Returns literal {enabled:false, reachable:false} - Hermes badge in header can never show connected" },
+    { "pattern": "fetchRunner hardcoded", "location": "apps/desktop/src/api/client.ts:178-181", "classification": "DEV_ONLY", "detail": "Always {runner:null}" },
+    { "pattern": "v2Unavailable stubs", "location": "apps/desktop/src/api/client.ts:51-53 + 22 call sites", "classification": "LEGACY (dead-end stubs)", "detail": "agent registry, permission config/decide, pause/resume, retry, task-node/edge editing - all throw" },
+    { "pattern": "random mock metrics", "location": "apps/desktop/src/App.tsx:156-181", "classification": "DEV_ONLY (browser fallback)", "detail": "CPU/RAM/GPU/VRAM randomized when NOT in Tauri; Tauri path uses real sysinfo/NVML" },
+    { "pattern": "hardcoded initial metrics", "location": "apps/desktop/src/App.tsx:91-105", "classification": "DEV_ONLY", "detail": "cpu 18/ram 61/gpu 28/vram 42 seed values" },
+    { "pattern": "WindUser/Administrator/v1.2.0", "location": "apps/desktop/src/App.tsx:523,534-535", "classification": "DEV_ONLY (hardcoded identity + version mismatch)", "detail": "Sidebar bottom shows v1.2.0 while tauri.conf/Cargo say 0.3.0" },
+    { "pattern": "Browser page mock", "location": "apps/desktop/src/pages/Browser.tsx", "classification": "FAKE (hardcoded demo UI)", "detail": "32 mock/sample/demo matches, zero API imports" },
+    { "pattern": "Files page mock", "location": "apps/desktop/src/pages/Files.tsx", "classification": "FAKE (hardcoded demo UI)", "detail": "inline literal file rows, no API" },
+    { "pattern": "Memory page mock", "location": "apps/desktop/src/pages/Memory.tsx", "classification": "FAKE (hardcoded demo UI)", "detail": "inline literal memory rows, no API" },
+    { "pattern": "Workflows page", "location": "apps/desktop/src/pages/Workflows.tsx", "classification": "FAKE/PLACEHOLDER", "detail": "local state only, no client import" },
+    { "pattern": "Settings page", "location": "apps/desktop/src/pages/Settings.tsx", "classification": "PLACEHOLDER", "detail": "local state only" },
+    { "pattern": "Endpoints page", "location": "apps/desktop/src/pages/Endpoints.tsx", "classification": "PLACEHOLDER", "detail": "local state only" },
+    { "pattern": "Agents page stub-driven", "location": "apps/desktop/src/pages/Agents.tsx", "classification": "BROKEN", "detail": "fetchAgents/fetchAgentSummary/fetchAgentActivity all throw v2Unavailable -> page renders error/empty" },
+    { "pattern": "ProductionHeader hardcoded status", "location": "apps/desktop/src/pages/ProductionWorkspacePage.tsx (via ProductionShell.tsx:90-91)", "classification": "PRODUCTION_RISK (fake status)", "detail": "syncStatus='synced', backendStatus='online' hardcoded" },
+    { "pattern": "Placeholder copies", "location": "frontend/packages/production-ui/src/components/{ScriptEditorPlaceholder,AssetLibraryPlaceholder,VideoWorkspacePlaceholder}.tsx", "classification": "DEV_ONLY (intent markers)", "detail": "ProductionShell renders these; rich ScreenplayWorkspaceView suite dead" },
+    { "pattern": "Sidecar mock PIDs", "location": "apps/desktop/sidecar_manager.py:90-98,127-135", "classification": "DEV_ONLY (orphan module)", "detail": "mock_spawn=True default returns fake pid 1234/5678; zero callers in repo" },
+    { "pattern": "studio.eventCursors sessionStorage", "location": "apps/desktop/src/pages/StudioPage.tsx:63", "classification": "VALID_LOCAL_RUNTIME", "detail": "event cursor persistence" },
+    { "pattern": "VITE_STUDIO_CERTIFICATION_EPISODE_ID", "location": "apps/desktop/src/App.tsx:36-53", "classification": "DEV_ONLY (certification deep-link)", "detail": "forces studio tab + episode hash" },
+    { "pattern": "FakeTestAdapter", "location": "frontend/packages/production-platform/src/adapters/FakeTestAdapter.ts", "classification": "TEST_ONLY", "detail": "test double, fine" },
+    { "pattern": "tests/fixtures studio sample data", "location": "frontend/packages/studio-contracts/fixtures/*", "classification": "TEST_ONLY", "detail": "frozen contract fixtures (rabbit-kite-scenario etc.)" }
+  ]
+}

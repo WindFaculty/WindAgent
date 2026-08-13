@@ -1,0 +1,36 @@
+{
+ "batch": "A",
+ "scope": "apps/desktop orphan source+test cluster (chat/session/workflow legacy)",
+ "files": [
+  "apps/desktop/src/components/ChatInput.tsx",
+  "apps/desktop/src/components/ChatPanel.tsx",
+  "apps/desktop/src/components/ChatPanel.test.tsx",
+  "apps/desktop/src/components/MessageList.tsx",
+  "apps/desktop/src/components/ControlBar.tsx",
+  "apps/desktop/src/components/ControlBar.test.tsx",
+  "apps/desktop/src/components/StatusBar.tsx",
+  "apps/desktop/src/components/WorkflowPanel.tsx",
+  "apps/desktop/src/components/WorkflowPanel.test.tsx",
+  "apps/desktop/src/components/WorkflowStepItem.tsx",
+  "apps/desktop/src/components/PermissionDialog.tsx",
+  "apps/desktop/src/components/SessionNavigator.tsx",
+  "apps/desktop/src/hooks/useSessionEvents.ts",
+  "apps/desktop/src/lib/routerApi.ts",
+  "apps/desktop/src/services/agentEventReducer.ts",
+  "apps/desktop/src/services/agentSocketManager.ts",
+  "apps/desktop/src/state/agentSessionStore.ts",
+  "apps/desktop/src/state/agentSessionRecovery.test.ts",
+  "apps/desktop/src/state/agentSessionSocket.test.ts",
+  "apps/desktop/src/state/agentSessionStore.test.ts",
+  "apps/desktop/src/state/sessionStore.ts",
+  "apps/desktop/src/state/sessionStore.test.ts",
+  "apps/desktop/src/state/useAgentSession.ts",
+  "apps/desktop/src/test/routerApi.unit.test.ts"
+ ],
+ "gate": {
+  "desktop_typecheck": 0,
+  "desktop_tests": "8 files / 71 passed",
+  "desktop_build": 0
+ },
+ "result": "PASS"
+}
