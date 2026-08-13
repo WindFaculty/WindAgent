@@ -43,6 +43,10 @@ export default defineConfig({
     globals: true,
     setupFiles: ["./src/test/setup.ts"],
     include: ["src/**/*.{test,spec}.{ts,tsx}"],
+    // ponytail: web app is now a pure re-export of @desktop/App — all UI
+    // tests live in apps/desktop (shared source). Legacy web clients/state
+    // removed with their tests, so the suite is legitimately empty.
+    passWithNoTests: true,
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html"],

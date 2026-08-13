@@ -27,19 +27,18 @@ apps/desktop/
 │   ├── api/
 │   │   ├── client.ts         # REST + WS client
 │   │   └── types.ts          # mirrors backend Pydantic schemas
-│   ├── hooks/
-│   │   └── useSessionEvents.ts
 │   ├── components/
-│   │   ├── ChatPanel.tsx
-│   │   ├── MessageList.tsx
-│   │   ├── ChatInput.tsx
-│   │   ├── WorkflowPanel.tsx
-│   │   ├── WorkflowStepItem.tsx
-│   │   ├── ControlBar.tsx
-│   │   ├── PermissionDialog.tsx
-│   │   └── StatusBar.tsx
+│   │   ├── assets/           # production asset workspace
+│   │   ├── studio/           # studio artifact views
+│   │   └── ui/               # design-system primitives
+│   ├── pages/                # Studio shell pages (Dashboard, Studio, ...)
+│   ├── lib/
+│   │   └── apiBase.ts        # single API base authority (UI0-INFRA-01)
+│   ├── services/
+│   │   └── conversationSocketManager.ts
 │   └── state/
-│       └── sessionStore.ts   # reducer + event-to-action adapter
+│       ├── theme.tsx
+│       └── multiAgentStore.tsx
 └── src-tauri/                # Tauri shell (build later)
     ├── Cargo.toml
     ├── build.rs

@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    run.ps1 - Menu khoi chay WindAgent (Web UI / API / Desktop App).
+    run.ps1 - Menu khoi chay WindAgent (Web UI / API / Desktop App / Tests).
 
 .DESCRIPTION
     Launcher tong hop voi menu tuong tac va ho tro truyen tham so -Option.
@@ -13,7 +13,7 @@
     Cong Vite dev server. Mac dinh: 5173.
 
 .PARAMETER Option
-    Lua chon menu khoi chay truc tiep (1-7, 0).
+    Lua chon menu khoi chay truc tiep (1-9, 0).
 #>
 [CmdletBinding()]
 param(
@@ -72,7 +72,7 @@ function Show-Menu {
     Write-Host "       Backend API (Mock) + Vite Web UI (apps/web)" -ForegroundColor DarkGray
     Write-Host ""
     Write-Host "  [2]  Web Dev - Real Mode" -ForegroundColor Green
-    Write-Host "       Backend API (Ollama + PyAutoGUI) + Vite Web UI (apps/web)" -ForegroundColor DarkGray
+    Write-Host "       Backend API (Real) + Vite Web UI (apps/web)" -ForegroundColor DarkGray
     Write-Host ""
     Write-Host "  -- Che do Desktop App (apps/desktop - Tauri) ------------" -ForegroundColor DarkGray
     Write-Host ""
@@ -80,13 +80,15 @@ function Show-Menu {
     Write-Host "       Backend API (Mock) + Tauri shell (apps/desktop)" -ForegroundColor DarkGray
     Write-Host ""
     Write-Host "  [4]  Desktop App - Real Mode" -ForegroundColor Yellow
-    Write-Host "       Backend API (Ollama + PyAutoGUI) + Tauri shell (apps/desktop)" -ForegroundColor DarkGray
+    Write-Host "       Backend API (Real) + Tauri shell (apps/desktop)" -ForegroundColor DarkGray
     Write-Host ""
-    Write-Host "  -- Tien ich -----------------------------------------------" -ForegroundColor DarkGray
+    Write-Host "  -- Tien ich & Testing ------------------------------------" -ForegroundColor DarkGray
     Write-Host ""
     Write-Host "  [5]  Chi chay Backend API (Mock)" -ForegroundColor Magenta
     Write-Host "  [6]  Chi chay Web UI (Vite apps/web)" -ForegroundColor Magenta
     Write-Host "  [7]  Health Check moi truong" -ForegroundColor Magenta
+    Write-Host "  [8]  Chi chay Desktop UI Dev (Vite apps/desktop)" -ForegroundColor Magenta
+    Write-Host "  [9]  Chay Test & Typecheck Matrix (Vitest & tsc)" -ForegroundColor Cyan
     Write-Host ""
     Write-Host "  [0]  Thoat" -ForegroundColor DarkGray
     Write-Host ""
@@ -166,6 +168,33 @@ function Execute-Option {
             return $true
         }
 
+        "8" {
+            Write-Host "`n  -> Chi chay Desktop UI Dev (apps/desktop)..." -ForegroundColor Magenta
+            & $DesktopScript -Port $FrontendPort
+            return $false
+        }
+
+        "9" {
+            Write-Host "`n  -> Chay Test & Typecheck Matrix..." -ForegroundColor Cyan
+            Push-Location (Join-Path $RepoRoot "frontend\packages\studio-shell")
+            Write-Host "  [studio-shell] Running Vitest..." -ForegroundColor DarkGray
+            npx vitest run
+            Pop-Location
+
+            Push-Location (Join-Path $RepoRoot "frontend\packages\story-ui")
+            Write-Host "  [story-ui] Running Vitest..." -ForegroundColor DarkGray
+            npx vitest run
+            Pop-Location
+
+            Push-Location (Join-Path $RepoRoot "apps\desktop")
+            Write-Host "  [apps/desktop] Running Typecheck..." -ForegroundColor DarkGray
+            npm run type-check
+            Write-Host "  [apps/desktop] Running Vitest..." -ForegroundColor DarkGray
+            npm test
+            Pop-Location
+            return $true
+        }
+
         "0" {
             Write-Host "`n  Tam biet!`n" -ForegroundColor Cyan
             exit 0
@@ -192,12 +221,12 @@ while ($true) {
         $choice = Read-Host "  Nhap lua chon"
     } catch {
         Write-Host "`n  [!] Terminal khong ho tro nhap tuong tac (StandardInput unreadable/non-interactive)." -ForegroundColor Yellow
-        Write-Host "  Meo: Chay voi tham so: .\run.ps1 -Option <1-7>" -ForegroundColor Cyan
+        Write-Host "  Meo: Chay voi tham so: .\run.ps1 -Option <1-9>" -ForegroundColor Cyan
         exit 0
     }
 
     $shouldContinue = Execute-Option -SelectedChoice $choice
-    if ($shouldContinue -and $choice.Trim() -eq "7") {
+    if ($shouldContinue -and ($choice.Trim() -eq "7" -or $choice.Trim() -eq "9")) {
         Write-Host "`n  Nhan phim bat ky de quay lai menu..." -ForegroundColor DarkGray
         try {
             [void]$Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")

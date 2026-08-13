@@ -2,13 +2,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
 
-// Vite config for the WindAgent desktop app.
-//
-// Dev server proxies `/api` to the FastAPI backend on localhost:8765 so
-// the React app can call same-origin paths in dev. In Tauri production,
-// the backend runs as a sidecar (Phase 9) and the host is `tauri://`.
-//
-// WebSocket path is `/ws/...` which the proxy also forwards.
+// Vite config for the WindAgent desktop app with Phase UI11 Rollup code-splitting.
 export default defineConfig({
   plugins: [react()],
   resolve: {
@@ -27,20 +21,41 @@ export default defineConfig({
       allow: ['..', '../../frontend'],
     },
     proxy: {
-              "/api": {
-                target: "http://127.0.0.1:8765",
-                changeOrigin: true,
-                rewrite: (p) => p.replace(/^\/api/, ""),
-                ws: true,
-              },
-              "/ws": {
-                target: "ws://127.0.0.1:8765",
-                ws: true,
-              },
-            },
+      "/api": {
+        target: "http://127.0.0.1:8765",
+        changeOrigin: true,
+        rewrite: (p) => p.replace(/^\/api/, ""),
+        ws: true,
+      },
+      "/ws": {
+        target: "ws://127.0.0.1:8765",
+        ws: true,
+      },
+    },
   },
   build: {
     outDir: "dist",
     sourcemap: true,
+    chunkSizeWarningLimit: 800,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom')) {
+              return 'vendor-react';
+            }
+            if (id.includes('lucide-react')) {
+              return 'vendor-icons';
+            }
+          }
+          if (id.includes('frontend/packages/story-ui')) {
+            return 'story-ui';
+          }
+          if (id.includes('frontend/packages/studio-shell')) {
+            return 'studio-shell';
+          }
+        },
+      },
+    },
   },
 });

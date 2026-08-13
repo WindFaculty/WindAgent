@@ -21,6 +21,7 @@
     "react-redux": "^9.3.0",
     "remark-gfm": "^4.0.1",
     "zustand": "^5.0.14",
+    "lucide-react": "^0.344.0",
     "@windagent/production-contracts": "file:../../frontend/packages/production-contracts",
     "@windagent/production-client": "file:../../frontend/packages/production-client",
     "@windagent/production-platform": "file:../../frontend/packages/production-platform",
@@ -28,7 +29,9 @@
     "@windagent/production-ui": "file:../../frontend/packages/production-ui",
     "@windagent/studio-client": "file:../../frontend/packages/studio-client",
     "@windagent/studio-state": "file:../../frontend/packages/studio-state",
-    "@windagent/studio-contracts": "file:../../frontend/packages/studio-contracts"
+    "@windagent/studio-contracts": "file:../../frontend/packages/studio-contracts",
+    "@windagent/studio-shell": "file:../../frontend/packages/studio-shell",
+    "@windagent/story-ui": "file:../../frontend/packages/story-ui"
   },
   "devDependencies": {
     "@tauri-apps/api": "^2.11.1",

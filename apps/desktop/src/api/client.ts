@@ -4,7 +4,6 @@ import type {
   ChatSession,
   ConversationEventEnvelope,
   CreateSessionResponse,
-  EventEnvelope,
   ModelsHealthResponse,
   PermissionConfigResponse,
   RunnerState,
@@ -179,17 +178,6 @@ export async function fetchRunner(sessionId: string): Promise<{ runner: RunnerSt
   return { runner: null };
 }
 
-export async function controlSession(
-  sessionId: string,
-  action: "pause" | "resume" | "stop",
-): Promise<void> {
-  if (action === "stop") {
-    await cancelSessionApi(sessionId);
-    return;
-  }
-  return v2Unavailable(`Session ${action}`);
-}
-
 // ---------- Phase 8: multi-agent workspace ----------
 
 export interface AgentBoardRow {
@@ -287,10 +275,6 @@ export async function fetchAgentEvents(
     `/api/v2/events?aggregate_id=${encodeURIComponent(agentInstanceId)}&min_sequence=${afterSeq}`,
   );
   return { agent_instance_id: agentInstanceId, session_id: null, events };
-}
-
-export async function retryStep(stepId: string): Promise<void> {
-  return v2Unavailable(`Workflow step retry for ${stepId}`);
 }
 
 export async function fetchPermissionConfig(): Promise<PermissionConfigResponse> {
@@ -467,7 +451,6 @@ export async function reloadBrowser(sessionId: string): Promise<BrowserState> {
 
 // ---------- WebSocket Client ----------
 
-export type WsListener = (env: EventEnvelope) => void;
 export type WsCloseListener = (reason: string) => void;
 
 export interface WsHandle {
@@ -476,50 +459,6 @@ export interface WsHandle {
 }
 
 export type ConversationWsListener = (env: ConversationEventEnvelope) => void;
-
-export function connectWs(
-  sessionId: string,
-  listeners: { onEvent?: WsListener; onClose?: WsCloseListener } = {},
-  afterSeq?: number
-): WsHandle {
-  const params = new URLSearchParams({ aggregate_id: sessionId });
-  if (afterSeq !== undefined) params.set("last_sequence", String(afterSeq));
-  const wsUrl = `${WS_BASE}/api/v2/events/ws?${params}`;
-  logDebug(`WebSocket connecting to ${wsUrl}`);
-  
-  const ws = new WebSocket(wsUrl);
-
-  ws.onmessage = (event) => {
-    if (event.data === "ping" || event.data === "pong") {
-      return; // filter keepalive frames
-    }
-    try {
-      const envelope: EventEnvelope = JSON.parse(event.data);
-      listeners.onEvent?.(envelope);
-    } catch (e) {
-      logDebug(`Failed to parse WS message: ${event.data}, error: ${e}`);
-    }
-  };
-
-  ws.onclose = (event) => {
-    listeners.onClose?.(event.reason || "Connection closed");
-  };
-
-  ws.onerror = (error) => {
-    logDebug(`WebSocket error: ${error}`);
-  };
-
-  return {
-    send: (text: string) => {
-      if (ws.readyState === WebSocket.OPEN) {
-        ws.send(text);
-      }
-    },
-    close: () => {
-      ws.close();
-    },
-  };
-}
 
 /** Open the single durable event stream for a conversation. */
 export function connectConversationWs(
