@@ -1,26 +1,41 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 :root {
-  --bg-darker: #07090e;
-  --bg-dark: #0b0f19;
-  --bg-panel: #0d1220;
-  --bg-panel-light: #141b2e;
-  --bg-panel-active: #1b253c;
-  --border-color: #1a2438;
-  --border-glow: rgba(59, 130, 246, 0.15);
-  --color-primary: #3b82f6;
-  --color-primary-glow: rgba(59, 130, 246, 0.35);
-  --color-success: #10b981;
-  --color-success-glow: rgba(16, 185, 129, 0.2);
+  --bg-darker: #060e20;
+  --bg-dark: #0b1326;
+  --bg-panel: #131b2e;
+  --bg-panel-light: #171f33;
+  --bg-panel-active: #222a3d;
+  --border-color: #424754;
+  --border-glow: rgba(77, 142, 255, 0.25);
+  --color-primary: #4d8eff;
+  --color-primary-glow: rgba(173, 198, 255, 0.35);
+  --color-secondary: #4edea3;
+  --color-success: #4edea3;
+  --color-success-glow: rgba(78, 222, 163, 0.2);
   --color-warning: #f59e0b;
-  --color-danger: #ef4444;
-  --color-accent: #8b5cf6;
-  --text-main: #f3f4f6;
-  --text-muted: #9ca3af;
-  --text-dim: #4b5563;
-  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --color-danger: #ffb4ab;
+  --color-accent: #c0c1ff;
+  --text-main: #dae2fd;
+  --text-muted: #c2c6d6;
+  --text-dim: #8c909f;
+  --font-sans: 'Hanken Grotesk', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
   --shadow: rgba(0, 0, 0, 0.6);
+
+  /* Stitch Kinetic Obsidian Tokens */
+  --stitch-bg: #0b1326;
+  --stitch-surface: #0b1326;
+  --stitch-surface-container: #171f33;
+  --stitch-surface-container-high: #222a3d;
+  --stitch-surface-container-highest: #2d3449;
+  --stitch-surface-container-low: #131b2e;
+  --stitch-surface-container-lowest: #060e20;
+  --stitch-on-surface: #dae2fd;
+  --stitch-on-surface-variant: #c2c6d6;
+  --stitch-primary: #adc6ff;
+  --stitch-primary-container: #4d8eff;
+  --stitch-secondary: #4edea3;
 
   /* Studio Semantic Tokens (UI1.1) */
   --studio-bg: var(--bg-darker);

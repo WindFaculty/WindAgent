@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>WindAgent Studio - Assets</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary": "#1000a9",
+                      "secondary-fixed": "#6ffbbe",
+                      "on-secondary-fixed-variant": "#005236",
+                      "outline-variant": "#424754",
+                      "secondary-container": "#00a572",
+                      "surface-container-high": "#222a3d",
+                      "tertiary-container": "#8083ff",
+                      "on-surface": "#dae2fd",
+                      "on-primary-fixed": "#001a42",
+                      "surface-tint": "#adc6ff",
+                      "on-primary": "#002e6a",
+                      "tertiary": "#c0c1ff",
+                      "inverse-surface": "#dae2fd",
+                      "surface-bright": "#31394d",
+                      "on-secondary": "#003824",
+                      "primary-container": "#4d8eff",
+                      "surface": "#0b1326",
+                      "surface-variant": "#2d3449",
+                      "on-tertiary-fixed-variant": "#2f2ebe",
+                      "on-secondary-container": "#00311f",
+                      "error-container": "#93000a",
+                      "on-tertiary-container": "#0d0096",
+                      "secondary-fixed-dim": "#4edea3",
+                      "on-background": "#dae2fd",
+                      "tertiary-fixed": "#e1e0ff",
+                      "primary-fixed": "#d8e2ff",
+                      "surface-container-highest": "#2d3449",
+                      "on-tertiary-fixed": "#07006c",
+                      "secondary": "#4edea3",
+                      "outline": "#8c909f",
+                      "on-primary-fixed-variant": "#004395",
+                      "primary-fixed-dim": "#adc6ff",
+                      "on-surface-variant": "#c2c6d6",
+                      "on-error-container": "#ffdad6",
+                      "surface-container-low": "#131b2e",
+                      "on-error": "#690005",
+                      "tertiary-fixed-dim": "#c0c1ff",
+                      "error": "#ffb4ab",
+                      "inverse-on-surface": "#283044",
+                      "inverse-primary": "#005ac2",
+                      "on-secondary-fixed": "#002113",
+                      "surface-container-lowest": "#060e20",
+                      "primary": "#adc6ff",
+                      "on-primary-container": "#00285d",
+                      "surface-container": "#171f33",
+                      "surface-dim": "#0b1326",
+                      "background": "#0b1326"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "lg": "32px",
+                      "gutter": "20px",
+                      "base": "4px",
+                      "xs": "8px",
+                      "sidebar_width": "240px",
+                      "xl": "48px",
+                      "sm": "16px",
+                      "md": "24px"
+              },
+              "fontFamily": {
+                      "label-sm": [
+                              "Hanken Grotesk"
+                      ],
+                      "body-lg": [
+                              "Hanken Grotesk"
+                      ],
+                      "label-caps": [
+                              "JetBrains Mono"
+                      ],
+                      "body-md": [
+                              "Hanken Grotesk"
+                      ],
+                      "display-lg": [
+                              "Hanken Grotesk"
+                      ],
+                      "display-lg-mobile": [
+                              "Hanken Grotesk"
+                      ],
+                      "headline-sm": [
+                              "Hanken Grotesk"
+                      ],
+                      "headline-md": [
+                              "Hanken Grotesk"
+                      ]
+              },
+              "fontSize": {
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-caps": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg": [
+                              "36px",
+                              {
+                                      "lineHeight": "44px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "display-lg-mobile": [
+                              "28px",
+                              {
+                                      "lineHeight": "36px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-sm": [
+                              "18px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        .glass-panel {
+            background: rgba(34, 42, 61, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(140, 144, 159, 0.1);
+        }
+        
+        .glass-card {
+            background: rgba(45, 52, 73, 0.4);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(140, 144, 159, 0.1);
+            transition: all 0.2s ease-in-out;
+        }
+
+        .glass-card:hover {
+            background: rgba(45, 52, 73, 0.6);
+            border-color: rgba(77, 142, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 12px rgba(77, 142, 255, 0.15);
+        }
+
+        .neon-glow {
+            box-shadow: 0 0 15px rgba(77, 142, 255, 0.3);
+        }
+        
+        /* Custom Scrollbar for dark theme */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(11, 19, 38, 0.5); 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(140, 144, 159, 0.3); 
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(140, 144, 159, 0.5); 
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md antialiased overflow-hidden flex h-screen">
+<!-- SideNavBar -->
+<nav class="fixed left-0 top-0 h-full flex flex-col py-md px-sm gap-y-xs overflow-y-auto bg-surface-container-lowest dark:bg-surface-container-lowest docked full-height left-0 w-sidebar_width border-r border-outline-variant/10 z-50">
+<!-- Brand / Header -->
+<div class="flex items-center gap-3 px-2 mb-lg mt-sm">
+<div class="w-8 h-8 rounded bg-primary-container flex items-center justify-center neon-glow">
+<span class="material-symbols-outlined text-on-primary-container text-[20px]" style="font-variation-settings: 'FILL' 1;">toys</span>
+</div>
+<div>
+<h1 class="text-headline-sm font-headline-sm font-bold text-on-surface dark:text-on-surface">WindAgent</h1>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Build • Create • Inspire</p>
+</div>
+</div>
+<!-- CTA -->
+<button class="w-full flex items-center justify-center gap-2 bg-primary-container hover:bg-primary-container/90 text-on-primary-container py-2.5 rounded-lg font-semibold transition-colors mb-6 shadow-[0_0_15px_rgba(77,142,255,0.2)]">
+<span class="material-symbols-outlined text-[18px]">add</span>
+            Tạo dự án mới
+        </button>
+<!-- Navigation Links -->
+<div class="flex-1 flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+<span class="text-label-sm font-label-sm">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">auto_awesome</span>
+<span class="text-label-sm font-label-sm">Studio</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">folder</span>
+<span class="text-label-sm font-label-sm">Projects</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">movie</span>
+<span class="text-label-sm font-label-sm">Episodes</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">grid_view</span>
+<span class="text-label-sm font-label-sm">Story Board</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">person</span>
+<span class="text-label-sm font-label-sm">Characters</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">public</span>
+<span class="text-label-sm font-label-sm">World/Setting</span>
+</a>
+<!-- Active State -->
+<a class="flex items-center gap-3 px-3 py-2.5 bg-primary-container text-on-primary-container rounded-lg font-semibold shadow-[0_0_15px_rgba(77,142,255,0.3)] transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">inventory_2</span>
+<span class="text-label-sm font-label-sm">Assets</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">rate_review</span>
+<span class="text-label-sm font-label-sm">Reviews</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">smart_toy</span>
+<span class="text-label-sm font-label-sm">Models</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">cloud</span>
+<span class="text-label-sm font-label-sm">Providers</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">account_tree</span>
+<span class="text-label-sm font-label-sm">Workflows</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">experiment</span>
+<span class="text-label-sm font-label-sm">Agent Lab</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">history</span>
+<span class="text-label-sm font-label-sm">Logs</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">database</span>
+<span class="text-label-sm font-label-sm">Database</span>
+</a>
+</div>
+<!-- Footer Links -->
+<div class="mt-auto pt-4 border-t border-outline-variant/10">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">code</span>
+<span class="text-label-sm font-label-sm">Development</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Wrapper (Accounts for Sidebar) -->
+<div class="flex-1 ml-[240px] flex flex-col h-screen relative">
+<!-- TopNavBar -->
+<header class="fixed top-0 left-sidebar_width right-0 z-40 flex justify-between items-center px-md py-xs h-16 bg-surface/80 backdrop-blur-xl border-b border-outline-variant/10 shadow-sm">
+<div class="flex items-center gap-6">
+<span class="text-headline-sm font-headline-sm font-extrabold tracking-tight text-on-surface">WindAgent Studio</span>
+<nav class="hidden md:flex gap-4 ml-8">
+<a class="text-on-surface-variant hover:text-primary transition-colors text-label-caps font-label-caps px-2 py-1" href="#">Studio</a>
+<a class="text-primary border-b-2 border-primary pb-1 text-label-caps font-label-caps px-2" href="#">Assets</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors text-label-caps font-label-caps px-2 py-1" href="#">Models</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors text-label-caps font-label-caps px-2 py-1" href="#">Monitoring</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors text-label-caps font-label-caps px-2 py-1" href="#">Settings</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<!-- Search on Right -->
+<div class="relative hidden lg:block w-64">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
+<input class="w-full bg-surface-container-high border-outline-variant/30 text-on-surface text-body-md font-body-md rounded-full pl-10 pr-4 py-1.5 focus:border-primary focus:ring-1 focus:ring-primary transition-all" placeholder="Search assets..." type="text"/>
+</div>
+<div class="flex items-center gap-2">
+<div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary-container/10 border border-secondary/20">
+<div class="w-2 h-2 rounded-full bg-secondary shadow-[0_0_8px_rgba(78,222,163,0.6)]"></div>
+<span class="text-label-sm font-label-sm text-secondary">System Online</span>
+</div>
+</div>
+<div class="flex items-center gap-2 border-l border-outline-variant/20 pl-4">
+<button class="p-2 rounded-full text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-all">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 rounded-full text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-all">
+<span class="material-symbols-outlined">help</span>
+</button>
+<button class="ml-2 w-8 h-8 rounded-full overflow-hidden border-2 border-surface-container-high hover:border-primary transition-colors">
+<img alt="Tran Xuan Khoa Profile" class="w-full h-full object-cover" data-alt="A small, circular avatar portrait of a creative professional in a dimly lit studio environment with cool blue lighting accents, highly detailed, photorealistic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC-r4qc9ez_PG9w4PF3WhgwRcC-2iIpHMSG3Da3cWi0Jtof2-7PGBMr2yDNwokbZOIreaezh9Bd60Ytbf6FNFxJBiMGes0Kz9Qx4EVdotQLzFuHRQTW8m9_nkFDVPob9URt8NYAlhnQf315kfLYhRnoL9GvSvaqnstC6IKoN15FQ05zZk37t_If2Jy2VPG4pq6r2YTaIQAB21Jh-kaAj_mXfgN1q7eL5GEvyyfzpHkgd1oLVrY_148MiA"/>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Workspace Canvas -->
+<main class="flex-1 mt-16 overflow-y-auto p-md pb-xl">
+<!-- Header Section -->
+<div class="flex justify-between items-end mb-lg">
+<div>
+<h2 class="text-display-lg font-display-lg text-on-surface mb-2">Media Library</h2>
+<p class="text-body-lg font-body-lg text-on-surface-variant">Manage, tag, and organize all creative assets for your AI projects.</p>
+</div>
+<div class="flex gap-3">
+<button class="flex items-center gap-2 px-4 py-2 rounded-lg border border-outline-variant/30 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all">
+<span class="material-symbols-outlined text-[18px]">sync</span>
+<span class="text-label-sm font-label-sm">Sync Storage</span>
+</button>
+<button class="flex items-center gap-2 px-5 py-2 rounded-lg bg-primary text-on-primary hover:bg-primary-fixed transition-colors font-semibold shadow-[0_0_15px_rgba(173,198,255,0.2)]">
+<span class="material-symbols-outlined text-[18px]">cloud_upload</span>
+<span>Upload Assets</span>
+</button>
+</div>
+</div>
+<!-- Workspace Layout: Filter Sidebar + Asset Grid -->
+<div class="flex gap-lg h-full">
+<!-- Left Utility Panel: Categories & Filters -->
+<aside class="w-64 flex-shrink-0 flex flex-col gap-6">
+<!-- Global Search/Filter Box -->
+<div class="glass-panel rounded-xl p-4 flex flex-col gap-4">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">filter_list</span>
+<input class="w-full bg-surface-container-lowest border-outline-variant/30 text-on-surface text-body-md font-body-md rounded-lg pl-10 pr-4 py-2 focus:border-primary focus:ring-1 focus:ring-primary transition-all" placeholder="Filter by tag..." type="text"/>
+</div>
+<div class="flex items-center justify-between text-label-sm font-label-sm text-on-surface-variant">
+<span>Sort By</span>
+<button class="flex items-center gap-1 hover:text-on-surface">
+                                Date Added <span class="material-symbols-outlined text-[16px]">arrow_drop_down</span>
+</button>
+</div>
+</div>
+<!-- Categories -->
+<div class="glass-panel rounded-xl p-4 flex flex-col gap-2">
+<h3 class="text-label-caps font-label-caps text-on-surface-variant mb-2 px-2">Asset Types</h3>
+<button class="flex items-center justify-between w-full px-3 py-2 rounded-lg bg-primary-container/10 border border-primary/30 text-primary-fixed">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[18px]">grid_view</span>
+<span class="text-body-md font-body-md">All Assets</span>
+</div>
+<span class="text-label-sm font-label-sm bg-surface-container-high px-2 py-0.5 rounded-full">1,248</span>
+</button>
+<button class="flex items-center justify-between w-full px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[18px]">image</span>
+<span class="text-body-md font-body-md">Images (AI Gen)</span>
+</div>
+<span class="text-label-sm font-label-sm">842</span>
+</button>
+<button class="flex items-center justify-between w-full px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[18px]">view_in_ar</span>
+<span class="text-body-md font-body-md">3D Models</span>
+</div>
+<span class="text-label-sm font-label-sm">156</span>
+</button>
+<button class="flex items-center justify-between w-full px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[18px]">audio_file</span>
+<span class="text-body-md font-body-md">Audio &amp; SFX</span>
+</div>
+<span class="text-label-sm font-label-sm">203</span>
+</button>
+<button class="flex items-center justify-between w-full px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[18px]">texture</span>
+<span class="text-body-md font-body-md">Textures / Mats</span>
+</div>
+<span class="text-label-sm font-label-sm">47</span>
+</button>
+</div>
+<!-- Tags -->
+<div class="glass-panel rounded-xl p-4">
+<h3 class="text-label-caps font-label-caps text-on-surface-variant mb-3 px-2">Popular Tags</h3>
+<div class="flex flex-wrap gap-2">
+<span class="px-2.5 py-1 rounded-md bg-surface-container-high text-on-surface-variant text-label-sm font-label-sm hover:bg-surface-container-highest cursor-pointer border border-outline-variant/20">cyberpunk</span>
+<span class="px-2.5 py-1 rounded-md bg-primary-container/20 text-primary text-label-sm font-label-sm border border-primary/30 cursor-pointer">character_concept</span>
+<span class="px-2.5 py-1 rounded-md bg-surface-container-high text-on-surface-variant text-label-sm font-label-sm hover:bg-surface-container-highest cursor-pointer border border-outline-variant/20">environment</span>
+<span class="px-2.5 py-1 rounded-md bg-surface-container-high text-on-surface-variant text-label-sm font-label-sm hover:bg-surface-container-highest cursor-pointer border border-outline-variant/20">high_res</span>
+<span class="px-2.5 py-1 rounded-md bg-surface-container-high text-on-surface-variant text-label-sm font-label-sm hover:bg-surface-container-highest cursor-pointer border border-outline-variant/20">raw_audio</span>
+</div>
+</div>
+</aside>
+<!-- Right Stage: Bento/Grid View -->
+<div class="flex-1 grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 auto-rows-[280px]">
+<!-- Asset Card 1: AI Image (Large/Featured) -->
+<div class="glass-card rounded-xl overflow-hidden group relative col-span-2 row-span-2 flex flex-col">
+<div class="absolute top-3 left-3 z-10 flex gap-2">
+<span class="px-2 py-1 rounded bg-black/60 backdrop-blur-md text-white text-label-caps font-label-caps border border-white/10 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">image</span> PNG
+                            </span>
+<span class="px-2 py-1 rounded bg-primary-container/80 backdrop-blur-md text-on-primary-container text-label-caps font-label-caps border border-primary/30">
+                                Approved
+                            </span>
+</div>
+<div class="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+<button class="p-1.5 rounded-md bg-black/60 backdrop-blur-md text-white hover:bg-primary transition-colors"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+<button class="p-1.5 rounded-md bg-black/60 backdrop-blur-md text-white hover:bg-primary transition-colors"><span class="material-symbols-outlined text-[18px]">download</span></button>
+</div>
+<div class="flex-1 relative bg-surface-container-lowest overflow-hidden">
+<img alt="Cyberpunk Alley Concept" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" data-alt="A cinematic, high-resolution AI generated concept art of a futuristic cyberpunk city alleyway at night, illuminated by vivid neon blue and magenta lights reflecting off rain-slicked pavement. Highly detailed, 8k resolution, atmospheric lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA6LGiS3VFvIaI0eQGeyAnykMkYJg89owaStDqM093HvVdi_u_6iaFemq81S7IJHUJQwKmxyd2Y4mY3WXGyO0BwXe9NSz9BMNt3Rjy5-5GjctJnGQGJ8kIp1ADrGCDcmYBTDtH_1ytPQ3TOXZWQVBc3I72ljHatIoKn7EAlFiO1tbdz9vGM11vZ_sG9Eym-qPvl_Edwki3mH4rLP3QKm_7ky6UlMqLFb_Hh5GrBsqhT1zxioQ3no5f5ug"/>
+<!-- Gradient overlay for text readability -->
+<div class="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-surface to-transparent"></div>
+</div>
+<div class="absolute bottom-0 w-full p-4 flex justify-between items-end">
+<div>
+<h4 class="text-headline-sm font-headline-sm text-on-surface mb-1 truncate shadow-black drop-shadow-md">Neo_Tokyo_Alley_v4.png</h4>
+<div class="flex gap-3 text-label-sm font-label-sm text-on-surface-variant">
+<span>4096 x 2160</span>
+<span>•</span>
+<span>12.4 MB</span>
+<span>•</span>
+<span>Today, 14:32</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Asset Card 2: 3D Model -->
+<div class="glass-card rounded-xl overflow-hidden group relative flex flex-col">
+<div class="absolute top-3 left-3 z-10">
+<span class="px-2 py-1 rounded bg-black/60 backdrop-blur-md text-white text-label-caps font-label-caps border border-white/10 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">view_in_ar</span> FBX
+                            </span>
+</div>
+<div class="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 rounded-md bg-black/60 backdrop-blur-md text-white hover:bg-primary transition-colors"><span class="material-symbols-outlined text-[18px]">more_vert</span></button>
+</div>
+<div class="h-40 bg-surface-container-lowest relative flex items-center justify-center p-4">
+<!-- Placeholder for 3D viewer or pre-rendered thumbnail -->
+<img alt="Sci-Fi Rifle 3D Model" class="w-full h-full object-contain" data-alt="A clean, studio-lit render of a futuristic sci-fi rifle 3D model, displayed on a dark grey pedestal against a pure black background. The weapon features intricate mechanical details and subtle glowing blue indicator lights." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBRA5L3R05WzTu_QLO8erD4accdL1tVcNexYCLbMr5NRO8uAy-3k56M_JoL37F66nNz6MHodw34GD-3IVYmViQt9f4odMfpANdWu1KJNd5yAxL_F2yXZaaq9DQH22SFkw2A3BjHgw8fGF0waUiR75dBGCdNqmntaU1ZpTftFJ5Gr_wV_0RIquuE02bmKIv777HTxg2_gzBfWcZnn-o4Jk0Hi8DWOWSjJL0wF9lwSWvr45EdZSPsaiwehg"/>
+</div>
+<div class="p-4 border-t border-outline-variant/10 flex-1 flex flex-col justify-between bg-surface-container/50">
+<div>
+<h4 class="text-body-md font-body-md text-on-surface font-semibold truncate mb-1">Assault_Rifle_T2.fbx</h4>
+<div class="text-label-sm font-label-sm text-on-surface-variant">24.5k Polys • 18 MB</div>
+</div>
+<div class="flex gap-1 mt-2">
+<span class="text-[10px] px-1.5 py-0.5 rounded bg-surface-container-high border border-outline-variant/20 text-on-surface-variant">weapon</span>
+<span class="text-[10px] px-1.5 py-0.5 rounded bg-surface-container-high border border-outline-variant/20 text-on-surface-variant">sci-fi</span>
+</div>
+</div>
+</div>
+<!-- Asset Card 3: Audio File -->
+<div class="glass-card rounded-xl overflow-hidden group relative flex flex-col">
+<div class="absolute top-3 left-3 z-10">
+<span class="px-2 py-1 rounded bg-black/60 backdrop-blur-md text-white text-label-caps font-label-caps border border-white/10 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">audio_file</span> WAV
+                            </span>
+</div>
+<div class="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 rounded-md bg-black/60 backdrop-blur-md text-white hover:bg-primary transition-colors"><span class="material-symbols-outlined text-[18px]">more_vert</span></button>
+</div>
+<!-- Audio Waveform Visualization Placeholder -->
+<div class="h-40 bg-surface-container-lowest relative flex flex-col items-center justify-center overflow-hidden">
+<!-- Abstract waveform representation -->
+<div class="w-full h-full opacity-30 flex items-center justify-center gap-1 px-4">
+<div class="w-1.5 h-1/3 bg-tertiary rounded-full"></div>
+<div class="w-1.5 h-2/3 bg-tertiary rounded-full"></div>
+<div class="w-1.5 h-1/2 bg-tertiary rounded-full"></div>
+<div class="w-1.5 h-full bg-primary rounded-full neon-glow"></div>
+<div class="w-1.5 h-3/4 bg-tertiary rounded-full"></div>
+<div class="w-1.5 h-1/4 bg-tertiary rounded-full"></div>
+<div class="w-1.5 h-1/2 bg-tertiary rounded-full"></div>
+<div class="w-1.5 h-1/3 bg-tertiary rounded-full"></div>
+</div>
+<!-- Play button overlay -->
+<button class="absolute w-12 h-12 rounded-full bg-primary/20 border border-primary/50 text-primary flex items-center justify-center hover:bg-primary hover:text-on-primary transition-all neon-glow">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</button>
+</div>
+<div class="p-4 border-t border-outline-variant/10 flex-1 flex flex-col justify-between bg-surface-container/50">
+<div>
+<h4 class="text-body-md font-body-md text-on-surface font-semibold truncate mb-1">Ambient_City_Rain.wav</h4>
+<div class="text-label-sm font-label-sm text-on-surface-variant">02:14 • 48kHz • 4.2 MB</div>
+</div>
+<div class="w-full bg-surface-container-high h-1 rounded-full mt-3 overflow-hidden">
+<div class="bg-primary w-1/3 h-full rounded-full"></div>
+</div>
+</div>
+</div>
+<!-- Asset Card 4: Texture -->
+<div class="glass-card rounded-xl overflow-hidden group relative flex flex-col">
+<div class="absolute top-3 left-3 z-10">
+<span class="px-2 py-1 rounded bg-black/60 backdrop-blur-md text-white text-label-caps font-label-caps border border-white/10 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">texture</span> MAT
+                            </span>
+</div>
+<div class="h-40 bg-surface-container-lowest relative">
+<img alt="Distressed Metal Texture" class="w-full h-full object-cover" data-alt="A seamless, high-resolution texture map of distressed dark metal panels with rust accumulation at the seams. Created for physically based rendering (PBR) workflows. The surface shows varied roughness and subtle specular highlights." src="https://lh3.googleusercontent.com/aida-public/AB6AXuATZzOn-_V_Llz-Xyk5sB7kP0zirPUEUmT-2LKuJMdA9hmjJAObUCbk3-7iX30bXcn7pYvV8acdfLo6MhrJkmRbT7NCwPH0A-MPrY1DldElvwd-DlRKSQsXc7q4s0nj3HaSFkdNL4pGHqX7O_zBcDNA04QlvN_KL5rAFuYfQjr9WKZJAhMACgP3xjr_wPkCiSnRaKseOi6Kznk_xKR8aZq94TCgeJP71FiqkidKy4Zft6_6aj4i7hcD8w"/>
+</div>
+<div class="p-4 border-t border-outline-variant/10 flex-1 flex flex-col justify-between bg-surface-container/50">
+<div>
+<h4 class="text-body-md font-body-md text-on-surface font-semibold truncate mb-1">Distressed_Metal_PBR</h4>
+<div class="text-label-sm font-label-sm text-on-surface-variant">Material Set • 4 Maps</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="fixed bottom-0 left-sidebar_width right-0 flex justify-between items-center px-md py-base h-8 bg-surface-container-lowest/50 text-label-sm border-t border-outline-variant/10 docked full-width bottom-0 z-40 backdrop-blur-sm">
+<span class="text-on-surface-variant font-label-sm">© 2024 WindAgent Studio — Story-driven content creation powered by AI agents</span>
+<div class="flex gap-4">
+<a class="text-on-surface-variant hover:text-on-surface font-label-sm transition-colors" href="#">Privacy Policy</a>
+<a class="text-on-surface-variant hover:text-on-surface font-label-sm transition-colors" href="#">Terms of Service</a>
+<span class="text-on-surface-variant font-label-caps">v0.1.0-dev</span>
+</div>
+</footer>
+</div>
+</body></html>

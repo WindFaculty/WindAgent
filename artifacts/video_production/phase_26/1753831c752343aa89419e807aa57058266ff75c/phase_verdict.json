@@ -1,9 +1,0 @@
-{
-  "schema_version": "1.0.0",
-  "gate": "VP26_SECURITY_VERIFIED",
-  "candidate_sha": "1753831c752343aa89419e807aa57058266ff75c",
-  "status": "PASSED",
-  "derived_by": "scripts/verification/verify_phase26_security.py",
-  "derived_at": "2026-08-02T15:55:19.763374+00:00",
-  "reasons": []
-}

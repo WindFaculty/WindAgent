@@ -48,6 +48,20 @@ export class StudioNetworkError extends Error {
   }
 }
 
+/** A response reached the Studio API but could not be mapped to its error contract. */
+export class StudioHttpError extends Error {
+  readonly retryable: boolean;
+
+  constructor(
+    readonly status: number,
+    readonly statusText: string,
+  ) {
+    super(`Studio API returned HTTP ${status}${statusText ? `: ${statusText}` : ''}`);
+    this.name = 'StudioHttpError';
+    this.retryable = status >= 500;
+  }
+}
+
 export class StudioTimeoutError extends StudioNetworkError {
   constructor() {
     super('Studio request timed out');
@@ -149,7 +163,13 @@ export class HttpStudioApiClient {
     this.baseUrl = options.baseUrl.replace(/\/+$/, '');
     this.actor = options.actor;
     this.timeoutMs = options.timeoutMs ?? 15_000;
-    this.fetchImpl = options.fetchImpl ?? fetch;
+    const defaultFetch =
+      typeof window !== 'undefined'
+        ? window.fetch.bind(window)
+        : typeof globalThis !== 'undefined'
+        ? globalThis.fetch.bind(globalThis)
+        : fetch;
+    this.fetchImpl = options.fetchImpl ?? defaultFetch;
   }
 
   // -- reads -------------------------------------------------------------
@@ -344,16 +364,12 @@ export class HttpStudioApiClient {
     try {
       payload = (await res.json()) as StudioErrorPayload;
     } catch {
-      throw new StudioNetworkError(
-        `Studio request failed with HTTP ${res.status} (non-JSON body)`
-      );
+      throw new StudioHttpError(res.status, res.statusText);
     }
     if (payload && typeof payload.code === 'string') {
       throw new StudioApiError(payload);
     }
-    throw new StudioNetworkError(
-      `Studio request failed with HTTP ${res.status}: ${res.statusText}`
-    );
+    throw new StudioHttpError(res.status, res.statusText);
   }
 }
 

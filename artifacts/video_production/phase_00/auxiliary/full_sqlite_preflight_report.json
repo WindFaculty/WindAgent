@@ -1,6 +1,0 @@
-{
-  "dialect": "sqlite",
-  "server_version": "3.53.1",
-  "schema_operation": "create_all_test_schema",
-  "verdict": "PASS"
-}

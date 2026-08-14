@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>WindAgent Studio - Review</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary": "#1000a9",
+                      "secondary-fixed": "#6ffbbe",
+                      "on-secondary-fixed-variant": "#005236",
+                      "outline-variant": "#424754",
+                      "secondary-container": "#00a572",
+                      "surface-container-high": "#222a3d",
+                      "tertiary-container": "#8083ff",
+                      "on-surface": "#dae2fd",
+                      "on-primary-fixed": "#001a42",
+                      "surface-tint": "#adc6ff",
+                      "on-primary": "#002e6a",
+                      "tertiary": "#c0c1ff",
+                      "inverse-surface": "#dae2fd",
+                      "surface-bright": "#31394d",
+                      "on-secondary": "#003824",
+                      "primary-container": "#4d8eff",
+                      "surface": "#0b1326",
+                      "surface-variant": "#2d3449",
+                      "on-tertiary-fixed-variant": "#2f2ebe",
+                      "on-secondary-container": "#00311f",
+                      "error-container": "#93000a",
+                      "on-tertiary-container": "#0d0096",
+                      "secondary-fixed-dim": "#4edea3",
+                      "on-background": "#dae2fd",
+                      "tertiary-fixed": "#e1e0ff",
+                      "primary-fixed": "#d8e2ff",
+                      "surface-container-highest": "#2d3449",
+                      "on-tertiary-fixed": "#07006c",
+                      "secondary": "#4edea3",
+                      "outline": "#8c909f",
+                      "on-primary-fixed-variant": "#004395",
+                      "primary-fixed-dim": "#adc6ff",
+                      "on-surface-variant": "#c2c6d6",
+                      "on-error-container": "#ffdad6",
+                      "surface-container-low": "#131b2e",
+                      "on-error": "#690005",
+                      "tertiary-fixed-dim": "#c0c1ff",
+                      "error": "#ffb4ab",
+                      "inverse-on-surface": "#283044",
+                      "inverse-primary": "#005ac2",
+                      "on-secondary-fixed": "#002113",
+                      "surface-container-lowest": "#060e20",
+                      "primary": "#adc6ff",
+                      "on-primary-container": "#00285d",
+                      "surface-container": "#171f33",
+                      "surface-dim": "#0b1326",
+                      "background": "#0b1326"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "lg": "32px",
+                      "gutter": "20px",
+                      "base": "4px",
+                      "xs": "8px",
+                      "sidebar_width": "240px",
+                      "xl": "48px",
+                      "sm": "16px",
+                      "md": "24px"
+              },
+              "fontFamily": {
+                      "label-sm": [
+                              "Hanken Grotesk"
+                      ],
+                      "body-lg": [
+                              "Hanken Grotesk"
+                      ],
+                      "label-caps": [
+                              "JetBrains Mono"
+                      ],
+                      "body-md": [
+                              "Hanken Grotesk"
+                      ],
+                      "display-lg": [
+                              "Hanken Grotesk"
+                      ],
+                      "display-lg-mobile": [
+                              "Hanken Grotesk"
+                      ],
+                      "headline-sm": [
+                              "Hanken Grotesk"
+                      ],
+                      "headline-md": [
+                              "Hanken Grotesk"
+                      ]
+              },
+              "fontSize": {
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-caps": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg": [
+                              "36px",
+                              {
+                                      "lineHeight": "44px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "display-lg-mobile": [
+                              "28px",
+                              {
+                                      "lineHeight": "36px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-sm": [
+                              "18px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        body {
+            background-color: theme('colors.background');
+            color: theme('colors.on-background');
+        }
+        .glass-panel {
+            background: rgba(34, 42, 61, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Custom scrollbar for dark theme */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: theme('colors.outline-variant');
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: theme('colors.outline');
+        }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden antialiased font-body-md">
+<!-- SideNavBar -->
+<nav class="bg-surface-container-lowest dark:bg-surface-container-lowest text-primary dark:text-primary-fixed border-r border-outline-variant/10 fixed left-0 top-0 h-full flex flex-col py-md px-sm gap-y-xs overflow-y-auto docked full-height left-0 w-sidebar_width z-50">
+<div class="mb-lg px-xs">
+<h1 class="text-headline-sm font-headline-sm font-bold text-on-surface dark:text-on-surface">WindAgent</h1>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Build • Create • Inspire</p>
+</div>
+<button class="bg-primary-container text-on-primary-container font-label-sm text-label-sm py-2 px-4 rounded-lg mb-6 flex items-center justify-center gap-2 hover:bg-primary-fixed transition-colors shadow-[0_0_15px_rgba(77,142,255,0.3)]">
+<span class="material-symbols-outlined text-[18px]">add</span>
+            Tạo dự án mới
+        </button>
+<div class="flex-1 flex flex-col gap-1 overflow-y-auto pb-4">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface transition-colors hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="dashboard">dashboard</span>
+<span class="text-label-sm font-label-sm">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface transition-colors hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="auto_awesome">auto_awesome</span>
+<span class="text-label-sm font-label-sm">Studio</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface transition-colors hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="folder">folder</span>
+<span class="text-label-sm font-label-sm">Projects</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface transition-colors hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="movie">movie</span>
+<span class="text-label-sm font-label-sm">Episodes</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface transition-colors hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="grid_view">grid_view</span>
+<span class="text-label-sm font-label-sm">Story Board</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface transition-colors hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="person">person</span>
+<span class="text-label-sm font-label-sm">Characters</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface transition-colors hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="public">public</span>
+<span class="text-label-sm font-label-sm">World/Setting</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface transition-colors hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="inventory_2">inventory_2</span>
+<span class="text-label-sm font-label-sm">Assets</span>
+</a>
+<!-- Active Tab: Reviews -->
+<a class="flex items-center gap-3 px-3 py-2 bg-primary-container text-on-primary-container rounded-lg font-semibold shadow-[0_0_15px_rgba(77,142,255,0.3)]" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="rate_review" data-weight="fill" style="font-variation-settings: 'FILL' 1;">rate_review</span>
+<span class="text-label-sm font-label-sm">Reviews</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface transition-colors hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="smart_toy">smart_toy</span>
+<span class="text-label-sm font-label-sm">Models</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface transition-colors hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="cloud">cloud</span>
+<span class="text-label-sm font-label-sm">Providers</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface transition-colors hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="account_tree">account_tree</span>
+<span class="text-label-sm font-label-sm">Workflows</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface transition-colors hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="experiment">experiment</span>
+<span class="text-label-sm font-label-sm">Agent Lab</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface transition-colors hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="history">history</span>
+<span class="text-label-sm font-label-sm">Logs</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface transition-colors hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="database">database</span>
+<span class="text-label-sm font-label-sm">Database</span>
+</a>
+</div>
+<div class="mt-auto pt-4 border-t border-outline-variant/10">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface transition-colors hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="code">code</span>
+<span class="text-label-sm font-label-sm">Development</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="ml-[240px] flex-1 flex flex-col h-full relative">
+<!-- TopNavBar -->
+<header class="bg-surface/80 backdrop-blur-xl border-b border-outline-variant/10 shadow-sm fixed top-0 left-sidebar_width right-0 z-40 flex justify-between items-center px-md py-xs h-16 text-primary dark:text-primary-fixed">
+<div class="flex items-center gap-lg">
+<div class="text-headline-sm font-headline-sm font-extrabold tracking-tight text-on-surface">WindAgent Studio</div>
+<nav class="hidden md:flex items-center gap-6 h-full">
+<a class="text-on-surface-variant hover:text-primary transition-colors text-label-caps font-label-caps h-full flex items-center" href="#">Studio</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors text-label-caps font-label-caps h-full flex items-center" href="#">Assets</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors text-label-caps font-label-caps h-full flex items-center" href="#">Models</a>
+<a class="text-primary border-b-2 border-primary text-label-caps font-label-caps h-full flex items-center" href="#">Monitoring</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors text-label-caps font-label-caps h-full flex items-center" href="#">Settings</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 px-3 py-1 bg-surface-container-high rounded-full border border-outline-variant/30">
+<div class="w-2 h-2 rounded-full bg-secondary-fixed shadow-[0_0_8px_theme('colors.secondary-fixed')]"></div>
+<span class="text-label-sm font-label-sm text-secondary-fixed">System Online</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed rounded-full hover:bg-surface-container-high transition-all">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed rounded-full hover:bg-surface-container-high transition-all">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-surface-container-highest border border-outline-variant/30 overflow-hidden ml-2">
+<img alt="Tran Xuan Khoa Profile" class="w-full h-full object-cover" data-alt="A small circular avatar portrait of a creative professional in a dark studio setting with subtle blue lighting on one side of the face." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDBvInYi4JiixGGkeElJkah7taIzSoI3zH3m7jymglUXByIRZP0BHL7BXD31y8IBRe8_YDZTVMEkaHKLi-L52g70PjyYcgyBqGDzWbdVUaPKrJ1lrRxpm0e22g83BIZCQXIXzp2C-lsqiyoYQ7ssoCITRgAo7fZ_80YX-jRqrhncjADGC0PQb87xht6izTqDXh8aooc69KZQaplXnW50ePIzA8g6bsrmOyU67h49_SY9gQsie15pW2nhA"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Studio Workspace -->
+<main class="flex-1 mt-16 pb-8 overflow-hidden flex flex-col p-md gap-md">
+<!-- Context Header -->
+<div class="flex items-center justify-between shrink-0 glass-panel p-4 rounded-xl">
+<div>
+<div class="flex items-center gap-3 mb-1">
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high border border-outline-variant/30 text-label-caps font-label-caps text-on-surface-variant">EPISODE 04</span>
+<h2 class="text-headline-md font-headline-md text-on-surface">The Neon Ascendancy</h2>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant">Reviewing generated storyboard sequence and script alignment.</p>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container-high border border-outline-variant/30 text-label-sm font-label-sm text-primary">
+<span class="material-symbols-outlined text-[16px]">pending</span>
+                        Pending Review
+                    </div>
+<button class="px-4 py-2 rounded-lg border border-outline-variant/50 text-on-surface hover:bg-surface-container-high transition-colors text-label-sm font-label-sm">
+                        Request Revision
+                    </button>
+<button class="px-4 py-2 rounded-lg bg-primary text-on-primary hover:bg-primary-fixed transition-colors text-label-sm font-label-sm font-semibold shadow-[0_0_15px_rgba(173,198,255,0.2)]">
+                        Approve Content
+                    </button>
+</div>
+</div>
+<!-- Split Screen Workspace -->
+<div class="flex-1 flex gap-md overflow-hidden min-h-0">
+<!-- Left: Content Viewer (Stage) -->
+<div class="flex-[2] flex flex-col gap-4 min-w-0">
+<!-- Media Viewer -->
+<div class="flex-1 glass-panel rounded-xl flex flex-col overflow-hidden border border-outline-variant/20 relative group">
+<!-- Simulated Video/Storyboard Area -->
+<div class="flex-1 relative bg-black flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover opacity-80" data-alt="A highly detailed cinematic storyboard frame showing a futuristic cyberpunk cityscape at night. Luminous neon blue and purple signs reflect on wet, dark pavement. A lone figure in a dark coat stands looking up at a massive holographic advertisement. High contrast, atmospheric lighting, moody tone." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD_cgIIhWTV7vwSP3e-YHSRf2VUQVuw6O8JzfU-nEN7kwC4qUC56KKitvV_m4FOFQ0Cy-9AxvZN3TKzjO4Cpm5UOaSuzvUOXh5STpEE5UnsUTOMvLWM-6O_F8QT-QGVDDZNV22BaT7uszt9MQa0CGfpgSe8mnpkegIkOMbTbu_ibI4V9kMi6hwLPmKaOF7iX7sWi1VgSDJorOeI6hp2eKTkAxqd9XDBEDm2749rqw3Q2IBxVLQI2dHbzQ"/>
+<!-- Overlay Controls -->
+<div class="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+<div class="flex items-center gap-4 text-on-surface">
+<button class="p-2 hover:text-primary transition-colors"><span class="material-symbols-outlined" data-weight="fill" style="font-variation-settings: 'FILL' 1;">play_arrow</span></button>
+<div class="flex-1 h-1 bg-surface-variant rounded-full overflow-hidden relative">
+<div class="absolute left-0 top-0 bottom-0 w-1/3 bg-primary"></div>
+<div class="absolute left-1/3 top-1/2 -translate-y-1/2 w-3 h-3 bg-primary rounded-full shadow-[0_0_8px_theme('colors.primary')]"></div>
+</div>
+<span class="text-label-caps font-label-caps">01:24 / 04:10</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right: Feedback & Info Panel -->
+<div class="w-[400px] flex flex-col gap-4 shrink-0 overflow-y-auto pr-2 custom-scrollbar">
+<!-- Version History Bento -->
+<div class="glass-panel p-4 rounded-xl">
+<h3 class="text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">history</span> Version History
+                        </h3>
+<div class="flex flex-col gap-0 relative">
+<!-- Timeline line -->
+<div class="absolute left-[11px] top-4 bottom-4 w-[2px] bg-outline-variant/20 z-0"></div>
+<!-- V3 (Current) -->
+<div class="flex gap-4 relative z-10 py-2">
+<div class="mt-1 w-6 h-6 rounded-full bg-primary-container border-2 border-surface flex items-center justify-center shrink-0">
+<div class="w-2 h-2 rounded-full bg-on-primary-container"></div>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<span class="text-label-sm font-label-sm text-on-surface font-semibold">v3.0 - Current</span>
+<span class="text-[10px] text-on-surface-variant bg-surface-container-highest px-2 py-0.5 rounded-full">Pending</span>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant mt-1 text-xs">AI Agent updated lighting parameters in scene 4.</p>
+</div>
+</div>
+<!-- V2 -->
+<div class="flex gap-4 relative z-10 py-2">
+<div class="mt-1 w-6 h-6 rounded-full bg-surface-container-high border-2 border-surface flex items-center justify-center shrink-0">
+</div>
+<div>
+<div class="flex items-center gap-2">
+<span class="text-label-sm font-label-sm text-on-surface-variant">v2.1 - Revision</span>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant mt-1 text-xs opacity-70">User requested darker shadows.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Conversation Thread -->
+<div class="glass-panel rounded-xl flex flex-col flex-1 min-h-[400px]">
+<div class="p-4 border-b border-outline-variant/20 shrink-0">
+<h3 class="text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">forum</span> Review Notes
+                            </h3>
+</div>
+<div class="flex-1 overflow-y-auto p-4 flex flex-col gap-4">
+<!-- Comment -->
+<div class="flex gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest shrink-0 overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A small circular avatar portrait of an AI assistant icon, glowing softly with blue and purple neon light against a dark background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB_nqZH2fvi4pDA5m61GV4-goP1yeWlGxso8tdO6Lkuc9lVr8uDiIP4OSd8DO85_PC5nMnW5SCAC3Ih63KWCIEx7HEe3KI1t9MqwuBpov6QQefRaBekcChyAO3ZsV_aUyjLp1_fbMz61gg0GsHCDFy-TytcszA_CNpCmV0eVaWqVhLmL5DVd4QmmZol6Bd_A9s9UnD7397otCi8hl0D32M7vZQMh-7LeYn2CfQRvqTjScmYG-SmUCfE7Q"/>
+</div>
+<div class="flex-1 bg-surface-container-low rounded-lg p-3 border border-outline-variant/10">
+<div class="flex items-baseline justify-between mb-1">
+<span class="text-label-sm font-label-sm text-primary">Director Agent</span>
+<span class="text-[10px] text-on-surface-variant">10:42 AM</span>
+</div>
+<p class="text-body-md font-body-md text-on-surface text-sm">I've adjusted the color grading in the alleyway sequence to better match the requested "neo-noir" aesthetic. The neon reflections are now more prominent.</p>
+</div>
+</div>
+<!-- Comment -->
+<div class="flex gap-3 flex-row-reverse">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest shrink-0 overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A small circular avatar portrait of a creative professional in a dark studio setting with subtle blue lighting on one side of the face." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBgUs-0k8UL8P8R9SJctaRINGmND-8G0_va6zMRkWs0To8uFvpJwyaWMxx-5mY66gsMXrJzQLwaXQv9lsufdyQXIOpcJUrqg2q9gHYLJFWuxg83k2zowEN_JpBvxyJTWtfbxGFv38uh7h2RRM3w_U_z8iXp6CAvnMSVMimJXY6PBILrraIQQbz-CG_9Xp-cWcvre1P-eA5PVz0NKQgB-IjyZvGT1AAfkzHOSg2ZUd8bTVu4yI0wdUskdQ"/>
+</div>
+<div class="flex-1 bg-surface-container-high rounded-lg p-3 border border-primary/20">
+<div class="flex items-baseline justify-between mb-1 flex-row-reverse">
+<span class="text-label-sm font-label-sm text-on-surface">You</span>
+<span class="text-[10px] text-on-surface-variant">10:45 AM</span>
+</div>
+<p class="text-body-md font-body-md text-on-surface text-sm text-right">Looks much better. Can we slightly reduce the bloom on the main holographic sign though? It's distracting from the character.</p>
+</div>
+</div>
+</div>
+<!-- Input Area -->
+<div class="p-4 border-t border-outline-variant/20 shrink-0 bg-surface-container-lowest/50">
+<div class="relative">
+<textarea class="w-full bg-surface-container-low border border-outline-variant/30 rounded-lg p-3 pr-12 text-body-md font-body-md text-on-surface placeholder:text-on-surface-variant/50 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none resize-none h-[80px]" placeholder="Add feedback or request specific changes..."></textarea>
+<button class="absolute right-2 bottom-2 p-2 rounded-md text-primary hover:bg-primary-container/20 transition-colors">
+<span class="material-symbols-outlined text-[20px]">send</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-lowest/50 border-t border-outline-variant/10 fixed bottom-0 left-sidebar_width right-0 flex justify-between items-center px-md py-base h-8 text-label-sm font-label-sm text-on-surface-variant z-40">
+<div>© 2024 WindAgent Studio — Story-driven content creation powered by AI agents</div>
+<div class="flex items-center gap-4">
+<a class="hover:text-on-surface transition-colors" href="#">Privacy Policy</a>
+<a class="hover:text-on-surface transition-colors" href="#">Terms of Service</a>
+<a class="hover:text-on-surface transition-colors" href="#">v0.1.0-dev</a>
+</div>
+</footer>
+</div>
+</body></html>

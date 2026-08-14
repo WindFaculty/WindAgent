@@ -16,40 +16,12 @@ export const DESKTOP_NAVIGATION_GROUPS: NavigationGroupDescriptor[] = [
       { id: 'reviews', label: 'Reviews', iconName: 'CheckSquare' },
     ],
   },
-  {
-    id: 'production',
-    title: 'PRODUCTION',
-    badge: 'ROADMAP 2',
-    defaultCollapsed: true,
-    items: [
-      {
-        id: 'production',
-        label: 'Production',
-        iconName: 'Film',
-        badge: 'PREVIEW',
-        children: [
-          { id: 'production-script', label: 'Script Workspace', iconName: 'FileText', badge: 'PREVIEW' },
-          { id: 'production-assets', label: 'Asset Library', iconName: 'Palette', badge: 'PREVIEW' },
-          { id: 'production-video', label: 'Video Workspace', iconName: 'Video', badge: 'PREVIEW' },
-        ],
-      },
-    ],
-  },
+
   {
     id: 'system',
     title: 'SYSTEM',
     items: [
       { id: 'workspace', label: 'Agent Workspace', iconName: 'Bot' },
-      {
-        id: 'models',
-        label: 'Models',
-        iconName: 'Cpu',
-        children: [
-          { id: 'models-library', label: 'Model Library' },
-          { id: 'models-endpoints', label: 'Endpoints' },
-        ],
-      },
-      { id: 'models-library', label: 'Models', iconName: 'Cpu' },
       { id: 'router', label: 'Router / Providers', iconName: 'Server' },
       { id: 'browser', label: 'Browser', iconName: 'Globe', badge: 'STUB' },
       { id: 'files', label: 'Files', iconName: 'Folder', badge: 'STUB' },

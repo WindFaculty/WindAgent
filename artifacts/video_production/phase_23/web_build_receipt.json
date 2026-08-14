@@ -1,7 +1,0 @@
-{
-  "workstream": "web_build",
-  "target": "apps/web",
-  "dist_directory": "apps/web/dist",
-  "bundle_size_kb": 342,
-  "build_status": "SUCCESS"
-}

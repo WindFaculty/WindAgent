@@ -46,44 +46,40 @@ export function Endpoints() {
   }, []);
 
   return (
-    <main style={{ padding: "24px", color: "var(--text-main)" }}>
-      <h1 style={{ margin: 0 }}>Provider endpoints</h1>
-      <p style={{ color: "var(--text-muted)", margin: "6px 0 20px" }}>
-        Canonical V2 provider status. Credential and endpoint mutations are intentionally
-        unavailable until their V2 contracts are published.
-      </p>
+    <main className="p-6 bg-background text-on-surface min-h-screen space-y-6">
+      <header className="pb-4 border-b border-outline-variant/10">
+        <h1 className="text-3xl font-extrabold tracking-tight text-on-surface flex items-center gap-3">
+          <span className="material-symbols-outlined text-primary text-3xl">hub</span>
+          Provider Endpoints & Connections
+        </h1>
+        <p className="text-sm text-on-surface-variant mt-1">
+          Trạng thái kết nối các nhà cung cấp mô hình V2. Thay đổi cấu hình endpoint/API Keys sẽ sẵn sàng ở các bản cập nhật tiếp theo.
+        </p>
+      </header>
 
       {error ? (
-        <div role="alert" style={{ color: "var(--color-danger)" }}>
+        <div role="alert" className="p-4 rounded-lg bg-error-container/20 border border-error/30 text-error text-sm">
           {error}
         </div>
       ) : (
-        <div style={{ display: "grid", gap: "12px" }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {providers.map((provider) => (
             <article
               key={provider.name}
-              style={{
-                padding: "16px",
-                border: "1px solid var(--border-color)",
-                borderRadius: "10px",
-                background: "rgba(255,255,255,0.02)",
-              }}
+              className="p-5 rounded-xl bg-surface-container-low border border-outline-variant/15 hover:border-primary/40 transition-all space-y-3"
             >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  gap: "12px",
-                  marginBottom: "8px",
-                }}
-              >
-                <strong>{provider.name}</strong>
-                <span style={{ color: "var(--color-success)", fontSize: "0.8rem" }}>
+              <div className="flex justify-between items-center">
+                <div className="font-bold text-on-surface text-lg flex items-center gap-2">
+                  <span className="material-symbols-outlined text-primary">dns</span>
+                  {provider.name}
+                </div>
+                <span className="text-xs font-semibold px-2 py-0.5 rounded bg-secondary/10 text-secondary uppercase">
                   {health[provider.name] ?? provider.status}
                 </span>
               </div>
-              <div style={{ color: "var(--text-muted)", fontSize: "0.82rem" }}>
-                {provider.models.join(", ") || "No models advertised"}
+              <div className="text-xs text-on-surface-variant bg-surface-container-high/50 p-3 rounded-lg border border-outline-variant/10">
+                <span className="font-semibold text-on-surface block mb-1">Mô hình khả dụng:</span>
+                {provider.models.join(", ") || "Chưa có danh sách mô hình"}
               </div>
             </article>
           ))}

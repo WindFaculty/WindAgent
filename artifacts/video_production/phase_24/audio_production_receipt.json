@@ -1,8 +1,0 @@
-{
-  "workstream": "audio_production",
-  "gate": "VP21_AUDIO_PIPELINE_VERIFIED",
-  "status": "PASSED",
-  "audio_mix_hash": "sha256_final_audio_mix_hash_poc",
-  "loudness_lufs": -16.0,
-  "peak_db": -1.0
-}

@@ -24,6 +24,7 @@ import type {
 import {
   HttpStudioApiClient,
   StudioApiError,
+  StudioHttpError,
   StudioNetworkError,
   type CapabilityProfile,
   type RunEventsPage,
@@ -40,6 +41,7 @@ import {
 export type StoreErrorKind =
   | 'capability_unavailable'
   | 'conflict'
+  | 'http'
   | 'network'
   | 'validation'
   | 'not_found'
@@ -51,6 +53,7 @@ export interface StoreError {
   message: string;
   code?: string;
   details?: Record<string, unknown>;
+  status?: number;
 }
 
 export interface StudioSnapshot {
@@ -323,7 +326,14 @@ export class StudioStore {
 
   private async withErrors<T>(fn: () => Promise<T>): Promise<T | null> {
     try {
-      return await fn();
+      const result = await fn();
+      // A subsequent successful request proves a transient connection or
+      // unstructured HTTP failure has recovered. Domain errors are retained
+      // so their required user action is not hidden by unrelated reads.
+      if (this.lastError?.kind === 'network' || this.lastError?.kind === 'http') {
+        this.lastError = null;
+      }
+      return result;
     } catch (err) {
       this.recordError(err);
       return null;
@@ -352,6 +362,10 @@ export class StudioStore {
     }
     if (err instanceof StudioNetworkError) {
       this.lastError = { kind: 'network', message: err.message };
+      return;
+    }
+    if (err instanceof StudioHttpError) {
+      this.lastError = { kind: 'http', message: err.message, status: err.status };
       return;
     }
     this.lastError = { kind: 'unknown', message: String(err) };

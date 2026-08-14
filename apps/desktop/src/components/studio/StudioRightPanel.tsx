@@ -1,76 +1,98 @@
 import React, { useState } from 'react';
+import {
+  Film,
+  Sparkles,
+  Bot,
+  Users,
+  Settings,
+  ArrowRight,
+  PlusCircle,
+  BookOpen,
+  Activity,
+} from 'lucide-react';
 
-export interface StudioRightPanelProps {
-  onSelectProject?: (projectId: string) => void;
+export interface StudioSeriesItem {
+  id: string;
+  title: string;
+  episode_count: number;
+  created_at?: string;
 }
 
-export const StudioRightPanel: React.FC<StudioRightPanelProps> = ({ onSelectProject }) => {
-  const [activeTab, setActiveTab] = useState<'recent' | 'templates' | 'activity'>('recent');
+export interface StudioRightPanelProps {
+  seriesList?: StudioSeriesItem[];
+  capabilities?: Record<string, string>;
+  onSelectProject?: (projectId: string) => void;
+  onApplyTemplate?: (templateTitle: string, templateDesc?: string) => void;
+  onNavigateTab?: (hash: string) => void;
+}
 
-  const projects = [
-    {
-      id: 'proj_1',
-      title: 'Rừng Xanh Kỳ Diệu',
-      status: 'Active',
-      statusColor: '#10b981',
-      episodes: '12 episodes',
-      date: '12/08/2025',
-      gradient: 'linear-gradient(135deg, #059669 0%, #10b981 100%)',
-      iconEmoji: '🌲',
-    },
-    {
-      id: 'proj_2',
-      title: 'Những Người Bạn Từ Vũ Trụ',
-      status: 'Planning',
-      statusColor: '#3b82f6',
-      episodes: '1 episode',
-      date: '10/08/2025',
-      gradient: 'linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%)',
-      iconEmoji: '🚀',
-    },
-    {
-      id: 'proj_3',
-      title: 'Thành Phố Mơ Ước',
-      status: 'Draft',
-      statusColor: '#6b7280',
-      episodes: '0 episode',
-      date: '08/08/2025',
-      gradient: 'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)',
-      iconEmoji: '🌆',
-    },
-    {
-      id: 'proj_4',
-      title: 'Cá Voi Và Đại Dương',
-      status: 'Draft',
-      statusColor: '#6b7280',
-      episodes: '0 episode',
-      date: '05/08/2025',
-      gradient: 'linear-gradient(135deg, #0284c7 0%, #38bdf8 100%)',
-      iconEmoji: '🐋',
-    },
-    {
-      id: 'proj_5',
-      title: 'Bí Mật Ngôi Làng Xanh',
-      status: 'Draft',
-      statusColor: '#6b7280',
-      episodes: '0 episode',
-      date: '01/08/2025',
-      gradient: 'linear-gradient(135deg, #16a34a 0%, #4ade80 100%)',
-      iconEmoji: '🏡',
-    },
-  ];
+const TEMPLATE_PRESETS = [
+  {
+    id: 'tmpl_scifi',
+    title: 'Cyberpunk Odyssey 2099',
+    desc: 'Series khoa học viễn tưởng thế giới ngầm neon, cyborg và AI nổi dậy.',
+    tag: 'Sci-Fi / Cyberpunk',
+    color: '#4d8eff',
+  },
+  {
+    id: 'tmpl_fantasy',
+    title: 'Biên Niên Sử Vùng Đất Rồng',
+    desc: 'Hành trình phiêu lưu sử thi kỳ ảo qua 7 vương quốc phép thuật cổ đại.',
+    tag: 'Fantasy / Adventure',
+    color: '#4edea3',
+  },
+  {
+    id: 'tmpl_mystery',
+    title: 'Án Mạng Lúc Nửa Đêm',
+    desc: 'Trinh thám kịch tính với cú lật mặt bất ngờ tại dinh thự cổ.',
+    tag: 'Mystery / Detective',
+    color: '#f59e0b',
+  },
+  {
+    id: 'tmpl_comedy',
+    title: 'Biệt Đội Siêu Lầy Trái Đất',
+    desc: 'Hài hước sitcom về nhóm sinh vật ngoài hành tinh ẩn thân trong chung cư.',
+    tag: 'Sitcom / Comedy',
+    color: '#c0c1ff',
+  },
+];
+
+export const StudioRightPanel: React.FC<StudioRightPanelProps> = ({
+  seriesList = [],
+  capabilities = {},
+  onSelectProject,
+  onApplyTemplate,
+  onNavigateTab,
+}) => {
+  const [activeTab, setActiveTab] = useState<'recent' | 'templates' | 'system'>('recent');
+
+  const handleLinkClick = (hash: string) => {
+    if (onNavigateTab) {
+      onNavigateTab(hash);
+    } else {
+      window.location.hash = hash;
+    }
+  };
 
   return (
     <aside className="studio-right-panel">
-      {/* Top Banner Card */}
+      {/* Top Hero Card */}
       <div className="right-panel-hero-card">
         <div className="hero-card-content">
-          <div className="hero-card-title">WindAgent Studio v1.0</div>
-          <div className="hero-card-sub">Story-first. Agent-powered.</div>
-          <div className="hero-card-play-btn">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-              <polygon points="5 3 19 12 5 21 5 3" />
-            </svg>
+          <div className="hero-card-title">WindAgent Studio</div>
+          <div className="hero-card-sub">AI Screenplay & Story Swarm</div>
+          <div
+            className="hero-card-play-btn"
+            title="Khởi tạo kịch bản mới"
+            onClick={() => {
+              const inputEl = document.getElementById('new-series-input');
+              if (inputEl) {
+                inputEl.focus();
+                inputEl.scrollIntoView({ behavior: 'smooth' });
+              }
+            }}
+          >
+            <Sparkles size={14} />
           </div>
         </div>
         <div className="hero-card-art-preview">
@@ -78,13 +100,13 @@ export const StudioRightPanel: React.FC<StudioRightPanelProps> = ({ onSelectProj
         </div>
       </div>
 
-      {/* Tabs */}
+      {/* Navigation Tabs */}
       <div className="right-panel-tabs">
         <button
           className={`panel-tab ${activeTab === 'recent' ? 'active' : ''}`}
           onClick={() => setActiveTab('recent')}
         >
-          Recent Projects
+          Dự Án ({seriesList.length})
         </button>
         <button
           className={`panel-tab ${activeTab === 'templates' ? 'active' : ''}`}
@@ -93,87 +115,216 @@ export const StudioRightPanel: React.FC<StudioRightPanelProps> = ({ onSelectProj
           Templates
         </button>
         <button
-          className={`panel-tab ${activeTab === 'activity' ? 'active' : ''}`}
-          onClick={() => setActiveTab('activity')}
+          className={`panel-tab ${activeTab === 'system' ? 'active' : ''}`}
+          onClick={() => setActiveTab('system')}
         >
-          Activity
+          Hệ Thống
         </button>
       </div>
 
-      {/* Content based on tab */}
+      {/* Tab 1: Real Recent Projects from Database */}
       {activeTab === 'recent' && (
         <div className="recent-projects-list">
-          {projects.map((proj) => (
+          {seriesList.length === 0 ? (
+            <div className="right-panel-empty-tab">
+              <Film size={28} color="#8c909f" style={{ margin: '0 auto 8px auto' }} />
+              <p>Chưa có dự án nào trong Database.</p>
+              <button
+                className="btn-quick-new"
+                style={{ margin: '8px auto', fontSize: '0.76rem', padding: '6px 12px' }}
+                onClick={() => {
+                  const inputEl = document.getElementById('new-series-input');
+                  if (inputEl) {
+                    inputEl.focus();
+                    inputEl.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }}
+              >
+                <PlusCircle size={14} />
+                <span>Tạo Series Đầu Tiên</span>
+              </button>
+            </div>
+          ) : (
+            <>
+              {seriesList.map((proj, idx) => (
+                <div
+                  key={proj.id}
+                  className="project-item-card"
+                  onClick={() => onSelectProject?.(proj.id)}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <div
+                    className="project-thumb"
+                    style={{
+                      background: `linear-gradient(135deg, ${
+                        idx % 3 === 0 ? '#1e3a8a, #3b82f6' : idx % 3 === 1 ? '#064e3b, #10b981' : '#581c87, #a855f7'
+                      })`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <Film size={16} color="#ffffff" />
+                  </div>
+                  <div className="project-meta">
+                    <div className="project-title" title={proj.title}>
+                      {proj.title}
+                    </div>
+                    <div className="project-status-row">
+                      <span className="status-dot" style={{ backgroundColor: '#4edea3' }}></span>
+                      <span className="status-name">{proj.episode_count} tập phim</span>
+                    </div>
+                    <div className="project-episodes" style={{ fontFamily: 'var(--font-mono)' }}>
+                      {proj.id.slice(0, 14)}…
+                    </div>
+                  </div>
+                  <div className="project-right">
+                    <ArrowRight size={14} color="#8c909f" />
+                  </div>
+                </div>
+              ))}
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Tab 2: Story Starter Templates */}
+      {activeTab === 'templates' && (
+        <div className="recent-projects-list">
+          {TEMPLATE_PRESETS.map((tmpl) => (
             <div
-              key={proj.id}
+              key={tmpl.id}
               className="project-item-card"
-              onClick={() => onSelectProject?.(proj.id)}
+              onClick={() => onApplyTemplate?.(tmpl.title, tmpl.desc)}
+              style={{ cursor: 'pointer' }}
+              title="Nhấn để áp dụng template này"
             >
-              <div className="project-thumb" style={{ background: proj.gradient }}>
-                <span className="thumb-emoji">{proj.iconEmoji}</span>
+              <div
+                className="project-thumb"
+                style={{
+                  background: `linear-gradient(135deg, ${tmpl.color}33, ${tmpl.color}88)`,
+                  border: `1px solid ${tmpl.color}aa`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <BookOpen size={16} color={tmpl.color} />
               </div>
               <div className="project-meta">
-                <div className="project-title">{proj.title}</div>
+                <div className="project-title">{tmpl.title}</div>
                 <div className="project-status-row">
-                  <span className="status-dot" style={{ backgroundColor: proj.statusColor }}></span>
-                  <span className="status-name">{proj.status}</span>
+                  <span
+                    style={{
+                      fontSize: '0.68rem',
+                      fontWeight: 700,
+                      color: tmpl.color,
+                    }}
+                  >
+                    {tmpl.tag}
+                  </span>
                 </div>
-                <div className="project-episodes">{proj.episodes}</div>
+                <div className="project-episodes" style={{ fontSize: '0.72rem', color: '#8c909f' }}>
+                  {tmpl.desc}
+                </div>
               </div>
               <div className="project-right">
-                <button className="project-more-btn" aria-label="More options">•••</button>
-                <div className="project-date">{proj.date}</div>
+                <PlusCircle size={14} color={tmpl.color} />
               </div>
             </div>
           ))}
-          <a href="#/studio/projects" className="view-all-projects-link">
-            View all projects <span>→</span>
-          </a>
         </div>
       )}
 
-      {activeTab === 'templates' && (
-        <div className="right-panel-empty-tab">
-          <p>Preset templates available for short screenplays, drama series, and documentary arcs.</p>
+      {/* Tab 3: Real Live System Engine Status */}
+      {activeTab === 'system' && (
+        <div className="recent-projects-list" style={{ padding: '8px 12px' }}>
+          {[
+            { key: 'durable_db', label: 'Cơ Sở Dữ Liệu (DB)', desc: 'SQLite / aiosqlite persistent engine' },
+            { key: 'studio_orchestration', label: 'Orchestrator', desc: 'Studio run authority & DAG' },
+            { key: 'story_engine', label: 'Story Engine', desc: 'Writer, Ideation & Outline engine' },
+            { key: 'worker', label: 'Worker Swarm', desc: 'Durable execution worker heartbeat' },
+            { key: 'model_route', label: 'Model Router', desc: 'Provider routing & token balancing' },
+          ].map((item) => {
+            const rawStatus = capabilities[item.key] || 'CHECKING';
+            const isOk = rawStatus === 'AVAILABLE' || rawStatus === 'READY';
+            return (
+              <div
+                key={item.key}
+                style={{
+                  padding: '10px 12px',
+                  borderRadius: '10px',
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  border: '1px solid rgba(255, 255, 255, 0.06)',
+                  marginBottom: '8px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '4px',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#ffffff' }}>{item.label}</span>
+                  <span
+                    style={{
+                      fontSize: '0.68rem',
+                      fontWeight: 700,
+                      padding: '2px 6px',
+                      borderRadius: '4px',
+                      background: isOk ? 'rgba(78, 222, 163, 0.12)' : 'rgba(245, 158, 11, 0.12)',
+                      color: isOk ? '#4edea3' : '#f59e0b',
+                    }}
+                  >
+                    {rawStatus}
+                  </span>
+                </div>
+                <span style={{ fontSize: '0.72rem', color: '#8c909f' }}>{item.desc}</span>
+              </div>
+            );
+          })}
         </div>
       )}
 
-      {activeTab === 'activity' && (
-        <div className="right-panel-empty-tab">
-          <p>Recent agent runs, screenplay locks, and revision events will appear here.</p>
-        </div>
-      )}
-
-      {/* Useful Links Section */}
+      {/* Useful Links Section - Wired to real Navigation */}
       <div className="useful-links-section">
-        <div className="useful-links-title">Useful Links</div>
+        <div className="useful-links-title">Lối Tắt Không Gian Làm Việc</div>
         <div className="useful-links-grid">
-          <div className="link-item">
-            <div className="link-icon">📄</div>
+          <div className="link-item" onClick={() => handleLinkClick('#/system/workspace')} style={{ cursor: 'pointer' }}>
+            <div className="link-icon">
+              <Bot size={16} color="#4d8eff" />
+            </div>
             <div className="link-text">
-              <span className="link-label">Documentation</span>
-              <span className="link-desc">Read the docs →</span>
+              <span className="link-label">Agent Workspace</span>
+              <span className="link-desc">Multi-agent Swarm →</span>
             </div>
           </div>
-          <div className="link-item">
-            <div className="link-icon">📦</div>
+
+          <div className="link-item" onClick={() => handleLinkClick('#/studio/characters')} style={{ cursor: 'pointer' }}>
+            <div className="link-icon">
+              <Users size={16} color="#4edea3" />
+            </div>
             <div className="link-text">
-              <span className="link-label">Changelog</span>
-              <span className="link-desc">View latest updates →</span>
+              <span className="link-label">Nhân Vật (Cast)</span>
+              <span className="link-desc">Hồ sơ nhân vật →</span>
             </div>
           </div>
-          <div className="link-item">
-            <div className="link-icon">🗺️</div>
+
+          <div className="link-item" onClick={() => handleLinkClick('#/system/settings')} style={{ cursor: 'pointer' }}>
+            <div className="link-icon">
+              <Settings size={16} color="#c0c1ff" />
+            </div>
             <div className="link-text">
-              <span className="link-label">Roadmap</span>
-              <span className="link-desc">See what's next →</span>
+              <span className="link-label">Cấu Hình Mô Hình</span>
+              <span className="link-desc">Ollama & APIs →</span>
             </div>
           </div>
-          <div className="link-item">
-            <div className="link-icon">👥</div>
+
+          <div className="link-item" onClick={() => handleLinkClick('#/dashboard')} style={{ cursor: 'pointer' }}>
+            <div className="link-icon">
+              <Activity size={16} color="#f59e0b" />
+            </div>
             <div className="link-text">
-              <span className="link-label">Community</span>
-              <span className="link-desc">Join the discussion →</span>
+              <span className="link-label">Bảng Điều Khiển</span>
+              <span className="link-desc">Hiệu suất Studio →</span>
             </div>
           </div>
         </div>

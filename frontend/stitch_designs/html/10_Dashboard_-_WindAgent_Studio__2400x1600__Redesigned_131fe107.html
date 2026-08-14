@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>WindAgent Studio - Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error": "#ffb4ab",
+                        "secondary-container": "#00a572",
+                        "tertiary-fixed": "#e1e0ff",
+                        "on-secondary-container": "#00311f",
+                        "on-primary": "#002e6a",
+                        "on-surface": "#dae2fd",
+                        "secondary-fixed": "#6ffbbe",
+                        "on-tertiary-fixed-variant": "#2f2ebe",
+                        "on-surface-variant": "#c2c6d6",
+                        "secondary": "#4edea3",
+                        "inverse-surface": "#dae2fd",
+                        "error-container": "#93000a",
+                        "outline-variant": "#424754",
+                        "surface-container": "#171f33",
+                        "secondary-fixed-dim": "#4edea3",
+                        "inverse-on-surface": "#283044",
+                        "surface-container-lowest": "#060e20",
+                        "tertiary": "#c0c1ff",
+                        "surface-container-high": "#222a3d",
+                        "on-tertiary": "#1000a9",
+                        "on-primary-fixed-variant": "#004395",
+                        "on-tertiary-fixed": "#07006c",
+                        "on-secondary-fixed-variant": "#005236",
+                        "on-primary-container": "#00285d",
+                        "primary": "#adc6ff",
+                        "surface-dim": "#0b1326",
+                        "primary-fixed": "#d8e2ff",
+                        "background": "#0b1326",
+                        "surface-bright": "#31394d",
+                        "on-error-container": "#ffdad6",
+                        "outline": "#8c909f",
+                        "tertiary-fixed-dim": "#c0c1ff",
+                        "tertiary-container": "#8083ff",
+                        "on-secondary-fixed": "#002113",
+                        "primary-container": "#4d8eff",
+                        "primary-fixed-dim": "#adc6ff",
+                        "surface-container-low": "#131b2e",
+                        "on-secondary": "#003824",
+                        "on-primary-fixed": "#001a42",
+                        "on-error": "#690005",
+                        "surface-tint": "#adc6ff",
+                        "on-background": "#dae2fd",
+                        "surface-container-highest": "#2d3449",
+                        "surface": "#0b1326",
+                        "on-tertiary-container": "#0d0096",
+                        "inverse-primary": "#005ac2",
+                        "surface-variant": "#2d3449"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "20px",
+                        "sm": "16px",
+                        "xs": "8px",
+                        "base": "4px",
+                        "md": "24px",
+                        "xl": "48px",
+                        "sidebar_width": "240px",
+                        "lg": "32px"
+                    },
+                    "fontFamily": {
+                        "label-sm": ["Hanken Grotesk"],
+                        "body-md": ["Hanken Grotesk"],
+                        "label-caps": ["JetBrains Mono"],
+                        "display-lg": ["Hanken Grotesk"],
+                        "headline-md": ["Hanken Grotesk"],
+                        "headline-sm": ["Hanken Grotesk"],
+                        "body-lg": ["Hanken Grotesk"],
+                        "display-lg-mobile": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "display-lg": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "display-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(23, 31, 51, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(140, 144, 159, 0.1);
+        }
+        .neon-glow {
+            box-shadow: 0 0 15px rgba(77, 142, 255, 0.3);
+        }
+        
+        /* Custom scrollbar for webkit */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(6, 14, 32, 0.5); 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(66, 71, 84, 0.5); 
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(66, 71, 84, 0.8); 
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md antialiased overflow-hidden flex h-[1600px] w-[2400px]">
+<!-- SideNavBar -->
+<aside class="bg-surface-container-lowest dark:bg-surface-container-lowest text-primary dark:text-primary-fixed fixed left-0 top-0 h-full flex flex-col py-md px-sm gap-y-xs overflow-y-auto border-r border-outline-variant/10 w-sidebar_width z-50">
+<div class="flex items-center gap-2 px-2 mb-6">
+<div class="w-8 h-8 rounded-lg bg-primary-container flex items-center justify-center neon-glow">
+<span class="material-symbols-outlined text-on-primary-container" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+</div>
+<div>
+<h1 class="text-headline-sm font-headline-sm font-bold text-on-surface dark:text-on-surface">WindAgent</h1>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Build • Create • Inspire</p>
+</div>
+</div>
+<div class="mb-4">
+<button class="w-full bg-primary text-on-primary py-2 px-4 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-primary-fixed transition-colors">
+<span class="material-symbols-outlined">add</span>
+                Tạo dự án mới
+            </button>
+</div>
+<nav class="flex-1 flex flex-col gap-1 overflow-y-auto">
+<div class="text-label-caps font-label-caps text-on-surface-variant px-3 py-2 mt-2">STUDIO</div>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary-container text-on-primary-container font-semibold shadow-[0_0_15px_rgba(77,142,255,0.3)]" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+                Bảng điều khiển
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined">auto_awesome</span>
+                Studio
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined">folder</span>
+                Dự án
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined">movie</span>
+                Tập phim
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined">grid_view</span>
+                Bảng phân cảnh
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined">person</span>
+                Nhân vật
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined">public</span>
+                Thế giới/Bối cảnh
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+                Tài sản
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined">rate_review</span>
+                Đánh giá
+            </a>
+<div class="text-label-caps font-label-caps text-on-surface-variant px-3 py-2 mt-4">HỆ THỐNG</div>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined">smart_toy</span>
+                Mô hình
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined">cloud</span>
+                Nhà cung cấp
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined">account_tree</span>
+                Quy trình làm việc
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined">experiment</span>
+                Phòng thí nghiệm Agent
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined">history</span>
+                Nhật ký
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined">database</span>
+                Cơ sở dữ liệu
+            </a>
+</nav>
+<div class="mt-auto pt-4 border-t border-outline-variant/10">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined">code</span>
+                Phát triển
+            </a>
+</div>
+</aside>
+<!-- Main Content Wrapper -->
+<div class="flex-1 flex flex-col ml-sidebar_width h-full relative w-full">
+<!-- TopNavBar -->
+<header class="bg-surface/80 backdrop-blur-xl text-primary dark:text-primary-fixed border-b border-outline-variant/10 shadow-sm fixed top-0 left-sidebar_width right-0 z-40 flex justify-between items-center px-md py-xs h-16 w-[2160px]">
+<div class="flex items-center gap-6">
+<div class="text-headline-sm font-headline-sm font-extrabold tracking-tight text-on-surface">WindAgent Studio</div>
+<nav class="hidden md:flex items-center gap-1">
+<a class="text-on-surface-variant hover:text-primary transition-colors px-3 py-2 rounded-md font-label-caps text-label-caps" href="#">Studio</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors px-3 py-2 rounded-md font-label-caps text-label-caps" href="#">Tài sản</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors px-3 py-2 rounded-md font-label-caps text-label-caps" href="#">Mô hình</a>
+<a class="text-primary border-b-2 border-primary pb-2 px-3 py-2 rounded-t-md font-label-caps text-label-caps" href="#">Giám sát</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors px-3 py-2 rounded-md font-label-caps text-label-caps" href="#">Cài đặt</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 bg-surface-container-low px-3 py-1.5 rounded-full border border-outline-variant/20">
+<div class="w-2 h-2 rounded-full bg-secondary-fixed shadow-[0_0_8px_rgba(111,251,190,0.6)]"></div>
+<span class="text-label-sm font-label-sm text-on-surface-variant">Hệ thống Trực tuyến</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed rounded-full hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed rounded-full hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined">help</span>
+</button>
+</div>
+<div class="w-8 h-8 rounded-full bg-tertiary-container flex items-center justify-center text-on-tertiary-container font-bold text-label-sm border border-outline-variant/30">
+                    TK
+                </div>
+</div>
+</header>
+<!-- Scrollable Stage -->
+<main class="flex-1 overflow-y-auto pt-24 pb-16 px-md lg:px-lg">
+<div class="mb-8 flex justify-between items-end">
+<div>
+<h2 class="text-display-lg font-display-lg text-on-surface mb-2">Bảng điều khiển</h2>
+<p class="text-body-lg font-body-lg text-on-surface-variant">Tổng quan về hiệu suất studio AI và các hoạt động sáng tạo của bạn.</p>
+</div>
+<div class="flex gap-3">
+<button class="px-4 py-2 bg-surface-container-high hover:bg-surface-container-highest text-on-surface rounded-lg border border-outline-variant/20 transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">calendar_today</span>
+<span class="text-label-sm font-label-sm">7 Ngày Qua</span>
+</button>
+</div>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-12 gap-6 mb-8">
+<!-- Stats Row -->
+<div class="col-span-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+<div class="glass-panel rounded-xl p-5 flex flex-col gap-2 relative overflow-hidden group">
+<div class="absolute -right-4 -top-4 w-24 h-24 bg-primary/5 rounded-full blur-xl group-hover:bg-primary/10 transition-all"></div>
+<div class="flex justify-between items-center text-on-surface-variant">
+<span class="text-label-sm font-label-sm uppercase tracking-wider">Dự án Đang hoạt động</span>
+<span class="material-symbols-outlined text-primary">folder_open</span>
+</div>
+<div class="text-display-lg-mobile font-display-lg-mobile text-on-surface">12</div>
+<div class="text-label-sm font-label-sm text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">trending_up</span>
+                            +2 tuần này
+                        </div>
+</div>
+<div class="glass-panel rounded-xl p-5 flex flex-col gap-2 relative overflow-hidden group">
+<div class="absolute -right-4 -top-4 w-24 h-24 bg-tertiary-container/5 rounded-full blur-xl group-hover:bg-tertiary-container/10 transition-all"></div>
+<div class="flex justify-between items-center text-on-surface-variant">
+<span class="text-label-sm font-label-sm uppercase tracking-wider">Token AI Đã dùng</span>
+<span class="material-symbols-outlined text-tertiary-container">token</span>
+</div>
+<div class="text-display-lg-mobile font-display-lg-mobile text-on-surface">1.2M</div>
+<div class="text-label-sm font-label-sm text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">trending_up</span>
+                            +15% so với tuần trước
+                        </div>
+</div>
+<div class="glass-panel rounded-xl p-5 flex flex-col gap-2 relative overflow-hidden group">
+<div class="absolute -right-4 -top-4 w-24 h-24 bg-secondary-container/5 rounded-full blur-xl group-hover:bg-secondary-container/10 transition-all"></div>
+<div class="flex justify-between items-center text-on-surface-variant">
+<span class="text-label-sm font-label-sm uppercase tracking-wider">Tín dụng Tạo</span>
+<span class="material-symbols-outlined text-secondary">bolt</span>
+</div>
+<div class="text-display-lg-mobile font-display-lg-mobile text-on-surface">4,850</div>
+<div class="w-full bg-surface-container-highest rounded-full h-1.5 mt-1">
+<div class="bg-secondary h-1.5 rounded-full" style="width: 75%"></div>
+</div>
+</div>
+<div class="glass-panel rounded-xl p-5 flex flex-col gap-2 relative overflow-hidden group">
+<div class="absolute -right-4 -top-4 w-24 h-24 bg-error-container/5 rounded-full blur-xl group-hover:bg-error-container/10 transition-all"></div>
+<div class="flex justify-between items-center text-on-surface-variant">
+<span class="text-label-sm font-label-sm uppercase tracking-wider">Tác vụ Đang chạy</span>
+<span class="material-symbols-outlined text-error">pending_actions</span>
+</div>
+<div class="text-display-lg-mobile font-display-lg-mobile text-on-surface">8</div>
+<div class="text-label-sm font-label-sm text-on-surface-variant flex items-center gap-1">
+                            3 agent đang làm việc
+                        </div>
+</div>
+</div>
+<!-- Main Column: Graph & Actions -->
+<div class="col-span-12 lg:col-span-8 flex flex-col gap-6">
+<!-- Graph -->
+<div class="glass-panel rounded-xl p-6 h-[500px] flex flex-col">
+<div class="flex justify-between items-center mb-6">
+<h3 class="text-headline-sm font-headline-sm text-on-surface">Hoạt động Tạo câu chuyện</h3>
+<button class="p-1.5 hover:bg-surface-container-high rounded-md transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<div class="flex-1 relative w-full rounded-lg border border-outline-variant/10 bg-surface-container-lowest/50 overflow-hidden flex items-end">
+<!-- Simulated Graph SVG -->
+<svg class="absolute bottom-0 w-full h-[80%] text-primary/20" preserveaspectratio="none" viewbox="0 0 100 100">
+<defs>
+<lineargradient id="grad1" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" style="stop-color:currentColor;stop-opacity:0.5"></stop>
+<stop offset="100%" style="stop-color:currentColor;stop-opacity:0"></stop>
+</lineargradient>
+</defs>
+<path d="M0,100 L0,60 Q10,40 20,50 T40,30 T60,60 T80,20 T100,40 L100,100 Z" fill="url(#grad1)"></path>
+<path class="neon-glow" d="M0,60 Q10,40 20,50 T40,30 T60,60 T80,20 T100,40" fill="none" stroke="theme('colors.primary')" stroke-width="2"></path>
+</svg>
+<!-- X Axis Labels -->
+<div class="absolute bottom-2 w-full flex justify-between px-4 text-label-caps font-label-caps text-outline text-[12px]">
+<span class="">T2</span><span class="">T3</span><span class="">T4</span><span class="">T5</span><span class="">T6</span><span class="">T7</span><span class="">CN</span>
+</div>
+</div>
+</div>
+<!-- Quick Actions -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<button class="glass-panel rounded-xl p-5 flex flex-col items-center justify-center gap-3 hover:bg-surface-container-high transition-all group border border-outline-variant/20 hover:border-primary/50 text-left h-40">
+<div class="w-12 h-12 rounded-full bg-primary-container/20 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">edit_document</span>
+</div>
+<span class="text-body-lg font-body-lg font-medium text-on-surface">Phác thảo Ý tưởng Mới</span>
+</button>
+<button class="glass-panel rounded-xl p-5 flex flex-col items-center justify-center gap-3 hover:bg-surface-container-high transition-all group border border-outline-variant/20 hover:border-secondary/50 text-left h-40">
+<div class="w-12 h-12 rounded-full bg-secondary-container/20 flex items-center justify-center text-secondary group-hover:bg-secondary group-hover:text-on-secondary transition-colors">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">psychology</span>
+</div>
+<span class="text-body-lg font-body-lg font-medium text-on-surface">Tối ưu Kịch bản</span>
+</button>
+<button class="glass-panel rounded-xl p-5 flex flex-col items-center justify-center gap-3 hover:bg-surface-container-high transition-all group border border-outline-variant/20 hover:border-tertiary-container/50 text-left h-40">
+<div class="w-12 h-12 rounded-full bg-tertiary-container/20 flex items-center justify-center text-tertiary-container group-hover:bg-tertiary-container group-hover:text-on-tertiary-container transition-colors">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">groups</span>
+</div>
+<span class="text-body-lg font-body-lg font-medium text-on-surface">Phân tích Nhân vật</span>
+</button>
+</div>
+<!-- NEW: Model Performance Section -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+<div class="glass-panel rounded-xl p-6 flex flex-col h-[400px]">
+<div class="flex justify-between items-center mb-6">
+<h3 class="text-headline-sm font-headline-sm text-on-surface">Hiệu suất Mô hình AI</h3>
+<button class="p-1.5 hover:bg-surface-container-high rounded-md transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<div class="flex-1 flex flex-col gap-4">
+<!-- Model 1 -->
+<div class="flex flex-col gap-2">
+<div class="flex justify-between items-center">
+<span class="text-body-md font-body-md text-on-surface">GPT-4 (Creative)</span>
+<span class="text-label-sm font-label-sm text-primary">98% Tỉ lệ thành công</span>
+</div>
+<div class="w-full bg-surface-container-highest rounded-full h-2">
+<div class="bg-primary h-2 rounded-full" style="width: 98%"></div>
+</div>
+</div>
+<!-- Model 2 -->
+<div class="flex flex-col gap-2">
+<div class="flex justify-between items-center">
+<span class="text-body-md font-body-md text-on-surface">Claude 3 (Editing)</span>
+<span class="text-label-sm font-label-sm text-secondary">95% Tỉ lệ thành công</span>
+</div>
+<div class="w-full bg-surface-container-highest rounded-full h-2">
+<div class="bg-secondary h-2 rounded-full" style="width: 95%"></div>
+</div>
+</div>
+<!-- Model 3 -->
+<div class="flex flex-col gap-2">
+<div class="flex justify-between items-center">
+<span class="text-body-md font-body-md text-on-surface">Llama 3 (Local)</span>
+<span class="text-label-sm font-label-sm text-tertiary-container">88% Tỉ lệ thành công</span>
+</div>
+<div class="w-full bg-surface-container-highest rounded-full h-2">
+<div class="bg-tertiary-container h-2 rounded-full" style="width: 88%"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- NEW: Resource Usage Heat Map -->
+<div class="glass-panel rounded-xl p-6 flex flex-col h-[400px]">
+<div class="flex justify-between items-center mb-6">
+<h3 class="text-headline-sm font-headline-sm text-on-surface">Sử dụng Tài nguyên</h3>
+<span class="text-label-sm font-label-sm text-on-surface-variant bg-surface-container-highest px-2 py-1 rounded">Hôm nay</span>
+</div>
+<div class="flex-1 grid grid-cols-6 grid-rows-4 gap-2">
+<!-- Heatmap cells simulated with background opacities -->
+<div class="bg-primary/20 rounded"></div><div class="bg-primary/40 rounded"></div><div class="bg-primary/80 rounded neon-glow"></div><div class="bg-primary/60 rounded"></div><div class="bg-primary/30 rounded"></div><div class="bg-primary/10 rounded"></div>
+<div class="bg-primary/30 rounded"></div><div class="bg-primary/70 rounded"></div><div class="bg-primary/100 rounded neon-glow"></div><div class="bg-primary/50 rounded"></div><div class="bg-primary/20 rounded"></div><div class="bg-primary/10 rounded"></div>
+<div class="bg-primary/10 rounded"></div><div class="bg-primary/30 rounded"></div><div class="bg-primary/60 rounded"></div><div class="bg-primary/90 rounded neon-glow"></div><div class="bg-primary/40 rounded"></div><div class="bg-primary/20 rounded"></div>
+<div class="bg-primary/5 rounded"></div><div class="bg-primary/10 rounded"></div><div class="bg-primary/20 rounded"></div><div class="bg-primary/40 rounded"></div><div class="bg-primary/30 rounded"></div><div class="bg-primary/10 rounded"></div>
+</div>
+<div class="flex justify-between items-center mt-4 text-label-sm text-on-surface-variant">
+<span>Thấp</span>
+<div class="flex gap-1">
+<div class="w-3 h-3 bg-primary/20 rounded-sm"></div>
+<div class="w-3 h-3 bg-primary/50 rounded-sm"></div>
+<div class="w-3 h-3 bg-primary/100 rounded-sm"></div>
+</div>
+<span>Cao</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Feed -->
+<div class="col-span-12 lg:col-span-4 flex flex-col h-full">
+<div class="glass-panel rounded-xl p-0 flex flex-col h-full border border-outline-variant/20 overflow-hidden min-h-[900px]">
+<div class="p-5 border-b border-outline-variant/10 bg-surface-container-low/50 flex justify-between items-center sticky top-0 backdrop-blur-md z-10">
+<h3 class="text-headline-sm font-headline-sm text-on-surface">Hoạt động Gần đây</h3>
+<button class="text-label-sm font-label-sm text-primary hover:text-primary-fixed">Xem Tất cả</button>
+</div>
+<div class="flex-1 overflow-y-auto p-5 flex flex-col gap-6 relative">
+<!-- Timeline line -->
+<div class="absolute left-9 top-5 bottom-5 w-px bg-outline-variant/20"></div>
+<!-- Feed Item -->
+<div class="flex gap-4 relative z-10">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest border-2 border-surface flex items-center justify-center shrink-0 z-10">
+<span class="material-symbols-outlined text-[16px] text-primary">smart_toy</span>
+</div>
+<div class="flex-1 pb-1">
+<div class="flex justify-between items-start mb-1">
+<span class="text-label-sm font-label-sm text-primary">Agent: Nhà văn-01</span>
+<span class="text-[12px] text-outline">10 phút trước</span>
+</div>
+<p class="text-body-md font-body-md text-on-surface mb-2">Đã hoàn thành tạo cảnh cho "Vụ trộm Lượng tử" Hồi 2.</p>
+<div class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-surface-container-lowest border border-outline-variant/20 text-[11px] text-on-surface-variant">
+<span class="material-symbols-outlined text-[12px]">done_all</span>
+                                        Tác vụ Thành công
+                                    </div>
+</div>
+</div>
+<!-- Feed Item -->
+<div class="flex gap-4 relative z-10">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest border-2 border-surface flex items-center justify-center shrink-0 z-10">
+<span class="material-symbols-outlined text-[16px] text-tertiary-container">person</span>
+</div>
+<div class="flex-1 pb-1">
+<div class="flex justify-between items-start mb-1">
+<span class="text-label-sm font-label-sm text-on-surface">Bạn</span>
+<span class="text-[12px] text-outline">1 giờ trước</span>
+</div>
+<p class="text-body-md font-body-md text-on-surface mb-2">Đã cập nhật hồ sơ nhân vật cho "Elara Vance".</p>
+</div>
+</div>
+<!-- Feed Item -->
+<div class="flex gap-4 relative z-10">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest border-2 border-surface flex items-center justify-center shrink-0 z-10">
+<span class="material-symbols-outlined text-[16px] text-error">warning</span>
+</div>
+<div class="flex-1 pb-1">
+<div class="flex justify-between items-start mb-1">
+<span class="text-label-sm font-label-sm text-error">Hệ thống</span>
+<span class="text-[12px] text-outline">3 giờ trước</span>
+</div>
+<p class="text-body-md font-body-md text-on-surface mb-2">Định tuyến mô hình thất bại cho endpoint Alpha. Đang thử lại với Beta.</p>
+<button class="text-[11px] text-primary hover:underline">Xem Nhật ký</button>
+</div>
+</div>
+<!-- Feed Item -->
+<div class="flex gap-4 relative z-10">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest border-2 border-surface flex items-center justify-center shrink-0 z-10">
+<span class="material-symbols-outlined text-[16px] text-primary">smart_toy</span>
+</div>
+<div class="flex-1 pb-1">
+<div class="flex justify-between items-start mb-1">
+<span class="text-label-sm font-label-sm text-primary">Agent: Biên tập-04</span>
+<span class="text-[12px] text-outline">Hôm qua</span>
+</div>
+<p class="text-body-md font-body-md text-on-surface mb-2">Đã đánh giá và đề xuất 12 thay đổi cấu trúc cho đề cương Tập 4.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-lowest text-on-surface-variant fixed bottom-0 left-sidebar_width right-0 flex justify-between items-center px-md py-base h-8 bg-surface-container-lowest/50 border-t border-outline-variant/10 text-label-sm font-label-sm z-40 w-[2160px]">
+<div class="">© 2024 WindAgent Studio — Nội dung theo cốt truyện được hỗ trợ bởi các AI agent</div>
+<div class="flex gap-4">
+<a class="hover:text-on-surface transition-colors" href="#">Chính sách Bảo mật</a>
+<a class="hover:text-on-surface transition-colors" href="#">Điều khoản Dịch vụ</a>
+<span class="text-outline">v0.1.0-dev</span>
+</div>
+</footer>
+</div>
+</body></html>

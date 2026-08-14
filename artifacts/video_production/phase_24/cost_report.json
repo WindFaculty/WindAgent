@@ -1,9 +1,0 @@
-{
-  "run_id": "run_poc_e2e_01",
-  "max_approved_credits": 50.0,
-  "estimated_credits": 25.0,
-  "debited_credits": 22.5,
-  "remaining_credits": 27.5,
-  "ledger_reconciled": true,
-  "satisfies_budget": true
-}

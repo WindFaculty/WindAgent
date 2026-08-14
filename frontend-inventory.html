@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WindAgent — Frontend Web Inventory</title>
+<style>
+  :root {
+    --bg: #0d1117; --panel: #161b22; --border: #30363d;
+    --text: #e6edf3; --muted: #8b949e; --accent: #58a6ff;
+    --green: #3fb950; --yellow: #d29922; --red: #f85149; --purple: #bc8cff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font: 14px/1.6 "Segoe UI", system-ui, sans-serif; padding: 24px; }
+  .wrap { max-width: 1100px; margin: 0 auto; }
+  h1 { font-size: 26px; margin-bottom: 4px; }
+  h2 { font-size: 18px; margin: 28px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  h3 { font-size: 15px; margin: 14px 0 8px; }
+  .sub { color: var(--muted); margin-bottom: 16px; }
+  .badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 12px; margin: 2px 4px 2px 0; border: 1px solid var(--border); background: var(--panel); }
+  .badge.green { color: var(--green); border-color: var(--green); }
+  .badge.yellow { color: var(--yellow); border-color: var(--yellow); }
+  .badge.red { color: var(--red); border-color: var(--red); }
+  .badge.purple { color: var(--purple); border-color: var(--purple); }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 12px; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; }
+  .card h3 { margin: 0 0 6px; }
+  .card .meta { color: var(--muted); font-size: 12px; margin-bottom: 8px; }
+  .card ul { padding-left: 18px; color: var(--text); }
+  .card li { margin: 2px 0; }
+  code { background: #21262d; border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; font-size: 12.5px; font-family: Consolas, monospace; }
+  pre { background: #161b22; border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; overflow-x: auto; font-size: 12.5px; font-family: Consolas, monospace; line-height: 1.5; }
+  pre code { background: none; border: none; padding: 0; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+  th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--border); font-size: 13px; }
+  th { color: var(--muted); font-weight: 600; background: var(--panel); }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; color: var(--accent); }
+  details { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; margin: 8px 0; }
+  summary { cursor: pointer; padding: 10px 14px; font-weight: 600; font-size: 13.5px; }
+  details[open] summary { border-bottom: 1px solid var(--border); }
+  .files { padding: 10px 14px; columns: 2; column-gap: 24px; }
+  .files div { break-inside: avoid; padding: 1px 0; font-family: Consolas, monospace; font-size: 12px; color: var(--muted); }
+  .files div::before { content: "▸ "; color: var(--accent); }
+  #filter { width: 100%; max-width: 420px; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--panel); color: var(--text); font-size: 13px; margin-bottom: 14px; }
+  .note { color: var(--muted); font-size: 12.5px; }
+  .dep { color: var(--accent); font-size: 12px; }
+  .stat-row { display: flex; gap: 18px; flex-wrap: wrap; margin: 12px 0; }
+  .stat { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 10px 18px; text-align: center; }
+  .stat .n { font-size: 22px; font-weight: 700; color: var(--accent); }
+  .stat .l { font-size: 11.5px; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>WindAgent — Frontend Web Inventory</h1>
+  <div class="sub">Tổng hợp toàn bộ phần frontend web trong repo <code>D:\code_ca_nhan\WindAgent</code> — cập nhật từ mã nguồn (branch <code>chore/cleanup-stale-md-docs</code>)</div>
+
+  <div class="stat-row">
+    <div class="stat"><div class="n">3</div><div class="l">vị trí frontend</div></div>
+    <div class="stat"><div class="n">12</div><div class="l">entry app / package</div></div>
+    <div class="stat"><div class="n">~21,700</div><div class="l">dòng mã nguồn TS/TSX</div></div>
+    <div class="stat"><div class="n">~190</div><div class="l">file TS/TSX (không tính tests)</div></div>
+    <div class="stat"><div class="n">React 18</div><div class="l">+ Vite + TypeScript + Redux/Zustand</div></div>
+  </div>
+
+  <input id="filter" type="text" placeholder="Lọc file… (gõ đường dẫn hoặc tên)">
+
+  <h2>1. Vị trí frontend web</h2>
+  <div class="cards">
+    <div class="card">
+      <h3><code>apps/desktop</code> — <span class="badge red">main UI</span></h3>
+      <div class="meta">Tauri + React desktop app · 15,750 LOC · 64 file · phase 6</div>
+      <ul>
+        <li>Entry: <code>src/main.tsx</code> → <code>src/App.tsx</code> (god component, 14 routes / 12 pages)</li>
+        <li>Layout dùng <code>@windagent/studio-shell</code> (AppShell, Sidebar, TopBar, MainWorkspace)</li>
+        <li>Pages: Dashboard, Projects, Episodes, Characters, StoryBoard, Reviews, Studio, Production, Agents, Models, Endpoints, Memory, Files, Browser, Settings, Workflows…</li>
+        <li>UI kit riêng: <code>src/components/ui/*</code> (Button, Card, Tabs, Dropdown, Tooltip…)</li>
+        <li>State: <code>zustand</code> (multiAgentStore) + Redux Toolkit cho production packages</li>
+        <li>API: <code>src/api/client.ts</code>, WS: <code>src/services/conversationSocketManager.ts</code></li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3><code>apps/web</code> — <span class="badge yellow">browser build</span></h3>
+      <div class="meta">Vite web app · 39 LOC · re-export thuần của desktop App</div>
+      <ul>
+        <li><code>src/app/App.tsx</code> chỉ re-export <code>@desktop/App</code> qua alias — không có UI riêng</li>
+        <li>Proxy dev: <code>/api</code> → <code>127.0.0.1:8765</code>, <code>/ws</code> → WS cùng host</li>
+        <li>Port dev: 5173 (strictPort)</li>
+        <li>Suite test rỗng cố ý (<code>passWithNoTests</code>) — test nằm ở apps/desktop</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3><code>frontend/</code> — <span class="badge purple">shared packages</span></h3>
+      <div class="meta">npm workspaces monorepo · 10 packages · ~11,700 LOC</div>
+      <ul>
+        <li>UI: <code>studio-shell</code>, <code>story-ui</code>, <code>production-ui</code></li>
+        <li>State: <code>studio-state</code>, <code>production-state</code></li>
+        <li>API client: <code>studio-client</code>, <code>production-client</code></li>
+        <li>Contracts (types/route): <code>studio-contracts</code>, <code>production-contracts</code></li>
+        <li>Platform adapters: <code>production-platform</code> (Tauri / Browser / Fake)</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>2. Bản đồ package (frontend/)</h2>
+  <table>
+    <tr><th>Package</th><th>LOC</th><th>Vai trò</th><th>File chính</th></tr>
+    <tr><td><code>studio-shell</code></td><td class="num">881</td><td>App shell: sidebar, topbar, workspace, runtime status</td><td>AppShell, Sidebar, TopBar, MainWorkspace, RuntimeStatusStrip</td></tr>
+    <tr><td><code>story-ui</code></td><td class="num">3,085</td><td>UI pipeline kịch bản: idea → story bible → outline → screenplay → review → approval</td><td>EpisodeWorkspace, IdeaSetView, StoryBibleView, OutlineView, ScreenplayView, ReviewReportView, ApprovalBar</td></tr>
+    <tr><td><code>production-ui</code></td><td class="num">4,049</td><td>UI production: screenplay workspace, scene tree, conflict, collaboration, asset</td><td>ProductionShell, ScreenplayWorkspaceView, SceneTree, SceneInspector, ConflictResolverModal, SemanticDiffViewer, ActivityTimelinePanel</td></tr>
+    <tr><td><code>studio-state</code></td><td class="num">580</td><td>Redux store studio</td><td>StudioStore</td></tr>
+    <tr><td><code>production-state</code></td><td class="num">814</td><td>Redux slices production (screenplay, binding, recovery, project context)</td><td>store, screenplaySlice, recoverySlice, useUnsavedChangesGuard</td></tr>
+    <tr><td><code>studio-client</code></td><td class="num">573</td><td>HTTP client studio API</td><td>HttpStudioApiClient</td></tr>
+    <tr><td><code>production-client</code></td><td class="num">263</td><td>HTTP client production API</td><td>ProductionApiClient</td></tr>
+    <tr><td><code>studio-contracts</code></td><td class="num">515</td><td>Contracts sinh từ backend (generated/): episode, run-status, artifact-envelope, idempotency…</td><td>generated/*.ts</td></tr>
+    <tr><td><code>production-contracts</code></td><td class="num">588</td><td>Types + route codec screenplay production</td><td>types, routing/routeCodec</td></tr>
+    <tr><td><code>production-platform</code></td><td class="num">349</td><td>Adapter đa nền tảng: Tauri desktop, browser web, fake test, storage recovery</td><td>adapters/TauriDesktopAdapter, BrowserWebAdapter, WebStorageRecoveryAdapter</td></tr>
+  </table>
+
+  <h2>3. Đồ thị phụ thuộc</h2>
+  <pre><code>apps/desktop ──┬── @windagent/studio-shell
+                ├── @windagent/story-ui
+                ├── @windagent/studio-client / studio-state / studio-contracts
+                ├── @windagent/production-ui
+                └── @windagent/production-client / -state / -contracts / -platform
+
+apps/web ─────── re-export @desktop/App (alias tới apps/desktop/src) + production packages
+
+frontend/ ───── UI ──▶ state ──▶ client ──▶ contracts ──▶ backend (FastAPI :8765)
+                 └── platform adapters (Tauri / Web / Fake)</code></pre>
+
+  <h2>4. Cách chạy</h2>
+  <pre><code># desktop app (dev)
+cd apps/desktop && npm run dev          # Vite dev server
+
+# web app (browser) — cần backend FastAPI ở 127.0.0.1:8765
+cd apps/web && npm run dev              # http://localhost:5173
+
+# shared packages — build / typecheck / test toàn bộ
+cd frontend && npm run build
+cd frontend && npm run typecheck
+cd frontend && npm run test</code></pre>
+
+  <h2>5. Kiểm thử</h2>
+  <table>
+    <tr><th>Khu vực</th><th>Runner</th><th>Ghi chú</th></tr>
+    <tr><td>apps/desktop</td><td>vitest (happy-dom)</td><td>Suite chính: studioShellTests, studioStoryTests, studioCertificationPhase12, productionPackageTests + ui primitives</td></tr>
+    <tr><td>apps/web</td><td>vitest</td><td>passWithNoTests — test sống ở desktop</td></tr>
+    <tr><td>frontend/packages</td><td>vitest per package</td><td>storyUiPhase6-9, studioShellPhase10, screenplay/screenplayBehavioral, architecture.test (platform)</td></tr>
+  </table>
+
+  <h2>6. File inventory đầy đủ</h2>
+  <div class="note">Tổng ~190 file nguồn TS/TSX. Bấm để mở từng khu vực.</div>
+
+  <details open>
+    <summary>apps/desktop/src — 64 file · 15,750 LOC</summary>
+    <div class="files">
+      <div>App.tsx</div><div>main.tsx</div><div>vite-env.d.ts</div>
+      <div>api/client.ts</div><div>api/types.ts</div>
+      <div>lib/apiBase.ts</div>
+      <div>services/conversationSocketManager.ts</div>
+      <div>state/multiAgentStore.tsx</div><div>state/theme.tsx</div>
+      <div>pages/Agents.tsx</div><div>pages/Browser.tsx</div>
+      <div>pages/CharactersPage.tsx</div><div>pages/Dashboard.tsx</div>
+      <div>pages/Endpoints.tsx</div><div>pages/EpisodesPage.tsx</div>
+      <div>pages/Files.tsx</div><div>pages/Memory.tsx</div>
+      <div>pages/Models.tsx</div><div>pages/MultiAgentWorkspace.tsx</div>
+      <div>pages/ProductionWorkspacePage.tsx</div><div>pages/ProjectsPage.tsx</div>
+      <div>pages/ReviewsPage.tsx</div><div>pages/Router.tsx</div>
+      <div>pages/Settings.tsx</div><div>pages/StoryBoardPage.tsx</div>
+      <div>pages/StudioPage.tsx</div><div>pages/Workflows.tsx</div>
+      <div>components/assets/AssetAcquisitionWizard.tsx</div>
+      <div>components/assets/AssetInspector.tsx</div>
+      <div>components/assets/AssetJobMonitor.tsx</div>
+      <div>components/assets/AssetVersionImpactModal.tsx</div>
+      <div>components/assets/AssetWorkspace.tsx</div>
+      <div>components/assets/NonThreeDPreviewViewer.tsx</div>
+      <div>components/assets/ThreeDPreviewViewer.tsx</div>
+      <div>components/studio/ApprovalBar.tsx</div>
+      <div>components/studio/ArtifactViews.tsx</div>
+      <div>components/studio/RunProgress.tsx</div>
+      <div>components/studio/StudioRightPanel.tsx</div>
+      <div>components/ui/Alert.tsx</div><div>components/ui/Badge.tsx</div>
+      <div>components/ui/Button.tsx</div><div>components/ui/Card.tsx</div>
+      <div>components/ui/Dropdown.tsx</div><div>components/ui/EmptyState.tsx</div>
+      <div>components/ui/Icon.tsx</div><div>components/ui/IconButton.tsx</div>
+      <div>components/ui/Panel.tsx</div><div>components/ui/ProgressBar.tsx</div>
+      <div>components/ui/SectionHeader.tsx</div><div>components/ui/Skeleton.tsx</div>
+      <div>components/ui/StatusBadge.tsx</div><div>components/ui/Tabs.tsx</div>
+      <div>components/ui/Tooltip.tsx</div><div>components/ui/index.ts</div>
+    </div>
+  </details>
+
+  <details>
+    <summary>apps/web/src — 3 file · 39 LOC</summary>
+    <div class="files">
+      <div>main.tsx</div><div>app/App.tsx</div><div>test/setup.ts</div>
+    </div>
+  </details>
+
+  <details>
+    <summary>frontend/packages/studio-shell/src — 12 TSX · 881 LOC</summary>
+    <div class="files">
+      <div>layout/AppShell.tsx</div><div>layout/MainWorkspace.tsx</div>
+      <div>layout/Sidebar.tsx</div><div>layout/TopBar.tsx</div>
+      <div>layout/WorkspaceHeader.tsx</div><div>navigation/NavigationGroup.tsx</div>
+      <div>status/BackendStatus.tsx</div><div>status/RuntimeMetrics.tsx</div>
+      <div>status/RuntimeStatusStrip.tsx</div>
+    </div>
+  </details>
+
+  <details>
+    <summary>frontend/packages/story-ui/src — 16 TSX · 3,085 LOC</summary>
+    <div class="files">
+      <div>workspace/EpisodeWorkspace.tsx</div><div>idea/IdeaSetView.tsx</div>
+      <div>story/StoryBibleView.tsx</div><div>outline/OutlineView.tsx</div>
+      <div>screenplay/ScreenplayView.tsx</div><div>review/ReviewReportView.tsx</div>
+      <div>revisions/RevisionProposalView.tsx</div><div>approval/ApprovalBar.tsx</div>
+      <div>runtime/PipelineProgress.tsx</div><div>runtime/RunProgress.tsx</div>
+      <div>shared/ArtifactView.tsx</div>
+    </div>
+  </details>
+
+  <details>
+    <summary>frontend/packages/production-ui/src — 29 TSX · 4,049 LOC</summary>
+    <div class="files">
+      <div>components/ProductionShell.tsx</div><div>components/ProductionHeader.tsx</div>
+      <div>components/ImportFileDialog.tsx</div>
+      <div>components/AssetLibraryPlaceholder.tsx</div>
+      <div>components/ScriptEditorPlaceholder.tsx</div>
+      <div>components/VideoWorkspacePlaceholder.tsx</div>
+      <div>components/screenplay/ScreenplayWorkspaceView.tsx</div>
+      <div>components/screenplay/ScreenplayHeader.tsx</div>
+      <div>components/screenplay/SceneTree.tsx</div><div>components/screenplay/SceneInspector.tsx</div>
+      <div>components/screenplay/StructuredEditor.tsx</div><div>components/screenplay/TextEditor.tsx</div>
+      <div>components/screenplay/ScreenplayDiffView.tsx</div>
+      <div>components/screenplay/ScreenplayBottomPanel.tsx</div>
+      <div>components/screenplay/ValidationGatePanel.tsx</div>
+      <div>components/screenplay/AIProposalView.tsx</div>
+      <div>components/screenplay/AssetPickerModal.tsx</div>
+      <div>components/screenplay/MissingAssetResolverModal.tsx</div>
+      <div>components/screenplay/ProductionImpactView.tsx</div>
+      <div>components/screenplay/CrossNavigationLinks.tsx</div>
+      <div>components/conflict/ConflictResolverModal.tsx</div>
+      <div>components/conflict/SemanticDiffViewer.tsx</div>
+      <div>components/collaboration/ActivityTimelinePanel.tsx</div>
+      <div>components/collaboration/ProposalInboxPanel.tsx</div>
+      <div>components/recovery/RecoveryPromptBanner.tsx</div>
+    </div>
+  </details>
+
+  <details>
+    <summary>frontend/packages (state / client / contracts / platform — TS)</summary>
+    <div class="files">
+      <div>production-state/store.ts</div>
+      <div>production-state/slices/screenplaySlice.ts</div>
+      <div>production-state/slices/bindingSlice.ts</div>
+      <div>production-state/slices/recoverySlice.ts</div>
+      <div>production-state/slices/projectContextSlice.ts</div>
+      <div>production-state/hooks/useUnsavedChangesGuard.ts</div>
+      <div>studio-state/StudioStore.ts</div>
+      <div>studio-client/HttpStudioApiClient.ts</div>
+      <div>production-client/ProductionApiClient.ts</div>
+      <div>production-contracts/types.ts</div>
+      <div>production-contracts/screenplay/types.ts</div>
+      <div>production-contracts/routing/routeCodec.ts</div>
+      <div>production-contracts/routing/routingCodec.ts</div>
+      <div>studio-contracts/generated/studio.episode.ts</div>
+      <div>studio-contracts/generated/studio.run-status.ts</div>
+      <div>studio-contracts/generated/studio.run-resource.ts</div>
+      <div>studio-contracts/generated/studio.artifact-envelope.ts</div>
+      <div>studio-contracts/generated/studio.approval-mode.ts</div>
+      <div>studio-contracts/generated/studio.episode-state.ts</div>
+      <div>studio-contracts/generated/studio.idempotency-headers.ts</div>
+      <div>studio-contracts/generated/studio.error-payload.ts</div>
+      <div>studio-contracts/generated/studio.series.ts</div>
+      <div>studio-contracts/generated/studio.rabbit-kite-scenario.ts</div>
+      <div>production-platform/adapters/TauriDesktopAdapter.ts</div>
+      <div>production-platform/adapters/BrowserWebAdapter.ts</div>
+      <div>production-platform/adapters/WebStorageRecoveryAdapter.ts</div>
+      <div>production-platform/adapters/DesktopStorageRecoveryAdapter.ts</div>
+      <div>production-platform/adapters/FakeTestAdapter.ts</div>
+      <div>production-platform/errors.ts</div><div>production-platform/types.ts</div>
+    </div>
+  </details>
+
+  <details>
+    <summary>Build artifacts (không phải source)</summary>
+    <div class="files">
+      <div>web-build/index.html (bundle apps/web)</div>
+      <div>desktop-build/index.html (bundle apps/desktop)</div>
+      <div>apps/web/dist/ (output vite build)</div>
+      <div>apps/web/coverage/ (báo cáo coverage)</div>
+    </div>
+  </details>
+
+  <h2>7. Ghi chú kiến trúc</h2>
+  <ul>
+    <li><b>Phân lớp 3 tầng:</b> apps (điểm vào) → packages UI (studio-shell / story-ui / production-ui) → packages state/client/contracts (logic + API).</li>
+    <li><b>apps/web hiện là bản sao mỏng:</b> re-export <code>@desktop/App</code>, không còn UI riêng — legacy web client/state đã bị loại.</li>
+    <li><b>Backend:</b> FastAPI tại <code>127.0.0.1:8765</code>; web dev server proxy <code>/api</code> + <code>/ws</code>.</li>
+    <li><b>Contracts generated:</b> <code>studio-contracts/src/generated/*</code> sinh từ backend spec — không sửa tay.</li>
+    <li><b>Adapter platform:</b> cùng một production UI chạy được trên Tauri (desktop) và browser nhờ production-platform.</li>
+    <li>Chart WS chưa nối (REST polling) ở appdesktop cũ; studio pipeline dùng HTTP client mới.</li>
+  </ul>
+
+  <div class="sub" style="margin-top:30px">Sinh tự động từ mã nguồn — WindAgent repo, 2026-08-14.</div>
+</div>
+
+<script>
+  const input = document.getElementById("filter");
+  const groups = Array.from(document.querySelectorAll("details"));
+  input.addEventListener("input", () => {
+    const q = input.value.trim().toLowerCase();
+    groups.forEach(g => {
+      const files = g.querySelector(".files");
+      if (!files) { g.style.display = q ? "none" : ""; return; }
+      let hit = false;
+      files.querySelectorAll("div").forEach(f => {
+        const m = !q || f.textContent.toLowerCase().includes(q);
+        f.style.display = m ? "" : "none";
+        if (m) hit = true;
+      });
+      g.style.display = hit ? "" : "none";
+      if (q) g.open = hit;
+    });
+  });
+</script>
+</body>
+</html>

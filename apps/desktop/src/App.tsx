@@ -1,31 +1,101 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import {
   AppShell,
   TopBar,
   Sidebar,
   MainWorkspace,
   BackendStatus,
-  RuntimeMetrics,
   NavigationGroup,
   DESKTOP_NAVIGATION_GROUPS,
   type MetricState,
 } from "@windagent/studio-shell";
-import { Dashboard } from "./pages/Dashboard";
-import { Agents } from "./pages/Agents";
-import { Models } from "./pages/Models";
-import { Memory } from "./pages/Memory";
-import { Workflows } from "./pages/Workflows";
-import { Browser } from "./pages/Browser";
-import { Files } from "./pages/Files";
-import { Router } from "./pages/Router";
-import { Settings } from "./pages/Settings";
-import { MultiAgentWorkspace } from "./pages/MultiAgentWorkspace";
 import { MultiAgentProvider } from "./state/multiAgentStore";
 import { fetchHermesHealth, fetchHealth } from "./api/client";
-import { Endpoints } from "./pages/Endpoints";
-import { AssetWorkspace } from "./components/assets/AssetWorkspace";
-import { ProductionWorkspacePage } from "./pages/ProductionWorkspacePage";
-import { StudioPage } from "./pages/StudioPage";
+
+function lazyNamed<T extends React.ComponentType<any>>(
+  factory: () => Promise<any>,
+  name: string
+) {
+  return lazy(() => factory().then((module) => ({ default: module[name] as T })));
+}
+
+const Dashboard = lazyNamed(() => import("./pages/Dashboard"), "Dashboard");
+const Agents = lazyNamed(() => import("./pages/Agents"), "Agents");
+const Models = lazyNamed(() => import("./pages/Models"), "Models");
+const Endpoints = lazyNamed(() => import("./pages/Endpoints"), "Endpoints");
+const Memory = lazyNamed(() => import("./pages/Memory"), "Memory");
+const Workflows = lazyNamed(() => import("./pages/Workflows"), "Workflows");
+const Browser = lazyNamed(() => import("./pages/Browser"), "Browser");
+const Files = lazyNamed(() => import("./pages/Files"), "Files");
+const Router = lazyNamed(() => import("./pages/Router"), "Router");
+const Settings = lazyNamed(() => import("./pages/Settings"), "Settings");
+const MultiAgentWorkspace = lazyNamed(() => import("./pages/MultiAgentWorkspace"), "MultiAgentWorkspace");
+const AssetWorkspace = lazyNamed(() => import("./components/assets/AssetWorkspace"), "AssetWorkspace");
+const ProductionWorkspacePage = lazyNamed(() => import("./pages/ProductionWorkspacePage"), "ProductionWorkspacePage");
+const StudioPage = lazyNamed(() => import("./pages/StudioPage"), "StudioPage");
+const CharactersPage = lazyNamed(() => import("./pages/CharactersPage"), "CharactersPage");
+const EpisodesPage = lazyNamed(() => import("./pages/EpisodesPage"), "EpisodesPage");
+const StoryBoardPage = lazyNamed(() => import("./pages/StoryBoardPage"), "StoryBoardPage");
+const ProjectsPage = lazyNamed(() => import("./pages/ProjectsPage"), "ProjectsPage");
+const ReviewsPage = lazyNamed(() => import("./pages/ReviewsPage"), "ReviewsPage");
+
+const PageSkeleton: React.FC<{ tabId?: string }> = ({ tabId }) => (
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      height: "100%",
+      minHeight: "400px",
+      color: "var(--text-muted, #c2c6d6)",
+      gap: "16px",
+      fontFamily: "var(--font-sans, sans-serif)",
+    }}
+  >
+    <div
+      style={{
+        width: "36px",
+        height: "36px",
+        border: "3px solid var(--bg-panel-light, #171f33)",
+        borderTop: "3px solid var(--color-primary, #4d8eff)",
+        borderRadius: "50%",
+        animation: "spin 0.8s linear infinite",
+      }}
+    />
+    <span style={{ fontSize: "14px", letterSpacing: "0.5px", opacity: 0.8 }}>
+      {tabId ? `Loading ${tabId}...` : "Loading page..."}
+    </span>
+  </div>
+);
+
+function TabKeeper({
+  id,
+  activeTab,
+  visitedTabs,
+  children,
+}: {
+  id: string;
+  activeTab: string;
+  visitedTabs: Set<string>;
+  children: React.ReactNode;
+}) {
+  if (!visitedTabs.has(id)) {
+    return null;
+  }
+  const isActive = activeTab === id;
+  return (
+    <div
+      style={{ display: isActive ? "contents" : "none" }}
+      data-tab-id={id}
+      data-active={isActive}
+    >
+      <Suspense fallback={<PageSkeleton tabId={id} />}>
+        {children}
+      </Suspense>
+    </div>
+  );
+}
 
 function useConversationId(): string {
   const [conversationId] = useState<string>(() => {
@@ -52,6 +122,19 @@ export function App() {
   const conversationId = useConversationId();
   const [refreshInterval, setRefreshInterval] = useState<string>("10s");
 
+  const [visitedTabs, setVisitedTabs] = useState<Set<string>>(
+    () => new Set([certificationEpisodeId ? "studio" : "dashboard"])
+  );
+
+  useEffect(() => {
+    setVisitedTabs((prev) => {
+      if (prev.has(activeTab)) return prev;
+      const next = new Set(prev);
+      next.add(activeTab);
+      return next;
+    });
+  }, [activeTab]);
+
   // Synchronize top-level routing hash with activeTab
   useEffect(() => {
     if (certificationEpisodeId) {
@@ -63,7 +146,9 @@ export function App() {
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.toLowerCase();
-      if (hash.startsWith("#/studio")) {
+      if (hash === "#/dashboard" || hash === "#/" || hash === "") {
+        setActiveTab("dashboard");
+      } else if (hash.startsWith("#/studio")) {
         setActiveTab("studio");
       } else if (hash.startsWith("#/production/assets")) {
         setActiveTab("production-assets");
@@ -71,11 +156,11 @@ export function App() {
         setActiveTab("production-video");
       } else if (hash.startsWith("#/production")) {
         setActiveTab("production-script");
-      } else if (hash.startsWith("#/system/workspace")) {
+      } else if (hash.startsWith("#/system/workspace") || hash === "#/workspace") {
         setActiveTab("workspace");
-      } else if (hash.startsWith("#/system/agents")) {
+      } else if (hash.startsWith("#/system/agents") || hash === "#/agents") {
         setActiveTab("agents");
-      } else if (hash.startsWith("#/system/settings")) {
+      } else if (hash.startsWith("#/system/settings") || hash === "#/settings") {
         setActiveTab("settings");
       }
     };
@@ -208,6 +293,8 @@ export function App() {
     setActiveTab(tabId);
     if (tabId === "studio" && !window.location.hash.startsWith("#/studio")) {
       window.location.hash = "#/studio";
+    } else if (tabId === "dashboard") {
+      window.location.hash = "#/dashboard";
     }
   };
 
@@ -216,7 +303,6 @@ export function App() {
       header={
         <TopBar
           statusSlot={<BackendStatus backendOnline={backendOnline} hermesOnline={hermesOnline} />}
-          metricsSlot={<RuntimeMetrics metrics={metrics} />}
         />
       }
     >
@@ -234,7 +320,7 @@ export function App() {
           </Sidebar>
         }
       >
-        {activeTab === "dashboard" && (
+        <TabKeeper id="dashboard" activeTab={activeTab} visitedTabs={visitedTabs}>
           <Dashboard
             metrics={metrics}
             setMetrics={setMetrics}
@@ -242,27 +328,71 @@ export function App() {
             refreshInterval={refreshInterval}
             setRefreshInterval={setRefreshInterval}
           />
-        )}
-        {activeTab === "agents" && <Agents setActiveTab={setActiveTab} />}
-        {activeTab === "models-library" && <Models setActiveTab={setActiveTab} />}
-        {activeTab === "models-endpoints" && <Endpoints />}
-        {activeTab === "memory" && <Memory setActiveTab={setActiveTab} />}
-        {activeTab === "workflows" && <Workflows />}
-        {activeTab === "browser" && <Browser />}
-        {activeTab === "files" && <Files />}
-        {activeTab === "workspace" && (
+        </TabKeeper>
+        <TabKeeper id="agents" activeTab={activeTab} visitedTabs={visitedTabs}>
+          <Agents setActiveTab={setActiveTab} />
+        </TabKeeper>
+        <TabKeeper id="models-library" activeTab={activeTab} visitedTabs={visitedTabs}>
+          <Models setActiveTab={setActiveTab} />
+        </TabKeeper>
+        <TabKeeper id="models-endpoints" activeTab={activeTab} visitedTabs={visitedTabs}>
+          <Endpoints />
+        </TabKeeper>
+        <TabKeeper id="memory" activeTab={activeTab} visitedTabs={visitedTabs}>
+          <Memory setActiveTab={setActiveTab} />
+        </TabKeeper>
+        <TabKeeper id="workflows" activeTab={activeTab} visitedTabs={visitedTabs}>
+          <Workflows />
+        </TabKeeper>
+        <TabKeeper id="browser" activeTab={activeTab} visitedTabs={visitedTabs}>
+          <Browser />
+        </TabKeeper>
+        <TabKeeper id="files" activeTab={activeTab} visitedTabs={visitedTabs}>
+          <Files />
+        </TabKeeper>
+        <TabKeeper id="workspace" activeTab={activeTab} visitedTabs={visitedTabs}>
           <MultiAgentProvider conversationId={conversationId}>
             <MultiAgentWorkspace conversationId={conversationId} />
           </MultiAgentProvider>
-        )}
-        {activeTab === "router" && <Router />}
-        {activeTab === "studio" && <StudioPage />}
-        {activeTab === "asset-library" && <AssetWorkspace />}
-        {activeTab === "production-script" && <ProductionWorkspacePage initialPage="script" />}
-        {activeTab === "production-assets" && <ProductionWorkspacePage initialPage="assets" />}
-        {activeTab === "production-video" && <ProductionWorkspacePage initialPage="video" />}
-        {activeTab === "settings" && <Settings />}
+        </TabKeeper>
+        <TabKeeper id="router" activeTab={activeTab} visitedTabs={visitedTabs}>
+          <Router />
+        </TabKeeper>
+        <TabKeeper id="studio" activeTab={activeTab} visitedTabs={visitedTabs}>
+          <StudioPage />
+        </TabKeeper>
+        <TabKeeper id="projects" activeTab={activeTab} visitedTabs={visitedTabs}>
+          <ProjectsPage />
+        </TabKeeper>
+        <TabKeeper id="episodes" activeTab={activeTab} visitedTabs={visitedTabs}>
+          <EpisodesPage />
+        </TabKeeper>
+        <TabKeeper id="storyboard" activeTab={activeTab} visitedTabs={visitedTabs}>
+          <StoryBoardPage />
+        </TabKeeper>
+        <TabKeeper id="characters" activeTab={activeTab} visitedTabs={visitedTabs}>
+          <CharactersPage />
+        </TabKeeper>
+        <TabKeeper id="reviews" activeTab={activeTab} visitedTabs={visitedTabs}>
+          <ReviewsPage />
+        </TabKeeper>
+        <TabKeeper id="asset-library" activeTab={activeTab} visitedTabs={visitedTabs}>
+          <AssetWorkspace />
+        </TabKeeper>
+        <TabKeeper id="production-script" activeTab={activeTab} visitedTabs={visitedTabs}>
+          <ProductionWorkspacePage initialPage="script" />
+        </TabKeeper>
+        <TabKeeper id="production-assets" activeTab={activeTab} visitedTabs={visitedTabs}>
+          <ProductionWorkspacePage initialPage="assets" />
+        </TabKeeper>
+        <TabKeeper id="production-video" activeTab={activeTab} visitedTabs={visitedTabs}>
+          <ProductionWorkspacePage initialPage="video" />
+        </TabKeeper>
+        <TabKeeper id="settings" activeTab={activeTab} visitedTabs={visitedTabs}>
+          <Settings />
+        </TabKeeper>
       </MainWorkspace>
     </AppShell>
   );
 }
+

@@ -1,4 +1,0 @@
-{
- "note": "No public/ dirs exist in apps/desktop or apps/web. All png/ico/json under src-tauri/ (icons + capabilities) = Tauri shell, protected. Zero svg/webp/font files in frontend scope. studio-contracts/fixtures/*.json = contract fixtures (protected, drift-checked).",
- "assets_deleted": 0
-}

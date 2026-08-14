@@ -1,8 +1,0 @@
-{
-  "phase": "F",
-  "status": "NOT_RUN",
-  "reason": "NO_QUALIFIED_CANDIDATE",
-  "detail": "Provider qualification produced no model meeting the promotion bar (3/3 PASS or >=4/5 with mean language >= 0.85). ornith:9b executes the chain but scores language 0.75-0.80 < 0.85 on every run; qwen3.5:latest fails ideation 3/3; deepseek-v4-flash:cloud requires subscription. Controlled C7 rerun on a qualified candidate is therefore impossible; C7(S2) remains FAIL.",
-  "c7_status": "FAIL",
-  "c7_integration_sha": "16602f3b777e103f7565dcfb44abf0682b0cb550"
-}

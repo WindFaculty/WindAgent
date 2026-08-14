@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>WindAgent Studio</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#3b82f6",
+                        "background-light": "#f3f4f6",
+                        "background-dark": "#0f172a",
+                        "surface-dark": "#1e293b",
+                        "surface-light": "#ffffff",
+                        "border-dark": "#334155",
+                        "border-light": "#e2e8f0",
+                        "text-dark": "#f8fafc",
+                        "text-light": "#0f172a",
+                        "text-muted-dark": "#94a3b8",
+                        "text-muted-light": "#64748b",
+                    },
+                    fontFamily: {
+                        display: ["Inter", "sans-serif"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.5rem",
+                    },
+                },
+            },
+        };
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+        .nav-item.active {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+            border-left: 3px solid #3b82f6;
+        }
+        .nav-item.active .material-icons-outlined {
+            color: #3b82f6;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark min-h-screen flex flex-col h-screen overflow-hidden text-sm">
+<header class="h-14 border-b border-border-light dark:border-border-dark flex items-center justify-between px-4 bg-surface-light dark:bg-surface-dark shrink-0">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-2 text-xl font-bold text-primary">
+<span class="material-icons-outlined text-3xl">auto_awesome</span>
+<span>WindAgent Studio</span>
+</div>
+<nav class="flex items-center gap-1">
+<a class="flex items-center gap-2 px-4 py-1.5 rounded bg-primary text-white text-sm font-medium" href="#">
+<span class="material-icons-outlined text-lg">design_services</span>
+                    Studio
+                </a>
+<a class="flex items-center gap-2 px-4 py-1.5 rounded text-text-muted-light dark:text-text-muted-dark hover:bg-background-light dark:hover:bg-background-dark text-sm font-medium transition-colors" href="#">
+<span class="material-icons-outlined text-lg">folder_open</span>
+                    Assets
+                </a>
+<a class="flex items-center gap-2 px-4 py-1.5 rounded text-text-muted-light dark:text-text-muted-dark hover:bg-background-light dark:hover:bg-background-dark text-sm font-medium transition-colors" href="#">
+<span class="material-icons-outlined text-lg">schema</span>
+                    Models
+                </a>
+<a class="flex items-center gap-2 px-4 py-1.5 rounded text-text-muted-light dark:text-text-muted-dark hover:bg-background-light dark:hover:bg-background-dark text-sm font-medium transition-colors" href="#">
+<span class="material-icons-outlined text-lg">monitor_heart</span>
+                    Monitoring
+                </a>
+<a class="flex items-center gap-2 px-4 py-1.5 rounded text-text-muted-light dark:text-text-muted-dark hover:bg-background-light dark:hover:bg-background-dark text-sm font-medium transition-colors" href="#">
+<span class="material-icons-outlined text-lg">settings</span>
+                    Settings
+                </a>
+</nav>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2 text-xs text-text-muted-light dark:text-text-muted-dark">
+<span class="w-2 h-2 rounded-full bg-green-500"></span>
+                System Online
+            </div>
+<div class="px-2 py-1 rounded border border-border-light dark:border-border-dark text-xs text-text-muted-light dark:text-text-muted-dark">
+                v0.1.0-dev
+            </div>
+<div class="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
+<div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-xs">
+                    TK
+                </div>
+<span class="text-sm font-medium">Tran Xuan Khoa</span>
+<span class="material-icons-outlined text-sm text-text-muted-light dark:text-text-muted-dark">expand_more</span>
+</div>
+</div>
+</header>
+<div class="flex flex-1 overflow-hidden">
+<aside class="w-64 border-r border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark flex flex-col justify-between shrink-0 overflow-y-auto">
+<div class="py-4">
+<div class="px-4 mb-2 text-xs font-semibold text-text-muted-light dark:text-text-muted-dark uppercase tracking-wider">Studio</div>
+<nav class="flex flex-col gap-1 px-2">
+<a class="nav-item flex items-center gap-3 px-3 py-2 rounded text-text-muted-light dark:text-text-muted-dark hover:bg-background-light dark:hover:bg-background-dark transition-colors border-l-3 border-transparent" href="#">
+<span class="material-icons-outlined text-xl">dashboard</span>
+                        Dashboard
+                    </a>
+<a class="nav-item active flex items-center gap-3 px-3 py-2 rounded bg-blue-50 dark:bg-blue-900/20 text-primary border-l-[3px] border-primary" href="#">
+<span class="material-icons-outlined text-xl">play_circle_outline</span>
+                        Studio
+                    </a>
+<a class="nav-item flex items-center gap-3 px-3 py-2 rounded text-text-muted-light dark:text-text-muted-dark hover:bg-background-light dark:hover:bg-background-dark transition-colors border-l-3 border-transparent" href="#">
+<span class="material-icons-outlined text-xl">folder</span>
+                        Projects
+                    </a>
+<a class="nav-item flex items-center gap-3 px-3 py-2 rounded text-text-muted-light dark:text-text-muted-dark hover:bg-background-light dark:hover:bg-background-dark transition-colors border-l-3 border-transparent" href="#">
+<span class="material-icons-outlined text-xl">movie</span>
+                        Episodes
+                    </a>
+<a class="nav-item flex items-center gap-3 px-3 py-2 rounded text-text-muted-light dark:text-text-muted-dark hover:bg-background-light dark:hover:bg-background-dark transition-colors border-l-3 border-transparent" href="#">
+<span class="material-icons-outlined text-xl">view_carousel</span>
+                        Story Board
+                    </a>
+<a class="nav-item flex items-center gap-3 px-3 py-2 rounded text-text-muted-light dark:text-text-muted-dark hover:bg-background-light dark:hover:bg-background-dark transition-colors border-l-3 border-transparent" href="#">
+<span class="material-icons-outlined text-xl">group</span>
+                        Characters
+                    </a>
+<a class="nav-item flex items-center gap-3 px-3 py-2 rounded text-text-muted-light dark:text-text-muted-dark hover:bg-background-light dark:hover:bg-background-dark transition-colors border-l-3 border-transparent" href="#">
+<span class="material-icons-outlined text-xl">public</span>
+                        World / Setting
+                    </a>
+<a class="nav-item flex items-center gap-3 px-3 py-2 rounded text-text-muted-light dark:text-text-muted-dark hover:bg-background-light dark:hover:bg-background-dark transition-colors border-l-3 border-transparent" href="#">
+<span class="material-icons-outlined text-xl">category</span>
+                        Assets
+                    </a>
+<a class="nav-item flex items-center gap-3 px-3 py-2 rounded text-text-muted-light dark:text-text-muted-dark hover:bg-background-light dark:hover:bg-background-dark transition-colors border-l-3 border-transparent" href="#">
+<span class="material-icons-outlined text-xl">fact_check</span>
+                        Reviews
+                    </a>
+</nav>
+<div class="px-4 mt-8 mb-2 text-xs font-semibold text-text-muted-light dark:text-text-muted-dark uppercase tracking-wider">System</div>
+<nav class="flex flex-col gap-1 px-2">
+<a class="nav-item flex items-center gap-3 px-3 py-2 rounded text-text-muted-light dark:text-text-muted-dark hover:bg-background-light dark:hover:bg-background-dark transition-colors border-l-3 border-transparent" href="#">
+<span class="material-icons-outlined text-xl">hub</span>
+                        Models
+                    </a>
+<a class="nav-item flex items-center gap-3 px-3 py-2 rounded text-text-muted-light dark:text-text-muted-dark hover:bg-background-light dark:hover:bg-background-dark transition-colors border-l-3 border-transparent" href="#">
+<span class="material-icons-outlined text-xl">cloud</span>
+                        Providers
+                    </a>
+<a class="nav-item flex items-center gap-3 px-3 py-2 rounded text-text-muted-light dark:text-text-muted-dark hover:bg-background-light dark:hover:bg-background-dark transition-colors border-l-3 border-transparent" href="#">
+<span class="material-icons-outlined text-xl">account_tree</span>
+                        Workflows
+                    </a>
+<a class="nav-item flex items-center gap-3 px-3 py-2 rounded text-text-muted-light dark:text-text-muted-dark hover:bg-background-light dark:hover:bg-background-dark transition-colors border-l-3 border-transparent" href="#">
+<span class="material-icons-outlined text-xl">smart_toy</span>
+                        Agent Lab
+                    </a>
+<a class="nav-item flex items-center gap-3 px-3 py-2 rounded text-text-muted-light dark:text-text-muted-dark hover:bg-background-light dark:hover:bg-background-dark transition-colors border-l-3 border-transparent" href="#">
+<span class="material-icons-outlined text-xl">receipt_long</span>
+                        Logs
+                    </a>
+<a class="nav-item flex items-center gap-3 px-3 py-2 rounded text-text-muted-light dark:text-text-muted-dark hover:bg-background-light dark:hover:bg-background-dark transition-colors border-l-3 border-transparent" href="#">
+<span class="material-icons-outlined text-xl">storage</span>
+                        Database
+                    </a>
+</nav>
+</div>
+<div class="p-4 space-y-4">
+<div class="p-4 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark flex flex-col gap-2 relative overflow-hidden">
+<div class="absolute inset-0 opacity-10 bg-gradient-to-r from-blue-500 to-purple-500"></div>
+<div class="relative z-10 flex items-center gap-2">
+<span class="material-icons-outlined text-primary text-xl">auto_awesome</span>
+<span class="font-bold">WindAgent</span>
+</div>
+<div class="relative z-10 text-xs text-text-muted-light dark:text-text-muted-dark">Build • Create • Inspire</div>
+<div class="relative z-10 mt-2 h-8 w-full">
+<svg class="w-full h-full stroke-primary fill-none stroke-2" preserveAspectRatio="none" viewBox="0 0 100 20">
+<path d="M0 10 Q 10 5, 20 10 T 40 10 T 60 10 T 80 10 T 100 10"></path>
+</svg>
+</div>
+</div>
+<button class="w-full flex items-center justify-between p-3 rounded-lg border border-border-light dark:border-border-dark hover:bg-background-light dark:hover:bg-background-dark transition-colors text-left">
+<div class="flex flex-col">
+<span class="text-xs font-semibold text-green-500 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> Development</span>
+<span class="text-xs text-text-muted-light dark:text-text-muted-dark mt-0.5">Main Studio Platform</span>
+</div>
+<span class="material-icons-outlined text-text-muted-light dark:text-text-muted-dark">expand_more</span>
+</button>
+</div>
+</aside>
+<main class="flex-1 flex flex-col overflow-y-auto bg-background-light dark:bg-background-dark p-6 gap-6">
+<div class="flex items-start justify-between">
+<div>
+<h1 class="text-2xl font-bold mb-1">Studio</h1>
+<p class="text-text-muted-light dark:text-text-muted-dark text-sm">From a spark of an idea to a locked screenplay</p>
+</div>
+<button class="flex items-center gap-2 px-4 py-2 rounded-lg border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark hover:bg-background-light dark:hover:bg-background-dark transition-colors text-sm font-medium">
+<span class="w-2 h-2 rounded-full bg-green-500"></span>
+                    Sock
+                    <span class="material-icons-outlined text-sm ml-2 text-text-muted-light dark:text-text-muted-dark">expand_more</span>
+</button>
+</div>
+<div class="flex items-center justify-between w-full max-w-5xl mx-auto py-4">
+<div class="flex flex-col items-start gap-2 flex-1 relative group cursor-pointer">
+<div class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-semibold text-sm relative z-10 ring-4 ring-background-light dark:ring-background-dark">
+                        1
+                    </div>
+<div>
+<div class="font-semibold text-sm">Project</div>
+<div class="text-xs text-text-muted-light dark:text-text-muted-dark">Create a series</div>
+</div>
+<div class="absolute top-4 left-8 right-0 h-0.5 bg-border-light dark:bg-border-dark z-0 -ml-4 group-hover:bg-primary transition-colors"></div>
+</div>
+<div class="flex flex-col items-start gap-2 flex-1 relative group cursor-pointer">
+<div class="w-8 h-8 rounded-full border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark text-text-muted-light dark:text-text-muted-dark flex items-center justify-center font-semibold text-sm relative z-10 ring-4 ring-background-light dark:ring-background-dark group-hover:border-primary group-hover:text-primary transition-colors">
+                        2
+                    </div>
+<div>
+<div class="font-medium text-sm text-text-muted-light dark:text-text-muted-dark group-hover:text-text-light dark:group-hover:text-text-dark transition-colors">Idea</div>
+<div class="text-xs text-text-muted-light dark:text-text-muted-dark">Generate &amp; choose</div>
+</div>
+<div class="absolute top-4 left-8 right-0 h-0.5 bg-border-light dark:bg-border-dark z-0 -ml-4 group-hover:bg-primary transition-colors"></div>
+<div class="absolute top-4 left-0 right-8 h-0.5 bg-border-light dark:bg-border-dark z-0 -mr-4 group-hover:bg-primary transition-colors"></div>
+</div>
+<div class="flex flex-col items-start gap-2 flex-1 relative group cursor-pointer">
+<div class="w-8 h-8 rounded-full border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark text-text-muted-light dark:text-text-muted-dark flex items-center justify-center font-semibold text-sm relative z-10 ring-4 ring-background-light dark:ring-background-dark group-hover:border-primary group-hover:text-primary transition-colors">
+                        3
+                    </div>
+<div>
+<div class="font-medium text-sm text-text-muted-light dark:text-text-muted-dark group-hover:text-text-light dark:group-hover:text-text-dark transition-colors">Story Bible</div>
+<div class="text-xs text-text-muted-light dark:text-text-muted-dark">World &amp; characters</div>
+</div>
+<div class="absolute top-4 left-8 right-0 h-0.5 bg-border-light dark:bg-border-dark z-0 -ml-4 group-hover:bg-primary transition-colors"></div>
+<div class="absolute top-4 left-0 right-8 h-0.5 bg-border-light dark:bg-border-dark z-0 -mr-4 group-hover:bg-primary transition-colors"></div>
+</div>
+<div class="flex flex-col items-start gap-2 flex-1 relative group cursor-pointer">
+<div class="w-8 h-8 rounded-full border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark text-text-muted-light dark:text-text-muted-dark flex items-center justify-center font-semibold text-sm relative z-10 ring-4 ring-background-light dark:ring-background-dark group-hover:border-primary group-hover:text-primary transition-colors">
+                        4
+                    </div>
+<div>
+<div class="font-medium text-sm text-text-muted-light dark:text-text-muted-dark group-hover:text-text-light dark:group-hover:text-text-dark transition-colors">Outline</div>
+<div class="text-xs text-text-muted-light dark:text-text-muted-dark">Beat sheet &amp; arc</div>
+</div>
+<div class="absolute top-4 left-8 right-0 h-0.5 bg-border-light dark:bg-border-dark z-0 -ml-4 group-hover:bg-primary transition-colors"></div>
+<div class="absolute top-4 left-0 right-8 h-0.5 bg-border-light dark:bg-border-dark z-0 -mr-4 group-hover:bg-primary transition-colors"></div>
+</div>
+<div class="flex flex-col items-start gap-2 flex-1 relative group cursor-pointer">
+<div class="w-8 h-8 rounded-full border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark text-text-muted-light dark:text-text-muted-dark flex items-center justify-center font-semibold text-sm relative z-10 ring-4 ring-background-light dark:ring-background-dark group-hover:border-primary group-hover:text-primary transition-colors">
+                        5
+                    </div>
+<div>
+<div class="font-medium text-sm text-text-muted-light dark:text-text-muted-dark group-hover:text-text-light dark:group-hover:text-text-dark transition-colors">Screenplay</div>
+<div class="text-xs text-text-muted-light dark:text-text-muted-dark">Write &amp; validate</div>
+</div>
+<div class="absolute top-4 left-8 right-0 h-0.5 bg-border-light dark:bg-border-dark z-0 -ml-4 group-hover:bg-primary transition-colors"></div>
+<div class="absolute top-4 left-0 right-8 h-0.5 bg-border-light dark:bg-border-dark z-0 -mr-4 group-hover:bg-primary transition-colors"></div>
+</div>
+<div class="flex flex-col items-start gap-2 flex-1 relative group cursor-pointer">
+<div class="w-8 h-8 rounded-full border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark text-text-muted-light dark:text-text-muted-dark flex items-center justify-center font-semibold text-sm relative z-10 ring-4 ring-background-light dark:ring-background-dark group-hover:border-primary group-hover:text-primary transition-colors">
+                        6
+                    </div>
+<div>
+<div class="font-medium text-sm text-text-muted-light dark:text-text-muted-dark group-hover:text-text-light dark:group-hover:text-text-dark transition-colors">Review</div>
+<div class="text-xs text-text-muted-light dark:text-text-muted-dark">Quality check</div>
+</div>
+<div class="absolute top-4 left-8 right-0 h-0.5 bg-border-light dark:bg-border-dark z-0 -ml-4 group-hover:bg-primary transition-colors"></div>
+<div class="absolute top-4 left-0 right-8 h-0.5 bg-border-light dark:bg-border-dark z-0 -mr-4 group-hover:bg-primary transition-colors"></div>
+</div>
+<div class="flex flex-col items-start gap-2 flex-1 relative group cursor-pointer">
+<div class="w-8 h-8 rounded-full border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark text-text-muted-light dark:text-text-muted-dark flex items-center justify-center font-semibold text-sm relative z-10 ring-4 ring-background-light dark:ring-background-dark group-hover:border-primary group-hover:text-primary transition-colors">
+                        7
+                    </div>
+<div>
+<div class="font-medium text-sm text-text-muted-light dark:text-text-muted-dark group-hover:text-text-light dark:group-hover:text-text-dark transition-colors">Revision</div>
+<div class="text-xs text-text-muted-light dark:text-text-muted-dark">Iterate if needed</div>
+</div>
+<div class="absolute top-4 left-8 right-0 h-0.5 bg-border-light dark:bg-border-dark z-0 -ml-4 group-hover:bg-primary transition-colors"></div>
+<div class="absolute top-4 left-0 right-8 h-0.5 bg-border-light dark:bg-border-dark z-0 -mr-4 group-hover:bg-primary transition-colors"></div>
+</div>
+<div class="flex flex-col items-start gap-2 relative group cursor-pointer">
+<div class="w-8 h-8 rounded-full border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark text-text-muted-light dark:text-text-muted-dark flex items-center justify-center font-semibold text-sm relative z-10 ring-4 ring-background-light dark:ring-background-dark group-hover:border-primary group-hover:text-primary transition-colors">
+                        8
+                    </div>
+<div>
+<div class="font-medium text-sm text-text-muted-light dark:text-text-muted-dark group-hover:text-text-light dark:group-hover:text-text-dark transition-colors">Lock</div>
+<div class="text-xs text-text-muted-light dark:text-text-muted-dark">Ready for production</div>
+</div>
+<div class="absolute top-4 left-0 right-8 h-0.5 bg-border-light dark:bg-border-dark z-0 -mr-4 group-hover:bg-primary transition-colors"></div>
+</div>
+</div>
+<div class="flex-1 flex flex-col items-center justify-center rounded-xl bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark p-12 text-center relative overflow-hidden">
+<div class="absolute top-0 right-0 p-8 opacity-10 blur-3xl pointer-events-none">
+<div class="w-64 h-64 rounded-full bg-blue-500"></div>
+</div>
+<div class="absolute bottom-0 left-0 p-8 opacity-10 blur-3xl pointer-events-none">
+<div class="w-64 h-64 rounded-full bg-purple-500"></div>
+</div>
+<div class="z-10 flex flex-col items-center max-w-4xl mx-auto">
+<div class="mb-6">
+<span class="material-icons-outlined text-5xl text-primary drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]">auto_awesome</span>
+</div>
+<h2 class="text-3xl font-bold mb-3">Chào mừng bạn đến với <span class="text-primary">WindAgent Studio</span></h2>
+<p class="text-lg text-text-muted-light dark:text-text-muted-dark mb-12">Biến ý tưởng thành những câu chuyện tuyệt vời.</p>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12 w-full">
+<div class="flex flex-col items-center text-center p-6 rounded-xl border border-border-light dark:border-border-dark bg-background-light/50 dark:bg-background-dark/50 hover:border-blue-500/50 hover:bg-blue-50/10 transition-all cursor-pointer group">
+<div class="w-12 h-12 rounded-lg bg-blue-500/20 text-blue-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+<span class="material-icons-outlined text-2xl">lightbulb</span>
+</div>
+<h3 class="font-semibold text-lg mb-2">Ý tưởng</h3>
+<p class="text-sm text-text-muted-light dark:text-text-muted-dark">Đề xuất và chọn ý tưởng có tiềm năng</p>
+</div>
+<div class="flex flex-col items-center text-center p-6 rounded-xl border border-border-light dark:border-border-dark bg-background-light/50 dark:bg-background-dark/50 hover:border-green-500/50 hover:bg-green-50/10 transition-all cursor-pointer group">
+<div class="w-12 h-12 rounded-lg bg-green-500/20 text-green-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+<span class="material-icons-outlined text-2xl">menu_book</span>
+</div>
+<h3 class="font-semibold text-lg mb-2">Thế giới</h3>
+<p class="text-sm text-text-muted-light dark:text-text-muted-dark">Xây dựng thế giới, bối cảnh, nhân vật</p>
+</div>
+<div class="flex flex-col items-center text-center p-6 rounded-xl border border-border-light dark:border-border-dark bg-background-light/50 dark:bg-background-dark/50 hover:border-purple-500/50 hover:bg-purple-50/10 transition-all cursor-pointer group">
+<div class="w-12 h-12 rounded-lg bg-purple-500/20 text-purple-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+<span class="material-icons-outlined text-2xl">article</span>
+</div>
+<h3 class="font-semibold text-lg mb-2">Kịch bản</h3>
+<p class="text-sm text-text-muted-light dark:text-text-muted-dark">Tạo dàn ý, viết kịch bản ngắn (short screenplay)</p>
+</div>
+<div class="flex flex-col items-center text-center p-6 rounded-xl border border-border-light dark:border-border-dark bg-background-light/50 dark:bg-background-dark/50 hover:border-orange-500/50 hover:bg-orange-50/10 transition-all cursor-pointer group">
+<div class="w-12 h-12 rounded-lg bg-orange-500/20 text-orange-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+<span class="material-icons-outlined text-2xl">verified</span>
+</div>
+<h3 class="font-semibold text-lg mb-2">Kiểm duyệt</h3>
+<p class="text-sm text-text-muted-light dark:text-text-muted-dark">Tự động đánh giá, vòng lặp chỉnh sửa và khóa kịch bản</p>
+</div>
+</div>
+<div class="flex flex-col items-center gap-4">
+<button class="flex items-center gap-2 px-8 py-3 rounded-lg bg-primary hover:bg-blue-600 text-white font-medium shadow-lg shadow-blue-500/20 transition-all hover:-translate-y-0.5">
+<span class="material-icons-outlined">add_circle_outline</span>
+                            Tạo dự án mới
+                            <span class="material-icons-outlined text-sm ml-1">arrow_forward</span>
+</button>
+<p class="text-xs text-text-muted-light dark:text-text-muted-dark">Một dự án mới - Một hành trình sáng tạo.</p>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6 shrink-0">
+<div class="col-span-1 rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-5 flex flex-col h-full">
+<div class="flex items-center justify-between mb-4">
+<h3 class="font-semibold">Quick Actions</h3>
+<button class="text-text-muted-light dark:text-text-muted-dark hover:text-text-light dark:hover:text-text-dark">
+<span class="material-icons-outlined text-sm">open_in_new</span>
+</button>
+</div>
+<div class="grid grid-cols-2 gap-3 flex-1">
+<button class="flex flex-col items-start p-3 rounded-lg border border-border-light dark:border-border-dark bg-background-light/50 dark:bg-background-dark/50 hover:bg-background-light dark:hover:bg-background-dark transition-colors text-left group">
+<div class="w-8 h-8 rounded bg-green-500/20 text-green-500 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+<span class="material-icons-outlined text-sm">edit_note</span>
+</div>
+<span class="text-xs font-medium">Tạo dự án từ ý tưởng</span>
+</button>
+<button class="flex flex-col items-start p-3 rounded-lg border border-border-light dark:border-border-dark bg-background-light/50 dark:bg-background-dark/50 hover:bg-background-light dark:hover:bg-background-dark transition-colors text-left group">
+<div class="w-8 h-8 rounded bg-blue-500/20 text-blue-500 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+<span class="material-icons-outlined text-sm">upload_file</span>
+</div>
+<span class="text-xs font-medium">Import kịch bản</span>
+</button>
+<button class="flex flex-col items-start p-3 rounded-lg border border-border-light dark:border-border-dark bg-background-light/50 dark:bg-background-dark/50 hover:bg-background-light dark:hover:bg-background-dark transition-colors text-left group">
+<div class="w-8 h-8 rounded bg-orange-500/20 text-orange-500 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+<span class="material-icons-outlined text-sm">people</span>
+</div>
+<span class="text-xs font-medium">Quản lý nhân vật</span>
+</button>
+<button class="flex flex-col items-start p-3 rounded-lg border border-border-light dark:border-border-dark bg-background-light/50 dark:bg-background-dark/50 hover:bg-background-light dark:hover:bg-background-dark transition-colors text-left group">
+<div class="w-8 h-8 rounded bg-indigo-500/20 text-indigo-500 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+<span class="material-icons-outlined text-sm">timeline</span>
+</div>
+<span class="text-xs font-medium">Xem tiến độ</span>
+</button>
+</div>
+</div>
+<div class="col-span-1 lg:col-span-1 xl:col-span-2 rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-5 flex flex-col h-full">
+<h3 class="font-semibold mb-4">System Status</h3>
+<div class="flex gap-8 flex-1">
+<div class="flex-1 flex flex-col justify-center gap-3">
+<div class="flex items-center justify-between text-sm">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_5px_rgba(34,197,94,0.5)]"></span>
+<span class="text-text-muted-light dark:text-text-muted-dark">Orchestrator</span>
+</div>
+<span class="font-medium">Online</span>
+</div>
+<div class="flex items-center justify-between text-sm">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_5px_rgba(34,197,94,0.5)]"></span>
+<span class="text-text-muted-light dark:text-text-muted-dark">Worker Pool</span>
+</div>
+<span class="font-medium">Ready</span>
+</div>
+<div class="flex items-center justify-between text-sm">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_5px_rgba(34,197,94,0.5)]"></span>
+<span class="text-text-muted-light dark:text-text-muted-dark">Database</span>
+</div>
+<span class="font-medium">Healthy</span>
+</div>
+<div class="flex items-center justify-between text-sm">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_5px_rgba(34,197,94,0.5)]"></span>
+<span class="text-text-muted-light dark:text-text-muted-dark">Model Router</span>
+</div>
+<span class="font-medium">Healthy</span>
+</div>
+<div class="flex items-center justify-between text-sm">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_5px_rgba(34,197,94,0.5)]"></span>
+<span class="text-text-muted-light dark:text-text-muted-dark">Providers</span>
+</div>
+<span class="font-medium">4/5</span>
+</div>
+</div>
+<div class="flex-[1.5] flex flex-col">
+<div class="flex items-center justify-between mb-2">
+<span class="text-xs text-text-muted-light dark:text-text-muted-dark">Requests (Last 24h)</span>
+<div class="flex items-end gap-2">
+<span class="text-xl font-bold">2,341</span>
+<span class="text-xs font-medium text-green-500 mb-0.5">+12%</span>
+</div>
+</div>
+<div class="flex-1 w-full bg-background-light dark:bg-background-dark/50 rounded border border-border-light dark:border-border-dark relative flex items-end p-2 pb-6">
+<svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 200 50">
+<defs>
+<linearGradient id="gradient" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#3b82f6" stop-opacity="0.2"></stop>
+<stop offset="100%" stop-color="#3b82f6" stop-opacity="0"></stop>
+</linearGradient>
+</defs>
+<path d="M0 40 Q 20 45, 40 30 T 80 20 T 120 35 T 160 15 T 200 5 L 200 50 L 0 50 Z" fill="url(#gradient)"></path>
+<path d="M0 40 Q 20 45, 40 30 T 80 20 T 120 35 T 160 15 T 200 5" fill="none" stroke="#3b82f6" stroke-width="2"></path>
+</svg>
+<div class="absolute bottom-1 left-2 right-2 flex justify-between text-[10px] text-text-muted-light dark:text-text-muted-dark">
+<span>00h</span>
+<span>06h</span>
+<span>12h</span>
+<span>18h</span>
+<span>24h</span>
+</div>
+<div class="absolute left-2 top-2 bottom-6 flex flex-col justify-between text-[10px] text-text-muted-light dark:text-text-muted-dark">
+<span>75</span>
+<span>50</span>
+<span>0</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="col-span-1 rounded-xl border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark p-5 flex flex-col h-full hidden xl:flex">
+<h3 class="font-semibold mb-4">Useful Links</h3>
+<div class="flex flex-col gap-2 flex-1 justify-center">
+<a class="flex items-center justify-between p-2 rounded hover:bg-background-light dark:hover:bg-background-dark transition-colors group" href="#">
+<div class="flex items-center gap-3">
+<span class="material-icons-outlined text-text-muted-light dark:text-text-muted-dark">description</span>
+<div>
+<div class="text-sm font-medium">Documentation</div>
+<div class="text-xs text-text-muted-light dark:text-text-muted-dark">Read the docs <span class="inline-block transition-transform group-hover:translate-x-1">→</span></div>
+</div>
+</div>
+</a>
+<a class="flex items-center justify-between p-2 rounded hover:bg-background-light dark:hover:bg-background-dark transition-colors group" href="#">
+<div class="flex items-center gap-3">
+<span class="material-icons-outlined text-text-muted-light dark:text-text-muted-dark">update</span>
+<div>
+<div class="text-sm font-medium">Changelog</div>
+<div class="text-xs text-text-muted-light dark:text-text-muted-dark">View latest updates <span class="inline-block transition-transform group-hover:translate-x-1">→</span></div>
+</div>
+</div>
+</a>
+<a class="flex items-center justify-between p-2 rounded hover:bg-background-light dark:hover:bg-background-dark transition-colors group" href="#">
+<div class="flex items-center gap-3">
+<span class="material-icons-outlined text-text-muted-light dark:text-text-muted-dark">map</span>
+<div>
+<div class="text-sm font-medium">Roadmap</div>
+<div class="text-xs text-text-muted-light dark:text-text-muted-dark">See what's next <span class="inline-block transition-transform group-hover:translate-x-1">→</span></div>
+</div>
+</div>
+</a>
+<a class="flex items-center justify-between p-2 rounded hover:bg-background-light dark:hover:bg-background-dark transition-colors group" href="#">
+<div class="flex items-center gap-3">
+<span class="material-icons-outlined text-text-muted-light dark:text-text-muted-dark">forum</span>
+<div>
+<div class="text-sm font-medium">Community</div>
+<div class="text-xs text-text-muted-light dark:text-text-muted-dark">Join the discussion <span class="inline-block transition-transform group-hover:translate-x-1">→</span></div>
+</div>
+</div>
+</a>
+</div>
+</div>
+</div>
+<footer class="flex items-center justify-between mt-auto pt-4 border-t border-border-light dark:border-border-dark text-xs text-text-muted-light dark:text-text-muted-dark shrink-0">
+<div>WindAgent Studio — Story-driven content creation powered by AI agents</div>
+<div>Build 0.1.0-dev | 2026 © WindFaculty</div>
+</footer>
+</main>
+<aside class="w-80 border-l border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark flex flex-col shrink-0 overflow-hidden">
+<div class="p-4 shrink-0">
+<div class="relative rounded-xl overflow-hidden h-32 group cursor-pointer">
+<img alt="Abstract gradient landscape" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCnHd_SnIIXtEPCah8JD4aCFPZMzMFEvdr3SFHZmm0XXeWzN8nHl2Co9AaLF4cQjyBkZqwgDHG5dnJi89K0RJtYjyalZTlkHkyAK0YcdYMSdbPHBd-uxa-covWsaInrsmL2ys6VFvbJyelA8G5sc9PCJOR2k9hmAK51ASIb8vmEGjTs7WOSjkuf8Bdrle2aBlR-d4qKJVFy6t_vbqUDSDppqqlEY_aRasCUt0u1coL0qxmfBYD75lIlmw"/>
+<div class="absolute inset-0 bg-gradient-to-r from-blue-900/90 to-transparent"></div>
+<div class="absolute inset-0 p-4 flex flex-col justify-center">
+<div class="font-bold text-white mb-1">WindAgent Studio v1.0</div>
+<div class="text-xs text-blue-200">Story-first. Agent-powered.</div>
+<div class="mt-auto">
+<span class="material-icons-outlined text-white text-sm">play_circle</span>
+</div>
+</div>
+<div class="absolute top-4 right-4">
+<span class="material-icons-outlined text-white/50 text-sm">close</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-6 px-6 border-b border-border-light dark:border-border-dark shrink-0">
+<button class="py-3 text-sm font-medium border-b-2 border-primary text-primary">Recent Projects</button>
+<button class="py-3 text-sm font-medium border-b-2 border-transparent text-text-muted-light dark:text-text-muted-dark hover:text-text-light dark:hover:text-text-dark">Templates</button>
+<button class="py-3 text-sm font-medium border-b-2 border-transparent text-text-muted-light dark:text-text-muted-dark hover:text-text-light dark:hover:text-text-dark">Activity</button>
+</div>
+<div class="flex-1 overflow-y-auto p-4 space-y-2">
+<div class="flex items-center gap-3 p-3 rounded-lg hover:bg-background-light dark:hover:bg-background-dark transition-colors cursor-pointer group">
+<div class="w-12 h-12 rounded overflow-hidden shrink-0">
+<img alt="Magical forest thumbnail" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDtvjqB6akduDtlmWfaySgy23OxKPda7RZxpExl8tcxxBqYfY6aLl9h52Vl6-tURDWkEuqwTwbtU8Pjrtn1B48XIL8onBOcUuf6b5ctggg3rKJV4GpHPBjV0qQSIqIYbHEMzT35_TwM_c8bH4LOPdwHE0yRDLfH0OlXU5cdWDveD5tmfNVqbXso61A9U_nJbE8cXMwvmpGKPn4qekRypbOv2F-urXLp6ViqkbbpK1u0Y-_Ft0-7U1pdaA"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-0.5">
+<h4 class="font-semibold text-sm truncate">Rừng Xanh Kỳ Diệu</h4>
+<button class="text-text-muted-light dark:text-text-muted-dark opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-icons-outlined text-sm">more_horiz</span>
+</button>
+</div>
+<div class="flex items-center gap-1.5 text-xs text-text-muted-light dark:text-text-muted-dark mb-1">
+<span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+<span>Active</span>
+</div>
+<div class="flex items-center justify-between text-xs text-text-muted-light dark:text-text-muted-dark">
+<span>12 episodes</span>
+<span>12/08/2025</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3 p-3 rounded-lg hover:bg-background-light dark:hover:bg-background-dark transition-colors cursor-pointer group">
+<div class="w-12 h-12 rounded overflow-hidden shrink-0">
+<img alt="Space robots thumbnail" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCunSW__ZkWQECzuF3p8y2VvxqDykVZ_kGO_RXTa0Btn1er9UFE7tokoccvFPgXyrnoEVvzWYfwGDvN83FXCBWrP38ce5cpacSRcjatqghRE2yDE_HLo4g3rKYnoNblTXiPkykcpyEEVYeoDDiiJKP6i47rN7_4mJsBy0JepiCgUHV66YOVL-K2v0P3dEoFbBP6tkDYkR-52dhLHxXlXja7mJHQJf2hfKaoDssA4SQboNVNG7vf8-3sPg"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-0.5">
+<h4 class="font-semibold text-sm truncate">Những Người Bạn Từ Vũ Trụ</h4>
+<button class="text-text-muted-light dark:text-text-muted-dark opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-icons-outlined text-sm">more_horiz</span>
+</button>
+</div>
+<div class="flex items-center gap-1.5 text-xs text-text-muted-light dark:text-text-muted-dark mb-1">
+<span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+<span>Planning</span>
+</div>
+<div class="flex items-center justify-between text-xs text-text-muted-light dark:text-text-muted-dark">
+<span>1 episode</span>
+<span>10/08/2025</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3 p-3 rounded-lg hover:bg-background-light dark:hover:bg-background-dark transition-colors cursor-pointer group">
+<div class="w-12 h-12 rounded overflow-hidden shrink-0">
+<img alt="Cityscape thumbnail" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAqJKXaOxwBzcOS_rdW57pEi1DkHPwh-2x4DuEJWXBeGkDhFNxeDmOVr36jqT-W5vBG2aM-sb-2-soIH9t_WP1u4qPtjWoCYG5YfaIhCj4E6pON4wOUJFp4P4sFLnavbH3wMVv_tvEkzdRtlG98v0tpRdDfKcYJKW98_9X7-tXWwTrxp-ePRzkGTPuXVFhM57Yd0c5CeRz_FZuSA4f_Bf7Gb-VlEUgJVJXz_Rf0YRoJuv5lUYxBr98uHg"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-0.5">
+<h4 class="font-semibold text-sm truncate">Thành Phố Mơ Ước</h4>
+<button class="text-text-muted-light dark:text-text-muted-dark opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-icons-outlined text-sm">more_horiz</span>
+</button>
+</div>
+<div class="flex items-center gap-1.5 text-xs text-text-muted-light dark:text-text-muted-dark mb-1">
+<span class="w-1.5 h-1.5 rounded-full bg-gray-500"></span>
+<span>Draft</span>
+</div>
+<div class="flex items-center justify-between text-xs text-text-muted-light dark:text-text-muted-dark">
+<span>0 episode</span>
+<span>08/08/2025</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3 p-3 rounded-lg hover:bg-background-light dark:hover:bg-background-dark transition-colors cursor-pointer group">
+<div class="w-12 h-12 rounded overflow-hidden shrink-0">
+<img alt="Ocean whale thumbnail" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBLodN2ufvo8frm2zxzo6DaRJ8nrlIFrthOFKBozUnvy7obO1ZA09svB6V5F6B2nADy7U9UtdRWxbuoN60oSPpGuM7HnKOGIOfFz6prANTB7XqhOEKypK6S11CHqtiezlRRg8-YgCac3gA0B8dExyzKYeFZBPJAKisu-16g-hd07yXVDo27SlgjAKxtTYJp3lX7pNplkq7iLkJm1NnwcpyHBCDkeAGp2n_8cTLvgwF34bExoEtL51c07A"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-0.5">
+<h4 class="font-semibold text-sm truncate">Cá Voi Và Đại Dương</h4>
+<button class="text-text-muted-light dark:text-text-muted-dark opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-icons-outlined text-sm">more_horiz</span>
+</button>
+</div>
+<div class="flex items-center gap-1.5 text-xs text-text-muted-light dark:text-text-muted-dark mb-1">
+<span class="w-1.5 h-1.5 rounded-full bg-gray-500"></span>
+<span>Draft</span>
+</div>
+<div class="flex items-center justify-between text-xs text-text-muted-light dark:text-text-muted-dark">
+<span>0 episode</span>
+<span>05/08/2025</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3 p-3 rounded-lg hover:bg-background-light dark:hover:bg-background-dark transition-colors cursor-pointer group">
+<div class="w-12 h-12 rounded overflow-hidden shrink-0">
+<img alt="Village thumbnail" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDlMUJLVivqWLXttJ5lcciOfD1pY3DF0UOrvVrx6BLMpecnxGPM9gy1OGSMYz7netETeJIpZI1cuqFzsaqd2dtfl8wBOQrpEIBDK8-TJYtqLDFCOPavOwvJbVoqmhbxSnuZz1Q4P80Uf34nFb5FNoECC2CbH-Vb8xJhPtbZe3emLicyTb_nNIkpS8yb8z9kEhsoP5gYSZ-11UE-qt1_lWjHNYigDQ_sT1vRet4mlRDtfUgxpjUJNM0eXQ"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-0.5">
+<h4 class="font-semibold text-sm truncate">Bí Mật Ngôi Làng Xanh</h4>
+<button class="text-text-muted-light dark:text-text-muted-dark opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-icons-outlined text-sm">more_horiz</span>
+</button>
+</div>
+<div class="flex items-center gap-1.5 text-xs text-text-muted-light dark:text-text-muted-dark mb-1">
+<span class="w-1.5 h-1.5 rounded-full bg-gray-500"></span>
+<span>Draft</span>
+</div>
+<div class="flex items-center justify-between text-xs text-text-muted-light dark:text-text-muted-dark">
+<span>0 episode</span>
+<span>01/08/2025</span>
+</div>
+</div>
+</div>
+<div class="pt-4 pb-2 text-center">
+<a class="text-xs text-text-muted-light dark:text-text-muted-dark hover:text-text-light dark:hover:text-text-dark flex items-center justify-center gap-1" href="#">
+                        View all projects
+                        <span class="material-icons-outlined text-xs">arrow_forward</span>
+</a>
+</div>
+</div>
+</aside>
+</div>
+
+</body></html>

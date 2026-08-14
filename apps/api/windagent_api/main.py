@@ -51,6 +51,8 @@ from windagent_api.routers.v3.studio.aggregator import router as v3_studio_route
 from windagent_api.routers.v3.studio.errors import studio_error_handler
 from windagent_core.contracts.studio.errors import StudioError
 
+from fastapi.middleware.cors import CORSMiddleware
+
 logger = logging.getLogger("windagent.api.main")
 
 app = FastAPI(
@@ -58,6 +60,15 @@ app = FastAPI(
     description="Modular Monolith API V2 Production Application",
     version=PRODUCT_VERSION,
     lifespan=lifespan,
+)
+
+# CORS configuration for Web and Desktop Frontend clients
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Exception Handlers Mapping WindAgentError to Structured JSON

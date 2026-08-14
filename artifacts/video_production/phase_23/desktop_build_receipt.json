@@ -1,7 +1,0 @@
-{
-  "workstream": "desktop_build",
-  "target": "apps/desktop",
-  "dist_directory": "apps/desktop/dist",
-  "sidecar_binary": "sidecar_manager.exe",
-  "build_status": "SUCCESS"
-}

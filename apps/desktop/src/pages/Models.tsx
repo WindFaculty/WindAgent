@@ -49,6 +49,7 @@ export function Models({ setActiveTab }: ModelsProps) {
       ),
     [providers],
   );
+
   const query = search.trim().toLowerCase();
   const visibleModels = query
     ? models.filter(
@@ -59,75 +60,67 @@ export function Models({ setActiveTab }: ModelsProps) {
     : models;
 
   return (
-    <main style={{ padding: "24px", color: "var(--text-main)" }}>
-      <header
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: "16px",
-          marginBottom: "20px",
-        }}
-      >
+    <main className="p-6 bg-background text-on-surface min-h-screen space-y-6">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-outline-variant/10">
         <div>
-          <h1 style={{ margin: 0 }}>Models</h1>
-          <p style={{ color: "var(--text-muted)", margin: "6px 0 0" }}>
-            Read-only inventory from the canonical Architecture V2 provider registry.
+          <h1 className="text-3xl font-extrabold tracking-tight text-on-surface flex items-center gap-3">
+            <span className="material-symbols-outlined text-primary text-3xl">cpu</span>
+            Danh sách Mô hình AI (Models)
+          </h1>
+          <p className="text-sm text-on-surface-variant mt-1">
+            Danh sách mô hình đăng ký từ hệ thống Provider Registry chuẩn V2.
           </p>
         </div>
-        <button type="button" className="role-btn" onClick={() => setActiveTab("endpoints")}>
-          View providers
+        <button
+          type="button"
+          className="px-4 py-2 bg-primary text-on-primary font-semibold rounded-lg hover:bg-primary-container transition-all flex items-center gap-2 text-sm w-fit"
+          onClick={() => setActiveTab("endpoints")}
+        >
+          <span className="material-symbols-outlined text-sm">hub</span>
+          Xem Endpoints & Providers
         </button>
       </header>
 
-      <input
-        aria-label="Search models"
-        value={search}
-        onChange={(event) => setSearch(event.target.value)}
-        placeholder="Search model or provider"
-        style={{
-          width: "min(420px, 100%)",
-          padding: "10px 12px",
-          marginBottom: "16px",
-          borderRadius: "8px",
-          border: "1px solid var(--border-color)",
-          background: "var(--bg-darker)",
-          color: "var(--text-main)",
-        }}
-      />
+      <div className="relative max-w-md">
+        <span className="material-symbols-outlined absolute left-3 top-2.5 text-on-surface-variant text-sm">
+          search
+        </span>
+        <input
+          aria-label="Search models"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          placeholder="Tìm kiếm mô hình hoặc nhà cung cấp..."
+          className="w-full pl-9 pr-4 py-2 text-sm bg-surface-container-low border border-outline-variant/20 rounded-lg text-on-surface focus:outline-none focus:border-primary transition-all"
+        />
+      </div>
 
       {error ? (
-        <div role="alert" style={{ color: "var(--color-danger)" }}>
+        <div role="alert" className="p-4 rounded-lg bg-error-container/20 border border-error/30 text-error text-sm">
           {error}
         </div>
       ) : (
-        <div style={{ display: "grid", gap: "10px" }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {visibleModels.map((model) => (
             <article
               key={model.id}
-              style={{
-                padding: "14px 16px",
-                border: "1px solid var(--border-color)",
-                borderRadius: "10px",
-                background: "rgba(255,255,255,0.02)",
-                display: "flex",
-                justifyContent: "space-between",
-                gap: "12px",
-              }}
+              className="p-4 rounded-xl bg-surface-container-low border border-outline-variant/15 hover:border-primary/40 transition-all flex justify-between items-start"
             >
               <div>
-                <strong>{model.name}</strong>
-                <div style={{ color: "var(--text-muted)", fontSize: "0.82rem" }}>
+                <div className="font-bold text-on-surface text-base">{model.name}</div>
+                <div className="text-xs text-on-surface-variant mt-1 flex items-center gap-1">
+                  <span className="material-symbols-outlined text-xs">dns</span>
                   {model.provider}
                 </div>
               </div>
-              <span style={{ color: "var(--color-success)", fontSize: "0.8rem" }}>
+              <span className="text-xs font-semibold px-2 py-0.5 rounded bg-secondary/10 text-secondary uppercase">
                 {model.status}
               </span>
             </article>
           ))}
           {!error && visibleModels.length === 0 && (
-            <p style={{ color: "var(--text-muted)" }}>No models found.</p>
+            <div className="col-span-full p-8 text-center text-on-surface-variant bg-surface-container-low rounded-xl border border-outline-variant/10">
+              Không tìm thấy mô hình AI nào.
+            </div>
           )}
         </div>
       )}

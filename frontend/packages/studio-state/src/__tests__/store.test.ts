@@ -151,6 +151,36 @@ describe('StudioStore conflicts', () => {
     expect(store.getLastError()?.kind).toBe('network');
   });
 
+  it('clears a recovered network error after the next successful request', async () => {
+    const store = makeStore();
+    let online = false;
+    fetchMock.mockImplementation(async () => {
+      if (!online) throw new TypeError('network down');
+      return jsonResponse(200, { items: [series('srs_1', 'Recovered')] });
+    });
+
+    await store.loadSeriesList();
+    expect(store.getLastError()?.kind).toBe('network');
+
+    online = true;
+    await store.loadSeriesList();
+    expect(store.getLastError()).toBeNull();
+    expect(store.getSeriesList()[0]?.title).toBe('Recovered');
+  });
+
+  it('maps an unstructured HTTP error separately from an offline error', async () => {
+    const store = makeStore();
+    fetchMock.mockImplementation(async () => jsonResponse(404, { detail: 'Not Found' }));
+
+    await store.loadSeriesList();
+
+    expect(store.getLastError()).toMatchObject({
+      kind: 'http',
+      status: 404,
+      message: 'Studio API returned HTTP 404',
+    });
+  });
+
   it('capabilities surface orchestration status', async () => {
     const store = makeStore();
     await store.loadCapabilities();

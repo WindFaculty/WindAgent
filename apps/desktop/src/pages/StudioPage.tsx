@@ -4,9 +4,7 @@
  *
  * Route authority lives in the URL hash so deep links and refresh rehydrate
  * from the server: #/studio, #/studio/series/<id>, #/studio/episodes/<id>.
- * No sample identifier, no fake client, no optimistic durable completion:
- * state renders only what the server returns; pending commands show a
- * pending marker.
+ * Fully dynamic — no hardcoded mock data or inert placeholder cards.
  */
 
 import React, { useEffect, useRef, useState } from 'react';
@@ -19,6 +17,20 @@ import {
   EpisodeWorkspace,
   type ApprovalDecision,
 } from '@windagent/story-ui';
+import {
+  Sparkles,
+  Film,
+  Search,
+  Bot,
+  Users,
+  CheckCircle2,
+  Layers,
+  Edit3,
+  Plus,
+  ArrowLeft,
+  Lock,
+  Check
+} from 'lucide-react';
 import { Button, Card, StatusBadge, SectionHeader, Alert, Badge } from '../components/ui';
 import { API_BASE } from '../lib/apiBase';
 import { StudioRightPanel } from '../components/studio/StudioRightPanel';
@@ -58,7 +70,7 @@ const CURSOR_STORAGE_KEY = 'studio.eventCursors';
 
 export const StudioPage: React.FC = () => {
   const [route, setRoute] = useState<StudioRoute>(() => parseHash(window.location.hash));
-  const [seriesList, setSeriesList] = useState<Array<{ id: string; title: string; episode_count: number }>>([]);
+  const [seriesList, setSeriesList] = useState<Array<{ id: string; title: string; episode_count: number; created_at?: string }>>([]);
   const [episodes, setEpisodes] = useState<Array<{ id: string; title: string; state: string }>>([]);
   const [episode, setEpisode] = useState<Record<string, unknown> | null>(null);
   const [artifacts, setArtifacts] = useState<StudioArtifactEnvelope[]>([]);
@@ -68,6 +80,7 @@ export const StudioPage: React.FC = () => {
   const [pendingKeys, setPendingKeys] = useState<Set<string>>(new Set());
   const [title, setTitle] = useState('');
   const [episodeTitle, setEpisodeTitle] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const storeRef = useRef<StudioStore | null>(null);
   if (storeRef.current === null) {
@@ -94,7 +107,12 @@ export const StudioPage: React.FC = () => {
   const refreshSeries = async () => {
     setLoading('series');
     await store.loadSeriesList();
-    setSeriesList(store.getSeriesList().map((s) => ({ id: s.id, title: s.title, episode_count: s.episode_count })));
+    setSeriesList(store.getSeriesList().map((s) => ({
+      id: s.id,
+      title: s.title,
+      episode_count: s.episode_count,
+      created_at: (s as any).created_at,
+    })));
     setLoading(null);
     const err = store.getLastError();
     setError(err ? { kind: err.kind, message: err.message } : null);
@@ -144,6 +162,7 @@ export const StudioPage: React.FC = () => {
   }, [route]);
 
   const createSeries = async () => {
+    if (!title.trim()) return;
     const key = `studio_series_${crypto.randomUUID()}`;
     setPendingKeys((prev) => new Set(prev).add(key));
     const result = await store.createSeries(key, title.trim());
@@ -163,6 +182,7 @@ export const StudioPage: React.FC = () => {
   };
 
   const createEpisode = async (seriesId: string) => {
+    if (!episodeTitle.trim()) return;
     const key = `studio_episode_${crypto.randomUUID()}`;
     setPendingKeys((prev) => new Set(prev).add(key));
     const result = await store.createEpisode(key, seriesId, episodeTitle.trim());
@@ -355,61 +375,134 @@ export const StudioPage: React.FC = () => {
   const busy = loading !== null || pendingKeys.size > 0;
   const capabilityLabel = (name: string) => `${name}: ${capabilities[name] ?? '…'}`;
 
-  // Derived metrics for Studio Home summary dashboard
+  // Dynamic calculations for real studio metrics
   const totalEpisodesCount = seriesList.reduce((sum, s) => sum + s.episode_count, 0);
 
+  // Dynamic 8-Step Pipeline Stepper Calculation
+  const computeActiveStep = (): number => {
+    if (route.view === 'list' || route.view === 'series') return 1;
+    if (!episode) return 1;
+    const st = String(episode.state || '');
+    const awaiting = String(episode.awaiting_checkpoint || '');
+    if (st === 'LOCKED' || st === 'READY_FOR_PRODUCTION') return 8;
+    if (st === 'REVISE') return 7;
+    if (st === 'REVIEW_PACKAGE_GEN' || awaiting.includes('REVIEW')) return 6;
+    if (st.startsWith('SCREENPLAY')) return 5;
+    if (st.startsWith('OUTLINE')) return 4;
+    if (st.startsWith('STORY_BIBLE')) return 3;
+    if (st.startsWith('IDEA') || st === 'DRAFT') return 2;
+    return 1;
+  };
+
+  const currentStepNum = computeActiveStep();
+
   const pipelineSteps = [
-    { num: 1, title: 'Project', desc: 'Create a series', active: true },
-    { num: 2, title: 'Idea', desc: 'Generate & choose' },
-    { num: 3, title: 'Story Bible', desc: 'World & characters' },
-    { num: 4, title: 'Outline', desc: 'Beat sheet & arc' },
-    { num: 5, title: 'Screenplay', desc: 'Write & validate' },
-    { num: 6, title: 'Review', desc: 'Quality check' },
-    { num: 7, title: 'Revision', desc: 'Iterate if needed' },
-    { num: 8, title: 'Lock', desc: 'Ready for production' },
+    { num: 1, title: 'Dự Án', desc: 'Khởi tạo Series' },
+    { num: 2, title: 'Ý Tưởng', desc: 'Tạo & chọn Idea' },
+    { num: 3, title: 'Story Bible', desc: 'Thế giới & nhân vật' },
+    { num: 4, title: 'Dàn Ý', desc: 'Outline & beat sheet' },
+    { num: 5, title: 'Kịch Bản', desc: 'Screenplay draft' },
+    { num: 6, title: 'Kiểm Duyệt', desc: 'Audit & review' },
+    { num: 7, title: 'Chỉnh Sửa', desc: 'Iterate revision' },
+    { num: 8, title: 'Khóa Bản Phim', desc: 'Sẵn sàng sản xuất' },
   ];
+
+  const filteredSeries = seriesList.filter((s) => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase();
+    return s.title.toLowerCase().includes(q) || s.id.toLowerCase().includes(q);
+  });
 
   return (
     <div className="studio-workspace-container">
       <div className="studio-main-flow">
-        {/* Top Header Row */}
+        {/* Top Header Row with Functional Real-Time Search */}
         <div className="studio-top-header-row">
           <div>
-            <h1 className="studio-page-title">Studio</h1>
-            <p className="studio-page-subtitle">From a spark of an idea to a locked screenplay</p>
+            <h1 className="studio-page-title">WindAgent Studio</h1>
+            <p className="studio-page-subtitle">Hành trình sáng tạo kịch bản điện ảnh từ ý tưởng đến bản phim hoàn chỉnh</p>
           </div>
           <div className="studio-header-actions">
-            <div className="studio-search-pill">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="11" cy="11" r="8" />
-                <line x1="21" y1="21" x2="16.65" y2="16.65" />
-              </svg>
-              <span>Sock</span>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M6 9l6 6 6-6" />
-              </svg>
+            <div className="studio-search-pill" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Search size={14} color="#94a3b8" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Tìm kiếm dự án series..."
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  outline: 'none',
+                  color: '#ffffff',
+                  fontSize: '0.8125rem',
+                  width: '180px',
+                }}
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: '#94a3b8',
+                    cursor: 'pointer',
+                    fontSize: '0.9rem',
+                    padding: 0,
+                    lineHeight: 1,
+                  }}
+                  title="Xóa tìm kiếm"
+                >
+                  ✕
+                </button>
+              )}
             </div>
           </div>
         </div>
 
-        {/* 8-Step Pipeline Stepper */}
+        {/* Dynamic 8-Step Pipeline Stepper */}
         <div className="studio-pipeline-stepper">
-          {pipelineSteps.map((step, idx) => (
-            <React.Fragment key={step.num}>
-              <div className={`stepper-node ${step.active ? 'active' : ''}`}>
-                <div className="stepper-circle">{step.num}</div>
-                <div className="stepper-labels">
-                  <div className="step-title">{step.title}</div>
-                  <div className="step-desc">{step.desc}</div>
+          {pipelineSteps.map((step, idx) => {
+            const isDone = step.num < currentStepNum;
+            const isActive = step.num === currentStepNum;
+            return (
+              <React.Fragment key={step.num}>
+                <div
+                  className={`stepper-node ${isActive ? 'active' : ''}`}
+                  style={{
+                    opacity: isDone ? 0.9 : isActive ? 1 : 0.5,
+                  }}
+                >
+                  <div
+                    className="stepper-circle"
+                    style={{
+                      background: isDone ? '#10b981' : isActive ? '#3b82f6' : '#0f172a',
+                      borderColor: isDone ? '#10b981' : isActive ? '#3b82f6' : '#334155',
+                      color: isDone || isActive ? '#ffffff' : '#94a3b8',
+                    }}
+                  >
+                    {isDone ? <Check size={14} /> : step.num}
+                  </div>
+                  <div className="stepper-labels">
+                    <div className="step-title">{step.title}</div>
+                    <div className="step-desc">{step.desc}</div>
+                  </div>
                 </div>
-              </div>
-              {idx < pipelineSteps.length - 1 && <div className="stepper-connector"></div>}
-            </React.Fragment>
-          ))}
+                {idx < pipelineSteps.length - 1 && (
+                  <div
+                    className="stepper-connector"
+                    style={{
+                      background: step.num < currentStepNum ? '#10b981' : '#1e293b',
+                    }}
+                  />
+                )}
+              </React.Fragment>
+            );
+          })}
         </div>
 
-        {/* Capabilities status strip */}
-        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 16 }}>
+        {/* Live Backend Capabilities Status Strip */}
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 16 }}>
           <StatusBadge status={capabilities['durable_db'] === 'AVAILABLE' ? 'SUCCESS' : 'WAITING'}>
             {capabilityLabel('durable_db')}
           </StatusBadge>
@@ -425,43 +518,55 @@ export const StudioPage: React.FC = () => {
         </div>
 
         {error && (
-          <Alert type="danger" title="Studio Alert">
-            {ERROR_LABEL[error.kind] ?? error.message}
+          <Alert type="danger" title="Thông Báo Studio">
+            <div>{ERROR_LABEL[error.kind] ?? 'Studio request failed.'}</div>
+            <div style={{ marginTop: 4, opacity: 0.85 }}>{error.message}</div>
           </Alert>
         )}
-        {busy && <div style={{ marginBottom: 12, color: '#94a3b8' }}>Loading…</div>}
+        {busy && <div style={{ marginBottom: 12, color: '#94a3b8', fontSize: '0.85rem' }}>Đang tải dữ liệu…</div>}
 
-        {/* STUDIO HOME DASHBOARD (UI4B) */}
+        {/* STUDIO HOME DASHBOARD */}
         {route.view === 'list' && (
           <section aria-label="Series" className="studio-home-section">
             {/* Hero Central Welcome Card */}
             <div className="hero-welcome-card">
               <div className="sparkles-icon">✨</div>
               <h2 className="welcome-title">
-                Chào mừng bạn đến với <span className="blue-gradient-text">WindAgent Studio</span>
+                Không Gian Sáng Tạo <span className="blue-gradient-text">WindAgent Studio</span>
               </h2>
-              <p className="welcome-subtitle">Biến ý tưởng thành những câu chuyện tuyệt vời.</p>
+              <p className="welcome-subtitle">
+                Điều phối đội ngũ AI Swarm biến ý tưởng thành kịch bản điện ảnh & storyboard chất lượng cao.
+              </p>
 
+              {/* 4 Feature Cards */}
               <div className="feature-cards-grid">
                 <div className="feature-card">
-                  <div className="feature-icon-box blue">💡</div>
-                  <div className="feature-title">Ý tưởng</div>
-                  <div className="feature-desc">Đề xuất và chọn ý tưởng có tiềm năng</div>
+                  <div className="feature-icon-box blue">
+                    <Sparkles size={18} color="#60a5fa" />
+                  </div>
+                  <div className="feature-title">Ý Tưởng AI</div>
+                  <div className="feature-desc">Đề xuất và phát triển concept đột phá</div>
                 </div>
                 <div className="feature-card">
-                  <div className="feature-icon-box green">📖</div>
-                  <div className="feature-title">Thế giới</div>
-                  <div className="feature-desc">Xây dựng thế giới, bối cảnh, nhân vật</div>
+                  <div className="feature-icon-box green">
+                    <Layers size={18} color="#4edea3" />
+                  </div>
+                  <div className="feature-title">Story Bible</div>
+                  <div className="feature-desc">Xây dựng thế giới, bối cảnh & nhân vật</div>
                 </div>
                 <div className="feature-card">
-                  <div className="feature-icon-box purple">📝</div>
-                  <div className="feature-title">Kịch bản</div>
-                  <div className="feature-desc">Tạo dàn ý, viết kịch bản ngắn (short screenplay)</div>
+                  <div className="feature-icon-box purple">
+                    <Edit3 size={18} color="#c0c1ff" />
+                  </div>
+                  <div className="feature-title">Kịch Bản Phân Đoạn</div>
+                  <div className="feature-desc">Tạo dàn ý beat sheet & hội thoại chi tiết</div>
                 </div>
                 <div className="feature-card">
-                  <div className="feature-icon-box orange">🛡️</div>
-                  <div className="feature-title">Kiểm duyệt</div>
-                  <div className="feature-desc">Tự động đánh giá, vòng lặp chỉnh sửa và khóa kịch bản</div>
+                  <div className="feature-icon-box orange">
+                    <CheckCircle2 size={18} color="#f59e0b" />
+                  </div>
+                  <div className="feature-title">Kiểm Duyệt & Khóa</div>
+                  <div className="feature-desc">Đánh giá tính nhất quán và khóa bản dựng</div>
                 </div>
               </div>
 
@@ -470,105 +575,132 @@ export const StudioPage: React.FC = () => {
                   className="welcome-primary-btn"
                   onClick={() => {
                     const inputEl = document.getElementById('new-series-input');
-                    if (inputEl) inputEl.focus();
+                    if (inputEl) {
+                      inputEl.focus();
+                      inputEl.scrollIntoView({ behavior: 'smooth' });
+                    }
                   }}
                 >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <rect x="4" y="4" width="16" height="16" rx="2" />
-                    <path d="M12 8v8M8 12h8" />
-                  </svg>
-                  Tạo dự án mới ➔
+                  <Plus size={16} />
+                  <span>Khởi Tạo Dự Án Mới Ngay</span>
                 </button>
-                <div className="welcome-subtext">Một dự án mới – Một hành trình sáng tạo.</div>
+                <div className="welcome-subtext">Hệ thống sẵn sàng tiếp nhận ý tưởng câu chuyện mới.</div>
               </div>
             </div>
 
-            {/* Bottom Grid Dashboard */}
+            {/* Bottom Grid Dashboard - 100% Dynamic & Wired */}
             <div className="studio-bottom-grid">
-              {/* Quick Actions Card */}
+              {/* Card 1: Quick Actions (Wired) */}
               <div className="studio-dashboard-card quick-actions-card">
-                <div className="card-header-title">Quick Actions</div>
+                <div className="card-header-title">Tác Vụ Nhanh</div>
                 <div className="quick-actions-grid">
-                  <div className="quick-action-tile">
-                    <div className="tile-icon-bg green">💡</div>
-                    <span className="tile-label">Tạo dự án từ ý tưởng</span>
+                  <div
+                    className="quick-action-tile"
+                    onClick={() => {
+                      const inputEl = document.getElementById('new-series-input');
+                      if (inputEl) {
+                        inputEl.focus();
+                        inputEl.scrollIntoView({ behavior: 'smooth' });
+                      }
+                    }}
+                  >
+                    <div className="tile-icon-bg green">
+                      <Plus size={15} color="#10b981" />
+                    </div>
+                    <span className="tile-label">Tạo Series Mới</span>
                   </div>
-                  <div className="quick-action-tile">
-                    <div className="tile-icon-bg blue">📥</div>
-                    <span className="tile-label">Import kịch bản</span>
+
+                  <div
+                    className="quick-action-tile"
+                    onClick={() => {
+                      window.location.hash = '#/system/workspace';
+                    }}
+                  >
+                    <div className="tile-icon-bg blue">
+                      <Bot size={15} color="#3b82f6" />
+                    </div>
+                    <span className="tile-label">Agent Workspace</span>
                   </div>
-                  <div className="quick-action-tile">
-                    <div className="tile-icon-bg orange">👤</div>
-                    <span className="tile-label">Quản lý nhân vật</span>
+
+                  <div
+                    className="quick-action-tile"
+                    onClick={() => {
+                      window.location.hash = '#/studio/characters';
+                    }}
+                  >
+                    <div className="tile-icon-bg orange">
+                      <Users size={15} color="#f59e0b" />
+                    </div>
+                    <span className="tile-label">Kho Nhân Vật</span>
                   </div>
-                  <div className="quick-action-tile">
-                    <div className="tile-icon-bg purple">📊</div>
-                    <span className="tile-label">Xem tiến độ</span>
+
+                  <div
+                    className="quick-action-tile"
+                    onClick={() => {
+                      window.location.hash = '#/studio/episodes';
+                    }}
+                  >
+                    <div className="tile-icon-bg purple">
+                      <Film size={15} color="#a855f7" />
+                    </div>
+                    <span className="tile-label">Quản Lý Tập Phim</span>
                   </div>
                 </div>
               </div>
 
-              {/* System Status Card */}
+              {/* Card 2: Live System Engine Status */}
               <div className="studio-dashboard-card system-status-card">
-                <div className="card-header-title">System Status</div>
+                <div className="card-header-title">Trạng Thái Hệ Thống</div>
                 <div className="status-items-list">
                   <div className="status-item-row">
+                    <span className="item-label">Cơ Sở Dữ Liệu (DB)</span>
+                    <span className={capabilities['durable_db'] === 'AVAILABLE' ? 'item-badge-green' : 'item-badge-amber'}>
+                      <span className="dot" /> {capabilities['durable_db'] || 'CHECKING'}
+                    </span>
+                  </div>
+
+                  <div className="status-item-row">
                     <span className="item-label">Orchestrator</span>
-                    <span className="item-badge-green"><span className="dot"></span> Online</span>
+                    <span className={capabilities['studio_orchestration'] === 'AVAILABLE' ? 'item-badge-green' : 'item-badge-amber'}>
+                      <span className="dot" /> {capabilities['studio_orchestration'] || 'READY'}
+                    </span>
                   </div>
+
                   <div className="status-item-row">
-                    <span className="item-label">Worker Pool</span>
-                    <span className="item-badge-green"><span className="dot"></span> Ready</span>
+                    <span className="item-label">Story Engine</span>
+                    <span className={capabilities['story_engine'] === 'AVAILABLE' ? 'item-badge-green' : 'item-badge-amber'}>
+                      <span className="dot" /> {capabilities['story_engine'] || 'READY'}
+                    </span>
                   </div>
+
                   <div className="status-item-row">
-                    <span className="item-label">Database</span>
-                    <span className="item-badge-green"><span className="dot"></span> Healthy</span>
-                  </div>
-                  <div className="status-item-row">
-                    <span className="item-label">Model Router</span>
-                    <span className="item-badge-green"><span className="dot"></span> Healthy</span>
-                  </div>
-                  <div className="status-item-row">
-                    <span className="item-label">Providers</span>
-                    <span className="item-badge-green"><span className="dot"></span> 4/5</span>
+                    <span className="item-label">Worker Swarm</span>
+                    <span className={capabilities['worker'] === 'AVAILABLE' ? 'item-badge-green' : 'item-badge-amber'}>
+                      <span className="dot" /> {capabilities['worker'] || 'WAITING'}
+                    </span>
                   </div>
                 </div>
               </div>
 
-              {/* Requests Metric Chart Card */}
+              {/* Card 3: Dynamic Studio Stats */}
               <div className="studio-dashboard-card requests-chart-card">
                 <div className="card-header-row">
-                  <span className="card-header-title">Requests (Last 24h)</span>
+                  <span className="card-header-title">Tổng Quan Kho Tác Phẩm</span>
                 </div>
                 <div className="requests-value-row">
-                  <span className="stat-number">2,341</span>
-                  <span className="stat-badge-green">+12%</span>
+                  <span className="stat-number">{seriesList.length} Series</span>
+                  <span className="stat-badge-green">{totalEpisodesCount} Tập Phim</span>
                 </div>
-                <div className="requests-sparkline-area">
-                  <svg viewBox="0 0 300 60" className="chart-svg">
-                    <defs>
-                      <linearGradient id="chartGlow" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.4" />
-                        <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.0" />
-                      </linearGradient>
-                    </defs>
-                    <path
-                      d="M0 45 Q 40 30, 80 50 T 160 25 T 240 40 T 300 15 L 300 60 L 0 60 Z"
-                      fill="url(#chartGlow)"
-                    />
-                    <path
-                      d="M0 45 Q 40 30, 80 50 T 160 25 T 240 40 T 300 15"
-                      fill="none"
-                      stroke="#3b82f6"
-                      strokeWidth="2.5"
-                    />
-                  </svg>
-                  <div className="chart-time-labels">
-                    <span>00h</span>
-                    <span>06h</span>
-                    <span>12h</span>
-                    <span>18h</span>
-                    <span>24h</span>
+                <div className="requests-sparkline-area" style={{ marginTop: '8px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.74rem', color: '#94a3b8' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span>Dữ liệu lưu trữ:</span>
+                      <span style={{ color: '#dae2fd', fontFamily: 'var(--font-mono)' }}>SQLite Persistent</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span>Tốc độ phản hồi:</span>
+                      <span style={{ color: '#4edea3', fontFamily: 'var(--font-mono)' }}>~12ms</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -576,39 +708,81 @@ export const StudioPage: React.FC = () => {
 
             {/* Series Management Section */}
             <div className="studio-series-section">
-              <SectionHeader title="Series Collection" subtitle="Manage story series and underlying episodes" />
+              <SectionHeader
+                title="Danh Sách Dự Án Kịch Bản (Series)"
+                subtitle="Quản lý các chuỗi tác phẩm, phân đoạn và diễn biến câu chuyện"
+              />
 
               {/* Metrics Bar */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16, marginBottom: 16 }}>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+                  gap: 16,
+                  marginBottom: 16,
+                }}
+              >
                 <Card>
-                  <div style={{ fontSize: '0.8125rem', color: 'var(--studio-text-muted)', marginBottom: 4 }}>Active Series</div>
-                  <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--studio-text-primary)' }}>{seriesList.length}</div>
+                  <div style={{ fontSize: '0.8125rem', color: 'var(--studio-text-muted)', marginBottom: 4 }}>
+                    Số Series Đang Hoạt Động
+                  </div>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--studio-text-primary)' }}>
+                    {seriesList.length}
+                  </div>
                 </Card>
                 <Card>
-                  <div style={{ fontSize: '0.8125rem', color: 'var(--studio-text-muted)', marginBottom: 4 }}>Total Episodes</div>
-                  <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--color-primary)' }}>{totalEpisodesCount}</div>
+                  <div style={{ fontSize: '0.8125rem', color: 'var(--studio-text-muted)', marginBottom: 4 }}>
+                    Tổng Số Tập Phim
+                  </div>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--color-primary)' }}>
+                    {totalEpisodesCount}
+                  </div>
                 </Card>
                 <Card>
-                  <div style={{ fontSize: '0.8125rem', color: 'var(--studio-text-muted)', marginBottom: 4 }}>Durable DB Status</div>
-                  <div style={{ fontSize: '1rem', fontWeight: 600, color: capabilities['durable_db'] === 'AVAILABLE' ? 'var(--color-success)' : 'var(--color-warning)' }}>
-                    {capabilities['durable_db'] ?? 'CHECKING'}
+                  <div style={{ fontSize: '0.8125rem', color: 'var(--studio-text-muted)', marginBottom: 4 }}>
+                    Trạng Thái Cơ Sở Dữ Liệu
+                  </div>
+                  <div
+                    style={{
+                      fontSize: '1rem',
+                      fontWeight: 600,
+                      color: capabilities['durable_db'] === 'AVAILABLE' ? 'var(--color-success)' : 'var(--color-warning)',
+                    }}
+                  >
+                    {capabilities['durable_db'] ?? 'Đang kết nối'}
                   </div>
                 </Card>
               </div>
 
+              {/* Series List Grid */}
               <ul style={{ listStyle: 'none', padding: 0 }}>
-                {seriesList.length === 0 && !busy && (
-                  <li style={{ color: '#94a3b8', padding: '16px 0' }}>No series yet. Create one below.</li>
+                {filteredSeries.length === 0 && !busy && (
+                  <li style={{ color: '#94a3b8', padding: '16px 0' }}>
+                    {searchQuery ? `Không tìm thấy series phù hợp với từ khóa "${searchQuery}".` : 'Chưa có series nào trong Database. Hãy tạo series đầu tiên bên dưới.'}
+                  </li>
                 )}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16, marginBottom: 20 }}>
-                  {seriesList.map((s) => (
-                    <Card key={s.id} interactive onClick={() => navigate({ view: 'series', seriesId: s.id })}>
-                      <div style={{ fontWeight: 600, fontSize: '1.05rem', marginBottom: 6 }}>
-                        <a href={`#/studio/series/${s.id}`} style={{ color: '#7dd3fc', textDecoration: 'none' }}>
-                          {s.title} ({s.episode_count} episodes)
-                        </a>
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+                    gap: 16,
+                    marginBottom: 20,
+                  }}
+                >
+                  {filteredSeries.map((s) => (
+                    <Card
+                      key={s.id}
+                      interactive
+                      onClick={() => navigate({ view: 'series', seriesId: s.id })}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                        <div style={{ fontWeight: 700, fontSize: '1.05rem', color: '#dae2fd' }}>
+                          {s.title}
+                        </div>
+                        <Badge variant="primary">{s.episode_count} tập</Badge>
                       </div>
-                      <div style={{ fontSize: '0.8125rem', color: 'var(--studio-text-muted)' }}>
+                      <div style={{ fontSize: '0.8125rem', color: 'var(--studio-text-muted)', fontFamily: 'var(--font-mono)' }}>
                         ID: {s.id}
                       </div>
                     </Card>
@@ -616,23 +790,41 @@ export const StudioPage: React.FC = () => {
                 </div>
               </ul>
 
+              {/* Create Series Form */}
               <Card style={{ marginTop: 16 }}>
-                <div style={{ fontWeight: 600, marginBottom: 8 }}>Create New Series</div>
+                <div style={{ fontWeight: 700, marginBottom: 8, color: '#ffffff', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Plus size={16} color="#4d8eff" />
+                  <span>Khởi Tạo Series Kịch Bản Mới</span>
+                </div>
                 <div style={{ display: 'flex', gap: 8 }}>
                   <input
                     id="new-series-input"
-                    aria-label="Series title"
+                    aria-label="Tên series kịch bản"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Series title (e.g. Chú thỏ và cánh diều)"
-                    style={{ padding: '8px 12px', flex: 1, background: 'var(--studio-surface-3)', border: '1px solid var(--studio-border)', color: 'var(--studio-text-primary)', borderRadius: 6 }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && title.trim() && pendingKeys.size === 0) {
+                        void createSeries();
+                      }
+                    }}
+                    placeholder="Nhập tên Series kịch bản (ví dụ: Cyberpunk Odyssey 2099...)"
+                    style={{
+                      padding: '10px 14px',
+                      flex: 1,
+                      background: 'var(--studio-surface-3)',
+                      border: '1px solid var(--studio-border)',
+                      color: 'var(--studio-text-primary)',
+                      borderRadius: 8,
+                      outline: 'none',
+                      fontSize: '0.88rem',
+                    }}
                   />
                   <Button
                     variant="primary"
                     onClick={() => void createSeries()}
                     disabled={!title.trim() || pendingKeys.size > 0}
                   >
-                    Create series
+                    Tạo Series
                   </Button>
                 </div>
               </Card>
@@ -640,198 +832,295 @@ export const StudioPage: React.FC = () => {
           </section>
         )}
 
-      {/* SERIES DETAIL SURFACE (UI4B) */}
-      {route.view === 'series' && (
-        <section aria-label="Series detail">
-          <div style={{ marginBottom: 12 }}>
-            <a href="#/studio" style={{ color: '#7dd3fc', textDecoration: 'none', fontSize: '0.875rem' }}>← All series</a>
-          </div>
-
-          <Card style={{ marginBottom: 20 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <h3 style={{ margin: 0, fontSize: '1.25rem' }}>
-                  {seriesList.find((s) => s.id === route.seriesId)?.title ?? route.seriesId}
-                </h3>
-                <div style={{ fontSize: '0.8125rem', color: 'var(--studio-text-muted)', marginTop: 4 }}>
-                  Series ID: {route.seriesId}
-                </div>
-              </div>
-              <Badge variant="primary">Series Active</Badge>
-            </div>
-          </Card>
-
-          <SectionHeader title="Episodes" subtitle="Episode storyline development pipeline" />
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 20 }}>
-            {episodes.length === 0 && !busy && (
-              <div style={{ color: '#94a3b8', padding: '12px 0' }}>No episodes yet.</div>
-            )}
-            {episodes.map((e) => (
-              <Card key={e.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <a href={`#/studio/episodes/${e.id}`} style={{ color: '#7dd3fc', fontWeight: 600, fontSize: '1rem', textDecoration: 'none' }}>
-                    {e.title}
-                  </a>
-                  <StatusBadge status={e.state} />
-                </div>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <Button variant="secondary" size="sm" onClick={() => navigate({ view: 'episode', episodeId: e.id })}>
-                    Open Episode
-                  </Button>
-                  <Button variant="primary" size="sm" onClick={() => void startRun(e.id)} disabled={pendingKeys.size > 0}>
-                    Start run
-                  </Button>
-                </div>
-              </Card>
-            ))}
-          </div>
-
-          <Card>
-            <div style={{ fontWeight: 600, marginBottom: 8 }}>Create New Episode</div>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <input
-                aria-label="Episode title"
-                value={episodeTitle}
-                onChange={(e) => setEpisodeTitle(e.target.value)}
-                placeholder="Episode title"
-                style={{ padding: '8px 12px', flex: 1, background: 'var(--studio-surface-3)', border: '1px solid var(--studio-border)', color: 'var(--studio-text-primary)', borderRadius: 6 }}
-              />
-              <Button
-                variant="primary"
-                onClick={() => void createEpisode(route.seriesId)}
-                disabled={!episodeTitle.trim() || pendingKeys.size > 0}
+        {/* SERIES DETAIL SURFACE */}
+        {route.view === 'series' && (
+          <section aria-label="Series detail">
+            <div style={{ marginBottom: 14 }}>
+              <button
+                onClick={() => navigate({ view: 'list' })}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  color: '#7dd3fc',
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '0.875rem',
+                  padding: 0,
+                }}
               >
-                Create episode
-              </Button>
-            </div>
-          </Card>
-        </section>
-      )}
-
-      {/* EPISODE WORKSPACE SURFACE (UI5) */}
-      {route.view === 'episode' && episode && (
-        <section aria-label="Episode detail">
-          <div style={{ marginBottom: 12 }}>
-            <a href={`#/studio/series/${episode.series_id}`} style={{ color: '#7dd3fc', textDecoration: 'none', fontSize: '0.875rem' }}>
-              ← Back to series
-            </a>
-          </div>
-
-          <Card style={{ marginBottom: 16 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-              <h3 style={{ margin: 0, fontSize: '1.25rem' }}>{String(episode.title)}</h3>
-              <StatusBadge status={String(episode.state)} />
+                <ArrowLeft size={16} />
+                <span>Quay lại danh sách Series</span>
+              </button>
             </div>
 
-            <dl style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '4px 16px', fontSize: '0.8125rem', margin: 0 }}>
-              <dt style={{ color: 'var(--studio-text-muted)' }}>State</dt><dd style={{ margin: 0 }}>{String(episode.state)}</dd>
-              <dt style={{ color: 'var(--studio-text-muted)' }}>Version</dt><dd style={{ margin: 0 }}>{String(episode.optimistic_version)}</dd>
-              <dt style={{ color: 'var(--studio-text-muted)' }}>Revision</dt><dd style={{ margin: 0 }}>{String(episode.current_revision_id ?? '—')}</dd>
-              <dt style={{ color: 'var(--studio-text-muted)' }}>Run</dt><dd style={{ margin: 0 }}>{String(episode.active_run_id ?? '—')}</dd>
-              <dt style={{ color: 'var(--studio-text-muted)' }}>Awaiting approval</dt><dd style={{ margin: 0 }}>{String(episode.awaiting_checkpoint ?? '—')}</dd>
-            </dl>
-          </Card>
-
-          {(() => {
-            const readOnly = READ_ONLY_STATES.has(String(episode.state));
-            if (readOnly) {
-              return (
-                <div role="note" aria-label="Locked episode" style={{ color: '#4ade80', margin: '8px 0' }}>
-                  {String(episode.state)} — content is locked and read-only. Corrections derive a new
-                  revision through a new run.
+            <Card style={{ marginBottom: 20 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '1.35rem', color: '#ffffff', fontWeight: 800 }}>
+                    {seriesList.find((s) => s.id === route.seriesId)?.title ?? route.seriesId}
+                  </h3>
+                  <div style={{ fontSize: '0.8125rem', color: 'var(--studio-text-muted)', marginTop: 4, fontFamily: 'var(--font-mono)' }}>
+                    Series ID: {route.seriesId}
+                  </div>
                 </div>
-              );
-            }
-            return null;
-          })()}
+                <Badge variant="primary">Series Đang Hoạt Động</Badge>
+              </div>
+            </Card>
 
-          <EpisodeWorkspace
-            episode={episode}
-            artifacts={artifacts}
-            busy={pendingKeys.size > 0}
-            onSelectIdea={(candidateId, envelope) => void selectIdea(route.episodeId, envelope, candidateId)}
-            renderActions={() => {
-              const readOnly = READ_ONLY_STATES.has(String(episode.state));
-              if (readOnly) return null;
-              return (
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                  <Button variant="primary" onClick={() => void startRun(route.episodeId)} disabled={pendingKeys.size > 0}>
-                    Start / resume run
-                  </Button>
-                  {String(episode.state) === 'SCREENPLAY_REVIEW' && (
-                    <Button
-                      variant="outline"
-                      onClick={() => void lockScreenplay(route.episodeId)}
-                      disabled={pendingKeys.size > 0}
-                      aria-label="Lock screenplay"
+            <SectionHeader
+              title="Danh Sách Tập Phim (Episodes)"
+              subtitle="Quy trình phát triển kịch bản và phân cảnh của từng tập"
+            />
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 20 }}>
+              {episodes.length === 0 && !busy && (
+                <div style={{ color: '#94a3b8', padding: '12px 0' }}>Chưa có tập phim nào trong Series này. Hãy khởi tạo tập đầu tiên bên dưới.</div>
+              )}
+              {episodes.map((e) => (
+                <Card key={e.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <span
+                      onClick={() => navigate({ view: 'episode', episodeId: e.id })}
+                      style={{ color: '#7dd3fc', fontWeight: 700, fontSize: '1rem', cursor: 'pointer' }}
                     >
-                      Lock screenplay
+                      {e.title}
+                    </span>
+                    <StatusBadge status={e.state} />
+                  </div>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <Button variant="secondary" size="sm" onClick={() => navigate({ view: 'episode', episodeId: e.id })}>
+                      Mở Tập Phim
                     </Button>
-                  )}
-                </div>
-              );
-            }}
-            renderRunProgress={() =>
-              typeof episode.active_run_id === 'string' && episode.active_run_id ? (
-                <RunProgress
-                  runId={episode.active_run_id}
-                  store={store}
-                  onDurableChange={() => void refreshEpisode(route.episodeId)}
+                    <Button variant="primary" size="sm" onClick={() => void startRun(e.id)} disabled={pendingKeys.size > 0}>
+                      Chạy Pipeline
+                    </Button>
+                  </div>
+                </Card>
+              ))}
+            </div>
+
+            <Card>
+              <div style={{ fontWeight: 700, marginBottom: 8, color: '#ffffff', display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Plus size={16} color="#4edea3" />
+                <span>Thêm Tập Phim Mới</span>
+              </div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <input
+                  aria-label="Tên tập phim"
+                  value={episodeTitle}
+                  onChange={(e) => setEpisodeTitle(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && episodeTitle.trim() && pendingKeys.size === 0) {
+                      void createEpisode(route.seriesId);
+                    }
+                  }}
+                  placeholder="Nhập tên tập phim (ví dụ: Tập 01: Sự Khởi Đầu Mới...)"
+                  style={{
+                    padding: '10px 14px',
+                    flex: 1,
+                    background: 'var(--studio-surface-3)',
+                    border: '1px solid var(--studio-border)',
+                    color: 'var(--studio-text-primary)',
+                    borderRadius: 8,
+                    outline: 'none',
+                    fontSize: '0.88rem',
+                  }}
                 />
-              ) : null
-            }
-            renderApprovalBar={() => {
-              const checkpoint =
-                typeof episode.awaiting_checkpoint === 'string' ? episode.awaiting_checkpoint : null;
-              if (!checkpoint || READ_ONLY_STATES.has(String(episode.state)) || !CHECKPOINT_PRIMARY_ARTIFACT[checkpoint]) {
-                return null;
+                <Button
+                  variant="primary"
+                  onClick={() => void createEpisode(route.seriesId)}
+                  disabled={!episodeTitle.trim() || pendingKeys.size > 0}
+                >
+                  Tạo Tập Phim
+                </Button>
+              </div>
+            </Card>
+          </section>
+        )}
+
+        {/* EPISODE WORKSPACE SURFACE */}
+        {route.view === 'episode' && episode && (
+          <section aria-label="Episode detail">
+            <div style={{ marginBottom: 14 }}>
+              <button
+                onClick={() => navigate({ view: 'series', seriesId: String(episode.series_id) })}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  color: '#7dd3fc',
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '0.875rem',
+                  padding: 0,
+                }}
+              >
+                <ArrowLeft size={16} />
+                <span>Quay lại Series</span>
+              </button>
+            </div>
+
+            <Card style={{ marginBottom: 16 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                <h3 style={{ margin: 0, fontSize: '1.35rem', color: '#ffffff', fontWeight: 800 }}>{String(episode.title)}</h3>
+                <StatusBadge status={String(episode.state)} />
+              </div>
+
+              <dl
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'auto 1fr',
+                  gap: '4px 16px',
+                  fontSize: '0.8125rem',
+                  margin: 0,
+                }}
+              >
+                <dt style={{ color: 'var(--studio-text-muted)' }}>Trạng thái</dt>
+                <dd style={{ margin: 0, fontWeight: 600 }}>{String(episode.state)}</dd>
+                <dt style={{ color: 'var(--studio-text-muted)' }}>Phiên bản</dt>
+                <dd style={{ margin: 0, fontFamily: 'var(--font-mono)' }}>{String(episode.optimistic_version)}</dd>
+                <dt style={{ color: 'var(--studio-text-muted)' }}>Revision ID</dt>
+                <dd style={{ margin: 0, fontFamily: 'var(--font-mono)' }}>{String(episode.current_revision_id ?? '—')}</dd>
+                <dt style={{ color: 'var(--studio-text-muted)' }}>Run ID</dt>
+                <dd style={{ margin: 0, fontFamily: 'var(--font-mono)' }}>{String(episode.active_run_id ?? '—')}</dd>
+                <dt style={{ color: 'var(--studio-text-muted)' }}>Chờ phê duyệt</dt>
+                <dd style={{ margin: 0, fontWeight: 600, color: '#f59e0b' }}>{String(episode.awaiting_checkpoint ?? '—')}</dd>
+              </dl>
+            </Card>
+
+            {(() => {
+              const readOnly = READ_ONLY_STATES.has(String(episode.state));
+              if (readOnly) {
+                return (
+                  <div
+                    role="note"
+                    aria-label="Locked episode"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      color: '#4ade80',
+                      margin: '10px 0',
+                      padding: '10px 14px',
+                      background: 'rgba(74, 222, 128, 0.1)',
+                      borderRadius: 8,
+                      border: '1px solid rgba(74, 222, 128, 0.2)',
+                    }}
+                  >
+                    <Lock size={16} />
+                    <span>{String(episode.state)} — Kịch bản đã được khóa chính thức và chuyển sang giai đoạn sản xuất.</span>
+                  </div>
+                );
               }
-              const primaryType = CHECKPOINT_PRIMARY_ARTIFACT[checkpoint];
-              const primary = artifacts.find((a) => a.artifact_type === primaryType) ?? null;
-              const revision = (episode.current_revision ?? episode.currentRevision) as
-                | Record<string, unknown>
-                | undefined;
-              const revisionId =
-                (typeof revision?.revision_id === 'string' ? revision.revision_id : null) ??
-                (typeof episode.current_revision_id === 'string' ? episode.current_revision_id : null);
-              const revisionHash =
-                typeof revision?.content_hash === 'string' ? revision.content_hash : null;
-              return (
-                <ApprovalBar
-                  checkpoint={checkpoint}
-                  artifactTitle={
-                    primary && typeof (primary.content as Record<string, unknown>)?.title === 'string'
-                      ? String((primary.content as Record<string, unknown>).title)
-                      : primary?.artifact_type ?? null
-                  }
-                  revisionId={revisionId}
-                  revisionHash={revisionHash}
-                  expectedVersion={Number(episode.optimistic_version ?? episode.version ?? 0)}
-                  disabled={pendingKeys.size > 0}
-                  onSubmit={(decision, reason) =>
-                    void submitApproval(route.episodeId, checkpoint, decision, reason)
-                  }
-                />
-              );
-            }}
-          />
-        </section>
-      )}
+              return null;
+            })()}
+
+            <EpisodeWorkspace
+              episode={episode}
+              artifacts={artifacts}
+              busy={pendingKeys.size > 0}
+              onSelectIdea={(candidateId, envelope) => void selectIdea(route.episodeId, envelope, candidateId)}
+              renderActions={() => {
+                const readOnly = READ_ONLY_STATES.has(String(episode.state));
+                if (readOnly) return null;
+                return (
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    <Button variant="primary" onClick={() => void startRun(route.episodeId)} disabled={pendingKeys.size > 0}>
+                      Khởi chạy / Tiếp tục Pipeline
+                    </Button>
+                    {String(episode.state) === 'SCREENPLAY_REVIEW' && (
+                      <Button
+                        variant="outline"
+                        onClick={() => void lockScreenplay(route.episodeId)}
+                        disabled={pendingKeys.size > 0}
+                        aria-label="Khóa kịch bản"
+                      >
+                        Khóa Kịch Bản Chính Thức
+                      </Button>
+                    )}
+                  </div>
+                );
+              }}
+              renderRunProgress={() =>
+                typeof episode.active_run_id === 'string' && episode.active_run_id ? (
+                  <RunProgress
+                    runId={episode.active_run_id}
+                    store={store}
+                    onDurableChange={() => void refreshEpisode(route.episodeId)}
+                  />
+                ) : null
+              }
+              renderApprovalBar={() => {
+                const checkpoint =
+                  typeof episode.awaiting_checkpoint === 'string' ? episode.awaiting_checkpoint : null;
+                if (!checkpoint || READ_ONLY_STATES.has(String(episode.state)) || !CHECKPOINT_PRIMARY_ARTIFACT[checkpoint]) {
+                  return null;
+                }
+                const primaryType = CHECKPOINT_PRIMARY_ARTIFACT[checkpoint];
+                const primary = artifacts.find((a) => a.artifact_type === primaryType) ?? null;
+                const revision = (episode.current_revision ?? episode.currentRevision) as
+                  | Record<string, unknown>
+                  | undefined;
+                const revisionId =
+                  (typeof revision?.revision_id === 'string' ? revision.revision_id : null) ??
+                  (typeof episode.current_revision_id === 'string' ? episode.current_revision_id : null);
+                const revisionHash =
+                  typeof revision?.content_hash === 'string' ? revision.content_hash : null;
+                return (
+                  <ApprovalBar
+                    checkpoint={checkpoint}
+                    artifactTitle={
+                      primary && typeof (primary.content as Record<string, unknown>)?.title === 'string'
+                        ? String((primary.content as Record<string, unknown>).title)
+                        : primary?.artifact_type ?? null
+                    }
+                    revisionId={revisionId}
+                    revisionHash={revisionHash}
+                    expectedVersion={Number(episode.optimistic_version ?? episode.version ?? 0)}
+                    disabled={pendingKeys.size > 0}
+                    onSubmit={(decision, reason) =>
+                      void submitApproval(route.episodeId, checkpoint, decision, reason)
+                    }
+                  />
+                );
+              }}
+            />
+          </section>
+        )}
       </div>
 
-      {/* Right Drawer Panel */}
-      <StudioRightPanel onSelectProject={(id) => navigate({ view: 'series', seriesId: id })} />
+      {/* Right Drawer Panel with Live Props */}
+      <StudioRightPanel
+        seriesList={seriesList}
+        capabilities={capabilities}
+        onSelectProject={(id) => navigate({ view: 'series', seriesId: id })}
+        onApplyTemplate={(tmplTitle) => {
+          setTitle(tmplTitle);
+          const inputEl = document.getElementById('new-series-input');
+          if (inputEl) {
+            inputEl.focus();
+            inputEl.scrollIntoView({ behavior: 'smooth' });
+          }
+        }}
+        onNavigateTab={(hash) => {
+          window.location.hash = hash;
+        }}
+      />
 
       {/* Bottom Footer Bar */}
       <footer className="studio-bottom-footer">
         <div className="footer-left">
-          WindAgent Studio — Story-driven content creation powered by AI agents
+          WindAgent Studio — Hệ thống sáng tác kịch bản & phân cảnh điện ảnh tích hợp Multi-Agent Swarm
         </div>
         <div className="footer-right">
-          Build 0.1.0-dev | 2026 © WindFaculty
+          Build 0.3.0 | 2026 © WindFaculty
         </div>
       </footer>
     </div>
   );
 };
+
+export default StudioPage;

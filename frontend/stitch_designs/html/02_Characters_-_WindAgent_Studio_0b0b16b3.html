@@ -1,0 +1,449 @@
+<!DOCTYPE html><html class="dark" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>WindAgent Studio - Characters</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error": "#ffb4ab",
+                        "secondary-container": "#00a572",
+                        "tertiary-fixed": "#e1e0ff",
+                        "on-secondary-container": "#00311f",
+                        "on-primary": "#002e6a",
+                        "on-surface": "#dae2fd",
+                        "secondary-fixed": "#6ffbbe",
+                        "on-tertiary-fixed-variant": "#2f2ebe",
+                        "on-surface-variant": "#c2c6d6",
+                        "secondary": "#4edea3",
+                        "inverse-surface": "#dae2fd",
+                        "error-container": "#93000a",
+                        "outline-variant": "#424754",
+                        "surface-container": "#171f33",
+                        "secondary-fixed-dim": "#4edea3",
+                        "inverse-on-surface": "#283044",
+                        "surface-container-lowest": "#060e20",
+                        "tertiary": "#c0c1ff",
+                        "surface-container-high": "#222a3d",
+                        "on-tertiary": "#1000a9",
+                        "on-primary-fixed-variant": "#004395",
+                        "on-tertiary-fixed": "#07006c",
+                        "on-secondary-fixed-variant": "#005236",
+                        "on-primary-container": "#00285d",
+                        "primary": "#adc6ff",
+                        "surface-dim": "#0b1326",
+                        "primary-fixed": "#d8e2ff",
+                        "background": "#0b1326",
+                        "surface-bright": "#31394d",
+                        "on-error-container": "#ffdad6",
+                        "outline": "#8c909f",
+                        "tertiary-fixed-dim": "#c0c1ff",
+                        "tertiary-container": "#8083ff",
+                        "on-secondary-fixed": "#002113",
+                        "primary-container": "#4d8eff",
+                        "primary-fixed-dim": "#adc6ff",
+                        "surface-container-low": "#131b2e",
+                        "on-secondary": "#003824",
+                        "on-primary-fixed": "#001a42",
+                        "on-error": "#690005",
+                        "surface-tint": "#adc6ff",
+                        "on-background": "#dae2fd",
+                        "surface-container-highest": "#2d3449",
+                        "surface": "#0b1326",
+                        "on-tertiary-container": "#0d0096",
+                        "inverse-primary": "#005ac2",
+                        "surface-variant": "#2d3449"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "20px",
+                        "sm": "16px",
+                        "xs": "8px",
+                        "base": "4px",
+                        "md": "24px",
+                        "xl": "48px",
+                        "sidebar_width": "240px",
+                        "lg": "32px"
+                    },
+                    "fontFamily": {
+                        "label-sm": ["Hanken Grotesk"],
+                        "body-md": ["Hanken Grotesk"],
+                        "label-caps": ["JetBrains Mono"],
+                        "display-lg": ["Hanken Grotesk"],
+                        "headline-md": ["Hanken Grotesk"],
+                        "headline-sm": ["Hanken Grotesk"],
+                        "body-lg": ["Hanken Grotesk"],
+                        "display-lg-mobile": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "display-lg": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "display-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "700" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(23, 31, 51, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .nav-active-glow {
+            box-shadow: inset 4px 0 0 0 #4d8eff, 0 0 15px rgba(77, 142, 255, 0.1);
+            background: linear-gradient(90deg, rgba(77,142,255,0.1) 0%, rgba(77,142,255,0) 100%);
+        }
+
+        /* Custom Scrollbar for inner panels */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1); 
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2); 
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md overflow-hidden selection:bg-primary-container selection:text-on-primary-container flex h-screen">
+<!-- SideNavBar -->
+<nav class="fixed left-0 top-0 h-full w-sidebar_width bg-surface-container-lowest border-r border-outline-variant/10 flex flex-col py-md px-sm gap-y-xs overflow-y-auto z-50 w-64">
+<!-- Brand Header -->
+<div class="mb-lg px-2 flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-primary-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-on-primary-container" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+</div>
+<div>
+<h1 class="text-headline-sm font-headline-sm font-bold text-on-surface tracking-tight">WindAgent</h1>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Build • Create • Inspire</p>
+</div>
+</div>
+<button class="w-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 rounded-lg py-2 px-4 flex items-center justify-center gap-2 transition-all duration-200 mb-6 group">
+<span class="material-symbols-outlined text-[18px] group-hover:scale-110 transition-transform">add</span>
+<span class="font-label-sm text-label-sm font-semibold tracking-wide">Tạo dự án mới</span>
+</button>
+<div class="flex flex-col gap-1 flex-1">
+<div class="text-label-caps font-label-caps text-on-surface-variant/50 px-3 mb-2 mt-4 uppercase">Studio</div>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+<span class="font-label-sm text-label-sm">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">auto_awesome</span>
+<span class="font-label-sm text-label-sm">Studio</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">folder</span>
+<span class="font-label-sm text-label-sm">Projects</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">movie</span>
+<span class="font-label-sm text-label-sm">Episodes</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">grid_view</span>
+<span class="font-label-sm text-label-sm">Story Board</span>
+</a>
+<!-- ACTIVE TAB -->
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary-container text-on-primary-container font-semibold shadow-[0_0_15px_rgba(77,142,255,0.3)] transition-all duration-200 relative" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="font-label-sm text-label-sm">Characters</span>
+<div class="absolute right-3 w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></div>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">public</span>
+<span class="font-label-sm text-label-sm">World/Setting</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">inventory_2</span>
+<span class="font-label-sm text-label-sm">Assets</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">rate_review</span>
+<span class="font-label-sm text-label-sm">Reviews</span>
+</a>
+<div class="text-label-caps font-label-caps text-on-surface-variant/50 px-3 mb-2 mt-6 uppercase">System</div>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">smart_toy</span>
+<span class="font-label-sm text-label-sm">Models</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">cloud</span>
+<span class="font-label-sm text-label-sm">Providers</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">account_tree</span>
+<span class="font-label-sm text-label-sm">Workflows</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">experiment</span>
+<span class="font-label-sm text-label-sm">Agent Lab</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">history</span>
+<span class="font-label-sm text-label-sm">Logs</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">database</span>
+<span class="font-label-sm text-label-sm">Database</span>
+</a>
+</div>
+<div class="mt-auto pt-4 border-t border-outline-variant/10">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">code</span>
+<span class="font-label-sm text-label-sm">Development</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="flex-1 ml-sidebar_width flex flex-col relative h-full ml-64">
+<!-- TopNavBar -->
+<header class="fixed top-0 left-sidebar_width right-0 z-40 flex justify-between items-center px-md py-xs h-16 bg-surface/80 backdrop-blur-xl border-b border-outline-variant/10 shadow-sm left-64">
+<div class="flex items-center gap-6">
+<!-- Navigation Links -->
+<nav class="hidden md:flex items-center gap-2">
+<a class="px-3 py-1.5 rounded-md text-on-surface-variant hover:text-primary transition-colors font-label-caps text-label-caps" href="#">Studio</a>
+<a class="px-3 py-1.5 rounded-md text-on-surface-variant hover:text-primary transition-colors font-label-caps text-label-caps" href="#">Assets</a>
+<a class="px-3 py-1.5 rounded-md text-on-surface-variant hover:text-primary transition-colors font-label-caps text-label-caps" href="#">Models</a>
+<a class="px-3 py-1.5 rounded-md text-on-surface-variant hover:text-primary transition-colors font-label-caps text-label-caps" href="#">Monitoring</a>
+<a class="px-3 py-1.5 rounded-md text-on-surface-variant hover:text-primary transition-colors font-label-caps text-label-caps" href="#">Settings</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<!-- Status Indicator -->
+<div class="flex items-center gap-2 px-3 py-1 rounded-full bg-surface-container border border-outline-variant/20">
+<div class="w-2 h-2 rounded-full bg-secondary animate-pulse shadow-[0_0_8px_rgba(78,222,163,0.6)]"></div>
+<span class="text-label-sm font-label-sm text-on-surface-variant">System Online</span>
+</div>
+<!-- Icon Actions -->
+<div class="flex items-center gap-1">
+<button class="p-2 rounded-full text-on-surface-variant hover:text-primary hover:bg-surface-container transition-all">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 rounded-full text-on-surface-variant hover:text-primary hover:bg-surface-container transition-all">
+<span class="material-symbols-outlined">help</span>
+</button>
+</div>
+<!-- Profile -->
+<button class="flex items-center gap-2 pl-2 border-l border-outline-variant/20 hover:opacity-80 transition-opacity">
+<div class="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-sm overflow-hidden border border-primary/30">
+<img alt="Tran Xuan Khoa Profile" class="w-full h-full object-cover" data-alt="A futuristic, high-contrast digital portrait of a user avatar in a sleek, neon-lit studio environment. The style is modern, cinematic, and slightly cyberpunk, featuring deep blues and glowing accents against a dark slate background, conveying a sense of advanced technology and creativity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDEjsC8E1OfucgBShS8ENCnaWsEjcPZWUa-C7I5n02OQ8T7eaFmh8ivao2aSQaKfrBsrp1x4u1R89fW5QKEYV-Nna56Y5DBX_OEQM19EWs_LuKZ7JmVj5HZWk6ZcYW4RSA2zrAS93BpApgyHgErs4DrLpQhguQFcQvse6S7BpJgtuKBitJejD7a4XjroOiOd8GEkvnPQHwEBPHmDc_aahntH-1Ph4MwUusSAananmzSdDfLL0Rb0XDBeQ">
+</div>
+</button>
+</div>
+</header>
+<!-- Canvas -->
+<main class="flex-1 mt-16 p-md overflow-hidden flex gap-md p-6">
+<!-- Left Side: Character Gallery -->
+<div class="flex-1 flex flex-col h-full glass-panel rounded-xl overflow-hidden">
+<!-- Gallery Header -->
+<div class="p-lg border-b border-outline-variant/10 flex justify-between items-end bg-surface-container-low/50">
+<div>
+<h2 class="text-display-lg font-display-lg text-on-surface mb-2">Cast &amp; Characters</h2>
+<p class="text-body-md font-body-md text-on-surface-variant max-w-2xl">Manage personalities, backstories, and voice profiles for the current narrative universe.</p>
+</div>
+<div class="flex items-center gap-3">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant/50 text-[18px]">search</span>
+<input class="bg-surface-container border border-outline-variant/20 rounded-full py-2 pl-9 pr-4 text-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary w-64 transition-all" placeholder="Search cast..." type="text">
+</div>
+<button class="bg-primary hover:bg-primary-fixed text-on-primary font-label-sm text-label-sm font-semibold py-2 px-4 rounded-full flex items-center gap-2 transition-all shadow-[0_0_15px_rgba(173,198,255,0.2)]">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                            Create Character
+                        </button>
+</div>
+</div>
+<!-- Gallery Grid -->
+<div class="p-lg overflow-y-auto flex-1 bg-surface-container-lowest/30">
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+<!-- Character Card 1 (Active) -->
+<div class="group relative bg-surface-container border border-primary/50 rounded-xl p-4 flex flex-col items-center text-center cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_10px_30px_rgba(77,142,255,0.1)] nav-active-glow">
+<div class="w-24 h-24 rounded-full mb-4 overflow-hidden border-2 border-primary shadow-[0_0_15px_rgba(77,142,255,0.3)] relative">
+<img class="w-full h-full object-cover" data-alt="A stylized 3D portrait of a rugged, stoic sci-fi protagonist with short dark hair and a slight scar. The lighting is dramatic, with rim light from a neon blue source against a dark, moody studio backdrop. High resolution, professional concept art style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAgd7m-oW9qyLC5a5bN6PEkQPvlWxr9w3H3EWe_0HjIp5JQFQjB6vs18Bv78naoQwRLeS9Pt0yyvpjJ9SdPkeqW7SVJT1ud9XrPklJRGTl_ADpjiOwn_AFudC9gtAOuLI5_1NPgy4gHE2SieuARxed3GOE_pXydmJigzPvg7XpMasDsAPS2atdM0lL8Xz3ui2hPzu2FWEWSC7pHYpTt2PDdMsheSXc_7l12TIdTUg2CPtjz2rRZNoYs-g">
+<div class="absolute inset-0 bg-primary/10 group-hover:bg-transparent transition-colors"></div>
+</div>
+<h3 class="text-headline-sm font-headline-sm text-on-surface mb-1">Kaelen Vance</h3>
+<span class="text-label-caps font-label-caps text-primary tracking-wider uppercase text-[10px] mb-3">Protagonist</span>
+<div class="flex gap-2 justify-center w-full">
+<span class="px-2 py-0.5 rounded-full bg-surface-variant text-on-surface-variant text-[10px] border border-outline-variant/30">Stoic</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-variant text-on-surface-variant text-[10px] border border-outline-variant/30">Tactical</span>
+</div>
+</div>
+<!-- Character Card 2 -->
+<div class="group relative bg-surface-container border border-outline-variant/20 rounded-xl p-4 flex flex-col items-center text-center cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:bg-surface-container-high">
+<div class="w-24 h-24 rounded-full mb-4 overflow-hidden border border-outline-variant/30 group-hover:border-primary/50 transition-colors">
+<img class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" data-alt="A vibrant 3D portrait of a brilliant, slightly chaotic mechanic character. She has brightly colored hair, goggles resting on her forehead, and smudges on her cheek. The lighting is warm and energetic, set against a dark metallic studio background. High resolution, expressive design." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDPuuYLlSJxyPIPXIcLNYjpeUDIxje1V45ASKSC0qsaJs2P5XIKvY3UnBK5NVowErutYXTBcXyz98pRxFTlMSp7R3VvH6DhtFmSUiDb1-PUXk9en3mj6vQE9GAEVlsVySO3IRwy6WS6YgNyjavqfqVqVkeweYb4N0hYxNA9XbFIDHEBiZBduI4q9Bra-WvsSCMcS_GImga7uV8L9hjFq0_BH3Vc6xfV7PhhqzxQwcNMLfiqUpBL8f8kiQ">
+</div>
+<h3 class="text-headline-sm font-headline-sm text-on-surface mb-1">Nova Tink</h3>
+<span class="text-label-caps font-label-caps text-on-surface-variant tracking-wider uppercase text-[10px] mb-3">Supporting</span>
+<div class="flex gap-2 justify-center w-full">
+<span class="px-2 py-0.5 rounded-full bg-surface-variant text-on-surface-variant text-[10px] border border-outline-variant/30">Chaotic Good</span>
+</div>
+</div>
+<!-- Character Card 3 -->
+<div class="group relative bg-surface-container border border-outline-variant/20 rounded-xl p-4 flex flex-col items-center text-center cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:bg-surface-container-high">
+<div class="w-24 h-24 rounded-full mb-4 overflow-hidden border border-outline-variant/30 group-hover:border-primary/50 transition-colors">
+<img class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" data-alt="A shadowy, enigmatic 3D portrait of an antagonist figure. Features sharp cheekbones, piercing pale eyes, and elegant dark attire. Illuminated by a singular, sharp beam of cold white light in a pitch-black studio setting. Mysterious and highly detailed concept art style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCZPETH2Zw2pFtVjzjV2CGr8jHIJpe9aRXrxH96hy7STEED1wRVAK5qbf_cHe_8sXcjJ9P3DKvrN0uvG3t70U9yGEYOAWuddclxQD_J3K8IK1qYZop96v3Zz8dfBy5E2zFyKWxmUkxwEhQldPf1fzOEhwpkM7m6QqSbeKAzj9v1q3zhfDCK0-a3fN1pSZs2iUChUKuMfhXxJJAGBL4bkJC_SZTnKo8jrEWM0RYjeHNo8Cpl9YEP8nadpQ">
+</div>
+<h3 class="text-headline-sm font-headline-sm text-on-surface mb-1">Sylas Thorne</h3>
+<span class="text-label-caps font-label-caps text-error tracking-wider uppercase text-[10px] mb-3">Antagonist</span>
+<div class="flex gap-2 justify-center w-full">
+<span class="px-2 py-0.5 rounded-full bg-surface-variant text-on-surface-variant text-[10px] border border-outline-variant/30">Manipulative</span>
+</div>
+</div>
+<!-- Character Card 4 (Placeholder/Draft) -->
+<div class="group relative bg-surface-container/50 border border-dashed border-outline-variant/40 rounded-xl p-4 flex flex-col items-center text-center cursor-pointer transition-all duration-300 hover:bg-surface-container hover:border-primary/40">
+<div class="w-24 h-24 rounded-full mb-4 bg-surface-dim flex items-center justify-center border border-outline-variant/20 group-hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-outline-variant text-[32px] group-hover:text-primary transition-colors">person_add</span>
+</div>
+<h3 class="text-headline-sm font-headline-sm text-on-surface-variant mb-1 group-hover:text-on-surface transition-colors">Draft_004</h3>
+<span class="text-label-caps font-label-caps text-outline-variant tracking-wider uppercase text-[10px] mb-3">Unknown Role</span>
+<div class="flex gap-2 justify-center w-full opacity-50">
+<span class="px-2 py-0.5 rounded-full bg-surface-variant text-on-surface-variant text-[10px] border border-outline-variant/30">Unassigned</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Side: Detail Panel (Active Character) -->
+<aside class="w-[400px] shrink-0 flex flex-col h-full glass-panel rounded-xl overflow-hidden border-l-0">
+<!-- Detail Header (Hero Image) -->
+<div class="relative h-48 bg-surface-container-highest">
+<img class="w-full h-full object-cover opacity-60" data-alt="A wide, cinematic banner showing the rugged sci-fi protagonist, Kaelen Vance, standing on a desolate alien landscape. The sky is dark with streaks of neon nebula. Dramatic, moody lighting emphasizing his silhouette. High-end digital art style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuALMt6gcEyDUU3ozmzONqnv-092PvpWyTnyKy2pz0VU_Wn-7pgTibgT1uSeS_aATbLUPNGBbXPnVrx_l4Q0N3WQYWF6yvfFkK4Ydr2m9gzv2H9zyeLS1JaUzDqOJ0VEkTfxDIux19LvJtMNcTUdKH4rVT1RHYJz5GiriaVrGGXoZfoEjm-UMOxCzMbfdwA3ADM99X24a2wZSku_aDE6DIGPMUCPyLC7TNhmbOyHhMPNDGqj8Se7nIexOg">
+<div class="absolute inset-0 bg-gradient-to-t from-[#171f33] via-transparent to-transparent"></div>
+<div class="absolute bottom-0 left-0 p-lg w-full flex items-end gap-4 translate-y-1/2">
+<div class="w-20 h-20 rounded-full border-4 border-[#171f33] bg-surface-dim overflow-hidden shadow-lg z-10">
+<img class="w-full h-full object-cover" data-alt="A stylized 3D portrait of a rugged, stoic sci-fi protagonist with short dark hair and a slight scar. The lighting is dramatic, with rim light from a neon blue source against a dark, moody studio backdrop. High resolution, professional concept art style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAF1hygNZU0nUkBwanhk9dKOYfdMx-HpHngKy-u6foDXQyfJAFezsS4us42evMUu0b4EpvzuSStIJoLZoiqhQTRA80E1ckeuI4ZZlBR-eyBkm6B6w-iWUbLyfPWYLNPeh9Sdu2Wcft3hbrbiu8ylKY_MCBOAwZJTVh8VHkZKd9ozDdgBgaJ8TfcsOVq5M6q0mht44WyTumYZJuIErXI0QfuCLWWlcQ_H2C5nN0m6QYzwMI3-vBDHEG-LQ">
+</div>
+<div class="pb-2 z-10">
+<h2 class="text-headline-md font-headline-md text-white font-bold leading-none mb-1">Kaelen Vance</h2>
+<span class="text-label-sm text-primary font-label-caps tracking-widest uppercase">Protagonist</span>
+</div>
+</div>
+<button class="absolute top-4 right-4 p-2 rounded-full bg-surface/50 backdrop-blur border border-white/10 text-on-surface hover:bg-surface transition-colors">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+</div>
+<!-- Scrollable Details -->
+<div class="flex-1 overflow-y-auto mt-10 p-lg pb-xl space-y-8">
+<!-- Bio -->
+<section>
+<h4 class="text-label-caps font-label-caps text-on-surface-variant uppercase mb-3 flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">menu_book</span> Background
+                        </h4>
+<p class="text-body-md font-body-md text-on-surface leading-relaxed opacity-90">
+                            A former operative left behind in the Outer Rim sectors. Kaelen relies on tactical precision and a deep distrust of authority to survive. Despite a cold exterior, he possesses a strong moral compass that often forces him into conflicts he tries to avoid.
+                        </p>
+</section>
+<!-- Core Traits -->
+<section>
+<h4 class="text-label-caps font-label-caps text-on-surface-variant uppercase mb-3 flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">psychology</span> Persona Matrix
+                        </h4>
+<div class="grid grid-cols-2 gap-3">
+<div class="bg-surface-container border border-outline-variant/20 p-3 rounded-lg">
+<div class="text-[10px] font-label-caps text-on-surface-variant uppercase mb-1">Dominant Trait</div>
+<div class="text-body-md font-semibold text-primary">Stoic</div>
+</div>
+<div class="bg-surface-container border border-outline-variant/20 p-3 rounded-lg">
+<div class="text-[10px] font-label-caps text-on-surface-variant uppercase mb-1">Flaw</div>
+<div class="text-body-md font-semibold text-error">Distrustful</div>
+</div>
+<div class="bg-surface-container border border-outline-variant/20 p-3 rounded-lg col-span-2">
+<div class="text-[10px] font-label-caps text-on-surface-variant uppercase mb-2">Alignment Scale</div>
+<div class="w-full h-1.5 bg-surface-dim rounded-full overflow-hidden">
+<div class="h-full bg-gradient-to-r from-secondary to-primary w-[75%] rounded-full shadow-[0_0_10px_rgba(78,222,163,0.5)]"></div>
+</div>
+<div class="flex justify-between text-[10px] text-on-surface-variant mt-1">
+<span class="">Chaotic</span>
+<span class="">Lawful</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Voice Profile -->
+<section>
+<h4 class="text-label-caps font-label-caps text-on-surface-variant uppercase mb-3 flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">mic</span> Voice Profile
+                        </h4>
+<div class="bg-surface-container-high border border-outline-variant/30 rounded-lg p-4 relative overflow-hidden group cursor-pointer hover:border-primary/50 transition-colors">
+<div class="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</div>
+<div class="flex-1">
+<div class="text-body-md font-semibold text-on-surface">Model: ELEVEN_GRIT_02</div>
+<div class="text-[11px] text-on-surface-variant font-label-caps">Deep, raspy, deliberate</div>
+</div>
+
+</div>
+</div>
+</section>
+<!-- Relationships -->
+<section>
+<h4 class="text-label-caps font-label-caps text-on-surface-variant uppercase mb-3 flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">hub</span> Key Connections
+                        </h4>
+<div class="flex flex-col gap-2">
+<div class="flex items-center justify-between p-2 rounded-lg bg-surface-container hover:bg-surface-container-high transition-colors">
+<div class="flex items-center gap-3">
+<div class="w-6 h-6 rounded-full bg-surface-dim overflow-hidden border border-outline-variant/30">
+<img class="w-full h-full object-cover" data-alt="A small 3D portrait of Nova Tink, bright and energetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBIxKPi3l-c3dXkwlugvbqzon9QxZZnN68bCtRW5jUuow-FvfeVlEAoQxBWPLPa6UrsWfQ7Ed2OC5ggvKIQTZXvLgUluHrnysu7dc_f7wM9AyfI9BFrezcLops3jrjn3_h86ciGjFSjCy9A-KJT-iSPNqPT-dfrlnTabJoRj_FN5wPoFLR_1tThOgogwzo7bmpvx7tZzWLrDC8n1hful6nHjwJU3StcxQ52pTMcikmmi2fWkz8KpeJBxg">
+</div>
+<span class="text-label-sm font-label-sm text-on-surface">Nova Tink</span>
+</div>
+<span class="text-[10px] font-label-caps text-secondary uppercase px-2 py-1 rounded bg-secondary/10 border border-secondary/20">Ally</span>
+</div>
+<div class="flex items-center justify-between p-2 rounded-lg bg-surface-container hover:bg-surface-container-high transition-colors">
+<div class="flex items-center gap-3">
+<div class="w-6 h-6 rounded-full bg-surface-dim overflow-hidden border border-outline-variant/30">
+<img class="w-full h-full object-cover" data-alt="A small 3D portrait of Sylas Thorne, dark and menacing." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDIiXwyE9whubL-MWmeL5Pq-JLWGgMLSGlBPI0CogK7LBFeksmdBwKhE0sUgW-uDmyunaM4DgDgjKYugwOWLaHryl3GOanaPHCtss5r1J02zPzIXL4NUYLxHfu7vQGqeYLR-BhTUAv8PaPVwfmMQa-TiOunB7GYO_s2lKCcGzSeI0emwAcIkZ-E08kqEVK-_2HhdBRvw2QhaPl-Fn_vckZ_1TU0-_U-gLj77048CRNIkCbFXXh_HSeqKg">
+</div>
+<span class="text-label-sm font-label-sm text-on-surface">Sylas Thorne</span>
+</div>
+<span class="text-[10px] font-label-caps text-error uppercase px-2 py-1 rounded bg-error/10 border border-error/20">Rival</span>
+</div>
+</div>
+</section>
+</div>
+</aside>
+</main>
+<!-- Footer (Hidden as per JSON logic on structural layout if canvas is primary, but included structurally if needed. Kept minimal at bottom of canvas container) -->
+<footer class="fixed bottom-0 left-sidebar_width right-0 flex justify-between items-center px-md py-base h-8 bg-surface-container-lowest/50 backdrop-blur-sm text-label-sm border-t border-outline-variant/10 z-40 left-64">
+<div class="text-on-surface-variant font-label-sm">© 2024 WindAgent Studio — Story-driven content creation powered by AI agents</div>
+<div class="flex items-center gap-4">
+<a class="text-on-surface-variant hover:text-on-surface transition-colors font-label-sm" href="#">Privacy Policy</a>
+<a class="text-on-surface-variant hover:text-on-surface transition-colors font-label-sm" href="#">Terms of Service</a>
+<span class="text-primary font-label-caps text-[10px] px-2 py-0.5 rounded bg-primary/10 border border-primary/20">v0.1.0-dev</span>
+</div>
+</footer>
+</div>
+
+
+</body></html>

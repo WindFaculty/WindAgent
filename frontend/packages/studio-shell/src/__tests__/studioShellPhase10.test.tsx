@@ -26,7 +26,6 @@ describe('Phase UI10 — Production Isolation & System Regroup', () => {
 
     const itemIds = sysGroup?.items.map((i) => i.id);
     expect(itemIds).toContain('workspace');
-    expect(itemIds).toContain('models');
     expect(itemIds).toContain('router');
     expect(itemIds).toContain('browser');
     expect(itemIds).toContain('files');
