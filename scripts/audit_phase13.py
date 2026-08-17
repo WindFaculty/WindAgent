@@ -145,7 +145,7 @@ check("settings schema server-owned", '"/schema"' in settings_py and "SettingSch
 check("secrets never returned", "configured" in settings_py and "never returned" in settings_py)
 
 memory_py = (BACKEND_V3 / "memory.py").read_text(encoding="utf-8")
-check("memory DB-backed", "MemoryRecordORM" in memory_py)
+check("memory DB-backed", "SqlMemoryRecordRepository" in memory_py)
 check("memory search endpoint", '"/search"' in memory_py)
 
 logs_py = (BACKEND_V3 / "logs.py").read_text(encoding="utf-8")
