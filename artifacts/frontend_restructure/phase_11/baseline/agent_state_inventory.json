@@ -1,0 +1,38 @@
+{
+  "phase": "phase_11",
+  "concept_classifications": {
+    "AgentDefinition": "Canonical agent blueprint/template defining roles, prompt templates, model policies, tool policies",
+    "AgentInstance": "Active runtime execution unit tied to a conversation, session, or task",
+    "Conversation": "Durable multi-agent collaboration context containing plan versions, agent instances, tasks, and events",
+    "Task": "Actionable work node within a conversation with dependencies and canonical lifecycle state",
+    "TaskGraph": "DAG of tasks representing the plan execution structure",
+    "WorkflowDefinition": "Catalog blueprint of structured multi-step automated pipelines",
+    "WorkflowRun": "Execution instance of a workflow definition with distinct step runs and derived progress"
+  },
+  "canonical_task_states": [
+    "PENDING",
+    "READY",
+    "RUNNING",
+    "BLOCKED",
+    "SUCCEEDED",
+    "FAILED",
+    "CANCELLED"
+  ],
+  "canonical_agent_instance_states": [
+    "IDLE",
+    "RUNNING",
+    "WAITING",
+    "BLOCKED",
+    "FAILED",
+    "TERMINATED",
+    "OFFLINE"
+  ],
+  "canonical_workflow_run_states": [
+    "PENDING",
+    "RUNNING",
+    "PAUSED",
+    "COMPLETED",
+    "FAILED",
+    "CANCELLED"
+  ]
+}

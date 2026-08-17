@@ -1,0 +1,75 @@
+/**
+ * WindAgent Design Tokens — Colors (P5.2).
+ * Strictly preserves the Kinetic Obsidian / Dark palette authority.
+ */
+
+:root {
+  /* Core Backgrounds */
+  --bg-darker: #060e20;
+  --bg-dark: #0b1326;
+  --bg-panel: #131b2e;
+  --bg-panel-light: #171f33;
+  --bg-panel-active: #222a3d;
+
+  /* Borders */
+  --border-color: #424754;
+  --border-subtle: #2d3449;
+  --border-glow: rgba(77, 142, 255, 0.25);
+
+  /* Primary Brand & Accents */
+  --color-primary: #4d8eff;
+  --color-primary-hover: #3b82f6;
+  --color-primary-glow: rgba(173, 198, 255, 0.35);
+  --color-secondary: #4edea3;
+  --color-accent: #c0c1ff;
+
+  /* Status Colors */
+  --color-success: #4edea3;
+  --color-success-hover: #10b981;
+  --color-success-glow: rgba(78, 222, 163, 0.2);
+  --color-warning: #f59e0b;
+  --color-warning-hover: #d97706;
+  --color-danger: #ffb4ab;
+  --color-danger-hover: #ef4444;
+  --color-info: #38bdf8;
+
+  /* Typography / Text Colors */
+  --text-main: #dae2fd;
+  --text-muted: #c2c6d6;
+  --text-dim: #8c909f;
+  --text-inverse: #0b1326;
+
+  /* Kinetic Obsidian / Surface Hierarchy */
+  --stitch-bg: #0b1326;
+  --stitch-surface: #0b1326;
+  --stitch-surface-container: #171f33;
+  --stitch-surface-container-high: #222a3d;
+  --stitch-surface-container-highest: #2d3449;
+  --stitch-surface-container-low: #131b2e;
+  --stitch-surface-container-lowest: #060e20;
+  --stitch-on-surface: #dae2fd;
+  --stitch-on-surface-variant: #c2c6d6;
+  --stitch-primary: #adc6ff;
+  --stitch-primary-container: #4d8eff;
+  --stitch-secondary: #4edea3;
+
+  /* Studio Semantic Palette */
+  --studio-bg: var(--bg-darker);
+  --studio-surface-1: var(--bg-dark);
+  --studio-surface-2: var(--bg-panel);
+  --studio-surface-3: var(--bg-panel-light);
+  --studio-surface-4: var(--bg-panel-active);
+  --studio-border: var(--border-color);
+  --studio-border-active: var(--color-primary);
+  --studio-text-primary: var(--text-main);
+  --studio-text-muted: var(--text-muted);
+  --studio-text-dim: var(--text-dim);
+  --studio-accent: var(--color-accent);
+
+  /* Studio Status Mappings */
+  --status-running: var(--color-primary);
+  --status-waiting: var(--color-warning);
+  --status-success: var(--color-success);
+  --status-failed: var(--color-danger);
+  --status-locked: #6366f1;
+}

@@ -1,6 +1,10 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { App } from "./app/App";
+import { bootstrapFrontend, createWebAdapter } from "@windagent/app";
+
+const platform = createWebAdapter();
+bootstrapFrontend({ platform });
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

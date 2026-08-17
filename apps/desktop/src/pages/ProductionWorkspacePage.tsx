@@ -1,33 +1,38 @@
-import React, { useState, useMemo } from 'react';
-import { ProductionShell } from '@windagent/production-ui';
-import { TauriDesktopAdapter } from '@windagent/production-platform';
-import { FakeProductionApiClient, ProductionApiClient } from '@windagent/production-client';
-import { ProductionRoute, ProductionPage } from '@windagent/production-contracts';
+/**
+ * Desktop ProductionWorkspacePage — delegates fully to @windagent/app canonical ProductionPage.
+ * ZERO FakeProductionApiClient runtime usage. ZERO hardcoded proj-alpha. ZERO fake timers.
+ * All state backed by /api/v3/episodes/{episodeId}/production + WebSocket realtime stream.
+ */
+import React from 'react';
+import { ProductionPage as CanonicalProductionPage, type ProductionTab } from '@windagent/app/src/features/production';
+import { useSearchParams } from '@windagent/app/src/shared/hooks/useSearchParams';
 
 interface ProductionWorkspacePageProps {
-  initialPage?: ProductionPage;
+  initialPage?: 'script' | 'assets' | 'video';
+  episodeId?: string;
 }
 
-export const ProductionWorkspacePage: React.FC<ProductionWorkspacePageProps> = ({ initialPage = 'script' }) => {
-  const [route, setRoute] = useState<ProductionRoute>({
-    projectId: 'proj-alpha',
-    page: initialPage,
-  });
+const PAGE_TAB_MAP: Record<string, ProductionTab> = {
+  script: 'shots',
+  assets: 'audio',
+  video: 'render',
+};
 
-  const platformAdapter = useMemo(() => new TauriDesktopAdapter(), []);
-  
-  // Use FakeProductionApiClient as robust default for offline/mock desktop dev, fallback to HTTP if server active
-  const apiClient = useMemo<ProductionApiClient>(() => {
-    return new FakeProductionApiClient();
-  }, []);
+export const ProductionWorkspacePage: React.FC<ProductionWorkspacePageProps> = ({
+  initialPage = 'script',
+  episodeId: propEpisodeId,
+}) => {
+  const [searchParams] = useSearchParams();
+  const episodeId = propEpisodeId ?? searchParams.get('episodeId') ?? 'ep-cb-001';
+  const initialTab = PAGE_TAB_MAP[initialPage] ?? 'overview';
+  const apiBaseUrl = (window as any).__WINDAGENT_API_URL__ ?? '';
 
   return (
     <div style={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      <ProductionShell
-        platformAdapter={platformAdapter}
-        apiClient={apiClient}
-        route={route}
-        onNavigate={(newRoute) => setRoute(newRoute)}
+      <CanonicalProductionPage
+        episodeId={episodeId}
+        initialTab={initialTab}
+        apiBaseUrl={apiBaseUrl}
       />
     </div>
   );

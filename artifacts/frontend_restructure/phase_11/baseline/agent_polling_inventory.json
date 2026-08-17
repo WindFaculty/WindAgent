@@ -1,0 +1,17 @@
+{
+  "phase": "phase_11",
+  "polling_patterns_identified": [
+    {
+      "file": "apps/desktop/src/pages/Agents.tsx",
+      "interval_ms": 5000,
+      "description": "5-second polling of entire agent list",
+      "action": "Eliminate 5s polling interval; use reactive query and SSE/WS stream"
+    },
+    {
+      "file": "apps/desktop/src/pages/MultiAgentWorkspace.tsx",
+      "interval_ms": 2000,
+      "description": "2-second polling of browser state in BrowserPanel",
+      "action": "Eliminate 2s polling interval; use event/query caching"
+    }
+  ]
+}

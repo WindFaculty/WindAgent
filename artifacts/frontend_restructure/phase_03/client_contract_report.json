@@ -1,0 +1,59 @@
+{
+  "packages": [
+    {
+      "name": "@windagent/api-contracts",
+      "path": "frontend/packages/api-contracts",
+      "status": "CANONICAL_V3_PACKAGE",
+      "exports": [
+        "ApiProblem",
+        "PageInfo",
+        "ProjectResource",
+        "EpisodeResource",
+        "EventEnvelope",
+        "AgentDefinitionResource",
+        "AgentInstanceResource",
+        "AssetResource",
+        "CommandReceipt"
+      ]
+    },
+    {
+      "name": "@windagent/api-client",
+      "path": "frontend/packages/api-client",
+      "status": "CANONICAL_V3_PACKAGE",
+      "exports": [
+        "WindAgentClient",
+        "HttpTransport",
+        "ApiError",
+        "HttpError",
+        "NetworkError",
+        "TimeoutError"
+      ]
+    },
+    {
+      "name": "@windagent/realtime",
+      "path": "frontend/packages/realtime",
+      "status": "CANONICAL_V3_PACKAGE",
+      "exports": [
+        "RealtimeClient",
+        "createRealtimeClient"
+      ]
+    }
+  ],
+  "features": {
+    "typed_api_problem_mapping": true,
+    "correlation_id_propagation": true,
+    "idempotency_key_mutations": true,
+    "get_retry_on_network_error": true,
+    "idempotent_mutation_retry_on_network_error": true,
+    "realtime_sequence_dedup": true,
+    "realtime_exponential_backoff": true,
+    "facade_namespaces": [
+      "projects",
+      "episodes",
+      "studio",
+      "agents",
+      "assets",
+      "system"
+    ]
+  }
+}

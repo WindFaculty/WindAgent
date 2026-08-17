@@ -1,0 +1,39 @@
+{
+  "package": "@windagent/ui",
+  "version": "0.5.0",
+  "total_primitives": 25,
+  "primitives": [
+    "Button",
+    "IconButton",
+    "Badge",
+    "StatusBadge",
+    "Card",
+    "Panel",
+    "EmptyState",
+    "Tabs",
+    "ProgressBar",
+    "Skeleton",
+    "Alert",
+    "Dropdown",
+    "Tooltip",
+    "Icon",
+    "Input",
+    "Textarea",
+    "Select",
+    "Checkbox",
+    "Switch",
+    "Modal",
+    "Dialog",
+    "Spinner",
+    "Table",
+    "Toast",
+    "ErrorState"
+  ],
+  "layout_components": [
+    "SectionHeader",
+    "PageHeader",
+    "Stack",
+    "Grid",
+    "SplitPane"
+  ]
+}

@@ -2,11 +2,19 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
 
-// Vite config for the WindAgent desktop app with Phase UI11 Rollup code-splitting.
+// Vite config for the WindAgent desktop app with Phase UI11 Rollup code-splitting & Shared App.
 export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
+      '@windagent/ui': path.resolve(__dirname, '../../frontend/packages/ui/src/index.ts'),
+      '@windagent/app/src': path.resolve(__dirname, '../../frontend/app/src'),
+      '@windagent/app': path.resolve(__dirname, '../../frontend/app/src/index.ts'),
+      '@windagent/api-contracts': path.resolve(__dirname, '../../frontend/packages/api-contracts/src/index.ts'),
+      '@windagent/api-client': path.resolve(__dirname, '../../frontend/packages/api-client/src/index.ts'),
+      '@windagent/realtime': path.resolve(__dirname, '../../frontend/packages/realtime/src/index.ts'),
+      '@windagent/studio-shell': path.resolve(__dirname, '../../frontend/packages/studio-shell/src/index.ts'),
+      '@windagent/story-ui': path.resolve(__dirname, '../../frontend/packages/story-ui/src/index.ts'),
       '@windagent/production-contracts': path.resolve(__dirname, '../../frontend/packages/production-contracts/src/index.ts'),
       '@windagent/production-client': path.resolve(__dirname, '../../frontend/packages/production-client/src/index.ts'),
       '@windagent/production-platform': path.resolve(__dirname, '../../frontend/packages/production-platform/src/index.ts'),
@@ -51,11 +59,17 @@ export default defineConfig({
               return 'vendor-icons';
             }
           }
+          if (id.includes('frontend/packages/ui')) {
+            return 'shared-ui';
+          }
           if (id.includes('frontend/packages/story-ui')) {
             return 'story-ui';
           }
           if (id.includes('frontend/packages/studio-shell')) {
             return 'studio-shell';
+          }
+          if (id.includes('frontend/app')) {
+            return 'shared-app';
           }
         },
       },

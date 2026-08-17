@@ -1,0 +1,149 @@
+[
+  {
+    "tab_id": "dashboard",
+    "component": "Dashboard",
+    "rendered_via": "TabKeeper",
+    "has_hash_listener": true,
+    "source_file": "apps/desktop/src/App.tsx"
+  },
+  {
+    "tab_id": "agents",
+    "component": "Agents",
+    "rendered_via": "TabKeeper",
+    "has_hash_listener": true,
+    "source_file": "apps/desktop/src/App.tsx"
+  },
+  {
+    "tab_id": "models-library",
+    "component": "Models-library",
+    "rendered_via": "TabKeeper",
+    "has_hash_listener": false,
+    "source_file": "apps/desktop/src/App.tsx"
+  },
+  {
+    "tab_id": "models-endpoints",
+    "component": "Models-endpoints",
+    "rendered_via": "TabKeeper",
+    "has_hash_listener": false,
+    "source_file": "apps/desktop/src/App.tsx"
+  },
+  {
+    "tab_id": "memory",
+    "component": "Memory",
+    "rendered_via": "TabKeeper",
+    "has_hash_listener": false,
+    "source_file": "apps/desktop/src/App.tsx"
+  },
+  {
+    "tab_id": "workflows",
+    "component": "Workflows",
+    "rendered_via": "TabKeeper",
+    "has_hash_listener": false,
+    "source_file": "apps/desktop/src/App.tsx"
+  },
+  {
+    "tab_id": "browser",
+    "component": "Browser",
+    "rendered_via": "TabKeeper",
+    "has_hash_listener": false,
+    "source_file": "apps/desktop/src/App.tsx"
+  },
+  {
+    "tab_id": "files",
+    "component": "Files",
+    "rendered_via": "TabKeeper",
+    "has_hash_listener": false,
+    "source_file": "apps/desktop/src/App.tsx"
+  },
+  {
+    "tab_id": "workspace",
+    "component": "Workspace",
+    "rendered_via": "TabKeeper",
+    "has_hash_listener": true,
+    "source_file": "apps/desktop/src/App.tsx"
+  },
+  {
+    "tab_id": "router",
+    "component": "Router",
+    "rendered_via": "TabKeeper",
+    "has_hash_listener": false,
+    "source_file": "apps/desktop/src/App.tsx"
+  },
+  {
+    "tab_id": "studio",
+    "component": "Studio",
+    "rendered_via": "TabKeeper",
+    "has_hash_listener": true,
+    "source_file": "apps/desktop/src/App.tsx"
+  },
+  {
+    "tab_id": "projects",
+    "component": "Projects",
+    "rendered_via": "TabKeeper",
+    "has_hash_listener": false,
+    "source_file": "apps/desktop/src/App.tsx"
+  },
+  {
+    "tab_id": "episodes",
+    "component": "Episodes",
+    "rendered_via": "TabKeeper",
+    "has_hash_listener": false,
+    "source_file": "apps/desktop/src/App.tsx"
+  },
+  {
+    "tab_id": "storyboard",
+    "component": "Storyboard",
+    "rendered_via": "TabKeeper",
+    "has_hash_listener": false,
+    "source_file": "apps/desktop/src/App.tsx"
+  },
+  {
+    "tab_id": "characters",
+    "component": "Characters",
+    "rendered_via": "TabKeeper",
+    "has_hash_listener": false,
+    "source_file": "apps/desktop/src/App.tsx"
+  },
+  {
+    "tab_id": "reviews",
+    "component": "Reviews",
+    "rendered_via": "TabKeeper",
+    "has_hash_listener": false,
+    "source_file": "apps/desktop/src/App.tsx"
+  },
+  {
+    "tab_id": "asset-library",
+    "component": "Asset-library",
+    "rendered_via": "TabKeeper",
+    "has_hash_listener": false,
+    "source_file": "apps/desktop/src/App.tsx"
+  },
+  {
+    "tab_id": "production-script",
+    "component": "Production-script",
+    "rendered_via": "TabKeeper",
+    "has_hash_listener": false,
+    "source_file": "apps/desktop/src/App.tsx"
+  },
+  {
+    "tab_id": "production-assets",
+    "component": "Production-assets",
+    "rendered_via": "TabKeeper",
+    "has_hash_listener": true,
+    "source_file": "apps/desktop/src/App.tsx"
+  },
+  {
+    "tab_id": "production-video",
+    "component": "Production-video",
+    "rendered_via": "TabKeeper",
+    "has_hash_listener": true,
+    "source_file": "apps/desktop/src/App.tsx"
+  },
+  {
+    "tab_id": "settings",
+    "component": "Settings",
+    "rendered_via": "TabKeeper",
+    "has_hash_listener": true,
+    "source_file": "apps/desktop/src/App.tsx"
+  }
+]

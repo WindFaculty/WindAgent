@@ -1,0 +1,32 @@
+{
+  "name": "@windagent/app",
+  "version": "0.4.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.62.0",
+    "@windagent/api-contracts": "file:../packages/api-contracts",
+    "@windagent/api-client": "file:../packages/api-client",
+    "@windagent/realtime": "file:../packages/realtime",
+    "@windagent/studio-shell": "file:../packages/studio-shell",
+    "@windagent/story-ui": "file:../packages/story-ui",
+    "@windagent/ui": "file:../packages/ui",
+
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "zustand": "^5.0.14",
+    "lucide-react": "^0.344.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "typescript": "^5.6.3",
+    "vitest": "^4.1.9"
+  }
+}

@@ -1,0 +1,15 @@
+/**
+ * WindAgent Design Tokens — Layout (P5.2).
+ */
+
+:root {
+  --studio-sidebar-width: 240px;
+  --studio-sidebar-collapsed-width: 68px;
+  --studio-header-height: 52px;
+  --studio-workspace-padding: 24px;
+  --studio-panel-radius: 8px;
+  --studio-panel-gap: 16px;
+  --studio-content-max-width: 1280px;
+  --studio-inspector-width: 320px;
+  --studio-status-strip-height: 36px;
+}

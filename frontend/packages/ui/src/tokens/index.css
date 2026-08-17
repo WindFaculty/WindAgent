@@ -1,0 +1,12 @@
+/**
+ * WindAgent Design Tokens — Single Authority Entrypoint (P5.2).
+ */
+
+@import './colors.css';
+@import './typography.css';
+@import './spacing.css';
+@import './radius.css';
+@import './shadows.css';
+@import './z-index.css';
+@import './motion.css';
+@import './layout.css';

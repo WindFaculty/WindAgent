@@ -1,0 +1,21 @@
+{
+  "phase": "phase_12",
+  "audit_timestamp": "2026-08-16T19:30:00Z",
+  "mock_findings": [
+    {
+      "component": "apps/desktop/src/pages/Models.tsx",
+      "issue": "Deriving models directly by mapping provider response without canonical metadata (context window, modality, benchmarks)",
+      "target_action": "REPLACE_WITH_CANONICAL_MODELS_API"
+    },
+    {
+      "component": "apps/desktop/src/pages/Endpoints.tsx",
+      "issue": "Direct fetch to legacy /api/v2/providers and /api/v2/providers/health",
+      "target_action": "REPLACE_WITH_CANONICAL_PROVIDERS_API"
+    },
+    {
+      "component": "apps/desktop/src/pages/Router.tsx",
+      "issue": "Direct fetch to legacy /api/models/routing/* with hardcoded fallback health & activity simulations",
+      "target_action": "REPLACE_WITH_CANONICAL_ROUTING_API"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "phase": "3",
+  "phase_name": "Generated API Client & Realtime Package",
+  "verdict": "FEV3_P3_GENERATED_CLIENT_VERIFIED",
+  "criteria": {
+    "openapi_export_pass": true,
+    "openapi_validation_pass": true,
+    "generated_ts_contracts_pass": true,
+    "generated_api_client_pass": true,
+    "realtime_package_pass": true,
+    "new_direct_fetch_violations": 0,
+    "v2_regression_pass": true,
+    "v3_studio_regression_pass": true
+  },
+  "status": "PASS",
+  "timestamp": "2026-08-14T05:09:05.445995+00:00"
+}

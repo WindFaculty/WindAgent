@@ -1,0 +1,14 @@
+{
+  "timestamp": "2026-08-14T05:13:34.193526+00:00",
+  "canonical_surfaces": {
+    "episodes_catalog": "frontend/app/src/features/episodes/pages/EpisodesPage.tsx",
+    "episode_workspace": "frontend/app/src/features/episodes/pages/EpisodeWorkspacePage.tsx",
+    "backend_episodes_api": "/api/v3/episodes",
+    "backend_artifacts_api": "/api/v3/episodes/{episodeId}/artifacts",
+    "backend_runs_api": "/api/v3/episodes/{episodeId}/runs",
+    "backend_decisions_api": "/api/v3/episodes/{episodeId}/decision",
+    "backend_lock_api": "/api/v3/episodes/{episodeId}/lock",
+    "backend_websocket": "/ws/v3/episodes/{episodeId}"
+  },
+  "status": "PASS"
+}

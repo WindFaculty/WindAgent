@@ -1,0 +1,17 @@
+{
+  "phase": "phase_11",
+  "domain": "conversations",
+  "canonical_v3_endpoints": [
+    "GET /api/v3/conversations",
+    "POST /api/v3/conversations",
+    "GET /api/v3/conversations/{id}",
+    "GET /api/v3/conversations/{id}/agents",
+    "GET /api/v3/conversations/{id}/tasks",
+    "GET /api/v3/conversations/{id}/events",
+    "POST /api/v3/conversations/{id}/agents/{agent_id}/stop"
+  ],
+  "composition": {
+    "conversation": "ConversationResource",
+    "children": ["PlanVersion[]", "AgentInstance[]", "Task[]", "Event[]"]
+  }
+}

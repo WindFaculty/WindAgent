@@ -22,6 +22,8 @@ const SAMPLE_ENVELOPE: StudioArtifactEnvelope = {
   series_id: 'srs_1',
   episode_id: 'ep_1',
   content_hash: 'abc123hash',
+  revision_id: 'rev_fixture',
+  created_at: '2026-08-01T00:00:00Z',
   content: {
     candidates: [
       { candidate_id: 'c1', title: 'Idea One', premise: 'Premise 1', score: 0.95 },

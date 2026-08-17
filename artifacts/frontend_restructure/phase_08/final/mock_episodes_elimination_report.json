@@ -1,0 +1,11 @@
+{
+  "timestamp": "2026-08-14T05:13:34.194868+00:00",
+  "default_episodes_runtime": 0,
+  "local_only_episode_creation": 0,
+  "manual_hash_parsing": 0,
+  "polling_episode_state": 0,
+  "revision_authority_bound": true,
+  "optimistic_locking_check": "409 Conflict Verified",
+  "realtime_websocket_verified": true,
+  "status": "PASS"
+}

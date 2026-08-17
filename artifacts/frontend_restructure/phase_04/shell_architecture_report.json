@@ -1,0 +1,17 @@
+{
+  "shared_app_package": "@windagent/app",
+  "web_imports_desktop_app": 0,
+  "provider_hierarchy": [
+    "GlobalErrorBoundary",
+    "PlatformProvider",
+    "ApiProvider",
+    "QueryProvider",
+    "RealtimeProvider",
+    "RouterProvider"
+  ],
+  "state_isolation": {
+    "ui_state_engine": "Zustand (useSyncExternalStore)",
+    "query_cache_engine": "QueryClient",
+    "server_state_storage": "QueryClient/Backend"
+  }
+}

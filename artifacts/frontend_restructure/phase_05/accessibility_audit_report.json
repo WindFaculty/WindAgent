@@ -1,0 +1,16 @@
+{
+  "keyboard_navigable": true,
+  "focus_visible_styles": true,
+  "aria_roles_present": [
+    "button",
+    "tablist",
+    "tab",
+    "status",
+    "progressbar",
+    "alert",
+    "dialog",
+    "switch"
+  ],
+  "screen_reader_support": true,
+  "status": "PASS"
+}

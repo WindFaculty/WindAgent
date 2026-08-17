@@ -1,0 +1,38 @@
+{
+  "name": "@windagent/ui",
+  "version": "0.5.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./styles.css": "./src/styles/index.css",
+    "./tokens": "./src/tokens/index.css",
+    "./theme": "./src/theme/index.css"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --environment happy-dom",
+    "test:watch": "vitest"
+  },
+  "peerDependencies": {
+    "lucide-react": "^0.344.0 || ^0.400.0 || ^1.0.0",
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.4.2",
+    "@testing-library/react": "^14.2.1",
+    "@types/react": "^18.2.66",
+    "@types/react-dom": "^18.2.22",
+    "@vitejs/plugin-react": "^4.2.1",
+    "happy-dom": "^14.7.1",
+    "lucide-react": "^0.344.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "typescript": "^5.2.2",
+    "vite": "^5.1.6",
+    "vitest": "^1.4.0"
+  }
+}

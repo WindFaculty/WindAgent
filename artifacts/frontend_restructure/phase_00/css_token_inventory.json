@@ -1,0 +1,368 @@
+[
+  {
+    "name": "--bg-darker",
+    "value": "#060e20",
+    "category": "Global Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--bg-dark",
+    "value": "#0b1326",
+    "category": "Global Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--bg-panel",
+    "value": "#131b2e",
+    "category": "Global Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--bg-panel-light",
+    "value": "#171f33",
+    "category": "Global Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--bg-panel-active",
+    "value": "#222a3d",
+    "category": "Global Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--border-color",
+    "value": "#424754",
+    "category": "Status / Color Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--border-glow",
+    "value": "rgba(77, 142, 255, 0.25)",
+    "category": "Global Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--color-primary",
+    "value": "#4d8eff",
+    "category": "Status / Color Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--color-primary-glow",
+    "value": "rgba(173, 198, 255, 0.35)",
+    "category": "Status / Color Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--color-secondary",
+    "value": "#4edea3",
+    "category": "Status / Color Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--color-success",
+    "value": "#4edea3",
+    "category": "Status / Color Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--color-success-glow",
+    "value": "rgba(78, 222, 163, 0.2)",
+    "category": "Status / Color Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--color-warning",
+    "value": "#f59e0b",
+    "category": "Status / Color Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--color-danger",
+    "value": "#ffb4ab",
+    "category": "Status / Color Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--color-accent",
+    "value": "#c0c1ff",
+    "category": "Status / Color Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--text-main",
+    "value": "#dae2fd",
+    "category": "Typography Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--text-muted",
+    "value": "#c2c6d6",
+    "category": "Typography Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--text-dim",
+    "value": "#8c909f",
+    "category": "Typography Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--font-sans",
+    "value": "'Hanken Grotesk', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif",
+    "category": "Typography Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--font-mono",
+    "value": "'JetBrains Mono', ui-monospace, monospace",
+    "category": "Typography Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--shadow",
+    "value": "rgba(0, 0, 0, 0.6)",
+    "category": "Global Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--stitch-bg",
+    "value": "#0b1326",
+    "category": "Stitch Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--stitch-surface",
+    "value": "#0b1326",
+    "category": "Stitch Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--stitch-surface-container",
+    "value": "#171f33",
+    "category": "Stitch Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--stitch-surface-container-high",
+    "value": "#222a3d",
+    "category": "Stitch Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--stitch-surface-container-highest",
+    "value": "#2d3449",
+    "category": "Stitch Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--stitch-surface-container-low",
+    "value": "#131b2e",
+    "category": "Stitch Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--stitch-surface-container-lowest",
+    "value": "#060e20",
+    "category": "Stitch Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--stitch-on-surface",
+    "value": "#dae2fd",
+    "category": "Stitch Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--stitch-on-surface-variant",
+    "value": "#c2c6d6",
+    "category": "Stitch Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--stitch-primary",
+    "value": "#adc6ff",
+    "category": "Stitch Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--stitch-primary-container",
+    "value": "#4d8eff",
+    "category": "Stitch Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--stitch-secondary",
+    "value": "#4edea3",
+    "category": "Stitch Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--studio-bg",
+    "value": "var(--bg-darker)",
+    "category": "Studio Semantic Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--studio-surface-1",
+    "value": "var(--bg-dark)",
+    "category": "Studio Semantic Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--studio-surface-2",
+    "value": "var(--bg-panel)",
+    "category": "Studio Semantic Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--studio-surface-3",
+    "value": "var(--bg-panel-light)",
+    "category": "Studio Semantic Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--studio-border",
+    "value": "var(--border-color)",
+    "category": "Studio Semantic Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--studio-border-active",
+    "value": "var(--color-primary)",
+    "category": "Studio Semantic Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--studio-text-primary",
+    "value": "var(--text-main)",
+    "category": "Studio Semantic Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--studio-text-muted",
+    "value": "var(--text-muted)",
+    "category": "Studio Semantic Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--studio-text-dim",
+    "value": "var(--text-dim)",
+    "category": "Studio Semantic Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--studio-accent",
+    "value": "var(--color-accent)",
+    "category": "Studio Semantic Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--status-running",
+    "value": "var(--color-primary)",
+    "category": "Status / Color Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--status-waiting",
+    "value": "var(--color-warning)",
+    "category": "Status / Color Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--status-success",
+    "value": "var(--color-success)",
+    "category": "Status / Color Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--status-failed",
+    "value": "var(--color-danger)",
+    "category": "Status / Color Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--status-locked",
+    "value": "#6366f1",
+    "category": "Status / Color Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--studio-sidebar-width",
+    "value": "240px",
+    "category": "Studio Semantic Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--studio-header-height",
+    "value": "52px",
+    "category": "Studio Semantic Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--studio-workspace-padding",
+    "value": "24px",
+    "category": "Studio Semantic Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--studio-panel-radius",
+    "value": "8px",
+    "category": "Studio Semantic Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--studio-panel-gap",
+    "value": "16px",
+    "category": "Studio Semantic Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--studio-content-max-width",
+    "value": "1280px",
+    "category": "Studio Semantic Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--studio-inspector-width",
+    "value": "320px",
+    "category": "Studio Semantic Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--primary",
+    "value": "hover:not(:disabled) {\n  background: #2563eb",
+    "category": "Global Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--secondary",
+    "value": "hover:not(:disabled) {\n  background: var(--bg-panel-active)",
+    "category": "Global Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--outline",
+    "value": "hover:not(:disabled) {\n  background: rgba(255, 255, 255, 0.05)",
+    "category": "Global Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--ghost",
+    "value": "hover:not(:disabled) {\n  background: rgba(255, 255, 255, 0.06)",
+    "category": "Global Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--danger",
+    "value": "hover:not(:disabled) {\n  background: #dc2626",
+    "category": "Global Token",
+    "file": "apps/desktop/src/styles.css"
+  },
+  {
+    "name": "--interactive",
+    "value": "hover {\n  border-color: var(--studio-border-active)",
+    "category": "Global Token",
+    "file": "apps/desktop/src/styles.css"
+  }
+]

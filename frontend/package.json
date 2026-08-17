@@ -2,7 +2,8 @@
   "name": "@windagent/frontend-root",
   "private": true,
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "app"
   ],
   "scripts": {
     "build": "npm run build --workspaces",

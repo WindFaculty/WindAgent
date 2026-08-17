@@ -1,0 +1,14 @@
+{
+  "inventory_targets": [
+    "apps/desktop/src/pages/EpisodesPage.tsx"
+  ],
+  "violations_found": [
+    {
+      "file": "apps/desktop/src/pages/EpisodesPage.tsx",
+      "mock_array": "DEFAULT_EPISODES (3 mock items with fake thumbnails and progress: 65)",
+      "local_mutation": "setEpisodes((prev) => [fresh, ...prev]) using id: ep_${Date.now()}",
+      "arbitrary_progress": "progress: 25, 65, 100"
+    }
+  ],
+  "target": "DEFAULT_EPISODES = 0 | Local-only mutations = 0 | Arbitrary progress = 0 (Derived deterministically from pipeline checkpoint)"
+}

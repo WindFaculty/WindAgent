@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "baseUrl": ".",
+    "paths": {
+      "@windagent/api-contracts": ["../api-contracts/src/index.ts"],
+      "@windagent/api-contracts/*": ["../api-contracts/src/*"]
+    }
+  },
+  "include": ["src/**/*", "../api-contracts/src/**/*"]
+}

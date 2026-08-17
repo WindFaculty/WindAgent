@@ -12,6 +12,8 @@ const SAMPLE_OUTLINE: StudioArtifactEnvelope = {
   series_id: 'srs_1',
   episode_id: 'ep_1',
   content_hash: 'outline123hash',
+  revision_id: 'rev_fixture',
+  created_at: '2026-08-01T00:00:00Z',
   content: {
     title: 'Đường Đến Ngôi Làng',
     target_duration_seconds: 120,
@@ -42,6 +44,8 @@ const SAMPLE_SCREENPLAY: StudioArtifactEnvelope = {
   series_id: 'srs_1',
   episode_id: 'ep_1',
   content_hash: 'sp123hash',
+  revision_id: 'rev_fixture',
+  created_at: '2026-08-01T00:00:00Z',
   content: {
     title: 'Kịch Bản Tập 1',
     target_duration_seconds: 120,

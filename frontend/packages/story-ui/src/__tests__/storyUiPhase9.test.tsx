@@ -13,6 +13,8 @@ const SAMPLE_ARTIFACTS: StudioArtifactEnvelope[] = [
     series_id: 'srs_1',
     episode_id: 'ep_1',
     content_hash: 'idea123',
+  revision_id: 'rev_fixture',
+  created_at: '2026-08-01T00:00:00Z',
     content: { candidates: [{ candidate_id: 'c1', title: 'Thỏ Thả Diều' }] },
   },
   {
@@ -22,6 +24,8 @@ const SAMPLE_ARTIFACTS: StudioArtifactEnvelope[] = [
     series_id: 'srs_1',
     episode_id: 'ep_1',
     content_hash: 'sel123',
+  revision_id: 'rev_fixture',
+  created_at: '2026-08-01T00:00:00Z',
     content: { title: 'Thỏ Thả Diều' },
   },
   {
@@ -31,6 +35,8 @@ const SAMPLE_ARTIFACTS: StudioArtifactEnvelope[] = [
     series_id: 'srs_1',
     episode_id: 'ep_1',
     content_hash: 'sb123',
+  revision_id: 'rev_fixture',
+  created_at: '2026-08-01T00:00:00Z',
     content: { title: 'Thỏ Thả Diều' },
   },
 ];

@@ -47,7 +47,12 @@ from windagent_api.routers.v2_conversations import router as v2_conversations_ro
 from windagent_api.routers.v2_conflict_recovery import router as v2_conflict_recovery_router
 
 from windagent_api.routers.conversation_streams import router as conversation_streams_router
-from windagent_api.routers.v3.studio.aggregator import router as v3_studio_router
+from windagent_api.routers.v3 import v3_router
+from windagent_api.routers.v3.common import (
+    CorrelationIdMiddleware,
+    ApiProblemException,
+    api_problem_exception_handler,
+)
 from windagent_api.routers.v3.studio.errors import studio_error_handler
 from windagent_core.contracts.studio.errors import StudioError
 
@@ -56,11 +61,14 @@ from fastapi.middleware.cors import CORSMiddleware
 logger = logging.getLogger("windagent.api.main")
 
 app = FastAPI(
-    title="WindAgent V2 API",
-    description="Modular Monolith API V2 Production Application",
+    title="WindAgent API",
+    description="Modular Monolith API Production Application with Unified V3 Foundation",
     version=PRODUCT_VERSION,
     lifespan=lifespan,
 )
+
+# Correlation ID tracing middleware (P2.5)
+app.add_middleware(CorrelationIdMiddleware)
 
 # CORS configuration for Web and Desktop Frontend clients
 app.add_middleware(
@@ -72,6 +80,11 @@ app.add_middleware(
 )
 
 # Exception Handlers Mapping WindAgentError to Structured JSON
+@app.exception_handler(ApiProblemException)
+async def v3_problem_exception_handler(request: Request, exc: ApiProblemException) -> JSONResponse:
+    return await api_problem_exception_handler(request, exc)
+
+
 @app.exception_handler(NotFoundError)
 async def not_found_exception_handler(request: Request, exc: NotFoundError) -> JSONResponse:
     return JSONResponse(
@@ -180,8 +193,8 @@ app.include_router(v2_conflict_recovery_router)
 
 app.include_router(conversation_streams_router)
 
-# Additive V3 Studio surface (Plan C1). V2 routes stay registered and reachable.
-app.include_router(v3_studio_router)
+# Unified V3 Root Router (Plan C1 + Phase 2 Foundation)
+app.include_router(v3_router)
 
 
 # V2 deprecation metadata: additive headers only. V2 is not removed or
@@ -192,12 +205,14 @@ async def v2_deprecation_metadata(request: Request, call_next):
     if request.url.path.startswith("/api/v2"):
         response.headers["Deprecation"] = "true"
         response.headers["X-WindAgent-Deprecation"] = "v2"
-        response.headers["X-WindAgent-V3-Studio"] = "/api/v3/studio"
+        # Only claim specific successor when domain replacement exists (P2.10)
+        if request.url.path.startswith("/api/v2/screenplay_workspace") or request.url.path.startswith("/api/v2/production_workspace"):
+            response.headers["X-WindAgent-Successor"] = "/api/v3/studio"
     return response
 
 
 # API V1 Tombstone Handler - Returns 410 Gone for all /api/v1/* requests
-@app.api_route("/api/v1/{path:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"])
+@app.api_route("/api/v1/{path:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"], include_in_schema=False)
 async def api_v1_tombstone(request: Request, path: str):
     """
     API V1 has been permanently removed as per Architecture V2 cutover.

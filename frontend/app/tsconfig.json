@@ -1,0 +1,36 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "@windagent/ui": ["../packages/ui/src/index.ts"],
+      "@windagent/ui/*": ["../packages/ui/src/*"],
+      "@windagent/api-contracts": ["../packages/api-contracts/src/index.ts"],
+      "@windagent/api-contracts/*": ["../packages/api-contracts/src/*"],
+      "@windagent/api-client": ["../packages/api-client/src/index.ts"],
+      "@windagent/api-client/*": ["../packages/api-client/src/*"],
+      "@windagent/realtime": ["../packages/realtime/src/index.ts"],
+      "@windagent/realtime/*": ["../packages/realtime/src/*"],
+      "@windagent/studio-shell": ["../packages/studio-shell/src/index.ts"],
+      "@windagent/studio-shell/*": ["../packages/studio-shell/src/*"],
+      "@windagent/story-ui": ["../packages/story-ui/src/index.ts"],
+      "@windagent/story-ui/*": ["../packages/story-ui/src/*"]
+    }
+  },
+  "include": [
+    "src/**/*",
+    "../packages/ui/src/**/*.ts",
+    "../packages/ui/src/**/*.tsx",
+    "../packages/api-contracts/src/**/*.ts",
+    "../packages/api-client/src/**/*.ts",
+    "../packages/realtime/src/**/*.ts",
+    "../packages/studio-shell/src/**/*.ts",
+    "../packages/studio-shell/src/**/*.tsx"
+  ],
+  "exclude": [
+    "../packages/**/__tests__/**/*",
+    "../packages/**/*.test.*"
+  ]
+}

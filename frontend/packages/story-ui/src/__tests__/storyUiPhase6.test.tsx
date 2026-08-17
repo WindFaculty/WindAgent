@@ -12,6 +12,8 @@ const SAMPLE_IDEA_ENVELOPE: StudioArtifactEnvelope = {
   series_id: 'srs_1',
   episode_id: 'ep_1',
   content_hash: 'idea123hash',
+  revision_id: 'rev_fixture',
+  created_at: '2026-08-01T00:00:00Z',
   content: {
     recommended_candidate_id: 'c1',
     scoring_rubric_version: 'v1.0.0',
@@ -36,6 +38,8 @@ const SAMPLE_STORY_BIBLE: StudioArtifactEnvelope = {
   series_id: 'srs_1',
   episode_id: 'ep_1',
   content_hash: 'sb123hash',
+  revision_id: 'rev_fixture',
+  created_at: '2026-08-01T00:00:00Z',
   content: {
     title: 'Hành Trình Rừng Xanh',
     premise: 'Cuộc phiêu lưu tìm lại nguồn nước.',
@@ -54,6 +58,8 @@ const SAMPLE_CHARACTER_CANON: StudioArtifactEnvelope = {
   series_id: 'srs_1',
   episode_id: 'ep_1',
   content_hash: 'cc123hash',
+  revision_id: 'rev_fixture',
+  created_at: '2026-08-01T00:00:00Z',
   content: {
     characters: [
       {
@@ -78,6 +84,8 @@ const SAMPLE_BEATS: StudioArtifactEnvelope = {
   series_id: 'srs_1',
   episode_id: 'ep_1',
   content_hash: 'beat123hash',
+  revision_id: 'rev_fixture',
+  created_at: '2026-08-01T00:00:00Z',
   content: {
     beats: [
       {

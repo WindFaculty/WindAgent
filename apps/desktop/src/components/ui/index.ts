@@ -1,15 +1,7 @@
-export * from './Icon';
-export * from './Button';
-export * from './IconButton';
-export * from './Badge';
-export * from './StatusBadge';
-export * from './Panel';
-export * from './Card';
-export * from './EmptyState';
-export * from './SectionHeader';
-export * from './Tabs';
-export * from './ProgressBar';
-export * from './Skeleton';
-export * from './Alert';
-export * from './Dropdown';
-export * from './Tooltip';
+/**
+ * UI Component Library — Re-exported from @windagent/ui (Phase 5).
+ * Maintains full backward compatibility for all existing desktop pages.
+ */
+
+export * from '@windagent/ui';
+export { Icon } from './Icon';

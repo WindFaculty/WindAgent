@@ -34,6 +34,11 @@ export interface ProductionRoute {
   resolutionAction?: 'search_library' | 'search_internet' | 'generate' | 'upload';
 }
 
+export interface SelectedEntity {
+  entityId: string;
+  entityType: 'CHARACTER' | 'LOCATION' | 'PROP' | 'SCENE' | 'SHOT';
+}
+
 export interface ProductionAssetBindingDTO {
   binding_id: string;
   project_id: string;

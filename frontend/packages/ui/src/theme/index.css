@@ -1,0 +1,6 @@
+/**
+ * WindAgent Theme Aggregator (P5.3).
+ */
+
+@import '../tokens/index.css';
+@import './dark.css';

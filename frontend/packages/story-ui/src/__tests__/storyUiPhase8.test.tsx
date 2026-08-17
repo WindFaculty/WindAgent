@@ -12,6 +12,8 @@ const SAMPLE_REVIEW: StudioArtifactEnvelope = {
   series_id: 'srs_1',
   episode_id: 'ep_1',
   content_hash: 'review123hash',
+  revision_id: 'rev_fixture',
+  created_at: '2026-08-01T00:00:00Z',
   content: {
     verdict: 'REVISION_REQUIRED',
     quality_summary: 'Kịch bản tốt nhưng cần chỉnh nhịp điệu ở cảnh 2.',
@@ -50,6 +52,7 @@ const SAMPLE_REVISION_PROPOSAL: StudioArtifactEnvelope = {
   episode_id: 'ep_1',
   content_hash: 'prop123hash',
   revision_id: 'rev_2',
+  created_at: '2026-08-01T00:00:00Z',
   content: {
     proposal_id: 'prop_1',
     draft_id: 'draft_1',
@@ -67,6 +70,8 @@ const SAMPLE_LOCK_RECEIPT: StudioArtifactEnvelope = {
   series_id: 'srs_1',
   episode_id: 'ep_1',
   content_hash: 'receipt123hash',
+  revision_id: 'rev_fixture',
+  created_at: '2026-08-01T00:00:00Z',
   content: {
     receipt_id: 'rec_1001',
     draft_id: 'draft_2',
@@ -84,6 +89,8 @@ const SAMPLE_LOCK_PACKAGE: StudioArtifactEnvelope = {
   series_id: 'srs_1',
   episode_id: 'ep_1',
   content_hash: 'pkg123hash',
+  revision_id: 'rev_fixture',
+  created_at: '2026-08-01T00:00:00Z',
   content: {
     package_id: 'pkg_5001',
     assembled_at: '2026-08-13T10:05:00Z',

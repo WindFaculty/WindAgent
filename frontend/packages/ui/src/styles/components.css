@@ -1,0 +1,540 @@
+/**
+ * WindAgent UI Component Styles (P5.6).
+ * Modularized component classes strictly referencing design tokens.
+ */
+
+/* ==========================================================================
+   Button & IconButton
+   ========================================================================== */
+.ui-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--font-sans);
+  font-weight: var(--font-semibold);
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: var(--transition-all);
+  outline: none;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.ui-button:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.ui-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.ui-button--sm {
+  padding: 4px 10px;
+  font-size: var(--text-xs);
+  height: 28px;
+}
+
+.ui-button--md {
+  padding: 6px 14px;
+  font-size: var(--text-sm);
+  height: 34px;
+}
+
+.ui-button--lg {
+  padding: 8px 18px;
+  font-size: var(--text-base);
+  height: 40px;
+}
+
+.ui-button--primary {
+  background: var(--color-primary);
+  color: #ffffff;
+  border-color: var(--color-primary);
+}
+.ui-button--primary:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+  box-shadow: var(--shadow-glow-primary);
+}
+
+.ui-button--secondary {
+  background: var(--studio-surface-3);
+  color: var(--studio-text-primary);
+  border-color: var(--studio-border);
+}
+.ui-button--secondary:hover:not(:disabled) {
+  background: var(--studio-surface-4);
+  border-color: #2a3855;
+}
+
+.ui-button--outline {
+  background: transparent;
+  color: var(--studio-text-primary);
+  border-color: var(--studio-border);
+}
+.ui-button--outline:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--studio-text-muted);
+}
+
+.ui-button--ghost {
+  background: transparent;
+  color: var(--studio-text-muted);
+  border-color: transparent;
+}
+.ui-button--ghost:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--studio-text-primary);
+}
+
+.ui-button--danger {
+  background: var(--color-danger);
+  color: #ffffff;
+  border-color: var(--color-danger);
+}
+.ui-button--danger:hover:not(:disabled) {
+  background: var(--color-danger-hover);
+}
+
+.ui-icon-button {
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  aspect-ratio: 1;
+}
+
+/* ==========================================================================
+   Form Controls (Input, Textarea, Select, Checkbox, Switch)
+   ========================================================================== */
+.ui-input,
+.ui-textarea,
+.ui-select {
+  background: var(--studio-surface-3);
+  color: var(--studio-text-primary);
+  border: 1px solid var(--studio-border);
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  outline: none;
+  transition: var(--transition-colors);
+  width: 100%;
+}
+
+.ui-input:focus,
+.ui-textarea:focus,
+.ui-select:focus {
+  border-color: var(--studio-border-active);
+  box-shadow: 0 0 0 1px var(--studio-border-active);
+}
+
+.ui-input:disabled,
+.ui-textarea:disabled,
+.ui-select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ui-checkbox-container {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  font-size: var(--text-sm);
+  color: var(--studio-text-primary);
+}
+
+.ui-checkbox {
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--studio-border);
+  background: var(--studio-surface-3);
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
+.ui-switch-track {
+  width: 36px;
+  height: 20px;
+  background: var(--studio-surface-3);
+  border: 1px solid var(--studio-border);
+  border-radius: var(--radius-full);
+  position: relative;
+  cursor: pointer;
+  transition: var(--transition-all);
+}
+
+.ui-switch-track[data-checked='true'] {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.ui-switch-thumb {
+  width: 14px;
+  height: 14px;
+  background: #ffffff;
+  border-radius: 50%;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  transition: var(--transition-transform);
+}
+
+.ui-switch-track[data-checked='true'] .ui-switch-thumb {
+  transform: translateX(16px);
+}
+
+/* ==========================================================================
+   Badge & StatusBadge
+   ========================================================================== */
+.ui-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  line-height: var(--leading-tight);
+  width: fit-content;
+}
+.ui-badge--default { background: var(--studio-surface-3); color: var(--studio-text-muted); border: 1px solid var(--studio-border); }
+.ui-badge--primary { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+.ui-badge--success { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+.ui-badge--warning { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+.ui-badge--danger  { background: rgba(239, 68, 68, 0.15);  color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+.ui-badge--accent  { background: rgba(139, 92, 246, 0.15); color: #a78bfa; border: 1px solid rgba(139, 92, 246, 0.3); }
+
+.ui-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: currentColor;
+}
+.ui-status-dot--pulse {
+  animation: ui-pulse 2s infinite;
+}
+@keyframes ui-pulse {
+  0% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(1.15); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* ==========================================================================
+   Panel & Card
+   ========================================================================== */
+.ui-panel {
+  background: var(--studio-surface-2);
+  border: 1px solid var(--studio-border);
+  border-radius: var(--studio-panel-radius);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.ui-panel__header {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--studio-border);
+  background: var(--studio-surface-1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.ui-panel__content {
+  padding: var(--studio-panel-gap);
+  flex: 1;
+}
+.ui-panel__footer {
+  padding: 10px 16px;
+  border-top: 1px solid var(--studio-border);
+  background: var(--studio-surface-1);
+}
+
+.ui-card {
+  background: var(--studio-surface-2);
+  border: 1px solid var(--studio-border);
+  border-radius: var(--studio-panel-radius);
+  padding: 16px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+.ui-card--interactive {
+  cursor: pointer;
+}
+.ui-card--interactive:hover {
+  border-color: var(--studio-border-active);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+/* ==========================================================================
+   Section & Page Header
+   ========================================================================== */
+.ui-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  gap: 12px;
+}
+.ui-section-header__title {
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--studio-text-primary);
+  letter-spacing: -0.01em;
+}
+.ui-section-header__subtitle {
+  font-size: var(--text-sm);
+  color: var(--studio-text-muted);
+  margin-top: 2px;
+}
+
+/* ==========================================================================
+   Tabs
+   ========================================================================== */
+.ui-tabs-list {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--studio-border);
+  margin-bottom: 16px;
+}
+.ui-tab-trigger {
+  padding: 8px 14px;
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--studio-text-muted);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: var(--transition-all);
+}
+.ui-tab-trigger:hover {
+  color: var(--studio-text-primary);
+}
+.ui-tab-trigger[data-active="true"] {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+}
+
+/* ==========================================================================
+   Progress, Skeleton & Spinner
+   ========================================================================== */
+.ui-progress-track {
+  width: 100%;
+  height: 6px;
+  background: var(--studio-surface-3);
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+}
+.ui-progress-fill {
+  height: 100%;
+  background: var(--color-primary);
+  transition: width 0.3s ease;
+  border-radius: 3px;
+}
+.ui-progress-fill--indeterminate {
+  width: 40%;
+  position: absolute;
+  animation: ui-indeterminate 1.5s infinite ease-in-out;
+}
+@keyframes ui-indeterminate {
+  0% { left: -40%; }
+  100% { left: 100%; }
+}
+
+.ui-skeleton {
+  background: linear-gradient(90deg, var(--studio-surface-2) 25%, var(--studio-surface-3) 50%, var(--studio-surface-2) 75%);
+  background-size: 200% 100%;
+  animation: ui-skeleton-pulse 1.5s infinite;
+  border-radius: var(--radius-sm);
+}
+@keyframes ui-skeleton-pulse {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.ui-spinner {
+  display: inline-block;
+  border: 2px solid var(--studio-surface-3);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: ui-spin 0.8s linear infinite;
+}
+@keyframes ui-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ==========================================================================
+   Feedback (Alert, EmptyState, ErrorState)
+   ========================================================================== */
+.ui-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  margin-bottom: 12px;
+}
+.ui-alert--info { background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.3); color: #93c5fd; }
+.ui-alert--success { background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); color: #6ee7b7; }
+.ui-alert--warning { background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.3); color: #fde047; }
+.ui-alert--danger { background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.3); color: #fca5a5; }
+
+.ui-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+  text-align: center;
+  color: var(--studio-text-muted);
+  border: 1px dashed var(--studio-border);
+  border-radius: var(--studio-panel-radius);
+  background: rgba(0, 0, 0, 0.15);
+}
+.ui-empty-state__icon {
+  font-size: 2rem;
+  margin-bottom: 12px;
+  color: var(--studio-text-dim);
+}
+.ui-empty-state__title {
+  font-size: var(--text-md);
+  font-weight: var(--font-semibold);
+  color: var(--studio-text-primary);
+  margin-bottom: 4px;
+}
+.ui-empty-state__description {
+  font-size: var(--text-sm);
+  max-width: 360px;
+  margin-bottom: 16px;
+}
+
+/* ==========================================================================
+   Dropdown & Tooltip
+   ========================================================================== */
+.ui-dropdown {
+  background: var(--studio-surface-3);
+  color: var(--studio-text-primary);
+  border: 1px solid var(--studio-border);
+  border-radius: var(--radius-md);
+  padding: 6px 12px;
+  font-size: var(--text-sm);
+  outline: none;
+  cursor: pointer;
+}
+.ui-dropdown:focus {
+  border-color: var(--studio-border-active);
+}
+
+.ui-tooltip-wrapper {
+  position: relative;
+  display: inline-block;
+}
+.ui-tooltip-box {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 6px;
+  padding: 4px 8px;
+  background: #000000;
+  color: #ffffff;
+  font-size: var(--text-xs);
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: var(--z-tooltip);
+  box-shadow: var(--shadow-md);
+}
+
+/* ==========================================================================
+   Modal & Dialog Overlay
+   ========================================================================== */
+.ui-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.ui-modal-container {
+  background: var(--studio-surface-2);
+  border: 1px solid var(--studio-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  width: 100%;
+  max-width: 560px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ==========================================================================
+   Table Primitive
+   ========================================================================== */
+.ui-table-container {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--studio-border);
+  border-radius: var(--radius-md);
+}
+.ui-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: var(--text-sm);
+}
+.ui-table th {
+  padding: 10px 14px;
+  background: var(--studio-surface-1);
+  color: var(--studio-text-muted);
+  font-weight: var(--font-semibold);
+  border-bottom: 1px solid var(--studio-border);
+}
+.ui-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--studio-border);
+  color: var(--studio-text-primary);
+}
+.ui-table tr:last-child td {
+  border-bottom: none;
+}
+.ui-table tr:hover td {
+  background: var(--studio-surface-3);
+}
+
+/* ==========================================================================
+   Layout Primitives (Stack, Grid, SplitPane)
+   ========================================================================== */
+.ui-stack {
+  display: flex;
+}
+.ui-stack--vertical { flex-direction: column; }
+.ui-stack--horizontal { flex-direction: row; align-items: center; }
+
+.ui-grid {
+  display: grid;
+}
+
+.ui-split-pane {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}

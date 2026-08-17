@@ -1,0 +1,28 @@
+{
+  "phase": "phase_11",
+  "domain": "tasks",
+  "legacy_endpoints": [
+    "/api/v2/tasks",
+    "/api/v2/tasks/{id}",
+    "/api/v2/tasks/{id}/cancel",
+    "/api/v2/conversations/{id}/task-graphs"
+  ],
+  "canonical_v3_endpoints": [
+    "GET /api/v3/tasks",
+    "POST /api/v3/tasks",
+    "GET /api/v3/tasks/{id}",
+    "PATCH /api/v3/tasks/{id}",
+    "POST /api/v3/tasks/{id}/cancel",
+    "POST /api/v3/tasks/{id}/retry",
+    "GET /api/v3/conversations/{id}/tasks"
+  ],
+  "canonical_states": [
+    "PENDING",
+    "READY",
+    "RUNNING",
+    "BLOCKED",
+    "SUCCEEDED",
+    "FAILED",
+    "CANCELLED"
+  ]
+}

@@ -18,6 +18,26 @@ export const DESKTOP_NAVIGATION_GROUPS: NavigationGroupDescriptor[] = [
   },
 
   {
+    id: 'production',
+    title: 'PRODUCTION',
+    badge: 'ROADMAP 2',
+    defaultCollapsed: true,
+    items: [
+      {
+        id: 'production',
+        label: 'Production',
+        iconName: 'Clapperboard',
+        badge: 'PREVIEW',
+        children: [
+          { id: 'production-script', label: 'Script', iconName: 'FileText' },
+          { id: 'production-assets', label: 'Assets', iconName: 'Package' },
+          { id: 'production-video', label: 'Video', iconName: 'Film' },
+        ],
+      },
+    ],
+  },
+
+  {
     id: 'system',
     title: 'SYSTEM',
     items: [

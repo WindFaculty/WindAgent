@@ -1,0 +1,8 @@
+/**
+ * WindAgent Design System — Consolidated Stylesheet (P5.6).
+ * Combines Tokens + Theme + Component Styles.
+ */
+
+@import '../tokens/index.css';
+@import '../theme/dark.css';
+@import './components.css';

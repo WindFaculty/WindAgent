@@ -1,0 +1,12 @@
+{
+  "timestamp": "2026-08-14T04:47:53.708743+00:00",
+  "canonical_surfaces": {
+    "dashboard_page": "frontend/app/src/features/dashboard/pages/DashboardPage.tsx",
+    "monitoring_page": "frontend/app/src/features/monitoring/pages/MonitoringPage.tsx",
+    "backend_system_api": "/api/v3/system/metrics",
+    "backend_dashboard_api": "/api/v3/dashboard/summary",
+    "backend_monitoring_api": "/api/v3/monitoring/*",
+    "realtime_stream": "/ws/v3/system/metrics"
+  },
+  "status": "PASS"
+}

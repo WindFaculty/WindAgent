@@ -8,6 +8,14 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "./src"),
       '@desktop': path.resolve(__dirname, '../desktop/src'),
+      '@windagent/ui': path.resolve(__dirname, '../../frontend/packages/ui/src/index.ts'),
+      '@windagent/app/src': path.resolve(__dirname, '../../frontend/app/src'),
+      '@windagent/app': path.resolve(__dirname, '../../frontend/app/src/index.ts'),
+      '@windagent/api-contracts': path.resolve(__dirname, '../../frontend/packages/api-contracts/src/index.ts'),
+      '@windagent/api-client': path.resolve(__dirname, '../../frontend/packages/api-client/src/index.ts'),
+      '@windagent/realtime': path.resolve(__dirname, '../../frontend/packages/realtime/src/index.ts'),
+      '@windagent/studio-shell': path.resolve(__dirname, '../../frontend/packages/studio-shell/src/index.ts'),
+      '@windagent/story-ui': path.resolve(__dirname, '../../frontend/packages/story-ui/src/index.ts'),
       '@windagent/production-contracts': path.resolve(__dirname, '../../frontend/packages/production-contracts/src/index.ts'),
       '@windagent/production-client': path.resolve(__dirname, '../../frontend/packages/production-client/src/index.ts'),
       '@windagent/production-platform': path.resolve(__dirname, '../../frontend/packages/production-platform/src/index.ts'),
@@ -46,9 +54,6 @@ export default defineConfig({
     globals: true,
     setupFiles: ["./src/test/setup.ts"],
     include: ["src/**/*.{test,spec}.{ts,tsx}"],
-    // ponytail: web app is now a pure re-export of @desktop/App — all UI
-    // tests live in apps/desktop (shared source). Legacy web clients/state
-    // removed with their tests, so the suite is legitimately empty.
     passWithNoTests: true,
     coverage: {
       provider: "v8",

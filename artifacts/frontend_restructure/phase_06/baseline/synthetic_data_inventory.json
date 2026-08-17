@@ -1,0 +1,45 @@
+{
+  "total_violations": 8,
+  "violations": [
+    {
+      "type": "Math.random()",
+      "location": "apps/desktop/src/pages/Dashboard.tsx:166-169",
+      "description": "handleManualRefresh uses Math.random() to simulate CPU, GPU, RAM, VRAM changes"
+    },
+    {
+      "type": "setTimeout",
+      "location": "apps/desktop/src/pages/Dashboard.tsx:171",
+      "description": "Simulated refresh spinner timeout"
+    },
+    {
+      "type": "hardcoded_model_usage",
+      "location": "apps/desktop/src/pages/Dashboard.tsx:58-91",
+      "description": "modelSegments array hardcodes Llama 3.3, Claude 3.5, DeepSeek R1, Gemma 2 percentages, speed, latency"
+    },
+    {
+      "type": "hardcoded_chart_data",
+      "location": "apps/desktop/src/pages/Dashboard.tsx:94-130",
+      "description": "chartDatasets hardcodes 24h, 7d, 30d, 90d points, ideas, outlines, scripts, renders"
+    },
+    {
+      "type": "hardcoded_kpi",
+      "location": "apps/desktop/src/pages/Dashboard.tsx:253-255",
+      "description": "Hardcoded 12 projects / 48 episodes / +3 new episodes"
+    },
+    {
+      "type": "hardcoded_kpi",
+      "location": "apps/desktop/src/pages/Dashboard.tsx:290-292",
+      "description": "Hardcoded 4/6 agents active, 66.7% uptime"
+    },
+    {
+      "type": "hardcoded_metrics_fallback",
+      "location": "frontend/app/src/state/uiStore.ts:79-93",
+      "description": "Initial UI store state contains static placeholder metric values"
+    },
+    {
+      "type": "tauri_polling",
+      "location": "frontend/app/src/app/App.tsx:73-90",
+      "description": "App root polls platform.getSystemMetrics every 2000ms"
+    }
+  ]
+}

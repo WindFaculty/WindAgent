@@ -1,0 +1,142 @@
+[
+  {
+    "file": "apps/desktop/src/App.tsx",
+    "framework": "Manual Hash Routing",
+    "state_type": "URL_STATE",
+    "description": "Direct window.location.hash read/write",
+    "target_architecture": "TanStack Router (Phase 4)"
+  },
+  {
+    "file": "apps/desktop/src/api/client.ts",
+    "framework": "WebSocket / SSE",
+    "state_type": "REALTIME_STATE",
+    "description": "Realtime socket or event stream connection",
+    "target_architecture": "@windagent/realtime (Phase 3)"
+  },
+  {
+    "file": "apps/desktop/src/api/types.ts",
+    "framework": "WebSocket / SSE",
+    "state_type": "REALTIME_STATE",
+    "description": "Realtime socket or event stream connection",
+    "target_architecture": "@windagent/realtime (Phase 3)"
+  },
+  {
+    "file": "apps/desktop/src/components/studio/StudioRightPanel.tsx",
+    "framework": "Manual Hash Routing",
+    "state_type": "URL_STATE",
+    "description": "Direct window.location.hash read/write",
+    "target_architecture": "TanStack Router (Phase 4)"
+  },
+  {
+    "file": "apps/desktop/src/pages/Browser.tsx",
+    "framework": "WebSocket / SSE",
+    "state_type": "REALTIME_STATE",
+    "description": "Realtime socket or event stream connection",
+    "target_architecture": "@windagent/realtime (Phase 3)"
+  },
+  {
+    "file": "apps/desktop/src/pages/ProjectsPage.tsx",
+    "framework": "Manual Hash Routing",
+    "state_type": "URL_STATE",
+    "description": "Direct window.location.hash read/write",
+    "target_architecture": "TanStack Router (Phase 4)"
+  },
+  {
+    "file": "apps/desktop/src/pages/StudioPage.tsx",
+    "framework": "Manual Hash Routing",
+    "state_type": "URL_STATE",
+    "description": "Direct window.location.hash read/write",
+    "target_architecture": "TanStack Router (Phase 4)"
+  },
+  {
+    "file": "apps/desktop/src/services/conversationSocketManager.test.ts",
+    "framework": "WebSocket / SSE",
+    "state_type": "REALTIME_STATE",
+    "description": "Realtime socket or event stream connection",
+    "target_architecture": "@windagent/realtime (Phase 3)"
+  },
+  {
+    "file": "apps/desktop/src/services/conversationSocketManager.ts",
+    "framework": "WebSocket / SSE",
+    "state_type": "REALTIME_STATE",
+    "description": "Realtime socket or event stream connection",
+    "target_architecture": "@windagent/realtime (Phase 3)"
+  },
+  {
+    "file": "apps/desktop/src/state/multiAgentStore.tsx",
+    "framework": "Zustand",
+    "state_type": "LOCAL_UI_STATE",
+    "description": "Zustand store definition",
+    "target_architecture": "Keep for client UI state"
+  },
+  {
+    "file": "apps/desktop/src/state/multiAgentStore.tsx",
+    "framework": "WebSocket / SSE",
+    "state_type": "REALTIME_STATE",
+    "description": "Realtime socket or event stream connection",
+    "target_architecture": "@windagent/realtime (Phase 3)"
+  },
+  {
+    "file": "apps/desktop/src/state/theme.tsx",
+    "framework": "React Context",
+    "state_type": "LOCAL_UI_STATE",
+    "description": "React Context Provider definition",
+    "target_architecture": "Shared React Providers"
+  },
+  {
+    "file": "apps/desktop/src/test/projectsPage.test.tsx",
+    "framework": "Manual Hash Routing",
+    "state_type": "URL_STATE",
+    "description": "Direct window.location.hash read/write",
+    "target_architecture": "TanStack Router (Phase 4)"
+  },
+  {
+    "file": "apps/desktop/src/test/studioShellTests.test.tsx",
+    "framework": "Manual Hash Routing",
+    "state_type": "URL_STATE",
+    "description": "Direct window.location.hash read/write",
+    "target_architecture": "TanStack Router (Phase 4)"
+  },
+  {
+    "file": "apps/desktop/src/test/studioStoryTests.test.tsx",
+    "framework": "Manual Hash Routing",
+    "state_type": "URL_STATE",
+    "description": "Direct window.location.hash read/write",
+    "target_architecture": "TanStack Router (Phase 4)"
+  },
+  {
+    "file": "frontend/packages/production-state/src/store.ts",
+    "framework": "Redux Toolkit",
+    "state_type": "LOCAL_UI_STATE",
+    "description": "Redux slice or selector usage",
+    "target_architecture": "TanStack Query (server) / Zustand (UI)"
+  },
+  {
+    "file": "frontend/packages/production-state/src/slices/bindingSlice.ts",
+    "framework": "Redux Toolkit",
+    "state_type": "LOCAL_UI_STATE",
+    "description": "Redux slice or selector usage",
+    "target_architecture": "TanStack Query (server) / Zustand (UI)"
+  },
+  {
+    "file": "frontend/packages/production-state/src/slices/projectContextSlice.ts",
+    "framework": "Redux Toolkit",
+    "state_type": "LOCAL_UI_STATE",
+    "description": "Redux slice or selector usage",
+    "target_architecture": "TanStack Query (server) / Zustand (UI)"
+  },
+  {
+    "file": "frontend/packages/production-state/src/slices/recoverySlice.ts",
+    "framework": "Redux Toolkit",
+    "state_type": "LOCAL_UI_STATE",
+    "description": "Redux slice or selector usage",
+    "target_architecture": "TanStack Query (server) / Zustand (UI)"
+  },
+  {
+    "file": "frontend/packages/production-state/src/slices/screenplaySlice.ts",
+    "framework": "Redux Toolkit",
+    "state_type": "LOCAL_UI_STATE",
+    "description": "Redux slice or selector usage",
+    "target_architecture": "TanStack Query (server) / Zustand (UI)"
+  }
+]

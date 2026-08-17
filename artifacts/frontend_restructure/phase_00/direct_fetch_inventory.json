@@ -1,0 +1,146 @@
+[
+  {
+    "file": "apps/desktop/src/components/assets/AssetAcquisitionWizard.tsx",
+    "line": 20,
+    "url": "/api/v2/video-production/assets/commands",
+    "snippet": "const res = await fetch(\"/api/v2/video-production/assets/commands\", {"
+  },
+  {
+    "file": "apps/desktop/src/components/assets/AssetInspector.tsx",
+    "line": 17,
+    "url": "/api/v2/video-production/assets/${assetId}",
+    "snippet": "const res = await fetch(`/api/v2/video-production/assets/${assetId}`);"
+  },
+  {
+    "file": "apps/desktop/src/components/assets/AssetInspector.tsx",
+    "line": 23,
+    "url": "/api/v2/video-production/assets/${assetId}/revisions",
+    "snippet": "const revRes = await fetch(`/api/v2/video-production/assets/${assetId}/revisions`);"
+  },
+  {
+    "file": "apps/desktop/src/components/assets/AssetInspector.tsx",
+    "line": 29,
+    "url": "/api/v2/video-production/assets/${assetId}/provenance",
+    "snippet": "const provRes = await fetch(`/api/v2/video-production/assets/${assetId}/provenance`);"
+  },
+  {
+    "file": "apps/desktop/src/components/assets/AssetInspector.tsx",
+    "line": 35,
+    "url": "/api/v2/video-production/assets/${assetId}/dependencies",
+    "snippet": "const depRes = await fetch(`/api/v2/video-production/assets/${assetId}/dependencies`);"
+  },
+  {
+    "file": "apps/desktop/src/components/assets/AssetInspector.tsx",
+    "line": 60,
+    "url": "/api/v2/video-production/assets/commands",
+    "snippet": "await fetch(\"/api/v2/video-production/assets/commands\", {"
+  },
+  {
+    "file": "apps/desktop/src/components/assets/AssetInspector.tsx",
+    "line": 79,
+    "url": "/api/v2/video-production/assets/commands",
+    "snippet": "await fetch(\"/api/v2/video-production/assets/commands\", {"
+  },
+  {
+    "file": "apps/desktop/src/components/assets/AssetVersionImpactModal.tsx",
+    "line": 15,
+    "url": "/api/v2/video-production/assets/${assetId}/compare?old_revision_id=${oldRevisionId}&new_revision_id=${newRevisionId}",
+    "snippet": "const res = await fetch(`/api/v2/video-production/assets/${assetId}/compare?old_revision_id=${oldRevisionId}&new_revision_id=${newRevisionId}`, {"
+  },
+  {
+    "file": "apps/desktop/src/components/assets/AssetWorkspace.tsx",
+    "line": 48,
+    "url": "/api/v2/video-production/assets?${params.toString()}",
+    "snippet": "const res = await fetch(`/api/v2/video-production/assets?${params.toString()}`);"
+  },
+  {
+    "file": "apps/desktop/src/pages/Endpoints.tsx",
+    "line": 17,
+    "url": "/api/v2/providers",
+    "snippet": "fetch(\"/api/v2/providers\"),"
+  },
+  {
+    "file": "apps/desktop/src/pages/Endpoints.tsx",
+    "line": 18,
+    "url": "/api/v2/providers/health",
+    "snippet": "fetch(\"/api/v2/providers/health\"),"
+  },
+  {
+    "file": "apps/desktop/src/pages/Models.tsx",
+    "line": 20,
+    "url": "/api/v2/providers",
+    "snippet": "fetch(\"/api/v2/providers\")"
+  },
+  {
+    "file": "apps/desktop/src/pages/Router.tsx",
+    "line": 391,
+    "url": "/api/models/routing/rules",
+    "snippet": "const rulesRes = await fetch(\"/api/models/routing/rules\");"
+  },
+  {
+    "file": "apps/desktop/src/pages/Router.tsx",
+    "line": 429,
+    "url": "/api/models/routing/stats",
+    "snippet": "const statsRes = await fetch(\"/api/models/routing/stats\");"
+  },
+  {
+    "file": "apps/desktop/src/pages/Router.tsx",
+    "line": 445,
+    "url": "/api/models/routing/traffic",
+    "snippet": "const trafficRes = await fetch(\"/api/models/routing/traffic\");"
+  },
+  {
+    "file": "apps/desktop/src/pages/Router.tsx",
+    "line": 454,
+    "url": "/api/models/routing/graph",
+    "snippet": "const graphRes = await fetch(\"/api/models/routing/graph\");"
+  },
+  {
+    "file": "apps/desktop/src/pages/Router.tsx",
+    "line": 461,
+    "url": "/api/v2/providers",
+    "snippet": "const modelsRes = await fetch(\"/api/v2/providers\");"
+  },
+  {
+    "file": "apps/desktop/src/pages/Router.tsx",
+    "line": 562,
+    "url": "/api/models/routing/rules/${editingRule.id}",
+    "snippet": "res = await fetch(`/api/models/routing/rules/${editingRule.id}`, {"
+  },
+  {
+    "file": "apps/desktop/src/pages/Router.tsx",
+    "line": 568,
+    "url": "/api/models/routing/rules",
+    "snippet": "res = await fetch(\"/api/models/routing/rules\", {"
+  },
+  {
+    "file": "apps/desktop/src/pages/Router.tsx",
+    "line": 604,
+    "url": "/api/models/routing/rules/${role}",
+    "snippet": "const res = await fetch(`/api/models/routing/rules/${role}`, {"
+  },
+  {
+    "file": "apps/desktop/src/pages/Router.tsx",
+    "line": 621,
+    "url": "/api/models/routing/rules/${role}/test",
+    "snippet": "const res = await fetch(`/api/models/routing/rules/${role}/test`, {"
+  },
+  {
+    "file": "apps/desktop/src/pages/Router.tsx",
+    "line": 642,
+    "url": "/api/models/routing/simulate",
+    "snippet": "const res = await fetch(\"/api/models/routing/simulate\", {"
+  },
+  {
+    "file": "frontend/packages/production-client/src/ProductionApiClient.ts",
+    "line": 28,
+    "url": "${this.baseUrl}/api/v2/video-production/projects/${id}",
+    "snippet": "const res = await fetch(`${this.baseUrl}/api/v2/video-production/projects/${id}`);"
+  },
+  {
+    "file": "frontend/packages/production-client/src/ProductionApiClient.ts",
+    "line": 82,
+    "url": "${this.baseUrl}/api/v2/video-production/commands",
+    "snippet": "const res = await fetch(`${this.baseUrl}/api/v2/video-production/commands`, {"
+  }
+]

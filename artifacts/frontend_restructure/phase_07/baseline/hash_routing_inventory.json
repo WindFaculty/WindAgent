@@ -1,0 +1,14 @@
+{
+  "hash_routing_found": [
+    {
+      "file": "apps/desktop/src/pages/StudioPage.tsx",
+      "patterns": [
+        "parseHash(window.location.hash)",
+        "window.location.hash = hash",
+        "#/studio/series/${next.seriesId}",
+        "#/studio/episodes/${next.episodeId}"
+      ]
+    }
+  ],
+  "target": "Manual hash parsing in Studio = 0 (migrated to canonical router and routeManifest in @windagent/app)"
+}

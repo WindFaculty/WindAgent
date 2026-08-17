@@ -1,0 +1,57 @@
+{
+  "summary": {
+    "total_navigation_items": 18,
+    "total_tab_routes": 21,
+    "navigation_without_route_count": 3,
+    "route_without_navigation_count": 6
+  },
+  "navigation_items_missing_route_handler": [
+    {
+      "nav_id": "assets",
+      "label": "Assets",
+      "reason": "Declared in DESKTOP_NAVIGATION_GROUPS but no TabKeeper in App.tsx"
+    },
+    {
+      "nav_id": "logs",
+      "label": "Logs",
+      "reason": "Declared in DESKTOP_NAVIGATION_GROUPS but no TabKeeper in App.tsx"
+    },
+    {
+      "nav_id": "world",
+      "label": "World / Setting",
+      "reason": "Declared in DESKTOP_NAVIGATION_GROUPS but no TabKeeper in App.tsx"
+    }
+  ],
+  "routes_missing_from_navigation": [
+    {
+      "tab_id": "asset-library",
+      "reason": "TabKeeper exists in App.tsx but no corresponding sidebar item in DESKTOP_NAVIGATION_GROUPS"
+    },
+    {
+      "tab_id": "models-endpoints",
+      "reason": "TabKeeper exists in App.tsx but no corresponding sidebar item in DESKTOP_NAVIGATION_GROUPS"
+    },
+    {
+      "tab_id": "models-library",
+      "reason": "TabKeeper exists in App.tsx but no corresponding sidebar item in DESKTOP_NAVIGATION_GROUPS"
+    },
+    {
+      "tab_id": "production-assets",
+      "reason": "TabKeeper exists in App.tsx but no corresponding sidebar item in DESKTOP_NAVIGATION_GROUPS"
+    },
+    {
+      "tab_id": "production-script",
+      "reason": "TabKeeper exists in App.tsx but no corresponding sidebar item in DESKTOP_NAVIGATION_GROUPS"
+    },
+    {
+      "tab_id": "production-video",
+      "reason": "TabKeeper exists in App.tsx but no corresponding sidebar item in DESKTOP_NAVIGATION_GROUPS"
+    }
+  ],
+  "manual_hash_routing_flaws": [
+    "App.tsx only synchronizes 8 hash prefixes (dashboard, studio, production/assets, production/video, production, workspace, agents, settings)",
+    "Routes like #/projects, #/episodes, #/storyboard, #/characters, #/reviews, #/memory, #/workflows are not synchronized via handleHashChange",
+    "Tab ID mismatch: Sidebar has 'assets' and 'memory' (label 'Database'), but App.tsx registers 'asset-library' and 'production-assets'",
+    "Duplicated routing authority between App.tsx hash listener, window.location.hash assignments, and studio-shell activeTab state"
+  ]
+}

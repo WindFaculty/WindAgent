@@ -1,0 +1,25 @@
+{
+  "classification": "PRE_EXISTING_FAILURE",
+  "description": "Test failures present in snapshot before Phase 0 baseline freeze. These must NOT be silently patched out-of-scope in Phase 0.",
+  "failures": [
+    {
+      "suite": "apps/desktop vitest",
+      "file": "apps/desktop/src/test/studioShellTests.test.tsx",
+      "failed_tests": [
+        "renders real series from server with capability summary",
+        "navigates to series detail and episode detail via hash links",
+        "renders unsupported artifact schema as unsupported, not blank",
+        "never renders sample identifiers or fake data"
+      ],
+      "root_cause": "Test expects real HTTP server running on localhost:8000 during test execution instead of isolated MSW mock."
+    },
+    {
+      "suite": "apps/desktop vitest",
+      "file": "apps/desktop/src/test/studioStoryTests.test.tsx",
+      "failed_tests": [
+        "10 tests checking live backend Studio series endpoints"
+      ],
+      "root_cause": "Live API integration dependency in client test environment."
+    }
+  ]
+}

@@ -40,7 +40,7 @@ export class BrowserWebAdapter implements ProductionPlatformAdapter {
     });
   }
 
-  async revealFile(): Promise<void> {
+  async revealFile(_artifactId: string): Promise<void> {
     throw new UnsupportedError('Local file reveal is not supported in web browser environment');
   }
 

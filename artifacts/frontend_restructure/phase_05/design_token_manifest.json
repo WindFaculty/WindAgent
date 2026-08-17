@@ -1,0 +1,17 @@
+{
+  "authority": "frontend/packages/ui/src/tokens/index.css",
+  "domains": {
+    "colors": "frontend/packages/ui/src/tokens/colors.css",
+    "typography": "frontend/packages/ui/src/tokens/typography.css",
+    "spacing": "frontend/packages/ui/src/tokens/spacing.css",
+    "radius": "frontend/packages/ui/src/tokens/radius.css",
+    "shadows": "frontend/packages/ui/src/tokens/shadows.css",
+    "z_index": "frontend/packages/ui/src/tokens/z-index.css",
+    "motion": "frontend/packages/ui/src/tokens/motion.css",
+    "layout": "frontend/packages/ui/src/tokens/layout.css"
+  },
+  "theme": {
+    "name": "Kinetic Obsidian / Dark",
+    "path": "frontend/packages/ui/src/theme/dark.css"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "phase": "phase_12",
+  "audit_timestamp": "2026-08-16T19:30:00Z",
+  "file": "apps/desktop/src/pages/Router.tsx",
+  "file_size_bytes": 117800,
+  "file_line_count": 2565,
+  "coupled_components": [
+    {
+      "name": "WebAudioSound",
+      "type": "interface",
+      "purpose": "Audio synth sound effects (swim, bubble, fish, hit, game over)",
+      "target_action": "REMOVE_FROM_PRODUCTION_ROUTING"
+    },
+    {
+      "name": "SoundSynth",
+      "type": "class",
+      "purpose": "Web Audio API oscillator implementation",
+      "target_action": "REMOVE_FROM_PRODUCTION_ROUTING"
+    },
+    {
+      "name": "FishSwimGame",
+      "type": "easter_egg_game",
+      "purpose": "In-router mini-game state with shrimps, score, skins",
+      "target_action": "REMOVE_FROM_PRODUCTION_ROUTING"
+    }
+  ],
+  "remediation": "Decompose Router into focused modular components under frontend/app/src/features/routing/ with clean production responsibilities."
+}

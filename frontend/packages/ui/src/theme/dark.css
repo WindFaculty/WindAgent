@@ -1,0 +1,11 @@
+/**
+ * Kinetic Obsidian Theme (P5.3).
+ * Preserves high-contrast deep dark aesthetic with luminescent accent colors.
+ */
+
+[data-theme='dark'],
+:root {
+  color-scheme: dark;
+  background-color: var(--bg-darker);
+  color: var(--text-main);
+}
