@@ -16,12 +16,8 @@ const Dashboard = lazyNamed(() => import("./pages/Dashboard"), "Dashboard");
 const Agents = lazyNamed(() => import("./pages/Agents"), "Agents");
 const Models = lazyNamed(() => import("./pages/Models"), "Models");
 const Endpoints = lazyNamed(() => import("./pages/Endpoints"), "Endpoints");
-const Memory = lazyNamed(() => import("./pages/Memory"), "Memory");
 const Workflows = lazyNamed(() => import("./pages/Workflows"), "Workflows");
-const Browser = lazyNamed(() => import("./pages/Browser"), "Browser");
-const Files = lazyNamed(() => import("./pages/Files"), "Files");
 const Router = lazyNamed(() => import("./pages/Router"), "Router");
-const Settings = lazyNamed(() => import("./pages/Settings"), "Settings");
 const MultiAgentWorkspace = lazyNamed(() => import("./pages/MultiAgentWorkspace"), "MultiAgentWorkspace");
 const AssetWorkspace = lazyNamed(() => import("./components/assets/AssetWorkspace"), "AssetWorkspace");
 const ProductionWorkspacePage = lazyNamed(() => import("./pages/ProductionWorkspacePage"), "ProductionWorkspacePage");
@@ -49,14 +45,8 @@ export function App() {
         return <Models setActiveTab={() => {}} />;
       case "models-endpoints":
         return <Endpoints />;
-      case "memory":
-        return <Memory setActiveTab={() => {}} />;
       case "workflows":
         return <Workflows />;
-      case "browser":
-        return <Browser />;
-      case "files":
-        return <Files />;
       case "workspace":
         return (
           <MultiAgentProvider conversationId={conversationId}>
@@ -90,8 +80,6 @@ export function App() {
         return <ProductionWorkspacePage initialPage="assets" />;
       case "production-video":
         return <ProductionWorkspacePage initialPage="video" />;
-      case "settings":
-        return <Settings />;
       default:
         return null;
     }

@@ -247,6 +247,11 @@ class BrowserSessionService:
         async with record.lock:
             return BrowserState(**record.state.__dict__)
 
+    async def list_session_ids(self) -> list[str]:
+        """Return ids of all live browser runtime sessions (no mock entries)."""
+        async with self._sessions_lock:
+            return list(self._sessions.keys())
+
     async def navigate(
         self,
         session_id: str,

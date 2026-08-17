@@ -41,6 +41,11 @@ import { WorkflowsPage } from '../features/workflows/pages/WorkflowsPage';
 import { ModelsPage } from '../features/models/pages/ModelsPage';
 import { ProvidersPage } from '../features/providers/pages/ProvidersPage';
 import { RoutingPage } from '../features/routing/pages/RoutingPage';
+import { BrowserPage } from '../features/browser/pages/BrowserPage';
+import { FilesPage } from '../features/files/pages/FilesPage';
+import { MemoryPage } from '../features/memory/pages/MemoryPage';
+import { LogsPage } from '../features/logs/pages/LogsPage';
+import { SettingsPage } from '../features/settings/pages/SettingsPage';
 
 export const PageSkeleton: React.FC<{ tabId?: string }> = ({ tabId }) => (
   <div
@@ -210,6 +215,26 @@ const SharedAppContent: React.FC<SharedAppContentProps> = ({ customRouteRenderer
 
     if (route.id === 'router' || route.id === 'routing') {
       return <RoutingPage />;
+    }
+
+    if (route.id === 'browser') {
+      return <BrowserPage />;
+    }
+
+    if (route.id === 'files') {
+      return <FilesPage />;
+    }
+
+    if (route.id === 'memory') {
+      return <MemoryPage />;
+    }
+
+    if (route.id === 'logs') {
+      return <LogsPage />;
+    }
+
+    if (route.id === 'settings') {
+      return <SettingsPage />;
     }
 
     return (

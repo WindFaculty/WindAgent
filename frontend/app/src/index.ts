@@ -29,3 +29,8 @@ export * from './features/workflows';
 export * from './features/models';
 export * from './features/providers';
 export * from './features/routing';
+export * from './features/browser';
+export * from './features/files';
+export * from './features/memory';
+export * from './features/logs';
+export * from './features/settings';

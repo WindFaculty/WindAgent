@@ -14,7 +14,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from windagent_storage.orm.v2_orchestration_models import (
     TaskRunORM, ExecutionLeaseORM, WorkflowCheckpointORM,
-    CancellationRequestORM, RuntimeExecutionORM, RecoveryLeaderLeaseORM
+    CancellationRequestORM, RuntimeExecutionORM, RecoveryLeaderLeaseORM,
+    MemoryRecordORM,
 )
 from windagent_core.errors.exceptions import DomainError
 
@@ -388,3 +389,67 @@ class SqlCancellationRepository:
         stmt = select(CancellationRequestORM).where(CancellationRequestORM.target_id == target_id)
         res = await self._session.execute(stmt)
         return res.scalar_one_or_none() is not None
+
+
+class SqlMemoryRecordRepository:
+    """Phase 13C — Memory records repository (Memory != Database).
+
+    Keeps ORM access in the storage layer so routers stay in the application
+    layer without sqlalchemy / ORM imports (architecture boundary).
+    """
+
+    def __init__(self, session: AsyncSession):
+        self._session = session
+
+    async def list_records(
+        self,
+        scope: Optional[str] = None,
+        owner: Optional[str] = None,
+        memory_type: Optional[str] = None,
+        limit: int = 50,
+    ) -> List[MemoryRecordORM]:
+        stmt = select(MemoryRecordORM).order_by(MemoryRecordORM.updated_at.desc()).limit(limit)
+        if scope:
+            stmt = stmt.where(MemoryRecordORM.memory_type == scope)
+        if owner:
+            stmt = stmt.where(MemoryRecordORM.session_id == owner)
+        if memory_type:
+            stmt = stmt.where(MemoryRecordORM.memory_type == memory_type)
+        return list((await self._session.execute(stmt)).scalars().all())
+
+    async def get_record(self, memory_id: str) -> Optional[MemoryRecordORM]:
+        return await self._session.get(MemoryRecordORM, memory_id)
+
+    async def create_record(
+        self,
+        record_id: str,
+        session_id: Optional[str],
+        memory_type: str,
+        key: str,
+        value_json: str,
+        now: datetime,
+    ) -> MemoryRecordORM:
+        orm = MemoryRecordORM(
+            id=record_id,
+            session_id=session_id,
+            memory_type=memory_type,
+            key=key,
+            value_json=value_json,
+            created_at=now,
+            updated_at=now,
+        )
+        self._session.add(orm)
+        return orm
+
+    async def search_records(
+        self,
+        scope: Optional[str] = None,
+        owner: Optional[str] = None,
+        limit: int = 20,
+    ) -> List[MemoryRecordORM]:
+        stmt = select(MemoryRecordORM).order_by(MemoryRecordORM.updated_at.desc()).limit(limit)
+        if scope:
+            stmt = stmt.where(MemoryRecordORM.memory_type == scope)
+        if owner:
+            stmt = stmt.where(MemoryRecordORM.session_id == owner)
+        return list((await self._session.execute(stmt)).scalars().all())

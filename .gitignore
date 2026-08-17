@@ -53,6 +53,8 @@ apps/artifacts/runs/*
 
 # Logs
 logs/
+!frontend/app/src/features/logs/
+!frontend/app/src/features/logs/**
 
 # SQLite (created at runtime by Phase 2)
 *.db

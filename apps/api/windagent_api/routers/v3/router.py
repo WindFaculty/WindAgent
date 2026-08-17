@@ -36,6 +36,13 @@ from windagent_api.routers.v3.models import router as v3_models_router
 from windagent_api.routers.v3.providers import router as v3_providers_router
 from windagent_api.routers.v3.routing import router as v3_routing_router, ws_router as v3_model_infra_ws_router
 
+# Phase 13 — Platform & Administration Domain
+from windagent_api.routers.v3.browser import router as v3_browser_router, ws_router as v3_browser_ws_router
+from windagent_api.routers.v3.files import router as v3_files_router
+from windagent_api.routers.v3.memory import router as v3_memory_router
+from windagent_api.routers.v3.logs import router as v3_logs_router, ws_router as v3_logs_ws_router
+from windagent_api.routers.v3.settings import router as v3_settings_router
+
 v3_router = APIRouter()
 
 # Include Modular V3 Subrouters
@@ -74,4 +81,13 @@ v3_router.include_router(v3_models_router)
 v3_router.include_router(v3_providers_router)
 v3_router.include_router(v3_routing_router)
 v3_router.include_router(v3_model_infra_ws_router)
+
+# Phase 13 — Platform & Administration Domain routers
+v3_router.include_router(v3_browser_router)
+v3_router.include_router(v3_browser_ws_router)
+v3_router.include_router(v3_files_router)
+v3_router.include_router(v3_memory_router)
+v3_router.include_router(v3_logs_router)
+v3_router.include_router(v3_logs_ws_router)
+v3_router.include_router(v3_settings_router)
 

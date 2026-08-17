@@ -68,6 +68,19 @@ import type {
   RouteSimulationRequest,
   RouteDecisionResource,
   RouteLockDetailResource,
+  // Phase 13 — Platform & Administration Domain
+  BrowserSessionResource,
+  CreateBrowserSessionRequest,
+  BrowserActionResponse,
+  FileResource,
+  CreateFileRequest,
+  MemoryRecordResource,
+  CreateMemoryRequest,
+  MemorySearchRequest,
+  LogRecord,
+  LogQueryParams,
+  SettingsResponse,
+  PatchSettingsRequest,
 } from '@windagent/api-contracts';
 import { HttpTransport, type TransportOptions } from './transport';
 
@@ -850,6 +863,139 @@ export class RoutingApi {
   }
 }
 
+// ─── Phase 13: Platform & Administration Domain ────────────────────────────
+
+export class BrowserApi {
+  constructor(private transport: HttpTransport) {}
+
+  async listSessions(): Promise<BrowserSessionResource[]> {
+    return this.transport.get<BrowserSessionResource[]>('/api/v3/browser/sessions');
+  }
+
+  async createSession(body: CreateBrowserSessionRequest = {}): Promise<BrowserSessionResource> {
+    return this.transport.post<BrowserSessionResource>('/api/v3/browser/sessions', body);
+  }
+
+  async getSession(sessionId: string): Promise<BrowserSessionResource> {
+    return this.transport.get<BrowserSessionResource>(`/api/v3/browser/sessions/${encodeURIComponent(sessionId)}`);
+  }
+
+  async navigate(sessionId: string, url: string): Promise<BrowserActionResponse> {
+    return this.transport.post<BrowserActionResponse>(
+      `/api/v3/browser/sessions/${encodeURIComponent(sessionId)}/navigate`,
+      { url }
+    );
+  }
+
+  async click(sessionId: string, x: number, y: number): Promise<BrowserActionResponse> {
+    return this.transport.post<BrowserActionResponse>(
+      `/api/v3/browser/sessions/${encodeURIComponent(sessionId)}/click`,
+      { x, y }
+    );
+  }
+
+  async typeText(sessionId: string, selector: string, text: string): Promise<BrowserActionResponse> {
+    return this.transport.post<BrowserActionResponse>(
+      `/api/v3/browser/sessions/${encodeURIComponent(sessionId)}/type`,
+      { selector, text }
+    );
+  }
+
+  async scroll(sessionId: string, direction: 'up' | 'down' = 'down', pixels = 800): Promise<BrowserActionResponse> {
+    return this.transport.post<BrowserActionResponse>(
+      `/api/v3/browser/sessions/${encodeURIComponent(sessionId)}/scroll`,
+      { direction, pixels }
+    );
+  }
+
+  async extract(sessionId: string): Promise<BrowserActionResponse> {
+    return this.transport.get<BrowserActionResponse>(
+      `/api/v3/browser/sessions/${encodeURIComponent(sessionId)}/extract`
+    );
+  }
+
+  screenshotUrl(sessionId: string): string {
+    return `/api/v3/browser/sessions/${encodeURIComponent(sessionId)}/screenshot`;
+  }
+
+  async close(sessionId: string): Promise<void> {
+    await this.transport.delete<void>(`/api/v3/browser/sessions/${encodeURIComponent(sessionId)}`);
+  }
+}
+
+export class FilesApi {
+  constructor(private transport: HttpTransport) {}
+
+  async list(): Promise<FileResource[]> {
+    return this.transport.get<FileResource[]>('/api/v3/files');
+  }
+
+  async create(body: CreateFileRequest): Promise<FileResource> {
+    return this.transport.post<FileResource>('/api/v3/files', body);
+  }
+
+  async get(fileId: string): Promise<FileResource> {
+    return this.transport.get<FileResource>(`/api/v3/files/${encodeURIComponent(fileId)}`);
+  }
+
+  downloadUrl(fileId: string): string {
+    return `/api/v3/files/${encodeURIComponent(fileId)}/download`;
+  }
+
+  async remove(fileId: string): Promise<void> {
+    await this.transport.delete<void>(`/api/v3/files/${encodeURIComponent(fileId)}`);
+  }
+}
+
+export class MemoryApi {
+  constructor(private transport: HttpTransport) {}
+
+  async list(params?: { scope?: string; owner?: string; memory_type?: string; limit?: number }): Promise<MemoryRecordResource[]> {
+    return this.transport.get<MemoryRecordResource[]>('/api/v3/memory', params);
+  }
+
+  async get(memoryId: string): Promise<MemoryRecordResource> {
+    return this.transport.get<MemoryRecordResource>(`/api/v3/memory/${encodeURIComponent(memoryId)}`);
+  }
+
+  async create(body: CreateMemoryRequest): Promise<MemoryRecordResource> {
+    return this.transport.post<MemoryRecordResource>('/api/v3/memory', body);
+  }
+
+  async search(body: MemorySearchRequest): Promise<MemoryRecordResource[]> {
+    return this.transport.post<MemoryRecordResource[]>('/api/v3/memory/search', body);
+  }
+}
+
+export class LogsApi {
+  constructor(private transport: HttpTransport) {}
+
+  async list(params?: LogQueryParams): Promise<LogRecord[]> {
+    return this.transport.get<LogRecord[]>('/api/v3/logs', params as Record<string, unknown> | undefined);
+  }
+
+  async sources(): Promise<string[]> {
+    return this.transport.get<string[]>('/api/v3/logs/sources');
+  }
+}
+
+export class SettingsApi {
+  constructor(private transport: HttpTransport) {}
+
+  async get(): Promise<SettingsResponse> {
+    return this.transport.get<SettingsResponse>('/api/v3/settings');
+  }
+
+  async getSchema(): Promise<SettingsResponse> {
+    return this.transport.get<SettingsResponse>('/api/v3/settings/schema');
+  }
+
+  async patch(values: Record<string, unknown>): Promise<SettingsResponse> {
+    const body: PatchSettingsRequest = { values };
+    return this.transport.patch<SettingsResponse>('/api/v3/settings', body);
+  }
+}
+
 export class WindAgentClient {
   readonly transport: HttpTransport;
   readonly projects: ProjectsApi;
@@ -876,6 +1022,12 @@ export class WindAgentClient {
   readonly models: ModelsApi;
   readonly providers: ProvidersApi;
   readonly routing: RoutingApi;
+  // Phase 13 — Platform & Administration Domain
+  readonly browser: BrowserApi;
+  readonly files: FilesApi;
+  readonly memory: MemoryApi;
+  readonly logs: LogsApi;
+  readonly settings: SettingsApi;
 
   constructor(options: TransportOptions) {
     this.transport = new HttpTransport(options);
@@ -903,6 +1055,12 @@ export class WindAgentClient {
     this.models = new ModelsApi(this.transport);
     this.providers = new ProvidersApi(this.transport);
     this.routing = new RoutingApi(this.transport);
+    // Phase 13
+    this.browser = new BrowserApi(this.transport);
+    this.files = new FilesApi(this.transport);
+    this.memory = new MemoryApi(this.transport);
+    this.logs = new LogsApi(this.transport);
+    this.settings = new SettingsApi(this.transport);
   }
 }
 

@@ -20,3 +20,4 @@ export * from './observability';
 export * from './models';
 export * from './providers';
 export * from './routing';
+export * from './platform';
