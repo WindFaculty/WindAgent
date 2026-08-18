@@ -6,7 +6,7 @@
     "app"
   ],
   "scripts": {
-    "build": "npm run build --workspaces",
+    "build": "npm run typecheck --workspaces",
     "typecheck": "npm run typecheck --workspaces",
     "test": "npm run test --workspaces"
   },

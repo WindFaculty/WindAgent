@@ -1,6 +1,6 @@
 """
 Generates TypeScript interfaces and contract schemas from FastAPI models
-and exports them to `@windagent/production-contracts`.
+and exports them to `tests/fixtures/generated_contracts.ts`.
 """
 
 from __future__ import annotations
@@ -9,7 +9,7 @@ import json
 from pathlib import Path
 from typing import Any, Dict
 
-CONTRACT_TS_OUTPUT_PATH = Path("frontend/packages/production-contracts/src/generated_contracts.ts")
+CONTRACT_TS_OUTPUT_PATH = Path("tests/fixtures/generated_contracts.ts")
 
 GENERATED_CONTRACT_HEADER = """/* eslint-disable */
 /**

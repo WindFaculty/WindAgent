@@ -20,11 +20,7 @@
     "react-dom": "^18.3.1",
     "react-redux": "^9.3.0",
     "@tanstack/react-query": "^5.62.0",
-    "@windagent/production-contracts": "file:../../frontend/packages/production-contracts",
-    "@windagent/production-client": "file:../../frontend/packages/production-client",
-    "@windagent/production-platform": "file:../../frontend/packages/production-platform",
-    "@windagent/production-state": "file:../../frontend/packages/production-state",
-    "@windagent/production-ui": "file:../../frontend/packages/production-ui"
+    "@windagent/app": "file:../../frontend/app"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.4.2",

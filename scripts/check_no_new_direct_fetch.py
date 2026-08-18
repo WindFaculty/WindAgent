@@ -13,9 +13,7 @@ BASELINE_FILE = WORKSPACE_ROOT / "artifacts" / "frontend_restructure" / "phase_0
 DELTA_FILE = WORKSPACE_ROOT / "artifacts" / "frontend_restructure" / "phase_03" / "direct_fetch_delta.json"
 
 ALLOWED_PATHS = [
-    "frontend/packages/api-client/src/transport.ts",
-    "frontend/packages/studio-client/src/HttpStudioApiClient.ts",
-    "frontend/packages/production-client/src/FakeProductionApiClient.ts"
+    "frontend/packages/api-client/src/transport.ts"
 ]
 
 def check_direct_fetches() -> bool:

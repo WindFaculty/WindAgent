@@ -1,8 +1,7 @@
 """
 C0 contract round-trip: the frozen studio.contract/v0.1 fixtures under
-frontend/packages/studio-contracts/fixtures validate against the JSON Schema
-definitions in schemas/. The same instances and schemas are validated from
-TypeScript in @windagent/studio-contracts, proving one source of truth.
+tests/fixtures/studio_contracts/fixtures validate against the JSON Schema
+definitions in schemas/.
 
 All fixtures are fixture_only: true per the manifest; none may be used by
 production composition or injected as real-slice run output.
@@ -15,7 +14,7 @@ import jsonschema
 from referencing import Registry, Resource
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-CONTRACTS_DIR = REPO_ROOT / "frontend" / "packages" / "studio-contracts"
+CONTRACTS_DIR = REPO_ROOT / "tests" / "fixtures" / "studio_contracts"
 SCHEMAS_DIR = CONTRACTS_DIR / "schemas"
 FIXTURES_DIR = CONTRACTS_DIR / "fixtures"
 

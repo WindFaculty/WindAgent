@@ -2,10 +2,9 @@
 """
 Video Workspace Architecture Boundary Linter (Stage I — UI50)
 
-Enforces that Video Workspace components (e.g. VideoWorkspacePlaceholder)
-only consume public APIs from shared packages (@windagent/production-ui,
-@windagent/production-context, etc.) and DO NOT import internal private state
-or implementation files from screenplay/ or asset/ modules.
+Enforces that the canonical shared app shell (`@windagent/app`) only consumes
+public APIs from shared packages (`@windagent/ui`, `@windagent/studio-shell`,
+etc.) and does NOT import internal private implementation files.
 """
 
 import sys
@@ -13,7 +12,7 @@ import re
 from pathlib import Path
 
 WORKSPACE_ROOT = Path(__file__).resolve().parent.parent
-TARGET_COMPONENT = WORKSPACE_ROOT / "frontend" / "packages" / "production-ui" / "src" / "components" / "VideoWorkspacePlaceholder.tsx"
+TARGET_COMPONENT = WORKSPACE_ROOT / "frontend" / "app" / "src" / "app" / "App.tsx"
 
 FORBIDDEN_PATTERNS = [
     re.compile(r"import\s+.*\s+from\s+['\"].*components/(screenplay|asset)/.*['\"]"),

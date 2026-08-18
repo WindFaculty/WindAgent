@@ -30,9 +30,7 @@
       "@windagent/realtime": ["../../frontend/packages/realtime/src/index.ts"],
       "@windagent/realtime/*": ["../../frontend/packages/realtime/src/*"],
       "@windagent/studio-shell": ["../../frontend/packages/studio-shell/src/index.ts"],
-      "@windagent/studio-shell/*": ["../../frontend/packages/studio-shell/src/*"],
-      "@windagent/story-ui": ["../../frontend/packages/story-ui/src/index.ts"],
-      "@windagent/story-ui/*": ["../../frontend/packages/story-ui/src/*"]
+      "@windagent/studio-shell/*": ["../../frontend/packages/studio-shell/src/*"]
     },
     "types": ["vitest/globals", "@testing-library/jest-dom"]
   },

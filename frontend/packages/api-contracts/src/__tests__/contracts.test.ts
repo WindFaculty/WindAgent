@@ -16,9 +16,10 @@ import type {
 describe('Phase 9.0 — shared contract freeze', () => {
   it('AssetResource carries durable provenance for downstream reuse', () => {
     const provenance: AssetProvenance = {
-      source: 'generation',
+      source: 'GENERATED',
       generator: 'storyboard_concept_gen',
       model: 'stable-diffusion-3',
+      reference_ids: [],
       job_id: 'job_abc',
       content_hash: 'sha256:abc',
       parent_revision_id: 'rev_1',
@@ -44,9 +45,15 @@ describe('Phase 9.0 — shared contract freeze', () => {
     const scene: SceneResource = {
       id: 'scene_1',
       storyboard_id: 'sb_1',
+      episode_id: 'ep_1',
+      scene_number: 1,
+      title: 'Opening wide shot',
+      status: 'DRAFT',
+      script_text: 'Exterior. City skyline at dawn.',
+      duration_seconds: 12,
+      location: 'City skyline',
+      character_ids: ['char_1'],
       source_screenplay_revision_id: 'rev_9',
-      index: 0,
-      description: 'Opening wide shot',
       version: 1,
       created_at: '2026-08-01T00:00:00Z',
       updated_at: '2026-08-01T00:00:00Z',
@@ -56,10 +63,14 @@ describe('Phase 9.0 — shared contract freeze', () => {
 
   it('ReviewDecisionResource is pinned to revision + expected_version', () => {
     const decision: ReviewDecisionResource = {
+      id: 'dec_1',
+      review_id: 'review_1',
       decision: 'APPROVED',
       revision_id: 'rev_7',
       expected_version: 12,
       reason: 'Meets audience band',
+      decided_by: 'reviewer_1',
+      decided_at: '2026-08-01T00:00:00Z',
     };
     expect(decision.decision).toBe('APPROVED');
     expect(decision.revision_id).toBe('rev_7');

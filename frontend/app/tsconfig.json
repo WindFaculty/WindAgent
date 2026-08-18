@@ -17,9 +17,7 @@
       "@windagent/realtime": ["../packages/realtime/src/index.ts"],
       "@windagent/realtime/*": ["../packages/realtime/src/*"],
       "@windagent/studio-shell": ["../packages/studio-shell/src/index.ts"],
-      "@windagent/studio-shell/*": ["../packages/studio-shell/src/*"],
-      "@windagent/story-ui": ["../packages/story-ui/src/index.ts"],
-      "@windagent/story-ui/*": ["../packages/story-ui/src/*"]
+      "@windagent/studio-shell/*": ["../packages/studio-shell/src/*"]
     }
   },
   "include": [

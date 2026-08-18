@@ -17,12 +17,6 @@ export default defineConfig({
       '@windagent/api-client': path.resolve(__dirname, '../../frontend/packages/api-client/src/index.ts'),
       '@windagent/realtime': path.resolve(__dirname, '../../frontend/packages/realtime/src/index.ts'),
       '@windagent/studio-shell': path.resolve(__dirname, '../../frontend/packages/studio-shell/src/index.ts'),
-      '@windagent/story-ui': path.resolve(__dirname, '../../frontend/packages/story-ui/src/index.ts'),
-      '@windagent/production-contracts': path.resolve(__dirname, '../../frontend/packages/production-contracts/src/index.ts'),
-      '@windagent/production-client': path.resolve(__dirname, '../../frontend/packages/production-client/src/index.ts'),
-      '@windagent/production-platform': path.resolve(__dirname, '../../frontend/packages/production-platform/src/index.ts'),
-      '@windagent/production-state': path.resolve(__dirname, '../../frontend/packages/production-state/src/index.ts'),
-      '@windagent/production-ui': path.resolve(__dirname, '../../frontend/packages/production-ui/src/index.ts'),
     },
   },
   server: {
@@ -64,9 +58,6 @@ export default defineConfig({
           }
           if (id.includes('frontend/packages/ui')) {
             return 'shared-ui';
-          }
-          if (id.includes('frontend/packages/story-ui')) {
-            return 'story-ui';
           }
           if (id.includes('frontend/packages/studio-shell')) {
             return 'studio-shell';

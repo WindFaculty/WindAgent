@@ -74,8 +74,8 @@ def run_stage_h_verification() -> bool:
 
     # 4. UI44: Shared Package Consumer Parity
     print("[4/6] Running UI44 Shared Package Consumer Parity Suite...")
-    # Verify consumer parity test file exists
-    parity_file = PROJECT_ROOT / "frontend/packages/production-ui/src/__tests__/ConsumerParity.test.tsx"
+    # Verify canonical app parity test files exist
+    parity_file = PROJECT_ROOT / "frontend/app/src/__tests__/routerParity.test.ts"
     ui44_pass = parity_file.exists()
     results["suites"]["UI44_consumer_parity"] = "PASSED" if ui44_pass else "FAILED"
     print(f"  -> UI44 Consumer Parity: {'PASS' if ui44_pass else 'FAIL'}")
@@ -87,7 +87,7 @@ def run_stage_h_verification() -> bool:
     # is the Vitest suite under apps/desktop/src — verify its presence instead.
     print("[5/6] Verifying UI45 Desktop Test Suite Presence...")
     desktop_shell = PROJECT_ROOT / "apps/desktop/src/test/studioShellTests.test.tsx"
-    desktop_story = PROJECT_ROOT / "apps/desktop/src/test/studioStoryTests.test.tsx"
+    desktop_story = PROJECT_ROOT / "apps/desktop/src/test/platformParity.test.tsx"
     ui45_pass = desktop_shell.exists() and desktop_story.exists()
     results["suites"]["UI45_desktop_e2e"] = "PASSED" if ui45_pass else "FAILED"
     print(f"  -> UI45 Desktop Test Suite: {'PASS' if ui45_pass else 'FAIL'}")

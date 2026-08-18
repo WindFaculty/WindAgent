@@ -19,7 +19,6 @@
     "@windagent/api-client": "file:../packages/api-client",
     "@windagent/realtime": "file:../packages/realtime",
     "@windagent/studio-shell": "file:../packages/studio-shell",
-    "@windagent/story-ui": "file:../packages/story-ui",
     "@windagent/ui": "file:../packages/ui",
 
     "react": "^18.3.1",
