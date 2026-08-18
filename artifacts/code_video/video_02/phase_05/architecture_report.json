@@ -1,0 +1,64 @@
+{
+  "phase": "phase_05",
+  "workflow": "code_video",
+  "video_id": "video-02",
+  "subsystem": "code_studio_renderer",
+  "architectural_principles": [
+    "Recording-Safe UI: zero notifications, zero personal filesystem paths, zero hostnames, zero system clock in studio frames",
+    "Deterministic state machine: all visual state transitions are derived strictly from semantic IR actions",
+    "Clean Architecture isolation: UI layer has no dependency on live external model providers or live VS Code processes",
+    "Dual Rendering parity: python tool layer and React UI layer share identical layout geometry and visual modes",
+    "Multi-Mode viewport: supports 9 distinct layouts (CODE_STUDIO, FULL_CODE, FULL_TERMINAL, DIAGRAM, TITLE_CARD, CHECKLIST, ARCHITECTURE, SPLIT, OUTRO)"
+  ],
+  "components": {
+    "CodeEditorRenderer": {
+      "responsibilities": [
+        "Python tokenization and syntax highlighting",
+        "Cursor positioning and typing buffer",
+        "Symbol highlighting and range selection",
+        "Zoom and scroll state management",
+        "Deterministic HTML/SVG export"
+      ]
+    },
+    "TerminalRenderer": {
+      "responsibilities": [
+        "PowerShell prompt simulation with sanitized workspace paths",
+        "Deterministic command typing and playback",
+        "Stdout and Stderr stream formatting",
+        "Exit code status badge rendering"
+      ]
+    },
+    "DiagramRenderer": {
+      "responsibilities": [
+        "Scene S03 Recap diagram generation",
+        "Scene S04 Architecture v0.1 (User -> Agent -> LLM -> Answer) diagram generation",
+        "Scene S11 Concept Deep Dive ('Is This An Agent?') diagram generation",
+        "Scene S17 Clean Architecture Review (Domain vs Infrastructure) diagram generation",
+        "High-contrast vector SVG rendering"
+      ]
+    },
+    "TitleRenderer": {
+      "responsibilities": [
+        "Scene S02 Hook Title Card",
+        "Scene S16 Feature Scope Checklist (Included vs Excluded)",
+        "Scene S19 Outro and Video 03 Teaser Card"
+      ]
+    },
+    "CodeStudioRenderer": {
+      "responsibilities": [
+        "Master frame layout composition",
+        "File tree state management",
+        "Recording-safe UI validation and HTML frame rendering",
+        "Scene-by-scene action routing"
+      ]
+    },
+    "CodeVideoUIFrontend": {
+      "responsibilities": [
+        "React component rendering for capture browser",
+        "ReplayController client-side seek and animation",
+        "Clean dark theme CSS styling"
+      ]
+    }
+  },
+  "created_at_utc": "2026-08-18T00:00:00+00:00"
+}

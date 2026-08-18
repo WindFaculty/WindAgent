@@ -2,11 +2,37 @@
 Code Video Tools Package for WindAgent.
 
 Provides workspace management, sandbox isolation, repository building,
-incremental checkpoint tracking, and security scanning for code video creation.
+incremental checkpoint tracking, security scanning, and studio rendering for code video creation.
 """
 
 from __future__ import annotations
 
+from windagent_tools.code_video.renderer import (
+    ChecklistItem,
+    ChecklistItemStatus,
+    ChecklistState,
+    CodeEditorRenderer,
+    CodeEditorState,
+    CodeStudioRenderer,
+    CodeToken,
+    DiagramEdge,
+    DiagramNode,
+    DiagramRenderer,
+    DiagramState,
+    FileTreeItem,
+    FileTreeState,
+    NodeCategory,
+    OutroCardState,
+    PythonSyntaxHighlighter,
+    PythonTokenType,
+    StudioLayoutState,
+    TerminalLine,
+    TerminalLineType,
+    TerminalRenderer,
+    TerminalState,
+    TitleCardState,
+    TitleRenderer,
+)
 from windagent_tools.code_video.workspace.checkpoints import (
     CheckpointManager,
     CheckpointRecord,
@@ -66,5 +92,29 @@ __all__ = [
     "SecurityScanReport",
     "WorkspaceSecretScanner",
     "LEAK_PATTERNS",
+    # Renderer Subsystem
+    "PythonTokenType",
+    "CodeToken",
+    "PythonSyntaxHighlighter",
+    "CodeEditorState",
+    "CodeEditorRenderer",
+    "TerminalLineType",
+    "TerminalLine",
+    "TerminalState",
+    "TerminalRenderer",
+    "NodeCategory",
+    "DiagramNode",
+    "DiagramEdge",
+    "DiagramState",
+    "DiagramRenderer",
+    "ChecklistItemStatus",
+    "ChecklistItem",
+    "TitleCardState",
+    "ChecklistState",
+    "OutroCardState",
+    "TitleRenderer",
+    "FileTreeItem",
+    "FileTreeState",
+    "StudioLayoutState",
+    "CodeStudioRenderer",
 ]
-

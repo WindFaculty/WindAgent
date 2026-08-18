@@ -1,0 +1,83 @@
+{
+  "phase": "phase_05",
+  "workflow": "code_video",
+  "video_id": "video-02",
+  "implementation_units": [
+    {
+      "module": "windagent_tools.code_video.renderer.code_renderer",
+      "path": "tools/windagent_tools/code_video/renderer/code_renderer.py",
+      "symbols": [
+        "PythonTokenType",
+        "CodeToken",
+        "PythonSyntaxHighlighter",
+        "CodeEditorState",
+        "CodeEditorRenderer"
+      ],
+      "description": "Python syntax highlighter, tokenization, editor state machine, selection, highlights, and zoom"
+    },
+    {
+      "module": "windagent_tools.code_video.renderer.terminal_renderer",
+      "path": "tools/windagent_tools/code_video/renderer/terminal_renderer.py",
+      "symbols": [
+        "TerminalLineType",
+        "TerminalLine",
+        "TerminalState",
+        "TerminalRenderer"
+      ],
+      "description": "Deterministic terminal playback, prompt sanitization, command typing, stdout/stderr formatting, and exit code rendering"
+    },
+    {
+      "module": "windagent_tools.code_video.renderer.diagram_renderer",
+      "path": "tools/windagent_tools/code_video/renderer/diagram_renderer.py",
+      "symbols": [
+        "NodeCategory",
+        "DiagramNode",
+        "DiagramEdge",
+        "DiagramState",
+        "DiagramRenderer"
+      ],
+      "description": "Architecture & concept diagram renderer for scenes S03, S04, S11, S17 with high-contrast SVG output"
+    },
+    {
+      "module": "windagent_tools.code_video.renderer.title_renderer",
+      "path": "tools/windagent_tools/code_video/renderer/title_renderer.py",
+      "symbols": [
+        "ChecklistItemStatus",
+        "ChecklistItem",
+        "TitleCardState",
+        "ChecklistState",
+        "OutroCardState",
+        "TitleRenderer"
+      ],
+      "description": "Title card (S02), feature scope checklist (S16), and outro teaser (S19) renderers"
+    },
+    {
+      "module": "windagent_tools.code_video.renderer.studio_renderer",
+      "path": "tools/windagent_tools/code_video/renderer/studio_renderer.py",
+      "symbols": [
+        "FileTreeItem",
+        "FileTreeState",
+        "StudioLayoutState",
+        "CodeStudioRenderer"
+      ],
+      "description": "Master Code Studio layout orchestrator with recording-safe guarantees and 9 visual modes"
+    },
+    {
+      "package": "@windagent/code-video-ui",
+      "path": "frontend/packages/code-video-ui",
+      "components": [
+        "CodeStudio",
+        "CodeEditor",
+        "Terminal",
+        "FileTree",
+        "DiagramStage",
+        "TitleCard",
+        "ChecklistStage",
+        "Overlay",
+        "ReplayController"
+      ],
+      "description": "Frontend React/TypeScript UI component library for deterministic video capture"
+    }
+  ],
+  "created_at_utc": "2026-08-18T00:00:00+00:00"
+}

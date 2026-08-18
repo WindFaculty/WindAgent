@@ -1,0 +1,31 @@
+{
+  "phase": "phase_05",
+  "workflow": "code_video",
+  "video_id": "video-02",
+  "gate": "CV02_P5_CODE_STUDIO_RENDERER_VERIFIED",
+  "verdict": "PASS",
+  "conditions": [
+    "CodeStudioRenderer cung cấp đầy đủ layout phòng thu chuyên dụng gồm FileTree, CodeEditor, Terminal và DiagramStage",
+    "PythonSyntaxHighlighter tokenization và highlight chính xác các thành phần ngôn ngữ Python",
+    "TerminalRenderer mô phỏng thực thi PowerShell xác định, làm sạch path và hiển thị exit code badge",
+    "DiagramRenderer sinh sơ đồ vector SVG tương phản cao cho cả 4 phân cảnh kiến trúc (S03, S04, S11, S17)",
+    "TitleRenderer và ChecklistStage hỗ trợ hiển thị tiêu đề S02, bảng kiểm tra ranh giới phạm vi S16 và teaser S19",
+    "Tuân thủ triệt để tiêu chuẩn Recording-Safe UI: không popup, không hostname, không clock hệ thống",
+    "Gói React/TypeScript @windagent/code-video-ui hoàn thành đầy đủ component và pass 100% typecheck",
+    "Toàn bộ 67/67 tests trong test suite đều PASS 100%"
+  ],
+  "evidence_files": [
+    "input_manifest.json",
+    "implementation_manifest.json",
+    "test_receipt.json",
+    "architecture_report.json",
+    "phase_report.md",
+    "tools/windagent_tools/code_video/renderer/code_renderer.py",
+    "tools/windagent_tools/code_video/renderer/terminal_renderer.py",
+    "tools/windagent_tools/code_video/renderer/diagram_renderer.py",
+    "tools/windagent_tools/code_video/renderer/title_renderer.py",
+    "tools/windagent_tools/code_video/renderer/studio_renderer.py",
+    "frontend/packages/code-video-ui/src/CodeStudio.tsx"
+  ],
+  "decided_at_utc": "2026-08-18T00:00:00+00:00"
+}

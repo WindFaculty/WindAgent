@@ -1,0 +1,35 @@
+{
+  "phase": "phase_05",
+  "workflow": "code_video",
+  "video_id": "video-02",
+  "input_sources": [
+    {
+      "path": "ban_ke_hoach_video_02.md",
+      "type": "specification_and_plan",
+      "description": "Phase 5 specifications for Code Studio Renderer and Recording-Safe UI requirements"
+    },
+    {
+      "path": "artifacts/code_video/video_02/plans/video_02_plan.json",
+      "type": "compiled_video_plan",
+      "description": "Phase 4 compiled intermediate representation plan with 19 scenes and semantic actions"
+    },
+    {
+      "path": "artifacts/code_video/video_02/phase_03/implementation_manifest.json",
+      "type": "golden_tutorial_manifest",
+      "description": "Phase 3 golden tutorial checkpoints and verified code snippets"
+    },
+    {
+      "path": "workflows/windagent_workflows/code_video/contracts.py",
+      "type": "contracts",
+      "description": "Domain data structures (Action, Scene, VisualMode, Resolution, CodeVideoPlan)"
+    }
+  ],
+  "dependencies": {
+    "phase_00": "FROZEN",
+    "phase_01": "VERIFIED",
+    "phase_02": "VERIFIED",
+    "phase_03": "VERIFIED",
+    "phase_04": "VERIFIED"
+  },
+  "created_at_utc": "2026-08-18T00:00:00+00:00"
+}
