@@ -1,0 +1,92 @@
+{
+  "phase": "phase_01",
+  "workflow": "code_video",
+  "video_id": "video-02",
+  "gate": "CV02_P1_PLAN_CONTRACT_VERIFIED",
+  "test_suite": "tests/contracts/test_code_video_contracts.py",
+  "summary": {
+    "total": 16,
+    "passed": 16,
+    "failed": 0,
+    "skipped": 0,
+    "duration_seconds": 0.85
+  },
+  "checks": [
+    {
+      "id": "schema_roundtrip",
+      "description": "CodeVideoPlan roundtrips perfectly through dict, JSON, and YAML without loss of precision",
+      "result": "PASS"
+    },
+    {
+      "id": "duplicate_scene_id_rejection",
+      "description": "Duplicate scene IDs are detected and rejected with ValidationError",
+      "result": "PASS"
+    },
+    {
+      "id": "duplicate_action_id_rejection",
+      "description": "Duplicate action IDs within a scene are detected and rejected",
+      "result": "PASS"
+    },
+    {
+      "id": "overlapping_scene_rejection",
+      "description": "Overlapping scenes in timeline are detected and rejected",
+      "result": "PASS"
+    },
+    {
+      "id": "timeline_gap_rejection",
+      "description": "Gaps between contiguous scenes are detected and rejected",
+      "result": "PASS"
+    },
+    {
+      "id": "action_bounds_validation",
+      "description": "Actions starting before or extending beyond scene bounds are rejected",
+      "result": "PASS"
+    },
+    {
+      "id": "non_integer_duration_rejection",
+      "description": "Floating-point, boolean, and negative durations are rejected at dataclass initialization",
+      "result": "PASS"
+    },
+    {
+      "id": "plan_duration_sum_check",
+      "description": "Plan duration mismatch with sum of scene durations is detected and rejected",
+      "result": "PASS"
+    },
+    {
+      "id": "semantic_action_pixel_rejection",
+      "description": "Raw screen/pixel coordinate parameters (x, y, pixel_x, etc.) are strictly forbidden and rejected",
+      "result": "PASS"
+    },
+    {
+      "id": "unknown_action_type_rejection",
+      "description": "Unregistered action types raise ValidationError during parsing",
+      "result": "PASS"
+    },
+    {
+      "id": "missing_source_hash_rejection",
+      "description": "Empty or missing script source_hash raises ValidationError",
+      "result": "PASS"
+    },
+    {
+      "id": "audio_forbidden_fields_rejection",
+      "description": "Audio fields (audio_path, tts_model, voice_id) are strictly rejected",
+      "result": "PASS"
+    },
+    {
+      "id": "voice_cue_sheet_csv_generation",
+      "description": "Voice cue sheet CSV with MM:SS.mmm timecodes generated accurately",
+      "result": "PASS"
+    },
+    {
+      "id": "workflow_step_dag",
+      "description": "9 linear workflow steps successfully build ProductionStepNode dependency graph",
+      "result": "PASS"
+    },
+    {
+      "id": "step_contracts_lookup",
+      "description": "All 9 step contracts retrievable with correct artifact types and retry policies",
+      "result": "PASS"
+    }
+  ],
+  "gate_result": "PASS"
+}

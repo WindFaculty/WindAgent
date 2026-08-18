@@ -1,0 +1,42 @@
+{
+  "phase": "phase_01",
+  "workflow": "code_video",
+  "video_id": "video-02",
+  "gate": "CV02_P1_PLAN_CONTRACT_VERIFIED",
+  "inputs": {
+    "plan_document": {
+      "file": "ban_ke_hoach_video_02.md",
+      "section": "PHASE 1 — CODE VIDEO CONTRACT & IR"
+    },
+    "script": {
+      "file": "artifacts/code_video/video_02/source/script.md",
+      "sha256": "b2c9d46fd74cccc5f48de8509ceef41aec2dfb8db63a78c733a3d961ec1bec6c"
+    },
+    "phase_00_verdict": {
+      "gate": "CV02_P0_BASELINE_FROZEN",
+      "verdict": "PASS"
+    }
+  },
+  "specifications": {
+    "time_unit": "integer milliseconds (start_ms, end_ms, duration_ms)",
+    "semantic_actions_only": true,
+    "forbidden_pixel_coordinates": ["x", "y", "pixel_x", "pixel_y", "coord_x", "coord_y", "screen_x", "screen_y", "mouse_x", "mouse_y", "click_x", "click_y"],
+    "audio_policy": "EXCLUDED",
+    "forbidden_audio_keys": ["audio_path", "tts_model", "voice_id", "voice_audio", "bgm_path", "audio_file"],
+    "supported_visual_modes": ["CODE_STUDIO", "FULL_CODE", "FULL_TERMINAL", "DIAGRAM", "TITLE_CARD", "CHECKLIST", "ARCHITECTURE", "SPLIT", "OUTRO"],
+    "supported_action_types": [
+      "OPEN_WORKSPACE", "OPEN_FILE", "CREATE_FILE", "TYPE_TEXT", "REPLACE_TEXT",
+      "SELECT_RANGE", "HIGHLIGHT", "SCROLL", "ZOOM", "RUN_TERMINAL",
+      "WAIT", "SHOW_OUTPUT", "SHOW_DIAGRAM", "SHOW_TITLE", "SHOW_CHECKLIST",
+      "SHOW_ARCHITECTURE", "SWITCH_LAYOUT", "RESET_VIEW"
+    ]
+  },
+  "outputs": {
+    "workflow_package": "workflows/windagent_workflows/code_video/",
+    "contracts_module": "workflows/windagent_workflows/code_video/contracts.py",
+    "definition_module": "workflows/windagent_workflows/code_video/definition.py",
+    "tools_package": "tools/windagent_tools/code_video/",
+    "test_suite": "tests/contracts/test_code_video_contracts.py"
+  },
+  "created_at_utc": "2026-08-18T00:00:00+00:00"
+}

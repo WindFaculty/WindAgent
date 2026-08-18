@@ -1,0 +1,43 @@
+{
+  "phase": "phase_01",
+  "workflow": "code_video",
+  "video_id": "video-02",
+  "gate": "CV02_P1_PLAN_CONTRACT_VERIFIED",
+  "implementation": {
+    "modules_created": [
+      {
+        "path": "workflows/windagent_workflows/code_video/contracts.py",
+        "description": "Intermediate representation dataclasses (CodeVideoPlan, Scene, Action, ExpectedState, Annotation, OutputPolicy, Resolution), Enums (ActionType, VisualMode), validators, serializers (dict, JSON, YAML) and voice cue sheet exporter"
+      },
+      {
+        "path": "workflows/windagent_workflows/code_video/definition.py",
+        "description": "9 durable workflow steps (COMPILE_PLAN through FINAL_QC), approval gates, step contracts, retry policies, and ProductionStepNode DAG builder"
+      },
+      {
+        "path": "workflows/windagent_workflows/code_video/__init__.py",
+        "description": "Public export interface for code_video workflow contracts and definitions"
+      },
+      {
+        "path": "tools/windagent_tools/code_video/__init__.py",
+        "description": "Tool namespace initialization for code video subsystems"
+      },
+      {
+        "path": "tests/contracts/test_code_video_contracts.py",
+        "description": "Complete test suite validating schema roundtrip, non-integer/negative timing rejection, duplicate ID rejection, bounds checking, semantic action rules, audio parameter rejection, and workflow definitions"
+      }
+    ]
+  },
+  "files_created": [
+    "workflows/windagent_workflows/code_video/__init__.py",
+    "workflows/windagent_workflows/code_video/contracts.py",
+    "workflows/windagent_workflows/code_video/definition.py",
+    "tools/windagent_tools/code_video/__init__.py",
+    "tests/contracts/test_code_video_contracts.py",
+    "artifacts/code_video/video_02/phase_01/input_manifest.json",
+    "artifacts/code_video/video_02/phase_01/implementation_manifest.json",
+    "artifacts/code_video/video_02/phase_01/test_receipt.json",
+    "artifacts/code_video/video_02/phase_01/architecture_report.json",
+    "artifacts/code_video/video_02/phase_01/phase_report.md",
+    "artifacts/code_video/video_02/phase_01/phase_verdict.json"
+  ]
+}

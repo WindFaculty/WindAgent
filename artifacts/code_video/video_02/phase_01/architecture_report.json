@@ -1,0 +1,42 @@
+{
+  "phase": "phase_01",
+  "workflow": "code_video",
+  "video_id": "video-02",
+  "gate": "CV02_P1_PLAN_CONTRACT_VERIFIED",
+  "architecture": {
+    "intermediate_representation": {
+      "root_class": "CodeVideoPlan",
+      "granularity": "Scene -> Action, ExpectedState, Annotation",
+      "timing_precision": "Integer milliseconds",
+      "coordinate_system": "Semantic-only (symbol, line range, command, path; zero pixel dependency)",
+      "serialization_targets": ["dict", "JSON", "YAML"]
+    },
+    "workflow_definition": {
+      "package": "workflows/windagent_workflows/code_video/",
+      "step_count": 9,
+      "steps": [
+        "COMPILE_PLAN",
+        "BUILD_WORKSPACE",
+        "VERIFY_TUTORIAL",
+        "RENDER_STUDIO",
+        "RUN_REPLAY",
+        "CAPTURE_TAKES",
+        "RENDER_GRAPHICS",
+        "ASSEMBLE_MASTER",
+        "FINAL_QC"
+      ]
+    },
+    "tool_layer": {
+      "package": "tools/windagent_tools/code_video/",
+      "planned_submodules": ["workspace", "renderer", "capture", "media"]
+    }
+  },
+  "compliance": {
+    "audio_scope": "EXCLUDED (voice_cue_id retained for downstream dubbing cue sheet)",
+    "tool_calling": "OUT_OF_SCOPE",
+    "video_duration_target_ms": 975000,
+    "master_resolution": "2560x1440",
+    "delivery_resolution": "1920x1080"
+  },
+  "verdict": "READY_FOR_PHASE_2"
+}

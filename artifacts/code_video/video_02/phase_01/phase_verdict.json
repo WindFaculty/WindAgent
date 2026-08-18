@@ -1,0 +1,29 @@
+{
+  "phase": "phase_01",
+  "workflow": "code_video",
+  "video_id": "video-02",
+  "gate": "CV02_P1_PLAN_CONTRACT_VERIFIED",
+  "verdict": "PASS",
+  "conditions": [
+    "schema roundtrip (dict, JSON, YAML) hoạt động 100% không mất mát dữ liệu",
+    "chặn trùng lặp scene ID và action ID",
+    "chặn overlapping scenes và khoảng hở timeline (gaps)",
+    "action timing được kiểm tra chặt chẽ trong bounds của Scene",
+    "mọi mốc thời gian dùng integer milliseconds (chặn float, negative)",
+    "cấm tuyệt đối action dựa trên tọa độ pixel (x, y)",
+    "chặn unknown action types",
+    "bắt buộc source script hash (SHA256)",
+    "audio policy EXCLUDED được bảo đảm (chặn audio_path, tts_model, voice_id)",
+    "hỗ trợ xuất voice cue sheet CSV phục vụ lồng tiếng",
+    "workflow step definition và DAG scheduling graph đầy đủ cho 9 bước",
+    "toàn bộ 16 automated tests trong test suite đều PASS"
+  ],
+  "evidence_files": [
+    "input_manifest.json",
+    "implementation_manifest.json",
+    "test_receipt.json",
+    "architecture_report.json",
+    "phase_report.md"
+  ],
+  "decided_at_utc": "2026-08-18T00:00:00+00:00"
+}
