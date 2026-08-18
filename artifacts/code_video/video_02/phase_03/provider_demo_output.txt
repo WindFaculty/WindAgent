@@ -1,0 +1,2 @@
+User: Hello, what can you do?
+Agent: Hello! I am your simple AI Agent running on Agentic Studio v0.1.

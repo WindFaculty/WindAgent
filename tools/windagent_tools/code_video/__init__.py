@@ -11,6 +11,18 @@ from windagent_tools.code_video.workspace.checkpoints import (
     CheckpointManager,
     CheckpointRecord,
 )
+from windagent_tools.code_video.workspace.golden_builder import (
+    CHECKPOINT_STEPS,
+    CheckpointDefinition,
+    GoldenTutorialBuilder,
+    STEP_01_MESSAGE_CODE,
+    STEP_02_CONFIG_CODE,
+    STEP_03_PROTOCOL_CODE,
+    STEP_04_FAKE_LLM_CODE,
+    STEP_05_AGENT_CODE,
+    STEP_06_TESTS_CODE,
+    STEP_07_FINAL_AGENT_CODE,
+)
 from windagent_tools.code_video.workspace.repository_builder import (
     DEFAULT_ENV_EXAMPLE,
     DEFAULT_GITIGNORE,
@@ -38,9 +50,21 @@ __all__ = [
     # Checkpoints
     "CheckpointRecord",
     "CheckpointManager",
+    # Golden Tutorial Builder
+    "GoldenTutorialBuilder",
+    "CheckpointDefinition",
+    "CHECKPOINT_STEPS",
+    "STEP_01_MESSAGE_CODE",
+    "STEP_02_CONFIG_CODE",
+    "STEP_03_PROTOCOL_CODE",
+    "STEP_04_FAKE_LLM_CODE",
+    "STEP_05_AGENT_CODE",
+    "STEP_06_TESTS_CODE",
+    "STEP_07_FINAL_AGENT_CODE",
     # Security Scanner
     "SecurityViolation",
     "SecurityScanReport",
     "WorkspaceSecretScanner",
     "LEAK_PATTERNS",
 ]
+

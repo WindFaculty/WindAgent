@@ -1,0 +1,31 @@
+{
+  "phase": "phase_03",
+  "workflow": "code_video",
+  "video_id": "video-02",
+  "gate": "CV02_P3_GOLDEN_TUTORIAL_VERIFIED",
+  "verdict": "PASS",
+  "conditions": [
+    "xây dựng thành công toàn bộ mã nguồn Golden Tutorial trong isolated workspace",
+    "Message bất biến và kiểm soát chặt chẽ danh sách role hợp lệ",
+    "AgentConfig xác thực đầy đủ các tham số và miền giá trị hợp lệ",
+    "LLMClient Protocol phân tách hoàn hảo tầng Domain và tầng Infrastructure",
+    "FakeLLMClient hoạt động deterministic offline không phụ thuộc mạng",
+    "Agent điều phối luồng thực thi chuẩn xác theo kiến trúc User -> Agent -> LLM -> Answer",
+    "pytest trong sandbox trả về chính xác 2 passed và chặn SCRIPT_RUNTIME_MISMATCH",
+    "kết quả demo thực tế với Provider được freeze thành receipt cố định",
+    "kho lưu trữ tutorial được gắn commit milestone và 2 git tags (video-02, v0.1)",
+    "toàn bộ 9 checkpoint được lưu trữ và kiểm thử toàn vẹn SHA-256",
+    "WorkspaceSecretScanner xác nhận không có bất kỳ secret nào bị rò rỉ",
+    "toàn bộ 39 unit/contract tests trong hệ thống đều PASS 100%"
+  ],
+  "evidence_files": [
+    "input_manifest.json",
+    "implementation_manifest.json",
+    "test_receipt.json",
+    "architecture_report.json",
+    "phase_report.md",
+    "provider_demo_receipt.json",
+    "provider_demo_output.txt"
+  ],
+  "decided_at_utc": "2026-08-18T00:00:00+00:00"
+}

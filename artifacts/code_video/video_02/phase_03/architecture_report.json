@@ -1,0 +1,80 @@
+{
+  "phase": "phase_03",
+  "workflow": "code_video",
+  "video_id": "video-02",
+  "gate": "CV02_P3_GOLDEN_TUTORIAL_VERIFIED",
+  "architecture_analysis": {
+    "domain_vs_infrastructure_separation": {
+      "status": "STRICTLY_ENFORCED",
+      "domain_layer": [
+        "Message (immutable dataclass)",
+        "AgentConfig (frozen dataclass)",
+        "LLMClient (Protocol abstraction)",
+        "FakeLLMClient (offline test fake)",
+        "Agent (pure orchestrator)"
+      ],
+      "infrastructure_layer": [
+        "OpenAICompatibleProvider (HTTP adapter with environment credentials)"
+      ],
+      "dependency_direction": "Agent -> LLMClient Protocol (Zero vendor SDK dependencies)"
+    },
+    "checkpoint_progression": [
+      {
+        "id": "cp_00_init",
+        "step": "3.1",
+        "scope": "Repository initialization and initial scaffold"
+      },
+      {
+        "id": "cp_01_message",
+        "step": "3.2",
+        "scope": "Message representation and role validation"
+      },
+      {
+        "id": "cp_02_config",
+        "step": "3.3",
+        "scope": "AgentConfig parameter definition"
+      },
+      {
+        "id": "cp_03_llm_protocol",
+        "step": "3.4",
+        "scope": "LLMClient protocol interface definition"
+      },
+      {
+        "id": "cp_04_fake_llm",
+        "step": "3.5",
+        "scope": "Deterministic FakeLLMClient implementation"
+      },
+      {
+        "id": "cp_05_agent",
+        "step": "3.6",
+        "scope": "Agent execution flow implementation"
+      },
+      {
+        "id": "cp_06_tests",
+        "step": "3.7",
+        "scope": "Test suite verification (exact 2 passed)"
+      },
+      {
+        "id": "cp_07_provider",
+        "step": "3.8",
+        "scope": "Provider adapter & preflight freeze"
+      },
+      {
+        "id": "cp_09_v0_1",
+        "step": "3.9",
+        "scope": "Git commit milestone and tags (video-02, v0.1)"
+      }
+    ],
+    "production_preflight_freeze": {
+      "policy": "NO_LIVE_PROVIDER_DEPENDENCY_IN_RECORDINGS",
+      "receipt_path": "artifacts/code_video/video_02/phase_03/provider_demo_receipt.json",
+      "output_path": "artifacts/code_video/video_02/phase_03/provider_demo_output.txt"
+    }
+  },
+  "compliance": {
+    "tool_calling_in_runtime": "OUT_OF_SCOPE",
+    "audio_generation": "EXCLUDED",
+    "secret_leak_risk": "ZERO_DETECTED"
+  },
+  "evaluated_at_utc": "2026-08-18T00:00:00+00:00"
+}

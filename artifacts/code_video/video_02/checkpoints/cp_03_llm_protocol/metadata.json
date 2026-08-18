@@ -1,0 +1,19 @@
+{
+  "checkpoint_id": "cp_03_llm_protocol",
+  "name": "LLMClient Protocol",
+  "description": "Domain abstraction protocol for LLM interactions without SDK coupling",
+  "timestamp_utc": "2026-08-18T01:48:51.549192+00:00",
+  "file_hashes": {
+    ".env.example": "9c36d93e7759842b50415493b7215b64a71433b8b57d1f832f48fb831e1ceb6f",
+    ".gitignore": "34d4bc089db2e470caa1c3e336f0ceed77e205d9ae91a5861b4e40cb2fbd7171",
+    "README.md": "0e35d0c90bd91ea81c5630fa8ad4efd5e82df81ffa4550f6761a994b3505e47f",
+    "pyproject.toml": "65bee8b48da21be070f1820bca9eb4c151710d192e7fde9c0dcc75f0194603a7",
+    "src/__init__.py": "c94fbd1bb6c15331ef3ef1ead0c5ecc4c421ef5f72a0fbe0a1acaaa6e4cb56ae",
+    "src/agent.py": "3a400b5c8e7eec2c8b6aa099ea98b1117b761771aad1e7e3a1fa448114300c14",
+    "tests/__init__.py": "12158d9a9127237c1a2b50e665ce971f28134309b2f3d29896273941198f2b33",
+    "tests/test_agent.py": "12158d9a9127237c1a2b50e665ce971f28134309b2f3d29896273941198f2b33"
+  },
+  "state_hash": "7238945f1f80055c8194ba5d9aa0864a67c3e720054ab23b4d13a02e1c27ccda",
+  "git_commit_sha": null,
+  "extra_metadata": {}
+}

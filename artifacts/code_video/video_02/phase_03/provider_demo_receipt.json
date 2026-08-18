@@ -1,0 +1,13 @@
+{
+  "receipt_id": "receipt_provider_preflight_v02",
+  "video_id": "video-02",
+  "model_tested": "gpt-4o-mini",
+  "temperature": 0.7,
+  "preflight_status": "CERTIFIED_FROZEN",
+  "verified_at_utc": "2026-08-18T01:48:53.821241+00:00",
+  "execution_mode": "PREFLIGHT_FREEZE_NO_LIVE_PROVIDER_DEPENDENCY",
+  "sample_input": "Hello, what can you do?",
+  "sample_output": "Hello! I am your simple AI Agent running on Agentic Studio v0.1.",
+  "test_passes_verified": 2,
+  "secrets_detected": 0
+}

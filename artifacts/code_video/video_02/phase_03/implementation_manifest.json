@@ -1,0 +1,41 @@
+{
+  "phase": "phase_03",
+  "workflow": "code_video",
+  "video_id": "video-02",
+  "gate": "CV02_P3_GOLDEN_TUTORIAL_VERIFIED",
+  "implementation": {
+    "modules_created": [
+      {
+        "path": "tools/windagent_tools/code_video/workspace/golden_builder.py",
+        "description": "GoldenTutorialBuilder orchestrating incremental checkpoint generation, AST validation, pytest execution, and git milestone tagging"
+      },
+      {
+        "path": "tests/contracts/test_code_video_golden_tutorial.py",
+        "description": "Full contract test suite validating Message immutability, AgentConfig bounds, LLMClient protocol, FakeLLMClient, Agent orchestration, pytest verification, and secret prevention"
+      }
+    ],
+    "checkpoints_generated": [
+      "artifacts/code_video/video_02/checkpoints/cp_00_init",
+      "artifacts/code_video/video_02/checkpoints/cp_01_message",
+      "artifacts/code_video/video_02/checkpoints/cp_02_config",
+      "artifacts/code_video/video_02/checkpoints/cp_03_llm_protocol",
+      "artifacts/code_video/video_02/checkpoints/cp_04_fake_llm",
+      "artifacts/code_video/video_02/checkpoints/cp_05_agent",
+      "artifacts/code_video/video_02/checkpoints/cp_06_tests",
+      "artifacts/code_video/video_02/checkpoints/cp_07_provider",
+      "artifacts/code_video/video_02/checkpoints/cp_09_v0_1"
+    ]
+  },
+  "files_created": [
+    "tools/windagent_tools/code_video/workspace/golden_builder.py",
+    "tests/contracts/test_code_video_golden_tutorial.py",
+    "artifacts/code_video/video_02/phase_03/input_manifest.json",
+    "artifacts/code_video/video_02/phase_03/implementation_manifest.json",
+    "artifacts/code_video/video_02/phase_03/test_receipt.json",
+    "artifacts/code_video/video_02/phase_03/architecture_report.json",
+    "artifacts/code_video/video_02/phase_03/phase_report.md",
+    "artifacts/code_video/video_02/phase_03/phase_verdict.json",
+    "artifacts/code_video/video_02/phase_03/provider_demo_receipt.json",
+    "artifacts/code_video/video_02/phase_03/provider_demo_output.txt"
+  ]
+}

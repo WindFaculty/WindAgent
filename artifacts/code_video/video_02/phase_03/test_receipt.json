@@ -1,0 +1,66 @@
+{
+  "phase": "phase_03",
+  "workflow": "code_video",
+  "video_id": "video-02",
+  "gate": "CV02_P3_GOLDEN_TUTORIAL_VERIFIED",
+  "test_execution": {
+    "command": "pytest tests/contracts/test_code_video_golden_tutorial.py -v",
+    "exit_code": 0,
+    "total_tests": 9,
+    "passed": 9,
+    "failed": 0,
+    "skipped": 0,
+    "tests": [
+      {
+        "nodeid": "tests/contracts/test_code_video_golden_tutorial.py::TestGoldenTutorialStepCodeContracts::test_step_01_message_contract",
+        "status": "PASSED"
+      },
+      {
+        "nodeid": "tests/contracts/test_code_video_golden_tutorial.py::TestGoldenTutorialStepCodeContracts::test_step_02_config_contract",
+        "status": "PASSED"
+      },
+      {
+        "nodeid": "tests/contracts/test_code_video_golden_tutorial.py::TestGoldenTutorialStepCodeContracts::test_step_03_protocol_contract",
+        "status": "PASSED"
+      },
+      {
+        "nodeid": "tests/contracts/test_code_video_golden_tutorial.py::TestGoldenTutorialStepCodeContracts::test_step_04_fake_llm_contract",
+        "status": "PASSED"
+      },
+      {
+        "nodeid": "tests/contracts/test_code_video_golden_tutorial.py::TestGoldenTutorialStepCodeContracts::test_step_05_agent_contract",
+        "status": "PASSED"
+      },
+      {
+        "nodeid": "tests/contracts/test_code_video_golden_tutorial.py::TestGoldenTutorialStepCodeContracts::test_step_07_provider_adapter_contract",
+        "status": "PASSED"
+      },
+      {
+        "nodeid": "tests/contracts/test_code_video_golden_tutorial.py::TestGoldenTutorialBuilderLifecycle::test_full_golden_tutorial_build_lifecycle",
+        "status": "PASSED"
+      },
+      {
+        "nodeid": "tests/contracts/test_code_video_golden_tutorial.py::TestGoldenTutorialBuilderLifecycle::test_runtime_mismatch_rejection",
+        "status": "PASSED"
+      },
+      {
+        "nodeid": "tests/contracts/test_code_video_golden_tutorial.py::TestGoldenTutorialBuilderLifecycle::test_secret_leak_prevention_in_builder",
+        "status": "PASSED"
+      }
+    ]
+  },
+  "sandbox_pytest_execution": {
+    "command": "pytest",
+    "passed_count": 2,
+    "status": "VERIFIED_EXACT_MATCH"
+  },
+  "git_milestone_verification": {
+    "commit_message": "feat: build simple agent core",
+    "tags": [
+      "v0.1",
+      "video-02"
+    ],
+    "status": "CERTIFIED"
+  },
+  "executed_at_utc": "2026-08-18T00:00:00+00:00"
+}

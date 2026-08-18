@@ -1,0 +1,52 @@
+{
+  "phase": "phase_03",
+  "workflow": "code_video",
+  "video_id": "video-02",
+  "gate": "CV02_P3_GOLDEN_TUTORIAL_VERIFIED",
+  "inputs": {
+    "plan_document": {
+      "file": "ban_ke_hoach_video_02.md",
+      "section": "PHASE 3 — BUILD GOLDEN TUTORIAL"
+    },
+    "script_document": {
+      "file": "artifacts/code_video/video_02/source/script.md",
+      "sha256": "4b2cfb698cf1155dc4b341fbe148c3b7a8a0f074d2847c23bc9976377e8ef6ae"
+    },
+    "phase_02_verdict": {
+      "gate": "CV02_P2_SANDBOX_READY",
+      "verdict": "PASS"
+    }
+  },
+  "specifications": {
+    "tutorial_project": "agentic-studio",
+    "milestone": "v0.1",
+    "required_checkpoints": [
+      "cp_00_init",
+      "cp_01_message",
+      "cp_02_config",
+      "cp_03_llm_protocol",
+      "cp_04_fake_llm",
+      "cp_05_agent",
+      "cp_06_tests",
+      "cp_07_provider",
+      "cp_09_v0_1"
+    ],
+    "verification_rules": {
+      "domain_isolation": "Agent core must not import vendor provider SDKs",
+      "immutability": "Message dataclass must be frozen with role validation",
+      "offline_fake": "FakeLLMClient must operate offline with deterministic responses",
+      "pytest_target": "Exact 2 passed tests, reject SCRIPT_RUNTIME_MISMATCH",
+      "provider_preflight": "Real provider execution frozen to deterministic receipts",
+      "git_milestone": "Repository commits 'feat: build simple agent core' and tags 'video-02', 'v0.1'",
+      "zero_secrets": "Zero API keys or credentials allowed in code or logs"
+    }
+  },
+  "outputs": {
+    "golden_builder_module": "tools/windagent_tools/code_video/workspace/golden_builder.py",
+    "test_suite": "tests/contracts/test_code_video_golden_tutorial.py",
+    "checkpoint_store": "artifacts/code_video/video_02/checkpoints/",
+    "preflight_receipt": "artifacts/code_video/video_02/phase_03/provider_demo_receipt.json",
+    "preflight_output": "artifacts/code_video/video_02/phase_03/provider_demo_output.txt"
+  },
+  "created_at_utc": "2026-08-18T00:00:00+00:00"
+}
