@@ -1,0 +1,82 @@
+{
+  "phase": "phase_02",
+  "workflow": "code_video",
+  "video_id": "video-02",
+  "gate": "CV02_P2_SANDBOX_READY",
+  "test_suite": "tests/contracts/test_code_video_workspace.py",
+  "summary": {
+    "total": 14,
+    "passed": 14,
+    "failed": 0,
+    "skipped": 0,
+    "duration_seconds": 0.65
+  },
+  "checks": [
+    {
+      "id": "workspace_isolation_enforced",
+      "description": "Tutorial workspace creation inside host source trees is blocked with PermissionDeniedError",
+      "result": "PASS"
+    },
+    {
+      "id": "path_traversal_denial",
+      "description": "Relative and malicious path traversal attempts (../outside.txt) are blocked by PathSandbox",
+      "result": "PASS"
+    },
+    {
+      "id": "safe_shell_execution",
+      "description": "SafeShellRunner executes commands with timeout and redaction in isolated workspace",
+      "result": "PASS"
+    },
+    {
+      "id": "scaffold_generation_and_validation",
+      "description": "TutorialRepositoryBuilder creates all 8 required tutorial files and validates structure",
+      "result": "PASS"
+    },
+    {
+      "id": "missing_scaffold_file_detection",
+      "description": "Missing required files in tutorial workspace are detected with ValidationError",
+      "result": "PASS"
+    },
+    {
+      "id": "gitignore_env_protection",
+      "description": ".gitignore is verified to explicitly contain .env rule",
+      "result": "PASS"
+    },
+    {
+      "id": "env_example_placeholder_check",
+      "description": ".env.example is validated to ensure zero real credentials exist",
+      "result": "PASS"
+    },
+    {
+      "id": "checkpoint_capture_and_restore",
+      "description": "CheckpointManager captures immutable file snapshots and restores exact workspace state",
+      "result": "PASS"
+    },
+    {
+      "id": "checkpoint_verification_hash",
+      "description": "File content alterations are detected by CheckpointManager state hash verification",
+      "result": "PASS"
+    },
+    {
+      "id": "clean_workspace_security_pass",
+      "description": "Clean tutorial workspace passes security scanner with zero violations",
+      "result": "PASS"
+    },
+    {
+      "id": "openai_key_leak_detection",
+      "description": "Exposed sk-... key is detected and blocked with PermissionDeniedError",
+      "result": "PASS"
+    },
+    {
+      "id": "google_api_key_leak_detection",
+      "description": "Exposed AIza... key is detected in files and .env",
+      "result": "PASS"
+    },
+    {
+      "id": "bearer_and_groq_key_detection",
+      "description": "Bearer tokens and gsk_... keys are identified and reported by scanner",
+      "result": "PASS"
+    }
+  ],
+  "gate_result": "PASS"
+}

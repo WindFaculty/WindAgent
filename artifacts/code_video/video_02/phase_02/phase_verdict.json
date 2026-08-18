@@ -1,0 +1,25 @@
+{
+  "phase": "phase_02",
+  "workflow": "code_video",
+  "video_id": "video-02",
+  "gate": "CV02_P2_SANDBOX_READY",
+  "verdict": "PASS",
+  "conditions": [
+    "tutorial workspace được cách ly hoàn toàn bên ngoài source tree WindAgent",
+    "PathSandbox ngăn chặn triệt để tấn công path traversal ngoài workspace",
+    "SafeShellRunner quản lý an toàn lệnh shell với timeout và redaction",
+    "TutorialRepositoryBuilder tạo đúng khung 8 files chuẩn Definition of Done của Video 02",
+    "bảo đảm .gitignore chứa .env và .env.example không chứa secret thật",
+    "CheckpointManager lưu trữ, khôi phục và xác thực toàn vẹn snapshot với SHA-256",
+    "WorkspaceSecretScanner phát hiện và chặn rò rỉ các loại API key (OpenAI, Google, Groq, NVIDIA, Bearer)",
+    "toàn bộ 14 tests trong test suite đều PASS"
+  ],
+  "evidence_files": [
+    "input_manifest.json",
+    "implementation_manifest.json",
+    "test_receipt.json",
+    "architecture_report.json",
+    "phase_report.md"
+  ],
+  "decided_at_utc": "2026-08-18T00:00:00+00:00"
+}

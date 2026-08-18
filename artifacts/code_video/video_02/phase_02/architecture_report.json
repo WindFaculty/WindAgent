@@ -1,0 +1,37 @@
+{
+  "phase": "phase_02",
+  "workflow": "code_video",
+  "video_id": "video-02",
+  "gate": "CV02_P2_SANDBOX_READY",
+  "architecture": {
+    "workspace_subsystem": {
+      "package": "tools/windagent_tools/code_video/workspace/",
+      "sandbox_class": "TutorialWorkspace",
+      "builder_class": "TutorialRepositoryBuilder",
+      "checkpoint_class": "CheckpointManager",
+      "security_scanner_class": "WorkspaceSecretScanner"
+    },
+    "canonical_reuse": {
+      "path_sandbox": "windagent_tools.filesystem.PathSandbox",
+      "safe_shell": "windagent_tools.shell.SafeShellRunner"
+    },
+    "scaffold_structure": {
+      "project_name": "agentic-studio",
+      "files": [
+        "src/__init__.py",
+        "src/agent.py",
+        "tests/__init__.py",
+        "tests/test_agent.py",
+        ".env.example",
+        ".gitignore",
+        "pyproject.toml",
+        "README.md"
+      ]
+    },
+    "security_scanner": {
+      "supported_patterns": ["GOOGLE_API_KEY", "OPENAI_API_KEY", "GROQ_API_KEY", "NVIDIA_API_KEY", "BEARER_TOKEN", "GENERIC_SECRET_ASSIGNMENT"],
+      "enforce_mode": "raise PermissionDeniedError (WINDAGENT_ERR_SECURITY_LEAK_DETECTED)"
+    }
+  },
+  "verdict": "READY_FOR_PHASE_3"
+}
