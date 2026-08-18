@@ -1,5 +1,0 @@
-{
-  "rollback_rehearsal_status": "VERIFIED",
-  "backward_compatibility_shims": "ACTIVE",
-  "data_loss_on_rollback": 0
-}

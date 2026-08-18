@@ -1,8 +1,0 @@
-Python 3.11.15
-uv 0.11.28 (ebf0f43d7 2026-07-07 x86_64-pc-windows-msvc)
-docker: not available
-github.com
-  ✓ Logged in to github.com account WindFaculty (keyring)
-  - Active account: true
-  - Git operations protocol: https
-  - Token: gho_************************************

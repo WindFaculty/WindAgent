@@ -1,7 +1,0 @@
-{
-  "total": 3,
-  "passed": 3,
-  "failed": 0,
-  "test_file": "tests/unit/storage/migrations/test_phase9_rollback_rehearsal.py",
-  "verdict": "PASS"
-}

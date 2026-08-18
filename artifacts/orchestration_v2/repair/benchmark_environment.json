@@ -1,9 +1,0 @@
-{
-  "os": "Windows-10-10.0.26200-SP0",
-  "python_version": "3.11.15 (main, Jun 23 2026, 15:20:37) [MSC v.1944 64 bit (AMD64)]",
-  "sqlite_mode": "WAL",
-  "synchronous": "NORMAL",
-  "busy_timeout": 5000,
-  "sample_count_per_metric": 1000,
-  "independent_runs": 5
-}

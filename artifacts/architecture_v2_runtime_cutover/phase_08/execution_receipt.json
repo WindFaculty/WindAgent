@@ -1,8 +1,0 @@
-{
-  "phase": "phase_08",
-  "phase_name": "Data migration",
-  "timestamp": "2026-07-26T03:49:50Z",
-  "self_copy_sql": "eliminated",
-  "integrity_verification": "fail_closed",
-  "status": "PASS"
-}

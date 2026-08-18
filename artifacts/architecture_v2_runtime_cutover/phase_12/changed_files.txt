@@ -1,6 +1,0 @@
-observability/windagent_observability/health/contracts.py
-observability/windagent_observability/health/checker.py
-apps/cli/windagent_cli/composition.py
-apps/cli/windagent_cli/main.py
-tests/unit/cli/test_phase10_doctor.py
-tests/unit/cli/test_phase12_cli_doctor.py

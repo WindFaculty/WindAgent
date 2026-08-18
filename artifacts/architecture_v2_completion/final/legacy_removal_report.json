@@ -1,7 +1,0 @@
-{
-  "legacy_backend_evacuated": true,
-  "legacy_services_removed": true,
-  "legacy_db_models_removed": true,
-  "compatibility_shims_active": true,
-  "deprecation_deadline": "2026-12-31"
-}

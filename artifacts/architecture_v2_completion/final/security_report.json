@@ -1,6 +1,0 @@
-{
-  "secret_scanning_status": "ZERO_PLAINTEXT_SECRETS",
-  "permission_engine_status": "FAIL_CLOSED_VERIFIED",
-  "path_traversal_protection": "VERIFIED",
-  "hard_deny_rules_enforced": true
-}

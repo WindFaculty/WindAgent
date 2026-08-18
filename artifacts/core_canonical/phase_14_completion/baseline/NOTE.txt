@@ -1,1 +1,0 @@
-Refactor branch already includes worktree changes. Baseline artifacts reflect those changes after stash pop.

@@ -1,6 +1,0 @@
-{
-  "multi_replica_fencing_verified": true,
-  "stale_fencing_tokens_rejected": true,
-  "duplicate_execution_count": 0,
-  "stale_fencing_leak_count": 0
-}

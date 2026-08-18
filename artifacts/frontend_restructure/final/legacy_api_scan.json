@@ -1,8 +1,0 @@
-{
-  "frontend_v2_references": 0,
-  "frontend_models_references": 0,
-  "v2_unavailable_references": 0,
-  "backend_v2_routers_mounted": 0,
-  "v2_tombstone_active": true,
-  "status": "LEGACY_API_RETIRED"
-}

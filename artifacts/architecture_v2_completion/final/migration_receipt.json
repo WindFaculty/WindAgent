@@ -1,6 +1,0 @@
-{
-  "database_migrations": "IDEMPOTENT_AND_VERIFIED",
-  "schema_version": "v2.0.0",
-  "outbox_pattern_status": "ACTIVE",
-  "event_taxonomy_version": "v2.0"
-}

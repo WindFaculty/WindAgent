@@ -1,3 +1,0 @@
-tests/architecture/test_phase13_regression.py
-scripts/check_architecture_imports.py
-configs/architecture/scaffold_v2.yaml

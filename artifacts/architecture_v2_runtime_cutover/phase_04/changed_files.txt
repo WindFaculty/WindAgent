@@ -1,9 +1,0 @@
-storage/windagent_storage/repositories/worker_status.py
-apps/worker/windagent_worker/composition.py
-apps/worker/windagent_worker/runner.py
-tests/unit/worker/test_phase04_worker_heartbeat.py
-artifacts/architecture_v2_runtime_cutover/phase_04/execution_receipt.json
-artifacts/architecture_v2_runtime_cutover/phase_04/changed_files.txt
-artifacts/architecture_v2_runtime_cutover/phase_04/test_results.json
-artifacts/architecture_v2_runtime_cutover/phase_04/risk_register.md
-artifacts/architecture_v2_runtime_cutover/phase_04/phase_verdict.md

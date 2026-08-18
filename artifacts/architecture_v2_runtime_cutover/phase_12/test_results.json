@@ -1,7 +1,0 @@
-{
-  "test_suite": "tests/unit/cli/test_phase12_cli_doctor.py tests/unit/cli/test_phase10_doctor.py tests/unit/observability/test_phase11_capability_readiness.py",
-  "total_tests": 20,
-  "passed": 20,
-  "failed": 0,
-  "verdict": "PASS"
-}

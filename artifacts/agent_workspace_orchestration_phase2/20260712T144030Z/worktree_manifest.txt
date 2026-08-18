@@ -1,4 +1,0 @@
-worktree D:/code_ca_nhan/WindAgent
-HEAD 9205dfa111301eb65cf1963dde89778e246dae5c
-branch refs/heads/feat/phase-1-baseline
-

@@ -1,9 +1,0 @@
-{
-  "timestamp": "2026-07-24T02:29:32Z",
-  "status": "PASSED",
-  "concurrent_lease_claims": 100,
-  "successful_claims": 1,
-  "rejected_claims": 99,
-  "fencing_generation_bump": true,
-  "stale_result_rejection": true
-}

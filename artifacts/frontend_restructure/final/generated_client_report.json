@@ -1,7 +1,0 @@
-{
-  "client_package": "@windagent/api-client",
-  "contracts_package": "@windagent/api-contracts",
-  "source": "Generated from FastAPI OpenAPI specification",
-  "direct_fetch_in_features": 0,
-  "status": "AUTHORITATIVE_SINGLETON"
-}

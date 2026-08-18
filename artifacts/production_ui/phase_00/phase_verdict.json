@@ -1,8 +1,0 @@
-{
-  "phase": "UI0",
-  "verdict": "PASS",
-  "gate_symbol": "VP3D_UI_P0_BASELINE_FROZEN",
-  "baseline_commit": "7e6da5d4bc2b03bce14baf7e0a762960c75650ed",
-  "verified_at": "2026-08-08T08:18:00Z",
-  "summary": "Baseline successfully frozen. Toolchain inventories, API/event contract snapshots, test receipts, and smoke verifications complete."
-}

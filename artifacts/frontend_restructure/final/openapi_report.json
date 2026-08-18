@@ -1,8 +1,0 @@
-{
-  "openapi_version": "3.1.0",
-  "endpoint": "/openapi.json",
-  "v3_paths_count": 82,
-  "v2_paths_count": 0,
-  "deprecated_routes": 0,
-  "status": "CANONICAL_V3_CLEAN"
-}
