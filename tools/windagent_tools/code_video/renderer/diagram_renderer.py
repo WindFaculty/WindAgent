@@ -12,7 +12,7 @@ from enum import Enum
 import html
 from typing import Any, Dict, List, Optional
 
-from workflows.windagent_workflows.code_video.contracts import Action, ActionType
+from windagent_workflows.code_video.contracts import Action, ActionType
 
 
 class NodeCategory(str, Enum):

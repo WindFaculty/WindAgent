@@ -1,0 +1,34 @@
+{
+  "phase": "phase_06",
+  "workflow": "code_video",
+  "video_id": "video-02",
+  "gate": "CV02_P6_DETERMINISTIC_REPLAY_VERIFIED",
+  "verdict": "PASS",
+  "conditions": [
+    "DeterministicReplayEngine thực thi toàn bộ 19 scenes của Video 02 theo timeline 975,000 ms mà không truy vấn LLM",
+    "TypingSimulator hỗ trợ mô phỏng 4 chế độ gõ (instant, fast, normal, slow, custom cps) với độ chính xác millisecond",
+    "TerminalReplayExecutor tái hiện các lệnh PowerShell từ verified preflight receipts và từ chối nghiêm ngặt SCRIPT_RUNTIME_MISMATCH",
+    "CheckpointCodeResolver cung cấp đầy đủ canonical code fragments cho các checkpoints cp_00 đến cp_09",
+    "Hỗ trợ khôi phục trạng thái tức thì thông qua resume_from(scene_id, action_id) mà không phải replay lại toàn bộ timeline",
+    "Kiểm chứng determinism gate thành công: 2 lần chạy liên tiếp sinh cùng action_sequence_hash, checkpoint_hash, terminal_output_hash",
+    "Gói frontend ReplayController.ts hỗ trợ frame calculation, seeking, typing interpolation và subscription",
+    "Toàn bộ 79/79 tests trong test suite code_video đều PASS 100%"
+  ],
+  "evidence_files": [
+    "input_manifest.json",
+    "implementation_manifest.json",
+    "test_receipt.json",
+    "architecture_report.json",
+    "phase_report.md",
+    "workflows/windagent_workflows/code_video/replay.py",
+    "frontend/packages/code-video-ui/src/ReplayController.ts",
+    "tests/contracts/test_code_video_replay.py"
+  ],
+  "determinism_hashes": {
+    "action_sequence_hash": "e6001daab61f24038ec9cf133a35b9593fcae8f8d19a38df25b46f2027b8adac",
+    "checkpoint_hash": "49262f0a716824bca712f853c3b83da38043c280655651eec660b1005f1fbd17",
+    "terminal_output_hash": "dcdf2763f7ac712e933d9e1dcbbf1f38f80180121c78ad0300162c9be0f64624",
+    "composite_replay_hash": "64d1f06cee3806dd97cb0723daedaa6a98280b309851432a86361bd5e6d85f9c"
+  },
+  "decided_at_utc": "2026-08-18T02:14:00+00:00"
+}

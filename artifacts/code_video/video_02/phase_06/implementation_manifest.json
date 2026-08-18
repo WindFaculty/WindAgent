@@ -1,0 +1,47 @@
+{
+  "phase": "phase_06",
+  "workflow": "code_video",
+  "video_id": "video-02",
+  "implemented_components": [
+    {
+      "name": "DeterministicReplayEngine",
+      "module": "windagent_workflows.code_video.replay",
+      "description": "Master execution coordinator executing plan scenes and actions without querying LLM at runtime"
+    },
+    {
+      "name": "TypingSimulator",
+      "module": "windagent_workflows.code_video.replay",
+      "description": "Simulates millisecond-precise character typing across modes: instant, fast (60 cps), normal (25 cps), slow (12 cps), and custom cps"
+    },
+    {
+      "name": "TerminalReplayExecutor",
+      "module": "windagent_workflows.code_video.replay",
+      "description": "Anti-fake terminal command replayer with preflight verified receipts and strict SCRIPT_RUNTIME_MISMATCH detection"
+    },
+    {
+      "name": "CheckpointCodeResolver",
+      "module": "windagent_workflows.code_video.replay",
+      "description": "Resolves exact verified code fragments from cp_00 to cp_09 for deterministic editor state population"
+    },
+    {
+      "name": "ReplayTrace & ReplayStepRecord",
+      "module": "windagent_workflows.code_video.replay",
+      "description": "Generates immutable step-by-step traces and calculates composite SHA-256 execution hashes"
+    },
+    {
+      "name": "ReplayController",
+      "module": "@windagent/code-video-ui",
+      "description": "Client-side TypeScript controller with getFrameStateAt, timestamp seeking, typing interpolation, and recovery"
+    }
+  ],
+  "replay_metrics": {
+    "total_scenes": 19,
+    "total_actions": 40,
+    "total_duration_ms": 975000,
+    "action_sequence_hash": "e6001daab61f24038ec9cf133a35b9593fcae8f8d19a38df25b46f2027b8adac",
+    "checkpoint_hash": "49262f0a716824bca712f853c3b83da38043c280655651eec660b1005f1fbd17",
+    "terminal_output_hash": "dcdf2763f7ac712e933d9e1dcbbf1f38f80180121c78ad0300162c9be0f64624",
+    "composite_replay_hash": "64d1f06cee3806dd97cb0723daedaa6a98280b309851432a86361bd5e6d85f9c"
+  },
+  "created_at_utc": "2026-08-18T02:14:00+00:00"
+}

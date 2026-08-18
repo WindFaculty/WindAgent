@@ -1,0 +1,51 @@
+{
+  "phase": "phase_06",
+  "workflow": "code_video",
+  "video_id": "video-02",
+  "architecture_summary": {
+    "module": "windagent_workflows.code_video.replay",
+    "pattern": "Deterministic State Machine with Exact Checkpoint Injection & Anti-Fake Command Receipt Matching",
+    "responsibilities": [
+      "Orchestrate 19-scene playback against 975,000 ms timeline with integer millisecond precision",
+      "Inject verified code fragments from checkpoints cp_00 to cp_09 without querying live LLMs",
+      "Simulate realistic keystroke velocity across typing modes (instant, fast, normal, slow, custom cps)",
+      "Replay verified terminal receipts and enforce strict SCRIPT_RUNTIME_MISMATCH rejection on assertion failures",
+      "Support instant fast-forward and recovery through resume_from(scene_id, action_id)",
+      "Guarantee reproducible composite hashes across multiple execution runs for video capture acceptance"
+    ]
+  },
+  "subsystems": {
+    "typing_simulation": {
+      "class": "TypingSimulator",
+      "velocity_modes": {
+        "instant": "immediate drop-in / 0 duration",
+        "fast": "60 chars/second (~16.6 ms/char)",
+        "normal": "25 chars/second (~40.0 ms/char)",
+        "slow": "12 chars/second (~83.3 ms/char)",
+        "custom": "user specified chars_per_second"
+      },
+      "interpolation": "linear timecode character reveal with cursor tracking"
+    },
+    "terminal_playback": {
+      "class": "TerminalReplayExecutor",
+      "receipt_store": "VERIFIED_TERMINAL_RECEIPTS",
+      "anti_fake_policy": "Strict verification of exit codes, pass count assertions, and output substrings"
+    },
+    "checkpoint_resolution": {
+      "class": "CheckpointCodeResolver",
+      "source_mapping": "CHECKPOINT_CODE_MAP (cp_00 to cp_09) + on-disk CheckpointManager store"
+    },
+    "client_controller": {
+      "package": "@windagent/code-video-ui",
+      "class": "ReplayController",
+      "capabilities": ["getFrameStateAt", "seek", "resumeFrom", "event subscription"]
+    }
+  },
+  "determinism_guarantees": {
+    "zero_live_llm_calls": true,
+    "zero_live_network_calls": true,
+    "immutable_trace_hashing": true,
+    "reproducible_state_hashes": true
+  },
+  "created_at_utc": "2026-08-18T02:14:00+00:00"
+}

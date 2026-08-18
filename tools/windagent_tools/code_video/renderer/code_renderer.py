@@ -15,7 +15,7 @@ import html
 import re
 from typing import Any, Dict, List, Optional, Sequence, Set, Tuple
 
-from workflows.windagent_workflows.code_video.contracts import Action, ActionType
+from windagent_workflows.code_video.contracts import Action, ActionType
 
 
 class PythonTokenType(str, Enum):

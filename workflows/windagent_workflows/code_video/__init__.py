@@ -34,6 +34,18 @@ from windagent_workflows.code_video.definition import (
     build_code_video_step_nodes,
     step_contract,
 )
+from windagent_workflows.code_video.replay import (
+    CHECKPOINT_CODE_MAP,
+    CheckpointCodeResolver,
+    DeterministicReplayEngine,
+    ReplayStepRecord,
+    ReplayTrace,
+    SPEED_MODE_CPS_MAP,
+    TerminalReplayExecutor,
+    TypingSimulator,
+    TypingSpeedMode,
+    VERIFIED_TERMINAL_RECEIPTS,
+)
 
 __all__ = [
     # Compiler
@@ -62,5 +74,17 @@ __all__ = [
     "build_code_video_step_nodes",
     "step_contract",
     "all_step_contracts",
+    # Deterministic Replay
+    "TypingSpeedMode",
+    "SPEED_MODE_CPS_MAP",
+    "TypingSimulator",
+    "VERIFIED_TERMINAL_RECEIPTS",
+    "TerminalReplayExecutor",
+    "CHECKPOINT_CODE_MAP",
+    "CheckpointCodeResolver",
+    "ReplayStepRecord",
+    "ReplayTrace",
+    "DeterministicReplayEngine",
 ]
+
 

@@ -15,7 +15,7 @@ import json
 from pathlib import Path
 import pytest
 
-from workflows.windagent_workflows.code_video.contracts import (
+from windagent_workflows.code_video.contracts import (
     Action,
     ActionType,
     CodeVideoPlan,
@@ -23,6 +23,7 @@ from workflows.windagent_workflows.code_video.contracts import (
     Scene,
     VisualMode,
 )
+
 from windagent_tools.code_video.renderer import (
     ChecklistItemStatus,
     CodeEditorRenderer,

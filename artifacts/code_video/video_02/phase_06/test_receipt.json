@@ -1,0 +1,74 @@
+{
+  "phase": "phase_06",
+  "workflow": "code_video",
+  "video_id": "video-02",
+  "test_suites": [
+    {
+      "suite_file": "tests/contracts/test_code_video_replay.py",
+      "total_tests": 12,
+      "passed": 12,
+      "failed": 0,
+      "tests": [
+        "TestTypingSimulator::test_instant_typing",
+        "TestTypingSimulator::test_normal_typing_progression",
+        "TestTypingSimulator::test_custom_cps",
+        "TestTerminalReplayExecutor::test_verified_command_execution",
+        "TestTerminalReplayExecutor::test_unverified_command_strict_rejection",
+        "TestTerminalReplayExecutor::test_pass_count_mismatch_rejection",
+        "TestCheckpointCodeResolver::test_resolve_all_milestone_checkpoints",
+        "TestDeterministicReplayEngine::test_full_19_scene_replay_execution",
+        "TestDeterministicReplayEngine::test_timestamp_seeking_and_interpolation",
+        "TestDeterministicReplayEngine::test_recovery_and_resumability",
+        "TestDeterministicReplayEngine::test_determinism_gate_multi_run",
+        "TestDeterministicReplayEngine::test_expected_state_validation_failure"
+      ]
+    },
+    {
+      "suite_file": "tests/contracts/test_code_video_renderer.py",
+      "total_tests": 23,
+      "passed": 23,
+      "failed": 0
+    },
+    {
+      "suite_file": "tests/contracts/test_code_video_compiler.py",
+      "total_tests": 5,
+      "passed": 5,
+      "failed": 0
+    },
+    {
+      "suite_file": "tests/contracts/test_code_video_golden_tutorial.py",
+      "total_tests": 9,
+      "passed": 9,
+      "failed": 0
+    },
+    {
+      "suite_file": "tests/contracts/test_code_video_contracts.py",
+      "total_tests": 16,
+      "passed": 16,
+      "failed": 0
+    },
+    {
+      "suite_file": "tests/contracts/test_code_video_workspace.py",
+      "total_tests": 14,
+      "passed": 14,
+      "failed": 0
+    }
+  ],
+  "summary": {
+    "total_contract_suites": 6,
+    "total_contract_tests": 79,
+    "passed": 79,
+    "failed": 0,
+    "pass_rate": "100.0%"
+  },
+  "determinism_gate": {
+    "runs_tested": 2,
+    "is_deterministic": true,
+    "action_sequence_hash": "e6001daab61f24038ec9cf133a35b9593fcae8f8d19a38df25b46f2027b8adac",
+    "checkpoint_hash": "49262f0a716824bca712f853c3b83da38043c280655651eec660b1005f1fbd17",
+    "terminal_output_hash": "dcdf2763f7ac712e933d9e1dcbbf1f38f80180121c78ad0300162c9be0f64624",
+    "composite_replay_hash": "64d1f06cee3806dd97cb0723daedaa6a98280b309851432a86361bd5e6d85f9c",
+    "status": "PASS"
+  },
+  "generated_at_utc": "2026-08-18T02:14:00+00:00"
+}

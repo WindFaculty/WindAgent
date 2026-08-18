@@ -12,12 +12,13 @@ from dataclasses import asdict, dataclass, field
 import html
 from typing import Any, Dict, List, Optional
 
-from workflows.windagent_workflows.code_video.contracts import (
+from windagent_workflows.code_video.contracts import (
     Action,
     ActionType,
     Scene,
     VisualMode,
 )
+
 from windagent_tools.code_video.renderer.code_renderer import (
     CodeEditorRenderer,
     CodeEditorState,
