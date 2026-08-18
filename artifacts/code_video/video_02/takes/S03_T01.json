@@ -1,0 +1,20 @@
+{
+  "take_id": "S03_T01",
+  "scene_id": "S03",
+  "start_ms": 50000,
+  "duration_ms": 35000,
+  "resolution": "2560x1440",
+  "fps": 30,
+  "frame_count": 1050,
+  "output_hash": "276b11db8b9114b90b8ab4abec08583cc9bc68df5905c1d44bff682c84d3e8e0",
+  "status": "VERIFIED",
+  "audio_enabled": false,
+  "output_file": "S03_T01.mp4",
+  "metadata": {
+    "visual_mode": "DIAGRAM",
+    "title": "Video 01 Recap \u2014 N\u1ec1n t\u1ea3ng Agent Architecture",
+    "action_count": 1,
+    "keyframe_count": 36,
+    "sampled_frame_count": 36
+  }
+}

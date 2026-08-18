@@ -1,0 +1,20 @@
+{
+  "take_id": "S02_T01",
+  "scene_id": "S02",
+  "start_ms": 25000,
+  "duration_ms": 25000,
+  "resolution": "2560x1440",
+  "fps": 30,
+  "frame_count": 750,
+  "output_hash": "0429d9d80a142c95b114fcb9a3ddcb41dcd5859936d718c36488ed1868a7d720",
+  "status": "VERIFIED",
+  "audio_enabled": false,
+  "output_file": "S02_T01.mp4",
+  "metadata": {
+    "visual_mode": "TITLE_CARD",
+    "title": "Hook \u2014 Vi\u1ebft AI Agent \u0110\u1ea7u Ti\u00ean B\u1eb1ng Python",
+    "action_count": 1,
+    "keyframe_count": 26,
+    "sampled_frame_count": 26
+  }
+}

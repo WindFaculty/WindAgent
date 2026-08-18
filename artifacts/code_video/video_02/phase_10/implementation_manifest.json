@@ -1,0 +1,79 @@
+{
+  "phase": "phase_10",
+  "phase_name": "Visual Assembly",
+  "video_id": "video-02",
+  "gate": "CV02_P10_ASSEMBLY_VERIFIED",
+  "status": "PASS",
+  "modules_implemented": [
+    "tools/windagent_tools/media/__init__.py",
+    "tools/windagent_tools/media/ffmpeg.py",
+    "tools/windagent_tools/production_engines/blender/ffmpeg.py",
+    "tools/windagent_tools/code_video/media/assembler.py",
+    "tools/windagent_tools/code_video/media/__init__.py",
+    "workflows/windagent_workflows/code_video/assembly.py",
+    "workflows/windagent_workflows/code_video/__init__.py"
+  ],
+  "assembly_specs": {
+    "master_resolution": "2560x1440",
+    "delivery_resolution": "1920x1080",
+    "fps": 30,
+    "total_duration_ms": 975000,
+    "total_frames": 29250,
+    "scene_count": 19,
+    "audio_policy": "EXCLUDED",
+    "zero_audio_verified": true,
+    "transitions_allowed": [
+      "hard_cut",
+      "cut",
+      "short_dissolve",
+      "dissolve",
+      "zoom",
+      "pan",
+      "highlight"
+    ],
+    "flashy_transitions_rejected": [
+      "spin",
+      "wipe",
+      "star",
+      "explode",
+      "cube",
+      "flip",
+      "circle",
+      "flash"
+    ]
+  },
+  "outputs_generated": [
+    {
+      "filename": "video_02_visual_master_1440p.mp4",
+      "path": "artifacts/code_video/video_02/final/video_02_visual_master_1440p.mp4",
+      "resolution": "2560x1440",
+      "fps": 30,
+      "sha256": "ccad703d117a266bb81727929424c02172e86d4e492731fd904f19c2cf641399"
+    },
+    {
+      "filename": "video_02_visual_master_1080p.mp4",
+      "path": "artifacts/code_video/video_02/final/video_02_visual_master_1080p.mp4",
+      "resolution": "1920x1080",
+      "fps": 30,
+      "sha256": "94cc38f9a7751a8eae6464deb55011efbdd0d237fbecceadf43ac80ec21aafac"
+    },
+    {
+      "filename": "timeline.json",
+      "path": "artifacts/code_video/video_02/final/timeline.json",
+      "scene_count": 19,
+      "sha256": "aac3d8fce55e89d741c71c9ffa4f67021a56fbb24cb639ac3b301fd3f52ce717"
+    },
+    {
+      "filename": "cue_sheet.csv",
+      "path": "artifacts/code_video/video_02/final/cue_sheet.csv",
+      "entries_count": 19,
+      "sha256": "a359e172048e35b7afb9406bc8ed8ef16a203e749370a8d9680de355b69acc3e"
+    },
+    {
+      "filename": "video_manifest.json",
+      "path": "artifacts/code_video/video_02/final/video_manifest.json",
+      "sha256": "65ec879e22ad9e0ec56777c455b08151d8229fc6230e43f2dba618e550828fcd"
+    }
+  ],
+  "generated_at": "2026-08-18T16:58:11.576967+00:00"
+}

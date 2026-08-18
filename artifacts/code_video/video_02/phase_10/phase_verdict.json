@@ -1,0 +1,10 @@
+{
+  "phase": "phase_10",
+  "phase_name": "Visual Assembly",
+  "video_id": "video-02",
+  "milestone": "Agentic Studio v0.1",
+  "gate": "CV02_P10_ASSEMBLY_VERIFIED",
+  "verdict": "PASS",
+  "summary": "19 scenes assembled into contiguous 975,000 ms timeline (29,250 frames @ 30fps). Master 1440p, delivery 1080p, cue_sheet.csv, timeline.json, and video_manifest.json generated with zero audio streams.",
+  "certified_at": "2026-08-18T16:58:11.579510+00:00"
+}

@@ -1,0 +1,20 @@
+{
+  "take_id": "S14_T01",
+  "scene_id": "S14",
+  "start_ms": 665000,
+  "duration_ms": 55000,
+  "resolution": "2560x1440",
+  "fps": 30,
+  "frame_count": 1650,
+  "output_hash": "2e648bd3f438f3b7c5ac23ff4af11d9b2ac49e4bd859812e87543d2b129f6a33",
+  "status": "VERIFIED",
+  "audio_enabled": false,
+  "output_file": "S14_T01.mp4",
+  "metadata": {
+    "visual_mode": "FULL_TERMINAL",
+    "title": "First Run \u2014 Terminal Execution Replay",
+    "action_count": 2,
+    "keyframe_count": 56,
+    "sampled_frame_count": 56
+  }
+}

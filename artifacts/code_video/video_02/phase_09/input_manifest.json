@@ -1,0 +1,30 @@
+{
+  "phase": "phase_09",
+  "phase_name": "Record Video 02",
+  "video_id": "video-02",
+  "milestone": "Agentic Studio v0.1",
+  "gate": "CV02_P9_RECORDING_VERIFIED",
+  "inputs": [
+    {
+      "artifact": "artifacts/code_video/video_02/phase_04/implementation_manifest.json",
+      "gate": "CV02_P4_PLAN_COMPILER_VERIFIED",
+      "description": "Compiled deterministic timeline (19 scenes, 975,000 ms, 29,250 frames)"
+    },
+    {
+      "artifact": "artifacts/code_video/video_02/phase_07/implementation_manifest.json",
+      "gate": "CV02_P7_CAPTURE_VERIFIED",
+      "description": "Capture Engine and zero-audio frame capture protocol"
+    },
+    {
+      "artifact": "artifacts/code_video/video_02/phase_08/implementation_manifest.json",
+      "gate": "CV02_P8_GRAPHICS_VERIFIED",
+      "description": "Graphics Catalog (8 diagrams, 3 title cards, 1 checklist, 7 overlays)"
+    },
+    {
+      "artifact": "artifacts/code_video/video_02/checkpoints/checkpoint_manifest.json",
+      "gate": "CV02_P3_GOLDEN_TUTORIAL_VERIFIED",
+      "description": "Golden tutorial repository checkpoints (STEP_00 to STEP_07)"
+    }
+  ],
+  "generated_at": "2026-08-18T02:49:12.358803+00:00"
+}

@@ -1,0 +1,20 @@
+{
+  "take_id": "S11_T01",
+  "scene_id": "S11",
+  "start_ms": 505000,
+  "duration_ms": 35000,
+  "resolution": "2560x1440",
+  "fps": 30,
+  "frame_count": 1050,
+  "output_hash": "77ae35013e81ae90f5587b5761eb64868cebe7fa0177334e595b4e6ebe56e8b5",
+  "status": "VERIFIED",
+  "audio_enabled": false,
+  "output_file": "S11_T01.mp4",
+  "metadata": {
+    "visual_mode": "DIAGRAM",
+    "title": "Is This An Agent? \u2014 Concept Deep Dive",
+    "action_count": 1,
+    "keyframe_count": 36,
+    "sampled_frame_count": 36
+  }
+}

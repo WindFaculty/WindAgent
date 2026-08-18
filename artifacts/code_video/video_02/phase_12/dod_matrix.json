@@ -1,0 +1,194 @@
+[
+  {
+    "id": "DOD_01",
+    "category": "Workspace",
+    "requirement": "WindAgent build \u0111\u01b0\u1ee3c tutorial repo t\u1eeb workspace tr\u1ed1ng",
+    "actual_result": "Verified via WorkspaceBuilder in isolated temp workspace",
+    "status": "PASS",
+    "evidence_artifact": "artifacts/code_video/video_02/phase_02/implementation_manifest.json"
+  },
+  {
+    "id": "DOD_02",
+    "category": "Code Domain",
+    "requirement": "Message dataclass t\u1ed3n t\u1ea1i (frozen, role, content)",
+    "actual_result": "class Message with @dataclass(frozen=True) verified in AST",
+    "status": "PASS",
+    "evidence_artifact": "artifacts/code_video/video_02/checkpoints/cp_01_message.json"
+  },
+  {
+    "id": "DOD_03",
+    "category": "Code Domain",
+    "requirement": "AgentConfig t\u1ed3n t\u1ea1i (name, system_prompt, model, temp)",
+    "actual_result": "AgentConfig verified with hyperparameters and system prompt",
+    "status": "PASS",
+    "evidence_artifact": "artifacts/code_video/video_02/checkpoints/cp_02_config.json"
+  },
+  {
+    "id": "DOD_04",
+    "category": "Code Domain",
+    "requirement": "LLMClient Protocol t\u1ed3n t\u1ea1i",
+    "actual_result": "class LLMClient(Protocol) with generate() method in domain core",
+    "status": "PASS",
+    "evidence_artifact": "artifacts/code_video/video_02/checkpoints/cp_03_llm_protocol.json"
+  },
+  {
+    "id": "DOD_05",
+    "category": "Clean Architecture",
+    "requirement": "Agent kh\u00f4ng ph\u1ee5 thu\u1ed9c provider SDK (zero SDK leaks in core)",
+    "actual_result": "Zero forbidden SDK imports (openai, anthropic, google, etc.) in agent.py",
+    "status": "PASS",
+    "evidence_artifact": "artifacts/code_video/video_02/phase_03/architecture_report.json"
+  },
+  {
+    "id": "DOD_06",
+    "category": "Code Domain",
+    "requirement": "Fake LLM ho\u1ea1t \u0111\u1ed9ng offline deterministic",
+    "actual_result": "FakeLLMClient runs purely offline with zero network dependency",
+    "status": "PASS",
+    "evidence_artifact": "artifacts/code_video/video_02/checkpoints/cp_04_fake_llm.json"
+  },
+  {
+    "id": "DOD_07",
+    "category": "Testing",
+    "requirement": "Unit tests pass kh\u00f4ng d\u00f9ng API th\u1eadt",
+    "actual_result": "Pytest offline unit suite passed with 2 passed tests",
+    "status": "PASS",
+    "evidence_artifact": "artifacts/code_video/video_02/checkpoints/cp_06_tests.json"
+  },
+  {
+    "id": "DOD_08",
+    "category": "Infrastructure",
+    "requirement": "Provider implementation th\u1eadt \u0111\u00e3 \u0111\u01b0\u1ee3c integration-test",
+    "actual_result": "Preflight integration receipt verified with provider_demo_receipt.json",
+    "status": "PASS",
+    "evidence_artifact": "artifacts/code_video/video_02/records/provider_demo_receipt.json"
+  },
+  {
+    "id": "DOD_09",
+    "category": "Security",
+    "requirement": "Kh\u00f4ng secret n\u00e0o xu\u1ea5t hi\u1ec7n trong source / video / receipts",
+    "actual_result": "Multi-tier cryptographic regex scan confirmed 0 secrets leaked",
+    "status": "PASS",
+    "evidence_artifact": "artifacts/code_video/video_02/final/secret_scan.json"
+  },
+  {
+    "id": "DOD_10",
+    "category": "Terminal",
+    "requirement": "pytest output trong video l\u00e0 output verified (2 passed)",
+    "actual_result": "pytest command executed and matched '2 passed' with exit code 0",
+    "status": "PASS",
+    "evidence_artifact": "artifacts/code_video/video_02/records/pytest_receipt.json"
+  },
+  {
+    "id": "DOD_11",
+    "category": "Git Milestone",
+    "requirement": "Tutorial repository c\u00f3 commit milestone",
+    "actual_result": "feat: build simple agent core commit verified",
+    "status": "PASS",
+    "evidence_artifact": "artifacts/code_video/video_02/checkpoints/cp_09_v0_1.json"
+  },
+  {
+    "id": "DOD_12",
+    "category": "Git Milestone",
+    "requirement": "Tutorial repository c\u00f3 git tag video-02",
+    "actual_result": "git tag video-02 created in tutorial repo (not WindAgent repo)",
+    "status": "PASS",
+    "evidence_artifact": "artifacts/code_video/video_02/checkpoints/cp_09_v0_1.json"
+  },
+  {
+    "id": "DOD_13",
+    "category": "Git Milestone",
+    "requirement": "Tutorial repository c\u00f3 git tag v0.1",
+    "actual_result": "git tag v0.1 created in tutorial repo (not WindAgent repo)",
+    "status": "PASS",
+    "evidence_artifact": "artifacts/code_video/video_02/checkpoints/cp_09_v0_1.json"
+  },
+  {
+    "id": "DOD_14",
+    "category": "Scope Boundary",
+    "requirement": "Tool Calling kh\u00f4ng xu\u1ea5t hi\u1ec7n trong runtime Video 02",
+    "actual_result": "Tool calling explicitly marked OUT_OF_SCOPE in architecture & plan",
+    "status": "PASS",
+    "evidence_artifact": "artifacts/code_video/video_02/plans/video_02_plan.json"
+  },
+  {
+    "id": "DOD_15",
+    "category": "Replay Engine",
+    "requirement": "M\u1ecdi code take sinh t\u1eeb verified checkpoint",
+    "actual_result": "All 16 code and terminal takes bound to verified checkpoint hashes",
+    "status": "PASS",
+    "evidence_artifact": "artifacts/code_video/video_02/takes/takes_manifest.json"
+  },
+  {
+    "id": "DOD_16",
+    "category": "Timeline",
+    "requirement": "19 scene \u0111\u00fang timeline contiguous",
+    "actual_result": "19 scenes verified from 00:00.000 to 16:15.000 without gaps",
+    "status": "PASS",
+    "evidence_artifact": "artifacts/code_video/video_02/final/timeline.json"
+  },
+  {
+    "id": "DOD_17",
+    "category": "Visual Assets",
+    "requirement": "C\u00e1c architecture diagram v\u00e0 title cards \u0111\u00fang script",
+    "actual_result": "11/11 required diagrams, overlays, and title cards rendered and verified",
+    "status": "PASS",
+    "evidence_artifact": "artifacts/code_video/video_02/graphics/graphics_manifest.json"
+  },
+  {
+    "id": "DOD_18",
+    "category": "Timeline",
+    "requirement": "Final video d\u00e0i \u0111\u00fang 16:15 (975,000 ms = 29,250 frames)",
+    "actual_result": "Exactly 975,000 ms (29,250 frames @ 30fps) verified in assembly",
+    "status": "PASS",
+    "evidence_artifact": "artifacts/code_video/video_02/final/timeline_report.json"
+  },
+  {
+    "id": "DOD_19",
+    "category": "Audio Policy",
+    "requirement": "Final visual master kh\u00f4ng ph\u1ee5 thu\u1ed9c audio (0 audio streams)",
+    "actual_result": "audio_policy=EXCLUDED, 0 audio streams encoded in master files",
+    "status": "PASS",
+    "evidence_artifact": "artifacts/code_video/video_02/final/video_manifest.json"
+  },
+  {
+    "id": "DOD_20",
+    "category": "Media Delivery",
+    "requirement": "1440p master pass ffprobe / verification (2560x1440 @ 30fps)",
+    "actual_result": "video_02_visual_master_1440p.mp4 verified with 29,250 frames",
+    "status": "PASS",
+    "evidence_artifact": "artifacts/code_video/video_02/final/video_02_visual_master_1440p.mp4"
+  },
+  {
+    "id": "DOD_21",
+    "category": "Media Delivery",
+    "requirement": "1080p delivery pass ffprobe / verification (1920x1080 @ 30fps)",
+    "actual_result": "video_02_visual_master_1080p.mp4 verified with 29,250 frames",
+    "status": "PASS",
+    "evidence_artifact": "artifacts/code_video/video_02/final/video_02_visual_master_1080p.mp4"
+  },
+  {
+    "id": "DOD_22",
+    "category": "Handoff",
+    "requirement": "Cue sheet \u0111\u01b0\u1ee3c t\u1ea1o cho 19 scenes",
+    "actual_result": "cue_sheet.csv published with exact timecodes and voiceover cues",
+    "status": "PASS",
+    "evidence_artifact": "artifacts/code_video/video_02/final/cue_sheet.csv"
+  },
+  {
+    "id": "DOD_23",
+    "category": "Determinism",
+    "requirement": "Final artifacts c\u00f3 SHA-256 x\u00e1c th\u1ef1c \u0111\u1ea7y \u0111\u1ee7",
+    "actual_result": "All final files hashed and recorded in final_video_hash.json",
+    "status": "PASS",
+    "evidence_artifact": "artifacts/code_video/video_02/final/final_video_hash.json"
+  },
+  {
+    "id": "DOD_24",
+    "category": "Certification",
+    "requirement": "Gate cu\u1ed1i = CV02_VISUAL_MASTER_VERIFIED / CODE_VIDEO_VIDEO02_VERIFIED",
+    "actual_result": "24/24 DoD criteria validated, Gate certified successfully",
+    "status": "PASS",
+    "evidence_artifact": "artifacts/code_video/video_02/phase_11/phase_verdict.json"
+  }
+]

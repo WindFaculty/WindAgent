@@ -1,0 +1,31 @@
+{
+  "pass_id": "PASS_04_CONFIG",
+  "scene_id": "S07",
+  "status": "VERIFIED",
+  "duration_ms": 55000,
+  "frame_count": 1650,
+  "source_hash": "447b6e34d0667adce93358d910f588aa8f5b3d0174b41867ef35a6a533455cf1",
+  "render_config_hash": "0df715efc1aefb35ed33044ba5f6073bb8cf3633094546f662b25ab923d7b2ca",
+  "output_hash": "62fb23c42968f59e7a33319cd3c06e37b18a5443608d77a75815d7a571f56a7d",
+  "verified_terminal": true,
+  "secret_clean": true,
+  "keyframe_marks": [
+    {
+      "time_offset_ms": 0,
+      "event": "PASS_START_PASS_04_CONFIG"
+    },
+    {
+      "time_offset_ms": 27500,
+      "event": "PASS_MIDPOINT_PASS_04_CONFIG"
+    },
+    {
+      "time_offset_ms": 55000,
+      "event": "PASS_END_PASS_04_CONFIG"
+    }
+  ],
+  "artifacts_produced": [
+    "records/PASS_04_CONFIG.json"
+  ],
+  "recorded_at": "2026-08-18T02:49:12.346258+00:00",
+  "notes": "Recorded pass 4: AgentConfig for scene S07"
+}

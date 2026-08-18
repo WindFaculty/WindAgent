@@ -63,6 +63,65 @@ from windagent_tools.code_video.workspace.security_scanner import (
     SecurityViolation,
     WorkspaceSecretScanner,
 )
+from windagent_tools.code_video.capture import (
+    BrowserCaptureAdapter,
+    CapturePort,
+    CaptureStatus,
+    FrameMetadata,
+    FrameReport,
+    MediaProbeReport,
+    StudioCaptureEngine,
+    TakeConfig,
+    TakeReceipt,
+)
+from windagent_tools.code_video.media import (
+    TakeAssembler,
+    TakesManifest,
+    TakeVerificationResult,
+    TakeVerifier,
+)
+from windagent_tools.code_video.recording import (
+    PassCatalog,
+    PassDefinition,
+    PassRecord,
+    PassStatus,
+    PassType,
+    RecordingManifest,
+    RecordingVerificationReport,
+    RecordingVerifier,
+    SecretExposureMatch,
+    SecretPattern,
+    SecretScanResult,
+    SecretScanner,
+    Video02RecordingEngine,
+)
+
+from windagent_tools.code_video.qc import (
+    CodeCorrectnessVerifier,
+    CodeQCReport,
+    DOD_CRITERIA,
+    MasterVisualQCEngine,
+    MasterVisualQCReport,
+    ReadabilityQCReport,
+    ReadabilityQCVerifier,
+    SecretFinding,
+    SecretQCReport,
+    SecretQCVerifier,
+    StructuralQCReport,
+    StructuralQCVerifier,
+    TerminalCorrectnessVerifier,
+    TerminalQCReport,
+    TimingQCReport,
+    TimingQCVerifier,
+)
+
+from windagent_tools.code_video.program import (
+    DODMatrixItem,
+    HandoffFileEntry,
+    HandoffPackage,
+    ProgramCertificationEngine,
+    ProgramCertificationReport,
+)
 
 __all__ = [
     # Sandbox & Workspace
@@ -117,4 +176,60 @@ __all__ = [
     "FileTreeState",
     "StudioLayoutState",
     "CodeStudioRenderer",
+    # Capture Subsystem
+    "CaptureStatus",
+    "TakeConfig",
+    "CapturePort",
+    "TakeReceipt",
+    "FrameMetadata",
+    "FrameReport",
+    "MediaProbeReport",
+    "StudioCaptureEngine",
+    "BrowserCaptureAdapter",
+    # Media Subsystem
+    "TakesManifest",
+    "TakeAssembler",
+    "TakeVerificationResult",
+    "TakeVerifier",
+    # Recording Subsystem (Phase 9)
+    "PassType",
+    "PassStatus",
+    "PassDefinition",
+    "PassRecord",
+    "PassCatalog",
+    "SecretPattern",
+    "SecretExposureMatch",
+    "SecretScanResult",
+    "SecretScanner",
+    "RecordingManifest",
+    "Video02RecordingEngine",
+    "RecordingVerificationReport",
+    "RecordingVerifier",
+    # QC Subsystem (Phase 11)
+    "StructuralQCReport",
+    "StructuralQCVerifier",
+    "CodeQCReport",
+    "CodeCorrectnessVerifier",
+    "TerminalQCReport",
+    "TerminalCorrectnessVerifier",
+    "SecretFinding",
+    "SecretQCReport",
+    "SecretQCVerifier",
+    "ReadabilityQCReport",
+    "ReadabilityQCVerifier",
+    "TimingQCReport",
+    "TimingQCVerifier",
+    "DOD_CRITERIA",
+    "MasterVisualQCReport",
+    "MasterVisualQCEngine",
+    # Program Certification (Phase 12)
+    "DODMatrixItem",
+    "HandoffFileEntry",
+    "HandoffPackage",
+    "ProgramCertificationEngine",
+    "ProgramCertificationReport",
 ]
+
+
+
+

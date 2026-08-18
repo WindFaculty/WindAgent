@@ -1,0 +1,14 @@
+{
+  "phase": "phase_11",
+  "phase_name": "Final Visual QC & Certification",
+  "video_id": "video-02",
+  "inputs": {
+    "code_video_plan": "artifacts/code_video/video_02/plans/video_02_plan.json",
+    "master_assembly_manifest": "artifacts/code_video/video_02/final/video_manifest.json",
+    "master_1440p_video": "artifacts/code_video/video_02/final/video_02_visual_master_1440p.mp4",
+    "delivery_1080p_video": "artifacts/code_video/video_02/final/video_02_visual_master_1080p.mp4",
+    "cue_sheet": "artifacts/code_video/video_02/final/cue_sheet.csv",
+    "timeline": "artifacts/code_video/video_02/final/timeline.json",
+    "graphics_catalog": "artifacts/code_video/video_02/graphics/graphics_manifest.json"
+  }
+}

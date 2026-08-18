@@ -1,0 +1,145 @@
+{
+  "video_id": "video-02",
+  "gate": "CV02_VISUAL_MASTER_VERIFIED",
+  "total_duration_ms": 975000,
+  "total_frames": 29250,
+  "scene_count": 19,
+  "zero_audio_verified": true,
+  "cuesheet_verified": true,
+  "timeline_contiguity": "100% CONTIGUOUS (0 gaps, 0 overlaps)",
+  "scenes": [
+    {
+      "scene_id": "S01",
+      "visual_mode": "SPLIT",
+      "start_ms": 0,
+      "duration_ms": 25000,
+      "end_ms": 25000
+    },
+    {
+      "scene_id": "S02",
+      "visual_mode": "TITLE_CARD",
+      "start_ms": 25000,
+      "duration_ms": 25000,
+      "end_ms": 50000
+    },
+    {
+      "scene_id": "S03",
+      "visual_mode": "DIAGRAM",
+      "start_ms": 50000,
+      "duration_ms": 35000,
+      "end_ms": 85000
+    },
+    {
+      "scene_id": "S04",
+      "visual_mode": "ARCHITECTURE",
+      "start_ms": 85000,
+      "duration_ms": 45000,
+      "end_ms": 130000
+    },
+    {
+      "scene_id": "S05",
+      "visual_mode": "FULL_TERMINAL",
+      "start_ms": 130000,
+      "duration_ms": 35000,
+      "end_ms": 165000
+    },
+    {
+      "scene_id": "S06",
+      "visual_mode": "CODE_STUDIO",
+      "start_ms": 165000,
+      "duration_ms": 55000,
+      "end_ms": 220000
+    },
+    {
+      "scene_id": "S07",
+      "visual_mode": "CODE_STUDIO",
+      "start_ms": 220000,
+      "duration_ms": 55000,
+      "end_ms": 275000
+    },
+    {
+      "scene_id": "S08",
+      "visual_mode": "CODE_STUDIO",
+      "start_ms": 275000,
+      "duration_ms": 85000,
+      "end_ms": 360000
+    },
+    {
+      "scene_id": "S09",
+      "visual_mode": "CODE_STUDIO",
+      "start_ms": 360000,
+      "duration_ms": 50000,
+      "end_ms": 410000
+    },
+    {
+      "scene_id": "S10",
+      "visual_mode": "CODE_STUDIO",
+      "start_ms": 410000,
+      "duration_ms": 95000,
+      "end_ms": 505000
+    },
+    {
+      "scene_id": "S11",
+      "visual_mode": "DIAGRAM",
+      "start_ms": 505000,
+      "duration_ms": 35000,
+      "end_ms": 540000
+    },
+    {
+      "scene_id": "S12",
+      "visual_mode": "CODE_STUDIO",
+      "start_ms": 540000,
+      "duration_ms": 75000,
+      "end_ms": 615000
+    },
+    {
+      "scene_id": "S13",
+      "visual_mode": "CODE_STUDIO",
+      "start_ms": 615000,
+      "duration_ms": 50000,
+      "end_ms": 665000
+    },
+    {
+      "scene_id": "S14",
+      "visual_mode": "FULL_TERMINAL",
+      "start_ms": 665000,
+      "duration_ms": 55000,
+      "end_ms": 720000
+    },
+    {
+      "scene_id": "S15",
+      "visual_mode": "CODE_STUDIO",
+      "start_ms": 720000,
+      "duration_ms": 80000,
+      "end_ms": 800000
+    },
+    {
+      "scene_id": "S16",
+      "visual_mode": "CHECKLIST",
+      "start_ms": 800000,
+      "duration_ms": 50000,
+      "end_ms": 850000
+    },
+    {
+      "scene_id": "S17",
+      "visual_mode": "ARCHITECTURE",
+      "start_ms": 850000,
+      "duration_ms": 50000,
+      "end_ms": 900000
+    },
+    {
+      "scene_id": "S18",
+      "visual_mode": "FULL_TERMINAL",
+      "start_ms": 900000,
+      "duration_ms": 35000,
+      "end_ms": 935000
+    },
+    {
+      "scene_id": "S19",
+      "visual_mode": "OUTRO",
+      "start_ms": 935000,
+      "duration_ms": 40000,
+      "end_ms": 975000
+    }
+  ]
+}

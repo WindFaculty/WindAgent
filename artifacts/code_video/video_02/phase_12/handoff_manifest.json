@@ -1,0 +1,75 @@
+{
+  "video_id": "video-02",
+  "milestone": "Agentic Studio v0.1 \u2014 Simple Agent",
+  "total_duration_ms": 975000,
+  "total_frames": 29250,
+  "scene_count": 19,
+  "audio_policy": "EXCLUDED",
+  "package_hash": "76068a7c442c7a2670879912d7782d00dafa71f3042aca6771db20cac8711ede",
+  "created_at": "2026-08-18T16:58:15.014033+00:00",
+  "files": [
+    {
+      "filename": "video_02_visual_master_1440p.mp4",
+      "relative_path": "artifacts/code_video/video_02/final/video_02_visual_master_1440p.mp4",
+      "description": "Video Master 2560x1440 @ 30fps (Zero audio stream, 29,250 frames)",
+      "media_type": "video/mp4",
+      "sha256": "ccad703d117a266bb81727929424c02172e86d4e492731fd904f19c2cf641399",
+      "size_bytes": 20646509,
+      "required_for_voiceover": true
+    },
+    {
+      "filename": "video_02_visual_master_1080p.mp4",
+      "relative_path": "artifacts/code_video/video_02/final/video_02_visual_master_1080p.mp4",
+      "description": "Video Delivery 1920x1080 @ 30fps (Zero audio stream, 29,250 frames)",
+      "media_type": "video/mp4",
+      "sha256": "94cc38f9a7751a8eae6464deb55011efbdd0d237fbecceadf43ac80ec21aafac",
+      "size_bytes": 15553021,
+      "required_for_voiceover": false
+    },
+    {
+      "filename": "cue_sheet.csv",
+      "relative_path": "artifacts/code_video/video_02/final/cue_sheet.csv",
+      "description": "Voiceover Cue Sheet containing 19 exact start/end timecodes",
+      "media_type": "text/csv",
+      "sha256": "a359e172048e35b7afb9406bc8ed8ef16a203e749370a8d9680de355b69acc3e",
+      "size_bytes": 1695,
+      "required_for_voiceover": true
+    },
+    {
+      "filename": "timeline.json",
+      "relative_path": "artifacts/code_video/video_02/final/timeline.json",
+      "description": "Machine-readable timeline map for DAW / NLE marker import",
+      "media_type": "application/json",
+      "sha256": "aac3d8fce55e89d741c71c9ffa4f67021a56fbb24cb639ac3b301fd3f52ce717",
+      "size_bytes": 6674,
+      "required_for_voiceover": true
+    },
+    {
+      "filename": "script_with_timecodes.md",
+      "relative_path": "artifacts/code_video/video_02/final/script_with_timecodes.md",
+      "description": "Formatted script with exact timecodes and voiceover cues",
+      "media_type": "text/markdown",
+      "sha256": "4471fd406ede752d3f51ce4e08d2de87a0b8ac2b8db21549face22f8c79672f7",
+      "size_bytes": 5774,
+      "required_for_voiceover": true
+    },
+    {
+      "filename": "video_manifest.json",
+      "relative_path": "artifacts/code_video/video_02/final/video_manifest.json",
+      "description": "Complete video technical specifications and metadata",
+      "media_type": "application/json",
+      "sha256": "65ec879e22ad9e0ec56777c455b08151d8229fc6230e43f2dba618e550828fcd",
+      "size_bytes": 1791,
+      "required_for_voiceover": false
+    },
+    {
+      "filename": "final_video_hash.json",
+      "relative_path": "artifacts/code_video/video_02/final/final_video_hash.json",
+      "description": "Cryptographic SHA-256 verification hashes for all deliverables",
+      "media_type": "application/json",
+      "sha256": "f05dd7e8e5235aed2a98293e3f47a1fa7b2ebea013628003565140fed72282cd",
+      "size_bytes": 802,
+      "required_for_voiceover": false
+    }
+  ]
+}

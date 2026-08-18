@@ -1,0 +1,31 @@
+{
+  "pass_id": "PASS_03_MESSAGE",
+  "scene_id": "S06",
+  "status": "VERIFIED",
+  "duration_ms": 55000,
+  "frame_count": 1650,
+  "source_hash": "d2d1ba12a6f2d3fc86918c64370edccddfc57f8c214a7c321ce963b7273cd6ed",
+  "render_config_hash": "0df715efc1aefb35ed33044ba5f6073bb8cf3633094546f662b25ab923d7b2ca",
+  "output_hash": "c4f9a9f288d1be7dd9f12dc1efc203856b2d4606b8d0e000f320f3b556e30895",
+  "verified_terminal": true,
+  "secret_clean": true,
+  "keyframe_marks": [
+    {
+      "time_offset_ms": 0,
+      "event": "PASS_START_PASS_03_MESSAGE"
+    },
+    {
+      "time_offset_ms": 27500,
+      "event": "PASS_MIDPOINT_PASS_03_MESSAGE"
+    },
+    {
+      "time_offset_ms": 55000,
+      "event": "PASS_END_PASS_03_MESSAGE"
+    }
+  ],
+  "artifacts_produced": [
+    "records/PASS_03_MESSAGE.json"
+  ],
+  "recorded_at": "2026-08-18T02:49:12.346258+00:00",
+  "notes": "Recorded pass 3: Message Dataclass for scene S06"
+}

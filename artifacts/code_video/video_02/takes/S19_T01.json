@@ -1,0 +1,20 @@
+{
+  "take_id": "S19_T01",
+  "scene_id": "S19",
+  "start_ms": 935000,
+  "duration_ms": 40000,
+  "resolution": "2560x1440",
+  "fps": 30,
+  "frame_count": 1200,
+  "output_hash": "9f94f3f3ebde623b9fd9821c19acad3d077339a8e09a56528e5f3a51e8fcbd0e",
+  "status": "VERIFIED",
+  "audio_enabled": false,
+  "output_file": "S19_T01.mp4",
+  "metadata": {
+    "visual_mode": "OUTRO",
+    "title": "Video 03 Teaser & Outro \u2014 Tool Calling Preview",
+    "action_count": 2,
+    "keyframe_count": 41,
+    "sampled_frame_count": 41
+  }
+}

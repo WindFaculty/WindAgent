@@ -1,0 +1,20 @@
+{
+  "take_id": "S16_T01",
+  "scene_id": "S16",
+  "start_ms": 800000,
+  "duration_ms": 50000,
+  "resolution": "2560x1440",
+  "fps": 30,
+  "frame_count": 1500,
+  "output_hash": "37d8675566f49fefc1fa50161b65a10dbc7f14ae196ac10fd0b25373b667089c",
+  "status": "VERIFIED",
+  "audio_enabled": false,
+  "output_file": "S16_T01.mp4",
+  "metadata": {
+    "visual_mode": "CHECKLIST",
+    "title": "Not Yet \u2014 Feature Boundaries & Scope",
+    "action_count": 1,
+    "keyframe_count": 51,
+    "sampled_frame_count": 51
+  }
+}

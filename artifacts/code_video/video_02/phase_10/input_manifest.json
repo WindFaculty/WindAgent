@@ -1,0 +1,30 @@
+{
+  "phase": "phase_10",
+  "phase_name": "Visual Assembly",
+  "video_id": "video-02",
+  "milestone": "Agentic Studio v0.1",
+  "gate": "CV02_P10_ASSEMBLY_VERIFIED",
+  "inputs": [
+    {
+      "artifact": "artifacts/code_video/video_02/phase_04/implementation_manifest.json",
+      "gate": "CV02_P4_PLAN_COMPILER_VERIFIED",
+      "description": "Compiled deterministic timeline (19 scenes, 975,000 ms, 29,250 frames)"
+    },
+    {
+      "artifact": "artifacts/code_video/video_02/phase_07/implementation_manifest.json",
+      "gate": "CV02_P7_CAPTURE_VERIFIED",
+      "description": "Capture engine and 19 verified take receipts"
+    },
+    {
+      "artifact": "artifacts/code_video/video_02/phase_08/implementation_manifest.json",
+      "gate": "CV02_P8_GRAPHICS_VERIFIED",
+      "description": "Graphics catalog with 19 verified visual assets (18 required, 1 optional)"
+    },
+    {
+      "artifact": "artifacts/code_video/video_02/phase_09/implementation_manifest.json",
+      "gate": "CV02_P9_RECORDING_VERIFIED",
+      "description": "Verified recording passes and preflight receipts"
+    }
+  ],
+  "generated_at": "2026-08-18T16:58:11.567396+00:00"
+}

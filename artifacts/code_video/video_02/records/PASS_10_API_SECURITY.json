@@ -1,0 +1,31 @@
+{
+  "pass_id": "PASS_10_API_SECURITY",
+  "scene_id": "S13",
+  "status": "VERIFIED",
+  "duration_ms": 50000,
+  "frame_count": 1500,
+  "source_hash": "5d524e81828d18ca9fbf6d1f3f3758e5ca07b20870f701fa28a07d806375ddca",
+  "render_config_hash": "3f446ff494cf8f967115b6c11183e97617d6d458cac6e71874704451c8d4ac1f",
+  "output_hash": "4dd09595e1d51b31b2431bded75c8806b53d5ca6b6b45b6bbca9d6019dfbda7a",
+  "verified_terminal": true,
+  "secret_clean": true,
+  "keyframe_marks": [
+    {
+      "time_offset_ms": 0,
+      "event": "PASS_START_PASS_10_API_SECURITY"
+    },
+    {
+      "time_offset_ms": 25000,
+      "event": "PASS_MIDPOINT_PASS_10_API_SECURITY"
+    },
+    {
+      "time_offset_ms": 50000,
+      "event": "PASS_END_PASS_10_API_SECURITY"
+    }
+  ],
+  "artifacts_produced": [
+    "records/PASS_10_API_SECURITY.json"
+  ],
+  "recorded_at": "2026-08-18T02:49:12.348773+00:00",
+  "notes": "Recorded pass 10: API Key Configuration & Security for scene S13"
+}

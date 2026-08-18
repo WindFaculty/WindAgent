@@ -1,0 +1,59 @@
+{
+  "video_id": "video-02",
+  "milestone": "Agentic Studio v0.1",
+  "status": "VERIFIED",
+  "gate": "CV02_P10_ASSEMBLY_VERIFIED",
+  "media_profiles": {
+    "master_1440p": {
+      "filename": "video_02_visual_master_1440p.mp4",
+      "target_path": "artifacts/code_video/video_02/final/video_02_visual_master_1440p.mp4",
+      "resolution": "2560x1440",
+      "fps": 30,
+      "sha256": "ccad703d117a266bb81727929424c02172e86d4e492731fd904f19c2cf641399"
+    },
+    "delivery_1080p": {
+      "filename": "video_02_visual_master_1080p.mp4",
+      "target_path": "artifacts/code_video/video_02/final/video_02_visual_master_1080p.mp4",
+      "resolution": "1920x1080",
+      "fps": 30,
+      "sha256": "94cc38f9a7751a8eae6464deb55011efbdd0d237fbecceadf43ac80ec21aafac"
+    }
+  },
+  "timeline": {
+    "filename": "timeline.json",
+    "target_path": "artifacts/code_video/video_02/final/timeline.json",
+    "total_duration_ms": 975000,
+    "total_frames": 29250,
+    "scene_count": 19,
+    "sha256": "aac3d8fce55e89d741c71c9ffa4f67021a56fbb24cb639ac3b301fd3f52ce717"
+  },
+  "cue_sheet": {
+    "filename": "cue_sheet.csv",
+    "target_path": "artifacts/code_video/video_02/final/cue_sheet.csv",
+    "entries_count": 19,
+    "sha256": "a359e172048e35b7afb9406bc8ed8ef16a203e749370a8d9680de355b69acc3e"
+  },
+  "takes_manifest": {
+    "total_takes": 19,
+    "total_duration_ms": 975000,
+    "total_frames": 29250
+  },
+  "audio_policy": {
+    "policy": "EXCLUDED",
+    "audio_streams_count": 0,
+    "verified": true
+  },
+  "transitions": {
+    "policy": "tutorial_safe",
+    "allowed": [
+      "cut",
+      "dissolve",
+      "hard_cut",
+      "highlight",
+      "pan",
+      "short_dissolve",
+      "zoom"
+    ],
+    "default": "hard_cut"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "take_id": "S07_T01",
+  "scene_id": "S07",
+  "start_ms": 220000,
+  "duration_ms": 55000,
+  "resolution": "2560x1440",
+  "fps": 30,
+  "frame_count": 1650,
+  "output_hash": "e456cfcd9c9dbf6ce23f6e989c49f1d63788e37f59b02ca5717742bb812c5123",
+  "status": "VERIFIED",
+  "audio_enabled": false,
+  "output_file": "S07_T01.mp4",
+  "metadata": {
+    "visual_mode": "CODE_STUDIO",
+    "title": "AgentConfig \u2014 Hyperparameters & System Prompt",
+    "action_count": 3,
+    "keyframe_count": 56,
+    "sampled_frame_count": 56
+  }
+}

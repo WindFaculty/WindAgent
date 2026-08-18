@@ -1,0 +1,30 @@
+{
+  "phase": "phase_07",
+  "workflow": "code_video",
+  "video_id": "video-02",
+  "gate": "CV02_P7_CAPTURE_VERIFIED",
+  "verdict": "PASS",
+  "conditions": [
+    "CapturePort protocol \u0111\u01b0\u1ee3c tri\u1ec3n khai \u0111\u1ea7y \u0111\u1ee7 v\u1edbi c\u00e1c ph\u01b0\u01a1ng th\u1ee9c start, mark, stop, inspect",
+    "StudioCaptureEngine thu th\u1eadp th\u00e0nh c\u00f4ng to\u00e0n b\u1ed9 19 visual takes t\u01b0\u01a1ng \u1ee9ng 19 scenes c\u1ee7a Video 02",
+    "\u0110\u1ed9 ph\u00e2n gi\u1ea3i master chu\u1ea9n 2560x1440 (1440p) @ 30 fps v\u1edbi t\u1ed5ng c\u1ed9ng ch\u00ednh x\u00e1c 29,250 frames cho 975,000 ms",
+    "Ch\u00ednh s\u00e1ch zero live audio \u0111\u01b0\u1ee3c tu\u00e2n th\u1ee7 tuy\u1ec7t \u0111\u1ed1i: 0 audio stream, audio_enabled=False",
+    "M\u1ed7i take \u0111\u1ec1u c\u00f3 TakeReceipt, FrameReport, MediaProbeReport v\u00e0 m\u00e3 b\u0103m SHA-256 ho\u00e0n to\u00e0n x\u00e1c \u0111\u1ecbnh",
+    "TakeAssembler h\u1ee3p nh\u1ea5t 19 takes th\u00e0nh timeline li\u00ean t\u1ee5c kh\u00f4ng c\u00f3 kho\u1ea3ng tr\u1ed1ng (gap) ho\u1eb7c ch\u1ed3ng l\u1ea5n (overlap)",
+    "TakeVerifier ki\u1ec3m ch\u1ee9ng 100% c\u00e1c ti\u00eau chu\u1ea9n ch\u1ea5t l\u01b0\u1ee3ng k\u1ef9 thu\u1eadt c\u1ee7a to\u00e0n b\u1ed9 19 takes",
+    "To\u00e0n b\u1ed9 90/90 tests trong test suite code_video \u0111\u1ec1u PASS 100%"
+  ],
+  "evidence_files": [
+    "input_manifest.json",
+    "implementation_manifest.json",
+    "capture_receipt.json",
+    "frame_report.json",
+    "media_probe.json",
+    "architecture_report.json",
+    "test_receipt.json",
+    "phase_report.md",
+    "takes/takes_manifest.json",
+    "takes/takes_timeline.json"
+  ],
+  "decided_at_utc": "2026-08-18T02:20:13.455249+00:00"
+}

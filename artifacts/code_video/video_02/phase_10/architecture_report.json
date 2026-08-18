@@ -1,0 +1,34 @@
+{
+  "phase": "phase_10",
+  "component": "windagent_tools.media.ffmpeg & code_video.media.assembler",
+  "architectural_decisions": [
+    {
+      "decision": "Generic FFmpeg process boundary",
+      "rationale": "Extracted ffmpeg/ffprobe process runner to tools/windagent_tools/media/ffmpeg.py with argv list, bounded stdout/stderr, and time bounding."
+    },
+    {
+      "decision": "Blender compatibility wrapper",
+      "rationale": "Maintained BlenderFfmpegPort and BlenderFfmpegRunner aliases in production_engines/blender/ffmpeg.py to guarantee zero regression."
+    },
+    {
+      "decision": "Deterministic visual master and delivery representations",
+      "rationale": "Created 1440p master and 1080p delivery profiles with exact 29,250 frame counts and zero audio streams."
+    },
+    {
+      "decision": "Strict transition policy",
+      "rationale": "Enforced tutorial-safe transitions (hard cut, dissolve, zoom, pan, highlight) and banned flashy transitions."
+    },
+    {
+      "decision": "Voiceover handoff via CSV cue sheet",
+      "rationale": "Exported clean timecoded cue_sheet.csv matching all 19 scenes for downstream voice recording."
+    }
+  ],
+  "zero_audio_policy": {
+    "status": "ENFORCED",
+    "audio_streams": 0,
+    "flags": [
+      "-an"
+    ]
+  },
+  "verified_at": "2026-08-18T16:58:11.578506+00:00"
+}

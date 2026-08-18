@@ -1,0 +1,31 @@
+{
+  "pass_id": "PASS_07_AGENT_CORE",
+  "scene_id": "S10",
+  "status": "VERIFIED",
+  "duration_ms": 95000,
+  "frame_count": 2850,
+  "source_hash": "33a66929830ef69e7ad0ad56b4c575eb48b0bc5ef4540f240191d6afc242c939",
+  "render_config_hash": "953fefaa337df82ca445bbf5e4337711fdd64745b8697797dc0b862463bcca2c",
+  "output_hash": "3636d54e019ef318a8824094d269a43073ebea7ceef9b6b19c5913df6f7309e4",
+  "verified_terminal": true,
+  "secret_clean": true,
+  "keyframe_marks": [
+    {
+      "time_offset_ms": 0,
+      "event": "PASS_START_PASS_07_AGENT_CORE"
+    },
+    {
+      "time_offset_ms": 47500,
+      "event": "PASS_MIDPOINT_PASS_07_AGENT_CORE"
+    },
+    {
+      "time_offset_ms": 95000,
+      "event": "PASS_END_PASS_07_AGENT_CORE"
+    }
+  ],
+  "artifacts_produced": [
+    "records/PASS_07_AGENT_CORE.json"
+  ],
+  "recorded_at": "2026-08-18T02:49:12.347764+00:00",
+  "notes": "Recorded pass 7: Agent Core Implementation for scene S10"
+}

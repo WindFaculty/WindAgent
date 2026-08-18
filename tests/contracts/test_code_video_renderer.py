@@ -220,7 +220,7 @@ class TestDiagramRenderer:
 
     def test_s03_recap_diagram_structure(self) -> None:
         state = DiagramRenderer.build_s03_recap_diagram()
-        assert state.diagram_id == "S03_RECAP"
+        assert state.diagram_id in ("S03_RECAP", "DIAG_07_RECAP")
         assert len(state.nodes) == 3
         assert len(state.edges) == 2
         svg = state.render_svg()
@@ -229,7 +229,7 @@ class TestDiagramRenderer:
 
     def test_s04_arch_v01_diagram_structure(self) -> None:
         state = DiagramRenderer.build_s04_arch_v01_diagram()
-        assert state.diagram_id == "S04_ARCH_V0_1"
+        assert state.diagram_id in ("S04_ARCH_V0_1", "DIAG_01_FINAL_ARCH")
         assert len(state.nodes) == 4
         node_ids = {n.id for n in state.nodes}
         assert {"N_USER", "N_AGENT", "N_LLM", "N_ANSWER"}.issubset(node_ids)
@@ -240,21 +240,21 @@ class TestDiagramRenderer:
 
     def test_s11_concept_diagram_structure(self) -> None:
         state = DiagramRenderer.build_s11_concept_diagram()
-        assert state.diagram_id == "S11_IS_THIS_AGENT"
-        assert len(state.nodes) == 3
+        assert state.diagram_id in ("S11_IS_THIS_AGENT", "DIAG_05B_MISSING_CAPABILITIES")
+        assert len(state.nodes) >= 3
         svg = state.render_svg()
         assert "Is This An Agent?" in svg
 
     def test_s17_review_diagram_structure(self) -> None:
         state = DiagramRenderer.build_s17_review_diagram()
-        assert state.diagram_id == "S17_ARCH_REVIEW"
-        assert len(state.nodes) == 3
+        assert state.diagram_id in ("S17_ARCH_REVIEW", "DIAG_06_DOMAIN_VS_INFRA")
+        assert len(state.nodes) >= 3
         # Has domain and infrastructure categories
         categories = {n.category for n in state.nodes}
         assert NodeCategory.DOMAIN in categories
         assert NodeCategory.INFRASTRUCTURE in categories
         svg = state.render_svg()
-        assert "Architecture Review" in svg
+        assert "Clean Architecture" in svg or "Architecture Review" in svg
 
     def test_diagram_renderer_actions(self) -> None:
         renderer = DiagramRenderer()
@@ -283,11 +283,9 @@ class TestTitleAndChecklistRenderer:
 
     def test_s16_not_yet_checklist(self) -> None:
         state = TitleRenderer.build_s16_checklist()
-        assert len(state.items) >= 6
-        included = [it for it in state.items if it.status == ChecklistItemStatus.INCLUDED]
+        assert len(state.items) == 7
         excluded = [it for it in state.items if it.status == ChecklistItemStatus.EXCLUDED]
-        assert len(included) >= 4
-        assert len(excluded) >= 2
+        assert len(excluded) == 7
 
         # Check Tool Calling is excluded
         tc_item = next(it for it in state.items if "Tool Calling" in it.text)

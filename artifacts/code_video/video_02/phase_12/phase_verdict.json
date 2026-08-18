@@ -1,0 +1,14 @@
+{
+  "phase": "phase_12",
+  "phase_name": "Program Definition of Done & Program Handoff",
+  "video_id": "video-02",
+  "milestone": "Agentic Studio v0.1 \u2014 Simple Agent",
+  "final_milestone_verdict": "CODE_VIDEO_VIDEO02_VERIFIED",
+  "visual_gate": "CV02_VISUAL_MASTER_VERIFIED",
+  "verdict": "PASS",
+  "dod_matrix_pass_count": 24,
+  "dod_matrix_total_count": 24,
+  "program_master_hash": "e6232c7d84f954531aa809eda23e7bfa65d4c950e1abd6edd239b98368b305f0",
+  "summary": "100% (24/24) Definition of Done criteria certified. Upstream phases Phase 00-11 validated. Handoff package sealed in final/ directory with zero audio streams and exact 975,000 ms visual master.",
+  "certified_at": "2026-08-18T16:58:15.014033+00:00"
+}

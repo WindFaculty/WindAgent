@@ -1,0 +1,14 @@
+{
+  "phase": "phase_12",
+  "component": "windagent_tools.code_video.program.certification",
+  "clean_architecture_compliance": {
+    "domain_layer": "Domain core (Agent, Message, AgentConfig, LLMClient) is completely provider-agnostic",
+    "infrastructure_layer": "Real provider adapter isolated outside core domain",
+    "media_layer": "FFmpeg bounded process runner separated with zero audio streams",
+    "renderer_layer": "Deterministic semantic action playback, zero mouse coordinate reliance"
+  },
+  "security_status": "Zero API keys or secrets exposed across entire repository, checkpoints, receipts, and frames",
+  "audio_policy": "EXCLUDED (100% downstream voiceover handoff architecture)",
+  "program_master_hash": "e6232c7d84f954531aa809eda23e7bfa65d4c950e1abd6edd239b98368b305f0",
+  "verified_at": "2026-08-18T16:58:15.014033+00:00"
+}

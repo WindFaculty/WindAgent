@@ -1,0 +1,29 @@
+{
+  "phase": "phase_08",
+  "workflow": "code_video",
+  "video_id": "video-02",
+  "gate": "CV02_P8_GRAPHICS_VERIFIED",
+  "verdict": "PASS",
+  "conditions": [
+    "Toàn bộ visual assets được phân nhóm rành mạch: REQUIRED (có authority từ script/DoD), OPTIONAL (recap context), DERIVED",
+    "Diagram 05A (Cognitive Loop) và Diagram 05B (Missing Capabilities v0.1 gap analysis) được tách thành 2 visual độc lập",
+    "Chuẩn hóa master resolution 2560x1440 với Safe-Area Insets (Action-Safe 5% / 128px, Title-Safe 10% / 256px) và typography >= 24px theo pixel",
+    "Checklist S16 tuân thủ nghiêm ngặt 7 tính năng chưa có trong kịch bản mà không tự ý thêm các mục v0.1 vào required",
+    "GraphicsCatalog binding toàn bộ 19 visual assets với scene_id, entry_ms, exit_ms, transition và animation từ Phase 4 timeline",
+    "Mỗi asset đều có đầy đủ 3 mã băm xác thực: source_hash, render_config_hash, output_hash",
+    "CodeVideoVisualTheme đóng vai trò single source of truth cho typography, colors, layout và WCAG AA contrast",
+    "Chính sách Timeline Consumer tuân thủ tuyệt đối Phase 4 plan, cơ chế phát hiện lỗi GRAPHIC_TIMING_CONFLICT hoạt động chuẩn xác",
+    "Contract tests kiểm tra động 100% REQUIRED assets, safe area, typography, contrast, zero clipping và tri-hash determinism",
+    "100% các bài test trong test_code_video_graphics.py (23/23) và toàn bộ test suite code_video (113/113) đều PASS"
+  ],
+  "evidence_files": [
+    "input_manifest.json",
+    "implementation_manifest.json",
+    "test_receipt.json",
+    "architecture_report.json",
+    "phase_report.md",
+    "graphics/graphics_manifest.json",
+    "graphics/graphics_receipt.json"
+  ],
+  "decided_at_utc": "2026-08-18T02:36:30.000000+00:00"
+}

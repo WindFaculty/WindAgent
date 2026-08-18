@@ -1,0 +1,31 @@
+{
+  "pass_id": "PASS_09_REAL_PROVIDER",
+  "scene_id": "S12",
+  "status": "VERIFIED",
+  "duration_ms": 75000,
+  "frame_count": 2250,
+  "source_hash": "8f90281dba7678a4d44fba803a20dedbdfb6aa707d35d67e4a1606708461e313",
+  "render_config_hash": "21ffac16760bb7a75c5ca7d42ab14cc17ec4dea24337226e5809b1476dfee1c2",
+  "output_hash": "2641799b45ecde72bab4ade91df72006bb1870f974d97e6e061b0497580ed8eb",
+  "verified_terminal": true,
+  "secret_clean": true,
+  "keyframe_marks": [
+    {
+      "time_offset_ms": 0,
+      "event": "PASS_START_PASS_09_REAL_PROVIDER"
+    },
+    {
+      "time_offset_ms": 37500,
+      "event": "PASS_MIDPOINT_PASS_09_REAL_PROVIDER"
+    },
+    {
+      "time_offset_ms": 75000,
+      "event": "PASS_END_PASS_09_REAL_PROVIDER"
+    }
+  ],
+  "artifacts_produced": [
+    "records/PASS_09_REAL_PROVIDER.json"
+  ],
+  "recorded_at": "2026-08-18T02:49:12.348773+00:00",
+  "notes": "Recorded pass 9: Real Provider Architecture for scene S12"
+}

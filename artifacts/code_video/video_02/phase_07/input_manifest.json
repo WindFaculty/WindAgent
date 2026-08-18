@@ -1,0 +1,13 @@
+{
+  "phase": "phase_07",
+  "video_id": "video-02",
+  "plan_source": "artifacts/code_video/video_02/plans/video_02_plan.json",
+  "plan_source_hash": "b2c9d46fd74cccc5f48de8509ceef41aec2dfb8db63a78c733a3d961ec1bec6c",
+  "total_scenes": 19,
+  "total_duration_ms": 975000,
+  "target_resolution": "2560x1440",
+  "target_fps": 30,
+  "audio_policy": "EXCLUDED",
+  "replay_engine_source": "windagent_workflows.code_video.replay",
+  "checkpoints_source": "artifacts/code_video/video_02/checkpoints"
+}

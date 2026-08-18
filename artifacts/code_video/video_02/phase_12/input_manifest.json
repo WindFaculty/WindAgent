@@ -1,0 +1,71 @@
+{
+  "phase": "phase_12",
+  "phase_name": "Program Definition of Done & Program Handoff",
+  "video_id": "video-02",
+  "milestone": "Agentic Studio v0.1 \u2014 Simple Agent",
+  "final_milestone_verdict": "CODE_VIDEO_VIDEO02_VERIFIED",
+  "gate": "CV02_VISUAL_MASTER_VERIFIED",
+  "inputs": [
+    {
+      "phase": "phase_00",
+      "artifact": "artifacts/code_video/video_02/phase_00/phase_verdict.json",
+      "status": "PASS"
+    },
+    {
+      "phase": "phase_01",
+      "artifact": "artifacts/code_video/video_02/phase_01/phase_verdict.json",
+      "status": "PASS"
+    },
+    {
+      "phase": "phase_02",
+      "artifact": "artifacts/code_video/video_02/phase_02/phase_verdict.json",
+      "status": "PASS"
+    },
+    {
+      "phase": "phase_03",
+      "artifact": "artifacts/code_video/video_02/phase_03/phase_verdict.json",
+      "status": "PASS"
+    },
+    {
+      "phase": "phase_04",
+      "artifact": "artifacts/code_video/video_02/phase_04/phase_verdict.json",
+      "status": "PASS"
+    },
+    {
+      "phase": "phase_05",
+      "artifact": "artifacts/code_video/video_02/phase_05/phase_verdict.json",
+      "status": "PASS"
+    },
+    {
+      "phase": "phase_06",
+      "artifact": "artifacts/code_video/video_02/phase_06/phase_verdict.json",
+      "status": "PASS"
+    },
+    {
+      "phase": "phase_07",
+      "artifact": "artifacts/code_video/video_02/phase_07/phase_verdict.json",
+      "status": "PASS"
+    },
+    {
+      "phase": "phase_08",
+      "artifact": "artifacts/code_video/video_02/phase_08/phase_verdict.json",
+      "status": "PASS"
+    },
+    {
+      "phase": "phase_09",
+      "artifact": "artifacts/code_video/video_02/phase_09/phase_verdict.json",
+      "status": "PASS"
+    },
+    {
+      "phase": "phase_10",
+      "artifact": "artifacts/code_video/video_02/phase_10/phase_verdict.json",
+      "status": "PASS"
+    },
+    {
+      "phase": "phase_11",
+      "artifact": "artifacts/code_video/video_02/phase_11/phase_verdict.json",
+      "status": "PASS"
+    }
+  ],
+  "certified_at": "2026-08-18T16:58:15.014033+00:00"
+}

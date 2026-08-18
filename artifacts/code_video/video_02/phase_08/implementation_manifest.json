@@ -1,0 +1,40 @@
+{
+  "phase": "phase_08",
+  "name": "diagrams_title_cards_b_roll",
+  "components": [
+    {
+      "module": "windagent_tools.code_video.renderer.theme",
+      "symbols": ["SafeInsets", "TypographyScale", "StudioColorPalette", "CodeVideoVisualTheme"],
+      "description": "Central visual theme and safe-area insets authority (2560x1440, font >= 24px, WCAG AA contrast)"
+    },
+    {
+      "module": "windagent_tools.code_video.renderer.diagram_renderer",
+      "symbols": ["DiagramNode", "DiagramEdge", "DiagramState", "DiagramRenderer", "NodeCategory"],
+      "description": "Renderer for all 8 architecture diagrams (DIAG_01 to DIAG_08) with SVG output"
+    },
+    {
+      "module": "windagent_tools.code_video.renderer.title_renderer",
+      "symbols": ["TitleCardState", "ChecklistState", "OutroCardState", "TitleRenderer", "ChecklistItem"],
+      "description": "Renderer for title cards (S02, S18, S19) and strict S16 Checklist (7 excluded items)"
+    },
+    {
+      "module": "windagent_tools.code_video.renderer.overlay_renderer",
+      "symbols": ["OverlayPosition", "OverlayCardState", "OverlayRenderer"],
+      "description": "Renderer for 7 canonical B-roll overlays and security callout banners"
+    },
+    {
+      "module": "windagent_tools.code_video.renderer.graphics_catalog",
+      "symbols": ["GraphicsCatalog", "GraphicsCatalogEntry", "AssetClassification", "AssetCategory", "TransitionType", "AnimationType", "GRAPHIC_TIMING_CONFLICT"],
+      "description": "Catalog of visual assets bound to Phase 4 timeline with tri-hash determinism and timing conflict detection"
+    },
+    {
+      "module": "windagent_tools.code_video.renderer.graphics_verifier",
+      "symbols": ["GraphicsVerifier", "GraphicsVerificationReport", "AssetVerificationResult"],
+      "description": "Automated visual inspector for resolution, safe margins, typography, contrast, timeline, and gate certification"
+    }
+  ],
+  "exported_assets_count": 19,
+  "graphics_directory": "artifacts/code_video/video_02/graphics",
+  "manifest_path": "artifacts/code_video/video_02/graphics/graphics_manifest.json",
+  "receipt_path": "artifacts/code_video/video_02/graphics/graphics_receipt.json"
+}

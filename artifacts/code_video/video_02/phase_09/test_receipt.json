@@ -1,0 +1,19 @@
+{
+  "test_suite": "tests/contracts/test_code_video_recording.py",
+  "tests_run": 19,
+  "tests_passed": 19,
+  "tests_failed": 0,
+  "status": "PASS",
+  "gate": "CV02_P9_RECORDING_VERIFIED",
+  "passed_checks": [
+    "TOTAL_PASS_COUNT_16_VERIFIED",
+    "ALL_PASSES_STATUS_VERIFIED",
+    "ZERO_SECRET_EXPOSURE_VERIFIED",
+    "TERMINAL_OUTPUT_AUTHENTICITY_VERIFIED",
+    "MASTER_RESOLUTION_1440P_VERIFIED",
+    "MASTER_FPS_30_VERIFIED",
+    "TRI_HASH_DETERMINISM_VERIFIED",
+    "PASS_CATALOG_ALIGNMENT_VERIFIED"
+  ],
+  "verified_at": "2026-08-18T02:49:12.359802+00:00"
+}

@@ -1,0 +1,8 @@
+{
+  "status": "VERIFIED",
+  "gate": "CV02_P8_GRAPHICS_VERIFIED",
+  "manifest_sha256": "b08ae826ced73353ff05d7d8d65b2af729069fc18cf29f1d63e460e980fb7c9c",
+  "theme_config_hash": "cdaf5d60b8205ef740685360200abbcbfda121b3161ef15cb4436a03b9b0d7e4",
+  "total_assets": 19,
+  "all_required_verified": true
+}

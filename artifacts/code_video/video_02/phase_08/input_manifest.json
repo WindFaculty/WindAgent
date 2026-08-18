@@ -1,0 +1,14 @@
+{
+  "phase": "phase_08",
+  "video_id": "video-02",
+  "plan_source": "artifacts/code_video/video_02/plans/video_02_plan.json",
+  "plan_source_hash": "b2c9d46fd74cccc5f48de8509ceef41aec2dfb8db63a78c733a3d961ec1bec6c",
+  "script_source": "artifacts/code_video/video_02/source/script.md",
+  "takes_manifest": "artifacts/code_video/video_02/takes/takes_manifest.json",
+  "total_scenes": 19,
+  "total_duration_ms": 975000,
+  "target_resolution": "2560x1440",
+  "target_fps": 30,
+  "timeline_policy": "STRICT_CONSUMER_NO_MUTATION",
+  "classification_policy": "REQUIRED_OPTIONAL_DERIVED"
+}

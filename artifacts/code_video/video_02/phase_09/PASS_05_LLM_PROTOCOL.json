@@ -1,0 +1,31 @@
+{
+  "pass_id": "PASS_05_LLM_PROTOCOL",
+  "scene_id": "S08",
+  "status": "VERIFIED",
+  "duration_ms": 85000,
+  "frame_count": 2550,
+  "source_hash": "de6a97b72721afdbb3d9398cfad0d8060b9fa4431134179c05a24df30c8afdff",
+  "render_config_hash": "005c90421baae1a0e8f2b204e5f75764e453d4dcc8301d993b5db944abc7b64c",
+  "output_hash": "c0871d8c4b2e288430174657a9462f05d47342678781ccc295ed2e6598330526",
+  "verified_terminal": true,
+  "secret_clean": true,
+  "keyframe_marks": [
+    {
+      "time_offset_ms": 0,
+      "event": "PASS_START_PASS_05_LLM_PROTOCOL"
+    },
+    {
+      "time_offset_ms": 42500,
+      "event": "PASS_MIDPOINT_PASS_05_LLM_PROTOCOL"
+    },
+    {
+      "time_offset_ms": 85000,
+      "event": "PASS_END_PASS_05_LLM_PROTOCOL"
+    }
+  ],
+  "artifacts_produced": [
+    "records/PASS_05_LLM_PROTOCOL.json"
+  ],
+  "recorded_at": "2026-08-18T02:49:12.346258+00:00",
+  "notes": "Recorded pass 5: LLMClient Protocol for scene S08"
+}

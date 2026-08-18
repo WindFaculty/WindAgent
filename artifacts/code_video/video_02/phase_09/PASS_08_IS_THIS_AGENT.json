@@ -1,0 +1,31 @@
+{
+  "pass_id": "PASS_08_IS_THIS_AGENT",
+  "scene_id": "S11",
+  "status": "VERIFIED",
+  "duration_ms": 35000,
+  "frame_count": 1050,
+  "source_hash": "2ef52e9bcd371284d151d13ff158ff44a311f6ae34104ca8a75097009ebdd9fb",
+  "render_config_hash": "beb590b4be1e3b1318c0123a83d78abb69a3d5c9cad440278a75618e6b465428",
+  "output_hash": "666d2b492395190a3a6c7c0e3f6aa606e19475295d0909673f451b218930a80e",
+  "verified_terminal": true,
+  "secret_clean": true,
+  "keyframe_marks": [
+    {
+      "time_offset_ms": 0,
+      "event": "PASS_START_PASS_08_IS_THIS_AGENT"
+    },
+    {
+      "time_offset_ms": 17500,
+      "event": "PASS_MIDPOINT_PASS_08_IS_THIS_AGENT"
+    },
+    {
+      "time_offset_ms": 35000,
+      "event": "PASS_END_PASS_08_IS_THIS_AGENT"
+    }
+  ],
+  "artifacts_produced": [
+    "records/PASS_08_IS_THIS_AGENT.json"
+  ],
+  "recorded_at": "2026-08-18T02:49:12.347764+00:00",
+  "notes": "Recorded pass 8: Is This An Agent? for scene S11"
+}

@@ -1,0 +1,396 @@
+{
+  "video_id": "video-02",
+  "total_takes": 19,
+  "total_duration_ms": 975000,
+  "total_frames": 29250,
+  "master_resolution": "2560x1440",
+  "fps": 30,
+  "audio_policy": "EXCLUDED",
+  "takes": [
+    {
+      "take_id": "S01_T01",
+      "scene_id": "S01",
+      "start_ms": 0,
+      "duration_ms": 25000,
+      "resolution": "2560x1440",
+      "fps": 30,
+      "frame_count": 750,
+      "output_hash": "2bbdd94292697e8b9e9c610bbb2fda1ca5b50c43c54408d58e9725287533eb11",
+      "status": "VERIFIED",
+      "audio_enabled": false,
+      "output_file": "S01_T01.mp4",
+      "metadata": {
+        "visual_mode": "SPLIT",
+        "title": "Cold Open \u2014 Live Agent Execution",
+        "action_count": 3,
+        "keyframe_count": 26,
+        "sampled_frame_count": 26
+      }
+    },
+    {
+      "take_id": "S02_T01",
+      "scene_id": "S02",
+      "start_ms": 25000,
+      "duration_ms": 25000,
+      "resolution": "2560x1440",
+      "fps": 30,
+      "frame_count": 750,
+      "output_hash": "0429d9d80a142c95b114fcb9a3ddcb41dcd5859936d718c36488ed1868a7d720",
+      "status": "VERIFIED",
+      "audio_enabled": false,
+      "output_file": "S02_T01.mp4",
+      "metadata": {
+        "visual_mode": "TITLE_CARD",
+        "title": "Hook \u2014 Vi\u1ebft AI Agent \u0110\u1ea7u Ti\u00ean B\u1eb1ng Python",
+        "action_count": 1,
+        "keyframe_count": 26,
+        "sampled_frame_count": 26
+      }
+    },
+    {
+      "take_id": "S03_T01",
+      "scene_id": "S03",
+      "start_ms": 50000,
+      "duration_ms": 35000,
+      "resolution": "2560x1440",
+      "fps": 30,
+      "frame_count": 1050,
+      "output_hash": "276b11db8b9114b90b8ab4abec08583cc9bc68df5905c1d44bff682c84d3e8e0",
+      "status": "VERIFIED",
+      "audio_enabled": false,
+      "output_file": "S03_T01.mp4",
+      "metadata": {
+        "visual_mode": "DIAGRAM",
+        "title": "Video 01 Recap \u2014 N\u1ec1n t\u1ea3ng Agent Architecture",
+        "action_count": 1,
+        "keyframe_count": 36,
+        "sampled_frame_count": 36
+      }
+    },
+    {
+      "take_id": "S04_T01",
+      "scene_id": "S04",
+      "start_ms": 85000,
+      "duration_ms": 45000,
+      "resolution": "2560x1440",
+      "fps": 30,
+      "frame_count": 1350,
+      "output_hash": "7fbe4e638f7d9b610ff575ba2377fb5fd31391c68cbc0ad7c47f49e68283f09b",
+      "status": "VERIFIED",
+      "audio_enabled": false,
+      "output_file": "S04_T01.mp4",
+      "metadata": {
+        "visual_mode": "ARCHITECTURE",
+        "title": "Architecture v0.1 \u2014 User -> Agent -> LLM -> Answer",
+        "action_count": 1,
+        "keyframe_count": 46,
+        "sampled_frame_count": 46
+      }
+    },
+    {
+      "take_id": "S05_T01",
+      "scene_id": "S05",
+      "start_ms": 130000,
+      "duration_ms": 35000,
+      "resolution": "2560x1440",
+      "fps": 30,
+      "frame_count": 1050,
+      "output_hash": "508fdc23844c0c6abdda61d28d8a587a903e63b43a8b4d400d3e0a2cb0727ea8",
+      "status": "VERIFIED",
+      "audio_enabled": false,
+      "output_file": "S05_T01.mp4",
+      "metadata": {
+        "visual_mode": "FULL_TERMINAL",
+        "title": "Create Repository \u2014 Project Scaffolding",
+        "action_count": 3,
+        "keyframe_count": 36,
+        "sampled_frame_count": 36
+      }
+    },
+    {
+      "take_id": "S06_T01",
+      "scene_id": "S06",
+      "start_ms": 165000,
+      "duration_ms": 55000,
+      "resolution": "2560x1440",
+      "fps": 30,
+      "frame_count": 1650,
+      "output_hash": "a22811fa5467d187b8201ecb94187b59155027ca03bba0e6e8c257d308c2cacd",
+      "status": "VERIFIED",
+      "audio_enabled": false,
+      "output_file": "S06_T01.mp4",
+      "metadata": {
+        "visual_mode": "CODE_STUDIO",
+        "title": "Message \u2014 Immutable Conversation Representation",
+        "action_count": 3,
+        "keyframe_count": 56,
+        "sampled_frame_count": 56
+      }
+    },
+    {
+      "take_id": "S07_T01",
+      "scene_id": "S07",
+      "start_ms": 220000,
+      "duration_ms": 55000,
+      "resolution": "2560x1440",
+      "fps": 30,
+      "frame_count": 1650,
+      "output_hash": "e456cfcd9c9dbf6ce23f6e989c49f1d63788e37f59b02ca5717742bb812c5123",
+      "status": "VERIFIED",
+      "audio_enabled": false,
+      "output_file": "S07_T01.mp4",
+      "metadata": {
+        "visual_mode": "CODE_STUDIO",
+        "title": "AgentConfig \u2014 Hyperparameters & System Prompt",
+        "action_count": 3,
+        "keyframe_count": 56,
+        "sampled_frame_count": 56
+      }
+    },
+    {
+      "take_id": "S08_T01",
+      "scene_id": "S08",
+      "start_ms": 275000,
+      "duration_ms": 85000,
+      "resolution": "2560x1440",
+      "fps": 30,
+      "frame_count": 2550,
+      "output_hash": "9af3c3d2f6c578fc11fa54bd9114f29d53a380dcb43c1a891f3df8c2ca7cfb1a",
+      "status": "VERIFIED",
+      "audio_enabled": false,
+      "output_file": "S08_T01.mp4",
+      "metadata": {
+        "visual_mode": "CODE_STUDIO",
+        "title": "LLMClient \u2014 Domain Abstraction Protocol",
+        "action_count": 3,
+        "keyframe_count": 86,
+        "sampled_frame_count": 86
+      }
+    },
+    {
+      "take_id": "S09_T01",
+      "scene_id": "S09",
+      "start_ms": 360000,
+      "duration_ms": 50000,
+      "resolution": "2560x1440",
+      "fps": 30,
+      "frame_count": 1500,
+      "output_hash": "27b822e7ca188726bc89df8b3273d49e3cd69e56884ee5b633f2469f47956719",
+      "status": "VERIFIED",
+      "audio_enabled": false,
+      "output_file": "S09_T01.mp4",
+      "metadata": {
+        "visual_mode": "CODE_STUDIO",
+        "title": "Fake LLM \u2014 Deterministic Offline Testing Client",
+        "action_count": 3,
+        "keyframe_count": 51,
+        "sampled_frame_count": 51
+      }
+    },
+    {
+      "take_id": "S10_T01",
+      "scene_id": "S10",
+      "start_ms": 410000,
+      "duration_ms": 95000,
+      "resolution": "2560x1440",
+      "fps": 30,
+      "frame_count": 2850,
+      "output_hash": "8d729f4d6b0faa93666dcbc1accc724492dc1cf4c4cd2e28debf7f075b7bc705",
+      "status": "VERIFIED",
+      "audio_enabled": false,
+      "output_file": "S10_T01.mp4",
+      "metadata": {
+        "visual_mode": "CODE_STUDIO",
+        "title": "Agent \u2014 Orchestration Core Class",
+        "action_count": 3,
+        "keyframe_count": 96,
+        "sampled_frame_count": 96
+      }
+    },
+    {
+      "take_id": "S11_T01",
+      "scene_id": "S11",
+      "start_ms": 505000,
+      "duration_ms": 35000,
+      "resolution": "2560x1440",
+      "fps": 30,
+      "frame_count": 1050,
+      "output_hash": "77ae35013e81ae90f5587b5761eb64868cebe7fa0177334e595b4e6ebe56e8b5",
+      "status": "VERIFIED",
+      "audio_enabled": false,
+      "output_file": "S11_T01.mp4",
+      "metadata": {
+        "visual_mode": "DIAGRAM",
+        "title": "Is This An Agent? \u2014 Concept Deep Dive",
+        "action_count": 1,
+        "keyframe_count": 36,
+        "sampled_frame_count": 36
+      }
+    },
+    {
+      "take_id": "S12_T01",
+      "scene_id": "S12",
+      "start_ms": 540000,
+      "duration_ms": 75000,
+      "resolution": "2560x1440",
+      "fps": 30,
+      "frame_count": 2250,
+      "output_hash": "591fbff2e4613d0328beb063784c0090bed332c234564bb6c311f93c800ad4ab",
+      "status": "VERIFIED",
+      "audio_enabled": false,
+      "output_file": "S12_T01.mp4",
+      "metadata": {
+        "visual_mode": "CODE_STUDIO",
+        "title": "Real Provider \u2014 Infrastructure Layer Adapter",
+        "action_count": 3,
+        "keyframe_count": 76,
+        "sampled_frame_count": 76
+      }
+    },
+    {
+      "take_id": "S13_T01",
+      "scene_id": "S13",
+      "start_ms": 615000,
+      "duration_ms": 50000,
+      "resolution": "2560x1440",
+      "fps": 30,
+      "frame_count": 1500,
+      "output_hash": "b9f171ffafa099966abc244f84ae6262b2d8fe873acecad2f01f56025f6ee610",
+      "status": "VERIFIED",
+      "audio_enabled": false,
+      "output_file": "S13_T01.mp4",
+      "metadata": {
+        "visual_mode": "CODE_STUDIO",
+        "title": "API Key \u2014 Environment Configuration & Security",
+        "action_count": 3,
+        "keyframe_count": 51,
+        "sampled_frame_count": 51
+      }
+    },
+    {
+      "take_id": "S14_T01",
+      "scene_id": "S14",
+      "start_ms": 665000,
+      "duration_ms": 55000,
+      "resolution": "2560x1440",
+      "fps": 30,
+      "frame_count": 1650,
+      "output_hash": "2e648bd3f438f3b7c5ac23ff4af11d9b2ac49e4bd859812e87543d2b129f6a33",
+      "status": "VERIFIED",
+      "audio_enabled": false,
+      "output_file": "S14_T01.mp4",
+      "metadata": {
+        "visual_mode": "FULL_TERMINAL",
+        "title": "First Run \u2014 Terminal Execution Replay",
+        "action_count": 2,
+        "keyframe_count": 56,
+        "sampled_frame_count": 56
+      }
+    },
+    {
+      "take_id": "S15_T01",
+      "scene_id": "S15",
+      "start_ms": 720000,
+      "duration_ms": 80000,
+      "resolution": "2560x1440",
+      "fps": 30,
+      "frame_count": 2400,
+      "output_hash": "450a79e7357c29638bb58685520e5cfb0480dc6217b5177d4730b2227e94d14a",
+      "status": "VERIFIED",
+      "audio_enabled": false,
+      "output_file": "S15_T01.mp4",
+      "metadata": {
+        "visual_mode": "CODE_STUDIO",
+        "title": "Tests \u2014 Pytest Suite (2 passed)",
+        "action_count": 3,
+        "keyframe_count": 81,
+        "sampled_frame_count": 81
+      }
+    },
+    {
+      "take_id": "S16_T01",
+      "scene_id": "S16",
+      "start_ms": 800000,
+      "duration_ms": 50000,
+      "resolution": "2560x1440",
+      "fps": 30,
+      "frame_count": 1500,
+      "output_hash": "37d8675566f49fefc1fa50161b65a10dbc7f14ae196ac10fd0b25373b667089c",
+      "status": "VERIFIED",
+      "audio_enabled": false,
+      "output_file": "S16_T01.mp4",
+      "metadata": {
+        "visual_mode": "CHECKLIST",
+        "title": "Not Yet \u2014 Feature Boundaries & Scope",
+        "action_count": 1,
+        "keyframe_count": 51,
+        "sampled_frame_count": 51
+      }
+    },
+    {
+      "take_id": "S17_T01",
+      "scene_id": "S17",
+      "start_ms": 850000,
+      "duration_ms": 50000,
+      "resolution": "2560x1440",
+      "fps": 30,
+      "frame_count": 1500,
+      "output_hash": "ff5778eb085734a046b75bd3157717aa4030b6d49fe26d1faf7aee08108c4f8a",
+      "status": "VERIFIED",
+      "audio_enabled": false,
+      "output_file": "S17_T01.mp4",
+      "metadata": {
+        "visual_mode": "ARCHITECTURE",
+        "title": "Architecture Review \u2014 Domain / Infrastructure Separation",
+        "action_count": 1,
+        "keyframe_count": 51,
+        "sampled_frame_count": 51
+      }
+    },
+    {
+      "take_id": "S18_T01",
+      "scene_id": "S18",
+      "start_ms": 900000,
+      "duration_ms": 35000,
+      "resolution": "2560x1440",
+      "fps": 30,
+      "frame_count": 1050,
+      "output_hash": "53d6e253930c3a32aa9a355298d7cf85ec413367a22ee8f346b7bf95d2effc58",
+      "status": "VERIFIED",
+      "audio_enabled": false,
+      "output_file": "S18_T01.mp4",
+      "metadata": {
+        "visual_mode": "FULL_TERMINAL",
+        "title": "Git Milestone \u2014 Commit & Release Tagging",
+        "action_count": 3,
+        "keyframe_count": 36,
+        "sampled_frame_count": 36
+      }
+    },
+    {
+      "take_id": "S19_T01",
+      "scene_id": "S19",
+      "start_ms": 935000,
+      "duration_ms": 40000,
+      "resolution": "2560x1440",
+      "fps": 30,
+      "frame_count": 1200,
+      "output_hash": "9f94f3f3ebde623b9fd9821c19acad3d077339a8e09a56528e5f3a51e8fcbd0e",
+      "status": "VERIFIED",
+      "audio_enabled": false,
+      "output_file": "S19_T01.mp4",
+      "metadata": {
+        "visual_mode": "OUTRO",
+        "title": "Video 03 Teaser & Outro \u2014 Tool Calling Preview",
+        "action_count": 2,
+        "keyframe_count": 41,
+        "sampled_frame_count": 41
+      }
+    }
+  ],
+  "metadata": {
+    "assembled_takes_count": 19,
+    "contiguous_timeline": true,
+    "zero_audio": true
+  }
+}

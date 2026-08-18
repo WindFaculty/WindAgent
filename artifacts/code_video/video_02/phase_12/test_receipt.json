@@ -1,0 +1,24 @@
+{
+  "phase": "phase_12",
+  "final_milestone_verdict": "CODE_VIDEO_VIDEO02_VERIFIED",
+  "visual_gate": "CV02_VISUAL_MASTER_VERIFIED",
+  "verdict": "PASS",
+  "status": "PASS",
+  "test_files": [
+    "tests/contracts/test_code_video_contracts.py",
+    "tests/contracts/test_code_video_workspace.py",
+    "tests/contracts/test_code_video_golden_tutorial.py",
+    "tests/contracts/test_code_video_compiler.py",
+    "tests/contracts/test_code_video_renderer.py",
+    "tests/contracts/test_code_video_replay.py",
+    "tests/contracts/test_code_video_capture.py",
+    "tests/contracts/test_code_video_graphics.py",
+    "tests/contracts/test_code_video_recording.py",
+    "tests/contracts/test_code_video_assembly.py",
+    "tests/contracts/test_code_video_qc.py",
+    "tests/contracts/test_code_video_program_dod.py"
+  ],
+  "total_contract_tests_passed": 150,
+  "dod_matrix_pass_rate": "100%",
+  "verified_at": "2026-08-18T16:58:15.014033+00:00"
+}

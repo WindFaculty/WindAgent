@@ -1,0 +1,196 @@
+{
+  "video_id": "video-02",
+  "milestone": "Agentic Studio v0.1 \u2014 Simple Agent",
+  "gate": "CV02_VISUAL_MASTER_VERIFIED",
+  "is_valid": true,
+  "verdict": "PASS",
+  "certified_at": "2026-08-18T04:04:55.085500+00:00",
+  "dod_checklist": {
+    "DOD_01_WORKSPACE_BUILDABLE": true,
+    "DOD_02_MESSAGE_EXISTS": true,
+    "DOD_03_AGENT_CONFIG_EXISTS": true,
+    "DOD_04_LLM_CLIENT_PROTOCOL_EXISTS": true,
+    "DOD_05_AGENT_PROVIDER_AGNOSTIC": true,
+    "DOD_06_FAKE_LLM_OFFLINE_CAPABLE": true,
+    "DOD_07_UNIT_TESTS_PASS_OFFLINE": true,
+    "DOD_08_REAL_PROVIDER_INTEGRATION_TESTED": true,
+    "DOD_09_ZERO_SECRETS_EXPOSED": true,
+    "DOD_10_PYTEST_OUTPUT_VERIFIED": true,
+    "DOD_11_TUTORIAL_GIT_MILESTONE_COMMIT": true,
+    "DOD_12_TUTORIAL_GIT_TAG_VIDEO02": true,
+    "DOD_13_TUTORIAL_GIT_TAG_V01": true,
+    "DOD_14_TOOL_CALLING_OUT_OF_SCOPE": true,
+    "DOD_15_CODE_TAKES_FROM_CHECKPOINTS": true,
+    "DOD_16_19_SCENES_TIMELINE_MATCH": true,
+    "DOD_17_ARCHITECTURE_DIAGRAMS_MATCH": true,
+    "DOD_18_EXACT_DURATION_16_15": true,
+    "DOD_19_VISUAL_MASTER_ZERO_AUDIO": true,
+    "DOD_20_1440P_MASTER_VERIFIED": true,
+    "DOD_21_1080P_DELIVERY_VERIFIED": true,
+    "DOD_22_CUE_SHEET_GENERATED": true,
+    "DOD_23_FINAL_ARTIFACTS_SHA256": true,
+    "DOD_24_GATE_CV02_VISUAL_MASTER_VERIFIED": true
+  },
+  "all_violations": [],
+  "qc_hash": "86118509b328b159f1461f1d0b3cec8b4c3fbbdb3fcc8bc94f14aa35e673c9a9",
+  "structural_qc": {
+    "is_valid": true,
+    "total_scenes": 19,
+    "total_duration_ms": 975000,
+    "total_frames": 29250,
+    "scene_ids": [
+      "S01",
+      "S02",
+      "S03",
+      "S04",
+      "S05",
+      "S06",
+      "S07",
+      "S08",
+      "S09",
+      "S10",
+      "S11",
+      "S12",
+      "S13",
+      "S14",
+      "S15",
+      "S16",
+      "S17",
+      "S18",
+      "S19"
+    ],
+    "missing_scenes": [],
+    "missing_code_scenes": [],
+    "missing_graphics": [],
+    "timing_violations": [],
+    "errors": [],
+    "metadata": {
+      "video_id": "video-02",
+      "fps": 30,
+      "resolution": "2560x1440"
+    }
+  },
+  "code_qc": {
+    "is_valid": true,
+    "source_ast_valid": true,
+    "test_ast_valid": true,
+    "classes_found": [
+      "Message",
+      "AgentConfig",
+      "LLMClient",
+      "FakeLLMClient",
+      "Agent",
+      "OpenAICompatibleProvider"
+    ],
+    "missing_classes": [],
+    "test_functions_found": [
+      "test_agent_runs_with_fake_llm",
+      "test_message_immutability_and_role_validation"
+    ],
+    "missing_test_functions": [],
+    "forbidden_imports_found": [],
+    "normalized_ast_hash": "2cd91146b92c1e146194e961f2eaf4f44221dbcba9a51371dad7a79eb3468a22",
+    "errors": [],
+    "metadata": {
+      "required_classes": [
+        "Agent",
+        "AgentConfig",
+        "FakeLLMClient",
+        "LLMClient",
+        "Message"
+      ],
+      "required_test_functions": [
+        "test_agent_runs_with_fake_llm",
+        "test_message_immutability_and_role_validation"
+      ]
+    }
+  },
+  "terminal_qc": {
+    "is_valid": true,
+    "total_commands_executed": 8,
+    "commands_found": [
+      "python -m src.agent",
+      "mkdir agentic-studio && cd agentic-studio",
+      "git init",
+      "python -m src.agent",
+      "pytest",
+      "git add .",
+      "git commit -m \"feat: build simple agent core\"",
+      "git tag video-02 && git tag v0.1"
+    ],
+    "missing_mandatory_commands": [],
+    "pytest_verified": true,
+    "pytest_output_summary": "2 passed (verified in action expected_passes)",
+    "exit_code_violations": [],
+    "errors": [],
+    "metadata": {
+      "mandatory_patterns": [
+        "git init",
+        "pytest",
+        "python -m src.agent",
+        "git add",
+        "git commit",
+        "git tag video-02",
+        "git tag v0.1"
+      ]
+    }
+  },
+  "secret_qc": {
+    "is_clean": true,
+    "total_targets_scanned": 4,
+    "findings_count": 0,
+    "findings": [],
+    "scanned_locations": [
+      "src/agent.py",
+      "cue_sheet.csv",
+      "assembly_result",
+      "tests/test_agent.py"
+    ],
+    "verdict": "PASS",
+    "errors": [],
+    "metadata": {
+      "rules_checked": [
+        "google_api_key",
+        "openai_live_key",
+        "groq_live_key",
+        "nvidia_live_key",
+        "aws_access_key",
+        "bearer_token",
+        "private_key_header"
+      ]
+    }
+  },
+  "readability_qc": {
+    "is_valid": true,
+    "canvas_resolution": "2560x1440",
+    "action_safe_bound": "2304x1296",
+    "title_safe_bound": "2048x1152",
+    "typography_scale_valid": true,
+    "wcag_contrast_valid": true,
+    "safe_area_valid": true,
+    "violations": [],
+    "metrics": {
+      "canvas_width": 2560,
+      "canvas_height": 1440,
+      "body_contrast_ratio": 17.39,
+      "heading_contrast_ratio": 7.49,
+      "card_contrast_ratio": 15.89
+    },
+    "errors": []
+  },
+  "timing_qc": {
+    "is_valid": true,
+    "total_duration_ms": 975000,
+    "total_frames": 29250,
+    "scene_count": 19,
+    "zero_audio_verified": true,
+    "cuesheet_verified": true,
+    "timing_errors": [],
+    "audio_violations": [],
+    "errors": [],
+    "metadata": {
+      "master_1440p_hash": "1a3b681fbb79d38d140ed00a671cc8ccd0aa74e86f6547cec1e873ac52dc837c",
+      "delivery_1080p_hash": "51ca27dd9de2feff4879c3314381ed61530485e75593a6451290071b161c4773"
+    }
+  }
+}

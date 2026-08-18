@@ -7,6 +7,7 @@ and workflow step definitions for automated code tutorial video production.
 
 from __future__ import annotations
 
+from windagent_workflows.code_video.assembly import AssembleMasterStepExecutor
 from windagent_workflows.code_video.compiler import CodeVideoScriptCompiler
 from windagent_workflows.code_video.contracts import (
     FORBIDDEN_AUDIO_KEYS,
@@ -33,6 +34,14 @@ from windagent_workflows.code_video.definition import (
     all_step_contracts,
     build_code_video_step_nodes,
     step_contract,
+)
+from windagent_workflows.code_video.program_certification import (
+    ProgramCertificationDriver,
+    ProgramCertificationStepExecutor,
+)
+from windagent_workflows.code_video.qc import (
+    FinalQCDriver,
+    FinalQCStepExecutor,
 )
 from windagent_workflows.code_video.replay import (
     CHECKPOINT_CODE_MAP,
@@ -85,6 +94,13 @@ __all__ = [
     "ReplayStepRecord",
     "ReplayTrace",
     "DeterministicReplayEngine",
+    # Master Assembly
+    "AssembleMasterStepExecutor",
+    # Final QC
+    "FinalQCStepExecutor",
+    "FinalQCDriver",
+    # Program Certification (Phase 12)
+    "ProgramCertificationStepExecutor",
+    "ProgramCertificationDriver",
 ]
-
 

@@ -1,0 +1,31 @@
+{
+  "pass_id": "PASS_01_COLD_OPEN",
+  "scene_id": "S01",
+  "status": "VERIFIED",
+  "duration_ms": 25000,
+  "frame_count": 750,
+  "source_hash": "479a9bdf57c8d94fd581531e56334c74d512025a66431959259344826a31b46a",
+  "render_config_hash": "b242d036b994ff153d3cf1d597b0104fbf8d26ce7ff8b1c8ed021d584c2ad68d",
+  "output_hash": "fe60069649344320d87951908d7a7a667f186aec58faecbd038d6353af0d4929",
+  "verified_terminal": true,
+  "secret_clean": true,
+  "keyframe_marks": [
+    {
+      "time_offset_ms": 0,
+      "event": "PASS_START_PASS_01_COLD_OPEN"
+    },
+    {
+      "time_offset_ms": 12500,
+      "event": "PASS_MIDPOINT_PASS_01_COLD_OPEN"
+    },
+    {
+      "time_offset_ms": 25000,
+      "event": "PASS_END_PASS_01_COLD_OPEN"
+    }
+  ],
+  "artifacts_produced": [
+    "records/PASS_01_COLD_OPEN.json"
+  ],
+  "recorded_at": "2026-08-18T02:49:12.346258+00:00",
+  "notes": "Recorded pass 1: Cold Open for scene S01"
+}

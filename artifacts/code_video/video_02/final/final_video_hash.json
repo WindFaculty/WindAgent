@@ -1,0 +1,24 @@
+{
+  "video_id": "video-02",
+  "milestone": "Agentic Studio v0.1",
+  "gate": "CV02_VISUAL_MASTER_VERIFIED",
+  "certified_at": "2026-08-18T04:04:55.085500+00:00",
+  "master_1440p": {
+    "filename": "video_02_visual_master_1440p.mp4",
+    "resolution": "2560x1440",
+    "fps": 30,
+    "duration_ms": 975000,
+    "frame_count": 29250,
+    "sha256": "1a3b681fbb79d38d140ed00a671cc8ccd0aa74e86f6547cec1e873ac52dc837c"
+  },
+  "delivery_1080p": {
+    "filename": "video_02_visual_master_1080p.mp4",
+    "resolution": "1920x1080",
+    "fps": 30,
+    "duration_ms": 975000,
+    "frame_count": 29250,
+    "sha256": "51ca27dd9de2feff4879c3314381ed61530485e75593a6451290071b161c4773"
+  },
+  "qc_hash": "86118509b328b159f1461f1d0b3cec8b4c3fbbdb3fcc8bc94f14aa35e673c9a9",
+  "verdict": "PASS"
+}

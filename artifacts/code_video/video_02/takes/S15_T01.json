@@ -1,0 +1,20 @@
+{
+  "take_id": "S15_T01",
+  "scene_id": "S15",
+  "start_ms": 720000,
+  "duration_ms": 80000,
+  "resolution": "2560x1440",
+  "fps": 30,
+  "frame_count": 2400,
+  "output_hash": "450a79e7357c29638bb58685520e5cfb0480dc6217b5177d4730b2227e94d14a",
+  "status": "VERIFIED",
+  "audio_enabled": false,
+  "output_file": "S15_T01.mp4",
+  "metadata": {
+    "visual_mode": "CODE_STUDIO",
+    "title": "Tests \u2014 Pytest Suite (2 passed)",
+    "action_count": 3,
+    "keyframe_count": 81,
+    "sampled_frame_count": 81
+  }
+}

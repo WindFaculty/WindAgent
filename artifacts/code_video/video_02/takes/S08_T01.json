@@ -1,0 +1,20 @@
+{
+  "take_id": "S08_T01",
+  "scene_id": "S08",
+  "start_ms": 275000,
+  "duration_ms": 85000,
+  "resolution": "2560x1440",
+  "fps": 30,
+  "frame_count": 2550,
+  "output_hash": "9af3c3d2f6c578fc11fa54bd9114f29d53a380dcb43c1a891f3df8c2ca7cfb1a",
+  "status": "VERIFIED",
+  "audio_enabled": false,
+  "output_file": "S08_T01.mp4",
+  "metadata": {
+    "visual_mode": "CODE_STUDIO",
+    "title": "LLMClient \u2014 Domain Abstraction Protocol",
+    "action_count": 3,
+    "keyframe_count": 86,
+    "sampled_frame_count": 86
+  }
+}

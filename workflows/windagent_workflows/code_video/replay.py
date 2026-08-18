@@ -21,8 +21,25 @@ from enum import Enum
 import hashlib
 import json
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence, Set, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, Set, Tuple, Union
 
+if TYPE_CHECKING:
+    from windagent_tools.code_video.renderer.code_renderer import (
+        CodeEditorRenderer,
+        CodeEditorState,
+    )
+    from windagent_tools.code_video.renderer.diagram_renderer import DiagramRenderer
+    from windagent_tools.code_video.renderer.studio_renderer import (
+        CodeStudioRenderer,
+        FileTreeState,
+        StudioLayoutState,
+    )
+    from windagent_tools.code_video.renderer.terminal_renderer import (
+        TerminalLineType,
+        TerminalRenderer,
+        TerminalState,
+    )
+    from windagent_tools.code_video.renderer.title_renderer import TitleRenderer
 from windagent_core.errors.exceptions import NotFoundError, ValidationError
 from windagent_workflows.code_video.contracts import (
     Action,
@@ -33,24 +50,8 @@ from windagent_workflows.code_video.contracts import (
     VisualMode,
 )
 
-from windagent_tools.code_video.renderer.code_renderer import (
-    CodeEditorRenderer,
-    CodeEditorState,
-)
-from windagent_tools.code_video.renderer.diagram_renderer import DiagramRenderer
-from windagent_tools.code_video.renderer.studio_renderer import (
-    CodeStudioRenderer,
-    FileTreeState,
-    StudioLayoutState,
-)
-from windagent_tools.code_video.renderer.terminal_renderer import (
-    TerminalLineType,
-    TerminalRenderer,
-    TerminalState,
-)
-from windagent_tools.code_video.renderer.title_renderer import TitleRenderer
-from windagent_tools.code_video.workspace.checkpoints import CheckpointManager, CheckpointRecord
 from windagent_tools.code_video.workspace.golden_builder import (
+
     CHECKPOINT_STEPS,
     CheckpointDefinition,
     STEP_00_INIT_AGENT_CODE,
@@ -478,17 +479,28 @@ class DeterministicReplayEngine:
 
     def __init__(
         self,
-        plan: CodeVideoPlan,
+        plan: Optional[CodeVideoPlan] = None,
         checkpoint_manager: Optional[CheckpointManager] = None,
         studio_renderer: Optional[CodeStudioRenderer] = None,
         strict_terminal: bool = True,
     ) -> None:
-        self.plan = plan
+        if plan is None:
+            from windagent_workflows.code_video.compiler import CodeVideoScriptCompiler
+            compiler = CodeVideoScriptCompiler()
+            self.plan = compiler.compile_video_02_plan()
+        else:
+            self.plan = plan
         self.plan.validate()
-        self.checkpoint_resolver = CheckpointCodeResolver(checkpoint_manager=checkpoint_manager)
+        if studio_renderer is not None:
+            self.renderer = studio_renderer
+        else:
+            from windagent_tools.code_video.renderer.studio_renderer import CodeStudioRenderer
+            self.renderer = CodeStudioRenderer()
+        self.checkpoint_resolver = CheckpointCodeResolver(checkpoint_manager)
         self.terminal_executor = TerminalReplayExecutor()
-        self.renderer = studio_renderer or CodeStudioRenderer()
         self.strict_terminal = strict_terminal
+
+
 
     def _compute_step_hash(self, action: Action, layout: StudioLayoutState) -> str:
         h = hashlib.sha256()

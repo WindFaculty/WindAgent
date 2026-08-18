@@ -1,0 +1,31 @@
+{
+  "pass_id": "PASS_12_TESTING",
+  "scene_id": "S15",
+  "status": "VERIFIED",
+  "duration_ms": 80000,
+  "frame_count": 2400,
+  "source_hash": "a685228498a67a5f973fa425e9a4ef88c809d70665eff22d2bec213ceac8f351",
+  "render_config_hash": "855c9be8fa4a67c13115304d28e9211f3f44f38d71c9a558a5657dee0356aed4",
+  "output_hash": "4e684cb91c2fe327e4a08249807c7a223eadc52cdef15e05f47d897bd56977b1",
+  "verified_terminal": true,
+  "secret_clean": true,
+  "keyframe_marks": [
+    {
+      "time_offset_ms": 0,
+      "event": "PASS_START_PASS_12_TESTING"
+    },
+    {
+      "time_offset_ms": 40000,
+      "event": "PASS_MIDPOINT_PASS_12_TESTING"
+    },
+    {
+      "time_offset_ms": 80000,
+      "event": "PASS_END_PASS_12_TESTING"
+    }
+  ],
+  "artifacts_produced": [
+    "records/PASS_12_TESTING.json"
+  ],
+  "recorded_at": "2026-08-18T02:49:12.348773+00:00",
+  "notes": "Recorded pass 12: Pytest Execution for scene S15"
+}

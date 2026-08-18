@@ -1,0 +1,20 @@
+{
+  "take_id": "S12_T01",
+  "scene_id": "S12",
+  "start_ms": 540000,
+  "duration_ms": 75000,
+  "resolution": "2560x1440",
+  "fps": 30,
+  "frame_count": 2250,
+  "output_hash": "591fbff2e4613d0328beb063784c0090bed332c234564bb6c311f93c800ad4ab",
+  "status": "VERIFIED",
+  "audio_enabled": false,
+  "output_file": "S12_T01.mp4",
+  "metadata": {
+    "visual_mode": "CODE_STUDIO",
+    "title": "Real Provider \u2014 Infrastructure Layer Adapter",
+    "action_count": 3,
+    "keyframe_count": 76,
+    "sampled_frame_count": 76
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "phase": "phase_07",
+  "architecture_layer": "Capture & Media Pipeline",
+  "ports": [
+    "CapturePort"
+  ],
+  "adapters": [
+    "StudioCaptureEngine",
+    "BrowserCaptureAdapter"
+  ],
+  "media_pipeline": [
+    "TakeAssembler",
+    "TakeVerifier"
+  ],
+  "invariants": [
+    "Audio strictly disabled (0 audio streams, audio_policy: EXCLUDED)",
+    "Resolution fixed at 2560x1440 @ 30fps for pristine code legibility",
+    "Exact integer millisecond timing and deterministic frame count: (duration_ms * fps) // 1000",
+    "Zero live network or live LLM dependencies during take capture",
+    "Cryptographic SHA-256 output hashes on every take receipt"
+  ]
+}

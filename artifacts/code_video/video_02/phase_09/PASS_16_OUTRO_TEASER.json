@@ -1,0 +1,31 @@
+{
+  "pass_id": "PASS_16_OUTRO_TEASER",
+  "scene_id": "S19",
+  "status": "VERIFIED",
+  "duration_ms": 40000,
+  "frame_count": 1200,
+  "source_hash": "525b3b241579e9e4d02df1aa42c92c2db304ced093e9c9b3fd309a11eee10fc5",
+  "render_config_hash": "b3918c4d3b4489de21299837fc5c695ecc5c7006d4f18e7fa99ab981c765fec0",
+  "output_hash": "087a2c98f0cc6840ffa4eeb4ef60ce3e61d26c60f4a1e00791bb1a28420e4fc1",
+  "verified_terminal": true,
+  "secret_clean": true,
+  "keyframe_marks": [
+    {
+      "time_offset_ms": 0,
+      "event": "PASS_START_PASS_16_OUTRO_TEASER"
+    },
+    {
+      "time_offset_ms": 20000,
+      "event": "PASS_MIDPOINT_PASS_16_OUTRO_TEASER"
+    },
+    {
+      "time_offset_ms": 40000,
+      "event": "PASS_END_PASS_16_OUTRO_TEASER"
+    }
+  ],
+  "artifacts_produced": [
+    "records/PASS_16_OUTRO_TEASER.json"
+  ],
+  "recorded_at": "2026-08-18T02:49:12.349770+00:00",
+  "notes": "Recorded pass 16: Outro & Video 03 Teaser for scene S19"
+}

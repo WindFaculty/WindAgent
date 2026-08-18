@@ -1,0 +1,20 @@
+{
+  "take_id": "S06_T01",
+  "scene_id": "S06",
+  "start_ms": 165000,
+  "duration_ms": 55000,
+  "resolution": "2560x1440",
+  "fps": 30,
+  "frame_count": 1650,
+  "output_hash": "a22811fa5467d187b8201ecb94187b59155027ca03bba0e6e8c257d308c2cacd",
+  "status": "VERIFIED",
+  "audio_enabled": false,
+  "output_file": "S06_T01.mp4",
+  "metadata": {
+    "visual_mode": "CODE_STUDIO",
+    "title": "Message \u2014 Immutable Conversation Representation",
+    "action_count": 3,
+    "keyframe_count": 56,
+    "sampled_frame_count": 56
+  }
+}

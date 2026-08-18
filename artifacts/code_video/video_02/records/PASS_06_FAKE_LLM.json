@@ -1,0 +1,31 @@
+{
+  "pass_id": "PASS_06_FAKE_LLM",
+  "scene_id": "S09",
+  "status": "VERIFIED",
+  "duration_ms": 50000,
+  "frame_count": 1500,
+  "source_hash": "ad13bc50bc1b83e9d4dffecb278cf79a84e7a9e7aa83e9433d652fe4585409d2",
+  "render_config_hash": "3f446ff494cf8f967115b6c11183e97617d6d458cac6e71874704451c8d4ac1f",
+  "output_hash": "02f77e277345604681697ffa925aa21332ee0903a4fd0ad145f4494261484d35",
+  "verified_terminal": true,
+  "secret_clean": true,
+  "keyframe_marks": [
+    {
+      "time_offset_ms": 0,
+      "event": "PASS_START_PASS_06_FAKE_LLM"
+    },
+    {
+      "time_offset_ms": 25000,
+      "event": "PASS_MIDPOINT_PASS_06_FAKE_LLM"
+    },
+    {
+      "time_offset_ms": 50000,
+      "event": "PASS_END_PASS_06_FAKE_LLM"
+    }
+  ],
+  "artifacts_produced": [
+    "records/PASS_06_FAKE_LLM.json"
+  ],
+  "recorded_at": "2026-08-18T02:49:12.347764+00:00",
+  "notes": "Recorded pass 6: Fake LLM Client for scene S09"
+}

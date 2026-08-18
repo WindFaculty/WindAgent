@@ -1,0 +1,20 @@
+{
+  "take_id": "S04_T01",
+  "scene_id": "S04",
+  "start_ms": 85000,
+  "duration_ms": 45000,
+  "resolution": "2560x1440",
+  "fps": 30,
+  "frame_count": 1350,
+  "output_hash": "7fbe4e638f7d9b610ff575ba2377fb5fd31391c68cbc0ad7c47f49e68283f09b",
+  "status": "VERIFIED",
+  "audio_enabled": false,
+  "output_file": "S04_T01.mp4",
+  "metadata": {
+    "visual_mode": "ARCHITECTURE",
+    "title": "Architecture v0.1 \u2014 User -> Agent -> LLM -> Answer",
+    "action_count": 1,
+    "keyframe_count": 46,
+    "sampled_frame_count": 46
+  }
+}

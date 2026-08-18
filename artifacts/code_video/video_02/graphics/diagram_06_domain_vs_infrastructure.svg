@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2560 1440" width="2560" height="1440" class="diagram-svg">
+<rect width="100%" height="100%" fill="#0d1117" />
+<text x="1280" y="194" text-anchor="middle" fill="#58a6ff" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="64" font-weight="800">Clean Architecture Isolation</text>
+<text x="1280" y="254" text-anchor="middle" fill="#8b949e" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="32" font-weight="500">Domain Core never depends on external SDKs or API Keys</text>
+<line x1="316" y1="750" x2="2244" y2="750" stroke="#30363d" stroke-width="2" stroke-dasharray="8,8" />
+<text x="336" y="735" fill="#58a6ff" font-family="'JetBrains Mono', 'Fira Code', Consolas, monospace" font-size="24" font-weight="700">DOMAIN LAYER</text>
+<text x="336" y="785" fill="#d29922" font-family="'JetBrains Mono', 'Fira Code', Consolas, monospace" font-size="24" font-weight="700">INFRASTRUCTURE LAYER</text>
+<line x1="1118" y1="570" x2="1440" y2="570" stroke="#30363d" stroke-width="4"  />
+<text x="1279" y="554" text-anchor="middle" fill="#8b949e" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="24" font-weight="600">uses</text>
+<line x1="938" y1="840" x2="938" y2="660" stroke="#30363d" stroke-width="4" stroke-dasharray="8,8" />
+<text x="938" y="734" text-anchor="middle" fill="#8b949e" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="24" font-weight="600">cannot leak into</text>
+<line x1="1440" y1="930" x2="1118" y2="930" stroke="#30363d" stroke-width="4"  />
+<text x="1279" y="914" text-anchor="middle" fill="#8b949e" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="24" font-weight="600">loads</text>
+<g class="diagram-node" id="node_DM_AGENT" filter="drop-shadow(0 0 20px rgba(88,166,255,0.6))">
+<rect x="758" y="480" width="360" height="180" rx="16" fill="#1f242c" stroke="#58a6ff" stroke-width="3" />
+<rect x="774" y="496" width="140" height="32" rx="6" fill="#58a6ff22" stroke="#58a6ff44" stroke-width="1" /><text x="844" y="518" text-anchor="middle" fill="#58a6ff" font-family="'JetBrains Mono', 'Fira Code', Consolas, monospace" font-size="24" font-weight="700">DOMAIN</text>
+<text x="938" y="584" text-anchor="middle" fill="#f0f6fc" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="32" font-weight="bold">Agent Core</text>
+<text x="938" y="622" text-anchor="middle" fill="#8b949e" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="24">src/agent.py (Domain)</text>
+</g>
+<g class="diagram-node" id="node_DM_MODELS" >
+<rect x="1440" y="480" width="360" height="180" rx="16" fill="#161b22" stroke="#30363d" stroke-width="3" />
+<rect x="1456" y="496" width="140" height="32" rx="6" fill="#58a6ff22" stroke="#58a6ff44" stroke-width="1" /><text x="1526" y="518" text-anchor="middle" fill="#58a6ff" font-family="'JetBrains Mono', 'Fira Code', Consolas, monospace" font-size="24" font-weight="700">DOMAIN</text>
+<text x="1620" y="584" text-anchor="middle" fill="#c9d1d9" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="32" font-weight="bold">Message / Config</text>
+<text x="1620" y="622" text-anchor="middle" fill="#8b949e" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="24">Frozen Dataclasses</text>
+</g>
+<g class="diagram-node" id="node_IF_SDK" >
+<rect x="758" y="840" width="360" height="180" rx="16" fill="#161b22" stroke="#30363d" stroke-width="3" />
+<rect x="774" y="856" width="140" height="32" rx="6" fill="#d2992222" stroke="#d2992244" stroke-width="1" /><text x="844" y="878" text-anchor="middle" fill="#d29922" font-family="'JetBrains Mono', 'Fira Code', Consolas, monospace" font-size="24" font-weight="700">INFRASTRUCTURE</text>
+<text x="938" y="944" text-anchor="middle" fill="#c9d1d9" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="32" font-weight="bold">Provider SDK</text>
+<text x="938" y="982" text-anchor="middle" fill="#8b949e" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="24">openai / anthropic</text>
+</g>
+<g class="diagram-node" id="node_IF_ENV" >
+<rect x="1440" y="840" width="360" height="180" rx="16" fill="#161b22" stroke="#30363d" stroke-width="3" />
+<rect x="1456" y="856" width="140" height="32" rx="6" fill="#d2992222" stroke="#d2992244" stroke-width="1" /><text x="1526" y="878" text-anchor="middle" fill="#d29922" font-family="'JetBrains Mono', 'Fira Code', Consolas, monospace" font-size="24" font-weight="700">INFRASTRUCTURE</text>
+<text x="1620" y="944" text-anchor="middle" fill="#c9d1d9" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="32" font-weight="bold">API Key / Config</text>
+<text x="1620" y="982" text-anchor="middle" fill="#8b949e" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="24">.env / Environment</text>
+</g>
+</svg>

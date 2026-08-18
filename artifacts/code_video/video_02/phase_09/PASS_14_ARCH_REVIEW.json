@@ -1,0 +1,31 @@
+{
+  "pass_id": "PASS_14_ARCH_REVIEW",
+  "scene_id": "S17",
+  "status": "VERIFIED",
+  "duration_ms": 50000,
+  "frame_count": 1500,
+  "source_hash": "6e1120fd5c8b8fd4e2fe11b44aa0a537a9c352e192e5622fa9fe2a79ab12f6b4",
+  "render_config_hash": "5e13f53a0b5f6125b0106a1abc3968fdf9a3f68fb8dc717a273691c24a911871",
+  "output_hash": "8f7e26cd9304756fdb3a7a152f667cf67289c20768fe23de671b7bc39925e227",
+  "verified_terminal": true,
+  "secret_clean": true,
+  "keyframe_marks": [
+    {
+      "time_offset_ms": 0,
+      "event": "PASS_START_PASS_14_ARCH_REVIEW"
+    },
+    {
+      "time_offset_ms": 25000,
+      "event": "PASS_MIDPOINT_PASS_14_ARCH_REVIEW"
+    },
+    {
+      "time_offset_ms": 50000,
+      "event": "PASS_END_PASS_14_ARCH_REVIEW"
+    }
+  ],
+  "artifacts_produced": [
+    "records/PASS_14_ARCH_REVIEW.json"
+  ],
+  "recorded_at": "2026-08-18T02:49:12.348773+00:00",
+  "notes": "Recorded pass 14: Architecture Review for scene S17"
+}

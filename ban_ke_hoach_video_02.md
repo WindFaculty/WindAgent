@@ -1219,107 +1219,137 @@ Phase này có thể chạy song song với Phase 5–7 sau khi Phase 4 freeze.
 
 ---
 
-## Diagram bắt buộc
+## 8.1 Phân loại Visual Assets (`REQUIRED` / `OPTIONAL` / `DERIVED`)
 
-### Diagram 1
+Toàn bộ asset thị giác trong Video 02 được phân nhóm rành mạch:
 
-```text
-User
- ↓
-Agent
- ↓
-LLM
- ↓
-Answer
-```
+### Nhóm A: REQUIRED (Bắt buộc theo authority của Script)
 
-### Diagram 2
+1. **Diagrams**:
+   - `DIAG_01_FINAL_ARCH`: `User → Agent → LLM → Answer` (S01 Cold Open, S04 Architecture v0.1).
+   - `DIAG_02_COMPONENT_FLOW`: `AgentConfig → Agent → LLMClient → Provider` (S04, S08, S12).
+   - `DIAG_03_TODAY_VS_NEXT`: `TODAY (User → Agent → LLM → Answer)` vs `NEXT (User → Agent → LLM → Tool)` (S19 Outro/Teaser).
+   - `DIAG_04_LLMCLIENT_ABSTRACTION`: `Agent → LLMClient → [Provider A, Provider B, Local Model, Test Fake]` (S08 LLMClient Protocol).
+   - `DIAG_05A_COGNITIVE_LOOP`: `Observe → Decide → Act → Observe` (S11 Concept Recap — canonical loop).
+   - `DIAG_05B_MISSING_CAPABILITIES`: `Is This An Agent? — Scope Gap` (S11 Deep Dive — làm mờ các nhánh loop chưa có ở v0.1).
+   - `DIAG_06_DOMAIN_VS_INFRA`: Clean Architecture Isolation (`DOMAIN: Agent, Message, AgentConfig, LLMClient` vs `INFRASTRUCTURE: Provider SDK, HTTP, API Key, Response Mapping`) (S12, S17).
 
-```text
-AgentConfig
-     │
-     ▼
-   Agent
-     │
-     ▼
- LLMClient
-     │
-     ▼
- Provider
-```
+2. **Title Cards**:
+   - `CARD_S02_HOOK`: `VIDEO 02` — `AI AGENT ĐẦU TIÊN BẰNG PYTHON` (S02 Hook).
+   - `CARD_S18_MILESTONE`: `Agentic Studio` — `v0.1 — Simple Agent` (S18 Git Milestone).
+   - `CARD_S19_TEASER`: `VIDEO 03` — `TOOL CALLING HOẠT ĐỘNG BÊN TRONG NHƯ THẾ NÀO?` (S19 Next Episode).
 
-### Diagram 3
+3. **Scope Checklist (S16 — Not Yet)**:
+   - `CHECKLIST_S16_NOT_YET`: Đúng 7 mục chưa có trong kịch bản (không thêm checklist v0.1 vào required):
+     ```text
+     Tool Calling       ✕
+     Agent Loop         ✕
+     Memory             ✕
+     RAG                ✕
+     Planning           ✕
+     Multi-Agent        ✕
+     Orchestration      ✕
+     ```
 
-```text
-TODAY
+4. **B-Roll Overlays & Callouts**:
+   - `OVR_S06_MESSAGE_DATACLASS`: `@dataclass(frozen=True)`, `role`, `content` (S06).
+   - `OVR_S07_CONFIG_FIELDS`: `name`, `system_prompt`, `model`, `temperature` (S07).
+   - `OVR_S08_LLMCLIENT_PROTOCOL`: `class LLMClient(Protocol):` (S08).
+   - `OVR_S09_UNIT_TEST_VS_API`: `Unit Test ≠ Real API` (S09).
+   - `OVR_S10_EXECUTION_FLOW`: `"Hello" → Agent.run() → [system, user] → LLMClient.generate() → "Answer"` (S10).
+   - `OVR_S13_API_KEY_SECURITY`: `api_key = "sk-..." ✕` (Placeholder Only — S13).
+   - `OVR_S19_LLM_NOT_EXECUTOR`: `LLM ≠ Function Executor` (S19).
 
-User → Agent → LLM → Answer
-```
+### Nhóm B: OPTIONAL (Bổ trợ ngữ cảnh, không bắt buộc cho pass gate)
+- `DIAG_07_RECAP`: `Prompt Engineering → Chaining → Agent Architecture` (S03 Video 01 Recap — optional context).
+- `OVR_S01_COLD_OPEN_SPLIT`: Split overlay hỗ trợ phân cảnh mở đầu.
 
-### NEXT
-
-```text
-User
- ↓
-Agent
- ↓
-LLM
- ↓
-Tool
-```
-
-Các diagram này xuất phát trực tiếp từ B-roll/Visual Plan của kịch bản.
+### Nhóm C: DERIVED (Sinh tự động từ master)
+- Các biến thể downscale 1080p, preview thumbnail, raster frame snapshot từ canonical 1440p master.
 
 ---
 
-## Title cards
+## 8.2 Chuẩn Visual, Safe Area & Typography (Master 1440p)
 
-Cần:
+Hệ thống sử dụng `CodeVideoVisualTheme` làm nguồn chân lý duy nhất cho toàn bộ graphics:
 
-```text
-VIDEO 02
-AI AGENT ĐẦU TIÊN BẰNG PYTHON
-```
-
-```text
-Agentic Studio
-v0.1 — Simple Agent
-```
-
-```text
-VIDEO 03
-TOOL CALLING HOẠT ĐỘNG BÊN TRONG NHƯ THẾ NÀO?
-```
-
----
-
-## Checklist scene
-
-Render:
-
-```text
-Tool Calling       ✕
-Agent Loop         ✕
-Memory             ✕
-RAG                ✕
-Planning           ✕
-Multi-Agent        ✕
-Orchestration      ✕
-```
+1. **Master Canvas Resolution**: `2560×1440 px` (16:9).
+2. **Safe-Area Insets (Pixel & Percentage)**:
+   - **Action-Safe Inset**: `5%` (`dx = 128px`, `dy = 72px`) → Bound: `2304×1296 px`.
+   - **Title-Safe Inset**: `10%` (`dx = 256px`, `dy = 144px`) → Bound: `2048×1152 px`.
+   - Mọi nội dung text và visual quan trọng phải nằm tuyệt đối bên trong Title-Safe area. Không cho phép tràn (clipping).
+3. **Typography Minimum Pixel Sizes** (Bỏ đơn vị pt):
+   - `hero_title_font_px`: `56px – 72px` (Title cards & main headers).
+   - `section_heading_font_px`: `>= 40px`.
+   - `table_item_font_px`: `>= 32px`.
+   - `minimum_body_font_px`: `>= 24px` (Đảm bảo sắc nét khi transcode downstream).
+4. **Color & Contrast Standards**:
+   - Dark theme tối ưu studio (`#0d1117` background, `#161b22` card surface, `#30363d` border).
+   - Đạt chuẩn WCAG AA (Contrast ratio >= 4.5:1 đối với văn bản thông thường, >= 3:1 đối với tiêu đề lớn).
 
 ---
 
-## Gate
+## 8.3 `GraphicsCatalog` & Timeline Authority
 
-Mọi asset:
+Mọi visual asset được quản lý tập trung trong `GraphicsCatalog` với đầy đủ liên kết timeline:
+- **Binding thuộc tính**:
+  ```text
+  GraphicsCatalogEntry:
+  ├── asset_id (chuỗi duy nhất)
+  ├── classification (REQUIRED / OPTIONAL / DERIVED)
+  ├── category (DIAGRAM / TITLE_CARD / CHECKLIST / OVERLAY)
+  ├── scene_id (Scene sở tại từ Phase 4)
+  ├── entry_ms (Thời điểm xuất hiện)
+  ├── exit_ms (Thời điểm kết thúc)
+  ├── duration_ms (exit_ms - entry_ms)
+  ├── transition_in (CUT / FADE / SLIDE_UP / DISSOLVE / ZOOM_IN)
+  ├── transition_out (CUT / FADE / DISSOLVE)
+  ├── animation (NONE / PULSE / GLOW / DIM_INACTIVE / TYPEWRITER)
+  ├── canvas_bounds (2560x1440, safe insets)
+  ├── source_hash (SHA-256 nội dung semantic spec)
+  ├── render_config_hash (SHA-256 cấu hình theme, layout, font)
+  └── output_hash (SHA-256 file render thực tế)
+  ```
+- **Nguyên tắc Timeline Consumer**:
+  - Phase 8 **CHỈ consume timeline từ Phase 4**, tuyệt đối không tự điều chỉnh duration hay timestamps của scene.
+  - Mọi asset phải thỏa mãn `scene.start_ms <= entry_ms < exit_ms <= scene.end_ms`.
+  - Bất kỳ sai lệch nào đều bị chặn và trả về lỗi chuẩn:
+    ```text
+    GRAPHIC_TIMING_CONFLICT
+    ```
 
+---
+
+## 8.4 Tri-Hash Determinism
+
+Mỗi asset sinh ra bắt buộc có 3 mã băm xác thực:
+1. `source_hash`: Băm toàn bộ nội dung dữ liệu ngữ nghĩa đầu vào.
+2. `render_config_hash`: Băm toàn bộ tham số render (theme, resolution, safe margins, font sizes, transition).
+3. `output_hash`: Băm nội dung file artifact xuất ra (SVG / HTML / JSON).
+
+---
+
+## 8.5 Contract Testing & Gate Certification
+
+### Testing Policy
+- Test động dựa trên `GraphicsCatalog.get_required_assets()`, không hard-code số lượng asset cố định.
+- Kiểm tra toàn diện:
+  1. **Semantic Completeness**: 100% REQUIRED assets đầy đủ thành phần logic.
+  2. **Safe Area & Zero Clipping**: Không phần tử nào vượt ranh giới an toàn.
+  3. **Typography & Readability**: Mọi text element đạt `font-size >= 24px`.
+  4. **Color Contrast**: Tương phản WCAG AA hợp lệ.
+  5. **Timeline Bounds**: Khớp 100% với Phase 4 timeline, phát hiện kịp thời `GRAPHIC_TIMING_CONFLICT`.
+  6. **Tri-Hash Stability**: Deterministic hoàn toàn qua nhiều lần chạy lặp lại.
+
+### Gate Cuối Phase 8
 ```text
-resolution correct
-safe margins correct
-no clipping
-font readable
-hash stored
+CV02_P8_GRAPHICS_VERIFIED
 ```
+Chỉ **PASS** khi:
+- 100% `REQUIRED` assets đạt coverage và render hợp lệ.
+- Toàn bộ contract tests PASS 100%.
+- Không có bất kỳ lỗi `GRAPHIC_TIMING_CONFLICT` nào.
+- Toàn bộ asset và biên lai băm được lưu vào `artifacts/code_video/video_02/graphics/` và `artifacts/code_video/video_02/phase_08/`.
 
 ---
 
@@ -1996,31 +2026,32 @@ Nhờ vậy sau khi thu voice, chỉ cần đặt các đoạn voice đúng mark
 
 Chỉ được coi Video 02 hoàn thành khi:
 
-* [ ] WindAgent build được tutorial repo từ workspace trống.
-* [ ] `Message` tồn tại.
-* [ ] `AgentConfig` tồn tại.
-* [ ] `LLMClient` tồn tại.
-* [ ] `Agent` không phụ thuộc provider SDK.
-* [ ] Fake LLM hoạt động offline.
-* [ ] Unit tests pass không dùng API.
-* [ ] Provider implementation thật đã được integration-test.
-* [ ] Không secret nào xuất hiện trong source/video.
-* [ ] `pytest` output trong video là output verified.
-* [ ] Tutorial repository có commit milestone.
-* [ ] Tutorial repository có `video-02`.
-* [ ] Tutorial repository có `v0.1`.
-* [ ] Tool Calling không xuất hiện trong runtime Video 02.
-* [ ] Mọi code take sinh từ verified checkpoint.
-* [ ] 19 scene đúng timeline.
-* [ ] Các architecture diagram đúng script.
-* [ ] Final video dài đúng 16:15.
-* [ ] Final visual master không phụ thuộc audio.
-* [ ] 1440p master pass ffprobe.
-* [ ] 1080p delivery pass ffprobe.
-* [ ] Cue sheet được tạo.
-* [ ] Final artifact có SHA-256.
-* [ ] Có reproducibility receipt.
-* [ ] Gate cuối = `CV02_VISUAL_MASTER_VERIFIED`.
+* [x] WindAgent build được tutorial repo từ workspace trống.
+* [x] `Message` tồn tại.
+* [x] `AgentConfig` tồn tại.
+* [x] `LLMClient` tồn tại.
+* [x] `Agent` không phụ thuộc provider SDK.
+* [x] Fake LLM hoạt động offline.
+* [x] Unit tests pass không dùng API.
+* [x] Provider implementation thật đã được integration-test.
+* [x] Không secret nào xuất hiện trong source/video.
+* [x] `pytest` output trong video là output verified.
+* [x] Tutorial repository có commit milestone.
+* [x] Tutorial repository có `video-02`.
+* [x] Tutorial repository có `v0.1`.
+* [x] Tool Calling không xuất hiện trong runtime Video 02.
+* [x] Mọi code take sinh từ verified checkpoint.
+* [x] 19 scene đúng timeline.
+* [x] Các architecture diagram đúng script.
+* [x] Final video dài đúng 16:15.
+* [x] Final visual master không phụ thuộc audio.
+* [x] 1440p master pass ffprobe.
+* [x] 1080p delivery pass ffprobe.
+* [x] Cue sheet được tạo.
+* [x] Final artifact có SHA-256.
+* [x] Có reproducibility receipt.
+* [x] Gate cuối = `CV02_VISUAL_MASTER_VERIFIED`.
+
 
 ---
 

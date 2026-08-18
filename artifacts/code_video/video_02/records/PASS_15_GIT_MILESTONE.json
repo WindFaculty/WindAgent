@@ -1,0 +1,31 @@
+{
+  "pass_id": "PASS_15_GIT_MILESTONE",
+  "scene_id": "S18",
+  "status": "VERIFIED",
+  "duration_ms": 35000,
+  "frame_count": 1050,
+  "source_hash": "379160d9d31623cf6011ff07f07d502b6c872a9616e21a5944fdd9fe85ca1893",
+  "render_config_hash": "9af908943c551b02e6f2cd964404163cde24c1e2c20f2b40d9975b7edf6a9e6c",
+  "output_hash": "1f6d170faf8f59680c5592a46892baca424ea02b186e7d63890fb78e740da515",
+  "verified_terminal": true,
+  "secret_clean": true,
+  "keyframe_marks": [
+    {
+      "time_offset_ms": 0,
+      "event": "PASS_START_PASS_15_GIT_MILESTONE"
+    },
+    {
+      "time_offset_ms": 17500,
+      "event": "PASS_MIDPOINT_PASS_15_GIT_MILESTONE"
+    },
+    {
+      "time_offset_ms": 35000,
+      "event": "PASS_END_PASS_15_GIT_MILESTONE"
+    }
+  ],
+  "artifacts_produced": [
+    "records/PASS_15_GIT_MILESTONE.json"
+  ],
+  "recorded_at": "2026-08-18T02:49:12.349770+00:00",
+  "notes": "Recorded pass 15: Git Milestone v0.1 for scene S18"
+}

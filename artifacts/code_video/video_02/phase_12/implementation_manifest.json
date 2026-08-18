@@ -1,0 +1,63 @@
+{
+  "phase": "phase_12",
+  "phase_name": "Program Definition of Done & Program Handoff",
+  "video_id": "video-02",
+  "milestone": "Agentic Studio v0.1 \u2014 Simple Agent",
+  "final_milestone_verdict": "CODE_VIDEO_VIDEO02_VERIFIED",
+  "visual_gate": "CV02_VISUAL_MASTER_VERIFIED",
+  "verdict": "PASS",
+  "status": "PASS",
+  "total_dod_count": 24,
+  "passed_dod_count": 24,
+  "program_master_hash": "e6232c7d84f954531aa809eda23e7bfa65d4c950e1abd6edd239b98368b305f0",
+  "modules_implemented": [
+    "tools/windagent_tools/code_video/program/certification.py",
+    "tools/windagent_tools/code_video/program/__init__.py",
+    "workflows/windagent_workflows/code_video/program_certification.py",
+    "scripts/generate_phase_12_artifacts.py",
+    "tests/contracts/test_code_video_program_dod.py"
+  ],
+  "ten_commit_milestones": [
+    {
+      "commit": 1,
+      "message": "feat(code-video): define visual production contracts"
+    },
+    {
+      "commit": 2,
+      "message": "feat(code-video): add isolated tutorial workspace"
+    },
+    {
+      "commit": 3,
+      "message": "test(code-video): add video 02 golden tutorial fixture"
+    },
+    {
+      "commit": 4,
+      "message": "feat(code-video): compile script into deterministic timeline"
+    },
+    {
+      "commit": 5,
+      "message": "feat(code-video-ui): add code studio renderer"
+    },
+    {
+      "commit": 6,
+      "message": "feat(code-video): add deterministic replay engine"
+    },
+    {
+      "commit": 7,
+      "message": "feat(code-video): add visual capture pipeline"
+    },
+    {
+      "commit": 8,
+      "message": "feat(code-video): add diagrams and visual overlays"
+    },
+    {
+      "commit": 9,
+      "message": "feat(code-video): assemble and verify visual master"
+    },
+    {
+      "commit": 10,
+      "message": "test(code-video): certify video 02 end-to-end"
+    }
+  ],
+  "generated_at": "2026-08-18T16:58:15.014033+00:00"
+}

@@ -1,0 +1,31 @@
+{
+  "pass_id": "PASS_02_REPO_SETUP",
+  "scene_id": "S05",
+  "status": "VERIFIED",
+  "duration_ms": 35000,
+  "frame_count": 1050,
+  "source_hash": "f094a33ede369a988855e76afd1aa7729a075d7920e081892a7e0c3be333181d",
+  "render_config_hash": "9af908943c551b02e6f2cd964404163cde24c1e2c20f2b40d9975b7edf6a9e6c",
+  "output_hash": "7f4b816a04498e5fff82e514c45fe2275f764d4872a547c0e353ab81fcb39dbc",
+  "verified_terminal": true,
+  "secret_clean": true,
+  "keyframe_marks": [
+    {
+      "time_offset_ms": 0,
+      "event": "PASS_START_PASS_02_REPO_SETUP"
+    },
+    {
+      "time_offset_ms": 17500,
+      "event": "PASS_MIDPOINT_PASS_02_REPO_SETUP"
+    },
+    {
+      "time_offset_ms": 35000,
+      "event": "PASS_END_PASS_02_REPO_SETUP"
+    }
+  ],
+  "artifacts_produced": [
+    "records/PASS_02_REPO_SETUP.json"
+  ],
+  "recorded_at": "2026-08-18T02:49:12.346258+00:00",
+  "notes": "Recorded pass 2: Repository Setup for scene S05"
+}

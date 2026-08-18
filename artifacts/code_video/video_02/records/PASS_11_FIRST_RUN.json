@@ -1,0 +1,31 @@
+{
+  "pass_id": "PASS_11_FIRST_RUN",
+  "scene_id": "S14",
+  "status": "VERIFIED",
+  "duration_ms": 55000,
+  "frame_count": 1650,
+  "source_hash": "68595ed30fb0ae36d7a6c2eb543d5155d6556ac79173dcdd6d97dd0254dddf3c",
+  "render_config_hash": "0df715efc1aefb35ed33044ba5f6073bb8cf3633094546f662b25ab923d7b2ca",
+  "output_hash": "84c1a7464d6da1381c37f58c2444257e46837da3e6c09c483be8d5f02c16b010",
+  "verified_terminal": true,
+  "secret_clean": true,
+  "keyframe_marks": [
+    {
+      "time_offset_ms": 0,
+      "event": "PASS_START_PASS_11_FIRST_RUN"
+    },
+    {
+      "time_offset_ms": 27500,
+      "event": "PASS_MIDPOINT_PASS_11_FIRST_RUN"
+    },
+    {
+      "time_offset_ms": 55000,
+      "event": "PASS_END_PASS_11_FIRST_RUN"
+    }
+  ],
+  "artifacts_produced": [
+    "records/PASS_11_FIRST_RUN.json"
+  ],
+  "recorded_at": "2026-08-18T02:49:12.348773+00:00",
+  "notes": "Recorded pass 11: First Execution for scene S14"
+}
