@@ -1,12 +1,19 @@
 /**
  * WebPlatformAdapter — Implementation of PlatformAdapter for standard browser environment.
+ * Phase 14 Web/Desktop Convergence.
  */
 
 import type { MetricState } from '@windagent/studio-shell';
-import type { PlatformAdapter } from './platformAdapter';
+import type {
+  PlatformAdapter,
+  PlatformCapabilities,
+  FilePickerOptions,
+  PlatformNotificationOptions,
+} from './platformAdapter';
 
 export class WebPlatformAdapter implements PlatformAdapter {
   readonly kind = 'web' as const;
+  readonly platform = 'web' as const;
 
   private lastMetrics: MetricState = {
     cpu: 18,
@@ -23,6 +30,17 @@ export class WebPlatformAdapter implements PlatformAdapter {
     gpuHistory: [25, 30, 26, 29, 27, 28],
     vramHistory: [42, 42, 42, 42, 42, 42],
   };
+
+  async getSystemCapabilities(): Promise<PlatformCapabilities> {
+    const hasNotifications = typeof window !== 'undefined' && 'Notification' in window;
+    return {
+      supportsNativeFilePicker: false,
+      supportsNativeNotifications: hasNotifications,
+      supportsSystemMetrics: false,
+      supportsLocalRuntime: false,
+      supportsDeepLinks: true,
+    };
+  }
 
   async getSystemMetrics(): Promise<MetricState> {
     const updateHistory = (history: number[], nextVal: number) => [...history.slice(1), nextVal];
@@ -60,12 +78,25 @@ export class WebPlatformAdapter implements PlatformAdapter {
     }
   }
 
-  async selectFile(): Promise<string | null> {
-    // In web, file selector can return synthetic path or fallback
+  async selectFile(_options?: FilePickerOptions): Promise<string | string[] | null> {
+    // In web environment without native OS file picker access, returns null
     return null;
   }
 
-  async getSecureCredential(): Promise<string | null> {
+  async showNotification(title: string, options?: PlatformNotificationOptions): Promise<void> {
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      if (Notification.permission === 'granted') {
+        new Notification(title, { body: options?.body, icon: options?.icon });
+      } else if (Notification.permission !== 'denied') {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+          new Notification(title, { body: options?.body, icon: options?.icon });
+        }
+      }
+    }
+  }
+
+  async getSecureCredential(_key: string): Promise<string | null> {
     return null;
   }
 }

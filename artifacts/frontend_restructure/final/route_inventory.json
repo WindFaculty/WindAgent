@@ -1,0 +1,35 @@
+{
+  "route_manifest_source": "frontend/app/src/app/routeManifest.ts",
+  "total_canonical_routes": 26,
+  "studio_routes": [
+    "/dashboard",
+    "/studio",
+    "/projects",
+    "/projects/:projectId",
+    "/episodes",
+    "/episodes/:episodeId",
+    "/storyboard",
+    "/characters",
+    "/world",
+    "/assets",
+    "/reviews",
+    "/episodes/:episodeId/production",
+    "/production/script",
+    "/production/assets",
+    "/production/video"
+  ],
+  "system_routes": [
+    "/workspace",
+    "/router",
+    "/browser",
+    "/files",
+    "/settings",
+    "/agents",
+    "/workflows",
+    "/monitoring",
+    "/logs",
+    "/memory",
+    "/models",
+    "/models/endpoints"
+  ]
+}

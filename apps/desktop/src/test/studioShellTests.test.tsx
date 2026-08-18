@@ -5,7 +5,7 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
-import { StudioPage } from '../pages/StudioPage';
+import { StudioPage } from '@windagent/app';
 import {
   cursorPage,
   jsonResponse,

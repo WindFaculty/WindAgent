@@ -103,7 +103,7 @@ export const StoryboardPage: React.FC<StoryboardPageProps> = ({ episodeId, apiBa
         </div>
       ) : (
         <div className="storyboard-page__scenes">
-          {scenes.map((scene) => (
+          {scenes.map((scene: SceneResource) => (
             <SceneCard
               key={scene.id}
               scene={scene}

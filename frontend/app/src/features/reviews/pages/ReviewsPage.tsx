@@ -73,7 +73,7 @@ export const ReviewsPage: React.FC<ReviewsPageProps> = ({ episodeId, projectId }
               <p>Chưa có review nào</p>
             </div>
           ) : (
-            reviews.map((review) => (
+            reviews.map((review: ReviewResource) => (
               <ReviewListItem
                 key={review.id}
                 review={review}
@@ -104,7 +104,7 @@ function ReviewListItem({ review, isSelected, onSelect }: { review: ReviewResour
   return (
     <div className={`review-list-item${isSelected ? ' review-list-item--selected' : ''}`} onClick={onSelect}>
       <div className="review-list-item__header">
-        <span className="review-list-item__subject">{SUBJECT_LABELS[review.subject_type] ?? review.subject_type}</span>
+        <span className="review-list-item__subject">{SUBJECT_LABELS[review.subject_type as ReviewSubjectType] ?? review.subject_type}</span>
         <span
           className="review-list-item__status"
           style={{ color: statusColor, backgroundColor: `${statusColor}22`, border: `1px solid ${statusColor}44` }}
@@ -134,7 +134,7 @@ function ReviewDetail({ reviewId }: { reviewId: string }) {
   return (
     <div className="review-detail">
       <div className="review-detail__header">
-        <h3>{SUBJECT_LABELS[review.subject_type] ?? review.subject_type}</h3>
+        <h3>{SUBJECT_LABELS[review.subject_type as ReviewSubjectType] ?? review.subject_type}</h3>
         <span className="review-detail__subject-id">{review.subject_id}</span>
       </div>
 
@@ -153,7 +153,7 @@ function ReviewDetail({ reviewId }: { reviewId: string }) {
 
       <div className="review-detail__comments">
         <h4>Bình luận ({comments.length})</h4>
-        {comments.map((c) => (
+        {comments.map((c: any) => (
           <div key={c.id} className="review-comment">
             <div className="review-comment__header">
               <strong>{c.author}</strong>

@@ -78,7 +78,7 @@ export const AssetsPage: React.FC<AssetsPageProps> = ({ episodeId, projectId }) 
               <p>Chưa có asset nào</p>
             </div>
           ) : (
-            assets.map((asset) => (
+            assets.map((asset: AssetResource) => (
               <AssetCard
                 key={asset.id}
                 asset={asset}
@@ -167,7 +167,7 @@ function AssetDetail({ assetId, onClose }: { assetId: string; onClose: () => voi
 
       <div className="asset-detail__revisions">
         <h4>Lịch sử phiên bản ({revisions.length})</h4>
-        {revisions.map((rev) => (
+        {revisions.map((rev: any) => (
           <div key={rev.revision_id} className="asset-revision">
             <span className="asset-revision__version">v{rev.version}</span>
             <span className="asset-revision__status" style={{ color: STATUS_COLORS[rev.status] ?? '#6b7280' }}>{rev.status}</span>

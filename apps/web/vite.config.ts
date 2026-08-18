@@ -5,12 +5,18 @@ import path from "path";
 export default defineConfig({
   plugins: [react()],
   resolve: {
+    dedupe: ['react', 'react-dom'],
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      '@desktop': path.resolve(__dirname, '../desktop/src'),
-      '@windagent/ui': path.resolve(__dirname, '../../frontend/packages/ui/src/index.ts'),
+      'react': path.resolve(__dirname, '../../frontend/node_modules/react'),
+      'react-dom': path.resolve(__dirname, '../../frontend/node_modules/react-dom'),
+      '@testing-library/react': path.resolve(__dirname, '../../frontend/node_modules/@testing-library/react'),
+      '@tanstack/react-query': path.resolve(__dirname, '../../frontend/node_modules/@tanstack/react-query'),
+      '@windagent/app/styles.css': path.resolve(__dirname, '../../frontend/app/src/styles/index.css'),
       '@windagent/app/src': path.resolve(__dirname, '../../frontend/app/src'),
       '@windagent/app': path.resolve(__dirname, '../../frontend/app/src/index.ts'),
+      '@windagent/ui/styles.css': path.resolve(__dirname, '../../frontend/packages/ui/src/styles/index.css'),
+      '@windagent/ui': path.resolve(__dirname, '../../frontend/packages/ui/src/index.ts'),
       '@windagent/api-contracts': path.resolve(__dirname, '../../frontend/packages/api-contracts/src/index.ts'),
       '@windagent/api-client': path.resolve(__dirname, '../../frontend/packages/api-client/src/index.ts'),
       '@windagent/realtime': path.resolve(__dirname, '../../frontend/packages/realtime/src/index.ts'),
@@ -27,7 +33,7 @@ export default defineConfig({
     port: 5173,
     strictPort: true,
     fs: {
-      allow: ['..', '../../frontend', '../desktop'],
+      allow: ['..', '../../frontend'],
     },
     proxy: {
       "/api": {

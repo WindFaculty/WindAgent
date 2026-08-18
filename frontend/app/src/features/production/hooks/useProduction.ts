@@ -67,9 +67,9 @@ export function useUpdateShot(episodeId: string) {
   return useMutation({
     mutationFn: ({ shotId, ...data }: { shotId: string; camera_movement?: string; focal_length?: string; duration_seconds?: number; status?: string; audio_asset_id?: string; animation_asset_id?: string; render_asset_id?: string; expected_version: number }) =>
       client.production.updateShot(shotId, data),
-    onSuccess: (updated) => {
+    onSuccess: (updated: any) => {
       queryClient.invalidateQueries({ queryKey: productionKeys.shots(episodeId) });
-      queryClient.invalidateQueries({ queryKey: productionKeys.shot(updated.id) });
+      queryClient.invalidateQueries({ queryKey: productionKeys.shot(updated?.id) });
     },
   });
 }

@@ -8052,7 +8052,7 @@
       "from": "storage",
       "to": "core",
       "file": "storage/windagent_storage/repositories/v2_orchestration_repositories.py",
-      "line": 19
+      "line": 20
     },
     {
       "from": "storage",
@@ -9006,7 +9006,7 @@
       "from": "api",
       "to": "core",
       "file": "apps/api/windagent_api/main.py",
-      "line": 52
+      "line": 57
     },
     {
       "from": "api",
@@ -9613,6 +9613,150 @@
       "to": "storage",
       "file": "apps/api/windagent_api/routers/v2_tasks.py",
       "line": 18
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v3/agent_definitions.py",
+      "line": 11
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v3/agent_instances.py",
+      "line": 11
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v3/assets.py",
+      "line": 12
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v3/browser.py",
+      "line": 119
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v3/characters.py",
+      "line": 10
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v3/conversations.py",
+      "line": 12
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v3/dashboard.py",
+      "line": 13
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v3/episodes.py",
+      "line": 15
+    },
+    {
+      "from": "api",
+      "to": "tools",
+      "file": "apps/api/windagent_api/routers/v3/files.py",
+      "line": 21
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v3/files.py",
+      "line": 22
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v3/files.py",
+      "line": 22
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v3/logs.py",
+      "line": 116
+    },
+    {
+      "from": "api",
+      "to": "storage",
+      "file": "apps/api/windagent_api/routers/v3/memory.py",
+      "line": 21
+    },
+    {
+      "from": "api",
+      "to": "storage",
+      "file": "apps/api/windagent_api/routers/v3/memory.py",
+      "line": 22
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v3/monitoring.py",
+      "line": 11
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v3/production.py",
+      "line": 14
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v3/projects.py",
+      "line": 12
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v3/reviews.py",
+      "line": 11
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v3/storyboard.py",
+      "line": 12
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v3/system.py",
+      "line": 16
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v3/tasks.py",
+      "line": 13
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v3/workflows.py",
+      "line": 14
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v3/world.py",
+      "line": 10
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v3/common/events.py",
+      "line": 6
     },
     {
       "from": "api",

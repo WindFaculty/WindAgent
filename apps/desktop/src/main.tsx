@@ -1,13 +1,18 @@
+/**
+ * Desktop Application Entry Point (Phase 14 Web/Desktop Convergence).
+ * Zero custom route overrides. Uses shared @windagent/app and styles.
+ */
+
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { App } from "./App";
-import { ThemeProvider } from "./state/theme";
-import "./styles.css";
+import { App as SharedApp, bootstrapFrontend } from "@windagent/app";
+import { platform } from "./platform";
+import "@windagent/app/styles.css";
+
+bootstrapFrontend({ platform });
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <ThemeProvider>
-      <App />
-    </ThemeProvider>
+    <SharedApp platform={platform} />
   </React.StrictMode>
 );

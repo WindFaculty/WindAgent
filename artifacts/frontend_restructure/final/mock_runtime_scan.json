@@ -1,0 +1,7 @@
+{
+  "runtime_mock_datasets": 0,
+  "runtime_fake_clients": 0,
+  "runtime_synthetic_timers": 0,
+  "runtime_math_random_in_production": 0,
+  "status": "ZERO_RUNTIME_MOCKS"
+}

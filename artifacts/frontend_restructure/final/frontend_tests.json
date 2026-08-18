@@ -1,0 +1,13 @@
+{
+  "framework": "vitest",
+  "total_test_files": 23,
+  "total_tests": 98,
+  "passed": 98,
+  "failed": 0,
+  "breakdown": {
+    "frontend_app": "13 files / 49 tests passed",
+    "apps_desktop": "9 files / 47 tests passed",
+    "apps_web": "1 file / 2 tests passed"
+  },
+  "status": "PASS"
+}

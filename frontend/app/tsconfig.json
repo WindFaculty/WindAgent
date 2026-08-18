@@ -5,6 +5,9 @@
     "noEmit": true,
     "baseUrl": ".",
     "paths": {
+      "@windagent/app": ["./src/index.ts"],
+      "@windagent/app/*": ["./src/*"],
+      "@windagent/app/src/*": ["./src/*"],
       "@windagent/ui": ["../packages/ui/src/index.ts"],
       "@windagent/ui/*": ["../packages/ui/src/*"],
       "@windagent/api-contracts": ["../packages/api-contracts/src/index.ts"],

@@ -49,7 +49,7 @@ export const ProductionPage: React.FC<ProductionPageProps> = ({
   const submitRender = useSubmitStageJob(episodeId, 'RENDER');
   const submitVideo = useSubmitStageJob(episodeId, 'VIDEO');
 
-  const retryJob = useRetryStageJob(episodeId, (jobs.find(j => j.job_id)?.job_type as JobStage) || 'RENDER');
+  const retryJob = useRetryStageJob(episodeId, (jobs.find((j: any) => j.job_id)?.job_type as JobStage) || 'RENDER');
 
   // Realtime WebSocket subscription
   useProductionRealtime(episodeId, apiBaseUrl);
@@ -74,11 +74,11 @@ export const ProductionPage: React.FC<ProductionPageProps> = ({
     );
   }
 
-  const selectedShot = shots.find((s) => s.id === selectedShotId) ?? shots[0] ?? null;
+  const selectedShot = shots.find((s: any) => s.id === selectedShotId) ?? shots[0] ?? null;
 
-  const audioJobs = jobs.filter((j) => j.job_type === 'AUDIO');
-  const animJobs = jobs.filter((j) => j.job_type === 'ANIMATION');
-  const renderJobs = jobs.filter((j) => j.job_type === 'RENDER');
+  const audioJobs = jobs.filter((j: any) => j.job_type === 'AUDIO');
+  const animJobs = jobs.filter((j: any) => j.job_type === 'ANIMATION');
+  const renderJobs = jobs.filter((j: any) => j.job_type === 'RENDER');
 
   const tabs: { id: ProductionTab; label: string; count?: number }[] = [
     { id: 'overview', label: '📊 Tổng quan' },
@@ -117,7 +117,7 @@ export const ProductionPage: React.FC<ProductionPageProps> = ({
             <span className="production-stat__label">Tiến độ</span>
           </div>
           <div className="production-stat">
-            <span className="production-stat__value">{jobs.filter((j) => j.state === 'SUCCEEDED').length}/{jobs.length}</span>
+            <span className="production-stat__value">{jobs.filter((j: any) => j.state === 'SUCCEEDED').length}/{jobs.length}</span>
             <span className="production-stat__label">Jobs Done</span>
           </div>
         </div>
@@ -170,17 +170,17 @@ export const ProductionPage: React.FC<ProductionPageProps> = ({
                     <span>1. Phân cảnh (Shots Breakdown)</span>
                     <span>{shots.length > 0 ? '✅ Hoàn tất' : '⏳ Chưa có'}</span>
                   </div>
-                  <div className={`production-stage-item ${audioJobs.some(j => j.state === 'SUCCEEDED') ? 'done' : ''}`}>
+                  <div className={`production-stage-item ${audioJobs.some((j: any) => j.state === 'SUCCEEDED') ? 'done' : ''}`}>
                     <span>2. Tạo thoại (Audio/TTS)</span>
-                    <span>{audioJobs.some(j => j.state === 'SUCCEEDED') ? '✅ Hoàn tất' : '⏳ Đang chờ'}</span>
+                    <span>{audioJobs.some((j: any) => j.state === 'SUCCEEDED') ? '✅ Hoàn tất' : '⏳ Đang chờ'}</span>
                   </div>
-                  <div className={`production-stage-item ${animJobs.some(j => j.state === 'SUCCEEDED') ? 'done' : ''}`}>
+                  <div className={`production-stage-item ${animJobs.some((j: any) => j.state === 'SUCCEEDED') ? 'done' : ''}`}>
                     <span>3. Diễn hoạt (Animation)</span>
-                    <span>{animJobs.some(j => j.state === 'SUCCEEDED') ? '✅ Hoàn tất' : '⏳ Đang chờ'}</span>
+                    <span>{animJobs.some((j: any) => j.state === 'SUCCEEDED') ? '✅ Hoàn tất' : '⏳ Đang chờ'}</span>
                   </div>
-                  <div className={`production-stage-item ${renderJobs.some(j => j.state === 'SUCCEEDED') ? 'done' : ''}`}>
+                  <div className={`production-stage-item ${renderJobs.some((j: any) => j.state === 'SUCCEEDED') ? 'done' : ''}`}>
                     <span>4. Kết xuất (Render Engine)</span>
-                    <span>{renderJobs.some(j => j.state === 'SUCCEEDED') ? '✅ Hoàn tất' : '⏳ Đang chờ'}</span>
+                    <span>{renderJobs.some((j: any) => j.state === 'SUCCEEDED') ? '✅ Hoàn tất' : '⏳ Đang chờ'}</span>
                   </div>
                   <div className={`production-stage-item ${delivery?.video_asset_id ? 'done' : ''}`}>
                     <span>5. Đóng gói & Xuất bản (Delivery)</span>
@@ -213,7 +213,7 @@ export const ProductionPage: React.FC<ProductionPageProps> = ({
                 </div>
               ) : (
                 <div className="shots-grid">
-                  {shots.map((shot) => (
+                  {shots.map((shot: any) => (
                     <div
                       key={shot.id}
                       className={`shot-card${selectedShot?.id === shot.id ? ' shot-card--selected' : ''}`}
@@ -280,7 +280,7 @@ export const ProductionPage: React.FC<ProductionPageProps> = ({
               {audioJobs.length === 0 ? (
                 <p className="empty-hint">Chưa có audio job nào được gửi.</p>
               ) : (
-                audioJobs.map((job) => (
+                audioJobs.map((job: any) => (
                   <div key={job.job_id} className="production-job-card">
                     <JobProgress job={job} />
                     <JobFailure
@@ -318,7 +318,7 @@ export const ProductionPage: React.FC<ProductionPageProps> = ({
               {animJobs.length === 0 ? (
                 <p className="empty-hint">Chưa có animation job nào được gửi.</p>
               ) : (
-                animJobs.map((job) => (
+                animJobs.map((job: any) => (
                   <div key={job.job_id} className="production-job-card">
                     <JobProgress job={job} />
                     <JobFailure
@@ -356,7 +356,7 @@ export const ProductionPage: React.FC<ProductionPageProps> = ({
               {renderJobs.length === 0 ? (
                 <p className="empty-hint">Chưa có render job nào được gửi.</p>
               ) : (
-                renderJobs.map((job) => (
+                renderJobs.map((job: any) => (
                   <div key={job.job_id} className="production-job-card">
                     <JobProgress job={job} />
                     <JobFailure

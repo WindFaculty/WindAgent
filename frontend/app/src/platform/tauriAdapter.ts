@@ -1,12 +1,19 @@
 /**
  * TauriPlatformAdapter — Implementation of PlatformAdapter for desktop Tauri environment.
+ * Phase 14 Web/Desktop Convergence.
  */
 
 import type { MetricState } from '@windagent/studio-shell';
-import type { PlatformAdapter } from './platformAdapter';
+import type {
+  PlatformAdapter,
+  PlatformCapabilities,
+  FilePickerOptions,
+  PlatformNotificationOptions,
+} from './platformAdapter';
 
 export class TauriPlatformAdapter implements PlatformAdapter {
   readonly kind = 'tauri' as const;
+  readonly platform = 'desktop' as const;
 
   private lastMetrics: MetricState = {
     cpu: 18,
@@ -24,7 +31,21 @@ export class TauriPlatformAdapter implements PlatformAdapter {
     vramHistory: [42, 42, 42, 42, 42, 42],
   };
 
+  async getSystemCapabilities(): Promise<PlatformCapabilities> {
+    return {
+      supportsNativeFilePicker: true,
+      supportsNativeNotifications: true,
+      supportsSystemMetrics: true,
+      supportsLocalRuntime: true,
+      supportsDeepLinks: true,
+    };
+  }
+
   async getSystemMetrics(): Promise<MetricState> {
+    return this.getNativeSystemMetrics();
+  }
+
+  async getNativeSystemMetrics(): Promise<MetricState> {
     const updateHistory = (history: number[], nextVal: number) => [...history.slice(1), nextVal];
 
     if (typeof window !== 'undefined') {
@@ -64,15 +85,69 @@ export class TauriPlatformAdapter implements PlatformAdapter {
 
   async openExternal(url: string): Promise<void> {
     if (typeof window !== 'undefined') {
+      const tauriGlobal = (window as any).__TAURI__;
+      const shellOpen = tauriGlobal?.shell?.open || tauriGlobal?.opener?.openUrl;
+      if (typeof shellOpen === 'function') {
+        try {
+          await shellOpen(url);
+          return;
+        } catch {
+          // fallback to window.open
+        }
+      }
       window.open(url, '_blank', 'noopener,noreferrer');
     }
   }
 
-  async selectFile(): Promise<string | string[] | null> {
+  async selectFile(options?: FilePickerOptions): Promise<string | string[] | null> {
+    if (typeof window !== 'undefined') {
+      const tauriDialog = (window as any).__TAURI__?.dialog;
+      if (tauriDialog && typeof tauriDialog.open === 'function') {
+        try {
+          return await tauriDialog.open({
+            multiple: options?.multiple ?? false,
+            directory: options?.directory ?? false,
+          });
+        } catch (err) {
+          console.warn('[TauriPlatformAdapter] dialog.open error:', err);
+        }
+      }
+    }
     return null;
   }
 
-  async getSecureCredential(): Promise<string | null> {
+  async showNotification(title: string, options?: PlatformNotificationOptions): Promise<void> {
+    if (typeof window !== 'undefined') {
+      const tauriNotification = (window as any).__TAURI__?.notification;
+      if (tauriNotification && typeof tauriNotification.sendNotification === 'function') {
+        try {
+          await tauriNotification.sendNotification({
+            title,
+            body: options?.body,
+          });
+          return;
+        } catch {
+          // fallback to web notification
+        }
+      }
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification(title, { body: options?.body, icon: options?.icon });
+      }
+    }
+  }
+
+  async getSecureCredential(key: string): Promise<string | null> {
+    if (typeof window !== 'undefined') {
+      const tauriGlobal = (window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__;
+      const invokeFn = tauriGlobal?.invoke || (window as any).__TAURI_INVOKE__;
+      if (typeof invokeFn === 'function') {
+        try {
+          return await invokeFn('get_secure_credential', { key });
+        } catch {
+          return null;
+        }
+      }
+    }
     return null;
   }
 }

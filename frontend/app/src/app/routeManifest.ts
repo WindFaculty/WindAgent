@@ -183,7 +183,7 @@ export const CANONICAL_ROUTE_MANIFEST: readonly RouteDescriptor[] = [
   {
     id: 'router',
     path: '/router',
-    aliases: ['/system/router'],
+    aliases: ['/system/router', '/routing'],
     label: 'Router / Providers',
     iconName: 'Server',
     group: 'system',
@@ -275,7 +275,7 @@ export const CANONICAL_ROUTE_MANIFEST: readonly RouteDescriptor[] = [
   {
     id: 'models-library',
     path: '/models',
-    aliases: ['/models/library'],
+    aliases: ['/models/library', '/system/models'],
     label: 'Models',
     group: 'system',
     navigationVisible: false,
@@ -284,6 +284,7 @@ export const CANONICAL_ROUTE_MANIFEST: readonly RouteDescriptor[] = [
   {
     id: 'models-endpoints',
     path: '/models/endpoints',
+    aliases: ['/providers', '/models/providers', '/system/providers'],
     label: 'Endpoints',
     group: 'system',
     navigationVisible: false,

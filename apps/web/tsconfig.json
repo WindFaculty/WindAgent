@@ -18,10 +18,10 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
-      "@desktop/*": ["../desktop/src/*"],
       "@windagent/ui": ["../../frontend/packages/ui/src/index.ts"],
       "@windagent/ui/*": ["../../frontend/packages/ui/src/*"],
       "@windagent/app": ["../../frontend/app/src/index.ts"],
+      "@windagent/app/src/*": ["../../frontend/app/src/*"],
       "@windagent/app/*": ["../../frontend/app/src/*"],
       "@windagent/api-contracts": ["../../frontend/packages/api-contracts/src/index.ts"],
       "@windagent/api-contracts/*": ["../../frontend/packages/api-contracts/src/*"],

@@ -1,0 +1,6 @@
+{
+  "target": "apps/web",
+  "tooling": "vite",
+  "typescript_status": "PASS (0 errors)",
+  "bundle_status": "READY"
+}

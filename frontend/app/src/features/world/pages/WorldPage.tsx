@@ -77,7 +77,7 @@ export const WorldPage: React.FC<WorldPageProps> = ({ projectId }) => {
               <div className="world-overview__section">
                 <h3>Quy tắc thế giới</h3>
                 <ul className="world-overview__rules">
-                  {worldBible.rules.map((rule, i) => (
+                  {worldBible.rules.map((rule: string, i: number) => (
                     <li key={i}>{rule}</li>
                   ))}
                 </ul>
@@ -116,7 +116,7 @@ export const WorldPage: React.FC<WorldPageProps> = ({ projectId }) => {
               <p className="world-entity-list__empty">Chưa có địa điểm. Hãy thêm địa điểm đầu tiên.</p>
             ) : (
               <div className="world-entity-grid">
-                {locations.map((loc) => (
+                {locations.map((loc: any) => (
                   <div key={loc.id} className="world-entity-card">
                     <div className="world-entity-card__type">{loc.type}</div>
                     <h4>{loc.name}</h4>
@@ -145,7 +145,7 @@ export const WorldPage: React.FC<WorldPageProps> = ({ projectId }) => {
               <p className="world-entity-list__empty">Chưa có phe phái. Hãy thêm phe phái đầu tiên.</p>
             ) : (
               <div className="world-entity-grid">
-                {factions.map((fac) => (
+                {factions.map((fac: any) => (
                   <div key={fac.id} className="world-entity-card">
                     <div className="world-entity-card__influence">
                       <span style={{ width: `${fac.influence_level}%` }} />
@@ -176,7 +176,7 @@ export const WorldPage: React.FC<WorldPageProps> = ({ projectId }) => {
               <p className="world-entity-list__empty">Chưa có lore. Hãy thêm sự kiện đầu tiên.</p>
             ) : (
               <div className="world-lore-list">
-                {lore.map((entry) => (
+                {lore.map((entry: any) => (
                   <div key={entry.id} className="world-lore-entry">
                     <div className="world-lore-entry__header">
                       <h4>{entry.title}</h4>

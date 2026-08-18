@@ -1,0 +1,18 @@
+{
+  "phase": "16.0",
+  "audit_name": "Unused Exports Inventory",
+  "scanned_at": "2026-08-18T00:34:00Z",
+  "packages_audited": [
+    "@windagent/api-contracts",
+    "@windagent/api-client",
+    "@windagent/app",
+    "@windagent/ui",
+    "@windagent/realtime",
+    "@windagent/studio-shell",
+    "@windagent/production-client",
+    "@windagent/production-contracts"
+  ],
+  "unused_exports_count": 0,
+  "dead_public_apis": [],
+  "status": "CLEAN"
+}

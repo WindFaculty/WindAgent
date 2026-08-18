@@ -1,0 +1,14 @@
+{
+  "phase": "16.0",
+  "audit_name": "Orphan Tests Inventory",
+  "scanned_at": "2026-08-18T00:34:00Z",
+  "test_suites_scanned": [
+    "frontend/app/src/**/__tests__/*",
+    "apps/desktop/src/test/*",
+    "apps/web/src/test/*",
+    "tests/unit/api/*",
+    "tests/contracts/*"
+  ],
+  "orphan_tests": [],
+  "status": "ALL_TESTS_ACTIVE_AND_ATTACHED"
+}

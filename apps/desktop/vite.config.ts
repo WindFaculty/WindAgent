@@ -7,6 +7,9 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
+      'react': path.resolve(__dirname, './node_modules/react'),
+      'react-dom': path.resolve(__dirname, './node_modules/react-dom'),
+      '@windagent/app/styles.css': path.resolve(__dirname, '../../frontend/app/src/styles/index.css'),
       '@windagent/ui': path.resolve(__dirname, '../../frontend/packages/ui/src/index.ts'),
       '@windagent/app/src': path.resolve(__dirname, '../../frontend/app/src'),
       '@windagent/app': path.resolve(__dirname, '../../frontend/app/src/index.ts'),

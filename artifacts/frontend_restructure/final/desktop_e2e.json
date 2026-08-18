@@ -1,0 +1,11 @@
+{
+  "platform": "desktop",
+  "test_files": [
+    "apps/desktop/src/test/platformParity.test.tsx",
+    "apps/desktop/src/test/studioShellTests.test.tsx",
+    "apps/desktop/src/test/projectsPage.test.tsx"
+  ],
+  "tests_passed": 47,
+  "tests_failed": 0,
+  "status": "PASS"
+}

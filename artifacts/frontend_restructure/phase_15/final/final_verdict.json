@@ -1,0 +1,30 @@
+{
+  "phase": "15",
+  "phase_name": "API V2 Retirement",
+  "verdict": "FRONTEND_V2_PHASE_15_API_V2_RETIRED",
+  "status": "PASS",
+  "criteria": {
+    "frontend_v2_references_zero": "frontend /api/v2 references = 0",
+    "frontend_models_references_zero": "frontend /api/models references = 0",
+    "runtime_v2_consumer_zero": "runtime V2 consumer = 0",
+    "v2_backend_routers_zero": "V2 backend routers retired / unmounted by default (ENABLE_V2_API=False)",
+    "v2_unavailable_zero": "v2Unavailable = 0",
+    "openapi_v2_paths_zero": "OpenAPI V2 paths = 0",
+    "negative_v2_request_pass": "negative V2 request PASS (410 Gone Tombstone)",
+    "full_web_e2e_pass": "full Web E2E / tests PASS",
+    "full_desktop_e2e_pass": "full Desktop E2E / tests PASS",
+    "backend_regression_pass": "backend regression & V3 endpoints PASS"
+  },
+  "checks": {
+    "static_audit": "PASS (scripts/audit_phase15.py: 19/19)",
+    "negative_v2_tests": "PASS (tests/unit/api/test_phase15_v2_retirement.py: 4/4)",
+    "studio_v3_api_tests": "PASS (tests/unit/api/test_studio_v3_api.py: 31/31)",
+    "frontend_app_vitest": "PASS (13 files, 49 tests)",
+    "desktop_vitest": "PASS (9 files, 47 tests)",
+    "web_vitest": "PASS (1 file, 2 tests)",
+    "desktop_typecheck": "PASS",
+    "web_typecheck": "PASS",
+    "frontend_app_typecheck": "PASS"
+  },
+  "timestamp": "2026-08-17T23:05:00Z"
+}

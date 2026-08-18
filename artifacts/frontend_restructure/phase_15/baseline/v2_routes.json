@@ -1,0 +1,155 @@
+{
+  "phase": "15",
+  "audit_type": "v2_routes_inventory",
+  "retired_v2_routers": [
+    {
+      "router": "v2_sessions",
+      "prefix": "/api/v2/sessions",
+      "endpoints": ["POST /", "GET /{sessionId}", "GET /", "GET /{sessionId}/snapshot", "GET /{sessionId}/events", "POST /{sessionId}/cancel", "POST /{sessionId}/archive", "DELETE /{sessionId}", "GET /{sessionId}/messages", "POST /{sessionId}/messages"],
+      "replacement": "/api/v3/conversations",
+      "status": "RETIRED"
+    },
+    {
+      "router": "v2_tasks",
+      "prefix": "/api/v2/tasks",
+      "endpoints": ["POST /", "GET /{taskId}", "POST /{taskId}/cancel", "GET /"],
+      "replacement": "/api/v3/tasks",
+      "status": "RETIRED"
+    },
+    {
+      "router": "v2_runs",
+      "prefix": "/api/v2/runs",
+      "endpoints": ["POST /", "GET /{runId}", "GET /"],
+      "replacement": "/api/v3/tasks",
+      "status": "RETIRED"
+    },
+    {
+      "router": "v2_workflows",
+      "prefix": "/api/v2/workflows",
+      "endpoints": ["GET /", "POST /", "GET /{workflowId}", "POST /{workflowId}/execute"],
+      "replacement": "/api/v3/workflows",
+      "status": "RETIRED"
+    },
+    {
+      "router": "v2_events",
+      "prefix": "/api/v2/events",
+      "endpoints": ["GET /", "POST /"],
+      "replacement": "/api/v3/system/events",
+      "status": "RETIRED"
+    },
+    {
+      "router": "v2_providers",
+      "prefix": "/api/v2/providers",
+      "endpoints": ["GET /", "GET /health", "POST /test", "POST /"],
+      "replacement": "/api/v3/providers",
+      "status": "RETIRED"
+    },
+    {
+      "router": "v2_tools",
+      "prefix": "/api/v2/tools",
+      "endpoints": ["GET /", "POST /"],
+      "replacement": "/api/v3/agents/tools",
+      "status": "RETIRED"
+    },
+    {
+      "router": "v2_permissions",
+      "prefix": "/api/v2/permissions",
+      "endpoints": ["GET /", "PATCH /", "POST /decide"],
+      "replacement": "/api/v3/settings",
+      "status": "RETIRED"
+    },
+    {
+      "router": "v2_artifacts",
+      "prefix": "/api/v2/artifacts",
+      "endpoints": ["GET /", "GET /{artifactId}"],
+      "replacement": "/api/v3/assets",
+      "status": "RETIRED"
+    },
+    {
+      "router": "v2_memory",
+      "prefix": "/api/v2/memory",
+      "endpoints": ["GET /", "POST /", "DELETE /{id}"],
+      "replacement": "/api/v3/memory",
+      "status": "RETIRED"
+    },
+    {
+      "router": "v2_plugins",
+      "prefix": "/api/v2/plugins",
+      "endpoints": ["GET /", "POST /"],
+      "replacement": "/api/v3/agents",
+      "status": "RETIRED"
+    },
+    {
+      "router": "v2_skills",
+      "prefix": "/api/v2/skills",
+      "endpoints": ["GET /", "POST /"],
+      "replacement": "/api/v3/agents/skills",
+      "status": "RETIRED"
+    },
+    {
+      "router": "v2_evals",
+      "prefix": "/api/v2/evals",
+      "endpoints": ["GET /", "POST /"],
+      "replacement": "/api/v3/monitoring",
+      "status": "RETIRED"
+    },
+    {
+      "router": "v2_observability",
+      "prefix": "/api/v2/observability",
+      "endpoints": ["GET /metrics", "GET /traces"],
+      "replacement": "/api/v3/monitoring",
+      "status": "RETIRED"
+    },
+    {
+      "router": "v2_browser",
+      "prefix": "/api/v2/browser",
+      "endpoints": ["POST /sessions", "GET /sessions/{sessionId}", "POST /sessions/{sessionId}/navigate", "POST /sessions/{sessionId}/click", "POST /sessions/{sessionId}/type", "POST /sessions/{sessionId}/scroll", "POST /sessions/{sessionId}/control", "POST /sessions/{sessionId}/back", "POST /sessions/{sessionId}/forward", "POST /sessions/{sessionId}/reload"],
+      "replacement": "/api/v3/browser",
+      "status": "RETIRED"
+    },
+    {
+      "router": "v2_production_workspace",
+      "prefix": "/api/v2/video-production",
+      "endpoints": ["GET /projects/{id}", "GET /projects/{projectId}/workspace", "POST /commands", "GET /events"],
+      "replacement": "/api/v3/production",
+      "status": "RETIRED"
+    },
+    {
+      "router": "v2_screenplay_workspace",
+      "prefix": "/api/v2/screenplay",
+      "endpoints": ["GET /projects/{projectId}/screenplay", "POST /commands"],
+      "replacement": "/api/v3/episodes",
+      "status": "RETIRED"
+    },
+    {
+      "router": "v2_assets",
+      "prefix": "/api/v2/video-production/assets",
+      "endpoints": ["GET /{assetId}", "GET /{assetId}/revisions", "GET /{assetId}/provenance", "GET /{assetId}/dependencies", "POST /commands"],
+      "replacement": "/api/v3/assets",
+      "status": "RETIRED"
+    },
+    {
+      "router": "v2_collaboration",
+      "prefix": "/api/v2/collaboration",
+      "endpoints": ["POST /proposals", "GET /proposals", "GET /proposals/{id}", "POST /proposals/{id}/reject", "GET /timeline"],
+      "replacement": "/api/v3/reviews",
+      "status": "RETIRED"
+    },
+    {
+      "router": "v2_conversations",
+      "prefix": "/api/v2/conversations",
+      "endpoints": ["GET /{id}/agents", "GET /{id}/task-graphs", "POST /{id}/agents/{agentId}/stop", "GET /{id}/goals"],
+      "replacement": "/api/v3/conversations",
+      "status": "RETIRED"
+    },
+    {
+      "router": "v2_conflict_recovery",
+      "prefix": "/api/v2/recovery",
+      "endpoints": ["GET /reconcile", "POST /check-stale-edit", "POST /three-way-diff", "POST /resolve"],
+      "replacement": "/api/v3/episodes",
+      "status": "RETIRED"
+    }
+  ],
+  "total_retired_routers": 21,
+  "v3_router_count": 27
+}

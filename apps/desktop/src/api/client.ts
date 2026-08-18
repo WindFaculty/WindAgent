@@ -1,4 +1,4 @@
-/** REST + WebSocket client for the canonical WindAgent Architecture V2 API. */
+/** REST + WebSocket client for the canonical WindAgent Architecture V3 API. */
 
 import type {
   ChatSession,
@@ -46,13 +46,13 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   return response.json();
 }
 
-function v2Unavailable(feature: string): never {
-  throw new Error(`${feature} is not available in the Architecture V2 API`);
+function notImplemented(feature: string): never {
+  throw new Error(`${feature} is not implemented`);
 }
 
 export async function fetchHealth(): Promise<{ status: string; phase: number }> {
   const data = await request<{ status: string; service?: string }>("/health/live");
-  return { status: data.status, phase: 2 };
+  return { status: data.status, phase: 3 };
 }
 
 export interface HermesHealthResponse {
@@ -88,11 +88,11 @@ export async function fetchHermesHealth(): Promise<HermesHealthResponse> {
 }
 
 export async function fetchModelsHealth(): Promise<ModelsHealthResponse> {
-  return request<ModelsHealthResponse>("/api/v2/providers/health");
+  return request<ModelsHealthResponse>("/api/v3/providers/health");
 }
 
 export async function createSession(agentId?: string, workspaceRoot?: string): Promise<CreateSessionResponse> {
-  return request<CreateSessionResponse>("/api/v2/sessions", {
+  return request<CreateSessionResponse>("/api/v3/conversations", {
     method: "POST",
     body: JSON.stringify({
       agent_id: agentId || "coder",
@@ -103,7 +103,7 @@ export async function createSession(agentId?: string, workspaceRoot?: string): P
 }
 
 export async function fetchSession(sessionId: string): Promise<ChatSession> {
-  return request<ChatSession>(`/api/v2/sessions/${sessionId}`);
+  return request<ChatSession>(`/api/v3/conversations/${sessionId}`);
 }
 
 export async function fetchSessions(
@@ -118,7 +118,7 @@ export async function fetchSessions(
     exclude_archived: String(excludeArchived),
   });
   if (statusFilter) params.set("status", statusFilter);
-  return request<any[]>(`/api/v2/sessions?${params}`);
+  return request<any[]>(`/api/v3/conversations?${params}`);
 }
 
 export async function fetchSessionSnapshot(sessionId: string): Promise<{
@@ -128,38 +128,37 @@ export async function fetchSessionSnapshot(sessionId: string): Promise<{
   workflow: any | null;
   last_event_sequence: number;
 }> {
-  return request(`/api/v2/sessions/${sessionId}/snapshot`);
+  return request(`/api/v3/conversations/${sessionId}/snapshot`);
 }
 
 export async function fetchSessionEvents(
   sessionId: string,
   afterSeq = 0,
 ): Promise<{ session_id: string; events: any[]; after_seq: number; count: number }> {
-  return request(`/api/v2/sessions/${sessionId}/events?after_seq=${afterSeq}`);
+  return request(`/api/v3/conversations/${sessionId}/events?after_seq=${afterSeq}`);
 }
 
 export async function cancelSessionApi(sessionId: string): Promise<void> {
-  await request<void>(`/api/v2/sessions/${sessionId}/cancel`, { method: "POST" });
+  await request<void>(`/api/v3/conversations/${sessionId}/cancel`, { method: "POST" });
 }
 
 export async function archiveSessionApi(sessionId: string): Promise<void> {
-  await request<void>(`/api/v2/sessions/${sessionId}/archive`, { method: "POST" });
+  await request<void>(`/api/v3/conversations/${sessionId}/archive`, { method: "POST" });
 }
 
 export async function deleteSessionApi(sessionId: string): Promise<void> {
-  await request<void>(`/api/v2/sessions/${sessionId}`, { method: "DELETE" });
+  await request<void>(`/api/v3/conversations/${sessionId}`, { method: "DELETE" });
 }
 
 export async function fetchSessionMessages(sessionId: string): Promise<any[]> {
-  return request<any[]>(`/api/v2/sessions/${sessionId}/messages`);
+  return request<any[]>(`/api/v3/conversations/${sessionId}/messages`);
 }
-
 
 export async function sendMessage(
   sessionId: string,
   content: string,
 ): Promise<SendMessageResponse> {
-  return request<SendMessageResponse>(`/api/v2/sessions/${sessionId}/messages`, {
+  return request<SendMessageResponse>(`/api/v3/conversations/${sessionId}/messages`, {
     method: "POST",
     body: JSON.stringify({ content }),
   });
@@ -168,7 +167,7 @@ export async function sendMessage(
 export async function fetchWorkflow(sessionId: string): Promise<Workflow> {
   const snapshot = await fetchSessionSnapshot(sessionId);
   if (!snapshot.workflow) {
-    return v2Unavailable("Session workflow projection");
+    return notImplemented("Session workflow projection");
   }
   return snapshot.workflow as Workflow;
 }
@@ -245,7 +244,7 @@ export async function fetchConversationAgents(
   conversationId: string,
 ): Promise<AgentBoardRow[]> {
   return request<AgentBoardRow[]>(
-    `/api/v2/conversations/${encodeURIComponent(conversationId)}/agents`,
+    `/api/v3/conversations/${encodeURIComponent(conversationId)}/agents`,
   );
 }
 
@@ -253,7 +252,7 @@ export async function fetchConversationTasks(
   conversationId: string,
 ): Promise<TaskGraph[]> {
   return request<TaskGraph[]>(
-    `/api/v2/conversations/${encodeURIComponent(conversationId)}/task-graphs`,
+    `/api/v3/conversations/${encodeURIComponent(conversationId)}/task-graphs`,
   );
 }
 
@@ -262,7 +261,7 @@ export async function stopConversationAgent(
   agentInstanceId: string,
 ): Promise<void> {
   await request<{ status: string }>(
-    `/api/v2/conversations/${encodeURIComponent(conversationId)}/agents/${encodeURIComponent(agentInstanceId)}/stop`,
+    `/api/v3/conversations/${encodeURIComponent(conversationId)}/agents/${encodeURIComponent(agentInstanceId)}/stop`,
     { method: "POST" },
   );
 }
@@ -272,20 +271,20 @@ export async function fetchAgentEvents(
   afterSeq = 0,
 ): Promise<{ agent_instance_id: string; session_id: string | null; events: any[] }> {
   const events = await request<any[]>(
-    `/api/v2/events?aggregate_id=${encodeURIComponent(agentInstanceId)}&min_sequence=${afterSeq}`,
+    `/api/v3/events?aggregate_id=${encodeURIComponent(agentInstanceId)}&min_sequence=${afterSeq}`,
   );
   return { agent_instance_id: agentInstanceId, session_id: null, events };
 }
 
 export async function fetchPermissionConfig(): Promise<PermissionConfigResponse> {
-  return v2Unavailable("Mutable permission configuration");
+  return notImplemented("Mutable permission configuration");
 }
 
 export async function patchPermissionConfig(
   patch: Partial<PermissionConfigResponse>,
 ): Promise<PermissionConfigResponse> {
   void patch;
-  return v2Unavailable("Mutable permission configuration");
+  return notImplemented("Mutable permission configuration");
 }
 
 export async function decidePermission(
@@ -293,55 +292,55 @@ export async function decidePermission(
   decision: "granted" | "denied",
 ): Promise<void> {
   void decision;
-  return v2Unavailable(`Permission decision for ${requestId}`);
+  return notImplemented(`Permission decision for ${requestId}`);
 }
 
 // ---------- Agent Registry API ----------
 
 export async function fetchAgents(): Promise<any[]> {
-  return v2Unavailable("Agent registry");
+  return notImplemented("Agent registry");
 }
 
 export async function fetchAgentSummary(): Promise<any> {
-  return v2Unavailable("Agent summary");
+  return notImplemented("Agent summary");
 }
 
 export async function fetchAgent(agentId: string): Promise<any> {
-  return v2Unavailable(`Agent ${agentId}`);
+  return notImplemented(`Agent ${agentId}`);
 }
 
 export async function createAgent(agentData: any): Promise<any> {
   void agentData;
-  return v2Unavailable("Agent creation");
+  return notImplemented("Agent creation");
 }
 
 export async function updateAgent(agentId: string, agentData: any): Promise<any> {
   void agentData;
-  return v2Unavailable(`Agent update for ${agentId}`);
+  return notImplemented(`Agent update for ${agentId}`);
 }
 
 export async function deleteAgent(agentId: string): Promise<void> {
-  return v2Unavailable(`Agent deletion for ${agentId}`);
+  return notImplemented(`Agent deletion for ${agentId}`);
 }
 
 export async function startAgent(agentId: string): Promise<void> {
-  return v2Unavailable(`Agent start for ${agentId}`);
+  return notImplemented(`Agent start for ${agentId}`);
 }
 
 export async function stopAgent(agentId: string): Promise<void> {
-  return v2Unavailable(`Agent stop for ${agentId}`);
+  return notImplemented(`Agent stop for ${agentId}`);
 }
 
 export async function restartAgent(agentId: string): Promise<void> {
-  return v2Unavailable(`Agent restart for ${agentId}`);
+  return notImplemented(`Agent restart for ${agentId}`);
 }
 
 export async function fetchAgentSessions(agentId: string): Promise<any[]> {
-  return v2Unavailable(`Agent sessions for ${agentId}`);
+  return notImplemented(`Agent sessions for ${agentId}`);
 }
 
 export async function fetchAgentActivity(agentId: string): Promise<any[]> {
-  return v2Unavailable(`Agent activity for ${agentId}`);
+  return notImplemented(`Agent activity for ${agentId}`);
 }
 
 // ---------- Browser API ----------
@@ -361,7 +360,7 @@ export interface BrowserState {
 }
 
 export async function fetchBrowserState(sessionId: string): Promise<BrowserState> {
-  return request<BrowserState>(`/api/v2/browser/sessions/${encodeURIComponent(sessionId)}`);
+  return request<BrowserState>(`/api/v3/browser/sessions/${encodeURIComponent(sessionId)}`);
 }
 
 export async function navigateBrowser(
@@ -370,7 +369,7 @@ export async function navigateBrowser(
   options: { authenticated?: boolean; profile?: string } = {},
 ): Promise<BrowserState> {
   return request<BrowserState>(
-    `/api/v2/browser/sessions/${encodeURIComponent(sessionId)}/navigate`,
+    `/api/v3/browser/sessions/${encodeURIComponent(sessionId)}/navigate`,
     {
       method: "POST",
       body: JSON.stringify({ url, ...options }),
@@ -388,7 +387,7 @@ export async function clickBrowser(
     throw new Error("Coordinate clicks cannot include a selector.");
   }
   return request<BrowserState>(
-    `/api/v2/browser/sessions/${encodeURIComponent(sessionId)}/click`,
+    `/api/v3/browser/sessions/${encodeURIComponent(sessionId)}/click`,
     { method: "POST", body: JSON.stringify({ x, y }) },
   );
 }
@@ -402,7 +401,7 @@ export async function typeBrowser(
     throw new Error("A browser selector is required when typing text.");
   }
   return request<BrowserState>(
-    `/api/v2/browser/sessions/${encodeURIComponent(sessionId)}/type`,
+    `/api/v3/browser/sessions/${encodeURIComponent(sessionId)}/type`,
     { method: "POST", body: JSON.stringify({ selector, text }) },
   );
 }
@@ -413,7 +412,7 @@ export async function scrollBrowser(
   pixels = 800,
 ): Promise<BrowserState> {
   return request<BrowserState>(
-    `/api/v2/browser/sessions/${encodeURIComponent(sessionId)}/scroll`,
+    `/api/v3/browser/sessions/${encodeURIComponent(sessionId)}/scroll`,
     { method: "POST", body: JSON.stringify({ direction, pixels }) },
   );
 }
@@ -423,28 +422,28 @@ export async function controlBrowser(
   control: "agent" | "user",
 ): Promise<BrowserState> {
   return request<BrowserState>(
-    `/api/v2/browser/sessions/${encodeURIComponent(sessionId)}/control`,
+    `/api/v3/browser/sessions/${encodeURIComponent(sessionId)}/control`,
     { method: "POST", body: JSON.stringify({ controlled_by: control }) },
   );
 }
 
 export async function goBackBrowser(sessionId: string): Promise<BrowserState> {
   return request<BrowserState>(
-    `/api/v2/browser/sessions/${encodeURIComponent(sessionId)}/back`,
+    `/api/v3/browser/sessions/${encodeURIComponent(sessionId)}/back`,
     { method: "POST" },
   );
 }
 
 export async function goForwardBrowser(sessionId: string): Promise<BrowserState> {
   return request<BrowserState>(
-    `/api/v2/browser/sessions/${encodeURIComponent(sessionId)}/forward`,
+    `/api/v3/browser/sessions/${encodeURIComponent(sessionId)}/forward`,
     { method: "POST" },
   );
 }
 
 export async function reloadBrowser(sessionId: string): Promise<BrowserState> {
   return request<BrowserState>(
-    `/api/v2/browser/sessions/${encodeURIComponent(sessionId)}/reload`,
+    `/api/v3/browser/sessions/${encodeURIComponent(sessionId)}/reload`,
     { method: "POST" },
   );
 }
@@ -495,7 +494,7 @@ function logDebug(msg: string) {
   console.log(`[WebSocket] ${msg}`);
 }
 
-// ---------- Giai đoạn 9 - Task editing and Control API ----------
+// ---------- Task editing and Control API ----------
 
 export async function updateTaskNode(
   conversationId: string,
@@ -510,7 +509,7 @@ export async function updateTaskNode(
   }
 ): Promise<TaskGraph> {
   void data;
-  return v2Unavailable(`Task node update ${conversationId}/${nodeId}`);
+  return notImplemented(`Task node update ${conversationId}/${nodeId}`);
 }
 
 export async function createTaskNode(
@@ -525,7 +524,7 @@ export async function createTaskNode(
   }
 ): Promise<TaskGraph> {
   void data;
-  return v2Unavailable(`Task node creation for ${conversationId}`);
+  return notImplemented(`Task node creation for ${conversationId}`);
 }
 
 export async function deleteTaskNode(
@@ -534,7 +533,7 @@ export async function deleteTaskNode(
   version: number
 ): Promise<TaskGraph> {
   void version;
-  return v2Unavailable(`Task node deletion ${conversationId}/${nodeId}`);
+  return notImplemented(`Task node deletion ${conversationId}/${nodeId}`);
 }
 
 export async function createTaskEdge(
@@ -547,7 +546,7 @@ export async function createTaskEdge(
   }
 ): Promise<TaskGraph> {
   void data;
-  return v2Unavailable(`Task edge creation for ${conversationId}`);
+  return notImplemented(`Task edge creation for ${conversationId}`);
 }
 
 export async function deleteTaskEdge(
@@ -557,21 +556,21 @@ export async function deleteTaskEdge(
   version: number
 ): Promise<TaskGraph> {
   void version;
-  return v2Unavailable(`Task edge deletion ${conversationId}/${fromTaskId}/${toTaskId}`);
+  return notImplemented(`Task edge deletion ${conversationId}/${fromTaskId}/${toTaskId}`);
 }
 
 export async function pauseTask(nodeId: string): Promise<any> {
-  return v2Unavailable(`Task pause for ${nodeId}`);
+  return notImplemented(`Task pause for ${nodeId}`);
 }
 
 export async function resumeTask(nodeId: string): Promise<any> {
-  return v2Unavailable(`Task resume for ${nodeId}`);
+  return notImplemented(`Task resume for ${nodeId}`);
 }
 
 export async function cancelTask(nodeId: string): Promise<any> {
-  return request<any>(`/api/v2/tasks/${nodeId}/cancel`, { method: "POST" });
+  return request<any>(`/api/v3/tasks/${nodeId}/cancel`, { method: "POST" });
 }
 
 export async function retryTask(nodeId: string): Promise<any> {
-  return v2Unavailable(`Task retry for ${nodeId}`);
+  return notImplemented(`Task retry for ${nodeId}`);
 }

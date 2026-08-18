@@ -25,7 +25,7 @@ export class HttpProductionApiClient implements ProductionApiClient {
   constructor(private baseUrl: string = 'http://localhost:8000') {}
 
   async getProject(id: string): Promise<ProductionProject | null> {
-    const res = await fetch(`${this.baseUrl}/api/v2/video-production/projects/${id}`);
+    const res = await fetch(`${this.baseUrl}/api/v3/production/projects/${id}`);
     if (res.status === 404) return null;
     if (!res.ok) {
       throw new Error(`Failed to fetch project details: ${res.statusText}`);
@@ -59,7 +59,7 @@ export class HttpProductionApiClient implements ProductionApiClient {
   }
 
   async getWorkspaceSnapshot(projectId: string, revisionId?: string): Promise<WorkspaceSnapshot> {
-    let url = `${this.baseUrl}/api/v2/video-production/projects/${projectId}/workspace`;
+    let url = `${this.baseUrl}/api/v3/production/projects/${projectId}/workspace`;
     if (revisionId) {
       url += `?revision_id=${encodeURIComponent(revisionId)}`;
     }
@@ -79,7 +79,7 @@ export class HttpProductionApiClient implements ProductionApiClient {
     idempotencyKey?: string
   ): Promise<WorkspaceCommandResult> {
     const key = idempotencyKey || `key_${Math.random().toString(36).substring(2, 11)}`;
-    const res = await fetch(`${this.baseUrl}/api/v2/video-production/commands`, {
+    const res = await fetch(`${this.baseUrl}/api/v3/production/commands`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

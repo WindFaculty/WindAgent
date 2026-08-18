@@ -3,3 +3,4 @@
  */
 
 export * from './pages/StudioHomePage';
+export { StudioHomePage as StudioPage } from './pages/StudioHomePage';

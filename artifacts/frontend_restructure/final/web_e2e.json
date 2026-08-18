@@ -1,0 +1,7 @@
+{
+  "platform": "web",
+  "test_file": "apps/web/src/test/platformParity.test.tsx",
+  "tests_passed": 2,
+  "tests_failed": 0,
+  "status": "PASS"
+}

@@ -167,48 +167,59 @@ async def base_windagent_exception_handler(request: Request, exc: WindAgentError
 # Register Health Router
 app.include_router(health_router)
 
-# Register Canonical V2 Routers
-app.include_router(v2_sessions_router)
-app.include_router(v2_tasks_router)
-app.include_router(v2_runs_router)
-app.include_router(v2_workflows_router)
-app.include_router(v2_events_router)
-app.include_router(v2_events_legacy_router)
-app.include_router(v2_providers_router)
-app.include_router(v2_tools_router)
-app.include_router(v2_permissions_router)
-app.include_router(v2_artifacts_router)
-app.include_router(v2_memory_router)
-app.include_router(v2_plugins_router)
-app.include_router(v2_skills_router)
-app.include_router(v2_evals_router)
-app.include_router(v2_observability_router)
-app.include_router(v2_browser_router)
-app.include_router(v2_production_workspace_router)
-app.include_router(v2_screenplay_workspace_router)
-app.include_router(v2_assets_router)
-app.include_router(v2_collaboration_router)
-app.include_router(v2_conversations_router)
-app.include_router(v2_conflict_recovery_router)
+import os
+ENABLE_V2_API = os.getenv("ENABLE_V2_API", "false").lower() == "true"
+
+if ENABLE_V2_API:
+    # Optional legacy fallback if explicitly enabled
+    app.include_router(v2_sessions_router)
+    app.include_router(v2_tasks_router)
+    app.include_router(v2_runs_router)
+    app.include_router(v2_workflows_router)
+    app.include_router(v2_events_router)
+    app.include_router(v2_events_legacy_router)
+    app.include_router(v2_providers_router)
+    app.include_router(v2_tools_router)
+    app.include_router(v2_permissions_router)
+    app.include_router(v2_artifacts_router)
+    app.include_router(v2_memory_router)
+    app.include_router(v2_plugins_router)
+    app.include_router(v2_skills_router)
+    app.include_router(v2_evals_router)
+    app.include_router(v2_observability_router)
+    app.include_router(v2_browser_router)
+    app.include_router(v2_production_workspace_router)
+    app.include_router(v2_screenplay_workspace_router)
+    app.include_router(v2_assets_router)
+    app.include_router(v2_collaboration_router)
+    app.include_router(v2_conversations_router)
+    app.include_router(v2_conflict_recovery_router)
+else:
+    # Phase 15 — API V2 Tombstone Handler - Returns 410 Gone for all retired /api/v2/* requests
+    @app.api_route("/api/v2/{path:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"], include_in_schema=False)
+    async def api_v2_tombstone(request: Request, path: str):
+        """
+        API V2 has been permanently retired as per Phase 15 API V2 Retirement.
+        Returns 410 Gone to indicate the resource is no longer available.
+        """
+        return JSONResponse(
+            status_code=status.HTTP_410_GONE,
+            headers={"Deprecation": "true"},
+            content={
+                "type": "https://windagent.io/errors/api-v2-retired",
+                "title": "API V2 Retired",
+                "status": 410,
+                "detail": "API V2 has been permanently retired. Please use /api/v3/* endpoints.",
+                "removal_date": "2026-08-17",
+                "migration_guide": "https://windagent.io/docs/architecture-v3-migration",
+                "available_endpoints": "/api/v3/*",
+            },
+        )
 
 app.include_router(conversation_streams_router)
 
-# Unified V3 Root Router (Plan C1 + Phase 2 Foundation)
+# Unified V3 Root Router (Phase 2-14 Foundation)
 app.include_router(v3_router)
-
-
-# V2 deprecation metadata: additive headers only. V2 is not removed or
-# redirected; clients learn the successor surface without behavior change.
-@app.middleware("http")
-async def v2_deprecation_metadata(request: Request, call_next):
-    response = await call_next(request)
-    if request.url.path.startswith("/api/v2"):
-        response.headers["Deprecation"] = "true"
-        response.headers["X-WindAgent-Deprecation"] = "v2"
-        # Only claim specific successor when domain replacement exists (P2.10)
-        if request.url.path.startswith("/api/v2/screenplay_workspace") or request.url.path.startswith("/api/v2/production_workspace"):
-            response.headers["X-WindAgent-Successor"] = "/api/v3/studio"
-    return response
 
 
 # API V1 Tombstone Handler - Returns 410 Gone for all /api/v1/* requests
@@ -224,10 +235,10 @@ async def api_v1_tombstone(request: Request, path: str):
             "type": "https://windagent.io/errors/api-v1-removed",
             "title": "API V1 Removed",
             "status": 410,
-            "detail": "API V1 has been permanently removed. Please migrate to API V2.",
+            "detail": "API V1 has been permanently removed. Please migrate to API V3.",
             "removal_date": "2026-07-25",
-            "migration_guide": "https://windagent.io/docs/architecture-v2-migration",
-            "available_endpoints": "/api/v2/*",
+            "migration_guide": "https://windagent.io/docs/architecture-v3-migration",
+            "available_endpoints": "/api/v3/*",
         },
     )
 
@@ -245,11 +256,11 @@ class ArchitectureResponse(BaseModel):
 @app.get("/internal/architecture", response_model=ArchitectureResponse)
 async def internal_architecture() -> ArchitectureResponse:
     return ArchitectureResponse(
-        architecture="V2",
-        status="canonical_api_v2_production",
+        architecture="V3",
+        status="canonical_api_v3_production",
         version=PRODUCT_VERSION,
         architecture_generation=ARCHITECTURE_GENERATION,
-        api_version=API_VERSION,
+        api_version="v3",
         provider_protocol_version=PROVIDER_PROTOCOL_VERSION,
         artifact_protocol_version=ARTIFACT_PROTOCOL_VERSION,
     )

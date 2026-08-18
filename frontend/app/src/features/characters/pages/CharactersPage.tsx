@@ -88,7 +88,7 @@ export const CharactersPage: React.FC<CharactersPageProps> = ({ projectId }) => 
         </div>
       ) : (
         <div className="characters-page__grid">
-          {characters.map((char) => (
+          {characters.map((char: CharacterResource) => (
             <CharacterCard
               key={char.id}
               character={char}

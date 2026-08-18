@@ -1,0 +1,33 @@
+{
+  "phase": "16.0",
+  "audit_name": "Orphan Components Inventory",
+  "scanned_at": "2026-08-18T00:34:00Z",
+  "scanned_directories": [
+    "frontend/app/src/features",
+    "apps/desktop/src/components",
+    "apps/desktop/src/pages"
+  ],
+  "orphan_components": [
+    {
+      "component": "apps/desktop/src/pages/Browser.tsx",
+      "reason": "Replaced by @windagent/app/src/features/browser",
+      "action": "DELETE"
+    },
+    {
+      "component": "apps/desktop/src/pages/Files.tsx",
+      "reason": "Replaced by @windagent/app/src/features/files",
+      "action": "DELETE"
+    },
+    {
+      "component": "apps/desktop/src/pages/Memory.tsx",
+      "reason": "Replaced by @windagent/app/src/features/memory",
+      "action": "DELETE"
+    },
+    {
+      "component": "apps/desktop/src/pages/Settings.tsx",
+      "reason": "Replaced by @windagent/app/src/features/settings",
+      "action": "DELETE"
+    }
+  ],
+  "status": "CATEGORIZED_FOR_CLEANUP"
+}

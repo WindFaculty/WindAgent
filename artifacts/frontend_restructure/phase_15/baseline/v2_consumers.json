@@ -1,0 +1,21 @@
+{
+  "phase": "15",
+  "audit_type": "v2_consumer_inventory",
+  "frontend_authority": {
+    "package": "@windagent/app",
+    "v2_consumer_count": 0,
+    "api_version_used": "v3"
+  },
+  "bootstrap_apps": {
+    "apps/web": {
+      "v2_consumer_count": 0,
+      "api_version_used": "v3"
+    },
+    "apps/desktop": {
+      "v2_consumer_count": 0,
+      "api_version_used": "v3"
+    }
+  },
+  "runtime_v2_consumers": 0,
+  "status": "ZERO_CONSUMERS_PROVEN"
+}

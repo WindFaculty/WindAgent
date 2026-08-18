@@ -185,12 +185,10 @@ class TestV3ProductionComposition:
             by_name = {c["name"]: c for c in body["capabilities"]}
             assert by_name["durable_db"]["status"] == "AVAILABLE"
 
-    def test_v2_deprecation_metadata_is_additive(self, client):
+    def test_v2_tombstone_returns_410(self, client):
         res = client.get("/api/v2/does-not-exist-anywhere")
-        assert res.status_code == 404
-        assert res.headers.get("Deprecation") == "true"
-        assert res.headers.get("X-WindAgent-Deprecation") == "v2"
-        assert res.headers.get("X-WindAgent-V3-Studio") == "/api/v3/studio"
+        assert res.status_code == 410
+        assert "API V2 Retired" in res.json().get("title", "")
 
     def test_v1_tombstone_untouched(self, client):
         res = client.get("/api/v1/anything")
@@ -697,10 +695,9 @@ class TestV3ContractWithFakes:
         finally:
             app.dependency_overrides[get_studio_application_service] = lambda: _build_fake_service()
 
-    # -- V2 regression -----------------------------------------------------
+    # -- V2 retirement regression ------------------------------------------
 
-    def test_v2_production_workspace_still_works(self, client):
+    def test_v2_production_workspace_returns_tombstone(self, client):
         res = client.get("/api/v2/video-production/projects/vp_regression_01/workspace")
-        assert res.status_code == 200, res.text
-        assert res.headers.get("Deprecation") == "true"
-        assert res.headers.get("X-WindAgent-V3-Studio") == "/api/v3/studio"
+        assert res.status_code == 410
+        assert res.json().get("status") == 410
