@@ -1,0 +1,28 @@
+{
+  "phase": "phase_04",
+  "workflow": "code_video",
+  "video_id": "video-02",
+  "gate": "CV02_P4_PLAN_COMPILER_VERIFIED",
+  "verdict": "PASS",
+  "conditions": [
+    "CodeVideoScriptCompiler biên dịch hoàn chỉnh 19 scenes từ S01 đến S19",
+    "tổng thời lượng kế hoạch đạt chuẩn tuyệt đối 975000 ms (16:15.000)",
+    "timeline hoàn toàn liên tục, không có bất kỳ khoảng trống (gap) hay chồng lấn (overlap) nào",
+    "mọi action trong tất cả scenes đều mang tính semantic và không chứa tọa độ pixel",
+    "bảo đảm chính sách audio EXCLUDED không chứa tham số tts_model, audio_path hay voice_id",
+    "xuất khẩu thành công 3 artifact chuẩn: video_02_plan.yaml, video_02_plan.json, video_02_cue_sheet.csv",
+    "bảng cue sheet CSV tạo đủ 19 phân cảnh phục vụ lồng tiếng độc lập sau",
+    "toàn bộ 44 tests trong test suite đều PASS 100%"
+  ],
+  "evidence_files": [
+    "input_manifest.json",
+    "implementation_manifest.json",
+    "test_receipt.json",
+    "architecture_report.json",
+    "phase_report.md",
+    "plans/video_02_plan.yaml",
+    "plans/video_02_plan.json",
+    "plans/video_02_cue_sheet.csv"
+  ],
+  "decided_at_utc": "2026-08-18T00:00:00+00:00"
+}

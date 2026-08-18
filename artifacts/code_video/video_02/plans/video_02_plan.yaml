@@ -1,0 +1,674 @@
+video_id: video-02
+schema_version: 1.0.0
+title: Video 02 — Viết AI Agent Đầu Tiên Bằng Python
+duration_ms: 975000
+fps: 30
+resolution:
+  width: 2560
+  height: 1440
+source_hash: b2c9d46fd74cccc5f48de8509ceef41aec2dfb8db63a78c733a3d961ec1bec6c
+output_policy:
+  master_resolution: 2560x1440
+  delivery_resolutions:
+  - 1920x1080
+  fps: 30
+  audio_policy: EXCLUDED
+  allow_live_network: false
+  color_space: bt709
+metadata:
+  tutorial_project: agentic-studio
+  milestone: v0.1
+  target_timecode: '00:16:15.000'
+  compiler_version: 1.0.0
+  generated_at_utc: '2026-08-18T01:51:44.532172+00:00'
+scenes:
+- scene_id: S01
+  title: Cold Open — Live Agent Execution
+  start_ms: 0
+  end_ms: 25000
+  duration_ms: 25000
+  visual_mode: SPLIT
+  actions:
+  - action_id: act_s01_01
+    action_type: OPEN_WORKSPACE
+    start_ms: 0
+    duration_ms: 2000
+    params:
+      workspace_name: agentic-studio
+  - action_id: act_s01_02
+    action_type: RUN_TERMINAL
+    start_ms: 2000
+    duration_ms: 18000
+    params:
+      command: python -m src.agent
+      expected_output_receipt: provider_demo_output.txt
+  - action_id: act_s01_03
+    action_type: HIGHLIGHT
+    start_ms: 20000
+    duration_ms: 5000
+    params:
+      symbol: Agent
+      target: terminal_output
+  expected_state:
+    active_file: null
+    file_tree: null
+    editor_content_hash: null
+    cursor_symbol: null
+    terminal_last_command: python -m src.agent
+    terminal_exit_code: 0
+    custom_checks: {}
+  annotations:
+  - annotation_id: ann_s01_01
+    kind: badge
+    text: Agentic Studio v0.1 — Live Execution
+    start_ms: 1000
+    duration_ms: 23000
+    target_symbol: null
+    target_line: null
+    params: {}
+  voice_cue_id: CUE_S01_COLD_OPEN
+- scene_id: S02
+  title: Hook — Viết AI Agent Đầu Tiên Bằng Python
+  start_ms: 25000
+  end_ms: 50000
+  duration_ms: 25000
+  visual_mode: TITLE_CARD
+  actions:
+  - action_id: act_s02_01
+    action_type: SHOW_TITLE
+    start_ms: 25000
+    duration_ms: 25000
+    params:
+      title: VIDEO 02
+      subtitle: VIẾT AI AGENT ĐẦU TIÊN BẰNG PYTHON
+      card_type: primary
+  expected_state: null
+  annotations: []
+  voice_cue_id: CUE_S02_HOOK
+- scene_id: S03
+  title: Video 01 Recap — Nền tảng Agent Architecture
+  start_ms: 50000
+  end_ms: 85000
+  duration_ms: 35000
+  visual_mode: DIAGRAM
+  actions:
+  - action_id: act_s03_01
+    action_type: SHOW_DIAGRAM
+    start_ms: 50000
+    duration_ms: 35000
+    params:
+      diagram_id: diagram_01_recap
+      type: flowchart
+  expected_state: null
+  annotations:
+  - annotation_id: ann_s03_01
+    kind: callout
+    text: Observe ──> Decide ──> Act Loop
+    start_ms: 55000
+    duration_ms: 28000
+    target_symbol: null
+    target_line: null
+    params: {}
+  voice_cue_id: CUE_S03_RECAP
+- scene_id: S04
+  title: Architecture v0.1 — User -> Agent -> LLM -> Answer
+  start_ms: 85000
+  end_ms: 130000
+  duration_ms: 45000
+  visual_mode: ARCHITECTURE
+  actions:
+  - action_id: act_s04_01
+    action_type: SHOW_ARCHITECTURE
+    start_ms: 85000
+    duration_ms: 45000
+    params:
+      architecture_type: simple_agent_v01
+      flow:
+      - User
+      - Agent
+      - LLMClient
+      - Answer
+  expected_state: null
+  annotations:
+  - annotation_id: ann_s04_01
+    kind: badge
+    text: 'Milestone: Agentic Studio v0.1'
+    start_ms: 90000
+    duration_ms: 38000
+    target_symbol: null
+    target_line: null
+    params: {}
+  voice_cue_id: CUE_S04_ARCH_V01
+- scene_id: S05
+  title: Create Repository — Project Scaffolding
+  start_ms: 130000
+  end_ms: 165000
+  duration_ms: 35000
+  visual_mode: FULL_TERMINAL
+  actions:
+  - action_id: act_s05_01
+    action_type: RUN_TERMINAL
+    start_ms: 130000
+    duration_ms: 12000
+    params:
+      command: mkdir agentic-studio && cd agentic-studio
+  - action_id: act_s05_02
+    action_type: RUN_TERMINAL
+    start_ms: 142000
+    duration_ms: 10000
+    params:
+      command: git init
+  - action_id: act_s05_03
+    action_type: SHOW_OUTPUT
+    start_ms: 152000
+    duration_ms: 13000
+    params:
+      checkpoint: cp_00_init
+  expected_state:
+    active_file: null
+    file_tree:
+    - .env.example
+    - .gitignore
+    - pyproject.toml
+    - README.md
+    - src/__init__.py
+    - tests/__init__.py
+    editor_content_hash: null
+    cursor_symbol: null
+    terminal_last_command: git init
+    terminal_exit_code: 0
+    custom_checks: {}
+  annotations: []
+  voice_cue_id: CUE_S05_CREATE_REPO
+- scene_id: S06
+  title: Message — Immutable Conversation Representation
+  start_ms: 165000
+  end_ms: 220000
+  duration_ms: 55000
+  visual_mode: CODE_STUDIO
+  actions:
+  - action_id: act_s06_01
+    action_type: OPEN_FILE
+    start_ms: 165000
+    duration_ms: 5000
+    params:
+      path: src/agent.py
+  - action_id: act_s06_02
+    action_type: TYPE_TEXT
+    start_ms: 170000
+    duration_ms: 35000
+    params:
+      path: src/agent.py
+      checkpoint: cp_01_message
+      typing_speed: normal
+  - action_id: act_s06_03
+    action_type: HIGHLIGHT
+    start_ms: 205000
+    duration_ms: 15000
+    params:
+      symbol: Message
+      line_range:
+      - 10
+      - 22
+  expected_state:
+    active_file: src/agent.py
+    file_tree: null
+    editor_content_hash: null
+    cursor_symbol: Message
+    terminal_last_command: null
+    terminal_exit_code: null
+    custom_checks: {}
+  annotations: []
+  voice_cue_id: CUE_S06_MESSAGE
+- scene_id: S07
+  title: AgentConfig — Hyperparameters & System Prompt
+  start_ms: 220000
+  end_ms: 275000
+  duration_ms: 55000
+  visual_mode: CODE_STUDIO
+  actions:
+  - action_id: act_s07_01
+    action_type: OPEN_FILE
+    start_ms: 220000
+    duration_ms: 3000
+    params:
+      path: src/agent.py
+  - action_id: act_s07_02
+    action_type: TYPE_TEXT
+    start_ms: 223000
+    duration_ms: 37000
+    params:
+      path: src/agent.py
+      checkpoint: cp_02_config
+      typing_speed: normal
+  - action_id: act_s07_03
+    action_type: HIGHLIGHT
+    start_ms: 260000
+    duration_ms: 15000
+    params:
+      symbol: AgentConfig
+      line_range:
+      - 25
+      - 38
+  expected_state:
+    active_file: src/agent.py
+    file_tree: null
+    editor_content_hash: null
+    cursor_symbol: AgentConfig
+    terminal_last_command: null
+    terminal_exit_code: null
+    custom_checks: {}
+  annotations: []
+  voice_cue_id: CUE_S07_CONFIG
+- scene_id: S08
+  title: LLMClient — Domain Abstraction Protocol
+  start_ms: 275000
+  end_ms: 360000
+  duration_ms: 85000
+  visual_mode: CODE_STUDIO
+  actions:
+  - action_id: act_s08_01
+    action_type: OPEN_FILE
+    start_ms: 275000
+    duration_ms: 4000
+    params:
+      path: src/agent.py
+  - action_id: act_s08_02
+    action_type: TYPE_TEXT
+    start_ms: 279000
+    duration_ms: 56000
+    params:
+      path: src/agent.py
+      checkpoint: cp_03_llm_protocol
+      typing_speed: normal
+  - action_id: act_s08_03
+    action_type: HIGHLIGHT
+    start_ms: 335000
+    duration_ms: 25000
+    params:
+      symbol: LLMClient
+      line_range:
+      - 41
+      - 48
+  expected_state:
+    active_file: src/agent.py
+    file_tree: null
+    editor_content_hash: null
+    cursor_symbol: LLMClient
+    terminal_last_command: null
+    terminal_exit_code: null
+    custom_checks: {}
+  annotations: []
+  voice_cue_id: CUE_S08_PROTOCOL
+- scene_id: S09
+  title: Fake LLM — Deterministic Offline Testing Client
+  start_ms: 360000
+  end_ms: 410000
+  duration_ms: 50000
+  visual_mode: CODE_STUDIO
+  actions:
+  - action_id: act_s09_01
+    action_type: OPEN_FILE
+    start_ms: 360000
+    duration_ms: 3000
+    params:
+      path: src/agent.py
+  - action_id: act_s09_02
+    action_type: TYPE_TEXT
+    start_ms: 363000
+    duration_ms: 32000
+    params:
+      path: src/agent.py
+      checkpoint: cp_04_fake_llm
+      typing_speed: normal
+  - action_id: act_s09_03
+    action_type: HIGHLIGHT
+    start_ms: 395000
+    duration_ms: 15000
+    params:
+      symbol: FakeLLMClient
+      line_range:
+      - 51
+      - 68
+  expected_state:
+    active_file: src/agent.py
+    file_tree: null
+    editor_content_hash: null
+    cursor_symbol: FakeLLMClient
+    terminal_last_command: null
+    terminal_exit_code: null
+    custom_checks: {}
+  annotations: []
+  voice_cue_id: CUE_S09_FAKE_LLM
+- scene_id: S10
+  title: Agent — Orchestration Core Class
+  start_ms: 410000
+  end_ms: 505000
+  duration_ms: 95000
+  visual_mode: CODE_STUDIO
+  actions:
+  - action_id: act_s10_01
+    action_type: OPEN_FILE
+    start_ms: 410000
+    duration_ms: 3000
+    params:
+      path: src/agent.py
+  - action_id: act_s10_02
+    action_type: TYPE_TEXT
+    start_ms: 413000
+    duration_ms: 62000
+    params:
+      path: src/agent.py
+      checkpoint: cp_05_agent
+      typing_speed: normal
+  - action_id: act_s10_03
+    action_type: HIGHLIGHT
+    start_ms: 475000
+    duration_ms: 30000
+    params:
+      symbol: Agent
+      line_range:
+      - 71
+      - 90
+  expected_state:
+    active_file: src/agent.py
+    file_tree: null
+    editor_content_hash: null
+    cursor_symbol: Agent
+    terminal_last_command: null
+    terminal_exit_code: null
+    custom_checks: {}
+  annotations: []
+  voice_cue_id: CUE_S10_AGENT
+- scene_id: S11
+  title: Is This An Agent? — Concept Deep Dive
+  start_ms: 505000
+  end_ms: 540000
+  duration_ms: 35000
+  visual_mode: DIAGRAM
+  actions:
+  - action_id: act_s11_01
+    action_type: SHOW_DIAGRAM
+    start_ms: 505000
+    duration_ms: 35000
+    params:
+      diagram_id: diagram_02_agent_concept
+  expected_state: null
+  annotations:
+  - annotation_id: ann_s11_01
+    kind: callout
+    text: Simple Agent vs Full Autonomous Agent
+    start_ms: 510000
+    duration_ms: 28000
+    target_symbol: null
+    target_line: null
+    params: {}
+  voice_cue_id: CUE_S11_IS_AGENT
+- scene_id: S12
+  title: Real Provider — Infrastructure Layer Adapter
+  start_ms: 540000
+  end_ms: 615000
+  duration_ms: 75000
+  visual_mode: CODE_STUDIO
+  actions:
+  - action_id: act_s12_01
+    action_type: OPEN_FILE
+    start_ms: 540000
+    duration_ms: 4000
+    params:
+      path: src/agent.py
+  - action_id: act_s12_02
+    action_type: TYPE_TEXT
+    start_ms: 544000
+    duration_ms: 48000
+    params:
+      path: src/agent.py
+      checkpoint: cp_07_provider
+      typing_speed: normal
+  - action_id: act_s12_03
+    action_type: HIGHLIGHT
+    start_ms: 592000
+    duration_ms: 23000
+    params:
+      symbol: OpenAICompatibleProvider
+      line_range:
+      - 93
+      - 135
+  expected_state:
+    active_file: src/agent.py
+    file_tree: null
+    editor_content_hash: null
+    cursor_symbol: OpenAICompatibleProvider
+    terminal_last_command: null
+    terminal_exit_code: null
+    custom_checks: {}
+  annotations: []
+  voice_cue_id: CUE_S12_REAL_PROVIDER
+- scene_id: S13
+  title: API Key — Environment Configuration & Security
+  start_ms: 615000
+  end_ms: 665000
+  duration_ms: 50000
+  visual_mode: CODE_STUDIO
+  actions:
+  - action_id: act_s13_01
+    action_type: OPEN_FILE
+    start_ms: 615000
+    duration_ms: 4000
+    params:
+      path: .env.example
+  - action_id: act_s13_02
+    action_type: SELECT_RANGE
+    start_ms: 619000
+    duration_ms: 26000
+    params:
+      path: .env.example
+      lines:
+      - 1
+      - 7
+  - action_id: act_s13_03
+    action_type: OPEN_FILE
+    start_ms: 645000
+    duration_ms: 20000
+    params:
+      path: .gitignore
+  expected_state:
+    active_file: .gitignore
+    file_tree: null
+    editor_content_hash: null
+    cursor_symbol: null
+    terminal_last_command: null
+    terminal_exit_code: null
+    custom_checks: {}
+  annotations:
+  - annotation_id: ann_s13_01
+    kind: callout
+    text: NEVER COMMIT REAL SECRETS TO VERSION CONTROL
+    start_ms: 625000
+    duration_ms: 38000
+    target_symbol: null
+    target_line: null
+    params: {}
+  voice_cue_id: CUE_S13_API_KEY
+- scene_id: S14
+  title: First Run — Terminal Execution Replay
+  start_ms: 665000
+  end_ms: 720000
+  duration_ms: 55000
+  visual_mode: FULL_TERMINAL
+  actions:
+  - action_id: act_s14_01
+    action_type: RUN_TERMINAL
+    start_ms: 665000
+    duration_ms: 35000
+    params:
+      command: python -m src.agent
+      expected_output_receipt: provider_demo_output.txt
+  - action_id: act_s14_02
+    action_type: SHOW_OUTPUT
+    start_ms: 700000
+    duration_ms: 20000
+    params:
+      target: terminal_stdout
+  expected_state:
+    active_file: null
+    file_tree: null
+    editor_content_hash: null
+    cursor_symbol: null
+    terminal_last_command: python -m src.agent
+    terminal_exit_code: 0
+    custom_checks: {}
+  annotations: []
+  voice_cue_id: CUE_S14_FIRST_RUN
+- scene_id: S15
+  title: Tests — Pytest Suite (2 passed)
+  start_ms: 720000
+  end_ms: 800000
+  duration_ms: 80000
+  visual_mode: CODE_STUDIO
+  actions:
+  - action_id: act_s15_01
+    action_type: OPEN_FILE
+    start_ms: 720000
+    duration_ms: 4000
+    params:
+      path: tests/test_agent.py
+  - action_id: act_s15_02
+    action_type: TYPE_TEXT
+    start_ms: 724000
+    duration_ms: 46000
+    params:
+      path: tests/test_agent.py
+      checkpoint: cp_06_tests
+      typing_speed: normal
+  - action_id: act_s15_03
+    action_type: RUN_TERMINAL
+    start_ms: 770000
+    duration_ms: 30000
+    params:
+      command: pytest
+      expected_passes: 2
+  expected_state:
+    active_file: tests/test_agent.py
+    file_tree: null
+    editor_content_hash: null
+    cursor_symbol: null
+    terminal_last_command: pytest
+    terminal_exit_code: 0
+    custom_checks: {}
+  annotations: []
+  voice_cue_id: CUE_S15_TESTS
+- scene_id: S16
+  title: Not Yet — Feature Boundaries & Scope
+  start_ms: 800000
+  end_ms: 850000
+  duration_ms: 50000
+  visual_mode: CHECKLIST
+  actions:
+  - action_id: act_s16_01
+    action_type: SHOW_CHECKLIST
+    start_ms: 800000
+    duration_ms: 50000
+    params:
+      items:
+      - title: Tool Calling
+        status: excluded
+      - title: Agent Loop
+        status: excluded
+      - title: Memory
+        status: excluded
+      - title: RAG
+        status: excluded
+      - title: Planning
+        status: excluded
+      - title: Multi-Agent
+        status: excluded
+      - title: Orchestration
+        status: excluded
+  expected_state: null
+  annotations: []
+  voice_cue_id: CUE_S16_NOT_YET
+- scene_id: S17
+  title: Architecture Review — Domain / Infrastructure Separation
+  start_ms: 850000
+  end_ms: 900000
+  duration_ms: 50000
+  visual_mode: ARCHITECTURE
+  actions:
+  - action_id: act_s17_01
+    action_type: SHOW_ARCHITECTURE
+    start_ms: 850000
+    duration_ms: 50000
+    params:
+      diagram_id: diagram_06_domain_infrastructure
+      domain:
+      - Agent
+      - Message
+      - AgentConfig
+      - LLMClient
+      infrastructure:
+      - OpenAICompatibleProvider
+      - HTTP
+      - API Key
+  expected_state: null
+  annotations: []
+  voice_cue_id: CUE_S17_ARCH_REVIEW
+- scene_id: S18
+  title: Git Milestone — Commit & Release Tagging
+  start_ms: 900000
+  end_ms: 935000
+  duration_ms: 35000
+  visual_mode: FULL_TERMINAL
+  actions:
+  - action_id: act_s18_01
+    action_type: RUN_TERMINAL
+    start_ms: 900000
+    duration_ms: 12000
+    params:
+      command: git add .
+  - action_id: act_s18_02
+    action_type: RUN_TERMINAL
+    start_ms: 912000
+    duration_ms: 13000
+    params:
+      command: 'git commit -m "feat: build simple agent core"'
+  - action_id: act_s18_03
+    action_type: RUN_TERMINAL
+    start_ms: 925000
+    duration_ms: 10000
+    params:
+      command: git tag video-02 && git tag v0.1
+  expected_state:
+    active_file: null
+    file_tree: null
+    editor_content_hash: null
+    cursor_symbol: null
+    terminal_last_command: git tag video-02 && git tag v0.1
+    terminal_exit_code: 0
+    custom_checks: {}
+  annotations: []
+  voice_cue_id: CUE_S18_GIT_MILESTONE
+- scene_id: S19
+  title: Video 03 Teaser & Outro — Tool Calling Preview
+  start_ms: 935000
+  end_ms: 975000
+  duration_ms: 40000
+  visual_mode: OUTRO
+  actions:
+  - action_id: act_s19_01
+    action_type: SHOW_TITLE
+    start_ms: 935000
+    duration_ms: 25000
+    params:
+      title: VIDEO 03
+      subtitle: TOOL CALLING HOẠT ĐỘNG BÊN TRONG NHƯ THẾ NÀO?
+      card_type: teaser
+  - action_id: act_s19_02
+    action_type: SHOW_OUTPUT
+    start_ms: 960000
+    duration_ms: 15000
+    params:
+      outro_card: windagent_channel_subscribe
+  expected_state: null
+  annotations: []
+  voice_cue_id: CUE_S19_OUTRO

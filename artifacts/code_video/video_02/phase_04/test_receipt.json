@@ -1,0 +1,49 @@
+{
+  "phase": "phase_04",
+  "workflow": "code_video",
+  "video_id": "video-02",
+  "gate": "CV02_P4_PLAN_COMPILER_VERIFIED",
+  "test_execution": {
+    "command": "pytest tests/contracts/test_code_video_compiler.py -v",
+    "exit_code": 0,
+    "total_tests": 5,
+    "passed": 5,
+    "failed": 0,
+    "skipped": 0,
+    "tests": [
+      {
+        "nodeid": "tests/contracts/test_code_video_compiler.py::TestCodeVideoCompiler::test_compile_video_02_plan_duration_and_scene_count",
+        "status": "PASSED"
+      },
+      {
+        "nodeid": "tests/contracts/test_code_video_compiler.py::TestCodeVideoCompiler::test_contiguous_timeline_without_overlaps_or_gaps",
+        "status": "PASSED"
+      },
+      {
+        "nodeid": "tests/contracts/test_code_video_compiler.py::TestCodeVideoCompiler::test_semantic_actions_and_bounds_validation",
+        "status": "PASSED"
+      },
+      {
+        "nodeid": "tests/contracts/test_code_video_compiler.py::TestCodeVideoCompiler::test_export_plan_artifacts_and_roundtrip",
+        "status": "PASSED"
+      },
+      {
+        "nodeid": "tests/contracts/test_code_video_compiler.py::TestCodeVideoCompiler::test_source_hash_detection_from_script",
+        "status": "PASSED"
+      }
+    ]
+  },
+  "plan_metrics_verified": {
+    "duration_ms": 975000,
+    "duration_formatted": "16:15.000",
+    "scene_count": 19,
+    "fps": 30,
+    "resolution": "2560x1440",
+    "gaps_count": 0,
+    "overlaps_count": 0,
+    "coordinate_keys_count": 0,
+    "cue_sheet_rows": 19,
+    "status": "100%_CONFORMANT"
+  },
+  "executed_at_utc": "2026-08-18T00:00:00+00:00"
+}

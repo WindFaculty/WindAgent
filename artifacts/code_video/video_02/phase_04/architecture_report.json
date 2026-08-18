@@ -1,0 +1,48 @@
+{
+  "phase": "phase_04",
+  "workflow": "code_video",
+  "video_id": "video-02",
+  "gate": "CV02_P4_PLAN_COMPILER_VERIFIED",
+  "compiler_architecture": {
+    "intermediate_representation": "CodeVideoPlan (v1.0.0)",
+    "timeline_spec": {
+      "exact_duration_ms": 975000,
+      "timecode": "00:16:15.000",
+      "fps": 30,
+      "master_resolution": "2560x1440",
+      "scenes_total": 19,
+      "scene_breakdown": [
+        {"id": "S01", "start_ms": 0, "end_ms": 25000, "mode": "SPLIT", "title": "Cold Open"},
+        {"id": "S02", "start_ms": 25000, "end_ms": 50000, "mode": "TITLE_CARD", "title": "Hook"},
+        {"id": "S03", "start_ms": 50000, "end_ms": 85000, "mode": "DIAGRAM", "title": "Video 01 Recap"},
+        {"id": "S04", "start_ms": 85000, "end_ms": 130000, "mode": "ARCHITECTURE", "title": "Architecture v0.1"},
+        {"id": "S05", "start_ms": 130000, "end_ms": 165000, "mode": "FULL_TERMINAL", "title": "Create Repository"},
+        {"id": "S06", "start_ms": 165000, "end_ms": 220000, "mode": "CODE_STUDIO", "title": "Message"},
+        {"id": "S07", "start_ms": 220000, "end_ms": 275000, "mode": "CODE_STUDIO", "title": "AgentConfig"},
+        {"id": "S08", "start_ms": 275000, "end_ms": 360000, "mode": "CODE_STUDIO", "title": "LLMClient"},
+        {"id": "S09", "start_ms": 360000, "end_ms": 410000, "mode": "CODE_STUDIO", "title": "Fake LLM"},
+        {"id": "S10", "start_ms": 410000, "end_ms": 505000, "mode": "CODE_STUDIO", "title": "Agent"},
+        {"id": "S11", "start_ms": 505000, "end_ms": 540000, "mode": "DIAGRAM", "title": "Is This An Agent?"},
+        {"id": "S12", "start_ms": 540000, "end_ms": 615000, "mode": "CODE_STUDIO", "title": "Real Provider"},
+        {"id": "S13", "start_ms": 615000, "end_ms": 665000, "mode": "CODE_STUDIO", "title": "API Key"},
+        {"id": "S14", "start_ms": 665000, "end_ms": 720000, "mode": "FULL_TERMINAL", "title": "First Run"},
+        {"id": "S15", "start_ms": 720000, "end_ms": 800000, "mode": "CODE_STUDIO", "title": "Tests"},
+        {"id": "S16", "start_ms": 800000, "end_ms": 850000, "mode": "CHECKLIST", "title": "Not Yet"},
+        {"id": "S17", "start_ms": 850000, "end_ms": 900000, "mode": "ARCHITECTURE", "title": "Architecture Review"},
+        {"id": "S18", "start_ms": 900000, "end_ms": 935000, "mode": "FULL_TERMINAL", "title": "Git Milestone"},
+        {"id": "S19", "start_ms": 935000, "end_ms": 975000, "mode": "OUTRO", "title": "Video 03 Teaser"}
+      ]
+    },
+    "voice_handoff_integration": {
+      "cue_sheet_format": "CSV",
+      "total_cues": 19,
+      "audio_dependency": "ZERO_RUNTIME_AUDIO_DEPENDENCY"
+    }
+  },
+  "compliance": {
+    "timeline_continuity": "CONTIGUOUS_ZERO_GAPS_ZERO_OVERLAPS",
+    "semantic_actions": "STRICT_NON_COORDINATE",
+    "audio_policy": "EXCLUDED"
+  },
+  "evaluated_at_utc": "2026-08-18T00:00:00+00:00"
+}

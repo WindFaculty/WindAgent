@@ -7,6 +7,7 @@ and workflow step definitions for automated code tutorial video production.
 
 from __future__ import annotations
 
+from windagent_workflows.code_video.compiler import CodeVideoScriptCompiler
 from windagent_workflows.code_video.contracts import (
     FORBIDDEN_AUDIO_KEYS,
     FORBIDDEN_COORDINATE_KEYS,
@@ -35,6 +36,8 @@ from windagent_workflows.code_video.definition import (
 )
 
 __all__ = [
+    # Compiler
+    "CodeVideoScriptCompiler",
     # Contracts
     "ActionType",
     "VisualMode",
@@ -60,3 +63,4 @@ __all__ = [
     "step_contract",
     "all_step_contracts",
 ]
+

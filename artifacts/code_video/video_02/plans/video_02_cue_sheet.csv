@@ -1,0 +1,20 @@
+scene_id,title,start_timecode,end_timecode,duration_seconds,voice_reference
+S01,Cold Open — Live Agent Execution,00:00.000,00:25.000,25.000,CUE_S01_COLD_OPEN
+S02,Hook — Viết AI Agent Đầu Tiên Bằng Python,00:25.000,00:50.000,25.000,CUE_S02_HOOK
+S03,Video 01 Recap — Nền tảng Agent Architecture,00:50.000,01:25.000,35.000,CUE_S03_RECAP
+S04,Architecture v0.1 — User -> Agent -> LLM -> Answer,01:25.000,02:10.000,45.000,CUE_S04_ARCH_V01
+S05,Create Repository — Project Scaffolding,02:10.000,02:45.000,35.000,CUE_S05_CREATE_REPO
+S06,Message — Immutable Conversation Representation,02:45.000,03:40.000,55.000,CUE_S06_MESSAGE
+S07,AgentConfig — Hyperparameters & System Prompt,03:40.000,04:35.000,55.000,CUE_S07_CONFIG
+S08,LLMClient — Domain Abstraction Protocol,04:35.000,06:00.000,85.000,CUE_S08_PROTOCOL
+S09,Fake LLM — Deterministic Offline Testing Client,06:00.000,06:50.000,50.000,CUE_S09_FAKE_LLM
+S10,Agent — Orchestration Core Class,06:50.000,08:25.000,95.000,CUE_S10_AGENT
+S11,Is This An Agent? — Concept Deep Dive,08:25.000,09:00.000,35.000,CUE_S11_IS_AGENT
+S12,Real Provider — Infrastructure Layer Adapter,09:00.000,10:15.000,75.000,CUE_S12_REAL_PROVIDER
+S13,API Key — Environment Configuration & Security,10:15.000,11:05.000,50.000,CUE_S13_API_KEY
+S14,First Run — Terminal Execution Replay,11:05.000,12:00.000,55.000,CUE_S14_FIRST_RUN
+S15,Tests — Pytest Suite (2 passed),12:00.000,13:20.000,80.000,CUE_S15_TESTS
+S16,Not Yet — Feature Boundaries & Scope,13:20.000,14:10.000,50.000,CUE_S16_NOT_YET
+S17,Architecture Review — Domain / Infrastructure Separation,14:10.000,15:00.000,50.000,CUE_S17_ARCH_REVIEW
+S18,Git Milestone — Commit & Release Tagging,15:00.000,15:35.000,35.000,CUE_S18_GIT_MILESTONE
+S19,Video 03 Teaser & Outro — Tool Calling Preview,15:35.000,16:15.000,40.000,CUE_S19_OUTRO
