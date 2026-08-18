@@ -1,0 +1,51 @@
+{
+  "phase": "phase_00",
+  "workflow": "code_video",
+  "video_id": "video-02",
+  "gate": "CV02_P0_BASELINE_FROZEN",
+  "checks": [
+    {
+      "id": "baseline_sha_correct",
+      "expectation": "0e2fa7a89c4e0c0875fab963bbe8278f4153783a",
+      "actual": "0e2fa7a89c4e0c0875fab963bbe8278f4153783a",
+      "result": "PASS",
+      "method": "git rev-parse; merge-base(feature/code-video-video02, baseline) == baseline"
+    },
+    {
+      "id": "script_hash_pinned",
+      "expectation": "b2c9d46fd74cccc5f48de8509ceef41aec2dfb8db63a78c733a3d961ec1bec6c",
+      "actual": "b2c9d46fd74cccc5f48de8509ceef41aec2dfb8db63a78c733a3d961ec1bec6c",
+      "result": "PASS",
+      "method": "Get-FileHash SHA256 artifacts/code_video/video_02/source/script.md"
+    },
+    {
+      "id": "duration_975_seconds",
+      "expectation": 975,
+      "actual": 975,
+      "result": "PASS",
+      "method": "baseline.json target_duration_seconds == 975 (00:16:15.000)"
+    },
+    {
+      "id": "audio_excluded",
+      "expectation": "EXCLUDED",
+      "actual": "EXCLUDED",
+      "result": "PASS",
+      "method": "baseline.json audio_scope == EXCLUDED"
+    },
+    {
+      "id": "tool_calling_out_of_scope",
+      "expectation": "OUT_OF_SCOPE",
+      "actual": "OUT_OF_SCOPE",
+      "result": "PASS",
+      "method": "baseline.json tool_calling_scope == OUT_OF_SCOPE"
+    },
+    {
+      "id": "repository_clean",
+      "expectation": "no tracked worktree modifications",
+      "actual": "0 tracked modifications",
+      "result": "PASS",
+      "method": "git status --porcelain --untracked-files=no (count == 0)"
+    }
+  ],
+  "gate_result": "PASS"
+}

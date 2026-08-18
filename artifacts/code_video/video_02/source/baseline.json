@@ -1,0 +1,19 @@
+{
+  "video_id": "video-02",
+  "baseline_sha": "0e2fa7a89c4e0c0875fab963bbe8278f4153783a",
+  "audio_scope": "EXCLUDED",
+  "tool_calling_scope": "OUT_OF_SCOPE",
+  "target_duration_seconds": 975,
+  "target_duration_hms": "00:16:15.000",
+  "tutorial_project": "agentic-studio",
+  "milestone": "v0.1",
+  "script_source": {
+    "file": "script.md",
+    "sha256": "b2c9d46fd74cccc5f48de8509ceef41aec2dfb8db63a78c733a3d961ec1bec6c"
+  },
+  "architecture": {
+    "user_agent_llm_answer": "User -> Agent -> LLM -> Answer",
+    "tool_calling": "NOT_PRESENT"
+  },
+  "scenes": 19
+}

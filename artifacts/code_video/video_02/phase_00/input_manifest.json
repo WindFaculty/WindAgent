@@ -1,0 +1,43 @@
+{
+  "phase": "phase_00",
+  "workflow": "code_video",
+  "video_id": "video-02",
+  "gate": "CV02_P0_BASELINE_FROZEN",
+  "inputs": {
+    "plan_document": {
+      "file": "ban_ke_hoach_video_02.md",
+      "role": "implementation plan + script derivation source"
+    },
+    "script": {
+      "file": "artifacts/code_video/video_02/source/script.md",
+      "sha256": "b2c9d46fd74cccc5f48de8509ceef41aec2dfb8db63a78c733a3d961ec1bec6c",
+      "derived_from": "ban_ke_hoach_video_02.md (scene map S01-S19, milestones, passes, architecture)"
+    },
+    "baseline": {
+      "sha": "0e2fa7a89c4e0c0875fab963bbe8278f4153783a",
+      "branch": "feature/code-video-video02",
+      "created_from": "0e2fa7a89c4e0c0875fab963bbe8278f4153783a",
+      "commit_message": "feat(frontend): complete Phase 14-16 — web/desktop convergence, API V2 retirement, dead code removal & final architecture cert"
+    }
+  },
+  "constraints": {
+    "audio_scope": "EXCLUDED",
+    "tool_calling_scope": "OUT_OF_SCOPE",
+    "target_duration_seconds": 975,
+    "target_duration_hms": "00:16:15.000",
+    "milestone": "v0.1",
+    "tutorial_project": "agentic-studio"
+  },
+  "outputs": {
+    "source_dir": "artifacts/code_video/video_02/source",
+    "plans_dir": "artifacts/code_video/video_02/plans",
+    "checkpoints_dir": "artifacts/code_video/video_02/checkpoints",
+    "takes_dir": "artifacts/code_video/video_02/takes",
+    "graphics_dir": "artifacts/code_video/video_02/graphics",
+    "timeline_dir": "artifacts/code_video/video_02/timeline",
+    "reports_dir": "artifacts/code_video/video_02/reports",
+    "final_dir": "artifacts/code_video/video_02/final",
+    "phase_00_dir": "artifacts/code_video/video_02/phase_00"
+  },
+  "created_at_utc": "2026-08-18T00:00:00+00:00"
+}

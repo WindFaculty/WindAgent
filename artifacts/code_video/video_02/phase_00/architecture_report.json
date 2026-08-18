@@ -1,0 +1,37 @@
+{
+  "phase": "phase_00",
+  "workflow": "code_video",
+  "video_id": "video-02",
+  "gate": "CV02_P0_BASELINE_FROZEN",
+  "architecture": {
+    "workflow_package": "workflows/windagent_workflows/code_video/ (planned Phase 1+)",
+    "tool_package": "tools/windagent_tools/code_video/ (planned Phase 2+)",
+    "frontend_package": "frontend/packages/code-video-ui/ (planned Phase 5+)",
+    "asset_root": "artifacts/code_video/video_02/",
+    "out_of_scope": [
+      "tools/windagent_tools/production_engines/blender/",
+      "TTS",
+      "voice cloning",
+      "voice alignment",
+      "background music",
+      "SFX",
+      "subtitle generation from audio",
+      "Tool Calling runtime",
+      "Memory",
+      "RAG",
+      "Planning",
+      "Multi-Agent"
+    ]
+  },
+  "source_tree": {
+    "source": "source/",
+    "plans": "plans/",
+    "checkpoints": "checkpoints/",
+    "takes": "takes/",
+    "graphics": "graphics/",
+    "timeline": "timeline/",
+    "reports": "reports/",
+    "final": "final/"
+  },
+  "end_state": "input frozen; Phase 1 (contract & IR) can start against artifacts/code_video/video_02/source/script.md"
+}

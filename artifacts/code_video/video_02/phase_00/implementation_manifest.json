@@ -1,0 +1,32 @@
+{
+  "phase": "phase_00",
+  "workflow": "code_video",
+  "video_id": "video-02",
+  "gate": "CV02_P0_BASELINE_FROZEN",
+  "implementation": {
+    "steps": [
+      "git checkout -b feature/code-video-video02 (from baseline 0e2fa7a89c4e0c0875fab963bbe8278f4153783a)",
+      "committed pre-existing working-tree cleanup (retired frontend packages, fixture relocation)",
+      "created artifacts/code_video/video_02/{source,plans,checkpoints,takes,graphics,timeline,reports,final,phase_00}",
+      "derived source/script.md from ban_ke_hoach_video_02.md",
+      "pinned source/script.sha256",
+      "wrote source/baseline.json"
+    ]
+  },
+  "files_created": [
+    "artifacts/code_video/video_02/source/script.md",
+    "artifacts/code_video/video_02/source/script.sha256",
+    "artifacts/code_video/video_02/source/baseline.json",
+    "artifacts/code_video/video_02/phase_00/input_manifest.json",
+    "artifacts/code_video/video_02/phase_00/implementation_manifest.json",
+    "artifacts/code_video/video_02/phase_00/test_receipt.json",
+    "artifacts/code_video/video_02/phase_00/architecture_report.json",
+    "artifacts/code_video/video_02/phase_00/phase_report.md",
+    "artifacts/code_video/video_02/phase_00/phase_verdict.json"
+  ],
+  "git": {
+    "branch": "feature/code-video-video02",
+    "base_sha": "0e2fa7a89c4e0c0875fab963bbe8278f4153783a",
+    "worktree_clean": true
+  }
+}

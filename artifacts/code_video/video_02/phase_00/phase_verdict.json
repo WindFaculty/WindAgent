@@ -1,0 +1,23 @@
+{
+  "phase": "phase_00",
+  "workflow": "code_video",
+  "video_id": "video-02",
+  "gate": "CV02_P0_BASELINE_FROZEN",
+  "verdict": "PASS",
+  "conditions": [
+    "baseline SHA đúng (0e2fa7a89c4e0c0875fab963bbe8278f4153783a)",
+    "script hash cố định (b2c9d46fd74cccc5f48de8509ceef41aec2dfb8db63a78c733a3d961ec1bec6c)",
+    "duration 975 giây (00:16:15.000)",
+    "audio marked EXCLUDED",
+    "Tool Calling marked OUT_OF_SCOPE",
+    "repository WindAgent sạch trước implementation"
+  ],
+  "evidence_files": [
+    "input_manifest.json",
+    "implementation_manifest.json",
+    "test_receipt.json",
+    "architecture_report.json",
+    "phase_report.md"
+  ],
+  "decided_at_utc": "2026-08-18T00:00:00+00:00"
+}
