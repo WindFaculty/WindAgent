@@ -19,7 +19,6 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 import hashlib
 import json
-from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence
 
 from windagent_workflows.code_video.contracts import CodeVideoPlan

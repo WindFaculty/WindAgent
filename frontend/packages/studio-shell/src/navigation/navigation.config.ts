@@ -14,6 +14,7 @@ export const DESKTOP_NAVIGATION_GROUPS: NavigationGroupDescriptor[] = [
       { id: 'world', label: 'World / Setting', iconName: 'Globe' },
       { id: 'assets', label: 'Assets', iconName: 'Package' },
       { id: 'reviews', label: 'Reviews', iconName: 'CheckSquare' },
+      { id: 'live-record', label: 'Live Record', iconName: 'Video' },
     ],
   },
 

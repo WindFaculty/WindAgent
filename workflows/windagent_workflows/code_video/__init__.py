@@ -7,8 +7,8 @@ and workflow step definitions for automated code tutorial video production.
 
 from __future__ import annotations
 
-from windagent_workflows.code_video.assembly import AssembleMasterStepExecutor
-from windagent_workflows.code_video.compiler import CodeVideoScriptCompiler
+from typing import Any
+
 from windagent_workflows.code_video.contracts import (
     FORBIDDEN_AUDIO_KEYS,
     FORBIDDEN_COORDINATE_KEYS,
@@ -22,6 +22,7 @@ from windagent_workflows.code_video.contracts import (
     Scene,
     VisualMode,
 )
+from windagent_workflows.code_video.compiler import CodeVideoScriptCompiler
 from windagent_workflows.code_video.definition import (
     CODE_VIDEO_STEPS,
     STEP_APPROVAL_GATES,
@@ -35,14 +36,6 @@ from windagent_workflows.code_video.definition import (
     build_code_video_step_nodes,
     step_contract,
 )
-from windagent_workflows.code_video.program_certification import (
-    ProgramCertificationDriver,
-    ProgramCertificationStepExecutor,
-)
-from windagent_workflows.code_video.qc import (
-    FinalQCDriver,
-    FinalQCStepExecutor,
-)
 from windagent_workflows.code_video.replay import (
     CHECKPOINT_CODE_MAP,
     CheckpointCodeResolver,
@@ -55,6 +48,19 @@ from windagent_workflows.code_video.replay import (
     TypingSpeedMode,
     VERIFIED_TERMINAL_RECEIPTS,
 )
+def __getattr__(name: str) -> Any:
+    if name == "AssembleMasterStepExecutor":
+        from windagent_workflows.code_video.assembly import AssembleMasterStepExecutor
+        return AssembleMasterStepExecutor
+    if name in ("ProgramCertificationDriver", "ProgramCertificationStepExecutor"):
+        from windagent_workflows.code_video import program_certification
+
+        return getattr(program_certification, name)
+    if name in ("FinalQCDriver", "FinalQCStepExecutor"):
+        from windagent_workflows.code_video import qc
+
+        return getattr(qc, name)
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 __all__ = [
     # Compiler
@@ -103,4 +109,3 @@ __all__ = [
     "ProgramCertificationStepExecutor",
     "ProgramCertificationDriver",
 ]
-

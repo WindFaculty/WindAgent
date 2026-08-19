@@ -82,15 +82,18 @@ export const LogsPage: React.FC = () => {
         {merged.length === 0 && !isLoading && (
           <div style={{ color: 'var(--text-muted, #9ca3af)' }}>No log records yet — runtime activity will appear here.</div>
         )}
-        {merged.map((r, i) => (
-          <div key={i} style={{ display: 'flex', gap: '10px', padding: '3px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-            <span style={{ color: '#4b5563', whiteSpace: 'nowrap' }}>{r.timestamp.slice(11, 23)}</span>
-            <span style={{ color: LEVEL_COLORS[r.level] ?? '#6b7280', width: '70px', fontWeight: 700 }}>{r.level}</span>
-            <span style={{ color: '#93c5fd', width: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.source}</span>
-            <span style={{ color: '#e5e7eb', flex: 1 }}>{r.message}</span>
-            {r.correlation_id && <span style={{ color: '#8b5cf6', whiteSpace: 'nowrap' }}>{r.correlation_id}</span>}
-          </div>
-        ))}
+        {merged.map((r, i) => {
+          const timeStr = r.timestamp ? String(r.timestamp).slice(11, 23) : '--:--:--';
+          return (
+            <div key={i} style={{ display: 'flex', gap: '10px', padding: '3px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+              <span style={{ color: '#4b5563', whiteSpace: 'nowrap' }}>{timeStr}</span>
+              <span style={{ color: LEVEL_COLORS[r.level] ?? '#6b7280', width: '70px', fontWeight: 700 }}>{r.level || 'INFO'}</span>
+              <span style={{ color: '#93c5fd', width: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.source || 'system'}</span>
+              <span style={{ color: '#e5e7eb', flex: 1 }}>{r.message || ''}</span>
+              {r.correlation_id && <span style={{ color: '#8b5cf6', whiteSpace: 'nowrap' }}>{r.correlation_id}</span>}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

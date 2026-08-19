@@ -34,6 +34,7 @@ import { WorldPage } from '../features/world/pages/WorldPage';
 import { StoryboardPage } from '../features/storyboard/pages/StoryboardPage';
 import { ReviewsPage } from '../features/reviews/pages/ReviewsPage';
 import { AssetsPage } from '../features/assets/pages/AssetsPage';
+import { LiveRecordPage } from '../features/live-record/pages/LiveRecordPage';
 import { ProductionPage } from '../features/production/pages/ProductionPage';
 import { AgentWorkspacePage } from '../features/agent-workspace/pages/AgentWorkspacePage';
 import { AgentsPage } from '../features/agents/pages/AgentsPage';
@@ -175,6 +176,10 @@ const SharedAppContent: React.FC<SharedAppContentProps> = ({ customRouteRenderer
 
     if (route.id === 'assets') {
       return <AssetsPage episodeId={params.episodeId} projectId={params.projectId} />;
+    }
+
+    if (route.id === 'live-record') {
+      return <LiveRecordPage />;
     }
 
     if (route.id === 'episode-production') {

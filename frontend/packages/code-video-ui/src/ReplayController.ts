@@ -152,7 +152,8 @@ export class ReplayController {
       } else if (scene.scene_id === activeScene.scene_id) {
         for (const act of scene.actions) {
           if (act.start_ms <= clamped) {
-            const elapsed = clamped < act.end_ms ? clamped - act.start_ms : null;
+            const actionEndMs = act.start_ms + act.duration_ms;
+            const elapsed = clamped < actionEndMs ? clamped - act.start_ms : null;
             this.applyActionState(act, editor, terminal, diagram, elapsed);
           }
         }

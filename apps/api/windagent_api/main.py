@@ -6,18 +6,18 @@ and registers all canonical V2 routers. API V1 has been permanently removed - re
 
 from __future__ import annotations
 import logging
-from typing import Any, Dict
-from fastapi import FastAPI, Request, status
+import os
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
+from windagent_core.domain.lifecycle import utc_now
 from windagent_core.errors.exceptions import (
     WindAgentError, NotFoundError, PermissionDeniedError, ValidationError, DomainError
 )
 from windagent_core.version import (
     PRODUCT_VERSION,
     ARCHITECTURE_GENERATION,
-    API_VERSION,
     PROVIDER_PROTOCOL_VERSION,
     ARTIFACT_PROTOCOL_VERSION,
 )
@@ -167,7 +167,6 @@ async def base_windagent_exception_handler(request: Request, exc: WindAgentError
 # Register Health Router
 app.include_router(health_router)
 
-import os
 ENABLE_V2_API = os.getenv("ENABLE_V2_API", "false").lower() == "true"
 
 if ENABLE_V2_API:
@@ -220,6 +219,27 @@ app.include_router(conversation_streams_router)
 
 # Unified V3 Root Router (Phase 2-14 Foundation)
 app.include_router(v3_router)
+
+
+@app.websocket("/ws")
+async def root_websocket_endpoint(websocket: WebSocket):
+    """Canonical root WebSocket endpoint for RealtimeProvider events."""
+    await websocket.accept()
+    try:
+        await websocket.send_json({
+            "type": "connected",
+            "message": "WindAgent Realtime Connected",
+            "timestamp": utc_now().isoformat(),
+        })
+        while True:
+            data = await websocket.receive_text()
+            if data == "ping":
+                await websocket.send_text("pong")
+            else:
+                await websocket.send_json({"type": "ack", "received": data})
+    except (WebSocketDisconnect, Exception):
+        pass
+
 
 
 # API V1 Tombstone Handler - Returns 410 Gone for all /api/v1/* requests

@@ -7,7 +7,7 @@ All checks are real, no hardcoded values. Implements profile-based behavior.
 from __future__ import annotations
 import logging
 from typing import Any, Dict
-from fastapi import APIRouter, HTTPException, Request, Depends, status
+from fastapi import APIRouter, Request, Depends, status
 from fastapi.responses import JSONResponse
 
 from windagent_observability.health import (
@@ -56,6 +56,12 @@ def get_health_checker(request: Request) -> HealthChecker:
     return request.app.state._health_checker
 
 
+@router.get("")
+@router.get("/")
+async def health_root() -> Dict[str, str]:
+    return {"status": "ok", "service": "windagent-api"}
+
+
 @router.get("/live")
 async def health_liveness(
     checker: HealthChecker = Depends(get_health_checker),
@@ -98,7 +104,6 @@ async def health_readiness(
     - DEVELOPMENT: Worker not running returns DEGRADED (not UP)
     - TEST: Allows in-memory adapters when explicitly injected
     """
-    container = getattr(request.app.state, "container", None)
     bootstrap_config = getattr(request.app.state, "bootstrap_config", None)
     profile_str = getattr(bootstrap_config, "env", "development")
     

@@ -22,6 +22,7 @@ describe('Phase 14 Router Parity & Deep Linking', () => {
     expect(routeIds).toContain('world');
     expect(routeIds).toContain('assets');
     expect(routeIds).toContain('reviews');
+    expect(routeIds).toContain('live-record');
     expect(routeIds).toContain('episode-production');
     expect(routeIds).toContain('production-script');
     expect(routeIds).toContain('production-assets');
@@ -51,6 +52,9 @@ describe('Phase 14 Router Parity & Deep Linking', () => {
     expect(findRouteByPath('/studio/home')?.route.id).toBe('studio');
     expect(findRouteByPath('/projects')?.route.id).toBe('projects');
     expect(findRouteByPath('/studio/projects')?.route.id).toBe('projects');
+    expect(findRouteByPath('/live-record')?.route.id).toBe('live-record');
+    expect(findRouteByPath('/record')?.route.id).toBe('live-record');
+    expect(findRouteByPath('/live')?.route.id).toBe('live-record');
 
     // Parameterized routes
     const projMatch = findRouteByPath('/projects/proj-alpha-99');
