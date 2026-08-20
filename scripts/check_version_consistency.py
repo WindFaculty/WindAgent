@@ -65,8 +65,8 @@ def _load_canonical_versions() -> Dict[str, str]:
         _CANONICAL_IMPORT_ERROR = f"{type(exc).__name__}: {exc}"
         return {
             "product_version": _FALLBACK_VERSION or "0.3.0",
-            "architecture_generation": "v2",
-            "api_version": "v2",
+            "architecture_generation": "v3",
+            "api_version": "v3",
             "provider_protocol_version": "1.0.0",
             "artifact_protocol_version": "1.0.0",
         }
@@ -240,20 +240,24 @@ class VersionChecker:
         main_py = self.root / "apps/api/windagent_api/main.py"
         try:
             content = main_py.read_text(encoding="utf-8", errors="replace")
-            match = re.search(r'version\s*=\s*["\']([^"\']+)["\']', content)
-            if not match:
-                if "version=PRODUCT_VERSION" in content:
+            match = re.search(r'FastAPI\([^)]*version\s*=\s*(?:PRODUCT_VERSION|["\']([^"\']+)["\'])', content, re.DOTALL)
+            if match:
+                if "version=PRODUCT_VERSION" in match.group(0):
                     self.results["fastapi_app_version"] = PRODUCT_VERSION
                     return True
-                self.errors.append("FastAPI app version not found in main.py")
-                return False
-            version = match.group(1)
-            self.results["fastapi_app_version"] = version
-            if version != PRODUCT_VERSION:
-                self.errors.append(
-                    f"FastAPI app version {version} != canonical product_version {PRODUCT_VERSION}"
-                )
-                return False
+                version = match.group(1)
+                self.results["fastapi_app_version"] = version
+                if version != PRODUCT_VERSION:
+                    self.errors.append(
+                        f"FastAPI app version {version} != canonical product_version {PRODUCT_VERSION}"
+                    )
+                    return False
+                return True
+            if "version=PRODUCT_VERSION" in content:
+                self.results["fastapi_app_version"] = PRODUCT_VERSION
+                return True
+            self.errors.append("FastAPI app version not found in main.py")
+            return False
         except Exception as e:
             self.errors.append(f"Failed to check FastAPI version: {e}")
             return False
@@ -346,10 +350,10 @@ class VersionChecker:
         return True
 
     def check_architecture_generation(self) -> bool:
-        """Verify architecture generation is v2."""
+        """Verify architecture generation is v3."""
         self.results["architecture_generation"] = ARCHITECTURE_GENERATION
-        if ARCHITECTURE_GENERATION != "v2":
-            self.errors.append(f"Architecture generation {ARCHITECTURE_GENERATION} != expected 'v2'")
+        if ARCHITECTURE_GENERATION != "v3":
+            self.errors.append(f"Architecture generation {ARCHITECTURE_GENERATION} != expected 'v3'")
             return False
         return True
 

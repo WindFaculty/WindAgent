@@ -8,15 +8,15 @@
     "tracked_in_git": true
   },
   "git": {
-    "branch": "chore/cleanup-stale-md-docs",
-    "head_sha": "ca29241faca08e84ad41ce522a65a2c229a06ec7",
-    "head_tree_sha": "9583204d5c3d7c4b3e27764573f80862d63344cb",
+    "branch": "refactor/architecture-v3-hardening",
+    "head_sha": "c76bfe82416f7a014338485cdd7b96fadf9b04c3",
+    "head_tree_sha": "3a58927a23ee323f0f52e720bcd4d3c838bac3c8",
     "author": "Antigravity",
-    "committed_at": "2026-08-17 19:48:01 +0700",
-    "subject": "fix(audit): phase13 memory check references SqlMemoryRecordRepository after ORM boundary refactor",
+    "committed_at": "2026-08-20 18:56:08 +0700",
+    "subject": "refactor(arch-v3): unify Architecture V3 optimization and hardening",
     "worktree_state": {
-      "dirty_entries": 7,
-      "porcelain": "M artifacts/architecture_v2_runtime_cutover/phase_13/import_graph.json\n M artifacts/frontend_restructure/openapi/openapi-v3.json\n M artifacts/production_ui/final_acceptance/d6e8a7f9c2b1e4f3a5d8b7c6a9e0f1d2c3b4a5e6/checksums.json\n M artifacts/production_ui/final_acceptance/d6e8a7f9c2b1e4f3a5d8b7c6a9e0f1d2c3b4a5e6/run_manifest.json\n M artifacts/video_production/script_eval/phase_00_baseline/baseline_manifest.json\n M artifacts/video_production/script_eval/phase_00_baseline/baseline_verdict.json\n M artifacts/video_production/script_eval/phase_00_baseline/environment.json"
+      "dirty_entries": 62,
+      "porcelain": "M README.md\n M apps/api/README.md\n M apps/api/pyproject.toml\n M apps/api/windagent_api/main.py\n M apps/api/windagent_api/routers/v3/settings.py\n M apps/cli/README.md\n M apps/cli/pyproject.toml\n M apps/desktop/README.md\n M apps/desktop/src-tauri/tauri.conf.json\n D apps/desktop/src/api/client.ts\n D apps/desktop/src/api/types.ts\n D apps/desktop/src/lib/apiBase.test.ts\n D apps/desktop/src/lib/apiBase.ts\n D apps/desktop/src/services/conversationSocketManager.test.ts\n D apps/desktop/src/services/conversationSocketManager.ts\n D apps/desktop/src/state/multiAgentStore.test.ts\n D apps/desktop/src/state/multiAgentStore.tsx\n D apps/desktop/src/state/theme.tsx\n M apps/worker/README.md\n M apps/worker/pyproject.toml\n M apps/worker/windagent_worker/composition/core.py\n M apps/worker/windagent_worker/pipeline/pipeline.py\n M artifacts/architecture_v2_runtime_cutover/phase_13/import_graph.json\n M artifacts/architecture_v3/phase_01/v3_boundary_report.json\n M artifacts/architecture_v3/phase_01/v3_import_graph.json\n M artifacts/frontend_restructure/openapi/openapi-v3.json\n M artifacts/production_ui/final_acceptance/d6e8a7f9c2b1e4f3a5d8b7c6a9e0f1d2c3b4a5e6/checksums.json\n M artifacts/production_ui/final_acceptance/d6e8a7f9c2b1e4f3a5d8b7c6a9e0f1d2c3b4a5e6/run_manifest.json\n M artifacts/video_production/script_eval/phase_00_baseline/baseline_manifest.json\n M artifacts/video_production/script_eval/phase_00_baseline/baseline_verdict.json\n M artifacts/video_production/script_eval/phase_00_baseline/environment.json\n M core/windagent_core/security/redaction.py\n M core/windagent_core/version.py\n M docs/README.md\n M docs/api_contract.md\n M docs/event_protocol.md\n M docs/model_provider_registry.md\n M orchestration/windagent_orchestration/__init__.py\n M orchestration/windagent_orchestration/composition.py\n M providers/pyproject.toml\n M pyproject.toml\n M scripts/check_architecture_imports.py\n M scripts/check_duplicate_canonical_models.py\n M scripts/check_version_consistency.py\n M scripts/dev_api.ps1\n M scripts/healthcheck.ps1\n M storage/windagent_storage/database/connection.py\n M storage/windagent_storage/repositories/provider_management_repository.py\n M tests/architecture/test_phase00_single_workspace_contract.py\n M tests/architecture/test_phase06_kernel_canonical.py\n M tests/architecture/test_scaffold_v2.py\n M tests/unit/core/test_phase7_version_authority.py\n D tools/windagent_tools/adapters/legacy_tools.py\n M tools/windagent_tools/shell/runner.py\n?? artifacts/architecture_v3/phase_13/\n?? bench_phase15_temp.db-shm\n?? bench_phase15_temp.db-wal\n?? scripts/bench_architecture_v3_performance.py\n?? tests/architecture/test_architecture_v3_phase12.py\n?? tests/architecture/test_architecture_v3_phase13.py\n?? tests/architecture/test_architecture_v3_phase14.py\n?? tests/architecture/test_architecture_v3_phase15.py"
     }
   },
   "windagent": {
@@ -26,5 +26,5 @@
     "provider_protocol_version": "1.0.0",
     "artifact_protocol_version": "1.0.0"
   },
-  "timestamp_utc": "2026-08-17T14:04:20+00:00"
+  "timestamp_utc": "2026-08-20T12:53:05+00:00"
 }

@@ -245,13 +245,13 @@
     {
       "rule": "concrete_adapter_outside_composition",
       "file": "storage/windagent_storage/unit_of_work/sql_uow.py",
-      "line": 68,
+      "line": 76,
       "message": "Concrete adapter 'SqlWorkflowRepository' instantiated outside composition root"
     },
     {
       "rule": "concrete_adapter_outside_composition",
       "file": "storage/windagent_storage/unit_of_work/sql_uow.py",
-      "line": 70,
+      "line": 78,
       "message": "Concrete adapter 'SqlEventStore' instantiated outside composition root"
     },
     {
@@ -280,8 +280,8 @@
     },
     {
       "rule": "concrete_adapter_outside_composition",
-      "file": "apps/worker/windagent_worker/runner.py",
-      "line": 429,
+      "file": "apps/worker/windagent_worker/pipeline/finalizer.py",
+      "line": 55,
       "message": "Concrete adapter 'SqlUnitOfWork' instantiated outside composition root"
     }
   ],

@@ -81,6 +81,7 @@ class SQLProviderManagementRepository(ProviderManagementRepositoryPort):
                 enabled=vendor.enabled,
             )
             self.session.add(vendor_orm)
+            self.session.flush()
 
             credential_id: Optional[str] = None
             if credential is not None:
@@ -104,6 +105,7 @@ class SQLProviderManagementRepository(ProviderManagementRepositoryPort):
                     enabled=credential.enabled,
                 )
                 self.session.add(cred_orm)
+                self.session.flush()
                 credential_id = credential.id
 
             endpoint_orm = ProviderEndpointORM(

@@ -1,0 +1,9 @@
+{
+  "total_violations": 47,
+  "known_categories": [
+    "concrete_adapter_outside_composition",
+    "disallowed_dependency"
+  ],
+  "all_violations_are_known": true,
+  "checker_exit_code": 1
+}

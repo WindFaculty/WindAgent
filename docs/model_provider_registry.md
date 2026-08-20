@@ -49,8 +49,11 @@ không hardcode trong code. Không expose key ra response/log (xem
 
 ## 4. API surface
 
-- `GET /api/v2/providers` — danh sách provider (`ModelProviderInfo`)
-- `GET /api/v2/providers/health` — health từng provider
+- `GET /api/v3/providers` — danh sách provider (`ModelProviderInfo`)
+- `GET /api/v3/providers/health` — health từng provider
+- `POST /api/v3/providers/test` — kiểm tra kết nối provider thực tế
+- `GET /api/v3/models` — danh sách model đã discover
+- `GET /api/v3/routing` — cấu hình routing policy
 
 ## 5. Lưu ý
 

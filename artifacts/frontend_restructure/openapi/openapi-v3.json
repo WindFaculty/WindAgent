@@ -6757,7 +6757,7 @@
           "Providers V3"
         ],
         "summary": "List Providers",
-        "description": "Retrieve all configured AI model providers with physical endpoints.",
+        "description": "Retrieve all configured AI model providers with physical endpoints.\n\nDurable providers registered via ``POST /api/v3/providers`` are merged with\nthe demo catalog (non-production) so both authorities surface.",
         "operationId": "providers.list",
         "responses": {
           "200": {
@@ -6770,6 +6770,46 @@
                   },
                   "type": "array",
                   "title": "Response Providers.List"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Providers V3"
+        ],
+        "summary": "Create Provider",
+        "description": "Durably register a provider (vendor + optional credential + endpoint).\n\nThe raw ``api_key`` is encrypted at rest and never returned. The provider\nis stored in the dedicated provider SQL authority.",
+        "operationId": "providers.create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddProviderRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProviderResource"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -6794,6 +6834,72 @@
                   "additionalProperties": true,
                   "type": "object",
                   "title": "Response Providers.Health"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v3/providers/rules": {
+      "get": {
+        "tags": [
+          "Providers V3"
+        ],
+        "summary": "List Model Rules",
+        "description": "List enabled durable per-role model rules.",
+        "operationId": "providers.listRules",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ModelRuleResource"
+                  },
+                  "type": "array",
+                  "title": "Response Providers.Listrules"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Providers V3"
+        ],
+        "summary": "Assign Model Rule",
+        "description": "Durably assign one independent ModelRule per role/model mapping.\n\nThe rule is persisted in the dedicated ``model_routing_rules_v3`` authority\nand is loaded by the Worker at bootstrap (authoritative when no env override\nis supplied).",
+        "operationId": "providers.assignRule",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignModelRuleRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelRuleResource"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -6989,7 +7095,7 @@
           "Providers V3"
         ],
         "summary": "Test Provider Connection",
-        "description": "Perform real server-side connection handshake and model discovery.",
+        "description": "Perform a REAL server-side connection handshake and model discovery.\n\nFor providers registered in the dedicated SQL authority, this performs an\nactual adapter network call + model discovery (never a timer/catalog/random\nsimulation). Demo-only providers (seeded in non-production) fall back to the\ndemo catalog so legacy contract tests remain green.",
         "operationId": "providers.testConnection",
         "parameters": [
           {
@@ -8597,6 +8703,85 @@
         ],
         "title": "ActivityDataPoint"
       },
+      "AddProviderRequest": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Name"
+          },
+          "type": {
+            "type": "string",
+            "title": "Type",
+            "default": "custom"
+          },
+          "base_url": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Base Url"
+          },
+          "protocol_mode": {
+            "type": "string",
+            "title": "Protocol Mode",
+            "default": "openai"
+          },
+          "api_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Key"
+          },
+          "credential_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Credential Label"
+          },
+          "endpoint_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Endpoint Id"
+          },
+          "supports_model_discovery": {
+            "type": "boolean",
+            "title": "Supports Model Discovery",
+            "default": true
+          },
+          "supports_openai_compatible": {
+            "type": "boolean",
+            "title": "Supports Openai Compatible",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "base_url"
+        ],
+        "title": "AddProviderRequest"
+      },
       "AgentActivityItem": {
         "properties": {
           "id": {
@@ -9275,6 +9460,64 @@
           "provenance"
         ],
         "title": "AssetRevisionResource"
+      },
+      "AssignModelRuleRequest": {
+        "properties": {
+          "role": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Role"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Name"
+          },
+          "primary_canonical_model_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Primary Canonical Model Id"
+          },
+          "fallback_canonical_model_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fallback Canonical Model Id"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "default": true
+          },
+          "priority": {
+            "type": "integer",
+            "title": "Priority",
+            "default": 1
+          }
+        },
+        "type": "object",
+        "required": [
+          "role",
+          "name",
+          "primary_canonical_model_id"
+        ],
+        "title": "AssignModelRuleRequest"
       },
       "BrowserActionResponse": {
         "properties": {
@@ -12342,6 +12585,71 @@
         },
         "type": "object",
         "title": "ModelPricing"
+      },
+      "ModelRuleResource": {
+        "properties": {
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "primary_canonical_model_id": {
+            "type": "string",
+            "title": "Primary Canonical Model Id"
+          },
+          "fallback_canonical_model_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fallback Canonical Model Id"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled"
+          },
+          "priority": {
+            "type": "integer",
+            "title": "Priority"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "role",
+          "name",
+          "primary_canonical_model_id",
+          "enabled",
+          "priority",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "ModelRuleResource"
       },
       "ModelUsageStat": {
         "properties": {

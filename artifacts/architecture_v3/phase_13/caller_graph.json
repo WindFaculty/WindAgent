@@ -1,0 +1,151 @@
+{
+  "phase": "13",
+  "title": "Phase 13 Dead Code and Legacy Retirement Caller Graph & Classification",
+  "timestamp": "2026-08-20T19:30:00Z",
+  "classifications": {
+    "ACTIVE": [
+      {
+        "target": "apps/desktop/src/App.tsx",
+        "purpose": "Converged desktop application entry delegating to @windagent/app SharedApp"
+      },
+      {
+        "target": "apps/desktop/src/main.tsx",
+        "purpose": "Desktop bootstrap mounting @windagent/app"
+      },
+      {
+        "target": "apps/desktop/src/platform.ts",
+        "purpose": "Tauri platform adapter for @windagent/app"
+      },
+      {
+        "target": "apps/desktop/sidecar_manager.py",
+        "purpose": "Process-isolated API and Worker sidecar manager"
+      },
+      {
+        "target": "workflows/windagent_workflows/packs/*",
+        "purpose": "8 canonical workflow packs (bugfix, ci_fix, code_review, feature, refactor, release, research, scientific_eval)"
+      },
+      {
+        "target": "workflows/windagent_workflows/social_research.py",
+        "purpose": "Canonical social research workflow"
+      },
+      {
+        "target": "workflows/windagent_workflows/migration.py",
+        "purpose": "Workflow version pinning and upgrade impact manager"
+      },
+      {
+        "target": "providers/windagent_providers/{anthropic,google,mistral,nvidia,ollama,openai,openrouter}",
+        "purpose": "V3 canonical provider adapters"
+      },
+      {
+        "target": "storage/windagent_storage/orm/v2_orchestration_models.py",
+        "purpose": "Durable SQL ORM models for task runs"
+      },
+      {
+        "target": "storage/windagent_storage/repositories/v2_orchestration_repositories.py",
+        "purpose": "Durable SQL repositories for orchestration"
+      },
+      {
+        "target": "windagent_tools.media_assets (trust gate & quarantine)",
+        "purpose": "Media asset trust enforcer, fail-closed quarantine"
+      },
+      {
+        "target": "windagent_tools.production_engines.blender (supervisor quarantine)",
+        "purpose": "Blender process supervisor fail-closed quarantine"
+      }
+    ],
+    "COMPATIBILITY": [
+      {
+        "target": "apps/desktop/src/components/ui/index.ts",
+        "purpose": "Re-exports @windagent/ui for desktop backward compatibility"
+      },
+      {
+        "target": "core/windagent_core/adapters/legacy_mappers.py",
+        "purpose": "Transitional schema bidirectional domain mappers"
+      },
+      {
+        "target": "apps/api/windagent_api/adapters/legacy_event_mappers.py",
+        "purpose": "Event serializer for migration tooling"
+      },
+      {
+        "target": "apps/api/windagent_api/routers/v2_*.py",
+        "purpose": "Legacy V2 API routers quarantined behind ENABLE_V2_API=false (410 Gone tombstone)"
+      },
+      {
+        "target": "storage/windagent_storage/migrations/v2_canonical/migration_002_legacy_data.py",
+        "purpose": "Database migration script for legacy data"
+      }
+    ],
+    "TEST_ONLY": [
+      {
+        "target": "apps/desktop/src/test/*",
+        "purpose": "Desktop platform parity, studio shell, and projects page integration tests"
+      },
+      {
+        "target": "providers/windagent_providers/mock.py",
+        "purpose": "Offline mock provider for hermetic testing"
+      },
+      {
+        "target": "scripts/bench_orchestration_v2.py",
+        "purpose": "Benchmark fixture for cutover defect testing"
+      }
+    ],
+    "DEAD": [
+      {
+        "target": "apps/desktop/src/api/client.ts",
+        "action": "DELETED",
+        "evidence": "Superseded by @windagent/api-client, zero callers in converged runtime"
+      },
+      {
+        "target": "apps/desktop/src/api/types.ts",
+        "action": "DELETED",
+        "evidence": "Superseded by @windagent/api-contracts, zero callers"
+      },
+      {
+        "target": "apps/desktop/src/services/conversationSocketManager.ts",
+        "action": "DELETED",
+        "evidence": "Superseded by @windagent/realtime, zero callers in converged runtime"
+      },
+      {
+        "target": "apps/desktop/src/services/conversationSocketManager.test.ts",
+        "action": "DELETED",
+        "evidence": "Unit test for deleted manager"
+      },
+      {
+        "target": "apps/desktop/src/state/multiAgentStore.tsx",
+        "action": "DELETED",
+        "evidence": "Superseded by @windagent/production-state and @windagent/studio-state"
+      },
+      {
+        "target": "apps/desktop/src/state/multiAgentStore.test.ts",
+        "action": "DELETED",
+        "evidence": "Unit test for deleted store"
+      },
+      {
+        "target": "apps/desktop/src/state/theme.tsx",
+        "action": "DELETED",
+        "evidence": "Superseded by @windagent/ui tokens, zero callers"
+      },
+      {
+        "target": "apps/desktop/src/lib/apiBase.ts",
+        "action": "DELETED",
+        "evidence": "Only used by deleted client.ts"
+      },
+      {
+        "target": "apps/desktop/src/lib/apiBase.test.ts",
+        "action": "DELETED",
+        "evidence": "Unit test for deleted apiBase.ts"
+      },
+      {
+        "target": "tools/windagent_tools/adapters/legacy_tools.py",
+        "action": "DELETED",
+        "evidence": "Superseded by canonical windagent_tools.{filesystem,shell,browser}"
+      },
+      {
+        "target": "providers/windagent_providers/adapters/",
+        "action": "DELETED",
+        "evidence": "Empty directory"
+      }
+    ],
+    "UNKNOWN": []
+  }
+}

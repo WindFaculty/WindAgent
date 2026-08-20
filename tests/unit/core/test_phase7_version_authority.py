@@ -34,8 +34,8 @@ def test_canonical_version_constants_are_distinct():
     )
 
     assert PRODUCT_VERSION == "0.3.0"
-    assert ARCHITECTURE_GENERATION == "v2"
-    assert API_VERSION == "v2"
+    assert ARCHITECTURE_GENERATION == "v3"
+    assert API_VERSION == "v3"
     assert PROVIDER_PROTOCOL_VERSION == "1.0.0"
     assert ARTIFACT_PROTOCOL_VERSION == "1.0.0"
     # Protocol versions must never be confused with the product version.
@@ -89,8 +89,8 @@ def test_checker_fails_on_injected_version_mismatch(tmp_path: Path, monkeypatch)
     )
     (repo_copy / "core" / "windagent_core").mkdir()
     (repo_copy / "core" / "windagent_core" / "version.py").write_text(
-        'PRODUCT_VERSION = "0.3.0"\nARCHITECTURE_GENERATION = "v2"\n'
-        'API_VERSION = "v2"\nPROVIDER_PROTOCOL_VERSION = "1.0.0"\n'
+        'PRODUCT_VERSION = "0.3.0"\nARCHITECTURE_GENERATION = "v3"\n'
+        'API_VERSION = "v3"\nPROVIDER_PROTOCOL_VERSION = "1.0.0"\n'
         'ARTIFACT_PROTOCOL_VERSION = "1.0.0"\n',
         encoding="utf-8",
     )

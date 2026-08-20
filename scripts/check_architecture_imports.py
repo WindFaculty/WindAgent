@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail-closed Architecture V2 policy checker - Phase 3: Complete CLI Architecture Contract."""
+"""Fail-closed Architecture V3 policy checker."""
 
 import argparse
 import ast

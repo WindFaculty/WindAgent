@@ -14,10 +14,12 @@ _SECRET_PATTERNS = [
         re.IGNORECASE,
     ),
     re.compile(r"(Bearer\s+)([a-zA-Z0-9_\-\.]{6,})", re.IGNORECASE),
-    re.compile(r"(sk-[a-zA-Z0-9_-]{8,})"),  # OpenAI style key
+    re.compile(r"(sk-[a-zA-Z0-9_-]{8,})"),  # OpenAI/Anthropic style key
     re.compile(r"(nvapi-[a-zA-Z0-9_-]{8,})"),  # NVIDIA style key
     re.compile(r"(gsk_[a-zA-Z0-9_-]{8,})"),  # Groq/OpenRouter key pattern
     re.compile(r"(AIzaSy[a-zA-Z0-9_-]{20,})"),  # Google API key pattern
+    re.compile(r"(ghp_[a-zA-Z0-9]{30,})"),  # GitHub personal access token
+    re.compile(r"(xai-[a-zA-Z0-9_-]{16,})"),  # xAI API key
 ]
 
 

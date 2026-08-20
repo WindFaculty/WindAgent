@@ -150,11 +150,14 @@ class TaskExecutionPipeline:
             return {"status": "cancelled", "task_id": ctx.raw_task_id}
 
         # Execute step via ExecutionRuntimeRegistry.
+        exec_start = datetime.now(timezone.utc)
         await self.executor.execute(
             ctx,
             execution_registry=self.execution_registry,
             cancellation_broadcaster=self.cancellation_broadcaster,
         )
+        tool_execution_ms = max(0, int((datetime.now(timezone.utc) - exec_start).total_seconds() * 1000))
+        ctx.metric["tool_execution_ms"] = tool_execution_ms
         ctx.metric["execution_ms"] = self._elapsed_ms(ctx.started_at)
 
         # Current-lease authority check: the already-dispatched handle still
@@ -239,7 +242,9 @@ class TaskExecutionPipeline:
         if self.uow_factory is not None:
             await self.finalizer.finalize(ctx, outcome)
             finalized_via_uow = True
-            ctx.metric["finalize_ms"] = self._elapsed_ms(ctx.started_at)
+            total_elapsed = self._elapsed_ms(ctx.started_at)
+            ctx.metric["finalize_ms"] = total_elapsed
+            ctx.metric["overhead_ms"] = max(0, total_elapsed - tool_execution_ms)
             ctx.metric["status"] = outcome.terminal_state
             self.metrics["tasks"][ctx.task_id] = ctx.metric
             if outcome.terminal_state == "failed":

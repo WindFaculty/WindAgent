@@ -10,7 +10,7 @@ from windagent_context.services import ContextService
 from windagent_execution.registry import ExecutionRuntimeRegistry
 from windagent_memory.query import MemoryQueryService
 from windagent_observability.events.dispatcher import EventDispatcher
-from windagent_orchestration import OrchestrationV2Container
+from windagent_orchestration import OrchestrationContainer, OrchestrationV2Container
 from windagent_storage.database.connection import DatabaseManager
 from windagent_storage.orm.models import BaseORM
 from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork
@@ -29,7 +29,7 @@ class CoreBundle:
     db: DatabaseManager
     uow_factory: Any
     event_dispatcher: EventDispatcher
-    orchestration_container: OrchestrationV2Container
+    orchestration_container: OrchestrationContainer
     task_manager: Any
     execution_registry: ExecutionRuntimeRegistry
     context_service: ContextService
@@ -53,7 +53,7 @@ class CoreComposer:
 
         uow_factory = db.session_factory
         event_dispatcher = EventDispatcher()
-        orchestration_container = OrchestrationV2Container(uow_factory=uow_factory)
+        orchestration_container = OrchestrationContainer(uow_factory=uow_factory)
         if settings.fake_runtime:
             from windagent_execution.adapters.fake_runtime_adapter import (
                 FakeRuntimeAdapter,

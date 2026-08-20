@@ -14,8 +14,8 @@ Thư mục này được tổ chức theo **phạm vi hệ thống** và **mức
 
 ## Tài liệu nền tảng
 
-- [`api_contract.md`](api_contract.md): hợp đồng API kiến trúc V2.
-- [`event_protocol.md`](event_protocol.md): định dạng và quy tắc sự kiện V2.
+- [`api_contract.md`](api_contract.md): hợp đồng API kiến trúc V3.
+- [`event_protocol.md`](event_protocol.md): định dạng và quy tắc sự kiện V3.
 - [`model_provider_registry.md`](model_provider_registry.md): đăng ký và khả năng của nhà cung cấp mô hình.
 - [`safety_policy.md`](safety_policy.md): chính sách bảo mật, an toàn và phân quyền.
 

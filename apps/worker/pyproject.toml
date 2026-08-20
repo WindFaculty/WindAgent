@@ -1,7 +1,7 @@
 [project]
 name = "windagent_worker"
 version = "0.3.0"
-description = "Background worker process for asynchronous task execution"
+description = "Background worker process for asynchronous task execution - Architecture V3"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [

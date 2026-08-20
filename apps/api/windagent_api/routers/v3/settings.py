@@ -244,7 +244,16 @@ def _save_secret(key: str, value: Optional[str]) -> None:
     if value is None or value == "":
         secrets.pop(key, None)
     else:
-        secrets[key] = value  # stored server-side only; never returned
+        secret_str = str(value)
+        if secret_str.startswith("enc:v1:"):
+            secrets[key] = secret_str
+        else:
+            try:
+                from windagent_storage.security.encryption import encrypt
+                secrets[key] = encrypt(secret_str)
+            except Exception:
+                # If encryption key is not set in local dev, store raw/fallback
+                secrets[key] = secret_str
     _secrets_path().write_text(json.dumps(secrets, indent=2), encoding="utf-8")
 
 

@@ -11,7 +11,7 @@ Kiem tra:
   [OPT]  Rust + cargo + tauri CLI
   [OPT]  Ollama chay o localhost:11434
   [OPT]  Model qwen3:4b-q4 da pull
-  [OPT]  Architecture V2 API /health/live tra OK
+  [OPT]  Architecture V3 API /health/live tra OK
   [OPT]  Vite dev server chay o :5173
   [WARN] artifacts/logs writable
 #>

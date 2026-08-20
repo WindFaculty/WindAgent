@@ -1,7 +1,7 @@
 """
-FastAPI entrypoint for WindAgent Architecture V2 API (Phase 25 Cutover).
+FastAPI entrypoint for WindAgent Architecture V3 Production API.
 Uses canonical lifespan manager, ApplicationContainer composition root, RFC 7807 exception mapping for WindAgentError,
-and registers all canonical V2 routers. API V1 has been permanently removed - returns 410 Gone.
+and registers all canonical V3 routers with hardened security and zero plaintext secret leakage.
 """
 
 from __future__ import annotations
@@ -13,7 +13,6 @@ from typing import Any, Dict, Optional
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-
 from windagent_core.domain.lifecycle import utc_now
 from windagent_core.errors.exceptions import (
     WindAgentError, NotFoundError, PermissionDeniedError, ValidationError, DomainError

@@ -1,7 +1,7 @@
 # CLI (windagent_cli)
 
 ## Responsibility
-WindAgent CLI entrypoint (doctor, architecture check, workflow run)
+WindAgent CLI entrypoint (doctor, architecture check, workflow run) - Architecture V3
 
 ## Target Package
 `apps/cli/windagent_cli`
@@ -32,7 +32,7 @@ canonical packages and has no dependency on an HTTP application implementation.
 
 ## Out-of-Scope
 - ASGI and Worker process startup.
-- Retired Architecture V1 implementation.
+- Retired Architecture V1/V2 implementations.
 - Concrete implementations of other bounded contexts.
 
 ## Acceptance Criteria

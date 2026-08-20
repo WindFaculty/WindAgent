@@ -1,7 +1,7 @@
 # WORKER (windagent_worker)
 
 ## Responsibility
-Background worker process for asynchronous task execution
+Background worker process for asynchronous task execution - Architecture V3
 
 ## Target Package
 `apps/worker/windagent_worker`
@@ -35,7 +35,7 @@ application package or any retired runtime implementation.
 
 ## Out-of-Scope
 - HTTP routing and ASGI startup.
-- Retired Architecture V1 implementation.
+- Retired Architecture V1/V2 implementations.
 - Concrete implementations of other bounded contexts.
 
 ## Acceptance Criteria

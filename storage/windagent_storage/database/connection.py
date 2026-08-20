@@ -72,6 +72,8 @@ class DatabaseManager:
                     # enabled per-connection (GAP A / G1.2). Orphan inserts must
                     # be rejected at the DB boundary, not merely documented.
                     cur.execute("PRAGMA foreign_keys=ON")
+                    cur.execute("PRAGMA cache_size=-64000")
+                    cur.execute("PRAGMA temp_store=MEMORY")
                 finally:
                     cur.close()
 

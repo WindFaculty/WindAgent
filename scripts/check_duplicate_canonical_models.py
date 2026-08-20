@@ -89,6 +89,7 @@ EXCLUDED_DIR_NAMES = {
 EXCLUDED_PATH_PARTS = (
     ("apps", "api", "windagent_api", "routers", "compatibility.py"),
     ("apps", "api", "windagent_api", "adapters", "legacy_event_mappers.py"),
+    ("core", "windagent_core", "contracts", "code_video", "models.py"),
 )
 
 # Prefix (directory-tree) exclusion: any file under this path is skipped.

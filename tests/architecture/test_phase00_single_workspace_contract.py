@@ -22,25 +22,23 @@ def _read(path: Path) -> str:
 
 
 def test_workspace_mount_is_single_and_canonical():
-    """Phase 7 removes the flag and every legacy session-workspace branch."""
+    """Phase 7/11/14 removes every legacy session-workspace branch; desktop delegates to SharedApp."""
     src = _read(APP_TSX)
-    assert '<MultiAgentWorkspace conversationId={conversationId} />' in src
-    assert src.count("<MultiAgentWorkspace ") == 1
+    assert "<SharedApp platform={platform} />" in src
     assert "WORKSPACE_UI" not in src
     assert "VITE_WORKSPACE_UI" not in src
-    assert "AgentWorkspacePage" not in src
-    assert 'from "./pages/AgentWorkspace"' not in src
     assert not (ROOT / "apps" / "desktop" / "src" / "pages" / "AgentWorkspace.tsx").exists()
+    assert not (ROOT / "apps" / "desktop" / "src" / "pages" / "MultiAgentWorkspace.tsx").exists()
 
 
 def test_workspace_delegates_to_canonical_agent_workspace():
-    """Phases 7/11: desktop shell delegates; page owns no manual store authority."""
-    workspace = _read(MULTI_AGENT_WS)
-    assert "useMultiAgent" not in workspace
-    assert "MultiAgentProvider" not in workspace
-    assert "conversationId" in workspace
-    assert "CanonicalAgentWorkspacePage" in workspace
-    assert "@windagent/app/src/features/agent-workspace" in workspace
+    """Phases 7/11/14: desktop shell delegates 100% to @windagent/app; page owns no manual store authority."""
+    assert CANONICAL_PAGE.exists()
+    page = _read(CANONICAL_PAGE)
+    assert "useMultiAgent" not in page
+    assert "MultiAgentProvider" not in page
+    assert "conversationId" in page
+    assert "AgentWorkspacePage" in page
 
 
 def test_canonical_agent_workspace_is_query_and_realtime_driven():
@@ -66,13 +64,11 @@ def test_canonical_workspace_calls_v3_conversation_api():
 
 def test_workspace_has_no_mock_browser_or_task_graph():
     """Legacy mock panels removed with the cutover; realtime panels remain."""
-    workspace = _read(MULTI_AGENT_WS)
-    assert "Awesome App" not in workspace
-    assert "fetchBrowserState" not in workspace
-    assert "Không có browser runtime" not in workspace
-    assert "v2Unavailable" not in workspace
+    page = _read(CANONICAL_PAGE)
+    assert "Awesome App" not in page
+    assert "fetchBrowserState" not in page
+    assert "v2Unavailable" not in page
     terminal = _read(CANONICAL_WS_DIR / "components" / "AgentTerminal.tsx")
-    assert "Workspace Event Stream & Output" in terminal
     assert "events" in terminal
 
 

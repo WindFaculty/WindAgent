@@ -1,12 +1,12 @@
-# Event Protocol (Architecture V2)
+# Event Protocol (Architecture V3)
 
 Tài liệu này định nghĩa envelope và danh mục sự kiện (event catalog) của
-WindAgent Architecture V2. Nguồn chuẩn duy nhất là code:
+WindAgent Architecture V3. Nguồn chuẩn duy nhất là code:
 
 - Envelope: `core/windagent_core/events/envelope.py` (`EventEnvelope`, Pydantic v2)
 - Catalog: `core/windagent_core/events/catalog.py` và các module mở rộng
   (`studio.py`, `video_production.py`, `video_production_ir.py`, `script_asset_events.py`)
-- Giao vận: `apps/api/windagent_api/routers/v2_events.py`
+- Giao vận: Root realtime WebSocket `/ws` và API routers tại `apps/api/windagent_api/`
 
 ## 1. EventEnvelope (shape bắt buộc)
 
@@ -37,16 +37,13 @@ Envelope có `to_dict()` / `from_dict()` để persist và truyền qua wire.
 
 | Transport | Đường dẫn | Ghi chú |
 |---|---|---|
-| WebSocket | `WS /api/v2/events/ws` | Streaming realtime; dùng `EventEnvelope` |
-| SSE | `GET /api/v2/events/stream` | Server-sent events |
-| JSON | `GET /api/v2/events` | Liệt kê lịch sử event |
+| WebSocket | `WS /ws` | Canonical streaming realtime; hỗ trợ subscribe, catch-up replay và live broadcast |
+| JSON | `GET /api/v3/conversations/{id}/events` | Lịch sử event theo conversation |
+| JSON | `GET /api/v3/studio/episodes/{id}/runs/{run_id}/events` | Lịch sử event theo Studio run |
 
 `seq` (trong envelope là `sequence`) tăng đơn điệu theo stream; client có thể
-replay sau reconnect bằng cách đọc lại từ `sequence` cuối đã nhận và dedupe
-theo `event_id`.
-
-Router legacy `GET /api/v2/video-production/events` (`v2_events_legacy_router`)
-vẫn tồn tại cho tương thích với production events; không dùng cho event mới.
+replay sau reconnect bằng cách gửi `after_sequence` qua WebSocket subscription
+và dedupe theo `event_id`.
 
 ## 3. Danh mục sự kiện (catalog)
 

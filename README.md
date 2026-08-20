@@ -1,6 +1,6 @@
 # WindAgent
 
-WindAgent is a local-first desktop agent built as an Architecture V2 modular
+WindAgent is a local-first desktop agent built as an Architecture V3 modular
 monolith. The runtime is split into independently installable API, Worker, and
 CLI applications over shared canonical packages and persistent storage.
 
@@ -15,7 +15,7 @@ apps/web       React web client
 
 core, orchestration, execution, intelligence, providers, tools, workflows,
 verification, context, memory, storage, observability, evals, plugins, skills
-               Canonical Architecture V2 packages
+               Canonical Architecture V3 packages
 ```
 
 The former monolithic backend runtime has been retired. Production code,
@@ -42,8 +42,9 @@ The API starts at `http://127.0.0.1:8765`. Useful endpoints:
 - Liveness: `GET /health/live`
 - Readiness: `GET /health/ready`
 - OpenAPI: `GET /docs`
-- Canonical API: `/api/v2/*`
-- Retired API tombstone: `/api/v1/*` returns `410 Gone`
+- Canonical API: `/api/v3/*`
+- Realtime WebSocket: `/ws`
+- Retired API tombstones: `/api/v1/*` and `/api/v2/*` return `410 Gone`
 
 API and Worker must use the same `WINDAGENT_DATABASE_URL`.
 
@@ -92,10 +93,10 @@ canonical-to-legacy imports.
 
 - [Current roadmap — WindAgent Studio Roadmap 1](road_map.md)
 - [3D Animation production plan](docs/video_production/3d_animation_plans/README.md)
-- [API V2 contract](docs/api_contract.md)
+- [API V3 contract](docs/api_contract.md)
 - [Event protocol](docs/event_protocol.md)
 - [Model provider registry](docs/model_provider_registry.md)
-- [API V2 package](apps/api/README.md)
+- [API package](apps/api/README.md)
 - [Worker package](apps/worker/README.md)
 - [CLI package](apps/cli/README.md)
 - [Desktop client](apps/desktop/README.md)

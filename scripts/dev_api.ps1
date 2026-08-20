@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    scripts/dev_api.ps1 - Khoi chay WindAgent Architecture V2 API.
+    scripts/dev_api.ps1 - Khoi chay WindAgent Architecture V3 API.
 
 .DESCRIPTION
     1. Tim `uv` (uu tien PATH, fallback %USERPROFILE%\.local\bin).

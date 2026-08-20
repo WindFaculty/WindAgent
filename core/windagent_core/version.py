@@ -15,10 +15,10 @@ except PackageNotFoundError:
     PRODUCT_VERSION: Final[str] = "0.3.0"
 
 # Architecture generation - separate from product version
-ARCHITECTURE_GENERATION: Final[str] = "v2"
+ARCHITECTURE_GENERATION: Final[str] = "v3"
 
 # API version - separate from product version
-API_VERSION: Final[str] = "v2"
+API_VERSION: Final[str] = "v3"
 
 # Provider protocol version - separate from product version
 PROVIDER_PROTOCOL_VERSION: Final[str] = "1.0.0"

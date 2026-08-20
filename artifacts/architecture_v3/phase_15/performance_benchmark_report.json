@@ -1,0 +1,241 @@
+{
+  "phase": "15",
+  "timestamp": "2026-08-20T13:01:18.440746+00:00",
+  "status": "PASS",
+  "verdict": "ARCH_V3_PHASE15_PERFORMANCE_CERTIFIED",
+  "system_info": {
+    "platform": "Windows-10-10.0.26200-SP0",
+    "python_version": "3.11.15",
+    "sqlite_journal_mode": "WAL",
+    "sqlite_synchronous": "NORMAL",
+    "sqlite_busy_timeout_ms": 30000
+  },
+  "metrics": {
+    "durable_queue_claim_latency_ms": {
+      "min": 8.205,
+      "p50": 11.69,
+      "p95": 18.882,
+      "p99": 50.459,
+      "max": 72.971,
+      "avg": 13.264,
+      "count": 1000
+    },
+    "enqueue_latency_ms": {
+      "min": 5.033,
+      "p50": 6.709,
+      "p95": 10.781,
+      "p99": 14.335,
+      "max": 39.363,
+      "avg": 7.488,
+      "count": 1000
+    },
+    "db_transaction_duration_by_command_ms": {
+      "task_create": {
+        "min": 5.237,
+        "p50": 7.055,
+        "p95": 10.678,
+        "p99": 12.551,
+        "max": 37.048,
+        "avg": 7.705,
+        "count": 150
+      },
+      "task_claim": {
+        "min": 9.412,
+        "p50": 12.463,
+        "p95": 18.703,
+        "p99": 21.068,
+        "max": 21.783,
+        "avg": 13.287,
+        "count": 150
+      },
+      "state_transition": {
+        "min": 5.659,
+        "p50": 7.367,
+        "p95": 12.033,
+        "p99": 37.914,
+        "max": 65.765,
+        "avg": 8.715,
+        "count": 150
+      },
+      "atomic_finalize": {
+        "min": 7.438,
+        "p50": 9.972,
+        "p95": 15.509,
+        "p99": 45.478,
+        "max": 48.023,
+        "avg": 11.084,
+        "count": 150
+      },
+      "outbox_publish": {
+        "min": 6.134,
+        "p50": 8.2,
+        "p95": 12.267,
+        "p99": 17.553,
+        "max": 37.017,
+        "avg": 8.896,
+        "count": 150
+      }
+    },
+    "worker_execution_overhead_ms": {
+      "min": 35.633,
+      "p50": 41.057,
+      "p95": 65.826,
+      "p99": 74.571,
+      "max": 82.857,
+      "avg": 45.38,
+      "count": 150
+    },
+    "websocket_outbox_dispatch_ms": {
+      "min": 9.228,
+      "p50": 11.566,
+      "p95": 18.368,
+      "p99": 40.162,
+      "max": 44.518,
+      "avg": 12.491,
+      "count": 150
+    },
+    "reconnect_replay_scaling": {
+      "replay_10_events": {
+        "event_count": 10,
+        "latency_ms": {
+          "min": 4.36,
+          "p50": 4.684,
+          "p95": 5.616,
+          "p99": 5.616,
+          "max": 5.616,
+          "avg": 4.812,
+          "count": 5
+        },
+        "perfect_sequence_verified": true
+      },
+      "replay_50_events": {
+        "event_count": 50,
+        "latency_ms": {
+          "min": 4.661,
+          "p50": 4.821,
+          "p95": 5.965,
+          "p99": 5.965,
+          "max": 5.965,
+          "avg": 5.144,
+          "count": 5
+        },
+        "perfect_sequence_verified": true
+      },
+      "replay_100_events": {
+        "event_count": 100,
+        "latency_ms": {
+          "min": 6.306,
+          "p50": 7.614,
+          "p95": 35.687,
+          "p99": 35.687,
+          "max": 35.687,
+          "avg": 12.945,
+          "count": 5
+        },
+        "perfect_sequence_verified": true
+      },
+      "replay_500_events": {
+        "event_count": 500,
+        "latency_ms": {
+          "min": 11.995,
+          "p50": 12.515,
+          "p95": 14.999,
+          "p99": 14.999,
+          "max": 14.999,
+          "avg": 12.905,
+          "count": 5
+        },
+        "perfect_sequence_verified": true
+      },
+      "replay_1000_events": {
+        "event_count": 1000,
+        "latency_ms": {
+          "min": 20.848,
+          "p50": 23.032,
+          "p95": 60.595,
+          "p99": 60.595,
+          "max": 60.595,
+          "avg": 30.405,
+          "count": 5
+        },
+        "perfect_sequence_verified": true
+      }
+    },
+    "sqlite_concurrency_lock_test": {
+      "num_tasks_submitted": 100,
+      "num_tasks_completed": 103,
+      "concurrent_workers": 6,
+      "sqlite_lock_errors": 0,
+      "lock_error_messages": [],
+      "pass": true
+    },
+    "multi_worker_contention_test": {
+      "num_tasks": 50,
+      "racing_workers": 10,
+      "total_claims": 57,
+      "unique_tasks_claimed": 57,
+      "target_tasks_claimed": 50,
+      "duplicate_claims": 0,
+      "all_fencing_tokens_unique": true,
+      "pass": true
+    },
+    "api_endpoint_latencies_ms": {
+      "GET /health": {
+        "min": 0.861,
+        "p50": 1.148,
+        "p95": 2.124,
+        "p99": 3.108,
+        "max": 3.108,
+        "avg": 1.231,
+        "count": 100
+      },
+      "GET /api/v3/system/health": {
+        "min": 0.971,
+        "p50": 1.267,
+        "p95": 1.721,
+        "p99": 2.545,
+        "max": 2.545,
+        "avg": 1.306,
+        "count": 100
+      },
+      "GET /api/v3/providers": {
+        "min": 5.19,
+        "p50": 6.217,
+        "p95": 8.343,
+        "p99": 853.515,
+        "max": 853.515,
+        "avg": 14.821,
+        "count": 100
+      },
+      "GET /api/v3/workflows": {
+        "min": 4.893,
+        "p50": 5.714,
+        "p95": 8.33,
+        "p99": 8.676,
+        "max": 8.676,
+        "avg": 5.929,
+        "count": 100
+      },
+      "GET /api/v3/settings": {
+        "min": 2.107,
+        "p50": 2.478,
+        "p95": 3.87,
+        "p99": 23.679,
+        "max": 23.679,
+        "avg": 2.804,
+        "count": 100
+      }
+    }
+  },
+  "gates": {
+    "G15_1_SQLITE_LOCK_ERRORS_ZERO": "PASS",
+    "G15_2_ZERO_DUPLICATE_CLAIMS": "PASS",
+    "G15_3_MONOTONIC_FENCE_TOKENS": "PASS",
+    "G15_4_DURABLE_QUEUE_CLAIM_P95": "PASS",
+    "G15_5_ENQUEUE_P95": "PASS",
+    "G15_6_WORKER_OVERHEAD_P95": "PASS",
+    "G15_7_WEBSOCKET_DISPATCH_P95": "PASS",
+    "G15_8_REPLAY_SEQUENCE_INTEGRITY": "PASS",
+    "G15_9_API_LATENCY_P95": "PASS"
+  }
+}

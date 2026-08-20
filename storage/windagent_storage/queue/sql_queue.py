@@ -103,107 +103,115 @@ class SqlDurableTaskQueue(DurableTaskQueuePort, TaskLeasePort):
         expires_at = now + timedelta(seconds=lease_ttl_seconds)
         expires_at_naive = expires_at.replace(tzinfo=None)
 
-        async with self._session_factory() as session:
-            async with session.begin():
-                # 1. Search for pending/received task
-                stmt = (
-                    select(TaskRunORM)
-                    .where(TaskRunORM.state.in_(["pending", "received"]))
-                    .order_by(TaskRunORM.priority.desc(), TaskRunORM.created_at.asc())
-                    .limit(1)
-                    .with_for_update(skip_locked=True)
-                )
-                res = await session.execute(stmt)
-                task_orm = res.scalar_one_or_none()
+        from sqlalchemy.exc import IntegrityError
 
-                generation = 1
-                if task_orm is None:
-                    # 2. Check for expired task lease in running state
-                    stmt_expired = (
-                        select(TaskRunORM, ExecutionLeaseORM)
-                        .join(ExecutionLeaseORM, TaskRunORM.id == ExecutionLeaseORM.run_id)
-                        .where(TaskRunORM.state == "running")
-                        .where(ExecutionLeaseORM.status == "active")
-                        .where(ExecutionLeaseORM.expires_at < now_naive)
+        try:
+            async with self._session_factory() as session:
+                async with session.begin():
+                    # 1. Search for pending/received task
+                    stmt = (
+                        select(TaskRunORM)
+                        .where(TaskRunORM.state.in_(["pending", "received"]))
+                        .order_by(TaskRunORM.priority.desc(), TaskRunORM.created_at.asc())
                         .limit(1)
                         .with_for_update(skip_locked=True)
                     )
-                    res_expired = await session.execute(stmt_expired)
-                    row = res_expired.first()
-                    if row is None:
-                        return None
-                    task_orm, lease_orm = row[0], row[1]
-                    generation = (lease_orm.lease_generation or 1) + 1
+                    res = await session.execute(stmt)
+                    task_orm = res.scalar_one_or_none()
 
-                # Parse facts payload once so both the execution graph and the
-                # ClaimedTask below can reuse it.
-                facts = json.loads(task_orm.facts_json) if task_orm.facts_json else {}
+                    generation = 1
+                    if task_orm is None:
+                        # 2. Check for expired task lease in running state
+                        stmt_expired = (
+                            select(TaskRunORM, ExecutionLeaseORM)
+                            .join(ExecutionLeaseORM, TaskRunORM.id == ExecutionLeaseORM.run_id)
+                            .where(TaskRunORM.state == "running")
+                            .where(ExecutionLeaseORM.status == "active")
+                            .where(ExecutionLeaseORM.expires_at < now_naive)
+                            .limit(1)
+                            .with_for_update(skip_locked=True)
+                        )
+                        res_expired = await session.execute(stmt_expired)
+                        row = res_expired.first()
+                        if row is None:
+                            return None
+                        task_orm, lease_orm = row[0], row[1]
+                        generation = (lease_orm.lease_generation or 1) + 1
 
-                # GAP A: the lease's step_run_id FK requires a workflow_step_runs
-                # row (and its v2_workflow_runs_v2 parent). Create the graph
-                # idempotently in this same transaction before inserting the lease.
-                await _ensure_step_run_graph(session, task_orm, now_naive)
+                    # Parse facts payload once so both the execution graph and the
+                    # ClaimedTask below can reuse it.
+                    facts = json.loads(task_orm.facts_json) if task_orm.facts_json else {}
 
-                # Generate fencing token
-                raw_tid = task_orm.id
-                fencing_token = f"fence_{raw_tid}_gen_{generation}_{uuid.uuid4().hex[:6]}"
+                    # GAP A: the lease's step_run_id FK requires a workflow_step_runs
+                    # row (and its v2_workflow_runs_v2 parent). Create the graph
+                    # idempotently in this same transaction before inserting the lease.
+                    await _ensure_step_run_graph(session, task_orm, now_naive)
 
-                # Update task state to running
-                task_orm.state = "running"
-                task_orm.updated_at = now_naive
+                    # Generation and fencing token
+                    raw_tid = task_orm.id
+                    fencing_token = f"fence_{raw_tid}_gen_{generation}_{uuid.uuid4().hex[:6]}"
 
-                # Upsert lease lock record. The returned lease ID is the actual
-                # persisted identity: a new lease uses its generated ID, while a
-                # reclaim/upsert of an existing lease keeps the existing row's
-                # lease_id (never an unused freshly generated value). Generation
-                # and fencing-token updates stay atomic in this same transaction.
-                stmt_existing_lease = select(ExecutionLeaseORM).where(ExecutionLeaseORM.run_id == raw_tid)
-                res_lease = await session.execute(stmt_existing_lease)
-                existing_lease = res_lease.scalar_one_or_none()
+                    # Atomic CAS guard & active lease check
+                    stmt_existing_lease = select(ExecutionLeaseORM).where(ExecutionLeaseORM.run_id == raw_tid)
+                    res_lease = await session.execute(stmt_existing_lease)
+                    existing_lease = res_lease.scalar_one_or_none()
 
-                if existing_lease:
-                    existing_lease.worker_id = worker_id
-                    existing_lease.status = "active"
-                    existing_lease.expires_at = expires_at_naive
-                    existing_lease.lease_generation = generation
-                    existing_lease.fencing_token = fencing_token
-                    existing_lease.updated_at = now_naive
-                    lease_id = existing_lease.lease_id
-                else:
-                    lease_id = f"lease_{raw_tid}_{uuid.uuid4().hex[:8]}"
-                    new_lease = ExecutionLeaseORM(
-                        lease_id=lease_id,
-                        step_run_id=raw_tid,
-                        run_id=raw_tid,
+                    if existing_lease:
+                        # If lease is active and unexpired, another worker won the race
+                        if existing_lease.status == "active" and existing_lease.expires_at >= now_naive:
+                            return None
+
+                        existing_lease.worker_id = worker_id
+                        existing_lease.status = "active"
+                        existing_lease.expires_at = expires_at_naive
+                        existing_lease.lease_generation = generation
+                        existing_lease.fencing_token = fencing_token
+                        existing_lease.updated_at = now_naive
+                        lease_id = existing_lease.lease_id
+                    else:
+                        if generation > 1:
+                            return None
+                        lease_id = f"lease_{raw_tid}_{uuid.uuid4().hex[:8]}"
+                        new_lease = ExecutionLeaseORM(
+                            lease_id=lease_id,
+                            step_run_id=raw_tid,
+                            run_id=raw_tid,
+                            worker_id=worker_id,
+                            status="active",
+                            expires_at=expires_at_naive,
+                            idempotency_key=f"claim_{raw_tid}_{generation}",
+                            lease_generation=generation,
+                            fencing_token=fencing_token,
+                            created_at=now_naive,
+                            updated_at=now_naive,
+                        )
+                        session.add(new_lease)
+
+                    # Update task state to running
+                    task_orm.state = "running"
+                    task_orm.updated_at = now_naive
+
+                    prompt = facts.get("prompt", "")
+                    tool_name = facts.get("tool_name", "read_file")
+                    parameters = facts.get("parameters", {})
+
+                    logger.info(f"Worker [{worker_id}] atomically claimed task [{raw_tid}] (gen: {generation}, fence: {fencing_token})")
+
+                    return ClaimedTask(
+                        task_id=raw_tid,
                         worker_id=worker_id,
-                        status="active",
-                        expires_at=expires_at_naive,
-                        idempotency_key=f"claim_{raw_tid}_{generation}",
-                        lease_generation=generation,
+                        lease_id=lease_id,
                         fencing_token=fencing_token,
-                        created_at=now_naive,
-                        updated_at=now_naive,
+                        lease_generation=generation,
+                        tool_name=tool_name,
+                        prompt=prompt,
+                        parameters=parameters,
+                        acquired_at=now,
+                        expires_at=expires_at,
                     )
-                    session.add(new_lease)
-
-                prompt = facts.get("prompt", "")
-                tool_name = facts.get("tool_name", "read_file")
-                parameters = facts.get("parameters", {})
-
-                logger.info(f"Worker [{worker_id}] atomically claimed task [{raw_tid}] (gen: {generation}, fence: {fencing_token})")
-
-                return ClaimedTask(
-                    task_id=raw_tid,
-                    worker_id=worker_id,
-                    lease_id=lease_id,
-                    fencing_token=fencing_token,
-                    lease_generation=generation,
-                    tool_name=tool_name,
-                    prompt=prompt,
-                    parameters=parameters,
-                    acquired_at=now,
-                    expires_at=expires_at,
-                )
+        except IntegrityError:
+            logger.debug(f"Worker [{worker_id}] lost atomic claim race to concurrent worker.")
+            return None
 
     async def renew(self, task_id: str, worker_id: str, fencing_token: str, extension_seconds: int = 30) -> bool:
         """Renews an active lease if the fencing token matches."""

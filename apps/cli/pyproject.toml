@@ -1,7 +1,7 @@
 [project]
 name = "windagent_cli"
 version = "0.3.0"
-description = "WindAgent CLI entrypoint (doctor, architecture check, workflow run)"
+description = "WindAgent CLI entrypoint (doctor, architecture check, workflow run) - Architecture V3"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [

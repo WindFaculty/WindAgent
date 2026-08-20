@@ -1,7 +1,7 @@
 [project]
 name = "windagent_api"
 version = "0.3.0"
-description = "FastAPI REST & WebSocket entrypoint for Architecture V2"
+description = "FastAPI REST & WebSocket entrypoint for Architecture V3"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [

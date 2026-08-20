@@ -1,0 +1,26 @@
+{
+  "phase": "15",
+  "status": "PASS",
+  "verdict": "ARCH_V3_PHASE15_PERFORMANCE_CERTIFIED",
+  "timestamp": "2026-08-20T13:01:18.440746+00:00",
+  "summary": {
+    "claim_p95_ms": 18.882,
+    "enqueue_p95_ms": 10.781,
+    "worker_overhead_p95_ms": 65.826,
+    "websocket_dispatch_p95_ms": 18.368,
+    "sqlite_lock_errors": 0,
+    "duplicate_claims": 0,
+    "api_health_p95_ms": 2.124
+  },
+  "gates": {
+    "G15_1_SQLITE_LOCK_ERRORS_ZERO": "PASS",
+    "G15_2_ZERO_DUPLICATE_CLAIMS": "PASS",
+    "G15_3_MONOTONIC_FENCE_TOKENS": "PASS",
+    "G15_4_DURABLE_QUEUE_CLAIM_P95": "PASS",
+    "G15_5_ENQUEUE_P95": "PASS",
+    "G15_6_WORKER_OVERHEAD_P95": "PASS",
+    "G15_7_WEBSOCKET_DISPATCH_P95": "PASS",
+    "G15_8_REPLAY_SEQUENCE_INTEGRITY": "PASS",
+    "G15_9_API_LATENCY_P95": "PASS"
+  }
+}

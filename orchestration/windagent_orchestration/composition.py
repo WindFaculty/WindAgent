@@ -1,5 +1,5 @@
 """
-Composition Root for Orchestration V2 Subsystem.
+Composition Root for Orchestration Subsystem (Architecture V3).
 Wires TaskManager, WorkflowEngine, TaskScheduler, StepDispatcher, RetryPolicy, RecoveryManager, and CancellationManager.
 """
 
@@ -19,7 +19,7 @@ from windagent_orchestration.cancellation import CancellationManager
 logger = logging.getLogger("windagent.orchestration.composition")
 
 
-class OrchestrationV2Container:
+class OrchestrationContainer:
     def __init__(self, uow_factory: Optional[Any] = None, max_concurrency: int = 5, runtime_port: Optional[Any] = None):
         self.uow_factory = uow_factory
         
@@ -48,4 +48,9 @@ class OrchestrationV2Container:
         )
         self.recovery_manager = RecoveryManager(uow_factory=uow_factory)
         
-        logger.info("Initialized OrchestrationV2Container successfully.")
+        logger.info("Initialized OrchestrationContainer successfully.")
+
+
+# Backwards compatibility alias
+OrchestrationV2Container = OrchestrationContainer
+

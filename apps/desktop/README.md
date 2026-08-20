@@ -4,12 +4,12 @@ Tauri + React + TypeScript desktop app cho WindAgent.
 
 ## Trạng thái hiện tại
 
-- **Frontend (React + Vite + TS)** — scaffold xong, có thể chạy standalone
-  bằng `npm run dev`. Không cần Rust.
-- **API integration** — Vite proxy `/api` + `/ws` tới Architecture V2 API ở
+- **Frontend (React + Vite + TS)** — tích hợp qua `@windagent/app` SharedApp,
+  có thể chạy standalone bằng `npm run dev`. Không cần Rust.
+- **API integration** — Vite proxy `/api` + `/ws` tới Architecture V3 API ở
   `http://127.0.0.1:8765`. Chạy `scripts/dev_api.ps1` trước khi mở desktop.
 - **Tauri shell (Rust)** — scaffold xong (`src-tauri/`) nhưng cần Rust
-  toolchain để build. Phase 9 sẽ wire Python sidecar launcher.
+  toolchain để build. Phase 9/14 wire desktop platform adapter.
 
 ## Frontend layout
 
@@ -58,7 +58,7 @@ npm install
 npm run dev
 ```
 
-Mở `http://localhost:5173`. Architecture V2 API phải chạy ở port 8765.
+Mở `http://localhost:5173`. Architecture V3 API phải chạy ở port 8765.
 
 Để chạy API với provider/runtime mock:
 

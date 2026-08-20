@@ -1,7 +1,7 @@
 {
   "candidate_sha": "d6e8a7f9c2b1e4f3a5d8b7c6a9e0f1d2c3b4a5e6",
   "run_id": "accept_run_d6e8a7f9",
-  "timestamp": "2026-08-19T10:46:32.124150+00:00",
+  "timestamp": "2026-08-20T12:53:06.087004+00:00",
   "environment": "acceptance-runner-win64",
   "approver": "Lead Production Engineer",
   "gates_evaluated": [

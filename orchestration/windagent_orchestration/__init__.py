@@ -15,7 +15,7 @@ from windagent_orchestration.dispatcher import StepDispatcher, LeaseManager, Wor
 from windagent_orchestration.recovery import RecoveryManager, DESTRUCTIVE_TOOLS, DestructiveReplayGuard, InFlightReconciler
 from windagent_orchestration.task_manager import TaskManager, DurableExecutionFacts
 from windagent_orchestration.workflow_engine import WorkflowEngine, WorkflowDefinition, WorkflowNode, WorkflowEdge, WorkflowValidator, CheckpointManager
-from windagent_orchestration.composition import OrchestrationV2Container
+from windagent_orchestration.composition import OrchestrationContainer, OrchestrationV2Container
 from windagent_orchestration.production import (
     ProductionRunState, ProductionStepState, ProductionRunStateMachine,
     ProductionApprovalGate, ApprovalLedger, ProductionApproval,
@@ -50,6 +50,7 @@ __all__ = [
     "RecoveryManager", "DESTRUCTIVE_TOOLS", "DestructiveReplayGuard", "InFlightReconciler",
     "TaskManager", "DurableExecutionFacts",
     "WorkflowEngine", "WorkflowDefinition", "WorkflowNode", "WorkflowEdge", "WorkflowValidator", "CheckpointManager",
+    "OrchestrationContainer",
     "OrchestrationV2Container",
     "ProductionRunState", "ProductionStepState", "ProductionRunStateMachine",
     "ProductionApprovalGate", "ApprovalLedger", "ProductionApproval",

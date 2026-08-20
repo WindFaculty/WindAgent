@@ -23,7 +23,8 @@ FORBIDDEN_COMMAND_PATTERNS = [
 ]
 
 SECRET_MASK_PATTERNS = [
-    r"sk-[a-zA-Z0-9]{20,}",
+    r"sk-[a-zA-Z0-9_-]{16,}",
+    r"sk-ant-[a-zA-Z0-9_-]{16,}",
     r"bearer\s+[a-zA-Z0-9_\-\.]+",
     r"password\s*=\s*['\"][^'\"]+['\"]",
 ]
@@ -72,6 +73,14 @@ class SafeShellRunner:
         self.validate_command_policy(command_line)
 
         work_dir = Path(cwd).resolve() if cwd else self.workspace_root
+        try:
+            work_dir.relative_to(self.workspace_root)
+        except ValueError:
+            raise PermissionDeniedError(
+                message=f"Working directory [{cwd}] escapes workspace root [{self.workspace_root}].",
+                code="WINDAGENT_ERR_PATH_TRAVERSAL_DENIED",
+                details={"cwd": str(cwd), "workspace_root": str(self.workspace_root)},
+            )
         if not work_dir.exists():
             raise ToolError(f"Working directory '{work_dir}' does not exist.", tool_name="shell")
 
