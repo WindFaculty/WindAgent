@@ -72,7 +72,7 @@ async def db():
 @pytest.fixture
 def service(db):
     return StudioRunService(
-        db.session_factory,
+        lambda: StudioUnitOfWork(db.session_factory),
         StudioTaskSubmissionAdapter(db.session_factory),
         retry_budget=2,
     )
@@ -190,7 +190,9 @@ async def _complete_node(
             )
         await uow.commit()
     service = StudioRunService(
-        db.session_factory, StudioTaskSubmissionAdapter(db.session_factory), retry_budget=2
+        lambda: StudioUnitOfWork(db.session_factory),
+        StudioTaskSubmissionAdapter(db.session_factory),
+        retry_budget=2,
     )
     result = StudioTaskResult(
         task_id=task_id,

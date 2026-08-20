@@ -48,7 +48,7 @@ Phase 9 là giai đoạn **quay thực tế (Record Video 02)**, hiện thực h
 | 14 | `PASS_14_ARCH_REVIEW` | `S17` | 50,000 ms | 1,500 | `8f7e26cd9304756f...` | **VERIFIED** |
 | 15 | `PASS_15_GIT_MILESTONE` | `S18` | 35,000 ms | 1,050 | `1f6d170faf8f5968...` | **VERIFIED** |
 | 16 | `PASS_16_OUTRO_TEASER` | `S19` | 40,000 ms | 1,200 | `087a2c98f0cc6840...` | **VERIFIED** |
-| **TỔNG** | **16 Passes** | **19 Scenes** | **870,000 ms** | **26,100** | `ce8e1278777229ea...` | **100% VERIFIED** |
+| **TỔNG** | **16 Passes** | **19 Scenes** | **870,000 ms** | **26,100** | `6148df8bfb02a45a...` | **100% VERIFIED** |
 
 ---
 

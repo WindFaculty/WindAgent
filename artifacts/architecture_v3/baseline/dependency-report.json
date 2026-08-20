@@ -1,0 +1,678 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-08-19T10:48:01.809501Z",
+  "command": "uv run python scripts/check_architecture_imports.py --root . --json",
+  "executed": true,
+  "exit_code": 1,
+  "duration_seconds": 6.149,
+  "status": "FAIL",
+  "report": {
+    "repository_root": "D:\\code_ca_nhan\\WindAgent",
+    "checks": [
+      {
+        "name": "import_boundaries",
+        "argv": [
+          "D:\\code_ca_nhan\\WindAgent\\.venv\\Scripts\\python.exe",
+          "D:\\code_ca_nhan\\WindAgent\\scripts\\check_architecture_imports.py",
+          "--root",
+          ".",
+          "--json"
+        ],
+        "cwd": "D:\\code_ca_nhan\\WindAgent",
+        "executed": true,
+        "exit_code": 1,
+        "classification": "VIOLATION",
+        "duration_ms": 4924,
+        "stdout_tail": "",
+        "stderr_tail": ""
+      },
+      {
+        "name": "scaffold",
+        "argv": [
+          "D:\\code_ca_nhan\\WindAgent\\.venv\\Scripts\\python.exe",
+          "D:\\code_ca_nhan\\WindAgent\\scripts\\scaffold_architecture_v2.py",
+          "--check"
+        ],
+        "cwd": "D:\\code_ca_nhan\\WindAgent",
+        "executed": true,
+        "exit_code": 0,
+        "classification": "PASS",
+        "duration_ms": 343,
+        "stdout_tail": "Scaffold Check Passed: All workspace packages are fully compliant and up to date.\n",
+        "stderr_tail": ""
+      }
+    ],
+    "all_required_checks_executed": true,
+    "verdict": "FAIL",
+    "exit_code": 1,
+    "violations": [
+      {
+        "rule": "disallowed_dependency",
+        "file": "tools/windagent_tools/code_video/capture/base.py",
+        "line": 14,
+        "message": "tools cannot depend on workflows"
+      },
+      {
+        "rule": "undeclared_workspace_dependency",
+        "file": "tools/windagent_tools/code_video/capture/base.py",
+        "line": 14,
+        "message": "Missing declared dependency: windagent-workflows"
+      },
+      {
+        "rule": "disallowed_dependency",
+        "file": "tools/windagent_tools/code_video/capture/base.py",
+        "line": 14,
+        "message": "tools cannot depend on workflows"
+      },
+      {
+        "rule": "undeclared_workspace_dependency",
+        "file": "tools/windagent_tools/code_video/capture/base.py",
+        "line": 14,
+        "message": "Missing declared dependency: windagent-workflows"
+      },
+      {
+        "rule": "disallowed_dependency",
+        "file": "tools/windagent_tools/code_video/capture/browser_capture.py",
+        "line": 16,
+        "message": "tools cannot depend on workflows"
+      },
+      {
+        "rule": "undeclared_workspace_dependency",
+        "file": "tools/windagent_tools/code_video/capture/browser_capture.py",
+        "line": 16,
+        "message": "Missing declared dependency: windagent-workflows"
+      },
+      {
+        "rule": "disallowed_dependency",
+        "file": "tools/windagent_tools/code_video/capture/browser_capture.py",
+        "line": 16,
+        "message": "tools cannot depend on workflows"
+      },
+      {
+        "rule": "undeclared_workspace_dependency",
+        "file": "tools/windagent_tools/code_video/capture/browser_capture.py",
+        "line": 16,
+        "message": "Missing declared dependency: windagent-workflows"
+      },
+      {
+        "rule": "disallowed_dependency",
+        "file": "tools/windagent_tools/code_video/capture/browser_capture.py",
+        "line": 16,
+        "message": "tools cannot depend on workflows"
+      },
+      {
+        "rule": "undeclared_workspace_dependency",
+        "file": "tools/windagent_tools/code_video/capture/browser_capture.py",
+        "line": 16,
+        "message": "Missing declared dependency: windagent-workflows"
+      },
+      {
+        "rule": "disallowed_dependency",
+        "file": "tools/windagent_tools/code_video/capture/browser_capture.py",
+        "line": 16,
+        "message": "tools cannot depend on workflows"
+      },
+      {
+        "rule": "undeclared_workspace_dependency",
+        "file": "tools/windagent_tools/code_video/capture/browser_capture.py",
+        "line": 16,
+        "message": "Missing declared dependency: windagent-workflows"
+      },
+      {
+        "rule": "disallowed_dependency",
+        "file": "tools/windagent_tools/code_video/capture/studio_capture.py",
+        "line": 24,
+        "message": "tools cannot depend on workflows"
+      },
+      {
+        "rule": "undeclared_workspace_dependency",
+        "file": "tools/windagent_tools/code_video/capture/studio_capture.py",
+        "line": 24,
+        "message": "Missing declared dependency: windagent-workflows"
+      },
+      {
+        "rule": "disallowed_dependency",
+        "file": "tools/windagent_tools/code_video/capture/studio_capture.py",
+        "line": 24,
+        "message": "tools cannot depend on workflows"
+      },
+      {
+        "rule": "undeclared_workspace_dependency",
+        "file": "tools/windagent_tools/code_video/capture/studio_capture.py",
+        "line": 24,
+        "message": "Missing declared dependency: windagent-workflows"
+      },
+      {
+        "rule": "disallowed_dependency",
+        "file": "tools/windagent_tools/code_video/capture/studio_capture.py",
+        "line": 24,
+        "message": "tools cannot depend on workflows"
+      },
+      {
+        "rule": "undeclared_workspace_dependency",
+        "file": "tools/windagent_tools/code_video/capture/studio_capture.py",
+        "line": 24,
+        "message": "Missing declared dependency: windagent-workflows"
+      },
+      {
+        "rule": "disallowed_dependency",
+        "file": "tools/windagent_tools/code_video/capture/studio_capture.py",
+        "line": 24,
+        "message": "tools cannot depend on workflows"
+      },
+      {
+        "rule": "undeclared_workspace_dependency",
+        "file": "tools/windagent_tools/code_video/capture/studio_capture.py",
+        "line": 24,
+        "message": "Missing declared dependency: windagent-workflows"
+      },
+      {
+        "rule": "disallowed_dependency",
+        "file": "tools/windagent_tools/code_video/capture/studio_capture.py",
+        "line": 24,
+        "message": "tools cannot depend on workflows"
+      },
+      {
+        "rule": "undeclared_workspace_dependency",
+        "file": "tools/windagent_tools/code_video/capture/studio_capture.py",
+        "line": 24,
+        "message": "Missing declared dependency: windagent-workflows"
+      },
+      {
+        "rule": "disallowed_dependency",
+        "file": "tools/windagent_tools/code_video/capture/studio_capture.py",
+        "line": 24,
+        "message": "tools cannot depend on workflows"
+      },
+      {
+        "rule": "undeclared_workspace_dependency",
+        "file": "tools/windagent_tools/code_video/capture/studio_capture.py",
+        "line": 24,
+        "message": "Missing declared dependency: windagent-workflows"
+      },
+      {
+        "rule": "disallowed_dependency",
+        "file": "tools/windagent_tools/code_video/capture/studio_capture.py",
+        "line": 18,
+        "message": "tools cannot depend on workflows"
+      },
+      {
+        "rule": "undeclared_workspace_dependency",
+        "file": "tools/windagent_tools/code_video/capture/studio_capture.py",
+        "line": 18,
+        "message": "Missing declared dependency: windagent-workflows"
+      },
+      {
+        "rule": "disallowed_dependency",
+        "file": "tools/windagent_tools/code_video/capture/studio_capture.py",
+        "line": 18,
+        "message": "tools cannot depend on workflows"
+      },
+      {
+        "rule": "undeclared_workspace_dependency",
+        "file": "tools/windagent_tools/code_video/capture/studio_capture.py",
+        "line": 18,
+        "message": "Missing declared dependency: windagent-workflows"
+      },
+      {
+        "rule": "disallowed_dependency",
+        "file": "tools/windagent_tools/code_video/capture/studio_capture.py",
+        "line": 60,
+        "message": "tools cannot depend on workflows"
+      },
+      {
+        "rule": "undeclared_workspace_dependency",
+        "file": "tools/windagent_tools/code_video/capture/studio_capture.py",
+        "line": 60,
+        "message": "Missing declared dependency: windagent-workflows"
+      },
+      {
+        "rule": "disallowed_dependency",
+        "file": "tools/windagent_tools/code_video/media/assembler.py",
+        "line": 25,
+        "message": "tools cannot depend on workflows"
+      },
+      {
+        "rule": "undeclared_workspace_dependency",
+        "file": "tools/windagent_tools/code_video/media/assembler.py",
+        "line": 25,
+        "message": "Missing declared dependency: windagent-workflows"
+      },
+      {
+        "rule": "disallowed_dependency",
+        "file": "tools/windagent_tools/code_video/media/assembler.py",
+        "line": 25,
+        "message": "tools cannot depend on workflows"
+      },
+      {
+        "rule": "undeclared_workspace_dependency",
+        "file": "tools/windagent_tools/code_video/media/assembler.py",
+        "line": 25,
+        "message": "Missing declared dependency: windagent-workflows"
+      },
+      {
+        "rule": "disallowed_dependency",
+        "file": "tools/windagent_tools/code_video/media/verifier.py",
+        "line": 18,
+        "message": "tools cannot depend on workflows"
+      },
+      {
+        "rule": "undeclared_workspace_dependency",
+        "file": "tools/windagent_tools/code_video/media/verifier.py",
+        "line": 18,
+        "message": "Missing declared dependency: windagent-workflows"
+      },
+      {
+        "rule": "disallowed_dependency",
+        "file": "tools/windagent_tools/code_video/media/verifier.py",
+        "line": 18,
+        "message": "tools cannot depend on workflows"
+      },
+      {
+        "rule": "undeclared_workspace_dependency",
+        "file": "tools/windagent_tools/code_video/media/verifier.py",
+        "line": 18,
+        "message": "Missing declared dependency: windagent-workflows"
+      },
+      {
+        "rule": "disallowed_dependency",
+        "file": "tools/windagent_tools/code_video/media/video_generator.py",
+        "line": 28,
+        "message": "tools cannot depend on workflows"
+      },
+      {
+        "rule": "undeclared_workspace_dependency",
+        "file": "tools/windagent_tools/code_video/media/video_generator.py",
+        "line": 28,
+        "message": "Missing declared dependency: windagent-workflows"
+      },
+      {
+        "rule": "disallowed_dependency",
+        "file": "tools/windagent_tools/code_video/media/video_generator.py",
+        "line": 28,
+        "message": "tools cannot depend on workflows"
+      },
+      {
+        "rule": "undeclared_workspace_dependency",
+        "file": "tools/windagent_tools/code_video/media/video_generator.py",
+        "line": 28,
+        "message": "Missing declared dependency: windagent-workflows"
+      },
+      {
+        "rule": "disallowed_dependency",
+        "file": "tools/windagent_tools/code_video/program/certification.py",
+        "line": 24,
+        "message": "tools cannot depend on workflows"
+      },
+      {
+        "rule": "undeclared_workspace_dependency",
+        "file": "tools/windagent_tools/code_video/program/certification.py",
+        "line": 24,
+        "message": "Missing declared dependency: windagent-workflows"
+      },
+      {
+        "rule": "disallowed_dependency",
+        "file": "tools/windagent_tools/code_video/qc/engine.py",
+        "line": 24,
+        "message": "tools cannot depend on workflows"
+      },
+      {
+        "rule": "undeclared_workspace_dependency",
+        "file": "tools/windagent_tools/code_video/qc/engine.py",
+        "line": 24,
+        "message": "Missing declared dependency: windagent-workflows"
+      },
+      {
+        "rule": "disallowed_dependency",
+        "file": "tools/windagent_tools/code_video/qc/structural_qc.py",
+        "line": 17,
+        "message": "tools cannot depend on workflows"
+      },
+      {
+        "rule": "undeclared_workspace_dependency",
+        "file": "tools/windagent_tools/code_video/qc/structural_qc.py",
+        "line": 17,
+        "message": "Missing declared dependency: windagent-workflows"
+      },
+      {
+        "rule": "disallowed_dependency",
+        "file": "tools/windagent_tools/code_video/qc/structural_qc.py",
+        "line": 17,
+        "message": "tools cannot depend on workflows"
+      },
+      {
+        "rule": "undeclared_workspace_dependency",
+        "file": "tools/windagent_tools/code_video/qc/structural_qc.py",
+        "line": 17,
+        "message": "Missing declared dependency: windagent-workflows"
+      },
+      {
+        "rule": "disallowed_dependency",
+        "file": "tools/windagent_tools/code_video/qc/terminal_qc.py",
+        "line": 22,
+        "message": "tools cannot depend on workflows"
+      },
+      {
+        "rule": "undeclared_workspace_dependency",
+        "file": "tools/windagent_tools/code_video/qc/terminal_qc.py",
+        "line": 22,
+        "message": "Missing declared dependency: windagent-workflows"
+      },
+      {
+        "rule": "disallowed_dependency",
+        "file": "tools/windagent_tools/code_video/qc/timing_qc.py",
+        "line": 17,
+        "message": "tools cannot depend on workflows"
+      },
+      {
+        "rule": "undeclared_workspace_dependency",
+        "file": "tools/windagent_tools/code_video/qc/timing_qc.py",
+        "line": 17,
+        "message": "Missing declared dependency: windagent-workflows"
+      },
+      {
+        "rule": "disallowed_dependency",
+        "file": "tools/windagent_tools/code_video/recording/passes.py",
+        "line": 18,
+        "message": "tools cannot depend on workflows"
+      },
+      {
+        "rule": "undeclared_workspace_dependency",
+        "file": "tools/windagent_tools/code_video/recording/passes.py",
+        "line": 18,
+        "message": "Missing declared dependency: windagent-workflows"
+      },
+      {
+        "rule": "disallowed_dependency",
+        "file": "tools/windagent_tools/code_video/recording/passes.py",
+        "line": 18,
+        "message": "tools cannot depend on workflows"
+      },
+      {
+        "rule": "undeclared_workspace_dependency",
+        "file": "tools/windagent_tools/code_video/recording/passes.py",
+        "line": 18,
+        "message": "Missing declared dependency: windagent-workflows"
+      },
+      {
+        "rule": "disallowed_dependency",
+        "file": "tools/windagent_tools/code_video/recording/recorder.py",
+        "line": 21,
+        "message": "tools cannot depend on workflows"
+      },
+      {
+        "rule": "undeclared_workspace_dependency",
+        "file": "tools/windagent_tools/code_video/recording/recorder.py",
+        "line": 21,
+        "message": "Missing declared dependency: windagent-workflows"
+      },
+      {
+        "rule": "disallowed_dependency",
+        "file": "tools/windagent_tools/code_video/recording/recorder.py",
+        "line": 21,
+        "message": "tools cannot depend on workflows"
+      },
+      {
+        "rule": "undeclared_workspace_dependency",
+        "file": "tools/windagent_tools/code_video/recording/recorder.py",
+        "line": 21,
+        "message": "Missing declared dependency: windagent-workflows"
+      },
+      {
+        "rule": "disallowed_dependency",
+        "file": "tools/windagent_tools/code_video/recording/recorder.py",
+        "line": 21,
+        "message": "tools cannot depend on workflows"
+      },
+      {
+        "rule": "undeclared_workspace_dependency",
+        "file": "tools/windagent_tools/code_video/recording/recorder.py",
+        "line": 21,
+        "message": "Missing declared dependency: windagent-workflows"
+      },
+      {
+        "rule": "disallowed_dependency",
+        "file": "tools/windagent_tools/code_video/recording/recorder.py",
+        "line": 21,
+        "message": "tools cannot depend on workflows"
+      },
+      {
+        "rule": "undeclared_workspace_dependency",
+        "file": "tools/windagent_tools/code_video/recording/recorder.py",
+        "line": 21,
+        "message": "Missing declared dependency: windagent-workflows"
+      },
+      {
+        "rule": "disallowed_dependency",
+        "file": "tools/windagent_tools/code_video/recording/recorder.py",
+        "line": 18,
+        "message": "tools cannot depend on workflows"
+      },
+      {
+        "rule": "undeclared_workspace_dependency",
+        "file": "tools/windagent_tools/code_video/recording/recorder.py",
+        "line": 18,
+        "message": "Missing declared dependency: windagent-workflows"
+      },
+      {
+        "rule": "disallowed_dependency",
+        "file": "tools/windagent_tools/code_video/recording/recorder.py",
+        "line": 173,
+        "message": "tools cannot depend on workflows"
+      },
+      {
+        "rule": "undeclared_workspace_dependency",
+        "file": "tools/windagent_tools/code_video/recording/recorder.py",
+        "line": 173,
+        "message": "Missing declared dependency: windagent-workflows"
+      },
+      {
+        "rule": "disallowed_dependency",
+        "file": "tools/windagent_tools/code_video/recording/recorder.py",
+        "line": 127,
+        "message": "tools cannot depend on workflows"
+      },
+      {
+        "rule": "undeclared_workspace_dependency",
+        "file": "tools/windagent_tools/code_video/recording/recorder.py",
+        "line": 127,
+        "message": "Missing declared dependency: windagent-workflows"
+      },
+      {
+        "rule": "disallowed_dependency",
+        "file": "tools/windagent_tools/code_video/renderer/code_renderer.py",
+        "line": 18,
+        "message": "tools cannot depend on workflows"
+      },
+      {
+        "rule": "undeclared_workspace_dependency",
+        "file": "tools/windagent_tools/code_video/renderer/code_renderer.py",
+        "line": 18,
+        "message": "Missing declared dependency: windagent-workflows"
+      },
+      {
+        "rule": "disallowed_dependency",
+        "file": "tools/windagent_tools/code_video/renderer/code_renderer.py",
+        "line": 18,
+        "message": "tools cannot depend on workflows"
+      },
+      {
+        "rule": "undeclared_workspace_dependency",
+        "file": "tools/windagent_tools/code_video/renderer/code_renderer.py",
+        "line": 18,
+        "message": "Missing declared dependency: windagent-workflows"
+      },
+      {
+        "rule": "disallowed_dependency",
+        "file": "tools/windagent_tools/code_video/renderer/diagram_renderer.py",
+        "line": 17,
+        "message": "tools cannot depend on workflows"
+      },
+      {
+        "rule": "undeclared_workspace_dependency",
+        "file": "tools/windagent_tools/code_video/renderer/diagram_renderer.py",
+        "line": 17,
+        "message": "Missing declared dependency: windagent-workflows"
+      },
+      {
+        "rule": "disallowed_dependency",
+        "file": "tools/windagent_tools/code_video/renderer/diagram_renderer.py",
+        "line": 17,
+        "message": "tools cannot depend on workflows"
+      },
+      {
+        "rule": "undeclared_workspace_dependency",
+        "file": "tools/windagent_tools/code_video/renderer/diagram_renderer.py",
+        "line": 17,
+        "message": "Missing declared dependency: windagent-workflows"
+      },
+      {
+        "rule": "disallowed_dependency",
+        "file": "tools/windagent_tools/code_video/renderer/graphics_catalog.py",
+        "line": 18,
+        "message": "tools cannot depend on workflows"
+      },
+      {
+        "rule": "undeclared_workspace_dependency",
+        "file": "tools/windagent_tools/code_video/renderer/graphics_catalog.py",
+        "line": 18,
+        "message": "Missing declared dependency: windagent-workflows"
+      },
+      {
+        "rule": "disallowed_dependency",
+        "file": "tools/windagent_tools/code_video/renderer/graphics_catalog.py",
+        "line": 18,
+        "message": "tools cannot depend on workflows"
+      },
+      {
+        "rule": "undeclared_workspace_dependency",
+        "file": "tools/windagent_tools/code_video/renderer/graphics_catalog.py",
+        "line": 18,
+        "message": "Missing declared dependency: windagent-workflows"
+      },
+      {
+        "rule": "disallowed_dependency",
+        "file": "tools/windagent_tools/code_video/renderer/graphics_verifier.py",
+        "line": 20,
+        "message": "tools cannot depend on workflows"
+      },
+      {
+        "rule": "undeclared_workspace_dependency",
+        "file": "tools/windagent_tools/code_video/renderer/graphics_verifier.py",
+        "line": 20,
+        "message": "Missing declared dependency: windagent-workflows"
+      },
+      {
+        "rule": "disallowed_dependency",
+        "file": "tools/windagent_tools/code_video/renderer/studio_renderer.py",
+        "line": 15,
+        "message": "tools cannot depend on workflows"
+      },
+      {
+        "rule": "undeclared_workspace_dependency",
+        "file": "tools/windagent_tools/code_video/renderer/studio_renderer.py",
+        "line": 15,
+        "message": "Missing declared dependency: windagent-workflows"
+      },
+      {
+        "rule": "disallowed_dependency",
+        "file": "tools/windagent_tools/code_video/renderer/studio_renderer.py",
+        "line": 15,
+        "message": "tools cannot depend on workflows"
+      },
+      {
+        "rule": "undeclared_workspace_dependency",
+        "file": "tools/windagent_tools/code_video/renderer/studio_renderer.py",
+        "line": 15,
+        "message": "Missing declared dependency: windagent-workflows"
+      },
+      {
+        "rule": "disallowed_dependency",
+        "file": "tools/windagent_tools/code_video/renderer/studio_renderer.py",
+        "line": 15,
+        "message": "tools cannot depend on workflows"
+      },
+      {
+        "rule": "undeclared_workspace_dependency",
+        "file": "tools/windagent_tools/code_video/renderer/studio_renderer.py",
+        "line": 15,
+        "message": "Missing declared dependency: windagent-workflows"
+      },
+      {
+        "rule": "disallowed_dependency",
+        "file": "tools/windagent_tools/code_video/renderer/studio_renderer.py",
+        "line": 15,
+        "message": "tools cannot depend on workflows"
+      },
+      {
+        "rule": "undeclared_workspace_dependency",
+        "file": "tools/windagent_tools/code_video/renderer/studio_renderer.py",
+        "line": 15,
+        "message": "Missing declared dependency: windagent-workflows"
+      },
+      {
+        "rule": "disallowed_dependency",
+        "file": "tools/windagent_tools/code_video/renderer/terminal_renderer.py",
+        "line": 15,
+        "message": "tools cannot depend on workflows"
+      },
+      {
+        "rule": "undeclared_workspace_dependency",
+        "file": "tools/windagent_tools/code_video/renderer/terminal_renderer.py",
+        "line": 15,
+        "message": "Missing declared dependency: windagent-workflows"
+      },
+      {
+        "rule": "disallowed_dependency",
+        "file": "tools/windagent_tools/code_video/renderer/terminal_renderer.py",
+        "line": 15,
+        "message": "tools cannot depend on workflows"
+      },
+      {
+        "rule": "undeclared_workspace_dependency",
+        "file": "tools/windagent_tools/code_video/renderer/terminal_renderer.py",
+        "line": 15,
+        "message": "Missing declared dependency: windagent-workflows"
+      },
+      {
+        "rule": "disallowed_dependency",
+        "file": "tools/windagent_tools/code_video/renderer/title_renderer.py",
+        "line": 17,
+        "message": "tools cannot depend on workflows"
+      },
+      {
+        "rule": "undeclared_workspace_dependency",
+        "file": "tools/windagent_tools/code_video/renderer/title_renderer.py",
+        "line": 17,
+        "message": "Missing declared dependency: windagent-workflows"
+      },
+      {
+        "rule": "disallowed_dependency",
+        "file": "tools/windagent_tools/code_video/renderer/title_renderer.py",
+        "line": 17,
+        "message": "tools cannot depend on workflows"
+      },
+      {
+        "rule": "undeclared_workspace_dependency",
+        "file": "tools/windagent_tools/code_video/renderer/title_renderer.py",
+        "line": 17,
+        "message": "Missing declared dependency: windagent-workflows"
+      },
+      {
+        "rule": "dependency_cycle",
+        "file": "workspace",
+        "line": 1,
+        "message": "Dependency cycle: tools -> workflows"
+      },
+      {
+        "rule": "dependency_cycle",
+        "file": "workspace",
+        "line": 1,
+        "message": "Dependency cycle: workflows -> tools"
+      }
+    ],
+    "total_violations": 104
+  },
+  "parse_error": null,
+  "stderr": ""
+}

@@ -31,7 +31,7 @@ function getInitialConversationId(): string {
     const fresh =
       typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
         ? crypto.randomUUID()
-        : `conv-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        : `conv-${Date.now()}`;
     sessionStorage.setItem('windagent.conversationId', fresh);
     return fresh;
   }

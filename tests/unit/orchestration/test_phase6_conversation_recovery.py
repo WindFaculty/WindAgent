@@ -11,9 +11,12 @@ from windagent_execution.registry import ExecutionRuntimeRegistry
 from windagent_orchestration.orchestrator_service import OrchestratorService
 from windagent_orchestration.recovery.manager import RecoveryManager
 from windagent_api.routers.conversation_streams import router as conversation_streams_router
+from windagent_api.services.realtime_hub import RealtimeHub
 from windagent_storage.database.connection import DatabaseManager
 from windagent_storage.orm.models import BaseORM
+from windagent_storage.realtime.sql_replay import SqlRealtimeReplayAdapter
 from windagent_storage.repositories.multi_agent_repository import MultiAgentRepository
+from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork
 
 
 @pytest.fixture
@@ -50,7 +53,10 @@ async def test_conversation_socket_replays_multiplexed_agent_events_with_cursor(
 
     app = FastAPI()
     app.include_router(conversation_streams_router)
-    app.state.container = SimpleNamespace(db=db)
+    app.state.container = SimpleNamespace(
+        db=db,
+        realtime_hub=RealtimeHub(SqlRealtimeReplayAdapter(db.session_factory)),
+    )
     with TestClient(app) as client:
         with client.websocket_connect(f"/ws/conversations/{conversation_id}") as socket:
             events = [socket.receive_json() for _ in range(3)]
@@ -77,7 +83,11 @@ async def test_interrupted_stream_creates_audit_only_partial_artifact(db):
         await repo.ensure_conversation(conversation_id)
         await session.commit()
 
-    service = OrchestratorService(db.session_factory, ExecutionRuntimeRegistry())
+    service = OrchestratorService(
+        db.session_factory,
+        ExecutionRuntimeRegistry(),
+        repo_factory=lambda session: MultiAgentRepository(session),
+    )
 
     async def interrupted_chunks():
         yield "safe first token "
@@ -139,7 +149,9 @@ async def test_production_recovery_runs_in_durable_order(db):
         calls.append("pending-approvals")
         return 2
 
-    report = await RecoveryManager(db.session_factory, instance_id="phase6-recovery").recover_production(
+    report = await RecoveryManager(
+        lambda: SqlUnitOfWork(db.session_factory), instance_id="phase6-recovery"
+    ).recover_production(
         OrderedOrchestrator(), publish_pending_approvals=publish_pending_approvals
     )
 

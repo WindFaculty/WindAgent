@@ -5,6 +5,7 @@ Controls application startup and shutdown hooks via ApplicationContainer.
 
 from __future__ import annotations
 import logging
+import os
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 from fastapi import FastAPI
@@ -12,9 +13,17 @@ from fastapi import FastAPI
 from windagent_api.bootstrap import initialize_bootstrap
 from windagent_api.browser_sessions import BrowserSessionService
 from windagent_api.composition import ApplicationContainer
-from windagent_orchestration.recovery.manager import RecoveryManager
 
 logger = logging.getLogger("windagent.api.lifespan")
+
+
+def _demo_profile_enabled() -> bool:
+    """True only when the explicit demo profile is requested.
+
+    Phase 4: demo seeding is opt-in. Default development/test/production
+    startup must never silently install demo records.
+    """
+    return os.getenv("WINDAGENT_PROFILE", "").lower() == "demo"
 
 
 @asynccontextmanager
@@ -25,23 +34,26 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     container = ApplicationContainer(db_url=bootstrap_config.db_url)
     
     await container.bootstrap()
-    # Phase 6: one leader-governed recovery sequence reclaims leases, reattaches
-    # runtimes, resumes durable DAG nodes, reconciles route locks/worktrees, and
-    # then exposes the API.
-    if container.orchestrator_service is not None:
-        recovery = RecoveryManager(
-            container.db.session_factory if container.db else None,
-            release_telemetry=container.release_telemetry,
-        )
-        app.state.recovery_report = await recovery.recover_production(
-            container.orchestrator_service
-        )
+
+    # Phase 6: start the canonical realtime hub (single read-only SQL fallback
+    # loop) before serving traffic; it is stopped before database shutdown.
+    if container.realtime_hub is not None:
+        await container.realtime_hub.start()
+
+    # Phase 4: install the demo seed profile ONLY when explicitly requested via
+    # WINDAGENT_PROFILE=demo. Default development/test/production startup never
+    # silently installs demo records. The container owns the seeding operation
+    # (including canonical-model persistence and the routing-rules refresh) so
+    # lifespan never imports storage/database.
+    if _demo_profile_enabled():
+        await container.seed_demo_profile()
 
     # Store container in app state
     app.state.container = container
     app.state.db = container.db
     app.state.event_bus = container.event_dispatcher
     app.state.event_dispatcher = container.event_dispatcher
+    app.state.log_service = container.log_service
     app.state.task_manager = container.task_manager
     app.state.provider_registry = container.provider_registry
     app.state.tool_registry = container.tool_registry
@@ -56,5 +68,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     finally:
         logger.info("FastAPI lifespan shutting down...")
         await app.state.browser_session_service.close_all()
+        # The container owns the realtime hub lifecycle: container.shutdown()
+        # stops the hub (and unsubscribes it from the dispatcher) before the
+        # database is closed.  No redundant stop call here.
         await container.shutdown()
         logger.info("FastAPI lifespan shutdown complete.")

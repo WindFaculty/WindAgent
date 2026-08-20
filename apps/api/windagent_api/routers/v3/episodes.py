@@ -2,17 +2,26 @@
 V3 Episodes Router — Canonical Episode Workspace & Story Pipeline Authority.
 Provides full lifecycle management, immutable revision authority, optimistic locking,
 artifact management, and realtime WebSocket streaming.
+
+Phase 4: all mutable state is persisted through the namespaced durable V3
+resource authority. No module-level RAM stores.
 """
 
 from __future__ import annotations
 import asyncio
-import json
 import uuid
 from typing import Any, Dict, List, Optional
-from fastapi import APIRouter, Header, HTTPException, Path, Query, WebSocket, WebSocketDisconnect, status
+from fastapi import APIRouter, Depends, Header, HTTPException, Path, Query, WebSocket, WebSocketDisconnect, status
 from pydantic import BaseModel, Field
 
 from windagent_core.domain.lifecycle import utc_now
+from windagent_api.dependencies import get_v3_resource_service
+from windagent_api.services.v3_resource_service import V3ResourceService
+from windagent_api.services.v3_demo_seed import (
+    NS_EPISODES,
+    NS_EPISODE_ARTIFACTS,
+    NS_EPISODE_RUNS,
+)
 
 router = APIRouter(prefix="/api/v3/episodes", tags=["Episodes V3"])
 ws_router = APIRouter(prefix="/ws/v3/episodes", tags=["Episodes V3 WebSocket"])
@@ -108,171 +117,10 @@ def _derive_progress(state: str, checkpoint: str) -> int:
     return 5
 
 
-# In-memory storage seeded with rich canonical episode data
-_EPISODES: Dict[str, Dict[str, Any]] = {
-    "ep-cb-001": {
-        "id": "ep-cb-001",
-        "project_id": "proj-cyberpunk-01",
-        "project_name": "Cyberpunk Odyssey 2099",
-        "title": "Tập 01: Mã Nguồn Thức Tỉnh",
-        "episode_number": 1,
-        "description": "Tin tặc trẻ Alex vô tình giải mã một chuỗi tín hiệu bí ẩn từ AI trung tâm của siêu đô thị Neo-Saigon.",
-        "state": "SCREENPLAY",
-        "current_checkpoint": "SCREENPLAY",
-        "current_revision_id": "rev-cb-001-v3",
-        "version": 3,
-        "created_at": "2026-08-01T08:30:00Z",
-        "updated_at": "2026-08-14T02:00:00Z",
-        "metadata": {"genre": "Cyberpunk / Sci-Fi"},
-    },
-    "ep-cb-002": {
-        "id": "ep-cb-002",
-        "project_id": "proj-cyberpunk-01",
-        "project_name": "Cyberpunk Odyssey 2099",
-        "title": "Tập 02: Mê Cung Neon",
-        "episode_number": 2,
-        "description": "Bị truy kích bởi các thợ săn tiền thưởng cyborg, Alex phải lẩn trốn vào tầng ngầm 404.",
-        "state": "OUTLINE",
-        "current_checkpoint": "OUTLINE",
-        "current_revision_id": "rev-cb-002-v1",
-        "version": 1,
-        "created_at": "2026-08-05T08:30:00Z",
-        "updated_at": "2026-08-12T10:00:00Z",
-        "metadata": {"genre": "Cyberpunk / Sci-Fi"},
-    },
-    "ep-ft-001": {
-        "id": "ep-ft-001",
-        "project_id": "proj-fantasy-02",
-        "project_name": "Biên Niên Sử Vùng Đất Rồng",
-        "title": "Tập 01: Tiếng Gọi Rừng Thiêng",
-        "episode_number": 1,
-        "description": "Người giám hộ trẻ phát hiện dấu vết sinh vật thần thoại thức giấc sau một ngàn năm ngủ say.",
-        "state": "LOCKED",
-        "current_checkpoint": "LOCKED",
-        "current_revision_id": "rev-ft-001-lock",
-        "version": 5,
-        "created_at": "2026-08-05T10:00:00Z",
-        "updated_at": "2026-08-13T18:00:00Z",
-        "metadata": {"genre": "High Fantasy / Adventure"},
-    },
-}
-
-_ARTIFACTS: Dict[str, List[Dict[str, Any]]] = {
-    "ep-cb-001": [
-        {
-            "artifact_id": "art-idea-01",
-            "episode_id": "ep-cb-001",
-            "kind": "IdeaCandidateSet",
-            "revision_id": "rev-cb-001-v1",
-            "created_at": "2026-08-01T08:35:00Z",
-            "content": {
-                "selected_idea_id": "idea-1",
-                "ideas": [
-                    {
-                        "id": "idea-1",
-                        "title": "Mã Nguồn Thức Tỉnh",
-                        "premise": "Tin tặc phát hiện AI trung tâm đang cố gắng cảnh báo loài người về một đợt xóa sổ quy mô lớn.",
-                        "tone": "Hồi hộp, công nghệ cao, bí ẩn",
-                    },
-                    {
-                        "id": "idea-2",
-                        "title": "Ký Ức Đánh Cắp",
-                        "premise": "Một người máy cảnh sát bắt đầu nhớ lại kiếp sống con người trước khi bị biến đổi.",
-                        "tone": "Trầm mặc, triết lý, hành động",
-                    },
-                ],
-            },
-        },
-        {
-            "artifact_id": "art-bible-01",
-            "episode_id": "ep-cb-001",
-            "kind": "StoryBible",
-            "revision_id": "rev-cb-001-v2",
-            "created_at": "2026-08-02T10:00:00Z",
-            "content": {
-                "characters": [
-                    {"name": "Alex", "role": "Protagonist", "archetype": "Rebel Hacker"},
-                    {"name": "Vesper-9", "role": "Companion", "archetype": "Rogue Android"},
-                ],
-                "world_rules": "Siêu đô thị chia làm 3 tầng: Tầng Thượng lưu trên mây, Tầng Trung cư và Tầng Ngầm 404.",
-                "theme": "Ranh giới giữa ý thức nhân tạo và linh hồn con người.",
-            },
-        },
-        {
-            "artifact_id": "art-outline-01",
-            "episode_id": "ep-cb-001",
-            "kind": "EpisodeOutline",
-            "revision_id": "rev-cb-001-v2",
-            "created_at": "2026-08-03T11:00:00Z",
-            "content": {
-                "acts": [
-                    {"act_number": 1, "title": "Phát Hiện Tín Hiệu", "summary": "Alex quét thấy luồng dữ liệu lạ trong lúc tìm kiếm linh kiện ngầm."},
-                    {"act_number": 2, "title": "Cuộc Đột Kích", "summary": "Quân đoàn An ninh Tập đoàn ập vào căn hộ bí mật của Alex."},
-                    {"act_number": 3, "title": "Cú Nhảy Xuống Tầng 404", "summary": "Alex và Vesper-9 thoát khỏi tòa nhà và rơi vào mê cung ngầm."},
-                ],
-            },
-        },
-        {
-            "artifact_id": "art-screenplay-01",
-            "episode_id": "ep-cb-001",
-            "kind": "ScreenplayDraft",
-            "revision_id": "rev-cb-001-v3",
-            "created_at": "2026-08-04T14:00:00Z",
-            "content": {
-                "scenes": [
-                    {
-                        "scene_number": 1,
-                        "heading": "INT. PHÒNG LÀM VIỆC CỦA ALEX - ĐÊM",
-                        "action": "Ánh sáng xanh neon chớp nháy qua cửa sổ ẩm ướt. Tiếng mưa axit rơi lộp bộp trên mái tôn rỉ sét. Alex gõ liên hồi trên bàn phím holographic.",
-                        "dialogue": [
-                            {"speaker": "ALEX", "text": "Chuỗi mã này... nó không được viết bởi con người."},
-                            {"speaker": "VESPER-9", "text": "Vậy thì nó bắt nguồn từ AI Lõi. Và chúng ta chỉ có ba phút trước khi hệ thống phòng thủ phản ứng."},
-                        ],
-                    },
-                    {
-                        "scene_number": 2,
-                        "heading": "EXT. HẺM TẦNG 404 - ĐÊM",
-                        "action": "Tiếng còi báo động xé toạc màn đêm. Đèn pha từ các phi thuyền tuần tra quét qua những bức tường phủ đầy rêu điện tử.",
-                    },
-                ],
-            },
-        },
-    ],
-}
-
-_RUNS: Dict[str, List[Dict[str, Any]]] = {
-    "ep-cb-001": [
-        {
-            "run_id": "run-01",
-            "episode_id": "ep-cb-001",
-            "checkpoint": "IDEA",
-            "status": "COMPLETED",
-            "progress_percent": 100,
-            "started_at": "2026-08-01T08:31:00Z",
-            "completed_at": "2026-08-01T08:35:00Z",
-        },
-        {
-            "run_id": "run-02",
-            "episode_id": "ep-cb-001",
-            "checkpoint": "STORY_BIBLE",
-            "status": "COMPLETED",
-            "progress_percent": 100,
-            "started_at": "2026-08-02T09:55:00Z",
-            "completed_at": "2026-08-02T10:00:00Z",
-        },
-        {
-            "run_id": "run-03",
-            "episode_id": "ep-cb-001",
-            "checkpoint": "SCREENPLAY",
-            "status": "COMPLETED",
-            "progress_percent": 100,
-            "started_at": "2026-08-04T13:50:00Z",
-            "completed_at": "2026-08-04T14:00:00Z",
-        },
-    ],
-}
-
-_IDEMPOTENCY_KEYS_EPISODES: Dict[str, str] = {}
+def _episode_to_detail(e: Dict[str, Any]) -> EpisodeDetail:
+    ep = dict(e)
+    ep["progress_percent"] = _derive_progress(ep.get("state", "DRAFT"), ep.get("current_checkpoint", "IDEA"))
+    return EpisodeDetail(**ep)
 
 
 @router.get("", response_model=EpisodeListResponse, operation_id="episodes.listAll")
@@ -281,9 +129,10 @@ async def list_all_episodes(
     state: Optional[str] = Query(None, description="Filter by episode state"),
     search: Optional[str] = Query(None, description="Search term"),
     limit: int = Query(50, ge=1, le=200),
+    service: V3ResourceService = Depends(get_v3_resource_service),
 ) -> EpisodeListResponse:
     """List all episodes across projects with search and filter support."""
-    items = list(_EPISODES.values())
+    items = await service.list(NS_EPISODES)
 
     if project_id:
         items = [e for e in items if e.get("project_id") == project_id]
@@ -298,38 +147,32 @@ async def list_all_episodes(
     # Sort newest first
     items.sort(key=lambda e: e.get("updated_at", ""), reverse=True)
 
-    result_items = []
-    for item in items[:limit]:
-        item_copy = dict(item)
-        item_copy["progress_percent"] = _derive_progress(item_copy.get("state", "DRAFT"), item_copy.get("current_checkpoint", "IDEA"))
-        result_items.append(EpisodeDetail(**item_copy))
-
+    result_items = [_episode_to_detail(item) for item in items[:limit]]
     return EpisodeListResponse(items=result_items, page_info={"next_cursor": None, "has_more": False})
 
 
 @router.get("/{episode_id}", response_model=EpisodeDetail, operation_id="episodes.getDetail")
 async def get_episode_detail(
     episode_id: str = Path(..., description="Episode ID"),
+    service: V3ResourceService = Depends(get_v3_resource_service),
 ) -> EpisodeDetail:
     """Retrieve full details of a specific episode with derived progress."""
-    if episode_id not in _EPISODES:
+    ep = await service.get(NS_EPISODES, episode_id)
+    if ep is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Episode '{episode_id}' not found.")
-
-    ep = dict(_EPISODES[episode_id])
-    ep["progress_percent"] = _derive_progress(ep.get("state", "DRAFT"), ep.get("current_checkpoint", "IDEA"))
-    return EpisodeDetail(**ep)
+    return _episode_to_detail(ep)
 
 
 @router.patch("/{episode_id}", response_model=EpisodeDetail, operation_id="episodes.update")
 async def update_episode(
     episode_id: str = Path(..., description="Episode ID"),
     body: UpdateEpisodeRequest = ...,
+    service: V3ResourceService = Depends(get_v3_resource_service),
 ) -> EpisodeDetail:
     """Update episode title or description with optimistic concurrency check."""
-    if episode_id not in _EPISODES:
+    curr = await service.get(NS_EPISODES, episode_id)
+    if curr is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Episode '{episode_id}' not found.")
-
-    curr = _EPISODES[episode_id]
 
     if curr["version"] != body.expected_version:
         raise HTTPException(
@@ -337,53 +180,57 @@ async def update_episode(
             detail=f"Stale version conflict for episode '{episode_id}'. Expected {curr['version']}, got {body.expected_version}.",
         )
 
+    updates = dict(curr)
     if body.title is not None:
-        curr["title"] = body.title
+        updates["title"] = body.title
     if body.description is not None:
-        curr["description"] = body.description
+        updates["description"] = body.description
+    updates["updated_at"] = utc_now().isoformat()
 
-    curr["version"] += 1
-    curr["updated_at"] = utc_now().isoformat()
-
-    ep = dict(curr)
-    ep["progress_percent"] = _derive_progress(ep.get("state", "DRAFT"), ep.get("current_checkpoint", "IDEA"))
-    return EpisodeDetail(**ep)
+    updated = await service.update(NS_EPISODES, episode_id, updates, body.expected_version)
+    if updated is None:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f"Stale version conflict for episode '{episode_id}'.")
+    return _episode_to_detail(updated)
 
 
 @router.delete("/{episode_id}", status_code=status.HTTP_204_NO_CONTENT, operation_id="episodes.delete")
 async def delete_episode(
     episode_id: str = Path(..., description="Episode ID"),
+    service: V3ResourceService = Depends(get_v3_resource_service),
 ) -> None:
     """Delete an episode from the system."""
-    if episode_id in _EPISODES:
-        del _EPISODES[episode_id]
-    if episode_id in _ARTIFACTS:
-        del _ARTIFACTS[episode_id]
-    if episode_id in _RUNS:
-        del _RUNS[episode_id]
+    await service.delete(NS_EPISODES, episode_id)
+    await service.delete(NS_EPISODE_ARTIFACTS, episode_id)
+    await service.delete(NS_EPISODE_RUNS, episode_id)
 
 
 @router.get("/{episode_id}/artifacts", response_model=List[EpisodeArtifactEnvelope], operation_id="episodes.getArtifacts")
 async def get_episode_artifacts(
     episode_id: str = Path(..., description="Episode ID"),
+    service: V3ResourceService = Depends(get_v3_resource_service),
 ) -> List[EpisodeArtifactEnvelope]:
     """Retrieve all generated artifact envelopes for an episode."""
-    if episode_id not in _EPISODES:
+    ep = await service.get(NS_EPISODES, episode_id)
+    if ep is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Episode '{episode_id}' not found.")
 
-    arts = _ARTIFACTS.get(episode_id, [])
+    arts = await service.list(NS_EPISODE_ARTIFACTS)
+    arts = [a for a in arts if a.get("episode_id") == episode_id]
     return [EpisodeArtifactEnvelope(**a) for a in arts]
 
 
 @router.get("/{episode_id}/runs", response_model=List[PipelineRun], operation_id="episodes.getRuns")
 async def get_episode_runs(
     episode_id: str = Path(..., description="Episode ID"),
+    service: V3ResourceService = Depends(get_v3_resource_service),
 ) -> List[PipelineRun]:
     """Retrieve all pipeline execution runs for an episode."""
-    if episode_id not in _EPISODES:
+    ep = await service.get(NS_EPISODES, episode_id)
+    if ep is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Episode '{episode_id}' not found.")
 
-    runs = _RUNS.get(episode_id, [])
+    runs = await service.list(NS_EPISODE_RUNS)
+    runs = [r for r in runs if r.get("episode_id") == episode_id]
     return [PipelineRun(**r) for r in runs]
 
 
@@ -392,13 +239,15 @@ async def start_generation(
     episode_id: str = Path(..., description="Episode ID"),
     body: StartGenerationRequest = ...,
     idempotency_key: Optional[str] = Header(None, alias="Idempotency-Key"),
+    service: V3ResourceService = Depends(get_v3_resource_service),
 ) -> PipelineRun:
     """Start an AI generation run for the next or requested checkpoint stage."""
-    if episode_id not in _EPISODES:
+    ep = await service.get(NS_EPISODES, episode_id)
+    if ep is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Episode '{episode_id}' not found.")
 
     now_iso = utc_now().isoformat()
-    target_stage = body.checkpoint or _EPISODES[episode_id]["current_checkpoint"]
+    target_stage = body.checkpoint or ep["current_checkpoint"]
     run_id = f"run-{uuid.uuid4().hex[:8]}"
 
     new_run = {
@@ -410,15 +259,14 @@ async def start_generation(
         "started_at": now_iso,
         "completed_at": now_iso,
     }
-
-    if episode_id not in _RUNS:
-        _RUNS[episode_id] = []
-    _RUNS[episode_id].append(new_run)
+    await service.create(NS_EPISODE_RUNS, run_id, new_run)
 
     # Generate sample artifact for the stage if not present
     rev_id = f"rev-{uuid.uuid4().hex[:6]}"
-    _EPISODES[episode_id]["current_revision_id"] = rev_id
-    _EPISODES[episode_id]["updated_at"] = now_iso
+    ep_updates = dict(ep)
+    ep_updates["current_revision_id"] = rev_id
+    ep_updates["updated_at"] = now_iso
+    await service.update(NS_EPISODES, episode_id, ep_updates, ep["version"])
 
     return PipelineRun(**new_run)
 
@@ -427,46 +275,47 @@ async def start_generation(
 async def select_idea(
     episode_id: str = Path(..., description="Episode ID"),
     body: SelectIdeaRequest = ...,
+    service: V3ResourceService = Depends(get_v3_resource_service),
 ) -> EpisodeDetail:
     """Select a candidate idea and advance pipeline to STORY_BIBLE."""
-    if episode_id not in _EPISODES:
+    curr = await service.get(NS_EPISODES, episode_id)
+    if curr is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Episode '{episode_id}' not found.")
-
-    curr = _EPISODES[episode_id]
     if curr["version"] != body.expected_version:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=f"Stale version conflict for episode '{episode_id}'. Expected {curr['version']}, got {body.expected_version}.",
         )
 
-    curr["state"] = "STORY_BIBLE"
-    curr["current_checkpoint"] = "STORY_BIBLE"
-    curr["version"] += 1
-    curr["updated_at"] = utc_now().isoformat()
+    updates = dict(curr)
+    updates["state"] = "STORY_BIBLE"
+    updates["current_checkpoint"] = "STORY_BIBLE"
+    updates["updated_at"] = utc_now().isoformat()
 
-    ep = dict(curr)
-    ep["progress_percent"] = _derive_progress(ep["state"], ep["current_checkpoint"])
-    return EpisodeDetail(**ep)
+    updated = await service.update(NS_EPISODES, episode_id, updates, body.expected_version)
+    if updated is None:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f"Stale version conflict for episode '{episode_id}'.")
+    return _episode_to_detail(updated)
 
 
 @router.post("/{episode_id}/decision", response_model=EpisodeDetail, operation_id="episodes.submitDecision")
 async def submit_checkpoint_decision(
     episode_id: str = Path(..., description="Episode ID"),
     body: CheckpointDecisionRequest = ...,
+    service: V3ResourceService = Depends(get_v3_resource_service),
 ) -> EpisodeDetail:
     """Submit approval or revision request on a checkpoint revision with version verification."""
-    if episode_id not in _EPISODES:
+    curr = await service.get(NS_EPISODES, episode_id)
+    if curr is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Episode '{episode_id}' not found.")
-
-    curr = _EPISODES[episode_id]
     if curr["version"] != body.expected_version:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=f"Stale version conflict for episode '{episode_id}'. Expected {curr['version']}, got {body.expected_version}.",
         )
 
+    updates = dict(curr)
     if body.decision == "APPROVED":
-        # Advance pipeline stage
         stage_transitions = {
             "IDEA": "STORY_BIBLE",
             "STORY_BIBLE": "OUTLINE",
@@ -475,44 +324,50 @@ async def submit_checkpoint_decision(
             "REVIEW": "LOCKED",
         }
         next_stage = stage_transitions.get(curr["current_checkpoint"], curr["current_checkpoint"])
-        curr["current_checkpoint"] = next_stage
-        curr["state"] = next_stage
+        updates["current_checkpoint"] = next_stage
+        updates["state"] = next_stage
     elif body.decision == "REVISE":
-        # Keep same stage but record feedback in metadata
-        curr["metadata"]["last_feedback"] = body.feedback
+        metadata = dict(curr.get("metadata", {}))
+        metadata["last_feedback"] = body.feedback
+        updates["metadata"] = metadata
 
-    curr["version"] += 1
-    curr["updated_at"] = utc_now().isoformat()
+    updates["updated_at"] = utc_now().isoformat()
 
-    ep = dict(curr)
-    ep["progress_percent"] = _derive_progress(ep["state"], ep["current_checkpoint"])
-    return EpisodeDetail(**ep)
+    updated = await service.update(NS_EPISODES, episode_id, updates, body.expected_version)
+    if updated is None:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f"Stale version conflict for episode '{episode_id}'.")
+    return _episode_to_detail(updated)
 
 
 @router.post("/{episode_id}/lock", response_model=EpisodeDetail, operation_id="episodes.lockScreenplay")
 async def lock_screenplay(
     episode_id: str = Path(..., description="Episode ID"),
     body: LockScreenplayRequest = ...,
+    service: V3ResourceService = Depends(get_v3_resource_service),
 ) -> EpisodeDetail:
     """Lock screenplay for production readiness with content hash verification."""
-    if episode_id not in _EPISODES:
+    curr = await service.get(NS_EPISODES, episode_id)
+    if curr is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Episode '{episode_id}' not found.")
-
-    curr = _EPISODES[episode_id]
     if curr["version"] != body.expected_version:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=f"Stale version conflict for episode '{episode_id}'. Expected {curr['version']}, got {body.expected_version}.",
         )
 
-    curr["state"] = "LOCKED"
-    curr["current_checkpoint"] = "LOCKED"
-    curr["metadata"]["locked_revision_id"] = body.revision_id
-    curr["metadata"]["content_hash"] = body.content_hash
-    curr["version"] += 1
-    curr["updated_at"] = utc_now().isoformat()
+    updates = dict(curr)
+    updates["state"] = "LOCKED"
+    updates["current_checkpoint"] = "LOCKED"
+    metadata = dict(curr.get("metadata", {}))
+    metadata["locked_revision_id"] = body.revision_id
+    metadata["content_hash"] = body.content_hash
+    updates["metadata"] = metadata
+    updates["updated_at"] = utc_now().isoformat()
 
-    ep = dict(curr)
+    updated = await service.update(NS_EPISODES, episode_id, updates, body.expected_version)
+    if updated is None:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f"Stale version conflict for episode '{episode_id}'.")
+    ep = dict(updated)
     ep["progress_percent"] = 100
     return EpisodeDetail(**ep)
 
@@ -520,9 +375,11 @@ async def lock_screenplay(
 @router.post("/{episode_id}/cancel-run", response_model=Dict[str, Any], operation_id="episodes.cancelRun")
 async def cancel_run(
     episode_id: str = Path(..., description="Episode ID"),
+    service: V3ResourceService = Depends(get_v3_resource_service),
 ) -> Dict[str, Any]:
     """Cancel any active generation runs on the episode."""
-    if episode_id not in _EPISODES:
+    ep = await service.get(NS_EPISODES, episode_id)
+    if ep is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Episode '{episode_id}' not found.")
 
     return {"episode_id": episode_id, "status": "CANCELLED", "timestamp": utc_now().isoformat()}
@@ -534,13 +391,18 @@ async def episode_workspace_websocket(websocket: WebSocket, episode_id: str):
     await websocket.accept()
     try:
         # Stream initial snapshot
-        ep = _EPISODES.get(episode_id, {
-            "id": episode_id,
-            "title": "Episode Workspace",
-            "state": "DRAFT",
-            "current_checkpoint": "IDEA",
-            "version": 1,
-        })
+        container = getattr(websocket.app.state, "container", None)
+        service = container.v3_resource_service if container else None
+        ep = None
+        if service is not None:
+            ep = await service.get(NS_EPISODES, episode_id)
+        if ep is None:
+            ep = {
+                "id": episode_id,
+                "title": "Episode Workspace",
+                "state": "DRAFT",
+                "current_checkpoint": "IDEA",
+            }
         payload = dict(ep)
         payload["progress_percent"] = _derive_progress(payload.get("state", "DRAFT"), payload.get("current_checkpoint", "IDEA"))
 

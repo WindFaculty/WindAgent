@@ -4,7 +4,7 @@ RFC 7807 Problem Details for HTTP APIs (ApiProblem) for Unified API V3.
 
 from __future__ import annotations
 from typing import Any, Dict, Optional
-from fastapi import Request, status
+from fastapi import Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 

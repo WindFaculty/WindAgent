@@ -1,59 +1,41 @@
 {
   "video_id": "video-02",
-  "milestone": "Agentic Studio v0.1",
+  "milestone": "Agentic Studio v0.1 \u2014 Simple Agent Core",
   "status": "VERIFIED",
-  "gate": "CV02_P10_ASSEMBLY_VERIFIED",
+  "scene_count": 70,
   "media_profiles": {
     "master_1440p": {
       "filename": "video_02_visual_master_1440p.mp4",
-      "target_path": "artifacts/code_video/video_02/final/video_02_visual_master_1440p.mp4",
+      "target_path": "D:\\code_ca_nhan\\WindAgent\\artifacts\\code_video\\video_02\\final\\video_02_visual_master_1440p.mp4",
       "resolution": "2560x1440",
       "fps": 30,
-      "sha256": "ccad703d117a266bb81727929424c02172e86d4e492731fd904f19c2cf641399"
+      "sha256": "4bb6c6e226e51366659bcba0a755e930f828178b478e92e97c64eed408e5a9d1"
     },
     "delivery_1080p": {
       "filename": "video_02_visual_master_1080p.mp4",
-      "target_path": "artifacts/code_video/video_02/final/video_02_visual_master_1080p.mp4",
+      "target_path": "D:\\code_ca_nhan\\WindAgent\\artifacts\\code_video\\video_02\\final\\video_02_visual_master_1080p.mp4",
       "resolution": "1920x1080",
       "fps": 30,
-      "sha256": "94cc38f9a7751a8eae6464deb55011efbdd0d237fbecceadf43ac80ec21aafac"
+      "sha256": "9105967a7bbbadf6828f7f1aad9a27cd32c3605e00638b58dcd65b4d1a3b8276"
     }
   },
   "timeline": {
     "filename": "timeline.json",
-    "target_path": "artifacts/code_video/video_02/final/timeline.json",
-    "total_duration_ms": 975000,
-    "total_frames": 29250,
-    "scene_count": 19,
-    "sha256": "aac3d8fce55e89d741c71c9ffa4f67021a56fbb24cb639ac3b301fd3f52ce717"
+    "target_path": "D:\\code_ca_nhan\\WindAgent\\artifacts\\code_video\\video_02\\final\\timeline.json",
+    "total_duration_ms": 1332000,
+    "total_frames": 39960,
+    "scene_count": 70,
+    "sha256": "1abf1ce714b7a1b499f3729baeef9282c10e97584bb4ecafd569e71175e73e66"
   },
   "cue_sheet": {
     "filename": "cue_sheet.csv",
-    "target_path": "artifacts/code_video/video_02/final/cue_sheet.csv",
-    "entries_count": 19,
-    "sha256": "a359e172048e35b7afb9406bc8ed8ef16a203e749370a8d9680de355b69acc3e"
-  },
-  "takes_manifest": {
-    "total_takes": 19,
-    "total_duration_ms": 975000,
-    "total_frames": 29250
+    "target_path": "D:\\code_ca_nhan\\WindAgent\\artifacts\\code_video\\video_02\\final\\cue_sheet.csv",
+    "entries_count": 70,
+    "sha256": "a7f205139829b5b101a925cb9b4fd79ff8d2f2d6494cdd24de89f185de7fc842"
   },
   "audio_policy": {
     "policy": "EXCLUDED",
     "audio_streams_count": 0,
     "verified": true
-  },
-  "transitions": {
-    "policy": "tutorial_safe",
-    "allowed": [
-      "cut",
-      "dissolve",
-      "hard_cut",
-      "highlight",
-      "pan",
-      "short_dissolve",
-      "zoom"
-    ],
-    "default": "hard_cut"
   }
 }

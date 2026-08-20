@@ -4,8 +4,9 @@
  * Includes WebSocket realtime hook for /ws/v3/production/{episodeId}.
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useRef } from 'react';
-import { useApiClient } from '@windagent/app/src/shared/hooks/useApiClient';
+import { useEffect } from 'react';
+import { useApiClient } from '../../../shared/hooks/useApiClient';
+import { useRealtimeClient } from '../../../realtime/RealtimeProvider';
 import type { JobStage } from '@windagent/api-contracts';
 
 export const productionKeys = {
@@ -170,35 +171,36 @@ export function useDeliveryArtifact(episodeId: string) {
 }
 
 /**
- * Production WebSocket hook for streaming realtime progress and status updates.
+ * Production realtime hook via @windagent/realtime.
+ * Streams progress and status updates for an episode production workflow.
  */
-export function useProductionRealtime(episodeId: string, apiBaseUrl: string) {
+export function useProductionRealtime(episodeId: string, _apiBaseUrl?: string) {
   const queryClient = useQueryClient();
-  const wsRef = useRef<WebSocket | null>(null);
+  const realtime = useRealtimeClient();
 
   useEffect(() => {
-    if (!episodeId || !apiBaseUrl) return;
-    const wsUrl = apiBaseUrl.replace(/^http/, 'ws') + `/ws/v3/production/${episodeId}`;
+    if (!episodeId) return;
 
-    const ws = new WebSocket(wsUrl);
-    wsRef.current = ws;
-
-    ws.onmessage = (msg) => {
-      try {
-        const evt = JSON.parse(msg.data);
-        if (evt.event === 'production.snapshot' || evt.event?.startsWith('render.') || evt.event?.startsWith('audio.') || evt.event?.startsWith('animation.') || evt.event?.startsWith('video.')) {
+    const unsubscribe = realtime.subscribe(
+      { aggregateType: 'production', aggregateId: episodeId },
+      (evt) => {
+        const eventType = evt.event_type || (evt.payload as any)?.event;
+        if (
+          eventType === 'production.snapshot' ||
+          eventType?.startsWith('render.') ||
+          eventType?.startsWith('audio.') ||
+          eventType?.startsWith('animation.') ||
+          eventType?.startsWith('video.')
+        ) {
           queryClient.invalidateQueries({ queryKey: productionKeys.jobs(episodeId) });
           queryClient.invalidateQueries({ queryKey: productionKeys.shots(episodeId) });
           queryClient.invalidateQueries({ queryKey: productionKeys.plan(episodeId) });
         }
-      } catch {
-        // ignore malformed ws messages
       }
-    };
+    );
 
     return () => {
-      ws.close();
-      wsRef.current = null;
+      unsubscribe();
     };
-  }, [episodeId, apiBaseUrl, queryClient]);
+  }, [episodeId, realtime, queryClient]);
 }

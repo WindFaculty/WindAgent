@@ -337,7 +337,7 @@ async def run_chain() -> Dict[str, Any]:
     db = DatabaseManager("sqlite+aiosqlite:///:memory:")
     await db.create_tables(BaseORM.metadata)
     service = StudioRunService(
-        db.session_factory,
+        lambda: StudioUnitOfWork(db.session_factory),
         StudioTaskSubmissionAdapter(db.session_factory),
         retry_budget=2,
         policy_id="b9-policy",

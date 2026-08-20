@@ -11,14 +11,14 @@ from typing import Any, Dict, List, Optional
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from windagent_providers.base.contracts import (
+from windagent_core.contracts.providers.capabilities import (
     ModelDescriptor, ProviderCapabilities, QuotaState
 )
 from windagent_core.contracts.providers.ports import (
     CanonicalModelRegistryPort, EndpointRegistryPort, EndpointStatePort,
     QuotaStatePort, RouteAttemptPort, UsageLedgerPort
 )
-from windagent_providers.routing.ports import RouteLockRepositoryPort
+from windagent_core.contracts.repositories.routing_repository import RouteLockRepositoryPort
 from windagent_storage.orm.v3_models import (
     CanonicalModelV3ORM, EndpointModelBindingORM,
     EndpointRuntimeStateORM, ProviderEndpointORM,

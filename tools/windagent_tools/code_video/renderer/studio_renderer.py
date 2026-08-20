@@ -12,7 +12,7 @@ from dataclasses import dataclass, field
 import html
 from typing import Any, Dict, List, Optional
 
-from windagent_workflows.code_video.contracts import (
+from windagent_core.contracts.code_video import (
     Action,
     ActionType,
     Scene,

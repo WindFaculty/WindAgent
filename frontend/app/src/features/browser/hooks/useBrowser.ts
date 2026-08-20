@@ -1,10 +1,11 @@
 /**
  * Phase 13A — Browser Runtime Console Hooks.
- * Real /api/v3/browser sessions + /ws/v3/browser realtime. Zero mock data.
+ * Real /api/v3/browser sessions + @windagent/realtime stream. Zero mock data.
  */
 import { useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useApiClient } from '../../../shared/hooks/useApiClient';
+import { useRealtimeClient } from '../../../realtime/RealtimeProvider';
 import type { BrowserActionResponse, BrowserSessionResource } from '@windagent/api-contracts';
 
 export const browserKeys = {
@@ -12,11 +13,6 @@ export const browserKeys = {
   sessions: () => [...browserKeys.all, 'sessions'] as const,
   session: (id: string) => [...browserKeys.all, 'session', id] as const,
 };
-
-function wsOrigin(): string {
-  const origin = typeof window !== 'undefined' ? window.location.origin : 'http://127.0.0.1:8765';
-  return origin.replace(/^http/, 'ws');
-}
 
 export function useBrowserSessions() {
   const client = useApiClient();
@@ -83,24 +79,24 @@ export function useBrowserActions() {
 
 export function useBrowserRealtime(onEvent?: (event: string, payload: BrowserSessionResource | BrowserActionResponse) => void) {
   const queryClient = useQueryClient();
+  const realtime = useRealtimeClient();
   const onEventRef = useRef(onEvent);
   onEventRef.current = onEvent;
 
   useEffect(() => {
-    const ws = new WebSocket(wsOrigin() + '/ws/v3/browser');
-
-    ws.onmessage = (msg) => {
-      try {
-        const evt = JSON.parse(msg.data);
+    const unsubscribe = realtime.subscribe(
+      { aggregateType: 'browser' },
+      (envelope) => {
         queryClient.invalidateQueries({ queryKey: browserKeys.sessions() });
-        if (evt?.event && onEventRef.current) {
-          onEventRef.current(String(evt.event), evt);
+        const eventType = envelope.event_type || (envelope.payload as any)?.event || 'browser.updated';
+        if (onEventRef.current) {
+          onEventRef.current(String(eventType), (envelope.payload || envelope) as any);
         }
-      } catch {
-        // ignore malformed ws frames
       }
-    };
+    );
 
-    return () => ws.close();
-  }, [queryClient]);
+    return () => {
+      unsubscribe();
+    };
+  }, [realtime, queryClient]);
 }

@@ -19,11 +19,6 @@ from fastapi.testclient import TestClient
 from windagent_api.main import app
 
 
-@pytest.fixture
-def client():
-    return TestClient(app)
-
-
 def test_full_system_lifecycle_certification(client):
     """Certify full cross-domain lifecycle without synthetic mocks or V2 routes."""
     # 1. System Health Check

@@ -25,7 +25,7 @@ from typing import List, Optional, Tuple
 
 from PIL import Image, ImageDraw, ImageFont
 
-from windagent_workflows.code_video.contracts import CodeVideoPlan, Scene
+from windagent_core.contracts.code_video import CodeVideoPlan, Scene
 
 
 class Video02FrameRenderer:

@@ -110,3 +110,13 @@ final-evidence-bundle/
 web-build/
 desktop-build/
 
+# Codex/OpenCode delegation scratch plans and reports
+.worker/
+
+# Local temp/scratch dirs (deleted from disk; leftovers locked by running processes)
+.opencode/
+output/
+workspace/
+scripts/screenshots/
+scripts/ui_test_results.json
+

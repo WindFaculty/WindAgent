@@ -74,6 +74,10 @@ from windagent_core.contracts.studio.models import (
     StudioTaskStatus,
     StudioTaskType,
 )
+from windagent_core.contracts.repositories.unit_of_work import (
+    StudioUnitOfWorkFactory,
+    StudioUnitOfWorkPort,
+)
 from windagent_core.contracts.studio.ports import (
     StudioRunOrchestratorPort,
     StudioTaskSubmissionPort,
@@ -120,11 +124,10 @@ from windagent_orchestration.studio.dag import (
     dependencies_terminal,
     initial_node_states,
 )
-from windagent_storage.unit_of_work.studio_uow import StudioUnitOfWork
 
-# Session factory is an opaque ``Any`` here on purpose: the orchestration layer
-# must stay ORM-free (architecture checker forbids sqlalchemy imports).
-AsyncSessionFactory = Any
+# The Studio UoW is injected as a zero-argument factory by a composition root.
+# The orchestration layer stays ORM-free (architecture checker forbids
+# sqlalchemy/storage imports); it only ever sees the core ``StudioUnitOfWorkPort``.
 
 DEFAULT_APPROVAL_POLICY_ID = "studio.default"
 DEFAULT_RETRY_BUDGET = 3
@@ -163,7 +166,7 @@ def _id_from_key(prefix: str, idempotency_key: str) -> str:
 
 
 async def submit_runnable_nodes(
-    session_factory: AsyncSessionFactory,
+    uow_factory: StudioUnitOfWorkFactory,
     submission: StudioTaskSubmissionPort,
     run_id: StudioRunId,
     *,
@@ -179,7 +182,7 @@ async def submit_runnable_nodes(
     original committed task identity.
     """
     service = StudioRunService(
-        session_factory, submission, retry_budget=retry_budget, policy_id=policy_id
+        uow_factory, submission, retry_budget=retry_budget, policy_id=policy_id
     )
     async with service._uow() as uow:
         run = await uow.runs.get(run_id)
@@ -238,7 +241,7 @@ class StudioRunService(StudioRunOrchestratorPort):
 
     def __init__(
         self,
-        session_factory: AsyncSessionFactory,
+        uow_factory: StudioUnitOfWorkFactory,
         submission: StudioTaskSubmissionPort,
         *,
         retry_budget: int = DEFAULT_RETRY_BUDGET,
@@ -246,12 +249,12 @@ class StudioRunService(StudioRunOrchestratorPort):
     ) -> None:
         if retry_budget < 1:
             raise StudioValidationError("retry_budget must be >= 1.")
-        self._session_factory = session_factory
+        self._uow_factory = uow_factory
         self._submission = submission
         self._retry_budget = retry_budget
         self._policy_id = policy_id
         self._reconciler = StudioCompletionReconciler(
-            session_factory, submission, retry_budget=retry_budget, policy_id=policy_id
+            uow_factory, submission, retry_budget=retry_budget, policy_id=policy_id
         )
 
     # -- application commands -------------------------------------------------
@@ -382,7 +385,7 @@ class StudioRunService(StudioRunOrchestratorPort):
                 resume_run_id = run_id
                 is_new_run = True
         await submit_runnable_nodes(
-            self._session_factory, self._submission, resume_run_id,
+            self._uow_factory, self._submission, resume_run_id,
             retry_budget=self._retry_budget, policy_id=self._policy_id,
         )
         return StartRunResult(
@@ -778,7 +781,7 @@ class StudioRunService(StudioRunOrchestratorPort):
 
     @staticmethod
     async def _review_report_for_gate(
-        uow: StudioUnitOfWork, target: Dict[str, Any]
+        uow: StudioUnitOfWorkPort, target: Dict[str, Any]
     ) -> ReviewReport:
         report_ref = next(
             (
@@ -888,8 +891,8 @@ class StudioRunService(StudioRunOrchestratorPort):
     # -- internal helpers ------------------------------------------------------
 
     @asynccontextmanager
-    async def _uow(self) -> AsyncIterator[StudioUnitOfWork]:
-        uow = StudioUnitOfWork(self._session_factory)
+    async def _uow(self) -> AsyncIterator[StudioUnitOfWorkPort]:
+        uow = self._uow_factory()
         await uow.__aenter__()
         try:
             yield uow
@@ -898,7 +901,7 @@ class StudioRunService(StudioRunOrchestratorPort):
             raise
         await uow.__aexit__(None, None, None)
 
-    async def _load_policy(self, uow: StudioUnitOfWork) -> ApprovalPolicy:
+    async def _load_policy(self, uow: StudioUnitOfWorkPort) -> ApprovalPolicy:
         policy = await uow.approvals.get_policy(self._policy_id)
         if policy is None:
             return ApprovalPolicy(policy_id=self._policy_id, policy_version="1")
@@ -959,7 +962,7 @@ class StudioRunService(StudioRunOrchestratorPort):
 
     async def _augment_node_inputs(
         self,
-        uow: StudioUnitOfWork,
+        uow: StudioUnitOfWorkPort,
         run: Dict[str, Any],
         node: Dict[str, Any],
         input_refs: List[Dict[str, Any]],
@@ -1007,7 +1010,7 @@ class StudioRunService(StudioRunOrchestratorPort):
 
     @staticmethod
     async def _inject_run_artifacts(
-        uow: StudioUnitOfWork,
+        uow: StudioUnitOfWorkPort,
         run: Dict[str, Any],
         input_refs: List[Dict[str, Any]],
         artifact_types: set[str],
@@ -1037,7 +1040,7 @@ class StudioRunService(StudioRunOrchestratorPort):
 
     async def _inject_reviewed_draft(
         self,
-        uow: StudioUnitOfWork,
+        uow: StudioUnitOfWorkPort,
         run: Dict[str, Any],
         input_refs: List[Dict[str, Any]],
     ) -> List[Dict[str, Any]]:
@@ -1078,7 +1081,7 @@ class StudioRunService(StudioRunOrchestratorPort):
 
     async def _inject_selected_idea(
         self,
-        uow: StudioUnitOfWork,
+        uow: StudioUnitOfWorkPort,
         run: Dict[str, Any],
         input_refs: List[Dict[str, Any]],
     ) -> List[Dict[str, Any]]:
@@ -1161,7 +1164,7 @@ class StudioRunService(StudioRunOrchestratorPort):
 
     async def _lock_inputs(
         self,
-        uow: StudioUnitOfWork,
+        uow: StudioUnitOfWorkPort,
         run: Dict[str, Any],
         input_refs: List[Dict[str, Any]],
     ) -> tuple[List[Dict[str, Any]], Dict[str, Any]]:
@@ -1253,12 +1256,12 @@ class StudioRunService(StudioRunOrchestratorPort):
     async def _submit_runnable_nodes(self, run_id: StudioRunId) -> None:
         """Durable dispatch: queue commit first, node identity second."""
         await submit_runnable_nodes(
-            self._session_factory, self._submission, run_id,
+            self._uow_factory, self._submission, run_id,
             retry_budget=self._retry_budget, policy_id=self._policy_id,
         )
 
     async def _advance_dependents(
-        self, uow: StudioUnitOfWork, run_id: StudioRunId, nodes: List[Dict[str, Any]]
+        self, uow: StudioUnitOfWorkPort, run_id: StudioRunId, nodes: List[Dict[str, Any]]
     ) -> bool:
         """Mark PENDING nodes whose dependencies are terminal as RUNNABLE."""
         by_id = {n["dag_node_id"]: n for n in nodes}
@@ -1279,7 +1282,7 @@ class StudioRunService(StudioRunOrchestratorPort):
 
     @staticmethod
     async def _finish_run_failed(
-        uow: StudioUnitOfWork,
+        uow: StudioUnitOfWorkPort,
         run_id: StudioRunId,
         episode: Episode,
         reason: str,
@@ -1307,7 +1310,7 @@ class StudioRunService(StudioRunOrchestratorPort):
 
     async def _revision_for_approval(
         self,
-        uow: StudioUnitOfWork,
+        uow: StudioUnitOfWorkPort,
         episode_id: EpisodeId,
         revision_id: ProductionRevisionId,
         expected_version: Optional[int],
@@ -1351,7 +1354,7 @@ class StudioRunService(StudioRunOrchestratorPort):
 
     @staticmethod
     async def _emit(
-        uow: StudioUnitOfWork,
+        uow: StudioUnitOfWorkPort,
         event_type: str,
         *,
         run_id: Optional[StudioRunId] = None,
@@ -1375,13 +1378,13 @@ class StudioCompletionReconciler:
 
     def __init__(
         self,
-        session_factory: AsyncSessionFactory,
+        uow_factory: StudioUnitOfWorkFactory,
         submission: StudioTaskSubmissionPort,
         *,
         retry_budget: int = DEFAULT_RETRY_BUDGET,
         policy_id: str = DEFAULT_APPROVAL_POLICY_ID,
     ) -> None:
-        self._session_factory = session_factory
+        self._uow_factory = uow_factory
         self._submission = submission
         self._retry_budget = retry_budget
         self._policy_id = policy_id
@@ -1391,7 +1394,7 @@ class StudioCompletionReconciler:
 
         Returns a correlation dict; raises on stale/unknown completions.
         """
-        async with StudioUnitOfWork(self._session_factory) as uow:
+        async with self._uow_factory() as uow:
             run = await uow.runs.get(result.studio_run_id)
             if run is None:
                 raise StudioNotFoundError(
@@ -1467,7 +1470,7 @@ class StudioCompletionReconciler:
 
     async def _on_succeeded(
         self,
-        uow: StudioUnitOfWork,
+        uow: StudioUnitOfWorkPort,
         run: Dict[str, Any],
         node: Dict[str, Any],
         result: StudioTaskResult,
@@ -1567,7 +1570,7 @@ class StudioCompletionReconciler:
 
     async def _resolve_auto_review(
         self,
-        uow: StudioUnitOfWork,
+        uow: StudioUnitOfWorkPort,
         run: Dict[str, Any],
         node: Dict[str, Any],
         report: ReviewReport,
@@ -1661,7 +1664,7 @@ class StudioCompletionReconciler:
 
     async def _bind_screenplay_revision(
         self,
-        uow: StudioUnitOfWork,
+        uow: StudioUnitOfWorkPort,
         run: Dict[str, Any],
         node: Dict[str, Any],
         output_refs: List[Dict[str, Any]],
@@ -1775,7 +1778,7 @@ class StudioCompletionReconciler:
 
     async def _on_failed(
         self,
-        uow: StudioUnitOfWork,
+        uow: StudioUnitOfWorkPort,
         run: Dict[str, Any],
         node: Dict[str, Any],
         result: StudioTaskResult,
@@ -1822,7 +1825,7 @@ class StudioCompletionReconciler:
 
     async def _advance_and_finish(
         self,
-        uow: StudioUnitOfWork,
+        uow: StudioUnitOfWorkPort,
         run: Dict[str, Any],
         nodes: List[Dict[str, Any]],
     ) -> None:
@@ -1901,7 +1904,7 @@ class StudioCompletionReconciler:
 
     async def _service_submit(self, run_id: StudioRunId) -> None:
         await submit_runnable_nodes(
-            self._session_factory, self._submission, run_id,
+            self._uow_factory, self._submission, run_id,
             retry_budget=self._retry_budget, policy_id=self._policy_id,
         )
 

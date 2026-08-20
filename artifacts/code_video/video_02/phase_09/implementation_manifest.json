@@ -8,7 +8,7 @@
   "total_frames": 26100,
   "master_resolution": "2560x1440",
   "fps": 30,
-  "manifest_hash": "ce8e1278777229ea2aca57dc80894cba1768f773c1f4a3a4bece44d8d4042878",
+  "manifest_hash": "6148df8bfb02a45a7a2e9f16849f0332c75a3cb3d78eacd67727800e86160c4e",
   "passes": [
     {
       "pass_id": "PASS_01_COLD_OPEN",
@@ -209,5 +209,5 @@
     "windagent_tools.code_video.recording.recorder.Video02RecordingEngine",
     "windagent_tools.code_video.recording.verifier.RecordingVerifier"
   ],
-  "generated_at": "2026-08-18T02:49:12.359802+00:00"
+  "generated_at": "2026-08-19T07:54:00.968022+00:00"
 }

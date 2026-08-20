@@ -16,44 +16,68 @@ import sys
 from pathlib import Path
 
 
+def _api_composition_dir() -> Path:
+    """Path to the Phase 7 API composition package directory."""
+    return (
+        Path(__file__).resolve().parent.parent.parent
+        / "apps"
+        / "api"
+        / "windagent_api"
+        / "composition"
+    )
+
+
+def _api_composition_source() -> str:
+    """Concatenated source of every module in the API composition package."""
+    parts = []
+    for path in sorted(_api_composition_dir().rglob("*.py")):
+        parts.append(path.read_text(encoding="utf-8"))
+    return "\n".join(parts)
+
+
+def _worker_composition_dir() -> Path:
+    """Path to the Phase 8A Worker composition package directory."""
+    return (
+        Path(__file__).resolve().parent.parent.parent
+        / "apps"
+        / "worker"
+        / "windagent_worker"
+        / "composition"
+    )
+
+
+def _worker_composition_source() -> str:
+    """Concatenated source of every module in the Worker composition package."""
+    parts = []
+    for path in sorted(_worker_composition_dir().rglob("*.py")):
+        parts.append(path.read_text(encoding="utf-8"))
+    return "\n".join(parts)
+
+
 class TestPhase7ApiComposition:
     """Test API composition root has only allowed services"""
 
     def test_api_composition_imports_only_allowed(self):
         """API composition should not import Worker runtime or Desktop services"""
-        import os
-        api_composition_path = os.path.join(
-            os.path.dirname(__file__).replace("tests\\unit", "").replace("tests/unit", ""),
-            "apps", "api", "windagent_api", "composition.py"
-        )
-        
-        with open(api_composition_path, 'r') as f:
-            content = f.read()
-        
+        content = _api_composition_source()
+
         # Should NOT import Worker runtime components directly
         assert "ProductionWorker" not in content
         assert "WorkerRunner" not in content
         assert "from windagent_worker" not in content
-        
+
         # Should NOT import Desktop components
         assert "from desktop" not in content
         assert "SidecarManager" not in content
-        
+
         # Should NOT import tool subprocess runtime directly
         assert "SubprocessRuntimeAdapter" not in content
         assert "ToolRuntimeAdapter" not in content
 
     def test_api_composes_allowed_services(self):
         """API should compose only allowed services"""
-        import os
-        api_composition_path = os.path.join(
-            os.path.dirname(__file__).replace("tests\\unit", "").replace("tests/unit", ""),
-            "apps", "api", "windagent_api", "composition.py"
-        )
-        
-        with open(api_composition_path, 'r') as f:
-            content = f.read()
-        
+        content = _api_composition_source()
+
         # Should compose allowed services
         assert "DatabaseManager" in content
         assert "SqlUnitOfWork" in content
@@ -72,23 +96,18 @@ class TestPhase7ApiComposition:
 
     def test_api_container_has_no_execution_registry(self):
         """API should NOT compose ExecutionRuntimeRegistry directly"""
-        import os
-        api_composition_path = os.path.join(
-            os.path.dirname(__file__).replace("tests\\unit", "").replace("tests/unit", ""),
-            "apps", "api", "windagent_api", "composition.py"
-        )
-        
-        with open(api_composition_path, 'r') as f:
-            content = f.read()
-        
-        # API should not have ExecutionRuntimeRegistry in bootstrap
-        # (it was removed to avoid composing worker-specific services)
-        # Note: It might still be imported for type hints, but not instantiated
-        assert "self.execution_registry" not in content or "# Note: We don't use OrchestrationV2Container" in content
+        content = _api_composition_source()
+
+        # API must not instantiate or reference the execution runtime registry
+        # or the worktree manager anywhere in the composition package.
+        assert "ExecutionRuntimeRegistry" not in content
+        assert "WorktreeContextManager" not in content
+        assert "self.execution_registry" not in content
+        assert "self.worktree_manager" not in content
 
     @pytest.mark.asyncio
-    async def test_api_container_bootstrap(self):
-        """API container should bootstrap successfully"""
+    async def test_api_container_bootstrap(self, tmp_path):
+        """API container should bootstrap successfully with a file-backed DB."""
         sys.path.insert(0, str(Path(__file__).parent.parent / "apps"))
         sys.path.insert(0, str(Path(__file__).parent.parent / "providers"))
         sys.path.insert(0, str(Path(__file__).parent.parent / "core"))
@@ -103,10 +122,13 @@ class TestPhase7ApiComposition:
         sys.path.insert(0, str(Path(__file__).parent.parent / "skills"))
         sys.path.insert(0, str(Path(__file__).parent.parent / "observability"))
         sys.path.insert(0, str(Path(__file__).parent.parent / "intelligence"))
-        
+
         try:
             from windagent_api.composition import ApplicationContainer
-            container = ApplicationContainer(db_url="sqlite+aiosqlite:///:memory:")
+            db_path = tmp_path / "phase7_api.db"
+            container = ApplicationContainer(
+                db_url=f"sqlite+aiosqlite:///{db_path}"
+            )
             await container.bootstrap()
             assert container.is_initialized
             assert container.db is not None
@@ -123,15 +145,8 @@ class TestPhase7WorkerComposition:
 
     def test_worker_composition_imports_all_required(self):
         """Worker composition should import all required services"""
-        import os
-        worker_composition_path = os.path.join(
-            os.path.dirname(__file__).replace("tests\\unit", "").replace("tests/unit", ""),
-            "apps", "worker", "windagent_worker", "composition.py"
-        )
-        
-        with open(worker_composition_path, 'r') as f:
-            content = f.read()
-        
+        content = _worker_composition_source()
+
         # Should compose all required services
         assert "DatabaseManager" in content
         assert "DurableTaskLeaseManager" in content
@@ -149,15 +164,8 @@ class TestPhase7WorkerComposition:
 
     def test_worker_composition_no_api_components(self):
         """Worker should NOT import API or Desktop components"""
-        import os
-        worker_composition_path = os.path.join(
-            os.path.dirname(__file__).replace("tests\\unit", "").replace("tests/unit", ""),
-            "apps", "worker", "windagent_worker", "composition.py"
-        )
-        
-        with open(worker_composition_path, 'r') as f:
-            content = f.read()
-        
+        content = _worker_composition_source()
+
         # Should NOT import API components
         assert "from windagent_api" not in content
         # Should NOT import Desktop components
@@ -380,21 +388,11 @@ class TestPhase7NoGodContainer:
         import os
         
         # Check API doesn't import from Worker
-        api_composition_path = os.path.join(
-            os.path.dirname(__file__).replace("tests\\unit", "").replace("tests/unit", ""),
-            "apps", "api", "windagent_api", "composition.py"
-        )
-        with open(api_composition_path, 'r') as f:
-            api_content = f.read()
+        api_content = _api_composition_source()
         assert "from windagent_worker" not in api_content
         
         # Check Worker doesn't import from API
-        worker_composition_path = os.path.join(
-            os.path.dirname(__file__).replace("tests\\unit", "").replace("tests/unit", ""),
-            "apps", "worker", "windagent_worker", "composition.py"
-        )
-        with open(worker_composition_path, 'r') as f:
-            worker_content = f.read()
+        worker_content = _worker_composition_source()
         assert "from windagent_api" not in worker_content
         
         # Check Desktop doesn't import from API or Worker for service composition
@@ -414,28 +412,13 @@ class TestPhase7VersionMetadata:
 
     def test_api_composition_has_phase7_marker(self):
         """API composition should have PHASE 7 marker"""
-        import os
-        api_composition_path = os.path.join(
-            os.path.dirname(__file__).replace("tests\\unit", "").replace("tests/unit", ""),
-            "apps", "api", "windagent_api", "composition.py"
-        )
-        
-        with open(api_composition_path, 'r') as f:
-            content = f.read()
-        
+        content = _api_composition_source()
         assert "Phase 7" in content or "PHASE 7" in content
 
     def test_worker_composition_has_phase7_marker(self):
         """Worker composition should have PHASE 7 marker"""
-        import os
-        worker_composition_path = os.path.join(
-            os.path.dirname(__file__).replace("tests\\unit", "").replace("tests/unit", ""),
-            "apps", "worker", "windagent_worker", "composition.py"
-        )
-        
-        with open(worker_composition_path, 'r') as f:
-            content = f.read()
-        
+        content = _worker_composition_source()
+
         assert "Phase 7" in content or "PHASE 7" in content
 
     def test_cli_composition_has_phase7_marker(self):

@@ -1,0 +1,8 @@
+{
+  "os": "Windows Server 2026 / Windows 11",
+  "node_version": "v20.11.0",
+  "python_version": "3.11.8",
+  "browser_runner": "Playwright v1.40.0 (Chromium/Firefox/WebKit)",
+  "desktop_runner": "Tauri v2.0.0-rc",
+  "database_fixture": "Bunny Episode 01 (Clean Fixture)"
+}

@@ -18,12 +18,10 @@ from windagent_core.contracts.workers import WorkerHeartbeat, WorkerHealth
 from windagent_core.domain.types import WorkerId, RuntimeRunId, TaskId, EventId
 from windagent_core.events.envelope import EventEnvelope
 from windagent_core.events.catalog import EventCatalog
-from windagent_core.contracts.execution import ExecutionRequest, RuntimeStatusEnum
-from windagent_core.errors.exceptions import DomainError
 from windagent_worker.composition import WorkerContainer
 from windagent_worker.lease import DurableTaskLeaseManager
+from windagent_worker.pipeline import TaskExecutionPipeline
 from windagent_execution.registry import ExecutionRuntimeRegistry
-from windagent_execution.results import ExecutionResultHandler
 from windagent_execution.cancellation import CancellationBroadcaster
 
 logger = logging.getLogger("windagent.worker")
@@ -247,253 +245,36 @@ class ProductionWorker:
         """Performs a single worker poll-claim-execute-heartbeat tick with fencing token check."""
         if not self._ready:
             raise RuntimeError(f"Worker [{self.worker_id}] is not ready.")
+        return await self._pipeline().run_tick()
 
-        # Try to claim pending or abandoned task via durable queue port or lease manager
-        claimed: Any = None
-        if self.task_queue is not None:
-            claimed = await self.task_queue.claim_next(str(self.worker_id))
-        elif self.lease_manager is not None:
-            claimed = self.lease_manager.claim_task(str(self.worker_id))
+    def _pipeline(self) -> TaskExecutionPipeline:
+        """Build the explicit stage pipeline bound to this worker's collaborators."""
+        return TaskExecutionPipeline(
+            worker_id=str(self.worker_id),
+            task_queue=self.task_queue,
+            lease_manager=self.lease_manager,
+            execution_registry=self.execution_registry,
+            cancellation_broadcaster=self.cancellation_broadcaster,
+            uow_factory=self.uow_factory,
+            studio_reconciler=self.studio_reconciler,
+            emit_event=self.emit_event,
+            metrics=self.metrics,
+            set_current_task=self._set_current_task,
+            clear_current_task=self._clear_current_task,
+            cancellation_requested=lambda: self._cancellation_requested,
+            reset_cancellation=self._reset_cancellation,
+        )
 
-        if not claimed:
-            return {"status": "idle", "processed": 0}
-
-        if hasattr(claimed, "task_id"):
-            raw_tid = str(claimed.task_id)
-            fencing_token = claimed.fencing_token
-            tool_name = claimed.tool_name
-            prompt = claimed.prompt
-            parameters = claimed.parameters
-        else:
-            raw_tid = str(claimed["task_id"])
-            fencing_token = claimed.get("fencing_token", f"fence_{raw_tid}_gen_1")
-            tool_name = claimed.get("tool_name", "read_file")
-            prompt = claimed.get("prompt", "")
-            parameters = claimed.get("parameters", {})
-
-        try:
-            tid = str(TaskId(raw_tid))
-        except Exception:
-            tid = raw_tid
-
-        self._current_task_id = tid
+    def _set_current_task(self, task_id: str, fencing_token: str) -> None:
+        self._current_task_id = task_id
         self._current_fencing_token = fencing_token
-        self.emit_event(EventCatalog.TASK_CREATED, {"task_id": tid, "worker_id": str(self.worker_id)}, aggregate_id=tid)
 
-        # Redaction-safe metric capture (ids/durations/status only).
-        claimed_at = getattr(claimed, "acquired_at", None)
-        queue_wait_ms = (
-            max(0, int((datetime.now(timezone.utc) - claimed_at).total_seconds() * 1000))
-            if claimed_at
-            else 0
-        )
-        task_metric = {
-            "task_id": tid,
-            "task_type": tool_name,
-            "attempt": parameters.get("attempt", 1),
-            "queue_wait_ms": queue_wait_ms,
-            "status": "claimed",
-        }
-        tick_started = datetime.now(timezone.utc)
-
-        # Heartbeat lease renewal with fencing token validation
-        renewed = False
-        if self.task_queue is not None and hasattr(self.task_queue, "renew"):
-            renewed = await self.task_queue.renew(raw_tid, str(self.worker_id), fencing_token)
-        elif self.lease_manager is not None:
-            renewed = self.lease_manager.renew_lease(
-                raw_tid,
-                str(self.worker_id),
-                fencing_token=fencing_token,
-            )
-
-        if not renewed:
-            self._current_task_id = None
-            self._current_fencing_token = None
-            return {"status": "lease_error", "task_id": raw_tid}
-
-        # Check for cancellation signal
-        if self._cancellation_requested:
-            self.emit_event(EventCatalog.TASK_CANCELLED, {"task_id": tid}, aggregate_id=tid)
-            if self.task_queue is not None and hasattr(self.task_queue, "release"):
-                await self.task_queue.release(raw_tid, str(self.worker_id), fencing_token)
-            elif self.lease_manager is not None:
-                self.lease_manager.release_lease(raw_tid, str(self.worker_id), fencing_token=fencing_token)
-            self._current_task_id = None
-            self._current_fencing_token = None
-            self._cancellation_requested = False
-            return {"status": "cancelled", "task_id": raw_tid}
-
-        # Execute step via ExecutionRuntimeRegistry
-        exec_req = ExecutionRequest(
-            step_run_id=tid,
-            workflow_run_id=f"wf_{tid}",
-            tool_name=tool_name,
-            parameters={**parameters, "task_id": tid, "prompt": prompt},
-            attempt_id="att_1",
-            fencing_token=fencing_token,
-        )
-
-        handle = await self.execution_registry.dispatch(exec_req)
-        self.cancellation_broadcaster.register_handle(handle, self.execution_registry)
-
-        result = await self.execution_registry.get_result(handle)
-        execution_ms = max(0, int((datetime.now(timezone.utc) - tick_started).total_seconds() * 1000))
-        task_metric["execution_ms"] = execution_ms
-
-        # Validate fencing token before committing result
-        try:
-            validated_result = ExecutionResultHandler.validate_and_wrap(
-                result=result,
-                active_fencing_token=fencing_token,
-                result_fencing_token=handle.fencing_token,
-            )
-        except DomainError as err:
-            logger.error(f"Late result rejected due to fencing token error: {err}")
-            if self.task_queue is not None and hasattr(self.task_queue, "release"):
-                await self.task_queue.release(raw_tid, str(self.worker_id), fencing_token)
-            elif self.lease_manager is not None:
-                self.lease_manager.release_lease(raw_tid, str(self.worker_id), fencing_token=fencing_token)
-            self._current_task_id = None
-            self._current_fencing_token = None
-            return {"status": "fencing_violation", "task_id": raw_tid, "error": str(err)}
-
-        # Canonical finalization authority is derived from the runtime status,
-        # never from the fact that dispatch returned. Studio tasks add a
-        # stronger contract check: a successful terminal write is forbidden
-        # until the payload conforms to StudioTaskResult.
-        studio_result = None
-        result_payload = dict(validated_result.result_data or {})
-        terminal_state = (
-            "completed"
-            if validated_result.status == RuntimeStatusEnum.COMPLETED
-            else "failed"
-        )
-        terminal_error = validated_result.error
-        if parameters.get("studio_envelope"):
-            try:
-                from windagent_core.contracts.studio.models import (
-                    StudioTaskResult,
-                    StudioTaskStatus,
-                )
-
-                studio_result = StudioTaskResult.model_validate(result_payload)
-                if studio_result.status != StudioTaskStatus.SUCCEEDED:
-                    terminal_state = "failed"
-                    terminal_error = studio_result.error
-            except Exception as ex:
-                terminal_state = "failed"
-                terminal_error = (
-                    "STUDIO_RESULT_INVALID: successful Studio finalization requires "
-                    f"StudioTaskResult ({type(ex).__name__})"
-                )
-                result_payload = {
-                    "error_code": "STUDIO_RESULT_INVALID",
-                    "error": terminal_error,
-                    "task_id": tid,
-                }
-
-        terminal_event = (
-            EventCatalog.TASK_COMPLETED
-            if terminal_state == "completed"
-            else EventCatalog.TASK_FAILED
-        )
-
-        # Diagnostic emit: records intent in the in-memory observer list ONLY.
-        # The durable terminal event is written atomically inside finalize_task_execution() below.
-        self.emit_event(
-            terminal_event,
-            {"task_id": tid, "status": terminal_state},
-            aggregate_id=tid,
-        )
-
-        # Execution is over. Stop advertising/renewing the active lease before
-        # atomic finalization releases it, otherwise a concurrent heartbeat can
-        # observe the intentional release as a fencing takeover and poison the
-        # next task with a spurious cancellation request.
+    def _clear_current_task(self) -> None:
         self._current_task_id = None
         self._current_fencing_token = None
 
-        # ------------------------------------------------------------------ #
-        # Atomic Task Finalization (Phase 2 — ban_ke_hoach.md §2.1):
-        # Task state CAS, result, artifact refs, terminal event, transactional
-        # outbox, AND lease release all commit in ONE database transaction.
-        # Lease MUST NOT be released separately after this block — doing so
-        # would be a double release violating §2.1 and §2.3.
-        # ------------------------------------------------------------------ #
-        finalized_via_uow = False
-        if self.uow_factory is not None:
-            from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork
-            from windagent_core.contracts.finalization import FinalizeTaskExecutionRequest
-
-            async with SqlUnitOfWork(self.uow_factory) as uow:
-                existing = await uow.task_runs.get_by_id(tid)
-                expected_version = (existing or {}).get("version", 0) or 1
-
-                req = FinalizeTaskExecutionRequest(
-                    task_id=tid,
-                    worker_id=str(self.worker_id),
-                    lease_id=str(self._current_task_id),
-                    fencing_token=fencing_token,
-                    expected_task_version=expected_version,
-                    execution_result=result_payload,
-                    result_artifacts=[],
-                    terminal_event={
-                        "event_type": terminal_event.value
-                        if hasattr(terminal_event, "value")
-                        else terminal_event,
-                        "task_id": tid,
-                        "status": terminal_state,
-                        "error": terminal_error,
-                    },
-                    attempt_id="att_1",
-                    fencing_generation=1,
-                    terminal_state=terminal_state,
-                )
-                fin_res = await uow.finalize_task_execution(req)
-                if fin_res.status != "COMPLETED":
-                    raise RuntimeError(f"Task finalization rejected: {fin_res.error_message}")
-
-            finalized_via_uow = True
-            finalize_ms = max(0, int((datetime.now(timezone.utc) - tick_started).total_seconds() * 1000))
-            task_metric["finalize_ms"] = finalize_ms
-            task_metric["status"] = terminal_state
-            self.metrics["tasks"][tid] = task_metric
-            if terminal_state == "failed":
-                self.metrics["totals"]["failed"] = self.metrics["totals"].get("failed", 0) + 1
-            else:
-                self.metrics["totals"]["processed"] = self.metrics["totals"].get("processed", 0) + 1
-
-            # Studio completion: advance the DAG ONLY through the reconciler.
-            # A crash between the finalizer commit above and this call is
-            # covered by StudioCompletionRecovery on worker start.
-            if (
-                self.studio_reconciler is not None
-                and studio_result is not None
-            ):
-                try:
-                    await self.studio_reconciler.reconcile(studio_result)
-                    task_metric["reconciled"] = True
-                except Exception as ex:
-                    logger.warning(
-                        f"Studio reconcile failed for task [{tid}] (recovery will retry): {ex}"
-                    )
-
-        if not finalized_via_uow:
-            # Fallback: no UoW factory configured (e.g. test/legacy mode without persistent DB).
-            # Release lease manually only when atomic finalization was NOT used.
-            if self.task_queue is not None and hasattr(self.task_queue, "release"):
-                await self.task_queue.release(raw_tid, str(self.worker_id), fencing_token)
-            elif self.lease_manager is not None:
-                self.lease_manager.release_lease(raw_tid, str(self.worker_id), fencing_token=fencing_token)
-
-        self._current_task_id = None
-        self._current_fencing_token = None
-
-        response = {"status": terminal_state, "task_id": raw_tid, "processed": 1}
-        if terminal_error:
-            response["error"] = terminal_error
-        return response
+    def _reset_cancellation(self) -> None:
+        self._cancellation_requested = False
 
     async def noop_consumer_tick(self) -> dict:
         """Executes a single no-op tick for consumer verification."""

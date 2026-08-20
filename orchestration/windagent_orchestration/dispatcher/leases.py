@@ -13,7 +13,7 @@ from datetime import datetime, timezone
 from typing import Optional, Dict, Any, List
 
 from windagent_orchestration.metrics import metrics
-from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork
+from windagent_core.contracts.repositories.unit_of_work import UnitOfWorkFactory
 
 logger = logging.getLogger("windagent.orchestration.dispatcher.leases")
 
@@ -65,7 +65,7 @@ class LeaseManager:
         fencing_token = f"fence_{step_run_id}_gen_1_{uuid.uuid4().hex[:6]}"
 
         if self.uow_factory:
-            async with SqlUnitOfWork(self.uow_factory) as uow:
+            async with self.uow_factory() as uow:
                 acquired_dict = await uow.leases.acquire_lease(
                     lease_id=lease_id,
                     step_run_id=step_run_id,
@@ -109,7 +109,7 @@ class LeaseManager:
             lease.status = "released"
 
         if self.uow_factory:
-            async with SqlUnitOfWork(self.uow_factory) as uow:
+            async with self.uow_factory() as uow:
                 released = await uow.leases.release_lease(lease_id, worker_id)
                 await uow.commit()
                 return released
@@ -124,7 +124,7 @@ class LeaseManager:
                 reclaimed.append(lid)
 
         if self.uow_factory:
-            async with SqlUnitOfWork(self.uow_factory) as uow:
+            async with self.uow_factory() as uow:
                 db_reclaimed = await uow.leases.reclaim_expired_leases()
                 await uow.commit()
                 reclaimed = list(set(reclaimed + db_reclaimed))

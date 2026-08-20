@@ -15,7 +15,7 @@ import json
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-from windagent_workflows.code_video.contracts import CodeVideoPlan, Scene
+from windagent_core.contracts.code_video import CodeVideoPlan, Scene
 from windagent_tools.code_video.renderer.theme import CodeVideoVisualTheme
 from windagent_tools.code_video.renderer.diagram_renderer import DiagramRenderer, DiagramState
 from windagent_tools.code_video.renderer.title_renderer import TitleRenderer, TitleCardState, ChecklistState, OutroCardState

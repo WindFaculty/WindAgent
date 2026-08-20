@@ -1,76 +1,54 @@
 /**
- * Realtime WebSocket connection hook for an episode workspace.
+ * Realtime subscription hook for an episode workspace via @windagent/realtime.
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useQueryClient } from '../../../query';
+import { useRealtimeClient } from '../../../realtime/RealtimeProvider';
 import { EPISODE_DETAIL_QUERY_KEY } from './useEpisode';
 import { EPISODE_ARTIFACTS_QUERY_KEY, EPISODE_RUNS_QUERY_KEY } from './useEpisodeArtifacts';
 import type { EpisodeResource } from '@windagent/api-contracts';
 
 export function useEpisodeRealtime(episodeId?: string) {
   const queryClient = useQueryClient();
-  const [isConnected, setIsConnected] = useState(false);
+  const realtime = useRealtimeClient();
+  const [isConnected, setIsConnected] = useState(realtime.getState() === 'CONNECTED');
   const [lastEvent, setLastEvent] = useState<{ event: string; timestamp: string } | null>(null);
-  const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
-    if (!episodeId) return;
+    const unsubState = realtime.onStateChange((state) => {
+      setIsConnected(state === 'CONNECTED');
+    });
 
-    let unmounted = false;
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const host = window.location.host || '127.0.0.1:8000';
-    const url = `${protocol}//${host}/ws/v3/episodes/${encodeURIComponent(episodeId)}`;
-
-    let ws: WebSocket;
-    try {
-      ws = new WebSocket(url);
-      wsRef.current = ws;
-
-      ws.onopen = () => {
-        if (!unmounted) setIsConnected(true);
-      };
-
-      ws.onmessage = (e) => {
-        try {
-          const data = JSON.parse(e.data);
-          if (!unmounted) {
-            setLastEvent({ event: data.event, timestamp: data.timestamp });
-
-            if (data.event === 'episode.updated' && data.payload) {
-              queryClient.setQueryData<EpisodeResource>(
-                EPISODE_DETAIL_QUERY_KEY(episodeId),
-                data.payload
-              );
-            } else if (data.event === 'run.progress' || data.event === 'checkpoint.awaiting_approval') {
-              queryClient.invalidateQueries({ queryKey: EPISODE_DETAIL_QUERY_KEY(episodeId) });
-              queryClient.invalidateQueries({ queryKey: EPISODE_ARTIFACTS_QUERY_KEY(episodeId) });
-              queryClient.invalidateQueries({ queryKey: EPISODE_RUNS_QUERY_KEY(episodeId) });
-            }
-          }
-        } catch {
-          // ignore malformed ws messages
-        }
-      };
-
-      ws.onclose = () => {
-        if (!unmounted) setIsConnected(false);
-      };
-
-      ws.onerror = () => {
-        if (!unmounted) setIsConnected(false);
-      };
-    } catch {
-      setIsConnected(false);
+    if (!episodeId) {
+      return unsubState;
     }
 
-    return () => {
-      unmounted = true;
-      if (wsRef.current) {
-        wsRef.current.close();
+    const unsubEvents = realtime.subscribe(
+      { aggregateType: 'episode', aggregateId: episodeId },
+      (envelope) => {
+        const eventType = envelope.event_type || (envelope.payload as any)?.event;
+        const timestamp = String(envelope.occurred_at || new Date().toISOString());
+        setLastEvent({ event: eventType, timestamp });
+
+        if (eventType === 'episode.updated' && envelope.payload) {
+          queryClient.setQueryData<EpisodeResource>(
+            EPISODE_DETAIL_QUERY_KEY(episodeId),
+            envelope.payload as unknown as EpisodeResource
+          );
+        } else if (eventType === 'run.progress' || eventType === 'checkpoint.awaiting_approval') {
+          queryClient.invalidateQueries({ queryKey: EPISODE_DETAIL_QUERY_KEY(episodeId) });
+          queryClient.invalidateQueries({ queryKey: EPISODE_ARTIFACTS_QUERY_KEY(episodeId) });
+          queryClient.invalidateQueries({ queryKey: EPISODE_RUNS_QUERY_KEY(episodeId) });
+        }
       }
+    );
+
+    return () => {
+      unsubState();
+      unsubEvents();
     };
-  }, [episodeId, queryClient]);
+  }, [episodeId, realtime, queryClient]);
 
   return {
     isConnected,

@@ -12,6 +12,38 @@ from sqlalchemy import (
 from windagent_storage.orm.models import BaseORM, default_utc_now
 
 
+class V3ResourceORM(BaseORM):
+    """Namespaced durable V3 resource authority (Phase 4).
+
+    Backs every canonical mutable V3 router aggregate that has no dedicated
+    domain table. Each router uses a distinct ``namespace``; ``resource_id``
+    is the aggregate's canonical ID; ``data_json`` holds the full resource
+    payload; ``version`` provides optimistic concurrency; ``idempotency_key``
+    provides durable idempotency for create operations.
+    """
+
+    __tablename__ = "v3_resources"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    namespace = Column(String(64), nullable=False, index=True)
+    resource_id = Column(String(128), nullable=False)
+    data_json = Column(Text, nullable=False, default="{}")
+    version = Column(Integer, nullable=False, default=1)
+    idempotency_key = Column(String(128), nullable=True)
+    created_at = Column(DateTime, nullable=False, default=default_utc_now)
+    updated_at = Column(DateTime, nullable=False, default=default_utc_now)
+
+    __table_args__ = (
+        Index("ix_v3_resources_namespace_id", "namespace", "resource_id", unique=True),
+        Index(
+            "ix_v3_resources_namespace_idem",
+            "namespace",
+            "idempotency_key",
+            unique=True,
+        ),
+    )
+
+
 class ProviderVendorORM(BaseORM):
     __tablename__ = "provider_vendors"
 

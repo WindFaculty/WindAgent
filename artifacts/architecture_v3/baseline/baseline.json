@@ -1,0 +1,933 @@
+{
+  "schema_version": 1,
+  "captured_at": "2026-08-19T10:31:40.987423Z",
+  "source_authority": {
+    "expected_head_sha": "ac61c38cdca90100a14ec0ea26c4d19c35f7caa4",
+    "actual_head_sha": "ac61c38cdca90100a14ec0ea26c4d19c35f7caa4",
+    "head_matches": true,
+    "expected_branch": "refactor/architecture-v3-hardening",
+    "actual_branch": "refactor/architecture-v3-hardening",
+    "branch_matches": true,
+    "main_merged_automatically": false
+  },
+  "repository_state": {
+    "dirty": true,
+    "dirty_file_count": 105,
+    "preexisting_dirty_file_count": 104,
+    "dirty_files": [
+      {
+        "status": " M",
+        "path": "artifacts/architecture_v2_runtime_cutover/phase_13/dependency_boundary_report.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/architecture_v2_runtime_cutover/phase_13/import_graph.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/final/cue_sheet.csv"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/final/final_video_hash.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/final/script_with_timecodes.md"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/final/timeline.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/final/video_02_visual_master_1080p.mp4"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/final/video_02_visual_master_1440p.mp4"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/final/video_manifest.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_07/capture_receipt.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_07/frame_report.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_07/media_probe.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_07/phase_report.md"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_07/phase_verdict.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_07/test_receipt.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_09/PASS_01_COLD_OPEN.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_09/PASS_02_REPO_SETUP.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_09/PASS_03_MESSAGE.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_09/PASS_04_CONFIG.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_09/PASS_05_LLM_PROTOCOL.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_09/PASS_06_FAKE_LLM.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_09/PASS_07_AGENT_CORE.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_09/PASS_08_IS_THIS_AGENT.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_09/PASS_09_REAL_PROVIDER.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_09/PASS_10_API_SECURITY.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_09/PASS_11_FIRST_RUN.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_09/PASS_12_TESTING.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_09/PASS_13_NOT_YET.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_09/PASS_14_ARCH_REVIEW.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_09/PASS_15_GIT_MILESTONE.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_09/PASS_16_OUTRO_TEASER.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_09/architecture_report.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_09/implementation_manifest.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_09/input_manifest.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_09/phase_report.md"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_09/phase_verdict.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_09/recording_manifest.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_09/secret_scan_receipt.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_09/test_receipt.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_10/architecture_report.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_10/implementation_manifest.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_10/input_manifest.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_10/phase_report.md"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_10/phase_verdict.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_10/test_receipt.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_12/architecture_report.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_12/handoff_manifest.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_12/implementation_manifest.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_12/input_manifest.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_12/phase_report.md"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_12/phase_verdict.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_12/test_receipt.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/records/PASS_01_COLD_OPEN.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/records/PASS_02_REPO_SETUP.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/records/PASS_03_MESSAGE.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/records/PASS_04_CONFIG.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/records/PASS_05_LLM_PROTOCOL.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/records/PASS_06_FAKE_LLM.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/records/PASS_07_AGENT_CORE.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/records/PASS_08_IS_THIS_AGENT.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/records/PASS_09_REAL_PROVIDER.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/records/PASS_10_API_SECURITY.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/records/PASS_11_FIRST_RUN.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/records/PASS_12_TESTING.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/records/PASS_13_NOT_YET.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/records/PASS_14_ARCH_REVIEW.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/records/PASS_15_GIT_MILESTONE.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/records/PASS_16_OUTRO_TEASER.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/records/recording_manifest.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/takes/S01_T01.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/takes/S02_T01.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/takes/S03_T01.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/takes/S04_T01.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/takes/S05_T01.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/takes/S06_T01.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/takes/S07_T01.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/takes/S08_T01.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/takes/S09_T01.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/takes/S10_T01.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/takes/S11_T01.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/takes/S12_T01.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/takes/S13_T01.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/takes/S14_T01.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/takes/S15_T01.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/takes/S16_T01.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/takes/S17_T01.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/takes/S18_T01.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/takes/S19_T01.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/takes/takes_manifest.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/takes/takes_timeline.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/frontend_restructure/openapi/openapi-v3.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/frontend_restructure/phase_03/direct_fetch_delta.json"
+      },
+      {
+        "status": " M",
+        "path": "ban_ke_hoach_v1.md"
+      },
+      {
+        "status": "??",
+        "path": "artifacts/architecture_v3/"
+      },
+      {
+        "status": "??",
+        "path": "artifacts/code_video/video_02/final/sample_frame_s02.png"
+      },
+      {
+        "status": "??",
+        "path": "artifacts/code_video/video_02/final/sample_frame_s04.png"
+      },
+      {
+        "status": "??",
+        "path": "artifacts/code_video/video_02/final/sample_frame_s06.png"
+      },
+      {
+        "status": "??",
+        "path": "artifacts/code_video/video_02/final/sample_frame_s06_v2.png"
+      },
+      {
+        "status": "??",
+        "path": "artifacts/code_video/video_02/plans/video_02_70scenes_plan.json"
+      },
+      {
+        "status": "??",
+        "path": "artifacts/production_ui/"
+      },
+      {
+        "status": "??",
+        "path": "output/"
+      },
+      {
+        "status": "??",
+        "path": "scripts/freeze_architecture_v3_baseline.py"
+      },
+      {
+        "status": "??",
+        "path": "scripts/screenshots/"
+      },
+      {
+        "status": "??",
+        "path": "scripts/ui_test_results.json"
+      },
+      {
+        "status": "??",
+        "path": "workspace/"
+      }
+    ],
+    "preexisting_dirty_files": [
+      {
+        "status": " M",
+        "path": "artifacts/architecture_v2_runtime_cutover/phase_13/dependency_boundary_report.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/architecture_v2_runtime_cutover/phase_13/import_graph.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/final/cue_sheet.csv"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/final/final_video_hash.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/final/script_with_timecodes.md"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/final/timeline.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/final/video_02_visual_master_1080p.mp4"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/final/video_02_visual_master_1440p.mp4"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/final/video_manifest.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_07/capture_receipt.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_07/frame_report.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_07/media_probe.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_07/phase_report.md"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_07/phase_verdict.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_07/test_receipt.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_09/PASS_01_COLD_OPEN.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_09/PASS_02_REPO_SETUP.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_09/PASS_03_MESSAGE.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_09/PASS_04_CONFIG.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_09/PASS_05_LLM_PROTOCOL.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_09/PASS_06_FAKE_LLM.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_09/PASS_07_AGENT_CORE.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_09/PASS_08_IS_THIS_AGENT.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_09/PASS_09_REAL_PROVIDER.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_09/PASS_10_API_SECURITY.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_09/PASS_11_FIRST_RUN.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_09/PASS_12_TESTING.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_09/PASS_13_NOT_YET.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_09/PASS_14_ARCH_REVIEW.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_09/PASS_15_GIT_MILESTONE.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_09/PASS_16_OUTRO_TEASER.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_09/architecture_report.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_09/implementation_manifest.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_09/input_manifest.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_09/phase_report.md"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_09/phase_verdict.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_09/recording_manifest.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_09/secret_scan_receipt.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_09/test_receipt.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_10/architecture_report.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_10/implementation_manifest.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_10/input_manifest.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_10/phase_report.md"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_10/phase_verdict.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_10/test_receipt.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_12/architecture_report.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_12/handoff_manifest.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_12/implementation_manifest.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_12/input_manifest.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_12/phase_report.md"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_12/phase_verdict.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/phase_12/test_receipt.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/records/PASS_01_COLD_OPEN.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/records/PASS_02_REPO_SETUP.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/records/PASS_03_MESSAGE.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/records/PASS_04_CONFIG.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/records/PASS_05_LLM_PROTOCOL.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/records/PASS_06_FAKE_LLM.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/records/PASS_07_AGENT_CORE.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/records/PASS_08_IS_THIS_AGENT.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/records/PASS_09_REAL_PROVIDER.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/records/PASS_10_API_SECURITY.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/records/PASS_11_FIRST_RUN.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/records/PASS_12_TESTING.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/records/PASS_13_NOT_YET.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/records/PASS_14_ARCH_REVIEW.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/records/PASS_15_GIT_MILESTONE.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/records/PASS_16_OUTRO_TEASER.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/records/recording_manifest.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/takes/S01_T01.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/takes/S02_T01.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/takes/S03_T01.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/takes/S04_T01.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/takes/S05_T01.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/takes/S06_T01.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/takes/S07_T01.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/takes/S08_T01.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/takes/S09_T01.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/takes/S10_T01.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/takes/S11_T01.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/takes/S12_T01.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/takes/S13_T01.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/takes/S14_T01.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/takes/S15_T01.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/takes/S16_T01.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/takes/S17_T01.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/takes/S18_T01.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/takes/S19_T01.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/takes/takes_manifest.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/code_video/video_02/takes/takes_timeline.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/frontend_restructure/openapi/openapi-v3.json"
+      },
+      {
+        "status": " M",
+        "path": "artifacts/frontend_restructure/phase_03/direct_fetch_delta.json"
+      },
+      {
+        "status": " M",
+        "path": "ban_ke_hoach_v1.md"
+      },
+      {
+        "status": "??",
+        "path": "artifacts/architecture_v3/"
+      },
+      {
+        "status": "??",
+        "path": "artifacts/code_video/video_02/final/sample_frame_s02.png"
+      },
+      {
+        "status": "??",
+        "path": "artifacts/code_video/video_02/final/sample_frame_s04.png"
+      },
+      {
+        "status": "??",
+        "path": "artifacts/code_video/video_02/final/sample_frame_s06.png"
+      },
+      {
+        "status": "??",
+        "path": "artifacts/code_video/video_02/final/sample_frame_s06_v2.png"
+      },
+      {
+        "status": "??",
+        "path": "artifacts/code_video/video_02/plans/video_02_70scenes_plan.json"
+      },
+      {
+        "status": "??",
+        "path": "artifacts/production_ui/"
+      },
+      {
+        "status": "??",
+        "path": "output/"
+      },
+      {
+        "status": "??",
+        "path": "scripts/screenshots/"
+      },
+      {
+        "status": "??",
+        "path": "scripts/ui_test_results.json"
+      },
+      {
+        "status": "??",
+        "path": "workspace/"
+      }
+    ],
+    "submodules": ""
+  },
+  "environment": {
+    "platform": "Windows-10-10.0.26200-SP0",
+    "python": {
+      "version": "3.11.15",
+      "implementation": "CPython",
+      "executable": "D:\\code_ca_nhan\\WindAgent\\.venv\\Scripts\\python.exe"
+    },
+    "node_version": "v22.23.1",
+    "npm_version": "10.9.8",
+    "uv_version": "uv 0.11.28 (ebf0f43d7 2026-07-07 x86_64-pc-windows-msvc)",
+    "lockfiles": {
+      "uv.lock": {
+        "exists": true,
+        "sha256": "31a9583eb73b09c090256bea6f6a24024ab46af283dad256879972832f148cc6",
+        "size_bytes": 463998
+      },
+      "frontend/package-lock.json": {
+        "exists": true,
+        "sha256": "32b487c10f22deead8b2d26612f430bf128caf7fbd0a4a61f5b1b3a82cb7d950",
+        "size_bytes": 89186
+      },
+      "apps/web/package-lock.json": {
+        "exists": true,
+        "sha256": "d9242ec3c08e2bb2c0d84562295e617df6c0758dcb39d5582fb7f5f660c2b908",
+        "size_bytes": 86810
+      },
+      "apps/desktop/package-lock.json": {
+        "exists": true,
+        "sha256": "2e389348a4641367d01d816486c0946856ae5baf6eabbccd6e586410a8d4877d",
+        "size_bytes": 112037
+      }
+    }
+  },
+  "test_baseline": {
+    "all_required_commands_executed": true,
+    "all_required_commands_completed": true,
+    "summary": {
+      "PASS": 3,
+      "FAIL": 2,
+      "TIMEOUT": 0,
+      "NOT_EXECUTED": 0
+    },
+    "all_checks_passed": false
+  },
+  "artifacts": {
+    "dependency-report.json": {
+      "exists": true,
+      "sha256": "87f52ed6189bfbea34559f05b8dd6190d3e17116ea36bbf96c11812af7344820",
+      "size_bytes": 25109
+    },
+    "test-report.json": {
+      "exists": true,
+      "sha256": "148226db6752197b0a8c105f67ec9e32d6dca661eade0e63688e3e2f50a1940f",
+      "size_bytes": 316800
+    },
+    "workspace-packages.json": {
+      "exists": true,
+      "sha256": "e1452a9dcddf4db8f3c090b8760dd16a5c79994c7c120f8c2b9ad1acb7e4fc7d",
+      "size_bytes": 16796
+    },
+    "route-inventory.json": {
+      "exists": true,
+      "sha256": "d35480fb28a9c70d702c11f03f8ba54b0bfefd87f7a3ea883f9867e8cdf6529d",
+      "size_bytes": 71482
+    },
+    "git-state.txt": {
+      "exists": true,
+      "sha256": "26cf2814fecbf5605a647a1b1df5e0e30a5b47244d3a1bf4e8fbe9e862e79367",
+      "size_bytes": 7308
+    }
+  },
+  "gate": "ARCH_V3_BASELINE_FROZEN",
+  "frozen": true,
+  "note": "A frozen baseline may contain failing checks; Phase 0 records facts and does not repair later-phase architecture violations."
+}

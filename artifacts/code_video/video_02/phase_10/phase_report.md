@@ -60,8 +60,8 @@ Phase 10 là giai đoạn **ghép nối thị giác toàn diện (Visual Assembl
 
 ## 3. Danh mục Artifacts Xuất bản (Final Deliverables)
 
-- **Master Visual 1440p**: `artifacts/code_video/video_02/final/video_02_visual_master_1440p.mp4` (SHA-256: `ccad703d117a266bb81727929424c02172e86d4e492731fd904f19c2cf641399`)
-- **Delivery Visual 1080p**: `artifacts/code_video/video_02/final/video_02_visual_master_1080p.mp4` (SHA-256: `94cc38f9a7751a8eae6464deb55011efbdd0d237fbecceadf43ac80ec21aafac`)
+- **Master Visual 1440p**: `artifacts/code_video/video_02/final/video_02_visual_master_1440p.mp4` (SHA-256: `92a8e4b6fc4a341afcd652fd312a94749726c72bb310e21d1f8e08a4570cc047`)
+- **Delivery Visual 1080p**: `artifacts/code_video/video_02/final/video_02_visual_master_1080p.mp4` (SHA-256: `b38b7dfc4f09a13457de58a8cda38715baa9093801b26c9a7012dc849781d3f3`)
 - **Cue Sheet CSV**: `artifacts/code_video/video_02/final/cue_sheet.csv`
 - **Timeline Map JSON**: `artifacts/code_video/video_02/final/timeline.json`
 - **Video Manifest JSON**: `artifacts/code_video/video_02/final/video_manifest.json`

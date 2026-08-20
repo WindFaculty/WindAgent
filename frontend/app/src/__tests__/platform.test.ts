@@ -27,7 +27,7 @@ describe('Phase 14 Platform Adapter & Capability Model', () => {
       expect(caps.supportsDeepLinks).toBe(true);
     });
 
-    it('provides valid simulated system metrics for dashboard/monitoring', async () => {
+    it('provides baseline system metrics for dashboard/monitoring', async () => {
       const adapter = new WebPlatformAdapter();
       const metrics = await adapter.getSystemMetrics();
 

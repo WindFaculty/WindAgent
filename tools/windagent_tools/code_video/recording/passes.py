@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from windagent_core.errors.exceptions import NotFoundError, ValidationError
-from windagent_workflows.code_video.contracts import (
+from windagent_core.contracts.code_video import (
     Resolution,
     VisualMode,
 )

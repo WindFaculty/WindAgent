@@ -257,7 +257,7 @@ async def db():
 @pytest.fixture
 def service(db):
     return StudioRunService(
-        db.session_factory,
+        lambda: StudioUnitOfWork(db.session_factory),
         StudioTaskSubmissionAdapter(db.session_factory),
         retry_budget=2,
     )
@@ -267,7 +267,7 @@ def service(db):
 def studio(db):
     """Throwaway StudioRunService used only to seed series/episodes."""
     return StudioRunService(
-        db.session_factory,
+        lambda: StudioUnitOfWork(db.session_factory),
         StudioTaskSubmissionAdapter(db.session_factory),
         retry_budget=2,
     )
@@ -743,12 +743,18 @@ async def test_duplicate_delivery_is_idempotent(db, studio):
     )
     assert task_id == "stsk_dup_1"
 
+    # Claim the submitted task for real as worker wkr_a5 so the exact lease
+    # (lease_id, fencing token, generation) exists for the Phase 5 finalizer.
+    claimed = await SqlDurableTaskQueue(db.session_factory).claim_next("wkr_a5")
+    assert claimed is not None and claimed.task_id == task_id
+
     req = FinalizeTaskExecutionRequest(
         task_id=task_id,
         worker_id="wkr_a5",
-        lease_id="lease_dup_1",
-        fencing_token="fence_dup_1",
+        lease_id=claimed.lease_id,
+        fencing_token=claimed.fencing_token,
         expected_task_version=1,
+        fencing_generation=claimed.lease_generation,
         execution_result={"status": "SUCCEEDED"},
         terminal_state="completed",
     )

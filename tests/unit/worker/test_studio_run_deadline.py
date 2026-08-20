@@ -35,6 +35,7 @@ from windagent_storage.orm.models import BaseORM
 from windagent_storage.queue.sql_queue import SqlDurableTaskQueue
 from windagent_storage.studio.run_nodes import SqlStudioRunNodeRepository
 from windagent_storage.studio.task_submission import StudioTaskSubmissionAdapter
+from windagent_storage.unit_of_work.studio_uow import StudioUnitOfWork
 from windagent_worker.runner import ProductionWorker
 from windagent_worker.studio_runtime import (
     STUDIO_RUN_DEADLINE_EXCEEDED,
@@ -117,7 +118,7 @@ async def db():
 @pytest.fixture
 def service(db):
     return StudioRunService(
-        db.session_factory,
+        lambda: StudioUnitOfWork(db.session_factory),
         StudioTaskSubmissionAdapter(db.session_factory),
         retry_budget=2,
     )
@@ -127,7 +128,7 @@ def service(db):
 def studio(db):
     """Throwaway StudioRunService used only to seed series/episodes."""
     return StudioRunService(
-        db.session_factory,
+        lambda: StudioUnitOfWork(db.session_factory),
         StudioTaskSubmissionAdapter(db.session_factory),
         retry_budget=2,
     )

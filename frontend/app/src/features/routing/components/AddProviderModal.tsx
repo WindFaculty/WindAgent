@@ -68,10 +68,12 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({ isOpen, onCl
       name: name.trim(),
       subName: providerType === 'custom' ? 'Custom Endpoint' : name.trim(),
       endpoint: endpoint.trim(),
-      credentialsStatus: apiKey ? 'valid' : 'warning',
+      // A saved credential is configured, not validated. Only the server
+      // test-connection receipt may promote connection/credential health.
+      credentialsStatus: 'warning',
       modelsCount: models.length || 1,
       ruleSet: ruleSet,
-      status: 'connected',
+      status: 'warning',
       apiKeyMasked: apiKey ? `••••••••••••${apiKey.slice(-4)}` : '••••••••••••••••••••••••',
       orgId: orgId.trim() || undefined,
       timeoutSec: 30,
@@ -81,8 +83,8 @@ export const AddProviderModal: React.FC<AddProviderModalProps> = ({ isOpen, onCl
       maxTokens: 4096,
       streaming: true,
       enableCache: true,
-      lastTestLatency: 180,
-      lastTestTime: 'Just now',
+      lastTestLatency: undefined,
+      lastTestTime: undefined,
     };
 
     onAdd(newProvider);

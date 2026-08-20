@@ -7,7 +7,7 @@
 **Tổng thời lượng Master**: **16:15.000 (975,000 ms = 29,250 frames @ 30fps)**  
 **Độ phân giải Master Canvas**: 2560×1440 (Master) & 1920×1080 (Delivery)  
 **Chính sách Audio**: **EXCLUDED** (0 audio stream, bàn giao nguyên đai nguyên kiện cho khâu lồng tiếng thủ công)  
-**Mã băm chương trình (Program Master Hash)**: `e6232c7d84f954531aa809eda23e7bfa65d4c950e1abd6edd239b98368b305f0`  
+**Mã băm chương trình (Program Master Hash)**: `750d2c91f3a2ecec2b2ed178190e41552a2b5f90b42c11618a9ebbb52cb35e4a`  
 **Trạng thái chung**: **PASS 100% (24/24 Tiêu chí Definition of Done)**  
 
 ---

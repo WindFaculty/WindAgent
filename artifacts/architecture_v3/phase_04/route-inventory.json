@@ -1,0 +1,1672 @@
+{
+  "phase": "04",
+  "generated_by": "scripts/generate_architecture_v3_phase4_inventory.py",
+  "route_count": 185,
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/api/v3/agent-definitions",
+      "module": "windagent_api.routers.v3.agent_definitions.list_agent_definitions",
+      "classification": "DURABLE",
+      "authority": "v3_resources:agent_definitions",
+      "source": "v3_resources:agent_definitions",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/agent-definitions",
+      "module": "windagent_api.routers.v3.agent_definitions.create_agent_definition",
+      "classification": "DURABLE",
+      "authority": "v3_resources:agent_definitions",
+      "source": "v3_resources:agent_definitions",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v3/agent-definitions/{definition_id}",
+      "module": "windagent_api.routers.v3.agent_definitions.delete_agent_definition",
+      "classification": "DURABLE",
+      "authority": "v3_resources:agent_definitions",
+      "source": "v3_resources:agent_definitions",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/agent-definitions/{definition_id}",
+      "module": "windagent_api.routers.v3.agent_definitions.get_agent_definition",
+      "classification": "DURABLE",
+      "authority": "v3_resources:agent_definitions",
+      "source": "v3_resources:agent_definitions",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v3/agent-definitions/{definition_id}",
+      "module": "windagent_api.routers.v3.agent_definitions.update_agent_definition",
+      "classification": "DURABLE",
+      "authority": "v3_resources:agent_definitions",
+      "source": "v3_resources:agent_definitions",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/agent-definitions/{definition_id}/activity",
+      "module": "windagent_api.routers.v3.agent_definitions.get_agent_activity",
+      "classification": "DURABLE",
+      "authority": "v3_resources:agent_activity",
+      "source": "v3_resources:agent_activity",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/agent-instances",
+      "module": "windagent_api.routers.v3.agent_instances.list_agent_instances",
+      "classification": "DURABLE",
+      "authority": "multi-agent-sql:agent_instances",
+      "source": "multi-agent-sql:agent_instances",
+      "migration_disposition": "cutover-to-dedicated-multi-agent-sql"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/agent-instances",
+      "module": "windagent_api.routers.v3.agent_instances.launch_agent_instance",
+      "classification": "DURABLE",
+      "authority": "multi-agent-sql:agent_instances",
+      "source": "multi-agent-sql:agent_instances",
+      "migration_disposition": "cutover-to-dedicated-multi-agent-sql"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/agent-instances/{instance_id}",
+      "module": "windagent_api.routers.v3.agent_instances.get_agent_instance",
+      "classification": "DURABLE",
+      "authority": "multi-agent-sql:agent_instances",
+      "source": "multi-agent-sql:agent_instances",
+      "migration_disposition": "cutover-to-dedicated-multi-agent-sql"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/agent-instances/{instance_id}/restart",
+      "module": "windagent_api.routers.v3.agent_instances.restart_agent_instance",
+      "classification": "DURABLE",
+      "authority": "multi-agent-sql:agent_instances",
+      "source": "multi-agent-sql:agent_instances",
+      "migration_disposition": "cutover-to-dedicated-multi-agent-sql"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/agent-instances/{instance_id}/start",
+      "module": "windagent_api.routers.v3.agent_instances.start_agent_instance",
+      "classification": "DURABLE",
+      "authority": "multi-agent-sql:agent_instances",
+      "source": "multi-agent-sql:agent_instances",
+      "migration_disposition": "cutover-to-dedicated-multi-agent-sql"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/agent-instances/{instance_id}/stop",
+      "module": "windagent_api.routers.v3.agent_instances.stop_agent_instance",
+      "classification": "DURABLE",
+      "authority": "multi-agent-sql:agent_instances",
+      "source": "multi-agent-sql:agent_instances",
+      "migration_disposition": "cutover-to-dedicated-multi-agent-sql"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/agents/metrics",
+      "module": "windagent_api.routers.v3.agent_definitions.get_agent_metrics",
+      "classification": "DERIVED",
+      "authority": "v3_resources:agent_definitions,multi-agent-sql:agent_instances",
+      "source": "v3_resources:agent_definitions,multi-agent-sql:agent_instances",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/assets",
+      "module": "windagent_api.routers.v3.assets.list_assets",
+      "classification": "DURABLE",
+      "authority": "v3_resources:assets",
+      "source": "v3_resources:assets",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/assets",
+      "module": "windagent_api.routers.v3.assets.create_asset",
+      "classification": "DURABLE",
+      "authority": "v3_resources:assets",
+      "source": "v3_resources:assets",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/assets/{asset_id}",
+      "module": "windagent_api.routers.v3.assets.get_asset",
+      "classification": "DURABLE",
+      "authority": "v3_resources:assets",
+      "source": "v3_resources:assets",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/assets/{asset_id}/actions/approve",
+      "module": "windagent_api.routers.v3.assets.approve_asset",
+      "classification": "DURABLE",
+      "authority": "v3_resources:assets",
+      "source": "v3_resources:assets",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/assets/{asset_id}/actions/reject",
+      "module": "windagent_api.routers.v3.assets.reject_asset",
+      "classification": "DURABLE",
+      "authority": "v3_resources:assets",
+      "source": "v3_resources:assets",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/assets/{asset_id}/dependencies",
+      "module": "windagent_api.routers.v3.assets.get_asset_dependencies",
+      "classification": "DURABLE",
+      "authority": "v3_resources:assets",
+      "source": "v3_resources:assets",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/assets/{asset_id}/provenance",
+      "module": "windagent_api.routers.v3.assets.get_asset_provenance",
+      "classification": "DURABLE",
+      "authority": "v3_resources:assets",
+      "source": "v3_resources:assets",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/assets/{asset_id}/revisions",
+      "module": "windagent_api.routers.v3.assets.list_asset_revisions",
+      "classification": "DURABLE",
+      "authority": "v3_resources:asset_revisions",
+      "source": "v3_resources:asset_revisions",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/browser/sessions",
+      "module": "windagent_api.routers.v3.browser.list_browser_sessions",
+      "classification": "DERIVED",
+      "authority": "runtime:browser-sessions",
+      "source": "runtime:browser-sessions",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/browser/sessions",
+      "module": "windagent_api.routers.v3.browser.create_browser_session",
+      "classification": "DERIVED",
+      "authority": "runtime:browser-sessions",
+      "source": "runtime:browser-sessions",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v3/browser/sessions/{session_id}",
+      "module": "windagent_api.routers.v3.browser.browser_close",
+      "classification": "DERIVED",
+      "authority": "runtime:browser-sessions",
+      "source": "runtime:browser-sessions",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/browser/sessions/{session_id}",
+      "module": "windagent_api.routers.v3.browser.get_browser_session",
+      "classification": "DERIVED",
+      "authority": "runtime:browser-sessions",
+      "source": "runtime:browser-sessions",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/browser/sessions/{session_id}/click",
+      "module": "windagent_api.routers.v3.browser.browser_click",
+      "classification": "DERIVED",
+      "authority": "runtime:browser-sessions",
+      "source": "runtime:browser-sessions",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/browser/sessions/{session_id}/extract",
+      "module": "windagent_api.routers.v3.browser.browser_extract",
+      "classification": "DERIVED",
+      "authority": "runtime:browser-sessions",
+      "source": "runtime:browser-sessions",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/browser/sessions/{session_id}/navigate",
+      "module": "windagent_api.routers.v3.browser.browser_navigate",
+      "classification": "DERIVED",
+      "authority": "runtime:browser-sessions",
+      "source": "runtime:browser-sessions",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/browser/sessions/{session_id}/screenshot",
+      "module": "windagent_api.routers.v3.browser.browser_screenshot",
+      "classification": "DERIVED",
+      "authority": "runtime:browser-sessions",
+      "source": "runtime:browser-sessions",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/browser/sessions/{session_id}/scroll",
+      "module": "windagent_api.routers.v3.browser.browser_scroll",
+      "classification": "DERIVED",
+      "authority": "runtime:browser-sessions",
+      "source": "runtime:browser-sessions",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/browser/sessions/{session_id}/type",
+      "module": "windagent_api.routers.v3.browser.browser_type",
+      "classification": "DERIVED",
+      "authority": "runtime:browser-sessions",
+      "source": "runtime:browser-sessions",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v3/characters/{character_id}",
+      "module": "windagent_api.routers.v3.characters.delete_character",
+      "classification": "DURABLE",
+      "authority": "v3_resources:characters",
+      "source": "v3_resources:characters",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/characters/{character_id}",
+      "module": "windagent_api.routers.v3.characters.get_character",
+      "classification": "DURABLE",
+      "authority": "v3_resources:characters",
+      "source": "v3_resources:characters",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v3/characters/{character_id}",
+      "module": "windagent_api.routers.v3.characters.update_character",
+      "classification": "DURABLE",
+      "authority": "v3_resources:characters",
+      "source": "v3_resources:characters",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/characters/{character_id}/assets",
+      "module": "windagent_api.routers.v3.characters.get_character_assets",
+      "classification": "DURABLE",
+      "authority": "v3_resources:characters",
+      "source": "v3_resources:characters",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/characters/{character_id}/relationships",
+      "module": "windagent_api.routers.v3.characters.get_character_relationships",
+      "classification": "DURABLE",
+      "authority": "v3_resources:characters",
+      "source": "v3_resources:characters",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/conversations",
+      "module": "windagent_api.routers.v3.conversations.list_conversations",
+      "classification": "DURABLE",
+      "authority": "multi-agent-sql:conversations",
+      "source": "multi-agent-sql:conversations",
+      "migration_disposition": "cutover-to-dedicated-multi-agent-sql"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/conversations",
+      "module": "windagent_api.routers.v3.conversations.create_conversation",
+      "classification": "DURABLE",
+      "authority": "multi-agent-sql:conversations",
+      "source": "multi-agent-sql:conversations",
+      "migration_disposition": "cutover-to-dedicated-multi-agent-sql"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/conversations/{conversation_id}",
+      "module": "windagent_api.routers.v3.conversations.get_conversation",
+      "classification": "DURABLE",
+      "authority": "multi-agent-sql:conversations,agent_instances,conversation_events",
+      "source": "multi-agent-sql:conversations,agent_instances,conversation_events,v3_resources:tasks",
+      "migration_disposition": "cutover-to-dedicated-multi-agent-sql"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/conversations/{conversation_id}/agents",
+      "module": "windagent_api.routers.v3.conversations.get_conversation_agents",
+      "classification": "DURABLE",
+      "authority": "multi-agent-sql:agent_instances",
+      "source": "multi-agent-sql:agent_instances",
+      "migration_disposition": "cutover-to-dedicated-multi-agent-sql"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/conversations/{conversation_id}/agents/{agent_id}/stop",
+      "module": "windagent_api.routers.v3.conversations.stop_conversation_agent",
+      "classification": "DURABLE",
+      "authority": "multi-agent-sql:agent_instances",
+      "source": "multi-agent-sql:agent_instances",
+      "migration_disposition": "cutover-to-dedicated-multi-agent-sql"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/conversations/{conversation_id}/events",
+      "module": "windagent_api.routers.v3.conversations.get_conversation_events",
+      "classification": "DURABLE",
+      "authority": "multi-agent-sql:conversation_events",
+      "source": "multi-agent-sql:conversation_events",
+      "migration_disposition": "cutover-to-dedicated-multi-agent-sql"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/conversations/{conversation_id}/tasks",
+      "module": "windagent_api.routers.v3.conversations.get_conversation_tasks",
+      "classification": "DURABLE",
+      "authority": "v3_resources:tasks",
+      "source": "v3_resources:tasks",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/dashboard/summary",
+      "module": "windagent_api.routers.v3.dashboard.get_dashboard_summary",
+      "classification": "DERIVED",
+      "authority": "v3_resources:projects,episodes,tasks",
+      "source": "v3_resources:projects,episodes,tasks",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/episodes",
+      "module": "windagent_api.routers.v3.episodes.list_all_episodes",
+      "classification": "DURABLE",
+      "authority": "v3_resources:episodes",
+      "source": "v3_resources:episodes",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v3/episodes/{episode_id}",
+      "module": "windagent_api.routers.v3.episodes.delete_episode",
+      "classification": "DURABLE",
+      "authority": "v3_resources:episodes",
+      "source": "v3_resources:episodes",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/episodes/{episode_id}",
+      "module": "windagent_api.routers.v3.episodes.get_episode_detail",
+      "classification": "DURABLE",
+      "authority": "v3_resources:episodes",
+      "source": "v3_resources:episodes",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v3/episodes/{episode_id}",
+      "module": "windagent_api.routers.v3.episodes.update_episode",
+      "classification": "DURABLE",
+      "authority": "v3_resources:episodes",
+      "source": "v3_resources:episodes",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/episodes/{episode_id}/artifacts",
+      "module": "windagent_api.routers.v3.episodes.get_episode_artifacts",
+      "classification": "DURABLE",
+      "authority": "v3_resources:episode_artifacts",
+      "source": "v3_resources:episode_artifacts",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/episodes/{episode_id}/cancel-run",
+      "module": "windagent_api.routers.v3.episodes.cancel_run",
+      "classification": "DURABLE",
+      "authority": "v3_resources:episode_runs",
+      "source": "v3_resources:episode_runs",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/episodes/{episode_id}/decision",
+      "module": "windagent_api.routers.v3.episodes.submit_checkpoint_decision",
+      "classification": "DURABLE",
+      "authority": "v3_resources:episodes",
+      "source": "v3_resources:episodes",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/episodes/{episode_id}/lock",
+      "module": "windagent_api.routers.v3.episodes.lock_screenplay",
+      "classification": "DURABLE",
+      "authority": "v3_resources:episodes",
+      "source": "v3_resources:episodes",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/episodes/{episode_id}/production",
+      "module": "windagent_api.routers.v3.production.get_production_plan",
+      "classification": "DURABLE",
+      "authority": "v3_resources:production_plans",
+      "source": "v3_resources:production_plans",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/episodes/{episode_id}/production/animation/submit",
+      "module": "windagent_api.routers.v3.production.submit_animation_job",
+      "classification": "DURABLE",
+      "authority": "v3_resources:production_jobs",
+      "source": "v3_resources:production_jobs",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/episodes/{episode_id}/production/audio/submit",
+      "module": "windagent_api.routers.v3.production.submit_audio_job",
+      "classification": "DURABLE",
+      "authority": "v3_resources:production_jobs",
+      "source": "v3_resources:production_jobs",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/episodes/{episode_id}/production/delivery",
+      "module": "windagent_api.routers.v3.production.get_delivery_artifact",
+      "classification": "DURABLE",
+      "authority": "v3_resources:delivery_artifacts",
+      "source": "v3_resources:delivery_artifacts",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/episodes/{episode_id}/production/jobs",
+      "module": "windagent_api.routers.v3.production.list_production_jobs",
+      "classification": "DURABLE",
+      "authority": "v3_resources:production_jobs",
+      "source": "v3_resources:production_jobs",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/episodes/{episode_id}/production/plan",
+      "module": "windagent_api.routers.v3.production.create_production_plan",
+      "classification": "DURABLE",
+      "authority": "v3_resources:production_plans",
+      "source": "v3_resources:production_plans",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/episodes/{episode_id}/production/render/submit",
+      "module": "windagent_api.routers.v3.production.submit_render_job",
+      "classification": "DURABLE",
+      "authority": "v3_resources:production_jobs",
+      "source": "v3_resources:production_jobs",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/episodes/{episode_id}/production/video/submit",
+      "module": "windagent_api.routers.v3.production.submit_video_job",
+      "classification": "DURABLE",
+      "authority": "v3_resources:production_jobs",
+      "source": "v3_resources:production_jobs",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/episodes/{episode_id}/production/{stage}/cancel",
+      "module": "windagent_api.routers.v3.production.cancel_job",
+      "classification": "DURABLE",
+      "authority": "v3_resources:production_jobs",
+      "source": "v3_resources:production_jobs",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/episodes/{episode_id}/production/{stage}/retry",
+      "module": "windagent_api.routers.v3.production.retry_job",
+      "classification": "DURABLE",
+      "authority": "v3_resources:production_jobs",
+      "source": "v3_resources:production_jobs",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/episodes/{episode_id}/runs",
+      "module": "windagent_api.routers.v3.episodes.get_episode_runs",
+      "classification": "DURABLE",
+      "authority": "v3_resources:episode_runs",
+      "source": "v3_resources:episode_runs",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/episodes/{episode_id}/select-idea",
+      "module": "windagent_api.routers.v3.episodes.select_idea",
+      "classification": "DURABLE",
+      "authority": "v3_resources:episodes",
+      "source": "v3_resources:episodes",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/episodes/{episode_id}/shots",
+      "module": "windagent_api.routers.v3.production.list_shots",
+      "classification": "DURABLE",
+      "authority": "v3_resources:shots",
+      "source": "v3_resources:shots",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/episodes/{episode_id}/shots",
+      "module": "windagent_api.routers.v3.production.create_shot",
+      "classification": "DURABLE",
+      "authority": "v3_resources:shots",
+      "source": "v3_resources:shots",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/episodes/{episode_id}/start-generation",
+      "module": "windagent_api.routers.v3.episodes.start_generation",
+      "classification": "DURABLE",
+      "authority": "v3_resources:episodes",
+      "source": "v3_resources:episodes",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/episodes/{episode_id}/storyboard",
+      "module": "windagent_api.routers.v3.storyboard.get_episode_storyboard",
+      "classification": "DURABLE",
+      "authority": "v3_resources:storyboards",
+      "source": "v3_resources:storyboards",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/episodes/{episode_id}/storyboard/actions/sync",
+      "module": "windagent_api.routers.v3.storyboard.sync_storyboard_from_screenplay",
+      "classification": "DURABLE",
+      "authority": "v3_resources:storyboards",
+      "source": "v3_resources:storyboards",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/episodes/{episode_id}/storyboard/scenes",
+      "module": "windagent_api.routers.v3.storyboard.list_storyboard_scenes",
+      "classification": "DURABLE",
+      "authority": "v3_resources:scenes",
+      "source": "v3_resources:scenes",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/files",
+      "module": "windagent_api.routers.v3.files.list_files",
+      "classification": "DERIVED",
+      "authority": "runtime:workspace-files",
+      "source": "runtime:workspace-files",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/files",
+      "module": "windagent_api.routers.v3.files.create_file",
+      "classification": "DERIVED",
+      "authority": "runtime:workspace-files",
+      "source": "runtime:workspace-files",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/files/upload",
+      "module": "windagent_api.routers.v3.files.upload_file",
+      "classification": "DERIVED",
+      "authority": "runtime:workspace-files",
+      "source": "runtime:workspace-files",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v3/files/{file_id}",
+      "module": "windagent_api.routers.v3.files.delete_file",
+      "classification": "DERIVED",
+      "authority": "runtime:workspace-files",
+      "source": "runtime:workspace-files",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/files/{file_id}",
+      "module": "windagent_api.routers.v3.files.get_file",
+      "classification": "DERIVED",
+      "authority": "runtime:workspace-files",
+      "source": "runtime:workspace-files",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/files/{file_id}/download",
+      "module": "windagent_api.routers.v3.files.download_file",
+      "classification": "DERIVED",
+      "authority": "runtime:workspace-files",
+      "source": "runtime:workspace-files",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/logs",
+      "module": "windagent_api.routers.v3.logs.list_logs",
+      "classification": "DERIVED",
+      "authority": "runtime:log-service",
+      "source": "runtime:log-service",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/logs/sources",
+      "module": "windagent_api.routers.v3.logs.list_log_sources",
+      "classification": "DERIVED",
+      "authority": "runtime:log-service",
+      "source": "runtime:log-service",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/memory",
+      "module": "windagent_api.routers.v3.memory.list_memory",
+      "classification": "DERIVED",
+      "authority": "runtime:memory",
+      "source": "runtime:memory",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/memory",
+      "module": "windagent_api.routers.v3.memory.create_memory",
+      "classification": "DERIVED",
+      "authority": "runtime:memory",
+      "source": "runtime:memory",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/memory/search",
+      "module": "windagent_api.routers.v3.memory.search_memory",
+      "classification": "DERIVED",
+      "authority": "runtime:memory",
+      "source": "runtime:memory",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/memory/{memory_id}",
+      "module": "windagent_api.routers.v3.memory.get_memory",
+      "classification": "DERIVED",
+      "authority": "runtime:memory",
+      "source": "runtime:memory",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/models",
+      "module": "windagent_api.routers.v3.models.list_models",
+      "classification": "DURABLE",
+      "authority": "v3_resources:models",
+      "source": "v3_resources:models",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/models/{model_id:path}",
+      "module": "windagent_api.routers.v3.models.get_model",
+      "classification": "DURABLE",
+      "authority": "v3_resources:models",
+      "source": "v3_resources:models",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/monitoring/agents",
+      "module": "windagent_api.routers.v3.monitoring.get_monitoring_agents",
+      "classification": "DERIVED",
+      "authority": "runtime:monitoring",
+      "source": "runtime:monitoring",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/monitoring/providers",
+      "module": "windagent_api.routers.v3.monitoring.get_monitoring_providers",
+      "classification": "DERIVED",
+      "authority": "runtime:monitoring",
+      "source": "runtime:monitoring",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/monitoring/queues",
+      "module": "windagent_api.routers.v3.monitoring.get_monitoring_queues",
+      "classification": "DERIVED",
+      "authority": "runtime:monitoring",
+      "source": "runtime:monitoring",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/monitoring/runs",
+      "module": "windagent_api.routers.v3.monitoring.get_monitoring_runs",
+      "classification": "DERIVED",
+      "authority": "runtime:monitoring",
+      "source": "runtime:monitoring",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/monitoring/workers",
+      "module": "windagent_api.routers.v3.monitoring.get_monitoring_workers",
+      "classification": "DERIVED",
+      "authority": "runtime:monitoring",
+      "source": "runtime:monitoring",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/production/jobs/{job_id}",
+      "module": "windagent_api.routers.v3.production.get_production_job",
+      "classification": "DURABLE",
+      "authority": "v3_resources:production_jobs",
+      "source": "v3_resources:production_jobs",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/project-templates",
+      "module": "windagent_api.routers.v3.project_templates.list_project_templates",
+      "classification": "DERIVED",
+      "authority": "runtime:project-templates",
+      "source": "runtime:project-templates",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/projects",
+      "module": "windagent_api.routers.v3.projects.list_projects",
+      "classification": "DURABLE",
+      "authority": "v3_resources:projects",
+      "source": "v3_resources:projects",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/projects",
+      "module": "windagent_api.routers.v3.projects.create_project",
+      "classification": "DURABLE",
+      "authority": "v3_resources:projects",
+      "source": "v3_resources:projects",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/projects/{project_id}",
+      "module": "windagent_api.routers.v3.projects.get_project",
+      "classification": "DURABLE",
+      "authority": "v3_resources:projects",
+      "source": "v3_resources:projects",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v3/projects/{project_id}",
+      "module": "windagent_api.routers.v3.projects.update_project",
+      "classification": "DURABLE",
+      "authority": "v3_resources:projects",
+      "source": "v3_resources:projects",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/projects/{project_id}/characters",
+      "module": "windagent_api.routers.v3.characters.list_project_characters",
+      "classification": "DURABLE",
+      "authority": "v3_resources:characters",
+      "source": "v3_resources:characters",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/projects/{project_id}/characters",
+      "module": "windagent_api.routers.v3.characters.create_character",
+      "classification": "DURABLE",
+      "authority": "v3_resources:characters",
+      "source": "v3_resources:characters",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/projects/{project_id}/episodes",
+      "module": "windagent_api.routers.v3.projects.list_episodes_for_project",
+      "classification": "DURABLE",
+      "authority": "v3_resources:episodes",
+      "source": "v3_resources:episodes",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/projects/{project_id}/episodes",
+      "module": "windagent_api.routers.v3.projects.create_episode_for_project",
+      "classification": "DURABLE",
+      "authority": "v3_resources:episodes",
+      "source": "v3_resources:episodes",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/projects/{project_id}/world",
+      "module": "windagent_api.routers.v3.world.get_world_bible",
+      "classification": "DURABLE",
+      "authority": "v3_resources:world_bibles",
+      "source": "v3_resources:world_bibles",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v3/projects/{project_id}/world",
+      "module": "windagent_api.routers.v3.world.update_world_bible",
+      "classification": "DURABLE",
+      "authority": "v3_resources:world_bibles",
+      "source": "v3_resources:world_bibles",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/projects/{project_id}/world/factions",
+      "module": "windagent_api.routers.v3.world.list_factions",
+      "classification": "DURABLE",
+      "authority": "v3_resources:factions",
+      "source": "v3_resources:factions",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/projects/{project_id}/world/factions",
+      "module": "windagent_api.routers.v3.world.create_faction",
+      "classification": "DURABLE",
+      "authority": "v3_resources:factions",
+      "source": "v3_resources:factions",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/projects/{project_id}/world/locations",
+      "module": "windagent_api.routers.v3.world.list_locations",
+      "classification": "DURABLE",
+      "authority": "v3_resources:locations",
+      "source": "v3_resources:locations",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/projects/{project_id}/world/locations",
+      "module": "windagent_api.routers.v3.world.create_location",
+      "classification": "DURABLE",
+      "authority": "v3_resources:locations",
+      "source": "v3_resources:locations",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/projects/{project_id}/world/lore",
+      "module": "windagent_api.routers.v3.world.list_lore",
+      "classification": "DURABLE",
+      "authority": "v3_resources:lore",
+      "source": "v3_resources:lore",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/projects/{project_id}/world/lore",
+      "module": "windagent_api.routers.v3.world.create_lore",
+      "classification": "DURABLE",
+      "authority": "v3_resources:lore",
+      "source": "v3_resources:lore",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/providers",
+      "module": "windagent_api.routers.v3.providers.list_providers",
+      "classification": "DURABLE",
+      "authority": "v3_resources:providers",
+      "source": "v3_resources:providers",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/providers",
+      "module": "windagent_api.routers.v3.providers.create_provider",
+      "classification": "DURABLE",
+      "authority": "v3_resources:providers",
+      "source": "v3_resources:providers",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/providers/health",
+      "module": "windagent_api.routers.v3.providers.get_all_providers_health",
+      "classification": "DERIVED",
+      "authority": "v3_resources:providers",
+      "source": "v3_resources:providers",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/providers/rules",
+      "module": "windagent_api.routers.v3.providers.list_model_rules",
+      "classification": "DURABLE",
+      "authority": "v3_resources:routing_rules",
+      "source": "v3_resources:routing_rules",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/providers/rules",
+      "module": "windagent_api.routers.v3.providers.assign_model_rule",
+      "classification": "DURABLE",
+      "authority": "v3_resources:routing_rules",
+      "source": "v3_resources:routing_rules",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/providers/{provider_id}",
+      "module": "windagent_api.routers.v3.providers.get_provider",
+      "classification": "DURABLE",
+      "authority": "v3_resources:providers",
+      "source": "v3_resources:providers",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/providers/{provider_id}/endpoints",
+      "module": "windagent_api.routers.v3.providers.get_provider_endpoints",
+      "classification": "DURABLE",
+      "authority": "v3_resources:providers",
+      "source": "v3_resources:providers",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/providers/{provider_id}/health",
+      "module": "windagent_api.routers.v3.providers.get_provider_health",
+      "classification": "DERIVED",
+      "authority": "v3_resources:providers",
+      "source": "v3_resources:providers",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/providers/{provider_id}/models",
+      "module": "windagent_api.routers.v3.providers.get_provider_models",
+      "classification": "DURABLE",
+      "authority": "v3_resources:models",
+      "source": "v3_resources:models",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/providers/{provider_id}/test-connection",
+      "module": "windagent_api.routers.v3.providers.test_provider_connection",
+      "classification": "DERIVED",
+      "authority": "v3_resources:providers",
+      "source": "v3_resources:providers",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/reviews",
+      "module": "windagent_api.routers.v3.reviews.list_reviews",
+      "classification": "DURABLE",
+      "authority": "v3_resources:reviews",
+      "source": "v3_resources:reviews",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/reviews",
+      "module": "windagent_api.routers.v3.reviews.create_review",
+      "classification": "DURABLE",
+      "authority": "v3_resources:reviews",
+      "source": "v3_resources:reviews",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/reviews/{review_id}",
+      "module": "windagent_api.routers.v3.reviews.get_review",
+      "classification": "DURABLE",
+      "authority": "v3_resources:reviews",
+      "source": "v3_resources:reviews",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/reviews/{review_id}/comments",
+      "module": "windagent_api.routers.v3.reviews.list_review_comments",
+      "classification": "DURABLE",
+      "authority": "v3_resources:review_comments",
+      "source": "v3_resources:review_comments",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/reviews/{review_id}/comments",
+      "module": "windagent_api.routers.v3.reviews.add_review_comment",
+      "classification": "DURABLE",
+      "authority": "v3_resources:review_comments",
+      "source": "v3_resources:review_comments",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/reviews/{review_id}/decision",
+      "module": "windagent_api.routers.v3.reviews.submit_review_decision",
+      "classification": "DURABLE",
+      "authority": "v3_resources:review_decisions",
+      "source": "v3_resources:review_decisions",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/routing/graph",
+      "module": "windagent_api.routers.v3.routing.get_routing_graph",
+      "classification": "DERIVED",
+      "authority": "v3_resources:routing_rules",
+      "source": "v3_resources:routing_rules",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/routing/locks/{lock_id}",
+      "module": "windagent_api.routers.v3.routing.get_route_lock",
+      "classification": "DURABLE",
+      "authority": "dedicated-sql:route_locks_v3",
+      "source": "dedicated-sql:route_locks_v3",
+      "migration_disposition": "cutover-to-dedicated-route-lock-sql"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/routing/metrics",
+      "module": "windagent_api.routers.v3.routing.get_routing_metrics",
+      "classification": "DERIVED",
+      "authority": "v3_resources:routing_rules",
+      "source": "v3_resources:routing_rules",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/routing/rules",
+      "module": "windagent_api.routers.v3.routing.list_routing_rules",
+      "classification": "DURABLE",
+      "authority": "v3_resources:routing_rules",
+      "source": "v3_resources:routing_rules",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/routing/rules",
+      "module": "windagent_api.routers.v3.routing.create_routing_rule",
+      "classification": "DURABLE",
+      "authority": "v3_resources:routing_rules",
+      "source": "v3_resources:routing_rules",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v3/routing/rules/{rule_id}",
+      "module": "windagent_api.routers.v3.routing.delete_routing_rule",
+      "classification": "DURABLE",
+      "authority": "v3_resources:routing_rules",
+      "source": "v3_resources:routing_rules",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/routing/rules/{rule_id}",
+      "module": "windagent_api.routers.v3.routing.get_routing_rule",
+      "classification": "DURABLE",
+      "authority": "v3_resources:routing_rules",
+      "source": "v3_resources:routing_rules",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v3/routing/rules/{rule_id}",
+      "module": "windagent_api.routers.v3.routing.update_routing_rule",
+      "classification": "DURABLE",
+      "authority": "v3_resources:routing_rules",
+      "source": "v3_resources:routing_rules",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/routing/simulations",
+      "module": "windagent_api.routers.v3.routing.simulate_route_decision",
+      "classification": "DERIVED",
+      "authority": "v3_resources:routing_rules,dedicated-sql:route_locks_v3",
+      "source": "v3_resources:routing_rules,dedicated-sql:route_locks_v3",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/settings",
+      "module": "windagent_api.routers.v3.settings.get_settings",
+      "classification": "DERIVED",
+      "authority": "settings-file:settings.json",
+      "source": "settings-file:settings.json",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v3/settings",
+      "module": "windagent_api.routers.v3.settings.patch_settings",
+      "classification": "DURABLE",
+      "authority": "settings-file:settings.json",
+      "source": "settings-file:settings.json",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/settings/schema",
+      "module": "windagent_api.routers.v3.settings.get_settings_schema",
+      "classification": "DERIVED",
+      "authority": "settings-file:settings.json",
+      "source": "settings-file:settings.json",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/shots/{shot_id}",
+      "module": "windagent_api.routers.v3.production.get_shot",
+      "classification": "DURABLE",
+      "authority": "v3_resources:shots",
+      "source": "v3_resources:shots",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v3/shots/{shot_id}",
+      "module": "windagent_api.routers.v3.production.update_shot",
+      "classification": "DURABLE",
+      "authority": "v3_resources:shots",
+      "source": "v3_resources:shots",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/storyboard/scenes",
+      "module": "windagent_api.routers.v3.storyboard.create_scene",
+      "classification": "DURABLE",
+      "authority": "v3_resources:scenes",
+      "source": "v3_resources:scenes",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v3/storyboard/scenes/{scene_id}",
+      "module": "windagent_api.routers.v3.storyboard.update_scene",
+      "classification": "DURABLE",
+      "authority": "v3_resources:scenes",
+      "source": "v3_resources:scenes",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/storyboard/scenes/{scene_id}/generations",
+      "module": "windagent_api.routers.v3.storyboard.trigger_concept_generation",
+      "classification": "DURABLE",
+      "authority": "v3_resources:generation_jobs",
+      "source": "v3_resources:generation_jobs",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/storyboard/scenes/{scene_id}/generations/{generation_id}",
+      "module": "windagent_api.routers.v3.storyboard.get_generation_job",
+      "classification": "DURABLE",
+      "authority": "v3_resources:generation_jobs",
+      "source": "v3_resources:generation_jobs",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/studio/artifacts/{artifact_id}",
+      "module": "windagent_api.routers.v3.studio.artifacts.get_artifact",
+      "classification": "DURABLE",
+      "authority": "studio:artifacts",
+      "source": "studio:artifacts",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/studio/capabilities",
+      "module": "windagent_api.routers.v3.studio.aggregator.get_capabilities",
+      "classification": "DERIVED",
+      "authority": "runtime:studio",
+      "source": "runtime:studio",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/studio/episodes/{episode_id}",
+      "module": "windagent_api.routers.v3.studio.episodes.get_episode",
+      "classification": "DURABLE",
+      "authority": "studio:episodes",
+      "source": "studio:episodes",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/studio/episodes/{episode_id}/approvals",
+      "module": "windagent_api.routers.v3.studio.decisions.record_approval",
+      "classification": "DURABLE",
+      "authority": "studio:decisions",
+      "source": "studio:decisions",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/studio/episodes/{episode_id}/artifacts",
+      "module": "windagent_api.routers.v3.studio.artifacts.list_artifacts",
+      "classification": "DURABLE",
+      "authority": "studio:artifacts",
+      "source": "studio:artifacts",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/studio/episodes/{episode_id}/idea-selection",
+      "module": "windagent_api.routers.v3.studio.decisions.select_idea",
+      "classification": "DURABLE",
+      "authority": "studio:decisions",
+      "source": "studio:decisions",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/studio/episodes/{episode_id}/revisions",
+      "module": "windagent_api.routers.v3.studio.decisions.derive_revision",
+      "classification": "DURABLE",
+      "authority": "studio:revisions",
+      "source": "studio:revisions",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/studio/episodes/{episode_id}/runs",
+      "module": "windagent_api.routers.v3.studio.runs.start_or_resume_run",
+      "classification": "DURABLE",
+      "authority": "studio:runs",
+      "source": "studio:runs",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/studio/episodes/{episode_id}/screenplay-lock",
+      "module": "windagent_api.routers.v3.studio.decisions.lock_screenplay",
+      "classification": "DURABLE",
+      "authority": "studio:decisions",
+      "source": "studio:decisions",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/studio/readiness",
+      "module": "windagent_api.routers.v3.studio.aggregator.get_readiness",
+      "classification": "DERIVED",
+      "authority": "runtime:studio",
+      "source": "runtime:studio",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/studio/runs/{run_id}",
+      "module": "windagent_api.routers.v3.studio.runs.get_run",
+      "classification": "DURABLE",
+      "authority": "studio:runs",
+      "source": "studio:runs",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/studio/runs/{run_id}/events",
+      "module": "windagent_api.routers.v3.studio.runs.get_run_events",
+      "classification": "DURABLE",
+      "authority": "studio:runs",
+      "source": "studio:runs",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/studio/series",
+      "module": "windagent_api.routers.v3.studio.series.list_series",
+      "classification": "DURABLE",
+      "authority": "studio:series",
+      "source": "studio:series",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/studio/series",
+      "module": "windagent_api.routers.v3.studio.series.create_series",
+      "classification": "DURABLE",
+      "authority": "studio:series",
+      "source": "studio:series",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/studio/series/{series_id}",
+      "module": "windagent_api.routers.v3.studio.series.get_series",
+      "classification": "DURABLE",
+      "authority": "studio:series",
+      "source": "studio:series",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/studio/series/{series_id}/episodes",
+      "module": "windagent_api.routers.v3.studio.episodes.list_episodes",
+      "classification": "DURABLE",
+      "authority": "studio:episodes",
+      "source": "studio:episodes",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/studio/series/{series_id}/episodes",
+      "module": "windagent_api.routers.v3.studio.episodes.create_episode",
+      "classification": "DURABLE",
+      "authority": "studio:episodes",
+      "source": "studio:episodes",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/system/health",
+      "module": "windagent_api.routers.v3.system.get_system_health",
+      "classification": "DERIVED",
+      "authority": "runtime:system",
+      "source": "runtime:system",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/system/metrics",
+      "module": "windagent_api.routers.v3.system.get_system_metrics",
+      "classification": "DERIVED",
+      "authority": "runtime:system",
+      "source": "runtime:system",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/tasks",
+      "module": "windagent_api.routers.v3.tasks.list_tasks",
+      "classification": "DURABLE",
+      "authority": "v3_resources:tasks",
+      "source": "v3_resources:tasks",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/tasks",
+      "module": "windagent_api.routers.v3.tasks.create_task",
+      "classification": "DURABLE",
+      "authority": "v3_resources:tasks",
+      "source": "v3_resources:tasks",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/tasks/{task_id}",
+      "module": "windagent_api.routers.v3.tasks.get_task",
+      "classification": "DURABLE",
+      "authority": "v3_resources:tasks",
+      "source": "v3_resources:tasks",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v3/tasks/{task_id}",
+      "module": "windagent_api.routers.v3.tasks.update_task",
+      "classification": "DURABLE",
+      "authority": "v3_resources:tasks",
+      "source": "v3_resources:tasks",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/tasks/{task_id}/cancel",
+      "module": "windagent_api.routers.v3.tasks.cancel_task",
+      "classification": "DURABLE",
+      "authority": "v3_resources:tasks",
+      "source": "v3_resources:tasks",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/tasks/{task_id}/retry",
+      "module": "windagent_api.routers.v3.tasks.retry_task",
+      "classification": "DURABLE",
+      "authority": "v3_resources:tasks",
+      "source": "v3_resources:tasks",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/workflow-runs",
+      "module": "windagent_api.routers.v3.workflows.list_workflow_runs",
+      "classification": "DURABLE",
+      "authority": "v3_resources:workflow_runs",
+      "source": "v3_resources:workflow_runs",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/workflow-runs",
+      "module": "windagent_api.routers.v3.workflows.trigger_workflow_run",
+      "classification": "DURABLE",
+      "authority": "v3_resources:workflow_runs",
+      "source": "v3_resources:workflow_runs",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/workflow-runs/{run_id}",
+      "module": "windagent_api.routers.v3.workflows.get_workflow_run",
+      "classification": "DURABLE",
+      "authority": "v3_resources:workflow_runs",
+      "source": "v3_resources:workflow_runs",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/workflow-runs/{run_id}/cancel",
+      "module": "windagent_api.routers.v3.workflows.cancel_workflow_run",
+      "classification": "DURABLE",
+      "authority": "v3_resources:workflow_runs",
+      "source": "v3_resources:workflow_runs",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/workflow-runs/{run_id}/pause",
+      "module": "windagent_api.routers.v3.workflows.pause_workflow_run",
+      "classification": "DURABLE",
+      "authority": "v3_resources:workflow_runs",
+      "source": "v3_resources:workflow_runs",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/workflow-runs/{run_id}/resume",
+      "module": "windagent_api.routers.v3.workflows.resume_workflow_run",
+      "classification": "DURABLE",
+      "authority": "v3_resources:workflow_runs",
+      "source": "v3_resources:workflow_runs",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/workflow-runs/{run_id}/retry",
+      "module": "windagent_api.routers.v3.workflows.retry_workflow_run",
+      "classification": "DURABLE",
+      "authority": "v3_resources:workflow_runs",
+      "source": "v3_resources:workflow_runs",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/workflows",
+      "module": "windagent_api.routers.v3.workflows.list_workflows",
+      "classification": "DURABLE",
+      "authority": "v3_resources:workflows",
+      "source": "v3_resources:workflows",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/workflows",
+      "module": "windagent_api.routers.v3.workflows.create_workflow",
+      "classification": "DURABLE",
+      "authority": "v3_resources:workflows",
+      "source": "v3_resources:workflows",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/workflows/{workflow_id}",
+      "module": "windagent_api.routers.v3.workflows.get_workflow",
+      "classification": "DURABLE",
+      "authority": "v3_resources:workflows",
+      "source": "v3_resources:workflows",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v3/workflows/{workflow_id}",
+      "module": "windagent_api.routers.v3.workflows.update_workflow",
+      "classification": "DURABLE",
+      "authority": "v3_resources:workflows",
+      "source": "v3_resources:workflows",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "WS",
+      "path": "/ws/v3/agent-system",
+      "module": "windagent_api.routers.v3.workflows.agent_system_realtime_ws",
+      "classification": "DERIVED",
+      "authority": "runtime:realtime",
+      "source": "runtime:realtime",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "WS",
+      "path": "/ws/v3/browser",
+      "module": "windagent_api.routers.v3.browser.browser_realtime_ws",
+      "classification": "DERIVED",
+      "authority": "runtime:realtime",
+      "source": "runtime:realtime",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "WS",
+      "path": "/ws/v3/episodes/{episode_id}",
+      "module": "windagent_api.routers.v3.episodes.episode_workspace_websocket",
+      "classification": "DERIVED",
+      "authority": "runtime:realtime",
+      "source": "runtime:realtime",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "WS",
+      "path": "/ws/v3/logs",
+      "module": "windagent_api.routers.v3.logs.logs_realtime_ws",
+      "classification": "DERIVED",
+      "authority": "runtime:realtime",
+      "source": "runtime:realtime",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "WS",
+      "path": "/ws/v3/model-infra",
+      "module": "windagent_api.routers.v3.routing.model_infra_realtime_stream",
+      "classification": "DERIVED",
+      "authority": "runtime:realtime",
+      "source": "runtime:realtime",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "WS",
+      "path": "/ws/v3/production/{episode_id}",
+      "module": "windagent_api.routers.v3.production.production_realtime_ws",
+      "classification": "DERIVED",
+      "authority": "runtime:realtime",
+      "source": "runtime:realtime",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "WS",
+      "path": "/ws/v3/storyboard/{episode_id}",
+      "module": "windagent_api.routers.v3.storyboard.storyboard_realtime_ws",
+      "classification": "DERIVED",
+      "authority": "runtime:realtime",
+      "source": "runtime:realtime",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "WS",
+      "path": "/ws/v3/system/metrics",
+      "module": "windagent_api.routers.v3.system.websocket_system_metrics",
+      "classification": "DERIVED",
+      "authority": "runtime:realtime",
+      "source": "runtime:realtime",
+      "migration_disposition": "no-migration"
+    }
+  ]
+}

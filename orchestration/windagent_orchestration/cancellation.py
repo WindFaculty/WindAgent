@@ -10,13 +10,13 @@ import uuid
 from typing import Set, Optional, Any
 
 from windagent_core.errors.exceptions import DomainError
-from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork
+from windagent_core.contracts.repositories.unit_of_work import UnitOfWorkFactory
 
 logger = logging.getLogger("windagent.orchestration.cancellation")
 
 
 class CancellationManager:
-    def __init__(self, uow_factory: Optional[Any] = None):
+    def __init__(self, uow_factory: Optional[UnitOfWorkFactory] = None):
         self.uow_factory = uow_factory
         self._cancelled_runs: Set[str] = set()
 
@@ -29,7 +29,7 @@ class CancellationManager:
         """Persists durable cancellation request in database and marks memory token."""
         self._cancelled_runs.add(target_id)
         if self.uow_factory:
-            async with SqlUnitOfWork(self.uow_factory) as uow:
+            async with self.uow_factory() as uow:
                 await uow.cancellations.request_cancellation(
                     req_id=str(uuid.uuid4()),
                     target_id=target_id,
@@ -43,7 +43,7 @@ class CancellationManager:
         if run_id in self._cancelled_runs:
             return True
         if self.uow_factory:
-            async with SqlUnitOfWork(self.uow_factory) as uow:
+            async with self.uow_factory() as uow:
                 is_canc = await uow.cancellations.is_cancelled(run_id)
                 if is_canc:
                     self._cancelled_runs.add(run_id)

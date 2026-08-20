@@ -8,8 +8,8 @@
   "fps": 30,
   "all_secrets_clean": true,
   "all_terminals_verified": true,
-  "manifest_hash": "ce8e1278777229ea2aca57dc80894cba1768f773c1f4a3a4bece44d8d4042878",
-  "recorded_at": "2026-08-18T02:49:12.349770+00:00",
+  "manifest_hash": "6148df8bfb02a45a7a2e9f16849f0332c75a3cb3d78eacd67727800e86160c4e",
+  "recorded_at": "2026-08-19T07:54:00.957975+00:00",
   "passes": [
     {
       "pass_id": "PASS_01_COLD_OPEN",
@@ -39,7 +39,7 @@
       "artifacts_produced": [
         "records/PASS_01_COLD_OPEN.json"
       ],
-      "recorded_at": "2026-08-18T02:49:12.346258+00:00",
+      "recorded_at": "2026-08-19T07:54:00.955963+00:00",
       "notes": "Recorded pass 1: Cold Open for scene S01"
     },
     {
@@ -70,7 +70,7 @@
       "artifacts_produced": [
         "records/PASS_02_REPO_SETUP.json"
       ],
-      "recorded_at": "2026-08-18T02:49:12.346258+00:00",
+      "recorded_at": "2026-08-19T07:54:00.955963+00:00",
       "notes": "Recorded pass 2: Repository Setup for scene S05"
     },
     {
@@ -101,7 +101,7 @@
       "artifacts_produced": [
         "records/PASS_03_MESSAGE.json"
       ],
-      "recorded_at": "2026-08-18T02:49:12.346258+00:00",
+      "recorded_at": "2026-08-19T07:54:00.955963+00:00",
       "notes": "Recorded pass 3: Message Dataclass for scene S06"
     },
     {
@@ -132,7 +132,7 @@
       "artifacts_produced": [
         "records/PASS_04_CONFIG.json"
       ],
-      "recorded_at": "2026-08-18T02:49:12.346258+00:00",
+      "recorded_at": "2026-08-19T07:54:00.955963+00:00",
       "notes": "Recorded pass 4: AgentConfig for scene S07"
     },
     {
@@ -163,7 +163,7 @@
       "artifacts_produced": [
         "records/PASS_05_LLM_PROTOCOL.json"
       ],
-      "recorded_at": "2026-08-18T02:49:12.346258+00:00",
+      "recorded_at": "2026-08-19T07:54:00.955963+00:00",
       "notes": "Recorded pass 5: LLMClient Protocol for scene S08"
     },
     {
@@ -194,7 +194,7 @@
       "artifacts_produced": [
         "records/PASS_06_FAKE_LLM.json"
       ],
-      "recorded_at": "2026-08-18T02:49:12.347764+00:00",
+      "recorded_at": "2026-08-19T07:54:00.955963+00:00",
       "notes": "Recorded pass 6: Fake LLM Client for scene S09"
     },
     {
@@ -225,7 +225,7 @@
       "artifacts_produced": [
         "records/PASS_07_AGENT_CORE.json"
       ],
-      "recorded_at": "2026-08-18T02:49:12.347764+00:00",
+      "recorded_at": "2026-08-19T07:54:00.956955+00:00",
       "notes": "Recorded pass 7: Agent Core Implementation for scene S10"
     },
     {
@@ -256,7 +256,7 @@
       "artifacts_produced": [
         "records/PASS_08_IS_THIS_AGENT.json"
       ],
-      "recorded_at": "2026-08-18T02:49:12.347764+00:00",
+      "recorded_at": "2026-08-19T07:54:00.956955+00:00",
       "notes": "Recorded pass 8: Is This An Agent? for scene S11"
     },
     {
@@ -287,7 +287,7 @@
       "artifacts_produced": [
         "records/PASS_09_REAL_PROVIDER.json"
       ],
-      "recorded_at": "2026-08-18T02:49:12.348773+00:00",
+      "recorded_at": "2026-08-19T07:54:00.956955+00:00",
       "notes": "Recorded pass 9: Real Provider Architecture for scene S12"
     },
     {
@@ -318,7 +318,7 @@
       "artifacts_produced": [
         "records/PASS_10_API_SECURITY.json"
       ],
-      "recorded_at": "2026-08-18T02:49:12.348773+00:00",
+      "recorded_at": "2026-08-19T07:54:00.956955+00:00",
       "notes": "Recorded pass 10: API Key Configuration & Security for scene S13"
     },
     {
@@ -349,7 +349,7 @@
       "artifacts_produced": [
         "records/PASS_11_FIRST_RUN.json"
       ],
-      "recorded_at": "2026-08-18T02:49:12.348773+00:00",
+      "recorded_at": "2026-08-19T07:54:00.957975+00:00",
       "notes": "Recorded pass 11: First Execution for scene S14"
     },
     {
@@ -380,7 +380,7 @@
       "artifacts_produced": [
         "records/PASS_12_TESTING.json"
       ],
-      "recorded_at": "2026-08-18T02:49:12.348773+00:00",
+      "recorded_at": "2026-08-19T07:54:00.957975+00:00",
       "notes": "Recorded pass 12: Pytest Execution for scene S15"
     },
     {
@@ -411,7 +411,7 @@
       "artifacts_produced": [
         "records/PASS_13_NOT_YET.json"
       ],
-      "recorded_at": "2026-08-18T02:49:12.348773+00:00",
+      "recorded_at": "2026-08-19T07:54:00.957975+00:00",
       "notes": "Recorded pass 13: Not Yet Scope Checklist for scene S16"
     },
     {
@@ -442,7 +442,7 @@
       "artifacts_produced": [
         "records/PASS_14_ARCH_REVIEW.json"
       ],
-      "recorded_at": "2026-08-18T02:49:12.348773+00:00",
+      "recorded_at": "2026-08-19T07:54:00.957975+00:00",
       "notes": "Recorded pass 14: Architecture Review for scene S17"
     },
     {
@@ -473,7 +473,7 @@
       "artifacts_produced": [
         "records/PASS_15_GIT_MILESTONE.json"
       ],
-      "recorded_at": "2026-08-18T02:49:12.349770+00:00",
+      "recorded_at": "2026-08-19T07:54:00.957975+00:00",
       "notes": "Recorded pass 15: Git Milestone v0.1 for scene S18"
     },
     {
@@ -504,7 +504,7 @@
       "artifacts_produced": [
         "records/PASS_16_OUTRO_TEASER.json"
       ],
-      "recorded_at": "2026-08-18T02:49:12.349770+00:00",
+      "recorded_at": "2026-08-19T07:54:00.957975+00:00",
       "notes": "Recorded pass 16: Outro & Video 03 Teaser for scene S19"
     }
   ]

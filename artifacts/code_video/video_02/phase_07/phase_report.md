@@ -39,25 +39,25 @@ Phase 7 thực hiện mục tiêu cốt lõi **"Biến replay thành video take"
 
 | Scene | Take ID | Tiêu đề | Thời gian (ms) | Frames | Visual Mode | Hash Output | Status |
 |:---:|:---:|:---|:---:|:---:|:---:|:---:|:---:|
-| S01 | S01_T01 | Cold Open | 0 - 25,000 | 750 | SPLIT | `2bbdd94292697e8b...` | VERIFIED |
-| S02 | S02_T01 | Hook | 25,000 - 50,000 | 750 | TITLE_CARD | `0429d9d80a142c95...` | VERIFIED |
-| S03 | S03_T01 | Video 01 Recap | 50,000 - 85,000 | 1,050 | DIAGRAM | `276b11db8b9114b9...` | VERIFIED |
-| S04 | S04_T01 | Architecture v0.1 | 85,000 - 130,000 | 1,350 | DIAGRAM | `7fbe4e638f7d9b61...` | VERIFIED |
-| S05 | S05_T01 | Create Repository | 130,000 - 165,000 | 1,050 | CODE_STUDIO | `508fdc23844c0c6a...` | VERIFIED |
-| S06 | S06_T01 | Message | 165,000 - 220,000 | 1,650 | CODE_STUDIO | `a22811fa5467d187...` | VERIFIED |
-| S07 | S07_T01 | AgentConfig | 220,000 - 275,000 | 1,650 | CODE_STUDIO | `e456cfcd9c9dbf6c...` | VERIFIED |
-| S08 | S08_T01 | LLMClient Protocol | 275,000 - 360,000 | 2,550 | CODE_STUDIO | `9af3c3d2f6c578fc...` | VERIFIED |
-| S09 | S09_T01 | Fake LLM Client | 360,000 - 410,000 | 1,500 | CODE_STUDIO | `27b822e7ca188726...` | VERIFIED |
-| S10 | S10_T01 | Agent Core | 410,000 - 505,000 | 2,850 | CODE_STUDIO | `8d729f4d6b0faa93...` | VERIFIED |
-| S11 | S11_T01 | Is This An Agent? | 505,000 - 540,000 | 1,050 | DIAGRAM | `77ae35013e81ae90...` | VERIFIED |
-| S12 | S12_T01 | Real Provider | 540,000 - 615,000 | 2,250 | CODE_STUDIO | `591fbff2e4613d03...` | VERIFIED |
-| S13 | S13_T01 | API Key Configuration | 615,000 - 665,000 | 1,500 | CODE_STUDIO | `b9f171ffafa09996...` | VERIFIED |
-| S14 | S14_T01 | First Run | 665,000 - 720,000 | 1,650 | CODE_STUDIO | `2e648bd3f438f3b7...` | VERIFIED |
-| S15 | S15_T01 | Pytest Execution | 720,000 - 800,000 | 2,400 | CODE_STUDIO | `450a79e7357c2963...` | VERIFIED |
-| S16 | S16_T01 | Not Yet Checklist | 800,000 - 850,000 | 1,500 | CHECKLIST | `37d8675566f49fef...` | VERIFIED |
-| S17 | S17_T01 | Architecture Review | 850,000 - 900,000 | 1,500 | DIAGRAM | `ff5778eb085734a0...` | VERIFIED |
-| S18 | S18_T01 | Git Milestone | 900,000 - 935,000 | 1,050 | CODE_STUDIO | `53d6e253930c3a32...` | VERIFIED |
-| S19 | S19_T01 | Video 03 Teaser | 935,000 - 975,000 | 1,200 | OUTRO | `9f94f3f3ebde623b...` | VERIFIED |
+| S01 | S01_T01 | Cold Open | 0 - 25,000 | 750 | SPLIT | `0831c709bea9a3b2...` | VERIFIED |
+| S02 | S02_T01 | Hook | 25,000 - 50,000 | 750 | TITLE_CARD | `eba88c86da111eb3...` | VERIFIED |
+| S03 | S03_T01 | Video 01 Recap | 50,000 - 85,000 | 1,050 | DIAGRAM | `4c3f2df6dee8de04...` | VERIFIED |
+| S04 | S04_T01 | Architecture v0.1 | 85,000 - 130,000 | 1,350 | DIAGRAM | `cc439f2986bd9134...` | VERIFIED |
+| S05 | S05_T01 | Create Repository | 130,000 - 165,000 | 1,050 | CODE_STUDIO | `770807490afdc71b...` | VERIFIED |
+| S06 | S06_T01 | Message | 165,000 - 220,000 | 1,650 | CODE_STUDIO | `1409dcfcb9d0ca8e...` | VERIFIED |
+| S07 | S07_T01 | AgentConfig | 220,000 - 275,000 | 1,650 | CODE_STUDIO | `e48fb6c9c1998a03...` | VERIFIED |
+| S08 | S08_T01 | LLMClient Protocol | 275,000 - 360,000 | 2,550 | CODE_STUDIO | `ce25b53678f85ce8...` | VERIFIED |
+| S09 | S09_T01 | Fake LLM Client | 360,000 - 410,000 | 1,500 | CODE_STUDIO | `eb0ac44637678804...` | VERIFIED |
+| S10 | S10_T01 | Agent Core | 410,000 - 505,000 | 2,850 | CODE_STUDIO | `b630e8d65404c752...` | VERIFIED |
+| S11 | S11_T01 | Is This An Agent? | 505,000 - 540,000 | 1,050 | DIAGRAM | `4749c8cdb99525e4...` | VERIFIED |
+| S12 | S12_T01 | Real Provider | 540,000 - 615,000 | 2,250 | CODE_STUDIO | `275faad00c0d6d08...` | VERIFIED |
+| S13 | S13_T01 | API Key Configuration | 615,000 - 665,000 | 1,500 | CODE_STUDIO | `eb2e5d19a20cc98c...` | VERIFIED |
+| S14 | S14_T01 | First Run | 665,000 - 720,000 | 1,650 | CODE_STUDIO | `4db9ac81c3a48e08...` | VERIFIED |
+| S15 | S15_T01 | Pytest Execution | 720,000 - 800,000 | 2,400 | CODE_STUDIO | `d0775b1e85ce53c6...` | VERIFIED |
+| S16 | S16_T01 | Not Yet Checklist | 800,000 - 850,000 | 1,500 | CHECKLIST | `a497c1e9d9f63708...` | VERIFIED |
+| S17 | S17_T01 | Architecture Review | 850,000 - 900,000 | 1,500 | DIAGRAM | `23f804cfdea3fe0e...` | VERIFIED |
+| S18 | S18_T01 | Git Milestone | 900,000 - 935,000 | 1,050 | CODE_STUDIO | `0a88e937442ea065...` | VERIFIED |
+| S19 | S19_T01 | Video 03 Teaser | 935,000 - 975,000 | 1,200 | OUTRO | `c4d207b586b0ba0f...` | VERIFIED |
 | **TỔNG** | **19 Takes** | — | **975,000 ms** | **29,250** | — | — | **100% VERIFIED** |
 
 ---

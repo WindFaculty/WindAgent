@@ -16,19 +16,19 @@ export class WebPlatformAdapter implements PlatformAdapter {
   readonly platform = 'web' as const;
 
   private lastMetrics: MetricState = {
-    cpu: 18,
-    ram: 61,
-    ramGb: 9.7,
+    cpu: 0,
+    ram: 0,
+    ramGb: 0,
     ramTotalGb: 16,
-    gpu: 28,
-    gpuName: 'Web GPU (Simulated)',
-    vram: 42,
-    vramGb: 6.7,
+    gpu: 0,
+    gpuName: 'Web GPU (Host Telemetry Unavailable)',
+    vram: 0,
+    vramGb: 0,
     vramTotalGb: 16,
-    cpuHistory: [15, 18, 16, 21, 19, 18],
-    ramHistory: [60, 61, 61, 61, 61, 61],
-    gpuHistory: [25, 30, 26, 29, 27, 28],
-    vramHistory: [42, 42, 42, 42, 42, 42],
+    cpuHistory: [0, 0, 0, 0, 0, 0],
+    ramHistory: [0, 0, 0, 0, 0, 0],
+    gpuHistory: [0, 0, 0, 0, 0, 0],
+    vramHistory: [0, 0, 0, 0, 0, 0],
   };
 
   async getSystemCapabilities(): Promise<PlatformCapabilities> {
@@ -43,32 +43,7 @@ export class WebPlatformAdapter implements PlatformAdapter {
   }
 
   async getSystemMetrics(): Promise<MetricState> {
-    const updateHistory = (history: number[], nextVal: number) => [...history.slice(1), nextVal];
-    const prev = this.lastMetrics;
-
-    const nextCpu = Math.max(10, Math.min(90, Math.round(prev.cpu + (Math.random() * 6 - 3))));
-    const nextRam = Math.max(50, Math.min(85, Math.round(prev.ram + (Math.random() * 2 - 1))));
-    const nextRamGb = parseFloat(((nextRam / 100) * 16).toFixed(1));
-    const nextGpu = Math.max(15, Math.min(95, Math.round(prev.gpu + (Math.random() * 8 - 4))));
-    const nextVram = Math.max(35, Math.min(75, Math.round(prev.vram + (Math.random() * 2 - 1))));
-    const nextVramGb = parseFloat(((nextVram / 100) * 16).toFixed(1));
-
-    this.lastMetrics = {
-      cpu: nextCpu,
-      ram: nextRam,
-      ramGb: nextRamGb,
-      ramTotalGb: prev.ramTotalGb,
-      gpu: nextGpu,
-      gpuName: prev.gpuName,
-      vram: nextVram,
-      vramGb: nextVramGb,
-      vramTotalGb: prev.vramTotalGb,
-      cpuHistory: updateHistory(prev.cpuHistory, nextCpu),
-      ramHistory: updateHistory(prev.ramHistory, nextRam),
-      gpuHistory: updateHistory(prev.gpuHistory, nextGpu),
-      vramHistory: updateHistory(prev.vramHistory, nextVram),
-    };
-
+    // In web environment with supportsSystemMetrics=false, return truthful baseline without fake jitter
     return this.lastMetrics;
   }
 

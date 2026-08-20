@@ -1,0 +1,21 @@
+{
+  "argv": [
+    "C:\\Users\\Admin\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\python.exe",
+    "-m",
+    "pytest",
+    "-q",
+    "-p",
+    "no:cacheprovider",
+    "--basetemp",
+    "D:\\code_ca_nhan\\WindAgent\\.tmp\\phase1-policy-pknj2anc\\pytest",
+    "tests/architecture/test_architecture_policy.py",
+    "tests/architecture/test_architecture_v3_policy.py"
+  ],
+  "completed": true,
+  "executed": true,
+  "exit_code": 0,
+  "started_at": "2026-08-19T11:30:17.492940Z",
+  "status": "PASS",
+  "stderr": "",
+  "stdout": "....................                                                     [100%]\n20 passed in 15.71s\n"
+}

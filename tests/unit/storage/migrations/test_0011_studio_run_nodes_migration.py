@@ -1,13 +1,14 @@
 """A4 — migration 0011 studio_run_nodes + 0012 artifact_provenance (Plan A, studio.contract/v0.1).
 
-Covers: fresh upgrade reaches the current head (0012) with the node table,
-idempotent re-upgrade, downgrade rehearsal preserves Studio runs/legacy rows,
-schema matches ORM metadata, and optimistic versioning of node rows.
+Covers: fresh upgrade reaches the repository's declared current head with the
+node table, idempotent re-upgrade, downgrade rehearsal preserves Studio
+runs/legacy rows, schema matches ORM metadata, and optimistic versioning of
+node rows. The 0011/0012 schema behavior is under test while the full upgrade
+targets whatever head the chain declares.
 """
 
 from __future__ import annotations
 
-import sqlite3
 from pathlib import Path
 
 import pytest
@@ -16,6 +17,7 @@ from sqlalchemy import create_engine, inspect, text
 from windagent_storage.migrations.runner import (
     alembic_current,
     alembic_downgrade_base,
+    alembic_heads,
     alembic_upgrade_head,
 )
 from windagent_storage.orm.models import BaseORM
@@ -45,10 +47,10 @@ def _inspect(path: Path):
     return engine, inspector
 
 
-def test_fresh_upgrade_reaches_0012_with_node_table(temp_db_path):
+def test_fresh_upgrade_reaches_current_head_with_node_table(temp_db_path):
     db_url = f"sqlite:///{temp_db_path.as_posix()}"
     alembic_upgrade_head(db_url)
-    assert alembic_current(db_url) == ("0012_studio_artifact_provenance",)
+    assert alembic_current(db_url) == alembic_heads()
     engine, inspector = _inspect(temp_db_path)
     try:
         tables = set(inspector.get_table_names())
@@ -118,7 +120,7 @@ def test_upgrade_is_idempotent_and_downgrade_rehearsal_preserves_data(temp_db_pa
         engine.dispose()
 
     alembic_upgrade_head(db_url)
-    assert alembic_current(db_url) == ("0012_studio_artifact_provenance",)
+    assert alembic_current(db_url) == alembic_heads()
     engine, inspector = _inspect(temp_db_path)
     try:
         with engine.connect() as conn:

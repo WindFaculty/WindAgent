@@ -1,0 +1,2728 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-08-19T10:31:45.338873Z",
+  "source": "windagent_api.main.app runtime route graph",
+  "environment": {
+    "ENABLE_V2_API": "false"
+  },
+  "summary": {
+    "total": 195,
+    "http": 185,
+    "websocket": 10,
+    "schema_visible": 179
+  },
+  "routes": [
+    {
+      "kind": "http",
+      "path": "/api/v1/{path:path}",
+      "methods": [
+        "DELETE",
+        "GET",
+        "HEAD",
+        "OPTIONS",
+        "PATCH",
+        "POST",
+        "PUT"
+      ],
+      "name": "api_v1_tombstone",
+      "operation_id": null,
+      "include_in_schema": false,
+      "tags": [],
+      "endpoint": "windagent_api.main.api_v1_tombstone"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v2/{path:path}",
+      "methods": [
+        "DELETE",
+        "GET",
+        "HEAD",
+        "OPTIONS",
+        "PATCH",
+        "POST",
+        "PUT"
+      ],
+      "name": "api_v2_tombstone",
+      "operation_id": null,
+      "include_in_schema": false,
+      "tags": [],
+      "endpoint": "windagent_api.main.api_v2_tombstone"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/agent-definitions",
+      "methods": [
+        "GET"
+      ],
+      "name": "list_agent_definitions",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "Agent Definitions V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.agent_definitions.list_agent_definitions"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/agent-definitions",
+      "methods": [
+        "POST"
+      ],
+      "name": "create_agent_definition",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "Agent Definitions V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.agent_definitions.create_agent_definition"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/agent-definitions/{definition_id}",
+      "methods": [
+        "DELETE"
+      ],
+      "name": "delete_agent_definition",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "Agent Definitions V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.agent_definitions.delete_agent_definition"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/agent-definitions/{definition_id}",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_agent_definition",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "Agent Definitions V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.agent_definitions.get_agent_definition"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/agent-definitions/{definition_id}",
+      "methods": [
+        "PATCH"
+      ],
+      "name": "update_agent_definition",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "Agent Definitions V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.agent_definitions.update_agent_definition"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/agent-definitions/{definition_id}/activity",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_agent_activity",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "Agent Definitions V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.agent_definitions.get_agent_activity"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/agent-instances",
+      "methods": [
+        "GET"
+      ],
+      "name": "list_agent_instances",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "Agent Instances V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.agent_instances.list_agent_instances"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/agent-instances",
+      "methods": [
+        "POST"
+      ],
+      "name": "launch_agent_instance",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "Agent Instances V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.agent_instances.launch_agent_instance"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/agent-instances/{instance_id}",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_agent_instance",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "Agent Instances V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.agent_instances.get_agent_instance"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/agent-instances/{instance_id}/restart",
+      "methods": [
+        "POST"
+      ],
+      "name": "restart_agent_instance",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "Agent Instances V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.agent_instances.restart_agent_instance"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/agent-instances/{instance_id}/start",
+      "methods": [
+        "POST"
+      ],
+      "name": "start_agent_instance",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "Agent Instances V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.agent_instances.start_agent_instance"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/agent-instances/{instance_id}/stop",
+      "methods": [
+        "POST"
+      ],
+      "name": "stop_agent_instance",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "Agent Instances V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.agent_instances.stop_agent_instance"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/agents/metrics",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_agent_metrics",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "Agent Definitions V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.agent_definitions.get_agent_metrics"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/assets",
+      "methods": [
+        "GET"
+      ],
+      "name": "list_assets",
+      "operation_id": "assets.list",
+      "include_in_schema": true,
+      "tags": [
+        "Assets V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.assets.list_assets"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/assets",
+      "methods": [
+        "POST"
+      ],
+      "name": "create_asset",
+      "operation_id": "assets.create",
+      "include_in_schema": true,
+      "tags": [
+        "Assets V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.assets.create_asset"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/assets/{asset_id}",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_asset",
+      "operation_id": "assets.get",
+      "include_in_schema": true,
+      "tags": [
+        "Assets V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.assets.get_asset"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/assets/{asset_id}/actions/approve",
+      "methods": [
+        "POST"
+      ],
+      "name": "approve_asset",
+      "operation_id": "assets.approve",
+      "include_in_schema": true,
+      "tags": [
+        "Assets V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.assets.approve_asset"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/assets/{asset_id}/actions/reject",
+      "methods": [
+        "POST"
+      ],
+      "name": "reject_asset",
+      "operation_id": "assets.reject",
+      "include_in_schema": true,
+      "tags": [
+        "Assets V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.assets.reject_asset"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/assets/{asset_id}/dependencies",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_asset_dependencies",
+      "operation_id": "assets.getDependencies",
+      "include_in_schema": true,
+      "tags": [
+        "Assets V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.assets.get_asset_dependencies"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/assets/{asset_id}/provenance",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_asset_provenance",
+      "operation_id": "assets.getProvenance",
+      "include_in_schema": true,
+      "tags": [
+        "Assets V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.assets.get_asset_provenance"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/assets/{asset_id}/revisions",
+      "methods": [
+        "GET"
+      ],
+      "name": "list_asset_revisions",
+      "operation_id": "assets.listRevisions",
+      "include_in_schema": true,
+      "tags": [
+        "Assets V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.assets.list_asset_revisions"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/browser/sessions",
+      "methods": [
+        "GET"
+      ],
+      "name": "list_browser_sessions",
+      "operation_id": "browser.listSessions",
+      "include_in_schema": true,
+      "tags": [
+        "Browser V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.browser.list_browser_sessions"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/browser/sessions",
+      "methods": [
+        "POST"
+      ],
+      "name": "create_browser_session",
+      "operation_id": "browser.createSession",
+      "include_in_schema": true,
+      "tags": [
+        "Browser V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.browser.create_browser_session"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/browser/sessions/{session_id}",
+      "methods": [
+        "DELETE"
+      ],
+      "name": "browser_close",
+      "operation_id": "browser.close",
+      "include_in_schema": true,
+      "tags": [
+        "Browser V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.browser.browser_close"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/browser/sessions/{session_id}",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_browser_session",
+      "operation_id": "browser.getSession",
+      "include_in_schema": true,
+      "tags": [
+        "Browser V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.browser.get_browser_session"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/browser/sessions/{session_id}/click",
+      "methods": [
+        "POST"
+      ],
+      "name": "browser_click",
+      "operation_id": "browser.click",
+      "include_in_schema": true,
+      "tags": [
+        "Browser V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.browser.browser_click"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/browser/sessions/{session_id}/extract",
+      "methods": [
+        "GET"
+      ],
+      "name": "browser_extract",
+      "operation_id": "browser.extract",
+      "include_in_schema": true,
+      "tags": [
+        "Browser V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.browser.browser_extract"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/browser/sessions/{session_id}/navigate",
+      "methods": [
+        "POST"
+      ],
+      "name": "browser_navigate",
+      "operation_id": "browser.navigate",
+      "include_in_schema": true,
+      "tags": [
+        "Browser V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.browser.browser_navigate"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/browser/sessions/{session_id}/screenshot",
+      "methods": [
+        "GET"
+      ],
+      "name": "browser_screenshot",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "Browser V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.browser.browser_screenshot"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/browser/sessions/{session_id}/scroll",
+      "methods": [
+        "POST"
+      ],
+      "name": "browser_scroll",
+      "operation_id": "browser.scroll",
+      "include_in_schema": true,
+      "tags": [
+        "Browser V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.browser.browser_scroll"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/browser/sessions/{session_id}/type",
+      "methods": [
+        "POST"
+      ],
+      "name": "browser_type",
+      "operation_id": "browser.type",
+      "include_in_schema": true,
+      "tags": [
+        "Browser V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.browser.browser_type"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/characters/{character_id}",
+      "methods": [
+        "DELETE"
+      ],
+      "name": "delete_character",
+      "operation_id": "characters.delete",
+      "include_in_schema": true,
+      "tags": [
+        "Characters V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.characters.delete_character"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/characters/{character_id}",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_character",
+      "operation_id": "characters.get",
+      "include_in_schema": true,
+      "tags": [
+        "Characters V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.characters.get_character"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/characters/{character_id}",
+      "methods": [
+        "PATCH"
+      ],
+      "name": "update_character",
+      "operation_id": "characters.update",
+      "include_in_schema": true,
+      "tags": [
+        "Characters V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.characters.update_character"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/characters/{character_id}/assets",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_character_assets",
+      "operation_id": "characters.getAssets",
+      "include_in_schema": true,
+      "tags": [
+        "Characters V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.characters.get_character_assets"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/characters/{character_id}/relationships",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_character_relationships",
+      "operation_id": "characters.getRelationships",
+      "include_in_schema": true,
+      "tags": [
+        "Characters V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.characters.get_character_relationships"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/conversations",
+      "methods": [
+        "GET"
+      ],
+      "name": "list_conversations",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "Conversations V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.conversations.list_conversations"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/conversations",
+      "methods": [
+        "POST"
+      ],
+      "name": "create_conversation",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "Conversations V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.conversations.create_conversation"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/conversations/{conversation_id}",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_conversation",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "Conversations V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.conversations.get_conversation"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/conversations/{conversation_id}/agents",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_conversation_agents",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "Conversations V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.conversations.get_conversation_agents"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/conversations/{conversation_id}/agents/{agent_id}/stop",
+      "methods": [
+        "POST"
+      ],
+      "name": "stop_conversation_agent",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "Conversations V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.conversations.stop_conversation_agent"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/conversations/{conversation_id}/events",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_conversation_events",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "Conversations V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.conversations.get_conversation_events"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/conversations/{conversation_id}/tasks",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_conversation_tasks",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "Conversations V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.conversations.get_conversation_tasks"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/dashboard/summary",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_dashboard_summary",
+      "operation_id": "dashboard.getSummary",
+      "include_in_schema": true,
+      "tags": [
+        "Dashboard V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.dashboard.get_dashboard_summary"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/episodes",
+      "methods": [
+        "GET"
+      ],
+      "name": "list_all_episodes",
+      "operation_id": "episodes.listAll",
+      "include_in_schema": true,
+      "tags": [
+        "Episodes V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.episodes.list_all_episodes"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/episodes/{episode_id}",
+      "methods": [
+        "DELETE"
+      ],
+      "name": "delete_episode",
+      "operation_id": "episodes.delete",
+      "include_in_schema": true,
+      "tags": [
+        "Episodes V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.episodes.delete_episode"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/episodes/{episode_id}",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_episode_detail",
+      "operation_id": "episodes.getDetail",
+      "include_in_schema": true,
+      "tags": [
+        "Episodes V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.episodes.get_episode_detail"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/episodes/{episode_id}",
+      "methods": [
+        "PATCH"
+      ],
+      "name": "update_episode",
+      "operation_id": "episodes.update",
+      "include_in_schema": true,
+      "tags": [
+        "Episodes V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.episodes.update_episode"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/episodes/{episode_id}/artifacts",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_episode_artifacts",
+      "operation_id": "episodes.getArtifacts",
+      "include_in_schema": true,
+      "tags": [
+        "Episodes V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.episodes.get_episode_artifacts"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/episodes/{episode_id}/cancel-run",
+      "methods": [
+        "POST"
+      ],
+      "name": "cancel_run",
+      "operation_id": "episodes.cancelRun",
+      "include_in_schema": true,
+      "tags": [
+        "Episodes V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.episodes.cancel_run"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/episodes/{episode_id}/decision",
+      "methods": [
+        "POST"
+      ],
+      "name": "submit_checkpoint_decision",
+      "operation_id": "episodes.submitDecision",
+      "include_in_schema": true,
+      "tags": [
+        "Episodes V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.episodes.submit_checkpoint_decision"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/episodes/{episode_id}/lock",
+      "methods": [
+        "POST"
+      ],
+      "name": "lock_screenplay",
+      "operation_id": "episodes.lockScreenplay",
+      "include_in_schema": true,
+      "tags": [
+        "Episodes V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.episodes.lock_screenplay"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/episodes/{episode_id}/production",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_production_plan",
+      "operation_id": "production.getPlan",
+      "include_in_schema": true,
+      "tags": [
+        "Production V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.production.get_production_plan"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/episodes/{episode_id}/production/animation/submit",
+      "methods": [
+        "POST"
+      ],
+      "name": "submit_animation_job",
+      "operation_id": "production.submitAnimation",
+      "include_in_schema": true,
+      "tags": [
+        "Production V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.production.submit_animation_job"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/episodes/{episode_id}/production/audio/submit",
+      "methods": [
+        "POST"
+      ],
+      "name": "submit_audio_job",
+      "operation_id": "production.submitAudio",
+      "include_in_schema": true,
+      "tags": [
+        "Production V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.production.submit_audio_job"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/episodes/{episode_id}/production/delivery",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_delivery_artifact",
+      "operation_id": "production.getDelivery",
+      "include_in_schema": true,
+      "tags": [
+        "Production V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.production.get_delivery_artifact"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/episodes/{episode_id}/production/jobs",
+      "methods": [
+        "GET"
+      ],
+      "name": "list_production_jobs",
+      "operation_id": "production.listJobs",
+      "include_in_schema": true,
+      "tags": [
+        "Production V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.production.list_production_jobs"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/episodes/{episode_id}/production/plan",
+      "methods": [
+        "POST"
+      ],
+      "name": "create_production_plan",
+      "operation_id": "production.createPlan",
+      "include_in_schema": true,
+      "tags": [
+        "Production V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.production.create_production_plan"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/episodes/{episode_id}/production/render/submit",
+      "methods": [
+        "POST"
+      ],
+      "name": "submit_render_job",
+      "operation_id": "production.submitRender",
+      "include_in_schema": true,
+      "tags": [
+        "Production V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.production.submit_render_job"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/episodes/{episode_id}/production/video/submit",
+      "methods": [
+        "POST"
+      ],
+      "name": "submit_video_job",
+      "operation_id": "production.submitVideo",
+      "include_in_schema": true,
+      "tags": [
+        "Production V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.production.submit_video_job"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/episodes/{episode_id}/production/{stage}/cancel",
+      "methods": [
+        "POST"
+      ],
+      "name": "cancel_job",
+      "operation_id": "production.cancelJob",
+      "include_in_schema": true,
+      "tags": [
+        "Production V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.production.cancel_job"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/episodes/{episode_id}/production/{stage}/retry",
+      "methods": [
+        "POST"
+      ],
+      "name": "retry_job",
+      "operation_id": "production.retryJob",
+      "include_in_schema": true,
+      "tags": [
+        "Production V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.production.retry_job"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/episodes/{episode_id}/runs",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_episode_runs",
+      "operation_id": "episodes.getRuns",
+      "include_in_schema": true,
+      "tags": [
+        "Episodes V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.episodes.get_episode_runs"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/episodes/{episode_id}/select-idea",
+      "methods": [
+        "POST"
+      ],
+      "name": "select_idea",
+      "operation_id": "episodes.selectIdea",
+      "include_in_schema": true,
+      "tags": [
+        "Episodes V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.episodes.select_idea"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/episodes/{episode_id}/shots",
+      "methods": [
+        "GET"
+      ],
+      "name": "list_shots",
+      "operation_id": "production.listShots",
+      "include_in_schema": true,
+      "tags": [
+        "Production V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.production.list_shots"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/episodes/{episode_id}/shots",
+      "methods": [
+        "POST"
+      ],
+      "name": "create_shot",
+      "operation_id": "production.createShot",
+      "include_in_schema": true,
+      "tags": [
+        "Production V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.production.create_shot"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/episodes/{episode_id}/start-generation",
+      "methods": [
+        "POST"
+      ],
+      "name": "start_generation",
+      "operation_id": "episodes.startGeneration",
+      "include_in_schema": true,
+      "tags": [
+        "Episodes V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.episodes.start_generation"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/episodes/{episode_id}/storyboard",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_episode_storyboard",
+      "operation_id": "storyboard.get",
+      "include_in_schema": true,
+      "tags": [
+        "Storyboard V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.storyboard.get_episode_storyboard"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/episodes/{episode_id}/storyboard/actions/sync",
+      "methods": [
+        "POST"
+      ],
+      "name": "sync_storyboard_from_screenplay",
+      "operation_id": "storyboard.syncFromScreenplay",
+      "include_in_schema": true,
+      "tags": [
+        "Storyboard V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.storyboard.sync_storyboard_from_screenplay"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/episodes/{episode_id}/storyboard/scenes",
+      "methods": [
+        "GET"
+      ],
+      "name": "list_storyboard_scenes",
+      "operation_id": "storyboard.listScenes",
+      "include_in_schema": true,
+      "tags": [
+        "Storyboard V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.storyboard.list_storyboard_scenes"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/files",
+      "methods": [
+        "GET"
+      ],
+      "name": "list_files",
+      "operation_id": "files.list",
+      "include_in_schema": true,
+      "tags": [
+        "Files V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.files.list_files"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/files",
+      "methods": [
+        "POST"
+      ],
+      "name": "create_file",
+      "operation_id": "files.create",
+      "include_in_schema": true,
+      "tags": [
+        "Files V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.files.create_file"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/files/upload",
+      "methods": [
+        "POST"
+      ],
+      "name": "upload_file",
+      "operation_id": "files.upload",
+      "include_in_schema": true,
+      "tags": [
+        "Files V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.files.upload_file"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/files/{file_id}",
+      "methods": [
+        "DELETE"
+      ],
+      "name": "delete_file",
+      "operation_id": "files.delete",
+      "include_in_schema": true,
+      "tags": [
+        "Files V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.files.delete_file"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/files/{file_id}",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_file",
+      "operation_id": "files.get",
+      "include_in_schema": true,
+      "tags": [
+        "Files V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.files.get_file"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/files/{file_id}/download",
+      "methods": [
+        "GET"
+      ],
+      "name": "download_file",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "Files V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.files.download_file"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/logs",
+      "methods": [
+        "GET"
+      ],
+      "name": "list_logs",
+      "operation_id": "logs.list",
+      "include_in_schema": true,
+      "tags": [
+        "Logs V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.logs.list_logs"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/logs/sources",
+      "methods": [
+        "GET"
+      ],
+      "name": "list_log_sources",
+      "operation_id": "logs.sources",
+      "include_in_schema": true,
+      "tags": [
+        "Logs V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.logs.list_log_sources"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/memory",
+      "methods": [
+        "GET"
+      ],
+      "name": "list_memory",
+      "operation_id": "memory.list",
+      "include_in_schema": true,
+      "tags": [
+        "Memory V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.memory.list_memory"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/memory",
+      "methods": [
+        "POST"
+      ],
+      "name": "create_memory",
+      "operation_id": "memory.create",
+      "include_in_schema": true,
+      "tags": [
+        "Memory V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.memory.create_memory"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/memory/search",
+      "methods": [
+        "POST"
+      ],
+      "name": "search_memory",
+      "operation_id": "memory.search",
+      "include_in_schema": true,
+      "tags": [
+        "Memory V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.memory.search_memory"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/memory/{memory_id}",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_memory",
+      "operation_id": "memory.get",
+      "include_in_schema": true,
+      "tags": [
+        "Memory V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.memory.get_memory"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/models",
+      "methods": [
+        "GET"
+      ],
+      "name": "list_models",
+      "operation_id": "models.list",
+      "include_in_schema": true,
+      "tags": [
+        "Models V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.models.list_models"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/models/{model_id:path}",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_model",
+      "operation_id": "models.get",
+      "include_in_schema": true,
+      "tags": [
+        "Models V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.models.get_model"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/monitoring/agents",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_monitoring_agents",
+      "operation_id": "monitoring.getAgents",
+      "include_in_schema": true,
+      "tags": [
+        "Monitoring V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.monitoring.get_monitoring_agents"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/monitoring/providers",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_monitoring_providers",
+      "operation_id": "monitoring.getProviders",
+      "include_in_schema": true,
+      "tags": [
+        "Monitoring V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.monitoring.get_monitoring_providers"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/monitoring/queues",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_monitoring_queues",
+      "operation_id": "monitoring.getQueues",
+      "include_in_schema": true,
+      "tags": [
+        "Monitoring V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.monitoring.get_monitoring_queues"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/monitoring/runs",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_monitoring_runs",
+      "operation_id": "monitoring.getRuns",
+      "include_in_schema": true,
+      "tags": [
+        "Monitoring V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.monitoring.get_monitoring_runs"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/monitoring/workers",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_monitoring_workers",
+      "operation_id": "monitoring.getWorkers",
+      "include_in_schema": true,
+      "tags": [
+        "Monitoring V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.monitoring.get_monitoring_workers"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/production/jobs/{job_id}",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_production_job",
+      "operation_id": "production.getJob",
+      "include_in_schema": true,
+      "tags": [
+        "Production V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.production.get_production_job"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/project-templates",
+      "methods": [
+        "GET"
+      ],
+      "name": "list_project_templates",
+      "operation_id": "projects.getTemplates",
+      "include_in_schema": true,
+      "tags": [
+        "Project Templates V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.project_templates.list_project_templates"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/projects",
+      "methods": [
+        "GET"
+      ],
+      "name": "list_projects",
+      "operation_id": "projects.list",
+      "include_in_schema": true,
+      "tags": [
+        "Projects V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.projects.list_projects"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/projects",
+      "methods": [
+        "POST"
+      ],
+      "name": "create_project",
+      "operation_id": "projects.create",
+      "include_in_schema": true,
+      "tags": [
+        "Projects V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.projects.create_project"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/projects/{project_id}",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_project",
+      "operation_id": "projects.get",
+      "include_in_schema": true,
+      "tags": [
+        "Projects V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.projects.get_project"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/projects/{project_id}",
+      "methods": [
+        "PATCH"
+      ],
+      "name": "update_project",
+      "operation_id": "projects.update",
+      "include_in_schema": true,
+      "tags": [
+        "Projects V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.projects.update_project"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/projects/{project_id}/characters",
+      "methods": [
+        "GET"
+      ],
+      "name": "list_project_characters",
+      "operation_id": "characters.listForProject",
+      "include_in_schema": true,
+      "tags": [
+        "Characters V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.characters.list_project_characters"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/projects/{project_id}/characters",
+      "methods": [
+        "POST"
+      ],
+      "name": "create_character",
+      "operation_id": "characters.create",
+      "include_in_schema": true,
+      "tags": [
+        "Characters V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.characters.create_character"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/projects/{project_id}/episodes",
+      "methods": [
+        "GET"
+      ],
+      "name": "list_episodes_for_project",
+      "operation_id": "episodes.listForProject",
+      "include_in_schema": true,
+      "tags": [
+        "Projects V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.projects.list_episodes_for_project"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/projects/{project_id}/episodes",
+      "methods": [
+        "POST"
+      ],
+      "name": "create_episode_for_project",
+      "operation_id": "episodes.create",
+      "include_in_schema": true,
+      "tags": [
+        "Projects V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.projects.create_episode_for_project"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/projects/{project_id}/world",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_world_bible",
+      "operation_id": "world.get",
+      "include_in_schema": true,
+      "tags": [
+        "World V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.world.get_world_bible"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/projects/{project_id}/world",
+      "methods": [
+        "PATCH"
+      ],
+      "name": "update_world_bible",
+      "operation_id": "world.update",
+      "include_in_schema": true,
+      "tags": [
+        "World V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.world.update_world_bible"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/projects/{project_id}/world/factions",
+      "methods": [
+        "GET"
+      ],
+      "name": "list_factions",
+      "operation_id": "world.listFactions",
+      "include_in_schema": true,
+      "tags": [
+        "World V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.world.list_factions"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/projects/{project_id}/world/factions",
+      "methods": [
+        "POST"
+      ],
+      "name": "create_faction",
+      "operation_id": "world.createFaction",
+      "include_in_schema": true,
+      "tags": [
+        "World V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.world.create_faction"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/projects/{project_id}/world/locations",
+      "methods": [
+        "GET"
+      ],
+      "name": "list_locations",
+      "operation_id": "world.listLocations",
+      "include_in_schema": true,
+      "tags": [
+        "World V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.world.list_locations"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/projects/{project_id}/world/locations",
+      "methods": [
+        "POST"
+      ],
+      "name": "create_location",
+      "operation_id": "world.createLocation",
+      "include_in_schema": true,
+      "tags": [
+        "World V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.world.create_location"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/projects/{project_id}/world/lore",
+      "methods": [
+        "GET"
+      ],
+      "name": "list_lore",
+      "operation_id": "world.listLore",
+      "include_in_schema": true,
+      "tags": [
+        "World V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.world.list_lore"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/projects/{project_id}/world/lore",
+      "methods": [
+        "POST"
+      ],
+      "name": "create_lore",
+      "operation_id": "world.createLore",
+      "include_in_schema": true,
+      "tags": [
+        "World V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.world.create_lore"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/providers",
+      "methods": [
+        "GET"
+      ],
+      "name": "list_providers",
+      "operation_id": "providers.list",
+      "include_in_schema": true,
+      "tags": [
+        "Providers V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.providers.list_providers"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/providers/health",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_all_providers_health",
+      "operation_id": "providers.health",
+      "include_in_schema": true,
+      "tags": [
+        "Providers V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.providers.get_all_providers_health"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/providers/{provider_id}",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_provider",
+      "operation_id": "providers.get",
+      "include_in_schema": true,
+      "tags": [
+        "Providers V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.providers.get_provider"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/providers/{provider_id}/endpoints",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_provider_endpoints",
+      "operation_id": "providers.getEndpoints",
+      "include_in_schema": true,
+      "tags": [
+        "Providers V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.providers.get_provider_endpoints"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/providers/{provider_id}/health",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_provider_health",
+      "operation_id": "providers.getProviderHealth",
+      "include_in_schema": true,
+      "tags": [
+        "Providers V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.providers.get_provider_health"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/providers/{provider_id}/models",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_provider_models",
+      "operation_id": "providers.getModels",
+      "include_in_schema": true,
+      "tags": [
+        "Providers V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.providers.get_provider_models"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/providers/{provider_id}/test-connection",
+      "methods": [
+        "POST"
+      ],
+      "name": "test_provider_connection",
+      "operation_id": "providers.testConnection",
+      "include_in_schema": true,
+      "tags": [
+        "Providers V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.providers.test_provider_connection"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/reviews",
+      "methods": [
+        "GET"
+      ],
+      "name": "list_reviews",
+      "operation_id": "reviews.list",
+      "include_in_schema": true,
+      "tags": [
+        "Reviews V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.reviews.list_reviews"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/reviews",
+      "methods": [
+        "POST"
+      ],
+      "name": "create_review",
+      "operation_id": "reviews.create",
+      "include_in_schema": true,
+      "tags": [
+        "Reviews V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.reviews.create_review"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/reviews/{review_id}",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_review",
+      "operation_id": "reviews.get",
+      "include_in_schema": true,
+      "tags": [
+        "Reviews V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.reviews.get_review"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/reviews/{review_id}/comments",
+      "methods": [
+        "GET"
+      ],
+      "name": "list_review_comments",
+      "operation_id": "reviews.listComments",
+      "include_in_schema": true,
+      "tags": [
+        "Reviews V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.reviews.list_review_comments"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/reviews/{review_id}/comments",
+      "methods": [
+        "POST"
+      ],
+      "name": "add_review_comment",
+      "operation_id": "reviews.addComment",
+      "include_in_schema": true,
+      "tags": [
+        "Reviews V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.reviews.add_review_comment"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/reviews/{review_id}/decision",
+      "methods": [
+        "POST"
+      ],
+      "name": "submit_review_decision",
+      "operation_id": "reviews.submitDecision",
+      "include_in_schema": true,
+      "tags": [
+        "Reviews V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.reviews.submit_review_decision"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/routing/graph",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_routing_graph",
+      "operation_id": "routing.getGraph",
+      "include_in_schema": true,
+      "tags": [
+        "Routing V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.routing.get_routing_graph"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/routing/locks/{lock_id}",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_route_lock",
+      "operation_id": "routing.getLock",
+      "include_in_schema": true,
+      "tags": [
+        "Routing V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.routing.get_route_lock"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/routing/metrics",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_routing_metrics",
+      "operation_id": "routing.getMetrics",
+      "include_in_schema": true,
+      "tags": [
+        "Routing V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.routing.get_routing_metrics"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/routing/rules",
+      "methods": [
+        "GET"
+      ],
+      "name": "list_routing_rules",
+      "operation_id": "routing.listRules",
+      "include_in_schema": true,
+      "tags": [
+        "Routing V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.routing.list_routing_rules"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/routing/rules",
+      "methods": [
+        "POST"
+      ],
+      "name": "create_routing_rule",
+      "operation_id": "routing.createRule",
+      "include_in_schema": true,
+      "tags": [
+        "Routing V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.routing.create_routing_rule"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/routing/rules/{rule_id}",
+      "methods": [
+        "DELETE"
+      ],
+      "name": "delete_routing_rule",
+      "operation_id": "routing.deleteRule",
+      "include_in_schema": true,
+      "tags": [
+        "Routing V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.routing.delete_routing_rule"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/routing/rules/{rule_id}",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_routing_rule",
+      "operation_id": "routing.getRule",
+      "include_in_schema": true,
+      "tags": [
+        "Routing V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.routing.get_routing_rule"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/routing/rules/{rule_id}",
+      "methods": [
+        "PATCH"
+      ],
+      "name": "update_routing_rule",
+      "operation_id": "routing.updateRule",
+      "include_in_schema": true,
+      "tags": [
+        "Routing V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.routing.update_routing_rule"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/routing/simulations",
+      "methods": [
+        "POST"
+      ],
+      "name": "simulate_route_decision",
+      "operation_id": "routing.simulate",
+      "include_in_schema": true,
+      "tags": [
+        "Routing V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.routing.simulate_route_decision"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/settings",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_settings",
+      "operation_id": "settings.get",
+      "include_in_schema": true,
+      "tags": [
+        "Settings V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.settings.get_settings"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/settings",
+      "methods": [
+        "PATCH"
+      ],
+      "name": "patch_settings",
+      "operation_id": "settings.patch",
+      "include_in_schema": true,
+      "tags": [
+        "Settings V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.settings.patch_settings"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/settings/schema",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_settings_schema",
+      "operation_id": "settings.getSchema",
+      "include_in_schema": true,
+      "tags": [
+        "Settings V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.settings.get_settings_schema"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/shots/{shot_id}",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_shot",
+      "operation_id": "production.getShot",
+      "include_in_schema": true,
+      "tags": [
+        "Production V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.production.get_shot"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/shots/{shot_id}",
+      "methods": [
+        "PATCH"
+      ],
+      "name": "update_shot",
+      "operation_id": "production.updateShot",
+      "include_in_schema": true,
+      "tags": [
+        "Production V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.production.update_shot"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/storyboard/scenes",
+      "methods": [
+        "POST"
+      ],
+      "name": "create_scene",
+      "operation_id": "storyboard.createScene",
+      "include_in_schema": true,
+      "tags": [
+        "Storyboard V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.storyboard.create_scene"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/storyboard/scenes/{scene_id}",
+      "methods": [
+        "PATCH"
+      ],
+      "name": "update_scene",
+      "operation_id": "storyboard.updateScene",
+      "include_in_schema": true,
+      "tags": [
+        "Storyboard V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.storyboard.update_scene"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/storyboard/scenes/{scene_id}/generations",
+      "methods": [
+        "POST"
+      ],
+      "name": "trigger_concept_generation",
+      "operation_id": "storyboard.triggerGeneration",
+      "include_in_schema": true,
+      "tags": [
+        "Storyboard V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.storyboard.trigger_concept_generation"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/storyboard/scenes/{scene_id}/generations/{generation_id}",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_generation_job",
+      "operation_id": "storyboard.getGenerationJob",
+      "include_in_schema": true,
+      "tags": [
+        "Storyboard V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.storyboard.get_generation_job"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/studio/artifacts/{artifact_id}",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_artifact",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "studio-artifacts"
+      ],
+      "endpoint": "windagent_api.routers.v3.studio.artifacts.get_artifact"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/studio/capabilities",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_capabilities",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "studio-v3"
+      ],
+      "endpoint": "windagent_api.routers.v3.studio.aggregator.get_capabilities"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/studio/episodes/{episode_id}",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_episode",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "studio-episodes"
+      ],
+      "endpoint": "windagent_api.routers.v3.studio.episodes.get_episode"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/studio/episodes/{episode_id}/approvals",
+      "methods": [
+        "POST"
+      ],
+      "name": "record_approval",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "studio-decisions"
+      ],
+      "endpoint": "windagent_api.routers.v3.studio.decisions.record_approval"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/studio/episodes/{episode_id}/artifacts",
+      "methods": [
+        "GET"
+      ],
+      "name": "list_artifacts",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "studio-artifacts"
+      ],
+      "endpoint": "windagent_api.routers.v3.studio.artifacts.list_artifacts"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/studio/episodes/{episode_id}/idea-selection",
+      "methods": [
+        "POST"
+      ],
+      "name": "select_idea",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "studio-decisions"
+      ],
+      "endpoint": "windagent_api.routers.v3.studio.decisions.select_idea"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/studio/episodes/{episode_id}/revisions",
+      "methods": [
+        "POST"
+      ],
+      "name": "derive_revision",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "studio-decisions"
+      ],
+      "endpoint": "windagent_api.routers.v3.studio.decisions.derive_revision"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/studio/episodes/{episode_id}/runs",
+      "methods": [
+        "POST"
+      ],
+      "name": "start_or_resume_run",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "studio-runs"
+      ],
+      "endpoint": "windagent_api.routers.v3.studio.runs.start_or_resume_run"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/studio/episodes/{episode_id}/screenplay-lock",
+      "methods": [
+        "POST"
+      ],
+      "name": "lock_screenplay",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "studio-decisions"
+      ],
+      "endpoint": "windagent_api.routers.v3.studio.decisions.lock_screenplay"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/studio/readiness",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_readiness",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "studio-v3"
+      ],
+      "endpoint": "windagent_api.routers.v3.studio.aggregator.get_readiness"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/studio/runs/{run_id}",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_run",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "studio-runs"
+      ],
+      "endpoint": "windagent_api.routers.v3.studio.runs.get_run"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/studio/runs/{run_id}/events",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_run_events",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "studio-runs"
+      ],
+      "endpoint": "windagent_api.routers.v3.studio.runs.get_run_events"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/studio/series",
+      "methods": [
+        "GET"
+      ],
+      "name": "list_series",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "studio-series"
+      ],
+      "endpoint": "windagent_api.routers.v3.studio.series.list_series"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/studio/series",
+      "methods": [
+        "POST"
+      ],
+      "name": "create_series",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "studio-series"
+      ],
+      "endpoint": "windagent_api.routers.v3.studio.series.create_series"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/studio/series/{series_id}",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_series",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "studio-series"
+      ],
+      "endpoint": "windagent_api.routers.v3.studio.series.get_series"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/studio/series/{series_id}/episodes",
+      "methods": [
+        "GET"
+      ],
+      "name": "list_episodes",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "studio-episodes"
+      ],
+      "endpoint": "windagent_api.routers.v3.studio.episodes.list_episodes"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/studio/series/{series_id}/episodes",
+      "methods": [
+        "POST"
+      ],
+      "name": "create_episode",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "studio-episodes"
+      ],
+      "endpoint": "windagent_api.routers.v3.studio.episodes.create_episode"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/system/health",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_system_health",
+      "operation_id": "system.getHealth",
+      "include_in_schema": true,
+      "tags": [
+        "System V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.system.get_system_health"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/system/metrics",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_system_metrics",
+      "operation_id": "system.getMetrics",
+      "include_in_schema": true,
+      "tags": [
+        "System V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.system.get_system_metrics"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/tasks",
+      "methods": [
+        "GET"
+      ],
+      "name": "list_tasks",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "Tasks V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.tasks.list_tasks"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/tasks",
+      "methods": [
+        "POST"
+      ],
+      "name": "create_task",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "Tasks V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.tasks.create_task"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/tasks/{task_id}",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_task",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "Tasks V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.tasks.get_task"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/tasks/{task_id}",
+      "methods": [
+        "PATCH"
+      ],
+      "name": "update_task",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "Tasks V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.tasks.update_task"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/tasks/{task_id}/cancel",
+      "methods": [
+        "POST"
+      ],
+      "name": "cancel_task",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "Tasks V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.tasks.cancel_task"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/tasks/{task_id}/retry",
+      "methods": [
+        "POST"
+      ],
+      "name": "retry_task",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "Tasks V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.tasks.retry_task"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/workflow-runs",
+      "methods": [
+        "GET"
+      ],
+      "name": "list_workflow_runs",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "Workflows V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.workflows.list_workflow_runs"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/workflow-runs",
+      "methods": [
+        "POST"
+      ],
+      "name": "trigger_workflow_run",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "Workflows V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.workflows.trigger_workflow_run"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/workflow-runs/{run_id}",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_workflow_run",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "Workflows V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.workflows.get_workflow_run"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/workflow-runs/{run_id}/cancel",
+      "methods": [
+        "POST"
+      ],
+      "name": "cancel_workflow_run",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "Workflows V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.workflows.cancel_workflow_run"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/workflow-runs/{run_id}/pause",
+      "methods": [
+        "POST"
+      ],
+      "name": "pause_workflow_run",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "Workflows V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.workflows.pause_workflow_run"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/workflow-runs/{run_id}/resume",
+      "methods": [
+        "POST"
+      ],
+      "name": "resume_workflow_run",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "Workflows V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.workflows.resume_workflow_run"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/workflow-runs/{run_id}/retry",
+      "methods": [
+        "POST"
+      ],
+      "name": "retry_workflow_run",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "Workflows V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.workflows.retry_workflow_run"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/workflows",
+      "methods": [
+        "GET"
+      ],
+      "name": "list_workflows",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "Workflows V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.workflows.list_workflows"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/workflows",
+      "methods": [
+        "POST"
+      ],
+      "name": "create_workflow",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "Workflows V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.workflows.create_workflow"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/workflows/{workflow_id}",
+      "methods": [
+        "GET"
+      ],
+      "name": "get_workflow",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "Workflows V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.workflows.get_workflow"
+    },
+    {
+      "kind": "http",
+      "path": "/api/v3/workflows/{workflow_id}",
+      "methods": [
+        "PATCH"
+      ],
+      "name": "update_workflow",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "Workflows V3"
+      ],
+      "endpoint": "windagent_api.routers.v3.workflows.update_workflow"
+    },
+    {
+      "kind": "http",
+      "path": "/docs",
+      "methods": [
+        "GET",
+        "HEAD"
+      ],
+      "name": "swagger_ui_html",
+      "operation_id": null,
+      "include_in_schema": false,
+      "tags": [],
+      "endpoint": "fastapi.applications.FastAPI.setup.<locals>.swagger_ui_html"
+    },
+    {
+      "kind": "http",
+      "path": "/docs/oauth2-redirect",
+      "methods": [
+        "GET",
+        "HEAD"
+      ],
+      "name": "swagger_ui_redirect",
+      "operation_id": null,
+      "include_in_schema": false,
+      "tags": [],
+      "endpoint": "fastapi.applications.FastAPI.setup.<locals>.swagger_ui_redirect"
+    },
+    {
+      "kind": "http",
+      "path": "/health",
+      "methods": [
+        "GET"
+      ],
+      "name": "health_root",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "health"
+      ],
+      "endpoint": "windagent_api.health.health_root"
+    },
+    {
+      "kind": "http",
+      "path": "/health/",
+      "methods": [
+        "GET"
+      ],
+      "name": "health_root",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "health"
+      ],
+      "endpoint": "windagent_api.health.health_root"
+    },
+    {
+      "kind": "http",
+      "path": "/health/live",
+      "methods": [
+        "GET"
+      ],
+      "name": "health_liveness",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "health"
+      ],
+      "endpoint": "windagent_api.health.health_liveness"
+    },
+    {
+      "kind": "http",
+      "path": "/health/ready",
+      "methods": [
+        "GET"
+      ],
+      "name": "health_readiness",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [
+        "health"
+      ],
+      "endpoint": "windagent_api.health.health_readiness"
+    },
+    {
+      "kind": "http",
+      "path": "/internal/architecture",
+      "methods": [
+        "GET"
+      ],
+      "name": "internal_architecture",
+      "operation_id": null,
+      "include_in_schema": true,
+      "tags": [],
+      "endpoint": "windagent_api.main.internal_architecture"
+    },
+    {
+      "kind": "http",
+      "path": "/openapi.json",
+      "methods": [
+        "GET",
+        "HEAD"
+      ],
+      "name": "openapi",
+      "operation_id": null,
+      "include_in_schema": false,
+      "tags": [],
+      "endpoint": "fastapi.applications.FastAPI.setup.<locals>.openapi"
+    },
+    {
+      "kind": "http",
+      "path": "/redoc",
+      "methods": [
+        "GET",
+        "HEAD"
+      ],
+      "name": "redoc_html",
+      "operation_id": null,
+      "include_in_schema": false,
+      "tags": [],
+      "endpoint": "fastapi.applications.FastAPI.setup.<locals>.redoc_html"
+    },
+    {
+      "kind": "websocket",
+      "path": "/ws",
+      "methods": [
+        "WEBSOCKET"
+      ],
+      "name": "root_websocket_endpoint",
+      "operation_id": null,
+      "include_in_schema": false,
+      "tags": [],
+      "endpoint": "windagent_api.main.root_websocket_endpoint"
+    },
+    {
+      "kind": "websocket",
+      "path": "/ws/conversations/{conversation_id}",
+      "methods": [
+        "WEBSOCKET"
+      ],
+      "name": "conversation_event_stream",
+      "operation_id": null,
+      "include_in_schema": false,
+      "tags": [],
+      "endpoint": "windagent_api.routers.conversation_streams.conversation_event_stream"
+    },
+    {
+      "kind": "websocket",
+      "path": "/ws/v3/agent-system",
+      "methods": [
+        "WEBSOCKET"
+      ],
+      "name": "agent_system_realtime_ws",
+      "operation_id": null,
+      "include_in_schema": false,
+      "tags": [],
+      "endpoint": "windagent_api.routers.v3.workflows.agent_system_realtime_ws"
+    },
+    {
+      "kind": "websocket",
+      "path": "/ws/v3/browser",
+      "methods": [
+        "WEBSOCKET"
+      ],
+      "name": "browser_realtime_ws",
+      "operation_id": null,
+      "include_in_schema": false,
+      "tags": [],
+      "endpoint": "windagent_api.routers.v3.browser.browser_realtime_ws"
+    },
+    {
+      "kind": "websocket",
+      "path": "/ws/v3/episodes/{episode_id}",
+      "methods": [
+        "WEBSOCKET"
+      ],
+      "name": "episode_workspace_websocket",
+      "operation_id": null,
+      "include_in_schema": false,
+      "tags": [],
+      "endpoint": "windagent_api.routers.v3.episodes.episode_workspace_websocket"
+    },
+    {
+      "kind": "websocket",
+      "path": "/ws/v3/logs",
+      "methods": [
+        "WEBSOCKET"
+      ],
+      "name": "logs_realtime_ws",
+      "operation_id": null,
+      "include_in_schema": false,
+      "tags": [],
+      "endpoint": "windagent_api.routers.v3.logs.logs_realtime_ws"
+    },
+    {
+      "kind": "websocket",
+      "path": "/ws/v3/model-infra",
+      "methods": [
+        "WEBSOCKET"
+      ],
+      "name": "model_infra_realtime_stream",
+      "operation_id": null,
+      "include_in_schema": false,
+      "tags": [],
+      "endpoint": "windagent_api.routers.v3.routing.model_infra_realtime_stream"
+    },
+    {
+      "kind": "websocket",
+      "path": "/ws/v3/production/{episode_id}",
+      "methods": [
+        "WEBSOCKET"
+      ],
+      "name": "production_realtime_ws",
+      "operation_id": null,
+      "include_in_schema": false,
+      "tags": [],
+      "endpoint": "windagent_api.routers.v3.production.production_realtime_ws"
+    },
+    {
+      "kind": "websocket",
+      "path": "/ws/v3/storyboard/{episode_id}",
+      "methods": [
+        "WEBSOCKET"
+      ],
+      "name": "storyboard_realtime_ws",
+      "operation_id": null,
+      "include_in_schema": false,
+      "tags": [],
+      "endpoint": "windagent_api.routers.v3.storyboard.storyboard_realtime_ws"
+    },
+    {
+      "kind": "websocket",
+      "path": "/ws/v3/system/metrics",
+      "methods": [
+        "WEBSOCKET"
+      ],
+      "name": "websocket_system_metrics",
+      "operation_id": null,
+      "include_in_schema": false,
+      "tags": [],
+      "endpoint": "windagent_api.routers.v3.system.websocket_system_metrics"
+    }
+  ]
+}

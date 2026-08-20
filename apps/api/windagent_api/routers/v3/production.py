@@ -3,23 +3,30 @@ V3 Production Router — Canonical Production Cutover Domain.
 Provides durable endpoints for Episode Production Plans, Shots,
 Stage Jobs (Audio, Animation, Render, Video) with failure diagnostics,
 and WebSocket realtime streaming.
+
+Phase 4: production plans, shots, jobs, and delivery artifacts are persisted
+through the namespaced durable V3 resource authority. No module-level RAM stores.
 """
 from __future__ import annotations
 
 import asyncio
 import uuid
 from typing import Any, Dict, List, Optional
-from fastapi import APIRouter, HTTPException, Path, Query, WebSocket, WebSocketDisconnect, status
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, WebSocket, WebSocketDisconnect, status
 from pydantic import BaseModel, Field
 from windagent_core.domain.lifecycle import utc_now
+from windagent_api.dependencies import get_v3_resource_service
+from windagent_api.services.v3_resource_service import V3ResourceService
+from windagent_api.services.v3_demo_seed import (
+    NS_PRODUCTION_PLANS,
+    NS_SHOTS,
+    NS_PRODUCTION_JOBS,
+    NS_DELIVERY_ARTIFACTS,
+)
 
 router = APIRouter(prefix="/api/v3", tags=["Production V3"])
 ws_router = APIRouter(prefix="/ws/v3/production", tags=["Production V3 WebSocket"])
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Domain Models
-# ─────────────────────────────────────────────────────────────────────────────
 
 class ProductionPlanResource(BaseModel):
     id: str
@@ -134,153 +141,7 @@ class DeliveryArtifactResource(BaseModel):
     created_at: str
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# In-Memory Storage
-# ─────────────────────────────────────────────────────────────────────────────
-
-_PRODUCTION_PLANS: Dict[str, Dict[str, Any]] = {
-    "ep-cb-001": {
-        "id": "plan-ep-cb-001",
-        "episode_id": "ep-cb-001",
-        "project_id": "proj-cyberpunk-01",
-        "screenplay_revision_id": "rev-cb-001-v3",
-        "storyboard_revision_id": "sb-cb-001",
-        "character_references": ["char-kaelen-01", "char-nova-01", "char-sylas-01"],
-        "asset_references": ["asset-concept-cb-001-01"],
-        "status": "ACTIVE",
-        "progress_percent": 35,
-        "version": 1,
-        "created_at": "2026-08-14T08:00:00Z",
-        "updated_at": "2026-08-16T00:00:00Z",
-    }
-}
-
-_SHOTS: Dict[str, Dict[str, Any]] = {
-    "shot-cb-001-01": {
-        "id": "shot-cb-001-01",
-        "episode_id": "ep-cb-001",
-        "production_plan_id": "plan-ep-cb-001",
-        "scene_id": "scene-cb-001-01",
-        "shot_number": 1,
-        "camera_movement": "Slow Dolly In",
-        "focal_length": "50mm Anamorphic",
-        "status": "RENDERED",
-        "duration_seconds": 6,
-        "audio_asset_id": "asset-audio-01",
-        "animation_asset_id": "asset-anim-01",
-        "render_asset_id": "asset-render-01",
-        "version": 1,
-        "created_at": "2026-08-14T08:30:00Z",
-        "updated_at": "2026-08-16T00:00:00Z",
-    },
-    "shot-cb-001-02": {
-        "id": "shot-cb-001-02",
-        "episode_id": "ep-cb-001",
-        "production_plan_id": "plan-ep-cb-001",
-        "scene_id": "scene-cb-001-01",
-        "shot_number": 2,
-        "camera_movement": "Over-the-shoulder Pan",
-        "focal_length": "35mm",
-        "status": "RENDER_PENDING",
-        "duration_seconds": 4,
-        "audio_asset_id": "asset-audio-02",
-        "animation_asset_id": "asset-anim-02",
-        "render_asset_id": None,
-        "version": 1,
-        "created_at": "2026-08-14T08:35:00Z",
-        "updated_at": "2026-08-16T00:00:00Z",
-    },
-    "shot-cb-001-03": {
-        "id": "shot-cb-001-03",
-        "episode_id": "ep-cb-001",
-        "production_plan_id": "plan-ep-cb-001",
-        "scene_id": "scene-cb-001-02",
-        "shot_number": 3,
-        "camera_movement": "Tracking Shot",
-        "focal_length": "24mm Wide",
-        "status": "ANIMATION_PENDING",
-        "duration_seconds": 8,
-        "audio_asset_id": "asset-audio-03",
-        "animation_asset_id": None,
-        "render_asset_id": None,
-        "version": 1,
-        "created_at": "2026-08-14T08:40:00Z",
-        "updated_at": "2026-08-16T00:00:00Z",
-    },
-}
-
-_PRODUCTION_JOBS: Dict[str, Dict[str, Any]] = {
-    "job-audio-001": {
-        "job_id": "job-audio-001",
-        "episode_id": "ep-cb-001",
-        "shot_id": "shot-cb-001-01",
-        "job_type": "AUDIO",
-        "state": "SUCCEEDED",
-        "progress_percent": 100,
-        "error_code": None,
-        "retryable": False,
-        "failure_stage": None,
-        "attempt": 1,
-        "max_attempts": 3,
-        "artifact_id": "asset-audio-01",
-        "correlation_id": "corr-audio-001",
-        "submitted_at": "2026-08-15T10:00:00Z",
-        "completed_at": "2026-08-15T10:01:15Z",
-    },
-    "job-anim-001": {
-        "job_id": "job-anim-001",
-        "episode_id": "ep-cb-001",
-        "shot_id": "shot-cb-001-01",
-        "job_type": "ANIMATION",
-        "state": "SUCCEEDED",
-        "progress_percent": 100,
-        "error_code": None,
-        "retryable": False,
-        "failure_stage": None,
-        "attempt": 1,
-        "max_attempts": 3,
-        "artifact_id": "asset-anim-01",
-        "correlation_id": "corr-anim-001",
-        "submitted_at": "2026-08-15T10:05:00Z",
-        "completed_at": "2026-08-15T10:08:40Z",
-    },
-    "job-render-001": {
-        "job_id": "job-render-001",
-        "episode_id": "ep-cb-001",
-        "shot_id": "shot-cb-001-01",
-        "job_type": "RENDER",
-        "state": "SUCCEEDED",
-        "progress_percent": 100,
-        "error_code": None,
-        "retryable": False,
-        "failure_stage": None,
-        "attempt": 1,
-        "max_attempts": 3,
-        "artifact_id": "asset-render-01",
-        "correlation_id": "corr-render-001",
-        "submitted_at": "2026-08-15T10:10:00Z",
-        "completed_at": "2026-08-15T10:25:00Z",
-    },
-}
-
-_DELIVERY_ARTIFACTS: Dict[str, Dict[str, Any]] = {
-    "ep-cb-001": {
-        "id": "delivery-ep-cb-001",
-        "episode_id": "ep-cb-001",
-        "video_asset_id": "asset-video-ep-cb-001",
-        "resolution": "1080p (1920x1080)",
-        "codec": "H.264 / AAC",
-        "duration_seconds": 18,
-        "file_size_bytes": 48500000,
-        "download_url": None,
-        "manifest_url": None,
-        "created_at": "2026-08-16T00:00:00Z",
-    }
-}
-
-
-def _plan_to_resource(p: Dict[str, Any]) -> ProductionPlanResource:
-    shots = [s for s in _SHOTS.values() if s["episode_id"] == p["episode_id"]]
+def _plan_to_resource(p: Dict[str, Any], shots_count: int) -> ProductionPlanResource:
     return ProductionPlanResource(
         id=p["id"],
         episode_id=p["episode_id"],
@@ -289,12 +150,12 @@ def _plan_to_resource(p: Dict[str, Any]) -> ProductionPlanResource:
         storyboard_revision_id=p["storyboard_revision_id"],
         character_references=p.get("character_references", []),
         asset_references=p.get("asset_references", []),
-        status=p["status"],
-        progress_percent=p["progress_percent"],
-        shots_count=len(shots),
-        version=p["version"],
-        created_at=p["created_at"],
-        updated_at=p["updated_at"],
+        status=p.get("status", "ACTIVE"),
+        progress_percent=p.get("progress_percent", 0),
+        shots_count=shots_count,
+        version=p.get("version", 1),
+        created_at=p.get("created_at", ""),
+        updated_at=p.get("updated_at", ""),
     )
 
 
@@ -306,17 +167,17 @@ def _job_to_resource(j: Dict[str, Any]) -> ProductionJobResource:
     return ProductionJobResource(**j)
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Production Plan Endpoints
-# ─────────────────────────────────────────────────────────────────────────────
-
 @router.get("/episodes/{episode_id}/production", response_model=ProductionPlanResource, operation_id="production.getPlan")
-async def get_production_plan(episode_id: str = Path(...)) -> ProductionPlanResource:
+async def get_production_plan(
+    episode_id: str = Path(...),
+    service: V3ResourceService = Depends(get_v3_resource_service),
+) -> ProductionPlanResource:
     """Retrieve the active production plan for an episode."""
-    if episode_id not in _PRODUCTION_PLANS:
+    plan = await service.get(NS_PRODUCTION_PLANS, episode_id)
+    if plan is None:
         # Create empty initial plan pinned to locked revisions
         now = utc_now().isoformat()
-        _PRODUCTION_PLANS[episode_id] = {
+        plan_data = {
             "id": f"plan-{episode_id}",
             "episode_id": episode_id,
             "project_id": None,
@@ -326,17 +187,21 @@ async def get_production_plan(episode_id: str = Path(...)) -> ProductionPlanReso
             "asset_references": [],
             "status": "PLANNING",
             "progress_percent": 0,
-            "version": 1,
             "created_at": now,
             "updated_at": now,
         }
-    return _plan_to_resource(_PRODUCTION_PLANS[episode_id])
+        plan = await service.create(NS_PRODUCTION_PLANS, episode_id, plan_data)
+
+    shots = await service.list(NS_SHOTS)
+    shots = [s for s in shots if s.get("episode_id") == episode_id]
+    return _plan_to_resource(plan, len(shots))
 
 
 @router.post("/episodes/{episode_id}/production/plan", response_model=ProductionPlanResource, status_code=status.HTTP_201_CREATED, operation_id="production.createPlan")
 async def create_production_plan(
     episode_id: str = Path(...),
     body: CreateProductionPlanRequest = ...,
+    service: V3ResourceService = Depends(get_v3_resource_service),
 ) -> ProductionPlanResource:
     """Initialize or update production plan with pinned screenplay & storyboard revisions."""
     now = utc_now().isoformat()
@@ -350,23 +215,24 @@ async def create_production_plan(
         "asset_references": body.asset_references,
         "status": "ACTIVE",
         "progress_percent": 0,
-        "version": 1,
         "created_at": now,
         "updated_at": now,
     }
-    _PRODUCTION_PLANS[episode_id] = plan_data
-    return _plan_to_resource(plan_data)
+    created = await service.create(NS_PRODUCTION_PLANS, episode_id, plan_data)
+    shots = await service.list(NS_SHOTS)
+    shots = [s for s in shots if s.get("episode_id") == episode_id]
+    return _plan_to_resource(created, len(shots))
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Shot Endpoints
-# ─────────────────────────────────────────────────────────────────────────────
 
 @router.get("/episodes/{episode_id}/shots", response_model=List[ShotResource], operation_id="production.listShots")
-async def list_shots(episode_id: str = Path(...)) -> List[ShotResource]:
+async def list_shots(
+    episode_id: str = Path(...),
+    service: V3ResourceService = Depends(get_v3_resource_service),
+) -> List[ShotResource]:
     """List all production shots for an episode ordered by shot number."""
-    shots = [s for s in _SHOTS.values() if s["episode_id"] == episode_id]
-    shots.sort(key=lambda s: s["shot_number"])
+    shots = await service.list(NS_SHOTS)
+    shots = [s for s in shots if s.get("episode_id") == episode_id]
+    shots.sort(key=lambda s: s.get("shot_number", 0))
     return [_shot_to_resource(s) for s in shots]
 
 
@@ -374,14 +240,17 @@ async def list_shots(episode_id: str = Path(...)) -> List[ShotResource]:
 async def create_shot(
     episode_id: str = Path(...),
     body: CreateShotRequest = ...,
+    service: V3ResourceService = Depends(get_v3_resource_service),
 ) -> ShotResource:
     """Create a new production shot record."""
     shot_id = f"shot-{uuid.uuid4().hex[:8]}"
     now = utc_now().isoformat()
-    shots = [s for s in _SHOTS.values() if s["episode_id"] == episode_id]
+    shots = await service.list(NS_SHOTS)
+    shots = [s for s in shots if s.get("episode_id") == episode_id]
     next_number = body.shot_number or (len(shots) + 1)
-    
-    plan_id = _PRODUCTION_PLANS.get(episode_id, {}).get("id", f"plan-{episode_id}")
+
+    plan = await service.get(NS_PRODUCTION_PLANS, episode_id)
+    plan_id = plan.get("id", f"plan-{episode_id}") if plan else f"plan-{episode_id}"
     new_shot = {
         "id": shot_id,
         "episode_id": episode_id,
@@ -395,65 +264,69 @@ async def create_shot(
         "audio_asset_id": None,
         "animation_asset_id": None,
         "render_asset_id": None,
-        "version": 1,
         "created_at": now,
         "updated_at": now,
     }
-    _SHOTS[shot_id] = new_shot
-    return _shot_to_resource(new_shot)
+    created = await service.create(NS_SHOTS, shot_id, new_shot)
+    return _shot_to_resource(created)
 
 
 @router.get("/shots/{shot_id}", response_model=ShotResource, operation_id="production.getShot")
-async def get_shot(shot_id: str = Path(...)) -> ShotResource:
+async def get_shot(
+    shot_id: str = Path(...),
+    service: V3ResourceService = Depends(get_v3_resource_service),
+) -> ShotResource:
     """Retrieve shot details."""
-    if shot_id not in _SHOTS:
+    shot = await service.get(NS_SHOTS, shot_id)
+    if shot is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Shot '{shot_id}' not found.")
-    return _shot_to_resource(_SHOTS[shot_id])
+    return _shot_to_resource(shot)
 
 
 @router.patch("/shots/{shot_id}", response_model=ShotResource, operation_id="production.updateShot")
 async def update_shot(
     shot_id: str = Path(...),
     body: UpdateShotRequest = ...,
+    service: V3ResourceService = Depends(get_v3_resource_service),
 ) -> ShotResource:
     """Update shot details with optimistic locking."""
-    if shot_id not in _SHOTS:
+    curr = await service.get(NS_SHOTS, shot_id)
+    if curr is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Shot '{shot_id}' not found.")
-    curr = _SHOTS[shot_id]
     if curr["version"] != body.expected_version:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=f"Version conflict for shot '{shot_id}'. Expected {curr['version']}, got {body.expected_version}.",
         )
 
+    updates = dict(curr)
     if body.camera_movement is not None:
-        curr["camera_movement"] = body.camera_movement
+        updates["camera_movement"] = body.camera_movement
     if body.focal_length is not None:
-        curr["focal_length"] = body.focal_length
+        updates["focal_length"] = body.focal_length
     if body.duration_seconds is not None:
-        curr["duration_seconds"] = body.duration_seconds
+        updates["duration_seconds"] = body.duration_seconds
     if body.status is not None:
-        curr["status"] = body.status
+        updates["status"] = body.status
     if body.audio_asset_id is not None:
-        curr["audio_asset_id"] = body.audio_asset_id
+        updates["audio_asset_id"] = body.audio_asset_id
     if body.animation_asset_id is not None:
-        curr["animation_asset_id"] = body.animation_asset_id
+        updates["animation_asset_id"] = body.animation_asset_id
     if body.render_asset_id is not None:
-        curr["render_asset_id"] = body.render_asset_id
+        updates["render_asset_id"] = body.render_asset_id
+    updates["updated_at"] = utc_now().isoformat()
 
-    curr["version"] += 1
-    curr["updated_at"] = utc_now().isoformat()
-    return _shot_to_resource(curr)
+    updated = await service.update(NS_SHOTS, shot_id, updates, body.expected_version)
+    if updated is None:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f"Version conflict for shot '{shot_id}'.")
+    return _shot_to_resource(updated)
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Stage Job Endpoints (Audio, Animation, Render, Video)
-# ─────────────────────────────────────────────────────────────────────────────
-
-def _submit_stage_job(
+async def _submit_stage_job(
     episode_id: str,
     stage: str,
     body: SubmitJobRequest,
+    service: V3ResourceService,
 ) -> JobSubmissionReceipt:
     job_id = f"job-{stage.lower()}-{uuid.uuid4().hex[:8]}"
     now = utc_now().isoformat()
@@ -474,33 +347,49 @@ def _submit_stage_job(
         "submitted_at": now,
         "completed_at": None,
     }
-    _PRODUCTION_JOBS[job_id] = job
+    created = await service.create(NS_PRODUCTION_JOBS, job_id, job)
     return JobSubmissionReceipt(
         job_id=job_id,
         state="QUEUED",
         submitted_at=now,
-        correlation_id=job["correlation_id"],
+        correlation_id=created.get("correlation_id"),
     )
 
 
 @router.post("/episodes/{episode_id}/production/audio/submit", response_model=JobSubmissionReceipt, status_code=status.HTTP_201_CREATED, operation_id="production.submitAudio")
-async def submit_audio_job(episode_id: str = Path(...), body: SubmitJobRequest = ...) -> JobSubmissionReceipt:
-    return _submit_stage_job(episode_id, "AUDIO", body)
+async def submit_audio_job(
+    episode_id: str = Path(...),
+    body: SubmitJobRequest = ...,
+    service: V3ResourceService = Depends(get_v3_resource_service),
+) -> JobSubmissionReceipt:
+    return await _submit_stage_job(episode_id, "AUDIO", body, service)
 
 
 @router.post("/episodes/{episode_id}/production/animation/submit", response_model=JobSubmissionReceipt, status_code=status.HTTP_201_CREATED, operation_id="production.submitAnimation")
-async def submit_animation_job(episode_id: str = Path(...), body: SubmitJobRequest = ...) -> JobSubmissionReceipt:
-    return _submit_stage_job(episode_id, "ANIMATION", body)
+async def submit_animation_job(
+    episode_id: str = Path(...),
+    body: SubmitJobRequest = ...,
+    service: V3ResourceService = Depends(get_v3_resource_service),
+) -> JobSubmissionReceipt:
+    return await _submit_stage_job(episode_id, "ANIMATION", body, service)
 
 
 @router.post("/episodes/{episode_id}/production/render/submit", response_model=JobSubmissionReceipt, status_code=status.HTTP_201_CREATED, operation_id="production.submitRender")
-async def submit_render_job(episode_id: str = Path(...), body: SubmitJobRequest = ...) -> JobSubmissionReceipt:
-    return _submit_stage_job(episode_id, "RENDER", body)
+async def submit_render_job(
+    episode_id: str = Path(...),
+    body: SubmitJobRequest = ...,
+    service: V3ResourceService = Depends(get_v3_resource_service),
+) -> JobSubmissionReceipt:
+    return await _submit_stage_job(episode_id, "RENDER", body, service)
 
 
 @router.post("/episodes/{episode_id}/production/video/submit", response_model=JobSubmissionReceipt, status_code=status.HTTP_201_CREATED, operation_id="production.submitVideo")
-async def submit_video_job(episode_id: str = Path(...), body: SubmitJobRequest = ...) -> JobSubmissionReceipt:
-    return _submit_stage_job(episode_id, "VIDEO", body)
+async def submit_video_job(
+    episode_id: str = Path(...),
+    body: SubmitJobRequest = ...,
+    service: V3ResourceService = Depends(get_v3_resource_service),
+) -> JobSubmissionReceipt:
+    return await _submit_stage_job(episode_id, "VIDEO", body, service)
 
 
 @router.post("/episodes/{episode_id}/production/{stage}/cancel", response_model=ProductionJobResource, operation_id="production.cancelJob")
@@ -508,14 +397,17 @@ async def cancel_job(
     episode_id: str = Path(...),
     stage: str = Path(...),
     body: CancelJobRequest = ...,
+    service: V3ResourceService = Depends(get_v3_resource_service),
 ) -> ProductionJobResource:
     """Cancel a running or queued production job."""
-    if body.job_id not in _PRODUCTION_JOBS:
+    job = await service.get(NS_PRODUCTION_JOBS, body.job_id)
+    if job is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Job '{body.job_id}' not found.")
-    job = _PRODUCTION_JOBS[body.job_id]
-    job["state"] = "CANCELLED"
-    job["completed_at"] = utc_now().isoformat()
-    return _job_to_resource(job)
+    updates = dict(job)
+    updates["state"] = "CANCELLED"
+    updates["completed_at"] = utc_now().isoformat()
+    updated = await service.update(NS_PRODUCTION_JOBS, body.job_id, updates, job["version"])
+    return _job_to_resource(updated)
 
 
 @router.post("/episodes/{episode_id}/production/{stage}/retry", response_model=JobSubmissionReceipt, operation_id="production.retryJob")
@@ -523,26 +415,29 @@ async def retry_job(
     episode_id: str = Path(...),
     stage: str = Path(...),
     body: RetryJobRequest = ...,
+    service: V3ResourceService = Depends(get_v3_resource_service),
 ) -> JobSubmissionReceipt:
     """Retry a failed or blocked job."""
-    if body.job_id not in _PRODUCTION_JOBS:
+    job = await service.get(NS_PRODUCTION_JOBS, body.job_id)
+    if job is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Job '{body.job_id}' not found.")
-    job = _PRODUCTION_JOBS[body.job_id]
     if not job.get("retryable", True) and job.get("attempt", 1) >= job.get("max_attempts", 3):
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=f"Job '{body.job_id}' has exceeded max retry attempts ({job.get('max_attempts')}).",
         )
-    job["state"] = "QUEUED"
-    job["attempt"] = job.get("attempt", 1) + 1
-    job["error_code"] = None
-    job["failure_stage"] = None
-    job["submitted_at"] = utc_now().isoformat()
+    updates = dict(job)
+    updates["state"] = "QUEUED"
+    updates["attempt"] = job.get("attempt", 1) + 1
+    updates["error_code"] = None
+    updates["failure_stage"] = None
+    updates["submitted_at"] = utc_now().isoformat()
+    updated = await service.update(NS_PRODUCTION_JOBS, body.job_id, updates, job["version"])
     return JobSubmissionReceipt(
-        job_id=job["job_id"],
+        job_id=updated["job_id"],
         state="QUEUED",
-        submitted_at=job["submitted_at"],
-        correlation_id=job.get("correlation_id"),
+        submitted_at=updated["submitted_at"],
+        correlation_id=updated.get("correlation_id"),
     )
 
 
@@ -550,28 +445,38 @@ async def retry_job(
 async def list_production_jobs(
     episode_id: str = Path(...),
     stage: Optional[str] = Query(None),
+    service: V3ResourceService = Depends(get_v3_resource_service),
 ) -> List[ProductionJobResource]:
     """List all production jobs for an episode."""
-    jobs = [j for j in _PRODUCTION_JOBS.values() if j["episode_id"] == episode_id]
+    jobs = await service.list(NS_PRODUCTION_JOBS)
+    jobs = [j for j in jobs if j.get("episode_id") == episode_id]
     if stage:
-        jobs = [j for j in jobs if j["job_type"].upper() == stage.upper()]
+        jobs = [j for j in jobs if j.get("job_type", "").upper() == stage.upper()]
     return [_job_to_resource(j) for j in jobs]
 
 
 @router.get("/production/jobs/{job_id}", response_model=ProductionJobResource, operation_id="production.getJob")
-async def get_production_job(job_id: str = Path(...)) -> ProductionJobResource:
+async def get_production_job(
+    job_id: str = Path(...),
+    service: V3ResourceService = Depends(get_v3_resource_service),
+) -> ProductionJobResource:
     """Retrieve details of a specific job."""
-    if job_id not in _PRODUCTION_JOBS:
+    job = await service.get(NS_PRODUCTION_JOBS, job_id)
+    if job is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Job '{job_id}' not found.")
-    return _job_to_resource(_PRODUCTION_JOBS[job_id])
+    return _job_to_resource(job)
 
 
 @router.get("/episodes/{episode_id}/production/delivery", response_model=DeliveryArtifactResource, operation_id="production.getDelivery")
-async def get_delivery_artifact(episode_id: str = Path(...)) -> DeliveryArtifactResource:
+async def get_delivery_artifact(
+    episode_id: str = Path(...),
+    service: V3ResourceService = Depends(get_v3_resource_service),
+) -> DeliveryArtifactResource:
     """Get final delivery package for an episode."""
-    if episode_id not in _DELIVERY_ARTIFACTS:
+    delivery = await service.get(NS_DELIVERY_ARTIFACTS, episode_id)
+    if delivery is None:
         now = utc_now().isoformat()
-        _DELIVERY_ARTIFACTS[episode_id] = {
+        delivery_data = {
             "id": f"delivery-{episode_id}",
             "episode_id": episode_id,
             "video_asset_id": None,
@@ -583,12 +488,9 @@ async def get_delivery_artifact(episode_id: str = Path(...)) -> DeliveryArtifact
             "manifest_url": None,
             "created_at": now,
         }
-    return DeliveryArtifactResource(**_DELIVERY_ARTIFACTS[episode_id])
+        delivery = await service.create(NS_DELIVERY_ARTIFACTS, episode_id, delivery_data)
+    return DeliveryArtifactResource(**delivery)
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Realtime WebSocket Stream
-# ─────────────────────────────────────────────────────────────────────────────
 
 @ws_router.websocket("/{episode_id}")
 async def production_realtime_ws(websocket: WebSocket, episode_id: str):
@@ -596,9 +498,17 @@ async def production_realtime_ws(websocket: WebSocket, episode_id: str):
     await websocket.accept()
     try:
         # Send initial snapshot
-        plan = _PRODUCTION_PLANS.get(episode_id)
-        shots = [s for s in _SHOTS.values() if s["episode_id"] == episode_id]
-        jobs = [j for j in _PRODUCTION_JOBS.values() if j["episode_id"] == episode_id]
+        container = getattr(websocket.app.state, "container", None)
+        service = container.v3_resource_service if container else None
+        plan = None
+        shots = []
+        jobs = []
+        if service is not None:
+            plan = await service.get(NS_PRODUCTION_PLANS, episode_id)
+            shots = await service.list(NS_SHOTS)
+            shots = [s for s in shots if s.get("episode_id") == episode_id]
+            jobs = await service.list(NS_PRODUCTION_JOBS)
+            jobs = [j for j in jobs if j.get("episode_id") == episode_id]
 
         await websocket.send_json({
             "event": "production.snapshot",

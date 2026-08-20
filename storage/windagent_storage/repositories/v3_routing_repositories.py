@@ -20,13 +20,13 @@ from typing import Any, Dict, List, Optional
 
 from sqlalchemy.orm import Session
 
-from windagent_providers.base.contracts import DiscoveredModel
-from windagent_providers.registry.model_normalizer import normalize_model_id
-from windagent_providers.registry.equivalence import (
+from windagent_core.contracts.providers.capabilities import DiscoveredModel
+from windagent_core.contracts.providers.model_normalizer import normalize_model_id
+from windagent_core.contracts.providers.equivalence import (
     classify_equivalence,
     EquivalenceLevel,
 )
-from windagent_providers.routing.ports import (
+from windagent_core.contracts.repositories.routing_repository import (
     EndpointBindingRepositoryPort,
     RoutingAuditRepositoryPort,
 )

@@ -37,7 +37,7 @@ async def test_recovery_destructive_tool_interrupted(in_memory_db):
         await uow.events.append_event(env)
         await uow.commit()
 
-    rec_manager = RecoveryManager(session_factory=in_memory_db.session_factory)
+    rec_manager = RecoveryManager(uow_factory=lambda: SqlUnitOfWork(in_memory_db.session_factory))
     results = await rec_manager.scan_and_reconcile_in_flight_runs(sid)
 
     assert len(results) == 1

@@ -1,0 +1,2340 @@
+{
+  "video_id": "video-02",
+  "schema_version": "1.0.0",
+  "title": "Tự Xây AI Agent Đầu Tiên Bằng Python — Không Dùng Agent Framework (70 Cảnh)",
+  "duration_ms": 1332000,
+  "fps": 30,
+  "resolution": {
+    "width": 2560,
+    "height": 1440
+  },
+  "source_hash": "de9f7b7a94d7245a193a7cb6c06a191adfc4b6b1c4171785f3aa9f69502c076c",
+  "output_policy": {
+    "master_resolution": "2560x1440",
+    "delivery_resolutions": [
+      "1920x1080"
+    ],
+    "fps": 30,
+    "audio_policy": "EXCLUDED",
+    "allow_live_network": false,
+    "color_space": "bt709"
+  },
+  "metadata": {
+    "milestone": "Agentic Studio v0.1 — Simple Agent Core",
+    "scene_count": 70,
+    "script_file": "kich_ban.md",
+    "compiled_at": "2026-08-19T08:00:48.129684+00:00"
+  },
+  "scenes": [
+    {
+      "scene_id": "S01",
+      "title": "COLD OPEN: CHO XEM THÀNH QUẢ TRƯỚC",
+      "start_ms": 0,
+      "end_ms": 25000,
+      "duration_ms": 25000,
+      "visual_mode": "FULL_TERMINAL",
+      "actions": [
+        {
+          "action_id": "act_s01_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 0,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s01_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — COLD OPEN: CHO XEM THÀNH QUẢ TRƯỚC",
+          "start_ms": 500,
+          "duration_ms": 24000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S01"
+    },
+    {
+      "scene_id": "S02",
+      "title": "NỐI TRỰC TIẾP VỚI VIDEO 01",
+      "start_ms": 25000,
+      "end_ms": 50000,
+      "duration_ms": 25000,
+      "visual_mode": "DIAGRAM",
+      "actions": [
+        {
+          "action_id": "act_s02_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 25000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s02_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — NỐI TRỰC TIẾP VỚI VIDEO 01",
+          "start_ms": 25500,
+          "duration_ms": 24000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S02"
+    },
+    {
+      "scene_id": "S03",
+      "title": "ĐẶT CÂU HỎI QUAN TRỌNG NHẤT",
+      "start_ms": 50000,
+      "end_ms": 72000,
+      "duration_ms": 22000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s03_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 50000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s03_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — ĐẶT CÂU HỎI QUAN TRỌNG NHẤT",
+          "start_ms": 50500,
+          "duration_ms": 21000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S03"
+    },
+    {
+      "scene_id": "S04",
+      "title": "VIẾT PHIÊN BẢN “NGÂY THƠ” NHẤT",
+      "start_ms": 72000,
+      "end_ms": 95000,
+      "duration_ms": 23000,
+      "visual_mode": "FULL_CODE",
+      "actions": [
+        {
+          "action_id": "act_s04_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 72000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s04_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — VIẾT PHIÊN BẢN “NGÂY THƠ” NHẤT",
+          "start_ms": 72500,
+          "duration_ms": 22000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S04"
+    },
+    {
+      "scene_id": "S05",
+      "title": "“CHẠY ĐƯỢC” KHÔNG CÓ NGHĨA LÀ “THIẾT KẾ ĐƯỢC”",
+      "start_ms": 95000,
+      "end_ms": 120000,
+      "duration_ms": 25000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s05_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 95000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s05_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — “CHẠY ĐƯỢC” KHÔNG CÓ NGHĨA LÀ “THIẾT KẾ ",
+          "start_ms": 95500,
+          "duration_ms": 24000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S05"
+    },
+    {
+      "scene_id": "S06",
+      "title": "VẤN ĐỀ 1: PROVIDER COUPLING",
+      "start_ms": 120000,
+      "end_ms": 145000,
+      "duration_ms": 25000,
+      "visual_mode": "FULL_CODE",
+      "actions": [
+        {
+          "action_id": "act_s06_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 120000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s06_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — VẤN ĐỀ 1: PROVIDER COUPLING",
+          "start_ms": 120500,
+          "duration_ms": 24000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S06"
+    },
+    {
+      "scene_id": "S07",
+      "title": "TẠO NGUYÊN TẮC ĐẦU TIÊN",
+      "start_ms": 145000,
+      "end_ms": 170000,
+      "duration_ms": 25000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s07_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 145000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s07_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — TẠO NGUYÊN TẮC ĐẦU TIÊN",
+          "start_ms": 145500,
+          "duration_ms": 24000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S07"
+    },
+    {
+      "scene_id": "S08",
+      "title": "CHƯA CODE VỘI: ĐỊNH NGHĨA BOUNDARY",
+      "start_ms": 170000,
+      "end_ms": 187000,
+      "duration_ms": 17000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s08_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 170000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s08_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — CHƯA CODE VỘI: ĐỊNH NGHĨA BOUNDARY",
+          "start_ms": 170500,
+          "duration_ms": 16000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S08"
+    },
+    {
+      "scene_id": "S09",
+      "title": "TẠO REPOSITORY",
+      "start_ms": 187000,
+      "end_ms": 212000,
+      "duration_ms": 25000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s09_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 187000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s09_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — TẠO REPOSITORY",
+          "start_ms": 187500,
+          "duration_ms": 24000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S09"
+    },
+    {
+      "scene_id": "S10",
+      "title": "TẠI SAO REPOSITORY NÀY CỐ Ý RẤT NHỎ?",
+      "start_ms": 212000,
+      "end_ms": 237000,
+      "duration_ms": 25000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s10_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 212000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s10_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — TẠI SAO REPOSITORY NÀY CỐ Ý RẤT NHỎ?",
+          "start_ms": 212500,
+          "duration_ms": 24000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S10"
+    },
+    {
+      "scene_id": "S11",
+      "title": "VẤN ĐỀ 2: MESSAGE LÀ GÌ?",
+      "start_ms": 237000,
+      "end_ms": 262000,
+      "duration_ms": 25000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s11_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 237000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s11_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — VẤN ĐỀ 2: MESSAGE LÀ GÌ?",
+          "start_ms": 237500,
+          "duration_ms": 24000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S11"
+    },
+    {
+      "scene_id": "S12",
+      "title": "TẠO `Message`",
+      "start_ms": 262000,
+      "end_ms": 285000,
+      "duration_ms": 23000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s12_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 262000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s12_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — TẠO `Message`",
+          "start_ms": 262500,
+          "duration_ms": 22000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S12"
+    },
+    {
+      "scene_id": "S13",
+      "title": "TẠI SAO `frozen=True`?",
+      "start_ms": 285000,
+      "end_ms": 310000,
+      "duration_ms": 25000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s13_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 285000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s13_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — TẠI SAO `frozen=True`?",
+          "start_ms": 285500,
+          "duration_ms": 24000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S13"
+    },
+    {
+      "scene_id": "S14",
+      "title": "NHƯNG ĐỪNG OVERENGINEER MESSAGE",
+      "start_ms": 310000,
+      "end_ms": 335000,
+      "duration_ms": 25000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s14_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 310000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s14_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — NHƯNG ĐỪNG OVERENGINEER MESSAGE",
+          "start_ms": 310500,
+          "duration_ms": 24000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S14"
+    },
+    {
+      "scene_id": "S15",
+      "title": "VẤN ĐỀ 3: CONFIGURATION ĐANG NẰM Ở ĐÂU?",
+      "start_ms": 335000,
+      "end_ms": 358000,
+      "duration_ms": 23000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s15_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 335000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s15_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — VẤN ĐỀ 3: CONFIGURATION ĐANG NẰM Ở ĐÂU?",
+          "start_ms": 335500,
+          "duration_ms": 22000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S15"
+    },
+    {
+      "scene_id": "S16",
+      "title": "TẠO `AgentConfig`",
+      "start_ms": 358000,
+      "end_ms": 372000,
+      "duration_ms": 14000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s16_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 358000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s16_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — TẠO `AgentConfig`",
+          "start_ms": 358500,
+          "duration_ms": 13000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S16"
+    },
+    {
+      "scene_id": "S17",
+      "title": "TẠI SAO TÁCH CONFIG RA KHỎI AGENT?",
+      "start_ms": 372000,
+      "end_ms": 396000,
+      "duration_ms": 24000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s17_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 372000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s17_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — TẠI SAO TÁCH CONFIG RA KHỎI AGENT?",
+          "start_ms": 372500,
+          "duration_ms": 23000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S17"
+    },
+    {
+      "scene_id": "S18",
+      "title": "RETENTION HOOK: CHÚNG TA ĐÃ TẠO HAI CLASS NHƯNG CHƯA CÓ AGENT",
+      "start_ms": 396000,
+      "end_ms": 419000,
+      "duration_ms": 23000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s18_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 396000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s18_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — RETENTION HOOK: CHÚNG TA ĐÃ TẠO HAI CLAS",
+          "start_ms": 396500,
+          "duration_ms": 22000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S18"
+    },
+    {
+      "scene_id": "S19",
+      "title": "VẤN ĐỀ 4: AGENT NÊN PHỤ THUỘC VÀO CÁI GÌ?",
+      "start_ms": 419000,
+      "end_ms": 435000,
+      "duration_ms": 16000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s19_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 419000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s19_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — VẤN ĐỀ 4: AGENT NÊN PHỤ THUỘC VÀO CÁI GÌ",
+          "start_ms": 419500,
+          "duration_ms": 15000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S19"
+    },
+    {
+      "scene_id": "S20",
+      "title": "ĐỊNH NGHĨA `LLMClient`",
+      "start_ms": 435000,
+      "end_ms": 449000,
+      "duration_ms": 14000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s20_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 435000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s20_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — ĐỊNH NGHĨA `LLMClient`",
+          "start_ms": 435500,
+          "duration_ms": 13000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S20"
+    },
+    {
+      "scene_id": "S21",
+      "title": "GIẢI THÍCH `Protocol` KHÔNG SA ĐÀ",
+      "start_ms": 449000,
+      "end_ms": 474000,
+      "duration_ms": 25000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s21_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 449000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s21_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — GIẢI THÍCH `Protocol` KHÔNG SA ĐÀ",
+          "start_ms": 449500,
+          "duration_ms": 24000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S21"
+    },
+    {
+      "scene_id": "S22",
+      "title": "ĐIỂM NHẤN KIẾN TRÚC",
+      "start_ms": 474000,
+      "end_ms": 498000,
+      "duration_ms": 24000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s22_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 474000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s22_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — ĐIỂM NHẤN KIẾN TRÚC",
+          "start_ms": 474500,
+          "duration_ms": 23000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S22"
+    },
+    {
+      "scene_id": "S23",
+      "title": "GIẢI THÍCH BẰNG THÍ NGHIỆM THAY PROVIDER",
+      "start_ms": 498000,
+      "end_ms": 514000,
+      "duration_ms": 16000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s23_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 498000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s23_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — GIẢI THÍCH BẰNG THÍ NGHIỆM THAY PROVIDER",
+          "start_ms": 498500,
+          "duration_ms": 15000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S23"
+    },
+    {
+      "scene_id": "S24",
+      "title": "VẤN ĐỀ 5: LÀM SAO TEST?",
+      "start_ms": 514000,
+      "end_ms": 539000,
+      "duration_ms": 25000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s24_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 514000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s24_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — VẤN ĐỀ 5: LÀM SAO TEST?",
+          "start_ms": 514500,
+          "duration_ms": 24000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S24"
+    },
+    {
+      "scene_id": "S25",
+      "title": "TẠO FAKE LLM",
+      "start_ms": 539000,
+      "end_ms": 560000,
+      "duration_ms": 21000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s25_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 539000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s25_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — TẠO FAKE LLM",
+          "start_ms": 539500,
+          "duration_ms": 20000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S25"
+    },
+    {
+      "scene_id": "S26",
+      "title": "CHẠY FAKE TRƯỚC KHI TẠO AGENT",
+      "start_ms": 560000,
+      "end_ms": 574000,
+      "duration_ms": 14000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s26_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 560000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s26_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — CHẠY FAKE TRƯỚC KHI TẠO AGENT",
+          "start_ms": 560500,
+          "duration_ms": 13000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S26"
+    },
+    {
+      "scene_id": "S27",
+      "title": "CUỐI CÙNG TẠO `Agent`",
+      "start_ms": 574000,
+      "end_ms": 589000,
+      "duration_ms": 15000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s27_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 574000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s27_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — CUỐI CÙNG TẠO `Agent`",
+          "start_ms": 574500,
+          "duration_ms": 14000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S27"
+    },
+    {
+      "scene_id": "S28",
+      "title": "DEPENDENCY INJECTION BẰNG NGÔN NGỮ ĐƠN GIẢN",
+      "start_ms": 589000,
+      "end_ms": 614000,
+      "duration_ms": 25000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s28_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 589000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s28_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — DEPENDENCY INJECTION BẰNG NGÔN NGỮ ĐƠN G",
+          "start_ms": 589500,
+          "duration_ms": 24000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S28"
+    },
+    {
+      "scene_id": "S29",
+      "title": "AGENT NHẬN USER INPUT",
+      "start_ms": 614000,
+      "end_ms": 632000,
+      "duration_ms": 18000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s29_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 614000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s29_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — AGENT NHẬN USER INPUT",
+          "start_ms": 614500,
+          "duration_ms": 17000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S29"
+    },
+    {
+      "scene_id": "S30",
+      "title": "AGENT KHÔNG GỬI RAW STRING THẲNG ĐẾN LLM",
+      "start_ms": 632000,
+      "end_ms": 657000,
+      "duration_ms": 25000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s30_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 632000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s30_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — AGENT KHÔNG GỬI RAW STRING THẲNG ĐẾN LLM",
+          "start_ms": 632500,
+          "duration_ms": 24000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S30"
+    },
+    {
+      "scene_id": "S31",
+      "title": "GIẢI THÍCH SYSTEM MESSAGE",
+      "start_ms": 657000,
+      "end_ms": 680000,
+      "duration_ms": 23000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s31_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 657000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s31_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — GIẢI THÍCH SYSTEM MESSAGE",
+          "start_ms": 657500,
+          "duration_ms": 22000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S31"
+    },
+    {
+      "scene_id": "S32",
+      "title": "GIẢI THÍCH USER MESSAGE",
+      "start_ms": 680000,
+      "end_ms": 698000,
+      "duration_ms": 18000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s32_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 680000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s32_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — GIẢI THÍCH USER MESSAGE",
+          "start_ms": 680500,
+          "duration_ms": 17000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S32"
+    },
+    {
+      "scene_id": "S33",
+      "title": "GỌI `LLMClient`",
+      "start_ms": 698000,
+      "end_ms": 714000,
+      "duration_ms": 16000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s33_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 698000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s33_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — GỌI `LLMClient`",
+          "start_ms": 698500,
+          "duration_ms": 15000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S33"
+    },
+    {
+      "scene_id": "S34",
+      "title": "CHẠY TOÀN BỘ VỚI FAKE LLM",
+      "start_ms": 714000,
+      "end_ms": 729000,
+      "duration_ms": 15000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s34_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 714000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s34_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — CHẠY TOÀN BỘ VỚI FAKE LLM",
+          "start_ms": 714500,
+          "duration_ms": 14000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S34"
+    },
+    {
+      "scene_id": "S35",
+      "title": "TEST 1: OUTPUT",
+      "start_ms": 729000,
+      "end_ms": 743000,
+      "duration_ms": 14000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s35_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 729000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s35_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — TEST 1: OUTPUT",
+          "start_ms": 729500,
+          "duration_ms": 13000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S35"
+    },
+    {
+      "scene_id": "S36",
+      "title": "TEST 2: AGENT CÓ GỬI ĐÚNG MESSAGE KHÔNG?",
+      "start_ms": 743000,
+      "end_ms": 761000,
+      "duration_ms": 18000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s36_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 743000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s36_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — TEST 2: AGENT CÓ GỬI ĐÚNG MESSAGE KHÔNG?",
+          "start_ms": 743500,
+          "duration_ms": 17000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S36"
+    },
+    {
+      "scene_id": "S37",
+      "title": "TEST 3: CONFIG ĐƯỢC FORWARD ĐÚNG",
+      "start_ms": 761000,
+      "end_ms": 783000,
+      "duration_ms": 22000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s37_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 761000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s37_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — TEST 3: CONFIG ĐƯỢC FORWARD ĐÚNG",
+          "start_ms": 761500,
+          "duration_ms": 21000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S37"
+    },
+    {
+      "scene_id": "S38",
+      "title": "CHẠY TEST",
+      "start_ms": 783000,
+      "end_ms": 803000,
+      "duration_ms": 20000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s38_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 783000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s38_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — CHẠY TEST",
+          "start_ms": 783500,
+          "duration_ms": 19000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S38"
+    },
+    {
+      "scene_id": "S39",
+      "title": "BÂY GIỜ MỚI KẾT NỐI PROVIDER THẬT",
+      "start_ms": 803000,
+      "end_ms": 822000,
+      "duration_ms": 19000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s39_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 803000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s39_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — BÂY GIỜ MỚI KẾT NỐI PROVIDER THẬT",
+          "start_ms": 803500,
+          "duration_ms": 18000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S39"
+    },
+    {
+      "scene_id": "S40",
+      "title": "PROVIDER ADAPTER LÀM GÌ?",
+      "start_ms": 822000,
+      "end_ms": 842000,
+      "duration_ms": 20000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s40_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 822000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s40_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — PROVIDER ADAPTER LÀM GÌ?",
+          "start_ms": 822500,
+          "duration_ms": 19000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S40"
+    },
+    {
+      "scene_id": "S41",
+      "title": "ĐIỂM NHẤN: PROVIDER OBJECT KHÔNG ĐƯỢC RÒ RỈ VÀO CORE",
+      "start_ms": 842000,
+      "end_ms": 862000,
+      "duration_ms": 20000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s41_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 842000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s41_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — ĐIỂM NHẤN: PROVIDER OBJECT KHÔNG ĐƯỢC RÒ",
+          "start_ms": 842500,
+          "duration_ms": 19000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S41"
+    },
+    {
+      "scene_id": "S42",
+      "title": "API KEY",
+      "start_ms": 862000,
+      "end_ms": 887000,
+      "duration_ms": 25000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s42_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 862000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s42_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — API KEY",
+          "start_ms": 862500,
+          "duration_ms": 24000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S42"
+    },
+    {
+      "scene_id": "S43",
+      "title": "PHÂN BIỆT CONFIG VÀ SECRET",
+      "start_ms": 887000,
+      "end_ms": 905000,
+      "duration_ms": 18000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s43_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 887000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s43_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — PHÂN BIỆT CONFIG VÀ SECRET",
+          "start_ms": 887500,
+          "duration_ms": 17000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S43"
+    },
+    {
+      "scene_id": "S44",
+      "title": "KHỞI TẠO PROVIDER",
+      "start_ms": 905000,
+      "end_ms": 919000,
+      "duration_ms": 14000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s44_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 905000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s44_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — KHỞI TẠO PROVIDER",
+          "start_ms": 905500,
+          "duration_ms": 13000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S44"
+    },
+    {
+      "scene_id": "S45",
+      "title": "COMPOSITION ROOT",
+      "start_ms": 919000,
+      "end_ms": 941000,
+      "duration_ms": 22000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s45_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 919000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s45_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — COMPOSITION ROOT",
+          "start_ms": 919500,
+          "duration_ms": 21000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S45"
+    },
+    {
+      "scene_id": "S46",
+      "title": "CHẠY REQUEST THẬT ĐẦU TIÊN",
+      "start_ms": 941000,
+      "end_ms": 955000,
+      "duration_ms": 14000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s46_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 941000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s46_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — CHẠY REQUEST THẬT ĐẦU TIÊN",
+          "start_ms": 941500,
+          "duration_ms": 13000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S46"
+    },
+    {
+      "scene_id": "S47",
+      "title": "KHÔNG ĂN MỪNG QUÁ SỚM",
+      "start_ms": 955000,
+      "end_ms": 980000,
+      "duration_ms": 25000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s47_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 955000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s47_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — KHÔNG ĂN MỪNG QUÁ SỚM",
+          "start_ms": 955500,
+          "duration_ms": 24000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S47"
+    },
+    {
+      "scene_id": "S48",
+      "title": "TRACE MỘT REQUEST TỪ ĐẦU ĐẾN CUỐI",
+      "start_ms": 980000,
+      "end_ms": 1005000,
+      "duration_ms": 25000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s48_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 980000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s48_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — TRACE MỘT REQUEST TỪ ĐẦU ĐẾN CUỐI",
+          "start_ms": 980500,
+          "duration_ms": 24000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S48"
+    },
+    {
+      "scene_id": "S49",
+      "title": "CÂU HỎI GÂY TRANH LUẬN: ĐÂY CÓ PHẢI AGENT KHÔNG?",
+      "start_ms": 1005000,
+      "end_ms": 1022000,
+      "duration_ms": 17000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s49_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 1005000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s49_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — CÂU HỎI GÂY TRANH LUẬN: ĐÂY CÓ PHẢI AGEN",
+          "start_ms": 1005500,
+          "duration_ms": 16000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S49"
+    },
+    {
+      "scene_id": "S50",
+      "title": "TRẢ LỜI RÕ RÀNG",
+      "start_ms": 1022000,
+      "end_ms": 1047000,
+      "duration_ms": 25000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s50_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 1022000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s50_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — TRẢ LỜI RÕ RÀNG",
+          "start_ms": 1022500,
+          "duration_ms": 24000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S50"
+    },
+    {
+      "scene_id": "S51",
+      "title": "VẬY TẠI SAO LẠI GỌI NÓ LÀ AGENT?",
+      "start_ms": 1047000,
+      "end_ms": 1072000,
+      "duration_ms": 25000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s51_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 1047000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s51_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — VẬY TẠI SAO LẠI GỌI NÓ LÀ AGENT?",
+          "start_ms": 1047500,
+          "duration_ms": 24000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S51"
+    },
+    {
+      "scene_id": "S52",
+      "title": "SO SÁNH CHAT COMPLETION VỚI AGENT CORE",
+      "start_ms": 1072000,
+      "end_ms": 1091000,
+      "duration_ms": 19000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s52_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 1072000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s52_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — SO SÁNH CHAT COMPLETION VỚI AGENT CORE",
+          "start_ms": 1072500,
+          "duration_ms": 18000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S52"
+    },
+    {
+      "scene_id": "S53",
+      "title": "NHỮNG THỨ CHÚNG TA CỐ Ý KHÔNG BUILD",
+      "start_ms": 1091000,
+      "end_ms": 1110000,
+      "duration_ms": 19000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s53_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 1091000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s53_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — NHỮNG THỨ CHÚNG TA CỐ Ý KHÔNG BUILD",
+          "start_ms": 1091500,
+          "duration_ms": 18000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S53"
+    },
+    {
+      "scene_id": "S54",
+      "title": "NGUYÊN TẮC LỚN CỦA SERIES",
+      "start_ms": 1110000,
+      "end_ms": 1135000,
+      "duration_ms": 25000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s54_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 1110000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s54_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — NGUYÊN TẮC LỚN CỦA SERIES",
+          "start_ms": 1110500,
+          "duration_ms": 24000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S54"
+    },
+    {
+      "scene_id": "S55",
+      "title": "MINH HỌA ROADMAP BẰNG PROBLEM-DRIVEN DEVELOPMENT",
+      "start_ms": 1135000,
+      "end_ms": 1148000,
+      "duration_ms": 13000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s55_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 1135000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s55_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — MINH HỌA ROADMAP BẰNG PROBLEM-DRIVEN DEV",
+          "start_ms": 1135500,
+          "duration_ms": 12000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S55"
+    },
+    {
+      "scene_id": "S56",
+      "title": "REVIEW BỐN ABSTRACTION",
+      "start_ms": 1148000,
+      "end_ms": 1156000,
+      "duration_ms": 8000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s56_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 1148000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s56_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — REVIEW BỐN ABSTRACTION",
+          "start_ms": 1148500,
+          "duration_ms": 7000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S56"
+    },
+    {
+      "scene_id": "S57",
+      "title": "KIẾN TRÚC V0.1",
+      "start_ms": 1156000,
+      "end_ms": 1164000,
+      "duration_ms": 8000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s57_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 1156000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s57_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — KIẾN TRÚC V0.1",
+          "start_ms": 1156500,
+          "duration_ms": 7000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S57"
+    },
+    {
+      "scene_id": "S58",
+      "title": "REPOSITORY REVIEW",
+      "start_ms": 1164000,
+      "end_ms": 1183000,
+      "duration_ms": 19000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s58_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 1164000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s58_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — REPOSITORY REVIEW",
+          "start_ms": 1164500,
+          "duration_ms": 18000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S58"
+    },
+    {
+      "scene_id": "S59",
+      "title": "README ARCHITECTURE",
+      "start_ms": 1183000,
+      "end_ms": 1197000,
+      "duration_ms": 14000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s59_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 1183000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s59_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — README ARCHITECTURE",
+          "start_ms": 1183500,
+          "duration_ms": 13000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S59"
+    },
+    {
+      "scene_id": "S60",
+      "title": "VERSIONING",
+      "start_ms": 1197000,
+      "end_ms": 1209000,
+      "duration_ms": 12000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s60_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 1197000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s60_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — VERSIONING",
+          "start_ms": 1197500,
+          "duration_ms": 11000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S60"
+    },
+    {
+      "scene_id": "S61",
+      "title": "TẠO CẢM GIÁC “HỆ THỐNG ĐANG LỚN LÊN”",
+      "start_ms": 1209000,
+      "end_ms": 1223000,
+      "duration_ms": 14000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s61_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 1209000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s61_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — TẠO CẢM GIÁC “HỆ THỐNG ĐANG LỚN LÊN”",
+          "start_ms": 1209500,
+          "duration_ms": 13000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S61"
+    },
+    {
+      "scene_id": "S62",
+      "title": "DEMO GIỚI HẠN CỦA AGENT HIỆN TẠI",
+      "start_ms": 1223000,
+      "end_ms": 1233000,
+      "duration_ms": 10000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s62_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 1223000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s62_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — DEMO GIỚI HẠN CỦA AGENT HIỆN TẠI",
+          "start_ms": 1223500,
+          "duration_ms": 9000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S62"
+    },
+    {
+      "scene_id": "S63",
+      "title": "THỬ MỘT TASK CẦN HÀNH ĐỘNG",
+      "start_ms": 1233000,
+      "end_ms": 1250000,
+      "duration_ms": 17000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s63_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 1233000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s63_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — THỬ MỘT TASK CẦN HÀNH ĐỘNG",
+          "start_ms": 1233500,
+          "duration_ms": 16000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S63"
+    },
+    {
+      "scene_id": "S64",
+      "title": "ĐIỂM NHẤN VIDEO",
+      "start_ms": 1250000,
+      "end_ms": 1270000,
+      "duration_ms": 20000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s64_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 1250000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s64_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — ĐIỂM NHẤN VIDEO",
+          "start_ms": 1250500,
+          "duration_ms": 19000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S64"
+    },
+    {
+      "scene_id": "S65",
+      "title": "ĐẶT VẤN ĐỀ CHO VIDEO 03",
+      "start_ms": 1270000,
+      "end_ms": 1278000,
+      "duration_ms": 8000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s65_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 1270000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s65_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — ĐẶT VẤN ĐỀ CHO VIDEO 03",
+          "start_ms": 1270500,
+          "duration_ms": 7000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S65"
+    },
+    {
+      "scene_id": "S66",
+      "title": "BA CÂU HỎI CHO VIDEO SAU",
+      "start_ms": 1278000,
+      "end_ms": 1286000,
+      "duration_ms": 8000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s66_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 1278000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s66_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — BA CÂU HỎI CHO VIDEO SAU",
+          "start_ms": 1278500,
+          "duration_ms": 7000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S66"
+    },
+    {
+      "scene_id": "S67",
+      "title": "TEASER CODE",
+      "start_ms": 1286000,
+      "end_ms": 1294000,
+      "duration_ms": 8000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s67_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 1286000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s67_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — TEASER CODE",
+          "start_ms": 1286500,
+          "duration_ms": 7000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S67"
+    },
+    {
+      "scene_id": "S68",
+      "title": "TEASER ARCHITECTURE",
+      "start_ms": 1294000,
+      "end_ms": 1302000,
+      "duration_ms": 8000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s68_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 1294000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s68_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — TEASER ARCHITECTURE",
+          "start_ms": 1294500,
+          "duration_ms": 7000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S68"
+    },
+    {
+      "scene_id": "S69",
+      "title": "KẾT LUẬN BẰNG MỘT CÂU",
+      "start_ms": 1302000,
+      "end_ms": 1324000,
+      "duration_ms": 22000,
+      "visual_mode": "SPLIT",
+      "actions": [
+        {
+          "action_id": "act_s69_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 1302000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s69_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — KẾT LUẬN BẰNG MỘT CÂU",
+          "start_ms": 1302500,
+          "duration_ms": 21000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S69"
+    },
+    {
+      "scene_id": "S70",
+      "title": "END CARD",
+      "start_ms": 1324000,
+      "end_ms": 1332000,
+      "duration_ms": 8000,
+      "visual_mode": "TITLE_CARD",
+      "actions": [
+        {
+          "action_id": "act_s70_01",
+          "action_type": "OPEN_WORKSPACE",
+          "start_ms": 1324000,
+          "duration_ms": 2000,
+          "params": {
+            "workspace_name": "agentic-studio"
+          }
+        }
+      ],
+      "expected_state": null,
+      "annotations": [
+        {
+          "annotation_id": "ann_s70_01",
+          "kind": "badge",
+          "text": "Agentic Studio v0.1 — END CARD",
+          "start_ms": 1324500,
+          "duration_ms": 7000,
+          "target_symbol": null,
+          "target_line": null,
+          "params": {}
+        }
+      ],
+      "voice_cue_id": "CUE_S70"
+    }
+  ]
+}

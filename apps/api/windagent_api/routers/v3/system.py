@@ -6,7 +6,6 @@ Authoritative source for hardware and process observability across Web and Deskt
 from __future__ import annotations
 import asyncio
 import os
-import sys
 import time
 from typing import List, Optional
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect

@@ -1,0 +1,751 @@
+{
+  "status": "FAIL",
+  "total_violations": 124,
+  "violations": [
+    {
+      "rule": "forbidden_import",
+      "file": "orchestration/windagent_orchestration/cancellation.py",
+      "line": 13,
+      "message": "orchestration has forbidden dependency on storage"
+    },
+    {
+      "rule": "forbidden_import",
+      "file": "orchestration/windagent_orchestration/durable_plan_scheduler.py",
+      "line": 12,
+      "message": "orchestration has forbidden dependency on storage"
+    },
+    {
+      "rule": "forbidden_import",
+      "file": "orchestration/windagent_orchestration/orchestrator_service.py",
+      "line": 28,
+      "message": "orchestration has forbidden dependency on storage"
+    },
+    {
+      "rule": "forbidden_import",
+      "file": "orchestration/windagent_orchestration/dispatcher/dispatch.py",
+      "line": 50,
+      "message": "orchestration has forbidden dependency on storage"
+    },
+    {
+      "rule": "forbidden_import",
+      "file": "orchestration/windagent_orchestration/dispatcher/leases.py",
+      "line": 16,
+      "message": "orchestration has forbidden dependency on storage"
+    },
+    {
+      "rule": "forbidden_import",
+      "file": "orchestration/windagent_orchestration/dispatcher/result_ingestion.py",
+      "line": 35,
+      "message": "orchestration has forbidden dependency on storage"
+    },
+    {
+      "rule": "forbidden_import",
+      "file": "orchestration/windagent_orchestration/recovery/manager.py",
+      "line": 17,
+      "message": "orchestration has forbidden dependency on storage"
+    },
+    {
+      "rule": "forbidden_import",
+      "file": "orchestration/windagent_orchestration/recovery/reconciler.py",
+      "line": 14,
+      "message": "orchestration has forbidden dependency on storage"
+    },
+    {
+      "rule": "forbidden_import",
+      "file": "orchestration/windagent_orchestration/recovery/reconciler.py",
+      "line": 15,
+      "message": "orchestration has forbidden dependency on storage"
+    },
+    {
+      "rule": "forbidden_import",
+      "file": "orchestration/windagent_orchestration/recovery/reconciler.py",
+      "line": 15,
+      "message": "orchestration has forbidden dependency on storage"
+    },
+    {
+      "rule": "forbidden_import",
+      "file": "orchestration/windagent_orchestration/studio/service.py",
+      "line": 123,
+      "message": "orchestration has forbidden dependency on storage"
+    },
+    {
+      "rule": "forbidden_import",
+      "file": "orchestration/windagent_orchestration/task_manager/service.py",
+      "line": 16,
+      "message": "orchestration has forbidden dependency on storage"
+    },
+    {
+      "rule": "forbidden_import",
+      "file": "orchestration/windagent_orchestration/workflow_engine/checkpoints.py",
+      "line": 11,
+      "message": "orchestration has forbidden dependency on storage"
+    },
+    {
+      "rule": "forbidden_import",
+      "file": "intelligence/windagent_intelligence/model_router/policy.py",
+      "line": 11,
+      "message": "intelligence has forbidden dependency on providers"
+    },
+    {
+      "rule": "forbidden_import",
+      "file": "intelligence/windagent_intelligence/model_router/policy.py",
+      "line": 11,
+      "message": "intelligence has forbidden dependency on providers"
+    },
+    {
+      "rule": "forbidden_import",
+      "file": "intelligence/windagent_intelligence/model_router/policy.py",
+      "line": 11,
+      "message": "intelligence has forbidden dependency on providers"
+    },
+    {
+      "rule": "forbidden_import",
+      "file": "intelligence/windagent_intelligence/model_router/policy.py",
+      "line": 14,
+      "message": "intelligence has forbidden dependency on providers"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/social_research.py",
+      "line": 36,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/social_research.py",
+      "line": 36,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/assembly.py",
+      "line": 19,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/assembly.py",
+      "line": 20,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/assembly.py",
+      "line": 20,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/assembly.py",
+      "line": 20,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/assembly.py",
+      "line": 20,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/assembly.py",
+      "line": 20,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/assembly.py",
+      "line": 20,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/compiler.py",
+      "line": 2,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/program_certification.py",
+      "line": 22,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/program_certification.py",
+      "line": 22,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/program_certification.py",
+      "line": 23,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/program_certification.py",
+      "line": 23,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/program_certification.py",
+      "line": 23,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/program_certification.py",
+      "line": 23,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/program_certification.py",
+      "line": 23,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/program_certification.py",
+      "line": 30,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/qc.py",
+      "line": 21,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/qc.py",
+      "line": 21,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/qc.py",
+      "line": 22,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/qc.py",
+      "line": 23,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/qc.py",
+      "line": 24,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/qc.py",
+      "line": 24,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/replay.py",
+      "line": 7,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/replay.py",
+      "line": 7,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/replay.py",
+      "line": 7,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/replay.py",
+      "line": 7,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/replay.py",
+      "line": 7,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/replay.py",
+      "line": 7,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/replay.py",
+      "line": 7,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/replay.py",
+      "line": 7,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/replay.py",
+      "line": 7,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/replay.py",
+      "line": 7,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "memory/windagent_memory/repository.py",
+      "line": 17,
+      "message": "memory cannot depend on storage"
+    },
+    {
+      "rule": "forbidden_import",
+      "file": "storage/windagent_storage/repositories/v3_repositories.py",
+      "line": 14,
+      "message": "storage has forbidden dependency on providers"
+    },
+    {
+      "rule": "forbidden_import",
+      "file": "storage/windagent_storage/repositories/v3_repositories.py",
+      "line": 14,
+      "message": "storage has forbidden dependency on providers"
+    },
+    {
+      "rule": "forbidden_import",
+      "file": "storage/windagent_storage/repositories/v3_repositories.py",
+      "line": 14,
+      "message": "storage has forbidden dependency on providers"
+    },
+    {
+      "rule": "forbidden_import",
+      "file": "storage/windagent_storage/repositories/v3_repositories.py",
+      "line": 21,
+      "message": "storage has forbidden dependency on providers"
+    },
+    {
+      "rule": "forbidden_import",
+      "file": "storage/windagent_storage/repositories/v3_routing_repositories.py",
+      "line": 23,
+      "message": "storage has forbidden dependency on providers"
+    },
+    {
+      "rule": "forbidden_import",
+      "file": "storage/windagent_storage/repositories/v3_routing_repositories.py",
+      "line": 24,
+      "message": "storage has forbidden dependency on providers"
+    },
+    {
+      "rule": "forbidden_import",
+      "file": "storage/windagent_storage/repositories/v3_routing_repositories.py",
+      "line": 25,
+      "message": "storage has forbidden dependency on providers"
+    },
+    {
+      "rule": "forbidden_import",
+      "file": "storage/windagent_storage/repositories/v3_routing_repositories.py",
+      "line": 25,
+      "message": "storage has forbidden dependency on providers"
+    },
+    {
+      "rule": "forbidden_import",
+      "file": "storage/windagent_storage/repositories/v3_routing_repositories.py",
+      "line": 29,
+      "message": "storage has forbidden dependency on providers"
+    },
+    {
+      "rule": "forbidden_import",
+      "file": "storage/windagent_storage/repositories/v3_routing_repositories.py",
+      "line": 29,
+      "message": "storage has forbidden dependency on providers"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "observability/windagent_observability/events/dead_letter.py",
+      "line": 8,
+      "message": "observability cannot depend on storage"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "observability/windagent_observability/events/dead_letter.py",
+      "line": 9,
+      "message": "observability cannot depend on storage"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "observability/windagent_observability/events/publisher.py",
+      "line": 12,
+      "message": "observability cannot depend on storage"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "observability/windagent_observability/events/publisher.py",
+      "line": 13,
+      "message": "observability cannot depend on storage"
+    },
+    {
+      "rule": "concrete_adapter_outside_composition",
+      "file": "orchestration/windagent_orchestration/cancellation.py",
+      "line": 32,
+      "message": "Concrete adapter 'SqlUnitOfWork' instantiated outside composition root"
+    },
+    {
+      "rule": "concrete_adapter_outside_composition",
+      "file": "orchestration/windagent_orchestration/cancellation.py",
+      "line": 46,
+      "message": "Concrete adapter 'SqlUnitOfWork' instantiated outside composition root"
+    },
+    {
+      "rule": "concrete_adapter_outside_composition",
+      "file": "orchestration/windagent_orchestration/dispatcher/dispatch.py",
+      "line": 51,
+      "message": "Concrete adapter 'SqlUnitOfWork' instantiated outside composition root"
+    },
+    {
+      "rule": "concrete_adapter_outside_composition",
+      "file": "orchestration/windagent_orchestration/dispatcher/leases.py",
+      "line": 68,
+      "message": "Concrete adapter 'SqlUnitOfWork' instantiated outside composition root"
+    },
+    {
+      "rule": "concrete_adapter_outside_composition",
+      "file": "orchestration/windagent_orchestration/dispatcher/leases.py",
+      "line": 112,
+      "message": "Concrete adapter 'SqlUnitOfWork' instantiated outside composition root"
+    },
+    {
+      "rule": "concrete_adapter_outside_composition",
+      "file": "orchestration/windagent_orchestration/dispatcher/leases.py",
+      "line": 127,
+      "message": "Concrete adapter 'SqlUnitOfWork' instantiated outside composition root"
+    },
+    {
+      "rule": "concrete_adapter_outside_composition",
+      "file": "orchestration/windagent_orchestration/dispatcher/result_ingestion.py",
+      "line": 36,
+      "message": "Concrete adapter 'SqlUnitOfWork' instantiated outside composition root"
+    },
+    {
+      "rule": "concrete_adapter_outside_composition",
+      "file": "orchestration/windagent_orchestration/recovery/manager.py",
+      "line": 66,
+      "message": "Concrete adapter 'SqlUnitOfWork' instantiated outside composition root"
+    },
+    {
+      "rule": "concrete_adapter_outside_composition",
+      "file": "orchestration/windagent_orchestration/recovery/manager.py",
+      "line": 97,
+      "message": "Concrete adapter 'SqlUnitOfWork' instantiated outside composition root"
+    },
+    {
+      "rule": "concrete_adapter_outside_composition",
+      "file": "orchestration/windagent_orchestration/recovery/reconciler.py",
+      "line": 33,
+      "message": "Concrete adapter 'SqlUnitOfWork' instantiated outside composition root"
+    },
+    {
+      "rule": "concrete_adapter_outside_composition",
+      "file": "orchestration/windagent_orchestration/recovery/reconciler.py",
+      "line": 97,
+      "message": "Concrete adapter 'SqlUnitOfWork' instantiated outside composition root"
+    },
+    {
+      "rule": "concrete_adapter_outside_composition",
+      "file": "orchestration/windagent_orchestration/studio/service.py",
+      "line": 127,
+      "message": "Concrete adapter variable 'AsyncSessionFactory' created outside composition root"
+    },
+    {
+      "rule": "concrete_adapter_outside_composition",
+      "file": "orchestration/windagent_orchestration/task_manager/service.py",
+      "line": 66,
+      "message": "Concrete adapter 'SqlUnitOfWork' instantiated outside composition root"
+    },
+    {
+      "rule": "concrete_adapter_outside_composition",
+      "file": "orchestration/windagent_orchestration/task_manager/service.py",
+      "line": 91,
+      "message": "Concrete adapter 'SqlUnitOfWork' instantiated outside composition root"
+    },
+    {
+      "rule": "concrete_adapter_outside_composition",
+      "file": "orchestration/windagent_orchestration/task_manager/service.py",
+      "line": 47,
+      "message": "Concrete adapter 'SqlUnitOfWork' instantiated outside composition root"
+    },
+    {
+      "rule": "concrete_adapter_outside_composition",
+      "file": "orchestration/windagent_orchestration/workflow_engine/checkpoints.py",
+      "line": 64,
+      "message": "Concrete adapter 'SqlUnitOfWork' instantiated outside composition root"
+    },
+    {
+      "rule": "concrete_adapter_outside_composition",
+      "file": "orchestration/windagent_orchestration/workflow_engine/checkpoints.py",
+      "line": 50,
+      "message": "Concrete adapter 'SqlUnitOfWork' instantiated outside composition root"
+    },
+    {
+      "rule": "concrete_adapter_outside_composition",
+      "file": "storage/windagent_storage/repositories/sql_repositories.py",
+      "line": 547,
+      "message": "Concrete adapter 'SqlOutboxRepository' instantiated outside composition root"
+    },
+    {
+      "rule": "concrete_adapter_outside_composition",
+      "file": "storage/windagent_storage/studio/task_submission.py",
+      "line": 68,
+      "message": "Concrete adapter 'SqlOutboxRepository' instantiated outside composition root"
+    },
+    {
+      "rule": "concrete_adapter_outside_composition",
+      "file": "storage/windagent_storage/unit_of_work/sql_uow.py",
+      "line": 66,
+      "message": "Concrete adapter 'SqlWorkflowRepository' instantiated outside composition root"
+    },
+    {
+      "rule": "concrete_adapter_outside_composition",
+      "file": "storage/windagent_storage/unit_of_work/sql_uow.py",
+      "line": 68,
+      "message": "Concrete adapter 'SqlEventStore' instantiated outside composition root"
+    },
+    {
+      "rule": "concrete_adapter_outside_composition",
+      "file": "storage/windagent_storage/unit_of_work/studio_uow.py",
+      "line": 63,
+      "message": "Concrete adapter 'SqlEpisodeRepository' instantiated outside composition root"
+    },
+    {
+      "rule": "concrete_adapter_outside_composition",
+      "file": "storage/windagent_storage/unit_of_work/studio_uow.py",
+      "line": 93,
+      "message": "Concrete adapter 'SqlOutboxRepository' instantiated outside composition root"
+    },
+    {
+      "rule": "concrete_adapter_outside_composition",
+      "file": "apps/api/windagent_api/services/studio_storage_adapter.py",
+      "line": 59,
+      "message": "Concrete adapter 'SqlEpisodeRepository' instantiated outside composition root"
+    },
+    {
+      "rule": "concrete_adapter_outside_composition",
+      "file": "apps/api/windagent_api/services/studio_storage_adapter.py",
+      "line": 63,
+      "message": "Concrete adapter 'SqlEpisodeRepository' instantiated outside composition root"
+    },
+    {
+      "rule": "concrete_adapter_outside_composition",
+      "file": "apps/worker/windagent_worker/runner.py",
+      "line": 429,
+      "message": "Concrete adapter 'SqlUnitOfWork' instantiated outside composition root"
+    },
+    {
+      "rule": "application_direct_storage_import",
+      "file": "orchestration/windagent_orchestration/cancellation.py",
+      "line": 13,
+      "message": "Application layer 'orchestration' imports concrete storage directly: windagent_storage.unit_of_work.sql_uow.SqlUnitOfWork. Use repository ports from core instead."
+    },
+    {
+      "rule": "application_direct_storage_import",
+      "file": "orchestration/windagent_orchestration/durable_plan_scheduler.py",
+      "line": 12,
+      "message": "Application layer 'orchestration' imports concrete storage directly: windagent_storage.repositories.multi_agent_repository.MultiAgentRepository. Use repository ports from core instead."
+    },
+    {
+      "rule": "application_direct_storage_import",
+      "file": "orchestration/windagent_orchestration/orchestrator_service.py",
+      "line": 28,
+      "message": "Application layer 'orchestration' imports concrete storage directly: windagent_storage.repositories.multi_agent_repository.MultiAgentRepository. Use repository ports from core instead."
+    },
+    {
+      "rule": "application_direct_storage_import",
+      "file": "orchestration/windagent_orchestration/dispatcher/dispatch.py",
+      "line": 50,
+      "message": "Application layer 'orchestration' imports concrete storage directly: windagent_storage.unit_of_work.sql_uow.SqlUnitOfWork. Use repository ports from core instead."
+    },
+    {
+      "rule": "application_direct_storage_import",
+      "file": "orchestration/windagent_orchestration/dispatcher/leases.py",
+      "line": 16,
+      "message": "Application layer 'orchestration' imports concrete storage directly: windagent_storage.unit_of_work.sql_uow.SqlUnitOfWork. Use repository ports from core instead."
+    },
+    {
+      "rule": "application_direct_storage_import",
+      "file": "orchestration/windagent_orchestration/dispatcher/result_ingestion.py",
+      "line": 35,
+      "message": "Application layer 'orchestration' imports concrete storage directly: windagent_storage.unit_of_work.sql_uow.SqlUnitOfWork. Use repository ports from core instead."
+    },
+    {
+      "rule": "application_direct_storage_import",
+      "file": "orchestration/windagent_orchestration/recovery/manager.py",
+      "line": 17,
+      "message": "Application layer 'orchestration' imports concrete storage directly: windagent_storage.unit_of_work.sql_uow.SqlUnitOfWork. Use repository ports from core instead."
+    },
+    {
+      "rule": "application_direct_storage_import",
+      "file": "orchestration/windagent_orchestration/recovery/reconciler.py",
+      "line": 10,
+      "message": "Application layer 'orchestration' imports concrete storage directly: sqlalchemy.select. Use repository ports from core instead."
+    },
+    {
+      "rule": "application_direct_storage_import",
+      "file": "orchestration/windagent_orchestration/recovery/reconciler.py",
+      "line": 14,
+      "message": "Application layer 'orchestration' imports concrete storage directly: windagent_storage.unit_of_work.sql_uow.SqlUnitOfWork. Use repository ports from core instead."
+    },
+    {
+      "rule": "application_direct_storage_import",
+      "file": "orchestration/windagent_orchestration/recovery/reconciler.py",
+      "line": 15,
+      "message": "Application layer 'orchestration' imports concrete storage directly: windagent_storage.orm.v2_orchestration_models.TaskRunORM. Use repository ports from core instead."
+    },
+    {
+      "rule": "application_direct_storage_import",
+      "file": "orchestration/windagent_orchestration/recovery/reconciler.py",
+      "line": 15,
+      "message": "Application layer 'orchestration' imports concrete storage directly: windagent_storage.orm.v2_orchestration_models.WorkflowStepRunORM. Use repository ports from core instead."
+    },
+    {
+      "rule": "application_direct_storage_import",
+      "file": "orchestration/windagent_orchestration/studio/service.py",
+      "line": 123,
+      "message": "Application layer 'orchestration' imports concrete storage directly: windagent_storage.unit_of_work.studio_uow.StudioUnitOfWork. Use repository ports from core instead."
+    },
+    {
+      "rule": "application_direct_storage_import",
+      "file": "orchestration/windagent_orchestration/task_manager/service.py",
+      "line": 16,
+      "message": "Application layer 'orchestration' imports concrete storage directly: windagent_storage.unit_of_work.sql_uow.SqlUnitOfWork. Use repository ports from core instead."
+    },
+    {
+      "rule": "application_direct_storage_import",
+      "file": "orchestration/windagent_orchestration/workflow_engine/checkpoints.py",
+      "line": 11,
+      "message": "Application layer 'orchestration' imports concrete storage directly: windagent_storage.unit_of_work.sql_uow.SqlUnitOfWork. Use repository ports from core instead."
+    },
+    {
+      "rule": "application_direct_storage_import",
+      "file": "memory/windagent_memory/repository.py",
+      "line": 13,
+      "message": "Application layer 'memory' imports concrete storage directly: sqlalchemy.select. Use repository ports from core instead."
+    },
+    {
+      "rule": "application_direct_storage_import",
+      "file": "memory/windagent_memory/repository.py",
+      "line": 13,
+      "message": "Application layer 'memory' imports concrete storage directly: sqlalchemy.delete. Use repository ports from core instead."
+    },
+    {
+      "rule": "application_direct_storage_import",
+      "file": "memory/windagent_memory/repository.py",
+      "line": 14,
+      "message": "Application layer 'memory' imports concrete storage directly: sqlalchemy.ext.asyncio.AsyncSession. Use repository ports from core instead."
+    },
+    {
+      "rule": "application_direct_storage_import",
+      "file": "memory/windagent_memory/repository.py",
+      "line": 17,
+      "message": "Application layer 'memory' imports concrete storage directly: windagent_storage.orm.v2_orchestration_models.MemoryRecordORM. Use repository ports from core instead."
+    },
+    {
+      "rule": "storage_to_provider_import",
+      "file": "storage/windagent_storage/repositories/v3_repositories.py",
+      "line": 14,
+      "message": "storage imports providers directly: windagent_providers.base.contracts.ModelDescriptor. Storage must not depend on provider implementation."
+    },
+    {
+      "rule": "storage_to_provider_import",
+      "file": "storage/windagent_storage/repositories/v3_repositories.py",
+      "line": 14,
+      "message": "storage imports providers directly: windagent_providers.base.contracts.ProviderCapabilities. Storage must not depend on provider implementation."
+    },
+    {
+      "rule": "storage_to_provider_import",
+      "file": "storage/windagent_storage/repositories/v3_repositories.py",
+      "line": 14,
+      "message": "storage imports providers directly: windagent_providers.base.contracts.QuotaState. Storage must not depend on provider implementation."
+    },
+    {
+      "rule": "storage_to_provider_import",
+      "file": "storage/windagent_storage/repositories/v3_repositories.py",
+      "line": 21,
+      "message": "storage imports providers directly: windagent_providers.routing.ports.RouteLockRepositoryPort. Storage must not depend on provider implementation."
+    },
+    {
+      "rule": "storage_to_provider_import",
+      "file": "storage/windagent_storage/repositories/v3_routing_repositories.py",
+      "line": 23,
+      "message": "storage imports providers directly: windagent_providers.base.contracts.DiscoveredModel. Storage must not depend on provider implementation."
+    },
+    {
+      "rule": "storage_to_provider_import",
+      "file": "storage/windagent_storage/repositories/v3_routing_repositories.py",
+      "line": 24,
+      "message": "storage imports providers directly: windagent_providers.registry.model_normalizer.normalize_model_id. Storage must not depend on provider implementation."
+    },
+    {
+      "rule": "storage_to_provider_import",
+      "file": "storage/windagent_storage/repositories/v3_routing_repositories.py",
+      "line": 25,
+      "message": "storage imports providers directly: windagent_providers.registry.equivalence.classify_equivalence. Storage must not depend on provider implementation."
+    },
+    {
+      "rule": "storage_to_provider_import",
+      "file": "storage/windagent_storage/repositories/v3_routing_repositories.py",
+      "line": 25,
+      "message": "storage imports providers directly: windagent_providers.registry.equivalence.EquivalenceLevel. Storage must not depend on provider implementation."
+    },
+    {
+      "rule": "storage_to_provider_import",
+      "file": "storage/windagent_storage/repositories/v3_routing_repositories.py",
+      "line": 29,
+      "message": "storage imports providers directly: windagent_providers.routing.ports.EndpointBindingRepositoryPort. Storage must not depend on provider implementation."
+    },
+    {
+      "rule": "storage_to_provider_import",
+      "file": "storage/windagent_storage/repositories/v3_routing_repositories.py",
+      "line": 29,
+      "message": "storage imports providers directly: windagent_providers.routing.ports.RoutingAuditRepositoryPort. Storage must not depend on provider implementation."
+    },
+    {
+      "rule": "module_level_mutable_production_store",
+      "file": "apps/api/windagent_api/routers/v3/projects.py",
+      "line": 73,
+      "message": "Module-level mutable store in production code: '_PROJECTS_STORE: Dict[str, Dict[str, Any]] = {'. Use SQL repository pattern instead."
+    },
+    {
+      "rule": "module_level_mutable_production_store",
+      "file": "apps/api/windagent_api/routers/v3/projects.py",
+      "line": 106,
+      "message": "Module-level mutable store in production code: '_EPISODES_STORE: Dict[str, List[Dict[str, Any]]] = {'. Use SQL repository pattern instead."
+    },
+    {
+      "rule": "module_level_mutable_production_store",
+      "file": "apps/api/windagent_api/routers/v3/tasks.py",
+      "line": 65,
+      "message": "Module-level mutable store in production code: '_TASKS_STORE: Dict[str, Dict[str, Any]] = {'. Use SQL repository pattern instead."
+    },
+    {
+      "rule": "module_level_mutable_production_store",
+      "file": "apps/api/windagent_api/routers/v3/workflows.py",
+      "line": 142,
+      "message": "Module-level mutable store in production code: '_WORKFLOWS_STORE: Dict[str, Dict[str, Any]] = {w[\"id\"]: dict(w) for w in _INITIAL_WORKFLOWS}'. Use SQL repository pattern instead."
+    }
+  ],
+  "circular_dependency_cycles": 0
+}

@@ -7,20 +7,16 @@ from __future__ import annotations
 
 import logging
 from typing import List, Tuple, Optional, Any
-from sqlalchemy import select
 
 from windagent_orchestration.state_machine import TaskState
 from windagent_orchestration.recovery.destructive_guard import DESTRUCTIVE_TOOLS
-from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork
-from windagent_storage.orm.v2_orchestration_models import (
-    TaskRunORM, WorkflowStepRunORM
-)
+from windagent_core.contracts.repositories.unit_of_work import UnitOfWorkFactory
 
 logger = logging.getLogger("windagent.orchestration.recovery.reconciler")
 
 
 class InFlightReconciler:
-    def __init__(self, uow_factory: Optional[Any] = None):
+    def __init__(self, uow_factory: Optional[UnitOfWorkFactory] = None):
         self.uow_factory = uow_factory
 
     async def reconcile_all_in_flight(self, batch_size: int = 500) -> Any:
@@ -30,59 +26,52 @@ class InFlightReconciler:
         if not self.uow_factory:
             return report
 
-        async with SqlUnitOfWork(self.uow_factory) as uow:
+        async with self.uow_factory() as uow:
             # Reclaim expired leases first
             expired_leases = await uow.leases.reclaim_expired_leases()
             report.leases_reclaimed_count = len(expired_leases)
             await uow.commit()
 
             # Paginated scan of non-terminal TaskRuns
-            stmt_tasks = select(TaskRunORM).where(TaskRunORM.state.notin_(["completed", "failed", "cancelled"])).limit(batch_size)
-            res_tasks = await uow.session.execute(stmt_tasks)
-            tasks = res_tasks.scalars().all()
+            tasks = await uow.list_non_terminal_task_runs(batch_size)
             report.tasks_scanned = len(tasks)
 
-            # Paginated scan of non-terminal WorkflowStepRuns
-            stmt_steps = select(WorkflowStepRunORM).where(WorkflowStepRunORM.state.in_(["running", "dispatched", "retry_wait"])).limit(batch_size)
-            res_steps = await uow.session.execute(stmt_steps)
-            steps = res_steps.scalars().all()
+            # Paginated scan of in-flight WorkflowStepRuns
+            steps = await uow.list_in_flight_steps(batch_size)
 
             for step in steps:
                 report.runs_reconciled += 1
-                runtime_exec = await uow.runtime_executions.get_by_step_run_id(step.id)
-                tool_name = step.tool_name or ""
+                runtime_exec = await uow.runtime_executions.get_by_step_run_id(step["id"])
+                tool_name = step.get("tool_name") or ""
                 is_destructive = tool_name in DESTRUCTIVE_TOOLS
 
                 if not runtime_exec:
                     # Missing execution record
                     if is_destructive:
-                        step.state = "failed"
-                        step.error = "Recovery blocked: Missing runtime execution for destructive step"
+                        await uow.set_step_state(step["id"], "failed", "Recovery blocked: Missing runtime execution for destructive step")
                         report.destructive_blocked_count += 1
                     else:
-                        step.state = "ready"
-                        report.details.append({"step_id": step.id, "action": "reset_to_ready"})
+                        await uow.set_step_state(step["id"], "ready")
+                        report.details.append({"step_id": step["id"], "action": "reset_to_ready"})
                 else:
-                    status = runtime_exec.status
+                    status = getattr(runtime_exec, "status", None)
                     if status == "completed":
-                        step.state = "completed"
+                        await uow.set_step_state(step["id"], "completed")
                         report.completed_ingested_count += 1
                     elif status == "running" or status == "dispatched":
                         report.reattached_count += 1
                     elif status == "unknown":
                         if is_destructive:
-                            step.state = "failed"
-                            step.error = "Recovery blocked: UNKNOWN runtime state for destructive step"
+                            await uow.set_step_state(step["id"], "failed", "Recovery blocked: UNKNOWN runtime state for destructive step")
                             report.destructive_blocked_count += 1
                         else:
-                            step.state = "ready"
+                            await uow.set_step_state(step["id"], "ready")
                     elif status in ("lost", "failed", "timeout"):
                         if is_destructive:
-                            step.state = "failed"
-                            step.error = f"Recovery blocked: Runtime status [{status}] for destructive step"
+                            await uow.set_step_state(step["id"], "failed", f"Recovery blocked: Runtime status [{status}] for destructive step")
                             report.destructive_blocked_count += 1
                         else:
-                            step.state = "ready"
+                            await uow.set_step_state(step["id"], "ready")
 
             await uow.commit()
 
@@ -94,7 +83,7 @@ class InFlightReconciler:
         if not self.uow_factory:
             return results
 
-        async with SqlUnitOfWork(self.uow_factory) as uow:
+        async with self.uow_factory() as uow:
             events = await uow.events.get_events(session_id)
             if not events:
                 return results

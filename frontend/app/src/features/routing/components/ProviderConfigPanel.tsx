@@ -1062,111 +1062,131 @@ export const ProviderConfigPanel: React.FC<ProviderConfigPanelProps> = ({
             </button>
           </div>
 
-          {/* Last Test Result Box */}
-          <div
-            style={{
-              marginTop: '6px',
-              padding: '14px 16px',
-              borderRadius: '10px',
-              backgroundColor: 'rgba(16, 185, 129, 0.04)',
-              border: '1px solid rgba(16, 185, 129, 0.25)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '10px',
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <CheckCircle2 size={16} color="#34d399" />
+          {/* Test Result Box */}
+          {formData.lastTestLatency !== undefined ? (
+            <div
+              style={{
+                marginTop: '6px',
+                padding: '14px 16px',
+                borderRadius: '10px',
+                backgroundColor: 'rgba(16, 185, 129, 0.04)',
+                border: '1px solid rgba(16, 185, 129, 0.25)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '10px',
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <CheckCircle2 size={16} color="#34d399" />
+                  <div>
+                    <span style={{ fontSize: '0.70rem', color: '#94a3b8', display: 'block' }}>
+                      Last Test Result
+                    </span>
+                    <span
+                      style={{
+                        fontSize: '0.84rem',
+                        fontWeight: 700,
+                        color: '#34d399',
+                      }}
+                    >
+                      Connection Tested
+                    </span>
+                  </div>
+                </div>
+
+                <span style={{ fontSize: '0.70rem', color: '#64748b' }}>
+                  {formData.lastTestTime || 'Recent'}
+                </span>
+              </div>
+
+              {/* 4 Stat Items */}
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(4, 1fr)',
+                  gap: '8px',
+                  paddingTop: '8px',
+                  borderTop: '1px solid rgba(16, 185, 129, 0.15)',
+                }}
+              >
                 <div>
-                  <span style={{ fontSize: '0.70rem', color: '#94a3b8', display: 'block' }}>
-                    Last Test Result
+                  <span style={{ fontSize: '0.68rem', color: '#94a3b8', display: 'block' }}>
+                    Latency
+                  </span>
+                  <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#f8fafc' }}>
+                    {formData.lastTestLatency} ms
+                  </span>
+                </div>
+
+                <div>
+                  <span style={{ fontSize: '0.68rem', color: '#94a3b8', display: 'block' }}>
+                    Authentication
+                  </span>
+                  <span style={{ fontSize: '0.82rem', fontWeight: 700, color: formData.status === 'error' ? '#f87171' : '#34d399' }}>
+                    {formData.status === 'error' ? 'Failed' : 'Verified'}
+                  </span>
+                </div>
+
+                <div>
+                  <span style={{ fontSize: '0.68rem', color: '#94a3b8', display: 'block' }}>
+                    Models Discovered
+                  </span>
+                  <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#f8fafc' }}>
+                    {formData.modelsCount} models
+                  </span>
+                </div>
+
+                <div>
+                  <span style={{ fontSize: '0.68rem', color: '#94a3b8', display: 'block' }}>
+                    Endpoint
                   </span>
                   <span
                     style={{
-                      fontSize: '0.84rem',
+                      fontSize: '0.82rem',
                       fontWeight: 700,
-                      color: '#34d399',
+                      color: formData.status === 'error' ? '#f87171' : '#34d399',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
                     }}
                   >
-                    Connection Successful
+                    <span
+                      style={{
+                        width: '6px',
+                        height: '6px',
+                        borderRadius: '50%',
+                        backgroundColor: formData.status === 'error' ? '#f87171' : '#34d399',
+                      }}
+                    />
+                    {formData.status === 'error' ? 'Unhealthy' : 'Healthy'}
                   </span>
                 </div>
               </div>
 
-              <span style={{ fontSize: '0.70rem', color: '#64748b' }}>
-                {formData.lastTestTime || 'Just now (16:23)'}
-              </span>
+              <div style={{ fontSize: '0.70rem', color: '#64748b' }}>
+                Full server roundtrip latency: {formData.lastTestLatency} ms.
+              </div>
             </div>
-
-            {/* 4 Stat Items */}
+          ) : (
             <div
               style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(4, 1fr)',
+                marginTop: '6px',
+                padding: '12px 14px',
+                borderRadius: '8px',
+                backgroundColor: 'rgba(255, 255, 255, 0.03)',
+                border: '1px solid rgba(66, 71, 84, 0.3)',
+                fontSize: '0.75rem',
+                color: '#94a3b8',
+                display: 'flex',
+                alignItems: 'center',
                 gap: '8px',
-                paddingTop: '8px',
-                borderTop: '1px solid rgba(16, 185, 129, 0.15)',
               }}
             >
-              <div>
-                <span style={{ fontSize: '0.68rem', color: '#94a3b8', display: 'block' }}>
-                  Latency
-                </span>
-                <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#f8fafc' }}>
-                  {formData.lastTestLatency || 289} ms
-                </span>
-              </div>
-
-              <div>
-                <span style={{ fontSize: '0.68rem', color: '#94a3b8', display: 'block' }}>
-                  Authentication
-                </span>
-                <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#34d399' }}>
-                  Success
-                </span>
-              </div>
-
-              <div>
-                <span style={{ fontSize: '0.68rem', color: '#94a3b8', display: 'block' }}>
-                  Models Fetched
-                </span>
-                <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#f8fafc' }}>
-                  {formData.modelsCount} models
-                </span>
-              </div>
-
-              <div>
-                <span style={{ fontSize: '0.68rem', color: '#94a3b8', display: 'block' }}>
-                  Endpoint
-                </span>
-                <span
-                  style={{
-                    fontSize: '0.82rem',
-                    fontWeight: 700,
-                    color: '#34d399',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                  }}
-                >
-                  <span
-                    style={{
-                      width: '6px',
-                      height: '6px',
-                      borderRadius: '50%',
-                      backgroundColor: '#34d399',
-                    }}
-                  />
-                  Healthy
-                </span>
-              </div>
+              <Info size={14} color="#60a5fa" />
+              <span>No connection test run yet. Click &quot;Test Connection&quot; to probe the endpoint.</span>
             </div>
-
-            <div style={{ fontSize: '0.70rem', color: '#64748b' }}>
-              Full response completed in {formData.lastTestLatency || 289} ms.
-            </div>
-          </div>
+          )}
         </div>
       )}
     </div>

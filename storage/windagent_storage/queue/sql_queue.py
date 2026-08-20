@@ -144,16 +144,19 @@ class SqlDurableTaskQueue(DurableTaskQueuePort, TaskLeasePort):
                 # idempotently in this same transaction before inserting the lease.
                 await _ensure_step_run_graph(session, task_orm, now_naive)
 
-                # Generate fencing token and lease ID
+                # Generate fencing token
                 raw_tid = task_orm.id
                 fencing_token = f"fence_{raw_tid}_gen_{generation}_{uuid.uuid4().hex[:6]}"
-                lease_id = f"lease_{raw_tid}_{uuid.uuid4().hex[:8]}"
 
                 # Update task state to running
                 task_orm.state = "running"
                 task_orm.updated_at = now_naive
 
-                # Upsert lease lock record
+                # Upsert lease lock record. The returned lease ID is the actual
+                # persisted identity: a new lease uses its generated ID, while a
+                # reclaim/upsert of an existing lease keeps the existing row's
+                # lease_id (never an unused freshly generated value). Generation
+                # and fencing-token updates stay atomic in this same transaction.
                 stmt_existing_lease = select(ExecutionLeaseORM).where(ExecutionLeaseORM.run_id == raw_tid)
                 res_lease = await session.execute(stmt_existing_lease)
                 existing_lease = res_lease.scalar_one_or_none()
@@ -165,7 +168,9 @@ class SqlDurableTaskQueue(DurableTaskQueuePort, TaskLeasePort):
                     existing_lease.lease_generation = generation
                     existing_lease.fencing_token = fencing_token
                     existing_lease.updated_at = now_naive
+                    lease_id = existing_lease.lease_id
                 else:
+                    lease_id = f"lease_{raw_tid}_{uuid.uuid4().hex[:8]}"
                     new_lease = ExecutionLeaseORM(
                         lease_id=lease_id,
                         step_run_id=raw_tid,

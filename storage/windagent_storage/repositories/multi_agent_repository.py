@@ -1209,6 +1209,26 @@ class MultiAgentRepository:
         )
         return [dict(row) for row in rows.mappings().all()]
 
+    async def has_agent_run_history(self, agent_instance_id: str) -> bool:
+        """Return whether any real ``agent_runs`` row exists for the instance.
+
+        This is the fail-closed guard for control-plane start/restart: an
+        instance that ever had a real runtime run (even one that later
+        completed, failed, or was cancelled) must not be marked RUNNING again
+        without resurrecting that runtime.
+        """
+        result = await self._session.execute(
+            text(
+                """
+                SELECT 1 FROM agent_runs
+                WHERE agent_instance_id=:agent_instance_id
+                LIMIT 1
+                """
+            ),
+            {"agent_instance_id": agent_instance_id},
+        )
+        return result.first() is not None
+
     async def mark_agent_cancelled(
         self, agent_instance_id: str, conversation_id: str | None = None
     ) -> list[dict[str, Any]]:
@@ -1634,3 +1654,365 @@ class MultiAgentRepository:
                 }
             )
         return graphs
+
+    # ─────────────────────────────────────────────────────────────────────
+    # Control-plane seam (P4-R4B): idempotent conversation/agent CRUD and
+    # lifecycle transitions for the V3 compatibility surface.
+    # ─────────────────────────────────────────────────────────────────────
+
+    @staticmethod
+    def _iso(value: Any) -> str:
+        if value is None:
+            return ""
+        if hasattr(value, "isoformat"):
+            return value.isoformat()
+        return str(value)
+
+    @staticmethod
+    def _decode_conversation(row: dict[str, Any]) -> dict[str, Any]:
+        metadata = json.loads(row.pop("metadata_json") or "{}")
+        row["id"] = row.pop("conversation_id")
+        row["objective"] = metadata.get("objective", "")
+        row["plan_version_id"] = metadata.get("plan_version_id")
+        row["orchestrator_instance_id"] = metadata.get("orchestrator_instance_id")
+        row["version"] = int(metadata.get("version", 1))
+        row["created_at"] = MultiAgentRepository._iso(row.get("created_at"))
+        row["updated_at"] = MultiAgentRepository._iso(row.get("updated_at"))
+        return row
+
+    @staticmethod
+    def _decode_agent_instance(row: dict[str, Any]) -> dict[str, Any]:
+        profile = json.loads(row.pop("permission_profile_json") or "{}")
+        row["id"] = row.pop("agent_instance_id")
+        row["definition_id"] = profile.get("definition_id") or "def-generalist-01"
+        row["provider_binding_id"] = profile.get("provider_binding_id")
+        row["route_lock_id"] = profile.get("route_lock_id")
+        row["assigned_task_id"] = profile.get("assigned_task_id")
+        row["current_tool"] = profile.get("current_tool")
+        row["started_at"] = profile.get("started_at")
+        row["stopped_at"] = profile.get("stopped_at")
+        row["runtime_metadata"] = profile.get("runtime_metadata", {})
+        row["version"] = int(row.pop("session_version") or 1)
+        row["created_at"] = MultiAgentRepository._iso(row.get("created_at"))
+        row["updated_at"] = MultiAgentRepository._iso(row.get("updated_at"))
+        return row
+
+    async def get_conversation(self, conversation_id: str) -> dict[str, Any] | None:
+        row = (
+            await self._session.execute(
+                text(
+                    """
+                    SELECT conversation_id, title, status, metadata_json,
+                           last_event_sequence, created_at, updated_at
+                    FROM conversations
+                    WHERE conversation_id=:conversation_id
+                    """
+                ),
+                {"conversation_id": conversation_id},
+            )
+        ).mappings().first()
+        return self._decode_conversation(dict(row)) if row is not None else None
+
+    async def list_conversations(self) -> list[dict[str, Any]]:
+        rows = await self._session.execute(
+            text(
+                """
+                SELECT conversation_id, title, status, metadata_json,
+                       last_event_sequence, created_at, updated_at
+                FROM conversations
+                ORDER BY created_at ASC
+                """
+            )
+        )
+        return [self._decode_conversation(dict(row)) for row in rows.mappings().all()]
+
+    async def create_conversation(
+        self,
+        *,
+        conversation_id: str,
+        title: str | None,
+        objective: str,
+        plan_version_id: str | None = None,
+        orchestrator_instance_id: str | None = None,
+    ) -> dict[str, Any]:
+        """Idempotently persist a canonical conversation and return its projection."""
+        existing = await self.get_conversation(conversation_id)
+        if existing is not None:
+            return existing
+        now = utc_now()
+        metadata = {
+            "objective": objective,
+            "plan_version_id": plan_version_id,
+            "orchestrator_instance_id": orchestrator_instance_id,
+            "version": 1,
+        }
+        await self._session.execute(
+            text(
+                """
+                INSERT INTO conversations
+                (conversation_id, title, status, metadata_json, last_event_sequence, created_at, updated_at)
+                VALUES (:id, :title, 'active', :metadata, 0, :now, :now)
+                """
+            ),
+            {
+                "id": conversation_id,
+                "title": title,
+                "metadata": json.dumps(metadata),
+                "now": now,
+            },
+        )
+        return await self.get_conversation(conversation_id)
+
+    async def get_agent_instance(self, agent_instance_id: str) -> dict[str, Any] | None:
+        row = (
+            await self._session.execute(
+                text(
+                    """
+                    SELECT ai.agent_instance_id, ai.conversation_id, ai.agent_type,
+                           ai.status, ai.permission_profile_json, ai.canonical_model_id,
+                           ai.created_at, ai.updated_at,
+                           aps.agent_session_id, aps.status AS session_status,
+                           aps.version AS session_version
+                    FROM agent_instances ai
+                    LEFT JOIN agent_sessions aps ON aps.agent_session_id = (
+                        SELECT s.agent_session_id FROM agent_sessions s
+                        WHERE s.agent_instance_id = ai.agent_instance_id
+                        ORDER BY s.created_at ASC LIMIT 1
+                    )
+                    WHERE ai.agent_instance_id=:agent_instance_id
+                    """
+                ),
+                {"agent_instance_id": agent_instance_id},
+            )
+        ).mappings().first()
+        return self._decode_agent_instance(dict(row)) if row is not None else None
+
+    async def list_agent_instances(
+        self, conversation_id: str | None = None
+    ) -> list[dict[str, Any]]:
+        clause = ""
+        params: dict[str, Any] = {}
+        if conversation_id is not None:
+            clause = "WHERE ai.conversation_id=:conversation_id"
+            params["conversation_id"] = conversation_id
+        rows = await self._session.execute(
+            text(
+                """
+                SELECT ai.agent_instance_id, ai.conversation_id, ai.agent_type,
+                       ai.status, ai.permission_profile_json, ai.canonical_model_id,
+                       ai.created_at, ai.updated_at,
+                       aps.agent_session_id, aps.status AS session_status,
+                       aps.version AS session_version
+                FROM agent_instances ai
+                LEFT JOIN agent_sessions aps ON aps.agent_session_id = (
+                    SELECT s.agent_session_id FROM agent_sessions s
+                    WHERE s.agent_instance_id = ai.agent_instance_id
+                    ORDER BY s.created_at ASC LIMIT 1
+                )
+                """
+                + clause
+                + """
+                ORDER BY ai.created_at ASC
+                """
+            ),
+            params,
+        )
+        return [self._decode_agent_instance(dict(row)) for row in rows.mappings().all()]
+
+    async def create_agent_instance(
+        self,
+        *,
+        agent_instance_id: str,
+        conversation_id: str,
+        agent_session_id: str,
+        agent_type: str,
+        definition_id: str | None = None,
+        canonical_model_id: str | None = None,
+        runtime_metadata: Mapping[str, Any] | None = None,
+        status: str = "active",
+        started_at: str | None = None,
+        stopped_at: str | None = None,
+        provider_binding_id: str | None = None,
+        route_lock_id: str | None = None,
+        assigned_task_id: str | None = None,
+        current_tool: str | None = None,
+    ) -> dict[str, Any]:
+        """Persist a control-plane agent instance plus its session atomically."""
+        now = utc_now()
+        profile = {
+            "definition_id": definition_id,
+            "runtime_metadata": dict(runtime_metadata or {}),
+            "started_at": started_at,
+            "stopped_at": stopped_at,
+            "provider_binding_id": provider_binding_id,
+            "route_lock_id": route_lock_id,
+            "assigned_task_id": assigned_task_id,
+            "current_tool": current_tool,
+        }
+        await self._session.execute(
+            text(
+                """
+                INSERT INTO agent_instances
+                (agent_instance_id, conversation_id, agent_type, status,
+                 permission_profile_json, canonical_model_id, created_at, updated_at)
+                VALUES (:id, :conversation_id, :agent_type, :status,
+                        :profile, :canonical_model_id, :now, :now)
+                """
+            ),
+            {
+                "id": agent_instance_id,
+                "conversation_id": conversation_id,
+                "agent_type": agent_type,
+                "status": status,
+                "profile": json.dumps(profile),
+                "canonical_model_id": canonical_model_id,
+                "now": now,
+            },
+        )
+        await self._session.execute(
+            text(
+                """
+                INSERT INTO agent_sessions
+                (agent_session_id, agent_instance_id, windagent_session_id, status,
+                 version, created_at, updated_at)
+                VALUES (:id, :agent_instance_id, :windagent_session_id, :status,
+                        1, :now, :now)
+                """
+            ),
+            {
+                "id": agent_session_id,
+                "agent_instance_id": agent_instance_id,
+                "windagent_session_id": f"control:{agent_instance_id}",
+                "status": status,
+                "now": now,
+            },
+        )
+        return await self.get_agent_instance(agent_instance_id)
+
+    async def transition_agent_lifecycle(
+        self,
+        *,
+        agent_instance_id: str,
+        target_status: str,
+        profile_updates: Mapping[str, Any] | None = None,
+    ) -> dict[str, Any] | None:
+        """CAS lifecycle transition keyed on the durable ``agent_sessions.version``.
+
+        The session version is the optimistic-concurrency source for agent
+        lifecycle control.  ``profile_updates`` values are written verbatim
+        (``None`` clears the compatibility key).
+        """
+        now = utc_now()
+        current = (
+            await self._session.execute(
+                text(
+                    """
+                    SELECT aps.agent_session_id, aps.version, aps.status AS session_status,
+                           ai.status AS instance_status, ai.conversation_id
+                    FROM agent_instances ai
+                    LEFT JOIN agent_sessions aps ON aps.agent_session_id = (
+                        SELECT s.agent_session_id FROM agent_sessions s
+                        WHERE s.agent_instance_id = ai.agent_instance_id
+                        ORDER BY s.created_at ASC LIMIT 1
+                    )
+                    WHERE ai.agent_instance_id=:agent_instance_id
+                    """
+                ),
+                {"agent_instance_id": agent_instance_id},
+            )
+        ).mappings().first()
+        if current is None or current["agent_session_id"] is None:
+            return None
+        session_id = str(current["agent_session_id"])
+        expected_version = int(current["version"])
+        result = await self._session.execute(
+            text(
+                """
+                UPDATE agent_sessions
+                SET status=:status, version=version+1, updated_at=:now
+                WHERE agent_session_id=:agent_session_id AND version=:expected_version
+                """
+            ),
+            {
+                "status": target_status,
+                "now": now,
+                "agent_session_id": session_id,
+                "expected_version": expected_version,
+            },
+        )
+        if result.rowcount != 1:
+            return None
+        profile_row = (
+            await self._session.execute(
+                text(
+                    "SELECT permission_profile_json FROM agent_instances WHERE agent_instance_id=:id"
+                ),
+                {"id": agent_instance_id},
+            )
+        ).mappings().first()
+        profile = (
+            json.loads(profile_row["permission_profile_json"] or "{}")
+            if profile_row is not None
+            else {}
+        )
+        for key, value in (profile_updates or {}).items():
+            profile[key] = value
+        await self._session.execute(
+            text(
+                """
+                UPDATE agent_instances
+                SET status=:status, permission_profile_json=:profile, updated_at=:now
+                WHERE agent_instance_id=:id
+                """
+            ),
+            {
+                "status": target_status,
+                "profile": json.dumps(profile),
+                "now": now,
+                "id": agent_instance_id,
+            },
+        )
+        return await self.get_agent_instance(agent_instance_id)
+
+    async def get_event(self, event_id: str) -> dict[str, Any] | None:
+        row = (
+            await self._session.execute(
+                text(
+                    """
+                    SELECT event_id, conversation_id, agent_instance_id, agent_session_id,
+                           sequence, event_type, data_json, idempotency_key, created_at
+                    FROM conversation_events
+                    WHERE event_id=:event_id
+                    """
+                ),
+                {"event_id": event_id},
+            )
+        ).mappings().first()
+        if row is None:
+            return None
+        event = dict(row)
+        event["data"] = json.loads(event.pop("data_json") or "{}")
+        return event
+
+    async def append_event_if_absent(
+        self,
+        *,
+        event_id: str,
+        conversation_id: str,
+        event_type: str,
+        data: Mapping[str, Any],
+        agent_instance_id: str | None = None,
+        agent_session_id: str | None = None,
+    ) -> int | None:
+        """Append an event only when its ``event_id`` is not already persisted."""
+        existing = await self.get_event(event_id)
+        if existing is not None:
+            return None
+        return await self.append_event(
+            event_id=event_id,
+            conversation_id=conversation_id,
+            event_type=event_type,
+            data=data,
+            agent_instance_id=agent_instance_id,
+            agent_session_id=agent_session_id,
+        )

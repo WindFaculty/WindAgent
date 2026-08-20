@@ -11,7 +11,12 @@ logger = logging.getLogger("windagent.observability.events.dispatcher")
 
 
 class EventDispatcher:
-    """Routes published events to registered subscribers by event_type."""
+    """Routes published events to registered subscribers by event_type.
+
+    A handler registered under the ``"*"`` wildcard receives every event.
+    If a handler is registered both for an exact event type and as a wildcard,
+    it is invoked only once per dispatch.
+    """
 
     def __init__(self):
         self._handlers: Dict[str, List[Callable[[EventEnvelope], Any]]] = defaultdict(list)
@@ -25,7 +30,11 @@ class EventDispatcher:
 
     async def dispatch(self, envelope: EventEnvelope) -> None:
         """Dispatch event to all subscribers. Errors are logged but do not stop other handlers."""
-        handlers = self._handlers.get(envelope.event_type, [])
+        handlers = list(self._handlers.get(envelope.event_type, []))
+        wildcard = self._handlers.get("*", [])
+        for handler in wildcard:
+            if handler not in handlers:
+                handlers.append(handler)
         for handler in handlers:
             try:
                 result = handler(envelope)

@@ -21,7 +21,7 @@ import hashlib
 import json
 from typing import Any, Dict, List, Optional, Sequence
 
-from windagent_workflows.code_video.contracts import CodeVideoPlan
+from windagent_core.contracts.code_video import CodeVideoPlan
 from windagent_tools.code_video.media.assembler import CueSheet, MasterAssemblyResult
 from windagent_tools.code_video.renderer.graphics_catalog import GraphicsCatalog
 from windagent_tools.code_video.renderer.theme import CodeVideoVisualTheme

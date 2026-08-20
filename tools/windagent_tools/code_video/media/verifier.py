@@ -15,7 +15,7 @@ from dataclasses import dataclass, field
 import re
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
-from windagent_workflows.code_video.contracts import CodeVideoPlan, Scene
+from windagent_core.contracts.code_video import CodeVideoPlan, Scene
 from windagent_tools.code_video.capture.receipts import (
     FrameReport,
     MediaProbeReport,

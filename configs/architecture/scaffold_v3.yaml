@@ -1,0 +1,538 @@
+version: "3.0"
+workspace:
+  root: "."
+  members:
+    - apps/api
+    - apps/cli
+    - apps/worker
+    - core
+    - orchestration
+    - intelligence
+    - providers
+    - tools
+    - workflows
+    - verification
+    - context
+    - memory
+    - execution
+    - storage
+    - observability
+    - evals
+    - plugins
+    - skills
+
+global_rules:
+  # Existing V2 rules — maintained
+  forbid_cross_app_imports: true
+  forbid_core_framework_imports: true
+  require_declared_workspace_dependencies: true
+  forbid_dependency_cycles: true
+  forbid_public_api_leakage: true
+  forbid_legacy_backend_imports: true
+  forbid_production_test_fallbacks: true
+  enforce_legacy_quarantine: true
+  enforce_videoclaw_quarantine: true
+  forbid_canonical_to_legacy_imports: true
+  forbid_legacy_runtime_authority: true
+  forbid_dynamic_imports: true
+  enforce_composition_root_rule: true
+
+  # New V3 rules
+  forbid_application_direct_storage_import: true
+  forbid_storage_to_provider_import: true
+  forbid_infrastructure_to_application_import: true
+  forbid_module_level_mutable_production_store: true
+  forbid_concrete_adapter_outside_composition: true
+
+  composition_roots:
+    - "apps/api/windagent_api/composition.py"
+    - "apps/api/windagent_api/composition/**"
+    - "apps/worker/windagent_worker/composition.py"
+    - "apps/worker/windagent_worker/composition/**"
+    - "apps/cli/windagent_cli/composition.py"
+    - "apps/cli/windagent_cli/composition/**"
+
+  # Allowlist for specific infrastructure files that legitimately access ORM/storage
+  # These are NOT application business logic — they are the infrastructure layer itself
+  infrastructure_orm_allowlist:
+    - "storage/windagent_storage/**"
+    - "apps/api/windagent_api/composition/**"
+    - "apps/worker/windagent_worker/composition/**"
+    - "apps/cli/windagent_cli/composition/**"
+
+forbidden_patterns:
+  production_fallback_regex: "\\b_fallback_[A-Za-z_][A-Za-z0-9_]*\\b"
+  test_adapter_paths:
+    - "tests/"
+
+  legacy_quarantine:
+    zone: "apps/backend"
+    allowlist: []
+    runtime_authority_blocked_patterns:
+      - "DatabaseManager"
+      - "SqlRepository"
+      - "Provider"
+      - "ExecutionRuntime"
+      - "Authority"
+      - "Adapter"
+    retirement_gate: "LEGACY_BACKEND_RUNTIME_REMOVED"
+
+  # Module-level mutable store patterns (production RAM authority anti-pattern)
+  module_level_store_patterns:
+    - "_PROJECTS_STORE"
+    - "_EPISODES_STORE"
+    - "_EPISODES"
+    - "_ARTIFACTS"
+    - "_RUNS"
+    - "_TASKS_STORE"
+    - "_WORKFLOWS_STORE"
+    - "_RUNS_STORE"
+    - "_PROVIDERS"
+    - "_CANONICAL_MODELS"
+    - "_RULES"
+    - "_ROUTE_LOCKS"
+    - "_ASSETS"
+    - "_ASSET_REVISIONS"
+    - "_REVIEWS"
+    - "_REVIEW_COMMENTS"
+    - "_REVIEW_DECISIONS"
+    - "_WORLD_BIBLES"
+    - "_LOCATIONS"
+    - "_FACTIONS"
+    - "_LORE"
+    - "_STORYBOARDS"
+    - "_SCENES"
+    - "_GENERATION_JOBS"
+    - "_CHARACTERS"
+    - "_IDEMPOTENCY_CHARS"
+    - "_PRODUCTION_PLANS"
+    - "_SHOTS"
+    - "_PRODUCTION_JOBS"
+    - "_DELIVERY_ARTIFACTS"
+    - "_DEFINITIONS_STORE"
+    - "_ACTIVITY_LOGS"
+    - "_INSTANCES_STORE"
+    - "_CONVERSATIONS_STORE"
+    - "_CONVERSATION_EVENTS"
+    - "_IDEMPOTENCY_KEYS_"
+    - "_idempotency_map"
+    - "_DEMO_"
+
+  # These concrete adapter names must NOT be instantiated outside composition roots
+  concrete_adapter_instantiation_patterns:
+    - "SqlProjectRepository"
+    - "SqlEpisodeRepository"
+    - "SqlTaskRepository"
+    - "SqlWorkflowRepository"
+    - "SqlEventStore"
+    - "SqlOutboxRepository"
+    - "SqlProviderRegistryRepository"
+    - "SqlRoutingRepository"
+    - "SqlAssetRepository"
+    - "SqlReviewRepository"
+    - "SqlUnitOfWork"
+    - "SQLAlchemy"
+    - "AsyncSession"
+    - "AsyncEngine"
+
+canonical_models:
+  - EventEnvelope
+  - TaskState
+  - WorkflowState
+  - StepState
+  - SessionState
+  - WindAgentError
+  - ProviderRequest
+  - ProviderResponse
+  - ProviderUsage
+  - ProviderToolCall
+  - ProviderStreamChunk
+  - ProviderCapabilities
+  - ModelDescriptor
+  - ToolInvocation
+  - ToolResult
+  - ToolDefinition
+  - ToolExecutionContext
+  - ToolRiskLevel
+
+required_top_level_packages:
+  - plugins
+  - skills
+
+public_exports:
+  core:
+    required: []
+  api:
+    required: []
+  cli:
+    required: []
+  worker:
+    required:
+      TaskLease: windagent_worker.lease
+      TaskLeaseManager: windagent_worker.lease
+      DurableTaskLeaseManager: windagent_worker.lease
+      ProductionWorker: windagent_worker.runner
+      WorkerRunner: windagent_worker.runner
+
+# ─────────────────────────────────────────────────────────────────────────────
+# V3 Dependency Matrix
+#
+# Dependency direction:
+#   ENTRY POINTS (API, Worker, CLI)
+#       └── Composition Root (only location allowed to see both application
+#                             and infrastructure for DI wiring)
+#           └── APPLICATION LAYER (orchestration, workflows, intelligence, skills,
+#                                  context, memory, verification)
+#               └── CORE / PORTS (domain, contracts, repository ports,
+#                                 provider ports, tool ports, event contracts,
+#                                 errors / IDs / state)
+#               ↑── INFRASTRUCTURE (storage, providers, tools, execution, plugins,
+#                                   observability)
+#
+# Hard rules:
+#   Application  ─X─>  concrete Storage
+#   Application  ─X─>  concrete Provider
+#   Application  ─X─>  concrete Tool implementation
+#   Infrastructure  ─X─>  Application
+#   Core  ─X─>  Framework
+#   Core  ─X─>  Storage
+#   Core  ─X─>  Provider implementation
+# ─────────────────────────────────────────────────────────────────────────────
+
+packages:
+  core:
+    layer: domain
+    namespace: windagent_core
+    path: core
+    description: "Core domain models, contracts, ports, domain events, errors, config, security types — no framework, no storage, no provider implementation"
+    allowed_dependencies: []
+    external_dependencies: ["pydantic>=2.7", "typing-extensions"]
+    forbidden_dependencies:
+      - "apps"
+      - "fastapi"
+      - "sqlalchemy"
+      - "mcp"
+      - "langgraph"
+      - "providers"
+      - "windagent_providers"
+      - "windagent_storage"
+      - "windagent_orchestration"
+      - "windagent_intelligence"
+      - "windagent_workflows"
+      - "windagent_tools"
+      - "windagent_execution"
+      - "windagent_memory"
+      - "windagent_context"
+      - "windagent_verification"
+      - "windagent_observability"
+    legacy_source: "apps/backend/models, apps/backend/config.py"
+    internal_boundaries:
+      domain:
+        path: core/windagent_core/domain
+        forbidden_dependencies: ["core/windagent_core/config", "core/windagent_core/security"]
+        allowed_dependencies: ["core/windagent_core/contracts", "core/windagent_core/errors"]
+      contracts:
+        path: core/windagent_core/contracts
+        forbidden_dependencies: ["infrastructure"]
+        allowed_dependencies: ["core/windagent_core/domain", "core/windagent_core/errors"]
+      events:
+        path: core/windagent_core/events
+        allowed_dependencies: ["core/windagent_core/domain", "core/windagent_core/contracts", "core/windagent_core/errors"]
+        forbidden_dependencies: []
+
+  orchestration:
+    layer: application
+    namespace: windagent_orchestration
+    path: orchestration
+    description: "Task manager, workflow engine, state machine, scheduler, dispatcher, retry, recovery — depends only on core ports, not concrete storage"
+    allowed_dependencies:
+      - "windagent_core"
+    forbidden_dependencies:
+      - "apps"
+      - "windagent_providers"
+      - "windagent_storage"
+      - "windagent_execution"
+    legacy_source: "apps/backend/services/workflow_service.py, recovery.py"
+
+  intelligence:
+    layer: application
+    namespace: windagent_intelligence
+    path: intelligence
+    description: "Task classifier, planner, context builder, model router, summarizer, reviewer, reporter — depends on core ports and context contracts"
+    allowed_dependencies:
+      - "windagent_core"
+      - "windagent_context"
+    forbidden_dependencies:
+      - "apps"
+      - "windagent_storage"
+      - "windagent_providers"
+    legacy_source: "apps/backend/services/model_routing_service.py, agent_service.py"
+
+  providers:
+    layer: infrastructure
+    namespace: windagent_providers
+    path: providers
+    description: "Model provider adapters (OpenRouter, Google, Ollama, Groq, etc.) — infrastructure, knows only core ports"
+    allowed_dependencies:
+      - "windagent_core"
+    forbidden_dependencies:
+      - "apps"
+      - "windagent_orchestration"
+      - "windagent_intelligence"
+      - "windagent_workflows"
+      - "windagent_memory"
+      - "windagent_context"
+    legacy_source: "apps/backend/services/model_service.py"
+
+  tools:
+    layer: infrastructure
+    namespace: windagent_tools
+    path: tools
+    description: "Tool registry, filesystem, shell, git, code_search, AST, LSP, browser, database, MCP — depends only on core ports, NOT on workflows"
+    allowed_dependencies:
+      - "windagent_core"
+    forbidden_dependencies:
+      - "apps"
+      - "windagent_orchestration"
+      - "windagent_workflows"
+      - "windagent_intelligence"
+      - "windagent_memory"
+    legacy_source: "apps/backend/services/tool_execution_service.py, tools/"
+
+  workflows:
+    layer: application
+    namespace: windagent_workflows
+    path: workflows
+    description: "Predefined workflow definitions and step implementations — depends on core and orchestration contracts; NOT on tools implementation (tools is infrastructure)"
+    allowed_dependencies:
+      - "windagent_core"
+      - "windagent_orchestration"
+    forbidden_dependencies:
+      - "apps"
+      - "windagent_storage"
+      - "windagent_providers"
+    legacy_source: "apps/backend/workflows/"
+
+  verification:
+    layer: application
+    namespace: windagent_verification
+    path: verification
+    description: "Quality gates, verification runners, test assertion helpers"
+    allowed_dependencies:
+      - "windagent_core"
+    forbidden_dependencies:
+      - "apps"
+      - "windagent_storage"
+    legacy_source: "apps/backend/verification/"
+
+  context:
+    layer: application
+    namespace: windagent_context
+    path: context
+    description: "Context assembly, token budgeting, prompt formatting"
+    allowed_dependencies:
+      - "windagent_core"
+    forbidden_dependencies:
+      - "apps"
+      - "windagent_storage"
+    legacy_source: "apps/backend/services/context_service.py"
+
+  memory:
+    layer: application
+    namespace: windagent_memory
+    path: memory
+    description: "Multi-layered memory, working memory, long-term memory, semantic store — depends on core ports only, not concrete storage"
+    allowed_dependencies:
+      - "windagent_core"
+    forbidden_dependencies:
+      - "apps"
+      - "windagent_providers"
+    legacy_source: "apps/backend/services/memory_service.py"
+
+  execution:
+    layer: infrastructure
+    namespace: windagent_execution
+    path: execution
+    description: "Git worktree isolation, sandbox runtime, subprocess execution"
+    allowed_dependencies:
+      - "windagent_core"
+    forbidden_dependencies:
+      - "apps"
+      - "windagent_orchestration"
+      - "windagent_intelligence"
+    legacy_source: "apps/backend/services/worktree_service.py"
+
+  storage:
+    layer: infrastructure
+    namespace: windagent_storage
+    path: storage
+    description: "Database repositories, ORM mappings, migration adapters, persistent artifact storage — knows only core ports and ORM; NOT providers"
+    allowed_dependencies:
+      - "windagent_core"
+    forbidden_dependencies:
+      - "apps"
+      - "windagent_orchestration"
+      - "windagent_intelligence"
+      - "windagent_providers"
+      - "windagent_workflows"
+      - "windagent_memory"
+      - "windagent_context"
+    legacy_source: "apps/backend/db/"
+
+  observability:
+    layer: infrastructure
+    namespace: windagent_observability
+    path: observability
+    description: "Logging, tracing, metrics, audit trail, cost tracking"
+    allowed_dependencies:
+      - "windagent_core"
+    forbidden_dependencies:
+      - "apps"
+      - "windagent_orchestration"
+      - "windagent_intelligence"
+    legacy_source: "apps/backend/observability/"
+
+  evals:
+    layer: application
+    namespace: windagent_evals
+    path: evals
+    description: "Evaluation benchmarks, model output scoring, regression suites"
+    allowed_dependencies:
+      - "windagent_core"
+      - "windagent_intelligence"
+    forbidden_dependencies:
+      - "apps"
+    legacy_source: "apps/backend/evals/"
+
+  api:
+    layer: app
+    namespace: windagent_api
+    path: apps/api
+    description: "FastAPI REST & WebSocket entrypoint — composition root only; owns HTTP, validation, application service dispatch, realtime, health"
+    allowed_dependencies:
+      - "windagent_core"
+      - "windagent_orchestration"
+      - "windagent_execution"
+      - "windagent_intelligence"
+      - "windagent_providers"
+      - "windagent_tools"
+      - "windagent_workflows"
+      - "windagent_verification"
+      - "windagent_context"
+      - "windagent_memory"
+      - "windagent_plugins"
+      - "windagent_skills"
+      - "windagent_storage"
+      - "windagent_observability"
+    forbidden_dependencies: []
+    legacy_source: "apps/backend/main.py"
+
+  cli:
+    layer: app
+    namespace: windagent_cli
+    path: apps/cli
+    description: "WindAgent CLI entrypoint — composition root only"
+    allowed_dependencies:
+      - "windagent_core"
+      - "windagent_orchestration"
+      - "windagent_intelligence"
+      - "windagent_providers"
+      - "windagent_tools"
+      - "windagent_workflows"
+      - "windagent_storage"
+      - "windagent_observability"
+      - "windagent_plugins"
+      - "windagent_skills"
+    forbidden_dependencies: []
+    legacy_source: "apps/backend/cli.py"
+
+  worker:
+    layer: app
+    namespace: windagent_worker
+    path: apps/worker
+    description: "Background worker process — composition root only; actual execution pipeline, queue polling, provider routing"
+    allowed_dependencies:
+      - "windagent_core"
+      - "windagent_orchestration"
+      - "windagent_execution"
+      - "windagent_providers"
+      - "windagent_tools"
+      - "windagent_intelligence"
+      - "windagent_context"
+      - "windagent_memory"
+      - "windagent_workflows"
+      - "windagent_verification"
+      - "windagent_storage"
+      - "windagent_observability"
+    forbidden_dependencies: []
+    legacy_source: "apps/backend/worker.py"
+
+  plugins:
+    layer: infrastructure
+    namespace: windagent_plugins
+    path: plugins
+    description: "Plugin system — loader, registry, lifecycle, security, manifest"
+    allowed_dependencies:
+      - "windagent_core"
+    forbidden_dependencies:
+      - "apps"
+      - "windagent_orchestration"
+      - "windagent_intelligence"
+      - "windagent_storage"
+    legacy_source: "apps/backend/plugins/"
+
+  skills:
+    layer: application
+    namespace: windagent_skills
+    path: skills
+    description: "Skills system — loader, registry, execution, versioning; depends only on core contracts"
+    allowed_dependencies:
+      - "windagent_core"
+    forbidden_dependencies:
+      - "apps"
+      - "windagent_orchestration"
+      - "windagent_storage"
+      - "windagent_providers"
+    legacy_source: "apps/backend/skills/"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# V3 Violation inventory (for Phase 1 documentation — not yet enforced in code)
+#
+# These are the known baseline violations that must be resolved in Phase 2–3.
+# Recording them here establishes the contract; enforcement comes as each
+# phase drives violations to zero.
+#
+# Violation categories:
+#   CYCLE          — tools → workflows → tools (tools/capture/base.py imports workflows contracts)
+#   LAYER_BREACH   — application → concrete storage (orchestration/memory)
+#   LAYER_BREACH   — infrastructure → infrastructure (storage → providers)
+#   RAM_AUTHORITY  — module-level mutable store in production API routes
+# ─────────────────────────────────────────────────────────────────────────────
+known_baseline_violations:
+  - category: CYCLE
+    from: tools
+    to: workflows
+    files:
+      - tools/windagent_tools/code_video/capture/base.py
+      - tools/windagent_tools/code_video/capture/browser_capture.py
+      - tools/windagent_tools/code_video/capture/studio_capture.py
+    resolution: "Phase 2 — move Scene/Resolution/capture contracts to core/windagent_core/contracts/code_video/"
+    status: RESOLVED
+    resolved_by: "Phase 2 — tools now imports Scene/Resolution/CodeVideoPlan from core; no windagent_workflows references remain under tools/"
+    evidence: "artifacts/architecture_v3/phase_02/phase_verdict.json"
+  - category: LAYER_BREACH
+    from: orchestration
+    to: storage
+    resolution: "Phase 3 — remove direct storage import from orchestration; use repository ports from core"
+  - category: LAYER_BREACH
+    from: memory
+    to: storage
+    resolution: "Phase 3 — remove direct storage import from memory; use repository ports from core"
+  - category: LAYER_BREACH
+    from: storage
+    to: providers
+    resolution: "Phase 3 — remove providers import from storage"
+  - category: RAM_AUTHORITY
+    location: apps/api
+    pattern: "_PROJECTS_STORE, _EPISODES_STORE, idempotency_map"
+    resolution: "Phase 4 — migrate all canonical V3 routes to SQL repository pattern"

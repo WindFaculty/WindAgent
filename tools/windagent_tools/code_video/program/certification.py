@@ -21,7 +21,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence
 
 from windagent_core.errors.exceptions import ValidationError
-from windagent_workflows.code_video.contracts import CodeVideoPlan
+from windagent_core.contracts.code_video import CodeVideoPlan
 from windagent_tools.code_video.media.assembler import CueSheet, MasterAssemblyResult
 from windagent_tools.code_video.qc.engine import MasterVisualQCEngine, MasterVisualQCReport
 

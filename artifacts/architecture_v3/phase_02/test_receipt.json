@@ -1,0 +1,28 @@
+{
+  "argv": [
+    "D:\\code_ca_nhan\\WindAgent\\.venv\\Scripts\\python.exe",
+    "-m",
+    "pytest",
+    "-q",
+    "-p",
+    "no:cacheprovider",
+    "--basetemp",
+    "D:\\code_ca_nhan\\WindAgent\\.tmp\\phase2-gate-8sb5kbtw\\pytest",
+    "tests/architecture/test_architecture_v3_policy.py",
+    "tests/architecture/test_architecture_v3_phase2.py",
+    "tests/contracts/test_code_video_contracts.py",
+    "tests/contracts/test_code_video_replay.py",
+    "tests/contracts/test_code_video_compiler.py",
+    "tests/contracts/test_code_video_capture.py",
+    "tests/contracts/test_code_video_assembly.py",
+    "tests/contracts/test_code_video_qc.py",
+    "tests/contracts/test_code_video_recording.py"
+  ],
+  "completed": true,
+  "executed": true,
+  "exit_code": 0,
+  "started_at": "2026-08-19T13:04:33.043737Z",
+  "status": "PASS",
+  "stderr": "",
+  "stdout": "........................................................................ [ 73%]\n..........................                                               [100%]\n98 passed in 57.22s\n"
+}

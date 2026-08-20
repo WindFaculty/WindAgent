@@ -13,7 +13,7 @@ from windagent_core.contracts.workers.models import WorkSubmission
 from windagent_execution.registry import ExecutionRuntimeRegistry
 from windagent_storage.database.connection import DatabaseManager
 from windagent_storage.orm.models import BaseORM, OutboxRecordORM
-from windagent_storage.orm.v2_orchestration_models import TaskRunORM
+from windagent_storage.orm.v2_orchestration_models import ExecutionLeaseORM, TaskRunORM
 import windagent_storage.orm.v2_orchestration_models  # noqa: F401
 from windagent_storage.queue.submission_adapter import SqlWorkSubmissionAdapter
 from windagent_storage.queue.sql_queue import SqlDurableTaskQueue
@@ -128,6 +128,9 @@ async def test_task_reclaimable_after_lease_expiry(db_manager):
     assert c2.lease_generation == 2
     assert c2.fencing_token != c1.fencing_token
     assert "gen_2" in c2.fencing_token
+    # The reclaim must return the SAME persisted lease identity, never a
+    # freshly generated unused lease ID.
+    assert c2.lease_id == c1.lease_id
 
 
 @pytest.mark.asyncio
@@ -151,7 +154,12 @@ async def test_fencing_token_validation_prevents_stale_renewal(db_manager):
 
 @pytest.mark.asyncio
 async def test_production_worker_durable_tick(db_manager):
-    """ProductionWorker performs poll_and_execute_tick via SqlDurableTaskQueue."""
+    """ProductionWorker performs poll_and_execute_tick via SqlDurableTaskQueue.
+
+    With the SQL UoW finalization enabled, the tick must atomically complete the
+    task AND the exact claimed lease. A fresh session proves the durable state:
+    task completed, exact lease completed with a non-null released_at.
+    """
     submitter = SqlWorkSubmissionAdapter(db_manager.session_factory)
     task_id = await submitter.submit(WorkSubmission(prompt="Worker tick test"))
 
@@ -160,6 +168,7 @@ async def test_production_worker_durable_tick(db_manager):
         name="durable-test-worker",
         task_queue=queue,
         execution_registry=ExecutionRuntimeRegistry(allow_tool_simulation=True),
+        uow_factory=db_manager.session_factory,
     )
     await worker.start()
 
@@ -167,3 +176,18 @@ async def test_production_worker_durable_tick(db_manager):
     assert tick_res["status"] == "completed"
     assert tick_res["task_id"] == task_id
     await worker.stop()
+
+    # Fresh session: the durable finalization committed task + exact lease.
+    async with db_manager.session_factory() as session:
+        task = (
+            await session.execute(select(TaskRunORM).where(TaskRunORM.id == task_id))
+        ).scalar_one()
+        assert task.state == "completed"
+
+        lease = (
+            await session.execute(
+                select(ExecutionLeaseORM).where(ExecutionLeaseORM.run_id == task_id)
+            )
+        ).scalar_one()
+        assert lease.status == "completed"
+        assert lease.released_at is not None

@@ -1,18 +1,20 @@
 /**
- * useSystemMetrics Hook (Phase 6).
- * Manages real-time hardware telemetry via WebSocket with graceful HTTP polling fallback.
+ * useSystemMetrics Hook (Phase 6 & 11).
+ * Manages real-time hardware telemetry via @windagent/realtime with graceful HTTP polling fallback.
  * Strictly zero fake/synthetic numbers.
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import type { SystemMetrics } from '@windagent/api-contracts';
 import { useApiClient } from '../../../api/ApiProvider';
+import { useRealtimeClient } from '../../../realtime/RealtimeProvider';
 import type { SystemMetricHistory } from '../model/types';
 
 const MAX_HISTORY_POINTS = 10;
 
 export function useSystemMetrics(pollIntervalMs: number = 3000) {
   const apiClient = useApiClient();
+  const realtime = useRealtimeClient();
   const [metrics, setMetrics] = useState<SystemMetrics | null>(null);
   const [history, setHistory] = useState<SystemMetricHistory>({
     cpu: [],
@@ -20,12 +22,10 @@ export function useSystemMetrics(pollIntervalMs: number = 3000) {
     gpu: [],
     vram: [],
   });
-  const [isRealtime, setIsRealtime] = useState<boolean>(false);
+  const [isRealtime, setIsRealtime] = useState<boolean>(realtime.getState() === 'CONNECTED');
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isError, setIsError] = useState<boolean>(false);
 
-  const wsRef = useRef<WebSocket | null>(null);
-  const reconnectTimerRef = useRef<any>(null);
   const fallbackTimerRef = useRef<any>(null);
 
   const pushHistorySample = useCallback((m: SystemMetrics) => {
@@ -61,84 +61,38 @@ export function useSystemMetrics(pollIntervalMs: number = 3000) {
   }, [apiClient, pushHistorySample]);
 
   useEffect(() => {
-    let unmounted = false;
-
-    const connectWebSocket = () => {
-      if (unmounted) return;
-
-      try {
-        const protocol = typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const host = typeof window !== 'undefined' && window.location.host ? window.location.host : 'localhost:8000';
-        const wsUrl = `${protocol}//${host}/ws/v3/system/metrics`;
-
-        const ws = new WebSocket(wsUrl);
-        wsRef.current = ws;
-
-        ws.onopen = () => {
-          if (!unmounted) {
-            setIsRealtime(true);
-            setIsError(false);
-          }
-        };
-
-        ws.onmessage = (event) => {
-          if (unmounted) return;
-          try {
-            const data = JSON.parse(event.data);
-            if (data?.payload) {
-              const m = data.payload as SystemMetrics;
-              setMetrics(m);
-              pushHistorySample(m);
-              setIsLoading(false);
-            }
-          } catch {
-            // ignore malformed message
-          }
-        };
-
-        ws.onerror = () => {
-          if (!unmounted) {
-            setIsRealtime(false);
-          }
-        };
-
-        ws.onclose = () => {
-          if (!unmounted) {
-            setIsRealtime(false);
-            // Attempt reconnect in 3s
-            reconnectTimerRef.current = setTimeout(connectWebSocket, 3000);
-          }
-        };
-      } catch {
-        if (!unmounted) {
-          setIsRealtime(false);
-        }
-      }
-    };
-
     // Initial HTTP snapshot for immediate rendering
     fetchHttpSnapshot();
 
-    // Start WebSocket
-    connectWebSocket();
+    const unsubState = realtime.onStateChange((state) => {
+      setIsRealtime(state === 'CONNECTED');
+    });
 
-    // Start polling fallback in case WebSocket is disconnected
+    const unsubEvents = realtime.subscribe<SystemMetrics>(
+      { aggregateType: 'system_metrics' },
+      (envelope) => {
+        if (envelope?.payload) {
+          const m = envelope.payload as unknown as SystemMetrics;
+          setMetrics(m);
+          pushHistorySample(m);
+          setIsLoading(false);
+        }
+      }
+    );
+
+    // Start polling fallback in case WebSocket is disconnected or degraded
     fallbackTimerRef.current = setInterval(() => {
-      if (!isRealtime) {
+      if (realtime.getState() !== 'CONNECTED') {
         fetchHttpSnapshot();
       }
     }, pollIntervalMs);
 
     return () => {
-      unmounted = true;
-      if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
+      unsubState();
+      unsubEvents();
       if (fallbackTimerRef.current) clearInterval(fallbackTimerRef.current);
-      if (wsRef.current) {
-        wsRef.current.close();
-        wsRef.current = null;
-      }
     };
-  }, [fetchHttpSnapshot, isRealtime, pollIntervalMs]);
+  }, [fetchHttpSnapshot, realtime, pollIntervalMs, pushHistorySample]);
 
   return {
     metrics,

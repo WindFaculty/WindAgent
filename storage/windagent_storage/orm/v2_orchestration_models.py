@@ -84,11 +84,12 @@ class ExecutionLeaseORM(BaseORM):
     step_run_id = Column(String(36), ForeignKey("workflow_step_runs.id"), nullable=False)
     run_id = Column(String(36), nullable=False)
     worker_id = Column(String(64), nullable=False)
-    status = Column(String(32), nullable=False, default="active")  # active | expired | released
+    status = Column(String(32), nullable=False, default="active")  # active | expired | released | completed
     expires_at = Column(DateTime, nullable=False)
     idempotency_key = Column(String(128), nullable=False, unique=True)
     lease_generation = Column(Integer, nullable=False, default=1)
     fencing_token = Column(String(128), nullable=True)
+    released_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, nullable=False, default=default_utc_now)
     updated_at = Column(DateTime, nullable=False, default=default_utc_now)
 

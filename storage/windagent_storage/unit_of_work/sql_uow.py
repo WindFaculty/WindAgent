@@ -4,15 +4,20 @@ Implements UnitOfWork core contract port for atomic transactions, repository gro
 """
 
 from __future__ import annotations
-from typing import Any, List, Optional
+import inspect
+from typing import Any, Dict, List, Optional
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from windagent_core.contracts.finalization import (
+    CheckpointHook,
+    FinalizationCheckpoint,
     FinalizeTaskExecutionRequest,
     FinalizeTaskExecutionResult,
 )
 from windagent_core.events.envelope import EventEnvelope
 from windagent_storage.orm.models import OutboxRecordORM
+from windagent_storage.orm.v2_orchestration_models import TaskRunORM, WorkflowStepRunORM
 from windagent_storage.repositories.sql_repositories import (
     SqlSessionRepository,
     SqlWorkflowRepository,
@@ -36,8 +41,13 @@ TaskRunRepository = SqlTaskRunRepository
 
 class SqlUnitOfWork:
     """Concrete SqlUnitOfWork implementing windagent_core.contracts.UnitOfWork protocol."""
-    def __init__(self, session_factory: async_sessionmaker[AsyncSession]):
+    def __init__(
+        self,
+        session_factory: async_sessionmaker[AsyncSession],
+        checkpoint_hook: Optional[CheckpointHook] = None,
+    ):
         self._session_factory = session_factory
+        self._checkpoint_hook = checkpoint_hook
         self.session: Optional[AsyncSession] = None
         
         # Canonical Repositories conforming to core contracts
@@ -85,6 +95,20 @@ class SqlUnitOfWork:
         if self.session:
             await self.session.close()
 
+    async def _checkpoint(self, checkpoint: FinalizationCheckpoint) -> None:
+        """Internal Phase 5A crash-gate seam used by the storage finalizer.
+
+        With no hook configured this is a strict no-op (zero overhead and
+        identical behavior to pre-Phase-5A construction). A configured hook may
+        be synchronous or asynchronous; both shapes are awaited/handled here.
+        """
+        hook = self._checkpoint_hook
+        if hook is None:
+            return
+        result = hook(checkpoint)
+        if inspect.isawaitable(result):
+            await result
+
     async def record_outbox_event(self, event: EventEnvelope) -> None:
         """Records an event in both EventStore and Outbox within the current transaction."""
         if not self.session:
@@ -93,8 +117,69 @@ class SqlUnitOfWork:
         # 1. Append to EventStore
         await self.events.append(event)
 
+        # Phase 5A crash gate: after the domain event-store append and before
+        # the corresponding outbox write. A crash here must roll back both.
+        await self._checkpoint(FinalizationCheckpoint.AFTER_EVENT_WRITE)
+
         # 2. Append to Transactional Outbox
         await self.outbox.write(event)
+
+    async def list_non_terminal_task_runs(self, batch_size: int) -> List[Dict[str, Any]]:
+        """Return non-terminal task runs as plain dicts (recovery scans)."""
+        if self.session is None:
+            return []
+        stmt = (
+            select(TaskRunORM)
+            .where(TaskRunORM.state.notin_(["completed", "failed", "cancelled"]))
+            .limit(batch_size)
+        )
+        res = await self.session.execute(stmt)
+        rows = res.scalars().all()
+        return [
+            {
+                "id": row.id,
+                "state": row.state,
+                "version": row.version,
+                "session_id": row.session_id,
+                "project_id": row.project_id,
+            }
+            for row in rows
+        ]
+
+    async def list_in_flight_steps(self, batch_size: int) -> List[Dict[str, Any]]:
+        """Return in-flight workflow step runs as plain dicts (recovery scans)."""
+        if self.session is None:
+            return []
+        stmt = (
+            select(WorkflowStepRunORM)
+            .where(WorkflowStepRunORM.state.in_(["running", "dispatched", "retry_wait"]))
+            .limit(batch_size)
+        )
+        res = await self.session.execute(stmt)
+        rows = res.scalars().all()
+        return [
+            {
+                "id": row.id,
+                "state": row.state,
+                "tool_name": row.tool_name,
+                "error": row.error,
+                "workflow_run_id": row.workflow_run_id,
+            }
+            for row in rows
+        ]
+
+    async def set_step_state(
+        self, step_id: str, state: str, error: Optional[str] = None
+    ) -> None:
+        """Persist a reconciled workflow step state (recovery scans)."""
+        if self.session is None:
+            return
+        row = await self.session.get(WorkflowStepRunORM, step_id)
+        if row is None:
+            return
+        row.state = state
+        if error is not None:
+            row.error = error
 
     async def finalize_task_execution(
         self, request: FinalizeTaskExecutionRequest

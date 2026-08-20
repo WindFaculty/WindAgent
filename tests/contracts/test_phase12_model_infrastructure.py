@@ -17,11 +17,6 @@ from fastapi.testclient import TestClient
 from windagent_api.main import app
 
 
-@pytest.fixture
-def client():
-    return TestClient(app)
-
-
 # ─────────────────────────────────────────────────────────────────────────────
 # Phase 12.2 — Models API
 # ─────────────────────────────────────────────────────────────────────────────

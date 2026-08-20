@@ -15,7 +15,7 @@
       "take_id": "S01_T01",
       "duration_ms": 25000,
       "frame_count": 750,
-      "output_hash": "2bbdd94292697e8b9e9c610bbb2fda1ca5b50c43c54408d58e9725287533eb11",
+      "output_hash": "0831c709bea9a3b20b8b70449c49878af75e51af2f35b8da38df696c29a5b78e",
       "status": "VERIFIED",
       "audio_enabled": false
     },
@@ -24,7 +24,7 @@
       "take_id": "S02_T01",
       "duration_ms": 25000,
       "frame_count": 750,
-      "output_hash": "0429d9d80a142c95b114fcb9a3ddcb41dcd5859936d718c36488ed1868a7d720",
+      "output_hash": "eba88c86da111eb3291e2fb8b9df9d9bc33bac656ed89caa48810b6f24121e0e",
       "status": "VERIFIED",
       "audio_enabled": false
     },
@@ -33,7 +33,7 @@
       "take_id": "S03_T01",
       "duration_ms": 35000,
       "frame_count": 1050,
-      "output_hash": "276b11db8b9114b90b8ab4abec08583cc9bc68df5905c1d44bff682c84d3e8e0",
+      "output_hash": "4c3f2df6dee8de04425a4688359ea46ee0fccd80f7563780682229a4c0a2073b",
       "status": "VERIFIED",
       "audio_enabled": false
     },
@@ -42,7 +42,7 @@
       "take_id": "S04_T01",
       "duration_ms": 45000,
       "frame_count": 1350,
-      "output_hash": "7fbe4e638f7d9b610ff575ba2377fb5fd31391c68cbc0ad7c47f49e68283f09b",
+      "output_hash": "cc439f2986bd9134756c3c160c4454c86a490dffbd2df78bc3df1a2ac59bbf7d",
       "status": "VERIFIED",
       "audio_enabled": false
     },
@@ -51,7 +51,7 @@
       "take_id": "S05_T01",
       "duration_ms": 35000,
       "frame_count": 1050,
-      "output_hash": "508fdc23844c0c6abdda61d28d8a587a903e63b43a8b4d400d3e0a2cb0727ea8",
+      "output_hash": "770807490afdc71b00d6ab50c1e5fc4dd9e69c563746a92836ddef483c1651a5",
       "status": "VERIFIED",
       "audio_enabled": false
     },
@@ -60,7 +60,7 @@
       "take_id": "S06_T01",
       "duration_ms": 55000,
       "frame_count": 1650,
-      "output_hash": "a22811fa5467d187b8201ecb94187b59155027ca03bba0e6e8c257d308c2cacd",
+      "output_hash": "1409dcfcb9d0ca8edbf8d7741798cc83e6df8a314537676124b1311829797bb0",
       "status": "VERIFIED",
       "audio_enabled": false
     },
@@ -69,7 +69,7 @@
       "take_id": "S07_T01",
       "duration_ms": 55000,
       "frame_count": 1650,
-      "output_hash": "e456cfcd9c9dbf6ce23f6e989c49f1d63788e37f59b02ca5717742bb812c5123",
+      "output_hash": "e48fb6c9c1998a03135a6610b7bc766ffda993eaac168647ce2265a124816e5b",
       "status": "VERIFIED",
       "audio_enabled": false
     },
@@ -78,7 +78,7 @@
       "take_id": "S08_T01",
       "duration_ms": 85000,
       "frame_count": 2550,
-      "output_hash": "9af3c3d2f6c578fc11fa54bd9114f29d53a380dcb43c1a891f3df8c2ca7cfb1a",
+      "output_hash": "ce25b53678f85ce8b49a0a0dd91ef60b39802afb3f7f392babf6e49aabcaded9",
       "status": "VERIFIED",
       "audio_enabled": false
     },
@@ -87,7 +87,7 @@
       "take_id": "S09_T01",
       "duration_ms": 50000,
       "frame_count": 1500,
-      "output_hash": "27b822e7ca188726bc89df8b3273d49e3cd69e56884ee5b633f2469f47956719",
+      "output_hash": "eb0ac44637678804680478279ebc91100accff4ab3397038db15a50287e87bf3",
       "status": "VERIFIED",
       "audio_enabled": false
     },
@@ -96,7 +96,7 @@
       "take_id": "S10_T01",
       "duration_ms": 95000,
       "frame_count": 2850,
-      "output_hash": "8d729f4d6b0faa93666dcbc1accc724492dc1cf4c4cd2e28debf7f075b7bc705",
+      "output_hash": "b630e8d65404c752f1382d8defef846c70b06057d4eaedf5588293005e51b2bc",
       "status": "VERIFIED",
       "audio_enabled": false
     },
@@ -105,7 +105,7 @@
       "take_id": "S11_T01",
       "duration_ms": 35000,
       "frame_count": 1050,
-      "output_hash": "77ae35013e81ae90f5587b5761eb64868cebe7fa0177334e595b4e6ebe56e8b5",
+      "output_hash": "4749c8cdb99525e48b4b592e7491a85c736865784eef77cf9984fbe85cc871ac",
       "status": "VERIFIED",
       "audio_enabled": false
     },
@@ -114,7 +114,7 @@
       "take_id": "S12_T01",
       "duration_ms": 75000,
       "frame_count": 2250,
-      "output_hash": "591fbff2e4613d0328beb063784c0090bed332c234564bb6c311f93c800ad4ab",
+      "output_hash": "275faad00c0d6d08f3cb074abc8b8f798859220ab2af507ed898736da5a77375",
       "status": "VERIFIED",
       "audio_enabled": false
     },
@@ -123,7 +123,7 @@
       "take_id": "S13_T01",
       "duration_ms": 50000,
       "frame_count": 1500,
-      "output_hash": "b9f171ffafa099966abc244f84ae6262b2d8fe873acecad2f01f56025f6ee610",
+      "output_hash": "eb2e5d19a20cc98c947a9cea552a4f0a26ed77e7d8dd702e74494caa0848b5ae",
       "status": "VERIFIED",
       "audio_enabled": false
     },
@@ -132,7 +132,7 @@
       "take_id": "S14_T01",
       "duration_ms": 55000,
       "frame_count": 1650,
-      "output_hash": "2e648bd3f438f3b7c5ac23ff4af11d9b2ac49e4bd859812e87543d2b129f6a33",
+      "output_hash": "4db9ac81c3a48e085a0527b4aa12bdfcb8843390d1674ca704499f5e10930076",
       "status": "VERIFIED",
       "audio_enabled": false
     },
@@ -141,7 +141,7 @@
       "take_id": "S15_T01",
       "duration_ms": 80000,
       "frame_count": 2400,
-      "output_hash": "450a79e7357c29638bb58685520e5cfb0480dc6217b5177d4730b2227e94d14a",
+      "output_hash": "d0775b1e85ce53c6edf160c628d8fa1c2c489a63487e8718d4f5076c89e99721",
       "status": "VERIFIED",
       "audio_enabled": false
     },
@@ -150,7 +150,7 @@
       "take_id": "S16_T01",
       "duration_ms": 50000,
       "frame_count": 1500,
-      "output_hash": "37d8675566f49fefc1fa50161b65a10dbc7f14ae196ac10fd0b25373b667089c",
+      "output_hash": "a497c1e9d9f63708455cf25c7f486db6b952cc8399e94f16acaa777bd53da73d",
       "status": "VERIFIED",
       "audio_enabled": false
     },
@@ -159,7 +159,7 @@
       "take_id": "S17_T01",
       "duration_ms": 50000,
       "frame_count": 1500,
-      "output_hash": "ff5778eb085734a046b75bd3157717aa4030b6d49fe26d1faf7aee08108c4f8a",
+      "output_hash": "23f804cfdea3fe0eed0ad0b9cabdd00638c2f8e0dc53ded49312316758c998bb",
       "status": "VERIFIED",
       "audio_enabled": false
     },
@@ -168,7 +168,7 @@
       "take_id": "S18_T01",
       "duration_ms": 35000,
       "frame_count": 1050,
-      "output_hash": "53d6e253930c3a32aa9a355298d7cf85ec413367a22ee8f346b7bf95d2effc58",
+      "output_hash": "0a88e937442ea065b50fbc0b50e58c42968840f08b81879fe338b6971b67826a",
       "status": "VERIFIED",
       "audio_enabled": false
     },
@@ -177,10 +177,10 @@
       "take_id": "S19_T01",
       "duration_ms": 40000,
       "frame_count": 1200,
-      "output_hash": "9f94f3f3ebde623b9fd9821c19acad3d077339a8e09a56528e5f3a51e8fcbd0e",
+      "output_hash": "c4d207b586b0ba0f3bbd7f02adcfbcb82afeabe95bef13afe75ad24db7ed6ea9",
       "status": "VERIFIED",
       "audio_enabled": false
     }
   ],
-  "composite_manifest_hash": "ce2ac4c0b8846d0e0339e43d6acf60e0e37d27e50083932c7fbd933768dad3eb"
+  "composite_manifest_hash": "b7496e566877bc2676bd05216dda690a2e183c41ddb391dc3eb02cb7fd197429"
 }

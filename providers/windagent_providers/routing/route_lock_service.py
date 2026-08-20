@@ -152,6 +152,12 @@ class RouteLockService:
     def is_durable(self) -> bool:
         return self._durable
 
+    @property
+    def current_ruleset(self) -> RoutingRuleSet:
+        """Return the currently active ruleset (the rebuildable runtime projection)."""
+        with self._mutex:
+            return self._ruleset
+
     def record_attempt(
         self,
         lock_id: str,
@@ -411,6 +417,18 @@ class RouteLockService:
                 canonical_model_id=canonical_model_id,
             )
             self._emit(lock_event)
+            self._audit(
+                action="select",
+                scope_type=context.scope_type,
+                scope_id=context.scope_id,
+                lock_id=record.lock_id,
+                canonical_model_id=canonical_model_id,
+                reason=matched_rule.description,
+                metadata={
+                    "rule_id": matched_rule.rule_id,
+                    "rule_version": matched_rule.rule_version,
+                },
+            )
         return record
 
     def _emit_reuse_event(self, record: RouteLockRecord, context: RuleMatchContext) -> None:

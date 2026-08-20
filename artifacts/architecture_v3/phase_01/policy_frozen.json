@@ -1,0 +1,155 @@
+{
+  "architecture_verdict": "FAIL",
+  "artifacts": {
+    "boundary_report": {
+      "path": "artifacts/architecture_v3/phase_01/v3_boundary_report.json",
+      "sha256": "f7cd891b09386cd76e876f0e84a6c4ea9cbcf6d73abd21bae85236809e2d6992"
+    },
+    "import_graph": {
+      "path": "artifacts/architecture_v3/phase_01/v3_import_graph.json",
+      "sha256": "fd2bdd4f4b0f1688324f99b74400fce6748b5d693517c4cd08463d01cc63dc3b"
+    },
+    "test_receipt": {
+      "path": "artifacts/architecture_v3/phase_01/test_receipt.json",
+      "sha256": "d01381a788fc063213a85ad3a2d04bf5a684146c6882985dc0a9f4b1af647cc1"
+    }
+  },
+  "baseline_branch": "refactor/architecture-v3-hardening",
+  "baseline_commit": "ac61c38cdca90100a14ec0ea26c4d19c35f7caa4",
+  "checker": {
+    "completed": true,
+    "executed": true,
+    "exit_code": 1
+  },
+  "frozen": true,
+  "gate": "ARCH_V3_POLICY_FROZEN",
+  "gate_verdict": "PASS",
+  "generated_at": "2026-08-19T11:30:42.628580Z",
+  "inputs": {
+    "checker_core": {
+      "path": "scripts/check_architecture_imports.py",
+      "sha256": "38c41610a5447fc22045728a6245d4421b7723cf1577b5ec9a7ad02ccfdffccc"
+    },
+    "checker_entry": {
+      "path": "scripts/check_architecture_v3.py",
+      "sha256": "5986f1fcc6b4a2e0c8e56817e8e8a2f8eae959b38fcf1a4f404e3f1a230caea8"
+    },
+    "policy": {
+      "path": "configs/architecture/scaffold_v3.yaml",
+      "sha256": "e40fcc7e07e3eee8ab41f8d881ffe65792ef356f772abcf175d35503d78d6b14"
+    },
+    "policy_tests": [
+      {
+        "path": "tests/architecture/test_architecture_policy.py",
+        "sha256": "f906c02e201fd5376411e14ee0a0d60830d702bd1a9aed5843d57660eac77645"
+      },
+      {
+        "path": "tests/architecture/test_architecture_v3_policy.py",
+        "sha256": "b08e058b3a44dd8a08273266790cacceb98b03e8f34b996260699f80657594d3"
+      }
+    ],
+    "producer": {
+      "path": "scripts/freeze_architecture_v3_policy.py",
+      "sha256": "82564d5a69c88cba04ae438f661b273fef0ced79daaab6d71493cdf3639cdb35"
+    }
+  },
+  "note": "Phase 1 freezes policy and the content-addressed violation inventory. Zero violations are intentionally deferred to their owning repair phases.",
+  "phase": "phase_01",
+  "required_capabilities": {
+    "application_to_infrastructure": true,
+    "concrete_adapter_outside_composition": true,
+    "core_framework_import": true,
+    "cross_app_import": true,
+    "dependency_cycle": true,
+    "infrastructure_to_application": true,
+    "legacy_runtime_authority": true,
+    "module_level_mutable_production_store": true,
+    "production_test_fallback": true,
+    "undeclared_dependency": true
+  },
+  "schema_version": 2,
+  "source_snapshot": {
+    "checked_source_file_count": 915,
+    "checked_source_sha256": "729e356802ed4c25d5984a7d704fc0c79279b9da91e34c1a6d248163b8a6e393",
+    "dirty_entry_count": 158,
+    "git_status_sha256": "a7906da362bfb9de36c1e17a3153f9be17c78cb07f52c26aba302515d44b4a7a",
+    "mode": "content_addressed_worktree",
+    "worktree_dirty": true
+  },
+  "tests": {
+    "exit_code": 0,
+    "files": [
+      "tests/architecture/test_architecture_policy.py",
+      "tests/architecture/test_architecture_v3_policy.py"
+    ],
+    "status": "PASS"
+  },
+  "total_violations": 220,
+  "v3_new_rules_reporting": {
+    "application_direct_storage_import": 18,
+    "concrete_adapter_outside_composition": 26,
+    "infrastructure_to_application_import": 27,
+    "legacy_runtime_authority": 0,
+    "module_level_mutable_production_store": 4,
+    "storage_to_provider_import": 10
+  },
+  "validation": {
+    "all_required_capabilities_enabled": true,
+    "baseline_frozen": true,
+    "checker_completed": true,
+    "checker_returned_policy_result": true,
+    "composition_roots_are_scoped": true,
+    "graph_covers_workspace": true,
+    "policy_tests_pass": true,
+    "report_count_consistent": true,
+    "report_status_valid": true,
+    "workspace_matrix_matches": true
+  },
+  "violations_by_rule": [
+    {
+      "count": 54,
+      "rule": "forbidden_import"
+    },
+    {
+      "count": 50,
+      "rule": "disallowed_dependency"
+    },
+    {
+      "count": 27,
+      "rule": "infrastructure_to_application_import"
+    },
+    {
+      "count": 27,
+      "rule": "undeclared_workspace_dependency"
+    },
+    {
+      "count": 26,
+      "rule": "concrete_adapter_outside_composition"
+    },
+    {
+      "count": 18,
+      "rule": "application_direct_storage_import"
+    },
+    {
+      "count": 10,
+      "rule": "storage_to_provider_import"
+    },
+    {
+      "count": 4,
+      "rule": "module_level_mutable_production_store"
+    },
+    {
+      "count": 2,
+      "rule": "dependency_cycle"
+    },
+    {
+      "count": 1,
+      "rule": "private_cross_package_import"
+    },
+    {
+      "count": 1,
+      "rule": "public_api_leakage"
+    }
+  ],
+  "zero_violations_required": false
+}

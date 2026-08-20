@@ -1,15 +1,22 @@
 """
 V3 Projects and Episodes Router — Canonical project management authority.
 Provides CRUD operations, optimistic locking, and episode hierarchy with idempotency keys.
+
+Phase 4: all mutable state is persisted through the namespaced durable V3
+resource authority (Router -> Application Service -> Core Port -> SQL
+Repository -> Unit of Work). No module-level RAM stores.
 """
 
 from __future__ import annotations
 import uuid
 from typing import Any, Dict, List, Optional
-from fastapi import APIRouter, Header, HTTPException, Path, Query, status
+from fastapi import APIRouter, Depends, Header, HTTPException, Path, Query, status
 from pydantic import BaseModel, Field
 
 from windagent_core.domain.lifecycle import utc_now
+from windagent_api.dependencies import get_v3_resource_service
+from windagent_api.services.v3_resource_service import V3ResourceService
+from windagent_api.services.v3_demo_seed import NS_PROJECTS, NS_EPISODES
 
 router = APIRouter(prefix="/api/v3/projects", tags=["Projects V3"])
 
@@ -69,111 +76,30 @@ class EpisodeListResponse(BaseModel):
     page_info: PageInfo
 
 
-# In-memory storage seeded with starter projects
-_PROJECTS_STORE: Dict[str, Dict[str, Any]] = {
-    "proj-cyberpunk-01": {
-        "id": "proj-cyberpunk-01",
-        "name": "Cyberpunk Odyssey 2099",
-        "description": "Vũ trụ siêu đô thị ngầm tương lai nơi các hacker và cyborg tìm kiếm ký ức đã mất.",
-        "version": 1,
-        "episodes_count": 3,
-        "created_at": "2026-08-01T08:00:00Z",
-        "updated_at": "2026-08-10T12:00:00Z",
-        "metadata": {"genre": "Cyberpunk / Sci-Fi", "accent": "#38bdf8"},
-    },
-    "proj-fantasy-02": {
-        "id": "proj-fantasy-02",
-        "name": "Biên Niên Sử Vùng Đất Rồng",
-        "description": "Cuộc phiêu lưu huyền ảo qua các vương quốc cổ đại nhằm khôi phục viên ngọc nguyên tố.",
-        "version": 1,
-        "episodes_count": 2,
-        "created_at": "2026-08-05T09:30:00Z",
-        "updated_at": "2026-08-12T14:15:00Z",
-        "metadata": {"genre": "High Fantasy / Adventure", "accent": "#34d399"},
-    },
-    "proj-noir-03": {
-        "id": "proj-noir-03",
-        "name": "Thám Tử Đêm Sương Mù",
-        "description": "Những vụ án bí ẩn tại thành phố cảng những năm 1940 với các âm mưu ngầm.",
-        "version": 1,
-        "episodes_count": 1,
-        "created_at": "2026-08-08T11:00:00Z",
-        "updated_at": "2026-08-13T16:45:00Z",
-        "metadata": {"genre": "Drama / Mystery Noir", "accent": "#fbbf24"},
-    },
-}
+def _project_to_resource(p: Dict[str, Any]) -> ProjectResource:
+    return ProjectResource(
+        id=p["id"],
+        name=p["name"],
+        description=p.get("description"),
+        version=p.get("version", 1),
+        episodes_count=p.get("episodes_count", 0),
+        created_at=p.get("created_at", ""),
+        updated_at=p.get("updated_at", ""),
+        metadata=p.get("metadata", {}),
+    )
 
-_EPISODES_STORE: Dict[str, List[Dict[str, Any]]] = {
-    "proj-cyberpunk-01": [
-        {
-            "id": "ep-cb-001",
-            "project_id": "proj-cyberpunk-01",
-            "title": "Tập 01: Mã Nguồn Thức Tỉnh",
-            "episode_number": 1,
-            "state": "SCREENPLAY",
-            "version": 1,
-            "created_at": "2026-08-01T08:30:00Z",
-            "updated_at": "2026-08-04T10:00:00Z",
-        },
-        {
-            "id": "ep-cb-002",
-            "project_id": "proj-cyberpunk-01",
-            "title": "Tập 02: Mê Cung Neon",
-            "episode_number": 2,
-            "state": "OUTLINE",
-            "version": 1,
-            "created_at": "2026-08-05T08:30:00Z",
-            "updated_at": "2026-08-08T10:00:00Z",
-        },
-        {
-            "id": "ep-cb-003",
-            "project_id": "proj-cyberpunk-01",
-            "title": "Tập 03: Tín Hiệu Cuối Cùng",
-            "episode_number": 3,
-            "state": "DRAFT",
-            "version": 1,
-            "created_at": "2026-08-10T08:30:00Z",
-            "updated_at": "2026-08-10T12:00:00Z",
-        },
-    ],
-    "proj-fantasy-02": [
-        {
-            "id": "ep-ft-001",
-            "project_id": "proj-fantasy-02",
-            "title": "Tập 01: Tiếng Gọi Rừng Thiêng",
-            "episode_number": 1,
-            "state": "SCREENPLAY",
-            "version": 1,
-            "created_at": "2026-08-05T10:00:00Z",
-            "updated_at": "2026-08-08T11:00:00Z",
-        },
-        {
-            "id": "ep-ft-002",
-            "project_id": "proj-fantasy-02",
-            "title": "Tập 02: Hẻm Núi Gió Hú",
-            "episode_number": 2,
-            "state": "DRAFT",
-            "version": 1,
-            "created_at": "2026-08-12T10:00:00Z",
-            "updated_at": "2026-08-12T14:15:00Z",
-        },
-    ],
-    "proj-noir-03": [
-        {
-            "id": "ep-nr-001",
-            "project_id": "proj-noir-03",
-            "title": "Tập 01: Vết Bóng Trên Cầu Cảng",
-            "episode_number": 1,
-            "state": "DRAFT",
-            "version": 1,
-            "created_at": "2026-08-08T11:30:00Z",
-            "updated_at": "2026-08-13T16:45:00Z",
-        },
-    ],
-}
 
-_IDEMPOTENCY_KEYS_PROJECTS: Dict[str, str] = {}
-_IDEMPOTENCY_KEYS_EPISODES: Dict[str, str] = {}
+def _episode_to_resource(e: Dict[str, Any]) -> EpisodeResource:
+    return EpisodeResource(
+        id=e["id"],
+        project_id=e["project_id"],
+        title=e["title"],
+        episode_number=e.get("episode_number", 1),
+        state=e.get("state", "DRAFT"),
+        version=e.get("version", 1),
+        created_at=e.get("created_at", ""),
+        updated_at=e.get("updated_at", ""),
+    )
 
 
 @router.get("", response_model=ProjectListResponse, operation_id="projects.list")
@@ -182,9 +108,10 @@ async def list_projects(
     genre: Optional[str] = Query(None, description="Filter by genre"),
     cursor: Optional[str] = Query(None, description="Pagination cursor"),
     limit: int = Query(50, ge=1, le=200, description="Items limit"),
+    service: V3ResourceService = Depends(get_v3_resource_service),
 ) -> ProjectListResponse:
     """List all projects in workspace with optional search filtering."""
-    projects_list = list(_PROJECTS_STORE.values())
+    projects_list = await service.list(NS_PROJECTS)
 
     if search:
         s = search.lower()
@@ -196,7 +123,7 @@ async def list_projects(
     # Sort newest first
     projects_list.sort(key=lambda x: x.get("updated_at", ""), reverse=True)
 
-    items = [ProjectResource(**p) for p in projects_list[:limit]]
+    items = [_project_to_resource(p) for p in projects_list[:limit]]
     return ProjectListResponse(
         items=items,
         page_info=PageInfo(next_cursor=None, has_more=False),
@@ -207,12 +134,13 @@ async def list_projects(
 async def create_project(
     body: CreateProjectRequest,
     idempotency_key: Optional[str] = Header(None, alias="Idempotency-Key"),
+    service: V3ResourceService = Depends(get_v3_resource_service),
 ) -> ProjectResource:
     """Create a new project. Supports idempotent submission via Idempotency-Key header."""
-    if idempotency_key and idempotency_key in _IDEMPOTENCY_KEYS_PROJECTS:
-        existing_id = _IDEMPOTENCY_KEYS_PROJECTS[idempotency_key]
-        if existing_id in _PROJECTS_STORE:
-            return ProjectResource(**_PROJECTS_STORE[existing_id])
+    if idempotency_key:
+        existing = await service.find_by_idempotency(NS_PROJECTS, idempotency_key)
+        if existing is not None:
+            return _project_to_resource(existing)
 
     now_iso = utc_now().isoformat()
     project_id = f"proj-{uuid.uuid4().hex[:8]}"
@@ -225,15 +153,11 @@ async def create_project(
         "id": project_id,
         "name": body.name,
         "description": body.description,
-        "version": 1,
         "episodes_count": 0,
+        "metadata": metadata,
         "created_at": now_iso,
         "updated_at": now_iso,
-        "metadata": metadata,
     }
-
-    _PROJECTS_STORE[project_id] = new_project
-    _EPISODES_STORE[project_id] = []
 
     # If initial episode specified, create Episode 1
     if body.initial_episode_title:
@@ -244,27 +168,26 @@ async def create_project(
             "title": body.initial_episode_title,
             "episode_number": 1,
             "state": "DRAFT",
-            "version": 1,
             "created_at": now_iso,
             "updated_at": now_iso,
         }
-        _EPISODES_STORE[project_id].append(initial_ep)
+        await service.create(NS_EPISODES, ep_id, initial_ep)
         new_project["episodes_count"] = 1
 
-    if idempotency_key:
-        _IDEMPOTENCY_KEYS_PROJECTS[idempotency_key] = project_id
-
-    return ProjectResource(**new_project)
+    created = await service.create(NS_PROJECTS, project_id, new_project, idempotency_key)
+    return _project_to_resource(created)
 
 
 @router.get("/{project_id}", response_model=ProjectResource, operation_id="projects.get")
 async def get_project(
     project_id: str = Path(..., description="Project ID"),
+    service: V3ResourceService = Depends(get_v3_resource_service),
 ) -> ProjectResource:
     """Retrieve details of a specific project."""
-    if project_id not in _PROJECTS_STORE:
+    project = await service.get(NS_PROJECTS, project_id)
+    if project is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Project '{project_id}' not found.")
-    return ProjectResource(**_PROJECTS_STORE[project_id])
+    return _project_to_resource(project)
 
 
 @router.patch("/{project_id}", response_model=ProjectResource, operation_id="projects.update")
@@ -272,12 +195,12 @@ async def update_project(
     project_id: str = Path(..., description="Project ID"),
     body: UpdateProjectRequest = ...,
     idempotency_key: Optional[str] = Header(None, alias="Idempotency-Key"),
+    service: V3ResourceService = Depends(get_v3_resource_service),
 ) -> ProjectResource:
     """Update project title or description with optimistic concurrency check."""
-    if project_id not in _PROJECTS_STORE:
+    curr = await service.get(NS_PROJECTS, project_id)
+    if curr is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Project '{project_id}' not found.")
-
-    curr = _PROJECTS_STORE[project_id]
 
     if curr["version"] != body.expected_version:
         raise HTTPException(
@@ -285,29 +208,34 @@ async def update_project(
             detail=f"Stale version conflict for project '{project_id}'. Expected {curr['version']}, got {body.expected_version}.",
         )
 
+    updates = dict(curr)
     if body.name is not None:
-        curr["name"] = body.name
+        updates["name"] = body.name
     if body.description is not None:
-        curr["description"] = body.description
+        updates["description"] = body.description
+    updates["updated_at"] = utc_now().isoformat()
 
-    curr["version"] += 1
-    curr["updated_at"] = utc_now().isoformat()
-
-    return ProjectResource(**curr)
+    updated = await service.update(NS_PROJECTS, project_id, updates, body.expected_version)
+    if updated is None:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f"Stale version conflict for project '{project_id}'.")
+    return _project_to_resource(updated)
 
 
 @router.get("/{project_id}/episodes", response_model=EpisodeListResponse, operation_id="episodes.listForProject")
 async def list_episodes_for_project(
     project_id: str = Path(..., description="Project ID"),
+    service: V3ResourceService = Depends(get_v3_resource_service),
 ) -> EpisodeListResponse:
     """List all episodes belonging to a project."""
-    if project_id not in _PROJECTS_STORE:
+    project = await service.get(NS_PROJECTS, project_id)
+    if project is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Project '{project_id}' not found.")
 
-    episodes_list = _EPISODES_STORE.get(project_id, [])
+    episodes_list = await service.list(NS_EPISODES)
+    episodes_list = [e for e in episodes_list if e.get("project_id") == project_id]
     episodes_list.sort(key=lambda e: e.get("episode_number", 1))
 
-    items = [EpisodeResource(**e) for e in episodes_list]
+    items = [_episode_to_resource(e) for e in episodes_list]
     return EpisodeListResponse(
         items=items,
         page_info=PageInfo(next_cursor=None, has_more=False),
@@ -319,21 +247,23 @@ async def create_episode_for_project(
     project_id: str = Path(..., description="Project ID"),
     body: CreateEpisodeRequest = ...,
     idempotency_key: Optional[str] = Header(None, alias="Idempotency-Key"),
+    service: V3ResourceService = Depends(get_v3_resource_service),
 ) -> EpisodeResource:
     """Create a new episode in a project."""
-    if project_id not in _PROJECTS_STORE:
+    project = await service.get(NS_PROJECTS, project_id)
+    if project is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Project '{project_id}' not found.")
 
-    if idempotency_key and idempotency_key in _IDEMPOTENCY_KEYS_EPISODES:
-        existing_id = _IDEMPOTENCY_KEYS_EPISODES[idempotency_key]
-        for ep in _EPISODES_STORE.get(project_id, []):
-            if ep["id"] == existing_id:
-                return EpisodeResource(**ep)
+    if idempotency_key:
+        existing = await service.find_by_idempotency(NS_EPISODES, idempotency_key)
+        if existing is not None:
+            return _episode_to_resource(existing)
 
     now_iso = utc_now().isoformat()
     ep_id = f"ep-{uuid.uuid4().hex[:8]}"
 
-    existing_episodes = _EPISODES_STORE.get(project_id, [])
+    existing_episodes = await service.list(NS_EPISODES)
+    existing_episodes = [e for e in existing_episodes if e.get("project_id") == project_id]
     next_num = body.episode_number or (len(existing_episodes) + 1)
 
     new_episode = {
@@ -342,19 +272,16 @@ async def create_episode_for_project(
         "title": body.title,
         "episode_number": next_num,
         "state": "DRAFT",
-        "version": 1,
         "created_at": now_iso,
         "updated_at": now_iso,
     }
 
-    if project_id not in _EPISODES_STORE:
-        _EPISODES_STORE[project_id] = []
-    _EPISODES_STORE[project_id].append(new_episode)
+    created = await service.create(NS_EPISODES, ep_id, new_episode, idempotency_key)
 
-    _PROJECTS_STORE[project_id]["episodes_count"] = len(_EPISODES_STORE[project_id])
-    _PROJECTS_STORE[project_id]["updated_at"] = now_iso
+    # Update project episode count
+    project_updates = dict(project)
+    project_updates["episodes_count"] = len(existing_episodes) + 1
+    project_updates["updated_at"] = now_iso
+    await service.update(NS_PROJECTS, project_id, project_updates, project["version"])
 
-    if idempotency_key:
-        _IDEMPOTENCY_KEYS_EPISODES[idempotency_key] = ep_id
-
-    return EpisodeResource(**new_episode)
+    return _episode_to_resource(created)

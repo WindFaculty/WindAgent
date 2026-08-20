@@ -6,7 +6,29 @@ Defines atomic task execution finalization data structures, exceptions, and port
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Protocol, runtime_checkable
+from enum import Enum
+from typing import Any, Callable, Dict, List, Optional, Protocol, runtime_checkable
+
+
+class FinalizationCheckpoint(str, Enum):
+    """Canonical transaction checkpoints for atomic task finalization (Phase 5A).
+
+    The values define the exact crash-gate seam the storage finalizer fires
+    against the real transaction boundary. Ordering matters: a happy-path run
+    must observe ``before_write`` -> ``after_state_write`` ->
+    ``after_event_write`` -> ``before_commit`` -> ``after_commit``.
+    """
+
+    BEFORE_WRITE = "before_write"
+    AFTER_STATE_WRITE = "after_state_write"
+    AFTER_EVENT_WRITE = "after_event_write"
+    BEFORE_COMMIT = "before_commit"
+    AFTER_COMMIT = "after_commit"
+
+
+# A checkpoint hook may be synchronous (returns None) or asynchronous (returns
+# an awaitable). The SqlUnitOfWork checkpoint seam handles both shapes.
+CheckpointHook = Callable[[FinalizationCheckpoint], Any]
 
 
 class StaleResultRejectedError(Exception):

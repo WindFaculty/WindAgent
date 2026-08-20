@@ -18,7 +18,9 @@ from windagent_api.main import app
 
 
 @pytest.fixture
-def client():
+def client(monkeypatch):
+    # Explicitly enable the demo profile (Phase 4: demo seeding is opt-in).
+    monkeypatch.setenv("WINDAGENT_PROFILE", "demo")
     # Pre-build the fallback DB container OUTSIDE the TestClient event loop
     # (db upgrade needs a fresh loop; get_uow requests then reuse the cache).
     from windagent_api import dependencies

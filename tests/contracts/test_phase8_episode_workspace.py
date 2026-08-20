@@ -10,11 +10,6 @@ from fastapi.testclient import TestClient
 from windagent_api.main import app
 
 
-@pytest.fixture
-def client():
-    return TestClient(app)
-
-
 class TestPhase8EpisodeWorkspaceContracts:
     def test_list_all_episodes_contract(self, client: TestClient):
         """Verify GET /api/v3/episodes returns canonical EpisodeListResponse with derived progress."""

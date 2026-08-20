@@ -46,6 +46,6 @@ class OrchestrationV2Container:
             retry_policy=self.retry_policy,
             cancellation_manager=self.cancellation_manager,
         )
-        self.recovery_manager = RecoveryManager(session_factory=uow_factory)
+        self.recovery_manager = RecoveryManager(uow_factory=uow_factory)
         
         logger.info("Initialized OrchestrationV2Container successfully.")

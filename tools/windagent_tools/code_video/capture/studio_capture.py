@@ -14,14 +14,8 @@ import json
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, Tuple
 
-if TYPE_CHECKING:
-    from windagent_workflows.code_video.replay import (
-        DeterministicReplayEngine,
-        ReplayTrace,
-    )
-
 from windagent_core.errors.exceptions import NotFoundError, ValidationError
-from windagent_workflows.code_video.contracts import (
+from windagent_core.contracts.code_video import (
     Action,
     ActionType,
     CodeVideoPlan,
@@ -54,11 +48,10 @@ class StudioCaptureEngine(CapturePort):
         replay_engine: Optional[Any] = None,
         output_dir: Optional[Path] = None,
     ) -> None:
-        if replay_engine is not None:
-            self.replay_engine = replay_engine
-        else:
-            from windagent_workflows.code_video.replay import DeterministicReplayEngine
-            self.replay_engine = DeterministicReplayEngine()
+        if replay_engine is None:
+            from windagent_tools.code_video.replay import DeterministicReplayEngine
+            replay_engine = DeterministicReplayEngine()
+        self.replay_engine = replay_engine
         self.output_dir = output_dir or Path("artifacts/code_video/video_02/takes")
 
         self._current_scene: Optional[Scene] = None

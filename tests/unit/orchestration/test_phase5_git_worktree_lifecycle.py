@@ -22,6 +22,7 @@ from windagent_execution.worktree.context import WorktreeContextManager
 from windagent_orchestration.orchestrator_service import OrchestratorService, Subtask
 from windagent_storage.database.connection import DatabaseManager
 from windagent_storage.orm.models import BaseORM
+from windagent_storage.repositories.multi_agent_repository import MultiAgentRepository
 
 
 class HoldingRuntime(ExecutionRuntimePort):
@@ -111,7 +112,13 @@ def _service(
 ) -> OrchestratorService:
     registry = ExecutionRuntimeRegistry()
     registry.register_capability("local_agent", runtime)
-    return OrchestratorService(db.session_factory, registry, RouteLocks(), worktree_manager=worktrees)
+    return OrchestratorService(
+        db.session_factory,
+        registry,
+        RouteLocks(),
+        worktree_manager=worktrees,
+        repo_factory=lambda session: MultiAgentRepository(session),
+    )
 
 
 def _agent_by_node(agents, suffix: str):

@@ -99,6 +99,7 @@ from windagent_core.contracts.video_production import (
     AssetStoragePort,
     QualityReviewPort,
 )
+from windagent_core.contracts.realtime import RealtimeReplayPort
 
 __all__ = [
     "Clock",
@@ -181,4 +182,6 @@ __all__ = [
     "MediaGenerationProviderPort",
     "AssetStoragePort",
     "QualityReviewPort",
+    # Realtime replay port (Phase 6)
+    "RealtimeReplayPort",
 ]

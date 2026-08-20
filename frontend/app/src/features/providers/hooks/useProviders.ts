@@ -7,6 +7,9 @@ import type {
   ProviderResource,
   ProviderEndpointResource,
   ProviderHealthMap,
+  AddProviderRequest,
+  AssignProviderModelRuleRequest,
+  ProviderModelRuleResource,
 } from '@windagent/api-contracts';
 
 export const providerKeys = {
@@ -15,6 +18,7 @@ export const providerKeys = {
   detail: (id: string) => [...providerKeys.all, 'detail', id] as const,
   endpoints: (id: string) => [...providerKeys.all, 'endpoints', id] as const,
   health: () => [...providerKeys.all, 'health'] as const,
+  rules: () => [...providerKeys.all, 'rules'] as const,
 };
 
 export function useProviders() {
@@ -22,6 +26,18 @@ export function useProviders() {
   return useQuery<ProviderResource[]>({
     queryKey: providerKeys.list(),
     queryFn: () => client.providers.list(),
+  });
+}
+
+export function useCreateProvider() {
+  const client = useApiClient();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (request: AddProviderRequest) => client.providers.create(request),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: providerKeys.list() });
+      queryClient.invalidateQueries({ queryKey: providerKeys.health() });
+    },
   });
 }
 
@@ -60,6 +76,26 @@ export function useTestProviderConnection() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: providerKeys.detail(variables.providerId) });
       queryClient.invalidateQueries({ queryKey: providerKeys.health() });
+    },
+  });
+}
+
+export function useProviderModelRules() {
+  const client = useApiClient();
+  return useQuery<ProviderModelRuleResource[]>({
+    queryKey: providerKeys.rules(),
+    queryFn: () => client.providers.listModelRules(),
+  });
+}
+
+export function useAssignProviderModelRule() {
+  const client = useApiClient();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (request: AssignProviderModelRuleRequest) =>
+      client.providers.assignModelRule(request),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: providerKeys.rules() });
     },
   });
 }

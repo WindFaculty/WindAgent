@@ -4,8 +4,9 @@
  * and WebSocket streaming without aggressive polling loops.
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { useApiClient } from '../../../shared/hooks/useApiClient';
+import { useRealtimeClient } from '../../../realtime/RealtimeProvider';
 import type {
   ConversationDetailResource,
   AgentInstanceResource,
@@ -119,45 +120,30 @@ export function useRetryTask(conversationId: string) {
 }
 
 /**
- * WebSocket Realtime Hook for Agent Workspace.
- * Connects to /ws/v3/agent-system and invalidates query caches on events.
+ * Realtime Hook for Agent Workspace via @windagent/realtime.
+ * Subscribes to agent system events and invalidates query caches on state changes.
  */
 export function useAgentRealtime(conversationId: string) {
   const queryClient = useQueryClient();
-  const wsRef = useRef<WebSocket | null>(null);
+  const realtime = useRealtimeClient();
 
   useEffect(() => {
     if (!conversationId) return;
 
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const host = window.location.host;
-    const wsUrl = `${protocol}//${host}/ws/v3/agent-system`;
-
-    let ws: WebSocket;
-    try {
-      ws = new WebSocket(wsUrl);
-      wsRef.current = ws;
-
-      ws.onmessage = (event) => {
-        try {
-          const payload = JSON.parse(event.data);
-          if (payload.type && payload.type.startsWith('agent.')) {
-            queryClient.invalidateQueries({ queryKey: agentWorkspaceKeys.agents(conversationId) });
-          } else if (payload.type && payload.type.startsWith('task.')) {
-            queryClient.invalidateQueries({ queryKey: agentWorkspaceKeys.tasks(conversationId) });
-          }
-        } catch {
-          // ignore non-json messages
+    const unsubscribe = realtime.subscribe(
+      { aggregateType: 'agent', aggregateId: conversationId },
+      (envelope) => {
+        const eventType = envelope.event_type || (envelope.payload as any)?.type || '';
+        if (eventType.startsWith('agent.')) {
+          queryClient.invalidateQueries({ queryKey: agentWorkspaceKeys.agents(conversationId) });
+        } else if (eventType.startsWith('task.')) {
+          queryClient.invalidateQueries({ queryKey: agentWorkspaceKeys.tasks(conversationId) });
         }
-      };
-    } catch {
-      // ws fallback
-    }
+      }
+    );
 
     return () => {
-      if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-        wsRef.current.close();
-      }
+      unsubscribe();
     };
-  }, [conversationId, queryClient]);
+  }, [conversationId, realtime, queryClient]);
 }

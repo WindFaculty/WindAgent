@@ -131,9 +131,10 @@ def _seed_legacy_fixture(path: Path) -> dict:
 
 
 def test_single_head_and_fresh_upgrade_creates_full_studio_schema(temp_db_path):
-    assert alembic_heads() == ("0012_studio_artifact_provenance",)
+    declared_heads = alembic_heads()
+    assert len(declared_heads) == 1
     alembic_upgrade_head(f"sqlite:///{temp_db_path.as_posix()}")
-    assert alembic_current(f"sqlite:///{temp_db_path.as_posix()}") == ("0012_studio_artifact_provenance",)
+    assert alembic_current(f"sqlite:///{temp_db_path.as_posix()}") == declared_heads
 
     engine, inspector = _inspect(temp_db_path)
     try:

@@ -46,6 +46,19 @@ COMPOSITION_ROOT_FILES = {
 }
 DEFAULT_FALLBACK_RE = re.compile(r"\b_fallback_[A-Za-z_][A-Za-z0-9_]*\b")
 
+
+def is_composition_directory_module(relative: str) -> bool:
+    """True when the module lives under an explicit ``apps/*/.../composition/``
+    directory.
+
+    Phase 7: the API/Worker/CLI composition roots were split into focused
+    composer packages.  Modules under an explicit ``composition/`` directory are
+    composition-root files for ORM wiring; this is NOT a blanket exemption for
+    all application modules.
+    """
+    parts = relative.split("/")
+    return len(parts) >= 3 and parts[0] == "apps" and "composition" in parts
+
 # Composition root patterns - only these locations can create concrete adapters
 COMPOSITION_ROOTS = {
     "apps/api/",
@@ -451,8 +464,12 @@ def check(root: Path, config: dict) -> tuple[dict, dict]:
             violations.append(violation)
 
     # Phase 4: Legacy quarantine enforcement
-    for violation in check_legacy_quarantine(root, packages, config):
-        violations.append(violation)
+    if rules.get("enforce_legacy_quarantine", True):
+        for violation in check_legacy_quarantine(root, packages, config):
+            violations.append(violation)
+    if rules.get("forbid_legacy_runtime_authority", False):
+        for violation in check_legacy_runtime_authority(root, config):
+            violations.append(violation)
 
     # Phase 4: VideoClaw quarantine boundary (plan 02)
     for violation in check_videoclaw_quarantine(root, packages, config):
@@ -463,12 +480,29 @@ def check(root: Path, config: dict) -> tuple[dict, dict]:
         violations.append(violation)
 
     # Phase 4: Composition root rule
-    for violation in check_composition_root_rule(root, packages, config):
-        violations.append(violation)
+    if rules.get("enforce_composition_root_rule", True):
+        for violation in check_composition_root_rule(root, packages, config):
+            violations.append(violation)
 
     # Phase 4: Public API enforcement
     for violation in check_public_api_enforcement(root, packages, config):
         violations.append(violation)
+
+    # V3 checks — activated when config version starts with "3"
+    config_version = str(config.get("version", "2.0"))
+    if config_version.startswith("3"):
+        if rules.get("forbid_application_direct_storage_import", False):
+            for violation in check_v3_application_direct_storage(root, packages, config):
+                violations.append(violation)
+        if rules.get("forbid_storage_to_provider_import", False):
+            for violation in check_v3_storage_to_provider(root, packages, config):
+                violations.append(violation)
+        if rules.get("forbid_infrastructure_to_application_import", False):
+            for violation in check_v3_infrastructure_to_application(root, packages, config):
+                violations.append(violation)
+        if rules.get("forbid_module_level_mutable_production_store", False):
+            for violation in check_v3_module_level_mutable_stores(root, packages, config):
+                violations.append(violation)
 
     graph_report = {
         "nodes": [{"id": name, "path": info["path"], "namespace": info["namespace"]} for name, info in packages.items()],
@@ -595,6 +629,54 @@ def check_legacy_quarantine(root: Path, packages: dict, config: dict) -> list[di
                 "line": 1,
                 "message": "Python source recreated in retired apps/backend tree",
             })
+    return violations
+
+
+def check_legacy_runtime_authority(root: Path, config: dict) -> list[dict]:
+    """Reject runtime-authority implementations in allowlisted legacy files.
+
+    The quarantine rule rejects non-allowlisted Python files wholesale. This
+    companion rule keeps compatibility files harmless when they are explicitly
+    allowlisted: they may translate data, but may not recreate runtime owners
+    such as database managers, providers, or execution adapters.
+    """
+    legacy_config = config.get("forbidden_patterns", {}).get(
+        "legacy_quarantine", {}
+    )
+    zone = legacy_config.get("zone", "apps/backend")
+    blocked_patterns = tuple(
+        legacy_config.get("runtime_authority_blocked_patterns", [])
+    )
+    zone_path = root / zone
+    if not zone_path.is_dir() or not blocked_patterns:
+        return []
+
+    violations = []
+    for source in zone_path.rglob("*.py"):
+        relative = source.relative_to(root).as_posix()
+        if ".venv" in relative or "__pycache__" in relative:
+            continue
+        try:
+            tree = ast.parse(source.read_text(encoding="utf-8"), filename=str(source))
+        except (OSError, UnicodeError, SyntaxError):
+            continue
+
+        for node in ast.walk(tree):
+            identifier = None
+            if isinstance(node, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
+                identifier = node.name
+            elif isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store):
+                identifier = node.id
+            if identifier and any(pattern in identifier for pattern in blocked_patterns):
+                violations.append({
+                    "rule": "legacy_runtime_authority",
+                    "file": relative,
+                    "line": getattr(node, "lineno", 1),
+                    "message": (
+                        "Legacy compatibility source defines runtime authority "
+                        f"'{identifier}'"
+                    ),
+                })
     return violations
 
 
@@ -726,7 +808,15 @@ def check_composition_root_rule(root: Path, packages: dict, config: dict) -> lis
     """Enforce composition-root rule: concrete adapters only in composition roots."""
     violations = []
 
-    composition_roots_config = config.get("composition_roots", [])
+    rules = config.get("global_rules", {})
+    if str(config.get("version", "2.0")).startswith("3") and not rules.get(
+        "forbid_concrete_adapter_outside_composition", True
+    ):
+        return violations
+
+    composition_roots_config = rules.get(
+        "composition_roots", config.get("composition_roots", [])
+    )
     if not composition_roots_config:
         composition_roots_config = [
             "apps/api/**",
@@ -749,7 +839,10 @@ def check_composition_root_rule(root: Path, packages: dict, config: dict) -> lis
             "tests/",
         ]
 
-    adapter_patterns = config.get("concrete_adapters", list(CONCRETE_ADAPTER_PATTERNS))
+    adapter_patterns = config.get("forbidden_patterns", {}).get(
+        "concrete_adapter_instantiation_patterns",
+        config.get("concrete_adapters", list(CONCRETE_ADAPTER_PATTERNS)),
+    )
 
     for name, info in packages.items():
         package_path = root / info["path"]
@@ -862,7 +955,10 @@ def check_public_api_enforcement(root: Path, packages: dict, config: dict) -> li
                     # (e.g. 'platform' contains 'orm', 'ReportFormat' contains 'orm' via 'format').
                     if name in APP_PACKAGES or info.get("layer") == "application":
                         _basename = Path(source).name
-                        if _basename not in COMPOSITION_ROOT_FILES:
+                        if (
+                            _basename not in COMPOSITION_ROOT_FILES
+                            and not is_composition_directory_module(relative)
+                        ):
                             orm_prefixes = ("sqlalchemy", "aiosqlite", "windagent_storage.orm", "windagent_storage.database")
                             if any(module.startswith(pfx) for pfx in orm_prefixes):
                                 violations.append({
@@ -896,6 +992,259 @@ def check_public_api_enforcement(root: Path, packages: dict, config: dict) -> li
             except Exception:
                 pass
 
+    return violations
+
+
+def check_v3_application_direct_storage(root: Path, packages: dict, config: dict) -> list[dict]:
+    """V3 rule: application layer packages must not import concrete storage directly.
+
+    Application layer (orchestration, workflows, intelligence, context, memory,
+    verification, skills, evals) may only depend on repository ports from core.
+    Only composition roots (apps/*) are allowed to wire concrete storage.
+    """
+    violations = []
+    application_layers = {"application"}
+    infrastructure_orm_allowlist = config.get("global_rules", {}).get(
+        "infrastructure_orm_allowlist", []
+    )
+    storage_prefixes = (
+        "windagent_storage",
+        "sqlalchemy",
+        "aiosqlite",
+    )
+
+    for name, info in packages.items():
+        if info.get("layer") not in application_layers:
+            continue
+        namespace_path = root / info["path"] / info["namespace"]
+        if not namespace_path.is_dir():
+            continue
+        for source in namespace_path.rglob("*.py"):
+            relative = source.relative_to(root).as_posix()
+            if ".venv" in relative or "__pycache__" in relative:
+                continue
+            # Check allowlist
+            if any(
+                relative.startswith(al.replace("/**", "/").replace("**", ""))
+                for al in infrastructure_orm_allowlist
+            ):
+                continue
+            try:
+                imports, _ = imports_and_classes(source)
+                for line, module in imports:
+                    if any(module.startswith(pfx) for pfx in storage_prefixes):
+                        violations.append({
+                            "rule": "application_direct_storage_import",
+                            "file": relative,
+                            "line": line,
+                            "message": (
+                                f"Application layer '{name}' imports concrete storage directly: "
+                                f"{module}. Use repository ports from core instead."
+                            ),
+                        })
+            except Exception:
+                pass
+    return violations
+
+
+def check_v3_storage_to_provider(root: Path, packages: dict, config: dict) -> list[dict]:
+    """V3 rule: storage package must not import providers package.
+
+    Storage knows only: core models, core ports, ORM mapping, SQL.
+    It must not know provider implementation packages.
+    """
+    violations = []
+    storage_info = packages.get("storage")
+    if not storage_info:
+        return violations
+
+    namespace_path = root / storage_info["path"] / storage_info["namespace"]
+    if not namespace_path.is_dir():
+        return violations
+
+    provider_prefixes = ("windagent_providers",)
+
+    for source in namespace_path.rglob("*.py"):
+        relative = source.relative_to(root).as_posix()
+        if ".venv" in relative or "__pycache__" in relative:
+            continue
+        try:
+            imports, _ = imports_and_classes(source)
+            for line, module in imports:
+                if any(module.startswith(pfx) for pfx in provider_prefixes):
+                    violations.append({
+                        "rule": "storage_to_provider_import",
+                        "file": relative,
+                        "line": line,
+                        "message": (
+                            f"storage imports providers directly: {module}. "
+                            "Storage must not depend on provider implementation."
+                        ),
+                    })
+        except Exception:
+            pass
+    return violations
+
+
+def check_v3_infrastructure_to_application(root: Path, packages: dict, config: dict) -> list[dict]:
+    """V3 rule: infrastructure layer must not import application layer.
+
+    Infrastructure (providers, tools, execution, storage, plugins, observability)
+    must not import from application layer (orchestration, workflows, intelligence,
+    context, memory, verification, skills, evals).
+    """
+    violations = []
+    infrastructure_layers = {"infrastructure"}
+    application_namespaces = {
+        info["namespace"]
+        for info in packages.values()
+        if info.get("layer") == "application"
+    }
+
+    for name, info in packages.items():
+        if info.get("layer") not in infrastructure_layers:
+            continue
+        namespace_path = root / info["path"] / info["namespace"]
+        if not namespace_path.is_dir():
+            continue
+        for source in namespace_path.rglob("*.py"):
+            relative = source.relative_to(root).as_posix()
+            if ".venv" in relative or "__pycache__" in relative:
+                continue
+            try:
+                imports, _ = imports_and_classes(source)
+                for line, module in imports:
+                    root_module = module.split(".")[0]
+                    if root_module in application_namespaces:
+                        violations.append({
+                            "rule": "infrastructure_to_application_import",
+                            "file": relative,
+                            "line": line,
+                            "message": (
+                                f"Infrastructure package '{name}' imports application layer: "
+                                f"{module}. Infrastructure must not depend on application."
+                            ),
+                        })
+            except Exception:
+                pass
+    return violations
+
+
+def check_v3_module_level_mutable_stores(root: Path, packages: dict, config: dict) -> list[dict]:
+    """V3 rule: production code must not contain module-level mutable in-memory stores.
+
+    Patterns like _PROJECTS_STORE = {}, _EPISODES_STORE = [] signal that a route
+    is using RAM as its authority instead of the durable SQL repository.
+    """
+    violations = []
+    store_patterns = config.get("forbidden_patterns", {}).get(
+        "module_level_store_patterns", []
+    )
+    if not store_patterns:
+        return violations
+
+    def matches_store_name(name: str) -> bool:
+        return any(
+            name.startswith(pattern) if pattern.endswith("_") else name == pattern
+            for pattern in store_patterns
+        )
+
+    def is_mutable_value(value: Optional[ast.expr]) -> bool:
+        if value is None:
+            return False
+        if isinstance(
+            value,
+            (ast.Dict, ast.List, ast.Set, ast.DictComp, ast.ListComp, ast.SetComp),
+        ):
+            return True
+        if not isinstance(value, ast.Call):
+            return False
+        if isinstance(value.func, ast.Name):
+            constructor = value.func.id
+        elif isinstance(value.func, ast.Attribute):
+            constructor = value.func.attr
+        else:
+            return False
+        return constructor in {
+            "defaultdict",
+            "deque",
+            "dict",
+            "list",
+            "OrderedDict",
+            "set",
+        }
+
+    class ModuleAssignmentVisitor(ast.NodeVisitor):
+        """Collect assignments executed at import time, excluding nested scopes."""
+
+        def __init__(self) -> None:
+            self.assignments: list[ast.Assign | ast.AnnAssign] = []
+
+        def visit_Assign(self, node: ast.Assign) -> None:  # noqa: N802
+            self.assignments.append(node)
+
+        def visit_AnnAssign(self, node: ast.AnnAssign) -> None:  # noqa: N802
+            self.assignments.append(node)
+
+        def visit_FunctionDef(self, node: ast.FunctionDef) -> None:  # noqa: N802
+            return
+
+        def visit_AsyncFunctionDef(  # noqa: N802
+            self, node: ast.AsyncFunctionDef
+        ) -> None:
+            return
+
+        def visit_ClassDef(self, node: ast.ClassDef) -> None:  # noqa: N802
+            return
+
+        def visit_Lambda(self, node: ast.Lambda) -> None:  # noqa: N802
+            return
+
+    for name, info in packages.items():
+        if info.get("layer") not in ("app", "application"):
+            continue
+        namespace_path = root / info["path"] / info["namespace"]
+        if not namespace_path.is_dir():
+            continue
+        for source in namespace_path.rglob("*.py"):
+            relative = source.relative_to(root).as_posix()
+            if ".venv" in relative or "__pycache__" in relative:
+                continue
+            if "test" in relative or "fixture" in relative or "demo" in relative:
+                continue
+            try:
+                text = source.read_text(encoding="utf-8")
+                tree = ast.parse(text, filename=str(source))
+            except (OSError, UnicodeError, SyntaxError):
+                continue
+
+            lines = text.splitlines()
+            visitor = ModuleAssignmentVisitor()
+            visitor.visit(tree)
+            for statement in visitor.assignments:
+                candidates: list[tuple[ast.expr, Optional[ast.expr]]] = []
+                if isinstance(statement, ast.Assign):
+                    candidates.extend((target, statement.value) for target in statement.targets)
+                elif isinstance(statement, ast.AnnAssign):
+                    candidates.append((statement.target, statement.value))
+                else:
+                    continue
+
+                for target, value in candidates:
+                    if not isinstance(target, ast.Name):
+                        continue
+                    if not matches_store_name(target.id) or not is_mutable_value(value):
+                        continue
+                    line_text = lines[statement.lineno - 1].strip()
+                    violations.append({
+                        "rule": "module_level_mutable_production_store",
+                        "file": relative,
+                        "line": statement.lineno,
+                        "message": (
+                            f"Module-level mutable store in production code: "
+                            f"{line_text!r}. Use SQL repository pattern instead."
+                        ),
+                    })
     return violations
 
 

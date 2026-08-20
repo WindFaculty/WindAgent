@@ -8,10 +8,12 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
 from windagent_core.domain.types import TaskId, SessionId, CanonicalModelId, ProviderId, RouteLockId
-from windagent_providers.capabilities import (
-    ModelCapability, ModelCapabilityProfile, KNOWN_MODEL_PROFILES
+from windagent_core.contracts.providers.model_capabilities import (
+    KNOWN_MODEL_PROFILES,
+    ModelCapability,
+    ModelCapabilityProfile,
 )
-from windagent_providers.base import BaseModelProvider
+from windagent_core.contracts.providers.ports import ProviderHealthPort
 from windagent_intelligence.model_router.route_lock import RouteLock
 
 
@@ -29,13 +31,13 @@ class RoutingContext:
 class ModelRouterPolicy:
     def __init__(
         self,
-        providers: Optional[Dict[str, BaseModelProvider]] = None,
+        providers: Optional[Dict[str, ProviderHealthPort]] = None,
         model_profiles: Optional[Dict[str, ModelCapabilityProfile]] = None,
     ):
         self.providers = providers or {}
         self.model_profiles = model_profiles or KNOWN_MODEL_PROFILES
 
-    def register_provider(self, provider: BaseModelProvider) -> None:
+    def register_provider(self, provider: ProviderHealthPort) -> None:
         self.providers[provider.provider_name] = provider
 
     async def route(self, ctx: RoutingContext) -> RouteLock:

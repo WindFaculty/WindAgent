@@ -67,6 +67,7 @@ import windagent_storage.orm.studio_models  # noqa: F401
 import windagent_storage.orm.v2_orchestration_models  # noqa: F401
 from windagent_storage.studio.run_nodes import SqlStudioRunNodeRepository
 from windagent_storage.studio.task_submission import StudioTaskSubmissionAdapter
+from windagent_storage.unit_of_work.studio_uow import StudioUnitOfWork
 
 HASH64 = "h" * 64
 
@@ -82,7 +83,7 @@ async def db():
 @pytest.fixture
 def service(db):
     return StudioRunService(
-        db.session_factory,
+        lambda: StudioUnitOfWork(db.session_factory),
         StudioTaskSubmissionAdapter(db.session_factory),
         retry_budget=2,
     )
@@ -420,7 +421,8 @@ async def test_submit_failure_leaves_node_runnable_then_resume_dispatches(db):
         await uow.commit()
 
     failing = StudioRunService(
-        manager.session_factory, FlakySubmission(manager.session_factory, fail=True)
+        lambda: StudioUnitOfWork(manager.session_factory),
+        FlakySubmission(manager.session_factory, fail=True),
     )
     with pytest.raises(RuntimeError):
         await failing.start_or_resume_run(
@@ -439,7 +441,7 @@ async def test_submit_failure_leaves_node_runnable_then_resume_dispatches(db):
     assert root["task_id"] is None
     # resume with a healthy submission: node dispatched, single queue row
     healthy = StudioRunService(
-        manager.session_factory,
+        lambda: StudioUnitOfWork(manager.session_factory),
         FlakySubmission(manager.session_factory, fail=False),
     )
     resumed = await healthy.start_or_resume_run(

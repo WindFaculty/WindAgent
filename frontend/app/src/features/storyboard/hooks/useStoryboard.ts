@@ -4,7 +4,8 @@
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef } from 'react';
-import { useApiClient } from '@windagent/app/src/shared/hooks/useApiClient';
+import { useApiClient } from '../../../shared/hooks/useApiClient';
+import { useRealtimeClient } from '../../../realtime/RealtimeProvider';
 import type { GenerationJobResource } from '@windagent/api-contracts';
 
 export const storyboardKeys = {
@@ -118,37 +119,31 @@ export function useGenerationJob(sceneId: string, generationId: string | undefin
 }
 
 /**
- * Storyboard realtime WebSocket hook.
- * Subscribes to /ws/v3/storyboard/{episodeId} and invalidates scenes on generation events.
+ * Storyboard realtime hook via @windagent/realtime.
+ * Subscribes to storyboard events for the episode and invalidates queries on generation updates.
  */
-export function useStoryboardRealtime(episodeId: string, apiBaseUrl: string) {
+export function useStoryboardRealtime(episodeId: string, _apiBaseUrl?: string) {
   const queryClient = useQueryClient();
-  const wsRef = useRef<WebSocket | null>(null);
+  const realtime = useRealtimeClient();
 
   useEffect(() => {
-    if (!episodeId || !apiBaseUrl) return;
-    const wsUrl = apiBaseUrl.replace(/^http/, 'ws') + `/ws/v3/storyboard/${episodeId}`;
+    if (!episodeId) return;
 
-    const ws = new WebSocket(wsUrl);
-    wsRef.current = ws;
-
-    ws.onmessage = (msg) => {
-      try {
-        const evt = JSON.parse(msg.data);
-        if (evt.event === 'generation.completed' || evt.event === 'generation.failed') {
+    const unsubscribe = realtime.subscribe(
+      { aggregateType: 'storyboard', aggregateId: episodeId },
+      (evt) => {
+        const eventType = evt.event_type || (evt.payload as any)?.event;
+        if (eventType === 'generation.completed' || eventType === 'generation.failed') {
           queryClient.invalidateQueries({ queryKey: storyboardKeys.scenes(episodeId) });
           queryClient.invalidateQueries({ queryKey: storyboardKeys.board(episodeId) });
-        } else if (evt.event === 'storyboard.snapshot' || evt.event === 'scene.updated') {
+        } else if (eventType === 'storyboard.snapshot' || eventType === 'scene.updated') {
           queryClient.invalidateQueries({ queryKey: storyboardKeys.scenes(episodeId) });
         }
-      } catch {
-        // ignore malformed messages
       }
-    };
+    );
 
     return () => {
-      ws.close();
-      wsRef.current = null;
+      unsubscribe();
     };
-  }, [episodeId, apiBaseUrl, queryClient]);
+  }, [episodeId, realtime, queryClient]);
 }

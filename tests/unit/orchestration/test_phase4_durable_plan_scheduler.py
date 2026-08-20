@@ -24,6 +24,7 @@ from windagent_orchestration.orchestrator_service import (
 )
 from windagent_storage.database.connection import DatabaseManager
 from windagent_storage.orm.models import BaseORM
+from windagent_storage.repositories.multi_agent_repository import MultiAgentRepository
 
 
 class HoldingRuntime(ExecutionRuntimePort):
@@ -82,7 +83,12 @@ async def db(tmp_path):
 def _service(db: DatabaseManager, runtime: HoldingRuntime) -> OrchestratorService:
     registry = ExecutionRuntimeRegistry()
     registry.register_capability("local_agent", runtime)
-    return OrchestratorService(db.session_factory, registry, RouteLocks())
+    return OrchestratorService(
+        db.session_factory,
+        registry,
+        RouteLocks(),
+        repo_factory=lambda session: MultiAgentRepository(session),
+    )
 
 
 def _by_suffix(agents, suffix: str):

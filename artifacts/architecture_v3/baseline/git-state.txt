@@ -1,0 +1,133 @@
+WindAgent Architecture V3 Phase 0 Git State
+Captured at: 2026-08-19T10:31:41.072400Z
+HEAD SHA: ac61c38cdca90100a14ec0ea26c4d19c35f7caa4
+Branch: refactor/architecture-v3-hardening
+Python: 3.11.15
+Node: v22.23.1
+npm: 10.9.8
+uv: uv 0.11.28 (ebf0f43d7 2026-07-07 x86_64-pc-windows-msvc)
+
+Lockfile SHA-256:
+uv.lock: 31a9583eb73b09c090256bea6f6a24024ab46af283dad256879972832f148cc6
+frontend/package-lock.json: 32b487c10f22deead8b2d26612f430bf128caf7fbd0a4a61f5b1b3a82cb7d950
+apps/web/package-lock.json: d9242ec3c08e2bb2c0d84562295e617df6c0758dcb39d5582fb7f5f660c2b908
+apps/desktop/package-lock.json: 2e389348a4641367d01d816486c0946856ae5baf6eabbccd6e586410a8d4877d
+
+Git status (porcelain v1):
+ M artifacts/architecture_v2_runtime_cutover/phase_13/dependency_boundary_report.json
+ M artifacts/architecture_v2_runtime_cutover/phase_13/import_graph.json
+ M artifacts/code_video/video_02/final/cue_sheet.csv
+ M artifacts/code_video/video_02/final/final_video_hash.json
+ M artifacts/code_video/video_02/final/script_with_timecodes.md
+ M artifacts/code_video/video_02/final/timeline.json
+ M artifacts/code_video/video_02/final/video_02_visual_master_1080p.mp4
+ M artifacts/code_video/video_02/final/video_02_visual_master_1440p.mp4
+ M artifacts/code_video/video_02/final/video_manifest.json
+ M artifacts/code_video/video_02/phase_07/capture_receipt.json
+ M artifacts/code_video/video_02/phase_07/frame_report.json
+ M artifacts/code_video/video_02/phase_07/media_probe.json
+ M artifacts/code_video/video_02/phase_07/phase_report.md
+ M artifacts/code_video/video_02/phase_07/phase_verdict.json
+ M artifacts/code_video/video_02/phase_07/test_receipt.json
+ M artifacts/code_video/video_02/phase_09/PASS_01_COLD_OPEN.json
+ M artifacts/code_video/video_02/phase_09/PASS_02_REPO_SETUP.json
+ M artifacts/code_video/video_02/phase_09/PASS_03_MESSAGE.json
+ M artifacts/code_video/video_02/phase_09/PASS_04_CONFIG.json
+ M artifacts/code_video/video_02/phase_09/PASS_05_LLM_PROTOCOL.json
+ M artifacts/code_video/video_02/phase_09/PASS_06_FAKE_LLM.json
+ M artifacts/code_video/video_02/phase_09/PASS_07_AGENT_CORE.json
+ M artifacts/code_video/video_02/phase_09/PASS_08_IS_THIS_AGENT.json
+ M artifacts/code_video/video_02/phase_09/PASS_09_REAL_PROVIDER.json
+ M artifacts/code_video/video_02/phase_09/PASS_10_API_SECURITY.json
+ M artifacts/code_video/video_02/phase_09/PASS_11_FIRST_RUN.json
+ M artifacts/code_video/video_02/phase_09/PASS_12_TESTING.json
+ M artifacts/code_video/video_02/phase_09/PASS_13_NOT_YET.json
+ M artifacts/code_video/video_02/phase_09/PASS_14_ARCH_REVIEW.json
+ M artifacts/code_video/video_02/phase_09/PASS_15_GIT_MILESTONE.json
+ M artifacts/code_video/video_02/phase_09/PASS_16_OUTRO_TEASER.json
+ M artifacts/code_video/video_02/phase_09/architecture_report.json
+ M artifacts/code_video/video_02/phase_09/implementation_manifest.json
+ M artifacts/code_video/video_02/phase_09/input_manifest.json
+ M artifacts/code_video/video_02/phase_09/phase_report.md
+ M artifacts/code_video/video_02/phase_09/phase_verdict.json
+ M artifacts/code_video/video_02/phase_09/recording_manifest.json
+ M artifacts/code_video/video_02/phase_09/secret_scan_receipt.json
+ M artifacts/code_video/video_02/phase_09/test_receipt.json
+ M artifacts/code_video/video_02/phase_10/architecture_report.json
+ M artifacts/code_video/video_02/phase_10/implementation_manifest.json
+ M artifacts/code_video/video_02/phase_10/input_manifest.json
+ M artifacts/code_video/video_02/phase_10/phase_report.md
+ M artifacts/code_video/video_02/phase_10/phase_verdict.json
+ M artifacts/code_video/video_02/phase_10/test_receipt.json
+ M artifacts/code_video/video_02/phase_12/architecture_report.json
+ M artifacts/code_video/video_02/phase_12/handoff_manifest.json
+ M artifacts/code_video/video_02/phase_12/implementation_manifest.json
+ M artifacts/code_video/video_02/phase_12/input_manifest.json
+ M artifacts/code_video/video_02/phase_12/phase_report.md
+ M artifacts/code_video/video_02/phase_12/phase_verdict.json
+ M artifacts/code_video/video_02/phase_12/test_receipt.json
+ M artifacts/code_video/video_02/records/PASS_01_COLD_OPEN.json
+ M artifacts/code_video/video_02/records/PASS_02_REPO_SETUP.json
+ M artifacts/code_video/video_02/records/PASS_03_MESSAGE.json
+ M artifacts/code_video/video_02/records/PASS_04_CONFIG.json
+ M artifacts/code_video/video_02/records/PASS_05_LLM_PROTOCOL.json
+ M artifacts/code_video/video_02/records/PASS_06_FAKE_LLM.json
+ M artifacts/code_video/video_02/records/PASS_07_AGENT_CORE.json
+ M artifacts/code_video/video_02/records/PASS_08_IS_THIS_AGENT.json
+ M artifacts/code_video/video_02/records/PASS_09_REAL_PROVIDER.json
+ M artifacts/code_video/video_02/records/PASS_10_API_SECURITY.json
+ M artifacts/code_video/video_02/records/PASS_11_FIRST_RUN.json
+ M artifacts/code_video/video_02/records/PASS_12_TESTING.json
+ M artifacts/code_video/video_02/records/PASS_13_NOT_YET.json
+ M artifacts/code_video/video_02/records/PASS_14_ARCH_REVIEW.json
+ M artifacts/code_video/video_02/records/PASS_15_GIT_MILESTONE.json
+ M artifacts/code_video/video_02/records/PASS_16_OUTRO_TEASER.json
+ M artifacts/code_video/video_02/records/recording_manifest.json
+ M artifacts/code_video/video_02/takes/S01_T01.json
+ M artifacts/code_video/video_02/takes/S02_T01.json
+ M artifacts/code_video/video_02/takes/S03_T01.json
+ M artifacts/code_video/video_02/takes/S04_T01.json
+ M artifacts/code_video/video_02/takes/S05_T01.json
+ M artifacts/code_video/video_02/takes/S06_T01.json
+ M artifacts/code_video/video_02/takes/S07_T01.json
+ M artifacts/code_video/video_02/takes/S08_T01.json
+ M artifacts/code_video/video_02/takes/S09_T01.json
+ M artifacts/code_video/video_02/takes/S10_T01.json
+ M artifacts/code_video/video_02/takes/S11_T01.json
+ M artifacts/code_video/video_02/takes/S12_T01.json
+ M artifacts/code_video/video_02/takes/S13_T01.json
+ M artifacts/code_video/video_02/takes/S14_T01.json
+ M artifacts/code_video/video_02/takes/S15_T01.json
+ M artifacts/code_video/video_02/takes/S16_T01.json
+ M artifacts/code_video/video_02/takes/S17_T01.json
+ M artifacts/code_video/video_02/takes/S18_T01.json
+ M artifacts/code_video/video_02/takes/S19_T01.json
+ M artifacts/code_video/video_02/takes/takes_manifest.json
+ M artifacts/code_video/video_02/takes/takes_timeline.json
+ M artifacts/frontend_restructure/openapi/openapi-v3.json
+ M artifacts/frontend_restructure/phase_03/direct_fetch_delta.json
+ M ban_ke_hoach_v1.md
+?? artifacts/architecture_v3/
+?? artifacts/code_video/video_02/final/sample_frame_s02.png
+?? artifacts/code_video/video_02/final/sample_frame_s04.png
+?? artifacts/code_video/video_02/final/sample_frame_s06.png
+?? artifacts/code_video/video_02/final/sample_frame_s06_v2.png
+?? artifacts/code_video/video_02/plans/video_02_70scenes_plan.json
+?? artifacts/production_ui/
+?? output/
+?? scripts/freeze_architecture_v3_baseline.py
+?? scripts/screenshots/
+?? scripts/ui_test_results.json
+?? workspace/
+
+Submodules:
+(none)
+
+Worktrees:
+worktree D:/code_ca_nhan/WindAgent
+HEAD ac61c38cdca90100a14ec0ea26c4d19c35f7caa4
+branch refs/heads/refactor/architecture-v3-hardening
+
+Remotes:
+origin	https://github.com/WindFaculty/WindAgent.git (fetch)
+origin	https://github.com/WindFaculty/WindAgent.git (push)

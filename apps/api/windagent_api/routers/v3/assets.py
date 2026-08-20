@@ -2,14 +2,20 @@
 V3 Assets Router — Canonical Asset Authority with Provenance Chain.
 Migrates from /api/v2/video-production/assets to /api/v3/assets.
 Every asset has full provenance: source, generator, model, prompt, job_id, content_hash, parent_revision.
+
+Phase 4: assets and their revision history are persisted through the
+namespaced durable V3 resource authority. No module-level RAM stores.
 """
 from __future__ import annotations
 import hashlib
 import uuid
 from typing import Any, Dict, List, Optional
-from fastapi import APIRouter, HTTPException, Path, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 from pydantic import BaseModel, Field
 from windagent_core.domain.lifecycle import utc_now
+from windagent_api.dependencies import get_v3_resource_service
+from windagent_api.services.v3_resource_service import V3ResourceService
+from windagent_api.services.v3_demo_seed import NS_ASSETS, NS_ASSET_REVISIONS
 
 router = APIRouter(prefix="/api/v3/assets", tags=["Assets V3"])
 
@@ -84,74 +90,21 @@ def _compute_content_hash(content: str) -> str:
     return hashlib.sha256(content.encode()).hexdigest()[:16]
 
 
-_ASSETS: Dict[str, Dict[str, Any]] = {
-    "asset-concept-cb-001-01": {
-        "id": "asset-concept-cb-001-01",
-        "name": "Concept Art - Phát Hiện Tín Hiệu",
-        "type": "IMAGE",
-        "episode_id": "ep-cb-001",
-        "project_id": "proj-cyberpunk-01",
-        "scene_id": "scene-cb-001-01",
-        "character_id": None,
-        "current_revision_id": "rev-asset-001-v1",
-        "status": "DRAFT",
-        "provenance": {
-            "source": "GENERATED",
-            "generator": "Imagen",
-            "model": "imagen-3.5-generate",
-            "prompt": "Cyberpunk interior, holographic keyboard, neon blue light through rain-streaked window, high contrast, cinematic, neo-noir",
-            "reference_ids": ["char-kaelen-01", "loc-tầng-404-01"],
-            "job_id": None,
-            "content_hash": _compute_content_hash("scene-cb-001-01-concept-v1"),
-            "parent_revision_id": None,
-            "created_at": "2026-08-14T00:00:00Z",
-        },
-        "version": 1,
-        "created_at": "2026-08-14T00:00:00Z",
-        "updated_at": "2026-08-14T00:00:00Z",
-    },
-}
-
-_ASSET_REVISIONS: Dict[str, List[Dict[str, Any]]] = {
-    "asset-concept-cb-001-01": [
-        {
-            "revision_id": "rev-asset-001-v1",
-            "asset_id": "asset-concept-cb-001-01",
-            "version": 1,
-            "status": "DRAFT",
-            "media_url": None,
-            "provenance": {
-                "source": "GENERATED",
-                "generator": "Imagen",
-                "model": "imagen-3.5-generate",
-                "prompt": "Cyberpunk interior, holographic keyboard, neon blue light",
-                "reference_ids": [],
-                "job_id": None,
-                "content_hash": _compute_content_hash("scene-cb-001-01-concept-v1"),
-                "parent_revision_id": None,
-                "created_at": "2026-08-14T00:00:00Z",
-            },
-            "created_at": "2026-08-14T00:00:00Z",
-        },
-    ],
-}
-
-
 def _asset_to_resource(a: Dict[str, Any]) -> AssetResource:
     return AssetResource(
         id=a["id"],
         name=a["name"],
-        type=a["type"],
+        type=a.get("type", "IMAGE"),
         episode_id=a.get("episode_id"),
         project_id=a.get("project_id"),
         scene_id=a.get("scene_id"),
         character_id=a.get("character_id"),
         current_revision_id=a.get("current_revision_id"),
-        status=a["status"],
+        status=a.get("status", "DRAFT"),
         provenance=AssetProvenance(**a["provenance"]),
-        version=a["version"],
-        created_at=a["created_at"],
-        updated_at=a["updated_at"],
+        version=a.get("version", 1),
+        created_at=a.get("created_at", ""),
+        updated_at=a.get("updated_at", ""),
     )
 
 
@@ -162,9 +115,10 @@ async def list_assets(
     scene_id: Optional[str] = Query(None),
     type_filter: Optional[str] = Query(None, alias="type"),
     status_filter: Optional[str] = Query(None, alias="status"),
+    service: V3ResourceService = Depends(get_v3_resource_service),
 ) -> List[AssetResource]:
     """List assets with provenance filtering."""
-    assets = list(_ASSETS.values())
+    assets = await service.list(NS_ASSETS)
     if episode_id:
         assets = [a for a in assets if a.get("episode_id") == episode_id]
     if project_id:
@@ -172,14 +126,17 @@ async def list_assets(
     if scene_id:
         assets = [a for a in assets if a.get("scene_id") == scene_id]
     if type_filter:
-        assets = [a for a in assets if a["type"] == type_filter]
+        assets = [a for a in assets if a.get("type") == type_filter]
     if status_filter:
-        assets = [a for a in assets if a["status"] == status_filter]
+        assets = [a for a in assets if a.get("status") == status_filter]
     return [_asset_to_resource(a) for a in assets]
 
 
 @router.post("", response_model=AssetResource, status_code=status.HTTP_201_CREATED, operation_id="assets.create")
-async def create_asset(body: CreateAssetRequest = ...) -> AssetResource:
+async def create_asset(
+    body: CreateAssetRequest = ...,
+    service: V3ResourceService = Depends(get_v3_resource_service),
+) -> AssetResource:
     """Create an asset record with full provenance chain."""
     asset_id = f"asset-{uuid.uuid4().hex[:8]}"
     rev_id = f"rev-{asset_id}-v1"
@@ -207,12 +164,11 @@ async def create_asset(body: CreateAssetRequest = ...) -> AssetResource:
         "current_revision_id": rev_id,
         "status": "DRAFT",
         "provenance": provenance_data,
-        "version": 1,
         "created_at": now,
         "updated_at": now,
     }
-    _ASSETS[asset_id] = new_asset
-    _ASSET_REVISIONS[asset_id] = [{
+    await service.create(NS_ASSETS, asset_id, new_asset)
+    await service.create(NS_ASSET_REVISIONS, rev_id, {
         "revision_id": rev_id,
         "asset_id": asset_id,
         "version": 1,
@@ -220,91 +176,126 @@ async def create_asset(body: CreateAssetRequest = ...) -> AssetResource:
         "media_url": body.media_url,
         "provenance": provenance_data,
         "created_at": now,
-    }]
+    })
     return _asset_to_resource(new_asset)
 
 
 @router.get("/{asset_id}", response_model=AssetResource, operation_id="assets.get")
-async def get_asset(asset_id: str = Path(...)) -> AssetResource:
+async def get_asset(
+    asset_id: str = Path(...),
+    service: V3ResourceService = Depends(get_v3_resource_service),
+) -> AssetResource:
     """Get full asset detail including current provenance."""
-    if asset_id not in _ASSETS:
+    asset = await service.get(NS_ASSETS, asset_id)
+    if asset is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Asset '{asset_id}' not found.")
-    return _asset_to_resource(_ASSETS[asset_id])
+    return _asset_to_resource(asset)
 
 
 @router.get("/{asset_id}/revisions", response_model=List[AssetRevisionResource], operation_id="assets.listRevisions")
-async def list_asset_revisions(asset_id: str = Path(...)) -> List[AssetRevisionResource]:
+async def list_asset_revisions(
+    asset_id: str = Path(...),
+    service: V3ResourceService = Depends(get_v3_resource_service),
+) -> List[AssetRevisionResource]:
     """Retrieve full revision history of an asset."""
-    if asset_id not in _ASSETS:
+    asset = await service.get(NS_ASSETS, asset_id)
+    if asset is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Asset '{asset_id}' not found.")
-    revs = _ASSET_REVISIONS.get(asset_id, [])
+    revs = await service.list(NS_ASSET_REVISIONS)
+    revs = [r for r in revs if r.get("asset_id") == asset_id]
     return [AssetRevisionResource(**r) for r in revs]
 
 
 @router.get("/{asset_id}/provenance", response_model=AssetProvenance, operation_id="assets.getProvenance")
-async def get_asset_provenance(asset_id: str = Path(...)) -> AssetProvenance:
+async def get_asset_provenance(
+    asset_id: str = Path(...),
+    service: V3ResourceService = Depends(get_v3_resource_service),
+) -> AssetProvenance:
     """Get the provenance chain for an asset."""
-    if asset_id not in _ASSETS:
+    asset = await service.get(NS_ASSETS, asset_id)
+    if asset is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Asset '{asset_id}' not found.")
-    return AssetProvenance(**_ASSETS[asset_id]["provenance"])
+    return AssetProvenance(**asset["provenance"])
 
 
 @router.get("/{asset_id}/dependencies", response_model=List[str], operation_id="assets.getDependencies")
-async def get_asset_dependencies(asset_id: str = Path(...)) -> List[str]:
+async def get_asset_dependencies(
+    asset_id: str = Path(...),
+    service: V3ResourceService = Depends(get_v3_resource_service),
+) -> List[str]:
     """Get downstream asset IDs that depend on this asset (e.g., composited renders)."""
-    if asset_id not in _ASSETS:
+    asset = await service.get(NS_ASSETS, asset_id)
+    if asset is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Asset '{asset_id}' not found.")
-    # In-memory: find assets with parent_revision_id matching any revision of this asset
-    my_revisions = {r["revision_id"] for r in _ASSET_REVISIONS.get(asset_id, [])}
+    revisions = await service.list(NS_ASSET_REVISIONS)
+    my_revisions = {r["revision_id"] for r in revisions if r.get("asset_id") == asset_id}
+    assets = await service.list(NS_ASSETS)
     deps = [
-        a["id"] for a in _ASSETS.values()
+        a["id"] for a in assets
         if a.get("provenance", {}).get("parent_revision_id") in my_revisions and a["id"] != asset_id
     ]
     return deps
 
 
 @router.post("/{asset_id}/actions/approve", response_model=AssetResource, operation_id="assets.approve")
-async def approve_asset(asset_id: str = Path(...), body: ApproveAssetRequest = ...) -> AssetResource:
+async def approve_asset(
+    asset_id: str = Path(...),
+    body: ApproveAssetRequest = ...,
+    service: V3ResourceService = Depends(get_v3_resource_service),
+) -> AssetResource:
     """Approve an asset at a specific revision. Cannot approve a mutable (un-versioned) asset."""
-    if asset_id not in _ASSETS:
+    asset = await service.get(NS_ASSETS, asset_id)
+    if asset is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Asset '{asset_id}' not found.")
-    # Verify the revision exists
-    revisions = _ASSET_REVISIONS.get(asset_id, [])
+    revisions = await service.list(NS_ASSET_REVISIONS)
+    revisions = [r for r in revisions if r.get("asset_id") == asset_id]
     rev_ids = {r["revision_id"] for r in revisions}
     if body.revision_id not in rev_ids:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=f"Revision '{body.revision_id}' not found for asset '{asset_id}'.")
 
     now = utc_now().isoformat()
-    _ASSETS[asset_id]["status"] = "APPROVED"
-    _ASSETS[asset_id]["version"] += 1
-    _ASSETS[asset_id]["updated_at"] = now
+    updates = dict(asset)
+    updates["status"] = "APPROVED"
+    updates["updated_at"] = now
+    updated = await service.update(NS_ASSETS, asset_id, updates, asset["version"])
 
     for r in revisions:
         if r["revision_id"] == body.revision_id:
-            r["status"] = "APPROVED"
+            rev_updates = dict(r)
+            rev_updates["status"] = "APPROVED"
+            await service.update(NS_ASSET_REVISIONS, r["revision_id"], rev_updates, r["version"])
             break
 
-    return _asset_to_resource(_ASSETS[asset_id])
+    return _asset_to_resource(updated)
 
 
 @router.post("/{asset_id}/actions/reject", response_model=AssetResource, operation_id="assets.reject")
-async def reject_asset(asset_id: str = Path(...), body: RejectAssetRequest = ...) -> AssetResource:
+async def reject_asset(
+    asset_id: str = Path(...),
+    body: RejectAssetRequest = ...,
+    service: V3ResourceService = Depends(get_v3_resource_service),
+) -> AssetResource:
     """Reject an asset at a specific revision with feedback."""
-    if asset_id not in _ASSETS:
+    asset = await service.get(NS_ASSETS, asset_id)
+    if asset is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Asset '{asset_id}' not found.")
-    revisions = _ASSET_REVISIONS.get(asset_id, [])
+    revisions = await service.list(NS_ASSET_REVISIONS)
+    revisions = [r for r in revisions if r.get("asset_id") == asset_id]
     rev_ids = {r["revision_id"] for r in revisions}
     if body.revision_id not in rev_ids:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=f"Revision '{body.revision_id}' not found for asset '{asset_id}'.")
 
     now = utc_now().isoformat()
-    _ASSETS[asset_id]["status"] = "REJECTED"
-    _ASSETS[asset_id]["version"] += 1
-    _ASSETS[asset_id]["updated_at"] = now
+    updates = dict(asset)
+    updates["status"] = "REJECTED"
+    updates["updated_at"] = now
+    updated = await service.update(NS_ASSETS, asset_id, updates, asset["version"])
 
     for r in revisions:
         if r["revision_id"] == body.revision_id:
-            r["status"] = "REJECTED"
+            rev_updates = dict(r)
+            rev_updates["status"] = "REJECTED"
+            await service.update(NS_ASSET_REVISIONS, r["revision_id"], rev_updates, r["version"])
             break
 
-    return _asset_to_resource(_ASSETS[asset_id])
+    return _asset_to_resource(updated)

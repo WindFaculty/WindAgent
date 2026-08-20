@@ -14,7 +14,7 @@ import html
 import json
 from typing import Any, Dict, List, Optional
 
-from windagent_workflows.code_video.contracts import Action, ActionType
+from windagent_core.contracts.code_video import Action, ActionType
 from windagent_tools.code_video.renderer.theme import CodeVideoVisualTheme
 
 

@@ -91,7 +91,7 @@ def test_task_scheduler_concurrency_and_priority_locks():
 
 @pytest.mark.asyncio
 async def test_step_dispatcher_duplicate_prevention(in_memory_db):
-    lease_mgr = LeaseManager(uow_factory=in_memory_db.session_factory)
+    lease_mgr = LeaseManager(uow_factory=lambda: SqlUnitOfWork(in_memory_db.session_factory))
     dispatcher = StepDispatcher(lease_manager=lease_mgr, runtime_port=FakeRuntimeAdapter())
     step = WorkflowStep(id=StepId.generate(), order=1, name="Step 1", tool_name="read_file")
     run_id = "run_100"
@@ -130,7 +130,7 @@ async def test_recovery_manager_protection_against_destructive_tools(in_memory_d
         await uow.commit()
 
     # RecoveryManager scans session events
-    rec_manager = RecoveryManager(session_factory=in_memory_db.session_factory)
+    rec_manager = RecoveryManager(uow_factory=lambda: SqlUnitOfWork(in_memory_db.session_factory))
     results = await rec_manager.scan_and_reconcile_in_flight_runs(sid)
 
     assert len(results) == 1

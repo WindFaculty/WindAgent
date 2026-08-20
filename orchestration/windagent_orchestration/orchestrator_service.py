@@ -22,10 +22,34 @@ from windagent_core.contracts.execution import (
     RuntimeStatusEnum,
 )
 from windagent_core.contracts.providers.requests import ProviderRequest
+from windagent_core.domain.lifecycle import utc_now
+from windagent_core.errors.exceptions import NotFoundError
 from windagent_core.security.redaction import redact_before_persist
+from windagent_core.contracts.repositories.multi_agent_repository import MultiAgentRepositoryPort
 from windagent_orchestration.durable_plan_scheduler import DurablePlanScheduler
 from windagent_orchestration.release.rollout import MultiAgentReleasePolicy
-from windagent_storage.repositories.multi_agent_repository import MultiAgentRepository
+
+
+# Canonical multi-agent runtime statuses -> existing V3 API enum strings.
+# The mapping is explicit and symmetric; the API schema is never changed.
+_CANONICAL_TO_API_STATUS: dict[str, str] = {
+    "active": "ACTIVE",
+    "running": "RUNNING",
+    "dispatching": "RUNNING",
+    "idle": "IDLE",
+    "queued": "IDLE",
+    "created": "IDLE",
+    "completed": "TERMINATED",
+    "failed": "TERMINATED",
+    "cancelled": "TERMINATED",
+}
+
+_API_TO_CANONICAL_STATUS: dict[str, str] = {
+    "ACTIVE": "active",
+    "RUNNING": "running",
+    "IDLE": "idle",
+    "TERMINATED": "cancelled",
+}
 
 
 @dataclass(frozen=True)
@@ -158,15 +182,21 @@ class OrchestratorService:
     def __init__(
         self,
         session_factory: Any,
-        execution_registry: ExecutionRuntimePort,
+        execution_registry: ExecutionRuntimePort | None = None,
         route_lock_service: Any | None = None,
         provider_execution_coordinator: Any | None = None,
         worktree_manager: Any | None = None,
         release_policy: MultiAgentReleasePolicy | None = None,
         release_telemetry: Any | None = None,
         studio_run_extension: Any | None = None,
+        repo_factory: Callable[[Any], MultiAgentRepositoryPort] | None = None,
     ) -> None:
         self._session_factory = session_factory
+        # Phase 7: the execution runtime port is optional.  The API composes
+        # this service with no runtime (control-plane mode): dispatch/reattach/
+        # cancel/poll methods fail closed or return queued results for Worker
+        # pickup.  Worker composition and direct orchestration tests still pass
+        # a real runtime.
         self._execution_registry = execution_registry
         self._route_lock_service = route_lock_service
         self._provider_execution_coordinator = provider_execution_coordinator
@@ -178,9 +208,25 @@ class OrchestratorService:
         # Extension seam for Studio run commands (Plan A A4). Inert until a
         # Studio phase wires it; existing callers never see it.
         self._studio_run_extension = studio_run_extension
-        self._plan_scheduler = DurablePlanScheduler(session_factory)
+        self._repo_factory = repo_factory
+        self._plan_scheduler = DurablePlanScheduler(
+            repo_factory=repo_factory, session_factory=session_factory
+        )
         self._live_runs: dict[str, _LiveRun] = {}
         self._registry_lock = asyncio.Lock()
+
+    @property
+    def _has_runtime(self) -> bool:
+        """True when a real execution runtime port is composed."""
+        return self._execution_registry is not None
+
+    def _repo(self, session: Any):
+        if self._repo_factory is not None:
+            return self._repo_factory(session)
+        raise RuntimeError(
+            "OrchestratorService requires a repo_factory (MultiAgentRepository factory) "
+            "to be injected by a composition root."
+        )
 
     async def submit_goal(
         self,
@@ -213,7 +259,7 @@ class OrchestratorService:
 
         launches: list[dict[str, Any]] = []
         async with self._session_factory() as session:
-            repo = MultiAgentRepository(session)
+            repo = self._repo(session)
             await repo.ensure_conversation(conversation_id, title)
             orchestrator_instance_id, orchestrator_session_id, created = (
                 await repo.get_or_create_orchestrator(
@@ -296,8 +342,16 @@ class OrchestratorService:
         # The durable scheduler, not WorkflowEngine's in-memory state, chooses
         # the initial runnable frontier.  Dependent nodes remain queued until
         # their pinned-plan parents terminally complete.
-        dispatched = await self._dispatch_ready_nodes(parent_task_id)
-        dispatched_by_run = {item.agent_run_id: item for item in dispatched}
+        #
+        # Phase 7 control-plane mode: with no execution runtime composed, the
+        # durable plan/ownership rows above are persisted but no subprocess is
+        # dispatched.  Every returned agent stays ``queued`` for Worker pickup;
+        # a run is never marked dispatched without a runtime handle.
+        if self._has_runtime:
+            dispatched = await self._dispatch_ready_nodes(parent_task_id)
+            dispatched_by_run = {item.agent_run_id: item for item in dispatched}
+        else:
+            dispatched_by_run = {}
         result_launches = [
             dispatched_by_run.get(
                 str(launch["agent_run_id"]),
@@ -344,7 +398,7 @@ class OrchestratorService:
 
         plan_version_id = self._new_id()
         async with self._session_factory() as session:
-            repo = MultiAgentRepository(session)
+            repo = self._repo(session)
             context = await repo.revision_context(
                 conversation_id=conversation_id,
                 parent_task_id=parent_task_id,
@@ -408,10 +462,20 @@ class OrchestratorService:
     async def stop_agent(self, agent_instance_id: str, *, conversation_id: str | None = None) -> bool:
         """Cancel only the selected agent's live runs; never its siblings."""
         async with self._session_factory() as session:
-            repo = MultiAgentRepository(session)
+            repo = self._repo(session)
             runs = await repo.active_runs_for_agent(agent_instance_id, conversation_id)
             if not runs:
                 return False
+
+        if not self._has_runtime:
+            # Control-plane mode: these active runs (queued/dispatching/running)
+            # belong to the Worker's execution runtime, which is not composed
+            # here.  Fail closed before any runtime/worktree/durable mutation so
+            # this API never claims it cancelled execution it never owned.
+            raise RuntimeError(
+                f"execution runtime is not composed; cannot stop agent instance "
+                f"'{agent_instance_id}' with active runs"
+            )
 
         for run in runs:
             live = self._live_runs.get(str(run["agent_run_id"]))
@@ -424,7 +488,7 @@ class OrchestratorService:
         await self._cleanup_agent_worktree(agent_instance_id, conversation_id)
 
         async with self._session_factory() as session:
-            repo = MultiAgentRepository(session)
+            repo = self._repo(session)
             cancelled = await repo.mark_agent_cancelled(agent_instance_id, conversation_id)
             for run in cancelled:
                 await repo.append_event(
@@ -459,7 +523,7 @@ class OrchestratorService:
         )
         runtime_orphans = set(worktree_report.runtime_orphaned_agent_instance_ids)
         async with self._session_factory() as session:
-            rows = await MultiAgentRepository(session).live_runs_with_owners()
+            rows = await self._repo(session).live_runs_with_owners()
 
         reattached: list[str] = []
         orphaned: list[str] = []
@@ -487,7 +551,7 @@ class OrchestratorService:
 
         if orphaned or reattached:
             async with self._session_factory() as session:
-                repo = MultiAgentRepository(session)
+                repo = self._repo(session)
                 for run_id in reattached:
                     await repo.mark_reattached(run_id)
                 for run_id in orphaned:
@@ -512,7 +576,7 @@ class OrchestratorService:
         if self._route_lock_service is None:
             return ()
         async with self._session_factory() as session:
-            rows = await MultiAgentRepository(session).live_runs_with_owners()
+            rows = await self._repo(session).live_runs_with_owners()
         lock_ids: list[str] = []
         for row in rows:
             if not row.get("owner_agent_session_id"):
@@ -539,7 +603,7 @@ class OrchestratorService:
             return WorktreeReconcileReport()
 
         async with self._session_factory() as session:
-            rows = await MultiAgentRepository(session).worktrees_for_reconciliation()
+            rows = await self._repo(session).worktrees_for_reconciliation()
 
         attached: list[str] = []
         cleaned: list[str] = []
@@ -561,7 +625,7 @@ class OrchestratorService:
             if not exists and error is None:
                 error = "worktree missing from git worktree list during startup reconciliation"
             async with self._session_factory() as session:
-                repo = MultiAgentRepository(session)
+                repo = self._repo(session)
                 await repo.record_worktree_cleanup(
                     worktree_id=allocation.worktree_id,
                     status=status,
@@ -591,12 +655,12 @@ class OrchestratorService:
 
     async def list_agents(self, conversation_id: str) -> list[dict[str, Any]]:
         async with self._session_factory() as session:
-            return await MultiAgentRepository(session).list_agents(conversation_id)
+            return await self._repo(session).list_agents(conversation_id)
 
     async def list_task_graphs(self, conversation_id: str) -> list[dict[str, Any]]:
         """Expose persisted active plan snapshots for the read-only workspace."""
         async with self._session_factory() as session:
-            return await MultiAgentRepository(session).list_task_graphs(conversation_id)
+            return await self._repo(session).list_task_graphs(conversation_id)
 
     async def list_plan_versions(
         self,
@@ -606,10 +670,300 @@ class OrchestratorService:
     ) -> list[dict[str, Any]]:
         """Expose the full immutable snapshot history for a parent task."""
         async with self._session_factory() as session:
-            return await MultiAgentRepository(session).list_plan_versions(
+            return await self._repo(session).list_plan_versions(
                 conversation_id=conversation_id,
                 parent_task_id=parent_task_id,
             )
+
+    # ─────────────────────────────────────────────────────────────────────
+    # Control-plane seam (P4-R4B): V3 conversation/agent compatibility
+    # surface.  These methods own sessions/transactions and expose the
+    # dedicated multi-agent authority; routers never create repositories or
+    # sessions.
+    # ─────────────────────────────────────────────────────────────────────
+
+    async def create_conversation(
+        self,
+        *,
+        conversation_id: str,
+        title: str | None,
+        objective: str,
+        plan_version_id: str | None = None,
+        orchestrator_instance_id: str | None = None,
+    ) -> dict[str, Any]:
+        """Persist the canonical conversation, its orchestrator instance/session,
+        and the start event atomically; return a ``ConversationResource``
+        projection.
+        """
+        objective = objective.strip()
+        if not objective:
+            raise ValueError("objective must not be empty")
+        orch_inst_id = orchestrator_instance_id or self._new_id()
+        orch_session_id = self._new_id()
+        async with self._session_factory() as session:
+            repo = self._repo(session)
+            projection = await repo.create_conversation(
+                conversation_id=conversation_id,
+                title=title,
+                objective=objective,
+                plan_version_id=plan_version_id,
+                orchestrator_instance_id=orch_inst_id,
+            )
+            orch_inst_id, orch_session_id, created = (
+                await repo.get_or_create_orchestrator(
+                    conversation_id, orch_inst_id, orch_session_id
+                )
+            )
+            if created:
+                await repo.append_event(
+                    event_id=self._new_id(),
+                    conversation_id=conversation_id,
+                    event_type="conversation.started",
+                    data={"objective": objective},
+                    agent_instance_id=orch_inst_id,
+                    agent_session_id=orch_session_id,
+                )
+            await session.commit()
+        return self._project_conversation(projection)
+
+    async def get_conversation(self, conversation_id: str) -> dict[str, Any] | None:
+        async with self._session_factory() as session:
+            projection = await self._repo(session).get_conversation(conversation_id)
+        return self._project_conversation(projection) if projection else None
+
+    async def list_conversations(self) -> list[dict[str, Any]]:
+        async with self._session_factory() as session:
+            projections = await self._repo(session).list_conversations()
+        return [self._project_conversation(projection) for projection in projections]
+
+    async def launch_agent(
+        self,
+        *,
+        agent_instance_id: str,
+        conversation_id: str,
+        definition_id: str,
+        agent_type: str = "generalist",
+        canonical_model_id: str | None = None,
+        runtime_metadata: Mapping[str, Any] | None = None,
+        status: str = "running",
+    ) -> dict[str, Any]:
+        """Persist a control-plane agent instance plus its session atomically."""
+        agent_session_id = self._new_id()
+        async with self._session_factory() as session:
+            repo = self._repo(session)
+            # Transaction-local invariant: the conversation must exist in the
+            # same session/transaction that persists the agent instance and
+            # event. This closes the router's check-then-use gap and prevents a
+            # raw foreign-key/integrity failure for a direct orchestration
+            # caller. Raising here rolls back the open transaction, so neither
+            # the agent instance/session nor the conversation event is written.
+            if await repo.get_conversation(conversation_id) is None:
+                raise NotFoundError(f"Conversation '{conversation_id}' not found")
+            projection = await repo.create_agent_instance(
+                agent_instance_id=agent_instance_id,
+                conversation_id=conversation_id,
+                agent_session_id=agent_session_id,
+                agent_type=agent_type,
+                definition_id=definition_id,
+                canonical_model_id=canonical_model_id,
+                runtime_metadata=runtime_metadata,
+                status=status,
+                started_at=utc_now().isoformat() if status == "running" else None,
+            )
+            await repo.append_event(
+                event_id=self._new_id(),
+                conversation_id=conversation_id,
+                event_type="agent_instance_launched",
+                data={
+                    "agent_instance_id": agent_instance_id,
+                    "definition_id": definition_id,
+                },
+                agent_instance_id=agent_instance_id,
+                agent_session_id=agent_session_id,
+            )
+            await session.commit()
+        return self._project_agent(projection)
+
+    async def get_agent_instance(self, agent_instance_id: str) -> dict[str, Any] | None:
+        async with self._session_factory() as session:
+            projection = await self._repo(session).get_agent_instance(agent_instance_id)
+        return self._project_agent(projection) if projection else None
+
+    async def list_agent_instances(
+        self, conversation_id: str | None = None
+    ) -> list[dict[str, Any]]:
+        async with self._session_factory() as session:
+            projections = await self._repo(session).list_agent_instances(conversation_id)
+        return [self._project_agent(projection) for projection in projections]
+
+    async def start_agent(self, agent_instance_id: str) -> dict[str, Any] | None:
+        """Control-plane start; fails closed while a real run is still live.
+
+        An instance that ever had a real ``agent_runs`` row (live or terminal)
+        cannot be control-started: doing so would mark it RUNNING without
+        resurrecting that runtime. Control-only instances with no run history
+        keep the existing start compatibility behavior.
+        """
+        async with self._session_factory() as session:
+            repo = self._repo(session)
+            runs = await repo.active_runs_for_agent(agent_instance_id)
+            if runs:
+                raise RuntimeError(
+                    f"agent instance '{agent_instance_id}' has live runs; cannot control-start"
+                )
+            if await repo.has_agent_run_history(agent_instance_id):
+                raise RuntimeError(
+                    f"agent instance '{agent_instance_id}' has real run history; "
+                    "cannot control-start without resurrecting a runtime"
+                )
+        now_iso = utc_now().isoformat()
+        async with self._session_factory() as session:
+            repo = self._repo(session)
+            projection = await repo.transition_agent_lifecycle(
+                agent_instance_id=agent_instance_id,
+                target_status="running",
+                profile_updates={
+                    "started_at": now_iso,
+                    "stopped_at": None,
+                    "current_tool": None,
+                },
+            )
+            if projection is None:
+                await session.rollback()
+                return None
+            await repo.append_event(
+                event_id=self._new_id(),
+                conversation_id=projection["conversation_id"],
+                event_type="agent_instance_started",
+                data={"agent_instance_id": agent_instance_id},
+                agent_instance_id=agent_instance_id,
+            )
+            await session.commit()
+        return self._project_agent(projection)
+
+    async def stop_agent_instance(
+        self, agent_instance_id: str, conversation_id: str | None = None
+    ) -> dict[str, Any] | None:
+        """Stop an agent instance.
+
+        Real runtime cancellation is preserved through ``stop_agent`` when live
+        runs exist; instances with no active run get a control lifecycle update.
+        """
+        async with self._session_factory() as session:
+            repo = self._repo(session)
+            runs = await repo.active_runs_for_agent(agent_instance_id, conversation_id)
+        if runs:
+            await self.stop_agent(agent_instance_id, conversation_id=conversation_id)
+        else:
+            now_iso = utc_now().isoformat()
+            async with self._session_factory() as session:
+                repo = self._repo(session)
+                projection = await repo.transition_agent_lifecycle(
+                    agent_instance_id=agent_instance_id,
+                    target_status="cancelled",
+                    profile_updates={"stopped_at": now_iso, "current_tool": None},
+                )
+                if projection is None:
+                    await session.rollback()
+                    return None
+                await repo.append_event(
+                    event_id=self._new_id(),
+                    conversation_id=projection["conversation_id"],
+                    event_type="agent_instance_stopped",
+                    data={"agent_instance_id": agent_instance_id},
+                    agent_instance_id=agent_instance_id,
+                )
+                await session.commit()
+        return await self.get_agent_instance(agent_instance_id)
+
+    async def restart_agent(self, agent_instance_id: str) -> dict[str, Any] | None:
+        """Control-plane restart; fails closed while a real run is still live.
+
+        A control restart never claims a runtime was resurrected for an agent
+        with an existing real-run state that cannot safely be restarted. An
+        instance that ever had a real ``agent_runs`` row (live or terminal)
+        cannot be control-restarted; control-only instances with no run history
+        keep the existing restart compatibility behavior.
+        """
+        async with self._session_factory() as session:
+            repo = self._repo(session)
+            runs = await repo.active_runs_for_agent(agent_instance_id)
+            if runs:
+                raise RuntimeError(
+                    f"agent instance '{agent_instance_id}' has live runs; cannot restart"
+                )
+            if await repo.has_agent_run_history(agent_instance_id):
+                raise RuntimeError(
+                    f"agent instance '{agent_instance_id}' has real run history; "
+                    "cannot control-restart without resurrecting a runtime"
+                )
+        now_iso = utc_now().isoformat()
+        async with self._session_factory() as session:
+            repo = self._repo(session)
+            projection = await repo.transition_agent_lifecycle(
+                agent_instance_id=agent_instance_id,
+                target_status="running",
+                profile_updates={
+                    "started_at": now_iso,
+                    "stopped_at": None,
+                    "current_tool": None,
+                },
+            )
+            if projection is None:
+                await session.rollback()
+                return None
+            await repo.append_event(
+                event_id=self._new_id(),
+                conversation_id=projection["conversation_id"],
+                event_type="agent_instance_restarted",
+                data={"agent_instance_id": agent_instance_id},
+                agent_instance_id=agent_instance_id,
+            )
+            await session.commit()
+        return self._project_agent(projection)
+
+    async def conversation_events(self, conversation_id: str) -> list[dict[str, Any]]:
+        """Return the authoritative ordered event replay for one conversation."""
+        async with self._session_factory() as session:
+            return await self._repo(session).conversation_events_after(conversation_id)
+
+    async def append_demo_event(
+        self,
+        *,
+        event_id: str,
+        conversation_id: str,
+        event_type: str,
+        payload: Mapping[str, Any],
+    ) -> None:
+        """Idempotently append a demo event through the dedicated event store."""
+        async with self._session_factory() as session:
+            await self._repo(session).append_event_if_absent(
+                event_id=event_id,
+                conversation_id=conversation_id,
+                event_type=event_type,
+                data=payload,
+            )
+            await session.commit()
+
+    @staticmethod
+    def _project_conversation(conv: Mapping[str, Any]) -> dict[str, Any]:
+        projection = dict(conv)
+        projection["status"] = _CANONICAL_TO_API_STATUS.get(
+            str(projection.get("status", "")), projection.get("status", "ACTIVE")
+        )
+        return projection
+
+    @staticmethod
+    def _project_agent(inst: Mapping[str, Any]) -> dict[str, Any]:
+        projection = dict(inst)
+        projection["status"] = _CANONICAL_TO_API_STATUS.get(
+            str(projection.get("status", "")), projection.get("status", "IDLE")
+        )
+        return projection
+
+    @staticmethod
+    def _canonical_status(api_status: str) -> str:
+        return _API_TO_CANONICAL_STATUS.get(api_status.upper(), api_status.lower())
 
     async def complete_agent_node(
         self,
@@ -628,7 +982,7 @@ class OrchestratorService:
         explicit precedence.
         """
         async with self._session_factory() as session:
-            repo = MultiAgentRepository(session)
+            repo = self._repo(session)
             run = await repo.running_agent_run(agent_instance_id, conversation_id, fencing_token)
             if run is None:
                 return NodeCompletionResult(applied=False)
@@ -673,6 +1027,10 @@ class OrchestratorService:
 
     async def schedule_due_nodes(self, parent_task_id: str | None = None) -> tuple[AgentLaunch, ...]:
         """Run one production scheduler tick; safe to call after recovery."""
+        if not self._has_runtime:
+            # Control-plane mode: no runtime exists, so nothing can be claimed
+            # or dispatched.  Durable rows remain queued for Worker pickup.
+            return ()
         if parent_task_id is None:
             claims = await self._plan_scheduler.claim_ready_nodes()
             return tuple(await self._dispatch_claimed_nodes(claims))
@@ -680,6 +1038,8 @@ class OrchestratorService:
 
     async def reconcile_runtime_completions(self) -> tuple[str, ...]:
         """Advance durable plans from terminal runtime handles after restart/ticks."""
+        if not self._has_runtime:
+            return ()
         completed: list[str] = []
         for live in tuple(self._live_runs.values()):
             status = await self._execution_registry.get_status(live.handle)
@@ -710,7 +1070,7 @@ class OrchestratorService:
         """Reserve a unique ToolExecution before an agent causes side effects."""
         claimant = agent_instance_id or "orchestrator"
         async with self._session_factory() as session:
-            reservation = await MultiAgentRepository(session).reserve_tool_execution(
+            reservation = await self._repo(session).reserve_tool_execution(
                 tool_execution_id=self._new_id(),
                 idempotency_key=idempotency_key,
                 agent_instance_id=agent_instance_id,
@@ -731,7 +1091,7 @@ class OrchestratorService:
 
         _, result_ref = await operation()
         async with self._session_factory() as session:
-            completed = await MultiAgentRepository(session).complete_tool_execution(
+            completed = await self._repo(session).complete_tool_execution(
                 tool_execution_id=str(reservation["tool_execution_id"]),
                 claimant=claimant,
                 result_ref=result_ref,
@@ -790,7 +1150,7 @@ class OrchestratorService:
         """Persist a redacted partial artifact without polluting transcripts."""
         partial_artifact_id = self._new_id()
         async with self._session_factory() as session:
-            repo = MultiAgentRepository(session)
+            repo = self._repo(session)
             run = (
                 await repo.routable_agent_run(agent_instance_id, conversation_id)
                 if agent_instance_id is not None
@@ -850,7 +1210,7 @@ class OrchestratorService:
             raise ValueError("prompt must not be empty")
 
         async with self._session_factory() as session:
-            repo = MultiAgentRepository(session)
+            repo = self._repo(session)
             run = await repo.routable_agent_run(agent_instance_id, conversation_id)
             if run is None:
                 raise LookupError("running agent not found")
@@ -922,7 +1282,7 @@ class OrchestratorService:
             "completion_tokens": response.usage.completion_tokens,
         }
         async with self._session_factory() as session:
-            repo = MultiAgentRepository(session)
+            repo = self._repo(session)
             await repo.complete_agent_turn(
                 turn_id=turn_id,
                 agent_run_id=str(run["agent_run_id"]),
@@ -952,13 +1312,13 @@ class OrchestratorService:
 
     async def list_routing_turns(self, conversation_id: str) -> list[dict[str, Any]]:
         async with self._session_factory() as session:
-            return await MultiAgentRepository(session).list_routing_turns(conversation_id)
+            return await self._repo(session).list_routing_turns(conversation_id)
 
     async def routing_turn_detail(
         self, conversation_id: str, turn_id: str
     ) -> dict[str, Any] | None:
         async with self._session_factory() as session:
-            return await MultiAgentRepository(session).routing_turn_detail(conversation_id, turn_id)
+            return await self._repo(session).routing_turn_detail(conversation_id, turn_id)
 
     async def _dispatch_agent_run(
         self,
@@ -968,7 +1328,14 @@ class OrchestratorService:
         plan_version_id: str,
         launch: Mapping[str, Any],
     ) -> AgentLaunch:
-        worktree: WorktreeAllocation | None = None
+        if not self._has_runtime:
+            # Fail closed before any mutation: no runtime handle exists, so a
+            # run must never be marked dispatched.  The durable submission
+            # contract (queued rows) is preserved for Worker pickup.
+            raise RuntimeError(
+                "execution runtime is not composed; cannot dispatch agent runs"
+            )
+        worktree: Any | None = None
         try:
             routing_snapshot = self._acquire_route_lock(launch)
             if str(launch["agent_type"]) == "coding":
@@ -1002,7 +1369,7 @@ class OrchestratorService:
             )
         except Exception as exc:
             async with self._session_factory() as session:
-                repo = MultiAgentRepository(session)
+                repo = self._repo(session)
                 await repo.record_dispatch_failure(str(launch["agent_run_id"]), str(exc))
                 await repo.release_concurrency_lock(str(launch["task_node_run_id"]))
                 await repo.append_event(
@@ -1029,7 +1396,7 @@ class OrchestratorService:
             )
 
         async with self._session_factory() as session:
-            repo = MultiAgentRepository(session)
+            repo = self._repo(session)
             await repo.record_dispatch(
                 agent_run_id=str(launch["agent_run_id"]),
                 agent_instance_id=str(launch["agent_instance_id"]),
@@ -1078,12 +1445,18 @@ class OrchestratorService:
         )
 
     async def _dispatch_ready_nodes(self, parent_task_id: str) -> list[AgentLaunch]:
+        if not self._has_runtime:
+            # Control-plane mode: never claim nodes for a runtime that does not
+            # exist.  The durable rows stay queued for Worker pickup.
+            return []
         claims = await self._plan_scheduler.claim_ready_nodes(parent_task_id)
         return await self._dispatch_claimed_nodes(claims)
 
     async def _dispatch_claimed_nodes(
         self, claims: Sequence[Mapping[str, Any]]
     ) -> list[AgentLaunch]:
+        if not self._has_runtime:
+            return []
         dispatched: list[AgentLaunch] = []
         for claim in claims:
             dispatched.append(
@@ -1103,6 +1476,8 @@ class OrchestratorService:
         agent_instance_id: str,
         handle: ExecutionHandle,
     ) -> None:
+        if not self._has_runtime:
+            return
         status = await self._execution_registry.get_status(handle)
         if status.status not in (RuntimeStatusEnum.COMPLETED, RuntimeStatusEnum.FAILED):
             return
@@ -1157,7 +1532,7 @@ class OrchestratorService:
         error_class: str,
     ) -> None:
         async with self._session_factory() as session:
-            repo = MultiAgentRepository(session)
+            repo = self._repo(session)
             await repo.fail_agent_turn(
                 turn_id=turn_id,
                 agent_run_id=agent_run_id,
@@ -1175,6 +1550,8 @@ class OrchestratorService:
             await session.commit()
 
     async def _reattach_handle(self, run: Mapping[str, Any]) -> ExecutionHandle | None:
+        if not self._has_runtime:
+            return None
         runtime_run_id = run.get("runtime_run_id")
         if not runtime_run_id:
             return None
@@ -1193,7 +1570,7 @@ class OrchestratorService:
             return None
         agent_instance_id = str(launch["agent_instance_id"])
         async with self._session_factory() as session:
-            existing = await MultiAgentRepository(session).active_worktree_for_agent(agent_instance_id)
+            existing = await self._repo(session).active_worktree_for_agent(agent_instance_id)
         if existing is not None:
             allocation = self._allocation_from_worktree_row(existing)
             if await asyncio.to_thread(self._worktree_manager.is_registered, allocation.path):
@@ -1206,7 +1583,7 @@ class OrchestratorService:
             branch=str(existing["branch"]) if existing is not None else None,
         )
         async with self._session_factory() as session:
-            repo = MultiAgentRepository(session)
+            repo = self._repo(session)
             await repo.upsert_worktree(
                 worktree_id=allocation.worktree_id,
                 agent_instance_id=allocation.agent_instance_id,
@@ -1235,13 +1612,13 @@ class OrchestratorService:
         if self._worktree_manager is None:
             return
         async with self._session_factory() as session:
-            row = await MultiAgentRepository(session).active_worktree_for_agent(agent_instance_id)
+            row = await self._repo(session).active_worktree_for_agent(agent_instance_id)
         if row is None:
             return
         allocation = self._allocation_from_worktree_row(row)
         cleanup = await asyncio.to_thread(self._worktree_manager.cleanup_worktree, allocation)
         async with self._session_factory() as session:
-            repo = MultiAgentRepository(session)
+            repo = self._repo(session)
             await repo.record_worktree_cleanup(
                 worktree_id=allocation.worktree_id,
                 status=cleanup.status,
@@ -1273,13 +1650,13 @@ class OrchestratorService:
         )
 
     async def _conversation_id_for_run(self, session: Any, run: Mapping[str, Any]) -> str:
-        return await MultiAgentRepository(session).conversation_id_for_parent_task(
+        return await self._repo(session).conversation_id_for_parent_task(
             str(run["parent_task_id"])
         )
 
     async def _conversation_id_for_agent(self, agent_instance_id: str) -> str:
         async with self._session_factory() as session:
-            return await MultiAgentRepository(session).conversation_id_for_agent(agent_instance_id)
+            return await self._repo(session).conversation_id_for_agent(agent_instance_id)
 
     @staticmethod
     def _derive_agent_type(objective: str) -> str:

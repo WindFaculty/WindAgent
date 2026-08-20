@@ -50,6 +50,7 @@ from windagent_worker.composition import (
 from windagent_storage.database.connection import DatabaseManager
 from windagent_storage.orm.models import BaseORM
 from windagent_storage.studio.task_submission import StudioTaskSubmissionAdapter
+from windagent_storage.unit_of_work.studio_uow import StudioUnitOfWork
 from windagent_worker.studio_runtime import StudioRuntimeAdapter
 from tests.fakes.routing_fakes import InMemoryLockStore
 
@@ -175,7 +176,10 @@ def _build_real_port(stub: StubProviderAdapter) -> RouteLockedModelPort:
 
 
 async def _seed(db) -> tuple[SeriesProjectId, EpisodeId]:
-    service = StudioRunService(db.session_factory, StudioTaskSubmissionAdapter(db.session_factory))
+    service = StudioRunService(
+        lambda: StudioUnitOfWork(db.session_factory),
+        StudioTaskSubmissionAdapter(db.session_factory),
+    )
     series = await service.create_series(
         CreateSeriesCommand(idempotency_key="a6-series", title="A6 Series")
     )

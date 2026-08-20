@@ -17,7 +17,7 @@ import json
 import re
 from typing import Any, Dict, List, Optional, Tuple
 
-from windagent_workflows.code_video.contracts import CodeVideoPlan
+from windagent_core.contracts.code_video import CodeVideoPlan
 from windagent_tools.code_video.renderer.theme import CodeVideoVisualTheme
 from windagent_tools.code_video.renderer.graphics_catalog import (
     AssetClassification,

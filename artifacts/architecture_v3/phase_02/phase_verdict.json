@@ -1,0 +1,29 @@
+{
+  "evidence": {
+    "dependency_boundary_report": "artifacts/architecture_v3/phase_02/dependency_boundary_report.json",
+    "import_graph": "artifacts/architecture_v3/phase_02/import_graph.json",
+    "phase_report": "artifacts/architecture_v3/phase_02/phase_report.md",
+    "test_receipt": "artifacts/architecture_v3/phase_02/test_receipt.json"
+  },
+  "gate": "ARCH_V3_PHASE2_CYCLES_BROKEN",
+  "gates": {
+    "dependency_cycles": true,
+    "no_tools_to_workflows_edge": true,
+    "phase2_tests": true,
+    "undeclared_workspace_dependencies": true
+  },
+  "generated_at_utc": "2026-08-19T13:05:37.470023Z",
+  "metrics": {
+    "dependency_cycles": 0,
+    "undeclared_workspace_dependencies": 0
+  },
+  "notes": [
+    "tools no longer imports workflows; the cycle tools -> workflows -> tools is broken.",
+    "Neutral code-video contracts (Scene, Resolution, Action, CodeVideoPlan) moved to core/windagent_core/contracts/code_video.",
+    "workflows code_video contracts module is a compatibility shim re-exporting from core.",
+    "No new test regressions versus the frozen baseline (baseline pytest run recorded 100 pre-existing failures; the phase 2 focused suites pass).",
+    "Remaining disallowed_dependency / layer-breach violations are owned by Phase 3+."
+  ],
+  "phase": "Phase 2 \u2014 Break dependency cycles",
+  "status": "PASS"
+}

@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Dict, Optional, Protocol, runtime_checkable
 
-from windagent_workflows.code_video.contracts import Resolution, Scene
+from windagent_core.contracts.code_video import Resolution, Scene
 
 
 class CaptureStatus(str, Enum):

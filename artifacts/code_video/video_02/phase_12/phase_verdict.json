@@ -8,7 +8,7 @@
   "verdict": "PASS",
   "dod_matrix_pass_count": 24,
   "dod_matrix_total_count": 24,
-  "program_master_hash": "e6232c7d84f954531aa809eda23e7bfa65d4c950e1abd6edd239b98368b305f0",
+  "program_master_hash": "750d2c91f3a2ecec2b2ed178190e41552a2b5f90b42c11618a9ebbb52cb35e4a",
   "summary": "100% (24/24) Definition of Done criteria certified. Upstream phases Phase 00-11 validated. Handoff package sealed in final/ directory with zero audio streams and exact 975,000 ms visual master.",
-  "certified_at": "2026-08-18T16:58:15.014033+00:00"
+  "certified_at": "2026-08-19T07:54:07.403178+00:00"
 }

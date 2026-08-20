@@ -42,8 +42,8 @@ async def db_factory():
 @pytest.mark.asyncio
 async def test_recovery_leader_lease_concurrency(db_factory):
     """Verify singleton recovery leader lease prevents concurrent secondary node recovery."""
-    rec_leader = RecoveryManager(session_factory=db_factory, instance_id="leader_node_1")
-    rec_follower = RecoveryManager(session_factory=db_factory, instance_id="follower_node_2")
+    rec_leader = RecoveryManager(uow_factory=lambda: SqlUnitOfWork(db_factory), instance_id="leader_node_1")
+    rec_follower = RecoveryManager(uow_factory=lambda: SqlUnitOfWork(db_factory), instance_id="follower_node_2")
 
     report1 = await rec_leader.recover_all_in_flight()
     assert report1.leader_acquired is True
@@ -103,7 +103,7 @@ async def test_recovery_1000_runs_fixed_distribution(db_factory):
 
         await uow.commit()
 
-    rec_manager = RecoveryManager(session_factory=db_factory, instance_id="leader_node_workload")
+    rec_manager = RecoveryManager(uow_factory=lambda: SqlUnitOfWork(db_factory), instance_id="leader_node_workload")
     report = await rec_manager.recover_all_in_flight(batch_size=1500)
 
     assert report.leader_acquired is True

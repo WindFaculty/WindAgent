@@ -13,7 +13,7 @@ from typing import Dict, Optional, Any
 from windagent_core.domain.types import TaskId, SessionId
 from windagent_orchestration.state_machine import TaskState, TaskStateMachine
 from windagent_orchestration.task_manager.facts import DurableExecutionFacts
-from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork
+from windagent_core.contracts.repositories.unit_of_work import UnitOfWorkFactory
 
 logger = logging.getLogger("windagent.orchestration.task_manager")
 
@@ -44,7 +44,7 @@ class TaskManager:
     async def save_durable_facts(self, facts: DurableExecutionFacts) -> int:
         if self.uow_factory:
             try:
-                async with SqlUnitOfWork(self.uow_factory) as uow:
+                async with self.uow_factory() as uow:
                     new_version = await uow.task_runs.save_facts(
                         task_id=str(facts.task_id),
                         session_id=str(facts.session_id),
@@ -63,7 +63,7 @@ class TaskManager:
         if not self.uow_factory:
             return self._in_memory_facts.get(str(task_id))
 
-        async with SqlUnitOfWork(self.uow_factory) as uow:
+        async with self.uow_factory() as uow:
             raw = await uow.task_runs.get_by_id(str(task_id))
             if not raw:
                 return None
@@ -88,7 +88,7 @@ class TaskManager:
         facts.updated_at = datetime.now(timezone.utc)
 
         if self.uow_factory:
-            async with SqlUnitOfWork(self.uow_factory) as uow:
+            async with self.uow_factory() as uow:
                 new_version = await uow.task_runs.save_facts(
                     task_id=str(task_id),
                     session_id=str(session_id),

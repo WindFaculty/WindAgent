@@ -1,2135 +1,1291 @@
-Dưới đây là kế hoạch triển khai chi tiết **Phase 0 → Phase 5** cho đợt **Frontend Architecture V2 + Unified API V3**, dựa trực tiếp trên roadmap bạn gửi và đối chiếu repository `WindFaculty/WindAgent` tại snapshot `ac2c19c59ca3c16c86e81d761c0a70b911bb294e`. 
+# WindAgent — Architecture V3 Optimization & Hardening Plan
 
-Tôi giữ nguyên nguyên tắc quan trọng của roadmap: **không big-bang rewrite, không xóa V2/mock sớm, không thay đổi business/domain logic nếu không cần thiết**.
+## 1. Mục tiêu
 
-Hiện trạng GitHub xác nhận các vấn đề nền tảng cần xử lý trong 0–5:
+Đợt này **không phát triển thêm feature mới**. Mục tiêu là đưa toàn bộ WindAgent về một kiến trúc V3 thống nhất, có dependency graph rõ ràng, một nguồn authority duy nhất cho dữ liệu, realtime contract thực, composition root gọn và worker pipeline dễ kiểm chứng.
 
-* `apps/desktop/src/App.tsx` vẫn tự quản lý `activeTab`, `visitedTabs`, hash routing, health polling, metrics và Tauri detection.
-* Web hiện chỉ import nguyên Desktop App và Desktop CSS.
-* `apps/desktop/src/api/client.ts` vẫn là handwritten client, direct `fetch()`, nhiều `/api/v2/*` và nhiều `v2Unavailable()`.
-* Backend đang đồng thời đăng ký nhiều V2 router và `/api/v3/studio`; middleware lại gắn `/api/v3/studio` làm successor chung cho toàn `/api/v2`, không đúng semantic.
-* `HttpStudioApiClient` hiện là implementation tốt để kế thừa: timeout, typed error, GET retry có giới hạn, mutation bắt buộc idempotency key.
-* Desktop hiện có Redux + Zustand nhưng chưa có router/query architecture mục tiêu.
-* `styles.css` đã khoảng 120 KB và thực ra đã có khá nhiều design token + primitive; Phase 5 vì thế nên **extract/converge**, không viết lại visual từ số 0.
+Baseline kỹ thuật dùng để refactor là:
+
+```text
+ac61c38cdca90100a14ec0ea26c4d19c35f7caa4
+```
+
+Cần đặc biệt lưu ý: nhánh `main` trên GitHub hiện vẫn trỏ tới `7e1cd9fa...` ngày 22/07/2026, trong khi `ac61c38...` là code mới hơn đang được phân tích. Vì vậy phải xác lập source-of-truth trước khi sửa kiến trúc; không được mặc định checkout `main` rồi refactor.
+
+Root workspace hiện vẫn tự nhận là Architecture V2 và chứa toàn bộ package API, Worker, orchestration, providers, tools, workflows, storage...
 
 ---
 
-# Tổng quan Phase 0–5
+# 2. Nguyên tắc của đợt refactor
 
-| Phase | Mục tiêu                                      | Runtime behavior           |
-| ----- | --------------------------------------------- | -------------------------- |
-| **0** | Freeze + inventory toàn bộ frontend/API       | Không đổi                  |
-| **1** | Chốt vocabulary/domain semantics              | Không đổi                  |
-| **2** | Xây nền Unified API V3                        | Additive                   |
-| **3** | OpenAPI → generated client + realtime package | Additive                   |
-| **4** | Shared Frontend App + Router + Providers      | Cutover shell có kiểm soát |
-| **5** | Design System extraction/convergence          | Không redesign             |
+Không rewrite WindAgent từ đầu.
 
-Mốc quan trọng:
+Phải giữ lại các phần đang có giá trị:
 
-```text
-P0 ──> P1 ──> P2 ──> P3 ──> P4 ──> P5
-       │       │       │       │
-       │       │       │       └── Shared Web/Desktop shell
-       │       │       └── Typed/generated transport
-       │       └── Canonical V3 contracts
-       └── Domain vocabulary authority
-```
+* durable SQL queue;
+* lease + fencing token;
+* transactional outbox;
+* atomic finalization;
+* SQLite WAL/local-first;
+* PostgreSQL profile;
+* API / Worker process separation;
+* Studio SQL path đã durable;
+* migration + backup guards;
+* crash recovery.
 
-**Không bắt đầu migrate Dashboard, Projects, Studio... trong Phase 0–5.** Việc migrate feature thực sự bắt đầu từ Phase 6.
+Không được sửa checker chỉ để “làm xanh”.
 
----
+Không được thêm dependency `tools → workflows` để hợp thức hóa cycle.
 
-# Phase 0 — Freeze & Inventory
+Không được thay durable storage bằng in-memory adapter.
 
-## Mục tiêu
+Không được trộn refactor kiến trúc với redesign UI, Blender feature, Live Record feature hay chức năng mới.
 
-Tạo **baseline có thể chứng minh** trước khi thay đổi architecture.
-
-Phase này tuyệt đối không được:
-
-```text
-xóa V2
-xóa mock
-xóa page cũ
-rewrite page
-đổi UI
-đổi endpoint behavior
-sửa business logic
-```
-
-Chỉ được thêm script audit, artifact, test baseline và tài liệu.
-
-### Verdict đề xuất
-
-```text
-FEV3_P0_BASELINE_FROZEN
-```
+Không được xóa legacy/dead code nếu chưa có caller/dependency evidence.
 
 ---
 
-## P0.1 — Khóa baseline
+# 3. Kiến trúc đích
 
-Lưu:
+Kiến trúc V3 nên có dependency direction:
 
 ```text
-repository
-branch
+                         ENTRY POINTS
+                  ┌─────────┼─────────┐
+                  │         │         │
+                 API      Worker      CLI
+                  │         │         │
+                  └──── Composition ──┘
+                            │
+                            ▼
+                  APPLICATION LAYER
+        ┌────────────┬────────────┬────────────┐
+        │            │            │            │
+ Orchestration   Workflows   Intelligence    Skills
+        │            │            │
+        ├──────── Context / Memory / Verification
+        │
+        ▼
+                  CORE / PORTS
+        ┌──────────────────────────────┐
+        │ Domain                      │
+        │ Contracts                   │
+        │ Repository Ports            │
+        │ Provider Ports              │
+        │ Tool Ports                  │
+        │ Execution Ports             │
+        │ Event contracts             │
+        │ Errors / IDs / state        │
+        └──────────────────────────────┘
+            ▲          ▲          ▲
+            │          │          │
+        Storage    Providers     Tools
+            │       Execution    Plugins
+            └──── Infrastructure ──┘
+```
+
+Quy tắc quan trọng:
+
+```text
+Application ─X─> concrete Storage
+Application ─X─> concrete Provider
+Application ─X─> concrete Tool implementation
+
+Infrastructure ─X─> Application
+
+Core ─X─> Framework
+Core ─X─> Storage
+Core ─X─> Provider implementation
+```
+
+Ngoại lệ duy nhất:
+
+```text
+apps/* composition root
+```
+
+được phép nhìn cả application và infrastructure để dependency injection.
+
+Policy hiện tại chưa đạt điều này. Ví dụ configuration đang cho phép `orchestration → storage` và `storage → providers`.
+
+---
+
+# 4. Phase 0 — Freeze baseline và xác lập source of truth
+
+**Priority: P0**
+
+Đây phải là phase đầu tiên.
+
+### Công việc
+
+1. Xác nhận checkout chứa chính xác commit:
+
+```text
+ac61c38cdca90100a14ec0ea26c4d19c35f7caa4
+```
+
+2. Ghi lại:
+
+```text
 HEAD SHA
-timestamp
+branch
+git status
+dirty files
+submodules
 Python version
 Node version
-npm/pnpm version
-OS
-architecture version
-API version
-frontend package versions
+uv.lock hash
+package-lock hash
 ```
 
-Tạo:
+3. Không merge `main` vào baseline một cách tự động.
+
+4. Tạo nhánh chuyên biệt:
 
 ```text
-artifacts/frontend_restructure/phase_00/baseline/
-├── baseline_manifest.json
-├── environment_manifest.json
-├── git_manifest.json
-└── baseline_verdict.json
+refactor/architecture-v3-hardening
 ```
 
-`baseline_manifest.json` tối thiểu:
+từ đúng baseline được xác nhận.
 
-```json
-{
-  "baseline_sha": "...",
-  "worktree_clean": true,
-  "frontend_behavior_modified": false,
-  "api_behavior_modified": false
-}
+5. Chạy baseline:
+
+```bash
+uv run python scripts/check_architecture_imports.py
+uv run pytest
 ```
 
----
+và toàn bộ web/desktop test hiện có.
 
-# P0.2 — Frontend file inventory
-
-Viết script audit toàn bộ:
+6. Xuất:
 
 ```text
-apps/desktop/
-apps/web/
-frontend/
-```
-
-Phân loại mỗi file:
-
-```text
-BOOTSTRAP
-APP_SHELL
-PAGE
-FEATURE
-COMPONENT
-STATE
-API_CLIENT
-CONTRACT
-PLATFORM
-STYLE
-TEST
-MOCK
-LEGACY
-UNKNOWN
-```
-
-Output:
-
-```text
-frontend_file_inventory.json
-```
-
-Schema:
-
-```json
-{
-  "path": "apps/desktop/src/pages/EpisodesPage.tsx",
-  "category": "PAGE",
-  "imports": [],
-  "consumers": [],
-  "runtime_reachable": true,
-  "contains_mock_data": true,
-  "contains_direct_fetch": false,
-  "decision": "MIGRATE"
-}
-```
-
-Không đánh `REMOVE` chỉ vì chưa tìm thấy import. Phase 0 chỉ inventory.
-
----
-
-# P0.3 — Route/navigation inventory
-
-Audit đồng thời:
-
-```text
-App.tsx
-DESKTOP_NAVIGATION_GROUPS
-window.location.hash
-activeTab
-lazy imports
-sidebar item IDs
-```
-
-Tạo:
-
-```text
-route_inventory.json
-navigation_inventory.json
-route_navigation_mismatch.json
-```
-
-Cần phát hiện tự động các trường hợp:
-
-```text
-navigation exists + no route
-route exists + no navigation
-different IDs for same page
-manual hash route
-duplicate route authority
-```
-
-Ví dụ hiện tại `App.tsx` rõ ràng đang tự chuyển hash thành `activeTab`; chính logic này sẽ trở thành baseline cần loại bỏ ở Phase 4.
-
----
-
-# P0.4 — API inventory
-
-Không chỉ grep URL.
-
-Phải lập matrix:
-
-```text
-Frontend consumer
-        ↓
-API client/function
-        ↓
-method + route
-        ↓
-FastAPI router
-        ↓
-application service
-        ↓
-mock / persistent / real runtime
-```
-
-Output:
-
-```text
-api_endpoint_inventory.json
-api_consumer_matrix.json
-```
-
-Mỗi endpoint:
-
-```json
-{
-  "method": "GET",
-  "path": "/api/v2/providers",
-  "api_generation": "V2",
-  "frontend_consumers": [],
-  "backend_router": "...",
-  "runtime_status": "REAL|FIXTURE|STUB|UNKNOWN",
-  "replacement": null,
-  "decision": "KEEP|MIGRATE|MERGE|REWRITE|REMOVE"
-}
-```
-
-Inventory riêng:
-
-```text
-/api/v2/
-/api/v3/
-/api/models/
-direct fetch()
-v2Unavailable()
-```
-
-`apps/desktop/src/api/client.ts` phải được xem như một nguồn legacy authority quan trọng vì hiện nó vừa có endpoint thật vừa có `v2Unavailable`.
-
----
-
-# P0.5 — Mock inventory
-
-Quét:
-
-```text
-DEFAULT_*
-MOCK_*
-Fake*
-mock*
-setTimeout(...)
-Math.random()
-hardcoded runtime arrays
-static progress
-fallback-to-mock
-```
-
-Output:
-
-```text
-mock_data_inventory.json
-```
-
-Phân biệt:
-
-```text
-TEST_FIXTURE       → hợp lệ
-STORYBOOK_FIXTURE  → hợp lệ
-DEV_FIXTURE        → xem xét
-PRODUCTION_RUNTIME → phải migrate sau
-```
-
-Không xóa gì trong P0.
-
----
-
-# P0.6 — State management inventory
-
-Phát hiện:
-
-```text
-Redux Toolkit
-React Redux
-Zustand
-StudioStore
-Context Provider
-useState
-useReducer
-server data stored locally
-```
-
-Output:
-
-```text
-state_management_inventory.json
-```
-
-Đặc biệt đánh dấu:
-
-```text
-SERVER_STATE
-LOCAL_UI_STATE
-WORKFLOW_STATE
-URL_STATE
-PLATFORM_STATE
-REALTIME_STATE
-```
-
-Đây là cơ sở để sau này chuyển về:
-
-```text
-Server state → TanStack Query
-UI state     → Zustand
-URL state    → Router
-Workflow     → backend
-Realtime     → realtime client
-```
-
-Không migrate state trong Phase 0.
-
----
-
-# P0.7 — CSS/design audit
-
-Phải inventory stylesheet 120 KB hiện tại thay vì coi nó là dead CSS.
-
-Tạo:
-
-```text
-css_token_inventory.json
-css_selector_inventory.json
-css_duplicate_report.json
-design_system_baseline.md
-```
-
-Phân loại token hiện có:
-
-```text
-global tokens
-Stitch tokens
-Studio semantic tokens
-status tokens
-layout tokens
-component primitives
-feature/page selectors
-```
-
-Current CSS đã có `--studio-*`, `--status-*`, `.ui-button`, `.ui-badge`... nên Phase 5 phải tái sử dụng chúng.
-
----
-
-# P0.8 — Baseline test matrix
-
-Chạy toàn bộ test hiện có, nhưng **không tự sửa test fail ngoài scope**.
-
-Thu thập:
-
-```text
-Python tests
-architecture checks
-API tests
-Desktop unit
-Desktop typecheck
-Desktop build
-Web unit
-Web typecheck
-Web build
-Studio client tests
-Production client tests
-```
-
-Output:
-
-```text
-test_matrix.json
-build_matrix.json
-baseline_failures.json
-```
-
-Nếu test đã fail trước Phase 0:
-
-```text
-PRE_EXISTING_FAILURE
-```
-
-Không được âm thầm fix rồi gọi Phase 0 PASS.
-
----
-
-## Phase 0 artifacts cuối cùng
-
-```text
-artifacts/frontend_restructure/phase_00/
-├── baseline/
-│   ├── baseline_manifest.json
-│   ├── environment_manifest.json
-│   └── git_manifest.json
-├── frontend_file_inventory.json
-├── route_inventory.json
-├── navigation_inventory.json
-├── route_navigation_mismatch.json
-├── api_endpoint_inventory.json
-├── api_consumer_matrix.json
-├── mock_data_inventory.json
-├── direct_fetch_inventory.json
-├── state_management_inventory.json
-├── css_token_inventory.json
-├── css_selector_inventory.json
-├── package_inventory.json
-├── test_matrix.json
-├── build_matrix.json
-├── risk_register.md
-├── baseline_report.md
-└── final_verdict.json
-```
-
-### Phase 0 PASS khi
-
-```text
-inventory coverage >= 100% production frontend source
-route/navigation inventory complete
-API consumer matrix complete
-mock inventory complete
-direct fetch inventory complete
-baseline tests captured
-baseline SHA frozen
-worktree state recorded
-runtime behavior changes = 0
-```
-
----
-
-# Phase 1 — Canonical Domain Vocabulary
-
-## Mục tiêu
-
-Đây là phase kiến trúc, không phải coding feature.
-
-Không được dựng API V3 toàn hệ thống khi các từ như `Series`, `Project`, `Run`, `Revision`, `Agent` vẫn có nhiều nghĩa.
-
-Verdict:
-
-```text
-FEV3_P1_DOMAIN_VOCABULARY_FROZEN
-```
-
----
-
-# P1.1 — Project vs Series
-
-Đề xuất canonical:
-
-```text
-Project
-├── Episodes
-├── Characters
-├── World
-├── Assets
-└── Production configuration
-```
-
-`Project` = aggregate/root người dùng nhìn thấy.
-
-`Series` hiện tại:
-
-```text
-StudioSeries
-series_id
-/api/v3/studio/series
-```
-
-không xóa ngay.
-
-Quyết định:
-
-```text
-Project = canonical terminology mới
-Series  = compatibility concept trong migration window
-```
-
-Tạo ADR:
-
-```text
-docs/architecture/adr/
-ADR-FE-001-project-vs-series.md
-```
-
-Nội dung phải mô tả:
-
-```text
-old concept
-new concept
-mapping
-migration rule
-database implications
-API implications
-frontend implications
-removal phase
-```
-
----
-
-# P1.2 — AgentDefinition vs AgentInstance
-
-Canonical:
-
-```text
-AgentDefinition
-= cấu hình/template agent
-
-AgentInstance
-= một runtime execution instance cụ thể
-```
-
-Không dùng `Agent` mơ hồ trong V3 contract.
-
----
-
-# P1.3 — File vs Artifact vs Asset
-
-Khóa semantic:
-
-```text
-File
-= filesystem/workspace resource
-
-Artifact
-= immutable output của pipeline
-
-Asset
-= production resource có thể được version/review/reuse
-```
-
-Ví dụ:
-
-```text
-screenplay JSON → Artifact
-character model → Asset
-user-uploaded .txt → File
-```
-
----
-
-# P1.4 — Task / Run / WorkflowRun
-
-Đề xuất:
-
-```text
-Task
-= unit of requested work
-
-Run
-= execution attempt
-
-WorkflowDefinition
-= reusable DAG/template
-
-WorkflowRun
-= execution instance của workflow
-```
-
-Không để một `run_id` vừa có nghĩa Studio generation vừa có nghĩa generic workflow nếu không namespace rõ.
-
----
-
-# P1.5 — Revision vs Version
-
-Đây là quyết định quan trọng cho Phase 2.
-
-Khóa:
-
-```text
-Revision
-= immutable content snapshot
-
-version
-= mutable optimistic concurrency counter
-```
-
-Ví dụ:
-
-```json
-{
-  "revision_id": "rev_123",
-  "version": 12
-}
-```
-
-Mutation:
-
-```json
-{
-  "expected_version": 12
-}
-```
-
-Tôi đề xuất dùng **`version/expected_version` làm concurrency authority** thay vì triển khai đồng thời cả `ETag/If-Match`.
-
-Lý do: Studio hiện đã có optimistic version trong contract, nên convergence rủi ro thấp hơn.
-
----
-
-# P1.6 — Memory vs Database
-
-Canonical:
-
-```text
-Memory
-= contextual/agent memory
-
-Database
-= persistence/runtime administration
-```
-
-Nếu không có nhu cầu database administration trong UI:
-
-```text
-sidebar "Database" → "Memory"
-```
-
-Không gọi memory records là database nữa.
-
----
-
-## Phase 1 output
-
-```text
-docs/architecture/frontend_v3/
-├── canonical_vocabulary.md
-├── aggregate_map.md
-├── resource_identity_rules.md
-└── migration_glossary.md
-
-docs/architecture/adr/
-├── ADR-FE-001-project-vs-series.md
-├── ADR-FE-002-agent-definition-instance.md
-├── ADR-FE-003-file-artifact-asset.md
-├── ADR-FE-004-task-run-workflow-run.md
-├── ADR-FE-005-revision-version.md
-└── ADR-FE-006-memory-database.md
-```
-
-Thêm machine-readable:
-
-```text
-artifacts/frontend_restructure/phase_01/
-├── vocabulary_manifest.json
-├── legacy_to_canonical_map.json
-├── unresolved_terms.json
-└── final_verdict.json
+artifacts/architecture_v3/baseline/
+├── baseline.json
+├── dependency-report.json
+├── test-report.json
+├── workspace-packages.json
+├── route-inventory.json
+└── git-state.txt
 ```
 
 ### Gate
 
 ```text
-unresolved critical vocabulary = 0
-duplicate canonical definition = 0
-V3 naming convention frozen
-concurrency model frozen
-identity rules frozen
+ARCH_V3_BASELINE_FROZEN
 ```
+
+Không qua Phase 1 nếu chưa freeze baseline.
 
 ---
 
-# Phase 2 — Unified API V3 Foundation
+# 5. Phase 1 — Định nghĩa Architecture V3 Contract
 
-## Mục tiêu
+**Priority: P0**
 
-**Không migrate tất cả V2 endpoint.**
+Hiện checker và config vẫn mang Architecture V2. `check_architecture_imports.py` cũng mặc định đọc `scaffold_v2.yaml`.
 
-Xây infrastructure để các phase sau có thể thêm:
+### Tạo policy V3
 
-```text
-/api/v3/projects
-/api/v3/assets
-/api/v3/agents
-...
-```
-
-mà không tiếp tục tạo contract tùy tiện.
-
-Verdict:
+Nên tạo:
 
 ```text
-FEV3_P2_API_FOUNDATION_VERIFIED
+configs/architecture/scaffold_v3.yaml
 ```
 
-Backend hiện có additive `/api/v3/studio` bên cạnh hàng loạt V2 router nên có thể tiếp tục dùng strangler migration.
+và sau cutover mới retire V2 policy.
+
+### Dependency matrix mới
+
+| Package         | Được phụ thuộc                                   |
+| --------------- | ------------------------------------------------ |
+| `core`          | external stdlib/type libraries tối thiểu         |
+| `orchestration` | `core`                                           |
+| `workflows`     | `core`, orchestration contracts nếu thật sự cần  |
+| `intelligence`  | `core`, context contracts                        |
+| `context`       | `core`                                           |
+| `memory`        | `core`                                           |
+| `verification`  | `core`                                           |
+| `skills`        | `core`                                           |
+| `providers`     | `core`                                           |
+| `tools`         | `core`                                           |
+| `execution`     | `core`                                           |
+| `storage`       | `core`                                           |
+| `plugins`       | `core`                                           |
+| `observability` | `core`                                           |
+| API             | application + infrastructure chỉ tại composition |
+| Worker          | application + infrastructure chỉ tại composition |
+| CLI             | application + infrastructure chỉ tại composition |
+
+### Checker phải bắt thêm
+
+```text
+dependency cycle
+undeclared dependency
+framework import trong core
+application → infrastructure
+infrastructure → application
+cross-app import
+module-level mutable production store
+production test fallback
+legacy authority
+concrete adapter construction ngoài composition root
+```
+
+### Gate
+
+```text
+ARCH_V3_POLICY_FROZEN
+```
+
+Ở phase này chưa cần zero violation. Mục tiêu là policy đúng trước, rồi mới sửa code theo policy.
 
 ---
 
-# P2.1 — V3 root infrastructure
+# 6. Phase 2 — Phá toàn bộ dependency cycle
 
-Tổ chức:
+**Priority: P0**
 
-```text
-apps/api/windagent_api/routers/v3/
-├── __init__.py
-├── router.py
-├── common/
-└── studio/             # existing
-```
-
-`router.py` trở thành aggregator V3 duy nhất:
-
-```python
-v3_router = APIRouter(prefix="/api/v3")
-```
-
-Sau đó:
+Cycle rõ nhất hiện tại:
 
 ```text
-main.py
-  ↓
-include_router(v3_router)
+tools → workflows → tools
 ```
 
-Không để main import hàng chục V3 domain router về sau.
+`capture/base.py` trong tools đang import `Resolution` và `Scene` từ workflows.
 
----
+Trong khi `workflows` đã khai báo phụ thuộc `windagent-tools`.
 
-# P2.2 — ApiProblem
+### Refactor
 
-Chuẩn một error contract.
-
-```json
-{
-  "type": "https://windagent.dev/problems/revision-conflict",
-  "title": "Revision conflict",
-  "status": 409,
-  "detail": "...",
-  "code": "REVISION_CONFLICT",
-  "correlation_id": "...",
-  "retryable": false,
-  "details": {}
-}
-```
-
-Tất cả V3 exception handler dùng cùng contract.
-
-Không sửa response contract V2 trong phase này.
-
----
-
-# P2.3 — Resource base
-
-Canonical base metadata:
-
-```json
-{
-  "id": "...",
-  "created_at": "...",
-  "updated_at": "...",
-  "version": 12
-}
-```
-
-Không bắt tất cả domain expose cùng exact Pydantic class nếu semantic không phù hợp, nhưng field naming phải thống nhất.
-
----
-
-# P2.4 — Pagination
-
-Chuẩn cursor pagination:
-
-```json
-{
-  "items": [],
-  "page_info": {
-    "next_cursor": null,
-    "has_more": false
-  }
-}
-```
-
-Cấm tạo mới trong V3:
+Di chuyển các type trung lập:
 
 ```text
-page
-page_size
-offset
-start
-continuation
+Scene
+Resolution
+TakeConfig-related contracts
+Video media contracts
+Capture contracts
+render request/result contracts
 ```
 
-trừ endpoint có lý do cụ thể được ADR ghi nhận.
-
----
-
-# P2.5 — Correlation ID
-
-Middleware:
+khỏi:
 
 ```text
-request
- ↓
-X-Correlation-ID supplied?
- ├─ yes → preserve
- └─ no  → generate
-```
-
-Echo:
-
-```text
-X-Correlation-ID
-```
-
-và error body:
-
-```text
-correlation_id
-```
-
-Trace phải đi xuyên:
-
-```text
-frontend → API → task/run → events → logs
-```
-
----
-
-# P2.6 — Idempotency
-
-Mutation quan trọng:
-
-```text
-POST
-PATCH
-DELETE
-```
-
-hỗ trợ:
-
-```http
-Idempotency-Key: UUID
-```
-
-Server lưu:
-
-```text
-key
-actor
-route
-request fingerprint
-result fingerprint
-created_at
-expires_at
-```
-
-Rules:
-
-```text
-same key + same request  → replay response
-same key + different body → 409 IDEMPOTENCY_CONFLICT
-```
-
-Studio client đang yêu cầu idempotency key từ caller; nguyên tắc này nên được giữ lại và đưa thành canonical contract.
-
----
-
-# P2.7 — Optimistic concurrency
-
-Canonical request:
-
-```json
-{
-  "expected_version": 12
-}
-```
-
-Nếu current:
-
-```text
-13
-```
-
-return:
-
-```text
-409 VERSION_CONFLICT
-```
-
-Không silently overwrite.
-
----
-
-# P2.8 — Command receipt
-
-Đối với async command:
-
-```json
-{
-  "command_id": "...",
-  "status": "ACCEPTED",
-  "resource_id": "...",
-  "correlation_id": "...",
-  "submitted_at": "..."
-}
-```
-
-HTTP:
-
-```text
-202 Accepted
-```
-
-Không trả fake final result nếu job chưa chạy.
-
----
-
-# P2.9 — EventEnvelope
-
-Canonical:
-
-```json
-{
-  "event_id": "...",
-  "aggregate_type": "episode",
-  "aggregate_id": "...",
-  "sequence": 128,
-  "event_type": "screenplay.generated",
-  "occurred_at": "...",
-  "correlation_id": "...",
-  "payload": {}
-}
-```
-
-Invariants:
-
-```text
-sequence monotonic per stream
-event_id globally unique
-event immutable
-correlation_id propagated
-payload typed by event_type
-```
-
----
-
-# P2.10 — Sửa deprecation semantics
-
-Hiện backend gắn tất cả `/api/v2/*` với successor `/api/v3/studio`.
-
-Sửa thành:
-
-```text
-không claim một successor chung
-```
-
-Chỉ gắn successor khi domain thực sự đã có V3 replacement.
-
-Ví dụ:
-
-```text
-/api/v2/assets
-→ successor sau khi /api/v3/assets tồn tại
-```
-
-Trong thời gian chưa có replacement:
-
-```text
-V2 vẫn reachable
-không redirect
-không 410
-không nói sai successor
-```
-
----
-
-# P2.11 — OpenAPI quality gate
-
-Mọi V3 operation:
-
-```text
-operation_id unique
-request model explicit
-response model explicit
-error contract documented
-tags canonical
-description meaningful
-```
-
-CI kiểm:
-
-```text
-duplicate operation_id = FAIL
-missing response schema = FAIL
-OpenAPI generation = FAIL → gate fail
-```
-
----
-
-## Phase 2 tests
-
-Tối thiểu:
-
-```text
-ApiProblem tests
-correlation ID tests
-idempotency replay tests
-idempotency conflict tests
-expected_version conflict tests
-pagination schema tests
-EventEnvelope serialization tests
-OpenAPI operation ID uniqueness
-V2 regression tests
-Studio V3 regression tests
-```
-
-Quan trọng:
-
-```text
-V2 functional regression = 0
-Studio V3 regression = 0
-```
-
----
-
-# Phase 3 — Generated API Client
-
-## Mục tiêu
-
-Biến:
-
-```text
-Pydantic
-   ↓
-FastAPI OpenAPI
-   ↓
-generated TS contracts/client
-   ↓
-frontend
-```
-
-thành **contract authority duy nhất**.
-
-Verdict:
-
-```text
-FEV3_P3_GENERATED_CLIENT_VERIFIED
-```
-
----
-
-# P3.1 — Tạo package mới
-
-```text
-frontend/packages/
-├── api-contracts/
-├── api-client/
-└── realtime/
-```
-
-Không tạo thêm package theo từng page.
-
-Existing `studio-client`, `production-client` vẫn giữ trong migration window. Repository hiện đã có nhiều package riêng cho Studio và Production, do đó P3 phải hướng tới convergence thay vì tiếp tục nhân package.
-
----
-
-# P3.2 — OpenAPI generation pipeline
-
-Pipeline:
-
-```text
-FastAPI app
-  ↓
-openapi.json
-  ↓
-validate schema
-  ↓
-generate TypeScript
-  ↓
-format
-  ↓
-typecheck
-  ↓
-check git diff
-```
-
-Tạo script:
-
-```text
-scripts/frontend_api/
-├── export_openapi.py
-├── validate_openapi.py
-└── generate_client.*
-```
-
-Output OpenAPI:
-
-```text
-artifacts/frontend_restructure/openapi/openapi-v3.json
-```
-
----
-
-# P3.3 — api-contracts
-
-Package chứa generated types.
-
-Không đặt business logic.
-
-Ví dụ:
-
-```text
-@windagent/api-contracts
-```
-
-Public exports:
-
-```ts
-ApiProblem
-PageInfo
-ProjectResource
-EpisodeResource
-EventEnvelope
-...
-```
-
-Không tiếp tục tạo:
-
-```text
-apps/desktop/src/api/types.ts
-studio-contracts duplicate type
-production-contracts duplicate type
-```
-
-cho V3 mới.
-
-Legacy packages chưa xóa.
-
----
-
-# P3.4 — api-client
-
-Xây transport chung dựa trên những nguyên tắc đã hoạt động tốt trong `HttpStudioApiClient`.
-
-Transport chịu trách nhiệm:
-
-```text
-base URL
-timeout
-correlation ID
-typed ApiProblem
-network errors
-GET retry
-idempotency key
-JSON serialization
-204 handling
-abort signal
-```
-
-Nguyên tắc retry:
-
-```text
-GET:
-  network failure → có thể retry
-
-Mutation:
-  không tự retry tùy tiện
-
-POST/PATCH/DELETE:
-  retry chỉ khi caller dùng cùng Idempotency-Key
-```
-
----
-
-# P3.5 — API façade
-
-Frontend feature không gọi URL.
-
-Target:
-
-```ts
-api.projects.list()
-api.projects.get(id)
-
-api.episodes.create(...)
-api.assets.get(id)
-
-api.agentInstances.stop(id)
-```
-
-Feature code không được biết:
-
-```text
-/api/v3/...
-```
-
-URL chỉ nằm trong generated/transport layer.
-
----
-
-# P3.6 — Realtime package
-
-```text
-@windagent/realtime
-```
-
-Responsibilities:
-
-```text
-connect
-disconnect
-heartbeat
-reconnect
-exponential backoff
-resume from sequence
-event dedup
-gap detection
-snapshot recovery
-subscription routing
-```
-
-State:
-
-```text
-DISCONNECTED
-CONNECTING
-CONNECTED
-DEGRADED
-RESYNCING
-```
-
-API:
-
-```ts
-subscribe({
-  aggregateType,
-  aggregateId,
-  afterSequence
-})
-```
-
----
-
-# P3.7 — Architecture rule: cấm direct fetch
-
-Sau Phase 3:
-
-```text
-feature/page production code
-        ↓
-direct fetch()
-        =
-FORBIDDEN
-```
-
-Cho phép:
-
-```text
-api-client transport
-service worker/platform adapter nếu cần
-test fixture
-```
-
-Thêm checker vào CI.
-
-Không yêu cầu direct fetch production = 0 ngay lúc Phase 3, vì legacy page chưa migrate.
-
-Thay vào đó:
-
-```text
-new direct fetch introduced after baseline = 0
-```
-
-Sau Phase 15 mới yêu cầu toàn repo = 0.
-
-Đây là khác biệt rất quan trọng để không biến migration thành big-bang.
-
----
-
-# Phase 3 gate
-
-```text
-OpenAPI export PASS
-OpenAPI validation PASS
-generated TS PASS
-generated client typecheck PASS
-transport tests PASS
-realtime tests PASS
-new direct-fetch violations = 0
-V2 regression PASS
-Studio regression PASS
-```
-
-Artifacts:
-
-```text
-phase_03/
-├── openapi_manifest.json
-├── generation_manifest.json
-├── operation_id_report.json
-├── client_contract_report.json
-├── direct_fetch_delta.json
-└── final_verdict.json
-```
-
----
-
-# Phase 4 — Frontend Foundation
-
-Đây là phase thay đổi frontend architecture lớn nhất trong 0–5.
-
-## Mục tiêu
-
-Từ:
-
-```text
-apps/web
-   ↓
-apps/desktop/App.tsx
+workflows/windagent_workflows/code_video/contracts*
 ```
 
 sang:
 
 ```text
-                  apps/web
-                     ↓
-frontend/app ─────────────
-                     ↑
-                apps/desktop
+core/windagent_core/contracts/code_video/
 ```
 
-Hiện Web đúng nghĩa chỉ render Desktop App.
-
-Verdict:
+hoặc:
 
 ```text
-FEV3_P4_SHARED_FRONTEND_FOUNDATION_VERIFIED
+core/windagent_core/contracts/media/
+```
+
+Sau đó:
+
+```text
+tools ────────┐
+              ▼
+             core
+              ▲
+              │
+workflows ────┘
+```
+
+### Sau đó scan toàn workspace
+
+Không chỉ sửa cycle đầu tiên. Tìm toàn bộ SCC — strongly connected components — trong dependency graph.
+
+### Gate
+
+```text
+dependency_cycles = 0
+undeclared_workspace_dependencies = 0
 ```
 
 ---
 
-# P4.1 — Tạo shared app
+# 7. Phase 3 — Dependency Inversion toàn hệ thống
+
+**Priority: P0**
+
+Đây là phase quan trọng nhất của kiến trúc.
+
+Hiện `orchestration` được policy cho phép import storage trực tiếp. `storage` còn được phép phụ thuộc providers.
+
+Cần loại bỏ hai hướng này.
+
+## 7.1 Repository ports
+
+Đưa interface về core:
 
 ```text
-frontend/app/
-├── package.json
-├── tsconfig.json
-└── src/
-    ├── app/
-    │   ├── App.tsx
-    │   ├── router.tsx
-    │   ├── routeManifest.ts
-    │   ├── providers.tsx
-    │   ├── bootstrap.ts
-    │   └── errors/
-    │
-    ├── features/
-    └── shared/
+core/contracts/repositories/
+├── project_repository.py
+├── episode_repository.py
+├── task_repository.py
+├── workflow_repository.py
+├── event_store.py
+├── outbox_repository.py
+├── provider_registry_repository.py
+├── routing_repository.py
+├── asset_repository.py
+└── review_repository.py
 ```
+
+Application nhận:
+
+```python
+ProjectRepositoryPort
+TaskRepositoryPort
+EventStorePort
+...
+```
+
+không nhận:
+
+```python
+SqlProjectRepository
+SqlUnitOfWork
+SQLAlchemy Session
+```
+
+## 7.2 Provider ports
+
+Core định nghĩa:
+
+```text
+ModelExecutionPort
+ModelRegistryPort
+ProviderHealthPort
+ProviderDiscoveryPort
+RoutingAuditPort
+```
+
+`providers` chỉ chứa adapter ra OpenRouter, Google, Ollama, Groq...
+
+Routing policy không nên nằm lẫn với HTTP/provider adapter.
+
+Nên đưa policy sang:
+
+```text
+intelligence/routing/
+```
+
+hoặc một application routing module tương đương.
+
+## 7.3 Storage không được phụ thuộc Providers
+
+Storage chỉ biết:
+
+```text
+core models
+core ports
+ORM mapping
+SQL
+```
+
+Không được biết implementation/provider package.
+
+### Gate
+
+```text
+application_direct_storage_imports = 0
+storage_to_provider_imports = 0
+infrastructure_to_application_imports = 0
+```
+
+Ngoại trừ migration/testing infrastructure được allowlist cụ thể, không dùng broad allowlist.
 
 ---
 
-# P4.2 — Platform bootstrap
+# 8. Phase 4 — Single Authority cho toàn bộ API V3
 
-Desktop:
+**Priority: P0**
 
-```text
-apps/desktop/src/main.tsx
-    ↓
-bootstrap shared frontend
-    ↓
-TauriPlatformAdapter
-```
+Đây là việc lớn nhất về persistence.
 
-Web:
+`projects.py` hiện gọi mình là canonical authority nhưng sử dụng `_PROJECTS_STORE`, `_EPISODES_STORE` và idempotency map trong RAM.
+
+Phải inventory toàn bộ `/api/v3`.
+
+Phân loại từng route:
 
 ```text
-apps/web/src/main.tsx
-    ↓
-bootstrap shared frontend
-    ↓
-WebPlatformAdapter
+DURABLE
+DERIVED
+EPHEMERAL
+DEMO
+INVALID
 ```
 
-Không còn:
-
-```ts
-import { App } from "@desktop/App";
-```
-
----
-
-# P4.3 — PlatformAdapter
-
-Interface:
-
-```ts
-interface PlatformAdapter {
-  kind: 'web' | 'tauri';
-
-  getSystemMetrics(): Promise<...>;
-
-  openExternal(url: string): Promise<void>;
-
-  selectFile?(...): Promise<...>;
-
-  getSecureCredential?(...): Promise<...>;
-}
-```
-
-Implement:
+Canonical API production chỉ được:
 
 ```text
-WebPlatformAdapter
-TauriPlatformAdapter
+DURABLE
+DERIVED
 ```
 
-Feature không được gọi trực tiếp:
+### Thứ tự migration
 
-```ts
-window.__TAURI__
-invoke(...)
-```
-
----
-
-# P4.4 — Router chuẩn
-
-Giữ **HashRouter** nếu phù hợp với Tauri, nhưng routing phải do router library quản lý.
-
-Canonical tree ban đầu:
-
-```text
-/dashboard
-
-/studio
-/studio/projects
-/studio/projects/:projectId
-
-/studio/episodes
-/studio/episodes/:episodeId
-
-/studio/characters
-/studio/world
-
-/assets
-
-/models
-/models/providers
-/models/routing
-
-/agents
-/workspace/:conversationId
-/workflows
-
-/browser
-/files
-
-/monitoring
-/logs
-/database
-
-/settings
-```
-
-Giai đoạn này route có thể vẫn render legacy page.
-
-Mục đích là **chuyển authority**, không phải migrate feature.
-
----
-
-# P4.5 — Route manifest
-
-Một nguồn sự thật:
-
-```ts
-routeManifest
-```
-
-Mỗi record:
-
-```ts
-{
-  id,
-  path,
-  label,
-  icon,
-  group,
-  component,
-  breadcrumb,
-  capabilities,
-  navigationVisible
-}
-```
-
-Từ manifest sinh:
-
-```text
-Router
-Sidebar
-Breadcrumb
-Keyboard navigation
-Page title
-```
-
-Cấm:
-
-```text
-Sidebar có route list riêng
-App có route list riêng
-hash parser có mapping riêng
-```
-
----
-
-# P4.6 — Xóa TabKeeper architecture
-
-`App.tsx` hiện đang dùng:
-
-```text
-activeTab
-visitedTabs
-TabKeeper
-window.location.hash
-hashchange
-```
-
-Phase 4 loại architecture này khỏi shell.
-
-Router quyết định lifecycle component.
-
-Nếu một page cần giữ state khi navigation:
-
-```text
-URL state
-Query cache
-small Zustand UI state
-```
-
-không dùng hidden mounted tab làm default solution.
-
----
-
-# P4.7 — Provider hierarchy
-
-`providers.tsx`:
-
-```text
-ErrorBoundary
-   ↓
-PlatformProvider
-   ↓
-ApiProvider
-   ↓
-QueryClientProvider
-   ↓
-RealtimeProvider
-   ↓
-UIStateProvider
-   ↓
-Router
-```
-
-Không tạo StudioStore trong page.
-
----
-
-# P4.8 — TanStack Query foundation
-
-Desktop package hiện đang có Redux + Zustand nhưng chưa có query architecture mục tiêu.
-
-Phase 4 bổ sung Query infrastructure, chưa cần migrate mọi page.
-
-Canonical query keys:
-
-```ts
-['projects']
-['project', projectId]
-
-['episodes', projectId]
-['episode', episodeId]
-
-['assets', filters]
-```
-
-Mutation:
-
-```text
-invalidate exact domain query
-update cache from realtime event
-```
-
----
-
-# P4.9 — Zustand scope
-
-Zustand chỉ cho UI state như:
-
-```text
-sidebar collapsed
-panel size
-selected inspector tab
-command palette
-local view preference
-```
-
-Không lưu canonical:
+#### Wave A — authority nền
 
 ```text
 projects
 episodes
-assets
+tasks
 workflows
 ```
 
-nếu chúng thuộc backend server state.
+#### Wave B — model system
+
+```text
+providers
+models
+routing
+routing rules
+endpoint binding
+provider health history
+```
+
+#### Wave C — content production
+
+```text
+assets
+reviews
+world
+storyboard
+characters
+```
+
+#### Wave D — agents
+
+```text
+agent_definitions
+agent_instances
+conversations
+```
+
+### Pattern bắt buộc
+
+```text
+Router
+   ↓
+Application Service
+   ↓
+Port
+   ↓
+SQL Repository
+   ↓
+Unit of Work
+```
+
+Không:
+
+```text
+Router
+   ↓
+global dict
+```
+
+Seed data phải chuyển vào:
+
+```text
+tests/fixtures/
+```
+
+hoặc:
+
+```text
+demo profile
+```
+
+### Gate
+
+```text
+production_module_level_stores = 0
+canonical_v3_in_memory_authorities = 0
+```
+
+Test bắt buộc:
+
+```text
+create → restart API → read
+```
+
+Dữ liệu phải còn nguyên.
 
 ---
 
-# P4.10 — Error Boundary
+# 9. Phase 5 — Chuẩn hóa Unit of Work và transaction boundaries
+
+**Priority: P0**
+
+Không để mỗi feature tự nghĩ transaction semantics.
+
+Chuẩn hóa:
+
+```text
+Command
+   ↓
+UoW begin
+   ↓
+domain mutation
+   ↓
+repository writes
+   ↓
+event store
+   ↓
+outbox
+   ↓
+commit
+```
+
+Atomic operation quan trọng:
+
+```text
+task state
+result
+domain event
+outbox event
+lease finalization
+```
+
+phải commit cùng transaction khi nghiệp vụ yêu cầu.
+
+Không làm giảm độ an toàn của finalization hiện tại.
+
+### Gate
+
+Crash injection tại từng điểm:
+
+```text
+before write
+after state write
+after event write
+before commit
+after commit
+```
+
+không được tạo split state.
+
+---
+
+# 10. Phase 6 — Realtime Architecture V3
+
+**Priority: P0**
+
+Root `/ws` hiện mới làm connected/ping/ack.
+
+Frontend lại gửi subscription envelope và chỉ xử lý message có `event_type`.
+
+Hai protocol hiện không tương thích.
+
+### Canonical protocol
+
+Client:
+
+```json
+{
+  "type": "subscribe",
+  "aggregate_type": "run",
+  "aggregate_id": "run_123",
+  "after_sequence": 71
+}
+```
+
+Server:
+
+```json
+{
+  "type": "subscribed",
+  "aggregate_type": "run",
+  "aggregate_id": "run_123",
+  "cursor": 71
+}
+```
+
+Event:
+
+```json
+{
+  "event_id": "...",
+  "event_type": "...",
+  "aggregate_type": "...",
+  "aggregate_id": "...",
+  "sequence": 72,
+  "occurred_at": "...",
+  "payload": {}
+}
+```
+
+### Architecture
+
+```text
+Worker transaction
+      │
+      └── Outbox
+            │
+            ▼
+      Event Dispatcher
+            │
+            ▼
+          WS Hub
+            │
+            ▼
+        Subscribers
+```
+
+Reconnect:
+
+```text
+after_sequence
+      ↓
+SQL replay
+      ↓
+catch-up complete
+      ↓
+live push
+```
+
+Endpoint `/ws/conversations/{id}` hiện poll DB mỗi `0.1s`.
+
+Sau khi WS Hub hoạt động, polling này phải được retire hoặc chỉ còn fallback rõ ràng.
+
+### Gate
+
+```text
+WS subscription contract PASS
+reconnect replay PASS
+duplicate suppression PASS
+sequence ordering PASS
+heartbeat PASS
+outbox → UI E2E PASS
+```
+
+---
+
+# 11. Phase 7 — Tách ApplicationContainer
+
+**Priority: P1**
+
+`ApplicationContainer` hiện compose cả `ExecutionRuntimeRegistry` và `WorktreeContextManager`, dù docstring nói API không trực tiếp compose tool subprocess runtime.
+
+API nên làm:
+
+```text
+HTTP
+validation
+application service
+query
+command submission
+realtime
+health
+```
+
+API không nên sở hữu execution runtime.
+
+### Cấu trúc đề xuất
+
+```text
+apps/api/windagent_api/composition/
+├── database.py
+├── repositories.py
+├── studio.py
+├── projects.py
+├── providers.py
+├── realtime.py
+├── health.py
+└── container.py
+```
+
+`container.py` chỉ orchestrate composers.
+
+Sau Phase 7:
+
+```text
+API → durable task submission
+Worker → actual execution
+```
+
+### Gate
+
+```text
+API ExecutionRuntimeRegistry instances = 0
+API WorktreeContextManager instances = 0
+```
+
+trừ trường hợp có ADR riêng chứng minh cần thiết.
+
+---
+
+# 12. Phase 8 — Tách WorkerContainer
+
+**Priority: P1**
+
+Worker composition hiện gom queue, Studio, routing, Blender, asset gateway, normalizer và nhiều feature flag trong cùng container.
+
+Tách thành:
+
+```text
+apps/worker/windagent_worker/composition/
+├── core.py
+├── queue.py
+├── providers.py
+├── studio.py
+├── video.py
+├── assets.py
+├── outbox.py
+└── container.py
+```
+
+Feature flag parsing cũng không nên rải:
+
+```python
+os.getenv(...)
+```
+
+khắp bootstrap.
+
+Tạo typed runtime configuration duy nhất:
+
+```text
+WorkerRuntimeSettings
+```
+
+và validate lúc startup.
+
+### Gate
+
+Worker bootstrap phải có thể trả ra manifest:
+
+```json
+{
+  "studio": true,
+  "provider_routing": true,
+  "blender": false,
+  "asset_gateway": false
+}
+```
+
+Không hidden capability.
+
+---
+
+# 13. Phase 9 — Tách ProductionWorker execution pipeline
+
+**Priority: P1**
+
+`poll_and_execute_tick()` hiện chứa quá nhiều trách nhiệm.
+
+Refactor thành:
+
+```text
+poll_and_execute_tick
+        │
+        ▼
+     claim()
+        │
+     lease_guard()
+        │
+     prepare()
+        │
+     execute()
+        │
+     validate()
+        │
+     finalize()
+        │
+     reconcile()
+        │
+     release()
+```
+
+Các module:
+
+```text
+worker/pipeline/
+├── claim.py
+├── lease_guard.py
+├── executor.py
+├── result_validator.py
+├── finalizer.py
+└── reconciler.py
+```
+
+Tạo:
+
+```text
+TaskExecutionContext
+```
+
+chứa:
+
+```text
+task id
+worker id
+fencing token
+attempt
+runtime handle
+timestamps
+```
+
+### Quy tắc
+
+Finalizer là authority duy nhất quyết định terminal persistence.
+
+Execution adapter không được tự commit task state.
+
+### Gate
+
+Mỗi stage test độc lập.
+
+Fencing test:
+
+```text
+claim A
+lease takeover B
+late result A
+→ REJECT
+```
+
+phải PASS.
+
+---
+
+# 14. Phase 10 — Chuẩn hóa Provider / Model / Routing architecture
+
+**Priority: P1**
+
+Sau khi persistence authority ổn định mới nối Providers Hub.
+
+Target:
+
+```text
+Provider
+    │
+    ├── Endpoint
+    │      ├── credentials reference
+    │      ├── status
+    │      └── capabilities
+    │
+    └── Models
+           │
+           └── ModelRule
+```
+
+Một model có rule riêng:
+
+```text
+OpenRouter
+├── deepseek-v4 → coding
+├── qwen → planning
+└── gemma → review
+```
 
 Tách:
 
 ```text
-GlobalErrorBoundary
-RouteErrorBoundary
-FeatureErrorState
+Provider Adapter
+Model Discovery
+Health Probe
+Routing Policy
+Route Lock
+Quota State
+Audit Log
 ```
 
-Phân biệt:
+Frontend không quyết định connection state.
+
+Providers UI hiện đang dùng mock data và random latency; trạng thái đó phải bị cấm trong production profile.
+
+### Gate
 
 ```text
-network unavailable
-401/403
-404
-409 conflict
-422 validation
-500
-unsupported capability
+Add Provider
+→ DB
+→ encrypted credential
+→ real Test Connect
+→ model discovery
+→ assign rule
+→ Worker route
+→ audit
 ```
 
-Không `catch {}` rồi fallback mock.
+E2E PASS.
 
 ---
 
-# P4.11 — Legacy route bridge
+# 15. Phase 11 — Frontend architecture cleanup
 
-Đây là yếu tố giúp Phase 4 an toàn.
+**Priority: P1**
 
-Ví dụ:
+Web và Desktop tiếp tục dùng shared application.
 
-```text
-/dashboard
-    ↓
-new Router
-    ↓
-legacy Dashboard component
-```
-
-Phase 4 **không yêu cầu Dashboard đã dùng V3 API**.
-
-Tương tự:
+Frontend chỉ giữ:
 
 ```text
-/agents → existing Agents
-/browser → existing Browser
+form state
+UI state
+cached query state
+temporary optimistic state
 ```
 
-Sau Phase 6 trở đi sẽ thay từng implementation.
+Không giữ server authority.
+
+Cấm trong production UI:
+
+```text
+Math.random() health
+fake latency
+fake connected
+fake credentials valid
+hardcoded provider authority
+```
+
+Tất cả backend data phải đi qua:
+
+```text
+API contracts
+      ↓
+client
+      ↓
+query/mutation layer
+      ↓
+feature UI
+```
+
+Realtime đi qua duy nhất:
+
+```text
+@windagent/realtime
+```
+
+Không tạo WebSocket riêng trong từng feature.
 
 ---
 
-## Phase 4 gate
+# 16. Phase 12 — Versioning, docs và naming cutover
 
-Bắt buộc:
+**Priority: P1**
 
-```text
-Web imports Desktop App                = 0
-manual hash parser in shared shell     = 0
-activeTab route authority              = 0
-TabKeeper route authority              = 0
-route manifest authorities             = 1
+Hiện README root vẫn ghi `/api/v2/*` canonical.
 
-Desktop starts                         PASS
-Web starts                             PASS
+API README cũng mô tả API V2.
 
-Desktop build                          PASS
-Web build                              PASS
+Trong khi runtime đã trả `410 Gone` cho V2 và hướng sang V3.
 
-all baseline routes reachable          PASS
-back/forward navigation                PASS
-deep-link/hash refresh                 PASS
-route 404                              PASS
-```
-
-**Feature behavior parity phải giữ nguyên.**
-
----
-
-# Phase 5 — Design System
-
-## Mục tiêu
-
-Không redesign lại WindAgent.
-
-Mục tiêu:
+Phải đồng bộ:
 
 ```text
-120 KB global stylesheet
-        ↓
-tokens + primitives + layout + feature styles
+README.md
+apps/api/README.md
+apps/worker/README.md
+apps/desktop/README.md
+pyproject descriptions
+docstrings
+architecture checker
+configs
+environment docs
+API docs
 ```
 
-và giữ visual hiện tại.
-
-Verdict:
+Rename dần:
 
 ```text
-FEV3_P5_DESIGN_SYSTEM_VERIFIED
+OrchestrationV2Container
+→ OrchestrationContainer
 ```
 
----
+nhưng chỉ sau khi caller migration hoàn tất.
 
-# P5.1 — Tạo shared UI package
+Không mass rename ở đầu roadmap.
 
-Đề xuất:
+### Gate
+
+Search toàn repo:
 
 ```text
-frontend/packages/ui/
-├── package.json
-└── src/
-    ├── tokens/
-    ├── theme/
-    ├── components/
-    ├── layout/
-    ├── feedback/
-    └── index.ts
+Architecture V2
+/api/v2
+Phase 7
+legacy canonical
 ```
 
----
-
-# P5.2 — Extract token
-
-Từ CSS hiện tại giữ lại semantic trước.
+Mọi occurrence phải thuộc một trong:
 
 ```text
-tokens/
-├── colors.css
-├── typography.css
-├── spacing.css
-├── radius.css
-├── shadows.css
-├── z-index.css
-├── motion.css
-└── layout.css
-```
-
-Không đổi giá trị màu chỉ vì đang refactor.
-
-Các token hiện có như:
-
-```text
---studio-bg
---studio-surface-*
---studio-border
---studio-text-*
---status-running
---status-success
-```
-
-nên trở thành foundation chứ không bị thay mất.
-
----
-
-# P5.3 — Theme
-
-```text
-theme/
-├── dark.css
-└── index.css
-```
-
-Hiện tại chỉ cần bảo toàn Kinetic Obsidian/dark design.
-
-Không cần ép light mode nếu application chưa dùng.
-
----
-
-# P5.4 — UI primitives
-
-Ưu tiên component có usage lớn:
-
-```text
-Button
-IconButton
-Input
-Textarea
-Select
-Checkbox
-Switch
-Badge
-StatusBadge
-Card
-Panel
-Tabs
-Table
-Modal
-Dialog
-Tooltip
-Toast
-Skeleton
-EmptyState
-ErrorState
-Spinner
-```
-
-Không tạo component wrapper chỉ để đổi tên HTML.
-
----
-
-# P5.5 — Layout primitives
-
-```text
-AppShell
-PageHeader
-PageBody
-SplitPane
-Sidebar
-TopBar
-Toolbar
-InspectorPanel
-Stack
-Grid
-```
-
-`studio-shell` hiện có thể được:
-
-```text
-giữ
-refactor
-merge từng phần vào shared UI
-```
-
-Không xóa package ngay ở P5.
-
----
-
-# P5.6 — Compatibility CSS
-
-Đây là phần rất quan trọng.
-
-Không rewrite toàn bộ selectors trong một commit.
-
-Tạm giữ alias:
-
-```css
-.ui-button { ... }
-```
-
-trỏ tới semantic mới hoặc giữ style tương thích.
-
-Cho phép legacy page tiếp tục render giống trước khi migrate.
-
----
-
-# P5.7 — Accessibility baseline
-
-Mỗi primitive mới:
-
-```text
-keyboard usable
-focus-visible
-disabled semantics
-aria-label khi icon-only
-dialog focus trap
-Escape handling
-contrast
-44px interactive target khi cần
+migration history
+tombstone
+archived document
+compatibility test
 ```
 
 ---
 
-# P5.8 — Visual regression
+# 17. Phase 13 — Dead code và legacy retirement
 
-Lưu screenshot canonical:
+**Priority: P1**
 
-```text
-Dashboard
-Studio
-Projects
-Agent Workspace
-Models
-Settings
-```
+Không xóa trước Phase 12.
 
-Trước / sau extraction.
-
-Mục tiêu P5:
+Lập caller graph cho:
 
 ```text
-visual change không chủ ý = 0
+apps/desktop/src/api/client.ts
+old desktop pages
+old V2 adapters
+deprecated workflows
+unused provider clients
+duplicate DTOs
+obsolete scripts
 ```
 
-Không dùng screenshot để ép pixel-perfect những chỗ dynamic, nhưng layout chính phải giữ.
+Phân loại:
+
+```text
+ACTIVE
+COMPATIBILITY
+TEST_ONLY
+DEMO
+DEAD
+UNKNOWN
+```
+
+Chỉ `DEAD` có evidence mới được xóa.
+
+`UNKNOWN` không được xóa.
+
+Legacy quarantine phải tiếp tục fail-closed.
 
 ---
 
-# P5.9 — Loại duplication
+# 18. Phase 14 — Security và configuration hardening
 
-Sau extraction kiểm tra:
+**Priority: P1/P2**
+
+Tập trung:
 
 ```text
-duplicate button definitions
-duplicate modal definitions
-duplicate status colors
-duplicate typography
-duplicate spacing constants
+API keys
+provider credentials
+workspace paths
+subprocess execution
+Tauri
+WebSocket
 ```
 
-Không xóa selector mà còn runtime consumer.
+Provider secret:
+
+```text
+Frontend
+   │ transient
+   ▼
+API
+   │
+encrypt
+   ▼
+secret store / encrypted DB
+```
+
+Frontend không được nhận lại plaintext key.
+
+Tauri hiện:
+
+```json
+"csp": null
+```
+
+Phải chuyển sang CSP cụ thể trước production desktop build.
+
+Sidecar API/Worker có thể triển khai sau khi kiến trúc runtime đã ổn.
 
 ---
 
-# Phase 5 gate
+# 19. Phase 15 — Performance optimization
+
+**Priority: P2**
+
+Chỉ tối ưu performance sau khi authority và boundaries ổn định.
+
+Đo:
+
+| Metric                      | Mục tiêu kiểm soát             |
+| --------------------------- | ------------------------------ |
+| durable queue claim latency | regression không vượt baseline |
+| enqueue p95                 | regression không vượt baseline |
+| DB transaction duration     | theo command                   |
+| Worker execution overhead   | tách khỏi model/tool runtime   |
+| WebSocket dispatch          | đo outbox → client             |
+| reconnect replay            | theo số event                  |
+| SQLite lock errors          | 0 trong acceptance workload    |
+| PostgreSQL contention       | không tạo duplicate claim      |
+| API endpoint latency        | đo P50/P95/P99                 |
+
+Không “optimize” bằng cách bỏ durability.
+
+---
+
+# 20. Phase 16 — Final architecture certification
+
+Chạy toàn bộ:
+
+```bash
+architecture checker
+ruff
+pytest unit
+pytest architecture
+pytest contract
+SQLite integration
+PostgreSQL integration
+API smoke
+Worker recovery
+queue/fencing tests
+outbox tests
+WebSocket replay tests
+web tests
+desktop tests
+typecheck
+build
+```
+
+Sau đó chạy các failure injections:
 
 ```text
-shared tokens package             PASS
-shared primitives                 PASS
-desktop consumes shared UI        PASS
-web consumes same UI              PASS
-
-visual regression                PASS
-component tests                  PASS
-keyboard tests                   PASS
-typecheck                        PASS
-
-runtime feature behavior change   = 0
-unintentional visual change       = 0
+API restart
+Worker restart
+worker killed during execution
+DB transient failure
+lease expiration
+late result
+duplicate command
+duplicate event
+WebSocket disconnect/reconnect
+provider timeout
+provider rate limit
 ```
 
 ---
 
-# Cấu trúc dự kiến sau Phase 5
+# 21. Hard gates cuối cùng
+
+| Gate                   | Điều kiện                             |
+| ---------------------- | ------------------------------------- |
+| `G0_SOURCE_AUTHORITY`  | baseline SHA/branch xác định          |
+| `G1_DEPENDENCY_DAG`    | cycle = 0                             |
+| `G2_DECLARED_DEPS`     | undeclared dependency = 0             |
+| `G3_CORE_PURITY`       | framework/infra import trong core = 0 |
+| `G4_LAYERING`          | application → concrete infra = 0      |
+| `G5_STORAGE_INVERSION` | storage → providers = 0               |
+| `G6_V3_AUTHORITY`      | canonical in-memory stores = 0        |
+| `G7_DURABILITY`        | restart persistence PASS              |
+| `G8_REALTIME`          | replay + push + dedup PASS            |
+| `G9_API_ISOLATION`     | API không compose execution runtime   |
+| `G10_WORKER_PIPELINE`  | stages tách và test được              |
+| `G11_TRUTHFUL_UI`      | fake success production = 0           |
+| `G12_DOCS`             | canonical docs = V3                   |
+| `G13_TESTS`            | toàn bộ required suites PASS          |
+| `G14_ARCH_CERTIFIED`   | architecture checker PASS             |
+
+Final verdict duy nhất được phép:
 
 ```text
-apps/
-├── desktop/
-│   └── src/
-│       └── main.tsx
-│
-└── web/
-    └── src/
-        └── main.tsx
-
-frontend/
-├── app/
-│   └── src/
-│       ├── app/
-│       │   ├── App.tsx
-│       │   ├── router.tsx
-│       │   ├── routeManifest.ts
-│       │   ├── providers.tsx
-│       │   └── bootstrap.ts
-│       │
-│       ├── features/
-│       └── shared/
-│
-└── packages/
-    ├── ui/
-    ├── api-contracts/
-    ├── api-client/
-    ├── realtime/
-    │
-    ├── studio-client/        # legacy/migration
-    ├── studio-contracts/     # legacy/migration
-    ├── studio-state/         # legacy/migration
-    ├── production-client/    # legacy/migration
-    └── ...
-
-apps/api/windagent_api/
-└── routers/
-    ├── v2_*                  # vẫn tồn tại
-    └── v3/
-        ├── router.py
-        ├── common/
-        └── studio/
+ARCHITECTURE_V3_OPTIMIZED_AND_CERTIFIED
 ```
-
-Điểm quan trọng: **các package legacy vẫn còn sau Phase 5**. Repository hiện đã có nhiều package Studio/Production riêng biệt; việc xóa chúng phải đợi các vertical slice migrate xong.
 
 ---
 
-# Những việc tuyệt đối chưa làm trong Phase 0–5
-
-Để tránh scope creep:
+# 22. Thứ tự triển khai thực tế
 
 ```text
-KHÔNG xóa /api/v2
-KHÔNG migrate toàn bộ Studio
-KHÔNG rewrite Dashboard data
-KHÔNG rewrite Episodes
-KHÔNG rewrite Storyboard
-KHÔNG rewrite Characters
-KHÔNG rewrite Production
-KHÔNG xóa FakeProductionApiClient
-KHÔNG xóa Redux chỉ vì muốn dùng Zustand
-KHÔNG xóa mock data hàng loạt
-KHÔNG xóa old pages
-KHÔNG dead-code cleanup lớn
-KHÔNG redesign UI lần nữa
+Phase 0
+Baseline / branch authority
+     │
+     ▼
+Phase 1
+Architecture V3 policy
+     │
+     ▼
+Phase 2
+Break dependency cycles
+     │
+     ▼
+Phase 3
+Ports + dependency inversion
+     │
+     ▼
+Phase 4
+Single V3 authority
+     │
+     ▼
+Phase 5
+Transaction/UoW
+     │
+     ▼
+Phase 6
+Realtime
+     │
+     ├──────────────┐
+     ▼              ▼
+Phase 7          Phase 8
+API composition  Worker composition
+     │              │
+     └──────┬───────┘
+            ▼
+         Phase 9
+      Worker pipeline
+            │
+            ▼
+         Phase 10
+ Provider/Model/Routing
+            │
+            ▼
+         Phase 11
+     Frontend boundary
+            │
+            ▼
+     Phase 12 → Phase 13
+      Docs       Cleanup
+            │
+            ▼
+         Phase 14
+      Security/config
+            │
+            ▼
+         Phase 15
+       Performance
+            │
+            ▼
+         Phase 16
+    Final certification
 ```
 
-Những việc đó thuộc Phase 6–16.
+## Quy tắc dừng
 
----
+Trong toàn bộ Phase 0–9:
 
-# Chiến lược commit tôi đề xuất
+> **Không mở rộng feature mới.**
 
-Không thực hiện cả sáu phase trong một commit.
+Live Record, Blender extension, UI redesign, Browser Agent, provider UX mới và các feature production khác chỉ được tiếp tục sau khi các gate nền sau đạt PASS:
 
 ```text
-P0
-refactor/frontend-v3-p0-inventory
-
-P1
-refactor/frontend-v3-p1-domain-vocabulary
-
-P2
-refactor/frontend-v3-p2-api-foundation
-
-P3
-refactor/frontend-v3-p3-generated-client
-
-P4
-refactor/frontend-v3-p4-shared-app
-
-P5
-refactor/frontend-v3-p5-design-system
+G0
+G1
+G2
+G3
+G4
+G5
+G6
+G7
+G8
+G9
+G10
 ```
 
-Mỗi phase:
-
-```text
-implementation commit(s)
-        ↓
-verification
-        ↓
-evidence commit
-        ↓
-phase verdict
-```
-
-Không sửa phase sau để che lỗi phase trước.
-
----
-
-# Gate tổng sau Phase 0–5
-
-Sau Phase 5 tôi chưa yêu cầu `/api/v2` hay mock bằng 0. Các invariant hợp lý ở **mốc foundation** là:
-
-```text
-Baseline inventory complete                    = YES
-Canonical vocabulary unresolved                = 0
-
-V3 common contract authority                   = 1
-V3 ApiProblem formats                          = 1
-V3 pagination conventions                      = 1
-V3 concurrency conventions                     = 1
-V3 idempotency conventions                     = 1
-V3 event envelope conventions                  = 1
-
-OpenAPI generation                             = PASS
-generated TS contracts                         = PASS
-generated API client                           = PASS
-realtime package                               = PASS
-
-new direct fetch violations since Phase 3      = 0
-new handwritten V3 DTO duplication             = 0
-
-Web importing Desktop App                      = 0
-manual shell routing authority                 = 0
-route manifests                                = 1
-
-Web shared app build                           = PASS
-Desktop shared app build                       = PASS
-
-Design tokens authority                        = 1
-shared primitive UI system                     = PASS
-visual regression                              = PASS
-
-existing V2 regression                         = PASS
-existing Studio V3 regression                  = PASS
-architecture checker                           = PASS
-```
-
-Verdict cuối:
-
-```text
-FRONTEND_V3_FOUNDATION_PHASE_0_5_VERIFIED
-READY_FOR_PHASE_6_DASHBOARD_MONITORING
-```
-
-## Dependency thực tế
-
-Tôi khuyến nghị **không chạy song song P0–P3**, vì đây là chuỗi authority:
-
-```text
-P0 Inventory
-   ↓
-P1 Vocabulary
-   ↓
-P2 API Contract
-   ↓
-P3 Generated Client
-```
-
-Sau khi P3 ổn định, **một phần P4 và P5 có thể chạy song song**:
-
-```text
-                  ┌─ P4 Router/App/Providers
-P3 verified ──────┤
-                  └─ P5 Tokens/UI primitives
-```
-
-nhưng **P5 integration vào AppShell nên merge sau khi skeleton P4 đã ổn định**.
-
-Điểm kết thúc Phase 5 không phải là “frontend mới đã hoàn thành”, mà là **WindAgent đã có nền kiến trúc đủ sạch để Phase 6 trở đi migrate từng vertical slice mà không tiếp tục sinh thêm V2 client, mock fallback, direct `fetch()`, handwritten contract và routing riêng lẻ**. Đây là mốc nền tảng quan trọng nhất của toàn roadmap.
+Kiến trúc hiện tại có nền durable khá tốt; mục tiêu của roadmap này là **không phá phần tốt**, mà loại bỏ các đường tắt V2/V3, đưa toàn bộ dependency graph về một chiều và biến API/Worker/frontend thành các vertical slice có authority rõ ràng.

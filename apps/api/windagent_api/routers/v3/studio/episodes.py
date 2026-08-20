@@ -27,7 +27,7 @@ async def create_episode(
     idempotency_key: str = Depends(require_idempotency_key),
     service: StudioApplicationService = Depends(get_studio_application_service),
 ) -> dict:
-    parsed_series = service.parse_id(SeriesProjectId, series_id, "series_id")
+    _parsed_series = service.parse_id(SeriesProjectId, series_id, "series_id")
     result = await service.create_episode(
         path_series_id=series_id,
         series_id=body.series_id,

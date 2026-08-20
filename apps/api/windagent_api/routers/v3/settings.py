@@ -14,10 +14,10 @@ import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, HTTPException, Request, status
-from pydantic import BaseModel, Field
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+from pydantic import BaseModel
 
-from windagent_api.routers.v3.logs import emit_log
+from windagent_api.services.log_service import LogService, get_log_service
 
 router = APIRouter(prefix="/api/v3/settings", tags=["Settings V3"])
 
@@ -275,7 +275,11 @@ async def get_settings(request: Request) -> SettingsResponse:
 
 
 @router.patch("", response_model=SettingsResponse, operation_id="settings.patch")
-async def patch_settings(body: PatchSettingsRequest, request: Request) -> SettingsResponse:
+async def patch_settings(
+    body: PatchSettingsRequest,
+    request: Request,
+    log_service: LogService = Depends(get_log_service),
+) -> SettingsResponse:
     """Apply setting updates. Secret values are stored server-side and echoed
     back only as configured-status; non-secret values persist to the settings store."""
     values = _load_values()
@@ -302,7 +306,7 @@ async def patch_settings(body: PatchSettingsRequest, request: Request) -> Settin
                     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"{key} must be one of {schema_item.enum}")
             values[key] = value
     _persist_values(values)
-    emit_log(
+    log_service.emit(
         "INFO",
         "settings",
         "Settings updated",

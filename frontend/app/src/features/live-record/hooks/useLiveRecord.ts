@@ -191,25 +191,24 @@ export function useLiveRecord() {
       setRecordSeconds((prev) => prev + 1);
       setRecordedFrames((prev) => prev + fps);
       setStorageUsedGB((prev) => +(prev + 0.0028).toFixed(2));
-      // Subtle realistic fluctuation for live bitrate
-      setCurrentBitrate(+(42.5 + (Math.random() * 1.6 - 0.8)).toFixed(1));
+      setCurrentBitrate(42.5);
     }, 1000);
 
     return () => clearInterval(interval);
   }, [isRecording, isPaused, fps]);
 
-  // Dynamic Audio Visualizer wave generator
+  // Audio Visualizer level updater
   useEffect(() => {
     if (!isRecording && !deviceConnected) return;
 
     const interval = setInterval(() => {
       setAudioLevels((prev) => ({
         ...prev,
-        mic: prev.isMicMuted ? -60 : Math.min(0, Math.max(-48, Math.round(-10 + (Math.random() * 8 - 4)))),
-        system: prev.isSystemMuted ? -60 : Math.min(0, Math.max(-54, Math.round(-18 + (Math.random() * 6 - 3)))),
-        voiceover: prev.isVoiceoverMuted ? -60 : Math.min(0, Math.max(-36, Math.round(-6 + (Math.random() * 5 - 2)))),
+        mic: prev.isMicMuted ? -60 : -12,
+        system: prev.isSystemMuted ? -60 : -18,
+        voiceover: prev.isVoiceoverMuted ? -60 : -8,
       }));
-    }, 120);
+    }, 250);
 
     return () => clearInterval(interval);
   }, [isRecording, deviceConnected]);

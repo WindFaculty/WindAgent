@@ -244,9 +244,22 @@ async def test_cas_stale_result_rejection(db_manager):
 @pytest.mark.asyncio
 async def test_idempotent_retry_deduplication(db_manager):
     """Retry with exact same idempotency_key returns already_finalized=True and produces 0 duplicates."""
+    now = datetime.now(timezone.utc)
     async with SqlUnitOfWork(db_manager.session_factory) as uow:
         task = TaskRunORM(id="task-idempotent", session_id="sess-idemp", state="running", version=1)
+        await _seed_step_run(uow.session, "step-idempotent")
+        lease = ExecutionLeaseORM(
+            lease_id="lease-idempotent",
+            step_run_id="step-idempotent",
+            run_id="task-idempotent",
+            worker_id="wkr-1",
+            fencing_token="fence-1",
+            status="active",
+            expires_at=now,
+            idempotency_key="key-idempotent",
+        )
         uow.session.add(task)
+        uow.session.add(lease)
         await uow.commit()
 
     req = FinalizeTaskExecutionRequest(
@@ -406,7 +419,19 @@ async def test_fault_injection_event_store_failure(db_manager):
     now = datetime.now(timezone.utc)
     async with SqlUnitOfWork(db_manager.session_factory) as uow:
         task = TaskRunORM(id="task-evt-fail", session_id="sess-evt", state="running", version=1)
+        await _seed_step_run(uow.session, "step-evt")
+        lease = ExecutionLeaseORM(
+            lease_id="lease-evt-fail",
+            step_run_id="step-evt",
+            run_id="task-evt-fail",
+            worker_id="wkr-1",
+            fencing_token="fence-evt",
+            status="active",
+            expires_at=now,
+            idempotency_key="key-evt",
+        )
         uow.session.add(task)
+        uow.session.add(lease)
         await uow.commit()
 
     async with SqlUnitOfWork(db_manager.session_factory) as uow:
@@ -590,9 +615,22 @@ async def test_crash_after_commit_idempotent_recovery(db_manager):
     Spec §2.5 & §2.6: Retry of the same transaction MUST NOT create duplicate completion
     records, events, outbox entries, or artifact links.
     """
+    now = datetime.now(timezone.utc)
     async with SqlUnitOfWork(db_manager.session_factory) as uow:
         task = TaskRunORM(id="task-crash-recover", session_id="sess-crash", state="running", version=1)
+        await _seed_step_run(uow.session, "step-crash")
+        lease = ExecutionLeaseORM(
+            lease_id="lease-crash-recover",
+            step_run_id="step-crash",
+            run_id="task-crash-recover",
+            worker_id="wkr-recover",
+            fencing_token="fence-crash",
+            status="active",
+            expires_at=now,
+            idempotency_key="key-crash",
+        )
         uow.session.add(task)
+        uow.session.add(lease)
         await uow.commit()
 
     req = FinalizeTaskExecutionRequest(

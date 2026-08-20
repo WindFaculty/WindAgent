@@ -5,8 +5,11 @@ and registers all canonical V2 routers. API V1 has been permanently removed - re
 """
 
 from __future__ import annotations
+import json
 import logging
 import os
+import uuid
+from typing import Any, Dict, Optional
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
@@ -223,22 +226,179 @@ app.include_router(v3_router)
 
 @app.websocket("/ws")
 async def root_websocket_endpoint(websocket: WebSocket):
-    """Canonical root WebSocket endpoint for RealtimeProvider events."""
+    """Canonical root WebSocket endpoint for RealtimeProvider events (Phase 6).
+
+    Protocol:
+    - initial ``{"type":"connected", ...}`` compatibility message;
+    - JSON ``subscribe`` with non-empty ``aggregate_type`` / ``aggregate_id``
+      and integer ``after_sequence >= 0`` (default 0);
+    - ``subscribed`` control message, then replay events using the canonical
+      event fields, then ``catchup_complete`` with the final cursor;
+    - live pushes afterwards; ``unsubscribe`` acknowledged with ``unsubscribed``;
+    - legacy raw ``ping`` and JSON ``{"type":"ping"}`` both return a pong;
+    - malformed/unsupported messages receive a stable error envelope.
+    """
     await websocket.accept()
+    container = getattr(websocket.app.state, "container", None)
+    hub = getattr(container, "realtime_hub", None) if container is not None else None
+    if hub is None:
+        await websocket.close(code=1011, reason="realtime hub unavailable")
+        return
+    await websocket.send_json({
+        "type": "connected",
+        "message": "WindAgent Realtime Connected",
+        "timestamp": utc_now().isoformat(),
+    })
+    connection_id = f"conn_{uuid.uuid4().hex[:12]}"
+    # Stream key ("aggregate_type:aggregate_id") -> current subscription id.
+    # A repeated subscribe replaces the previous subscription in the hub, so
+    # only the current id is tracked here; cleanup and unsubscribe by either
+    # id or stream must target only the current subscription.
+    subscription_ids: dict[str, str] = {}
     try:
-        await websocket.send_json({
-            "type": "connected",
-            "message": "WindAgent Realtime Connected",
-            "timestamp": utc_now().isoformat(),
-        })
         while True:
-            data = await websocket.receive_text()
-            if data == "ping":
-                await websocket.send_text("pong")
+            raw = await websocket.receive_text()
+            message = _parse_ws_message(raw)
+            if message is None:
+                if raw == "ping":
+                    await websocket.send_json({"type": "pong"})
+                else:
+                    await websocket.send_json({
+                        "type": "error",
+                        "error": "invalid_json",
+                        "message": "message must be valid JSON",
+                    })
+                continue
+            msg_type = message.get("type")
+            if msg_type == "ping":
+                await websocket.send_json({"type": "pong"})
+            elif msg_type == "subscribe":
+                validation_error = _validate_subscribe(message)
+                if validation_error is not None:
+                    await websocket.send_json({
+                        "type": "error",
+                        "error": "invalid_subscription",
+                        "message": validation_error,
+                    })
+                    continue
+                aggregate_type = str(message["aggregate_type"]).strip()
+                aggregate_id = str(message["aggregate_id"]).strip()
+                sub_id = await hub.subscribe(
+                    aggregate_type=aggregate_type,
+                    aggregate_id=aggregate_id,
+                    after_sequence=int(message.get("after_sequence", 0)),
+                    sender=_canonical_sender(websocket),
+                    connection_id=connection_id,
+                )
+                subscription_ids[f"{aggregate_type}:{aggregate_id}"] = sub_id
+            elif msg_type == "unsubscribe":
+                sub_id = message.get("subscription_id")
+                if sub_id and sub_id in subscription_ids.values():
+                    await hub.unsubscribe(sub_id)
+                    for key, current in list(subscription_ids.items()):
+                        if current == sub_id:
+                            del subscription_ids[key]
+                    await websocket.send_json({
+                        "type": "unsubscribed",
+                        "subscription_id": sub_id,
+                    })
+                else:
+                    # Frontend compatibility: the client identifies the stream
+                    # by aggregate identity and does not retain subscription_id.
+                    aggregate_type = message.get("aggregate_type")
+                    aggregate_id = message.get("aggregate_id")
+                    if (
+                        isinstance(aggregate_type, str)
+                        and aggregate_type.strip()
+                        and isinstance(aggregate_id, str)
+                        and aggregate_id.strip()
+                    ):
+                        stream_key = f"{aggregate_type.strip()}:{aggregate_id.strip()}"
+                        current_sub_id = subscription_ids.get(stream_key)
+                        if current_sub_id is not None:
+                            removed = await hub.unsubscribe_stream(
+                                connection_id=connection_id,
+                                aggregate_type=aggregate_type.strip(),
+                                aggregate_id=aggregate_id.strip(),
+                            )
+                            del subscription_ids[stream_key]
+                            await websocket.send_json({
+                                "type": "unsubscribed",
+                                "subscription_id": (
+                                    removed if removed is not None else current_sub_id
+                                ),
+                                "aggregate_type": aggregate_type.strip(),
+                                "aggregate_id": aggregate_id.strip(),
+                            })
+                        else:
+                            await websocket.send_json({
+                                "type": "error",
+                                "error": "unknown_subscription",
+                                "message": "no subscription for aggregate stream",
+                            })
+                    else:
+                        await websocket.send_json({
+                            "type": "error",
+                            "error": "unknown_subscription",
+                            "message": "unknown subscription_id",
+                        })
             else:
-                await websocket.send_json({"type": "ack", "received": data})
-    except (WebSocketDisconnect, Exception):
+                await websocket.send_json({
+                    "type": "error",
+                    "error": "unsupported_message",
+                    "message": f"unsupported message type: {msg_type!r}",
+                })
+    except WebSocketDisconnect:
         pass
+    finally:
+        for sub_id in subscription_ids.values():
+            try:
+                await hub.unsubscribe(sub_id)
+            except Exception:
+                pass
+        try:
+            await hub.disconnect(connection_id)
+        except Exception:
+            pass
+
+
+def _parse_ws_message(raw: str) -> Optional[Dict[str, Any]]:
+    """Parse a JSON object message; returns None for non-JSON/non-object input."""
+    try:
+        data = json.loads(raw)
+    except (json.JSONDecodeError, TypeError):
+        return None
+    if not isinstance(data, dict):
+        return None
+    return data
+
+
+def _validate_subscribe(message: Dict[str, Any]) -> Optional[str]:
+    """Validate a subscribe message; returns an error string or None."""
+    aggregate_type = message.get("aggregate_type")
+    aggregate_id = message.get("aggregate_id")
+    after_sequence = message.get("after_sequence", 0)
+    if not isinstance(aggregate_type, str) or not aggregate_type.strip():
+        return "aggregate_type must be a non-empty string"
+    if not isinstance(aggregate_id, str) or not aggregate_id.strip():
+        return "aggregate_id must be a non-empty string"
+    if isinstance(after_sequence, bool) or not isinstance(after_sequence, int) or after_sequence < 0:
+        return "after_sequence must be an integer >= 0"
+    return None
+
+
+def _canonical_sender(websocket: WebSocket):
+    """Sender that emits the canonical wire protocol for the root /ws endpoint."""
+
+    async def send(message: Dict[str, Any]) -> None:
+        if message.get("type") in ("subscribed", "catchup_complete"):
+            await websocket.send_json(message)
+        else:
+            await websocket.send_json({
+                k: v for k, v in message.items() if k not in ("is_replay", "metadata")
+            })
+
+    return send
 
 
 

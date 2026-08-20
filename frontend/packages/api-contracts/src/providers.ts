@@ -9,6 +9,8 @@ export type ProviderType =
   | 'mistral'
   | 'ollama'
   | 'openrouter'
+  | 'cloud'
+  | 'local'
   | 'custom';
 
 export type ProviderStatus = 'healthy' | 'degraded' | 'offline' | 'unconfigured';
@@ -69,4 +71,39 @@ export interface ProviderHealthMap {
     endpoints_healthy: number;
     endpoints_total: number;
   };
+}
+
+export interface AddProviderRequest {
+  id: string;
+  name: string;
+  type: 'cloud' | 'local' | 'custom';
+  base_url: string;
+  protocol_mode: 'openai' | 'anthropic' | 'gemini' | 'ollama';
+  api_key?: string;
+  credential_label?: string;
+  endpoint_id?: string;
+  supports_model_discovery?: boolean;
+  supports_openai_compatible?: boolean;
+}
+
+export interface ProviderModelRuleResource {
+  role: string;
+  name: string;
+  description?: string;
+  primary_canonical_model_id: string;
+  fallback_canonical_model_id?: string;
+  enabled: boolean;
+  priority: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AssignProviderModelRuleRequest {
+  role: string;
+  name: string;
+  primary_canonical_model_id: string;
+  fallback_canonical_model_id?: string;
+  description?: string;
+  enabled?: boolean;
+  priority?: number;
 }

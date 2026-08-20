@@ -12,6 +12,9 @@ from windagent_core.contracts.providers.capabilities import (
     ModelDescriptor,
     QuotaState,
 )
+from windagent_core.contracts.providers.model_capabilities import (
+    ModelCapabilityProfile,
+)
 
 
 @runtime_checkable
@@ -143,3 +146,92 @@ class UsageLedgerPort(Protocol):
         cost_usd: float,
     ) -> None:
         ...
+
+
+# ---------------------------------------------------------------------------
+# Roadmap provider ports (Phase 3 — Dependency Inversion).
+#
+# These are the neutral provider execution/health/discovery/registry/audit
+# contracts the intelligence model-router policy depends on. Provider adapters
+# satisfy them structurally; Core only defines them.
+# ---------------------------------------------------------------------------
+
+
+@runtime_checkable
+class ProviderHealthPort(Protocol):
+    """Port for querying a provider's health and quota state."""
+
+    @property
+    def provider_name(self) -> str:
+        """Read-only provider identity used by the model-router policy."""
+        ...
+
+    async def health(self) -> Any:
+        """Return a health record exposing ``.healthy``."""
+
+    async def get_quota(self) -> Any:
+        """Return a quota snapshot exposing ``.has_quota``."""
+
+
+@runtime_checkable
+class ModelExecutionPort(Protocol):
+    """Port for executing a model generation call."""
+
+    async def generate(self, request: Any) -> Any:
+        ...
+
+    def estimate_cost(self, request: Any) -> float:
+        ...
+
+
+@runtime_checkable
+class ModelRegistryPort(Protocol):
+    """Port for discovering available models and their capability profiles."""
+
+    async def list_models(self) -> List[str]:
+        ...
+
+    def capabilities(self) -> List[ModelCapabilityProfile]:
+        ...
+
+
+@runtime_checkable
+class ProviderDiscoveryPort(Protocol):
+    """Port for discovering provider models and capability profiles."""
+
+    async def discover(self, provider_id: str) -> List[ModelCapabilityProfile]:
+        ...
+
+
+@runtime_checkable
+class RoutingAuditPort(Protocol):
+    """Port for recording routing decisions for auditability."""
+
+    async def record_route(
+        self,
+        *,
+        session_id: str,
+        task_id: str,
+        canonical_model_id: str,
+        provider_name: str,
+        reasons: List[str],
+        fallback_chain: List[str],
+    ) -> None:
+        ...
+
+
+__all__ = [
+    "EndpointRegistryPort",
+    "CanonicalModelRegistryPort",
+    "RouteLockPort",
+    "RouteAttemptPort",
+    "QuotaStatePort",
+    "EndpointStatePort",
+    "CachePort",
+    "UsageLedgerPort",
+    "ProviderHealthPort",
+    "ModelExecutionPort",
+    "ModelRegistryPort",
+    "ProviderDiscoveryPort",
+    "RoutingAuditPort",
+]

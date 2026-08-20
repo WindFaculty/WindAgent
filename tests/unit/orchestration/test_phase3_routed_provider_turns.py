@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import uuid
-from types import SimpleNamespace
 from typing import Any
 
 import pytest
@@ -30,6 +29,7 @@ from windagent_providers.routing.memory_ports import (
 from windagent_storage.database.connection import DatabaseManager
 from windagent_storage.database.sync_factory import make_sync_session_factory
 from windagent_storage.orm.models import BaseORM
+from windagent_storage.repositories.multi_agent_repository import MultiAgentRepository
 from tests.fakes.provider_graph_seed import PersistentRouteLocks, seed_provider_graph
 from windagent_storage.repositories.v3_repositories import SQLRouteAttemptRepository
 
@@ -140,9 +140,10 @@ async def test_turn_429_failover_is_same_model_and_auditable(db: DatabaseManager
             canonical_model_id=canonical_model_id,
             rule_id="phase3-test-rule",
             rule_version=7,
-            reason="phase3 same-model policy",
+            reason="phase3 routed turns",
         ),
         coordinator,
+        repo_factory=lambda session: MultiAgentRepository(session),
     )
 
     goal = await service.submit_goal(

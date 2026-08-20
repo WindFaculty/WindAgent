@@ -1,0 +1,289 @@
+{
+  "status": "FAIL",
+  "total_violations": 47,
+  "violations": [
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/social_research.py",
+      "line": 36,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/social_research.py",
+      "line": 36,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/assembly.py",
+      "line": 19,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/assembly.py",
+      "line": 20,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/assembly.py",
+      "line": 20,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/assembly.py",
+      "line": 20,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/assembly.py",
+      "line": 20,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/assembly.py",
+      "line": 20,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/assembly.py",
+      "line": 20,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/compiler.py",
+      "line": 2,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/program_certification.py",
+      "line": 22,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/program_certification.py",
+      "line": 22,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/program_certification.py",
+      "line": 23,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/program_certification.py",
+      "line": 23,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/program_certification.py",
+      "line": 23,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/program_certification.py",
+      "line": 23,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/program_certification.py",
+      "line": 23,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/program_certification.py",
+      "line": 30,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/qc.py",
+      "line": 21,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/qc.py",
+      "line": 21,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/qc.py",
+      "line": 22,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/qc.py",
+      "line": 23,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/qc.py",
+      "line": 24,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/qc.py",
+      "line": 24,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/replay.py",
+      "line": 7,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/replay.py",
+      "line": 7,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/replay.py",
+      "line": 7,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/replay.py",
+      "line": 7,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/replay.py",
+      "line": 7,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/replay.py",
+      "line": 7,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/replay.py",
+      "line": 7,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/replay.py",
+      "line": 7,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/replay.py",
+      "line": 7,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "workflows/windagent_workflows/code_video/replay.py",
+      "line": 7,
+      "message": "workflows cannot depend on tools"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "observability/windagent_observability/events/dead_letter.py",
+      "line": 8,
+      "message": "observability cannot depend on storage"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "observability/windagent_observability/events/dead_letter.py",
+      "line": 9,
+      "message": "observability cannot depend on storage"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "observability/windagent_observability/events/publisher.py",
+      "line": 12,
+      "message": "observability cannot depend on storage"
+    },
+    {
+      "rule": "disallowed_dependency",
+      "file": "observability/windagent_observability/events/publisher.py",
+      "line": 13,
+      "message": "observability cannot depend on storage"
+    },
+    {
+      "rule": "concrete_adapter_outside_composition",
+      "file": "storage/windagent_storage/repositories/sql_repositories.py",
+      "line": 547,
+      "message": "Concrete adapter 'SqlOutboxRepository' instantiated outside composition root"
+    },
+    {
+      "rule": "concrete_adapter_outside_composition",
+      "file": "storage/windagent_storage/studio/task_submission.py",
+      "line": 68,
+      "message": "Concrete adapter 'SqlOutboxRepository' instantiated outside composition root"
+    },
+    {
+      "rule": "concrete_adapter_outside_composition",
+      "file": "storage/windagent_storage/unit_of_work/sql_uow.py",
+      "line": 68,
+      "message": "Concrete adapter 'SqlWorkflowRepository' instantiated outside composition root"
+    },
+    {
+      "rule": "concrete_adapter_outside_composition",
+      "file": "storage/windagent_storage/unit_of_work/sql_uow.py",
+      "line": 70,
+      "message": "Concrete adapter 'SqlEventStore' instantiated outside composition root"
+    },
+    {
+      "rule": "concrete_adapter_outside_composition",
+      "file": "storage/windagent_storage/unit_of_work/studio_uow.py",
+      "line": 63,
+      "message": "Concrete adapter 'SqlEpisodeRepository' instantiated outside composition root"
+    },
+    {
+      "rule": "concrete_adapter_outside_composition",
+      "file": "storage/windagent_storage/unit_of_work/studio_uow.py",
+      "line": 93,
+      "message": "Concrete adapter 'SqlOutboxRepository' instantiated outside composition root"
+    },
+    {
+      "rule": "concrete_adapter_outside_composition",
+      "file": "apps/api/windagent_api/services/studio_storage_adapter.py",
+      "line": 59,
+      "message": "Concrete adapter 'SqlEpisodeRepository' instantiated outside composition root"
+    },
+    {
+      "rule": "concrete_adapter_outside_composition",
+      "file": "apps/api/windagent_api/services/studio_storage_adapter.py",
+      "line": 63,
+      "message": "Concrete adapter 'SqlEpisodeRepository' instantiated outside composition root"
+    },
+    {
+      "rule": "concrete_adapter_outside_composition",
+      "file": "apps/worker/windagent_worker/runner.py",
+      "line": 429,
+      "message": "Concrete adapter 'SqlUnitOfWork' instantiated outside composition root"
+    }
+  ],
+  "circular_dependency_cycles": 0
+}

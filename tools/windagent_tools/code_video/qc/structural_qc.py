@@ -14,7 +14,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Sequence, Set
 
-from windagent_workflows.code_video.contracts import CodeVideoPlan, Scene
+from windagent_core.contracts.code_video import CodeVideoPlan, Scene
 from windagent_tools.code_video.renderer.graphics_catalog import GraphicsCatalog
 
 

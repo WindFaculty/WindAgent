@@ -48,14 +48,14 @@
       "path": "artifacts/code_video/video_02/final/video_02_visual_master_1440p.mp4",
       "resolution": "2560x1440",
       "fps": 30,
-      "sha256": "ccad703d117a266bb81727929424c02172e86d4e492731fd904f19c2cf641399"
+      "sha256": "92a8e4b6fc4a341afcd652fd312a94749726c72bb310e21d1f8e08a4570cc047"
     },
     {
       "filename": "video_02_visual_master_1080p.mp4",
       "path": "artifacts/code_video/video_02/final/video_02_visual_master_1080p.mp4",
       "resolution": "1920x1080",
       "fps": 30,
-      "sha256": "94cc38f9a7751a8eae6464deb55011efbdd0d237fbecceadf43ac80ec21aafac"
+      "sha256": "b38b7dfc4f09a13457de58a8cda38715baa9093801b26c9a7012dc849781d3f3"
     },
     {
       "filename": "timeline.json",
@@ -72,8 +72,8 @@
     {
       "filename": "video_manifest.json",
       "path": "artifacts/code_video/video_02/final/video_manifest.json",
-      "sha256": "65ec879e22ad9e0ec56777c455b08151d8229fc6230e43f2dba618e550828fcd"
+      "sha256": "73a0424fa901b4ef515d01cde2be88a349be3de043068f9f1422e26b22e850ea"
     }
   ],
-  "generated_at": "2026-08-18T16:58:11.576967+00:00"
+  "generated_at": "2026-08-19T07:54:04.283888+00:00"
 }

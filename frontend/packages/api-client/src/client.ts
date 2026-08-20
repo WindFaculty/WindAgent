@@ -62,6 +62,9 @@ import type {
   ProviderHealthMap,
   ProviderStatus,
   ProviderConnectionTestResult,
+  AddProviderRequest,
+  ProviderModelRuleResource,
+  AssignProviderModelRuleRequest,
   RoutingRuleResource,
   RoutingGraphData,
   RoutingMetricsData,
@@ -798,6 +801,10 @@ export class ProvidersApi {
     return this.transport.get<ProviderResource[]>('/api/v3/providers');
   }
 
+  async create(request: AddProviderRequest): Promise<ProviderResource> {
+    return this.transport.post<ProviderResource>('/api/v3/providers', request);
+  }
+
   async get(id: string): Promise<ProviderResource> {
     return this.transport.get<ProviderResource>(`/api/v3/providers/${encodeURIComponent(id)}`);
   }
@@ -820,6 +827,14 @@ export class ProvidersApi {
 
   async testConnection(id: string, endpointId?: string): Promise<ProviderConnectionTestResult> {
     return this.transport.post<ProviderConnectionTestResult>(`/api/v3/providers/${encodeURIComponent(id)}/test-connection`, { endpoint_id: endpointId });
+  }
+
+  async listModelRules(): Promise<ProviderModelRuleResource[]> {
+    return this.transport.get<ProviderModelRuleResource[]>('/api/v3/providers/rules');
+  }
+
+  async assignModelRule(request: AssignProviderModelRuleRequest): Promise<ProviderModelRuleResource> {
+    return this.transport.post<ProviderModelRuleResource>('/api/v3/providers/rules', request);
   }
 }
 

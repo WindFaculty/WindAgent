@@ -6,6 +6,56 @@
     "version": "0.3.0"
   },
   "paths": {
+    "/health/": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "Health Root",
+        "operationId": "health_root_health__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object",
+                  "title": "Response Health Root Health  Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "Health Root",
+        "operationId": "health_root_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object",
+                  "title": "Response Health Root Health Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/health/live": {
       "get": {
         "tags": [
@@ -7246,7 +7296,7 @@
           "Routing V3"
         ],
         "summary": "Simulate Route Decision",
-        "description": "Execute dry-run route resolution returning explainable RouteDecision.",
+        "description": "Execute dry-run route resolution returning explainable RouteDecision.\n\nThe decision is produced by the composed ``RouteLockService`` (whose\nproduction lock repository is ``SQLRouteLockRepository``). The ruleset is\nrefreshed from the durable SQL authority before each decision so a failed\nearlier cache refresh cannot leave decisions permanently stale.",
         "operationId": "routing.simulate",
         "requestBody": {
           "content": {
@@ -7288,7 +7338,7 @@
           "Routing V3"
         ],
         "summary": "Get Route Lock",
-        "description": "Audit and inspect route lock explanation for Agent Workspace.",
+        "description": "Audit and inspect route lock explanation for Agent Workspace.\n\nReads through the composed ``RouteLockService`` (production lock\nrepository ``SQLRouteLockRepository``), never the generic\n``v3_resources:route_locks`` namespace.",
         "operationId": "routing.getLock",
         "parameters": [
           {

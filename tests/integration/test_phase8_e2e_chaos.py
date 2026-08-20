@@ -23,6 +23,7 @@ from tests.fakes.phase8_controlled_doubles import (
 )
 from tests.fakes.provider_graph_seed import PersistentRouteLocks, seed_provider_graph
 from windagent_api.routers.conversation_streams import router as conversation_streams_router
+from windagent_api.services.realtime_hub import RealtimeHub
 from windagent_core.contracts.providers.responses import ProviderResponse, ProviderUsage
 from windagent_execution.registry import ExecutionRuntimeRegistry
 from windagent_execution.worktree.context import WorktreeContextManager
@@ -38,8 +39,10 @@ from windagent_providers.routing.memory_ports import (
 from windagent_storage.database.connection import DatabaseManager
 from windagent_storage.database.sync_factory import make_sync_session_factory
 from windagent_storage.orm.models import BaseORM
+from windagent_storage.realtime.sql_replay import SqlRealtimeReplayAdapter
 from windagent_storage.repositories.multi_agent_repository import MultiAgentRepository
 from windagent_storage.repositories.v3_repositories import SQLRouteAttemptRepository
+from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork
 
 
 def _stable_route_locks(
@@ -443,7 +446,7 @@ async def test_e2e_restart_mid_dag_surfaces_approval_and_unavailable_runtime(db:
 
     restarted = _service(db, runtime, route_locks=route_locks)
     report = await RecoveryManager(
-        db.session_factory,
+        lambda: SqlUnitOfWork(db.session_factory),
         instance_id="phase8-recovery",
     ).recover_production(restarted, publish_pending_approvals=publish_pending_approvals)
     assert root.agent_run_id in report.reattached_agent_run_ids
@@ -478,7 +481,10 @@ async def test_e2e_socket_reconnect_replays_only_missed_events(db: DatabaseManag
 
     app = FastAPI()
     app.include_router(conversation_streams_router)
-    app.state.container = SimpleNamespace(db=db)
+    app.state.container = SimpleNamespace(
+        db=db,
+        realtime_hub=RealtimeHub(SqlRealtimeReplayAdapter(db.session_factory)),
+    )
     with TestClient(app) as client:
         with client.websocket_connect(f"/ws/conversations/{conversation_id}") as socket:
             first = socket.receive_json()

@@ -32,8 +32,7 @@ class ResultIngestionService:
         logger.info(f"Ingesting result for handle [{handle.handle_id}], step [{handle.step_run_id}], status [{result.status}]")
 
         if self.uow_factory:
-            from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork
-            async with SqlUnitOfWork(self.uow_factory) as uow:
+            async with self.uow_factory() as uow:
                 if hasattr(uow, "runtime_executions"):
                     updated = await uow.runtime_executions.update_status_by_fencing_token(
                         step_run_id=handle.step_run_id,

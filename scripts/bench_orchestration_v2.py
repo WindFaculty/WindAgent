@@ -195,7 +195,7 @@ async def run_measured_benchmark() -> Dict[str, Any]:
                 uow.session.add(RuntimeExecutionORM(id=f"exec_{sid}", runtime_run_id=f"r_{sid}", attempt_id="att_1", step_run_id=sid, fencing_token=f"fence_{sid}", status="cancelled"))
             await uow.commit()
 
-        rec_manager = RecoveryManager(session_factory=session_factory, instance_id="bench_leader")
+        rec_manager = RecoveryManager(uow_factory=lambda: SqlUnitOfWork(session_factory), instance_id="bench_leader")
         t0_rec = time.perf_counter()
         rec_report = await rec_manager.recover_all_in_flight(batch_size=1500)
         rec_time_sec = time.perf_counter() - t0_rec

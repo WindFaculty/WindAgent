@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
-from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork
+from windagent_core.contracts.repositories.unit_of_work import UnitOfWorkFactory
 
 
 @dataclass
@@ -47,7 +47,7 @@ class CheckpointManager:
         self._in_memory_checkpoints[run_id] = ckpt
 
         if self.uow_factory:
-            async with SqlUnitOfWork(self.uow_factory) as uow:
+            async with self.uow_factory() as uow:
                 await uow.checkpoints.save_checkpoint(
                     checkpoint_id=checkpoint_id,
                     run_id=run_id,
@@ -61,7 +61,7 @@ class CheckpointManager:
         if not self.uow_factory:
             return self._in_memory_checkpoints.get(run_id)
 
-        async with SqlUnitOfWork(self.uow_factory) as uow:
+        async with self.uow_factory() as uow:
             raw = await uow.checkpoints.get_latest_checkpoint(run_id)
             if not raw:
                 return self._in_memory_checkpoints.get(run_id)

@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Optional
-
 from fastapi import APIRouter, Depends, Path, Query, Response, status
 from fastapi.responses import JSONResponse
 
@@ -13,7 +11,7 @@ from windagent_api.routers.v3.studio.dependencies import (
 )
 from windagent_api.routers.v3.studio.schemas import RunEventsResponse, StartRunRequest
 from windagent_api.services.studio_application_service import StudioApplicationService
-from windagent_core.contracts.studio.errors import StudioNotFoundError, StudioValidationError
+from windagent_core.contracts.studio.errors import StudioNotFoundError
 from windagent_core.contracts.studio.ids import EpisodeId, StudioRunId
 
 # Start/continue a Story run for an episode.

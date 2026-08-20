@@ -1,10 +1,11 @@
 /**
  * Phase 13D — Logs Hooks.
- * REST list + /ws/v3/logs live stream. Records are real runtime log entries.
+ * REST list + @windagent/realtime stream. Records are real runtime log entries.
  */
 import { useEffect, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useApiClient } from '../../../shared/hooks/useApiClient';
+import { useRealtimeClient } from '../../../realtime/RealtimeProvider';
 import type { LogQueryParams, LogRecord } from '@windagent/api-contracts';
 
 export const logsKeys = {
@@ -14,11 +15,6 @@ export const logsKeys = {
 };
 
 export const LOG_LEVELS = ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'] as const;
-
-function wsOrigin(): string {
-  const origin = typeof window !== 'undefined' ? window.location.origin : 'http://127.0.0.1:8765';
-  return origin.replace(/^http/, 'ws');
-}
 
 export function useLogs(filters: LogQueryParams = {}) {
   const client = useApiClient();
@@ -39,22 +35,23 @@ export function useLogSources() {
 
 export function useLogStream(onRecord: (record: LogRecord) => void) {
   const queryClient = useQueryClient();
+  const realtime = useRealtimeClient();
   const onRecordRef = useRef(onRecord);
   onRecordRef.current = onRecord;
 
   useEffect(() => {
-    const ws = new WebSocket(wsOrigin() + '/ws/v3/logs');
-
-    ws.onmessage = (msg) => {
-      try {
-        const record = JSON.parse(msg.data) as LogRecord;
-        onRecordRef.current(record);
-        queryClient.invalidateQueries({ queryKey: logsKeys.all });
-      } catch {
-        // ignore malformed ws frames
+    const unsubscribe = realtime.subscribe<LogRecord>(
+      { aggregateType: 'log' },
+      (envelope) => {
+        if (envelope?.payload) {
+          onRecordRef.current(envelope.payload as LogRecord);
+          queryClient.invalidateQueries({ queryKey: logsKeys.all });
+        }
       }
-    };
+    );
 
-    return () => ws.close();
-  }, [queryClient]);
+    return () => {
+      unsubscribe();
+    };
+  }, [realtime, queryClient]);
 }

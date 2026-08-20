@@ -14,7 +14,7 @@ from typing import Awaitable, Callable, List, Tuple, Optional, Any, Dict
 
 from windagent_orchestration.state_machine import TaskState
 from windagent_orchestration.recovery.reconciler import InFlightReconciler
-from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork
+from windagent_core.contracts.repositories.unit_of_work import UnitOfWorkFactory
 
 logger = logging.getLogger("windagent.orchestration.recovery")
 
@@ -48,22 +48,22 @@ class ProductionRecoveryReport(RecoveryReport):
 class RecoveryManager:
     def __init__(
         self,
-        session_factory: Optional[Any] = None,
+        uow_factory: Optional[UnitOfWorkFactory] = None,
         instance_id: Optional[str] = None,
         release_telemetry: Any | None = None,
     ):
-        self.session_factory = session_factory
+        self.uow_factory = uow_factory
         self.instance_id = instance_id or f"node_{uuid.uuid4().hex[:6]}"
-        self.reconciler = InFlightReconciler(uow_factory=session_factory)
+        self.reconciler = InFlightReconciler(uow_factory=uow_factory)
         self._release_telemetry = release_telemetry
 
     async def recover_all_in_flight(self, batch_size: int = 500) -> RecoveryReport:
         """Paginated, leader-leased startup recovery scanning all persisted in-flight records."""
         report = RecoveryReport()
-        if not self.session_factory:
+        if not self.uow_factory:
             return report
 
-        async with SqlUnitOfWork(self.session_factory) as uow:
+        async with self.uow_factory() as uow:
             # 1. Acquire singleton leader lease
             is_leader = await uow.recovery_leader_leases.acquire_leader_lease(self.instance_id, ttl_seconds=30.0)
             await uow.commit()
@@ -90,11 +90,11 @@ class RecoveryManager:
         """
         started = time.perf_counter()
         report = ProductionRecoveryReport()
-        if not self.session_factory:
+        if not self.uow_factory:
             self._record_recovery_duration(started)
             return report
 
-        async with SqlUnitOfWork(self.session_factory) as uow:
+        async with self.uow_factory() as uow:
             is_leader = await uow.recovery_leader_leases.acquire_leader_lease(
                 self.instance_id, ttl_seconds=30.0
             )

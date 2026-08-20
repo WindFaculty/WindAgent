@@ -47,8 +47,7 @@ class StepDispatchService:
         handle = await self.runtime_port.dispatch(req)
 
         if self.uow_factory:
-            from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork
-            async with SqlUnitOfWork(self.uow_factory) as uow:
+            async with self.uow_factory() as uow:
                 if hasattr(uow, "runtime_executions"):
                     exec_id = f"exec_{uuid.uuid4().hex[:8]}"
                     await uow.runtime_executions.create_execution(
