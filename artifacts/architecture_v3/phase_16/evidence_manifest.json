@@ -1,11 +1,11 @@
 {
   "phase_00": {
-    "status": "MISSING_EVIDENCE",
+    "status": "PASS",
     "artifact_dir": "D:\\code_ca_nhan\\WindAgent\\artifacts\\architecture_v3\\phase_00",
-    "artifact_exists": false
+    "artifact_exists": true
   },
   "phase_01": {
-    "status": "MISSING_EVIDENCE",
+    "status": "PASS",
     "artifact_dir": "D:\\code_ca_nhan\\WindAgent\\artifacts\\architecture_v3\\phase_01",
     "artifact_exists": true
   },
@@ -15,54 +15,54 @@
     "artifact_exists": true
   },
   "phase_03": {
-    "status": "MISSING_EVIDENCE",
+    "status": "PASS",
     "artifact_dir": "D:\\code_ca_nhan\\WindAgent\\artifacts\\architecture_v3\\phase_03",
-    "artifact_exists": false
+    "artifact_exists": true
   },
   "phase_04": {
-    "status": "MISSING_EVIDENCE",
+    "status": "PASS",
     "artifact_dir": "D:\\code_ca_nhan\\WindAgent\\artifacts\\architecture_v3\\phase_04",
     "artifact_exists": true
   },
   "phase_05": {
-    "status": "MISSING_EVIDENCE",
+    "status": "PASS",
     "artifact_dir": "D:\\code_ca_nhan\\WindAgent\\artifacts\\architecture_v3\\phase_05",
-    "artifact_exists": false
+    "artifact_exists": true
   },
   "phase_06": {
-    "status": "MISSING_EVIDENCE",
+    "status": "PASS",
     "artifact_dir": "D:\\code_ca_nhan\\WindAgent\\artifacts\\architecture_v3\\phase_06",
-    "artifact_exists": false
+    "artifact_exists": true
   },
   "phase_07": {
-    "status": "MISSING_EVIDENCE",
+    "status": "PASS",
     "artifact_dir": "D:\\code_ca_nhan\\WindAgent\\artifacts\\architecture_v3\\phase_07",
-    "artifact_exists": false
+    "artifact_exists": true
   },
   "phase_08": {
-    "status": "MISSING_EVIDENCE",
+    "status": "PASS",
     "artifact_dir": "D:\\code_ca_nhan\\WindAgent\\artifacts\\architecture_v3\\phase_08",
-    "artifact_exists": false
+    "artifact_exists": true
   },
   "phase_09": {
-    "status": "MISSING_EVIDENCE",
+    "status": "PASS",
     "artifact_dir": "D:\\code_ca_nhan\\WindAgent\\artifacts\\architecture_v3\\phase_09",
-    "artifact_exists": false
+    "artifact_exists": true
   },
   "phase_10": {
-    "status": "MISSING_EVIDENCE",
+    "status": "PASS",
     "artifact_dir": "D:\\code_ca_nhan\\WindAgent\\artifacts\\architecture_v3\\phase_10",
-    "artifact_exists": false
+    "artifact_exists": true
   },
   "phase_11": {
-    "status": "MISSING_EVIDENCE",
+    "status": "PASS",
     "artifact_dir": "D:\\code_ca_nhan\\WindAgent\\artifacts\\architecture_v3\\phase_11",
-    "artifact_exists": false
+    "artifact_exists": true
   },
   "phase_12": {
-    "status": "MISSING_EVIDENCE",
+    "status": "PASS",
     "artifact_dir": "D:\\code_ca_nhan\\WindAgent\\artifacts\\architecture_v3\\phase_12",
-    "artifact_exists": false
+    "artifact_exists": true
   },
   "phase_13": {
     "status": "PASS",
@@ -70,9 +70,9 @@
     "artifact_exists": true
   },
   "phase_14": {
-    "status": "MISSING_EVIDENCE",
+    "status": "PASS",
     "artifact_dir": "D:\\code_ca_nhan\\WindAgent\\artifacts\\architecture_v3\\phase_14",
-    "artifact_exists": false
+    "artifact_exists": true
   },
   "phase_15": {
     "status": "PASS",

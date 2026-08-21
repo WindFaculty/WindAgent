@@ -12,7 +12,6 @@ Validates Gate G12_DOCS and Phase 12 roadmap deliverables:
 
 from pathlib import Path
 import tomllib
-import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 

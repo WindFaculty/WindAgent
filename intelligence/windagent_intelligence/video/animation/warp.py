@@ -13,7 +13,6 @@ slower); only the frame count/duration change.
 
 from __future__ import annotations
 
-from typing import Optional
 
 from windagent_core.domain.video_production.animation import (
     MAX_WARP_RATIO,

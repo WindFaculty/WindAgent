@@ -28,9 +28,7 @@ same intent to Unreal.
 
 from __future__ import annotations
 
-import hashlib
-import json
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 from windagent_core.domain.video_production.animation import (
     AnimationTrack,
@@ -41,13 +39,10 @@ from windagent_core.domain.video_production.animation import (
     TimeWarp,
 )
 from windagent_core.domain.video_production.enums import (
-    AnimationAction,
-    AnimationEmotion,
     CompatibilityVerdict,
     SemanticBone,
 )
 from windagent_core.domain.video_production.errors import (
-    AnimationCompileError,
     AnimationPinMismatchError,
 )
 from windagent_core.domain.video_production.ids import (

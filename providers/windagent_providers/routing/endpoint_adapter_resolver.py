@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any, Callable
 
 from windagent_providers.base.errors import ProviderUnavailableFailure
-from windagent_providers.google import GoogleGeminiProviderAdapter
+from windagent_providers.factory import create_google_gemini_provider_adapter
 from windagent_providers.openai_compatible.transport import OpenAICompatibleTransport
 class EndpointAdapterResolver:
     """Build an adapter from a routed endpoint without persisting credentials.
@@ -35,7 +35,7 @@ class EndpointAdapterResolver:
             # generations (full screenplay JSON) routinely exceed the 30s
             # default read timeout, so the Google path uses the same 300s
             # ceiling as local Ollama.
-            return GoogleGeminiProviderAdapter(
+            return create_google_gemini_provider_adapter(
                 api_key=self._decrypt_credentials(ciphertext) if ciphertext else "",
                 base_url=str(candidate.base_url),
                 timeout_seconds=300.0,

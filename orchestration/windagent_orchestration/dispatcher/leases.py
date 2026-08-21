@@ -13,7 +13,6 @@ from datetime import datetime, timezone
 from typing import Optional, Dict, Any, List
 
 from windagent_orchestration.metrics import metrics
-from windagent_core.contracts.repositories.unit_of_work import UnitOfWorkFactory
 
 logger = logging.getLogger("windagent.orchestration.dispatcher.leases")
 

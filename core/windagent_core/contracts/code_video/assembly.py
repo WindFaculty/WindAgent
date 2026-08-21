@@ -10,9 +10,9 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence, Set
+from typing import Any, Dict, List, Set
 
-from windagent_core.contracts.code_video.models import CodeVideoPlan, Scene
+from windagent_core.contracts.code_video.models import CodeVideoPlan
 from windagent_core.errors.exceptions import ValidationError
 
 

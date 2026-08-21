@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.1.0",
+  "phase": 6,
+  "status": "PASSED",
+  "gate": "VP6_PREPRODUCTION_KERNEL_CANONICAL",
+  "evidence": [
+    {
+      "path": "capability_matrix.json"
+    },
+    {
+      "path": "golden_comparison.json"
+    },
+    {
+      "path": "provider_contract_receipt.json"
+    },
+    {
+      "path": "no_upstream_import_report.json"
+    },
+    {
+      "path": "integration_test_receipt.json"
+    }
+  ],
+  "blocking_reasons": [],
+  "derived_from": "scripts/verification/verify_phase6_kernel.py"
+}

@@ -8,9 +8,8 @@ from __future__ import annotations
 import threading
 import time
 import uuid
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
-from windagent_providers.base.contracts import DiscoveredModel
 from windagent_providers.registry.equivalence import (
     EquivalenceLevel,
     classify_equivalence,

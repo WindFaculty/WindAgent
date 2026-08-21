@@ -134,7 +134,6 @@ class SetDressingPlanner:
         )
 
         report = self.validator.validate(plan)
-        all_findings = [*prop_findings, *report.findings]
         blocking_set = report.blocking_findings or [f for f in prop_findings if f.blocking]
         combined_ok = (not blocking_set)
         if require_clean and not combined_ok:

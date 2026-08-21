@@ -32,7 +32,6 @@ from windagent_core.domain.video_production.audio import (
     TtsAudioAsset,
 )
 from windagent_core.domain.video_production.enums import (
-    AudioAlignmentStatus,
     AudioInvalidationScope,
     AudioNodeStatus,
     AudioValidationIssueCode,
@@ -46,7 +45,6 @@ from windagent_core.domain.video_production.errors import (
     OverlongLineError,
     TtsEmptyOutputError,
     TtsInvalidOutputError,
-    UnsupportedLocaleError,
     VoiceConsentMissingError,
 )
 from windagent_core.domain.video_production.ids import (
@@ -583,7 +581,6 @@ def invalidate_audio_scope(*, changed: str, voice_profile_hash: str, asset: Any)
     - BGM/SFX change -> invalidates ONLY the mix/final cut, never the visual
       clips (mirrors `AudioMixPlan.invalidated_scope` for the audio branch).
     """
-    from windagent_core.domain.video_production.audio import AudioMixPlan
 
     if changed == "dialogue" or (changed == "voice" and voice_profile_hash):
         return AudioInvalidationScope.TRACK_AND_MIX

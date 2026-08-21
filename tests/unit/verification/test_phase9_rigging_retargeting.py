@@ -29,7 +29,6 @@ from windagent_core.domain.video_production.ids import (
     SkeletonProfileId,
 )
 from windagent_core.domain.video_production.rigging import (
-    AnimationCompatibilityProfile,
     CompatibilityGate,
     DeformationMetricEngine,
     DerivedRigService,
@@ -39,6 +38,7 @@ from windagent_core.domain.video_production.rigging import (
     RigProfile,
     RigValidator,
     SkeletonDetector,
+    SkeletonProfile,
 )
 
 
@@ -120,7 +120,6 @@ def _bones_from(provider: dict, root_name: str) -> list:
 
 
 def _detect(provider: dict, root_name: str, seed: str) -> "SkeletonProfile":
-    from windagent_core.domain.video_production.rigging import SkeletonProfile
 
     detector = SkeletonDetector(
         SkeletonProfileId(seed),
@@ -321,7 +320,7 @@ def test_clip_under_all_thresholds_is_approved():
 
 def test_foot_sliding_over_threshold_fails_closed():
     gate = _gate()
-    profile = gate.evaluate(
+    gate.evaluate(
         AnimationCompatibilityProfileId("clip-2"),
         clip="walk",
         retarget=_retarget(),

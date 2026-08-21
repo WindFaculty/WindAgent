@@ -6,7 +6,6 @@ Verifies singleton leader lease, paginated recovery, decision matrix, and 1,000-
 from __future__ import annotations
 
 import sys
-import uuid
 from pathlib import Path
 
 root = Path(__file__).resolve().parent.parent.parent.parent
@@ -21,8 +20,8 @@ import pytest_asyncio
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 
 from windagent_storage.orm.v2_orchestration_models import (
-    BaseORM as V2BaseORM, TaskRunORM, WorkflowRunV2ORM, WorkflowStepRunORM,
-    ExecutionLeaseORM, RuntimeExecutionORM
+    BaseORM as V2BaseORM, WorkflowStepRunORM,
+    RuntimeExecutionORM
 )
 from windagent_orchestration.recovery import RecoveryManager
 from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork

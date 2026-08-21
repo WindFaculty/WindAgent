@@ -6,7 +6,6 @@ sensitivity level, content hash, and prompt-injection markers for external/brows
 
 from __future__ import annotations
 import hashlib
-import json
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum

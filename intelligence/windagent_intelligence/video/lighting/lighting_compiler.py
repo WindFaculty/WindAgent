@@ -41,7 +41,6 @@ from windagent_core.domain.video_production.lighting import (
     MAX_EXPOSURE_SHIFT_EV,
     MAX_KEY_MULTIPLIER,
     MIN_KEY_MULTIPLIER,
-    LIGHTING_COMPILER_VERSION,
     LightOverride,
     LightRigPlan,
     LightSpec,

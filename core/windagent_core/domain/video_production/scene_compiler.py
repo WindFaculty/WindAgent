@@ -41,7 +41,6 @@ from windagent_core.domain.video_production.enums import (
 )
 from windagent_core.domain.video_production.errors import (
     AssetRevisionMismatchError,
-    InvalidFrameRangeError,
     ScenePlanIncompleteError,
     UnapprovedAssetError,
     UnsafeCompilerOperationError,

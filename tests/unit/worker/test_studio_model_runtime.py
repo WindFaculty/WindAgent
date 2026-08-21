@@ -224,6 +224,7 @@ async def test_worker_handler_invokes_real_route_and_persists_provenance():
             handler_registry=HANDLER_REGISTRY,
             session_factory=db.session_factory,
             model_port=port,
+            studio_uow_factory=lambda: StudioUnitOfWork(db.session_factory),
         )
         envelope = StudioTaskEnvelope(
             task_type=StudioTaskType.IDEA_GENERATE,
@@ -300,6 +301,7 @@ async def test_same_task_retry_reuses_same_route_lock():
             handler_registry=HANDLER_REGISTRY,
             session_factory=db.session_factory,
             model_port=port,
+            studio_uow_factory=lambda: StudioUnitOfWork(db.session_factory),
         )
         envelope = StudioTaskEnvelope(
             task_type=StudioTaskType.IDEA_GENERATE,

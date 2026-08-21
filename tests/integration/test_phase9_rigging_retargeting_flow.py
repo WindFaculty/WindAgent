@@ -34,9 +34,7 @@ from windagent_core.domain.video_production.character_master import (
     StyleFingerprint,
 )
 from windagent_core.domain.video_production.enums import (
-    CharacterApprovalVerdict,
     CharacterMasterState,
-    CharacterRole,
     CompatibilityVerdict,
     CorrectionBasis,
     DeformationMetric,

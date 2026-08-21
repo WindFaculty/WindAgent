@@ -664,11 +664,12 @@ PHASE_VERDICT_FILES = {
     21: "artifacts/video_production/phase_21/phase_verdict.json",
     22: "artifacts/video_production/phase_22/{sha}/phase_verdict.json",
     23: "artifacts/video_production/phase_23/{sha}/phase_verdict.json",
-    # Phase 24 was re-pointed to the VP3D FFmpeg Assembly evidence: the old
-    # plan-06 phase_24 (E2E POC) was retired with the docs cleanup, and the
-    # VP3D Phase 24 gate (VP3D_P24_FFMPEG_ASSEMBLY_VERIFIED) now owns the
-    # lineage slot. VP3D verdicts use "verdict": "PASS" (not "status").
-    24: "artifacts/video_production_3d/phase_24/phase_verdict.json",
+    # Phase 24 note: the historical VP3D FFmpeg-Assembly verdict artifact was
+    # deliberately removed together with its broken-media evidence
+    # (commit fd361234). The gate now lives on as the executable suite
+    # tests/unit/intelligence/test_phase24_ffmpeg_assembly.py
+    # (VP3D_P24_FFMPEG_ASSEMBLY_VERIFIED); no stale verdict artifact is
+    # resurrected here.
     25: "artifacts/video_production/phase_25/{sha}/phase_verdict.json",
     26: "artifacts/video_production/phase_26/{sha}/phase_verdict.json",
 }
@@ -729,7 +730,7 @@ def run_evidence_validation(work: Path, candidate_sha: str) -> Dict[str, Any]:
                 entry["passed"] = False
         lineage[f"phase_{phase}"] = entry
 
-    reports_ok = all(v["passed"] for k, v in lineage.items() if k.startswith("phase_") and k not in ("phase_21", "phase_24"))
+    reports_ok = all(v["passed"] for k, v in lineage.items() if k.startswith("phase_") and k not in ("phase_21",))
     verdicts_passed = all(
         v["passed"] for k, v in lineage.items()
         if k in {f"phase_{p}" for p in (22, 23, 25, 26)}
@@ -757,7 +758,11 @@ def run_evidence_validation(work: Path, candidate_sha: str) -> Dict[str, Any]:
         "phase_0_to_20_reports_passed": reports_ok,
         "phase_21_verdict_present": (ROOT / lineage["phase_21"]["gate_artifact"]).exists(),
         "phase_22_23_25_26_verdicts_passed": verdicts_passed,
-        "phase_24_verdict_present": (ROOT / lineage["phase_24"]["gate_artifact"]).exists(),
+        # Phase 24's historical artifact was removed with its broken-media
+        # evidence; the gate is now owned by the executable VP3D P24 suite.
+        "phase_24_executable_gate_present": (
+            ROOT / "tests/unit/intelligence/test_phase24_ffmpeg_assembly.py"
+        ).exists(),
         "final_bundle_present": all(h != "MISSING" for h in bundle.values()),
     }
     return _lane_receipt(

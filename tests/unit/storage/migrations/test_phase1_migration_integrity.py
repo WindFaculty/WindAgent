@@ -561,7 +561,8 @@ class TestWorkspaceRootValidation:
             outside.rmdir()
 
     def test_api_rejects_traversal_with_400(self, tmp_path: Path, monkeypatch):
-        """API boundary returns HTTP 400 for workspace_root=../../etc."""
+        """Retired /api/v2/sessions returns 410 Gone (Phase 15 tombstone);
+        client-supplied workspace_root no longer exists on the canonical V3 API."""
         from fastapi.testclient import TestClient
 
         from windagent_api.main import app
@@ -570,8 +571,10 @@ class TestWorkspaceRootValidation:
         monkeypatch.setenv("WINDAGENT_DATABASE_URL", db_url)
         with TestClient(app) as client:
             res = client.post("/api/v2/sessions", json={"workspace_root": "../../etc"})
-            assert res.status_code == 400
-            assert "workspace_root" in res.json()["detail"]
+            assert res.status_code == 410
+            body = res.json()
+            assert body["status"] == 410
+            assert "/api/v3" in body["detail"] or body.get("available_endpoints") == "/api/v3/*"
 
 
 class TestParallelWriters:
@@ -723,9 +726,8 @@ class TestRuntimeMigrationAdoption:
     """G1.1 architecture gates — runtime no longer calls create_tables directly."""
 
     _RUNTIME_FILES = [
-        "apps/api/windagent_api/composition.py",
-        "apps/api/windagent_api/dependencies.py",
-        "apps/worker/windagent_worker/composition/container.py",
+        "apps/api/windagent_api/composition/database.py",
+        "apps/worker/windagent_worker/composition/core.py",
         "apps/cli/windagent_cli/composition.py",
     ]
 

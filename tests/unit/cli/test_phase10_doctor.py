@@ -4,9 +4,7 @@ Tests that doctor command uses same health provider as API, not hardcoded result
 """
 
 from __future__ import annotations
-import pytest
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
-import subprocess
+from unittest.mock import patch
 
 from windagent_cli.main import doctor
 
@@ -21,7 +19,7 @@ class TestDoctorCommand:
     
     def test_doctor_json_mode(self, capsys):
         """Doctor command in JSON mode should output JSON."""
-        result = doctor(json_mode=True)
+        doctor(json_mode=True)
         captured = capsys.readouterr()
         
         # Should output JSON
@@ -36,7 +34,7 @@ class TestDoctorCommand:
     
     def test_doctor_text_mode(self, capsys):
         """Doctor command in text mode should output formatted text."""
-        result = doctor(json_mode=False)
+        doctor(json_mode=False)
         captured = capsys.readouterr()
         
         output = captured.out
@@ -51,7 +49,7 @@ class TestDoctorUsesRealHealthChecks:
     
     def test_doctor_includes_runtime_checks(self, capsys):
         """Doctor should include runtime health checks, not just script checks."""
-        result = doctor(json_mode=True)
+        doctor(json_mode=True)
         captured = capsys.readouterr()
         
         import json
@@ -79,7 +77,7 @@ class TestDoctorScriptChecks:
     
     def test_doctor_includes_architecture_checks(self, capsys):
         """Doctor should include architecture validation checks."""
-        result = doctor(json_mode=True)
+        doctor(json_mode=True)
         captured = capsys.readouterr()
         
         import json
@@ -112,7 +110,7 @@ class TestDoctorExitCodes:
     
     def test_doctor_returns_1_when_warning(self, capsys):
         """Doctor should return exit code 1 when there are warnings."""
-        result = doctor(json_mode=False)
+        doctor(json_mode=False)
         captured = capsys.readouterr()
         
         if "WARNING" in captured.out or "DEGRADED" in captured.out:
@@ -126,7 +124,7 @@ class TestDoctorProfileConsistency:
     @patch.dict("os.environ", {"WINDAGENT_ENV": "development"})
     def test_doctor_uses_development_profile(self, capsys):
         """Doctor should use development profile when WINDAGENT_ENV=development."""
-        result = doctor(json_mode=True)
+        doctor(json_mode=True)
         captured = capsys.readouterr()
         
         import json

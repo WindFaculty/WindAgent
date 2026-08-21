@@ -13,7 +13,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 import re
-from typing import Any, Dict, List, Optional, Pattern, Sequence, Set, Tuple
+from typing import Any, Dict, List, Pattern, Set
 
 
 # Regex patterns targeting live API keys and tokens

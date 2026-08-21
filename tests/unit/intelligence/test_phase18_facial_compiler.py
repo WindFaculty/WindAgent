@@ -46,7 +46,6 @@ from windagent_core.domain.video_production.facial import (
     ARTICULATION_CONTROLS,
     DRIFT_TOLERANCE_FRAMES,
     FACIAL_COMPILER_VERSION,
-    FACIAL_POP_MAX_DELTA,
     HEAD_JOINT_LIMIT_DEGREES,
     PhonemeTrack,
     VisemeMap,
@@ -191,7 +190,6 @@ def test_normalize_deterministic_hash():
 
 
 def test_normalize_non_monotonic_fails_closed():
-    from windagent_core.domain.video_production.facial import PhonemeSpan
     result = fake_alignment(text=VIETNAMESE_LINE_A)
     result = result.model_copy(update={"phoneme_timestamps": [
         {"phoneme": "a", "start_seconds": 0.5, "end_seconds": 0.6,

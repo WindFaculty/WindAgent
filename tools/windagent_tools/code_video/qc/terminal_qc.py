@@ -17,7 +17,7 @@ Validates the authenticity, exit codes, output matches, and command coverage of 
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Sequence, Set
+from typing import Any, Dict, List, Optional, Sequence
 
 from windagent_core.contracts.code_video import CodeVideoPlan
 

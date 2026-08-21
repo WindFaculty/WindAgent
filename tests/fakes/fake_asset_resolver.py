@@ -33,7 +33,7 @@ class FakeAssetResolver:
                 "content_hash": hashlib.sha256(b"ast_bunny_3d_content").hexdigest(),
                 "license_state": "LICENSED",
                 "processing_state": "COMPLETED",
-                "signed_url": f"https://cdn.windagent.local/signed/ast_bunny_3d.glb?token=mock_valid_token",
+                "signed_url": "https://cdn.windagent.local/signed/ast_bunny_3d.glb?token=mock_valid_token",
                 "webgl_renderable": True,
             }
         elif asset_id == "ast_park_bg":
@@ -45,7 +45,7 @@ class FakeAssetResolver:
                 "content_hash": hashlib.sha256(b"ast_park_bg_content").hexdigest(),
                 "license_state": "UNKNOWN",
                 "processing_state": "COMPLETED",
-                "signed_url": f"https://cdn.windagent.local/signed/ast_park_bg.png?token=mock_valid_token",
+                "signed_url": "https://cdn.windagent.local/signed/ast_park_bg.png?token=mock_valid_token",
                 "webgl_renderable": False,
             }
         elif asset_id == "ast_missing_ball":

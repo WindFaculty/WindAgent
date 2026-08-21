@@ -5,12 +5,10 @@ and schema migration script behavior.
 """
 
 import pytest
-from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 
-from windagent_core.domain.types import TaskId, SessionId, StepId, RunId, WorkflowId, EventId, ArtifactId
-from windagent_core.domain.models import Task, Session, WorkflowRun, WorkflowStep, ArtifactRef, SessionStatus, WorkflowStatus, StepStatus
-from windagent_core.events.envelope import EventEnvelope
+from windagent_core.domain.types import TaskId, SessionId, StepId, RunId, WorkflowId
+from windagent_core.domain.models import Task, Session, WorkflowRun, WorkflowStep, SessionStatus, WorkflowStatus, StepStatus
 from windagent_core.contracts import UnitOfWork, TaskRepository, SessionRepository, EventStore, OutboxWriter
 
 from windagent_storage.orm.models import (
@@ -22,14 +20,11 @@ from windagent_storage.orm.models import (
     SessionORM,
     TaskORM,
     WorkflowRunORM,
-    WorkflowStepORM,
 )
 from windagent_storage.mappers.domain_orm import (
     orm_to_domain_session, domain_to_orm_session,
     orm_to_domain_task, domain_to_orm_task,
-    orm_to_domain_workflow, domain_to_orm_workflow,
-    orm_to_domain_event, domain_to_orm_event,
-    orm_to_domain_artifact, domain_to_orm_artifact
+    orm_to_domain_workflow, domain_to_orm_workflow
 )
 from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork
 

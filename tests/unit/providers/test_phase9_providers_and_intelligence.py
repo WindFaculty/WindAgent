@@ -12,7 +12,7 @@ from windagent_core.contracts.providers import (
 from windagent_core.errors.exceptions import ProviderError, WindAgentError
 from windagent_core.security import SecretRef
 from windagent_providers.base.errors import (
-    ProviderFailure, RateLimitFailure, AuthenticationFailure, QuotaExhaustedFailure, TimeoutFailure
+    ProviderFailure, RateLimitFailure, AuthenticationFailure
 )
 from windagent_intelligence.model_router.policy import ModelRouterPolicy, RoutingContext
 from windagent_intelligence.model_router.route_lock import RouteLock

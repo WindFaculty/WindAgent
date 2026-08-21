@@ -1,0 +1,70 @@
+{
+  "gate": "VP20_GENERATION_REVIEW_VERIFIED",
+  "workstream": "deterministic_gate",
+  "generated_at": "2026-08-02T12:12:58.755024+00:00",
+  "check_count": 12,
+  "all_checks_pass": true,
+  "checks": [
+    {
+      "check": "valid_video_passes",
+      "ok": true,
+      "detail": "technical_valid=True"
+    },
+    {
+      "check": "decode_failure_blocks",
+      "ok": true,
+      "detail": "technical_valid=False"
+    },
+    {
+      "check": "decode_failure_typed",
+      "ok": true,
+      "detail": "typed reason code"
+    },
+    {
+      "check": "missing_stream_blocks",
+      "ok": true,
+      "detail": "MISSING_VIDEO_STREAM"
+    },
+    {
+      "check": "invalid_hash_blocks",
+      "ok": true,
+      "detail": "INVALID_CONTENT_HASH"
+    },
+    {
+      "check": "zero_duration_blocks",
+      "ok": true,
+      "detail": "INVALID_DURATION"
+    },
+    {
+      "check": "missing_metadata_blocks",
+      "ok": true,
+      "detail": "MISSING_MEDIA_METADATA"
+    },
+    {
+      "check": "black_ending_blocks",
+      "ok": true,
+      "detail": "BLACK_ENDING"
+    },
+    {
+      "check": "truncated_ending_blocks",
+      "ok": true,
+      "detail": "TRUNCATED_ENDING"
+    },
+    {
+      "check": "missing_provenance_blocks",
+      "ok": true,
+      "detail": "MISSING_PROVENANCE"
+    },
+    {
+      "check": "safety_finding_blocks",
+      "ok": true,
+      "detail": "SAFETY_FINDING"
+    },
+    {
+      "check": "safety_not_technical",
+      "ok": true,
+      "detail": "safety is a separate blocking dimension"
+    }
+  ],
+  "metric_version": "1.0.0"
+}

@@ -8,15 +8,10 @@ credit reservation, step receipt generation, and checkpoint state transitions.
 from __future__ import annotations
 
 import datetime
-from typing import Sequence
 
 from windagent_core.domain.video_production.e2e_poc import (
     PocRunManifest,
     WorkflowEventReceipt,
-)
-from windagent_core.domain.video_production.ids import (
-    ProductionRevisionId,
-    VideoProjectId,
 )
 
 

@@ -8,7 +8,7 @@ semantic revision comparison, downstream impact dry-runs, human-approved AI prop
 from __future__ import annotations
 
 from typing import Any, Dict, Optional
-from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 
 from windagent_api.dependencies import get_video_production_uow

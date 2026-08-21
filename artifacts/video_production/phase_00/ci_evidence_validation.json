@@ -1,0 +1,10 @@
+{
+  "schema_version": "1.0.0",
+  "producer": "scripts/verification/validate_ci_evidence.py",
+  "timestamp": "2026-07-31T16:21:11Z",
+  "command": "validate_ci_evidence.py --download-root <immutable-extracted-artifact-root> --sha 6dab084abd3d46cc9f0c9e7dcbb6e65254b83057 --run-id 30456084211 --run-attempt 1 --jobs <13-required-jobs>",
+  "exit_code": 0,
+  "required_artifacts": 13,
+  "validated_artifacts": 13,
+  "result": "PASS"
+}

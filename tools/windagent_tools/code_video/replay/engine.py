@@ -15,45 +15,35 @@ Provides:
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from enum import Enum
 import hashlib
 import json
-from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, Set, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 
 if TYPE_CHECKING:
-    from windagent_tools.code_video.renderer.code_renderer import (
-        CodeEditorRenderer,
-        CodeEditorState,
-    )
-    from windagent_tools.code_video.renderer.diagram_renderer import DiagramRenderer
     from windagent_tools.code_video.renderer.studio_renderer import (
         CodeStudioRenderer,
-        FileTreeState,
         StudioLayoutState,
     )
     from windagent_tools.code_video.renderer.terminal_renderer import (
-        TerminalLineType,
         TerminalRenderer,
-        TerminalState,
     )
-    from windagent_tools.code_video.renderer.title_renderer import TitleRenderer
+    from windagent_tools.code_video.workspace.checkpoints import (
+        CheckpointManager,
+    )
 from windagent_core.errors.exceptions import NotFoundError, ValidationError
 from windagent_core.contracts.code_video import (
     Action,
     ActionType,
     CodeVideoPlan,
-    ExpectedState,
     Scene,
     VisualMode,
 )
 
 from windagent_tools.code_video.workspace.golden_builder import (
 
-    CHECKPOINT_STEPS,
-    CheckpointDefinition,
     STEP_00_INIT_AGENT_CODE,
     STEP_00_INIT_TEST_CODE,
     STEP_01_MESSAGE_CODE,

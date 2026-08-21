@@ -16,8 +16,8 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from windagent_core.domain.types import EventId
 from windagent_core.events.envelope import EventEnvelope
+from windagent_storage.factory import create_multi_agent_repository
 from windagent_storage.orm.models import OutboxRecordORM
-from windagent_storage.repositories.multi_agent_repository import MultiAgentRepository
 
 
 def _aware(dt: Any) -> Optional[datetime]:
@@ -95,9 +95,9 @@ class SqlRealtimeReplayAdapter:
         limit: int,
     ) -> List[EventEnvelope]:
         async with self._session_factory() as session:
-            rows = await MultiAgentRepository(session).conversation_events_after(
-                conversation_id, after_sequence, limit
-            )
+            rows = await create_multi_agent_repository(
+                session
+            ).conversation_events_after(conversation_id, after_sequence, limit)
         return [self._conversation_row_to_envelope(row) for row in rows]
 
     async def _outbox_events_after(

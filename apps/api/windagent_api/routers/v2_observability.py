@@ -4,9 +4,9 @@ Endpoints for querying distributed trace spans, system metrics, and audit logs.
 """
 
 from __future__ import annotations
-from typing import Any, Dict, List, Optional
-from fastapi import APIRouter, Query, status
-from pydantic import BaseModel, Field
+from typing import List, Optional
+from fastapi import APIRouter, Query
+from pydantic import BaseModel
 
 from windagent_core.domain.lifecycle import utc_now
 

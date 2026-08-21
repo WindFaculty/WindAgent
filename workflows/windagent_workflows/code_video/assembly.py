@@ -10,13 +10,12 @@ Executes the ASSEMBLE_MASTER pipeline step:
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any, Dict, Optional, Sequence
 
 from windagent_core.errors.exceptions import ValidationError
 from windagent_core.contracts.code_video import CodeVideoPlan
 from windagent_core.contracts.code_video.capture import TakeReceipt
 from windagent_core.contracts.code_video.assembly import (
-    CueSheet,
     MasterAssemblyResult,
     TransitionPolicy,
     VideoAssemblyConfig,

@@ -9,7 +9,6 @@ if backend_dir not in sys.path:
     sys.path.insert(0, backend_dir)
 
 import logging
-from typing import Optional
 from docx import Document
 
 logger = logging.getLogger(__name__)

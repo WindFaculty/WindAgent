@@ -24,12 +24,10 @@ These are data/import-level contracts. No A/C implementation is imported.
 from __future__ import annotations
 
 import json
-import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict
 
-import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 FIXTURES_DIR = (
@@ -190,7 +188,7 @@ def test_content_model_field_inventories_are_pinned() -> None:
         model = getattr(sp, model_name)
         fields = set(model.model_fields)
         unexpected = fields - expected
-        missing = expected - fields
+        expected - fields
         assert not unexpected, f"{model_name} gained fields: {unexpected}"
         # Extra='allow' constants are allowed, but frozen requires config.
         assert model.model_config.get("frozen") is True
@@ -319,7 +317,6 @@ def test_preproduction_model_port_is_the_only_boundary() -> None:
 
 
 def test_deterministic_fake_satisfies_model_port() -> None:
-    from typing import Optional
 
     from windagent_intelligence.video.ports import (
         ModelCompletionRequest,

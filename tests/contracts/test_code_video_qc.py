@@ -19,10 +19,9 @@ import json
 from pathlib import Path
 import pytest
 
-from windagent_core.errors.exceptions import ValidationError
 from windagent_tools.code_video.compiler import CodeVideoScriptCompiler
 from windagent_workflows.code_video.contracts import CodeVideoPlan
-from windagent_workflows.code_video.qc import FinalQCDriver, FinalQCStepExecutor
+from windagent_workflows.code_video.qc import FinalQCDriver
 from windagent_tools.code_video.capture.receipts import TakeReceipt
 from windagent_tools.code_video.media import (
     CueSheet,
@@ -31,20 +30,11 @@ from windagent_tools.code_video.media import (
 )
 from windagent_tools.code_video.qc import (
     CodeCorrectnessVerifier,
-    CodeQCReport,
-    DOD_CRITERIA,
     MasterVisualQCEngine,
-    MasterVisualQCReport,
-    ReadabilityQCReport,
     ReadabilityQCVerifier,
-    SecretFinding,
-    SecretQCReport,
     SecretQCVerifier,
-    StructuralQCReport,
     StructuralQCVerifier,
     TerminalCorrectnessVerifier,
-    TerminalQCReport,
-    TimingQCReport,
     TimingQCVerifier,
     contrast_ratio,
     hex_to_rgb,
@@ -53,7 +43,6 @@ from windagent_tools.code_video.qc import (
 from windagent_tools.code_video.renderer.graphics_catalog import GraphicsCatalog
 from windagent_tools.code_video.renderer.theme import CodeVideoVisualTheme
 from windagent_tools.code_video.workspace.golden_builder import (
-    STEP_05_AGENT_CODE,
     STEP_06_TESTS_CODE,
     STEP_07_FINAL_AGENT_CODE,
 )

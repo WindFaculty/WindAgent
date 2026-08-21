@@ -16,6 +16,23 @@ from windagent_core.contracts.finalization import (
     FinalizeTaskExecutionResult,
 )
 from windagent_core.events.envelope import EventEnvelope
+from windagent_storage.factory import (
+    create_file_artifact_repository,
+    create_sql_cancellation_repository,
+    create_sql_event_store,
+    create_sql_execution_lease_repository,
+    create_sql_memory_record_repository,
+    create_sql_outbox_writer,
+    create_sql_provider_configuration_repository,
+    create_sql_recovery_leader_lease_repository,
+    create_sql_runtime_execution_repository,
+    create_sql_session_repository,
+    create_sql_task_run_repository,
+    create_sql_workflow_checkpoint_repository,
+    create_sql_workflow_repository,
+    create_sql_workflow_run_repository,
+    create_sql_work_repository,
+)
 from windagent_storage.orm.models import OutboxRecordORM
 from windagent_storage.orm.v2_orchestration_models import TaskRunORM, WorkflowStepRunORM
 from windagent_storage.repositories.sql_repositories import (
@@ -29,6 +46,7 @@ from windagent_storage.repositories.sql_repositories import (
     SqlWorkflowRunRepository,
 )
 from windagent_storage.repositories.v2_orchestration_repositories import (
+    SqlMemoryRecordRepository,
     SqlTaskRunRepository, SqlExecutionLeaseRepository,
     SqlWorkflowCheckpointRepository, SqlCancellationRepository,
     SqlRuntimeExecutionRepository, SqlRecoveryLeaderLeaseRepository
@@ -65,26 +83,31 @@ class SqlUnitOfWork:
         self.cancellations: SqlCancellationRepository = None  # type: ignore
         self.runtime_executions: SqlRuntimeExecutionRepository = None  # type: ignore
         self.recovery_leader_leases: SqlRecoveryLeaderLeaseRepository = None  # type: ignore
+        self.memory_records: SqlMemoryRecordRepository = None  # type: ignore
 
         self._pending_outbox_records: List[OutboxRecordORM] = []
 
     async def __aenter__(self) -> SqlUnitOfWork:
         self.session = self._session_factory()
-        
-        self.tasks = TaskRepository(self.session)
-        self.task_runs = SqlTaskRunRepository(self.session)
-        self.workflows = SqlWorkflowRepository(self.session)
-        self.workflow_runs = SqlWorkflowRunRepository(self.session)
-        self.events = SqlEventStore(self.session)
-        self.outbox = SqlOutboxWriter(self.session)
-        self.sessions = SqlSessionRepository(self.session)
-        self.artifacts = FileArtifactRepository(self.session)
-        self.providers = SqlProviderConfigurationRepository(self.session)
-        self.leases = SqlExecutionLeaseRepository(self.session)
-        self.checkpoints = SqlWorkflowCheckpointRepository(self.session)
-        self.cancellations = SqlCancellationRepository(self.session)
-        self.runtime_executions = SqlRuntimeExecutionRepository(self.session)
-        self.recovery_leader_leases = SqlRecoveryLeaderLeaseRepository(self.session)
+
+        # Session-bound repositories are composed through the explicit storage
+        # factory — the single allowlisted construction point for concrete
+        # adapters inside the infrastructure package.
+        self.tasks = create_sql_work_repository(self.session)
+        self.task_runs = create_sql_task_run_repository(self.session)
+        self.workflows = create_sql_workflow_repository(self.session)
+        self.workflow_runs = create_sql_workflow_run_repository(self.session)
+        self.events = create_sql_event_store(self.session)
+        self.outbox = create_sql_outbox_writer(self.session)
+        self.sessions = create_sql_session_repository(self.session)
+        self.artifacts = create_file_artifact_repository(self.session)
+        self.providers = create_sql_provider_configuration_repository(self.session)
+        self.leases = create_sql_execution_lease_repository(self.session)
+        self.checkpoints = create_sql_workflow_checkpoint_repository(self.session)
+        self.cancellations = create_sql_cancellation_repository(self.session)
+        self.runtime_executions = create_sql_runtime_execution_repository(self.session)
+        self.recovery_leader_leases = create_sql_recovery_leader_lease_repository(self.session)
+        self.memory_records = create_sql_memory_record_repository(self.session)
 
         self._pending_outbox_records = []
         return self

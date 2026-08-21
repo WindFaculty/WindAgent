@@ -7,7 +7,7 @@ and Asset Manager usage projection from the event stream.
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 from pydantic import BaseModel, ConfigDict, Field
 
 from windagent_core.domain.video_production.script_asset_binding import (

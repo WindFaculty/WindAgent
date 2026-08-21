@@ -176,7 +176,6 @@ class SeedreamClient:
             extra_body["style"] = kwargs["style"]
 
         # 处理参考图 (图生图)
-        image_urls = []
         if image_paths and len(image_paths) > 0:
             # 处理参考图：支持 URL 和本地文件
             ref_images = []

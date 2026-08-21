@@ -5,11 +5,10 @@ Tests /health/live and /health/ready endpoints with real checks.
 
 from __future__ import annotations
 import pytest
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
+from unittest.mock import patch
 from fastapi.testclient import TestClient
 
 from windagent_api.main import app
-from windagent_observability.health import HealthStatus, HealthProfile
 
 
 @pytest.fixture

@@ -7,13 +7,9 @@ Recovery Receipts, Automation Rate Metrics, Cost Reports, and Hardening Handoffs
 
 from __future__ import annotations
 
-import hashlib
-import json
 from dataclasses import dataclass, field
-from typing import Any
 
 from windagent_core.domain.video_production.ids import (
-    FinalDeliverableId,
     ProductionRevisionId,
     VideoProjectId,
 )

@@ -9,7 +9,7 @@ from typing import Dict, List, Optional
 import httpx
 
 from windagent_providers.base.contracts import ProviderHealth
-from windagent_providers.ollama.adapter import OllamaProviderAdapter
+from windagent_providers.factory import create_ollama_provider_adapter
 
 
 class LocalOllamaManager:
@@ -25,7 +25,7 @@ class LocalOllamaManager:
 
     async def probe_endpoint(self, base_url: str) -> ProviderHealth:
         """Probes a specific local or LAN Ollama endpoint for reachability and model tags."""
-        adapter = OllamaProviderAdapter(
+        adapter = create_ollama_provider_adapter(
             base_url=base_url, http_client=self._http_client
         )
         return await adapter.health()

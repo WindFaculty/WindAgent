@@ -10,11 +10,9 @@ Executes the FINAL_QC pipeline step:
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
-import hashlib
 import json
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any, Dict, Optional, Sequence
 
 from windagent_core.errors.exceptions import ValidationError
 from windagent_core.contracts.code_video import CodeVideoPlan

@@ -8,8 +8,7 @@ Enforces revision immutability invariants: mutations against a LOCKED revision f
 from __future__ import annotations
 
 import uuid
-from typing import Any, Dict, List, Optional
-from pydantic import BaseModel, Field
+from typing import Any, Dict
 
 from windagent_core.contracts.video_production.video_production_uow import (
     VideoProductionUnitOfWorkPort,

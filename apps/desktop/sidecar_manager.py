@@ -21,10 +21,9 @@ from __future__ import annotations
 import os
 import socket
 import subprocess
-import asyncio
 import logging
 from dataclasses import dataclass
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional
 
 logger = logging.getLogger("windagent.desktop.sidecar")
 

@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0.0",
+  "phase": "VP0",
+  "producer": "phase-0-certification",
+  "timestamp": "2026-07-31T08:20:02Z",
+  "baseline_sha": "cbf7257643d4a1705fa221ae37e9391b6ee3f40e",
+  "result": "BLOCKED",
+  "blocker_id": "VP0-BLOCKER-FINALIZER-MUTATION",
+  "command": "pytest tests/unit/verification/test_finalize_phase7.py::test_finalizer_gate_evaluation -vv",
+  "exit_code": 0,
+  "tracked_mutation_count": 16,
+  "historical_inventory_count": 17,
+  "inventory_reconciliation": "The historical 17-file list included risk_register.md. The independent rerun found 16 tracked files; risk_register.md is not tracked at cbf725.",
+  "diff_sha256": "d33dd6cf631d4cdc1c46228d6c67ca157d07f4df457c31861209c756aa446943"
+}

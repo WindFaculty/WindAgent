@@ -10,7 +10,7 @@ lossless conversion).
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 

@@ -15,7 +15,6 @@ import re
 from typing import Dict, List, Optional, Tuple
 
 from windagent_core.domain.story.ideation.models import (
-    AGE_BAND_SEPARATOR,
     CreativeBrief,
 )
 

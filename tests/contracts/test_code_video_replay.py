@@ -14,8 +14,6 @@ Verifies:
 
 from __future__ import annotations
 
-import json
-from pathlib import Path
 import pytest
 
 from windagent_core.errors.exceptions import NotFoundError, ValidationError
@@ -24,22 +22,14 @@ from windagent_workflows.code_video.contracts import (
     Action,
     ActionType,
     CodeVideoPlan,
-    ExpectedState,
-    Resolution,
-    Scene,
     VisualMode,
 )
 from windagent_tools.code_video.replay import (
-    CHECKPOINT_CODE_MAP,
     CheckpointCodeResolver,
     DeterministicReplayEngine,
-    ReplayStepRecord,
-    ReplayTrace,
-    SPEED_MODE_CPS_MAP,
     TerminalReplayExecutor,
     TypingSimulator,
     TypingSpeedMode,
-    VERIFIED_TERMINAL_RECEIPTS,
 )
 
 from windagent_tools.code_video.renderer.studio_renderer import CodeStudioRenderer

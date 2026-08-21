@@ -50,12 +50,10 @@ from windagent_core.domain.video_production.enums import (
 )
 from windagent_core.domain.video_production.errors import (
     RigCompatibilityError,
-    SilentSourceMutationError,
     VideoProductionProtocolError,
 )
 from windagent_core.domain.video_production.ids import (
     AnimationCompatibilityProfileId,
-    CharacterGeometryProfileId,
     CharacterMasterId,
     CharacterMasterRevisionId,
     RetargetProfileId,
@@ -719,7 +717,7 @@ class RetargetMapper:
     @staticmethod
     def derive_new_version(retarget: RetargetProfile, target: SkeletonProfile) -> RetargetProfile:
         """Return a new immutable retarget version pinned to a newer target topology."""
-        mapping = dict(retarget.mapping)
+        dict(retarget.mapping)
         updated = retarget.model_copy(
             update={
                 "version": retarget.version + 1,

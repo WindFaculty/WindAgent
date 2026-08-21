@@ -7,7 +7,6 @@ Maintains all original interfaces and signatures for Blender workflows.
 
 from __future__ import annotations
 
-from typing import Dict, List, Optional, Protocol, Sequence, runtime_checkable
 
 from windagent_tools.media.ffmpeg import (
     DEFAULT_TIMEOUT_SECONDS,

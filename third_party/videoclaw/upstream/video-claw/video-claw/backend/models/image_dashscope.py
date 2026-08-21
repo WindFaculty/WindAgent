@@ -6,12 +6,10 @@ backend_dir = os.path.dirname(models_dir)
 if backend_dir not in sys.path:
     sys.path.insert(0, backend_dir)
 
-import json
 import logging
 import time
 import uuid
 import dashscope
-from dashscope import MultiModalConversation
 from dashscope.aigc.image_generation import ImageGeneration
 from config import Config
 try:

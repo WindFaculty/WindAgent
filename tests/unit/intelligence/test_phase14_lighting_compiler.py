@@ -24,7 +24,6 @@ import hashlib
 import pytest
 from windagent_core.domain.video_production.enums import (
     LightRole,
-    LightingColorPolicy,
     LightingEmphasis,
     LightingMood,
     LightingStyle,

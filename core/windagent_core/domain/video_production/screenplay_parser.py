@@ -87,7 +87,6 @@ class ScreenplayParser:
         scenes: List[Dict[str, Any]] = []
 
         current_scene: Optional[Dict[str, Any]] = None
-        current_dialogue: Optional[Dict[str, Any]] = None
         current_char_name: Optional[str] = None
         current_char_id: Optional[str] = None
         requires_review = False
@@ -135,7 +134,6 @@ class ScreenplayParser:
                     "dialogue_lines": [],
                 }
                 scenes.append(current_scene)
-                current_dialogue = None
                 continue
 
             # Character cue detection (all caps line or with sidecar comment)

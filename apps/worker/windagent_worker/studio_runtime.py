@@ -24,6 +24,7 @@ from __future__ import annotations
 import asyncio
 import inspect
 import logging
+import os
 from datetime import datetime, timezone
 from typing import Any, Callable, Dict, List, Optional
 
@@ -80,7 +81,7 @@ _METRIC_SAFE_FIELDS = ("task_id", "task_type", "attempt", "status", "dag_node_id
 
 def certification_enabled() -> bool:
     """Certification mode rejects fake runtimes and fixture providers."""
-    return certification_mode_enabled()
+    return certification_mode_enabled(os.environ)
 
 
 def is_studio_task(tool_name: str) -> bool:
@@ -204,9 +205,15 @@ class StudioRuntimeAdapter(ExecutionRuntimePort):
         fake_runtime_active: bool = False,
         cancel_check: Optional[Callable[[], bool]] = None,
         worker_id: str = "studio-worker",
+        studio_uow_factory: Optional[Callable[[], Any]] = None,
     ) -> None:
         self._handler_registry = handler_registry
         self._session_factory = session_factory
+        if studio_uow_factory is None:
+            raise RuntimeError(
+                "StudioRuntimeAdapter requires studio_uow_factory (wired by composition root)."
+            )
+        self._studio_uow_factory: Callable[[], Any] = studio_uow_factory
         self._model_port = model_port
         self._certification = certification_enabled() if certification is None else certification
         self._fake_runtime_active = fake_runtime_active
@@ -341,7 +348,7 @@ class StudioRuntimeAdapter(ExecutionRuntimePort):
                 task_id=durable_task_id,
             )
 
-        async with StudioUnitOfWork(self._session_factory) as uow:
+        async with self._studio_uow_factory() as uow:
             episode = await uow.episodes.get(envelope.episode_id)
             try:
                 inputs = await self._load_inputs(uow, envelope, episode)

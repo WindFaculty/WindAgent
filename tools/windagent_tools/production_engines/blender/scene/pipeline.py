@@ -34,8 +34,6 @@ ffmpeg), so the whole flow is contract-tested in CI with fake executables.
 from __future__ import annotations
 
 import json
-import os
-import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Optional
@@ -73,15 +71,12 @@ from windagent_tools.production_engines.blender.scene.determinism import (
     compare_runs,
 )
 from windagent_tools.production_engines.blender.scene.frames import (
-    FRAME_MANIFEST_FILENAME,
     FrameManifest,
     sha256_file,
 )
 from windagent_tools.production_engines.blender.scene.idempotency import (
     ArtifactReusePolicy,
-    FRESH,
     INVALIDATE,
-    NON_TERMINAL,
     REUSE,
     job_idempotency_key,
 )

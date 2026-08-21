@@ -16,7 +16,6 @@ Generates the complete set of required artifacts for Phase 9 (Record Video 02):
 from __future__ import annotations
 
 from datetime import datetime, timezone
-import hashlib
 import json
 from pathlib import Path
 import sys
@@ -28,8 +27,6 @@ if str(REPO_ROOT) not in sys.path:
 
 from windagent_tools.code_video.recording import (
     PassCatalog,
-    PassStatus,
-    RecordingManifest,
     RecordingVerifier,
     SecretScanner,
     Video02RecordingEngine,

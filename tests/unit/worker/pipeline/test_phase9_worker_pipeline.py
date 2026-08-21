@@ -518,9 +518,8 @@ async def test_validator_fencing_rejection():
 
 
 @pytest.mark.asyncio
-async def test_finalizer_exact_request_fields(monkeypatch):
+async def test_finalizer_exact_request_fields():
     uow = FakeUow()
-    monkeypatch.setattr("windagent_worker.pipeline.finalizer.SqlUnitOfWork", lambda factory: uow)
 
     ctx = TaskExecutionContext(
         task_id="task_fin",
@@ -537,7 +536,7 @@ async def test_finalizer_exact_request_fields(monkeypatch):
         result_payload={"output": "x"},
     )
 
-    stage = FinalizerStage(uow_factory=object())
+    stage = FinalizerStage(uow_factory=lambda: uow)
     result = await stage.finalize(ctx, outcome)
 
     assert result.finalized is True
@@ -559,7 +558,7 @@ async def test_finalizer_exact_request_fields(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_finalizer_rejection_propagates(monkeypatch):
+async def test_finalizer_rejection_propagates():
     uow = FakeUow(
         finalize_result=SimpleNamespace(
             status="REJECTED_STALE",
@@ -570,7 +569,6 @@ async def test_finalizer_rejection_propagates(monkeypatch):
             already_finalized=False,
         )
     )
-    monkeypatch.setattr("windagent_worker.pipeline.finalizer.SqlUnitOfWork", lambda factory: uow)
 
     ctx = TaskExecutionContext(
         task_id="task_fin",
@@ -583,7 +581,7 @@ async def test_finalizer_rejection_propagates(monkeypatch):
     outcome = ProposedOutcome(terminal_state="completed", result_payload={})
 
     with pytest.raises(RuntimeError, match="Task finalization rejected"):
-        await FinalizerStage(uow_factory=object()).finalize(ctx, outcome)
+        await FinalizerStage(uow_factory=lambda: uow).finalize(ctx, outcome)
 
 
 # ---------------------------------------------------------------------------

@@ -471,7 +471,11 @@ class FakeInternetSearchBackend:
     """
 
     def __init__(self) -> None:
-        self._inner = FakeInternetAssetAdapter()
+        # Adapter construction routes through the package factory (lazy import
+        # breaks the factory -> fake module cycle at import time).
+        from windagent_providers.factory import create_fake_internet_asset_adapter
+
+        self._inner = create_fake_internet_asset_adapter()
 
     async def search(self, request: AssetResolutionRequest) -> List[AssetCandidate]:
         candidates = await self._inner.discover(request)
@@ -490,7 +494,11 @@ class FakeInternetAcquisitionBackend:
     """Acquisition backend injectable into InternetAssetAdapter."""
 
     def __init__(self) -> None:
-        self._inner = FakeInternetAssetAdapter()
+        # Adapter construction routes through the package factory (lazy import
+        # breaks the factory -> fake module cycle at import time).
+        from windagent_providers.factory import create_fake_internet_asset_adapter
+
+        self._inner = create_fake_internet_asset_adapter()
 
     async def acquire(
         self,
@@ -508,7 +516,11 @@ class FakeGeneratorBackend(GeneratorBackendPort):
     """
 
     def __init__(self, *, enabled: bool = True) -> None:
-        self._inner = FakeGeneratorAdapter(enabled=enabled)
+        # Adapter construction routes through the package factory (lazy import
+        # breaks the factory -> fake module cycle at import time).
+        from windagent_providers.factory import create_fake_generator_adapter
+
+        self._inner = create_fake_generator_adapter(enabled=enabled)
 
     async def generate_candidates(
         self,

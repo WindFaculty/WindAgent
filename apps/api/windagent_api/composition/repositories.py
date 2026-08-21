@@ -32,7 +32,7 @@ from windagent_storage.repositories.v3_resource_repository import (
 from windagent_storage.repositories.provider_management_repository import (
     SQLProviderManagementRepository,
 )
-from windagent_api.services.studio_storage_adapter import (
+from windagent_api.composition.studio_storage_adapter import (
     SqlApprovalReadAdapter,
     SqlArtifactReadAdapter,
     SqlEpisodeReadAdapter,

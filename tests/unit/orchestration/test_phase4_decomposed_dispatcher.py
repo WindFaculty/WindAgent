@@ -20,13 +20,13 @@ import pytest_asyncio
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 
 from windagent_storage.orm.v2_orchestration_models import BaseORM as V2BaseORM
+from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork
 from windagent_orchestration.dispatcher import (
     StepDispatcher, StepClaimService, StepDispatchService,
-    ResultIngestionService, LeaseFinalizerService, LeaseManager
+    ResultIngestionService, LeaseManager
 )
 from windagent_orchestration.ports import ExecutionHandle, ExecutionResult, RuntimeStatusEnum
 from windagent_execution import FakeRuntimeAdapter
-from windagent_core.domain.models import WorkflowStep
 from windagent_core.errors.exceptions import DomainError
 
 
@@ -35,9 +35,9 @@ async def db_factory():
     engine = create_async_engine("sqlite+aiosqlite:///:memory:", echo=False)
     async with engine.begin() as conn:
         await conn.run_sync(V2BaseORM.metadata.create_all)
-    
+
     session_factory = async_sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
-    yield session_factory
+    yield lambda: SqlUnitOfWork(session_factory)
     await engine.dispose()
 
 

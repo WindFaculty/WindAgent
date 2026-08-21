@@ -24,12 +24,6 @@ from typing import Any, Dict, List
 REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT))
 
-from windagent_core.domain.story.bibles import (  # noqa: E402
-    CharacterCanon,
-    StoryBible,
-    WorldBible,
-    validate_canon_set,
-)
 from windagent_core.domain.story.canonical import content_hash_of  # noqa: E402
 from windagent_core.domain.story.ideation import SelectedIdea  # noqa: E402
 from windagent_core.domain.story.ids import SelectedIdeaId  # noqa: E402
@@ -415,7 +409,7 @@ def cross_validation_matrix() -> Dict[str, Any]:
 
         async def go() -> Dict[str, Any]:
             try:
-                result = await service.generate(GOLDEN_SELECTED_IDEA)
+                await service.generate(GOLDEN_SELECTED_IDEA)
             except BibleValidationFailure as exc:
                 return {
                     "dimension": case["case"],
@@ -489,7 +483,7 @@ def tolerant_parsing_violations() -> List[str]:
         from scripts.verification.produce_b2_evidence import tolerant_parsing_violations as scan
     except ImportError:  # pragma: no cover
         return []
-    extra_paths = [
+    [
         REPO_ROOT / "intelligence" / "windagent_intelligence" / "story" / "bibles",
         REPO_ROOT / "intelligence" / "windagent_intelligence" / "story" / "runtime_handlers",
     ]

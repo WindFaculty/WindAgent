@@ -6,7 +6,6 @@ from __future__ import annotations
 
 import pytest
 from windagent_core.domain.video_production.e2e_poc import (
-    AutomationRateMetric,
     CostReport,
     PocRunManifest,
 )

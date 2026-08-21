@@ -7,7 +7,6 @@ and SqlWorkerStatusQuery accuracy.
 from __future__ import annotations
 
 import asyncio
-from datetime import datetime, timezone
 import pytest
 
 from windagent_core.contracts.workers.models import WorkSubmission, WorkerHealth
@@ -84,7 +83,7 @@ async def test_heartbeat_renews_active_lease(db_manager):
 async def test_fencing_token_mismatch_during_heartbeat_cancels_task(db_manager):
     """Fencing token mismatch during heartbeat triggers task cancellation."""
     submitter = SqlWorkSubmissionAdapter(db_manager.session_factory)
-    task_id = await submitter.submit(WorkSubmission(prompt="Fencing cancellation test"))
+    await submitter.submit(WorkSubmission(prompt="Fencing cancellation test"))
 
     queue = SqlDurableTaskQueue(db_manager.session_factory)
     heartbeat_repo = SqlWorkerHeartbeatRepository(db_manager.session_factory)
@@ -110,7 +109,7 @@ async def test_fencing_token_mismatch_during_heartbeat_cancels_task(db_manager):
 async def test_worker_status_query_reflects_active_workers_and_leases(db_manager):
     """SqlWorkerStatusQuery accurately reports active workers and active leases count."""
     submitter = SqlWorkSubmissionAdapter(db_manager.session_factory)
-    task_id = await submitter.submit(WorkSubmission(prompt="Status query test"))
+    await submitter.submit(WorkSubmission(prompt="Status query test"))
 
     queue = SqlDurableTaskQueue(db_manager.session_factory)
     heartbeat_repo = SqlWorkerHeartbeatRepository(db_manager.session_factory)

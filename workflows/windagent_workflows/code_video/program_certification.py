@@ -11,15 +11,12 @@ Executes the PROGRAM_CERTIFICATION pipeline step:
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
-import hashlib
 import json
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any
 
 from windagent_core.errors.exceptions import ValidationError
 from windagent_core.contracts.code_video import CodeVideoPlan
-from windagent_core.contracts.code_video.assembly import CueSheet, MasterAssemblyResult
 from windagent_core.contracts.code_video.tools import ProgramCertificationPort
 
 

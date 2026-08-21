@@ -38,7 +38,6 @@ from windagent_core.domain.video_production.enums import (
     AnimationAction,
     AnimationEmotion,
     ClipSource,
-    CompatibilityVerdict,
     LicenseState,
     SemanticBone,
 )
@@ -378,7 +377,7 @@ def test_blend_excess_overlap_fails_closed():
 
 def test_overlap_conflict_detected_by_validator():
     intent = _intent()
-    clip = _walk_clip(COMPILER)
+    _walk_clip(COMPILER)
     first = COMPILER.compile(intent=intent, target_bones=_bones()).track
     with pytest.raises(ValidationFailureError) as exc:
         COMPILER.compile(

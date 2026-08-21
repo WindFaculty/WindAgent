@@ -4,7 +4,6 @@ import uvicorn
 import torch
 import soundfile
 import ChatTTS
-import json
 import os
 
 app = FastAPI()

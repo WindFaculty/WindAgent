@@ -20,7 +20,6 @@ from typing import List
 from windagent_core.domain.video_production.enums import (
     LightRole,
     LightingColorPolicy,
-    LightingEmphasis,
     LightingMood,
     LightingStyle,
     TimeOfDay,

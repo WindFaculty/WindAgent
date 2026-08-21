@@ -69,7 +69,7 @@ class WorkerRuntimeCapabilityProbe:
         self._fake_runtime_active = fake_runtime_active
         self._blender_executable_env = blender_executable_env
         self._certification_mode = (
-            certification_mode_enabled()
+            certification_mode_enabled(os.environ)
             if certification_mode is None
             else certification_mode
         )

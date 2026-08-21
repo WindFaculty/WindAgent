@@ -8,21 +8,13 @@ from __future__ import annotations
 
 from typing import Any, Dict, Optional
 from fastapi import APIRouter, HTTPException, status, Query
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
-from windagent_core.domain.video_production.state_recovery import (
-    ProductionRecoverySnapshot,
-    compute_snapshot_checksum,
-    sanitize_recovery_payload,
-)
 from windagent_core.domain.video_production.conflict_resolution_service import (
     ConflictResolutionService,
     ConflictResolutionPayload,
-    ResolutionStrategy,
     ThreeWayDiffResult,
-    ConflictClassification,
 )
-from windagent_core.errors.exceptions import ValidationError
 
 router = APIRouter(prefix="/api/v2", tags=["Recovery & Conflict Handling"])
 

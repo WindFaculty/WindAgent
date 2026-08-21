@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0.0",
+  "phase": 12,
+  "status": "PASSED",
+  "gate": "VP12_BROWSER_RUNTIME_VERIFIED",
+  "evidence": [
+    {
+      "path": "action_policy_receipt.json"
+    },
+    {
+      "path": "session_lock_receipt.json"
+    },
+    {
+      "path": "evidence_redaction_receipt.json"
+    },
+    {
+      "path": "healthcheck_receipt.json"
+    },
+    {
+      "path": "runtime_contract_receipt.json"
+    }
+  ],
+  "blocking_reasons": [],
+  "derived_from": "scripts/verification/verify_phase12_browser_runtime.py"
+}

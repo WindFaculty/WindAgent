@@ -19,10 +19,9 @@ from windagent_core.domain.video_production.collaboration_proposal import (
 from windagent_core.domain.video_production.activity_timeline import (
     ActivityCategory,
     ActivityProjector,
-    ProductionActivity,
     sanitize_text,
 )
-from windagent_core.errors.exceptions import PermissionDeniedError, ValidationError, DomainError
+from windagent_core.errors.exceptions import PermissionDeniedError, ValidationError
 
 
 @pytest.fixture(autouse=True)
@@ -240,9 +239,13 @@ def test_activity_timeline_replay_convergence():
 
 
 def test_api_v2_collaboration_endpoints():
+    """Phase 15: the V2 collaboration HTTP surface is retired (410 tombstone).
+
+    The collaboration domain logic above remains canonical; the retired
+    /api/v2/collaboration/* routes are pinned here.
+    """
     client = TestClient(app)
 
-    # 1. Create Proposal via API
     create_payload = {
         "project_id": "proj_api_f",
         "proposal_type": "SCREENPLAY_CHANGE",
@@ -253,30 +256,20 @@ def test_api_v2_collaboration_endpoints():
         "affected_entities": ["sc_10"],
     }
     resp = client.post("/api/v2/collaboration/proposals", json=create_payload)
-    assert resp.status_code == 200
-    prop_data = resp.json()
-    proposal_id = prop_data["proposal_id"]
-    assert prop_data["status"] == "PENDING"
+    assert resp.status_code == 410
+    assert resp.json()["title"] == "API V2 Retired"
 
-    # 2. List Proposals
-    list_resp = client.get(f"/api/v2/collaboration/proposals?project_id=proj_api_f")
-    assert list_resp.status_code == 200
-    assert len(list_resp.json()) == 1
+    list_resp = client.get("/api/v2/collaboration/proposals?project_id=proj_api_f")
+    assert list_resp.status_code == 410
 
-    # 3. Fetch Detail
-    detail_resp = client.get(f"/api/v2/collaboration/proposals/{proposal_id}")
-    assert detail_resp.status_code == 200
-    assert detail_resp.json()["proposal_id"] == proposal_id
+    detail_resp = client.get("/api/v2/collaboration/proposals/prop_any")
+    assert detail_resp.status_code == 410
 
-    # 4. Reject Proposal
     rej_resp = client.post(
-        f"/api/v2/collaboration/proposals/{proposal_id}/reject",
+        "/api/v2/collaboration/proposals/prop_any/reject",
         json={"rejector_actor": "user:editor", "reason": "Requires further revision"},
     )
-    assert rej_resp.status_code == 200
-    assert rej_resp.json()["status"] == "REJECTED"
+    assert rej_resp.status_code == 410
 
-    # 5. Query Timeline
     timeline_resp = client.get("/api/v2/collaboration/timeline?project_id=proj_api_f")
-    assert timeline_resp.status_code == 200
-    assert len(timeline_resp.json()) >= 1
+    assert timeline_resp.status_code == 410

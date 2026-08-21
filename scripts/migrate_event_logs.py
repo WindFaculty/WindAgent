@@ -21,7 +21,7 @@ for pkg in [
         sys.path.insert(0, pkg_path)
 
 from windagent_core.events.envelope import EventEnvelope
-from windagent_api.adapters.legacy_event_mappers import legacy_dict_to_v2_event, LEGACY_TO_V2_MAP
+from windagent_api.adapters.legacy_event_mappers import legacy_dict_to_v2_event
 
 
 def compute_sha256(file_path: Path) -> str:

@@ -12,7 +12,6 @@ import hashlib
 import json
 from pathlib import Path
 
-import pytest
 
 from windagent_core.domain.story import (
     STORY_ARTIFACT_REGISTRY,

@@ -13,7 +13,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Dict, FrozenSet, List, Mapping, Optional
+from typing import Dict, FrozenSet, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 

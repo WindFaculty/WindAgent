@@ -9,7 +9,7 @@ primitive definition deterministically changes every dependent rig manifest.
 
 from __future__ import annotations
 
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 from pydantic import BaseModel, ConfigDict, Field
 

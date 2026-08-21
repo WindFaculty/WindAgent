@@ -15,7 +15,6 @@ Validates visual ergonomics on Master 2560x1440 Canvas:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-import math
 from typing import Any, Dict, List, Optional, Tuple
 
 from windagent_tools.code_video.renderer.theme import CodeVideoVisualTheme

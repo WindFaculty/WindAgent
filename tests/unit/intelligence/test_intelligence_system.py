@@ -13,16 +13,13 @@ import os
 import subprocess
 import sys
 
-import pytest
 from windagent_intelligence import (
     # task_classifier
-    TaskClassifier, ClassificationResult, RiskLevel, WorkflowCandidate,
-    # planner
-    TaskPlanner, PlanRequest, PlanResult, PlanValidationResult,
+    TaskClassifier, RiskLevel, TaskPlanner, PlanRequest, PlanResult, PlanValidationResult,
     # context_builder
     IntelligenceContextBuilder, ContextAssemblyResult,
     # model_router
-    RouteLock, ModelRouterPolicy, RoutingContext, RouterCache,
+    RouterCache,
     # summarizer
     ContextSummarizer, SummarizationResult, SummarizationStrategy,
     # reviewer
@@ -30,7 +27,7 @@ from windagent_intelligence import (
     # reporter
     TaskReporter, ReportFormat, ReportSection, IntelligenceReport,
 )
-from windagent_context import ContextItem, ContextItemProvenance, SourceType, SensitivityLevel
+from windagent_context import ContextItem, ContextItemProvenance, SourceType
 
 
 # ====================================================================

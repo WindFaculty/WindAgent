@@ -41,16 +41,13 @@ from scripts.verification.produce_b5_evidence import (  # noqa: E402
     GOLDEN_BEAT_SHEET,
     GOLDEN_EPISODE_OUTLINE,
 )
-from scripts.verification.produce_b6_evidence import (  # noqa: E402
-    GOLDEN_SCREENPLAY_DRAFT,
-)
 from scripts.verification.produce_b7_evidence import (  # noqa: E402
     GOLDEN_DRAFT,
     _weak_report,
 )
 
 from windagent_core.domain.story.bibles import CharacterCanon, StoryBible, WorldBible  # noqa: E402
-from windagent_core.domain.story.ideation import IdeaCandidateSet, SelectedIdea  # noqa: E402
+from windagent_core.domain.story.ideation import IdeaCandidateSet  # noqa: E402
 from windagent_core.domain.story.outline import BeatSheet, EpisodeOutline  # noqa: E402
 from windagent_core.domain.story.review import (  # noqa: E402
     LockedScreenplayReceipt,
@@ -372,7 +369,7 @@ def run_lock_corpus() -> Dict[str, Any]:
             )
             refs = [*refs, dup]
         try:
-            result = LockService().assemble(
+            LockService().assemble(
                 draft=draft, report=report, receipt=receipt, lineage_refs=refs,
             )
             return {"case": case["case"], "outcome": "ok", "codes": []}

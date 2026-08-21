@@ -51,6 +51,85 @@
         "title": "ActivityDataPoint",
         "type": "object"
       },
+      "AddProviderRequest": {
+        "properties": {
+          "api_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Key"
+          },
+          "base_url": {
+            "minLength": 1,
+            "title": "Base Url",
+            "type": "string"
+          },
+          "credential_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Credential Label"
+          },
+          "endpoint_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Endpoint Id"
+          },
+          "id": {
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "protocol_mode": {
+            "default": "openai",
+            "title": "Protocol Mode",
+            "type": "string"
+          },
+          "supports_model_discovery": {
+            "default": true,
+            "title": "Supports Model Discovery",
+            "type": "boolean"
+          },
+          "supports_openai_compatible": {
+            "default": true,
+            "title": "Supports Openai Compatible",
+            "type": "boolean"
+          },
+          "type": {
+            "default": "custom",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "base_url"
+        ],
+        "title": "AddProviderRequest",
+        "type": "object"
+      },
       "AgentActivityItem": {
         "properties": {
           "action_type": {
@@ -728,6 +807,64 @@
           "provenance"
         ],
         "title": "AssetRevisionResource",
+        "type": "object"
+      },
+      "AssignModelRuleRequest": {
+        "properties": {
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "enabled": {
+            "default": true,
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "fallback_canonical_model_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fallback Canonical Model Id"
+          },
+          "name": {
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "primary_canonical_model_id": {
+            "minLength": 1,
+            "title": "Primary Canonical Model Id",
+            "type": "string"
+          },
+          "priority": {
+            "default": 1,
+            "title": "Priority",
+            "type": "integer"
+          },
+          "role": {
+            "minLength": 1,
+            "title": "Role",
+            "type": "string"
+          }
+        },
+        "required": [
+          "role",
+          "name",
+          "primary_canonical_model_id"
+        ],
+        "title": "AssignModelRuleRequest",
         "type": "object"
       },
       "BrowserActionResponse": {
@@ -3795,6 +3932,71 @@
           }
         },
         "title": "ModelPricing",
+        "type": "object"
+      },
+      "ModelRuleResource": {
+        "properties": {
+          "created_at": {
+            "title": "Created At",
+            "type": "string"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "fallback_canonical_model_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fallback Canonical Model Id"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "primary_canonical_model_id": {
+            "title": "Primary Canonical Model Id",
+            "type": "string"
+          },
+          "priority": {
+            "title": "Priority",
+            "type": "integer"
+          },
+          "role": {
+            "title": "Role",
+            "type": "string"
+          },
+          "updated_at": {
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "role",
+          "name",
+          "primary_canonical_model_id",
+          "enabled",
+          "priority",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "ModelRuleResource",
         "type": "object"
       },
       "ModelUsageStat": {
@@ -13472,7 +13674,7 @@
     },
     "/api/v3/providers": {
       "get": {
-        "description": "Retrieve all configured AI model providers with physical endpoints.",
+        "description": "Retrieve all configured AI model providers with physical endpoints.\n\nDurable providers registered via ``POST /api/v3/providers`` are merged with\nthe demo catalog (non-production) so both authorities surface.",
         "operationId": "providers.list",
         "responses": {
           "200": {
@@ -13491,6 +13693,46 @@
           }
         },
         "summary": "List Providers",
+        "tags": [
+          "Providers V3"
+        ]
+      },
+      "post": {
+        "description": "Durably register a provider (vendor + optional credential + endpoint).\n\nThe raw ``api_key`` is encrypted at rest and never returned. The provider\nis stored in the dedicated provider SQL authority.",
+        "operationId": "providers.create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddProviderRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProviderResource"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Provider",
         "tags": [
           "Providers V3"
         ]
@@ -13515,6 +13757,72 @@
           }
         },
         "summary": "Get All Providers Health",
+        "tags": [
+          "Providers V3"
+        ]
+      }
+    },
+    "/api/v3/providers/rules": {
+      "get": {
+        "description": "List enabled durable per-role model rules.",
+        "operationId": "providers.listRules",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ModelRuleResource"
+                  },
+                  "title": "Response Providers.Listrules",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Model Rules",
+        "tags": [
+          "Providers V3"
+        ]
+      },
+      "post": {
+        "description": "Durably assign one independent ModelRule per role/model mapping.\n\nThe rule is persisted in the dedicated ``model_routing_rules_v3`` authority\nand is loaded by the Worker at bootstrap (authoritative when no env override\nis supplied).",
+        "operationId": "providers.assignRule",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignModelRuleRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelRuleResource"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Assign Model Rule",
         "tags": [
           "Providers V3"
         ]
@@ -13704,7 +14012,7 @@
     },
     "/api/v3/providers/{provider_id}/test-connection": {
       "post": {
-        "description": "Perform real server-side connection handshake and model discovery.",
+        "description": "Perform a REAL server-side connection handshake and model discovery.\n\nFor providers registered in the dedicated SQL authority, this performs an\nactual adapter network call + model discovery (never a timer/catalog/random\nsimulation). Demo-only providers (seeded in non-production) fall back to the\ndemo catalog so legacy contract tests remain green.",
         "operationId": "providers.testConnection",
         "parameters": [
           {
@@ -14122,7 +14430,7 @@
     },
     "/api/v3/routing/locks/{lock_id}": {
       "get": {
-        "description": "Audit and inspect route lock explanation for Agent Workspace.",
+        "description": "Audit and inspect route lock explanation for Agent Workspace.\n\nReads through the composed ``RouteLockService`` (production lock\nrepository ``SQLRouteLockRepository``), never the generic\n``v3_resources:route_locks`` namespace.",
         "operationId": "routing.getLock",
         "parameters": [
           {
@@ -14390,7 +14698,7 @@
     },
     "/api/v3/routing/simulations": {
       "post": {
-        "description": "Execute dry-run route resolution returning explainable RouteDecision.",
+        "description": "Execute dry-run route resolution returning explainable RouteDecision.\n\nThe decision is produced by the composed ``RouteLockService`` (whose\nproduction lock repository is ``SQLRouteLockRepository``). The ruleset is\nrefreshed from the durable SQL authority before each decision so a failed\nearlier cache refresh cannot leave decisions permanently stale.",
         "operationId": "routing.simulate",
         "requestBody": {
           "content": {
@@ -16613,6 +16921,56 @@
         "summary": "Update Workflow",
         "tags": [
           "Workflows V3"
+        ]
+      }
+    },
+    "/health": {
+      "get": {
+        "operationId": "health_root_health_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "title": "Response Health Root Health Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Health Root",
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/health/": {
+      "get": {
+        "operationId": "health_root_health__get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "title": "Response Health Root Health  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Health Root",
+        "tags": [
+          "health"
         ]
       }
     },

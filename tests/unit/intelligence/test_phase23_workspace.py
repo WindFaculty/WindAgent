@@ -16,7 +16,6 @@ from windagent_core.domain.video_production.ids import (
 )
 from windagent_core.domain.video_production.workspace import (
     CandidateReviewOverride,
-    CostApprovalSummary,
     WorkspaceCommandRequest,
     WorkspaceCommandStatus,
     WorkspaceCommandType,
@@ -109,26 +108,27 @@ def test_event_stream_recovery(service: WorkspaceService):
 
 
 def test_api_v2_workspace_endpoints(client: TestClient):
-    """API V2 router responds to /snapshot, /commands, and /media requests."""
+    """Phase 15: the V2 workspace HTTP surface is retired behind the tombstone.
+
+    The WorkspaceService logic above remains the canonical authority; only
+    the retired /api/v2/video-production/workspace/* routes are pinned here.
+    """
     res_snap = client.get("/api/v2/video-production/workspace/snapshot?project_id=vp_poc")
-    assert res_snap.status_code == 200
-    data_snap = res_snap.json()
-    assert data_snap["project_id"] == "vp_poc"
+    assert res_snap.status_code == 410
+    assert res_snap.json()["title"] == "API V2 Retired"
 
     res_cmd = client.post(
         "/api/v2/video-production/workspace/commands",
         json={
             "command_type": "AUTHORIZE_COST",
             "project_id": "vp_poc",
-            "target_revision_id": data_snap["revision_id"],
+            "target_revision_id": "rev_1",
             "entity_id": "job_01",
             "reason": "Credit reservation approval",
         },
         headers={"X-Idempotency-Key": "idemp_test_999"},
     )
-    assert res_cmd.status_code == 200
-    assert res_cmd.json()["status"] == "COMPLETED"
+    assert res_cmd.status_code == 410
 
     res_media = client.get("/api/v2/video-production/workspace/media/tok_shot_01_a9f8")
-    assert res_media.status_code == 200
-    assert res_media.json()["status"] == "AUTHORIZED"
+    assert res_media.status_code == 410

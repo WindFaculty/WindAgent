@@ -10,19 +10,16 @@ Validates:
 7. Zero architecture boundary violations.
 """
 
-import os
 import subprocess
 import sys
 from pathlib import Path
-import pytest
 from fastapi.testclient import TestClient
 
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT_DIR))
 
 from windagent_api.main import app
-from windagent_tools.media_assets.trust_gate import MediaAssetTrustGate, AssetTrustVerdict
-from windagent_tools.media_assets.trust import AssetTrustEnforcer
+from windagent_tools.media_assets.trust_gate import MediaAssetTrustGate
 from windagent_tools.media_assets import QuarantinedAssetError
 from windagent_core.domain.video_production.asset_lifecycle import AssetLifecycleState
 from windagent_tools.production_engines.blender.runtime.supervisor import STATE_QUARANTINED

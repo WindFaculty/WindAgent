@@ -4,11 +4,10 @@ Test suite for PHASE 8 — Loai bo API V1 ngay (API V1 Removal)
 This test suite verifies that:
 1. API V1 routes have been completely removed
 2. Tombstone handler returns 410 Gone for all /api/v1/* requests
-3. API V2 endpoints are still operational
+3. API V2 is also retired (Phase 15): /api/v2/* returns 410 Gone
 4. No V1 compatibility code remains in the API
 """
 
-import pytest
 from fastapi.testclient import TestClient
 from windagent_api.main import app
 
@@ -25,7 +24,7 @@ class TestApiV1Removal:
         data = response.json()
         assert data["title"] == "API V1 Removed"
         assert data["status"] == 410
-        assert data["detail"] == "API V1 has been permanently removed. Please migrate to API V2."
+        assert data["detail"] == "API V1 has been permanently removed. Please migrate to API V3."
         assert "removal_date" in data
         assert "migration_guide" in data
         assert "available_endpoints" in data
@@ -61,9 +60,9 @@ class TestApiV1Removal:
         assert response.json()["title"] == "API V1 Removed"
 
     def test_v1_parity_matrix_removed(self):
-        """GET /api/v2/parity-matrix should return 404 (route removed)."""
+        """GET /api/v2/parity-matrix is behind the Phase 15 V2 tombstone."""
         response = client.get("/api/v2/parity-matrix")
-        assert response.status_code == 404
+        assert response.status_code == 410
 
     def test_v1_all_http_methods_return_410(self):
         """All HTTP methods on /api/v1/* should return 410."""
@@ -73,32 +72,33 @@ class TestApiV1Removal:
             assert response.status_code == 410, f"Method {method} should return 410"
 
 
-class TestApiV2StillOperational:
-    """Verify API V2 endpoints are still working after V1 removal."""
+class TestApiV2Retired:
+    """Phase 15: API V2 is permanently retired; /api/v3/* is canonical."""
 
-    def test_v2_tasks_still_works(self):
-        """POST /api/v2/tasks should still work."""
+    def test_v2_tasks_returns_410(self):
+        """POST /api/v2/tasks returns the V2 tombstone."""
         response = client.post("/api/v2/tasks", json={
             "prompt": "Test task",
             "workflow_name": "test"
         })
-        assert response.status_code == 201
-        data = response.json()
-        assert "task_id" in data
+        assert response.status_code == 410
+        assert response.json()["title"] == "API V2 Retired"
 
-    def test_v2_sessions_still_works(self):
-        """POST /api/v2/sessions should still work."""
+    def test_v2_sessions_returns_410(self):
+        """POST /api/v2/sessions returns the V2 tombstone."""
         response = client.post("/api/v2/sessions", json={
             "session_name": "Test Session"
         })
-        assert response.status_code in [200, 201]
+        assert response.status_code == 410
+        assert response.json()["title"] == "API V2 Retired"
 
-    def test_v2_providers_still_works(self):
-        """GET /api/v2/providers should still work."""
+    def test_v2_providers_returns_410(self):
+        """GET /api/v2/providers returns the V2 tombstone."""
         response = client.get("/api/v2/providers")
-        assert response.status_code == 200
+        assert response.status_code == 410
+        assert response.json()["available_endpoints"] == "/api/v3/*"
 
-    def test_v2_health_still_works(self):
+    def test_health_still_works(self):
         """Health endpoints should still work."""
         response = client.get("/health/live")
         assert response.status_code == 200

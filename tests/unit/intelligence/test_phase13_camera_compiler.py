@@ -27,7 +27,6 @@ from windagent_core.domain.video_production.cinematography import (
     CameraKeyframe,
     CameraOverride,
     CameraPath,
-    CameraRigPlan,
     FocusPlan,
     FramingConstraint,
     LensProfile,
@@ -38,7 +37,6 @@ from windagent_core.domain.video_production.enums import (
     CameraSide,
     EasingKind,
     ScreenDirection,
-    ShotType,
 )
 from windagent_core.domain.video_production.errors import (
     CameraOverridePinMismatchError,

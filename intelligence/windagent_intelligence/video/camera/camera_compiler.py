@@ -22,7 +22,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 from windagent_core.domain.video_production.cinematography import (
     CameraFinding,
@@ -34,7 +34,6 @@ from windagent_core.domain.video_production.cinematography import (
     CameraValidationReport,
     CameraValidator,
 )
-from windagent_core.domain.video_production.enums import CameraMovement
 from windagent_core.domain.video_production.errors import (
     CameraOverridePinMismatchError,
 )
@@ -49,7 +48,6 @@ from windagent_core.domain.video_production.set_dressing import (
     Vec3,
 )
 from windagent_intelligence.video.camera.rig_primitives import (
-    RIG_PRIMITIVES_VERSION,
     resolve_primitive,
 )
 from windagent_intelligence.video.errors import ValidationFailureError

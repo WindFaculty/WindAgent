@@ -4,11 +4,10 @@ import requests
 import random
 from FilmAgent_root.FilmAgent.util import *
 from tqdm import tqdm
-from FilmAgent_root.FilmAgent.LLMCaller import GPTTTS
 # TO DO
-Script_path = f"/path/to/script.json"
-actos_path = f"/path/to/actors_profile.json"
-Audio_path = f"The path to the folder where the audio files are stored."
+Script_path = "/path/to/script.json"
+actos_path = "/path/to/actors_profile.json"
+Audio_path = "The path to the folder where the audio files are stored."
 # TO DO
 if not os.path.exists(Audio_path):
     os.makedirs(Audio_path)
@@ -26,7 +25,6 @@ invalid_characters_map = {
     "'": ",",
     ':': ',',
     ';': ',',
-    '!': '.',
     '(': ',',
     ')': ',',
     '[': ',',

@@ -7,11 +7,7 @@ import uuid
 import pytest
 from pydantic import BaseModel
 from windagent_core.domain.types import (
-    UUIDEntityId, OpaqueId, TaskId, TaskRunId, SessionId, WorkflowId, StepId,
-    StepRunId, EventId, ArtifactId, PermissionRequestId, ToolCallId, ModelCallId,
-    ProviderId, EndpointId, CanonicalModelId, ProviderModelId, RuntimeRunId,
-    RuntimeSessionId, WorkerId, RouteLockId, RouteAttemptId, ExternalRequestId,
-    classify_identifier
+    TaskId, SessionId, ProviderId, WorkerId, classify_identifier
 )
 from windagent_core.errors.exceptions import IdentityValidationError
 

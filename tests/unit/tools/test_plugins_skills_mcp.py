@@ -13,13 +13,11 @@ Unit Tests for WindAgent Plugins, Skills, and MCP Client Adapter (Phase 7 + Phas
 
 import os
 import json
-import tempfile
-import shutil
 import pytest
 from windagent_core.domain.types import SessionId, ToolCallId
 from windagent_core.contracts.tools import ToolInvocation
 from windagent_core.errors.exceptions import (
-    ConflictError, PermissionDeniedError, ValidationError, NotFoundError
+    ConflictError, PermissionDeniedError, ValidationError
 )
 from windagent_plugins import (
     PluginManifest, PluginLoader,
@@ -196,7 +194,7 @@ def test_plugin_update(tmp_path):
     assert loader.is_enabled("updatable")
 
     v2 = PluginManifest(id="updatable", name="Updatable v2", version="2.0.0", entrypoint="mod:NewClass")
-    install_path = loader.update_plugin(v2)
+    loader.update_plugin(v2)
     assert "2.0.0" in v2.version
 
     # Enabled status preserved

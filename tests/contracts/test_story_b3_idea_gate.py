@@ -13,7 +13,6 @@ import hashlib
 import json
 from pathlib import Path
 
-import pytest
 
 from scripts.verification.produce_b3_evidence import (
     GOLDEN_BRIEF,
@@ -32,7 +31,6 @@ from windagent_intelligence.story import (
 from windagent_intelligence.story.prompts import (
     prompt_for,
     prompt_manifest,
-    registered_prompt_ids,
     validate_registry_invariants,
 )
 

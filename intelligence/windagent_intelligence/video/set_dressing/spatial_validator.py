@@ -27,14 +27,9 @@ from __future__ import annotations
 
 from typing import Dict, List, Optional
 
-from windagent_core.domain.video_production.ids import (
-    SetDressingSceneId,
-    SpatialFindingId,
-)
 from windagent_core.domain.video_production.set_dressing import (
-    CharacterPlacement,
+    Aabb,
     EnvironmentSpec,
-    PropPlacement,
     SetDressingPlan,
     SpatialFinding,
     SpatialFindingKind,
@@ -115,8 +110,6 @@ class SpatialConstraintValidator:
     def _validate_forbidden_penetration(
         self, plan: SetDressingPlan, env: EnvironmentSpec, findings: List[SpatialFinding]
     ) -> None:
-        from windagent_core.domain.video_production.set_dressing import Aabb
-
         forbids = {
             fv.name: fv.bounds for fv in env.forbidden_volumes
         }
@@ -166,7 +159,6 @@ class SpatialConstraintValidator:
         surfaces = [
             (s.name, s.surface_z) for s in env.support_surfaces
         ]
-        nav_top = 0.0
         for prop in plan.props:
             self._floor_findings(prop.position.z, "prop", str(prop.prop_id),
                                  prop.position, surfaces, findings)

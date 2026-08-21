@@ -13,13 +13,8 @@ from __future__ import annotations
 
 import copy
 import hashlib
-from typing import Any, Dict, List
 
-import pytest
 from tests.fixtures.canonical_bunny_episode import (
-    BUNNY_ACTIVE_DRAFT_REV,
-    BUNNY_LOCKED_REV,
-    BUNNY_PROJECT_ID,
     build_canonical_bunny_episode,
 )
 

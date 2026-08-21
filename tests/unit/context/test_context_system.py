@@ -14,8 +14,7 @@ from windagent_context import (
     ContextItemProvenance, ContextItem, TokenBudgetManager, estimate_tokens,
     RepositoryIndex, ContextCompactor, ContextBuilder,
     ContextPipeline, ContextPipelineConfig,
-    ProvenanceManifest, ProvenanceManifestEntry,
-    SensitivityLevel, SourceType,
+    ProvenanceManifest, SensitivityLevel, SourceType,
     TASK_TYPE_BUDGET_PROFILES,
 )
 

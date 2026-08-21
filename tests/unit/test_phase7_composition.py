@@ -150,7 +150,7 @@ class TestPhase7WorkerComposition:
         # Should compose all required services
         assert "DatabaseManager" in content
         assert "DurableTaskLeaseManager" in content
-        assert "OrchestrationV2Container" in content
+        assert "OrchestrationContainer" in content
         assert "ExecutionRuntimeRegistry" in content
         assert "ToolRegistry" in content
         assert "CanonicalModelRegistryService" in content

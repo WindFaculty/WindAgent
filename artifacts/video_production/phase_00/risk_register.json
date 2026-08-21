@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0.0",
+  "phase": 0,
+  "risks": [
+    {
+      "id": "R-001",
+      "severity": "HIGH",
+      "status": "RESOLVED",
+      "risk": "The full baseline test suite is not reproducible from a clean checkout because it relies on ignored Phase 7 evidence.",
+      "mitigation": "Resolved by baseline 1d98e26: full Python suite reproduced from a clean detached checkout (949 passed, 3 skipped, 0 failed) with 0 tracked mutations.",
+      "resolution": "Closed 2026-07-31 via baseline certification."
+    },
+    {
+      "id": "R-002",
+      "severity": "MEDIUM",
+      "status": "RESOLVED",
+      "risk": "Existing CI-evidence validation cannot execute without external CI artifact inputs and run metadata.",
+      "mitigation": "Resolved by publishing the CI artifact download, schema, metadata, and validation invocation as baseline evidence (13 immutable artifacts validated, run 30456084211).",
+      "resolution": "Closed 2026-07-31 via baseline certification."
+    },
+    {
+      "id": "R-003",
+      "severity": "MEDIUM",
+      "status": "OPEN_NONBLOCKING",
+      "risk": "The local Python, uv, and Node versions differ from the repository CI matrix.",
+      "mitigation": "Use the CI-pinned toolchain for the unblock rerun and compare receipts."
+    },
+    {
+      "id": "R-004",
+      "severity": "MEDIUM",
+      "status": "OPEN_NONBLOCKING",
+      "risk": "npm ci reports known dependency vulnerabilities in both frontend lockfiles.",
+      "mitigation": "Carry the lockfile findings into the Phase 1 dependency/security inventory; do not mutate the baseline in Phase 0."
+    }
+  ]
+}

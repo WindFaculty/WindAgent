@@ -14,7 +14,7 @@ from pathlib import Path
 import re
 import shutil
 import subprocess
-from typing import Iterable, Optional
+from typing import Iterable
 
 
 class WorktreeLifecycleError(RuntimeError):

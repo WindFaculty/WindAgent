@@ -30,10 +30,9 @@ library/mocap validators use (backlog 4).
 
 from __future__ import annotations
 
-import hashlib
 import json
 from datetime import datetime, timezone
-from typing import Dict, List
+from typing import Dict
 
 from windagent_core.domain.video_production.ai_motion import (
     MotionCapability,

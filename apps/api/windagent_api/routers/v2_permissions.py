@@ -4,9 +4,9 @@ Endpoints for evaluating, listing, and auditing permission requests via Permissi
 """
 
 from __future__ import annotations
-from typing import Any, Dict, List
+from typing import List
 from fastapi import APIRouter
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 router = APIRouter(prefix="/api/v2/permissions", tags=["Permissions V2"])
 

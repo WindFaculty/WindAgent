@@ -14,8 +14,10 @@ from typing import Any, Callable, Optional
 import httpx
 
 from windagent_core.contracts.providers.provider_management import ProviderProbeMaterial
-from windagent_providers.anthropic import AnthropicProviderAdapter
-from windagent_providers.google import GoogleGeminiProviderAdapter
+from windagent_providers.factory import (
+    create_anthropic_provider_adapter,
+    create_google_gemini_provider_adapter,
+)
 from windagent_providers.openai_compatible.transport import OpenAICompatibleTransport
 
 
@@ -63,14 +65,14 @@ class ProviderAdapterFactory:
         ciphertext = material.credential_ciphertext or ""
         api_key = self._decrypt_credentials(ciphertext) if ciphertext else ""
         if protocol_mode == "anthropic":
-            return AnthropicProviderAdapter(
+            return create_anthropic_provider_adapter(
                 api_key=api_key,
                 base_url=material.base_url,
                 timeout_seconds=30.0,
                 http_client=self._http_client,
             )
         if protocol_mode in {"google", "gemini"}:
-            return GoogleGeminiProviderAdapter(
+            return create_google_gemini_provider_adapter(
                 api_key=api_key,
                 base_url=material.base_url,
                 timeout_seconds=30.0,

@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 import json
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from windagent_tools.code_video.recording.passes import PassCatalog, PassStatus
 from windagent_tools.code_video.recording.recorder import RecordingManifest

@@ -5,7 +5,6 @@ Validates package structure, OpenAPI export integrity, zero new direct fetch vio
 
 import json
 from pathlib import Path
-import pytest
 from scripts.frontend_api.export_openapi import export_openapi
 from scripts.frontend_api.validate_openapi import validate_openapi
 from scripts.check_no_new_direct_fetch import check_direct_fetches

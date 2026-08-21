@@ -14,7 +14,7 @@ Provides deterministic data structures for Stage H testing:
 from __future__ import annotations
 
 import hashlib
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 BUNNY_PROJECT_ID = "prj_bunny_ep01"
 BUNNY_LOCKED_REV = "rev_ep01_v1_locked"

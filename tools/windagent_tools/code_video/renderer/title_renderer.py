@@ -7,12 +7,12 @@ and Outro / Next Video Teaser Cards (S19).
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from enum import Enum
 import hashlib
 import html
 import json
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from windagent_core.contracts.code_video import Action, ActionType
 from windagent_tools.code_video.renderer.theme import CodeVideoVisualTheme
@@ -164,7 +164,7 @@ class ChecklistState:
             f'    font-weight: 500; margin: 0 0 36px 0; text-align: center;">{html.escape(self.subtitle)}</p>\n'
             f'  <ul class="checklist-items" style="width: 1400px; padding: 0; margin: 0;">\n'
             + "\n".join(rows_html) + "\n"
-            f'  </ul>\n</div>'
+            '  </ul>\n</div>'
         )
 
 

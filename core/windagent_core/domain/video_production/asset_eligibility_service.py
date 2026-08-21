@@ -11,7 +11,7 @@ from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, ConfigDict, Field
 
 from windagent_core.domain.video_production.asset_lifecycle import AssetLifecycleState
-from windagent_core.domain.video_production.enums import LicenseState, ProductionAssetKind
+from windagent_core.domain.video_production.enums import LicenseState
 from windagent_core.domain.video_production.production_asset import AssetRevision, ProductionAsset
 from windagent_core.domain.video_production.script_asset_binding import ScreenplayEntityType
 

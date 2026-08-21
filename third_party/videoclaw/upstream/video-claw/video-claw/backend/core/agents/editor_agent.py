@@ -133,7 +133,7 @@ class VideoEditorAgent(AgentInterface):
                 
                 logger.info(f"[{sid}] Running ffmpeg for Ep {ep_idx}: {cmd}")
                 try:
-                    result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+                    subprocess.run(cmd, capture_output=True, text=True, check=True)
                 except subprocess.CalledProcessError as e:
                     logger.error(f"FFmpeg failed with exit code {e.returncode}")
                     logger.error(f"FFmpeg stderr: {e.stderr}")

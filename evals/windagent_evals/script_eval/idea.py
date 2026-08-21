@@ -230,15 +230,15 @@ def validate_idea(idea: Any, siblings: Optional[List[Dict[str, Any]]] = None
     for sib in siblings or []:
         if not isinstance(sib, dict):
             continue
-        for field, mine, other in (
+        for field_name, mine, other in (
                 ("premise", premise, sib.get("premise")),
                 ("differentiation", diff_field, sib.get("differentiation"))):
             if not _is_str(mine) or not _is_str(other):
                 continue
             j = _jaccard(mine, other)
             if j >= DUPLICATE_JACCARD:
-                _f(findings, "duplicate_idea", "ERROR", f"$.{field}",
-                   f"{field} too similar to sibling idea "
+                _f(findings, "duplicate_idea", "ERROR", f"$.{field_name}",
+                   f"{field_name} too similar to sibling idea "
                    f"`{sib.get('case_id', '?')}` (Jaccard "
                    f"{j:.2f} >= {DUPLICATE_JACCARD})")
                 diff_ok = False

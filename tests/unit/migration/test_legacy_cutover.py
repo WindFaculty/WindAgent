@@ -3,7 +3,6 @@ Unit tests for WindAgent Phase 14 Legacy Cutover, Feature Flags, and Shadow Exec
 apps/backend/compatibility_shim has been retired as of Phase 6 completion.
 """
 
-import pytest
 from windagent_api.bootstrap.feature_flags import FeatureFlagsManager
 from windagent_verification.shadow import ShadowExecutionEngine
 

@@ -1,11 +1,12 @@
 """
-API Integration Tests for Stage B Production Workspace & Canonical Commands.
-- Workspace snapshot reading from durable database
-- Canonical command envelope execution with X-Idempotency-Key
-- Rejection of stale target revisions (409 Conflict)
-- Rejection of locked revisions (409 Conflict)
-- Idempotency key reuse mismatch detection (409 Conflict)
-- Replay of identical responses for matching idempotency key & payload
+Stage B Production Workspace & Event Replay — retirement contract tests.
+
+The V2 video-production workspace (snapshot / canonical commands / event
+replay HTTP surface) was retired with API V2 (Phase 15). The canonical
+production surface is /api/v3/* (see routers/v3/production.py) and the
+canonical realtime replay is the /ws hub with per-aggregate sequence
+cursors. These tests pin the CURRENT default contract: every retired
+route answers 410 Gone pointing at /api/v3/*.
 """
 
 import pytest
@@ -21,121 +22,44 @@ def client(tmp_path, monkeypatch):
         yield test_client
 
 
-def test_get_workspace_snapshot_initializes_durable_project(client):
+def test_workspace_snapshot_route_is_retired(client):
     res = client.get("/api/v2/video-production/projects/vp_unit_01/workspace")
-    assert res.status_code == 200, res.text
-    data = res.json()
-    assert data["project_id"] == "vp_unit_01"
-    assert data["revision_id"].startswith("rev_")
-    assert data["current_sequence"] >= 1
-    assert data["creative_brief_locked"] is True
+    assert res.status_code == 410, res.text
+    body = res.json()
+    assert body["title"] == "API V2 Retired"
+    assert body["available_endpoints"] == "/api/v3/*"
 
 
-def test_canonical_command_execution_success(client):
-    # 1. Fetch initial snapshot
-    snap_res = client.get("/api/v2/video-production/projects/vp_unit_02/workspace")
-    assert snap_res.status_code == 200
-    snap = snap_res.json()
-    rev_id = snap["revision_id"]
-
-    # 2. Execute command with X-Idempotency-Key
-    cmd_res = client.post(
+def test_canonical_command_route_is_retired(client):
+    res = client.post(
         "/api/v2/video-production/commands",
         headers={"X-Idempotency-Key": "idemp_cmd_001"},
         json={
             "command_type": "UPDATE_SCENE",
             "project_id": "vp_unit_02",
-            "target_revision_id": rev_id,
+            "target_revision_id": "rev_1",
             "entity_id": "scene_01",
             "reason": "Dialogue refinement",
             "payload": {"text": "Updated scene text"},
         },
     )
-    assert cmd_res.status_code == 200, cmd_res.text
-    cmd_data = cmd_res.json()
-    assert cmd_data["status"] == "COMPLETED"
-    assert cmd_data["updated_revision_id"] != rev_id
-    assert cmd_data["current_sequence"] > snap["current_sequence"]
+    assert res.status_code == 410, res.text
+    assert res.json()["title"] == "API V2 Retired"
 
 
-def test_canonical_command_idempotency_replay_and_mismatch(client):
-    snap = client.get("/api/v2/video-production/projects/vp_unit_03/workspace").json()
-    rev_id = snap["revision_id"]
-
-    payload_a = {
-        "command_type": "ADD_SHOT",
-        "project_id": "vp_unit_03",
-        "target_revision_id": rev_id,
-        "entity_id": "shot_10",
-        "reason": "Add establishing shot",
-        "payload": {"duration": 4.0},
-    }
-
-    # First request
-    res1 = client.post(
-        "/api/v2/video-production/commands",
-        headers={"X-Idempotency-Key": "key_repeat_01"},
-        json=payload_a,
-    )
-    assert res1.status_code == 200
-    data1 = res1.json()
-
-    # Second identical request (Idempotent replay)
-    res2 = client.post(
-        "/api/v2/video-production/commands",
-        headers={"X-Idempotency-Key": "key_repeat_01"},
-        json=payload_a,
-    )
-    assert res2.status_code == 200
-    data2 = res2.json()
-    assert data2["command_id"] == data1["command_id"]
-    assert data2["updated_revision_id"] == data1["updated_revision_id"]
-
-    # Third request with SAME key but DIFFERENT payload -> 409 Mismatch Conflict
-    payload_b = dict(payload_a)
-    payload_b["reason"] = "DIFFERENT REASON"
-
-    res3 = client.post(
-        "/api/v2/video-production/commands",
-        headers={"X-Idempotency-Key": "key_repeat_01"},
-        json=payload_b,
-    )
-    assert res3.status_code == 409
-    detail = res3.json()["detail"]
-    assert detail["code"] == "IDEMPOTENCY_MISMATCH"
+def test_production_events_replay_route_is_retired(client):
+    res = client.get("/api/v2/video-production/events?project_id=vp_evt_01&min_sequence=0")
+    assert res.status_code == 410, res.text
+    assert res.json()["detail"].startswith("API V2 has been permanently retired")
 
 
-def test_stale_target_revision_rejection(client):
-    snap = client.get("/api/v2/video-production/projects/vp_unit_04/workspace").json()
-    rev1 = snap["revision_id"]
+def test_v3_production_surface_is_available(client):
+    """The canonical V3 production router answers on its plan surface.
 
-    # Execute first mutation to advance active revision to rev2
-    client.post(
-        "/api/v2/video-production/commands",
-        headers={"X-Idempotency-Key": "key_step_01"},
-        json={
-            "command_type": "UPDATE_ASSET",
-            "project_id": "vp_unit_04",
-            "target_revision_id": rev1,
-            "entity_id": "asset_1",
-            "reason": "First edit",
-        },
-    )
-
-    # Try executing second command against old rev1 -> 409 Conflict (REJECTED_STALE)
-    res_stale = client.post(
-        "/api/v2/video-production/commands",
-        headers={"X-Idempotency-Key": "key_step_02"},
-        json={
-            "command_type": "UPDATE_ASSET",
-            "project_id": "vp_unit_04",
-            "target_revision_id": rev1,
-            "entity_id": "asset_1",
-            "reason": "Stale edit attempt",
-        },
-    )
-    assert res_stale.status_code == 409
-    detail = res_stale.json()["detail"]
-    assert detail["code"] == "REJECTED_STALE"
-    assert detail["target_revision_id"] == rev1
-    assert detail["current_revision_id"] != rev1
+    The V3 plan endpoint lazily provisions a default plan for the requested
+    episode, so a fresh id still yields 200 — proving the route is live
+    (not the 410 tombstone).
+    """
+    res = client.get("/api/v3/episodes/ep_none/production")
+    assert res.status_code == 200, res.text
+    assert res.json()["episode_id"] == "ep_none"

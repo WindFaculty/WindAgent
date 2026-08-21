@@ -18,7 +18,6 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 
 from windagent_api.dependencies import get_uow
-from windagent_storage.repositories.v2_orchestration_repositories import SqlMemoryRecordRepository
 from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork
 
 router = APIRouter(prefix="/api/v3/memory", tags=["Memory V3"])
@@ -86,8 +85,10 @@ def _to_resource(orm: Any) -> MemoryRecordResource:
     )
 
 
-def _repo(uow: SqlUnitOfWork) -> SqlMemoryRecordRepository:
-    return SqlMemoryRecordRepository(uow.session)
+def _repo(uow: SqlUnitOfWork):
+    """Session-bound memory repository from the unit of work (no direct
+    adapter construction outside the composition root)."""
+    return uow.memory_records
 
 
 @router.get("", response_model=List[MemoryRecordResource], operation_id="memory.list")

@@ -9,7 +9,6 @@ Tests:
 5. ScriptAssetProjectionEngine event convergence.
 """
 
-import pytest
 from windagent_core.domain.video_production.script_asset_binding import (
     ProductionAssetBinding,
     ScreenplayEntityType,
@@ -20,8 +19,6 @@ from windagent_core.domain.video_production.asset_eligibility_service import (
 )
 from windagent_core.domain.video_production.asset_requirement_resolver import (
     AssetRequirementResolver,
-    RequirementSeverity,
-    RequirementStatus,
 )
 from windagent_core.domain.video_production.production_asset import ProductionAsset
 from windagent_core.domain.video_production.asset_lifecycle import AssetLifecycleState

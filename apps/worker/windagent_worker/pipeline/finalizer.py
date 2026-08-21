@@ -1,10 +1,14 @@
 """Finalizer stage for the Production Worker pipeline (Architecture V3 Phase 9).
 
-The ONLY production authority that imports/uses ``SqlUnitOfWork``,
-``FinalizeTaskExecutionRequest``, or calls ``finalize_task_execution``.  It
-atomically persists task CAS/result/event/outbox/exact lease release in one
-database transaction.  Runtime adapters and all other pipeline stages must not
-commit task terminal state.
+The ONLY production authority that uses ``FinalizeTaskExecutionRequest`` or
+calls ``finalize_task_execution``.  It atomically persists task
+CAS/result/event/outbox/exact lease release in one database transaction.
+Runtime adapters and all other pipeline stages must not commit task terminal
+state.
+
+The concrete ``SqlUnitOfWork`` is constructed by the worker composition root
+and injected here as a zero-argument ``uow_factory`` returning the async
+context manager — this pipeline stage never instantiates infrastructure.
 """
 
 from __future__ import annotations
@@ -15,7 +19,6 @@ from typing import Any, Optional
 
 from windagent_core.contracts.finalization import FinalizeTaskExecutionRequest
 from windagent_core.events.catalog import EventCatalog
-from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork
 
 from windagent_worker.pipeline.context import TaskExecutionContext
 from windagent_worker.pipeline.result_validator import ProposedOutcome
@@ -31,7 +34,11 @@ class FinalizeOutcome:
 
 
 class FinalizerStage:
-    """Atomic terminal persistence authority (Phase 2 / Phase 5 semantics)."""
+    """Atomic terminal persistence authority (Phase 2 / Phase 5 semantics).
+
+    ``uow_factory`` is a zero-argument callable returning an async context
+    manager that yields the unit of work (constructed by the composition root).
+    """
 
     def __init__(self, uow_factory: Any = None) -> None:
         self.uow_factory = uow_factory
@@ -52,7 +59,7 @@ class FinalizerStage:
             else EventCatalog.TASK_FAILED
         )
 
-        async with SqlUnitOfWork(self.uow_factory) as uow:
+        async with self.uow_factory() as uow:
             existing = await uow.task_runs.get_by_id(ctx.task_id)
             expected_version = (existing or {}).get("version", 0) or 1
 

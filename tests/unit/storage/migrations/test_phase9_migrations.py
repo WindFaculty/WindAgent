@@ -19,11 +19,9 @@ from sqlalchemy.orm import Session
 
 from windagent_storage.migrations.schema_checksum import SchemaChecksum
 from windagent_storage.migrations.migration_lock import MigrationLock, LockType, LockStatus
-from windagent_storage.migrations.backup_manager import BackupManager, BackupInfo
+from windagent_storage.migrations.backup_manager import BackupManager
 from windagent_storage.migrations.migration_registry import (
     migration_registry,
-    MigrationDirection,
-    MigrationStatus,
 )
 from windagent_storage.orm.models import BaseORM
 

@@ -5,22 +5,17 @@ retry vs callback race, crash recovery, destructive replay protection, and multi
 """
 
 import pytest
-import asyncio
-from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 
-from windagent_core.domain.types import TaskId, SessionId, WorkflowId, WorkflowRunId, StepId, WorkerId
-from windagent_core.domain.lifecycle import TaskState, WorkflowState, StepState
-from windagent_core.events.envelope import EventEnvelope
-from windagent_core.events.catalog import EventCatalog
+from windagent_core.domain.types import TaskId, SessionId, WorkflowRunId, StepId, WorkerId
+from windagent_core.domain.lifecycle import TaskState
 
 from windagent_storage.orm.models import BaseORM
 from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork
 from windagent_orchestration import (
-    TaskManager, WorkflowEngine, StepDispatcher, LeaseManager, RecoveryManager, DestructiveReplayGuard
+    TaskManager, LeaseManager, DestructiveReplayGuard
 )
-from windagent_orchestration.commands import CreateTaskCommand, TransitionTaskCommand, ClaimLeaseCommand
-from windagent_orchestration.state_machine import TaskState, TaskStateMachine, WorkflowStateMachine, StepStateMachine
+from windagent_orchestration.state_machine import TaskStateMachine
 
 
 @pytest.fixture
@@ -29,7 +24,7 @@ async def async_uow_factory():
     async with engine.begin() as conn:
         await conn.run_sync(BaseORM.metadata.create_all)
     factory = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
-    yield factory
+    yield lambda: SqlUnitOfWork(factory)
     await engine.dispose()
 
 

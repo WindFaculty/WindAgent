@@ -224,7 +224,7 @@ class ProductionIrMigrator:
         profile: RenderProfile,
     ) -> List[RenderIntent]:
         intents: List[RenderIntent] = []
-        scene_ids = {str(s.scene_id) for s in scenes}
+        {str(s.scene_id) for s in scenes}
         for scene in scenes:
             scene_shots = [
                 shot.intent_id

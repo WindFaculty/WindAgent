@@ -8,21 +8,16 @@ approve, reject) and real-time production activity timeline projection and repla
 from __future__ import annotations
 
 from typing import Any, Dict, List, Optional
-from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 
 from windagent_api.dependencies import get_video_production_uow
 from windagent_core.domain.video_production.collaboration_proposal import (
-    ProposalStatus,
     ProposalType,
-    ProductionChangeProposal,
     UniversalProposalService,
-    SensitiveOperationPolicy,
 )
 from windagent_core.domain.video_production.activity_timeline import (
-    ActivityCategory,
     ActivityProjector,
-    ProductionActivity,
 )
 from windagent_core.domain.video_production.command_dispatcher import CommandDispatcher
 

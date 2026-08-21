@@ -15,12 +15,10 @@ import pytest
 from windagent_core.domain.video_production.asset_command_handlers import AssetCommandHandler
 from windagent_core.domain.video_production.asset_lifecycle import (
     AssetLifecycleState,
-    AssetStateMachine,
 )
 from windagent_core.domain.video_production.asset_query_service import AssetQueryService
 from windagent_core.domain.video_production.enums import (
     AssetProcessingState,
-    AssetSourceType,
     LicenseState,
     MediaType,
     ProductionAssetKind,

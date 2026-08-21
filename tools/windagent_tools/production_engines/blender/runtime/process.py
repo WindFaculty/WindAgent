@@ -18,7 +18,7 @@ Two interfaces:
 from __future__ import annotations
 
 import asyncio
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Dict, Optional, Protocol, Sequence, runtime_checkable
 
 MAX_OUTPUT_BYTES = 4_000_000

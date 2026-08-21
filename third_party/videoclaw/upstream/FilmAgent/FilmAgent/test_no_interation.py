@@ -1,8 +1,7 @@
 from FilmAgent_root.FilmAgent.util import *
 from FilmAgent_root.FilmAgent.LLMCaller import *
-from typing import Dict, List, Union
+from typing import Dict, Union
 import random
-import copy
 
 # TO DO
 ROOT_PATH = "/path/to/FilmAgent"
@@ -160,7 +159,7 @@ class FilmCrafter:
             
             position_path = os.path.join(ROOT_PATH, f"Locations\{where}\position.json")
             positions = read_json(position_path)
-            normal_position = [item for item in positions if item['fixed_angle'] == False]
+            normal_position = [item for item in positions if not item['fixed_angle']]
             # This "if judgment" is related to the position, and camera settings in Unity.
             if len(who) >= len(positions) - len(normal_position) + 2:
                 p = ""

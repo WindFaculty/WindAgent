@@ -2,7 +2,6 @@
 Adheres strictly to ban_ke_hoach.md §PHASE 2 requirements.
 """
 
-import sys
 import pytest
 from pathlib import Path
 from sqlalchemy import create_engine
@@ -19,10 +18,8 @@ from windagent_storage.orm.v3_models import (
     ProviderEndpointORM,
     CanonicalModelV3ORM,
     EndpointModelBindingORM,
-    RouteLockV3ORM,
 )
 from windagent_storage.migrations.v3_schema_migration import (
-    backfill_legacy_providers,
     audit_v3_migration,
 )
 from windagent_storage.repositories.v3_repositories import (

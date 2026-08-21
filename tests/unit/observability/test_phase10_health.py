@@ -5,10 +5,8 @@ Tests all health check functionality with real checks, no hardcoded values.
 
 from __future__ import annotations
 import pytest
-import asyncio
 from pathlib import Path
-from typing import Any, Dict
-from unittest.mock import AsyncMock, MagicMock, Mock
+from unittest.mock import AsyncMock, Mock
 
 from windagent_observability.health import (
     HealthChecker,

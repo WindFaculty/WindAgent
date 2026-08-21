@@ -12,19 +12,13 @@ from pathlib import Path
 from pydantic import ValidationError as PydanticValidationError
 
 from windagent_core.errors import (
-    WindAgentError, DomainError, ValidationError, IdentityValidationError, ConflictError,
-    InvalidStateTransitionError, TerminalStateMutationError, ConcurrentStateConflictError,
-    NotFoundError, PermissionDeniedError, ApprovalRequiredError, ExecutionError, RuntimeLostError,
-    ProviderError, RateLimitError, QuotaExhaustedError, AuthenticationError, TimeoutError,
-    ToolError, SerializationError, IntegrityError, ConfigurationError
+    WindAgentError, ProviderError, RateLimitError, ToolError
 )
 from windagent_core.config import (
-    ApplicationConfig, DatabaseConfig, ExecutionConfig, ProviderRoutingConfig,
-    SecurityConfig, ObservabilityConfig, FeatureGateConfig
+    ApplicationConfig, SecurityConfig, FeatureGateConfig
 )
 from windagent_core.security import (
-    Principal, Role, Permission, ResourceScope, RiskLevel, ApprovalRequirement,
-    PermissionEvaluationRequest, PermissionDecision, SecretRef, RedactedValue, SecurityAuditContext
+    Principal, RiskLevel, PermissionEvaluationRequest, PermissionDecision
 )
 
 
@@ -80,7 +74,7 @@ def test_config_models_immutability():
 
 def test_security_types_and_permission_decision():
     principal = Principal(id="user_101", roles=["developer"])
-    req = PermissionEvaluationRequest(
+    PermissionEvaluationRequest(
         principal=principal,
         action="shell:execute",
         target="rm -rf /tmp/data",
@@ -102,7 +96,6 @@ def test_core_zero_getenv_and_forbidden_imports():
     root_dir = Path(__file__).resolve().parent.parent.parent.parent
     core_dir = root_dir / "core" / "windagent_core"
 
-    forbidden_modules = {"os.getenv", "os.environ", "fastapi", "sqlalchemy", "aiosqlite", "cryptography"}
 
     for py_file in core_dir.rglob("*.py"):
         content = py_file.read_text(encoding="utf-8")

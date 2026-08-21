@@ -88,5 +88,17 @@ pythonpath = [
     "skills",
 ]
 
+[tool.ruff]
+exclude = ["third_party", ".agents", ".venv", "__pycache__", "artifacts"]
+
 [tool.ruff.lint]
 select = ["E4", "E7", "E9", "F"]
+# Per-file ignores for justified bootstrap and barrel re-exports (local, not global noqa)
+# E402: sys.path bootstrap before workspace imports is intentional composition wiring
+# F401/F811 in barrel __init__.py: intentional re-exports, keep until __all__ audit
+[tool.ruff.lint.per-file-ignores]
+"scripts/**/*.py" = ["E402"]
+"tests/**/*.py" = ["E402"]
+"core/windagent_core/domain/video_production/__init__.py" = ["F401", "F811"]
+"core/windagent_core/domain/video_production/ids.py" = ["F401"]
+"tools/windagent_tools/**/*.py" = ["E402"]

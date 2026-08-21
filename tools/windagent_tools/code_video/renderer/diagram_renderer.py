@@ -7,7 +7,7 @@ for all canonical video scenes (S01, S03, S04, S08, S10, S11, S12, S17, S19).
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from enum import Enum
 import hashlib
 import html

@@ -29,11 +29,11 @@ sys.path.insert(0, str(ROOT_DIR))
 os.environ["WINDAGENT_ENCRYPTION_KEY"] = "MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY="
 
 from windagent_api.main import app
-from windagent_core.security.redaction import redact_text, redact_dict, redact_before_persist
+from windagent_core.security.redaction import redact_text, redact_dict
 from windagent_tools.filesystem.sandbox import PathSandbox
 from windagent_tools.shell.runner import SafeShellRunner, redact_shell_output
-from windagent_core.errors.exceptions import PermissionDeniedError, ValidationError
-from windagent_storage.security.encryption import encrypt, decrypt
+from windagent_core.errors.exceptions import PermissionDeniedError
+from windagent_storage.security.encryption import decrypt
 
 
 def test_provider_credentials_encrypted_at_rest_and_never_returned_plaintext(tmp_path, monkeypatch):

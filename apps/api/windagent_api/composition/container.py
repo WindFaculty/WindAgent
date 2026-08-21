@@ -256,6 +256,20 @@ class ApplicationContainer:
             raise RuntimeError("ApplicationContainer is not initialized.")
         return SqlUnitOfWork(self.db.session_factory)
 
+    def get_video_production_uow(self):
+        """Returns a new VideoProductionUnitOfWork transaction context.
+
+        The composition root is the only layer allowed to construct concrete
+        unit-of-work adapters; request handlers receive it via dependencies.
+        """
+        if not self.db:
+            raise RuntimeError("ApplicationContainer is not initialized.")
+        from windagent_storage.unit_of_work.video_production_uow import (
+            VideoProductionUnitOfWork,
+        )
+
+        return VideoProductionUnitOfWork(self.db.session_factory)
+
     async def seed_demo_profile(self) -> None:
         """Install the opt-in demo profile (WINDAGENT_PROFILE=demo).
 

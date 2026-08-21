@@ -8,12 +8,11 @@ and rendered HTML/SVG representations for high-fidelity code video takes.
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from enum import Enum
 import hashlib
 import html
-import re
-from typing import Any, Dict, List, Optional, Sequence, Set, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 from windagent_core.contracts.code_video import Action, ActionType
 
@@ -273,7 +272,7 @@ class CodeEditorState:
             f'<div class="editor-header"><span class="tab active">{html.escape(self.active_file)}</span></div>\n'
             f'<div class="editor-body">\n'
             + "\n".join(rows_html) + "\n"
-            f'</div>\n</div>'
+            '</div>\n</div>'
         )
 
 

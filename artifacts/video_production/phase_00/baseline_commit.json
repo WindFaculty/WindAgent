@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0.0",
+  "phase": 0,
+  "recorded_at": "2026-07-31T16:21:11Z",
+  "baseline_sha": "1d98e26fe8923549e848e1a73cf32c6bb59944c1",
+  "candidate_sha": "1d98e26fe8923549e848e1a73cf32c6bb59944c1",
+  "tree_sha": "98dc0d38082e715e8c17a36d9bd3cd6521296325",
+  "parent_sha": "cbf7257643d4a1705fa221ae37e9391b6ee3f40e",
+  "author_date": "2026-07-31T23:05:18+07:00",
+  "committer_date": "2026-07-31T23:15:26+07:00",
+  "subject": "fix(verification): isolate phase 7 finalizer outputs (build/verify refactor)",
+  "lineage": {
+    "primary_head_matches_baseline": true,
+    "baseline_is_ancestor_of_primary_head": true,
+    "phase7_evidence_verified_sha": "6dab084abd3d46cc9f0c9e7dcbb6e65254b83057",
+    "phase7_evidence_validation": "PASSED when validated against its declared verified SHA"
+  },
+  "test_checkout": {
+    "kind": "isolated_clone",
+    "revision": "1d98e26fe8923549e848e1a73cf32c6bb59944c1",
+    "detached_head": true,
+    "clean_before_test": true,
+    "purpose": "Preserve pre-existing changes in the primary worktree."
+  }
+}

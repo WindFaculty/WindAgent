@@ -6,15 +6,12 @@ ModelGatewayPort, PermissionEvaluator, SecretStore, and Repositories protocols.
 
 import pytest
 from typing import Any, Dict, List, Optional
-from datetime import datetime, timezone
 from windagent_core.contracts import (
-    Clock, IdGenerator, TaskRepository, TaskRunRepository, SessionRepository,
-    WorkflowRepository, WorkflowRunRepository, EventStore, OutboxWriter, EventPublisher,
-    ArtifactRepository, UnitOfWork, ExecutionRuntimePort, ModelGatewayPort, SecretStore,
-    PermissionEvaluator, AuditSink
+    TaskRepository, TaskRunRepository, EventStore, OutboxWriter, UnitOfWork, ExecutionRuntimePort, ModelGatewayPort, SecretStore,
+    PermissionEvaluator
 )
-from windagent_core.domain.types import TaskId, TaskRunId, SessionId, StepRunId, ArtifactId
-from windagent_core.domain.models import Task, TaskRun, Session, ModelRequest, ModelResponse, ArtifactRef
+from windagent_core.domain.types import TaskId, TaskRunId, SessionId, StepRunId
+from windagent_core.domain.models import Task, TaskRun, ModelRequest, ModelResponse
 from windagent_core.events.envelope import EventEnvelope
 from windagent_core.security.types import (
     PermissionEvaluationRequest, PermissionDecision, SecretRef, SecretName, SecretValue, RedactedValue, RiskLevel, Principal

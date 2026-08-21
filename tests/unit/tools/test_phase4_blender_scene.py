@@ -19,11 +19,8 @@ Contract tests in CI with FAKE executables (no real blender/ffmpeg needed):
 import asyncio
 import importlib.util
 import json
-import os
-import sys
 from pathlib import Path
 
-import pytest
 
 from windagent_core.domain.video_production.production_ir.models import (
     RenderIntent,
@@ -35,13 +32,11 @@ from windagent_tools.production_engines.blender import (
     ArtifactReusePolicy,
     BlenderFfmpegRunner,
     BlenderJobLauncher,
-    BlenderJobSpec,
     BlenderProcessSupervisor,
     FfmpegVersion,
     FrameManifest,
     INVALIDATE,
     REUSE,
-    ScenePlan,
     ScenePlanCompiler,
     job_idempotency_key,
 )
@@ -55,7 +50,6 @@ from windagent_tools.production_engines.blender.scene.determinism import (
     compare_runs,
 )
 from windagent_tools.production_engines.blender.scene.fixture import (
-    THREE_LIGHTS,
     build_smoke_fixture,
     fixture_content_hash,
 )
@@ -74,7 +68,6 @@ from windagent_tools.production_engines.blender.scene.pipeline import (
     BlenderSmokePipeline,
 )
 from windagent_tools.production_engines.blender.adapter import JOB_KIND_PROBE as PROBE
-from windagent_tools.production_engines.blender.validator import BlenderVersionPolicy
 
 from tests.fixtures.video_production.ir_fixture_builder import build_valid_ir
 

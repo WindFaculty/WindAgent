@@ -7,8 +7,7 @@ terminal state immutability, and optimistic concurrency versioning.
 import pytest
 from datetime import timezone
 from windagent_core.domain.lifecycle import (
-    TaskState, WorkflowState, StepState, SessionState, StateTransitionResult,
-    TaskLifecycle, WorkflowLifecycle, StepLifecycle, SessionLifecycle, utc_now
+    TaskState, WorkflowState, StepState, SessionState, TaskLifecycle, WorkflowLifecycle, StepLifecycle, SessionLifecycle, utc_now
 )
 from windagent_core.errors.exceptions import (
     InvalidStateTransitionError,

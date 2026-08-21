@@ -7,22 +7,16 @@ integrating with WindAgent's browser runtime and evidence capture facilities.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-import hashlib
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
-from windagent_core.errors.exceptions import NotFoundError, ValidationError
 from windagent_core.contracts.code_video import (
     CodeVideoPlan,
     Resolution,
     Scene,
-    VisualMode,
 )
 
-from windagent_tools.code_video.capture.base import CapturePort, CaptureStatus, TakeConfig
+from windagent_tools.code_video.capture.base import CapturePort
 from windagent_tools.code_video.capture.receipts import (
-    FrameMetadata,
     FrameReport,
     MediaProbeReport,
     TakeReceipt,

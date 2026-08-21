@@ -19,12 +19,9 @@ Phase 4 additions also tested:
 """
 from __future__ import annotations
 
-import asyncio
-import re
-from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Optional, Sequence
-from unittest.mock import AsyncMock, MagicMock, patch
+from typing import Any, Optional
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -32,15 +29,12 @@ from windagent_core.contracts.tools import ToolExecutionContext, ToolInvocation,
 from windagent_core.domain.types import SessionId, ToolCallId
 from windagent_workflows.social_research import (
     CollectionQuota,
-    ModelGatewayPort,
-    ModelRoute,
     PerDomainRateLimiter,
     PersonalDataFilter,
     SocialResearchConfig,
     SocialResearchError,
     SocialResearchWorkflow,
     SocialSourceSpec,
-    SourceEvidence,
     canonical_social_url,
 )
 
@@ -63,7 +57,6 @@ def _success_result(content: str = "Fake rendered page content.") -> ToolResult:
     """Simulate a successful open_url result."""
     import hashlib
 
-    from windagent_core.domain.types import ToolCallId
 
     sha = hashlib.sha256(content.encode()).hexdigest()
     return ToolResult(
@@ -82,7 +75,6 @@ def _success_result(content: str = "Fake rendered page content.") -> ToolResult:
 
 
 def _fail_result(error: str = "Browser timeout") -> ToolResult:
-    from windagent_core.domain.types import ToolCallId
 
     return ToolResult(call_id=ToolCallId.generate(), success=False, data={}, error=error)
 
@@ -317,7 +309,6 @@ class TestGate4RenderedTextCaptured:
     @pytest.mark.asyncio
     async def test_empty_content_marks_source_as_error(self, tmp_path: Path):
         import hashlib
-        from windagent_core.domain.types import ToolCallId
 
         empty_result = ToolResult(
             call_id=ToolCallId.generate(),

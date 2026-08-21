@@ -45,32 +45,24 @@ global_rules:
   forbid_concrete_adapter_outside_composition: true
 
   composition_roots:
-    # App-level composition roots (DI wiring)
+    # App-level composition roots (DI wiring) — the ONLY locations where
+    # concrete infrastructure adapters may be constructed for injection.
     - "apps/api/windagent_api/composition.py"
     - "apps/api/windagent_api/composition/**"
     - "apps/worker/windagent_worker/composition.py"
     - "apps/worker/windagent_worker/composition/**"
     - "apps/cli/windagent_cli/composition.py"
     - "apps/cli/windagent_cli/composition/**"
-    # Infrastructure packages — legitimate adapter construction locations
-    - "storage/**"
-    - "tools/**"
-    - "workflows/**"
-    - "execution/**"
-    - "providers/**"
-    - "orchestration/**"
-    - "intelligence/**"
-    - "context/**"
-    - "memory/**"
-    - "verification/**"
-    - "evals/**"
-    - "plugins/**"
-    - "skills/**"
-    - "observability/**"
-    # App adapter/pipeline infrastructure
-    - "apps/api/windagent_api/services/studio_storage_adapter.py"
-    - "apps/worker/windagent_worker/pipeline/finalizer.py"
-    - "apps/worker/windagent_worker/lease.py"
+    # Named application composition module (CLI social-research workflow wiring)
+    - "apps/cli/windagent_cli/social_research_composition.py"
+    # Explicit infrastructure factories — narrowly allowlisted modules whose
+    # sole responsibility is constructing their own package's adapters.
+    # NEVER use blanket "<package>/**" exemptions here.
+    - "storage/windagent_storage/factory.py"
+    - "providers/windagent_providers/factory.py"
+    - "tools/windagent_tools/factory.py"
+    - "execution/windagent_execution/factory.py"
+    - "observability/windagent_observability/factory.py"
 
   # Allowlist for specific infrastructure files that legitimately access ORM/storage
   # These are NOT application business logic — they are the infrastructure layer itself
@@ -138,20 +130,14 @@ forbidden_patterns:
     - "_idempotency_map"
     - "_DEMO_"
 
-  # These concrete adapter names must NOT be instantiated outside composition roots
+  # Concrete adapter instantiation policy (V3 structural rule):
+  # the checker computes the adapter inventory from classes DEFINED in
+  # infrastructure-layer packages (mechanism suffixes: Adapter, Repository,
+  # UnitOfWork, Gateway, Client, Store, Runtime, Bridge, Writer, Manager —
+  # excluding Error/ORM/Port/data suffixes). This list is only the explicit
+  # supplement for external framework classes that cannot be resolved from
+  # workspace source (exact name match).
   concrete_adapter_instantiation_patterns:
-    - "SqlProjectRepository"
-    - "SqlEpisodeRepository"
-    - "SqlTaskRepository"
-    - "SqlWorkflowRepository"
-    - "SqlEventStore"
-    - "SqlOutboxRepository"
-    - "SqlProviderRegistryRepository"
-    - "SqlRoutingRepository"
-    - "SqlAssetRepository"
-    - "SqlReviewRepository"
-    - "SqlUnitOfWork"
-    - "SQLAlchemy"
     - "AsyncSession"
     - "AsyncEngine"
 

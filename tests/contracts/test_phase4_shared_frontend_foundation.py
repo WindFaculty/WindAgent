@@ -6,7 +6,6 @@ Validates shell architecture cutover, zero Web -> Desktop App imports, TabKeeper
 import json
 import re
 from pathlib import Path
-import pytest
 
 WORKSPACE_ROOT = Path(__file__).resolve().parent.parent.parent
 PHASE_4_DIR = WORKSPACE_ROOT / "artifacts" / "frontend_restructure" / "phase_04"

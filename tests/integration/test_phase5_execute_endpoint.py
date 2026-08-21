@@ -6,7 +6,6 @@ Verifies POST /api/v1/conversations/{conversation_id}/plans/{plan_id}/execute in
 from __future__ import annotations
 
 import sys
-import uuid
 from pathlib import Path
 
 root = Path(__file__).resolve().parent.parent.parent

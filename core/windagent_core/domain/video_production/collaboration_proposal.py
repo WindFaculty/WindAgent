@@ -8,7 +8,6 @@ state without explicit proposal, impact preview, and human/policy approval.
 
 from __future__ import annotations
 
-import copy
 import hashlib
 import json
 import uuid

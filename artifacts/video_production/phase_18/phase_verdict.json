@@ -1,0 +1,13 @@
+{
+  "gate": "VP18_ARTIFACT_INVALIDATION_VERIFIED",
+  "status": "PASSED",
+  "verified_at": "2026-08-02T04:36:39.366911+00:00",
+  "workstreams": {
+    "artifact_model": true,
+    "artifact_key": true,
+    "dependency_graph": true,
+    "invalidation": true,
+    "publish_reuse": true
+  },
+  "blocking_reasons": []
+}

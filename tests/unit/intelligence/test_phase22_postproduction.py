@@ -4,26 +4,18 @@ Unit tests for Phase 22 — Post-Production FFmpeg Pipeline (VP22_POST_PRODUCTIO
 
 from __future__ import annotations
 
-import tempfile
 from pathlib import Path
 
 import pytest
 from windagent_core.domain.video_production.enums import (
-    ContainerFormat,
-    EncodingPreset,
     PostProductionIssueCode,
-    PostProductionStatus,
-    PostProductionVerificationStatus,
     TransitionType,
 )
 from windagent_core.domain.video_production.ids import (
     AudioMixPlanId,
     EditDecisionListId,
-    EncodingProfileId,
     ProductionRevisionId,
     ShotId,
-    SubtitleCueId,
-    SubtitleTrackId,
     TransitionPlanId,
     VideoProjectId,
 )
@@ -31,8 +23,6 @@ from windagent_core.domain.video_production.postproduction import (
     EditDecisionItem,
     EditDecisionList,
     EncodingProfile,
-    SubtitleCue,
-    SubtitleTrack,
     TransitionPlan,
 )
 from windagent_intelligence.video.postproduction import (

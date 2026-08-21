@@ -21,7 +21,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import pytest
 
 from windagent_core.domain.video_production.ids import EngineJobId
 from windagent_core.domain.video_production.production_ir.enums import (
@@ -43,7 +42,6 @@ from windagent_orchestration.production import (
     ProductionRunStore,
     ProductionStepExecutor,
     ProductionWorkflowEngine,
-    StepExecutionResult,
 )
 from windagent_workflows.video_production.definition import (
     build_production_step_nodes,

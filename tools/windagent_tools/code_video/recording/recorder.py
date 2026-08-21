@@ -12,29 +12,18 @@ from datetime import datetime, timezone
 import hashlib
 import json
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, List, Optional
 
-from windagent_core.errors.exceptions import NotFoundError, ValidationError
-from windagent_core.contracts.code_video import (
-    CodeVideoPlan,
-    Resolution,
-    Scene,
-    VisualMode,
-)
 
 from windagent_tools.code_video.capture import (
     StudioCaptureEngine,
-    TakeReceipt,
 )
 from windagent_tools.code_video.recording.passes import (
     PassCatalog,
-    PassDefinition,
     PassRecord,
     PassStatus,
-    PassType,
 )
 from windagent_tools.code_video.recording.secret_scanner import (
-    SecretScanResult,
     SecretScanner,
 )
 from windagent_tools.code_video.renderer import (
@@ -42,7 +31,6 @@ from windagent_tools.code_video.renderer import (
     GraphicsCatalog,
 )
 from windagent_tools.code_video.workspace.golden_builder import (
-    CHECKPOINT_STEPS,
     STEP_00_INIT_AGENT_CODE,
     STEP_01_MESSAGE_CODE,
     STEP_02_CONFIG_CODE,

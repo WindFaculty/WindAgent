@@ -13,7 +13,6 @@ Verifies:
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 import pytest
 
@@ -22,10 +21,7 @@ from windagent_tools.code_video.compiler import CodeVideoScriptCompiler
 from windagent_workflows.code_video.contracts import (
     CodeVideoPlan,
     Resolution,
-    Scene,
-    VisualMode,
 )
-from windagent_tools.code_video.replay import DeterministicReplayEngine
 
 from windagent_tools.code_video.capture import (
     BrowserCaptureAdapter,
@@ -35,13 +31,11 @@ from windagent_tools.code_video.capture import (
     FrameReport,
     MediaProbeReport,
     StudioCaptureEngine,
-    TakeConfig,
     TakeReceipt,
 )
 from windagent_tools.code_video.media import (
     TakeAssembler,
     TakesManifest,
-    TakeVerificationResult,
     TakeVerifier,
 )
 
@@ -51,7 +45,7 @@ def video_02_plan() -> CodeVideoPlan:
     plan_path = Path("artifacts/code_video/video_02/plans/video_02_plan.json")
     if plan_path.exists():
         return CodeVideoPlan.from_json(plan_path.read_text(encoding="utf-8"))
-    script_path = Path("artifacts/code_video/video_02/source/script.md")
+    Path("artifacts/code_video/video_02/source/script.md")
     compiler = CodeVideoScriptCompiler()
     return compiler.compile_video_02_plan()
 

@@ -2,9 +2,9 @@
 
 ## Verdict: [FAIL] CERTIFICATION_FAILED
 
-**Timestamp:** 2026-08-21T00:59:31.670263+00:00
-**Elapsed:** 44.5s
-**Candidate SHA:** `a3dfb406397e4705e10b7b329fd6d88b219cbdcd`
+**Timestamp:** 2026-08-21T11:00:18.721101+00:00
+**Elapsed:** 90.0s
+**Candidate SHA:** `0355e2c72408ce1b78f240c5ceb21928135c962d`
 **Branch:** `refactor/architecture-v3-hardening`
 
 ## Hard Gates (G0-G14)
@@ -33,18 +33,20 @@
 |-------|--------|
 | architecture_checker | PASS |
 | ruff_lint | FAIL |
-| prior_verdicts | FAIL |
-| pytest_architecture_phase16 | PASS |
+| prior_verdicts | PASS |
+| pytest_architecture_phase16 | FAIL |
 | pytest_performance_phase15 | PASS |
 | pytest_contracts_v3_e2e | PASS |
 | pytest_integration_v3 | PASS |
+| g6_restart | PASS |
+| g7_durability | PASS |
+| g8_realtime | PASS |
 
 ## Blockers
 
-- G0: Worktree not clean or SHA not verified. Dirty: 37 lines
+- G0: Worktree not clean or SHA not verified. Dirty: 357 lines
 - Ruff lint failed with full policy (E4,E7,E9,F)
-- Missing evidence for phases: phase_00, phase_01, phase_03, phase_04, phase_05, phase_06, phase_07, phase_08, phase_09, phase_10, phase_11, phase_12, phase_14
-- G13: Failed test suites: ruff_lint, prior_verdicts
+- G13: Failed test suites: ruff_lint, pytest_architecture_phase16
 
 ---
 

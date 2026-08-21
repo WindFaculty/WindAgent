@@ -14,7 +14,6 @@ from __future__ import annotations
 
 import threading
 import tempfile
-import uuid
 from pathlib import Path
 
 import pytest
@@ -30,9 +29,8 @@ from windagent_providers.routing.route_lock_service import (
     RouteLockService,
     NoMatchingRuleError,
 )
-from windagent_providers.routing.rule_matcher import RuleMatchContext, RuleMatcher
+from windagent_providers.routing.rule_matcher import RuleMatchContext
 from windagent_providers.routing.rules import RoutingRule, RoutingRuleSet
-from windagent_providers.routing.route_lock import LockStatus
 
 
 def _db_url() -> str:
@@ -266,6 +264,6 @@ def test_migration_and_rollback(db_url, factories):
     assert "provider_routing_audit_v3" in rep.tables_created
 
     # After rollback, audit table gone, lock table preserved
-    rb = rollback(engine)
+    rollback(engine)
     inspector = inspect(engine)
     assert "provider_routing_audit_v3" not in inspector.get_table_names()

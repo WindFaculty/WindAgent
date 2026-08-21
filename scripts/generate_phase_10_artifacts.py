@@ -30,11 +30,8 @@ if str(REPO_ROOT) not in sys.path:
 
 from windagent_tools.code_video.compiler import CodeVideoScriptCompiler
 from windagent_workflows.code_video.contracts import CodeVideoPlan
-from windagent_tools.code_video.capture.receipts import TakeReceipt
 from windagent_tools.code_video.media.assembler import (
-    CueSheet,
     TakesManifest,
-    TransitionPolicy,
     VideoAssemblyConfig,
     VisualMasterAssembler,
 )

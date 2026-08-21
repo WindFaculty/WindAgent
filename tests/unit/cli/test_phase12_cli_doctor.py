@@ -66,7 +66,7 @@ def test_doctor_exit_code_3_on_invalid_cli_flag():
 
 def test_doctor_component_filtering(capsys):
     """Doctor command with --component filters output checks."""
-    exit_code = doctor(json_mode=True, component="worker")
+    doctor(json_mode=True, component="worker")
     captured = capsys.readouterr()
     data = json.loads(captured.out)
     assert "checks" in data

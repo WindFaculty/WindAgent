@@ -1,6 +1,6 @@
 from FilmAgent_root.FilmAgent.util import *
 from FilmAgent_root.FilmAgent.LLMCaller import *
-from typing import Dict, List, Union
+from typing import Dict, Union
 
 # TO DO
 ROOT_PATH = "/path/to/FilmAgent"

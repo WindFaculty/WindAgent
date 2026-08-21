@@ -5,11 +5,10 @@ Unit Tests for Durable TaskManager & Optimistic Concurrency (Phase C).
 import pytest
 import pytest_asyncio
 from windagent_core.domain.types import TaskId, SessionId
-from windagent_core.errors.exceptions import DomainError
 from windagent_storage.database.connection import DatabaseManager
 from windagent_storage.orm.models import BaseORM
-from windagent_storage.orm.v2_orchestration_models import BaseORM as V2BaseORM
-from windagent_orchestration.task_manager import TaskManager, DurableExecutionFacts
+from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork
+from windagent_orchestration.task_manager import TaskManager
 from windagent_orchestration.state_machine import TaskState
 
 
@@ -23,7 +22,7 @@ async def in_memory_db():
 
 @pytest.mark.asyncio
 async def test_durable_task_manager_persistence(in_memory_db):
-    tm = TaskManager(uow_factory=in_memory_db.session_factory)
+    tm = TaskManager(uow_factory=lambda: SqlUnitOfWork(in_memory_db.session_factory))
     tid = TaskId.generate()
     sid = SessionId.generate()
 
@@ -38,7 +37,7 @@ async def test_durable_task_manager_persistence(in_memory_db):
     assert facts2.version == 2
 
     # Load from DB in new TaskManager instance
-    tm2 = TaskManager(uow_factory=in_memory_db.session_factory)
+    tm2 = TaskManager(uow_factory=lambda: SqlUnitOfWork(in_memory_db.session_factory))
     loaded = await tm2.load_durable_facts(tid)
     assert loaded is not None
     assert loaded.current_state == TaskState.RUNNING

@@ -509,7 +509,7 @@ def test_all_6_required_events_over_lifecycle():
     svc = _service(rules=rules)
 
     ctx_a = _ctx(scope_id="sess-lifecycle", agent_type="a")
-    lock = svc.resolve_or_create_lock(ctx_a)         # → ModelSelected + RouteLocked
+    svc.resolve_or_create_lock(ctx_a)         # → ModelSelected + RouteLocked
     svc.resolve_or_create_lock(ctx_a)                # → RouteReused
 
     ctx_b = _ctx(scope_id="sess-lifecycle", scope_type="session", agent_type="b")

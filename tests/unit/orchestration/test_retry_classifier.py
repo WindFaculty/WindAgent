@@ -2,7 +2,6 @@
 Unit Tests for ErrorClassifier, RetryPolicy, and Fail-Closed Unclassified Exceptions (Phase G).
 """
 
-import pytest
 from windagent_core.errors.exceptions import RetryableError, NonRetryableError
 from windagent_orchestration.retry import RetryPolicy, ErrorClassifier
 

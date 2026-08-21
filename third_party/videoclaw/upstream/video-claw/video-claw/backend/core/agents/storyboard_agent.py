@@ -5,7 +5,6 @@
 支持 Segment -> Shots 嵌套结构。
 """
 
-import os
 import re
 import json
 import asyncio

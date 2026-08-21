@@ -5,25 +5,17 @@ Idempotency Store, Correlation ID Middleware, EventEnvelope, and OpenAPI schema 
 """
 
 import pytest
-from datetime import datetime, timezone
-from fastapi import FastAPI, Request
+from datetime import datetime
 from fastapi.testclient import TestClient
 
 from windagent_api.routers.v3.common.problems import (
     ApiProblem,
-    ApiProblemException,
-    api_problem_exception_handler,
 )
 from windagent_api.routers.v3.common.resource import ResourceBase
 from windagent_api.routers.v3.common.pagination import PageInfo, CursorPage
 from windagent_api.routers.v3.common.concurrency import (
-    ExpectedVersionMutation,
     VersionConflictError,
     check_optimistic_concurrency,
-)
-from windagent_api.routers.v3.common.correlation import (
-    CorrelationIdMiddleware,
-    get_correlation_id,
 )
 from windagent_api.routers.v3.common.idempotency import (
     IdempotencyStore,

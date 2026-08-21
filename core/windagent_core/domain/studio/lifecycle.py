@@ -19,7 +19,7 @@ docs/plans/studio_roadmap_01/01_PARALLEL_BOOTSTRAP_AND_CONTRACT_FREEZE.md:
 from __future__ import annotations
 
 from enum import Enum
-from typing import Dict, FrozenSet, Optional, Set
+from typing import Dict, FrozenSet, Optional
 
 from windagent_core.contracts.studio.errors import StudioInvalidTransitionError
 

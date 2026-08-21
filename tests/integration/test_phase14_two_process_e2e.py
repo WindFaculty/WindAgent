@@ -137,14 +137,12 @@ async def test_api_worker_durable_runtime_two_process(tmp_path):
         # 5. Wait API readiness UP.
         _wait_url(f"{base}/health/ready", timeout=40.0, expect_status=200)
         # 6. Wait Worker heartbeat active (worker_status_query sees a live worker).
-        worker_up = False
         for _ in range(40):
             try:
                 r = httpx.get(f"{base}/health/ready", timeout=2.0)
                 checks = (r.json().get("checks") or {})
                 ws = checks.get("worker_heartbeat") or checks.get("worker")
                 if ws and str(ws.get("status", "")).upper() in ("UP", "HEALTHY", "OK"):
-                    worker_up = True
                     break
             except Exception:  # noqa: BLE001
                 pass

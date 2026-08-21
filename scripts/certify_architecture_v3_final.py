@@ -21,7 +21,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-import os
 import platform
 import subprocess
 import sys
@@ -369,34 +368,87 @@ def main(argv: List[str] | None = None) -> int:
     suite_results["pytest_integration_v3"] = {"pass": ok_integration}
 
     # ══════════════════════════════════════════════════════════════════
-    # REMAINING GATES — require executable evidence
+    # REMAINING GATES — dedicated executable evidence per gate (no proxy)
     # ══════════════════════════════════════════════════════════════════
 
-    # G6: V3 AUTHORITY — production in-memory canonical authority = 0
-    print("\n--- G6: V3 AUTHORITY ---")
-    # G6 requires: no production in-memory stores, restart persistence tests
+    # G6: V3 AUTHORITY — production in-memory canonical authority = 0 + restart persistence
+    print("\n--- G6: V3 AUTHORITY (dedicated) ---")
+    ok_g6_restart, _ = run_pytest_suite("tests/architecture/test_architecture_v3_phase16.py::test_fi_restart_persistence")
+    suite_results["g6_restart"] = {"pass": ok_g6_restart}
     g6_evidence = {
-        "module_level_stores": arch_violations == 0,  # checker catches this
-        "restart_persistence": ok_perf,
+        "gate": "G6",
+        "status": "PASS" if (arch_ok and arch_violations == 0 and ok_g6_restart) else "FAIL",
+        "commands": [
+            "uv run python scripts/check_architecture_v3.py",
+            "uv run pytest tests/architecture/test_architecture_v3_phase16.py::test_fi_restart_persistence -v",
+        ],
+        "exit_codes": [0 if arch_ok else 1, 0 if ok_g6_restart else 1],
+        "tests": ["test_fi_restart_persistence"],
+        "evidence": {
+            "module_level_stores": arch_violations == 0,
+            "checker_pass": arch_ok,
+            "restart_persistence": ok_g6_restart,
+        },
+        "candidate": git_info.get("candidate_sha", "unknown"),
     }
-    gate_results["G6_V3_AUTHORITY"] = "PASS" if (arch_ok and ok_perf) else "FAIL"
+    gate_results["G6_V3_AUTHORITY"] = g6_evidence["status"]
     gate_evidence["G6_V3_AUTHORITY"] = g6_evidence
     if gate_results["G6_V3_AUTHORITY"] != "PASS":
-        blockers.append("G6: V3 authority check failed")
+        blockers.append("G6: V3 authority check failed (dedicated)")
 
-    # G7: DURABILITY — real DB restart/reopen persistence
-    print("\n--- G7: DURABILITY ---")
-    gate_results["G7_DURABILITY"] = "PASS" if ok_perf else "FAIL"
-    gate_evidence["G7_DURABILITY"] = {"restart_persistence": ok_perf}
+    # G7: DURABILITY — restart, rollback, worker kill, lease expiry/takeover, fencing, late result, recovery
+    print("\n--- G7: DURABILITY (dedicated) ---")
+    ok_g7_restart, _ = run_pytest_suite("tests/architecture/test_architecture_v3_phase16.py::test_fi_restart_persistence")
+    ok_g7_kill, _ = run_pytest_suite("tests/architecture/test_architecture_v3_phase16.py::test_fi_worker_killed_no_split_state")
+    ok_g7_lease, _ = run_pytest_suite("tests/architecture/test_architecture_v3_phase16.py::test_fi_lease_takeover_late_result_reject")
+    ok_g7_db, _ = run_pytest_suite("tests/architecture/test_architecture_v3_phase16.py::test_fi_db_transient_failure_recovery")
+    ok_g7_dup_cmd, _ = run_pytest_suite("tests/architecture/test_architecture_v3_phase16.py::test_fi_duplicate_command_idempotent")
+    suite_results["g7_durability"] = {"pass": all([ok_g7_restart, ok_g7_kill, ok_g7_lease, ok_g7_db, ok_g7_dup_cmd])}
+    g7_evidence = {
+        "gate": "G7",
+        "status": "PASS" if all([ok_g7_restart, ok_g7_kill, ok_g7_lease, ok_g7_db, ok_g7_dup_cmd]) else "FAIL",
+        "commands": [
+            "uv run pytest tests/architecture/test_architecture_v3_phase16.py::test_fi_restart_persistence -v",
+            "uv run pytest tests/architecture/test_architecture_v3_phase16.py::test_fi_worker_killed_no_split_state -v",
+            "uv run pytest tests/architecture/test_architecture_v3_phase16.py::test_fi_lease_takeover_late_result_reject -v",
+            "uv run pytest tests/architecture/test_architecture_v3_phase16.py::test_fi_db_transient_failure_recovery -v",
+            "uv run pytest tests/architecture/test_architecture_v3_phase16.py::test_fi_duplicate_command_idempotent -v",
+        ],
+        "exit_codes": [0 if x else 1 for x in [ok_g7_restart, ok_g7_kill, ok_g7_lease, ok_g7_db, ok_g7_dup_cmd]],
+        "tests": ["test_fi_restart_persistence","test_fi_worker_killed_no_split_state","test_fi_lease_takeover_late_result_reject","test_fi_db_transient_failure_recovery","test_fi_duplicate_command_idempotent"],
+        "evidence": {"restart": ok_g7_restart, "worker_kill": ok_g7_kill, "lease_takeover": ok_g7_lease, "db_transient": ok_g7_db, "duplicate_cmd": ok_g7_dup_cmd},
+        "candidate": git_info.get("candidate_sha", "unknown"),
+    }
+    gate_results["G7_DURABILITY"] = g7_evidence["status"]
+    gate_evidence["G7_DURABILITY"] = g7_evidence
     if gate_results["G7_DURABILITY"] != "PASS":
-        blockers.append("G7: Durability tests failed")
+        blockers.append("G7: Durability tests failed (dedicated)")
 
-    # G8: REALTIME — replay, ordering, duplicate suppression, live push
-    print("\n--- G8: REALTIME ---")
-    gate_results["G8_REALTIME"] = "PASS" if ok_perf else "FAIL"
-    gate_evidence["G8_REALTIME"] = {"realtime_tests": ok_perf}
+    # G8: REALTIME — replay, push, ordering, dedup, WS reconnect, no gap/no duplicate
+    print("\n--- G8: REALTIME (dedicated) ---")
+    ok_g8_replay, _ = run_pytest_suite("tests/architecture/test_architecture_v3_phase16.py::test_fi_reconnect_replay_from_cursor")
+    ok_g8_ws, _ = run_pytest_suite("tests/architecture/test_architecture_v3_phase16.py::test_fi_ws_reconnect_live_integration")
+    ok_g8_dup, _ = run_pytest_suite("tests/architecture/test_architecture_v3_phase16.py::test_fi_duplicate_event_suppression")
+    # Also run the dedicated Phase6 realtime suite as cross-check
+    ok_g8_phase6, _ = run_pytest_suite("tests/unit/api/test_architecture_v3_phase6_realtime.py -k ws_reconnect")
+    suite_results["g8_realtime"] = {"pass": all([ok_g8_replay, ok_g8_ws, ok_g8_dup])}
+    g8_evidence = {
+        "gate": "G8",
+        "status": "PASS" if all([ok_g8_replay, ok_g8_ws, ok_g8_dup]) else "FAIL",
+        "commands": [
+            "uv run pytest tests/architecture/test_architecture_v3_phase16.py::test_fi_reconnect_replay_from_cursor -v",
+            "uv run pytest tests/architecture/test_architecture_v3_phase16.py::test_fi_ws_reconnect_live_integration -v",
+            "uv run pytest tests/architecture/test_architecture_v3_phase16.py::test_fi_duplicate_event_suppression -v",
+        ],
+        "exit_codes": [0 if x else 1 for x in [ok_g8_replay, ok_g8_ws, ok_g8_dup]],
+        "tests": ["test_fi_reconnect_replay_from_cursor","test_fi_ws_reconnect_live_integration","test_fi_duplicate_event_suppression"],
+        "evidence": {"replay": ok_g8_replay, "ws_reconnect": ok_g8_ws, "dedup": ok_g8_dup, "phase6_ws": ok_g8_phase6},
+        "candidate": git_info.get("candidate_sha", "unknown"),
+    }
+    gate_results["G8_REALTIME"] = g8_evidence["status"]
+    gate_evidence["G8_REALTIME"] = g8_evidence
     if gate_results["G8_REALTIME"] != "PASS":
-        blockers.append("G8: Realtime tests failed")
+        blockers.append("G8: Realtime tests failed (dedicated)")
 
     # G9: API ISOLATION — API composition graph proves execution runtime absent
     print("\n--- G9: API ISOLATION ---")

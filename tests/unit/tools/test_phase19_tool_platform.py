@@ -20,15 +20,13 @@ import pytest
 import windagent_tools
 from windagent_core.domain.types import SessionId, ToolCallId
 from windagent_core.contracts.tools import ToolInvocation
-from windagent_core.errors.exceptions import PermissionDeniedError, DomainError
+from windagent_core.errors.exceptions import DomainError
 from windagent_tools import (
-    ToolRegistry, PermissionEngine, PathSandbox, SafeShellRunner, ToolExecutionContext,
+    ToolRegistry, ToolExecutionContext,
     ReadFileTool, WriteFileTool, ExecShellTool, GitTool, CodeSearchTool,
     ASTSymbolExtractorTool, LSPTool, TestRunnerTool, OpenURLTool, ClickXYTool,
     DatabaseQueryTool, GitHubTool
 )
-from windagent_tools.mcp.client import MCPServerConfig, MCPToolInfo, MCPClientPort
-from windagent_tools.mcp.adapter import MCPToolAdapter
 
 
 def test_legacy_tools_not_exported_at_top_level():

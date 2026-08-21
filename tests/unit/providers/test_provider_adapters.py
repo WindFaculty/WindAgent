@@ -17,7 +17,6 @@ from windagent_providers import (
 import sys
 sys.path.insert(0, 'providers')
 sys.path.insert(0, 'core')
-from windagent_providers.openai_compatible_adapter import OpenAICompatibleProviderAdapter
 
 
 @pytest.mark.asyncio
@@ -56,7 +55,7 @@ async def test_provider_adapter_health_checks():
     gemini = GoogleGeminiProviderAdapter(api_key=None)
     assert not (await gemini.health()).healthy
 
-    ollama = OllamaProviderAdapter()
+    OllamaProviderAdapter()
     # Ollama health check makes real network call, skip for now
     # assert (await ollama.health()).healthy  # Skip - requires running Ollama server
 

@@ -35,6 +35,7 @@ hard-coded PASSED.
 
 from __future__ import annotations
 
+import asyncio
 import base64
 import datetime
 import hashlib
@@ -1131,6 +1132,7 @@ def run_se10_confirmation(work: Path, candidate_sha: str) -> Dict[str, Any]:
 
 def run_se11_api_authz(work: Path, candidate_sha: str) -> Dict[str, Any]:
     from fastapi import HTTPException
+    from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession, create_async_engine
 
     from windagent_core.domain.video_production.workspace import WorkspaceCommandType
     from windagent_core.events.video_production import (
@@ -1142,6 +1144,22 @@ def run_se11_api_authz(work: Path, candidate_sha: str) -> Dict[str, Any]:
         execute_workspace_command,
         get_authorized_media,
     )
+    from windagent_storage.orm.models import BaseORM
+    from windagent_storage.unit_of_work.video_production_uow import (
+        VideoProductionUnitOfWork,
+    )
+
+    db_path = work / "se11_api_authz.db"
+    engine = create_async_engine(f"sqlite+aiosqlite:///{db_path}", echo=False)
+
+    async def _create_schema() -> None:
+        async with engine.begin() as conn:
+            await conn.run_sync(BaseORM.metadata.create_all)
+
+    asyncio.run(_create_schema())
+    session_factory = async_sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
+    # The router consumes the UoW instance itself as an async context manager.
+    uow_factory = VideoProductionUnitOfWork(session_factory)
 
     # -- media token: format gate, path/injection denied, never exposes paths --
     media_ok = False
@@ -1172,8 +1190,8 @@ def run_se11_api_authz(work: Path, candidate_sha: str) -> Dict[str, Any]:
         entity_id="cand_1",
         reason="authorized test",
     )
-    first = execute_workspace_command(body, "key-proj-a-1")
-    replay = execute_workspace_command(body, "key-proj-a-1")
+    first = asyncio.run(execute_workspace_command(body, "key-proj-a-1", uow_factory=uow_factory))
+    replay = asyncio.run(execute_workspace_command(body, "key-proj-a-1", uow_factory=uow_factory))
     idempotency_dedup = (
         first.get("command_id") == replay.get("command_id")
         and first.get("status") == "COMPLETED"
@@ -1188,7 +1206,7 @@ def run_se11_api_authz(work: Path, candidate_sha: str) -> Dict[str, Any]:
     )
     stale_blocked = False
     try:
-        execute_workspace_command(stale_body, "key-proj-a-stale")
+        asyncio.run(execute_workspace_command(stale_body, "key-proj-a-stale", uow_factory=uow_factory))
     except HTTPException as exc:
         stale_blocked = exc.status_code == 409
 

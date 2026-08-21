@@ -14,7 +14,7 @@ from windagent_storage.migrations.migration_registry import (
     migration_registry,
 )
 from windagent_storage.migrations.migration_lock import MigrationLock, LockType
-from windagent_storage.migrations.backup_manager import BackupManager
+from windagent_storage.factory import create_backup_manager
 from windagent_storage.migrations.schema_checksum import SchemaChecksum
 
 # Import migrations
@@ -64,7 +64,7 @@ class MigrationRunner:
         """
         self._database_url = database_url
         self._engine: Optional[Engine] = None
-        self._backup_manager = BackupManager() if backup_root else BackupManager(backup_root)
+        self._backup_manager = create_backup_manager(backup_root)
         self._lock: Optional[MigrationLock] = None
         self._lock_timeout = lock_timeout
         

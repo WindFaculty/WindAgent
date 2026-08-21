@@ -12,7 +12,6 @@ import hashlib
 import json
 from pathlib import Path
 
-import pytest
 
 from scripts.verification.produce_b2_evidence import CORPUS, run_corpus, schema_bundle
 

@@ -49,7 +49,6 @@ from windagent_storage.orm.v2_orchestration_models import (
     TaskRunORM,
     WorkflowRunV2ORM,
 )
-from windagent_storage.outbox.sql_repository import SqlOutboxRepository
 from windagent_storage.mappers.domain_orm import domain_to_orm_event
 
 logger = logging.getLogger("windagent.storage.repositories.sql")
@@ -539,12 +538,13 @@ class SqlOutboxWriter:
         self._session = session
 
     async def write(self, event: EventEnvelope) -> None:
+        from windagent_storage.factory import create_sql_outbox_repository
         from windagent_storage.outbox.models import OutboxRecord
         from windagent_core.domain.lifecycle import utc_now
         from windagent_core.events.processor import redact_event_payload
         import uuid
 
-        repo = SqlOutboxRepository(self._session)
+        repo = create_sql_outbox_repository(self._session)
         # Outbox sequence is per-aggregate monotonic (UNIQUE constraint on
         # aggregate_id + sequence_number). The events table allocates its own
         # sequence and rewrites the envelope (SqlEventStore.append), so the

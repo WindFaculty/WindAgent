@@ -20,7 +20,6 @@ from windagent_core.domain.video_production.concurrent_audio import (
     AlignmentResult,
     AudioConcurrencyState,
     AudioDagNode,
-    AudioValidationReceipt,
     ConcurrencyPolicy,
     LineTimingResolver,
     TimingResolutionIssue,
@@ -49,7 +48,6 @@ from windagent_core.domain.video_production.errors import (
     OverlongLineError,
     TtsEmptyOutputError,
     TtsInvalidOutputError,
-    UnsupportedLocaleError,
     VoiceConsentMissingError,
 )
 from windagent_core.domain.video_production.ids import (

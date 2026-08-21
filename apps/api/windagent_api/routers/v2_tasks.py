@@ -6,12 +6,12 @@ Enforces idempotency keys, pagination, filtering, and durable task management.
 
 from __future__ import annotations
 from typing import Any, Dict, List, Optional
-from fastapi import APIRouter, HTTPException, Header, Query, Request, status, Depends
+from fastapi import APIRouter, Header, Query, Request, status, Depends
 from pydantic import BaseModel, Field
 
 from windagent_core.domain.types import TaskId, SessionId
-from windagent_core.domain.lifecycle import TaskState, TaskLifecycle, utc_now
-from windagent_core.errors.exceptions import NotFoundError, PermissionDeniedError, InvalidStateTransitionError
+from windagent_core.domain.lifecycle import TaskState, utc_now
+from windagent_core.errors.exceptions import NotFoundError
 from windagent_core.contracts.workers.models import WorkSubmission
 from windagent_api.dependencies import get_task_manager, get_uow, get_container
 from windagent_orchestration.task_manager.service import TaskManager
@@ -63,7 +63,7 @@ async def create_task(
     # Enqueue into the SQL durable queue (single source of truth for the Worker process).
     # SqlWorkSubmissionAdapter inserts the task_runs row in "pending" state plus the
     # TaskSubmitted outbox record in one atomic transaction; the Worker claims from this row.
-    task_id = await container.task_submission.submit(
+    await container.task_submission.submit(
         WorkSubmission(
             task_id=str(tid),
             session_id=str(sid),

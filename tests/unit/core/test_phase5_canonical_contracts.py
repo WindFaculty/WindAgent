@@ -13,7 +13,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-import pytest
 
 ROOT = Path(__file__).resolve().parents[3]
 SCANNER = ROOT / "scripts" / "check_duplicate_canonical_models.py"
@@ -28,18 +27,10 @@ def test_canonical_provider_contracts_importable():
     from windagent_core.contracts.providers import (
         ProviderRequest,
         ProviderResponse,
-        ProviderStreamChunk,
-        ProviderToolCall,
-        ProviderUsage,
         ProviderCapabilities,
-        ModelDescriptor,
-        CachePort,
-        EndpointRegistryPort,
-        RouteLockPort,
-        UsageLedgerPort,
     )
 
-    req = ProviderRequest(prompt="hi")
+    ProviderRequest(prompt="hi")
     res = ProviderResponse(content="ok")
     assert res.usage.total_tokens == 0
     assert ProviderCapabilities().supports_chat is True
@@ -47,13 +38,8 @@ def test_canonical_provider_contracts_importable():
 
 def test_canonical_tool_contracts_importable():
     from windagent_core.contracts.tools import (
-        ToolDefinition,
-        ToolExecutionContext,
-        ToolExecutorPort,
         ToolInvocation,
-        ToolRegistryPort,
         ToolResult,
-        ToolRiskLevel,
     )
     from windagent_core.domain.types import ToolCallId
 

@@ -17,12 +17,8 @@ Generated as part of PHASE 6: PROVIDER_IMPLEMENTATION_CANONICALIZED
 """
 
 import pytest
-import asyncio
-from unittest.mock import AsyncMock, patch, MagicMock
-import httpx
+from unittest.mock import patch, MagicMock
 
-from windagent_core.domain.types import ModelCallId
-from windagent_core.domain.models import ModelRequest
 
 
 class TestPhase6ImportSurface:
@@ -79,13 +75,13 @@ class TestPhase6ImportSurface:
     def test_legacy_adapters_removed(self):
         """Legacy adapters should NOT be importable"""
         with pytest.raises(ImportError):
-            from windagent_providers import LegacyAnthropicAdapter
+            from windagent_providers import LegacyAnthropicAdapter  # noqa: F401
 
         with pytest.raises(ImportError):
-            from windagent_providers import LegacyGoogleAdapter
+            from windagent_providers import LegacyGoogleAdapter  # noqa: F401
 
         with pytest.raises(ImportError):
-            from windagent_providers import LegacyOllamaAdapter
+            from windagent_providers import LegacyOllamaAdapter  # noqa: F401
 
 
 class TestPhase6ProtocolDetection:
@@ -256,7 +252,6 @@ class TestPhase6Cancellation:
     async def test_anthropic_cancellation(self):
         """Anthropic adapter handles cancellation via streaming"""
         from windagent_providers import AnthropicProviderAdapter
-        from windagent_providers.base.errors import CancellationFailure
         adapter = AnthropicProviderAdapter(api_key="test-key")
         
         # V3 adapters handle cancellation via asyncio.CancelledError in stream
@@ -290,7 +285,6 @@ class TestPhase6SecretRedaction:
     @pytest.mark.asyncio
     async def test_openai_secret_redaction(self):
         """OpenAI adapter redact secrets from error messages"""
-        from windagent_providers import OpenAIProviderAdapter
         from windagent_providers.base.secret_redaction import redact_text
         
         # Test redaction function
@@ -342,7 +336,6 @@ class TestPhase6NoProviderImportFromIntelligence:
 
     def test_adapter_files_no_intelligence_import(self):
         """Individual adapter files should not import intelligence"""
-        import os
         from pathlib import Path
         
         providers_dir = Path(__file__).parent.parent.parent / "providers" / "windagent_providers"

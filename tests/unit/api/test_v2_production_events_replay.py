@@ -35,7 +35,7 @@ def test_event_listing_and_project_replay(client):
         },
     ).json()
 
-    cmd2 = client.post(
+    client.post(
         "/api/v2/video-production/commands",
         headers={"X-Idempotency-Key": "evt_key_2"},
         json={

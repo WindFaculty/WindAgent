@@ -7,7 +7,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from windagent_observability.health.contracts import (
     HealthStatus,
     HealthProfile,
-    HealthDependencyBundle,
 )
 from windagent_observability.health.checker import HealthChecker
 

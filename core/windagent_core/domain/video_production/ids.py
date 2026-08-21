@@ -243,10 +243,6 @@ class AnimationTrackId(OpaqueId):
     """Identifier for an AnimationTrack in the Production IR."""
 
 
-class FacialTrackId(OpaqueId):
-    """Identifier for a FacialTrack in the Production IR."""
-
-
 class LightRigId(OpaqueId):
     """Identifier for a LightRig in the Production IR."""
 
@@ -534,7 +530,8 @@ class GazeTrackId(OpaqueId):
 
 
 class FacialTrackId(OpaqueId):
-    """Identifier for a compiled FacialAnimationTrack (VP3D Phase 18)."""
+    """Identifier for a facial track — Production IR intent and the compiled
+    FacialAnimationTrack (VP3D Phase 18) share this canonical id type."""
 
 
 class FacialFindingId(OpaqueId):

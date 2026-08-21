@@ -282,7 +282,7 @@ def run_review_corpus() -> Dict[str, Any]:
         service = ReviewService(StoryModelBoundary(port))
         try:
             result = await service.generate(GOLDEN_DRAFT)
-        except ReviewValidationFailure as exc:
+        except ReviewValidationFailure:
             return {"case": case["case"], "outcome": "error", "code": "REVIEW_VALIDATION_FAILURE"}
         except Exception as exc:
             return {"case": case["case"], "outcome": "error", "code": story_error_code(exc)}
@@ -316,7 +316,7 @@ def run_revise_corpus() -> Dict[str, Any]:
                 canon=GOLDEN_CANON,
                 world=GOLDEN_WORLD,
             )
-        except ReviseValidationFailure as exc:
+        except ReviseValidationFailure:
             return {"case": case["case"], "outcome": "error", "code": "REVISE_VALIDATION_FAILURE"}
         except Exception as exc:
             return {"case": case["case"], "outcome": "error", "code": story_error_code(exc)}
@@ -411,7 +411,7 @@ def tolerant_parsing_violations() -> List[str]:
         from scripts.verification.produce_b2_evidence import tolerant_parsing_violations as scan
     except ImportError:  # pragma: no cover
         return []
-    extra_paths = [
+    [
         REPO_ROOT / "intelligence" / "windagent_intelligence" / "story" / "review",
         REPO_ROOT / "intelligence" / "windagent_intelligence" / "story" / "runtime_handlers",
     ]
@@ -440,7 +440,7 @@ def evidence_markdown(
     violations = tolerant_parsing_violations()
     clean = golden["clean_review"]
     weak = golden["weak_review"]
-    diff = golden["story_diff"]
+    golden["story_diff"]
     proposal = golden["revision_proposal"]
     return f"""# B7 Evidence — STORY_REVIEW_GATE
 

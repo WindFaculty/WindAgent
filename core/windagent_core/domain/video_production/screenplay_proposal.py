@@ -10,7 +10,7 @@ from __future__ import annotations
 import copy
 import uuid
 from typing import Any, Dict, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from windagent_core.domain.video_production.screenplay_diff import ScreenplayDiffEngine, ScreenplayDiffResult
 from windagent_core.domain.video_production.screenplay_impact import ProductionImpactAnalyzer, ScreenplayChangeImpactDTO

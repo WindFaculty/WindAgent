@@ -21,7 +21,6 @@ from windagent_core.domain.story.review import (
 )
 from windagent_core.domain.story.screenplay import ScreenplayDraft
 from windagent_intelligence.story.review import (
-    APPROVAL_MODES,
     LockService,
     LockValidationFailure,
 )

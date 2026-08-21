@@ -5,7 +5,6 @@ event deduplication, and payload secret redaction.
 Legacy WebSocket compatibility tests moved to tests/unit/api/test_legacy_event_mappers.py.
 """
 
-import pytest
 from windagent_core.domain.types import EventId, SessionId
 from windagent_core.events.envelope import EventEnvelope
 from windagent_core.events.catalog import EventCatalog

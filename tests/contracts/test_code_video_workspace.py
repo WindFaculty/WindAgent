@@ -17,8 +17,6 @@ import pytest
 from windagent_core.errors.exceptions import PermissionDeniedError, ValidationError
 from windagent_tools.code_video.workspace.checkpoints import CheckpointManager
 from windagent_tools.code_video.workspace.repository_builder import (
-    DEFAULT_ENV_EXAMPLE,
-    DEFAULT_GITIGNORE,
     TutorialRepositoryBuilder,
 )
 from windagent_tools.code_video.workspace.sandbox import TutorialWorkspace
@@ -78,7 +76,7 @@ class TestTutorialRepositoryBuilder:
 
     def test_scaffold_creation_and_validation(self, temp_workspace: TutorialWorkspace) -> None:
         builder = TutorialRepositoryBuilder(temp_workspace)
-        created = builder.build_initial_scaffold()
+        builder.build_initial_scaffold()
 
         for req_file in TutorialRepositoryBuilder.REQUIRED_TUTORIAL_FILES:
             assert temp_workspace.file_exists(req_file)

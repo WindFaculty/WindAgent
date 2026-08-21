@@ -9,7 +9,7 @@ from windagent_core.events.envelope import EventEnvelope
 from windagent_storage.database.connection import DatabaseManager
 from windagent_storage.orm.models import BaseORM
 from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork
-from windagent_orchestration.recovery import RecoveryManager, DESTRUCTIVE_TOOLS
+from windagent_orchestration.recovery import RecoveryManager
 from windagent_orchestration.state_machine import TaskState
 
 

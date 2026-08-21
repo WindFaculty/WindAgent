@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0.0",
+  "phase": 2,
+  "updated_at": "2026-07-31T19:30:00Z",
+  "risks": [
+    {
+      "risk_id": "RSK-VP2-001",
+      "category": "Clean-Room Contamination",
+      "description": "Future implementer reads ViMax source and unconsciously reproduces patterns.",
+      "severity": "MEDIUM",
+      "mitigation": "Clean-room attestation with reviewer sign-off. Terminology mapping enforced in code review. Architecture checker verifies zero ViMax imports."
+    },
+    {
+      "risk_id": "RSK-VP2-002",
+      "category": "Requirement Drift",
+      "description": "DIR-REQ requirements evolve during implementation and lose clean-room provenance.",
+      "severity": "LOW",
+      "mitigation": "DIR-REQ IDs are immutable. Changes require new requirement ID with new observation source. Phase 2 gate is re-verified if any DIR-REQ is modified."
+    },
+    {
+      "risk_id": "RSK-VP2-003",
+      "category": "Incomplete Observation",
+      "description": "ViMax capabilities not observed during black-box analysis may be missed.",
+      "severity": "LOW",
+      "mitigation": "Behavior inventory covers 8 observed behaviors. New ViMax capabilities discovered later go through same clean-room process before entering WindAgent requirements."
+    }
+  ]
+}

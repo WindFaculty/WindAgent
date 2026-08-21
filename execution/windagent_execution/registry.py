@@ -11,10 +11,12 @@ from windagent_core.contracts.execution import (
     ExecutionRuntimePort, ExecutionRequest, ExecutionHandle, RuntimeStatus, ExecutionResult
 )
 from windagent_core.contracts.studio.errors import StudioCapabilityUnavailableError
-from windagent_execution.adapters.tool_runtime import ToolRuntimeAdapter
-from windagent_execution.adapters.browser_runtime import BrowserRuntimeAdapter
-from windagent_execution.adapters.local_agent import LocalAgentRuntimeAdapter
-from windagent_execution.adapters.subprocess_runtime import SubprocessRuntimeAdapter
+from windagent_execution.factory import (
+    create_browser_runtime_adapter,
+    create_local_agent_runtime_adapter,
+    create_subprocess_runtime_adapter,
+    create_tool_runtime_adapter,
+)
 
 logger = logging.getLogger("windagent.execution.registry")
 
@@ -28,14 +30,14 @@ class ExecutionRuntimeRegistry(ExecutionRuntimePort):
         *,
         allow_tool_simulation: bool = False,
     ) -> None:
-        self.default_adapter = default_adapter or ToolRuntimeAdapter(
+        self.default_adapter = default_adapter or create_tool_runtime_adapter(
             allow_simulation=allow_tool_simulation
         )
         self._capability_map: Dict[str, ExecutionRuntimePort] = {
             "tool": self.default_adapter,
-            "browser": BrowserRuntimeAdapter(),
-            "local_agent": LocalAgentRuntimeAdapter(),
-            "subprocess": SubprocessRuntimeAdapter(),
+            "browser": create_browser_runtime_adapter(),
+            "local_agent": create_local_agent_runtime_adapter(),
+            "subprocess": create_subprocess_runtime_adapter(),
         }
         self._handles_adapter_map: Dict[str, ExecutionRuntimePort] = {}
 

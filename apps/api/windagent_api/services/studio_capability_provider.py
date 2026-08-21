@@ -57,7 +57,7 @@ class ApiRuntimeCapabilityProvider:
         return RuntimeCapabilityProfile(
             capabilities=capabilities,
             fail_closed_flags=self._fail_closed_flags(evidence),
-            certification_mode=certification_mode_enabled(),
+            certification_mode=certification_mode_enabled(os.environ),
         )
 
     def _durable_db(self) -> RuntimeCapability:
@@ -127,7 +127,7 @@ class ApiRuntimeCapabilityProvider:
         evidence.active_leases = sum(worker.active_leases for worker in workers)
         api_sha = os.getenv("WINDAGENT_SOURCE_SHA", "").strip()
         expected_model = os.getenv("WINDAGENT_STUDIO_CANONICAL_MODEL", "").strip()
-        api_certification = certification_mode_enabled()
+        api_certification = certification_mode_enabled(os.environ)
         for worker in workers:
             raw = worker.metadata.get("studio_runtime_attestation")
             if not isinstance(raw, dict):
@@ -294,7 +294,7 @@ class ApiRuntimeCapabilityProvider:
     def _fail_closed_flags(evidence: _WorkerEvidence) -> List[str]:
         """Report unsafe certification composition without exposing secrets."""
 
-        if not certification_mode_enabled():
+        if not certification_mode_enabled(os.environ):
             return []
         flags: List[str] = []
         if os.getenv("WINDAGENT_FAKE_RUNTIME", "").lower() in ("1", "true", "yes"):

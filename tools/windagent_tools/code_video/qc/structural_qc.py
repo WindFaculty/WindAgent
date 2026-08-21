@@ -12,9 +12,9 @@ Validates the structural integrity and scene completeness of Video 02:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Sequence, Set
+from typing import Any, Dict, List, Optional, Set
 
-from windagent_core.contracts.code_video import CodeVideoPlan, Scene
+from windagent_core.contracts.code_video import CodeVideoPlan
 from windagent_tools.code_video.renderer.graphics_catalog import GraphicsCatalog
 
 

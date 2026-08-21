@@ -436,7 +436,6 @@ async def test_fault_injection_event_store_failure(db_manager):
 
     async with SqlUnitOfWork(db_manager.session_factory) as uow:
         # Patch events.append to raise
-        original_append = uow.events.append
 
         async def _broken_events_append(event):
             raise RuntimeError("FAULT_INJECTION: Event store write failed!")
@@ -492,16 +491,15 @@ async def test_fault_injection_lease_release_failure(db_manager):
         uow.session.add(lease)
         await uow.commit()
 
-    from unittest.mock import patch, AsyncMock
+    from unittest.mock import patch
     from windagent_storage.services import task_finalizer as tf_module
 
     # Patch lease status update inside TaskFinalizer to raise after CAS succeeds
-    original_finalize = tf_module.TaskFinalizer.finalize_task_execution
 
     async def _broken_finalize(self_inner, request):
         # Run normally up to lease release, then raise
-        from sqlalchemy import select, update
-        from windagent_storage.orm.v2_orchestration_models import TaskRunORM as TR, ExecutionLeaseORM as EL
+        from sqlalchemy import update
+        from windagent_storage.orm.v2_orchestration_models import TaskRunORM as TR
 
         session = self_inner.uow.session
         # Manually trigger the CAS step, then simulate a lease update failure
@@ -569,7 +567,6 @@ async def test_fault_injection_commit_failure(db_manager):
 
     async with SqlUnitOfWork(db_manager.session_factory) as uow:
         # Patch commit to raise after all writes are staged
-        original_commit = uow.commit
 
         async def _broken_commit():
             # Simulate commit failure (e.g. connection lost, serialization failure)

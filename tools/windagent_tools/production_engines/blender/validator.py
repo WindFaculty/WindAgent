@@ -13,7 +13,7 @@ an auditable policy change.
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Optional
 
 from windagent_tools.production_engines.blender.runtime.detector import BlenderInstallationCandidate

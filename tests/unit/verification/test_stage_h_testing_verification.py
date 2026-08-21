@@ -9,7 +9,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import pytest
 from scripts.verification.verify_stage_h_testing import run_stage_h_verification
 
 

@@ -28,9 +28,7 @@ sys.path.insert(0, str(REPO_ROOT))
 from windagent_core.domain.story.ideation import (  # noqa: E402
     SELECTION_POLICIES,
     SELECTION_POLICY_AUTO,
-    SELECTION_POLICY_HUMAN_REQUIRED,
     CreativeBrief,
-    IdeaCandidateSet,
     selection_allowed,
 )
 from windagent_core.domain.story.ids import CreativeBriefId  # noqa: E402
@@ -434,7 +432,7 @@ def tolerant_parsing_violations() -> List[str]:
         from scripts.verification.produce_b2_evidence import tolerant_parsing_violations as scan
     except ImportError:  # pragma: no cover
         return []
-    extra_paths = [
+    [
         REPO_ROOT / "intelligence" / "windagent_intelligence" / "story" / "ideation",
         REPO_ROOT / "intelligence" / "windagent_intelligence" / "story" / "runtime_handlers",
     ]

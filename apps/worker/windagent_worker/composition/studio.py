@@ -147,6 +147,7 @@ class StudioComposer:
             model_port=route_bundle.studio_model_port,
             fake_runtime_active=fake_active,
             worker_id="studio-worker",
+            studio_uow_factory=lambda: StudioUnitOfWork(uow_factory),
         )
         execution_registry.register_capability("studio", studio_runtime)
         studio_reconciler = StudioRunService(

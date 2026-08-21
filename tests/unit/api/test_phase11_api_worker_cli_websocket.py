@@ -5,10 +5,9 @@ EventEnvelope publishing, CLI Doctor checks, and WebSocket event sequence replay
 """
 
 import pytest
-import sys
 from fastapi.testclient import TestClient
 
-from windagent_core.domain.types import WorkerId, RuntimeRunId, TaskId, SessionId
+from windagent_core.domain.types import WorkerId, RuntimeRunId, SessionId
 from windagent_core.events.envelope import EventEnvelope
 from windagent_core.events.catalog import EventCatalog
 from windagent_api.main import app
@@ -18,39 +17,22 @@ from windagent_cli.main import doctor as cli_doctor
 client = TestClient(app)
 
 
-def test_api_v2_tasks_no_in_memory_tasks():
+def test_api_v2_tasks_retired_tombstone():
+    """Phase 15: /api/v2/tasks is retired; no in-memory task store exists."""
     sess_id = str(SessionId.generate())
 
-    # 1. Create Task
     create_resp = client.post("/api/v2/tasks", json={"prompt": "Integrate payment API", "session_id": sess_id})
-    assert create_resp.status_code == 201
-    data = create_resp.json()
-    assert "task_id" in data
-    assert data["session_id"] == sess_id
-    assert data["status"] in ("RECEIVED", "CREATED", "PLANNING", "RUNNING", "PENDING", "pending")
-    assert "created_at" in data
-    assert "2026-07-23" not in data["created_at"]  # No hardcoded legacy timestamp
-
-    task_id = data["task_id"]
-
-    # 2. Get Task
-    get_resp = client.get(f"/api/v2/tasks/{task_id}")
-    assert get_resp.status_code == 200
-    assert get_resp.json()["task_id"] == task_id
-
-    # 3. Cancel Task
-    cancel_resp = client.post(f"/api/v2/tasks/{task_id}/cancel")
-    assert cancel_resp.status_code in (200, 400)
+    assert create_resp.status_code == 410
+    assert create_resp.json()["title"] == "API V2 Retired"
 
 
 def test_api_v2_events_no_mock_domain_events():
     resp = client.get("/api/v2/events")
-    assert resp.status_code == 200
-    events = resp.json()
-    assert isinstance(events, list)
-    # Verify no mock events hardcoded
-    for evt in events:
-        assert "evt_01" not in evt.get("event_id", "")
+    # Phase 15: the V2 events surface is retired behind the tombstone.
+    assert resp.status_code == 410
+    body = resp.json()
+    assert isinstance(body, dict)
+    assert "evt_01" not in str(body)
 
 
 @pytest.mark.asyncio

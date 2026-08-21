@@ -38,7 +38,6 @@ async def create_session(
     uow: SqlUnitOfWork = Depends(get_uow),
 ) -> SessionResponse:
     from windagent_core.domain.models import Session, SessionStatus
-    from windagent_storage.repositories.sql_repositories import SqlSessionRepository
     from windagent_core.security.workspace import (
         WorkspaceRootViolation,
         validate_workspace_root,
@@ -56,7 +55,7 @@ async def create_session(
                 detail=f"invalid workspace_root: {exc}",
             ) from exc
 
-    session_repo = SqlSessionRepository(uow.session)
+    session_repo = uow.sessions
     sid = str(SessionId.generate())
     now = utc_now()
 
@@ -110,10 +109,8 @@ async def list_sessions(
     exclude_archived: bool = Query(True),
     uow: SqlUnitOfWork = Depends(get_uow),
 ) -> List[SessionResponse]:
-    from windagent_core.domain.types import SessionId
-    from windagent_storage.repositories.sql_repositories import SqlSessionRepository
 
-    session_repo = SqlSessionRepository(uow.session)
+    session_repo = uow.sessions
     sessions = await session_repo.list_sessions(limit=limit, offset=(page - 1) * limit)
 
     # Filter out archived sessions if requested
@@ -143,9 +140,8 @@ async def get_session(
     uow: SqlUnitOfWork = Depends(get_uow),
 ) -> SessionResponse:
     from windagent_core.domain.types import SessionId
-    from windagent_storage.repositories.sql_repositories import SqlSessionRepository
 
-    session_repo = SqlSessionRepository(uow.session)
+    session_repo = uow.sessions
     session = await session_repo.get_by_id(SessionId(session_id))
 
     if session is None:
@@ -172,9 +168,8 @@ async def get_session_snapshot(
 ) -> Dict[str, Any]:
     """Get session snapshot with messages and last event sequence for recovery."""
     from windagent_core.domain.types import SessionId
-    from windagent_storage.repositories.sql_repositories import SqlSessionRepository
 
-    session_repo = SqlSessionRepository(uow.session)
+    session_repo = uow.sessions
     session = await session_repo.get_by_id(SessionId(session_id))
 
     if session is None:
@@ -255,9 +250,8 @@ async def cancel_session(
     """Cancel session - stop but keep."""
     from windagent_core.domain.types import SessionId
     from windagent_core.domain.models import SessionStatus
-    from windagent_storage.repositories.sql_repositories import SqlSessionRepository
 
-    session_repo = SqlSessionRepository(uow.session)
+    session_repo = uow.sessions
     session = await session_repo.get_by_id(SessionId(session_id))
 
     if session is None:
@@ -275,9 +269,8 @@ async def archive_session(
 ):
     """Archive session - hide but keep."""
     from windagent_core.domain.types import SessionId
-    from windagent_storage.repositories.sql_repositories import SqlSessionRepository
 
-    session_repo = SqlSessionRepository(uow.session)
+    session_repo = uow.sessions
     session = await session_repo.get_by_id(SessionId(session_id))
 
     if session is None:
@@ -296,9 +289,8 @@ async def delete_session(
 ):
     """Delete session - permanently remove."""
     from windagent_core.domain.types import SessionId
-    from windagent_storage.repositories.sql_repositories import SqlSessionRepository
 
-    session_repo = SqlSessionRepository(uow.session)
+    session_repo = uow.sessions
     deleted = await session_repo.delete(SessionId(session_id))
 
     if not deleted:
@@ -347,9 +339,8 @@ async def send_message(
     """Send a message to a session - triggers workflow/task creation."""
     from windagent_core.domain.types import SessionId
     from windagent_core.domain.models import SessionStatus
-    from windagent_storage.repositories.sql_repositories import SqlSessionRepository
 
-    session_repo = SqlSessionRepository(uow.session)
+    session_repo = uow.sessions
     session = await session_repo.get_by_id(SessionId(session_id))
 
     if session is None:

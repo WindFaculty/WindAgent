@@ -6,6 +6,10 @@ import os
 from typing import Any, Dict, List, Optional
 
 from windagent_core.contracts.providers import ProviderRequest, ProviderResponse
+from windagent_providers.factory import (
+    create_google_gemini_provider_adapter,
+    create_ollama_provider_adapter,
+)
 from windagent_providers.google import GoogleGeminiProviderAdapter
 from windagent_providers.ollama import OllamaProviderAdapter
 
@@ -22,13 +26,14 @@ class V3ModelGatewayBridge:
     ) -> None:
         self.adapters: Dict[str, Any] = adapters or {}
         if "ollama" not in self.adapters:
-            self.adapters["ollama"] = ollama_adapter or OllamaProviderAdapter(
+            self.adapters["ollama"] = ollama_adapter or create_ollama_provider_adapter(
                 base_url=os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
             )
         if "google" not in self.adapters:
             api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
-            self.adapters["google"] = google_adapter or GoogleGeminiProviderAdapter(
-                api_key=api_key
+            self.adapters["google"] = (
+                google_adapter
+                or create_google_gemini_provider_adapter(api_key=api_key)
             )
 
     async def discover_models(self, provider: str) -> List[Any]:

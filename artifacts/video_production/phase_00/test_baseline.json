@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.1.0",
+  "phase": 0,
+  "candidate_sha": "1d98e26fe8923549e848e1a73cf32c6bb59944c1",
+  "evidence_source_sha": "6dab084abd3d46cc9f0c9e7dcbb6e65254b83057",
+  "rerun_completed_at": "2026-07-31T16:21:11Z",
+  "isolated_checkout": {
+    "head_verified": true,
+    "git_clean_before_hydration": true,
+    "git_clean_after_verified_hydration": true,
+    "git_clean_after_non_mutating_matrix": true,
+    "git_clean_after_full_python_suite": true,
+    "tracked_files_modified_by_full_suite": 0,
+    "tree_sha_before": "98dc0d38082e715e8c17a36d9bd3cd6521296325",
+    "tree_sha_after": "98dc0d38082e715e8c17a36d9bd3cd6521296325"
+  },
+  "results": [
+    {"command_id": "python_dependency_sync", "status": "PASSED", "exit_code": 0, "summary": "uv sync --frozen --all-packages installed all 26 workspace packages."},
+    {"command_id": "python_full_suite", "status": "PASSED", "exit_code": 0, "summary": "949 passed, 3 skipped, 0 failed in 129.37s; tracked mutation count 0, tree SHA unchanged."},
+    {"command_id": "finalizer_tests", "status": "PASSED", "exit_code": 0, "summary": "test_finalize_phase7.py + test_hydrate_phase7_evidence.py: 83 passed, 1 skipped; 0 tracked mutations."},
+    {"command_id": "architecture_import_boundaries", "status": "PASSED", "exit_code": 0, "summary": "0 architecture violations."},
+    {"command_id": "cli_contract", "status": "PASSED", "exit_code": 0, "summary": "21 integration tests passed."},
+    {"command_id": "version_consistency", "status": "PASSED", "exit_code": 0, "summary": "VERSION CONSISTENCY CHECK: PASSED (workspace pyproject fallback for package metadata)."},
+    {"command_id": "runtime_version_smoke", "status": "PASSED", "exit_code": 0, "summary": "verdict PASS; no errors."},
+    {"command_id": "sqlite_preflight", "status": "PASSED", "exit_code": 0, "summary": "dialect sqlite, server 3.53.1, verdict PASS (non-secret ephemeral sqlite+aiosqlite URL)."},
+    {"command_id": "artifact_schema_validation_linked_evidence", "status": "PASSED", "exit_code": 0, "summary": "Validated against the declared evidence source SHA 6dab084a, not the distinct attestation baseline SHA."},
+    {"command_id": "ci_evidence_validation_exact_run", "status": "PASSED", "exit_code": 0, "result": "root_cause_evidence/phase0_ci_evidence_validation.json", "summary": "13 required immutable GitHub Actions evidence artifacts passed unchanged CI validation."},
+    {"command_id": "phase7_evidence_hydrator_tests", "status": "PASSED", "exit_code": 0, "summary": "Hydrator unit tests pass under the new baseline."}
+  ],
+  "recorded_non_passing_attempts": [
+    {"command_id": "sqlite_preflight", "status": "ENVIRONMENT_BLOCKED", "exit_code": 1, "evidence": "async pysqlite driver error on sqlite:///:memory:", "resolution": "Re-run with the explicit non-secret ephemeral sqlite+aiosqlite URL template; passed."}
+  ]
+}

@@ -9,14 +9,14 @@ Unit Tests for WindAgent Workflow Packs (Phase 10 + Phase 23):
 """
 
 import pytest
-from windagent_core.errors.exceptions import ValidationError, NotFoundError, ConflictError
+from windagent_core.errors.exceptions import ValidationError
 from windagent_workflows import (
     WorkflowRegistry, BugfixWorkflowPack, CIFixWorkflowPack, CodeReviewWorkflowPack,
     FeatureWorkflowPack, RefactorWorkflowPack, ResearchWorkflowPack,
     ScientificEvalWorkflowPack, ReleaseWorkflowPack,
     ImmutableWorkflowDefinition, WorkflowNodeSpec, WorkflowEdgeSpec,
     ArtifactContract, CompletionPredicate, NodeType, EdgeType,
-    WorkflowMigrationManager, MigrationImpact, PinnedDefinition,
+    WorkflowMigrationManager,
 )
 
 
@@ -154,7 +154,7 @@ def test_workflow_node_spec_roundtrip():
 
 def test_version_pinning(populated_registry):
     """Pinning a workflow should keep the exact definition, even if pack is later updated."""
-    bugfix = populated_registry.get_pack("bugfix")
+    populated_registry.get_pack("bugfix")
 
     # Generate and pin a definition for run "run_001"
     pinned_def = populated_registry.pin_workflow("run_001", "bugfix", {"issue_description": "Bug in login"})

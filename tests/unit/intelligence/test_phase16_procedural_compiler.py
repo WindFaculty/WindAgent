@@ -35,7 +35,6 @@ from windagent_core.domain.video_production.ids import (
     SkeletonProfileId,
 )
 from windagent_core.domain.video_production.procedural import (
-    BakedAction,
     LAYER_DEFAULT_PRIORITY,
     LAYER_OWNERSHIP,
     ProceduralFindingKind,

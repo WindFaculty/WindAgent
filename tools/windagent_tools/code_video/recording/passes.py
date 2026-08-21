@@ -7,16 +7,14 @@ milestones in Video 02 (Viết AI Agent Đầu Tiên Bằng Python).
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from enum import Enum
 import hashlib
 import json
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Optional
 
 from windagent_core.errors.exceptions import NotFoundError, ValidationError
 from windagent_core.contracts.code_video import (
-    Resolution,
     VisualMode,
 )
 

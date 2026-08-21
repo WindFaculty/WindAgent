@@ -7,7 +7,6 @@ from windagent_core.domain.story import (
     content_model_for,
     deserialize_story_artifact,
     find_duplicate_canonical_models,
-    registered_artifact_types,
 )
 from windagent_core.domain.story.ideation.models import IdeaCandidateSet
 from windagent_core.domain.studio.artifact import (
@@ -17,7 +16,7 @@ from windagent_core.domain.studio.artifact import (
     IdeaCandidateSet as EnvelopeIdeaCandidateSet,
     StoryArtifactEnvelope,
 )
-from windagent_core.contracts.studio.ids import ArtifactId, EpisodeId, SeriesProjectId
+from windagent_core.contracts.studio.ids import EpisodeId, SeriesProjectId
 
 SERIES = SeriesProjectId.generate("ser")
 EPISODE = EpisodeId.generate("ep")

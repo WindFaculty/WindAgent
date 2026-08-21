@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import hashlib
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 from pydantic import BaseModel, ConfigDict, Field
 
 from windagent_core.domain.video_production.production_asset import ProductionAsset

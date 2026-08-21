@@ -13,8 +13,6 @@ from windagent_core.contracts.code_video.models import CodeVideoPlan
 from windagent_core.contracts.code_video.assembly import (
     CueSheet,
     MasterAssemblyResult,
-    TransitionPolicy,
-    VideoAssemblyConfig,
 )
 from windagent_core.contracts.code_video.capture import TakeReceipt
 

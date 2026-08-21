@@ -7,7 +7,7 @@ provides deterministic command typing, stdout/stderr formatting, and exit code r
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from enum import Enum
 import html
 from typing import Any, Dict, List, Optional, Sequence
@@ -105,7 +105,7 @@ class TerminalState:
             f'</div>\n'
             f'<div class="terminal-body">\n'
             + "\n".join(lines_html) + "\n"
-            f'</div>\n</div>'
+            '</div>\n</div>'
         )
 
 

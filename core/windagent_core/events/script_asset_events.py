@@ -7,8 +7,8 @@ eligibility changes, and screenplay validation updates.
 
 from __future__ import annotations
 
-from typing import Any, Dict, Optional
-from pydantic import BaseModel, ConfigDict, Field
+from typing import Any, Dict
+from pydantic import BaseModel, ConfigDict
 
 
 class ScriptAssetEventCatalog:

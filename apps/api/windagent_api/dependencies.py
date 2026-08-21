@@ -103,9 +103,8 @@ def get_permission_engine(request: Request) -> PermissionEngine:
 
 
 def get_video_production_uow(request: Request):
-    from windagent_storage.unit_of_work.video_production_uow import VideoProductionUnitOfWork
     container = get_container(request)
-    return VideoProductionUnitOfWork(container.db.session_factory)
+    return container.get_video_production_uow()
 
 
 def get_v3_resource_service(request: Request):

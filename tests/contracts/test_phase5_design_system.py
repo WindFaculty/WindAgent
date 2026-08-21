@@ -5,7 +5,6 @@ Validates token authority, primitive catalog integrity, desktop & web re-export 
 
 import json
 from pathlib import Path
-import pytest
 
 WORKSPACE_ROOT = Path(__file__).resolve().parent.parent.parent
 PHASE_5_DIR = WORKSPACE_ROOT / "artifacts" / "frontend_restructure" / "phase_05"

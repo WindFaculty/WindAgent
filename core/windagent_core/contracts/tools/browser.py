@@ -7,7 +7,7 @@ Workflows depend on this port, not on concrete tool implementations.
 
 from __future__ import annotations
 
-from typing import Any, Optional, Protocol, runtime_checkable
+from typing import Any, Protocol, runtime_checkable
 
 
 @runtime_checkable

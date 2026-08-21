@@ -237,7 +237,7 @@ def freeze(*, test_timeout: int, checker_timeout: int, run_tests: bool) -> int:
     if run_tests:
         write_json(TEST_RECEIPT_PATH, test_result)
 
-    checker_result = run(
+    run(
         [
             sys.executable,
             str(CHECKER_ENTRY_PATH),

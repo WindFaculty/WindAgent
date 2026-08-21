@@ -25,7 +25,6 @@ from windagent_core.domain.video_production.character_master import (
 from windagent_core.domain.video_production.enums import (
     CharacterApprovalVerdict,
     CharacterMasterState,
-    CharacterRole,
 )
 from windagent_core.domain.video_production.errors import VideoProductionProtocolError
 from windagent_core.domain.video_production.ids import (

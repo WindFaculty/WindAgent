@@ -15,8 +15,6 @@ Generates the complete set of required artifacts for Phase 12 (Program Definitio
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
-import hashlib
 import json
 from pathlib import Path
 import sys

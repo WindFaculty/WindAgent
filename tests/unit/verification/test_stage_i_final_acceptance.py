@@ -14,7 +14,6 @@ named are covered by real suites:
 
 from __future__ import annotations
 
-import pytest
 from scripts.check_video_workspace_architecture import main as check_video_arch
 from scripts.produce_stage_i_evidence import run_stage_i_evidence_generation
 

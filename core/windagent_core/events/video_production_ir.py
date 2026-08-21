@@ -29,7 +29,6 @@ from typing import Any, Dict, Optional, Set
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from windagent_core.domain.video_production.ids import (
-    EngineJobId,
     ProductionIrId,
     ProductionRevisionId,
     VideoProjectId,

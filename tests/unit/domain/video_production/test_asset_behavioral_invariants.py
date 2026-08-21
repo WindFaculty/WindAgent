@@ -11,7 +11,6 @@ Validates:
 
 from __future__ import annotations
 
-import pytest
 from tests.fakes.fake_asset_resolver import FakeAssetResolver
 from tests.fixtures.canonical_bunny_episode import build_canonical_bunny_episode
 
@@ -73,7 +72,7 @@ def test_job_execution_retry_and_ssrf_rejection() -> None:
 
 def test_asset_entity_binding_dependency_graph() -> None:
     """Verify scene-to-asset bindings track dependencies correctly."""
-    bunny = build_canonical_bunny_episode()
+    build_canonical_bunny_episode()
 
     bindings = [
         {"entity_id": "scn_park_01", "asset_id": "ast_bunny_3d", "role": "CHARACTER_MODEL"},

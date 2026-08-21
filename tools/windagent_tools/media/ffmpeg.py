@@ -19,7 +19,7 @@ from pathlib import Path
 import shutil
 import subprocess
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Protocol, Sequence, runtime_checkable
+from typing import Dict, Optional, Protocol, Sequence, runtime_checkable
 
 MAX_OUTPUT_BYTES = 1_000_000
 DEFAULT_TIMEOUT_SECONDS = 120.0

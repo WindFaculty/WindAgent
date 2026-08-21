@@ -8,11 +8,8 @@ from __future__ import annotations
 import time
 import uuid
 from dataclasses import dataclass
-from datetime import datetime, timezone
-from typing import Dict, List, Optional, Any
+from typing import Callable, Dict, List, Optional, Any
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from windagent_storage.repositories.v2_orchestration_repositories import SqlExecutionLeaseRepository
 
 
 @dataclass
@@ -31,9 +28,16 @@ class TaskLease:
 class DurableTaskLeaseManager:
     """Manages SQL-backed lease locks for distributed worker task execution."""
 
-    def __init__(self, session_factory: Optional[Any] = None, default_lease_ttl_sec: float = 10.0) -> None:
+    def __init__(
+        self,
+        session_factory: Optional[Any] = None,
+        default_lease_ttl_sec: float = 10.0,
+        lease_repository_factory: Optional[Callable[[AsyncSession], Any]] = None,
+    ) -> None:
         self.session_factory = session_factory
         self.default_lease_ttl_sec = default_lease_ttl_sec
+        # Session-bound lease repository factory, wired by the composition root.
+        self._lease_repository_factory = lease_repository_factory
         # Fallback storage for lightweight unit test mode when DB session is omitted
         self._leases: Dict[str, TaskLease] = {}
         self._pending: List[Dict[str, Any]] = []
@@ -53,9 +57,12 @@ class DurableTaskLeaseManager:
         session: AsyncSession,
         lease_ttl_sec: Optional[float] = None,
     ) -> Optional[Dict[str, Any]]:
-        """Claims an available step/task using SqlExecutionLeaseRepository inside an atomic transaction."""
-        repo = SqlExecutionLeaseRepository(session)
-        ttl = lease_ttl_sec or self.default_lease_ttl_sec
+        """Claims an available step/task using the injected lease repository inside an atomic transaction."""
+        if self._lease_repository_factory is None:
+            raise RuntimeError(
+                "DurableTaskLeaseManager requires lease_repository_factory (wired by composition root)."
+            )
+        repo = self._lease_repository_factory(session)
         
         # Check expired leases first
         await repo.reclaim_expired_leases()

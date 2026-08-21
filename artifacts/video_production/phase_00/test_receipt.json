@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.1.0",
+  "phase": 0,
+  "candidate_sha": "1d98e26fe8923549e848e1a73cf32c6bb59944c1",
+  "status": "BLOCKED",
+  "command_manifest": "test_command_manifest.json",
+  "result_manifest": "test_baseline.json",
+  "integrity_manifest": "integrity_manifest.json",
+  "summary": {
+    "canonical_commands_with_exit_code_zero": 16,
+    "ci_evidence_validation": "PASS (13 required jobs)",
+    "hydrator_tests": "5 passed",
+    "hydrator_lint": "PASS",
+    "full_python_suite": "920 passed, 2 skipped, 28 warnings",
+    "clean_checkout_after_full_suite": false,
+    "tracked_files_modified_by_full_suite": 17
+  },
+  "blocking_failure_ids": [
+    "KB-003"
+  ]
+}

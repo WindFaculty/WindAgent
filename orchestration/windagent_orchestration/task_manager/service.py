@@ -13,7 +13,6 @@ from typing import Dict, Optional, Any
 from windagent_core.domain.types import TaskId, SessionId
 from windagent_orchestration.state_machine import TaskState, TaskStateMachine
 from windagent_orchestration.task_manager.facts import DurableExecutionFacts
-from windagent_core.contracts.repositories.unit_of_work import UnitOfWorkFactory
 
 logger = logging.getLogger("windagent.orchestration.task_manager")
 

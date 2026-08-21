@@ -12,7 +12,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any, Dict, Optional
 
-from windagent_core.errors.exceptions import WindAgentError, sanitize_error_details
+from windagent_core.errors.exceptions import WindAgentError
 
 
 class StudioErrorCode(str, Enum):

@@ -1,6 +1,5 @@
 """Unit tests for Phase 7 — Schema Audit, Mapping & Preflight Validator."""
 
-import json
 import pytest
 from sqlalchemy import create_engine, text
 
@@ -8,7 +7,6 @@ from windagent_storage.migrations.inventory import SchemaInventoryAnalyzer
 from windagent_storage.migrations.mapping import (
     detect_self_copy_sql,
     TABLE_CLASSIFICATIONS,
-    MigrationMappingRegistry,
 )
 from windagent_storage.migrations.preflight import (
     DataMigrationPreflightValidator,

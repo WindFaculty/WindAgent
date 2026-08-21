@@ -438,7 +438,6 @@ class VideoDirectorAgent(AgentInterface):
     # ─── 核心流程 ───
 
     async def process(self, input_data: Any, intervention: Optional[Dict] = None) -> Dict:
-        from config import settings
         
         input_data = self._merge_session_params(input_data)
         sid = input_data["session_id"]
@@ -505,7 +504,7 @@ class VideoDirectorAgent(AgentInterface):
             "comic-book": "美漫",
             "cyberpunk": "赛博朋克"
         }
-        style_name = style_map_zh.get(style_zh, style_zh)
+        style_map_zh.get(style_zh, style_zh)
         style_prompt = self._get_style_prompt(style_zh)
 
         # ═══ 介入：重新生成指定片段 ═══

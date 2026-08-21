@@ -13,7 +13,6 @@ Tests UI8 to UI18 backend capabilities:
 """
 
 import pytest
-import asyncio
 import tempfile
 from pathlib import Path
 

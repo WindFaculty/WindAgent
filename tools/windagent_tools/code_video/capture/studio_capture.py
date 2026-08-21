@@ -8,32 +8,23 @@ detailed FrameReports, and MediaProbeReports.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 import hashlib
-import json
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from windagent_core.errors.exceptions import NotFoundError, ValidationError
 from windagent_core.contracts.code_video import (
-    Action,
-    ActionType,
     CodeVideoPlan,
     Resolution,
     Scene,
-    VisualMode,
 )
 
-from windagent_tools.code_video.capture.base import CapturePort, CaptureStatus, TakeConfig
+from windagent_tools.code_video.capture.base import CapturePort, CaptureStatus
 from windagent_tools.code_video.capture.receipts import (
     FrameMetadata,
     FrameReport,
     MediaProbeReport,
     TakeReceipt,
-)
-from windagent_tools.code_video.renderer.studio_renderer import (
-    CodeStudioRenderer,
-    StudioLayoutState,
 )
 
 
@@ -209,11 +200,11 @@ class StudioCaptureEngine(CapturePort):
         computes deterministic frame hashes, and produces verified outputs.
         """
         # Execute scene on replay engine
-        studio_state = self.replay_engine.execute_scene(scene)
+        self.replay_engine.execute_scene(scene)
 
         # Total frames calculation: (duration_ms * fps) // 1000
         total_frames = (scene.duration_ms * fps) // 1000
-        frame_interval_ms = 1000.0 / fps
+        1000.0 / fps
 
         # Sample frames across scene
         frame_samples: List[FrameMetadata] = []

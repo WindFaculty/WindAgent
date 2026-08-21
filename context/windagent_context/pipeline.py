@@ -11,13 +11,11 @@ Each stage produces context items with full provenance tracking.
 from __future__ import annotations
 import logging
 import uuid
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
 
 from windagent_context.provenance import (
-    ContextItem, ContextItemProvenance, ProvenanceManifest,
-    SourceType, SensitivityLevel,
+    ContextItem, ProvenanceManifest,
 )
 from windagent_context.budget import TokenBudgetManager, estimate_tokens
 from windagent_context.compaction import ContextCompactor

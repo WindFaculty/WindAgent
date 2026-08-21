@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "phase": 1,
+  "recorded_at": "2026-08-01T01:05:00Z",
+  "repository": {
+    "name": "VideoClaw",
+    "owner": "HITsz-TMG",
+    "canonical_url": "https://github.com/HITsz-TMG/VideoClaw",
+    "pinned_commit_sha": "5a16ae23a4f1cb6886c44c0205f7b7e52a34c276",
+    "pinned_commit_sha_note": "Re-pin amendment (2026-08-01): the original Phase 1 pin 7b328a99...1234 was metadata-derived (verification_method METADATA_REVIEW_ONLY_NO_SOURCE_VENDORED) and does not exist upstream (GitHub API 422). Approved re-pin to the real upstream HEAD 5a16ae23a4f1cb6886c44c0205f7b7e52a34c276 (main branch, commit 2026-07-17T05:23:47Z, author hit-cxf). Verified via codeload tarball download + SHA-256 in Phase 4 intake.",
+    "commit_date": "2026-07-17T05:23:47Z",
+    "tree_sha256": "86a8af167d4fdbbfc077df457a96085453ba5d98439c6194400546c5df8577be",
+    "tree_sha256_note": "Content hash of the vendored snapshot (third_party/videoclaw/upstream/, 443 files): SHA-256 of the sorted '<sha256>  <relpath>' lines (LF) over all files. The earlier empty-string sentinel e3b0c442... was replaced because the source is now actually vendored and hash-verifiable (Phase 4 intake).",
+    "verification_method": "SOURCE_ARCHIVE_VERIFIED_REPIN"
+  },
+  "license": {
+    "primary": "MIT",
+    "license_file": "LICENSE",
+    "copyright": "Copyright (c) 2026 Video-Claw"
+  },
+  "quarantine_status": "ISOLATED_QUARANTINE"
+}

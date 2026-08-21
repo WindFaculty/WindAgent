@@ -474,7 +474,7 @@ class StudioRunService(StudioRunOrchestratorPort):
                     details={"revision_id": str(command.parent_revision_id)},
                 )
             source_artifact: Optional[StoryArtifactEnvelope] = None
-            if certification_mode_enabled():
+            if certification_mode_enabled(os.environ):
                 source_artifact = next(
                     (
                         artifact

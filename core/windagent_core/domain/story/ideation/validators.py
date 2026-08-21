@@ -12,8 +12,8 @@ from typing import List
 
 from windagent_core.domain.story.ideation.models import (
     CreativeBrief,
-    IdeaCandidate,
     IdeaCandidateSet,
+    SelectedIdea,
 )
 from windagent_core.domain.story.validation import (
     ValidationIssue,
@@ -145,7 +145,6 @@ def validate_selected_idea(
     selected: "SelectedIdea",
     candidate_set: "IdeaCandidateSet | None" = None,
 ) -> ValidationReport:
-    from windagent_core.domain.story.ideation.models import SelectedIdea
     from windagent_core.domain.story.ideation.scoring import SELECTION_POLICIES
 
     issues: List[ValidationIssue] = []

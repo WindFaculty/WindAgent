@@ -18,23 +18,35 @@ from __future__ import annotations
 import json
 import uuid
 from datetime import datetime, timezone
-from typing import Any, Dict, Optional
+from typing import TYPE_CHECKING, Any, Dict, Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from windagent_core.events.studio import StudioEventEnvelope
-from windagent_storage.outbox.models import OutboxRecord
-from windagent_storage.outbox.sql_repository import SqlOutboxRepository
-from windagent_storage.studio.repositories import (
-    SqlApprovalRepository,
-    SqlEpisodeRepository,
-    SqlSeriesProjectRepository,
-    SqlStoryArtifactRepository,
-    SqlStudioEventRepository,
-    SqlStudioRevisionRepository,
-    SqlStudioRunRepository,
+from windagent_storage.factory import (
+    create_sql_approval_repository,
+    create_sql_episode_repository,
+    create_sql_outbox_repository,
+    create_sql_series_project_repository,
+    create_sql_story_artifact_repository,
+    create_sql_studio_event_repository,
+    create_sql_studio_revision_repository,
+    create_sql_studio_run_node_repository,
+    create_sql_studio_run_repository,
 )
+from windagent_storage.outbox.models import OutboxRecord
 from windagent_storage.studio.run_nodes import SqlStudioRunNodeRepository
+
+if TYPE_CHECKING:
+    from windagent_storage.studio.repositories import (
+        SqlApprovalRepository,
+        SqlEpisodeRepository,
+        SqlSeriesProjectRepository,
+        SqlStoryArtifactRepository,
+        SqlStudioEventRepository,
+        SqlStudioRevisionRepository,
+        SqlStudioRunRepository,
+    )
 
 
 def _naive(dt: datetime) -> datetime:
@@ -59,14 +71,17 @@ class StudioUnitOfWork:
 
     async def __aenter__(self) -> StudioUnitOfWork:
         self.session = self._session_factory()
-        self.series = SqlSeriesProjectRepository(self.session)
-        self.episodes = SqlEpisodeRepository(self.session)
-        self.revisions = SqlStudioRevisionRepository(self.session)
-        self.artifacts = SqlStoryArtifactRepository(self.session)
-        self.approvals = SqlApprovalRepository(self.session)
-        self.runs = SqlStudioRunRepository(self.session)
-        self.nodes = SqlStudioRunNodeRepository(self.session)
-        self.events = SqlStudioEventRepository(self.session)
+        # Session-bound repositories are composed through the explicit storage
+        # factory — the single allowlisted construction point for concrete
+        # adapters inside the infrastructure package.
+        self.series = create_sql_series_project_repository(self.session)
+        self.episodes = create_sql_episode_repository(self.session)
+        self.revisions = create_sql_studio_revision_repository(self.session)
+        self.artifacts = create_sql_story_artifact_repository(self.session)
+        self.approvals = create_sql_approval_repository(self.session)
+        self.runs = create_sql_studio_run_repository(self.session)
+        self.nodes = create_sql_studio_run_node_repository(self.session)
+        self.events = create_sql_studio_event_repository(self.session)
         self._assigned_events = {}
         return self
 
@@ -90,7 +105,7 @@ class StudioUnitOfWork:
         if self.session is None:
             raise RuntimeError("StudioUnitOfWork context not active.")
         assigned = self._assigned_events.get(event.event_id) or event
-        repository = SqlOutboxRepository(self.session)
+        repository = create_sql_outbox_repository(self.session)
         await repository.save(
             OutboxRecord(
                 id=f"studio_{uuid.uuid4().hex[:12]}",

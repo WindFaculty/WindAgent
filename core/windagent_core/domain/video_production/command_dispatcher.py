@@ -8,7 +8,6 @@ logging inside a VideoProductionUnitOfWorkPort.
 
 from __future__ import annotations
 
-import json
 import uuid
 from typing import Any
 
@@ -17,7 +16,6 @@ from windagent_core.contracts.video_production.video_production_uow import (
 )
 from windagent_core.domain.video_production.workspace import (
     WorkspaceCommandRequest,
-    WorkspaceCommandResult,
     WorkspaceCommandStatus,
     compute_payload_hash,
 )

@@ -78,7 +78,7 @@ def test_trace_chain_span_lifecycle_and_completeness():
     step_span = chain.start_span("step_01", SpanKind.STEP, parent_span_id=wf_span.span_id)
     model_span = chain.start_span("model_01", SpanKind.MODEL_CALL, parent_span_id=step_span.span_id)
     tool_span = chain.start_span("tool_01", SpanKind.TOOL_CALL, parent_span_id=step_span.span_id)
-    verif_span = chain.start_span("verif_01", SpanKind.VERIFICATION, parent_span_id=task_span.span_id)
+    chain.start_span("verif_01", SpanKind.VERIFICATION, parent_span_id=task_span.span_id)
 
     model_span.finish(status="OK")
     tool_span.finish(status="OK")

@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0.0",
+  "candidate_sha": "1d98e26fe8923549e848e1a73cf32c6bb59944c1",
+  "checker": "scripts/check_architecture_imports.py",
+  "result": {
+    "verdict": "PASS",
+    "exit_code": 0,
+    "all_required_checks_executed": true,
+    "total_violations": 0,
+    "checks": [
+      {
+        "name": "import_boundaries",
+        "classification": "PASS",
+        "duration_ms": 6007
+      },
+      {
+        "name": "scaffold",
+        "classification": "PASS",
+        "duration_ms": 139
+      }
+    ]
+  },
+  "workspace_package_inventory": [
+    "apps/api",
+    "apps/cli",
+    "apps/worker",
+    "core",
+    "orchestration",
+    "intelligence",
+    "providers",
+    "tools",
+    "workflows",
+    "verification",
+    "context",
+    "memory",
+    "execution",
+    "storage",
+    "observability",
+    "evals",
+    "plugins",
+    "skills"
+  ],
+  "canonical_entry_points": [
+    "apps/cli/windagent_cli/main.py",
+    "apps/desktop/src/App.tsx",
+    "apps/desktop/src-tauri/src/main.rs"
+  ],
+  "evidence": {
+    "stdout": "logs/architecture_import_boundaries.stdout.log",
+    "stderr": "logs/architecture_import_boundaries.stderr.log",
+    "stdout_sha256": "0c0042a2843be9345362731bb5228b09163ea779098e27600ca22f1c9043770a"
+  }
+}

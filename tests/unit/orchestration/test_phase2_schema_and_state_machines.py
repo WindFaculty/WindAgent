@@ -19,7 +19,6 @@ import pytest
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 
-from windagent_storage.orm.models import BaseORM
 from windagent_storage.orm.v2_orchestration_models import BaseORM as V2BaseORM
 from windagent_storage.repositories.v2_orchestration_repositories import (
     SqlTaskRunRepository, SqlExecutionLeaseRepository, SqlRuntimeExecutionRepository

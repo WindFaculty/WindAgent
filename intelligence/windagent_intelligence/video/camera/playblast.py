@@ -20,9 +20,7 @@ from typing import List, Optional
 from pydantic import BaseModel, ConfigDict, Field
 
 from windagent_core.domain.video_production.cinematography import (
-    CameraPose,
     CameraRigPlan,
-    ScreenProjection,
     project_to_screen,
 )
 from windagent_core.domain.video_production.ids import CameraPathManifestId

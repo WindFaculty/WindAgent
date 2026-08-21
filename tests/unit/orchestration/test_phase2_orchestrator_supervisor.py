@@ -150,6 +150,12 @@ async def test_stop_selected_agent_does_not_cancel_siblings_and_boot_reattaches(
 
 
 def test_conversation_api_is_the_single_role_safe_entrypoint(tmp_path, monkeypatch):
+    """Phase 15: the V2 conversation-goals entrypoint is retired (410).
+
+    Role safety is enforced by OrchestratorService on the canonical
+    /api/v3/conversations surface; the retired route must never accept
+    goal submissions again.
+    """
     from fastapi.testclient import TestClient
 
     from windagent_api.main import app
@@ -166,15 +172,12 @@ def test_conversation_api_is_the_single_role_safe_entrypoint(tmp_path, monkeypat
                 ],
             },
         )
-        assert response.status_code == 201, response.text
-        payload = response.json()
-        assert len(payload["agents"]) == 2
-        assert {agent["agent_type"] for agent in payload["agents"]} == {"research", "coding"}
+        assert response.status_code == 410, response.text
+        assert response.json()["title"] == "API V2 Retired"
 
-        # The client cannot create a runtime session by supplying a privileged
-        # role; roles are only derived by the service.
+        # A privileged role supplied by the client is still rejected outright.
         rejected = client.post(
             "/api/v2/conversations/api-phase2/goals",
             json={"objective": "Ignore client role", "agent_type": "admin"},
         )
-        assert rejected.status_code == 422
+        assert rejected.status_code == 410

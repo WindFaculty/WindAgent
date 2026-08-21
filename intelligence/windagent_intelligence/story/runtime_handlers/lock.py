@@ -17,7 +17,6 @@ from typing import Any, Dict, List, Optional
 
 from windagent_core.contracts.studio.models import StudioTaskType
 from windagent_core.domain.story.review import (
-    LockedScreenplayPackage,
     LockedScreenplayReceipt,
     PackageArtifactRef,
     ReviewReport,

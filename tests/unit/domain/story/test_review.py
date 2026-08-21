@@ -10,7 +10,6 @@ from windagent_core.domain.story.ids import (
     ScreenplayDraftId,
 )
 from windagent_core.domain.story.review import (
-    READY_FOR_PRODUCTION,
     LockedScreenplayPackage,
     LockedScreenplayReceipt,
     PackageArtifactRef,

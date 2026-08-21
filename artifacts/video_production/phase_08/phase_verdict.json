@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "gate": "VP3D_P8_CHARACTER_MASTER_VERIFIED",
+  "status": "PASSED",
+  "generated_at": "2026-08-08T02:38:50.510329+00:00",
+  "check_count": 13,
+  "all_checks_pass": true,
+  "checked_profiles": [
+    "CharacterGeometryProfile",
+    "CharacterMaterialProfile",
+    "CharacterProportionProfile",
+    "FacialRigProfile",
+    "AnimationProfile",
+    "StyleFingerprint",
+    "CharacterMasterRevision",
+    "CharacterMaster"
+  ]
+}

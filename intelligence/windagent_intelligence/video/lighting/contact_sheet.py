@@ -25,7 +25,6 @@ from windagent_core.domain.video_production.ids import (
 )
 from windagent_core.domain.video_production.lighting import (
     LightRigPlan,
-    LightSpec,
 )
 
 HISTOGRAM_BINS = 16

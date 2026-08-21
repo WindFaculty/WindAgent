@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0.0",
+  "phase": 0,
+  "inputs": [
+    {
+      "path": "docs/video_production/plans/01_phase_00_03_protocol_governance.md",
+      "role": "execution plan"
+    },
+    {
+      "path": "road_map.md",
+      "role": "higher-priority roadmap authority"
+    },
+    {
+      "path": "README.md",
+      "role": "canonical local verification commands"
+    },
+    {
+      "path": ".github/workflows/ci.yaml",
+      "role": "canonical CI matrix"
+    },
+    {
+      "path": "1d98e26fe8923549e848e1a73cf32c6bb59944c1",
+      "role": "required immutable baseline commit"
+    },
+    {
+      "path": "https://github.com/WindFaculty/WindAgent/actions/runs/30456084211",
+      "role": "exact immutable Phase 7 CI evidence run for 6dab084abd3d46cc9f0c9e7dcbb6e65254b83057"
+    }
+  ],
+  "out_of_scope_confirmations": [
+    "No VideoClaw or ViMax source was added to the workspace or runtime.",
+    "No Director, storyboard, browser automation, Flow, media generation, or credit-consuming feature was implemented.",
+    "No existing project, task, artifact, or approval authority was changed."
+  ]
+}

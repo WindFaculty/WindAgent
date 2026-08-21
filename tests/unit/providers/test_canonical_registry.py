@@ -55,7 +55,7 @@ def test_failover_candidate_query_only_exact_revision():
 
     # Register endpoint 2 (OpenRouter with same model revision)
     disc_ep2 = [DiscoveredModel(raw_model_id="openai/gpt-4o-2024-05-13", canonical_name="gpt-4o-2024-05-13", provider_id="openrouter")]
-    b2 = registry.register_discovery_snapshot(endpoint_id="ep-openrouter-1", discovered_models=disc_ep2)[0]
+    registry.register_discovery_snapshot(endpoint_id="ep-openrouter-1", discovered_models=disc_ep2)[0]
 
     canonical_id = b1.canonical_model_id
 

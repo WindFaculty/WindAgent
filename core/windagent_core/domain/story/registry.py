@@ -12,7 +12,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Callable, Dict, List, Optional, Type
 
-from pydantic import BaseModel
 
 from windagent_core.domain.story.bibles.models import CharacterCanon, StoryBible, WorldBible
 from windagent_core.domain.story.bibles.validators import (

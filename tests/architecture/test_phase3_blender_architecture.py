@@ -61,7 +61,7 @@ class TestPhase3BlenderArchitecture:
             for mod in _imported_modules(content):
                 if "production_engines" in mod or "windagent_tools" in mod:
                     violations.append(f"{path.relative_to(ROOT)} imports {mod}")
-        assert not violations, f"core imports adapter package:\n" + "\n".join(violations)
+        assert not violations, "core imports adapter package:\n" + "\n".join(violations)
 
     def test_adapter_implements_production_engine_port(self):
         # Structural check against the runtime-checkable Protocol.
@@ -86,7 +86,7 @@ class TestPhase3BlenderArchitecture:
             for term in LEGACY_TERMS:
                 if term in content:
                     violations.append(f"{path.relative_to(ROOT)} contains {term}")
-        assert not violations, f"legacy Flow concepts leaked:\n" + "\n".join(violations)
+        assert not violations, "legacy Flow concepts leaked:\n" + "\n".join(violations)
 
     def test_no_hardcoded_machine_paths(self):
         violations = []

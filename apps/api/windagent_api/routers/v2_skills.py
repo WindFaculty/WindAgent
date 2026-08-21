@@ -4,8 +4,8 @@ Endpoints for querying installed skills and manifests.
 """
 
 from __future__ import annotations
-from typing import Any, Dict, List, Optional
-from fastapi import APIRouter, status
+from typing import Any, Dict, List
+from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
 from windagent_core.domain.lifecycle import utc_now

@@ -13,7 +13,6 @@ Covers (plan §4 "Kiểm thử"):
 """
 
 import hashlib
-import json
 
 import pytest
 
@@ -91,7 +90,6 @@ class TestFailClosedVersioning:
 
     def test_unknown_event_type_fails_closed(self):
         from windagent_core.events.video_production_ir import (
-            ProductionIrEventCatalog,
             ProductionIrEventEnvelope,
         )
 

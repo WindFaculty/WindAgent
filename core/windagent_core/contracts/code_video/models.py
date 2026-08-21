@@ -10,11 +10,10 @@ Canonical location: core — no workflow, tool, or infrastructure imports allowe
 from __future__ import annotations
 
 import csv
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from enum import Enum
 import io
 import json
-import re
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 import yaml

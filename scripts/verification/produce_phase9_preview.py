@@ -173,7 +173,7 @@ def main() -> int:
         f"passed={evidence['preview_valid']}."
     )
     if PHASE not in [str(e) for e in verdict.get("evidence_files", [])]:
-        ev = artifact_root / "video_production_3d" / PHASE / "preview"
+        artifact_root / "video_production_3d" / PHASE / "preview"
         verdict.setdefault("evidence_files", []).extend(
             [
                 f"artifacts/video_production_3d/{PHASE}/preview/evidence.json",

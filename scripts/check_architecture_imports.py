@@ -818,25 +818,16 @@ def check_composition_root_rule(root: Path, packages: dict, config: dict) -> lis
         "composition_roots", config.get("composition_roots", [])
     )
     if not composition_roots_config:
+        # Fail-closed default: only the canonical application composition
+        # packages are composition roots.  A policy that configures nothing
+        # must not blanket-exempt the whole workspace.
         composition_roots_config = [
-            "apps/api/**",
-            "apps/worker/**",
-            "apps/cli/**",
-            "orchestration/**",
-            "providers/**",
-            "storage/**",
-            "execution/**",
-            "tools/**",
-            "workflows/**",
-            "verification/**",
-            "context/**",
-            "memory/**",
-            "intelligence/**",
-            "observability/**",
-            "evals/**",
-            "plugins/**",
-            "skills/**",
-            "tests/",
+            "apps/api/windagent_api/composition.py",
+            "apps/api/windagent_api/composition/**",
+            "apps/worker/windagent_worker/composition.py",
+            "apps/worker/windagent_worker/composition/**",
+            "apps/cli/windagent_cli/composition.py",
+            "apps/cli/windagent_cli/composition/**",
         ]
 
     adapter_patterns = config.get("forbidden_patterns", {}).get(

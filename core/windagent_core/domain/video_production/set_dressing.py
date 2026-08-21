@@ -21,14 +21,13 @@ from __future__ import annotations
 
 import hashlib
 import json
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from windagent_core.domain.video_production.ids import (
     EnvironmentInstanceId,
     PropInstanceId,
-    SetDressingSceneId,
     SpatialFindingId,
 )
 

@@ -14,9 +14,6 @@ Executes the complete vertical lifecycle across all domains in canonical V3 arch
 10. Verify Provider Health & Route Lock (Domain: Providers / Routing)
 11. Verify System Health & Logs (Domain: Platform / Admin)
 """
-import pytest
-from fastapi.testclient import TestClient
-from windagent_api.main import app
 
 
 def test_full_system_lifecycle_certification(client):

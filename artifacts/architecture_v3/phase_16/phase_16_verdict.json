@@ -2,7 +2,7 @@
   "phase": "16",
   "status": "FAIL",
   "verdict": "CERTIFICATION_FAILED",
-  "timestamp": "2026-08-21T00:59:31.670263+00:00",
+  "timestamp": "2026-08-21T11:00:18.721101+00:00",
   "gates": {
     "G0_SOURCE_AUTHORITY": "FAIL",
     "G14_ARCH_CERTIFIED": "PASS",
@@ -21,9 +21,8 @@
     "G13_TESTS": "FAIL"
   },
   "blockers": [
-    "G0: Worktree not clean or SHA not verified. Dirty: 37 lines",
+    "G0: Worktree not clean or SHA not verified. Dirty: 357 lines",
     "Ruff lint failed with full policy (E4,E7,E9,F)",
-    "Missing evidence for phases: phase_00, phase_01, phase_03, phase_04, phase_05, phase_06, phase_07, phase_08, phase_09, phase_10, phase_11, phase_12, phase_14",
-    "G13: Failed test suites: ruff_lint, prior_verdicts"
+    "G13: Failed test suites: ruff_lint, pytest_architecture_phase16"
   ]
 }

@@ -7,7 +7,7 @@ when screenplay changes occur before committing revisions.
 
 from __future__ import annotations
 
-from typing import Any, Dict, List
+from typing import List
 from pydantic import BaseModel, Field
 
 from windagent_core.domain.video_production.screenplay_diff import ScreenplayDiffResult

@@ -6,7 +6,6 @@ Verifies GET /workflow, GET /runner, POST /pause, POST /resume, POST /stop, and 
 from __future__ import annotations
 
 import sys
-import uuid
 from pathlib import Path
 
 root = Path(__file__).resolve().parent.parent.parent

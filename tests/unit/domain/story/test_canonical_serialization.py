@@ -8,7 +8,6 @@ import pytest
 
 from windagent_core.domain.story import (
     ARTIFACT_SCHEMA_VERSION,
-    StoryContent,
     content_hash_of,
     validate_artifact_schema_version,
 )

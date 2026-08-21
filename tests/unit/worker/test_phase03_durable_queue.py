@@ -17,6 +17,7 @@ from windagent_storage.orm.v2_orchestration_models import ExecutionLeaseORM, Tas
 import windagent_storage.orm.v2_orchestration_models  # noqa: F401
 from windagent_storage.queue.submission_adapter import SqlWorkSubmissionAdapter
 from windagent_storage.queue.sql_queue import SqlDurableTaskQueue
+from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork
 from windagent_worker.runner import ProductionWorker
 
 
@@ -168,7 +169,7 @@ async def test_production_worker_durable_tick(db_manager):
         name="durable-test-worker",
         task_queue=queue,
         execution_registry=ExecutionRuntimeRegistry(allow_tool_simulation=True),
-        uow_factory=db_manager.session_factory,
+        uow_factory=lambda: SqlUnitOfWork(db_manager.session_factory),
     )
     await worker.start()
 

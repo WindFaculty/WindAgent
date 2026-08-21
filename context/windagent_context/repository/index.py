@@ -5,7 +5,7 @@ Manages symbol graph, dependency lookup, code retrieval, and stale context detec
 
 from __future__ import annotations
 import logging
-from typing import Dict, List
+from typing import Any, Dict, List
 
 from windagent_context.provenance import ContextItem, ContextItemProvenance
 from windagent_context.budget import estimate_tokens

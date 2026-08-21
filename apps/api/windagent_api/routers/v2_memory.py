@@ -5,7 +5,7 @@ Endpoints for querying short-term and long-term memory records via SqlUnitOfWork
 
 from __future__ import annotations
 from typing import Any, Dict, List, Optional
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, Field
 
 from windagent_core.domain.lifecycle import utc_now

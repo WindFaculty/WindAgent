@@ -1,10 +1,9 @@
 """Unit tests for Phase 6 — Outbox Runtime (Publisher, Retry, Replay & Shutdown Drain)."""
 
-import asyncio
 import uuid
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 import pytest
-from sqlalchemy import select, func
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 
 from windagent_core.events.envelope import EventEnvelope
@@ -13,7 +12,6 @@ from windagent_storage.outbox.models import OutboxRecord
 from windagent_storage.outbox.sql_repository import SqlOutboxRepository
 from windagent_observability.events.publisher import OutboxEventPublisher
 from windagent_observability.events.dead_letter import DeadLetterReplayer
-from windagent_observability.events.heartbeat import PublisherHeartbeat
 from windagent_observability.events.retry import NonRetryablePublicationError
 
 

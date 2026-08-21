@@ -30,7 +30,6 @@ from windagent_core.domain.video_production.enums import (
 from windagent_tools.media_assets.errors import (
     EmbeddedExecutableError,
     QuarantinedAssetError,
-    TrademarkRequiresApprovalError,
 )
 from windagent_tools.media_assets.provenance import AssetProvenanceService
 from windagent_tools.media_assets.trust import (

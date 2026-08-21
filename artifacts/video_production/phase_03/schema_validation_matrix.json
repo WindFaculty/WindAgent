@@ -1,0 +1,112 @@
+{
+  "schema_version": "1.0.0",
+  "executed_at": "2026-08-07T10:12:01.540637+00:00",
+  "valid_fixture": {
+    "issues": [],
+    "status": "PASSED"
+  },
+  "invalid_fixtures": {
+    "asset_missing_hash": {
+      "status": "PASSED",
+      "expected_rule": "ASSET_MISSING_HASH",
+      "detected_codes": [
+        "ASSET_MISSING_HASH"
+      ],
+      "issues": [
+        {
+          "code": "ASSET_MISSING_HASH",
+          "path": "assets[0].content_hash",
+          "message": "Asset ast_hero_portrait must carry a 64-char SHA-256 content hash."
+        }
+      ]
+    },
+    "broken_reference": {
+      "status": "PASSED",
+      "expected_rule": "BROKEN_REFERENCE",
+      "detected_codes": [
+        "BROKEN_REFERENCE",
+        "LOCKED_REVISION_MUTATION"
+      ],
+      "issues": [
+        {
+          "code": "BROKEN_REFERENCE",
+          "path": "dialogue/dlg_001/character_id",
+          "message": "Reference dialogue/dlg_001/character_id=CharacterId('chr_does_not_exist') does not exist."
+        },
+        {
+          "code": "LOCKED_REVISION_MUTATION",
+          "path": "approvals",
+          "message": "Locked revision content hash 65c1953626cf… does not match approval target hash 85d19eee234e…; the artifact was mutated after lock."
+        }
+      ]
+    },
+    "duplicate_id": {
+      "status": "PASSED",
+      "expected_rule": "DUPLICATE_ID",
+      "detected_codes": [
+        "DUPLICATE_ID",
+        "LOCKED_REVISION_MUTATION"
+      ],
+      "issues": [
+        {
+          "code": "DUPLICATE_ID",
+          "path": "ast_hero_portrait",
+          "message": "Duplicate asset id 'ast_hero_portrait'."
+        },
+        {
+          "code": "LOCKED_REVISION_MUTATION",
+          "path": "approvals",
+          "message": "Locked revision content hash 3a0788ee5f30… does not match approval target hash 85d19eee234e…; the artifact was mutated after lock."
+        }
+      ]
+    },
+    "missing_id": {
+      "status": "PASSED",
+      "expected_rule": "MISSING_ID",
+      "detected_codes": [
+        "MISSING_ID"
+      ],
+      "issues": [
+        {
+          "code": "MISSING_ID",
+          "path": "screenplay.scenes[0].scene_id",
+          "message": "scene_id is missing."
+        }
+      ]
+    },
+    "mutation_after_lock": {
+      "status": "PASSED",
+      "expected_rule": "LOCKED_REVISION_MUTATION",
+      "detected_codes": [
+        "LOCKED_REVISION_MUTATION"
+      ],
+      "issues": [
+        {
+          "code": "LOCKED_REVISION_MUTATION",
+          "path": "approvals",
+          "message": "Locked revision content hash 85d19eee234e… does not match approval target hash 6335b1842532…; the artifact was mutated after lock."
+        }
+      ]
+    },
+    "unordered_shot": {
+      "status": "PASSED",
+      "expected_rule": "UNORDERED_SHOT",
+      "detected_codes": [
+        "LOCKED_REVISION_MUTATION",
+        "UNORDERED_SHOT"
+      ],
+      "issues": [
+        {
+          "code": "UNORDERED_SHOT",
+          "path": "cinematic_plan.graph.shots",
+          "message": "Shots in scene scn_01 are not ordered (order 2 followed by 1)."
+        },
+        {
+          "code": "LOCKED_REVISION_MUTATION",
+          "path": "approvals",
+          "message": "Locked revision content hash 32ccf70444cd… does not match approval target hash 85d19eee234e…; the artifact was mutated after lock."
+        }
+      ]
+    }
+  }
+}

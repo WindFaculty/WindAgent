@@ -10,7 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 import re
-from typing import Any, Dict, List, Optional, Pattern, Sequence, Set, Tuple
+from typing import Any, Dict, List, Optional, Pattern, Set
 
 
 @dataclass(frozen=True)

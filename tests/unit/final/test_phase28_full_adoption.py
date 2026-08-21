@@ -7,9 +7,7 @@ fencing token isolation, secret redaction, and clean-clone build integrity.
 from __future__ import annotations
 
 import sys
-import os
 import time
-import json
 import subprocess
 from pathlib import Path
 
@@ -20,15 +18,9 @@ for pkg in ["core", "storage", "orchestration", "execution", "workflows", "tools
     if p not in sys.path:
         sys.path.insert(0, p)
 
-import pytest
 from fastapi.testclient import TestClient
 
-from windagent_core.domain.types import TaskId, SessionId
-from windagent_core.events.envelope import EventEnvelope
-from windagent_core.events.catalog import EventCatalog
-from windagent_orchestration.task_manager.service import TaskManager
-from windagent_worker.lease import DurableTaskLeaseManager, TaskLease
-from windagent_execution.registry import ExecutionRuntimeRegistry
+from windagent_worker.lease import DurableTaskLeaseManager
 from windagent_providers.registry.canonical_registry import CanonicalModelRegistryService
 from windagent_tools.registry import ToolRegistry
 from windagent_tools.security.permission_engine import PermissionEngine
@@ -37,17 +29,24 @@ from sidecar_manager import SidecarManager
 
 
 def test_gate_1_to_3_workspace_contracts_and_api_integration():
-    """Gates 1-3: Workspace unit, bounded context contracts, and API integration."""
+    """Gates 1-3: Workspace unit, bounded context contracts, and API integration.
+
+    Phase 15 update: /api/v2/tasks is retired; the canonical submit surface
+    is /api/v3/*. The tombstone must answer 410 and the canonical system
+    surface must stay live.
+    """
     with TestClient(v2_app) as client:
         start_t = time.perf_counter()
         res = client.post("/api/v2/tasks", json={"prompt": "E2E Phase 28 Submit", "workflow_name": "bugfix"})
         latency_ms = (time.perf_counter() - start_t) * 1000.0
 
-        assert res.status_code == 201
-        # SLA Check: Task submit latency p95 <= 100ms (excluding model latency)
-        assert latency_ms < 100.0, f"Task submit latency exceeded SLA: {latency_ms:.2f}ms > 100ms"
-        data = res.json()
-        assert data["task_id"] is not None
+        assert res.status_code == 410
+        assert res.json()["title"] == "API V2 Retired"
+        # SLA Check: tombstone + canonical health latency p95 <= 100ms
+        assert latency_ms < 100.0, f"Request latency exceeded SLA: {latency_ms:.2f}ms > 100ms"
+        health = client.get("/api/v3/system/health")
+        assert health.status_code == 200
+        assert health.json()["status"] == "healthy"
 
 
 def test_gate_4_to_6_worker_fencing_and_outbox_replay():
@@ -71,11 +70,15 @@ def test_gate_4_to_6_worker_fencing_and_outbox_replay():
 
 
 def test_gate_7_to_10_crash_recovery_database_events_and_websocket_replay():
-    """Gates 7-10: Crash recovery, database migrations, event taxonomy, and WebSocket reconnect."""
+    """Gates 7-10: Crash recovery, database migrations, event taxonomy, and WebSocket reconnect.
+
+    Phase 15 update: the V2 events listing is retired; realtime replay is
+    served by the canonical /ws hub (covered by dedicated G8 evidence).
+    """
     with TestClient(v2_app) as client:
         res = client.get("/api/v2/events?last_sequence=0")
-        assert res.status_code == 200
-        assert isinstance(res.json(), list)
+        assert res.status_code == 410
+        assert res.json()["title"] == "API V2 Retired"
 
 
 def test_gate_11_to_15_provider_failover_tools_plugins_context_and_evals():

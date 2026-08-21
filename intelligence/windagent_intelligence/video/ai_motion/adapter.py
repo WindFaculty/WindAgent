@@ -37,7 +37,6 @@ from windagent_core.domain.video_production.ai_motion import (
     MOTION_ADAPTER_COMPILER_VERSION,
     MotionCandidate,
     MotionCapability,
-    MotionFindingKind,
     MotionGenerationRequest,
     MotionValidationReport,
     MotionValidator,

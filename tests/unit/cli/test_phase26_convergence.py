@@ -17,8 +17,7 @@ for pkg in ["core", "storage", "orchestration", "execution", "workflows", "tools
     if p not in sys.path:
         sys.path.insert(0, p)
 
-import pytest
-from windagent_cli.main import main, doctor, run_task, task_list, list_providers, list_tools, run_eval, architecture_check
+from windagent_cli.main import main, doctor, architecture_check
 from sidecar_manager import SidecarManager, get_free_port
 
 

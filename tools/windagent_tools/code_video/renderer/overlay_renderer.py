@@ -7,12 +7,12 @@ and concept callout overlays for scenes S06, S07, S08, S09, S10, S13, and S19.
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from enum import Enum
 import hashlib
 import html
 import json
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict
 
 from windagent_tools.code_video.renderer.theme import CodeVideoVisualTheme
 
@@ -109,7 +109,7 @@ class OverlayCardState:
         elif self.position == OverlayPosition.BOTTOM_CENTER:
             pos_style += f"left: 50%; transform: translateX(-50%); bottom: {insets.action_safe_dy}px; max-width: 1200px; width: 90%;"
         elif self.position == OverlayPosition.CENTER:
-            pos_style += f"left: 50%; top: 50%; transform: translate(-50%, -50%); max-width: 1200px; width: 90%;"
+            pos_style += "left: 50%; top: 50%; transform: translate(-50%, -50%); max-width: 1200px; width: 90%;"
         else:
             pos_style += f"left: {insets.action_safe_dx}px; top: {insets.action_safe_dy}px; right: {insets.action_safe_dx}px; bottom: {insets.action_safe_dy}px;"
 

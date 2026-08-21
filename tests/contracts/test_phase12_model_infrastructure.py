@@ -12,9 +12,6 @@ Verifies:
 
 from __future__ import annotations
 
-import pytest
-from fastapi.testclient import TestClient
-from windagent_api.main import app
 
 
 # ─────────────────────────────────────────────────────────────────────────────

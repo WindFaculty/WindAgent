@@ -17,7 +17,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import Field, field_validator
 
 from windagent_core.contracts.studio.errors import StudioValidationError
 from windagent_core.domain.story.canonical import StoryContent
@@ -25,7 +25,6 @@ from windagent_core.domain.story.ids import (
     CreativeBriefId,
     SelectedIdeaId,
 )
-from windagent_core.domain.story.validation import ValidationSeverity
 from windagent_core.domain.video_production.ids import StoryConceptId
 
 __all__ = [

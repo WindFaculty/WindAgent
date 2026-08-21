@@ -20,7 +20,7 @@ budget, output artifact types, and scheduler-ready node generation.
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from windagent_orchestration.production.approvals import ProductionApprovalGate
 from windagent_orchestration.production.scheduler import ProductionStepNode

@@ -15,7 +15,6 @@ from windagent_core.domain.story.review.models import (
     READY_FOR_PRODUCTION,
     LockedScreenplayPackage,
     LockedScreenplayReceipt,
-    PackageArtifactRef,
     ReviewFinding,
     ReviewReport,
     RevisionProposal,

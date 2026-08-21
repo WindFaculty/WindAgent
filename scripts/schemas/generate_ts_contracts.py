@@ -5,9 +5,7 @@ and exports them to `tests/fixtures/generated_contracts.ts`.
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
-from typing import Any, Dict
 
 CONTRACT_TS_OUTPUT_PATH = Path("tests/fixtures/generated_contracts.ts")
 

@@ -1,7 +1,7 @@
 """Unit tests for Phase 10 — Health Dependency Wiring & Fail-Closed Behavior."""
 
 import pytest
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import MagicMock
 
 from windagent_observability.health.contracts import (
     HealthStatus,

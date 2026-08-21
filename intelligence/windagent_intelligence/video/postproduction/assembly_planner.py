@@ -9,7 +9,6 @@ loudness normalization, subtitle multiplexing, thumbnail generation, and proxy p
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Sequence
 
 from windagent_core.domain.video_production.postproduction import (
     EditDecisionList,

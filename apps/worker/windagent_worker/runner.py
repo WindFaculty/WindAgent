@@ -56,7 +56,14 @@ class ProductionWorker:
         self.heartbeat_repo = heartbeat_repo or (worker_container.heartbeat_repo if worker_container else None)
         self.execution_registry = execution_registry or (worker_container.execution_registry if worker_container else ExecutionRuntimeRegistry())
         self.cancellation_broadcaster = CancellationBroadcaster()
-        self.uow_factory = uow_factory or (worker_container.uow_factory if worker_container else None)
+        # Zero-argument factory returning the concrete unit of work; built by
+        # the worker composition root. The pipeline finalizer never constructs
+        # infrastructure itself.
+        self.uow_factory = uow_factory or (
+            getattr(worker_container, "sql_uow_factory", None)
+            if worker_container
+            else None
+        )
         self.heartbeat_interval_sec = heartbeat_interval_sec
         self.studio_reconciler = studio_reconciler or (
             worker_container.studio_reconciler if worker_container else None

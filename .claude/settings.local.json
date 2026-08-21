@@ -23,7 +23,9 @@
       "Bash(set -x)",
       "Bash(MSYS2_ARG_CONV_EXCL=* uv run python scripts/check_version_consistency.py --root //nonexistent)",
       "Bash(echo \"EXIT=$?\")",
-      "PowerShell(uv run *)"
+      "PowerShell(uv run *)",
+      "Bash(rtk --version)",
+      "Bash(rtk *)"
     ]
   }
 }

@@ -4,7 +4,6 @@ SQLAlchemy Declarative ORM Models for Video Production API V2 Foundation (Stage 
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
 from sqlalchemy import (
     Column, DateTime, Index, Integer, String, Text, UniqueConstraint
 )

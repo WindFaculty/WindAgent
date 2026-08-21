@@ -45,9 +45,7 @@ from windagent_storage.orm.v3_models import (
     ProviderRoutingAuditV3ORM,
     ProviderVendorORM,
 )
-from windagent_storage.repositories.v3_routing_repositories import (
-    SQLEndpointBindingRepository,
-)
+from windagent_storage.factory import create_sql_endpoint_binding_repository
 from windagent_storage.security.encryption import encrypt
 
 
@@ -60,7 +58,7 @@ class SQLProviderManagementRepository(ProviderManagementRepositoryPort):
 
     def __init__(self, session: Session):
         self.session = session
-        self._binding_repo = SQLEndpointBindingRepository(session)
+        self._binding_repo = create_sql_endpoint_binding_repository(session)
 
     # ------------------------------------------------------------------ #
     # Vendor + credential + endpoint

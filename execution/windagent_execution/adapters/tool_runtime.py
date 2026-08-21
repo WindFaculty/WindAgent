@@ -5,6 +5,7 @@ Executes windagent_tools within isolated runtime context and handles fencing tok
 
 from __future__ import annotations
 import logging
+import os
 import uuid
 from datetime import datetime, timezone
 from typing import Dict, Any
@@ -71,7 +72,7 @@ class ToolRuntimeAdapter(ExecutionRuntimePort):
                     status=RuntimeStatusEnum.COMPLETED,
                     result_data=res if isinstance(res, dict) else {"output": str(res)},
                 )
-            elif self.allow_simulation and not certification_mode_enabled():
+            elif self.allow_simulation and not certification_mode_enabled(os.environ):
                 # Explicit test/development compatibility seam. Certification
                 # mode always rejects it, even if a caller enables the flag.
                 self._statuses[handle_id] = RuntimeStatusEnum.COMPLETED
@@ -83,7 +84,7 @@ class ToolRuntimeAdapter(ExecutionRuntimePort):
                 )
             else:
                 error = "TOOL_RUNTIME_UNAVAILABLE: no ToolRegistry execution authority"
-                if self.allow_simulation and certification_mode_enabled():
+                if self.allow_simulation and certification_mode_enabled(os.environ):
                     error = (
                         "CERTIFICATION_VIOLATION: tool runtime simulation is forbidden "
                         "in certification mode"

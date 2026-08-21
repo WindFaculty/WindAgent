@@ -5,22 +5,19 @@ unknown action default DENY, destructive action approval, hard-deny rules, norma
 and shared decision_id in permission events & audit records.
 """
 
-import pytest
 import os
 from windagent_core.domain.types import ToolInvocationId, SessionId, TaskId, DecisionId
 from windagent_core.contracts.tools import ToolInvocation, ToolResult
 from windagent_core.security.types import (
-    PermissionEvaluationRequest, PermissionDecision, SecurityAuditContext, Principal, RiskLevel
+    PermissionEvaluationRequest, SecurityAuditContext, Principal, RiskLevel
 )
-from windagent_core.errors.exceptions import PermissionDeniedError, WindAgentError
 from windagent_tools.security.permission_engine import PermissionEngine, normalize_and_validate_path
-from windagent_tools.base import ToolDefinition, ToolExecutionContext, ToolRiskLevel
 
 
 def test_canonical_tool_models():
     inv_id = ToolInvocationId.generate()
-    sess_id = SessionId.generate()
-    task_id = TaskId.generate()
+    SessionId.generate()
+    TaskId.generate()
 
     inv = ToolInvocation(
         id=inv_id,

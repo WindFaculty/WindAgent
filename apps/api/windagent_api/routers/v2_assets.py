@@ -14,7 +14,7 @@ from __future__ import annotations
 import uuid
 from typing import Any, Dict, Optional
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
+from fastapi import APIRouter, HTTPException, Query, status
 from pydantic import BaseModel, Field
 
 from windagent_core.domain.video_production.asset_command_handlers import AssetCommandHandler

@@ -16,7 +16,6 @@ from __future__ import annotations
 
 import datetime
 import json
-import os
 import sys
 from pathlib import Path
 
@@ -26,7 +25,6 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from scripts.verification.secret_redactor import sanitize_structure
-from scripts.verification.test_environment_builder import TestEnvironmentBuilder
 from tests.fixtures.canonical_bunny_episode import build_canonical_bunny_episode
 
 

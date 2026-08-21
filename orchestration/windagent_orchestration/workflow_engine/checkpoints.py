@@ -8,7 +8,6 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
-from windagent_core.contracts.repositories.unit_of_work import UnitOfWorkFactory
 
 
 @dataclass

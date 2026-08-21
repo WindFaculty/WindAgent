@@ -11,10 +11,8 @@ import pytest
 
 from windagent_core.errors.exceptions import ValidationError
 from windagent_tools.code_video.workspace.golden_builder import (
-    CHECKPOINT_STEPS,
     CheckpointDefinition,
     GoldenTutorialBuilder,
-    STEP_00_INIT_AGENT_CODE,
     STEP_00_INIT_TEST_CODE,
     STEP_01_MESSAGE_CODE,
     STEP_02_CONFIG_CODE,

@@ -15,21 +15,12 @@ from __future__ import annotations
 import json
 from pathlib import Path
 import pytest
-from typing import Any, Dict, List
 
-from windagent_core.errors.exceptions import NotFoundError, ValidationError
+from windagent_core.errors.exceptions import NotFoundError
 from windagent_tools.code_video.recording import (
     PassCatalog,
-    PassDefinition,
-    PassRecord,
     PassStatus,
-    PassType,
-    RecordingManifest,
-    RecordingVerificationReport,
     RecordingVerifier,
-    SecretExposureMatch,
-    SecretPattern,
-    SecretScanResult,
     SecretScanner,
     Video02RecordingEngine,
 )

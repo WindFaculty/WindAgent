@@ -12,12 +12,10 @@ Validates technical compliance of captured visual takes against Video 02 quality
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-import re
-from typing import Any, Dict, List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Optional
 
-from windagent_core.contracts.code_video import CodeVideoPlan, Scene
+from windagent_core.contracts.code_video import Scene
 from windagent_tools.code_video.capture.receipts import (
-    FrameReport,
     MediaProbeReport,
     TakeReceipt,
 )

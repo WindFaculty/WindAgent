@@ -3,10 +3,8 @@ Unit Tests for Workflow Engine, DAG Validation, Fan-Out/Fan-In, Checkpoint/Resum
 """
 
 import pytest
-import time
 from windagent_orchestration.workflow_engine import (
-    WorkflowDefinition, WorkflowNode, WorkflowEdge,
-    WorkflowEngine, WorkflowValidator, WorkflowGraph, DAGValidationError
+    WorkflowDefinition, WorkflowNode, WorkflowEngine, WorkflowValidator, WorkflowGraph, DAGValidationError
 )
 
 
@@ -44,7 +42,7 @@ def test_workflow_fan_out_fan_in():
 
     # Mark root dispatched & completed
     engine.mark_node_dispatched("run_fan", "root")
-    ready = pytest.helpers.async_run(engine.complete_node("run_fan", "root", {"status": "success"})) if hasattr(pytest, "helpers") else None
+    pytest.helpers.async_run(engine.complete_node("run_fan", "root", {"status": "success"})) if hasattr(pytest, "helpers") else None
 
 
 @pytest.mark.asyncio

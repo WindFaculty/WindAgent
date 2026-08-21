@@ -11,11 +11,9 @@ Proves ban_ke_hoach.md §1 multi-process requirements:
 from __future__ import annotations
 
 import multiprocessing as mp
-import os
 import tempfile
 from pathlib import Path
 
-import pytest
 
 from windagent_storage.database.sync_factory import make_sync_session_factory, sync_db_url
 from windagent_storage.orm.models import BaseORM

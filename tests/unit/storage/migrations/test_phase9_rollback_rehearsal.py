@@ -1,6 +1,5 @@
 """Unit tests for Phase 9 — Rollback & Backup Restoration Rehearsal."""
 
-import os
 import shutil
 import tempfile
 from pathlib import Path

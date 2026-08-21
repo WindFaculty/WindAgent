@@ -48,6 +48,7 @@ from windagent_storage.orm.models import BaseORM
 from windagent_storage.queue.sql_queue import SqlDurableTaskQueue
 from windagent_storage.studio.run_nodes import SqlStudioRunNodeRepository
 from windagent_storage.studio.task_submission import StudioTaskSubmissionAdapter
+from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork
 from windagent_storage.unit_of_work.studio_uow import StudioUnitOfWork
 from windagent_worker.runner import ProductionWorker
 from windagent_worker.studio_runtime import (
@@ -183,6 +184,7 @@ async def _adapter(db, **kwargs) -> StudioRuntimeAdapter:
     return StudioRuntimeAdapter(
         handler_registry=registry,
         session_factory=db.session_factory,
+        studio_uow_factory=lambda: StudioUnitOfWork(db.session_factory),
         **kwargs,
     )
 
@@ -582,7 +584,7 @@ async def _make_worker(db, *, studio_reconciler=None, studio_recovery=None, **ru
         name="a5-test-worker",
         task_queue=SqlDurableTaskQueue(db.session_factory),
         execution_registry=registry,
-        uow_factory=db.session_factory,
+        uow_factory=lambda: SqlUnitOfWork(db.session_factory),
         studio_reconciler=studio_reconciler,
         studio_recovery=studio_recovery,
     )
@@ -675,7 +677,7 @@ async def test_malformed_studio_result_is_finalized_as_failure_without_dag_advan
         name="malformed-studio-result-worker",
         task_queue=SqlDurableTaskQueue(db.session_factory),
         execution_registry=registry,
-        uow_factory=db.session_factory,
+        uow_factory=lambda: SqlUnitOfWork(db.session_factory),
         studio_reconciler=service,
     )
     await worker.start()
@@ -685,8 +687,6 @@ async def test_malformed_studio_result_is_finalized_as_failure_without_dag_advan
     assert "STUDIO_RESULT_INVALID" in tick["error"]
     assert (await _node(db, run_id, "idea.generate"))["status"] == "DISPATCHED"
     assert await _artifact_count(db) == 0
-
-    from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork
 
     async with SqlUnitOfWork(db.session_factory) as uow:
         task = await uow.task_runs.get_by_id(tick["task_id"])

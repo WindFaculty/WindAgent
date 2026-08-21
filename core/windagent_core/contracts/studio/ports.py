@@ -18,7 +18,7 @@ Authority rules:
 
 from __future__ import annotations
 
-from typing import Any, Awaitable, Dict, List, Optional, Protocol, TYPE_CHECKING, runtime_checkable
+from typing import Any, Dict, List, Optional, Protocol, TYPE_CHECKING, runtime_checkable
 
 from windagent_core.contracts.studio.ids import (
     ArtifactId,
@@ -28,11 +28,9 @@ from windagent_core.contracts.studio.ids import (
     StudioRunId,
 )
 from windagent_core.contracts.studio.models import (
-    StudioArtifactRef,
     StudioEventEnvelope,
     StudioRouteProvenance,
     StudioTaskEnvelope,
-    StudioTaskResult,
 )
 from windagent_core.domain.video_production.ids import VideoProjectId  # noqa: F401
 

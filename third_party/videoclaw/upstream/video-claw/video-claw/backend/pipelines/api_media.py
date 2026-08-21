@@ -3,10 +3,7 @@ from typing import Any, Optional
 
 from models.image_client import ImageClient
 from models.config_model import (
-    image_capabilities,
     list_api_models,
-    media_capabilities,
-    model_ability_tags,
     parse_api_model,
     video_capabilities,
 )

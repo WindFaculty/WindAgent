@@ -355,7 +355,6 @@ class CharacterDesignerAgent(AgentInterface):
                                asset_type: str, species: str = "", vlm_model: str = "qwen3.5-plus") -> tuple:
         """使用 VLM 从多个版本中选择最好的一张"""
         from models.vlm_client import VLM
-        import re
 
         if not image_paths:
             return None, None

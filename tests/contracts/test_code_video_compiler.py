@@ -7,10 +7,9 @@ from __future__ import annotations
 import csv
 from pathlib import Path
 import tempfile
-import pytest
 
 from windagent_tools.code_video.compiler import CodeVideoScriptCompiler
-from windagent_workflows.code_video.contracts import CodeVideoPlan, VisualMode
+from windagent_workflows.code_video.contracts import CodeVideoPlan
 
 
 class TestCodeVideoCompiler:

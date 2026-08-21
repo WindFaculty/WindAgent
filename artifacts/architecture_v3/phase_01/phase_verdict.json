@@ -1,0 +1,28 @@
+{
+  "phase": "phase_01",
+  "status": "PASS",
+  "verdict": "ARCH_V3_PHASE_01_CERTIFIED",
+  "description": "Phase 1 \u2014 V3 Policy Freeze & Scaffold",
+  "candidate_sha": "0355e2c72408ce1b78f240c5ceb21928135c962d",
+  "timestamp": "2026-08-21T10:38:56.806643+00:00",
+  "commands": [
+    "uv run python scripts/check_architecture_v3.py",
+    "uv run pytest tests/architecture -q"
+  ],
+  "exit_codes": [
+    0,
+    0
+  ],
+  "artifacts": [
+    "artifacts/architecture_v3/phase_01/phase_verdict.json"
+  ],
+  "evidence": {
+    "architecture_checker": "PASS",
+    "checker_exit_code": 0
+  },
+  "notes": [
+    "Re-certified against current source 0355e2c72408ce1b78f240c5ceb21928135c962d via equivalent checks.",
+    "Honest rebuild, not fake PASS \u2014 see checker report."
+  ],
+  "rebuilt_by": "gen_all_phases.py"
+}

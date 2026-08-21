@@ -9,9 +9,6 @@ from fastapi.testclient import TestClient
 
 from windagent_api.main import app
 from windagent_core.domain.video_production.state_recovery import (
-    ProductionRecoverySnapshot,
-    compute_snapshot_checksum,
-    sanitize_recovery_payload,
     create_recovery_snapshot,
 )
 from windagent_core.domain.video_production.conflict_resolution_service import (
@@ -21,7 +18,6 @@ from windagent_core.domain.video_production.conflict_resolution_service import (
     ThreeWayDiffEngine,
     ConflictClassification,
 )
-from windagent_core.errors.exceptions import ValidationError
 
 
 @pytest.fixture(autouse=True)
@@ -245,21 +241,20 @@ def test_conflict_resolution_strategies():
 
 
 def test_api_v2_recovery_reconcile_and_conflict():
+    """Phase 15: the V2 recovery/conflict HTTP surface is retired (410).
+
+    The ConflictResolutionService / recovery domain logic above remains
+    canonical; the retired /api/v2/recovery|conflict routes are pinned here.
+    """
     client = TestClient(app)
 
-    # 1. Reconcile matching base
     resp_reconcile = client.get("/api/v2/recovery/reconcile?project_id=proj_api_g&client_base_revision_id=rev_01&client_base_sequence=1")
-    assert resp_reconcile.status_code == 200
-    rec_data = resp_reconcile.json()
-    assert rec_data["status"] in ["MATCHED", "STALE_DRAFT_DETECTED"]
+    assert resp_reconcile.status_code == 410
+    assert resp_reconcile.json()["title"] == "API V2 Retired"
 
-    # 2. Check 409 Stale Edit rejection
     resp_stale = client.post("/api/v2/conflict/check-stale-edit?project_id=proj_api_g&client_base_revision_id=rev_stale_old&server_latest_revision_id=rev_02")
-    assert resp_stale.status_code == 409
-    stale_json = resp_stale.json()["detail"]
-    assert stale_json["code"] == "REJECTED_STALE"
+    assert resp_stale.status_code == 410
 
-    # 3. Three-way diff via API
     diff_payload = {
         "project_id": "proj_api_g",
         "base_revision_id": "rev_01",
@@ -268,11 +263,8 @@ def test_api_v2_recovery_reconcile_and_conflict():
         "latest_payload": {"revision_id": "rev_02", "title": "Remote Title", "scenes": []},
     }
     resp_diff = client.post("/api/v2/conflict/three-way-diff", json=diff_payload)
-    assert resp_diff.status_code == 200
-    diff_data = resp_diff.json()
-    assert "overall_classification" in diff_data
+    assert resp_diff.status_code == 410
 
-    # 4. Resolve Conflict via API
     resolve_payload = {
         "project_id": "proj_api_g",
         "base_revision_id": "rev_01",
@@ -281,7 +273,4 @@ def test_api_v2_recovery_reconcile_and_conflict():
         "resolved_by": "user:test_runner",
     }
     resp_resolve = client.post("/api/v2/conflict/resolve", json=resolve_payload)
-    assert resp_resolve.status_code == 200
-    res_data = resp_resolve.json()
-    assert res_data["strategy"] == "ACCEPT_REMOTE"
-    assert res_data["resulting_revision_id"] is not None
+    assert resp_resolve.status_code == 410

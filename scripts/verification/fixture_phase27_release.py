@@ -89,7 +89,7 @@ def write_fixture_set(out_dir: Path) -> Path:
         "phase_0_to_20_reports_passed": True,
         "phase_21_verdict_present": True,
         "phase_22_23_25_26_verdicts_passed": True,
-        "phase_24_verdict_present": True,
+        "phase_24_executable_gate_present": True,
         "final_bundle_present": True,
     })
     ev_validation["phase_lineage"] = {

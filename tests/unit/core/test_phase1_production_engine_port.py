@@ -12,14 +12,11 @@ Proves (plan §4 "Kiểm thử"):
 
 import inspect
 
-import pytest
 
 from windagent_core.contracts.video_production import ProductionEnginePort
 from windagent_core.domain.video_production import (
     DerivedArtifact,
     EngineJobReceipt,
-    ProductionIrDocument,
-    ProductionIrMigrator,
 )
 from windagent_core.domain.video_production.ids import EngineJobId
 from windagent_core.domain.video_production.production_ir.enums import (
@@ -33,10 +30,8 @@ from windagent_core.events.video_production_ir import (
     ProductionIrEventTransitions,
 )
 
-from tests.fixtures.video_production.fixture_builder import build_valid_package
 from tests.fixtures.video_production.ir_fixture_builder import (
     build_derived_artifact,
-    build_engine_receipt,
     build_valid_ir,
     build_valid_shot_intent,
 )

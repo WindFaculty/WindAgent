@@ -3,17 +3,13 @@
 from __future__ import annotations
 
 import json
-import tempfile
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from windagent_cli.composition import SocialReportCommandComposer
 from windagent_cli.main import main, run_social_report
 from windagent_workflows.social_research import (
     REPORT_SCHEMA_VERSION,
-    ModelCallReceipt,
-    ModelRoute,
     SocialResearchConfig,
     SocialResearchResult,
     SocialResearchWorkflow,

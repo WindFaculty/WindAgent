@@ -14,7 +14,6 @@ from __future__ import annotations
 
 import asyncio
 import json
-import os
 import sys
 import time
 import platform
@@ -31,12 +30,11 @@ for pkg_dir in [root, root / "core", root / "storage", root / "orchestration", r
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from sqlalchemy import text
 from windagent_storage.orm.v2_orchestration_models import (
-    BaseORM as V2BaseORM, WorkflowStepRunORM, RuntimeExecutionORM, TaskRunORM
+    BaseORM as V2BaseORM, WorkflowStepRunORM, RuntimeExecutionORM
 )
 from windagent_orchestration import (
-    OrchestrationV2Container, TaskState, WorkflowDefinition, WorkflowNode, WorkflowValidator, TaskPriority
+    OrchestrationV2Container, WorkflowDefinition, WorkflowNode, WorkflowValidator, TaskPriority
 )
-from windagent_orchestration.ports import ExecutionRequest
 from windagent_execution import FakeRuntimeAdapter
 from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork
 from windagent_orchestration.recovery import RecoveryManager
@@ -278,7 +276,7 @@ async def run_measured_benchmark() -> Dict[str, Any]:
     # Also save to artifacts/orchestration_v2/benchmark_report.json
     (root / "artifacts" / "orchestration_v2" / "benchmark_report.json").write_text(json.dumps(report, indent=2))
 
-    print(f"Orchestration V2 empirical benchmark completed successfully!")
+    print("Orchestration V2 empirical benchmark completed successfully!")
     print(f"Report saved to {out_dir / 'benchmark_report.json'}")
     return report
 

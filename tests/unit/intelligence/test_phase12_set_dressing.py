@@ -26,6 +26,7 @@ from windagent_core.domain.video_production.set_dressing import (
     ForbiddenVolume,
     InteractionAnchor,
     NavigationZone,
+    SetDressingPlan,
     SupportSurface,
     SpatialFindingKind,
     Vec3,
@@ -127,7 +128,7 @@ def _char(id: str, anchor: str = "chair_spot", pos=None, facing=None) -> Charact
 # EnvironmentBuilder
 # ---------------------------------------------------------------------------
 def test_environment_builder_minimal_empty_scene():
-    env = _env_spec()
+    _env_spec()
     b = EnvironmentBuilder()
     spec = b.build(
         EnvironmentInstance(

@@ -22,18 +22,10 @@ from pathlib import Path
 import pytest
 
 from windagent_core.contracts.video_production.production_engine import ProductionEnginePort
-from windagent_core.domain.video_production.ids import EngineJobId, ProductionRevisionId, VideoProjectId
+from windagent_core.domain.video_production.ids import EngineJobId
 from windagent_core.domain.video_production.production_ir.enums import (
     DerivedArtifactKind,
     EngineJobStatus,
-    IrAssetFormat,
-)
-from windagent_core.domain.video_production.production_ir.models import (
-    DerivedArtifact,
-    EngineJobReceipt,
-    RenderIntent,
-    SceneDescription,
-    ShotExecutionIntent,
 )
 
 from windagent_tools.production_engines.blender import (
@@ -43,21 +35,16 @@ from windagent_tools.production_engines.blender import (
     BlenderEngineAdapter,
     BlenderEngineConfig,
     BlenderGpuProbe,
-    BlenderInstallationCandidate,
     BlenderInstallationDetector,
-    BlenderVersionValidator,
     create_blender_engine_adapter,
 )
 from windagent_tools.production_engines.blender.runtime.process import (
     BlenderProcessPort,
     BlenderProcessResult,
 )
-from windagent_tools.production_engines.blender.validator import BlenderVersionPolicy
 
 from tests.fixtures.video_production.ir_fixture_builder import (
-    build_derived_artifact,
     build_valid_ir,
-    sha256_hex,
 )
 
 

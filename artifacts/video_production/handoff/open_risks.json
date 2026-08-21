@@ -1,0 +1,140 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-08-21T13:20:06.852158+00:00",
+  "note": "Open risks carried into Phase 4-7. None block the Phase 0-3 handoff.",
+  "risk_count": 14,
+  "vp0": {
+    "gate": "VP0_BASELINE_FROZEN",
+    "status": "PASSED",
+    "blocking_reasons": [],
+    "required_resolution": "None. Baseline 1d98e26 is frozen and reproducible from a clean checkout (KB-003 resolved by the build/verify finalizer refactor)."
+  },
+  "risks": [
+    {
+      "phase": 0,
+      "risk_id": "R-001",
+      "category": null,
+      "description": "The full baseline test suite is not reproducible from a clean checkout because it relies on ignored Phase 7 evidence.",
+      "severity": "HIGH",
+      "status": "RESOLVED",
+      "mitigation": "Resolved by baseline 1d98e26: full Python suite reproduced from a clean detached checkout (949 passed, 3 skipped, 0 failed) with 0 tracked mutations."
+    },
+    {
+      "phase": 0,
+      "risk_id": "R-002",
+      "category": null,
+      "description": "Existing CI-evidence validation cannot execute without external CI artifact inputs and run metadata.",
+      "severity": "MEDIUM",
+      "status": "RESOLVED",
+      "mitigation": "Resolved by publishing the CI artifact download, schema, metadata, and validation invocation as baseline evidence (13 immutable artifacts validated, run 30456084211)."
+    },
+    {
+      "phase": 0,
+      "risk_id": "R-003",
+      "category": null,
+      "description": "The local Python, uv, and Node versions differ from the repository CI matrix.",
+      "severity": "MEDIUM",
+      "status": "OPEN_NONBLOCKING",
+      "mitigation": "Use the CI-pinned toolchain for the unblock rerun and compare receipts."
+    },
+    {
+      "phase": 0,
+      "risk_id": "R-004",
+      "category": null,
+      "description": "npm ci reports known dependency vulnerabilities in both frontend lockfiles.",
+      "severity": "MEDIUM",
+      "status": "OPEN_NONBLOCKING",
+      "mitigation": "Carry the lockfile findings into the Phase 1 dependency/security inventory; do not mutate the baseline in Phase 0."
+    },
+    {
+      "phase": 1,
+      "risk_id": "RSK-VP1-001",
+      "category": "Upstream Mutation",
+      "description": "VideoClaw repository main branch changes after review.",
+      "severity": "MEDIUM",
+      "status": null,
+      "mitigation": "Re-pin amendment (2026-08-01): pinned commit SHA 5a16ae23a4f1cb6886c44c0205f7b7e52a34c276 (real upstream HEAD, main, 2026-07-17) and content sha256 86a8af... are frozen. The original metadata pin 7b328a99...1234 did not exist upstream and was superseded by an approved re-pin during Phase 4 intake (see upstream_source_receipt.json)."
+    },
+    {
+      "phase": 1,
+      "risk_id": "RSK-VP1-002",
+      "category": "Security / Subprocess Injection",
+      "description": "Upstream FFmpeg invocation uses shell=True.",
+      "severity": "HIGH",
+      "status": null,
+      "mitigation": "Mandatory list-argv rewrite in Phase 4-7 within windagent_tools/ffmpeg."
+    },
+    {
+      "phase": 1,
+      "risk_id": "RSK-VP1-003",
+      "category": "License Compliance",
+      "description": "Missing MIT header in refactored pre-production files.",
+      "severity": "LOW",
+      "status": null,
+      "mitigation": "Enforce header check in CI and include copyright notice in NOTICE.md."
+    },
+    {
+      "phase": 2,
+      "risk_id": "RSK-VP2-001",
+      "category": "Clean-Room Contamination",
+      "description": "Future implementer reads ViMax source and unconsciously reproduces patterns.",
+      "severity": "MEDIUM",
+      "status": null,
+      "mitigation": "Clean-room attestation with reviewer sign-off. Terminology mapping enforced in code review. Architecture checker verifies zero ViMax imports."
+    },
+    {
+      "phase": 2,
+      "risk_id": "RSK-VP2-002",
+      "category": "Requirement Drift",
+      "description": "DIR-REQ requirements evolve during implementation and lose clean-room provenance.",
+      "severity": "LOW",
+      "status": null,
+      "mitigation": "DIR-REQ IDs are immutable. Changes require new requirement ID with new observation source. Phase 2 gate is re-verified if any DIR-REQ is modified."
+    },
+    {
+      "phase": 2,
+      "risk_id": "RSK-VP2-003",
+      "category": "Incomplete Observation",
+      "description": "ViMax capabilities not observed during black-box analysis may be missed.",
+      "severity": "LOW",
+      "status": null,
+      "mitigation": "Behavior inventory covers 8 observed behaviors. New ViMax capabilities discovered later go through same clean-room process before entering WindAgent requirements."
+    },
+    {
+      "phase": 3,
+      "risk_id": "RSK-VP3-001",
+      "category": "Schema Drift",
+      "description": "Future phases mutate v1 directly instead of proposing a revision.",
+      "severity": "MEDIUM",
+      "status": null,
+      "mitigation": "Versioning policy + additive compatibility tests + fail-closed major check."
+    },
+    {
+      "phase": 3,
+      "risk_id": "RSK-VP3-002",
+      "category": "Provider Leakage",
+      "description": "Browser/provider implementation details leak into core contracts.",
+      "severity": "HIGH",
+      "status": null,
+      "mitigation": "Ports audited for cookie/selector/flow-url/browser-session leakage; architecture tests enforce the boundary."
+    },
+    {
+      "phase": 3,
+      "risk_id": "RSK-VP3-003",
+      "category": "Clean-Room Contamination",
+      "description": "ViMax or VideoClaw identifiers appear in the canonical protocol.",
+      "severity": "MEDIUM",
+      "status": null,
+      "mitigation": "Terminology mapping enforced; duplicate canonical model checker rejects shadow definitions."
+    },
+    {
+      "phase": 0,
+      "risk_id": "KB-003",
+      "category": "Test Defect",
+      "description": "Full baseline suite mutates 17 tracked Phase 7 final artifacts in the isolated checkout.",
+      "severity": "HIGH",
+      "status": "RESOLVED",
+      "mitigation": "Resolved by baseline 1d98e26 (build/verify finalizer refactor): 949 passed, 0 tracked mutations from a clean detached checkout."
+    }
+  ]
+}

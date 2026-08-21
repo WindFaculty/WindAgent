@@ -1,0 +1,45 @@
+{
+  "gate": "VP20_GENERATION_REVIEW_VERIFIED",
+  "workstream": "verdict_policy",
+  "generated_at": "2026-08-02T12:12:58.756023+00:00",
+  "check_count": 7,
+  "all_checks_pass": true,
+  "checks": [
+    {
+      "check": "clean_approve",
+      "ok": true,
+      "detail": "APPROVE"
+    },
+    {
+      "check": "blocking_wins_over_aggregate",
+      "ok": true,
+      "detail": "verdict=REJECT avg=0.93"
+    },
+    {
+      "check": "review_error_never_pass",
+      "ok": true,
+      "detail": "REVIEW_ERROR"
+    },
+    {
+      "check": "low_confidence_human",
+      "ok": true,
+      "detail": "HUMAN_REVIEW_REQUIRED"
+    },
+    {
+      "check": "below_threshold_reject",
+      "ok": true,
+      "detail": "REJECT"
+    },
+    {
+      "check": "policy_change_new_revision",
+      "ok": true,
+      "detail": "rv_cand_1:1.0.0 != rv_cand_1:1.1.0"
+    },
+    {
+      "check": "old_result_not_rewritten",
+      "ok": true,
+      "detail": "old review keeps its verdict (immutable)"
+    }
+  ],
+  "policy_version": "1.0.0"
+}

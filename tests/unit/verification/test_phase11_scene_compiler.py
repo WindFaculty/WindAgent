@@ -15,7 +15,6 @@ from windagent_core.domain.video_production.enums import (
     BpyOpCode,
     CompileStatus,
     PlanAffected,
-    TransformUnit,
 )
 from windagent_core.domain.video_production.errors import (
     AssetRevisionMismatchError,
@@ -78,7 +77,7 @@ def _asset(role: str) -> AssetReference:
 
 def _ir(*, locked: bool = True) -> ProductionIrDocument:
     scene = SceneDescription(
-        scene_id=f"sd-1",
+        scene_id="sd-1",
         screenplay_scene_id=SceneId("sc1"),
         characters=[CharacterInstance(
             instance_id="ci-1", character_id="ch-1", display_name="Mai",

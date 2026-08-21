@@ -1,0 +1,106 @@
+{
+  "captured_at": "2026-08-21T00:00:00Z",
+  "note": "Baseline captured at continuation start. Working tree contains in-flight composition-root refactor (finalizer uow_factory injection, storage factory.py). Phase16 suite: 12 passed / 1 failed (test_fi_provider_timeout_graceful_degradation fails on stale uow_factory contract). Ruff E4,E7,E9,F: 1805 findings. These numbers are the pre-repair truth; they are NOT evidence of certification.",
+  "candidate_sha": "0355e2c72408ce1b78f240c5ceb21928135c962d",
+  "tree_sha_committed": "6d8ade348d7cb2a372793f75bb3e0cf13e2c1604",
+  "branch": "refactor/architecture-v3-hardening",
+  "dirty_files_before": [
+    ".claude/settings.local.json",
+    "apps/api/windagent_api/composition/repositories.py",
+    "apps/api/windagent_api/composition/studio_storage_adapter.py (renamed from services/studio_storage_adapter.py)",
+    "apps/worker/windagent_worker/composition/container.py",
+    "apps/worker/windagent_worker/composition/core.py",
+    "apps/worker/windagent_worker/pipeline/finalizer.py",
+    "apps/worker/windagent_worker/runner.py",
+    "artifacts/architecture_v3/phase_01/v3_boundary_report.json",
+    "artifacts/architecture_v3/phase_16/CERTIFICATION_VERDICT.md",
+    "artifacts/architecture_v3/phase_16/gate_matrix.json",
+    "artifacts/architecture_v3/phase_16/phase_16_verdict.json",
+    "configs/architecture/scaffold_v3.yaml",
+    "scripts/bench_architecture_v3_performance.py",
+    "scripts/verification/produce_b9_evidence.py",
+    "storage/windagent_storage/repositories/sql_repositories.py",
+    "storage/windagent_storage/studio/task_submission.py",
+    "storage/windagent_storage/unit_of_work/sql_uow.py",
+    "storage/windagent_storage/unit_of_work/studio_uow.py",
+    "tests/unit/worker/pipeline/test_phase9_worker_pipeline.py",
+    "tests/unit/worker/test_phase03_durable_queue.py",
+    "tests/unit/worker/test_studio_run_deadline.py",
+    "tests/unit/worker/test_studio_runtime.py"
+  ],
+  "untracked_files": [
+    "artifacts/architecture_v3/phase_16/repair_baseline.json",
+    "storage/windagent_storage/factory.py"
+  ],
+  "architecture_checker": {
+    "command": "uv run python scripts/check_architecture_v3.py",
+    "exit_code": 0,
+    "violations": 0,
+    "caveat": "composition_roots policy still contains blanket exemptions (storage/**, tools/**, workflows/**, ...) so this 0 is not yet meaningful"
+  },
+  "ruff": {
+    "command": "uv run ruff check . --select E4,E7,E9,F",
+    "exit_code": 1,
+    "issue_count": 1805,
+    "by_code": {
+      "F401": 943,
+      "F405": 356,
+      "E402": 292,
+      "F841": 70,
+      "F541": 39,
+      "E741": 36,
+      "F811": 16,
+      "F821": 16,
+      "E701": 15,
+      "F403": 10,
+      "E712": 3,
+      "E722": 3,
+      "E731": 3,
+      "F402": 1,
+      "F601": 1,
+      "F823": 1
+    },
+    "by_area": {
+      "tests": 683,
+      "third_party": 542,
+      "tools": 133,
+      "core": 130,
+      "scripts": 128,
+      "intelligence": 54,
+      ".agents": 50,
+      "apps": 43,
+      "workflows": 17,
+      "storage": 10,
+      "context": 9,
+      "orchestration": 4,
+      "execution": 1,
+      "evals": 1
+    }
+  },
+  "phase16_tests": {
+    "file": "tests/architecture/test_architecture_v3_phase16.py",
+    "command": "uv run pytest tests/architecture/test_architecture_v3_phase16.py -v --tb=short",
+    "passed": 12,
+    "failed": 1,
+    "failing": [
+      {
+        "test": "test_fi_provider_timeout_graceful_degradation",
+        "error": "AttributeError: 'AsyncSession' object has no attribute 'task_runs'",
+        "cause": "stale test passes raw session factory as uow_factory after finalizer refactor to injected UoW factory"
+      }
+    ],
+    "caveat": "passing tests include false-certification logic (known_categories bypass, E9-only ruff, hardcoded gate PASS) to be repaired in Phase C"
+  },
+  "contracts_e2e": {
+    "file": "tests/contracts/test_phase16_e2e_certification.py",
+    "command": "uv run pytest tests/contracts/test_phase16_e2e_certification.py -v --tb=short",
+    "passed": 1,
+    "failed": 0,
+    "caveat": "current e2e is an HTTP smoke test, not the roadmap vertical (Phase I will replace)"
+  },
+  "environment": {
+    "python_version": "3.11.15",
+    "uv_version": "0.11.28",
+    "platform": "win32 / Windows 11 Home Single Language 10.0.26200"
+  }
+}

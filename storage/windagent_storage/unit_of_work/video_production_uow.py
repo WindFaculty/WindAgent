@@ -10,6 +10,12 @@ from __future__ import annotations
 from typing import Any, Optional
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from windagent_storage.factory import (
+    create_idempotency_repository,
+    create_production_event_repository,
+    create_production_project_repository,
+    create_workspace_read_model_repository,
+)
 from windagent_storage.video_production.repositories import (
     IdempotencyRepository,
     ProductionEventRepository,
@@ -31,11 +37,14 @@ class VideoProductionUnitOfWork:
         self.read_models: WorkspaceReadModelRepository = None  # type: ignore
 
     async def __aenter__(self) -> VideoProductionUnitOfWork:
+        # Session-bound repositories are composed through the explicit storage
+        # factory — the single allowlisted construction point inside the
+        # infrastructure package.
         self.session = self._session_factory()
-        self.projects = ProductionProjectRepository(self.session)
-        self.idempotency = IdempotencyRepository(self.session)
-        self.events = ProductionEventRepository(self.session)
-        self.read_models = WorkspaceReadModelRepository(self.session)
+        self.projects = create_production_project_repository(self.session)
+        self.idempotency = create_idempotency_repository(self.session)
+        self.events = create_production_event_repository(self.session)
+        self.read_models = create_workspace_read_model_repository(self.session)
         return self
 
     async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:

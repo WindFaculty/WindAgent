@@ -45,6 +45,7 @@ class WorkerContainer:
         # Stable compatibility surface consumed by runner/entrypoint/tests.
         self.db: Any | None = None
         self.uow_factory: Any | None = None
+        self.sql_uow_factory: Any | None = None
         self.event_dispatcher: Any | None = None
         self.task_queue: Any | None = None
         self.lease_manager: Any | None = None
@@ -110,6 +111,7 @@ class WorkerContainer:
         core = await self._core_composer.compose(self.settings)
         self.db = core.db
         self.uow_factory = core.uow_factory
+        self.sql_uow_factory = core.sql_uow_factory
         self.event_dispatcher = core.event_dispatcher
         self.orchestration_container = core.orchestration_container
         self.task_manager = core.task_manager

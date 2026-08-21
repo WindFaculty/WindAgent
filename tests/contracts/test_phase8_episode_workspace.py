@@ -4,10 +4,7 @@ Verifies canonical V3 Episodes, Artifacts, Runs, Revision Authority, Checkpoints
 Locking, Optimistic Concurrency (409 Conflict), and WebSocket Realtime.
 """
 
-import uuid
-import pytest
 from fastapi.testclient import TestClient
-from windagent_api.main import app
 
 
 class TestPhase8EpisodeWorkspaceContracts:

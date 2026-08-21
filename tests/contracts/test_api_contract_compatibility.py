@@ -11,11 +11,8 @@ Validates:
 
 from __future__ import annotations
 
-import json
-from pathlib import Path
 from typing import Any, Dict
 
-import pytest
 from tests.fixtures.canonical_bunny_episode import build_canonical_bunny_episode
 
 

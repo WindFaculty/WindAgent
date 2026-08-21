@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0.0",
+  "phase": 1,
+  "scanned_at": "2026-07-31T18:57:00Z",
+  "scanned_items_count": 10,
+  "summary": {
+    "mit": 7,
+    "bsd": 1,
+    "apache_2": 1,
+    "hpnd": 1,
+    "unknown": 0
+  },
+  "status": "CLEARED_NO_UNKNOWN_LICENSES",
+  "distribution_notice_mapping": [
+    {
+      "upstream_component": "VideoClaw (HITsz-TMG)",
+      "license": "MIT",
+      "notice_target": "NOTICE.md"
+    }
+  ]
+}

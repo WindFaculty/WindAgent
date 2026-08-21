@@ -11,10 +11,8 @@ Validates millisecond precision, continuous timeline integrity, and zero-audio d
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any, Dict, List, Optional
 
-from windagent_core.contracts.code_video import CodeVideoPlan
 from windagent_tools.code_video.media.assembler import CueSheet, MasterAssemblyResult
 
 

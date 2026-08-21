@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import logging
 import uuid
-from typing import Set, Optional, Any
+from typing import Set, Optional
 
 from windagent_core.errors.exceptions import DomainError
 from windagent_core.contracts.repositories.unit_of_work import UnitOfWorkFactory

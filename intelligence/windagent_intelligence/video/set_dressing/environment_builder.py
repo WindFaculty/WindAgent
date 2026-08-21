@@ -17,11 +17,10 @@ from __future__ import annotations
 
 import hashlib
 import json
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 from windagent_core.domain.video_production.ids import (
     EnvironmentInstanceId,
-    SpatialFindingId,
 )
 from windagent_core.domain.video_production.production_ir.models import (
     EnvironmentInstance,

@@ -16,7 +16,6 @@ import html
 import json
 from pathlib import Path
 import pytest
-from typing import Dict, List
 
 from windagent_workflows.code_video.contracts import CodeVideoPlan
 from windagent_tools.code_video.renderer import (
@@ -26,14 +25,10 @@ from windagent_tools.code_video.renderer import (
     ChecklistItemStatus,
     CodeVideoVisualTheme,
     DiagramRenderer,
-    DiagramState,
     GRAPHIC_TIMING_CONFLICT,
     GraphicsCatalog,
     GraphicsCatalogEntry,
-    GraphicsVerificationReport,
     GraphicsVerifier,
-    NodeCategory,
-    OverlayPosition,
     OverlayRenderer,
     SafeInsets,
     TitleRenderer,

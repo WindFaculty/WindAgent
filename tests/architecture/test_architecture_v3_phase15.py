@@ -19,17 +19,13 @@ from __future__ import annotations
 
 import asyncio
 import json
-import os
-import subprocess
 import sys
-import time
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 import pytest
 from httpx import AsyncClient, ASGITransport
-from sqlalchemy import select, text
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+from sqlalchemy import select
 
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT_DIR))
@@ -44,7 +40,6 @@ from windagent_storage.orm.v2_orchestration_models import (
     BaseORM as V2BaseORM,
     TaskRunORM,
     ExecutionLeaseORM,
-    WorkflowStepRunORM,
 )
 from windagent_storage.queue.sql_queue import SqlDurableTaskQueue
 from windagent_storage.outbox.processor import TransactionalOutboxManager
@@ -186,13 +181,16 @@ async def test_gate_g15_6_worker_execution_overhead_isolated(bench_db_session_fa
     exec_registry = ExecutionRuntimeRegistry(default_adapter=fake_runtime)
     cancellation_broadcaster = CancellationBroadcaster()
 
+    from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork
+    def uow_factory():
+        return SqlUnitOfWork(bench_db_session_factory)
     pipeline = TaskExecutionPipeline(
         worker_id="overhead-worker",
         task_queue=queue,
         lease_manager=queue,
         execution_registry=exec_registry,
         cancellation_broadcaster=cancellation_broadcaster,
-        uow_factory=bench_db_session_factory,
+        uow_factory=uow_factory,
     )
 
     task_id = str(uuid.uuid4())

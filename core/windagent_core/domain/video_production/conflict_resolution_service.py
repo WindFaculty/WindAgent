@@ -15,11 +15,9 @@ from pydantic import BaseModel, Field
 
 from windagent_core.domain.video_production.screenplay_diff import (
     ScreenplayDiffEngine,
-    ScreenplayDiffResult,
     EntityDiffSummary,
-    FieldChange,
 )
-from windagent_core.errors.exceptions import ValidationError, DomainError
+from windagent_core.errors.exceptions import ValidationError
 
 
 class ConflictClassification(str, Enum):

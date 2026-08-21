@@ -9,8 +9,9 @@ from windagent_core.domain.models import WorkflowStep
 from windagent_core.domain.types import StepId, TaskId, SessionId
 from windagent_storage.database.connection import DatabaseManager
 from windagent_storage.orm.models import BaseORM
+from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork
 from windagent_orchestration import (
-    OrchestrationV2Container, TaskState, WorkflowDefinition, WorkflowNode
+    OrchestrationV2Container, TaskState
 )
 from windagent_execution.adapters.fake_runtime_adapter import FakeRuntimeAdapter
 
@@ -27,7 +28,7 @@ async def in_memory_db():
 
 @pytest.mark.asyncio
 async def test_concurrent_lease_claims(in_memory_db):
-    container = OrchestrationV2Container(uow_factory=in_memory_db.session_factory, runtime_port=FakeRuntimeAdapter())
+    container = OrchestrationV2Container(uow_factory=lambda: SqlUnitOfWork(in_memory_db.session_factory), runtime_port=FakeRuntimeAdapter())
     step = WorkflowStep(id=StepId.generate(), order=1, name="Concurrent Step", tool_name="exec_shell")
     run_id = "run_concurrent_99"
 
@@ -45,7 +46,7 @@ async def test_concurrent_lease_claims(in_memory_db):
 
 @pytest.mark.asyncio
 async def test_crash_injection_state_persistence(in_memory_db):
-    container = OrchestrationV2Container(uow_factory=in_memory_db.session_factory, runtime_port=FakeRuntimeAdapter())
+    container = OrchestrationV2Container(uow_factory=lambda: SqlUnitOfWork(in_memory_db.session_factory), runtime_port=FakeRuntimeAdapter())
     tid = TaskId.generate()
     sid = SessionId.generate()
 
@@ -53,7 +54,7 @@ async def test_crash_injection_state_persistence(in_memory_db):
     await container.task_manager.transition_task_durable(tid, sid, TaskState.PLANNING)
 
     # Simulate crash before event broadcast -> DB state is preserved
-    container2 = OrchestrationV2Container(uow_factory=in_memory_db.session_factory)
+    container2 = OrchestrationV2Container(uow_factory=lambda: SqlUnitOfWork(in_memory_db.session_factory))
     loaded = await container2.task_manager.load_durable_facts(tid)
     assert loaded is not None
     assert loaded.current_state == TaskState.PLANNING

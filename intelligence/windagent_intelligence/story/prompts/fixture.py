@@ -15,7 +15,6 @@ from typing import Dict, Optional
 from windagent_intelligence.video.ports import (
     ModelCompletionRequest,
     ModelCompletionResult,
-    PreproductionModelPort,
 )
 
 FIXTURE_PROVIDER = "fixture"

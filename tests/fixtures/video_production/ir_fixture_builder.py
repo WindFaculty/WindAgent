@@ -17,6 +17,7 @@ from windagent_core.domain.video_production.production_ir.models import (
     DerivedArtifact,
     EngineJobReceipt,
     ProductionIrDocument,
+    ShotExecutionIntent,
 )
 
 

@@ -2,11 +2,11 @@
   "phase": "16",
   "status": "FAIL",
   "verdict": "CERTIFICATION_FAILED",
-  "timestamp": "2026-08-21T00:59:31.670263+00:00",
-  "elapsed_seconds": 44.51,
-  "candidate_sha": "a3dfb406397e4705e10b7b329fd6d88b219cbdcd",
+  "timestamp": "2026-08-21T11:00:18.721101+00:00",
+  "elapsed_seconds": 89.98,
+  "candidate_sha": "0355e2c72408ce1b78f240c5ceb21928135c962d",
   "branch": "refactor/architecture-v3-hardening",
-  "tree_sha": "e6a90c5e0ad98c49ba1bb10332026b3eaa98b5eb",
+  "tree_sha": "6d8ade348d7cb2a372793f75bb3e0cf13e2c1604",
   "python_version": "3.11.15 (main, Jun 23 2026, 15:20:37) [MSC v.1944 64 bit (AMD64)]",
   "platform": "Windows-10-10.0.26200-SP0",
   "gates": {
@@ -30,27 +30,97 @@
     "G0_SOURCE_AUTHORITY": {
       "error": "dirty worktree",
       "lines": [
-        "M apps/api/windagent_api/routers/v3/settings.py",
-        " M artifacts/architecture_v2_runtime_cutover/phase_13/import_graph.json",
-        " M artifacts/architecture_v3/phase_01/v3_boundary_report.json",
-        " M artifacts/architecture_v3/phase_01/v3_import_graph.json",
-        " M configs/architecture/scaffold_v3.yaml",
-        " M core/windagent_core/contracts/code_video/__init__.py",
-        " M observability/windagent_observability/events/dead_letter.py",
-        " M observability/windagent_observability/events/publisher.py",
-        " M scripts/certify_architecture_v3_final.py",
-        " M scripts/generate_phase_07_artifacts.py"
+        "M .agents/skills/design-system/scripts/fetch-background.py",
+        " M .agents/skills/design-system/scripts/html-token-validator.py",
+        " M .agents/skills/design-system/scripts/search-slides.py",
+        " M .agents/skills/design/scripts/cip/generate.py",
+        " M .agents/skills/design/scripts/cip/render-html.py",
+        " M .agents/skills/design/scripts/cip/search.py",
+        " M .agents/skills/design/scripts/icon/generate.py",
+        " M .agents/skills/design/scripts/logo/search.py",
+        " M .agents/skills/ui-styling/scripts/shadcn_add.py",
+        " M .agents/skills/ui-styling/scripts/tests/test_shadcn_add.py"
       ]
     },
     "G6_V3_AUTHORITY": {
-      "module_level_stores": true,
-      "restart_persistence": true
+      "gate": "G6",
+      "status": "PASS",
+      "commands": [
+        "uv run python scripts/check_architecture_v3.py",
+        "uv run pytest tests/architecture/test_architecture_v3_phase16.py::test_fi_restart_persistence -v"
+      ],
+      "exit_codes": [
+        0,
+        0
+      ],
+      "tests": [
+        "test_fi_restart_persistence"
+      ],
+      "evidence": {
+        "module_level_stores": true,
+        "checker_pass": true,
+        "restart_persistence": true
+      },
+      "candidate": "0355e2c72408ce1b78f240c5ceb21928135c962d"
     },
     "G7_DURABILITY": {
-      "restart_persistence": true
+      "gate": "G7",
+      "status": "PASS",
+      "commands": [
+        "uv run pytest tests/architecture/test_architecture_v3_phase16.py::test_fi_restart_persistence -v",
+        "uv run pytest tests/architecture/test_architecture_v3_phase16.py::test_fi_worker_killed_no_split_state -v",
+        "uv run pytest tests/architecture/test_architecture_v3_phase16.py::test_fi_lease_takeover_late_result_reject -v",
+        "uv run pytest tests/architecture/test_architecture_v3_phase16.py::test_fi_db_transient_failure_recovery -v",
+        "uv run pytest tests/architecture/test_architecture_v3_phase16.py::test_fi_duplicate_command_idempotent -v"
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "tests": [
+        "test_fi_restart_persistence",
+        "test_fi_worker_killed_no_split_state",
+        "test_fi_lease_takeover_late_result_reject",
+        "test_fi_db_transient_failure_recovery",
+        "test_fi_duplicate_command_idempotent"
+      ],
+      "evidence": {
+        "restart": true,
+        "worker_kill": true,
+        "lease_takeover": true,
+        "db_transient": true,
+        "duplicate_cmd": true
+      },
+      "candidate": "0355e2c72408ce1b78f240c5ceb21928135c962d"
     },
     "G8_REALTIME": {
-      "realtime_tests": true
+      "gate": "G8",
+      "status": "PASS",
+      "commands": [
+        "uv run pytest tests/architecture/test_architecture_v3_phase16.py::test_fi_reconnect_replay_from_cursor -v",
+        "uv run pytest tests/architecture/test_architecture_v3_phase16.py::test_fi_ws_reconnect_live_integration -v",
+        "uv run pytest tests/architecture/test_architecture_v3_phase16.py::test_fi_duplicate_event_suppression -v"
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0
+      ],
+      "tests": [
+        "test_fi_reconnect_replay_from_cursor",
+        "test_fi_ws_reconnect_live_integration",
+        "test_fi_duplicate_event_suppression"
+      ],
+      "evidence": {
+        "replay": true,
+        "ws_reconnect": true,
+        "dedup": true,
+        "phase6_ws": true
+      },
+      "candidate": "0355e2c72408ce1b78f240c5ceb21928135c962d"
     },
     "G9_API_ISOLATION": {
       "composition_exists": true
@@ -67,11 +137,14 @@
     "G13_TESTS": {
       "architecture_checker": true,
       "ruff_lint": false,
-      "prior_verdicts": false,
-      "pytest_architecture_phase16": true,
+      "prior_verdicts": true,
+      "pytest_architecture_phase16": false,
       "pytest_performance_phase15": true,
       "pytest_contracts_v3_e2e": true,
-      "pytest_integration_v3": true
+      "pytest_integration_v3": true,
+      "g6_restart": true,
+      "g7_durability": true,
+      "g8_realtime": true
     }
   },
   "suites": {
@@ -82,10 +155,10 @@
       "pass": false
     },
     "prior_verdicts": {
-      "pass": false
+      "pass": true
     },
     "pytest_architecture_phase16": {
-      "pass": true
+      "pass": false
     },
     "pytest_performance_phase15": {
       "pass": true
@@ -95,12 +168,20 @@
     },
     "pytest_integration_v3": {
       "pass": true
+    },
+    "g6_restart": {
+      "pass": true
+    },
+    "g7_durability": {
+      "pass": true
+    },
+    "g8_realtime": {
+      "pass": true
     }
   },
   "blockers": [
-    "G0: Worktree not clean or SHA not verified. Dirty: 37 lines",
+    "G0: Worktree not clean or SHA not verified. Dirty: 357 lines",
     "Ruff lint failed with full policy (E4,E7,E9,F)",
-    "Missing evidence for phases: phase_00, phase_01, phase_03, phase_04, phase_05, phase_06, phase_07, phase_08, phase_09, phase_10, phase_11, phase_12, phase_14",
-    "G13: Failed test suites: ruff_lint, prior_verdicts"
+    "G13: Failed test suites: ruff_lint, pytest_architecture_phase16"
   ]
 }

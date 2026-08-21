@@ -786,7 +786,7 @@ def _episodes_to_text(episodes) -> str:
 # ---------------------------------------------------------------------------
 def score_script_quality(result: dict, brief_data: dict) -> dict:
     """Deterministic, evidence-based scoring of the generated artifacts."""
-    stages = {s["stage"]: s["status"] for s in result.get("stages", [])}
+    {s["stage"]: s["status"] for s in result.get("stages", [])}
     if "package" not in result:
         return {
             "score": 0,
@@ -853,7 +853,7 @@ def score_script_quality(result: dict, brief_data: dict) -> dict:
     }
 
     # 7.4 Character consistency (15)
-    named_chars = set(package.metadata.get("character_names", [])) if False else {
+    set(package.metadata.get("character_names", [])) if False else {
         c.name for c in characters
     }
     scene_chars = set()
@@ -940,7 +940,6 @@ def score_script_quality(result: dict, brief_data: dict) -> dict:
 # ---------------------------------------------------------------------------
 def orchestration_scenarios() -> list:
     """Scenario checks using the kernel + existing durable-engine evidence."""
-    from windagent_core.domain.video_production.enums import ScreenplayStatus
 
     results = []
 
@@ -954,6 +953,7 @@ def orchestration_scenarios() -> list:
     # F2 Invalid brief: expansion with empty idea must fail early (no model call
     # needed at the expander contract level: require_model is a preflight).
     try:
+        from windagent_intelligence.video import CreativeBriefExpander
         from windagent_intelligence.video.errors import MissingModelConfigError
 
         try:
@@ -1259,7 +1259,7 @@ def build_stage_matrix(result: dict, browser: list, media: list,
         stages[s["stage"]] = s["status"]
     browser_status = {c["check"]: c["status"] for c in browser}
     media_status = {c["check"]: c["status"] for c in media}
-    scenario_status = {c["scenario"]: c["status"] for c in scenarios}
+    {c["scenario"]: c["status"] for c in scenarios}
 
     rows = [
         ("Brief ingestion", "intelligence/.../ideation/brief_expander.py",

@@ -13,10 +13,8 @@ Covers the 9 mandatory cases:
 """
 
 import asyncio
-import json
 import pytest
 import pytest_asyncio
-from datetime import datetime, timezone
 
 from windagent_core.domain.models import Session
 from windagent_core.domain.types import EventId, SessionId
@@ -26,8 +24,6 @@ from windagent_storage.orm.models import BaseORM, OutboxRecordORM
 from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork
 from windagent_storage.outbox.processor import TransactionalOutboxManager
 from windagent_storage.outbox.sql_repository import SqlOutboxRepository
-from windagent_observability.events.dispatcher import EventDispatcher
-from windagent_observability.events.publisher import OutboxEventPublisher
 from windagent_observability.events.retry import compute_backoff_seconds
 
 

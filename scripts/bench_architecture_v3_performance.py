@@ -22,14 +22,13 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
-import os
 import platform
 import sys
 import time
 import uuid
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Tuple
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT_DIR))
@@ -38,42 +37,25 @@ for pkg in ["core", "storage", "orchestration", "execution", "workflows", "provi
     if p not in sys.path:
         sys.path.insert(0, p)
 
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
-from sqlalchemy import text, select, func
+from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
+from sqlalchemy import select
 
 from windagent_storage.orm.models import BaseORM as RootBaseORM, OutboxRecordORM
 from windagent_storage.orm.v2_orchestration_models import (
     BaseORM as V2BaseORM,
     TaskRunORM,
     ExecutionLeaseORM,
-    WorkflowRunV2ORM,
     WorkflowStepRunORM,
-)
-from windagent_storage.orm.v3_models import (
-    ProviderVendorORM,
-    ProviderCredentialORM,
-    ProviderEndpointORM,
-    CanonicalModelV3ORM,
-    V3ResourceORM,
 )
 from windagent_storage.database.connection import DatabaseManager
 from windagent_storage.queue.sql_queue import SqlDurableTaskQueue
 from windagent_storage.outbox.processor import TransactionalOutboxManager
 from windagent_storage.realtime.sql_replay import SqlRealtimeReplayAdapter
-from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork
-from windagent_core.domain.types import EventId
 from windagent_core.events.envelope import EventEnvelope
 from windagent_core.events.catalog import EventCatalog
 from windagent_execution.registry import ExecutionRuntimeRegistry
 from windagent_execution.cancellation import CancellationBroadcaster
 from windagent_worker.pipeline.pipeline import TaskExecutionPipeline
-from windagent_worker.pipeline.claim import ClaimStage
-from windagent_worker.pipeline.lease_guard import LeaseGuardStage
-from windagent_worker.pipeline.executor import ExecutorStage
-from windagent_worker.pipeline.result_validator import ResultValidatorStage
-from windagent_worker.pipeline.finalizer import FinalizerStage
-from windagent_worker.pipeline.reconciler import ReconcilerStage
-from windagent_worker.pipeline.context import TaskExecutionContext
 from windagent_execution import FakeRuntimeAdapter
 
 logging.basicConfig(level=logging.WARNING)
@@ -223,7 +205,7 @@ async def bench_db_transaction_duration_by_command(
 
         # 2. task_claim
         t0 = time.perf_counter()
-        claimed = await queue.claim_next(worker_id="cmd-worker")
+        await queue.claim_next(worker_id="cmd-worker")
         t1 = time.perf_counter()
         results["task_claim"].append((t1 - t0) * 1000.0)
 

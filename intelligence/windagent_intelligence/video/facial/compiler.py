@@ -10,7 +10,7 @@ bake -> repair -> preview manifest). The Blender-side adapter mapping
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 from windagent_core.contracts.video_production.facial_animation import (
     FacialAnimationCompilerPort,

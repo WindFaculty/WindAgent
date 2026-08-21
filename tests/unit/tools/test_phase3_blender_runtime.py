@@ -28,22 +28,17 @@ from windagent_tools.production_engines.blender import (
     BlenderCapabilityProbe,
     BlenderCapabilityReport,
     BlenderExecutionReceipt,
-    BlenderGpuDevice,
     BlenderGpuProbe,
-    BlenderGpuProbeResult,
     BlenderInstallationCandidate,
     BlenderInstallationDetector,
     BlenderJobError,
     BlenderJobLauncher,
     BlenderJobSpec,
     BlenderProcessSupervisor,
-    BlenderVersionValidationResult,
     BlenderVersionValidator,
     redact_argv,
 )
-from windagent_tools.production_engines.blender.manifest import BlenderAddonDecision
 from windagent_tools.production_engines.blender.runtime.process import (
-    BlenderProcessHandle,
     BlenderProcessPort,
     BlenderProcessResult,
 )
@@ -501,7 +496,7 @@ class TestBlenderJobLauncher:
         launcher = BlenderJobLauncher(
             artifact_root="artifacts", process_port=FakeProcessPort()
         )
-        spec = make_spec(job_workspace="jobs/x")
+        make_spec(job_workspace="jobs/x")
         with pytest.raises(BlenderJobError):
             launcher.validate_argv(["blender", "--python", "x\x00y", ""])
 
@@ -596,7 +591,7 @@ class TestBlenderProcessSupervisor:
         asyncio.run(_go())
 
     def test_process_crash_marked_failed(self, tmp_path):
-        state_dir = tmp_path / "state"
+        tmp_path / "state"
         workspace = tmp_path / "jobs" / "ej_crash"
         launcher = BlenderJobLauncher(
             artifact_root=str(tmp_path), process_port=FakeProcessPort({"mode": "crash"})
@@ -638,7 +633,7 @@ class TestBlenderProcessSupervisor:
         asyncio.run(_go())
 
     def test_cancel_via_token(self, tmp_path):
-        state_dir = tmp_path / "state"
+        tmp_path / "state"
         workspace = tmp_path / "jobs" / "ej_cancel"
         launcher = BlenderJobLauncher(artifact_root=str(tmp_path), process_port=FakeProcessPort())
         supervisor = make_supervisor(tmp_path, launcher)

@@ -1071,7 +1071,7 @@ class WorkflowEngine:
         return {
             "status": "error",
             "openclaw": f"当前状态 {current_status} 不允许继续，请检查会话状态。",
-            "message": f"当前状态不允许继续",
+            "message": "当前状态不允许继续",
             "current_status": current_status,
         }
 

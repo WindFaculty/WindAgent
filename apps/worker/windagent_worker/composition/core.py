@@ -10,7 +10,7 @@ from windagent_context.services import ContextService
 from windagent_execution.registry import ExecutionRuntimeRegistry
 from windagent_memory.query import MemoryQueryService
 from windagent_observability.events.dispatcher import EventDispatcher
-from windagent_orchestration import OrchestrationContainer, OrchestrationV2Container
+from windagent_orchestration import OrchestrationContainer
 from windagent_storage.database.connection import DatabaseManager
 from windagent_storage.orm.models import BaseORM
 from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork
@@ -28,6 +28,7 @@ logger = logging.getLogger("windagent.worker.composition.core")
 class CoreBundle:
     db: DatabaseManager
     uow_factory: Any
+    sql_uow_factory: Any
     event_dispatcher: EventDispatcher
     orchestration_container: OrchestrationContainer
     task_manager: Any
@@ -52,6 +53,7 @@ class CoreComposer:
             logger.warning("Database migration warning: %s", ex)
 
         uow_factory = db.session_factory
+        sql_uow_factory = self.make_sql_uow_factory(uow_factory)
         event_dispatcher = EventDispatcher()
         orchestration_container = OrchestrationContainer(uow_factory=uow_factory)
         if settings.fake_runtime:
@@ -68,6 +70,7 @@ class CoreComposer:
         return CoreBundle(
             db=db,
             uow_factory=uow_factory,
+            sql_uow_factory=sql_uow_factory,
             event_dispatcher=event_dispatcher,
             orchestration_container=orchestration_container,
             task_manager=orchestration_container.task_manager,
@@ -80,6 +83,19 @@ class CoreComposer:
     @staticmethod
     def make_uow(uow_factory: Any) -> SqlUnitOfWork:
         return SqlUnitOfWork(uow_factory)
+
+    @staticmethod
+    def make_sql_uow_factory(session_factory: Any):
+        """Zero-argument factory producing ``SqlUnitOfWork`` instances.
+
+        This is the composition-root construction point for the concrete unit
+        of work injected into the worker pipeline finalizer.
+        """
+
+        def factory() -> SqlUnitOfWork:
+            return SqlUnitOfWork(session_factory)
+
+        return factory
 
     @staticmethod
     async def close_database(db: DatabaseManager | None) -> None:

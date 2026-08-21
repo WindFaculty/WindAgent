@@ -49,6 +49,7 @@ class WorkspaceService:
             project_id=project_id,
             revision_id=ProductionRevisionId(self.current_revision),
             project_status="IN_PRODUCTION",
+            revision_status="ACTIVE",
             creative_brief_locked=True,
             screenplay_locked=True,
             total_shots=6,
