@@ -141,18 +141,21 @@ def test_s3_missing_key_fail_closed(provider, monkeypatch):
     # Should fail closed, not succeed with plaintext fallback
     assert res.status_code in (400, 500), f"Expected fail-closed, got {res.status_code} {res.text}"
     assert secret not in res.text
-    # Verify DB has no plaintext row
+    # Verify fail-closed request left NO rows at all — vendor/credential/endpoint
+    # must be absent, not merely "present but encrypted" (transaction rollback).
     _ensure_key(monkeypatch)
     factory = _get_db_session_factory()
     import asyncio
     async def _query():
         async with factory() as sess:
-            row = (await sess.execute(text("SELECT secret_ciphertext FROM provider_credentials WHERE vendor_id=:vid"), {"vid": pid})).fetchone()
-            return row[0] if row else None
-    ciphertext = asyncio.run(_query())
-    if ciphertext is not None:
-        assert secret not in ciphertext
-        assert ciphertext.startswith("enc:v1:")
+            vendor = (await sess.execute(text("SELECT id FROM provider_vendors WHERE id=:vid"), {"vid": pid})).fetchone()
+            cred = (await sess.execute(text("SELECT secret_ciphertext FROM provider_credentials WHERE vendor_id=:vid"), {"vid": pid})).fetchone()
+            endpoint = (await sess.execute(text("SELECT id FROM provider_endpoints WHERE vendor_id=:vid"), {"vid": pid})).fetchone()
+            return vendor, cred, endpoint
+    vendor_row, cred_row, endpoint_row = asyncio.run(_query())
+    assert vendor_row is None, f"Vendor row must not exist after fail-closed request, got {vendor_row}"
+    assert cred_row is None, f"Credential row must not exist after fail-closed request, got {cred_row}"
+    assert endpoint_row is None, f"Endpoint row must not exist after fail-closed request, got {endpoint_row}"
     # Restore key for subsequent tests
     _ensure_key(monkeypatch)
 

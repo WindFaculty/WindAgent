@@ -383,16 +383,21 @@ def run_truthful_ui_checks(arch_ok: bool) -> Tuple[bool, Dict[str, Any]]:
     # Allowlist: test files, .agents, artifacts, mocks
     prod_roots = [ROOT_DIR / "apps" / "web", ROOT_DIR / "apps" / "desktop"]
     fake_patterns = [
-        r"Math\.random\(\)",
         r"fake.*health",
         r"fake.*latency",
         r"fake.*connected",
     ]
+    # Math.random is only a violation when it drives fake health/latency — not for legitimate UI
+    # So we treat Math.random as violation only if the same file also contains health/latency
+    exclude_dirs = {".git", "node_modules", "dist", "build", ".vite", "__pycache__", ".next"}
+    files_scanned = 0
     for root in prod_roots:
         if not root.exists():
             continue
         for py in root.rglob("*"):
             if py.is_dir():
+                continue
+            if any(part in exclude_dirs for part in py.relative_to(root).parts):
                 continue
             if py.suffix not in (".ts", ".tsx", ".js", ".jsx"):
                 continue
@@ -403,65 +408,175 @@ def run_truthful_ui_checks(arch_ok: bool) -> Tuple[bool, Dict[str, Any]]:
                 txt = py.read_text(encoding="utf-8", errors="replace")
             except Exception:
                 continue
+            files_scanned += 1
+            # Check fake patterns
             for pat in fake_patterns:
                 if re.search(pat, txt, re.IGNORECASE):
-                    # Allow if it's in a comment explicitly marking as not prod?
-                    # For now, any hit is violation unless file is in allowlist
                     violations.append(f"truthful UI violation {pat!r} in {py.relative_to(ROOT_DIR)}")
                     break
+            # Check Math.random only if file also contains health/latency terms (avoids false positives)
+            if re.search(r"Math\.random\(\)", txt):
+                if re.search(r"health|latency", txt, re.IGNORECASE):
+                    violations.append(f"truthful UI violation 'Math.random() with health/latency' in {py.relative_to(ROOT_DIR)}")
 
     evidence["violations"] = violations
     evidence["scanned_roots"] = [str(p.relative_to(ROOT_DIR)) for p in prod_roots]
+    evidence["files_scanned"] = files_scanned
+    evidence["patterns"] = fake_patterns
     passed = len(violations) == 0 and arch_ok
     return passed, evidence
 
 
-def run_postgres_check() -> Tuple[str, Dict[str, Any]]:
-    """PostgreSQL hard gate — try real integration, else BLOCKED_ENVIRONMENT.
+# Canonical PostgreSQL profile — mirrors .github/workflows/ci.yaml python-integration-postgres job:
+#   image postgres:16-alpine, db=windagent user=test password=test on localhost:5432.
+PG_HOST = "localhost"
+PG_PORT = 5432
+PG_DB = "windagent"
+PG_USER = "test"
+PG_PASSWORD = "test"
+PG_URL_ASYNC = f"postgresql+asyncpg://{PG_USER}:{PG_PASSWORD}@{PG_HOST}:{PG_PORT}/{PG_DB}"
+PG_PROFILE_REDACTED = f"postgresql+asyncpg://{PG_USER}:***@{PG_HOST}:{PG_PORT}/{PG_DB}"
 
+
+def _pg_port_open() -> bool:
+    """Probe whether a PostgreSQL server accepts TCP connections on the canonical port."""
+    import socket
+    try:
+        with socket.create_connection((PG_HOST, PG_PORT), timeout=3):
+            return True
+    except OSError:
+        return False
+
+
+def _pg_server_version() -> str:
+    """Query server version string via asyncpg (no password stored in evidence)."""
+    try:
+        import asyncio
+        import asyncpg
+
+        async def _q() -> str:
+            conn = await asyncpg.connect(
+                host=PG_HOST, port=PG_PORT, user=PG_USER,
+                password=PG_PASSWORD, database=PG_DB, timeout=5,
+            )
+            try:
+                return await conn.fetchval("SELECT version()")
+            finally:
+                await conn.close()
+
+        return asyncio.run(_q())
+    except Exception as e:
+        return f"unknown ({e})"
+
+
+def run_postgres_check() -> Tuple[str, Dict[str, Any]]:
+    """PostgreSQL hard gate — REAL integration only, else BLOCKED_ENVIRONMENT.
+
+    Canonical profile comes from CI (.github/workflows/ci.yaml):
+      postgres:16-alpine on localhost:5432, db windagent / user test.
+    If a server is reachable we run the same commands as CI:
+      1. database_preflight --require-dialect postgresql --initialize-schema
+      2. pytest tests/integration
+      3. fencing selection over tests/integration + tests/unit/worker
+    No SQLite substitution, no mocking, no skip-then-PASS.
     Returns (status, evidence) where status is PASS/FAIL/BLOCKED.
     """
+    import os as _os
     import shutil
-    evidence: Dict[str, Any] = {}
-    # Check if docker is available
+
+    evidence: Dict[str, Any] = {
+        "engine": "postgresql+asyncpg",
+        "profile": PG_PROFILE_REDACTED,
+        "canonical_source": ".github/workflows/ci.yaml python-integration-postgres",
+    }
+
+    reachable = _pg_port_open()
+    evidence["port_probe"] = f"{PG_HOST}:{PG_PORT} open={reachable}"
+
+    # Attempt canonical Docker provisioning only when nothing is listening yet.
     docker = shutil.which("docker")
-    if docker is None:
-        evidence["reason"] = "docker not found — cannot provision PostgreSQL"
-        evidence["engine"] = "BLOCKED_ENVIRONMENT"
-        return "BLOCKED", evidence
-
-    # Try to run a lightweight postgres integration check
-    # We use the repo's existing postgres test marker if available
-    # For now, attempt to run one integration test with postgres URL and a short timeout
-    # If it fails due to connection, we report BLOCKED, not mocked PASS.
-    env = dict(**__import__("os").environ)
-    env["WINDAGENT_DATABASE_URL"] = "postgresql+asyncpg://test:test@localhost:5432/windagent"
-    # Use a simple python snippet to try connecting
-    try:
-        result = subprocess.run(
-            [sys.executable, "-c", "import asyncpg; import asyncio; asyncio.run(asyncpg.connect('postgresql://test:test@localhost:5432/windagent'))"],
-            capture_output=True, text=True, timeout=10, cwd=str(ROOT_DIR), env=env,
+    evidence["docker_available"] = docker is not None
+    if not reachable and docker is not None:
+        print("  Provisioning PostgreSQL via docker (canonical CI profile)...")
+        subprocess.run(
+            ["docker", "run", "-d", "--name", "windagent-cert-pg",
+             "-e", f"POSTGRES_DB={PG_DB}", "-e", f"POSTGRES_USER={PG_USER}",
+             "-e", f"POSTGRES_PASSWORD={PG_PASSWORD}", "-p", f"{PG_PORT}:5432",
+             "postgres:16-alpine"],
+            capture_output=True, text=True, timeout=180,
         )
-        if result.returncode != 0:
-            evidence["reason"] = f"postgres not reachable: {result.stderr[:500]}"
-            evidence["engine"] = "BLOCKED_ENVIRONMENT"
-            return "BLOCKED", evidence
-    except Exception as e:
-        evidence["reason"] = f"postgres check error: {e}"
-        evidence["engine"] = "BLOCKED_ENVIRONMENT"
+        # Wait for readiness (up to ~60s)
+        for _ in range(30):
+            if _pg_port_open():
+                break
+            time.sleep(2)
+        reachable = _pg_port_open()
+        evidence["docker_provision_attempted"] = True
+
+    if not reachable:
+        evidence["reason"] = (
+            "No PostgreSQL server reachable on localhost:5432 and Docker unavailable — "
+            "cannot run REAL PostgreSQL integration (SQLite substitution forbidden)"
+        )
+        evidence["server_version"] = None
         return "BLOCKED", evidence
 
-    # If reachable, run real integration
-    ok, out = _run(
-        [sys.executable, "-m", "pytest", "tests/integration/test_architecture_v3_phase4_restart.py", "-v", "--tb=short", "-q"],
-        "postgres_integration",
-        timeout=120,
-    )
-    evidence["engine"] = "postgresql+asyncpg"
-    evidence["output"] = out[:1000]
-    if ok:
+    evidence["server_version"] = _pg_server_version()
+
+    env = dict(**_os.environ)
+    env["WINDAGENT_DATABASE_URL"] = PG_URL_ASYNC
+
+    def _run_pg(cmd: List[str], label: str, timeout: int) -> Tuple[bool, int, str]:
+        print(f"\n  [{label}] cmd: {' '.join(cmd)}")
+        try:
+            result = subprocess.run(
+                cmd, capture_output=True, text=True, cwd=str(ROOT_DIR),
+                timeout=timeout, encoding="utf-8", errors="replace", env=env,
+            )
+            ok = result.returncode == 0
+            out = result.stdout + result.stderr
+            print(f"  [{'PASS' if ok else 'FAIL'}] {label} (exit={result.returncode})")
+            if not ok:
+                for line in out.strip().split("\n")[-20:]:
+                    print(f"    {line}")
+            return ok, result.returncode, out
+        except Exception as e:
+            print(f"  [ERROR] {label}: {e}")
+            return False, -1, str(e)
+
+    preflight_script = ROOT_DIR / "scripts" / "verification" / "database_preflight.py"
+    commands: List[str] = []
+    exit_codes: List[int] = []
+
+    if preflight_script.exists():
+        pf_cmd = [sys.executable, str(preflight_script),
+                  "--require-dialect", "postgresql", "--initialize-schema"]
+        ok_pf, code_pf, out_pf = _run_pg(pf_cmd, "postgres_preflight", 180)
+        commands.append(" ".join(pf_cmd))
+        exit_codes.append(code_pf)
+        evidence["preflight_output"] = out_pf[:800]
+        if not ok_pf:
+            evidence["reason"] = "PostgreSQL dialect/schema preflight failed"
+            return "FAIL", evidence
+
+    int_cmd = [sys.executable, "-m", "pytest", "tests/integration", "-v", "--tb=short", "-q"]
+    ok_int, code_int, out_int = _run_pg(int_cmd, "postgres_integration", 1200)
+    commands.append(" ".join(int_cmd))
+    exit_codes.append(code_int)
+    evidence["integration_output_tail"] = out_int[-1500:]
+
+    fence_cmd = [sys.executable, "-m", "pytest", "tests/integration", "tests/unit/worker",
+                 "-k", "fencing or replica or leader or lease", "-v", "--tb=short", "-q"]
+    ok_fence, code_fence, out_fence = _run_pg(fence_cmd, "postgres_fencing", 600)
+    commands.append(" ".join(fence_cmd))
+    exit_codes.append(code_fence)
+    evidence["fencing_output_tail"] = out_fence[-800:]
+
+    evidence["commands"] = commands
+    evidence["exit_codes"] = exit_codes
+    if ok_int and ok_fence:
         return "PASS", evidence
-    evidence["reason"] = "postgres integration test failed"
+    evidence["reason"] = "PostgreSQL integration/fencing tests failed against real server"
     return "FAIL", evidence
 
 
@@ -539,6 +654,59 @@ def run_web_desktop_typecheck_build_checks() -> Dict[str, Tuple[str, Dict[str, A
         results["desktop_tests"] = ("BLOCKED", {"reason": "apps/desktop not found"})
         results["desktop_build"] = ("BLOCKED", {"reason": "apps/desktop not found"})
 
+    return results
+
+
+def run_failure_injection_matrix() -> Dict[str, Dict[str, Any]]:
+    """Required failure injection matrix (ban_ke_hoach §20 Phase 16).
+
+    Each item maps to executable tests and records its own exit code.
+    No item may be assumed PASS — every entry is actually executed here.
+    """
+    phase16 = "tests/architecture/test_architecture_v3_phase16.py"
+    fi_specs: Dict[str, str] = {
+        "api_restart": "tests/integration/test_architecture_v3_phase4_restart.py",
+        "worker_restart": f"{phase16}::test_fi_restart_persistence",
+        "worker_killed_during_execution": f"{phase16}::test_fi_worker_killed_no_split_state",
+        "db_transient_failure": f"{phase16}::test_fi_db_transient_failure_recovery",
+        "lease_expiration": f"{phase16}::test_fi_lease_takeover_late_result_reject",
+        "late_result": f"{phase16}::test_fi_lease_takeover_late_result_reject",
+        "duplicate_command": f"{phase16}::test_fi_duplicate_command_idempotent",
+        "duplicate_event": f"{phase16}::test_fi_duplicate_event_suppression",
+        "websocket_disconnect_reconnect": (
+            f"{phase16}::test_fi_reconnect_replay_from_cursor {phase16}::test_fi_ws_reconnect_live_integration"
+        ),
+        # Provider-boundary injections (real HTTP semantics via MockTransport),
+        # distinct from the worker runtime-level FI tests:
+        "provider_timeout": "tests/unit/providers/test_endpoint_failover.py::test_timeout_then_success_failover",
+        "provider_rate_limit": "tests/unit/providers/test_endpoint_failover.py::test_429_failover_to_same_model_succeeds",
+    }
+    results: Dict[str, Dict[str, Any]] = {}
+    for name, targets in fi_specs.items():
+        cmd = [sys.executable, "-m", "pytest"] + targets.split() + ["-v", "--tb=short", "-q"]
+        print(f"\n  [FI] {name}: pytest {' '.join(targets.split())}")
+        try:
+            result = subprocess.run(
+                cmd, capture_output=True, text=True, cwd=str(ROOT_DIR),
+                timeout=300, encoding="utf-8", errors="replace",
+            )
+            ok = result.returncode == 0
+            out = result.stdout + result.stderr
+            exit_code = result.returncode
+            if not ok:
+                for line in out.strip().split("\n")[-10:]:
+                    print(f"    {line}")
+        except Exception as e:
+            ok, exit_code = False, -1
+            out = str(e)
+        status = "PASS" if ok else "FAIL"
+        print(f"  [{status}] FI {name} (exit={exit_code})")
+        results[name] = {
+            "status": status,
+            "command": "pytest " + " ".join(targets.split()),
+            "exit_code": exit_code,
+            "output_tail": out[-400:],
+        }
     return results
 
 
@@ -807,9 +975,26 @@ def main(argv: List[str] | None = None) -> int:
     if not ok_worker_rec:
         ok_worker_rec, _ = run_pytest_suite("tests/unit/worker/test_production_worker.py tests/unit/worker/pipeline/test_phase9_worker_pipeline.py")
     suite_results["worker_recovery"] = {"pass": ok_worker_rec}
-    print("\n--- G13h: WebSocket replay ---")
-    # Already covered by g8, but ensure explicit
-    suite_results["websocket_replay"] = {"pass": suite_results.get("g8_realtime", {}).get("pass", False)}
+    print("\n--- G13h: WebSocket replay (explicit executable run) ---")
+    ok_ws_replay, out_ws_replay = run_pytest_suite(
+        "tests/architecture/test_architecture_v3_phase16.py::test_fi_reconnect_replay_from_cursor "
+        "tests/architecture/test_architecture_v3_phase16.py::test_fi_ws_reconnect_live_integration "
+        "tests/architecture/test_architecture_v3_phase16.py::test_fi_duplicate_event_suppression"
+    )
+    suite_results["websocket_replay"] = {"pass": ok_ws_replay, "output": out_ws_replay[-600:]}
+    print("\n--- G13j: Provider routing integration + provider-boundary failure injections ---")
+    ok_prov_routing, _ = run_pytest_suite(
+        "tests/integration/test_architecture_v3_phase10_provider_routing.py"
+    )
+    suite_results["provider_routing_integration"] = {"pass": ok_prov_routing}
+    ok_prov_timeout, _ = run_pytest_suite(
+        "tests/unit/providers/test_endpoint_failover.py::test_timeout_then_success_failover"
+    )
+    suite_results["provider_timeout"] = {"pass": ok_prov_timeout}
+    ok_prov_rate, _ = run_pytest_suite(
+        "tests/unit/providers/test_endpoint_failover.py::test_429_failover_to_same_model_succeeds"
+    )
+    suite_results["provider_rate_limit"] = {"pass": ok_prov_rate}
     print("\n--- G13i: Web / Desktop / Typecheck / Build ---")
     web_desktop_results = run_web_desktop_typecheck_build_checks()
     for k, (status, ev) in web_desktop_results.items():
@@ -831,6 +1016,9 @@ def main(argv: List[str] | None = None) -> int:
         "queue_fencing": "PASS" if suite_results.get("queue_fencing", {}).get("pass") else "FAIL",
         "outbox": "PASS" if suite_results.get("outbox", {}).get("pass") else "FAIL",
         "websocket_replay": "PASS" if suite_results.get("websocket_replay", {}).get("pass") else "FAIL",
+        "provider_routing_integration": "PASS" if suite_results.get("provider_routing_integration", {}).get("pass") else "FAIL",
+        "provider_timeout_fi": "PASS" if suite_results.get("provider_timeout", {}).get("pass") else "FAIL",
+        "provider_rate_limit_fi": "PASS" if suite_results.get("provider_rate_limit", {}).get("pass") else "FAIL",
         "web_tests": web_desktop_results.get("web_tests", ("FAIL", {}))[0],
         "web_typecheck": web_desktop_results.get("web_typecheck", ("FAIL", {}))[0],
         "web_build": web_desktop_results.get("web_build", ("FAIL", {}))[0],
@@ -855,6 +1043,19 @@ def main(argv: List[str] | None = None) -> int:
     # Also keep full suite_results for debugging
     gate_evidence["G13_suite_results"] = {k: v.get("pass", False) for k, v in suite_results.items()}
     suite_results["g13_required_matrix"] = {"pass": gate_results["G13_TESTS"] == "PASS", "matrix": required_matrix}
+
+    # ══════════════════════════════════════════════════════════════════
+    # REQUIRED FAILURE INJECTION MATRIX — every item executed with exit code
+    # ══════════════════════════════════════════════════════════════════
+    print("\n--- FAILURE INJECTION MATRIX ---")
+    fi_matrix = run_failure_injection_matrix()
+    fi_all_pass = all(v["status"] == "PASS" for v in fi_matrix.values())
+    gate_evidence["FAILURE_INJECTIONS"] = fi_matrix
+    suite_results["failure_injections"] = {"pass": fi_all_pass}
+    if not fi_all_pass:
+        failed_fis = [k for k, v in fi_matrix.items() if v["status"] != "PASS"]
+        gate_results["G7_DURABILITY"] = "FAIL"
+        blockers.append(f"Failure injection matrix failed: {', '.join(failed_fis)}")
 
     # ══════════════════════════════════════════════════════════════════
     # FINAL VERDICT — handle PASS / FAIL / BLOCKED
@@ -889,6 +1090,8 @@ def main(argv: List[str] | None = None) -> int:
         "gates": gate_results,
         "gate_evidence": gate_evidence,
         "suites": {k: {"pass": v.get("pass", False), "status": v.get("status", "PASS" if v.get("pass") else "FAIL")} for k, v in suite_results.items()},
+        "required_matrix": required_matrix,
+        "failure_injections": fi_matrix,
         "blockers": blockers,
     }
 
@@ -944,6 +1147,13 @@ def main(argv: List[str] | None = None) -> int:
         for suite, info in suite_results.items()
     )
     blocker_list = "\n".join(f"- {b}" for b in blockers) if blockers else "- None"
+    fi_table = "\n".join(
+        f"| {name} | {info['status']} | `{info['command']}` |"
+        for name, info in fi_matrix.items()
+    )
+    matrix_table = "\n".join(
+        f"| {entry} | {status} |" for entry, status in required_matrix.items()
+    )
 
     verdict_badge = "PASS" if all_gates_pass else ("BLOCKED" if has_blocked else "FAIL")
     md = f"""# Architecture V3 Final Certification
@@ -966,6 +1176,18 @@ def main(argv: List[str] | None = None) -> int:
 | Suite | Status |
 |-------|--------|
 {suite_table}
+
+## Required Matrix (G13)
+
+| Entry | Status |
+|-------|--------|
+{matrix_table}
+
+## Failure Injection Matrix
+
+| Injection | Status | Command |
+|-----------|--------|---------|
+{fi_table}
 
 ## Blockers
 
