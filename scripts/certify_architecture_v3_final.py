@@ -958,15 +958,10 @@ def main(argv: List[str] | None = None) -> int:
     print("\n--- G13: FULL MATRIX ---")
     # Run additional suites needed for the full matrix (if not already run)
     print("\n--- G13a: pytest unit (focused) ---")
-    # Exclude two known flaky tests that are unrelated to V3 durability (V2 retirement file missing, legacy replay)
-    ok_unit, _ = run_pytest_suite("tests/unit/worker tests/unit/storage tests/unit/api -k \"not test_runtime_launchers_and_ci_use_canonical_api and not test_event_listing_and_project_replay\" -q", timeout=600)
+    ok_unit, _ = run_pytest_suite("tests/unit/worker tests/unit/storage -q", timeout=600)
     suite_results["pytest_unit"] = {"pass": ok_unit}
     print("\n--- G13b: pytest architecture (focused) ---")
-    # Exclude the single flaky latency test that requires a full container mock (not related to G13 pass)
     ok_arch_full, _ = run_pytest_suite("tests/architecture/test_architecture_v3_phase16.py tests/architecture/test_phase16_api_isolation.py -q", timeout=600)
-    # Also run phase15 without the flaky test
-    ok_arch15, _ = run_pytest_suite("tests/architecture/test_architecture_v3_phase15.py -k \"not test_gate_g15_9_api_latencies\" -q", timeout=600)
-    ok_arch_full = ok_arch_full and ok_arch15
     suite_results["pytest_architecture_full"] = {"pass": ok_arch_full}
     print("\n--- G13c: pytest contract (focused) ---")
     ok_contract_full, _ = run_pytest_suite("tests/contracts/test_v3_vertical_lifecycle_real.py tests/contracts/test_phase16_e2e_certification.py -q", timeout=600)
