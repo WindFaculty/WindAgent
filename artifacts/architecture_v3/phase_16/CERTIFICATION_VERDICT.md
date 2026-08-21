@@ -2,9 +2,9 @@
 
 ## Verdict: [PASS] ARCHITECTURE_V3_OPTIMIZED_AND_CERTIFIED
 
-**Timestamp:** 2026-08-21T15:36:01.579993+00:00
-**Elapsed:** 65.9s
-**Candidate SHA:** `e481f33f502a551051bd30c43b5d5b9ae39cd892`
+**Timestamp:** 2026-08-21T17:01:47.363063+00:00
+**Elapsed:** 236.4s
+**Candidate SHA:** `be6c54e871cbf293772687f64bd18fe29104f485`
 **Branch:** `refactor/architecture-v3-hardening`
 
 ## Hard Gates (G0-G14)
@@ -41,6 +41,75 @@
 | g6_restart | PASS |
 | g7_durability | PASS |
 | g8_realtime | PASS |
+| g9_api_isolation | PASS |
+| g10_worker_pipeline | PASS |
+| g11_truthful_ui | PASS |
+| g12_docs | PASS |
+| pytest_unit | PASS |
+| pytest_architecture_full | PASS |
+| pytest_contract_full | PASS |
+| sqlite_integration | PASS |
+| postgres_integration | PASS |
+| api_smoke | PASS |
+| v3_vertical_real | PASS |
+| queue_fencing | PASS |
+| outbox | PASS |
+| worker_recovery | PASS |
+| websocket_replay | PASS |
+| provider_routing_integration | PASS |
+| provider_timeout | PASS |
+| provider_rate_limit | PASS |
+| web_typecheck | PASS |
+| web_tests | PASS |
+| web_build | PASS |
+| desktop_typecheck | PASS |
+| desktop_tests | PASS |
+| desktop_build | PASS |
+| g13_required_matrix | PASS |
+| failure_injections | PASS |
+
+## Required Matrix (G13)
+
+| Entry | Status |
+|-------|--------|
+| architecture_checker | PASS |
+| ruff | PASS |
+| pytest_unit | PASS |
+| pytest_architecture | PASS |
+| pytest_contract | PASS |
+| sqlite_integration | PASS |
+| postgres_integration | PASS |
+| api_smoke | PASS |
+| v3_vertical_real | PASS |
+| worker_recovery | PASS |
+| queue_fencing | PASS |
+| outbox | PASS |
+| websocket_replay | PASS |
+| provider_routing_integration | PASS |
+| provider_timeout_fi | PASS |
+| provider_rate_limit_fi | PASS |
+| web_tests | PASS |
+| web_typecheck | PASS |
+| web_build | PASS |
+| desktop_tests | PASS |
+| desktop_typecheck | PASS |
+| desktop_build | PASS |
+
+## Failure Injection Matrix
+
+| Injection | Status | Command |
+|-----------|--------|---------|
+| api_restart | PASS | `pytest tests/integration/test_architecture_v3_phase4_restart.py` |
+| worker_restart | PASS | `pytest tests/architecture/test_architecture_v3_phase16.py::test_fi_restart_persistence` |
+| worker_killed_during_execution | PASS | `pytest tests/architecture/test_architecture_v3_phase16.py::test_fi_worker_killed_no_split_state` |
+| db_transient_failure | PASS | `pytest tests/architecture/test_architecture_v3_phase16.py::test_fi_db_transient_failure_recovery` |
+| lease_expiration | PASS | `pytest tests/architecture/test_architecture_v3_phase16.py::test_fi_lease_takeover_late_result_reject` |
+| late_result | PASS | `pytest tests/architecture/test_architecture_v3_phase16.py::test_fi_lease_takeover_late_result_reject` |
+| duplicate_command | PASS | `pytest tests/architecture/test_architecture_v3_phase16.py::test_fi_duplicate_command_idempotent` |
+| duplicate_event | PASS | `pytest tests/architecture/test_architecture_v3_phase16.py::test_fi_duplicate_event_suppression` |
+| websocket_disconnect_reconnect | PASS | `pytest tests/architecture/test_architecture_v3_phase16.py::test_fi_reconnect_replay_from_cursor tests/architecture/test_architecture_v3_phase16.py::test_fi_ws_reconnect_live_integration` |
+| provider_timeout | PASS | `pytest tests/unit/providers/test_endpoint_failover.py::test_timeout_then_success_failover` |
+| provider_rate_limit | PASS | `pytest tests/unit/providers/test_endpoint_failover.py::test_429_failover_to_same_model_succeeds` |
 
 ## Blockers
 

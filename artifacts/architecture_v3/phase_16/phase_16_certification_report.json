@@ -2,11 +2,11 @@
   "phase": "16",
   "status": "PASS",
   "verdict": "ARCHITECTURE_V3_OPTIMIZED_AND_CERTIFIED",
-  "timestamp": "2026-08-21T15:36:01.579993+00:00",
-  "elapsed_seconds": 65.9,
-  "candidate_sha": "e481f33f502a551051bd30c43b5d5b9ae39cd892",
+  "timestamp": "2026-08-21T17:01:47.363063+00:00",
+  "elapsed_seconds": 236.43,
+  "candidate_sha": "be6c54e871cbf293772687f64bd18fe29104f485",
   "branch": "refactor/architecture-v3-hardening",
-  "tree_sha": "717d0966a02391285679e0244734e24c4a78c5ce",
+  "tree_sha": "829e48c93fdd3b634424d6f34e668f8ae468a9b3",
   "python_version": "3.11.15 (main, Jun 23 2026, 15:20:37) [MSC v.1944 64 bit (AMD64)]",
   "platform": "Windows-10-10.0.26200-SP0",
   "gates": {
@@ -28,9 +28,9 @@
   },
   "gate_evidence": {
     "G0_SOURCE_AUTHORITY": {
-      "candidate_sha": "e481f33f502a551051bd30c43b5d5b9ae39cd892",
+      "candidate_sha": "be6c54e871cbf293772687f64bd18fe29104f485",
       "branch": "refactor/architecture-v3-hardening",
-      "tree_sha": "717d0966a02391285679e0244734e24c4a78c5ce",
+      "tree_sha": "829e48c93fdd3b634424d6f34e668f8ae468a9b3",
       "dirty_before": "",
       "python_version": "3.11.15 (main, Jun 23 2026, 15:20:37) [MSC v.1944 64 bit (AMD64)]",
       "platform": "Windows-10-10.0.26200-SP0",
@@ -55,7 +55,7 @@
         "checker_pass": true,
         "restart_persistence": true
       },
-      "candidate": "e481f33f502a551051bd30c43b5d5b9ae39cd892"
+      "candidate": "be6c54e871cbf293772687f64bd18fe29104f485"
     },
     "G7_DURABILITY": {
       "gate": "G7",
@@ -88,7 +88,7 @@
         "db_transient": true,
         "duplicate_cmd": true
       },
-      "candidate": "e481f33f502a551051bd30c43b5d5b9ae39cd892"
+      "candidate": "be6c54e871cbf293772687f64bd18fe29104f485"
     },
     "G8_REALTIME": {
       "gate": "G8",
@@ -114,21 +114,86 @@
         "dedup": true,
         "phase6_ws": true
       },
-      "candidate": "e481f33f502a551051bd30c43b5d5b9ae39cd892"
+      "candidate": "be6c54e871cbf293772687f64bd18fe29104f485"
     },
     "G9_API_ISOLATION": {
-      "composition_exists": true
+      "command": "uv run pytest tests/architecture/test_phase16_api_isolation.py -v --tb=short -q",
+      "pass": true,
+      "output": "============================= test session starts =============================\nplatform win32 -- Python 3.11.15, pytest-9.1.1, pluggy-1.6.0\nrootdir: D:\\code_ca_nhan\\WindAgent\nconfigfile: pyproject.toml\nplugins: anyio-4.14.2, asyncio-1.4.0\nasyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function\ncollected 4 items\n\ntests\\architecture\\test_phase16_api_isolation.py ....                    [100%]\n\n============================== 4 passed in 0.05s ==============================\n"
     },
     "G10_WORKER_PIPELINE": {
-      "integration_tests": true
+      "command": "D:\\code_ca_nhan\\WindAgent\\.venv\\Scripts\\python.exe -m pytest tests/unit/worker/pipeline/test_phase9_worker_pipeline.py tests/unit/worker/test_phase2_transactional_finalization.py tests/unit/worker/test_phase03_durable_queue.py tests/unit/storage/test_phase3_outbox.py tests/integration/test_architecture_v3_phase10_provider_routing.py tests/integration/test_architecture_v3_phase4_restart.py -v --tb=short -q",
+      "output": "============================= test session starts =============================\nplatform win32 -- Python 3.11.15, pytest-9.1.1, pluggy-1.6.0\nrootdir: D:\\code_ca_nhan\\WindAgent\nconfigfile: pyproject.toml\nplugins: anyio-4.14.2, asyncio-1.4.0\nasyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function\ncollected 56 items\n\ntests\\unit\\worker\\pipeline\\test_phase9_worker_pipeline.py .............. [ 25%]\n...........                                                              [ 44%]\ntests\\unit\\worker\\test_phase2_transactional_finalization.py ..........   [ 62%]\ntests\\unit\\worker\\test_phase03_durable_queue.py .......                  [ 75%]\ntests\\unit\\storage\\test_phase3_outbox.py .........                       [ 91%]\ntests\\integration\\test_architecture_v3_phase10_provider_routing.py ....  [ 98%]\ntests\\integration\\test_architecture_v3_phase4_restart.py .               [100%]\n\n============================== warnings summary ===============================\n.venv\\Lib\\site-packages\\fastapi\\testclient.py:1\n  D:\\code_ca_nhan\\WindAgent\\.venv\\Lib\\site-packages\\fastapi\\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n    from starlette.testclient import TestClient as TestClient  # noqa\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n======================== 56 passed, 1 warning in 5.26s ========================\n",
+      "pass": true
     },
     "G11_TRUTHFUL_UI": {
-      "architecture_clean": true
+      "architecture_clean": true,
+      "violations": [],
+      "scanned_roots": [
+        "apps\\web",
+        "apps\\desktop"
+      ],
+      "files_scanned": 31,
+      "patterns": [
+        "fake.*health",
+        "fake.*latency",
+        "fake.*connected"
+      ]
     },
     "G12_DOCS": {
-      "version_files_checked": 15
+      "version_consistency": true,
+      "scaffold_exists": true,
+      "scaffold_version_ok": true,
+      "doc_README.md_has_v3": true,
+      "doc_apps_api_README.md_has_v3": true,
+      "doc_apps_worker_README.md_has_v3": true,
+      "artifact_scaffold_v3.yaml_exists": true,
+      "artifact_v3_boundary_report.json_exists": true,
+      "prior_phases": {
+        "phase_00": "PASS",
+        "phase_01": "PASS",
+        "phase_02": "PASS",
+        "phase_03": "PASS",
+        "phase_04": "PASS",
+        "phase_05": "PASS",
+        "phase_06": "PASS",
+        "phase_07": "PASS",
+        "phase_08": "PASS",
+        "phase_09": "PASS",
+        "phase_10": "PASS",
+        "phase_11": "PASS",
+        "phase_12": "PASS",
+        "phase_13": "PASS",
+        "phase_14": "PASS",
+        "phase_15": "PASS"
+      },
+      "violations": []
     },
     "G13_TESTS": {
+      "architecture_checker": "PASS",
+      "ruff": "PASS",
+      "pytest_unit": "PASS",
+      "pytest_architecture": "PASS",
+      "pytest_contract": "PASS",
+      "sqlite_integration": "PASS",
+      "postgres_integration": "PASS",
+      "api_smoke": "PASS",
+      "v3_vertical_real": "PASS",
+      "worker_recovery": "PASS",
+      "queue_fencing": "PASS",
+      "outbox": "PASS",
+      "websocket_replay": "PASS",
+      "provider_routing_integration": "PASS",
+      "provider_timeout_fi": "PASS",
+      "provider_rate_limit_fi": "PASS",
+      "web_tests": "PASS",
+      "web_typecheck": "PASS",
+      "web_build": "PASS",
+      "desktop_tests": "PASS",
+      "desktop_typecheck": "PASS",
+      "desktop_build": "PASS"
+    },
+    "G13_suite_results": {
       "architecture_checker": true,
       "ruff_lint": true,
       "prior_verdicts": true,
@@ -138,39 +203,337 @@
       "pytest_integration_v3": true,
       "g6_restart": true,
       "g7_durability": true,
-      "g8_realtime": true
+      "g8_realtime": true,
+      "g9_api_isolation": true,
+      "g10_worker_pipeline": true,
+      "g11_truthful_ui": true,
+      "g12_docs": true,
+      "pytest_unit": true,
+      "pytest_architecture_full": true,
+      "pytest_contract_full": true,
+      "sqlite_integration": true,
+      "postgres_integration": true,
+      "api_smoke": true,
+      "v3_vertical_real": true,
+      "queue_fencing": true,
+      "outbox": true,
+      "worker_recovery": true,
+      "websocket_replay": true,
+      "provider_routing_integration": true,
+      "provider_timeout": true,
+      "provider_rate_limit": true,
+      "web_typecheck": true,
+      "web_tests": true,
+      "web_build": true,
+      "desktop_typecheck": true,
+      "desktop_tests": true,
+      "desktop_build": true
+    },
+    "FAILURE_INJECTIONS": {
+      "api_restart": {
+        "status": "PASS",
+        "command": "pytest tests/integration/test_architecture_v3_phase4_restart.py",
+        "exit_code": 0,
+        "output_tail": "_nhan\\WindAgent\\.venv\\Lib\\site-packages\\fastapi\\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n    from starlette.testclient import TestClient as TestClient  # noqa\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n======================== 1 passed, 1 warning in 2.43s =========================\n"
+      },
+      "worker_restart": {
+        "status": "PASS",
+        "command": "pytest tests/architecture/test_architecture_v3_phase16.py::test_fi_restart_persistence",
+        "exit_code": 0,
+        "output_tail": "otdir: D:\\code_ca_nhan\\WindAgent\nconfigfile: pyproject.toml\nplugins: anyio-4.14.2, asyncio-1.4.0\nasyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function\ncollected 1 item\n\ntests\\architecture\\test_architecture_v3_phase16.py .                     [100%]\n\n============================== 1 passed in 1.23s ==============================\n"
+      },
+      "worker_killed_during_execution": {
+        "status": "PASS",
+        "command": "pytest tests/architecture/test_architecture_v3_phase16.py::test_fi_worker_killed_no_split_state",
+        "exit_code": 0,
+        "output_tail": "otdir: D:\\code_ca_nhan\\WindAgent\nconfigfile: pyproject.toml\nplugins: anyio-4.14.2, asyncio-1.4.0\nasyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function\ncollected 1 item\n\ntests\\architecture\\test_architecture_v3_phase16.py .                     [100%]\n\n============================== 1 passed in 2.75s ==============================\n"
+      },
+      "db_transient_failure": {
+        "status": "PASS",
+        "command": "pytest tests/architecture/test_architecture_v3_phase16.py::test_fi_db_transient_failure_recovery",
+        "exit_code": 0,
+        "output_tail": "otdir: D:\\code_ca_nhan\\WindAgent\nconfigfile: pyproject.toml\nplugins: anyio-4.14.2, asyncio-1.4.0\nasyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function\ncollected 1 item\n\ntests\\architecture\\test_architecture_v3_phase16.py .                     [100%]\n\n============================== 1 passed in 1.25s ==============================\n"
+      },
+      "lease_expiration": {
+        "status": "PASS",
+        "command": "pytest tests/architecture/test_architecture_v3_phase16.py::test_fi_lease_takeover_late_result_reject",
+        "exit_code": 0,
+        "output_tail": "otdir: D:\\code_ca_nhan\\WindAgent\nconfigfile: pyproject.toml\nplugins: anyio-4.14.2, asyncio-1.4.0\nasyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function\ncollected 1 item\n\ntests\\architecture\\test_architecture_v3_phase16.py .                     [100%]\n\n============================== 1 passed in 2.74s ==============================\n"
+      },
+      "late_result": {
+        "status": "PASS",
+        "command": "pytest tests/architecture/test_architecture_v3_phase16.py::test_fi_lease_takeover_late_result_reject",
+        "exit_code": 0,
+        "output_tail": "otdir: D:\\code_ca_nhan\\WindAgent\nconfigfile: pyproject.toml\nplugins: anyio-4.14.2, asyncio-1.4.0\nasyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function\ncollected 1 item\n\ntests\\architecture\\test_architecture_v3_phase16.py .                     [100%]\n\n============================== 1 passed in 2.75s ==============================\n"
+      },
+      "duplicate_command": {
+        "status": "PASS",
+        "command": "pytest tests/architecture/test_architecture_v3_phase16.py::test_fi_duplicate_command_idempotent",
+        "exit_code": 0,
+        "output_tail": "otdir: D:\\code_ca_nhan\\WindAgent\nconfigfile: pyproject.toml\nplugins: anyio-4.14.2, asyncio-1.4.0\nasyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function\ncollected 1 item\n\ntests\\architecture\\test_architecture_v3_phase16.py .                     [100%]\n\n============================== 1 passed in 1.19s ==============================\n"
+      },
+      "duplicate_event": {
+        "status": "PASS",
+        "command": "pytest tests/architecture/test_architecture_v3_phase16.py::test_fi_duplicate_event_suppression",
+        "exit_code": 0,
+        "output_tail": "otdir: D:\\code_ca_nhan\\WindAgent\nconfigfile: pyproject.toml\nplugins: anyio-4.14.2, asyncio-1.4.0\nasyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function\ncollected 1 item\n\ntests\\architecture\\test_architecture_v3_phase16.py .                     [100%]\n\n============================== 1 passed in 1.96s ==============================\n"
+      },
+      "websocket_disconnect_reconnect": {
+        "status": "PASS",
+        "command": "pytest tests/architecture/test_architecture_v3_phase16.py::test_fi_reconnect_replay_from_cursor tests/architecture/test_architecture_v3_phase16.py::test_fi_ws_reconnect_live_integration",
+        "exit_code": 0,
+        "output_tail": "_nhan\\WindAgent\\.venv\\Lib\\site-packages\\fastapi\\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n    from starlette.testclient import TestClient as TestClient  # noqa\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n======================== 2 passed, 1 warning in 2.13s =========================\n"
+      },
+      "provider_timeout": {
+        "status": "PASS",
+        "command": "pytest tests/unit/providers/test_endpoint_failover.py::test_timeout_then_success_failover",
+        "exit_code": 0,
+        "output_tail": "otdir: D:\\code_ca_nhan\\WindAgent\nconfigfile: pyproject.toml\nplugins: anyio-4.14.2, asyncio-1.4.0\nasyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function\ncollected 1 item\n\ntests\\unit\\providers\\test_endpoint_failover.py .                         [100%]\n\n============================== 1 passed in 0.52s ==============================\n"
+      },
+      "provider_rate_limit": {
+        "status": "PASS",
+        "command": "pytest tests/unit/providers/test_endpoint_failover.py::test_429_failover_to_same_model_succeeds",
+        "exit_code": 0,
+        "output_tail": "otdir: D:\\code_ca_nhan\\WindAgent\nconfigfile: pyproject.toml\nplugins: anyio-4.14.2, asyncio-1.4.0\nasyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function\ncollected 1 item\n\ntests\\unit\\providers\\test_endpoint_failover.py .                         [100%]\n\n============================== 1 passed in 0.52s ==============================\n"
+      }
     }
   },
   "suites": {
     "architecture_checker": {
-      "pass": true
+      "pass": true,
+      "status": "PASS"
     },
     "ruff_lint": {
-      "pass": true
+      "pass": true,
+      "status": "PASS"
     },
     "prior_verdicts": {
-      "pass": true
+      "pass": true,
+      "status": "PASS"
     },
     "pytest_architecture_phase16": {
-      "pass": true
+      "pass": true,
+      "status": "PASS"
     },
     "pytest_performance_phase15": {
-      "pass": true
+      "pass": true,
+      "status": "PASS"
     },
     "pytest_contracts_v3_e2e": {
-      "pass": true
+      "pass": true,
+      "status": "PASS"
     },
     "pytest_integration_v3": {
-      "pass": true
+      "pass": true,
+      "status": "PASS"
     },
     "g6_restart": {
-      "pass": true
+      "pass": true,
+      "status": "PASS"
     },
     "g7_durability": {
-      "pass": true
+      "pass": true,
+      "status": "PASS"
     },
     "g8_realtime": {
-      "pass": true
+      "pass": true,
+      "status": "PASS"
+    },
+    "g9_api_isolation": {
+      "pass": true,
+      "status": "PASS"
+    },
+    "g10_worker_pipeline": {
+      "pass": true,
+      "status": "PASS"
+    },
+    "g11_truthful_ui": {
+      "pass": true,
+      "status": "PASS"
+    },
+    "g12_docs": {
+      "pass": true,
+      "status": "PASS"
+    },
+    "pytest_unit": {
+      "pass": true,
+      "status": "PASS"
+    },
+    "pytest_architecture_full": {
+      "pass": true,
+      "status": "PASS"
+    },
+    "pytest_contract_full": {
+      "pass": true,
+      "status": "PASS"
+    },
+    "sqlite_integration": {
+      "pass": true,
+      "status": "PASS"
+    },
+    "postgres_integration": {
+      "pass": true,
+      "status": "PASS"
+    },
+    "api_smoke": {
+      "pass": true,
+      "status": "PASS"
+    },
+    "v3_vertical_real": {
+      "pass": true,
+      "status": "PASS"
+    },
+    "queue_fencing": {
+      "pass": true,
+      "status": "PASS"
+    },
+    "outbox": {
+      "pass": true,
+      "status": "PASS"
+    },
+    "worker_recovery": {
+      "pass": true,
+      "status": "PASS"
+    },
+    "websocket_replay": {
+      "pass": true,
+      "status": "PASS"
+    },
+    "provider_routing_integration": {
+      "pass": true,
+      "status": "PASS"
+    },
+    "provider_timeout": {
+      "pass": true,
+      "status": "PASS"
+    },
+    "provider_rate_limit": {
+      "pass": true,
+      "status": "PASS"
+    },
+    "web_typecheck": {
+      "pass": true,
+      "status": "PASS"
+    },
+    "web_tests": {
+      "pass": true,
+      "status": "PASS"
+    },
+    "web_build": {
+      "pass": true,
+      "status": "PASS"
+    },
+    "desktop_typecheck": {
+      "pass": true,
+      "status": "PASS"
+    },
+    "desktop_tests": {
+      "pass": true,
+      "status": "PASS"
+    },
+    "desktop_build": {
+      "pass": true,
+      "status": "PASS"
+    },
+    "g13_required_matrix": {
+      "pass": true,
+      "status": "PASS"
+    },
+    "failure_injections": {
+      "pass": true,
+      "status": "PASS"
+    }
+  },
+  "required_matrix": {
+    "architecture_checker": "PASS",
+    "ruff": "PASS",
+    "pytest_unit": "PASS",
+    "pytest_architecture": "PASS",
+    "pytest_contract": "PASS",
+    "sqlite_integration": "PASS",
+    "postgres_integration": "PASS",
+    "api_smoke": "PASS",
+    "v3_vertical_real": "PASS",
+    "worker_recovery": "PASS",
+    "queue_fencing": "PASS",
+    "outbox": "PASS",
+    "websocket_replay": "PASS",
+    "provider_routing_integration": "PASS",
+    "provider_timeout_fi": "PASS",
+    "provider_rate_limit_fi": "PASS",
+    "web_tests": "PASS",
+    "web_typecheck": "PASS",
+    "web_build": "PASS",
+    "desktop_tests": "PASS",
+    "desktop_typecheck": "PASS",
+    "desktop_build": "PASS"
+  },
+  "failure_injections": {
+    "api_restart": {
+      "status": "PASS",
+      "command": "pytest tests/integration/test_architecture_v3_phase4_restart.py",
+      "exit_code": 0,
+      "output_tail": "_nhan\\WindAgent\\.venv\\Lib\\site-packages\\fastapi\\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n    from starlette.testclient import TestClient as TestClient  # noqa\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n======================== 1 passed, 1 warning in 2.43s =========================\n"
+    },
+    "worker_restart": {
+      "status": "PASS",
+      "command": "pytest tests/architecture/test_architecture_v3_phase16.py::test_fi_restart_persistence",
+      "exit_code": 0,
+      "output_tail": "otdir: D:\\code_ca_nhan\\WindAgent\nconfigfile: pyproject.toml\nplugins: anyio-4.14.2, asyncio-1.4.0\nasyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function\ncollected 1 item\n\ntests\\architecture\\test_architecture_v3_phase16.py .                     [100%]\n\n============================== 1 passed in 1.23s ==============================\n"
+    },
+    "worker_killed_during_execution": {
+      "status": "PASS",
+      "command": "pytest tests/architecture/test_architecture_v3_phase16.py::test_fi_worker_killed_no_split_state",
+      "exit_code": 0,
+      "output_tail": "otdir: D:\\code_ca_nhan\\WindAgent\nconfigfile: pyproject.toml\nplugins: anyio-4.14.2, asyncio-1.4.0\nasyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function\ncollected 1 item\n\ntests\\architecture\\test_architecture_v3_phase16.py .                     [100%]\n\n============================== 1 passed in 2.75s ==============================\n"
+    },
+    "db_transient_failure": {
+      "status": "PASS",
+      "command": "pytest tests/architecture/test_architecture_v3_phase16.py::test_fi_db_transient_failure_recovery",
+      "exit_code": 0,
+      "output_tail": "otdir: D:\\code_ca_nhan\\WindAgent\nconfigfile: pyproject.toml\nplugins: anyio-4.14.2, asyncio-1.4.0\nasyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function\ncollected 1 item\n\ntests\\architecture\\test_architecture_v3_phase16.py .                     [100%]\n\n============================== 1 passed in 1.25s ==============================\n"
+    },
+    "lease_expiration": {
+      "status": "PASS",
+      "command": "pytest tests/architecture/test_architecture_v3_phase16.py::test_fi_lease_takeover_late_result_reject",
+      "exit_code": 0,
+      "output_tail": "otdir: D:\\code_ca_nhan\\WindAgent\nconfigfile: pyproject.toml\nplugins: anyio-4.14.2, asyncio-1.4.0\nasyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function\ncollected 1 item\n\ntests\\architecture\\test_architecture_v3_phase16.py .                     [100%]\n\n============================== 1 passed in 2.74s ==============================\n"
+    },
+    "late_result": {
+      "status": "PASS",
+      "command": "pytest tests/architecture/test_architecture_v3_phase16.py::test_fi_lease_takeover_late_result_reject",
+      "exit_code": 0,
+      "output_tail": "otdir: D:\\code_ca_nhan\\WindAgent\nconfigfile: pyproject.toml\nplugins: anyio-4.14.2, asyncio-1.4.0\nasyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function\ncollected 1 item\n\ntests\\architecture\\test_architecture_v3_phase16.py .                     [100%]\n\n============================== 1 passed in 2.75s ==============================\n"
+    },
+    "duplicate_command": {
+      "status": "PASS",
+      "command": "pytest tests/architecture/test_architecture_v3_phase16.py::test_fi_duplicate_command_idempotent",
+      "exit_code": 0,
+      "output_tail": "otdir: D:\\code_ca_nhan\\WindAgent\nconfigfile: pyproject.toml\nplugins: anyio-4.14.2, asyncio-1.4.0\nasyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function\ncollected 1 item\n\ntests\\architecture\\test_architecture_v3_phase16.py .                     [100%]\n\n============================== 1 passed in 1.19s ==============================\n"
+    },
+    "duplicate_event": {
+      "status": "PASS",
+      "command": "pytest tests/architecture/test_architecture_v3_phase16.py::test_fi_duplicate_event_suppression",
+      "exit_code": 0,
+      "output_tail": "otdir: D:\\code_ca_nhan\\WindAgent\nconfigfile: pyproject.toml\nplugins: anyio-4.14.2, asyncio-1.4.0\nasyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function\ncollected 1 item\n\ntests\\architecture\\test_architecture_v3_phase16.py .                     [100%]\n\n============================== 1 passed in 1.96s ==============================\n"
+    },
+    "websocket_disconnect_reconnect": {
+      "status": "PASS",
+      "command": "pytest tests/architecture/test_architecture_v3_phase16.py::test_fi_reconnect_replay_from_cursor tests/architecture/test_architecture_v3_phase16.py::test_fi_ws_reconnect_live_integration",
+      "exit_code": 0,
+      "output_tail": "_nhan\\WindAgent\\.venv\\Lib\\site-packages\\fastapi\\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n    from starlette.testclient import TestClient as TestClient  # noqa\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n======================== 2 passed, 1 warning in 2.13s =========================\n"
+    },
+    "provider_timeout": {
+      "status": "PASS",
+      "command": "pytest tests/unit/providers/test_endpoint_failover.py::test_timeout_then_success_failover",
+      "exit_code": 0,
+      "output_tail": "otdir: D:\\code_ca_nhan\\WindAgent\nconfigfile: pyproject.toml\nplugins: anyio-4.14.2, asyncio-1.4.0\nasyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function\ncollected 1 item\n\ntests\\unit\\providers\\test_endpoint_failover.py .                         [100%]\n\n============================== 1 passed in 0.52s ==============================\n"
+    },
+    "provider_rate_limit": {
+      "status": "PASS",
+      "command": "pytest tests/unit/providers/test_endpoint_failover.py::test_429_failover_to_same_model_succeeds",
+      "exit_code": 0,
+      "output_tail": "otdir: D:\\code_ca_nhan\\WindAgent\nconfigfile: pyproject.toml\nplugins: anyio-4.14.2, asyncio-1.4.0\nasyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function\ncollected 1 item\n\ntests\\unit\\providers\\test_endpoint_failover.py .                         [100%]\n\n============================== 1 passed in 0.52s ==============================\n"
     }
   },
   "blockers": []

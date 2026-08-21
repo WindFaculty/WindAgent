@@ -1,0 +1,6 @@
+{
+  "dialect": "postgresql",
+  "server_version": "PostgreSQL 16.9, compiled by Visual C++ build 1943, 64-bit",
+  "schema_operation": "create_all_test_schema",
+  "verdict": "PASS"
+}

@@ -2,7 +2,10 @@
   "phase": "16",
   "status": "PASS",
   "verdict": "ARCHITECTURE_V3_OPTIMIZED_AND_CERTIFIED",
-  "timestamp": "2026-08-21T15:36:01.579993+00:00",
+  "timestamp": "2026-08-21T17:01:47.363063+00:00",
+  "candidate_sha": "be6c54e871cbf293772687f64bd18fe29104f485",
+  "tree_sha": "829e48c93fdd3b634424d6f34e668f8ae468a9b3",
+  "elapsed_seconds": 236.43,
   "gates": {
     "G0_SOURCE_AUTHORITY": "PASS",
     "G14_ARCH_CERTIFIED": "PASS",
