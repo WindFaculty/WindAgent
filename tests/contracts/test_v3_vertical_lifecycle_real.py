@@ -3,17 +3,21 @@ Real V3 Product Vertical E2E — canonical path proof.
 
 Covers the roadmap vertical:
   API V3 -> Series -> Episode -> Story Workflow -> Orchestrator -> Durable Queue
-  -> Worker -> Model Router -> Provider Port -> Deterministic Provider
-  -> Story Pipeline -> Persistence -> Review -> Revision -> Approval -> Lock
+  -> Worker -> ModelExecutionPort (FixtureModelPort) -> Deterministic Provider
+  -> Story Pipeline -> Persistence -> Review -> Revision -> Lock
   -> READY_FOR_PRODUCTION
 
 This test goes through:
   - API composition (TestClient + ApplicationContainer)
   - Durable Queue (SqlDurableTaskQueue via StudioTaskSubmissionAdapter)
   - Worker (ProductionWorker + StudioRuntimeAdapter + SqlUnitOfWork)
-  - Model Router / Provider Port (FixtureModelPort with golden fixtures)
+  - ModelExecutionPort via FixtureModelPort with golden fixtures (deterministic, no network)
 
-It MUST NOT bypass queue/worker/router or manually insert final artifacts.
+Router/provider integration is proven separately:
+  tests/integration/test_architecture_v3_phase10_provider_routing.py covers
+  Model Router → routing rule → provider selection → deterministic fake transport.
+
+It MUST NOT bypass queue/worker or manually insert final artifacts.
 """
 
 from __future__ import annotations
@@ -344,7 +348,9 @@ async def test_v3_vertical_lifecycle_via_canonical_path():
             assert rev2.content_hash == locked_hash_before, f"Locked hash mutated after rejected lock: {rev2.content_hash} != {locked_hash_before}"
             assert ep2.current_revision_id == rev_id, "Revision id mutated after rejected lock"
             # Episode must remain in locked terminal state
-            assert str(ep2.state) in ("LOCKED", "READY_FOR_PRODUCTION") or ep_state_before in ("LOCKED", "READY_FOR_PRODUCTION", None)
+            ep_state_val = ep2.state.value if hasattr(ep2.state, "value") else str(ep2.state)
+            ep_before_val = ep_state_before.value if hasattr(ep_state_before, "value") else str(ep_state_before) if ep_state_before else None
+            assert ep_state_val in ("LOCKED", "READY_FOR_PRODUCTION") or ep_before_val in ("LOCKED", "READY_FOR_PRODUCTION", None)
         # Also verify no new revision was created via artifact count
         async with StudioUnitOfWork(container.db.session_factory) as uow3:
             arts_after = await uow3.artifacts.list_for_episode(EpisodeId(episode_id))
@@ -353,6 +359,32 @@ async def test_v3_vertical_lifecycle_via_canonical_path():
             for a in arts_after:
                 if a.artifact_type.value in ("LockedScreenplayReceipt", "LockedScreenplayPackage"):
                     assert a.content_hash != wrong_hash
+
+        # Locked immutability: derive with locked parent but no invalidation intent must be rejected (valid before lock, invalid because locked)
+        async with container.db.session_factory() as sess:
+            rev_count_before = (await sess.execute(sql_text("SELECT COUNT(*) FROM studio_revisions WHERE episode_id=:eid"), {"eid": episode_id})).scalar_one()
+        derive_resp = client.post(
+            f"/api/v3/studio/episodes/{episode_id}/revisions",
+            headers={"X-Idempotency-Key": str(uuid.uuid4()), "X-WindAgent-Actor": "tester"},
+            json={
+                "episode_id": episode_id,
+                "series_id": series_id,
+                "parent_revision_id": str(rev_id),
+                "new_content_hash": "e" * 64,
+                "summary": "attempt derive after lock without intent",
+            },
+        )
+        assert derive_resp.status_code == 409, f"Derive after lock without intent must be rejected due locked: {derive_resp.status_code} {derive_resp.text}"
+        assert "locked" in derive_resp.text.lower() or derive_resp.json().get("studio_code") == "LOCKED_REVISION"
+        async with container.db.session_factory() as sess:
+            rev_count_after = (await sess.execute(sql_text("SELECT COUNT(*) FROM studio_revisions WHERE episode_id=:eid"), {"eid": episode_id})).scalar_one()
+            assert rev_count_after == rev_count_before, f"Revision count must not increase after rejected derive: {rev_count_before} -> {rev_count_after}"
+        async with StudioUnitOfWork(container.db.session_factory) as uow_check:
+            ep_check = await uow_check.episodes.get(EpisodeId(episode_id))
+            rev_check = await uow_check.revisions.get(rev_id)
+            assert rev_check.content_hash == locked_hash_before
+            ep_check_val = ep_check.state.value if hasattr(ep_check.state, "value") else str(ep_check.state)
+            assert ep_check_val in ("LOCKED", "READY_FOR_PRODUCTION")
 
     # 30. Outbox / terminal events persisted
     async with container.db.session_factory() as sess:

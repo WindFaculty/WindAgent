@@ -55,6 +55,7 @@ from windagent_core.contracts.studio.commands import (
 from windagent_core.contracts.studio.errors import (
     StudioArtifactHashMismatchError,
     StudioIdempotencyMismatchError,
+    StudioLockedRevisionError,
     StudioNotFoundError,
     StudioStaleNodeError,
     StudioValidationError,
@@ -500,6 +501,15 @@ class StudioRunService(StudioRunOrchestratorPort):
                 if command.invalidation_intent
                 else None
             )
+            # Locked-episode guard: derive without explicit invalidation intent is rejected
+            # when the episode is already locked (READY_FOR_PRODUCTION). This enforces
+            # post-lock immutability at the episode level, not just the parent revision.
+            episode_for_lock_check = await uow.episodes.get(command.episode_id)
+            if episode_for_lock_check is not None and episode_for_lock_check.is_locked and intent in (None, StudioInvalidationIntent.NONE):
+                raise StudioLockedRevisionError(
+                    "Cannot derive new revision from locked episode without explicit invalidation intent.",
+                    details={"episode_id": str(command.episode_id), "parent_revision_id": str(parent.revision_id)},
+                )
             revision = StudioRevisionService.derive_revision(
                 parent=parent,
                 series_id=command.series_id,
