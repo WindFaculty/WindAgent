@@ -18,7 +18,7 @@ from pathlib import Path
 import pytest
 
 from windagent_core.errors.exceptions import ValidationError
-from windagent_workflows.code_video.compiler import CodeVideoScriptCompiler
+from windagent_tools.code_video.compiler import CodeVideoScriptCompiler
 from windagent_workflows.code_video.contracts import CodeVideoPlan
 from windagent_workflows.code_video.program_certification import (
     ProgramCertificationDriver,
@@ -66,7 +66,7 @@ def cue_sheet(repo_root: Path) -> CueSheet:
         return CueSheet.from_csv(cue_sheet_path.read_text(encoding="utf-8"))
     # Fallback synthetic cue sheet
     entries = []
-    from windagent_workflows.code_video.compiler import CodeVideoScriptCompiler
+    from windagent_tools.code_video.compiler import CodeVideoScriptCompiler
     plan = CodeVideoScriptCompiler().compile_video_02_plan()
     from windagent_tools.code_video.media.assembler import CueEntry
     for scene in plan.scenes:

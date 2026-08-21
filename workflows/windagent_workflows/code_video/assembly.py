@@ -10,21 +10,18 @@ Executes the ASSEMBLE_MASTER pipeline step:
 
 from __future__ import annotations
 
-import json
-from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence
 
 from windagent_core.errors.exceptions import ValidationError
-from windagent_workflows.code_video.contracts import CodeVideoPlan
-from windagent_tools.code_video.capture.receipts import TakeReceipt
-from windagent_tools.code_video.media.assembler import (
+from windagent_core.contracts.code_video import CodeVideoPlan
+from windagent_core.contracts.code_video.capture import TakeReceipt
+from windagent_core.contracts.code_video.assembly import (
     CueSheet,
     MasterAssemblyResult,
-    TakesManifest,
     TransitionPolicy,
     VideoAssemblyConfig,
-    VisualMasterAssembler,
 )
+from windagent_core.contracts.code_video.tools import AssemblerPort
 
 
 class AssembleMasterStepExecutor:
@@ -34,22 +31,20 @@ class AssembleMasterStepExecutor:
 
     def __init__(
         self,
+        assembler: AssemblerPort,
         config: Optional[VideoAssemblyConfig] = None,
         transition_policy: Optional[TransitionPolicy] = None,
     ) -> None:
+        self.assembler = assembler
         self.config = config or VideoAssemblyConfig()
         self.transition_policy = transition_policy or TransitionPolicy()
-        self.assembler = VisualMasterAssembler(
-            config=self.config,
-            transition_policy=self.transition_policy,
-        )
 
     def execute(
         self,
         plan: CodeVideoPlan,
         takes: Sequence[TakeReceipt],
         graphics_manifest: Optional[Dict[str, Any]] = None,
-        output_dir: Optional[Path] = None,
+        output_dir: Optional[Any] = None,
     ) -> MasterAssemblyResult:
         """Execute assembly step and return certified MasterAssemblyResult."""
         if not plan or not plan.scenes:

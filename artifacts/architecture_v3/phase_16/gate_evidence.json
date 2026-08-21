@@ -1,0 +1,48 @@
+{
+  "G0_SOURCE_AUTHORITY": {
+    "error": "dirty worktree",
+    "lines": [
+      "M apps/api/windagent_api/routers/v3/settings.py",
+      " M artifacts/architecture_v2_runtime_cutover/phase_13/import_graph.json",
+      " M artifacts/architecture_v3/phase_01/v3_boundary_report.json",
+      " M artifacts/architecture_v3/phase_01/v3_import_graph.json",
+      " M configs/architecture/scaffold_v3.yaml",
+      " M core/windagent_core/contracts/code_video/__init__.py",
+      " M observability/windagent_observability/events/dead_letter.py",
+      " M observability/windagent_observability/events/publisher.py",
+      " M scripts/certify_architecture_v3_final.py",
+      " M scripts/generate_phase_07_artifacts.py"
+    ]
+  },
+  "G6_V3_AUTHORITY": {
+    "module_level_stores": true,
+    "restart_persistence": true
+  },
+  "G7_DURABILITY": {
+    "restart_persistence": true
+  },
+  "G8_REALTIME": {
+    "realtime_tests": true
+  },
+  "G9_API_ISOLATION": {
+    "composition_exists": true
+  },
+  "G10_WORKER_PIPELINE": {
+    "integration_tests": true
+  },
+  "G11_TRUTHFUL_UI": {
+    "architecture_clean": true
+  },
+  "G12_DOCS": {
+    "version_files_checked": 15
+  },
+  "G13_TESTS": {
+    "architecture_checker": true,
+    "ruff_lint": false,
+    "prior_verdicts": false,
+    "pytest_architecture_phase16": true,
+    "pytest_performance_phase15": true,
+    "pytest_contracts_v3_e2e": true,
+    "pytest_integration_v3": true
+  }
+}

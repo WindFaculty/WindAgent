@@ -6702,7 +6702,13 @@
       "from": "tools",
       "to": "core",
       "file": "tools/windagent_tools/code_video/capture/base.py",
-      "line": 14
+      "line": 13
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/code_video/capture/base.py",
+      "line": 13
     },
     {
       "from": "tools",
@@ -6750,7 +6756,31 @@
       "from": "tools",
       "to": "core",
       "file": "tools/windagent_tools/code_video/capture/receipts.py",
-      "line": 14
+      "line": 8
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/code_video/capture/receipts.py",
+      "line": 8
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/code_video/capture/receipts.py",
+      "line": 8
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/code_video/capture/receipts.py",
+      "line": 8
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/code_video/capture/receipts.py",
+      "line": 8
     },
     {
       "from": "tools",
@@ -6804,19 +6834,85 @@
       "from": "tools",
       "to": "core",
       "file": "tools/windagent_tools/code_video/media/assembler.py",
-      "line": 24
+      "line": 15
     },
     {
       "from": "tools",
       "to": "core",
       "file": "tools/windagent_tools/code_video/media/assembler.py",
-      "line": 25
+      "line": 16
     },
     {
       "from": "tools",
       "to": "core",
       "file": "tools/windagent_tools/code_video/media/assembler.py",
-      "line": 25
+      "line": 16
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/code_video/media/assembler.py",
+      "line": 17
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/code_video/media/assembler.py",
+      "line": 17
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/code_video/media/assembler.py",
+      "line": 17
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/code_video/media/assembler.py",
+      "line": 17
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/code_video/media/assembler.py",
+      "line": 17
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/code_video/media/assembler.py",
+      "line": 17
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/code_video/media/assembler.py",
+      "line": 17
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/code_video/media/assembler.py",
+      "line": 17
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/code_video/media/assembler.py",
+      "line": 17
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/code_video/media/assembler.py",
+      "line": 17
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/code_video/media/assembler.py",
+      "line": 29
     },
     {
       "from": "tools",
@@ -6972,13 +7068,49 @@
       "from": "tools",
       "to": "core",
       "file": "tools/windagent_tools/code_video/renderer/graphics_catalog.py",
-      "line": 18
+      "line": 12
     },
     {
       "from": "tools",
       "to": "core",
       "file": "tools/windagent_tools/code_video/renderer/graphics_catalog.py",
-      "line": 18
+      "line": 12
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/code_video/renderer/graphics_catalog.py",
+      "line": 13
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/code_video/renderer/graphics_catalog.py",
+      "line": 13
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/code_video/renderer/graphics_catalog.py",
+      "line": 13
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/code_video/renderer/graphics_catalog.py",
+      "line": 13
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/code_video/renderer/graphics_catalog.py",
+      "line": 13
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/code_video/renderer/graphics_catalog.py",
+      "line": 13
     },
     {
       "from": "tools",
@@ -7021,6 +7153,30 @@
       "to": "core",
       "file": "tools/windagent_tools/code_video/renderer/terminal_renderer.py",
       "line": 15
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/code_video/renderer/theme.py",
+      "line": 8
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/code_video/renderer/theme.py",
+      "line": 8
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/code_video/renderer/theme.py",
+      "line": 8
+    },
+    {
+      "from": "tools",
+      "to": "core",
+      "file": "tools/windagent_tools/code_video/renderer/theme.py",
+      "line": 8
     },
     {
       "from": "tools",
@@ -7978,13 +8134,13 @@
     },
     {
       "from": "workflows",
-      "to": "tools",
+      "to": "core",
       "file": "workflows/windagent_workflows/social_research.py",
       "line": 36
     },
     {
       "from": "workflows",
-      "to": "tools",
+      "to": "core",
       "file": "workflows/windagent_workflows/social_research.py",
       "line": 36
     },
@@ -7998,55 +8154,55 @@
       "from": "workflows",
       "to": "core",
       "file": "workflows/windagent_workflows/code_video/assembly.py",
+      "line": 15
+    },
+    {
+      "from": "workflows",
+      "to": "core",
+      "file": "workflows/windagent_workflows/code_video/assembly.py",
+      "line": 16
+    },
+    {
+      "from": "workflows",
+      "to": "core",
+      "file": "workflows/windagent_workflows/code_video/assembly.py",
       "line": 17
     },
     {
       "from": "workflows",
-      "to": "tools",
+      "to": "core",
       "file": "workflows/windagent_workflows/code_video/assembly.py",
-      "line": 19
+      "line": 18
     },
     {
       "from": "workflows",
-      "to": "tools",
+      "to": "core",
       "file": "workflows/windagent_workflows/code_video/assembly.py",
-      "line": 20
+      "line": 18
     },
     {
       "from": "workflows",
-      "to": "tools",
+      "to": "core",
       "file": "workflows/windagent_workflows/code_video/assembly.py",
-      "line": 20
+      "line": 18
     },
     {
       "from": "workflows",
-      "to": "tools",
+      "to": "core",
       "file": "workflows/windagent_workflows/code_video/assembly.py",
-      "line": 20
+      "line": 18
     },
     {
       "from": "workflows",
-      "to": "tools",
+      "to": "core",
       "file": "workflows/windagent_workflows/code_video/assembly.py",
-      "line": 20
+      "line": 24
     },
     {
       "from": "workflows",
-      "to": "tools",
-      "file": "workflows/windagent_workflows/code_video/assembly.py",
-      "line": 20
-    },
-    {
-      "from": "workflows",
-      "to": "tools",
-      "file": "workflows/windagent_workflows/code_video/assembly.py",
-      "line": 20
-    },
-    {
-      "from": "workflows",
-      "to": "tools",
+      "to": "core",
       "file": "workflows/windagent_workflows/code_video/compiler.py",
-      "line": 2
+      "line": 6
     },
     {
       "from": "workflows",
@@ -8134,51 +8290,27 @@
     },
     {
       "from": "workflows",
-      "to": "tools",
+      "to": "core",
+      "file": "workflows/windagent_workflows/code_video/program_certification.py",
+      "line": 21
+    },
+    {
+      "from": "workflows",
+      "to": "core",
       "file": "workflows/windagent_workflows/code_video/program_certification.py",
       "line": 22
     },
     {
       "from": "workflows",
-      "to": "tools",
+      "to": "core",
       "file": "workflows/windagent_workflows/code_video/program_certification.py",
       "line": 22
     },
     {
       "from": "workflows",
-      "to": "tools",
+      "to": "core",
       "file": "workflows/windagent_workflows/code_video/program_certification.py",
       "line": 23
-    },
-    {
-      "from": "workflows",
-      "to": "tools",
-      "file": "workflows/windagent_workflows/code_video/program_certification.py",
-      "line": 23
-    },
-    {
-      "from": "workflows",
-      "to": "tools",
-      "file": "workflows/windagent_workflows/code_video/program_certification.py",
-      "line": 23
-    },
-    {
-      "from": "workflows",
-      "to": "tools",
-      "file": "workflows/windagent_workflows/code_video/program_certification.py",
-      "line": 23
-    },
-    {
-      "from": "workflows",
-      "to": "tools",
-      "file": "workflows/windagent_workflows/code_video/program_certification.py",
-      "line": 23
-    },
-    {
-      "from": "workflows",
-      "to": "tools",
-      "file": "workflows/windagent_workflows/code_video/program_certification.py",
-      "line": 30
     },
     {
       "from": "workflows",
@@ -8188,99 +8320,93 @@
     },
     {
       "from": "workflows",
-      "to": "tools",
+      "to": "core",
+      "file": "workflows/windagent_workflows/code_video/qc.py",
+      "line": 20
+    },
+    {
+      "from": "workflows",
+      "to": "core",
       "file": "workflows/windagent_workflows/code_video/qc.py",
       "line": 21
     },
     {
       "from": "workflows",
-      "to": "tools",
+      "to": "core",
       "file": "workflows/windagent_workflows/code_video/qc.py",
       "line": 21
     },
     {
       "from": "workflows",
-      "to": "tools",
+      "to": "core",
       "file": "workflows/windagent_workflows/code_video/qc.py",
       "line": 22
     },
     {
       "from": "workflows",
-      "to": "tools",
+      "to": "core",
       "file": "workflows/windagent_workflows/code_video/qc.py",
       "line": 23
     },
     {
       "from": "workflows",
-      "to": "tools",
-      "file": "workflows/windagent_workflows/code_video/qc.py",
-      "line": 24
-    },
-    {
-      "from": "workflows",
-      "to": "tools",
-      "file": "workflows/windagent_workflows/code_video/qc.py",
-      "line": 24
-    },
-    {
-      "from": "workflows",
-      "to": "tools",
+      "to": "core",
       "file": "workflows/windagent_workflows/code_video/replay.py",
-      "line": 7
+      "line": 8
     },
     {
       "from": "workflows",
-      "to": "tools",
+      "to": "core",
       "file": "workflows/windagent_workflows/code_video/replay.py",
-      "line": 7
+      "line": 8
     },
     {
       "from": "workflows",
-      "to": "tools",
+      "to": "core",
       "file": "workflows/windagent_workflows/code_video/replay.py",
-      "line": 7
+      "line": 8
     },
     {
       "from": "workflows",
-      "to": "tools",
+      "to": "core",
       "file": "workflows/windagent_workflows/code_video/replay.py",
-      "line": 7
+      "line": 8
     },
     {
       "from": "workflows",
-      "to": "tools",
+      "to": "core",
       "file": "workflows/windagent_workflows/code_video/replay.py",
-      "line": 7
+      "line": 8
     },
     {
       "from": "workflows",
-      "to": "tools",
-      "file": "workflows/windagent_workflows/code_video/replay.py",
-      "line": 7
+      "to": "core",
+      "file": "workflows/windagent_workflows/code_video/__init__.py",
+      "line": 38
     },
     {
       "from": "workflows",
-      "to": "tools",
-      "file": "workflows/windagent_workflows/code_video/replay.py",
-      "line": 7
+      "to": "core",
+      "file": "workflows/windagent_workflows/code_video/__init__.py",
+      "line": 38
     },
     {
       "from": "workflows",
-      "to": "tools",
-      "file": "workflows/windagent_workflows/code_video/replay.py",
-      "line": 7
+      "to": "core",
+      "file": "workflows/windagent_workflows/code_video/__init__.py",
+      "line": 38
     },
     {
       "from": "workflows",
-      "to": "tools",
-      "file": "workflows/windagent_workflows/code_video/replay.py",
-      "line": 7
+      "to": "core",
+      "file": "workflows/windagent_workflows/code_video/__init__.py",
+      "line": 38
     },
     {
       "from": "workflows",
-      "to": "tools",
-      "file": "workflows/windagent_workflows/code_video/replay.py",
-      "line": 7
+      "to": "core",
+      "file": "workflows/windagent_workflows/code_video/__init__.py",
+      "line": 38
     },
     {
       "from": "workflows",
@@ -9478,15 +9604,15 @@
     },
     {
       "from": "observability",
-      "to": "storage",
+      "to": "core",
       "file": "observability/windagent_observability/events/dead_letter.py",
       "line": 8
     },
     {
       "from": "observability",
-      "to": "storage",
+      "to": "core",
       "file": "observability/windagent_observability/events/dead_letter.py",
-      "line": 9
+      "line": 8
     },
     {
       "from": "observability",
@@ -9502,15 +9628,15 @@
     },
     {
       "from": "observability",
-      "to": "storage",
+      "to": "core",
       "file": "observability/windagent_observability/events/publisher.py",
       "line": 12
     },
     {
       "from": "observability",
-      "to": "storage",
+      "to": "core",
       "file": "observability/windagent_observability/events/publisher.py",
-      "line": 13
+      "line": 12
     },
     {
       "from": "evals",
@@ -12722,8 +12848,7 @@
     ],
     "workflows": [
       "core",
-      "orchestration",
-      "tools"
+      "orchestration"
     ],
     "verification": [
       "core"
@@ -12741,8 +12866,7 @@
       "core"
     ],
     "observability": [
-      "core",
-      "storage"
+      "core"
     ],
     "evals": [
       "core"

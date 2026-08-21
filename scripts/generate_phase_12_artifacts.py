@@ -26,7 +26,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from windagent_workflows.code_video.compiler import CodeVideoScriptCompiler
+from windagent_tools.code_video.compiler import CodeVideoScriptCompiler
 from windagent_workflows.code_video.contracts import CodeVideoPlan
 from windagent_workflows.code_video.program_certification import ProgramCertificationDriver
 from windagent_tools.code_video.media.assembler import CueSheet, MasterAssemblyResult

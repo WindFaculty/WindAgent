@@ -9,7 +9,7 @@ from pathlib import Path
 import tempfile
 import pytest
 
-from windagent_workflows.code_video.compiler import CodeVideoScriptCompiler
+from windagent_tools.code_video.compiler import CodeVideoScriptCompiler
 from windagent_workflows.code_video.contracts import CodeVideoPlan, VisualMode
 
 

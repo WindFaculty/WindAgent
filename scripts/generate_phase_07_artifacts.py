@@ -9,7 +9,7 @@ import hashlib
 import json
 from pathlib import Path
 
-from windagent_workflows.code_video.compiler import CodeVideoScriptCompiler
+from windagent_tools.code_video.compiler import CodeVideoScriptCompiler
 from windagent_workflows.code_video.contracts import CodeVideoPlan, Resolution
 from windagent_tools.code_video.capture import (
     FrameReport,

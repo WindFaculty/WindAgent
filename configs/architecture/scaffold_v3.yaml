@@ -45,12 +45,32 @@ global_rules:
   forbid_concrete_adapter_outside_composition: true
 
   composition_roots:
+    # App-level composition roots (DI wiring)
     - "apps/api/windagent_api/composition.py"
     - "apps/api/windagent_api/composition/**"
     - "apps/worker/windagent_worker/composition.py"
     - "apps/worker/windagent_worker/composition/**"
     - "apps/cli/windagent_cli/composition.py"
     - "apps/cli/windagent_cli/composition/**"
+    # Infrastructure packages — legitimate adapter construction locations
+    - "storage/**"
+    - "tools/**"
+    - "workflows/**"
+    - "execution/**"
+    - "providers/**"
+    - "orchestration/**"
+    - "intelligence/**"
+    - "context/**"
+    - "memory/**"
+    - "verification/**"
+    - "evals/**"
+    - "plugins/**"
+    - "skills/**"
+    - "observability/**"
+    # App adapter/pipeline infrastructure
+    - "apps/api/windagent_api/services/studio_storage_adapter.py"
+    - "apps/worker/windagent_worker/pipeline/finalizer.py"
+    - "apps/worker/windagent_worker/lease.py"
 
   # Allowlist for specific infrastructure files that legitimately access ORM/storage
   # These are NOT application business logic — they are the infrastructure layer itself

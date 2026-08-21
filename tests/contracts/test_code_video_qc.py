@@ -20,7 +20,7 @@ from pathlib import Path
 import pytest
 
 from windagent_core.errors.exceptions import ValidationError
-from windagent_workflows.code_video.compiler import CodeVideoScriptCompiler
+from windagent_tools.code_video.compiler import CodeVideoScriptCompiler
 from windagent_workflows.code_video.contracts import CodeVideoPlan
 from windagent_workflows.code_video.qc import FinalQCDriver, FinalQCStepExecutor
 from windagent_tools.code_video.capture.receipts import TakeReceipt

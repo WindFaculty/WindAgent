@@ -1,26 +1,17 @@
 """
 Base Contracts and CapturePort Protocol for Code Video Production.
 
-Defines the capture port interface, capture status lifecycles, and configuration
-for capturing high-fidelity code studio visual takes.
+CaptureStatus moved to core/windagent_core/contracts/code_video/capture.py.
+This module re-exports for backward compatibility.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from enum import Enum
 from typing import Any, Dict, Optional, Protocol, runtime_checkable
 
 from windagent_core.contracts.code_video import Resolution, Scene
-
-
-class CaptureStatus(str, Enum):
-    """Lifecycle status of a capture session or take."""
-    INITIALIZED = "INITIALIZED"
-    RECORDING = "RECORDING"
-    COMPLETED = "COMPLETED"
-    VERIFIED = "VERIFIED"
-    FAILED = "FAILED"
+from windagent_core.contracts.code_video.capture import CaptureStatus
 
 
 @dataclass(frozen=True)
@@ -50,10 +41,7 @@ class TakeConfig:
 
 @runtime_checkable
 class CapturePort(Protocol):
-    """
-    Standard protocol for capturing visual code studio takes.
-    Adheres strictly to the CapturePort interface specified in Video 02 implementation plan.
-    """
+    """Standard protocol for capturing visual code studio takes."""
 
     def start(
         self,
@@ -63,29 +51,15 @@ class CapturePort(Protocol):
         fps: int = 30,
         **kwargs: Any,
     ) -> str:
-        """
-        Start recording / capturing frames for a given scene.
-        Returns the active take_id.
-        """
         ...
 
     def mark(self, timestamp_ms: int, metadata: Optional[Dict[str, Any]] = None) -> None:
-        """
-        Mark a keyframe / milestone event at the given timestamp within the take.
-        """
         ...
 
     def stop(self) -> Any:
-        """
-        Stop capturing and finalize the take receipt.
-        Returns TakeReceipt.
-        """
         ...
 
     def inspect(self, take_id: str) -> Any:
-        """
-        Inspect the captured take and return a media probe report.
-        """
         ...
 
 

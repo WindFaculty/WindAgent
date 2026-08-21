@@ -9,8 +9,7 @@ from datetime import datetime, timezone
 from typing import Any, Callable, Optional, Set
 
 from windagent_core.events.envelope import EventEnvelope
-from windagent_storage.outbox.models import OutboxRecord
-from windagent_storage.outbox.repository import OutboxRepository
+from windagent_core.contracts.outbox import OutboxRecord, OutboxRepositoryPort
 from windagent_observability.events.heartbeat import PublisherHeartbeat
 from windagent_observability.events.retry import (
     DEFAULT_MAX_ATTEMPTS,
@@ -26,7 +25,7 @@ class OutboxEventPublisher:
 
     def __init__(
         self,
-        outbox_repo: OutboxRepository,
+        outbox_repo: OutboxRepositoryPort,
         dispatcher: Callable[[EventEnvelope], Any],
         batch_size: int = 50,
         poll_interval_seconds: float = 1.0,

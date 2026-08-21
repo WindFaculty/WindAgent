@@ -1,0 +1,6 @@
+[
+  "G0: Worktree not clean or SHA not verified. Dirty: 37 lines",
+  "Ruff lint failed with full policy (E4,E7,E9,F)",
+  "Missing evidence for phases: phase_00, phase_01, phase_03, phase_04, phase_05, phase_06, phase_07, phase_08, phase_09, phase_10, phase_11, phase_12, phase_14",
+  "G13: Failed test suites: ruff_lint, prior_verdicts"
+]

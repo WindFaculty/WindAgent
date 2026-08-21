@@ -19,7 +19,7 @@ from pathlib import Path
 import pytest
 
 from windagent_core.errors.exceptions import NotFoundError, ValidationError
-from windagent_workflows.code_video.compiler import CodeVideoScriptCompiler
+from windagent_tools.code_video.compiler import CodeVideoScriptCompiler
 from windagent_workflows.code_video.contracts import (
     Action,
     ActionType,
@@ -29,7 +29,7 @@ from windagent_workflows.code_video.contracts import (
     Scene,
     VisualMode,
 )
-from windagent_workflows.code_video.replay import (
+from windagent_tools.code_video.replay import (
     CHECKPOINT_CODE_MAP,
     CheckpointCodeResolver,
     DeterministicReplayEngine,

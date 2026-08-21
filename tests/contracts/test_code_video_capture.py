@@ -18,14 +18,14 @@ from pathlib import Path
 import pytest
 
 from windagent_core.errors.exceptions import ValidationError
-from windagent_workflows.code_video.compiler import CodeVideoScriptCompiler
+from windagent_tools.code_video.compiler import CodeVideoScriptCompiler
 from windagent_workflows.code_video.contracts import (
     CodeVideoPlan,
     Resolution,
     Scene,
     VisualMode,
 )
-from windagent_workflows.code_video.replay import DeterministicReplayEngine
+from windagent_tools.code_video.replay import DeterministicReplayEngine
 
 from windagent_tools.code_video.capture import (
     BrowserCaptureAdapter,

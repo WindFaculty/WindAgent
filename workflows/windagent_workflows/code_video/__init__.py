@@ -22,7 +22,6 @@ from windagent_workflows.code_video.contracts import (
     Scene,
     VisualMode,
 )
-from windagent_workflows.code_video.compiler import CodeVideoScriptCompiler
 from windagent_workflows.code_video.definition import (
     CODE_VIDEO_STEPS,
     STEP_APPROVAL_GATES,
@@ -36,35 +35,16 @@ from windagent_workflows.code_video.definition import (
     build_code_video_step_nodes,
     step_contract,
 )
-from windagent_workflows.code_video.replay import (
-    CHECKPOINT_CODE_MAP,
-    CheckpointCodeResolver,
-    DeterministicReplayEngine,
+from windagent_core.contracts.code_video.replay import (
+    TypingSpeedMode,
+    SPEED_MODE_CPS_MAP,
     ReplayStepRecord,
     ReplayTrace,
-    SPEED_MODE_CPS_MAP,
-    TerminalReplayExecutor,
-    TypingSimulator,
-    TypingSpeedMode,
-    VERIFIED_TERMINAL_RECEIPTS,
+    CheckpointDefinition,
 )
-def __getattr__(name: str) -> Any:
-    if name == "AssembleMasterStepExecutor":
-        from windagent_workflows.code_video.assembly import AssembleMasterStepExecutor
-        return AssembleMasterStepExecutor
-    if name in ("ProgramCertificationDriver", "ProgramCertificationStepExecutor"):
-        from windagent_workflows.code_video import program_certification
 
-        return getattr(program_certification, name)
-    if name in ("FinalQCDriver", "FinalQCStepExecutor"):
-        from windagent_workflows.code_video import qc
-
-        return getattr(qc, name)
-    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 __all__ = [
-    # Compiler
-    "CodeVideoScriptCompiler",
     # Contracts
     "ActionType",
     "VisualMode",
@@ -89,23 +69,10 @@ __all__ = [
     "build_code_video_step_nodes",
     "step_contract",
     "all_step_contracts",
-    # Deterministic Replay
+    # Replay data types (canonical in core)
     "TypingSpeedMode",
     "SPEED_MODE_CPS_MAP",
-    "TypingSimulator",
-    "VERIFIED_TERMINAL_RECEIPTS",
-    "TerminalReplayExecutor",
-    "CHECKPOINT_CODE_MAP",
-    "CheckpointCodeResolver",
     "ReplayStepRecord",
     "ReplayTrace",
-    "DeterministicReplayEngine",
-    # Master Assembly
-    "AssembleMasterStepExecutor",
-    # Final QC
-    "FinalQCStepExecutor",
-    "FinalQCDriver",
-    # Program Certification (Phase 12)
-    "ProgramCertificationStepExecutor",
-    "ProgramCertificationDriver",
+    "CheckpointDefinition",
 ]

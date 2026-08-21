@@ -251,9 +251,12 @@ def _save_secret(key: str, value: Optional[str]) -> None:
             try:
                 from windagent_storage.security.encryption import encrypt
                 secrets[key] = encrypt(secret_str)
-            except Exception:
-                # If encryption key is not set in local dev, store raw/fallback
-                secrets[key] = secret_str
+            except Exception as exc:
+                # FAIL-CLOSED: never persist plaintext secrets
+                raise RuntimeError(
+                    f"Cannot persist secret '{key}': encryption unavailable. "
+                    f"Set WINDAGENT_ENCRYPTION_KEY environment variable. Error: {exc}"
+                ) from exc
     _secrets_path().write_text(json.dumps(secrets, indent=2), encoding="utf-8")
 
 

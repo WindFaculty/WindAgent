@@ -5,8 +5,7 @@ import logging
 import uuid
 from typing import List, Optional
 
-from windagent_storage.outbox.models import OutboxRecord
-from windagent_storage.outbox.repository import OutboxRepository
+from windagent_core.contracts.outbox import OutboxRecord, OutboxRepositoryPort
 
 logger = logging.getLogger("windagent.observability.events.dead_letter")
 
@@ -14,7 +13,7 @@ logger = logging.getLogger("windagent.observability.events.dead_letter")
 class DeadLetterReplayer:
     """Replays dead-lettered outbox records with audit trail."""
 
-    def __init__(self, outbox_repo: OutboxRepository):
+    def __init__(self, outbox_repo: OutboxRepositoryPort):
         self._outbox_repo = outbox_repo
 
     async def list_dead_letters(self, limit: int = 100) -> List[OutboxRecord]:

@@ -33,7 +33,7 @@ from windagent_core.contracts.tools import (
 from windagent_core.contracts.providers import ProviderResponse
 from windagent_core.domain.types import SessionId, ToolCallId
 from windagent_core.security.redaction import redact_text
-from windagent_tools.browser import OpenURLTool, platform_for_url
+from windagent_core.contracts.tools.browser import BrowserToolPort, platform_for_url
 
 
 REPORT_SCHEMA_VERSION = "2.0.0"
@@ -44,7 +44,6 @@ def compute_file_sha256(file_path: Path) -> str:
     hasher = hashlib.sha256()
     hasher.update(file_path.read_bytes())
     return hasher.hexdigest()
-
 
 def generate_report_manifest(
     report_dir: Path,
@@ -176,12 +175,7 @@ _FB_POST_RE = re.compile(r"/(?:posts|videos|reel)/([A-Za-z0-9_-]+)")
 
 
 def canonical_social_url(url: str, platform: str) -> str:
-    """Return a stable key for social post deduplication.
-
-    For supported platforms the ID is extracted from the URL path/query; for
-    unknown patterns the lowercased stripped URL is used as a fallback so that
-    at minimum exact duplicates are caught.
-    """
+    """Return a stable key for social post deduplication."""
     url_clean = url.strip().rstrip("/")
     if platform == "youtube":
         m = _YT_VIDEO_RE.search(url_clean)
@@ -195,7 +189,6 @@ def canonical_social_url(url: str, platform: str) -> str:
         m = _FB_POST_RE.search(url_clean)
         if m:
             return f"facebook:post:{m.group(1)}"
-        # Try query param ?story_fbid=
         qs = parse_qs(urlsplit(url_clean).query)
         if "story_fbid" in qs:
             return f"facebook:post:{qs['story_fbid'][0]}"
@@ -206,14 +199,8 @@ def canonical_social_url(url: str, platform: str) -> str:
 # Phase 4: per-domain rate limiter
 # ---------------------------------------------------------------------------
 
-
 class PerDomainRateLimiter:
-    """Asyncio-safe sliding-window rate limiter keyed by domain hostname.
-
-    Each domain is limited to one request per ``interval_seconds``.  The limiter
-    inserts an ``asyncio.sleep`` before the call returns so the caller can simply
-    ``await limiter.acquire(hostname)`` without extra bookkeeping.
-    """
+    """Asyncio-safe sliding-window rate limiter keyed by domain hostname."""
 
     def __init__(self, interval_seconds: float = 2.0) -> None:
         if interval_seconds < 0:
@@ -239,16 +226,13 @@ class PerDomainRateLimiter:
 # Phase 4: personal data filter
 # ---------------------------------------------------------------------------
 
-# Simple regex patterns — deliberately conservative to avoid false negatives.
 _EMAIL_RE = re.compile(
     r"[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}"
 )
 _PHONE_RE = re.compile(
-    # Matches international (+XX) and local formats with optional separators.
     r"(?:(?:\+|00)\d{1,3}[\s\-.]?)?\(?\d{2,4}\)?[\s\-.]?\d{3,4}[\s\-.]?\d{4}"
 )
 _DOB_RE = re.compile(
-    # ISO date (YYYY-MM-DD) or common formats (DD/MM/YYYY, MM/DD/YYYY)
     r"\b(?:\d{4}-\d{2}-\d{2}|\d{1,2}[/\-]\d{1,2}[/\-]\d{2,4})\b"
 )
 
@@ -256,13 +240,7 @@ _REDACTED = "[REDACTED]"
 
 
 class PersonalDataFilter:
-    """Redact PII from string values inside a nested record dict.
-
-    Only *string* leaf values are inspected; nested dicts and lists are
-    traversed recursively.  The ``text`` field receives full redaction;
-    other fields receive conservative partial redaction (matching substrings
-    replaced) so structural information is preserved.
-    """
+    """Redact PII from string values inside a nested record dict."""
 
     def filter_record(self, record: dict[str, Any]) -> dict[str, Any]:
         """Return a new dict with PII redacted."""
@@ -281,10 +259,6 @@ class PersonalDataFilter:
     def _redact_string(text: str) -> str:
         text = _EMAIL_RE.sub(_REDACTED, text)
         text = _PHONE_RE.sub(_REDACTED, text)
-        # DOB patterns are only redacted from fields named *_at / *_date / *born*
-        # to avoid clobbering regular numeric strings in URLs or metrics.
-        # For the general text field we leave them as-is because dates in
-        # published content are rarely PII.
         return text
 
 
@@ -292,21 +266,9 @@ class PersonalDataFilter:
 # Phase 4: collection quota
 # ---------------------------------------------------------------------------
 
-
 @dataclass(frozen=True)
 class CollectionQuota:
-    """Hard limits applied across the entire workflow run.
-
-    Attributes
-    ----------
-    max_total_chars:
-        Maximum aggregate character budget across *all* sources.  Defaults to
-        720,000 (12 sources × 60,000 chars each at the default config).
-    max_sources:
-        Maximum number of sources (mirrors ``SocialResearchConfig.max_sources``
-        but kept here for standalone enforcement).
-    """
-
+    """Hard limits applied across the entire workflow run."""
     max_total_chars: int = 720_000
     max_sources: int = 12
 
@@ -386,13 +348,9 @@ class SocialResearchConfig:
     browser_session_prefix: str = "windagent-social"
     save_screenshots: bool = True
     allow_partial_sources: bool = True
-    # Phase 4: per-domain throttle (seconds between requests to same domain)
     per_domain_rate_limit_seconds: float = 2.0
-    # Phase 4: enable personal-data redaction in normalized records
     enable_personal_data_filter: bool = True
-    # Phase 4: skip duplicate sources sharing the same canonical post ID
     enable_deduplication: bool = True
-    # Phase 5: model gateway retry and failure classification settings
     model_retry_attempts: int = 3
     model_retry_backoff_seconds: float = 0.5
     skip_model_preflight: bool = False
@@ -404,10 +362,7 @@ class SocialResearchConfig:
         if self.max_source_chars < 1_000 or self.max_source_chars > 2_000_000:
             raise ValueError("max_source_chars must be between 1,000 and 2,000,000")
         if self.browser_wait_until not in {
-            "load",
-            "domcontentloaded",
-            "networkidle",
-            "none",
+            "load", "domcontentloaded", "networkidle", "none",
         }:
             raise ValueError("Invalid browser_wait_until value")
         if (
@@ -444,7 +399,6 @@ class SourceEvidence:
     browser_attempts: int = 1
     extracted_record: Optional[dict[str, Any]] = None
     error: Optional[str] = None
-    # Phase 4: stable deduplication key derived from canonical URL/post ID
     dedup_key: Optional[str] = None
 
 
@@ -466,12 +420,12 @@ class SocialResearchWorkflow:
         self,
         *,
         model_gateway: ModelGatewayPort,
-        browser_tool: Optional[OpenURLTool] = None,
+        browser_tool: Optional[BrowserToolPort] = None,
         config: Optional[SocialResearchConfig] = None,
         quota: Optional[CollectionQuota] = None,
     ) -> None:
         self.model_gateway = model_gateway
-        self.browser_tool = browser_tool or OpenURLTool()
+        self.browser_tool = browser_tool  # type: ignore[assignment]
         self.config = config or SocialResearchConfig()
         self._quota = quota or CollectionQuota(
             max_total_chars=self.config.max_sources * self.config.max_source_chars,
@@ -481,10 +435,6 @@ class SocialResearchWorkflow:
             interval_seconds=self.config.per_domain_rate_limit_seconds
         )
         self._pii_filter = PersonalDataFilter()
-
-    # ------------------------------------------------------------------
-    # Phase 4 helpers
-    # ------------------------------------------------------------------
 
     def _deduplicate_sources(
         self, sources: Sequence[SocialSourceSpec]
@@ -503,8 +453,6 @@ class SocialResearchWorkflow:
                 unique.append(source)
         return unique
 
-    # ------------------------------------------------------------------
-
     async def run(
         self,
         *,
@@ -521,10 +469,8 @@ class SocialResearchWorkflow:
         if not sources:
             raise SocialResearchError("At least one social source URL is required.")
 
-        # Phase 4: quota check (before dedup so the raw count is validated)
         self._quota.check_sources(len(sources))
 
-        # Phase 4: deduplication
         active_sources: Sequence[SocialSourceSpec] = (
             self._deduplicate_sources(sources)
             if self.config.enable_deduplication
@@ -587,7 +533,6 @@ class SocialResearchWorkflow:
             platform = source.resolved_platform()
             dedup_key = canonical_social_url(source.url, platform)
 
-            # Phase 4: per-domain rate limiting
             hostname = (urlsplit(source.url).hostname or source.url).lower()
             await self._rate_limiter.acquire(hostname)
 
@@ -695,7 +640,6 @@ class SocialResearchWorkflow:
                     )
                 continue
 
-            # Phase 4: enforce per-source char budget and aggregate quota
             chars_count = int(browser_data.get("content_chars", len(capture_text)))
             aggregate_chars += chars_count
             self._quota.check_chars(aggregate_chars)
@@ -708,7 +652,9 @@ class SocialResearchWorkflow:
                 content_sha256=str(browser_data.get("content_sha256", "")),
                 content_chars=chars_count,
                 browser_backend=str(
-                    browser_data.get("browser_backend", "vercel-labs/agent-browser")
+                    browser_data.get(
+                        "browser_backend", "vercel-labs/agent-browser"
+                    )
                 ),
                 screenshot_path=browser_data.get("screenshot_path"),
                 browser_attempts=browser_attempts,
@@ -724,7 +670,6 @@ class SocialResearchWorkflow:
                 )
                 model_receipts.append(extract_receipt)
                 record["source_content_sha256"] = source_evidence.content_sha256
-                # Phase 4: redact PII from normalized record
                 if self.config.enable_personal_data_filter:
                     record = self._pii_filter.filter_record(record)
                 source_evidence.extracted_record = record
@@ -916,7 +861,6 @@ class SocialResearchWorkflow:
                 )
                 latency_ms = (time.monotonic() - start_time) * 1000
 
-                # Extract text content and actual usage facts if returned as ProviderResponse or object
                 text_content = ""
                 p_tokens = prompt_tokens_est
                 c_tokens = 0
@@ -958,7 +902,6 @@ class SocialResearchWorkflow:
                 err_msg = redact_text(f"{type(exc).__name__}: {exc}")
                 err_str = str(exc).lower()
 
-                # Exception classification
                 exc_type_name = type(exc).__name__
                 is_rate_limit = "ratelimit" in err_str or "429" in err_str or "RateLimit" in exc_type_name
                 is_server_error = any(code in err_str for code in ("500", "502", "503", "504")) or "ProviderUnavailable" in exc_type_name
@@ -1253,7 +1196,6 @@ Normalized records:
         )
         return "\n".join(lines)
 
-
 def _parse_json_object(text: str) -> dict[str, Any]:
     clean = text.strip()
     candidates = [clean]
@@ -1276,8 +1218,9 @@ def _parse_json_object(text: str) -> dict[str, Any]:
     for candidate in repaired_candidates:
         try:
             value = json.loads(candidate)
+            if isinstance(value, dict):
+                return value
         except json.JSONDecodeError:
             continue
-        if isinstance(value, dict):
-            return value
-    raise SocialResearchError("Model response is not a valid JSON object.")
+
+    raise SocialResearchError("Failed to parse JSON from model response")
