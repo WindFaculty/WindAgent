@@ -1,18 +1,12 @@
 {
   "G0_SOURCE_AUTHORITY": {
-    "error": "dirty worktree",
-    "lines": [
-      "M .agents/skills/design-system/scripts/fetch-background.py",
-      " M .agents/skills/design-system/scripts/html-token-validator.py",
-      " M .agents/skills/design-system/scripts/search-slides.py",
-      " M .agents/skills/design/scripts/cip/generate.py",
-      " M .agents/skills/design/scripts/cip/render-html.py",
-      " M .agents/skills/design/scripts/cip/search.py",
-      " M .agents/skills/design/scripts/icon/generate.py",
-      " M .agents/skills/design/scripts/logo/search.py",
-      " M .agents/skills/ui-styling/scripts/shadcn_add.py",
-      " M .agents/skills/ui-styling/scripts/tests/test_shadcn_add.py"
-    ]
+    "candidate_sha": "e481f33f502a551051bd30c43b5d5b9ae39cd892",
+    "branch": "refactor/architecture-v3-hardening",
+    "tree_sha": "717d0966a02391285679e0244734e24c4a78c5ce",
+    "dirty_before": "",
+    "python_version": "3.11.15 (main, Jun 23 2026, 15:20:37) [MSC v.1944 64 bit (AMD64)]",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "uv.lock_hash": "31a9583eb73b09c0"
   },
   "G6_V3_AUTHORITY": {
     "gate": "G6",
@@ -33,7 +27,7 @@
       "checker_pass": true,
       "restart_persistence": true
     },
-    "candidate": "0355e2c72408ce1b78f240c5ceb21928135c962d"
+    "candidate": "e481f33f502a551051bd30c43b5d5b9ae39cd892"
   },
   "G7_DURABILITY": {
     "gate": "G7",
@@ -66,7 +60,7 @@
       "db_transient": true,
       "duplicate_cmd": true
     },
-    "candidate": "0355e2c72408ce1b78f240c5ceb21928135c962d"
+    "candidate": "e481f33f502a551051bd30c43b5d5b9ae39cd892"
   },
   "G8_REALTIME": {
     "gate": "G8",
@@ -92,7 +86,7 @@
       "dedup": true,
       "phase6_ws": true
     },
-    "candidate": "0355e2c72408ce1b78f240c5ceb21928135c962d"
+    "candidate": "e481f33f502a551051bd30c43b5d5b9ae39cd892"
   },
   "G9_API_ISOLATION": {
     "composition_exists": true
@@ -108,9 +102,9 @@
   },
   "G13_TESTS": {
     "architecture_checker": true,
-    "ruff_lint": false,
+    "ruff_lint": true,
     "prior_verdicts": true,
-    "pytest_architecture_phase16": false,
+    "pytest_architecture_phase16": true,
     "pytest_performance_phase15": true,
     "pytest_contracts_v3_e2e": true,
     "pytest_integration_v3": true,

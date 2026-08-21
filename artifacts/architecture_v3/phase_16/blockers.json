@@ -1,5 +1,1 @@
-[
-  "G0: Worktree not clean or SHA not verified. Dirty: 357 lines",
-  "Ruff lint failed with full policy (E4,E7,E9,F)",
-  "G13: Failed test suites: ruff_lint, pytest_architecture_phase16"
-]
+[]
