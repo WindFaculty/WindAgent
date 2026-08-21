@@ -278,7 +278,7 @@ class TestMigrationLock:
         
         # Verify lock is marked as expired
         locks = lock.get_active_locks()
-        expired_locks = [l for l in locks if l.lock_id == "test-expired-lock"]
+        expired_locks = [lock_item for lock_item in locks if lock_item.lock_id == "test-expired-lock"]
         assert len(expired_locks) == 0
 
 

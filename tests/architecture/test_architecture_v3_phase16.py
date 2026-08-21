@@ -657,6 +657,57 @@ async def test_fi_provider_timeout_graceful_degradation(cert_db_session_factory)
         assert row.state == "failed"
 
 
+# ─── Part B: Failure Injection — Provider Rate Limit Graceful Degradation ───── #
+
+@pytest.mark.asyncio
+async def test_fi_provider_rate_limit_graceful_degradation(cert_db_session_factory):
+    """Provider rate limit (429) must yield deterministic FAILED with retry semantics, not a crash.
+
+    Exercises the provider/router boundary via FakeRuntimeAdapter(rate_limit).
+    Expected: status=failed, error contains 429/rate limit, no split state,
+    durable task marked failed, no orphaned lease.
+    """
+    from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork
+    queue = SqlDurableTaskQueue(cert_db_session_factory)
+    fake_runtime = FakeRuntimeAdapter(default_mode="rate_limit")
+    exec_registry = ExecutionRuntimeRegistry(default_adapter=fake_runtime)
+    cancellation_broadcaster = CancellationBroadcaster()
+
+    def uow_factory():
+        return SqlUnitOfWork(cert_db_session_factory)
+
+    pipeline = TaskExecutionPipeline(
+        worker_id="rate-limit-worker",
+        task_queue=queue,
+        lease_manager=queue,
+        execution_registry=exec_registry,
+        cancellation_broadcaster=cancellation_broadcaster,
+        uow_factory=uow_factory,
+    )
+
+    task_id = str(uuid.uuid4())
+    async with cert_db_session_factory() as session:
+        async with session.begin():
+            session.add(
+                TaskRunORM(
+                    id=task_id,
+                    session_id="rate-limit-session",
+                    state="pending",
+                    priority=2,
+                    facts_json=json.dumps({"tool_name": "rate_limited_tool", "parameters": {}}),
+                )
+            )
+
+    res = await pipeline.run_tick()
+    assert res["status"] == "failed", f"Provider rate limit must produce status=failed, got: {res}"
+    # Error should indicate rate limit for observability
+    err = str(res.get("error") or "")
+    assert "429" in err or "rate" in err.lower(), f"Rate limit error missing in {res}"
+    async with cert_db_session_factory() as session:
+        row = (await session.execute(select(TaskRunORM).where(TaskRunORM.id == task_id))).scalar_one()
+        assert row.state == "failed", f"Task state must be failed after rate limit, got {row.state}"
+
+
 # ─── Part B: Failure Injection — DB Transient Failure Recovery ───────────── #
 
 @pytest.mark.asyncio

@@ -51,23 +51,6 @@ class DurableTaskLeaseManager:
             "status": "QUEUED"
         })
 
-    async def claim_task_durable(
-        self,
-        worker_id: str,
-        session: AsyncSession,
-        lease_ttl_sec: Optional[float] = None,
-    ) -> Optional[Dict[str, Any]]:
-        """Claims an available step/task using the injected lease repository inside an atomic transaction."""
-        if self._lease_repository_factory is None:
-            raise RuntimeError(
-                "DurableTaskLeaseManager requires lease_repository_factory (wired by composition root)."
-            )
-        repo = self._lease_repository_factory(session)
-        
-        # Check expired leases first
-        await repo.reclaim_expired_leases()
-        return None
-
     def claim_task(
         self,
         worker_id: str,

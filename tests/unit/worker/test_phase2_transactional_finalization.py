@@ -130,8 +130,8 @@ async def test_atomic_finalization_happy_path(db_manager):
         assert t.state == "completed"
         assert t.version == 2
 
-        l = (await uow.session.execute(select(ExecutionLeaseORM).where(ExecutionLeaseORM.lease_id == "lease-100"))).scalar_one()
-        assert l.status == "completed"
+        lease = (await uow.session.execute(select(ExecutionLeaseORM).where(ExecutionLeaseORM.lease_id == "lease-100"))).scalar_one()
+        assert lease.status == "completed"
 
         r = (await uow.session.execute(select(TaskExecutionResultORM).where(TaskExecutionResultORM.task_id == "task-100"))).scalar_one()
         assert r.execution_status == "completed"
@@ -338,8 +338,8 @@ async def test_fault_injection_outbox_failure_rolls_back_entire_transaction(db_m
         assert t.state == "running"
         assert t.version == 1
 
-        l = (await uow.session.execute(select(ExecutionLeaseORM).where(ExecutionLeaseORM.lease_id == "lease-fault"))).scalar_one()
-        assert l.status == "active"
+        lease = (await uow.session.execute(select(ExecutionLeaseORM).where(ExecutionLeaseORM.lease_id == "lease-fault"))).scalar_one()
+        assert lease.status == "active"
 
         results = (await uow.session.execute(select(TaskExecutionResultORM).where(TaskExecutionResultORM.task_id == "task-fault"))).scalars().all()
         assert len(results) == 0
@@ -403,8 +403,8 @@ async def test_fault_injection_result_persistence_failure(db_manager):
         assert t.state == "running"
         assert t.version == 1
 
-        l = (await uow.session.execute(select(ExecutionLeaseORM).where(ExecutionLeaseORM.lease_id == "lease-res-fail"))).scalar_one()
-        assert l.status == "active"
+        lease = (await uow.session.execute(select(ExecutionLeaseORM).where(ExecutionLeaseORM.lease_id == "lease-res-fail"))).scalar_one()
+        assert lease.status == "active"
 
         results = (await uow.session.execute(select(TaskExecutionResultORM).where(TaskExecutionResultORM.task_id == "task-res-fail"))).scalars().all()
         assert len(results) == 0
@@ -536,8 +536,8 @@ async def test_fault_injection_lease_release_failure(db_manager):
         assert t.state == "running"
         assert t.version == 1
 
-        l = (await uow.session.execute(select(ExecutionLeaseORM).where(ExecutionLeaseORM.lease_id == "lease-lease-fail"))).scalar_one()
-        assert l.status == "active"
+        lease = (await uow.session.execute(select(ExecutionLeaseORM).where(ExecutionLeaseORM.lease_id == "lease-lease-fail"))).scalar_one()
+        assert lease.status == "active"
 
 
 @pytest.mark.asyncio
@@ -594,8 +594,8 @@ async def test_fault_injection_commit_failure(db_manager):
         assert t.state == "running"
         assert t.version == 1
 
-        l = (await uow.session.execute(select(ExecutionLeaseORM).where(ExecutionLeaseORM.lease_id == "lease-commit-fail"))).scalar_one()
-        assert l.status == "active"
+        lease = (await uow.session.execute(select(ExecutionLeaseORM).where(ExecutionLeaseORM.lease_id == "lease-commit-fail"))).scalar_one()
+        assert lease.status == "active"
 
         results = (await uow.session.execute(select(TaskExecutionResultORM).where(TaskExecutionResultORM.task_id == "task-commit-fail"))).scalars().all()
         assert len(results) == 0

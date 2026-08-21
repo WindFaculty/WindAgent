@@ -209,7 +209,7 @@ class ScenePlan:
             "device": self.device,
             "objects": [o.to_dict() for o in self.objects],
             "camera": self.camera.to_dict(),
-            "lights": [l.to_dict() for l in self.lights],
+            "lights": [light.to_dict() for light in self.lights],
             "material": self.material.to_dict(),
             "animation": self.animation.to_dict(),
             "input_hash": self.input_hash,
@@ -239,9 +239,9 @@ class ScenePlan:
             ],
             camera=ScenePlanCamera(**data.get("camera", {})),
             lights=[
-                ScenePlanLight(**l)
-                for l in data.get("lights", [])
-                if isinstance(l, dict)
+                ScenePlanLight(**light)
+                for light in data.get("lights", [])
+                if isinstance(light, dict)
             ],
             material=ScenePlanMaterial(**data.get("material", {})),
             animation=ScenePlanAnimation(**data.get("animation", {})),

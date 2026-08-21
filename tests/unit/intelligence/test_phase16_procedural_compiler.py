@@ -150,7 +150,7 @@ def test_recipe_ordered_layers_priority_desc_stable():
             _layer("l-idle", ProceduralLayerKind.IDLE_VARIATION, seed=500),
             _layer("l-foot", ProceduralLayerKind.FOOT_IK),
             _layer("l-look", ProceduralLayerKind.LOOK_AT)])
-    priorities = [l.priority for l in recipe.ordered_layers()]
+    priorities = [layer.priority for layer in recipe.ordered_layers()]
     assert priorities == sorted(priorities, reverse=True)
     assert priorities[0] == LAYER_DEFAULT_PRIORITY[ProceduralLayerKind.FOOT_IK]
 

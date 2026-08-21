@@ -296,9 +296,9 @@ class SetDressingPlan(BaseModel):
             for c in self.cameras
         )
         payload["lights"] = sorted(
-            (l.name, l.kind, round(l.position.x, 6), round(l.position.y, 6),
-             round(l.position.z, 6))
-            for l in self.lights
+            (light.name, light.kind, round(light.position.x, 6), round(light.position.y, 6),
+             round(light.position.z, 6))
+            for light in self.lights
         )
         canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"))
         return canonical.encode("utf-8")

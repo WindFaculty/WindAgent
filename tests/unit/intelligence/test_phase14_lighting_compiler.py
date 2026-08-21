@@ -228,7 +228,7 @@ def test_override_applies_bounded_adjustments():
     assert receipt.plan.emphasis == LightingEmphasis.ENVIRONMENT
     key = receipt.plan.key_light()
     assert key is not None and key.intensity_ratio == pytest.approx(2.0)
-    assert all(l.color_kelvin >= 1000 for l in receipt.plan.lights)
+    assert all(light.color_kelvin >= 1000 for light in receipt.plan.lights)
     assert receipt.plan.lights[0].color_kelvin == 5600 + 500
 
 
@@ -248,8 +248,8 @@ def _validator_report(plan: LightRigPlan, **kw):
 
 def test_missing_key_light_detected():
     plan = _valid_plan().model_copy(update={
-        "lights": [l for l in _valid_plan().lights
-                   if l.role != LightRole.KEY]})
+        "lights": [light for light in _valid_plan().lights
+                   if light.role != LightRole.KEY]})
     report = _validator_report(plan)
     assert LightingFindingKind.MISSING_KEY_LIGHT in report.blocking_kinds
 

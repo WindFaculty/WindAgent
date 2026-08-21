@@ -875,7 +875,7 @@ def score_script_quality(result: dict, brief_data: dict) -> dict:
     ordered = all(
         s.order == i + 1 for i, s in enumerate(scenes)
     ) if scenes else False
-    loc_ids = {str(l.location_id) for l in locations}
+    loc_ids = {str(loc.location_id) for loc in locations}
     loc_ref_ok = all(str(s.location_id) in loc_ids for s in scenes) if scenes else False
     order_pts = 5 if ordered else 0
     props_pts = 4
@@ -1627,7 +1627,7 @@ def main() -> int:
         write_json(PROD_CASE_DIR / "character_bible.json",
                    [c.model_dump(mode="json") for c in result["package"].characters])
         write_json(PROD_CASE_DIR / "location_bible.json",
-                   [l.model_dump(mode="json") for l in result["package"].locations])
+                    [loc.model_dump(mode="json") for loc in result["package"].locations])
         write_json(PROD_CASE_DIR / "scene_breakdown.json",
                    [s.model_dump(mode="json") for s in result["package"].screenplay.scenes])
         write_json(PROD_CASE_DIR / "dialogue_script.json",

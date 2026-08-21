@@ -169,7 +169,7 @@ class PythonSyntaxHighlighter:
     @classmethod
     def tokenize(cls, text: str) -> List[List[CodeToken]]:
         lines = text.split("\n")
-        return [cls.tokenize_line(l) for l in lines]
+        return [cls.tokenize_line(line) for line in lines]
 
 
 @dataclass
@@ -398,7 +398,7 @@ class CodeEditorRenderer:
                 self.highlight_symbol(sym)
             lines = params.get("lines")
             if lines and isinstance(lines, list):
-                self._state.highlighted_lines = [int(l) for l in lines]
+                self._state.highlighted_lines = [int(line_no) for line_no in lines]
 
         elif action.action_type == ActionType.SCROLL:
             target_line = int(params.get("target_line", params.get("line", 1)))

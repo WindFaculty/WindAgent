@@ -989,8 +989,8 @@ class VisemeShape(str, Enum):
     NEUTRAL = "NEUTRAL"
     AA = "AA"  # open vowel a
     E = "E"  # spread vowel e/i
-    I = "I"  # narrow spread i
-    O = "O"  # rounded o
+    I = "I"  # narrow spread i  # noqa: E741
+    O = "O"  # rounded o  # noqa: E741
     U = "U"  # rounded u
     M_B_P = "M_B_P"  # bilabial closure
     F_V = "F_V"  # labiodental

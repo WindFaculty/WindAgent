@@ -487,6 +487,17 @@ __all__ = [
     "VIETNAMESE_LINE_B",
     "LINE_A_PHONEMES",
     "LINE_B_PHONEMES",
+    # Multi-Scene Episode orchestration (VP3D Phase 26, Stage M)
+    "EpisodeAssetCache",
+    "EpisodeAssetGeneratorLeg",
+    "EpisodeAudioSynthesisLeg",
+    "EpisodeFfmpegLeg",
+    "EpisodeOrchestrator",
+    "EpisodeRenderLeg",
+    "EpisodeReviewRepairLeg",
+    "asset_expected_hash",
+    "episode_identity_checker",
+    "episode_verification_checker",
     # Golden Scene End-to-End orchestration (VP3D Phase 25, Stage M)
     "GoldenSceneOrchestrator",
     "GoldenSceneRenderLeg",

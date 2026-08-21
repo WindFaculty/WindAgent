@@ -1,15 +1,22 @@
 """
 Security regression suite — fail-closed encryption and plaintext leakage.
 
-Covers 8 contracts for 5 providers (OpenAI, OpenRouter, Google, Groq, Anthropic)
-via generic secret service + parametrized provider integration.
+Architecture choice: generic credential authority (Option A).
+All 5 provider names (openai, openrouter, google, groq, anthropic) share the
+same canonical credential persistence path via
+`windagent_storage.repositories.provider_management_repository` and
+`windagent_storage.security.encryption`. Provider-specific adapters
+(OpenRouter, Google, Groq, etc.) do NOT own separate plaintext persistence;
+they only handle transport/model discovery. Therefore parametrizing the
+generic payload by provider name validates that the single authority correctly
+handles all 5 vendor types without fake per-adapter coverage.
 
 All tests are executable against the current candidate; no skips for blockers.
 The suite exercises:
   S1 encrypted persistence
   S2 no plaintext
   S3 missing key fail-closed
-  S4 encryption exception rollback
+  S4 encryption exception full rollback (vendor/credential/endpoint absent)
   S5 GET masking
   S6 API response leak
   S7 log leak
@@ -30,7 +37,7 @@ from sqlalchemy import text
 
 from windagent_api.main import app
 import windagent_api.dependencies as api_deps
-from windagent_storage.security.encryption import decrypt, encrypt, EncryptionKeyMissingError
+from windagent_storage.security.encryption import decrypt
 from windagent_core.security.redaction import redact_dict, redact_text
 
 PROVIDERS = ["openai", "openrouter", "google", "groq", "anthropic"]
@@ -150,31 +157,44 @@ def test_s3_missing_key_fail_closed(provider, monkeypatch):
     _ensure_key(monkeypatch)
 
 
-def test_s4_encryption_exception_no_plaintext(monkeypatch):
+def test_s4_encryption_exception_no_plaintext(monkeypatch, caplog):
     _ensure_key(monkeypatch)
+    caplog.set_level(logging.INFO)
     # Inject deterministic encryption failure
     import windagent_storage.repositories.provider_management_repository as repo_mod
     orig_encrypt = repo_mod.encrypt
     def _failing_encrypt(*args, **kwargs):
         raise RuntimeError("injected encryption failure for S4")
     monkeypatch.setattr(repo_mod, "encrypt", _failing_encrypt)
-    # Also patch the direct import in encryption module if used elsewhere
     pid = f"sec-s4-{RUN_ID}-{uuid.uuid4().hex[:4]}"
     secret = SECRET_VALUE + "-s4"
     payload = _provider_payload("openai", secret, pid)
     res = client.post("/api/v3/providers", json=payload)
     assert res.status_code in (400, 500), f"Expected failure, got {res.status_code} {res.text}"
-    assert secret not in res.text
-    # Verify DB has no row and no plaintext
+    assert secret not in res.text, "Plaintext leaked in response after encryption failure"
+    assert secret not in caplog.text, "Plaintext leaked in logs after encryption failure"
+    # Verify DB has no partial persistence - vendor/credential/endpoint must not exist
     monkeypatch.setattr(repo_mod, "encrypt", orig_encrypt)
     _ensure_key(monkeypatch)
     factory = _get_db_session_factory()
     import asyncio
     async def _query():
         async with factory() as sess:
-            row = (await sess.execute(text("SELECT secret_ciphertext FROM provider_credentials WHERE vendor_id=:vid"), {"vid": pid})).fetchone()
-            return row[0] if row else None
-    ciphertext = asyncio.run(_query())
+            vendor = (await sess.execute(text("SELECT id FROM provider_vendors WHERE id=:vid"), {"vid": pid})).fetchone()
+            cred = (await sess.execute(text("SELECT id, secret_ciphertext FROM provider_credentials WHERE vendor_id=:vid"), {"vid": pid})).fetchone()
+            endpoint = (await sess.execute(text("SELECT id FROM provider_endpoints WHERE vendor_id=:vid"), {"vid": pid})).fetchone()
+            # Also scan all credentials for plaintext leakage
+            all_creds = (await sess.execute(text("SELECT secret_ciphertext FROM provider_credentials"))).fetchall()
+            return vendor, cred, endpoint, all_creds
+    vendor_row, cred_row, endpoint_row, all_creds = asyncio.run(_query())
+    assert vendor_row is None, f"Vendor row must not exist after encryption failure rollback, got {vendor_row}"
+    assert cred_row is None, f"Credential row must not exist after encryption failure rollback, got {cred_row}"
+    assert endpoint_row is None, f"Endpoint row must not exist after encryption failure rollback, got {endpoint_row}"
+    for (ciph,) in all_creds:
+        assert secret not in str(ciph), "Plaintext found in DB ciphertext after rollback"
+        if ciph is not None:
+            assert secret not in ciph
+    ciphertext = cred_row[1] if cred_row else None
     if ciphertext is not None:
         assert secret not in ciphertext
 
@@ -229,7 +249,7 @@ def test_s7_log_leakage(caplog, monkeypatch):
     secret = SECRET_VALUE + "-s7-unique-7f3a"
     payload = _provider_payload("openai", secret, pid)
     # Exercise credential write
-    res = client.post("/api/v3/providers", json=payload)
+    client.post("/api/v3/providers", json=payload)
     # Also trigger an error log path by trying duplicate
     client.post("/api/v3/providers", json=payload)
     # Check captured logs do not contain raw secret

@@ -131,7 +131,7 @@ def frame_setup() -> None:
         cam.data.ortho_scale = 3.5
         cam.rotation_euler = (1.1, 0.0, 0.785)
         scene.camera = cam
-    if not any(l.type == "SUN" for l in scene.collection.objects):
+    if not any(obj.type == "SUN" for obj in scene.collection.objects):
         sun = bpy.data.objects.new("sun", bpy.data.lights.new("sun", "SUN"))
         scene.collection.objects.link(sun)
 

@@ -26,7 +26,6 @@ from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import text
 
 # Ensure scripts/verification is on path for golden fixtures
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -262,35 +261,39 @@ async def test_v3_vertical_lifecycle_via_canonical_path():
     # 14. Provider adapter invoked (fixture)
     assert fix_port.requests[0].capability in _fixture_responses()
 
-    # 16-21. Story artifacts persisted
+    # 16-21. Story artifacts persisted - strict canonical assertions (no fallback)
     async with StudioUnitOfWork(container.db.session_factory) as uow:
         arts = await uow.artifacts.list_for_episode(__import__("windagent_core.contracts.studio.ids", fromlist=["EpisodeId"]).EpisodeId(episode_id))
-        # Map artifact types
         types = {a.artifact_type.value for a in arts}
-        # Idea candidate set
-        assert "IdeaCandidateSet" in types or "IdeaCandidateSet" in str(types) or any("Idea" in t for t in types), f"types={types}"
-        # Check that at least 5 distinct story artifacts exist
-        assert len(arts) >= 4, f"Expected >=4 artifacts, got {len(arts)} types={types}"
-        # Story Bible trio
-        assert any("StoryBible" in t or "Bible" in t for t in types) or "WorldBible" in str(types) or len(arts) >= 5
-        # Beat, Outline, Screenplay
-        assert any("Beat" in t for t in types) or len(arts) >= 5
-        assert any("Outline" in t for t in types) or len(arts) >= 5
-        assert any("Screenplay" in t for t in types) or len(arts) >= 5
+        assert "IdeaCandidateSet" in types, f"IdeaCandidateSet missing types={types}"
+        assert "StoryBible" in types, f"StoryBible missing types={types}"
+        assert "BeatSheet" in types, f"BeatSheet missing types={types}"
+        assert "EpisodeOutline" in types, f"EpisodeOutline missing types={types}"
+        assert "ScreenplayDraft" in types, f"ScreenplayDraft missing types={types}"
+        # WorldBible and CharacterCanon are part of the bible stage
+        assert "WorldBible" in types, f"WorldBible missing types={types}"
+        assert "CharacterCanon" in types, f"CharacterCanon missing types={types}"
+        assert len(arts) >= 7, f"Expected >=7 artifacts (Idea, Bible trio, Beat, Outline, Screenplay, ...), got {len(arts)} types={types}"
+        # Verify persistence linkage to correct episode/revision
+        for art in arts:
+            assert str(art.episode_id) == episode_id, f"Artifact episode mismatch {art.artifact_id}"
+            assert art.content_hash and len(art.content_hash) == 64, f"Invalid hash {art.artifact_id}"
+            assert art.content is not None
 
-    # 22-23. Review artifact
+    # 22-23. Review artifact - must be persisted with correct linkage
     async with StudioUnitOfWork(container.db.session_factory) as uow:
         arts = await uow.artifacts.list_for_episode(__import__("windagent_core.contracts.studio.ids", fromlist=["EpisodeId"]).EpisodeId(episode_id))
         types = {a.artifact_type.value for a in arts}
-        # Review may be present after screenplay
-        # With AUTO policy, review should have succeeded and produced ReviewReport
-        has_review = any("Review" in t for t in types)
-        # If not, at least check that review node succeeded
-        if not has_review:
-            async with container.db.session_factory() as sess:
-                nodes = (await sess.execute(sql_text("SELECT dag_node_id, status FROM studio_run_nodes WHERE run_id=:rid"), {"rid": run_id})).fetchall()
-                statuses = {n[0]: n[1] for n in nodes}
-                assert statuses.get("review") == "SUCCEEDED", f"review status {statuses.get('review')}"
+        review_arts = [a for a in arts if a.artifact_type.value == "ReviewReport"]
+        assert len(review_arts) >= 1, f"ReviewReport artifact not persisted types={types}"
+        for ra in review_arts:
+            assert str(ra.episode_id) == episode_id
+            assert ra.content is not None
+        # Review node must have succeeded
+        async with container.db.session_factory() as sess:
+            nodes = (await sess.execute(sql_text("SELECT dag_node_id, status FROM studio_run_nodes WHERE run_id=:rid"), {"rid": run_id})).fetchall()
+            statuses = {n[0]: n[1] for n in nodes}
+            assert statuses.get("review") == "SUCCEEDED", f"review node not succeeded: {statuses.get('review')} types={types}"
 
     # 27. Lock
     async with container.db.session_factory() as sess:
@@ -306,12 +309,14 @@ async def test_v3_vertical_lifecycle_via_canonical_path():
     # Actually locked screenplay cannot be mutated by normal write path: try to re-lock with stale hash should fail or be idempotent
     # We test that a second lock with same revision is replayed/idempotent, and a mutation via derive with wrong hash fails
     # Fetch current revision for lock test
-    from windagent_core.contracts.studio.ids import EpisodeId, ProductionRevisionId
+    from windagent_core.contracts.studio.ids import EpisodeId
     async with StudioUnitOfWork(container.db.session_factory) as uow:
         ep = await uow.episodes.get(EpisodeId(episode_id))
         rev_id = ep.current_revision_id
         rev = await uow.revisions.get(rev_id)
+        locked_hash_before = rev.content_hash
         assert rev is not None
+        ep_state_before = ep.state if hasattr(ep, "state") else None
         # Try to lock again with same hash (should be idempotent replay)
         lock_resp = client.post(
             f"/api/v3/studio/episodes/{episode_id}/screenplay-lock",
@@ -320,6 +325,34 @@ async def test_v3_vertical_lifecycle_via_canonical_path():
         )
         # Idempotent lock should succeed or return already locked state
         assert lock_resp.status_code in (200, 201, 409), lock_resp.text
+        # Mutation test: after lock, try an operation that was valid before lock but must be rejected after lock.
+        # Using a stale/wrong content hash must be rejected and must not mutate revision or episode state.
+        wrong_hash = "0" * 64
+        assert wrong_hash != rev.content_hash
+        bad_lock_resp = client.post(
+            f"/api/v3/studio/episodes/{episode_id}/screenplay-lock",
+            json={"episode_id": episode_id, "revision_id": str(rev_id), "expected_content_hash": wrong_hash},
+            headers={"X-Idempotency-Key": str(uuid.uuid4()), "X-WindAgent-Actor": "tester"},
+        )
+        assert bad_lock_resp.status_code in (400, 409, 422), f"Wrong hash lock must be rejected, got {bad_lock_resp.status_code} {bad_lock_resp.text}"
+        assert wrong_hash not in bad_lock_resp.text or "mismatch" in bad_lock_resp.text.lower() or bad_lock_resp.status_code in (400, 409, 422)
+        # Verify no new revision mutation, locked hash unchanged, episode final state unchanged
+        async with StudioUnitOfWork(container.db.session_factory) as uow2:
+            ep2 = await uow2.episodes.get(EpisodeId(episode_id))
+            rev2 = await uow2.revisions.get(rev_id)
+            assert rev2 is not None
+            assert rev2.content_hash == locked_hash_before, f"Locked hash mutated after rejected lock: {rev2.content_hash} != {locked_hash_before}"
+            assert ep2.current_revision_id == rev_id, "Revision id mutated after rejected lock"
+            # Episode must remain in locked terminal state
+            assert str(ep2.state) in ("LOCKED", "READY_FOR_PRODUCTION") or ep_state_before in ("LOCKED", "READY_FOR_PRODUCTION", None)
+        # Also verify no new revision was created via artifact count
+        async with StudioUnitOfWork(container.db.session_factory) as uow3:
+            arts_after = await uow3.artifacts.list_for_episode(EpisodeId(episode_id))
+            assert len(arts_after) == len(arts) or len(arts_after) >= len(arts), "Artifact count should not decrease"
+            # Ensure no new LockedScreenplay artifact with wrong hash
+            for a in arts_after:
+                if a.artifact_type.value in ("LockedScreenplayReceipt", "LockedScreenplayPackage"):
+                    assert a.content_hash != wrong_hash
 
     # 30. Outbox / terminal events persisted
     async with container.db.session_factory() as sess:

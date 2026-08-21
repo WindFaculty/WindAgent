@@ -535,7 +535,7 @@ class FacialAnimationTrack(BaseModel):
             ),
             "head_motion": [{"frame": k.frame, "value": k.value}
                             for k in self.head_motion],
-            "ownership": {c: l.value for c, l in sorted(self.ownership.items())},
+            "ownership": {c: val.value for c, val in sorted(self.ownership.items())},
             "head_blend_policy": self.head_blend_policy.value,
             "compiler_version": self.compiler_version,
             "seed": self.seed,

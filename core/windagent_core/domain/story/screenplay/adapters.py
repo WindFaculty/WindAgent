@@ -99,7 +99,7 @@ def from_video_screenplay(
         story_scene_id = DraftSceneId.generate("dscn")
         lines: List[DraftDialogueLine] = []
         for order, line in enumerate(
-            sorted(lines_by_scene.get(str(scene.scene_id), []), key=lambda l: l.order),
+            sorted(lines_by_scene.get(str(scene.scene_id), []), key=lambda line_item: line_item.order),
             start=1,
         ):
             lines.append(DraftDialogueLine(

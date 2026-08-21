@@ -133,6 +133,22 @@ class FakeRuntimeAdapter(ExecutionRuntimePort):
                 status=RuntimeStatusEnum.CANCELLED,
                 error="Cancelled by scripted fake runtime",
             )
+        elif mode == "timeout":
+            self._statuses[handle_id] = RuntimeStatusEnum.FAILED
+            self._results[handle_id] = ExecutionResult(
+                handle_id=handle_id,
+                step_run_id=request.step_run_id,
+                status=RuntimeStatusEnum.FAILED,
+                error="Provider timeout: simulated timeout after 30s",
+            )
+        elif mode in {"rate_limit", "rate_limit_exceeded", "429"}:
+            self._statuses[handle_id] = RuntimeStatusEnum.FAILED
+            self._results[handle_id] = ExecutionResult(
+                handle_id=handle_id,
+                step_run_id=request.step_run_id,
+                status=RuntimeStatusEnum.FAILED,
+                error="429 RateLimitExceeded: provider rate limit hit (simulated)",
+            )
         else:
             self._statuses[handle_id] = RuntimeStatusEnum.DISPATCHED
 

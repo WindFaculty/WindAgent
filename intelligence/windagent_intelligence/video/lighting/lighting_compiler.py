@@ -235,27 +235,27 @@ class LightingCompiler:
             return list(preset.lights)
         return [
             LightSpec(
-                role=l.role,
+                role=light.role,
                 color_kelvin=max(
                     1000, min(20000,
-                              l.color_kelvin + override.cct_shift_kelvin)),
+                              light.color_kelvin + override.cct_shift_kelvin)),
                 intensity_ratio=(
-                    l.intensity_ratio * override.key_multiplier
-                    if l.role == LightRole.KEY else l.intensity_ratio),
-                casts_shadow=l.casts_shadow,
-                position_hint=l.position_hint,
-                cost_units=l.cost_units,
+                    light.intensity_ratio * override.key_multiplier
+                    if light.role == LightRole.KEY else light.intensity_ratio),
+                casts_shadow=light.casts_shadow,
+                position_hint=light.position_hint,
+                cost_units=light.cost_units,
             )
-            for l in preset.lights
+            for light in preset.lights
         ]
 
     @staticmethod
     def _estimate_resource(preset: LightingPreset,
                            lights: List[LightSpec]) -> ResourceEstimate:
         """Backlog 4: contribution/cost estimate vs the preset's policy."""
-        shadow_count = sum(1 for l in lights if l.casts_shadow)
+        shadow_count = sum(1 for light in lights if light.casts_shadow)
         bounce_count = sum(
-            1 for l in lights if l.role == LightRole.BOUNCE)
+            1 for light in lights if light.role == LightRole.BOUNCE)
         total_cost = (
             len(lights) * COST_PER_LIGHT
             + shadow_count * COST_PER_SHADOW_LIGHT

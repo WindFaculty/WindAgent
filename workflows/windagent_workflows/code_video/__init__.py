@@ -7,8 +7,6 @@ and workflow step definitions for automated code tutorial video production.
 
 from __future__ import annotations
 
-from typing import Any
-
 from windagent_workflows.code_video.contracts import (
     FORBIDDEN_AUDIO_KEYS,
     FORBIDDEN_COORDINATE_KEYS,

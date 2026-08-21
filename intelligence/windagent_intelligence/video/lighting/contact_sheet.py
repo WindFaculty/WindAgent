@@ -80,7 +80,7 @@ class ContactSheetBuilder:
         sheet_id: LightingContactSheetId,
     ) -> LightingContactSheetManifest:
         exposure_factor = 2.0 ** plan.world.exposure_ev
-        total_ratio = sum(l.intensity_ratio for l in plan.lights) or 1.0
+        total_ratio = sum(light.intensity_ratio for light in plan.lights) or 1.0
         mean = _clamp01(
             (plan.world.environment_strength * 0.25 + total_ratio * 0.10)
             * exposure_factor / (1.0 + exposure_factor))
@@ -96,9 +96,9 @@ class ContactSheetBuilder:
             contrast_ratio=contrast,
             histogram=histogram,
             entries=[ContactSheetEntry(
-                role=l.role.value, color_kelvin=l.color_kelvin,
-                intensity_ratio=l.intensity_ratio, casts_shadow=l.casts_shadow)
-                for l in plan.lights],
+                role=light.role.value, color_kelvin=light.color_kelvin,
+                intensity_ratio=light.intensity_ratio, casts_shadow=light.casts_shadow)
+                for light in plan.lights],
         )
         return manifest.model_copy(
             update={"manifest_hash": manifest.compute_hash()})

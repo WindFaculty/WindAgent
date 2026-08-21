@@ -154,7 +154,7 @@ class ProceduralRecipe(BaseModel):
 
     def ordered_layers(self) -> List[ProceduralLayerSpec]:
         """Priority-descending, id-stable layer order (deterministic bake)."""
-        return sorted(self.layers, key=lambda l: (-l.priority, str(l.layer_id)))
+        return sorted(self.layers, key=lambda layer: (-layer.priority, str(layer.layer_id)))
 
     def compute_stable_hash(self) -> str:
         payload = json.loads(

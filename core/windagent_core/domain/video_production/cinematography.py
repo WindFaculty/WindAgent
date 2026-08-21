@@ -42,7 +42,7 @@ from windagent_core.domain.video_production.ids import (
     CameraFindingId,
     CameraIntentId,
     CameraOverrideId,
-    CameraPathManifestId,
+    CameraPathManifestId,  # noqa: F401  # re-exported via domain package
     CameraRigPlanId,
     DialogueLineId,
     SceneId,

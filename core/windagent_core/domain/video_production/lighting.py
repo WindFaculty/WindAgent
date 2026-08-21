@@ -370,7 +370,7 @@ class LightingValidator:
             findings.append(self._finding(
                 finding_prefix, LightingFindingKind.MISSING_KEY_LIGHT, intent,
                 "no KEY light in rig plan", blocking=True,
-                measured={"roles": sorted({l.role.value for l in rig_plan.lights})}))
+                measured={"roles": sorted({light.role.value for light in rig_plan.lights})}))
 
         # clipped exposure: world EV must sit inside the preset's exposure range
         ev = rig_plan.world.exposure_ev
@@ -448,7 +448,7 @@ class LightingValidator:
     def _cct_spread(lights: List[LightSpec]) -> int:
         if not lights:
             return 0
-        kelvins = [l.color_kelvin for l in lights]
+        kelvins = [light.color_kelvin for light in lights]
         return max(kelvins) - min(kelvins)
 
     @staticmethod

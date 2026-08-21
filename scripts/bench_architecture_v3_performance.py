@@ -475,9 +475,9 @@ async def bench_sqlite_concurrency_lock_errors(
                             if t:
                                 t.state = "completed"
                                 t.updated_at = datetime.now(timezone.utc).replace(tzinfo=None)
-                            l = (await session.execute(select(ExecutionLeaseORM).where(ExecutionLeaseORM.run_id == claimed.task_id))).scalar_one_or_none()
-                            if l:
-                                l.status = "released"
+                            lease_row = (await session.execute(select(ExecutionLeaseORM).where(ExecutionLeaseORM.run_id == claimed.task_id))).scalar_one_or_none()
+                            if lease_row:
+                                lease_row.status = "released"
                     completed_tasks.append(claimed.task_id)
                 else:
                     idle_counts[worker_id] += 1

@@ -11,9 +11,6 @@ itself (current source of truth); the Phase 0 JSON baseline artifact is no
 longer present in the repository.
 """
 
-import json
-from pathlib import Path
-
 from windagent_core.domain.types import SessionId
 from windagent_api.adapters.legacy_event_mappers import (
     LEGACY_TO_V2_MAP,
