@@ -1114,6 +1114,21 @@
         "title": "CancelJobRequest",
         "type": "object"
       },
+      "CanonSyncActionApplyRequest": {
+        "properties": {
+          "action_index": {
+            "description": "Index into the proposal's actions[]",
+            "minimum": 0.0,
+            "title": "Action Index",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "action_index"
+        ],
+        "title": "CanonSyncActionApplyRequest",
+        "type": "object"
+      },
       "CapabilityStatus": {
         "enum": [
           "AVAILABLE",
@@ -1124,8 +1139,49 @@
         "title": "CapabilityStatus",
         "type": "string"
       },
+      "CharacterContinuity": {
+        "properties": {
+          "allowed_variations": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Allowed Variations",
+            "type": "array"
+          },
+          "forbidden_variations": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Forbidden Variations",
+            "type": "array"
+          },
+          "immutable_features": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Immutable Features",
+            "type": "array"
+          },
+          "wardrobe_rules": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Wardrobe Rules",
+            "type": "array"
+          }
+        },
+        "title": "CharacterContinuity",
+        "type": "object"
+      },
       "CharacterIdentity": {
         "properties": {
+          "aliases": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Aliases",
+            "type": "array"
+          },
           "biography": {
             "default": "",
             "title": "Biography",
@@ -1154,15 +1210,44 @@
             "title": "Alignment Score",
             "type": "integer"
           },
+          "archetype": {
+            "default": "",
+            "title": "Archetype",
+            "type": "string"
+          },
           "dominant_trait": {
             "default": "",
             "title": "Dominant Trait",
             "type": "string"
           },
+          "fears": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Fears",
+            "type": "array"
+          },
           "flaw": {
             "default": "",
             "title": "Flaw",
             "type": "string"
+          },
+          "goal": {
+            "default": "",
+            "title": "Goal",
+            "type": "string"
+          },
+          "motivation": {
+            "default": "",
+            "title": "Motivation",
+            "type": "string"
+          },
+          "traits": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Traits",
+            "type": "array"
           }
         },
         "title": "CharacterPsychology",
@@ -1193,9 +1278,34 @@
       },
       "CharacterResource": {
         "properties": {
+          "content_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content Hash"
+          },
+          "continuity": {
+            "$ref": "#/components/schemas/CharacterContinuity"
+          },
           "created_at": {
             "title": "Created At",
             "type": "string"
+          },
+          "current_revision_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Revision Id"
           },
           "id": {
             "title": "Id",
@@ -1203,6 +1313,17 @@
           },
           "identity": {
             "$ref": "#/components/schemas/CharacterIdentity"
+          },
+          "last_synced_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Synced Hash"
           },
           "project_id": {
             "title": "Project Id",
@@ -1217,6 +1338,14 @@
             },
             "title": "Relationships",
             "type": "array"
+          },
+          "source_lineage": {
+            "$ref": "#/components/schemas/CharacterSourceLineage"
+          },
+          "status": {
+            "default": "DRAFT",
+            "title": "Status",
+            "type": "string"
           },
           "updated_at": {
             "title": "Updated At",
@@ -1241,14 +1370,47 @@
           "psychology",
           "visual_profile",
           "voice_profile",
+          "continuity",
+          "source_lineage",
           "created_at",
           "updated_at"
         ],
         "title": "CharacterResource",
         "type": "object"
       },
+      "CharacterSourceLineage": {
+        "properties": {
+          "source_hash": {
+            "default": "",
+            "title": "Source Hash",
+            "type": "string"
+          },
+          "source_screenplay_revision_id": {
+            "default": "",
+            "title": "Source Screenplay Revision Id",
+            "type": "string"
+          },
+          "source_series_id": {
+            "default": "",
+            "title": "Source Series Id",
+            "type": "string"
+          },
+          "source_story_bible_artifact_id": {
+            "default": "",
+            "title": "Source Story Bible Artifact Id",
+            "type": "string"
+          }
+        },
+        "title": "CharacterSourceLineage",
+        "type": "object"
+      },
       "CharacterVisualProfile": {
         "properties": {
+          "age_appearance": {
+            "default": "",
+            "title": "Age Appearance",
+            "type": "string"
+          },
           "avatar_url": {
             "anyOf": [
               {
@@ -1271,6 +1433,35 @@
             ],
             "title": "Banner Url"
           },
+          "body_type": {
+            "default": "",
+            "title": "Body Type",
+            "type": "string"
+          },
+          "clothing": {
+            "default": "",
+            "title": "Clothing",
+            "type": "string"
+          },
+          "colors": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Colors",
+            "type": "array"
+          },
+          "distinguishing_features": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Distinguishing Features",
+            "type": "array"
+          },
+          "hair": {
+            "default": "",
+            "title": "Hair",
+            "type": "string"
+          },
           "physical_description": {
             "default": "",
             "title": "Physical Description",
@@ -1287,12 +1478,22 @@
       },
       "CharacterVoiceProfile": {
         "properties": {
+          "age_range": {
+            "default": "",
+            "title": "Age Range",
+            "type": "string"
+          },
           "sample_lines": {
             "items": {
               "type": "string"
             },
             "title": "Sample Lines",
             "type": "array"
+          },
+          "speaking_style": {
+            "default": "",
+            "title": "Speaking Style",
+            "type": "string"
           },
           "voice_model_id": {
             "anyOf": [
@@ -1721,6 +1922,13 @@
       },
       "CreateCharacterRequest": {
         "properties": {
+          "aliases": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Aliases",
+            "type": "array"
+          },
           "alignment_score": {
             "default": 50,
             "maximum": 100.0,
@@ -1744,10 +1952,22 @@
             "title": "Flaw",
             "type": "string"
           },
+          "immutable_features": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Immutable Features",
+            "type": "array"
+          },
           "name": {
             "maxLength": 200,
             "minLength": 1,
             "title": "Name",
+            "type": "string"
+          },
+          "physical_description": {
+            "default": "",
+            "title": "Physical Description",
             "type": "string"
           },
           "role": {
@@ -1771,6 +1991,13 @@
             "default": "",
             "title": "Voice Style",
             "type": "string"
+          },
+          "wardrobe_rules": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Wardrobe Rules",
+            "type": "array"
           }
         },
         "required": [
@@ -6454,6 +6681,26 @@
         "title": "SeriesListResponse",
         "type": "object"
       },
+      "SetCharacterStatusRequest": {
+        "properties": {
+          "expected_version": {
+            "description": "Optimistic locking version",
+            "title": "Expected Version",
+            "type": "integer"
+          },
+          "status": {
+            "description": "One of: DRAFT, REVIEW_REQUIRED, APPROVED, PRODUCTION_READY",
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "expected_version"
+        ],
+        "title": "SetCharacterStatusRequest",
+        "type": "object"
+      },
       "SettingSchemaItem": {
         "properties": {
           "default": {
@@ -7411,6 +7658,31 @@
       },
       "UpdateCharacterRequest": {
         "properties": {
+          "age_appearance": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Age Appearance"
+          },
+          "aliases": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Aliases"
+          },
           "alignment_score": {
             "anyOf": [
               {
@@ -7424,6 +7696,20 @@
             ],
             "title": "Alignment Score"
           },
+          "allowed_variations": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Allowed Variations"
+          },
           "biography": {
             "anyOf": [
               {
@@ -7434,6 +7720,56 @@
               }
             ],
             "title": "Biography"
+          },
+          "body_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Body Type"
+          },
+          "clothing": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Clothing"
+          },
+          "colors": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Colors"
+          },
+          "distinguishing_features": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Distinguishing Features"
           },
           "dominant_trait": {
             "anyOf": [
@@ -7451,6 +7787,20 @@
             "title": "Expected Version",
             "type": "integer"
           },
+          "fears": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fears"
+          },
           "flaw": {
             "anyOf": [
               {
@@ -7461,6 +7811,67 @@
               }
             ],
             "title": "Flaw"
+          },
+          "forbidden_variations": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Forbidden Variations"
+          },
+          "goal": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Goal"
+          },
+          "hair": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hair"
+          },
+          "immutable_features": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Immutable Features"
+          },
+          "motivation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Motivation"
           },
           "name": {
             "anyOf": [
@@ -7475,6 +7886,17 @@
             ],
             "title": "Name"
           },
+          "physical_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Physical Description"
+          },
           "role": {
             "anyOf": [
               {
@@ -7485,6 +7907,53 @@
               }
             ],
             "title": "Role"
+          },
+          "speaking_style": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Speaking Style"
+          },
+          "style_notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Style Notes"
+          },
+          "traits": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Traits"
+          },
+          "voice_age_range": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Voice Age Range"
           },
           "voice_model_id": {
             "anyOf": [
@@ -7507,6 +7976,20 @@
               }
             ],
             "title": "Voice Style"
+          },
+          "wardrobe_rules": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Wardrobe Rules"
           }
         },
         "required": [
@@ -10659,6 +11142,105 @@
         ]
       }
     },
+    "/api/v3/canon-sync/{proposal_id}": {
+      "get": {
+        "operationId": "characters.getCanonSyncProposal",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "proposal_id",
+            "required": true,
+            "schema": {
+              "title": "Proposal Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Characters.Getcanonsyncproposal",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Canon Sync Proposal",
+        "tags": [
+          "Characters V3"
+        ]
+      }
+    },
+    "/api/v3/canon-sync/{proposal_id}/apply": {
+      "post": {
+        "description": "Apply one proposed action (ADD_CHARACTER | UPDATE_PROPOSED).\n\nApplying an ADD creates the character pinned to the proposal's lineage;\napplying an UPDATE advances the existing character to a new revision and\nrefreshes its sync baseline. NO_CHANGE and CONFLICT actions are not\napplicable.",
+        "operationId": "characters.applyCanonSyncAction",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "proposal_id",
+            "required": true,
+            "schema": {
+              "title": "Proposal Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CanonSyncActionApplyRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Characters.Applycanonsyncaction",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Apply Canon Sync Action",
+        "tags": [
+          "Characters V3"
+        ]
+      }
+    },
     "/api/v3/characters/{character_id}": {
       "delete": {
         "description": "Delete a character by ID.",
@@ -10736,7 +11318,7 @@
         ]
       },
       "patch": {
-        "description": "Update character fields with optimistic concurrency check.",
+        "description": "Update character fields with optimistic concurrency check.\n\nP1.1: every manual edit bumps the version and records an immutable\nrevision with a fresh deterministic content hash. ``last_synced_hash`` is\ndeliberately left untouched \u2014 the next canon sync recomputes the guard\nfingerprint and detects the drift against the stored baseline, which\nclassifies the character as CONFLICT instead of overwriting it.",
         "operationId": "characters.update",
         "parameters": [
           {
@@ -10782,6 +11364,59 @@
           }
         },
         "summary": "Update Character",
+        "tags": [
+          "Characters V3"
+        ]
+      }
+    },
+    "/api/v3/characters/{character_id}/actions/set-status": {
+      "post": {
+        "description": "Advance the canon readiness ladder (plan \u00a7P1.1.6).\n\nDRAFT -> REVIEW_REQUIRED -> APPROVED -> PRODUCTION_READY. Moving to\nPRODUCTION_READY fails closed until name, story role, visual identity and\ncontinuity constraints are all present.",
+        "operationId": "characters.setStatus",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "character_id",
+            "required": true,
+            "schema": {
+              "title": "Character Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetCharacterStatusRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CharacterResource"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set Character Status",
         "tags": [
           "Characters V3"
         ]
@@ -10877,6 +11512,54 @@
           }
         },
         "summary": "Get Character Relationships",
+        "tags": [
+          "Characters V3"
+        ]
+      }
+    },
+    "/api/v3/characters/{character_id}/revisions": {
+      "get": {
+        "description": "Immutable version history of a character (P1.1 version pinning).",
+        "operationId": "characters.listRevisions",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "character_id",
+            "required": true,
+            "schema": {
+              "title": "Character Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "title": "Response Characters.Listrevisions",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Character Revisions",
         "tags": [
           "Characters V3"
         ]
@@ -11485,7 +12168,7 @@
     },
     "/api/v3/episodes/{episode_id}/cancel-run": {
       "post": {
-        "description": "Cancel any active generation runs on the episode.",
+        "description": "Cancel active generation runs on the episode.\n\nP0.8 truth repair: no fabricated CANCELLED. When the episode holds no\nrun at all the answer is honest (NO_ACTIVE_RUN), never a fake success.",
         "operationId": "episodes.cancelRun",
         "parameters": [
           {
@@ -11527,6 +12210,67 @@
         "summary": "Cancel Run",
         "tags": [
           "Episodes V3"
+        ]
+      }
+    },
+    "/api/v3/episodes/{episode_id}/characters/actions/canon-sync": {
+      "post": {
+        "description": "Propose character canon changes from the episode's locked screenplay.\n\nFail closed with 409 SCREENPLAY_NOT_LOCKED when there is no locked\nscreenplay. Never mutates canon directly \u2014 the returned proposal must be\napplied through explicit apply commands.",
+        "operationId": "characters.canonSync",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "episode_id",
+            "required": true,
+            "schema": {
+              "title": "Episode Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "project_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Characters.Canonsync",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Canon Sync Characters",
+        "tags": [
+          "Characters V3"
         ]
       }
     },
