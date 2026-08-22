@@ -100,12 +100,19 @@ BRIEF = GOLDEN_BRIEF
 #: pinned issued_at so the chain fixture reassembles byte-identically).
 from datetime import datetime, timezone  # noqa: E402
 
+PINNED_CLOCK_INSTANT = datetime(2026, 8, 11, 0, 0, 0, tzinfo=timezone.utc)
+
+
+def PINNED_CLOCK() -> datetime:
+    return PINNED_CLOCK_INSTANT
+
+
 RECEIPT = LockedScreenplayReceipt(
     receipt_id="rcpt_b9_rabbit_kite",
     draft_id="draft_rabbit_kite_r2",
     approval_mode="AUTO",
     policy_id="",
-    issued_at=datetime(2026, 8, 11, 0, 0, 0, tzinfo=timezone.utc),
+    issued_at=PINNED_CLOCK_INSTANT,
 )
 
 #: Node sequence: (node_id, task_type, output artifact types, model capability)
@@ -347,11 +354,15 @@ async def run_chain() -> Dict[str, Any]:
 
     db = DatabaseManager("sqlite+aiosqlite:///:memory:")
     await db.create_tables(BaseORM.metadata)
+    # P0.6.1: issued_at comes from an injected deterministic clock (pinned to
+    # the same instant as RECEIPT above) so the committed chain fixtures stay
+    # byte-stable across regenerations. Timestamps are never content-derived.
     service = StudioRunService(
         lambda: StudioUnitOfWork(db.session_factory),
         StudioTaskSubmissionAdapter(db.session_factory),
         retry_budget=2,
         policy_id="b9-policy",
+        clock=lambda: PINNED_CLOCK(),
     )
     await _seed_auto_policy(db)
     series_id, episode_id = await _seed(db, service)

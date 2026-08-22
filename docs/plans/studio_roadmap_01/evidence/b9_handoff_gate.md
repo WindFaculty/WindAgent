@@ -31,7 +31,7 @@ artifact hashes of this run.
 | `review` | `studio.story.review` | ScreenplayDraft | ReviewReport | 5151b70eac24 |
 | `revise` | `studio.story.revise` | ScreenplayDraft,ReviewReport | RevisionProposal,ScreenplayDraft | 771e32a5fede,7e0f33992a53 |
 | `review2` | `studio.story.review` | ScreenplayDraft | ReviewReport | 35349610fd4b |
-| `lock` | `studio.story.lock` | ScreenplayDraft,ReviewReport | LockedScreenplayReceipt,LockedScreenplayPackage | 02c5bd57e685,12f5e355c7f0 |
+| `lock` | `studio.story.lock` | ScreenplayDraft,ReviewReport | LockedScreenplayReceipt,LockedScreenplayPackage | c317eeede43d,aa06172664e4 |
 
 - Vietnamese rabbit/kite slice: ages 5-8, target 240s, `vi`.
 - Selection replayed deterministically on the evaluated candidate set (no
@@ -40,8 +40,8 @@ artifact hashes of this run.
 
 ## 3. Final LockedScreenplayPackage
 
-- Package ref hash: `12f5e355c7f03280…`
-  (artifact `art_12f5e355c7f03280`), persisted by the worker and
+- Package ref hash: `aa06172664e4b63f…`
+  (artifact `art_aa06172664e4b63f`), persisted by the worker and
   validated by `LockService` + `validate_locked_package` before persistence.
 - Post-lock mutation refused (`HASH_MISMATCH` -> derived revision, B8);
   package immutable + idempotent (B8 evidence).
@@ -64,7 +64,7 @@ Tolerant-parser scan (B2, whole story tree):
 **`PLAN_B_HANDOFF_GATE` + `SCREENPLAY_RUNTIME_GATE`: PASS (B-side evidence).**
 
 - Chain: `chain_run.json` (checksum
-  `01ebc78aad89783a…`).
+  `fdf549789f292a9f…`).
 - Manifest: `handler_manifest.json`; checksums: `checksums.json`.
 - A-side (full-DAG auto-drive with receipt issuance at the lock node) and
   C-side (consumer schemas) halves are co-signed by their plan owners at

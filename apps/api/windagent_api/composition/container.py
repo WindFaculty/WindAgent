@@ -158,7 +158,8 @@ class ApplicationContainer:
 
         # 7. Studio run authority (Plan A A4 seam) before the orchestrator.
         self.studio_run_service = StudioComposer.compose_run_service(
-            self.db, repo_bundle.studio_task_submission
+            self.db, repo_bundle.studio_task_submission,
+            clock=getattr(self, "studio_clock", None),
         )
 
         # 8. Control-plane OrchestratorService.  The API composes it with NO

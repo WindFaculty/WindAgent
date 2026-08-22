@@ -34,7 +34,7 @@ import sys
 import uuid
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
-from typing import Any, AsyncIterator, Dict, List, Optional
+from typing import Any, AsyncIterator, Callable, Dict, List, Optional
 
 from windagent_core.contracts.studio.commands import (
     CreateEpisodeCommand,
@@ -182,6 +182,7 @@ async def submit_runnable_nodes(
     *,
     retry_budget: int,
     policy_id: str,
+    clock: Optional[Callable[[], datetime]] = None,
 ) -> None:
     """Durable dispatch of RUNNABLE (and task-less DISPATCHED) nodes.
 
@@ -192,7 +193,8 @@ async def submit_runnable_nodes(
     original committed task identity.
     """
     service = StudioRunService(
-        uow_factory, submission, retry_budget=retry_budget, policy_id=policy_id
+        uow_factory, submission,
+        retry_budget=retry_budget, policy_id=policy_id, clock=clock,
     )
     async with service._uow() as uow:
         run = await uow.runs.get(run_id)
@@ -256,6 +258,7 @@ class StudioRunService(StudioRunOrchestratorPort):
         *,
         retry_budget: int = DEFAULT_RETRY_BUDGET,
         policy_id: str = DEFAULT_APPROVAL_POLICY_ID,
+        clock: Optional[Callable[[], datetime]] = None,
     ) -> None:
         if retry_budget < 1:
             raise StudioValidationError("retry_budget must be >= 1.")
@@ -263,8 +266,16 @@ class StudioRunService(StudioRunOrchestratorPort):
         self._submission = submission
         self._retry_budget = retry_budget
         self._policy_id = policy_id
+        #: P0.6.1 — issuance timestamps come from an injectable clock.
+        #: Production uses the real wall clock (actual persisted time);
+        #: deterministic tests inject a fixed clock. Timestamps are NEVER
+        #: derived from content hashes.
+        self._clock: Callable[[], datetime] = clock or (
+            lambda: datetime.now(timezone.utc)
+        )
         self._reconciler = StudioCompletionReconciler(
-            uow_factory, submission, retry_budget=retry_budget, policy_id=policy_id
+            uow_factory, submission, retry_budget=retry_budget, policy_id=policy_id,
+            clock=self._clock,
         )
 
     # -- application commands -------------------------------------------------
@@ -506,6 +517,7 @@ class StudioRunService(StudioRunOrchestratorPort):
         await submit_runnable_nodes(
             self._uow_factory, self._submission, resume_run_id,
             retry_budget=self._retry_budget, policy_id=self._policy_id,
+            clock=self._clock,
         )
         return StartRunResult(
             run_id=resume_run_id,
@@ -1363,10 +1375,10 @@ class StudioRunService(StudioRunOrchestratorPort):
                 missing_types.remove(artifact_type)
         policy = await self._load_policy(uow)
         mode = policy.mode_for(ApprovalCheckpoint.SCREENPLAY)
-        # ponytail: content-addressed receipt id + content-derived issued_at —
-        # same locked draft must always yield the same receipt/package hash
-        # (B9 fixture determinism). Upgrade path: A-issued receipts from a
-        # durable approvals table carry their own wall-clock timestamps.
+        # P0.6.1: the receipt id stays content-addressed (same locked draft →
+        # same receipt identity), but ``issued_at`` is the ACTUAL issuance
+        # wall-clock time from the injected clock — never derived from the
+        # content hash. Deterministic tests inject a fixed clock.
         draft_hash = draft.content_hash()
         receipt = LockedScreenplayReceipt(
             receipt_id=LockedScreenplayReceiptId(
@@ -1375,9 +1387,7 @@ class StudioRunService(StudioRunOrchestratorPort):
             draft_id=draft.draft_id,
             approval_mode=mode.value,
             policy_id=policy.policy_id,
-            issued_at=datetime.fromtimestamp(
-                int(draft_hash[:8], 16) % 2_145_916_800, tz=timezone.utc
-            ),
+            issued_at=self._clock(),
         )
         return input_refs, {
             "receipt": receipt.to_canonical_dict(),
@@ -1394,6 +1404,7 @@ class StudioRunService(StudioRunOrchestratorPort):
         await submit_runnable_nodes(
             self._uow_factory, self._submission, run_id,
             retry_budget=self._retry_budget, policy_id=self._policy_id,
+            clock=self._clock,
         )
 
     async def _advance_dependents(
@@ -1519,11 +1530,16 @@ class StudioCompletionReconciler:
         *,
         retry_budget: int = DEFAULT_RETRY_BUDGET,
         policy_id: str = DEFAULT_APPROVAL_POLICY_ID,
+        clock: Optional[Callable[[], datetime]] = None,
     ) -> None:
         self._uow_factory = uow_factory
         self._submission = submission
         self._retry_budget = retry_budget
         self._policy_id = policy_id
+        #: P0.6.1 — shared injectable clock (see StudioRunService).
+        self._clock: Callable[[], datetime] = clock or (
+            lambda: datetime.now(timezone.utc)
+        )
 
     async def handle_task_result(self, result: StudioTaskResult) -> Dict[str, Any]:
         """Apply one durable task result; advance the DAG; submit new work.
@@ -2042,6 +2058,7 @@ class StudioCompletionReconciler:
         await submit_runnable_nodes(
             self._uow_factory, self._submission, run_id,
             retry_budget=self._retry_budget, policy_id=self._policy_id,
+            clock=self._clock,
         )
 
 

@@ -8,7 +8,7 @@ the application service binds Plan A ports at handoff.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from windagent_storage.database.connection import DatabaseManager
 from windagent_storage.studio.task_submission import StudioTaskSubmissionAdapter
@@ -37,11 +37,17 @@ class StudioComposer:
     def compose_run_service(
         db: DatabaseManager,
         studio_task_submission: StudioTaskSubmissionAdapter,
+        clock: Any | None = None,
     ) -> StudioRunService:
-        """Build the durable Studio run authority (Plan A A4 seam)."""
+        """Build the durable Studio run authority (Plan A A4 seam).
+
+        ``clock`` is the P0.6.1 issuance-clock seam (production default =
+        real wall clock; deterministic tests inject a fixed clock).
+        """
         return StudioRunService(
             lambda: StudioUnitOfWork(db.session_factory),
             studio_task_submission,
+            clock=clock,
         )
 
     @staticmethod
