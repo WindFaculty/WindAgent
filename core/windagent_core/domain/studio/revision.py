@@ -164,8 +164,14 @@ class StudioRevisionService:
             )
         if len(new_content_hash) != 64:
             raise StudioValidationError("new_content_hash must be a 64-char SHA-256 hex digest.")
+        # ponytail: content-addressed revision id — same parent + same content
+        # must derive the same revision (deterministic lock lineage/package
+        # hashes). Random ids made downstream receipts/packages non-reproducible.
+        derived_id = hashlib.sha256(
+            f"{parent.revision_id}|{new_content_hash}".encode("utf-8")
+        ).hexdigest()[:16]
         return StudioProductionRevision(
-            revision_id=ProductionRevisionId.generate("rev"),
+            revision_id=ProductionRevisionId(f"rev_{derived_id}"),
             series_id=series_id,
             episode_id=episode_id,
             parent_revision_id=parent.revision_id,

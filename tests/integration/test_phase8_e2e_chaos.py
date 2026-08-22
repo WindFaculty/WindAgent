@@ -85,6 +85,7 @@ def _service(
         route_locks or _stable_route_locks(db),
         provider_coordinator,
         worktrees,
+        repo_factory=lambda session: MultiAgentRepository(session),
     )
 
 

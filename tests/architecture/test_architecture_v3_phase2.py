@@ -96,8 +96,20 @@ def test_workflows_declares_tools_dependency():
     assert "windagent-tools" in declared
 
 
-def test_workflows_to_tools_is_acyclic_edge():
+def test_workflows_to_tools_edge_is_gone():
+    """V3 hardening removed the workflows → tools edge (Phase 2+ cleanup).
+
+    All windagent_workflows imports of windagent_tools were retired, so the
+    actual-import adjacency list no longer contains the edge even though a
+    legacy declared dependency may remain in workflows/pyproject.toml.
+    The gate stays strict: no undeclared edges, no cycles, and
+    workflows must NOT import windagent_tools anywhere.
+    """
     report, graph = workspace_report()
     adjacency = graph["adjacency_list"]
-    assert "tools" in adjacency.get("workflows", set())
+    assert "tools" not in adjacency.get("workflows", [])
+    undeclared = [
+        item for item in report["violations"] if "tools" in str(item.get("to", "")) or "windagent-tools" in str(item)
+    ]
+    assert undeclared == []
     assert "workflows" not in adjacency.get("tools", set())

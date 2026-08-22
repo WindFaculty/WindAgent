@@ -583,31 +583,54 @@ def scan_kernel_provider_deps() -> dict:
 # 4. No upstream import report
 # ---------------------------------------------------------------------------
 
-UPSTREAM_LAUNCH_PATTERNS = (
+UPSTREAM_REFERENCE_PATTERNS = (
+    re.compile(r"\bvideoclaw\b", re.IGNORECASE),
+    re.compile(r"\bthird_party\b", re.IGNORECASE),
+)
+
+# Hard violations regardless of context: importing the quarantined package,
+# mutating sys.path, or loading modules by file location / name.
+KERNEL_HARD_PATTERNS = (
     re.compile(r"^\s*(?:from\s+videoclaw|import\s+videoclaw)\b", re.MULTILINE),
     re.compile(r"^\s*(?:from\s+third_party|import\s+third_party)\b", re.MULTILINE),
     re.compile(r"sys\.path\.(?:insert|append)\s*\(", re.MULTILINE),
     re.compile(r"spec_from_file_location\s*\(", re.MULTILINE),
-    re.compile(r"subprocess\.(?:run|Popen|call)\s*\(", re.MULTILINE),
     re.compile(r"importlib\.import_module\s*\(", re.MULTILINE),
+)
+
+# Contextual violations: generic process/module launching counts only when the
+# same file also references the quarantined upstream. Bare subprocess use for
+# repo tooling (e.g. ffprobe media QC) is not an upstream launch; the earlier
+# blanket ban produced false positives once P25/P26 added ffprobe checks.
+KERNEL_LAUNCH_PATTERNS = (
+    re.compile(r"subprocess\.(?:run|Popen|call)\s*\(", re.MULTILINE),
 )
 
 
 def scan_kernel_upstream_references() -> dict:
     """Assert the kernel never imports/launches the quarantined upstream."""
     hits: list[str] = []
-    for py in sorted(KERNEL_DIR.rglob("*.py")):
+    files = sorted(KERNEL_DIR.rglob("*.py"))
+    for py in files:
         rel = py.relative_to(ROOT).as_posix()
         text = py.read_text(encoding="utf-8", errors="ignore")
-        for pattern in UPSTREAM_LAUNCH_PATTERNS:
+        references_upstream = any(
+            pattern.search(text) for pattern in UPSTREAM_REFERENCE_PATTERNS
+        )
+        for pattern in KERNEL_HARD_PATTERNS:
             for match in pattern.finditer(text):
                 line_no = text[: match.start()].count("\n") + 1
                 hits.append(f"{rel}:{line_no}: {match.group(0).strip()[:80]}")
+        if references_upstream:
+            for pattern in KERNEL_LAUNCH_PATTERNS:
+                for match in pattern.finditer(text):
+                    line_no = text[: match.start()].count("\n") + 1
+                    hits.append(f"{rel}:{line_no}: {match.group(0).strip()[:80]}")
     return {
         "schema_version": "1.0.0",
         "generated_at": utc_now_iso(),
         "kernel_package": "intelligence/windagent_intelligence/video/",
-        "scanned_files": len(list(KERNEL_DIR.rglob("*.py"))),
+        "scanned_files": len(files),
         "upstream_imports_found": hits,
         "sys_path_mutations": [h for h in hits if "sys.path" in h],
         "verdict": "PASS" if not hits else "FAIL",

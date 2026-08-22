@@ -46,11 +46,11 @@ async def test_backend():
 
 @pytest.mark.asyncio
 async def test_execute_plan_endpoint_http(test_backend):
-    """The retired V1 execute endpoint directs callers to API V2."""
+    """The retired V1 execute endpoint directs callers to API V3."""
     async with AsyncClient(transport=ASGITransport(app=test_backend), base_url="http://testserver") as client:
         resp = await client.post("/api/v1/conversations/conv_123/plans/plan_123/execute")
         assert resp.status_code == 410
         data = resp.json()
         assert data["status"] == 410
         assert data["type"].endswith("/api-v1-removed")
-        assert data["available_endpoints"] == "/api/v2/*"
+        assert data["available_endpoints"] == "/api/v3/*"

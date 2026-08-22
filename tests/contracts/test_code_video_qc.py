@@ -323,6 +323,7 @@ class TestCodeVideoFinalQCContracts:
             source_code_test_py=STEP_06_TESTS_CODE,
             phase_11_dir=phase_11_dir,
             final_dir=final_dir,
+            qc_engine=MasterVisualQCEngine,
             graphics_catalog=graphics_catalog,
         )
 

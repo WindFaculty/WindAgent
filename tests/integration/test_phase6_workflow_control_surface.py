@@ -50,7 +50,7 @@ async def test_get_workflow_returns_durable_steps(test_backend):
     async with AsyncClient(transport=ASGITransport(app=test_backend), base_url="http://testserver") as client:
         resp = await client.get(f"/api/v1/sessions/{sess_id}/workflow")
         assert resp.status_code == 410
-        assert resp.json()["available_endpoints"] == "/api/v2/*"
+        assert resp.json()["available_endpoints"] == "/api/v3/*"
 
 
 @pytest.mark.asyncio
@@ -80,7 +80,7 @@ async def test_pause_resume_stop_endpoints(test_backend):
             r1.json()["available_endpoints"],
             r2.json()["available_endpoints"],
             r3.json()["available_endpoints"],
-        } == {"/api/v2/*"}
+        } == {"/api/v3/*"}
 
 
 @pytest.mark.asyncio
@@ -90,4 +90,4 @@ async def test_retry_step_endpoint(test_backend):
     async with AsyncClient(transport=ASGITransport(app=test_backend), base_url="http://testserver") as client:
         resp = await client.post(f"/api/v1/workflow/{step_id}/retry")
         assert resp.status_code == 410
-        assert resp.json()["available_endpoints"] == "/api/v2/*"
+        assert resp.json()["available_endpoints"] == "/api/v3/*"

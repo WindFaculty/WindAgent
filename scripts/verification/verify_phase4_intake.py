@@ -38,7 +38,13 @@ UPSTREAM_SHA = "5a16ae23a4f1cb6886c44c0205f7b7e52a34c276"
 UPSTREAM_REPO = "https://github.com/HITsz-TMG/VideoClaw"
 # Archive (codeload tarball) SHA-256 downloaded during intake.
 ARCHIVE_SHA256 = "6353b4cc1785b1c5d466b4e90427eb964844593f5721d74fa008c90b6baa6b18"
-EXPECTED_FILE_COUNT = 443
+# Vendored tree grew to 457 files when the render-media purge collateral damage
+# was restored (FilmAgent-pics, video-claw-pics, demo/logo images — commit
+# d213efb8). The intake-time pin was 443 files; the manifest below records both
+# so the inventory check verifies against the current authoritative counts.
+EXPECTED_FILE_COUNT = 457
+INTAKE_FILE_COUNT = 443
+RESTORE_COMMIT = "d213efb8721a15d68dd1392b8809cf561357fd09"
 
 # Secret scan patterns (crude, fail-closed on concrete credential shapes).
 SECRET_PATTERNS = {
@@ -218,11 +224,21 @@ def check_quarantine_boundary() -> dict:
     except Exception as exc:  # noqa: BLE001
         errors.append(f"workspace membership check failed: {exc}")
 
-    # 2. PYTHONPATH references
+    # 2. PYTHONPATH references — real check: a third_party path actually
+    # listed in [tool.pytest.ini_options].pythonpath. A bare mention of
+    # "third_party" elsewhere in the file (e.g. ruff exclude) is NOT a
+    # boundary violation; the substring scan produced false positives.
     for pyproject in ROOT.rglob("pyproject.toml"):
-        text = pyproject.read_text(encoding="utf-8", errors="ignore")
-        if "third_party" in text and "tool.pytest" in text and "pythonpath" in text:
-            errors.append(f"pyproject pythonpath references third_party: {pyproject}")
+        try:
+            import tomllib
+            with pyproject.open("rb") as fh:
+                cfg = tomllib.load(fh)
+            pythonpath = cfg.get("tool", {}).get("pytest", {}).get("ini_options", {}).get("pythonpath", [])
+        except Exception:
+            continue
+        offenders = [p for p in pythonpath if "third_party" in str(p)]
+        if offenders:
+            errors.append(f"pyproject pythonpath references third_party: {pyproject} -> {offenders}")
     details["pythonpath_clean"] = True
 
     # 3. No forbidden imports of videoclaw/third_party in canonical packages.

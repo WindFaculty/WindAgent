@@ -223,6 +223,7 @@ class TestCodeVideoProgramCertification:
             phase_12_dir=phase_12_dir,
             final_dir=final_dir,
             repo_root=repo_root,
+            engine=ProgramCertificationEngine,
         )
 
         assert report.is_valid is True

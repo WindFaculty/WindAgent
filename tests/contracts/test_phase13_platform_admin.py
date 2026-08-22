@@ -226,14 +226,20 @@ class TestSettings:
 
     def test_secret_roundtrip_configured_flag(self, tmp_path, client, monkeypatch):
         monkeypatch.setenv("WINDAGENT_CONFIG_DIR", str(tmp_path))
-        r = client.patch("/api/v3/settings", json={"values": {"integration.openai_api_key": "sk-test-secret-123"}})
+        monkeypatch.setenv(
+            "WINDAGENT_ENCRYPTION_KEY",
+            "MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=",
+        )
+        r = client.patch("/api/v3/settings", json={"values": {"integration.openai_api_key": "sk-tes...-123"}})
         assert r.status_code == 200
         items = {item["key"]: item for item in r.json()["settings"]}
         assert items["integration.openai_api_key"]["value"] == {"configured": True}
 
-        # persisted server-side, never echoed back raw
+        # persisted server-side encrypted at rest, never echoed back raw
         secrets_file = tmp_path / "secrets.json"
         assert secrets_file.exists()
         stored = json.loads(secrets_file.read_text(encoding="utf-8"))
-        assert stored.get("integration.openai_api_key") == "sk-test-secret-123"
-        assert "sk-test-secret-123" not in json.dumps(r.json())
+        stored_value = stored.get("integration.openai_api_key")
+        assert isinstance(stored_value, str) and stored_value.startswith("enc:v1:")
+        assert "sk-tes...-123" not in json.dumps(r.json())
+        assert "sk-tes...-123" not in json.dumps(stored)

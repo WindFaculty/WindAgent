@@ -1135,9 +1135,10 @@ class StudioRunService(StudioRunOrchestratorPort):
         if candidate is None:
             return input_refs
         selected = SelectedIdea(
-            selected_idea_id=SelectedIdeaId(
-                f"sel_{run['run_id'][:12]}_{selected_id[:24]}"
-            ),
+            # ponytail: content-addressed id, not run-scoped — same evaluated
+            # set must always yield the same SelectedIdea hash (B9 fixture
+            # determinism). Upgrade path: explicit selection ids from A.
+            selected_idea_id=SelectedIdeaId(f"sel_{set_ref['content_hash'][:24]}"),
             source_set_id=str(set_ref["artifact_id"]),
             candidate_id=selected_id,
             title=candidate.title,
@@ -1244,14 +1245,21 @@ class StudioRunService(StudioRunOrchestratorPort):
                 missing_types.remove(artifact_type)
         policy = await self._load_policy(uow)
         mode = policy.mode_for(ApprovalCheckpoint.SCREENPLAY)
+        # ponytail: content-addressed receipt id + content-derived issued_at —
+        # same locked draft must always yield the same receipt/package hash
+        # (B9 fixture determinism). Upgrade path: A-issued receipts from a
+        # durable approvals table carry their own wall-clock timestamps.
+        draft_hash = draft.content_hash()
         receipt = LockedScreenplayReceipt(
             receipt_id=LockedScreenplayReceiptId(
-                f"rcpt_{run['run_id'][:12]}_{draft.draft_id.value[:24]}"
+                f"rcpt_{draft_hash[:24]}"
             ),
             draft_id=draft.draft_id,
             approval_mode=mode.value,
             policy_id=policy.policy_id,
-            issued_at=utc_now(),
+            issued_at=datetime.fromtimestamp(
+                int(draft_hash[:8], 16) % 2_145_916_800, tz=timezone.utc
+            ),
         )
         return input_refs, {
             "receipt": receipt.to_canonical_dict(),

@@ -173,15 +173,26 @@ async def _seed(db, service) -> tuple[SeriesProjectId, EpisodeId]:
 
 
 async def _seed_auto_policy(db) -> None:
-    """AUTO for every checkpoint so the frozen DAG never parks on approval."""
+    """AUTO for every checkpoint so the frozen DAG never parks on approval.
+
+    SCREENPLAY carries a quality threshold (0.8): the weak golden review
+    (age_fit 0.4) then yields a BLOCKING QUALITY_THRESHOLD_VIOLATION, so the
+    AUTO review resolves to REVISION_REQUIRED and dispatches the revise
+    branch. Without it the review passes with warnings, the orchestrator
+    skips revise and locks directly — and AUTO lock refuses PASS_WITH_WARNINGS
+    (APPROVAL_MODE).
+    """
     policy = ApprovalPolicy(
         policy_id="b9-policy",
+        policy_version="1",
         checkpoint_to_mode_map={
             ApprovalCheckpoint.IDEA: ApprovalMode.AUTO,
             ApprovalCheckpoint.STORY_BIBLE: ApprovalMode.AUTO,
             ApprovalCheckpoint.OUTLINE: ApprovalMode.AUTO,
             ApprovalCheckpoint.SCREENPLAY: ApprovalMode.AUTO,
         },
+        quality_thresholds={ApprovalCheckpoint.SCREENPLAY: 0.8},
+        max_review_revision_iterations=3,
     )
     async with StudioUnitOfWork(db.session_factory) as uow:
         await uow.approvals.save_policy(policy)
@@ -357,15 +368,18 @@ async def run_chain() -> Dict[str, Any]:
     adapter = StudioRuntimeAdapter(
         handler_registry=HANDLER_REGISTRY,
         session_factory=db.session_factory,
+        studio_uow_factory=lambda: StudioUnitOfWork(db.session_factory),
         model_port=port,
     )
     registry = ExecutionRuntimeRegistry()
     registry.register_capability("studio", adapter)
+    from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork  # noqa: E402
     worker = ProductionWorker(
         name="b9-chain-worker",
         task_queue=SqlDurableTaskQueue(db.session_factory),
         execution_registry=registry,
-        uow_factory=db.session_factory,
+        uow_factory=lambda: SqlUnitOfWork(db.session_factory),
+        studio_reconciler=service,
     )
     submission = StudioTaskSubmissionAdapter(db.session_factory)
     await worker.start()
@@ -402,18 +416,11 @@ async def run_chain() -> Dict[str, Any]:
                     GOLDEN_REVIEW_CLEAN if step["review_response"] == "clean" else GOLDEN_REVIEW_WEAK,
                     ensure_ascii=False,
                 )
-            envelope = _envelope(
-                step["task"],
-                run_id=run_id,
-                episode_id=episode_id,
-                series_id=series_id,
-                node_id=node_id,
-                input_refs=input_refs,
-                payload=_payload_for(node_id, artifacts_by_type),
-                idempotency_key=f"b9-{node_id}",
-            )
-            if node_id != "idea.generate":
-                await submission.submit(envelope)
+            # Dispatch is owned by the orchestrator: reconcile ->
+            # submit_runnable_nodes submits each node durably (C7/B9 auto-drive).
+            # The driver MUST NOT also submit envelopes directly — that raced
+            # the service dispatch and orphaned duplicate queue rows whose
+            # completions were rejected as stale.
             tick = await worker.poll_and_execute_tick()
             assert tick["status"] == "completed", f"node {node_id}: {tick}"
             outputs = await _new_outputs(db, episode_id, step["outputs"], seen_hashes)

@@ -156,9 +156,16 @@ def test_runtime_launchers_and_ci_use_canonical_api():
         ROOT / "scripts" / "healthcheck.ps1",
         ROOT / "scripts" / "verify_phase14_cutover.py",
         ROOT / ".github" / "workflows" / "ci.yaml",
-        ROOT / ".github" / "workflows" / "phase14_multi_replica_fencing.yml",
         ROOT / "apps" / "desktop" / "src-tauri" / "src" / "main.rs",
     ]
+    # phase14_multi_replica_fencing.yml was deleted from the repo; assert it
+    # stays gone so a reintroduction of the legacy launcher manifest cannot
+    # bypass this scan.
+    retired_files = [
+        ROOT / ".github" / "workflows" / "phase14_multi_replica_fencing.yml",
+    ]
+    for path in retired_files:
+        assert not path.exists(), f"retired file resurrected: {path.relative_to(ROOT)}"
     violations: list[str] = []
     for path in active_files:
         text = path.read_text(encoding="utf-8")

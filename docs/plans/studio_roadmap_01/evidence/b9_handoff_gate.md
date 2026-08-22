@@ -28,10 +28,10 @@ artifact hashes of this run.
 | `beats.generate` | `studio.story.beats.generate` | StoryBible,WorldBible,CharacterCanon | BeatSheet | f64db297f2ba |
 | `outline.generate` | `studio.story.outline.generate` | BeatSheet | EpisodeOutline | 6e6653b711b7 |
 | `screenplay.generate` | `studio.story.screenplay.generate` | EpisodeOutline | ScreenplayDraft | dde24760a196 |
-| `review` | `studio.story.review` | ScreenplayDraft | ReviewReport | 4b84e78eefb9 |
-| `revise` | `studio.story.revise` | ScreenplayDraft,ReviewReport | RevisionProposal,ScreenplayDraft | 945a117ded7b,7e0f33992a53 |
-| `review2` | `studio.story.review` | ScreenplayDraft | ReviewReport | ba691b70e50b |
-| `lock` | `studio.story.lock` | ScreenplayDraft,ReviewReport | LockedScreenplayReceipt,LockedScreenplayPackage | 2c1b11fa6bb0,305c803b0fe3 |
+| `review` | `studio.story.review` | ScreenplayDraft | ReviewReport | 5151b70eac24 |
+| `revise` | `studio.story.revise` | ScreenplayDraft,ReviewReport | RevisionProposal,ScreenplayDraft | 771e32a5fede,7e0f33992a53 |
+| `review2` | `studio.story.review` | ScreenplayDraft | ReviewReport | 35349610fd4b |
+| `lock` | `studio.story.lock` | ScreenplayDraft,ReviewReport | LockedScreenplayReceipt,LockedScreenplayPackage | 02c5bd57e685,12f5e355c7f0 |
 
 - Vietnamese rabbit/kite slice: ages 5-8, target 240s, `vi`.
 - Selection replayed deterministically on the evaluated candidate set (no
@@ -40,8 +40,8 @@ artifact hashes of this run.
 
 ## 3. Final LockedScreenplayPackage
 
-- Package ref hash: `305c803b0fe30226…`
-  (artifact `art_305c803b0fe30226`), persisted by the worker and
+- Package ref hash: `12f5e355c7f03280…`
+  (artifact `art_12f5e355c7f03280`), persisted by the worker and
   validated by `LockService` + `validate_locked_package` before persistence.
 - Post-lock mutation refused (`HASH_MISMATCH` -> derived revision, B8);
   package immutable + idempotent (B8 evidence).
@@ -64,7 +64,7 @@ Tolerant-parser scan (B2, whole story tree):
 **`PLAN_B_HANDOFF_GATE` + `SCREENPLAY_RUNTIME_GATE`: PASS (B-side evidence).**
 
 - Chain: `chain_run.json` (checksum
-  `3324eeb23e74574c…`).
+  `01ebc78aad89783a…`).
 - Manifest: `handler_manifest.json`; checksums: `checksums.json`.
 - A-side (full-DAG auto-drive with receipt issuance at the lock node) and
   C-side (consumer schemas) halves are co-signed by their plan owners at
