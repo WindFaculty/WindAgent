@@ -139,6 +139,29 @@ async def test_v3_vertical_lifecycle_via_canonical_path():
     api_deps._container = container
     client = TestClient(app)
 
+    # P0.4.1 preflight requires at least one enabled provider with a
+    # configured credential. Register one through the real durable API path
+    # (the FixtureModelPort worker bypasses endpoints; this only satisfies
+    # the provider-configuration gate honestly).
+    import base64
+    import os
+
+    os.environ.setdefault(
+        "WINDAGENT_ENCRYPTION_KEY", base64.b64encode(b"v" * 32).decode()
+    )
+    provider_resp = client.post(
+        "/api/v3/providers",
+        json={
+            "id": "vertical-test-provider",
+            "name": "Vertical Test Provider",
+            "type": "cloud",
+            "base_url": "https://vertical.test/v1",
+            "protocol_mode": "openai",
+            "api_key": "synthetic-vertical-key",
+        },
+    )
+    assert provider_resp.status_code in (200, 201), provider_resp.text
+
     # 1. System health
     health = client.get("/api/v3/system/health")
     assert health.status_code == 200

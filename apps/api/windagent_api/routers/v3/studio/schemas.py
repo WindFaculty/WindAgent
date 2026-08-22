@@ -19,6 +19,7 @@ from windagent_core.contracts.studio.commands import (
     LockScreenplayCommand,
     RecordApprovalCommand,
     SelectIdeaCommand,
+    UpdateEpisodeCommand,
 )
 from windagent_core.contracts.studio.ids import ArtifactId, EpisodeId, SeriesProjectId, StudioRunId
 
@@ -29,6 +30,32 @@ class CreateSeriesRequest(CreateSeriesCommand):
 
 class CreateEpisodeRequest(CreateEpisodeCommand):
     idempotency_key: Optional[str] = None
+
+
+class UpdateSeriesRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    title: Optional[str] = Field(default=None, min_length=1)
+    description: Optional[str] = None
+    metadata_patch: Dict[str, Any] = Field(default_factory=dict)
+
+
+class UpdateEpisodeRequest(UpdateEpisodeCommand):
+    idempotency_key: Optional[str] = None
+
+
+class PreflightCheckResource(BaseModel):
+    name: str
+    status: str
+    detail: str = ""
+
+
+class PreflightReportResponse(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    episode_id: str
+    ready: bool
+    checks: List[PreflightCheckResource] = Field(default_factory=list)
 
 
 class StartRunRequest(BaseModel):
@@ -97,6 +124,10 @@ class ReadinessResponse(BaseModel):
 __all__ = [
     "CreateSeriesRequest",
     "CreateEpisodeRequest",
+    "UpdateSeriesRequest",
+    "UpdateEpisodeRequest",
+    "PreflightCheckResource",
+    "PreflightReportResponse",
     "StartRunRequest",
     "SelectIdeaRequest",
     "RecordApprovalRequest",

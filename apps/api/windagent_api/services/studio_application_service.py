@@ -32,6 +32,8 @@ from windagent_core.contracts.studio.commands import (
     SelectIdeaResult,
     StartRunCommand,
     StartRunResult,
+    UpdateEpisodeCommand,
+    UpdateSeriesCommand,
 )
 from windagent_core.contracts.studio.errors import (
     StudioCapabilityUnavailableError,
@@ -78,6 +80,7 @@ class StudioApplicationService:
         revisions_repo: Optional[ProductionRevisionRepositoryPort] = None,
         artifacts_repo: Optional[StoryArtifactRepositoryPort] = None,
         approvals_repo: Optional[ApprovalRepositoryPort] = None,
+        preflight: Optional[Any] = None,
     ) -> None:
         self.orchestrator = orchestrator
         self.run_query = run_query
@@ -88,6 +91,9 @@ class StudioApplicationService:
         self.revisions_repo = revisions_repo
         self.artifacts_repo = artifacts_repo
         self.approvals_repo = approvals_repo
+        #: Story Start preflight (P0.4.1); composed with real provider/routing
+        #: authorities. Optional so tests can drive mutations without it.
+        self.preflight = preflight
 
     # -- helpers ----------------------------------------------------------
 
@@ -179,6 +185,61 @@ class StudioApplicationService:
         return await orchestrator.start_or_resume_run(
             StartRunCommand(episode_id=episode_id, idempotency_key=idempotency_key)
         )
+
+    async def update_series(
+        self,
+        *,
+        series_id: SeriesProjectId,
+        title: Optional[str],
+        description: Optional[str],
+        metadata_patch: Dict[str, Any],
+        idempotency_key: str,
+    ) -> Any:
+        orchestrator = self._require(
+            self.orchestrator, "orchestrator", "Plan A has not wired the Studio authority (A4)"
+        )
+        return await orchestrator.update_series(
+            UpdateSeriesCommand(
+                series_id=series_id,
+                title=title,
+                description=description,
+                metadata_patch=metadata_patch,
+                idempotency_key=idempotency_key,
+            )
+        )
+
+    async def update_episode(
+        self,
+        *,
+        path_episode_id: str,
+        episode_id: EpisodeId,
+        title: Optional[str],
+        metadata_patch: Dict[str, Any],
+        expected_optimistic_version: Optional[int],
+        idempotency_key: str,
+    ) -> Any:
+        self._assert_episode_match(path_episode_id, episode_id)
+        orchestrator = self._require(
+            self.orchestrator, "orchestrator", "Plan A has not wired the Studio authority (A4)"
+        )
+        return await orchestrator.update_episode(
+            UpdateEpisodeCommand(
+                episode_id=episode_id,
+                title=title,
+                metadata_patch=metadata_patch,
+                expected_optimistic_version=expected_optimistic_version,
+                idempotency_key=idempotency_key,
+            )
+        )
+
+    async def preflight_start(self, *, episode_id: EpisodeId) -> Dict[str, Any]:
+        """P0.4.1 — server-authoritative pre-start checks (truthful report)."""
+        if self.preflight is None:
+            raise StudioCapabilityUnavailableError(
+                "Story start preflight is not composed.",
+                details={"missing": "preflight"},
+            )
+        return await self.preflight.run(episode_id)
 
     async def select_idea(
         self,

@@ -45,6 +45,44 @@ class CreateSeriesResult(BaseModel):
     title: str
 
 
+class UpdateSeriesCommand(StudioCommand):
+    """Partial series metadata edit (P0.4). ``metadata_patch`` merges."""
+
+    series_id: SeriesProjectId
+    title: Optional[str] = Field(default=None, min_length=1)
+    description: Optional[str] = None
+    metadata_patch: Dict[str, Any] = Field(default_factory=dict)
+
+
+class UpdateSeriesResult(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    series_id: SeriesProjectId
+    title: str
+
+
+class UpdateEpisodeCommand(StudioCommand):
+    """Partial draft-episode metadata edit (P0.4).
+
+    Generation-affecting fields are immutable once the episode leaves DRAFT;
+    the authority enforces that and callers may pass
+    ``expected_optimistic_version`` for stale-write protection.
+    """
+
+    episode_id: EpisodeId
+    title: Optional[str] = Field(default=None, min_length=1)
+    metadata_patch: Dict[str, Any] = Field(default_factory=dict)
+    expected_optimistic_version: Optional[int] = None
+
+
+class UpdateEpisodeResult(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    episode_id: EpisodeId
+    state: str
+    optimistic_version: int
+
+
 class CreateEpisodeCommand(StudioCommand):
     series_id: SeriesProjectId
     title: str = Field(min_length=1)

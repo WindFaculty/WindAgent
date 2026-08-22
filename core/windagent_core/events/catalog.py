@@ -103,6 +103,8 @@ class EventCatalog:
     # Studio Namespace (studio.contract/v0.1, owned exclusively by Plan A)
     STUDIO_SERIES_CREATED = "studio.series.created"
     STUDIO_EPISODE_CREATED = "studio.episode.created"
+    STUDIO_SERIES_UPDATED = "studio.series.updated"
+    STUDIO_EPISODE_UPDATED = "studio.episode.updated"
     STUDIO_REVISION_DERIVED = "studio.revision.derived"
     STUDIO_ARTIFACT_CREATED = "studio.artifact.created"
     STUDIO_IDEA_CANDIDATES_GENERATED = "studio.idea.candidates_generated"

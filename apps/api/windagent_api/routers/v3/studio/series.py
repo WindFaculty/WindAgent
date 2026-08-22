@@ -10,7 +10,11 @@ from windagent_api.routers.v3.studio.dependencies import (
     get_studio_application_service,
     require_idempotency_key,
 )
-from windagent_api.routers.v3.studio.schemas import CreateSeriesRequest, SeriesListResponse
+from windagent_api.routers.v3.studio.schemas import (
+    CreateSeriesRequest,
+    SeriesListResponse,
+    UpdateSeriesRequest,
+)
 from windagent_api.services.studio_application_service import StudioApplicationService
 from windagent_core.contracts.studio.errors import StudioNotFoundError
 from windagent_core.contracts.studio.ids import SeriesProjectId
@@ -28,6 +32,29 @@ async def create_series(
         title=body.title,
         description=body.description,
         metadata=body.metadata,
+        idempotency_key=idempotency_key,
+    )
+    return {
+        "series_id": str(result.series_id),
+        "title": result.title,
+        "series_url": f"/api/v3/studio/series/{result.series_id}",
+    }
+
+
+@router.patch("/{series_id}", response_model=dict)
+async def update_series(
+    series_id: str = Path(...),
+    body: UpdateSeriesRequest = ...,
+    idempotency_key: str = Depends(require_idempotency_key),
+    service: StudioApplicationService = Depends(get_studio_application_service),
+) -> dict:
+    """P0.4 — edit series metadata (title/description/metadata merge)."""
+    parsed = service.parse_id(SeriesProjectId, series_id, "series_id")
+    result = await service.update_series(
+        series_id=parsed,
+        title=body.title,
+        description=body.description,
+        metadata_patch=body.metadata_patch,
         idempotency_key=idempotency_key,
     )
     return {

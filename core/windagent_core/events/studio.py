@@ -32,6 +32,8 @@ class StudioEventCatalog:
 
     SERIES_CREATED = "studio.series.created"
     EPISODE_CREATED = "studio.episode.created"
+    SERIES_UPDATED = "studio.series.updated"
+    EPISODE_UPDATED = "studio.episode.updated"
     REVISION_DERIVED = "studio.revision.derived"
     ARTIFACT_CREATED = "studio.artifact.created"
     IDEA_CANDIDATES_GENERATED = "studio.idea.candidates_generated"
@@ -52,6 +54,8 @@ class StudioEventCatalog:
     ALL_EVENTS: Set[str] = {
         SERIES_CREATED,
         EPISODE_CREATED,
+        SERIES_UPDATED,
+        EPISODE_UPDATED,
         REVISION_DERIVED,
         ARTIFACT_CREATED,
         IDEA_CANDIDATES_GENERATED,

@@ -29,6 +29,24 @@ async def start_or_resume_run(
     service: StudioApplicationService = Depends(get_studio_application_service),
 ) -> Response:
     parsed = service.parse_id(EpisodeId, episode_id, "episode_id")
+    # P0.4.1 — a NEW run must pass the server-side preflight; resuming an
+    # existing run is never blocked by configuration drift. Only FAIL checks
+    # block; WARN surfaces honest non-blocking findings (e.g. worker not yet
+    # heartbeating — durable queue accepts submit-before-worker).
+    report = await service.preflight_start(episode_id=parsed)
+    if not report["ready"] and (await _has_no_active_run(service, parsed)):
+        failed = [c for c in report["checks"] if c["status"] == "FAIL"]
+        return JSONResponse(
+            status_code=status.HTTP_409_CONFLICT,
+            content={
+                "code": "START_BLOCKED",
+                "message": "Story start blocked: requirements not satisfied.",
+                "reasons": [
+                    f"{c['name']}: {c['detail'] or 'failed'}" for c in failed
+                ],
+                "report": report,
+            },
+        )
     result = await service.start_or_resume_run(
         episode_id=parsed, idempotency_key=idempotency_key
     )
@@ -43,6 +61,15 @@ async def start_or_resume_run(
         },
         headers={"Location": run_url},
     )
+
+
+async def _has_no_active_run(service: StudioApplicationService, episode_id: EpisodeId) -> bool:
+    """True when the episode holds no active (resumable) run."""
+    view = await service.get_episode(episode_id=episode_id)
+    if view is None:
+        return True
+    active_run_id = view.get("active_run_id") if isinstance(view, dict) else getattr(view, "active_run_id", None)
+    return not active_run_id
 
 
 @router_runs.get("/{run_id}", response_model=dict)

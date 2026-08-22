@@ -225,6 +225,76 @@
       }
     },
     "/api/v3/studio/series/{series_id}": {
+      "patch": {
+        "tags": [
+          "studio-v3",
+          "studio-series"
+        ],
+        "summary": "Update Series",
+        "description": "P0.4 \u2014 edit series metadata (title/description/metadata merge).",
+        "operationId": "update_series_api_v3_studio_series__series_id__patch",
+        "parameters": [
+          {
+            "name": "series_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Series Id"
+            }
+          },
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSeriesRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Update Series Api V3 Studio Series  Series Id  Patch"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
       "get": {
         "tags": [
           "studio-v3",
@@ -405,6 +475,120 @@
                   "type": "object",
                   "additionalProperties": true,
                   "title": "Response Get Episode Api V3 Studio Episodes  Episode Id  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "studio-v3",
+          "studio-episodes"
+        ],
+        "summary": "Update Episode",
+        "description": "P0.4 \u2014 edit a DRAFT episode (title + metadata merge).\n\nGeneration-affecting fields are immutable once the episode leaves DRAFT;\nthe authority rejects conflicting patches with the immutable field list.",
+        "operationId": "update_episode_api_v3_studio_episodes__episode_id__patch",
+        "parameters": [
+          {
+            "name": "episode_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Episode Id"
+            }
+          },
+          {
+            "name": "X-Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/windagent_api__routers__v3__studio__schemas__UpdateEpisodeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Update Episode Api V3 Studio Episodes  Episode Id  Patch"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v3/studio/episodes/{episode_id}/preflight": {
+      "get": {
+        "tags": [
+          "studio-v3",
+          "studio-episodes"
+        ],
+        "summary": "Preflight Start",
+        "description": "P0.4.1 \u2014 truthful per-check report before starting a Story run.",
+        "operationId": "preflight_start_api_v3_studio_episodes__episode_id__preflight_get",
+        "parameters": [
+          {
+            "name": "episode_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Episode Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreflightReportResponse"
                 }
               }
             }
@@ -1811,7 +1995,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateEpisodeRequest"
+                "$ref": "#/components/schemas/windagent_api__routers__v3__episodes__UpdateEpisodeRequest"
               }
             }
           }
@@ -13587,6 +13771,54 @@
         ],
         "title": "PipelineRun"
       },
+      "PreflightCheckResource": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "status"
+        ],
+        "title": "PreflightCheckResource"
+      },
+      "PreflightReportResponse": {
+        "properties": {
+          "episode_id": {
+            "type": "string",
+            "title": "Episode Id"
+          },
+          "ready": {
+            "type": "boolean",
+            "title": "Ready"
+          },
+          "checks": {
+            "items": {
+              "$ref": "#/components/schemas/PreflightCheckResource"
+            },
+            "type": "array",
+            "title": "Checks"
+          }
+        },
+        "type": "object",
+        "required": [
+          "episode_id",
+          "ready"
+        ],
+        "title": "PreflightReportResponse"
+      },
       "ProcessMetrics": {
         "properties": {
           "pid": {
@@ -16653,45 +16885,6 @@
         ],
         "title": "UpdateCharacterRequest"
       },
-      "UpdateEpisodeRequest": {
-        "properties": {
-          "title": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 200,
-                "minLength": 1
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Title"
-          },
-          "description": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 2000
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Description"
-          },
-          "expected_version": {
-            "type": "integer",
-            "title": "Expected Version",
-            "description": "Expected current version counter"
-          }
-        },
-        "type": "object",
-        "required": [
-          "expected_version"
-        ],
-        "title": "UpdateEpisodeRequest"
-      },
       "UpdateProjectRequest": {
         "properties": {
           "name": {
@@ -17097,6 +17290,41 @@
           "expected_version"
         ],
         "title": "UpdateSceneRequest"
+      },
+      "UpdateSeriesRequest": {
+        "properties": {
+          "title": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "metadata_patch": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Metadata Patch"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "UpdateSeriesRequest"
       },
       "UpdateShotRequest": {
         "properties": {
@@ -18006,6 +18234,45 @@
         ],
         "title": "SelectIdeaRequest"
       },
+      "windagent_api__routers__v3__episodes__UpdateEpisodeRequest": {
+        "properties": {
+          "title": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "expected_version": {
+            "type": "integer",
+            "title": "Expected Version",
+            "description": "Expected current version counter"
+          }
+        },
+        "type": "object",
+        "required": [
+          "expected_version"
+        ],
+        "title": "UpdateEpisodeRequest"
+      },
       "windagent_api__routers__v3__projects__CreateEpisodeRequest": {
         "properties": {
           "title": {
@@ -18226,6 +18493,64 @@
           "expected_content_hash"
         ],
         "title": "SelectIdeaRequest"
+      },
+      "windagent_api__routers__v3__studio__schemas__UpdateEpisodeRequest": {
+        "properties": {
+          "schema_version": {
+            "type": "string",
+            "title": "Schema Version",
+            "default": "studio.command/v1"
+          },
+          "idempotency_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Idempotency Key"
+          },
+          "episode_id": {
+            "type": "string",
+            "title": "Episode Id"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "metadata_patch": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Metadata Patch"
+          },
+          "expected_optimistic_version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Optimistic Version"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "episode_id"
+        ],
+        "title": "UpdateEpisodeRequest"
       }
     }
   }

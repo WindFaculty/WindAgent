@@ -106,6 +106,33 @@ class Episode(BaseModel):
             )
         return self._bump(current_revision_id=revision_id)
 
+    def edit(
+        self,
+        *,
+        title: Optional[str] = None,
+        metadata_patch: Optional[Dict[str, Any]] = None,
+        expected_version: Optional[int] = None,
+    ) -> "Episode":
+        """Presentation-only edit (P0.4): title + metadata merge.
+
+        Returns ``self`` unchanged when the patch is a no-op. Stale-write
+        protection via ``expected_version``. Generation semantics (which keys
+        are immutable once the episode leaves DRAFT) are enforced by the
+        application authority, not here.
+        """
+        self._check_stale(expected_version)
+        changes: Dict[str, Any] = {}
+        if title is not None and title.strip() != self.title:
+            changes["title"] = title.strip()
+        if metadata_patch:
+            merged = dict(self.metadata)
+            merged.update(metadata_patch)
+            if merged != self.metadata:
+                changes["metadata"] = merged
+        if not changes:
+            return self
+        return self._bump(**changes)
+
     def bind_run(self, run_id: StudioRunId, *, expected_version: Optional[int] = None) -> Episode:
         self._check_stale(expected_version)
         return self._bump(active_run_id=run_id)

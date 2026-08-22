@@ -51,6 +51,15 @@ class StudioComposer:
     ) -> StudioBundle:
         """Build the capability provider and the Plan C1 application service."""
         capability = ApiRuntimeCapabilityProvider(container)
+        from windagent_api.services.studio_preflight import StoryStartPreflight
+
+        preflight = StoryStartPreflight(
+            episodes_repo=repositories.episodes_repo,
+            series_repo=repositories.studio_reads,
+            provider_management_service=container.provider_management_service,
+            route_lock_service=container.route_lock_service,
+            capability_provider=capability,
+        )
         studio_application_service = StudioApplicationService(
             orchestrator=container.studio_run_service,
             run_query=repositories.run_query,
@@ -61,6 +70,7 @@ class StudioComposer:
             revisions_repo=repositories.revisions_repo,
             artifacts_repo=repositories.artifacts_repo,
             approvals_repo=repositories.approvals_repo,
+            preflight=preflight,
         )
         return StudioBundle(
             studio_capability_provider=capability,

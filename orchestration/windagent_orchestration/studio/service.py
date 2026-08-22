@@ -51,6 +51,10 @@ from windagent_core.contracts.studio.commands import (
     SelectIdeaResult,
     StartRunCommand,
     StartRunResult,
+    UpdateEpisodeCommand,
+    UpdateEpisodeResult,
+    UpdateSeriesCommand,
+    UpdateSeriesResult,
 )
 from windagent_core.contracts.studio.errors import (
     StudioArtifactHashMismatchError,
@@ -59,6 +63,11 @@ from windagent_core.contracts.studio.errors import (
     StudioNotFoundError,
     StudioStaleNodeError,
     StudioValidationError,
+)
+from windagent_core.contracts.studio.metadata import (
+    immutable_field_conflict,
+    validate_episode_metadata,
+    validate_series_metadata,
 )
 from windagent_core.contracts.studio.ids import (
     ArtifactId,
@@ -262,6 +271,7 @@ class StudioRunService(StudioRunOrchestratorPort):
 
     async def create_series(self, command: CreateSeriesCommand) -> CreateSeriesResult:
         series_id = SeriesProjectId(_id_from_key("srs", command.idempotency_key))
+        validate_series_metadata(command.metadata)
         async with self._uow() as uow:
             existing = await uow.series.get(series_id)
             if existing is None:
@@ -284,6 +294,7 @@ class StudioRunService(StudioRunOrchestratorPort):
 
     async def create_episode(self, command: CreateEpisodeCommand) -> CreateEpisodeResult:
         episode_id = EpisodeId(_id_from_key("ep", command.idempotency_key))
+        validate_episode_metadata(command.metadata)
         async with self._uow() as uow:
             series = await uow.series.get(command.series_id)
             if series is None:
@@ -316,6 +327,113 @@ class StudioRunService(StudioRunOrchestratorPort):
                 await uow.commit()
             state = episode.state.value if isinstance(episode.state, EpisodeState) else str(episode.state)
         return CreateEpisodeResult(episode_id=episode_id, series_id=command.series_id, state=state)
+
+    async def update_series(self, command: UpdateSeriesCommand) -> UpdateSeriesResult:
+        """Partial series metadata edit (P0.4). metadata_patch merges."""
+        validate_series_metadata(command.metadata_patch)
+        async with self._uow() as uow:
+            series = await uow.series.get(command.series_id)
+            if series is None:
+                raise StudioNotFoundError(
+                    f"Series {command.series_id!s} does not exist.",
+                    details={"series_id": str(command.series_id)},
+                )
+            updates: Dict[str, Any] = {"updated_at": utc_now()}
+            if command.title is not None:
+                updates["title"] = command.title
+            if command.description is not None:
+                updates["description"] = command.description
+            if command.metadata_patch:
+                merged = dict(series.metadata)
+                merged.update(command.metadata_patch)
+                updates["metadata"] = merged
+            updated = series.model_copy(update=updates)
+            await uow.series.save(updated)
+            await self._emit(
+                uow,
+                StudioEventCatalog.SERIES_UPDATED,
+                aggregate_id=str(command.series_id),
+                payload={
+                    "series_id": str(command.series_id),
+                    "fields": sorted(
+                        list(updates.keys())
+                        + [f"metadata.{k}" for k in command.metadata_patch]
+                    ),
+                },
+            )
+            await uow.commit()
+        return UpdateSeriesResult(
+            series_id=command.series_id, title=updated.title
+        )
+
+    async def update_episode(self, command: UpdateEpisodeCommand) -> UpdateEpisodeResult:
+        """Partial draft-episode edit (P0.4).
+
+        Generation-affecting metadata is immutable once the episode leaves
+        DRAFT — a conflicting patch is rejected (never silently mutates the
+        context of an existing/finished run). Title stays editable as pure
+        presentation.
+        """
+        validate_episode_metadata(command.metadata_patch)
+        async with self._uow() as uow:
+            episode = await uow.episodes.get(command.episode_id)
+            if episode is None:
+                raise StudioNotFoundError(
+                    f"Episode {command.episode_id!s} does not exist.",
+                    details={"episode_id": str(command.episode_id)},
+                )
+            from windagent_core.domain.studio.lifecycle import EpisodeState
+
+            state = (
+                episode.state
+                if isinstance(episode.state, EpisodeState)
+                else EpisodeState(str(episode.state))
+            )
+            conflicts = immutable_field_conflict(
+                command.metadata_patch, episode.metadata
+            )
+            if state is not EpisodeState.DRAFT and conflicts:
+                raise StudioValidationError(
+                    "Generation-affecting fields are immutable after the "
+                    "episode leaves DRAFT; derive a new revision instead.",
+                    details={
+                        "episode_id": str(command.episode_id),
+                        "state": state.value,
+                        "immutable_fields": conflicts,
+                    },
+                )
+            updated = episode.edit(
+                title=command.title,
+                metadata_patch=command.metadata_patch or None,
+                expected_version=command.expected_optimistic_version,
+            )
+            if updated is episode:
+                return UpdateEpisodeResult(
+                    episode_id=command.episode_id,
+                    state=state.value,
+                    optimistic_version=episode.optimistic_version,
+                )
+            await uow.episodes.save(updated)
+            await self._emit(
+                uow,
+                StudioEventCatalog.EPISODE_UPDATED,
+                aggregate_id=str(command.episode_id),
+                payload={
+                    "episode_id": str(command.episode_id),
+                    "fields": sorted(
+                        list(
+                            {"title"} if command.title is not None else set()
+                        )
+                        + [f"metadata.{k}" for k in command.metadata_patch]
+                    ),
+                },
+            )
+            await uow.commit()
+        return UpdateEpisodeResult(
+            episode_id=command.episode_id,
+            state=str(updated.state.value if isinstance(updated.state, EpisodeState) else updated.state),
+            optimistic_version=updated.optimistic_version,
+        )
 
     async def start_or_resume_run(self, command: StartRunCommand) -> StartRunResult:
         resume_run_id: Optional[StudioRunId] = None
