@@ -10,6 +10,10 @@ export interface CreateEpisodeInput {
   episode_number?: number;
 }
 
+/**
+ * P0.8 canonical-only: episode creation goes through the Studio command API.
+ * No legacy fallback — a failed studio create is a failed mutation.
+ */
 export function useCreateEpisode() {
   const client = useApiClient();
   const queryClient = useQueryClient();
@@ -17,7 +21,25 @@ export function useCreateEpisode() {
   const mutation = useMutation<EpisodeResource, CreateEpisodeInput, Error>({
     mutationFn: async ({ projectId, title, episode_number }: CreateEpisodeInput) => {
       const idempotencyKey = crypto.randomUUID();
-      return client.episodes.create(projectId, { title, episode_number }, idempotencyKey);
+      const res = await client.studio.createEpisode(
+        projectId,
+        {
+          series_id: projectId,
+          title,
+          episode_number: episode_number || 1,
+        },
+        idempotencyKey,
+      );
+      return {
+        id: res.episode_id,
+        project_id: res.series_id || projectId,
+        title,
+        episode_number: episode_number || 1,
+        state: res.state || 'DRAFT',
+        version: 1,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      } as EpisodeResource;
     },
     onSuccess: (_data: EpisodeResource, variables: CreateEpisodeInput) => {
       queryClient.invalidateQueries({ queryKey: PROJECT_QUERY_KEY(variables.projectId) });
@@ -26,7 +48,6 @@ export function useCreateEpisode() {
     },
   });
 
-
   return {
     createEpisode: mutation.mutateAsync,
     isCreating: mutation.isLoading,
@@ -34,4 +55,3 @@ export function useCreateEpisode() {
     error: mutation.error,
   };
 }
-

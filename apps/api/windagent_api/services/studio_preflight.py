@@ -147,33 +147,37 @@ class StoryStartPreflight:
             )
 
         # 5. Worker/story capability honestly reported by the probe.
-        #    WARN (not FAIL): durable execution means a worker may attach
-        #    after submission — blocking on a live heartbeat would contradict
-        #    submit-before-worker resumability. Missing provider/rules/brief
-        #    remain hard failures.
+        #    P0.4.1 (ban_ke_hoach_v1 §P0.4.1): "Worker capability available"
+        #    is a REQUIRED pre-start check — a missing/unavailable worker
+        #    blocks the start (START_BLOCKED) instead of warning. The durable
+        #    queue still accepts submit-before-worker for RESUME of an existing
+        #    run (the start endpoint only enforces FAIL on new runs).
         if self._capability is None:
             checks.append(
-                {"name": "worker_capability_available", "status": "WARN", "detail": "capability provider not composed"}
+                {"name": "worker_capability_available", "status": "FAIL", "detail": "capability provider not composed"}
             )
         else:
             try:
                 profile = await self._capability.get_capabilities()
                 model_route = profile.by_name("model_route")
                 story_engine = profile.by_name("story_engine")
+                worker = profile.by_name("worker")
                 problems: List[str] = []
+                if worker is not None and worker.status.value != "AVAILABLE":
+                    problems.append(f"worker={worker.status.value} ({(worker.reason or '')[:80]})")
                 if model_route is not None and model_route.status.value != "AVAILABLE":
                     problems.append(f"model_route={model_route.status.value} ({model_route.reason[:80]})")
                 if story_engine is not None and story_engine.status.value != "AVAILABLE":
                     problems.append(f"story_engine={story_engine.status.value}")
                 if problems:
                     checks.append(
-                        {"name": "worker_capability_available", "status": "WARN", "detail": "; ".join(problems)}
+                        {"name": "worker_capability_available", "status": "FAIL", "detail": "; ".join(problems)}
                     )
                 else:
                     checks.append({"name": "worker_capability_available", "status": "PASS", "detail": ""})
             except Exception as exc:  # noqa: BLE001
                 checks.append(
-                    {"name": "worker_capability_available", "status": "WARN", "detail": f"probe failed: {type(exc).__name__}"}
+                    {"name": "worker_capability_available", "status": "FAIL", "detail": f"probe failed: {type(exc).__name__}"}
                 )
 
         # 6. Persistence: the episode's series must be readable.

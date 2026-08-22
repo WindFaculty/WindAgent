@@ -31,8 +31,8 @@ export const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ projectId:
   const genre = (project?.metadata?.genre as string) || cover?.genre || 'Sci-Fi';
 
   const handleOpenEpisode = (episodeId: string) => {
-    // Navigate to episode workspace (or production script)
-    navigate(`/production/script?episodeId=${episodeId}&projectId=${projectId}`);
+    // Navigate to canonical episode workspace
+    navigate(`/episodes/${episodeId}`);
   };
 
   if (isLoading && !project) {

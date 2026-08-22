@@ -690,133 +690,145 @@
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/studio/service.py",
-      "line": 55
+      "line": 39
     },
     {
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/studio/service.py",
-      "line": 55
+      "line": 39
     },
     {
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/studio/service.py",
-      "line": 55
+      "line": 39
     },
     {
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/studio/service.py",
-      "line": 55
+      "line": 39
     },
     {
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/studio/service.py",
-      "line": 55
+      "line": 59
     },
     {
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/studio/service.py",
-      "line": 55
+      "line": 59
     },
     {
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/studio/service.py",
-      "line": 63
+      "line": 59
     },
     {
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/studio/service.py",
-      "line": 63
+      "line": 59
     },
     {
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/studio/service.py",
-      "line": 63
+      "line": 59
     },
     {
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/studio/service.py",
-      "line": 63
+      "line": 59
     },
     {
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/studio/service.py",
-      "line": 63
+      "line": 67
     },
     {
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/studio/service.py",
-      "line": 70
+      "line": 67
     },
     {
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/studio/service.py",
-      "line": 70
+      "line": 67
     },
     {
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/studio/service.py",
-      "line": 70
+      "line": 72
     },
     {
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/studio/service.py",
-      "line": 70
+      "line": 72
     },
     {
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/studio/service.py",
-      "line": 70
+      "line": 72
     },
     {
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/studio/service.py",
-      "line": 70
+      "line": 72
     },
     {
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/studio/service.py",
-      "line": 78
+      "line": 72
     },
     {
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/studio/service.py",
-      "line": 78
+      "line": 79
     },
     {
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/studio/service.py",
-      "line": 82
+      "line": 79
     },
     {
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/studio/service.py",
-      "line": 82
+      "line": 79
     },
     {
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/studio/service.py",
-      "line": 86
+      "line": 79
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/studio/service.py",
+      "line": 79
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/studio/service.py",
+      "line": 79
     },
     {
       "from": "orchestration",
@@ -834,115 +846,115 @@
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/studio/service.py",
-      "line": 87
+      "line": 91
     },
     {
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/studio/service.py",
-      "line": 92
+      "line": 91
     },
     {
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/studio/service.py",
-      "line": 93
+      "line": 95
     },
     {
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/studio/service.py",
-      "line": 94
+      "line": 96
     },
     {
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/studio/service.py",
-      "line": 94
+      "line": 96
     },
     {
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/studio/service.py",
-      "line": 94
+      "line": 96
     },
     {
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/studio/service.py",
-      "line": 94
+      "line": 101
     },
     {
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/studio/service.py",
-      "line": 100
+      "line": 102
     },
     {
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/studio/service.py",
-      "line": 100
+      "line": 103
     },
     {
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/studio/service.py",
-      "line": 100
+      "line": 103
     },
     {
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/studio/service.py",
-      "line": 100
+      "line": 103
     },
     {
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/studio/service.py",
-      "line": 106
+      "line": 103
     },
     {
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/studio/service.py",
-      "line": 107
+      "line": 109
     },
     {
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/studio/service.py",
-      "line": 107
+      "line": 109
     },
     {
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/studio/service.py",
-      "line": 108
+      "line": 109
     },
     {
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/studio/service.py",
-      "line": 108
+      "line": 109
     },
     {
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/studio/service.py",
-      "line": 112
+      "line": 115
     },
     {
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/studio/service.py",
-      "line": 112
+      "line": 116
     },
     {
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/studio/service.py",
-      "line": 112
+      "line": 116
     },
     {
       "from": "orchestration",
@@ -954,25 +966,61 @@
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/studio/service.py",
-      "line": 118
+      "line": 117
     },
     {
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/studio/service.py",
-      "line": 119
+      "line": 121
     },
     {
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/studio/service.py",
-      "line": 119
+      "line": 121
     },
     {
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/studio/service.py",
-      "line": 1343
+      "line": 121
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/studio/service.py",
+      "line": 126
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/studio/service.py",
+      "line": 127
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/studio/service.py",
+      "line": 128
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/studio/service.py",
+      "line": 128
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/studio/service.py",
+      "line": 396
+    },
+    {
+      "from": "orchestration",
+      "to": "core",
+      "file": "orchestration/windagent_orchestration/studio/service.py",
+      "line": 1472
     },
     {
       "from": "orchestration",
@@ -1357,6 +1405,12 @@
       "to": "core",
       "file": "intelligence/windagent_intelligence/story/prompts/structured.py",
       "line": 33
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
+      "file": "intelligence/windagent_intelligence/story/prompts/structured.py",
+      "line": 34
     },
     {
       "from": "intelligence",
@@ -9042,13 +9096,13 @@
       "from": "storage",
       "to": "core",
       "file": "storage/windagent_storage/repositories/v3_routing_repositories.py",
-      "line": 128
+      "line": 129
     },
     {
       "from": "storage",
       "to": "core",
       "file": "storage/windagent_storage/repositories/v3_routing_repositories.py",
-      "line": 357
+      "line": 358
     },
     {
       "from": "storage",
@@ -9648,13 +9702,13 @@
       "from": "api",
       "to": "storage",
       "file": "apps/api/windagent_api/composition/container.py",
-      "line": 267
+      "line": 269
     },
     {
       "from": "api",
       "to": "storage",
       "file": "apps/api/windagent_api/composition/container.py",
-      "line": 283
+      "line": 285
     },
     {
       "from": "api",
@@ -9852,37 +9906,37 @@
       "from": "api",
       "to": "storage",
       "file": "apps/api/windagent_api/composition/repositories.py",
-      "line": 19
+      "line": 15
     },
     {
       "from": "api",
       "to": "storage",
       "file": "apps/api/windagent_api/composition/repositories.py",
-      "line": 19
+      "line": 20
     },
     {
       "from": "api",
       "to": "storage",
       "file": "apps/api/windagent_api/composition/repositories.py",
-      "line": 19
+      "line": 20
     },
     {
       "from": "api",
       "to": "storage",
       "file": "apps/api/windagent_api/composition/repositories.py",
-      "line": 19
+      "line": 20
     },
     {
       "from": "api",
       "to": "storage",
       "file": "apps/api/windagent_api/composition/repositories.py",
-      "line": 19
+      "line": 20
     },
     {
       "from": "api",
       "to": "storage",
       "file": "apps/api/windagent_api/composition/repositories.py",
-      "line": 26
+      "line": 20
     },
     {
       "from": "api",
@@ -9906,7 +9960,13 @@
       "from": "api",
       "to": "storage",
       "file": "apps/api/windagent_api/composition/repositories.py",
-      "line": 32
+      "line": 30
+    },
+    {
+      "from": "api",
+      "to": "storage",
+      "file": "apps/api/windagent_api/composition/repositories.py",
+      "line": 33
     },
     {
       "from": "api",
@@ -10546,7 +10606,7 @@
     },
     {
       "from": "api",
-      "to": "providers",
+      "to": "core",
       "file": "apps/api/windagent_api/routers/v3/providers.py",
       "line": 33
     },
@@ -10554,43 +10614,49 @@
       "from": "api",
       "to": "providers",
       "file": "apps/api/windagent_api/routers/v3/providers.py",
-      "line": 33
+      "line": 34
     },
     {
       "from": "api",
       "to": "providers",
       "file": "apps/api/windagent_api/routers/v3/providers.py",
-      "line": 33
+      "line": 34
     },
     {
       "from": "api",
       "to": "providers",
       "file": "apps/api/windagent_api/routers/v3/providers.py",
-      "line": 33
+      "line": 34
     },
     {
       "from": "api",
       "to": "providers",
       "file": "apps/api/windagent_api/routers/v3/providers.py",
-      "line": 33
+      "line": 34
     },
     {
       "from": "api",
       "to": "providers",
       "file": "apps/api/windagent_api/routers/v3/providers.py",
-      "line": 33
+      "line": 34
     },
     {
       "from": "api",
       "to": "providers",
       "file": "apps/api/windagent_api/routers/v3/providers.py",
-      "line": 33
+      "line": 34
     },
     {
       "from": "api",
       "to": "providers",
       "file": "apps/api/windagent_api/routers/v3/providers.py",
-      "line": 33
+      "line": 34
+    },
+    {
+      "from": "api",
+      "to": "providers",
+      "file": "apps/api/windagent_api/routers/v3/providers.py",
+      "line": 34
     },
     {
       "from": "api",
@@ -10600,27 +10666,39 @@
     },
     {
       "from": "api",
-      "to": "providers",
+      "to": "core",
       "file": "apps/api/windagent_api/routers/v3/routing.py",
-      "line": 27
+      "line": 29
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v3/routing.py",
+      "line": 29
     },
     {
       "from": "api",
       "to": "providers",
       "file": "apps/api/windagent_api/routers/v3/routing.py",
-      "line": 28
+      "line": 33
     },
     {
       "from": "api",
       "to": "providers",
       "file": "apps/api/windagent_api/routers/v3/routing.py",
-      "line": 28
+      "line": 34
     },
     {
       "from": "api",
       "to": "providers",
       "file": "apps/api/windagent_api/routers/v3/routing.py",
-      "line": 32
+      "line": 34
+    },
+    {
+      "from": "api",
+      "to": "providers",
+      "file": "apps/api/windagent_api/routers/v3/routing.py",
+      "line": 38
     },
     {
       "from": "api",
@@ -10710,19 +10788,19 @@
       "from": "api",
       "to": "core",
       "file": "apps/api/windagent_api/routers/v3/studio/episodes.py",
-      "line": 13
+      "line": 18
     },
     {
       "from": "api",
       "to": "core",
       "file": "apps/api/windagent_api/routers/v3/studio/episodes.py",
-      "line": 14
+      "line": 19
     },
     {
       "from": "api",
       "to": "core",
       "file": "apps/api/windagent_api/routers/v3/studio/episodes.py",
-      "line": 14
+      "line": 19
     },
     {
       "from": "api",
@@ -10788,37 +10866,43 @@
       "from": "api",
       "to": "core",
       "file": "apps/api/windagent_api/routers/v3/studio/schemas.py",
-      "line": 23
-    },
-    {
-      "from": "api",
-      "to": "core",
-      "file": "apps/api/windagent_api/routers/v3/studio/schemas.py",
-      "line": 23
-    },
-    {
-      "from": "api",
-      "to": "core",
-      "file": "apps/api/windagent_api/routers/v3/studio/schemas.py",
-      "line": 23
-    },
-    {
-      "from": "api",
-      "to": "core",
-      "file": "apps/api/windagent_api/routers/v3/studio/schemas.py",
-      "line": 23
-    },
-    {
-      "from": "api",
-      "to": "core",
-      "file": "apps/api/windagent_api/routers/v3/studio/series.py",
       "line": 15
     },
     {
       "from": "api",
       "to": "core",
+      "file": "apps/api/windagent_api/routers/v3/studio/schemas.py",
+      "line": 24
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v3/studio/schemas.py",
+      "line": 24
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v3/studio/schemas.py",
+      "line": 24
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v3/studio/schemas.py",
+      "line": 24
+    },
+    {
+      "from": "api",
+      "to": "core",
       "file": "apps/api/windagent_api/routers/v3/studio/series.py",
-      "line": 16
+      "line": 19
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v3/studio/series.py",
+      "line": 20
     },
     {
       "from": "api",
@@ -10944,103 +11028,115 @@
       "from": "api",
       "to": "core",
       "file": "apps/api/windagent_api/services/studio_application_service.py",
-      "line": 36
+      "line": 20
     },
     {
       "from": "api",
       "to": "core",
       "file": "apps/api/windagent_api/services/studio_application_service.py",
-      "line": 36
+      "line": 20
     },
     {
       "from": "api",
       "to": "core",
       "file": "apps/api/windagent_api/services/studio_application_service.py",
-      "line": 40
+      "line": 38
     },
     {
       "from": "api",
       "to": "core",
       "file": "apps/api/windagent_api/services/studio_application_service.py",
-      "line": 40
+      "line": 38
     },
     {
       "from": "api",
       "to": "core",
       "file": "apps/api/windagent_api/services/studio_application_service.py",
-      "line": 40
+      "line": 42
     },
     {
       "from": "api",
       "to": "core",
       "file": "apps/api/windagent_api/services/studio_application_service.py",
-      "line": 40
+      "line": 42
     },
     {
       "from": "api",
       "to": "core",
       "file": "apps/api/windagent_api/services/studio_application_service.py",
-      "line": 40
+      "line": 42
     },
     {
       "from": "api",
       "to": "core",
       "file": "apps/api/windagent_api/services/studio_application_service.py",
-      "line": 47
+      "line": 42
     },
     {
       "from": "api",
       "to": "core",
       "file": "apps/api/windagent_api/services/studio_application_service.py",
-      "line": 47
+      "line": 42
     },
     {
       "from": "api",
       "to": "core",
       "file": "apps/api/windagent_api/services/studio_application_service.py",
-      "line": 47
+      "line": 49
     },
     {
       "from": "api",
       "to": "core",
       "file": "apps/api/windagent_api/services/studio_application_service.py",
-      "line": 47
+      "line": 49
     },
     {
       "from": "api",
       "to": "core",
       "file": "apps/api/windagent_api/services/studio_application_service.py",
-      "line": 47
+      "line": 49
     },
     {
       "from": "api",
       "to": "core",
       "file": "apps/api/windagent_api/services/studio_application_service.py",
-      "line": 47
+      "line": 49
     },
     {
       "from": "api",
       "to": "core",
       "file": "apps/api/windagent_api/services/studio_application_service.py",
-      "line": 47
+      "line": 49
     },
     {
       "from": "api",
       "to": "core",
       "file": "apps/api/windagent_api/services/studio_application_service.py",
-      "line": 47
+      "line": 49
     },
     {
       "from": "api",
       "to": "core",
       "file": "apps/api/windagent_api/services/studio_application_service.py",
-      "line": 47
+      "line": 49
     },
     {
       "from": "api",
       "to": "core",
       "file": "apps/api/windagent_api/services/studio_application_service.py",
-      "line": 58
+      "line": 49
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/services/studio_application_service.py",
+      "line": 49
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/services/studio_application_service.py",
+      "line": 60
     },
     {
       "from": "api",
@@ -11071,6 +11167,30 @@
       "to": "core",
       "file": "apps/api/windagent_api/services/studio_capability_provider.py",
       "line": 11
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/services/studio_preflight.py",
+      "line": 19
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/services/studio_preflight.py",
+      "line": 20
+    },
+    {
+      "from": "api",
+      "to": "providers",
+      "file": "apps/api/windagent_api/services/studio_preflight.py",
+      "line": 21
+    },
+    {
+      "from": "api",
+      "to": "providers",
+      "file": "apps/api/windagent_api/services/studio_preflight.py",
+      "line": 21
     },
     {
       "from": "api",
@@ -11598,151 +11718,181 @@
       "from": "worker",
       "to": "core",
       "file": "apps/worker/windagent_worker/studio_model_port.py",
-      "line": 37
+      "line": 39
     },
     {
       "from": "worker",
       "to": "core",
       "file": "apps/worker/windagent_worker/studio_model_port.py",
-      "line": 37
+      "line": 39
+    },
+    {
+      "from": "worker",
+      "to": "core",
+      "file": "apps/worker/windagent_worker/studio_model_port.py",
+      "line": 40
+    },
+    {
+      "from": "worker",
+      "to": "core",
+      "file": "apps/worker/windagent_worker/studio_model_port.py",
+      "line": 40
+    },
+    {
+      "from": "worker",
+      "to": "core",
+      "file": "apps/worker/windagent_worker/studio_model_port.py",
+      "line": 40
     },
     {
       "from": "worker",
       "to": "providers",
       "file": "apps/worker/windagent_worker/studio_model_port.py",
-      "line": 38
+      "line": 45
     },
     {
       "from": "worker",
       "to": "providers",
       "file": "apps/worker/windagent_worker/studio_model_port.py",
-      "line": 38
+      "line": 45
     },
     {
       "from": "worker",
       "to": "providers",
       "file": "apps/worker/windagent_worker/studio_model_port.py",
-      "line": 38
+      "line": 45
     },
     {
       "from": "worker",
       "to": "providers",
       "file": "apps/worker/windagent_worker/studio_model_port.py",
-      "line": 38
+      "line": 45
     },
     {
       "from": "worker",
       "to": "providers",
       "file": "apps/worker/windagent_worker/studio_model_port.py",
-      "line": 38
+      "line": 45
     },
     {
       "from": "worker",
       "to": "providers",
       "file": "apps/worker/windagent_worker/studio_model_port.py",
-      "line": 38
+      "line": 45
     },
     {
       "from": "worker",
       "to": "providers",
       "file": "apps/worker/windagent_worker/studio_model_port.py",
-      "line": 38
+      "line": 45
     },
     {
       "from": "worker",
       "to": "providers",
       "file": "apps/worker/windagent_worker/studio_model_port.py",
-      "line": 38
+      "line": 45
     },
     {
       "from": "worker",
       "to": "providers",
       "file": "apps/worker/windagent_worker/studio_model_port.py",
-      "line": 38
+      "line": 45
     },
     {
       "from": "worker",
       "to": "providers",
       "file": "apps/worker/windagent_worker/studio_model_port.py",
-      "line": 38
+      "line": 45
     },
     {
       "from": "worker",
       "to": "providers",
       "file": "apps/worker/windagent_worker/studio_model_port.py",
-      "line": 38
+      "line": 45
     },
     {
       "from": "worker",
       "to": "providers",
       "file": "apps/worker/windagent_worker/studio_model_port.py",
-      "line": 38
+      "line": 45
     },
     {
       "from": "worker",
       "to": "providers",
       "file": "apps/worker/windagent_worker/studio_model_port.py",
-      "line": 38
+      "line": 45
     },
     {
       "from": "worker",
       "to": "providers",
       "file": "apps/worker/windagent_worker/studio_model_port.py",
-      "line": 38
+      "line": 45
     },
     {
       "from": "worker",
       "to": "providers",
       "file": "apps/worker/windagent_worker/studio_model_port.py",
-      "line": 38
+      "line": 45
     },
     {
       "from": "worker",
       "to": "providers",
       "file": "apps/worker/windagent_worker/studio_model_port.py",
-      "line": 38
+      "line": 45
     },
     {
       "from": "worker",
       "to": "providers",
       "file": "apps/worker/windagent_worker/studio_model_port.py",
-      "line": 56
+      "line": 63
     },
     {
       "from": "worker",
       "to": "providers",
       "file": "apps/worker/windagent_worker/studio_model_port.py",
-      "line": 57
+      "line": 64
     },
     {
       "from": "worker",
       "to": "providers",
       "file": "apps/worker/windagent_worker/studio_model_port.py",
-      "line": 57
+      "line": 64
     },
     {
       "from": "worker",
       "to": "providers",
       "file": "apps/worker/windagent_worker/studio_model_port.py",
-      "line": 58
+      "line": 65
+    },
+    {
+      "from": "worker",
+      "to": "providers",
+      "file": "apps/worker/windagent_worker/studio_model_port.py",
+      "line": 65
+    },
+    {
+      "from": "worker",
+      "to": "providers",
+      "file": "apps/worker/windagent_worker/studio_model_port.py",
+      "line": 65
     },
     {
       "from": "worker",
       "to": "intelligence",
       "file": "apps/worker/windagent_worker/studio_model_port.py",
-      "line": 61
+      "line": 72
     },
     {
       "from": "worker",
       "to": "intelligence",
       "file": "apps/worker/windagent_worker/studio_model_port.py",
-      "line": 61
+      "line": 72
     },
     {
       "from": "worker",
       "to": "intelligence",
       "file": "apps/worker/windagent_worker/studio_model_port.py",
-      "line": 61
+      "line": 72
     },
     {
       "from": "worker",
@@ -11910,37 +12060,49 @@
       "from": "worker",
       "to": "core",
       "file": "apps/worker/windagent_worker/studio_runtime.py",
-      "line": 785
+      "line": 795
     },
     {
       "from": "worker",
       "to": "storage",
       "file": "apps/worker/windagent_worker/studio_runtime.py",
-      "line": 786
+      "line": 796
     },
     {
       "from": "worker",
       "to": "core",
       "file": "apps/worker/windagent_worker/studio_runtime.py",
-      "line": 641
+      "line": 651
     },
     {
       "from": "worker",
       "to": "core",
       "file": "apps/worker/windagent_worker/studio_runtime.py",
-      "line": 643
+      "line": 653
     },
     {
       "from": "worker",
       "to": "intelligence",
       "file": "apps/worker/windagent_worker/studio_runtime.py",
-      "line": 744
+      "line": 754
     },
     {
       "from": "worker",
-      "to": "intelligence",
+      "to": "core",
       "file": "apps/worker/windagent_worker/studio_runtime.py",
       "line": 405
+    },
+    {
+      "from": "worker",
+      "to": "core",
+      "file": "apps/worker/windagent_worker/studio_runtime.py",
+      "line": 405
+    },
+    {
+      "from": "worker",
+      "to": "intelligence",
+      "file": "apps/worker/windagent_worker/studio_runtime.py",
+      "line": 409
     },
     {
       "from": "worker",
@@ -12240,37 +12402,43 @@
       "from": "worker",
       "to": "intelligence",
       "file": "apps/worker/windagent_worker/composition/studio.py",
-      "line": 129
+      "line": 149
     },
     {
       "from": "worker",
       "to": "orchestration",
       "file": "apps/worker/windagent_worker/composition/studio.py",
-      "line": 130
+      "line": 150
     },
     {
       "from": "worker",
       "to": "providers",
       "file": "apps/worker/windagent_worker/composition/studio.py",
-      "line": 131
+      "line": 151
     },
     {
       "from": "worker",
       "to": "storage",
       "file": "apps/worker/windagent_worker/composition/studio.py",
-      "line": 132
+      "line": 152
     },
     {
       "from": "worker",
       "to": "storage",
       "file": "apps/worker/windagent_worker/composition/studio.py",
-      "line": 135
+      "line": 155
     },
     {
       "from": "worker",
       "to": "providers",
       "file": "apps/worker/windagent_worker/composition/studio.py",
-      "line": 86
+      "line": 83
+    },
+    {
+      "from": "worker",
+      "to": "storage",
+      "file": "apps/worker/windagent_worker/composition/studio.py",
+      "line": 114
     },
     {
       "from": "worker",

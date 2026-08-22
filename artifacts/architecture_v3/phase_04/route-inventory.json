@@ -1,7 +1,7 @@
 {
   "phase": "04",
   "generated_by": "scripts/generate_architecture_v3_phase4_inventory.py",
-  "route_count": 192,
+  "route_count": 196,
   "routes": [
     {
       "method": "GET",
@@ -595,15 +595,6 @@
       "classification": "DURABLE",
       "authority": "v3_resources:shots",
       "source": "v3_resources:shots",
-      "migration_disposition": "migrated-to-v3_resources"
-    },
-    {
-      "method": "POST",
-      "path": "/api/v3/episodes/{episode_id}/start-generation",
-      "module": "windagent_api.routers.v3.episodes.start_generation",
-      "classification": "DURABLE",
-      "authority": "v3_resources:episodes",
-      "source": "v3_resources:episodes",
       "migration_disposition": "migrated-to-v3_resources"
     },
     {
@@ -1202,6 +1193,24 @@
     },
     {
       "method": "GET",
+      "path": "/api/v3/routing/receipts",
+      "module": "windagent_api.routers.v3.routing.list_route_receipts",
+      "classification": "DURABLE",
+      "authority": "dedicated-sql:model_route_receipts_v3",
+      "source": "dedicated-sql:model_route_receipts_v3",
+      "migration_disposition": "cutover-to-dedicated-route-receipt-sql"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/routing/roles",
+      "module": "windagent_api.routers.v3.routing.list_story_roles",
+      "classification": "DERIVED",
+      "authority": "core-contract:studio.story_roles",
+      "source": "core-contract:studio.story_roles",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "GET",
       "path": "/api/v3/routing/rules",
       "module": "windagent_api.routers.v3.routing.list_routing_rules",
       "classification": "DURABLE",
@@ -1363,6 +1372,15 @@
       "migration_disposition": "no-migration"
     },
     {
+      "method": "PATCH",
+      "path": "/api/v3/studio/episodes/{episode_id}",
+      "module": "windagent_api.routers.v3.studio.episodes.update_episode",
+      "classification": "DURABLE",
+      "authority": "studio:episodes",
+      "source": "studio:episodes",
+      "migration_disposition": "no-migration"
+    },
+    {
       "method": "POST",
       "path": "/api/v3/studio/episodes/{episode_id}/approvals",
       "module": "windagent_api.routers.v3.studio.decisions.record_approval",
@@ -1387,6 +1405,15 @@
       "classification": "DURABLE",
       "authority": "studio:decisions",
       "source": "studio:decisions",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/studio/episodes/{episode_id}/preflight",
+      "module": "windagent_api.routers.v3.studio.episodes.preflight_start",
+      "classification": "DERIVED",
+      "authority": "runtime:studio",
+      "source": "runtime:studio",
       "migration_disposition": "no-migration"
     },
     {
@@ -1465,6 +1492,15 @@
       "method": "GET",
       "path": "/api/v3/studio/series/{series_id}",
       "module": "windagent_api.routers.v3.studio.series.get_series",
+      "classification": "DURABLE",
+      "authority": "studio:series",
+      "source": "studio:series",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v3/studio/series/{series_id}",
+      "module": "windagent_api.routers.v3.studio.series.update_series",
       "classification": "DURABLE",
       "authority": "studio:series",
       "source": "studio:series",

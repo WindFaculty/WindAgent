@@ -284,15 +284,15 @@ async def test_preflight_reports_every_missing_requirement():
     assert report["ready"] is False
     assert [c["name"] for c in report["checks"]] == list(CHECK_NAMES)
     failed = {c["name"] for c in report["checks"] if c["status"] == "FAIL"}
-    warned = {c["name"] for c in report["checks"] if c["status"] == "WARN"}
-    # Hard failures block; worker heartbeat absence is an honest WARN.
+    # P0.4.1: every required check is a hard failure when missing —
+    # worker capability absence blocks the start (no silent WARN).
     assert {
         "episode_exists",
         "creative_brief_valid",
         "provider_configured",
         "routing_rules_resolve",
+        "worker_capability_available",
     } <= failed
-    assert "worker_capability_available" in warned
 
 
 async def test_preflight_passes_with_full_configuration():

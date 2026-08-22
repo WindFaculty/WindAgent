@@ -2,6 +2,30 @@
  * WindAgentClient — Canonical API Façade for Unified API V3.
  */
 
+export type {
+  ProjectResource,
+  EpisodeResource,
+  CursorPage,
+  RuntimeCapabilityProfile,
+  StudioSeriesResource,
+  StudioSeriesListResponse,
+  StudioSeriesCreateResponse,
+  StudioSeriesUpdateResponse,
+  StudioEpisodeResource,
+  StudioEpisodeListResponse,
+  StudioEpisodeCreateResponse,
+  StudioUpdateEpisodeRequest,
+  StudioUpdateEpisodeResponse,
+  StudioSelectIdeaRequest,
+  StudioSelectIdeaResponse,
+  StudioRecordApprovalRequest,
+  StudioRecordApprovalResponse,
+  StudioDeriveRevisionRequest,
+  StudioDeriveRevisionResponse,
+  StudioLockScreenplayRequest,
+  StudioLockScreenplayResponse,
+} from '@windagent/api-contracts';
+
 import type {
   ProjectResource,
   EpisodeResource,
@@ -12,6 +36,16 @@ import type {
   StudioSeriesUpdateResponse,
   StudioEpisodeListResponse,
   StudioEpisodeCreateResponse,
+  StudioUpdateEpisodeRequest,
+  StudioUpdateEpisodeResponse,
+  StudioSelectIdeaRequest,
+  StudioSelectIdeaResponse,
+  StudioRecordApprovalRequest,
+  StudioRecordApprovalResponse,
+  StudioDeriveRevisionRequest,
+  StudioDeriveRevisionResponse,
+  StudioLockScreenplayRequest,
+  StudioLockScreenplayResponse,
   StudioPreflightReport,
   ReadinessResponse,
   AgentDefinitionResource,
@@ -169,10 +203,6 @@ export class EpisodesApi {
     return this.transport.get<PipelineRun[]>(`/api/v3/episodes/${encodeURIComponent(episodeId)}/runs`);
   }
 
-  async startGeneration(episodeId: string, data?: { checkpoint?: string; prompt_override?: string }): Promise<PipelineRun> {
-    return this.transport.post<PipelineRun>(`/api/v3/episodes/${encodeURIComponent(episodeId)}/start-generation`, data ?? {});
-  }
-
   async selectIdea(episodeId: string, data: { idea_id: string; expected_version: number }): Promise<EpisodeResource> {
     return this.transport.post<EpisodeResource>(`/api/v3/episodes/${encodeURIComponent(episodeId)}/select-idea`, data);
   }
@@ -258,6 +288,120 @@ export class StudioApi {
   /** Start or resume the durable Story run (202 + Location). */
   async startRun(episodeId: string, idempotencyKey: string): Promise<{ run_id: string; episode_id: string; resuming: boolean; run_url: string }> {
     return this.transport.post(`/api/v3/studio/episodes/${encodeURIComponent(episodeId)}/runs`, {}, { headers: { 'X-Idempotency-Key': idempotencyKey } });
+  }
+
+  async selectIdea(
+    episodeId: string,
+    data: StudioSelectIdeaRequest,
+    idempotencyKey?: string,
+  ): Promise<StudioSelectIdeaResponse> {
+    const key = idempotencyKey || crypto.randomUUID();
+    return this.transport.post<StudioSelectIdeaResponse>(
+      `/api/v3/studio/episodes/${encodeURIComponent(episodeId)}/idea-selection`,
+      {
+        schema_version: 'studio.command/v1',
+        episode_id: data.episode_id || episodeId,
+        revision_id: data.revision_id,
+        candidate_id: data.candidate_id,
+        expected_content_hash: data.expected_content_hash,
+        expected_optimistic_version: data.expected_optimistic_version,
+      },
+      { headers: { 'X-Idempotency-Key': key } },
+    );
+  }
+
+  async recordApproval(
+    episodeId: string,
+    data: StudioRecordApprovalRequest,
+    idempotencyKey?: string,
+    actor: string = 'human_user',
+  ): Promise<StudioRecordApprovalResponse> {
+    const key = idempotencyKey || crypto.randomUUID();
+    return this.transport.post<StudioRecordApprovalResponse>(
+      `/api/v3/studio/episodes/${encodeURIComponent(episodeId)}/approvals`,
+      {
+        schema_version: 'studio.command/v1',
+        episode_id: data.episode_id || episodeId,
+        revision_id: data.revision_id,
+        checkpoint: data.checkpoint,
+        artifact_hash: data.artifact_hash,
+        decision: data.decision,
+        reason: data.reason || '',
+        expected_optimistic_version: data.expected_optimistic_version,
+      },
+      {
+        headers: {
+          'X-Idempotency-Key': key,
+          'X-WindAgent-Actor': actor,
+        },
+      },
+    );
+  }
+
+  async deriveRevision(
+    episodeId: string,
+    data: StudioDeriveRevisionRequest,
+    idempotencyKey?: string,
+    actor: string = 'human_user',
+  ): Promise<StudioDeriveRevisionResponse> {
+    const key = idempotencyKey || crypto.randomUUID();
+    return this.transport.post<StudioDeriveRevisionResponse>(
+      `/api/v3/studio/episodes/${encodeURIComponent(episodeId)}/revisions`,
+      {
+        schema_version: 'studio.command/v1',
+        episode_id: data.episode_id || episodeId,
+        series_id: data.series_id,
+        parent_revision_id: data.parent_revision_id,
+        new_content_hash: data.new_content_hash,
+        summary: data.summary || '',
+        invalidation_intent: data.invalidation_intent || null,
+        expected_optimistic_version: data.expected_optimistic_version,
+      },
+      {
+        headers: {
+          'X-Idempotency-Key': key,
+          'X-WindAgent-Actor': actor,
+        },
+      },
+    );
+  }
+
+  async lockScreenplay(
+    episodeId: string,
+    data: StudioLockScreenplayRequest,
+    idempotencyKey?: string,
+  ): Promise<StudioLockScreenplayResponse> {
+    const key = idempotencyKey || crypto.randomUUID();
+    return this.transport.post<StudioLockScreenplayResponse>(
+      `/api/v3/studio/episodes/${encodeURIComponent(episodeId)}/screenplay-lock`,
+      {
+        schema_version: 'studio.command/v1',
+        episode_id: data.episode_id || episodeId,
+        revision_id: data.revision_id,
+        expected_content_hash: data.expected_content_hash,
+        expected_optimistic_version: data.expected_optimistic_version,
+      },
+      { headers: { 'X-Idempotency-Key': key } },
+    );
+  }
+
+  async updateEpisode(
+    episodeId: string,
+    data: StudioUpdateEpisodeRequest,
+    idempotencyKey?: string,
+  ): Promise<StudioUpdateEpisodeResponse> {
+    const key = idempotencyKey || crypto.randomUUID();
+    return this.transport.patch<StudioUpdateEpisodeResponse>(
+      `/api/v3/studio/episodes/${encodeURIComponent(episodeId)}`,
+      {
+        schema_version: 'studio.command/v1',
+        episode_id: episodeId,
+        title: data.title,
+        metadata_patch: data.metadata_patch || {},
+        expected_optimistic_version: data.expected_optimistic_version,
+      },
+      { headers: { 'X-Idempotency-Key': key } },
+    );
   }
 }
 

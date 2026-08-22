@@ -24,18 +24,18 @@ export const IdeaPanel: React.FC<IdeaPanelProps> = ({
   isSelectingIdea,
 }) => {
   const content = artifact?.content || {};
-  const ideas = content.ideas || [];
-  const selectedIdeaId = content.selected_idea_id;
+  const ideas = content.candidates || content.ideas || [];
+  const selectedIdeaId = content.selected_candidate_id || content.selected_idea_id;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
         <div>
           <h3 style={{ margin: '0 0 4px 0', fontSize: '18px', fontWeight: 700, color: '#f8fafc' }}>
             Ý Tưởng Cốt Truyện (Idea Candidates)
           </h3>
           <span style={{ fontSize: '13px', color: '#94a3b8' }}>
-            Tuyển chọn tiền đề và hướng đi ban đầu cho tập phim
+            Tuyển chọn tiền đề và hướng đi ban đầu cho tập phim ({ideas.length} ý tưởng)
           </span>
         </div>
 
@@ -65,10 +65,14 @@ export const IdeaPanel: React.FC<IdeaPanelProps> = ({
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
           {ideas.map((idea: any) => {
-            const isSelected = idea.id === selectedIdeaId;
+            const ideaId = idea.candidate_id || idea.id;
+            const isSelected = ideaId === selectedIdeaId;
+            const score = typeof idea.score === 'number' ? Math.round(idea.score * 100) : null;
+            const tone = idea.tone || (idea.themes && idea.themes[0]) || 'Cinematic';
+
             return (
               <Card
-                key={idea.id}
+                key={ideaId}
                 style={{
                   padding: '20px',
                   borderRadius: '12px',
@@ -82,10 +86,17 @@ export const IdeaPanel: React.FC<IdeaPanelProps> = ({
                 }}
               >
                 <div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                    <Badge style={{ background: 'rgba(255, 255, 255, 0.08)', color: '#38bdf8', fontSize: '11px' }}>
-                      {idea.tone || 'Cinematic'}
-                    </Badge>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px', flexWrap: 'wrap', gap: '6px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Badge style={{ background: 'rgba(255, 255, 255, 0.08)', color: '#38bdf8', fontSize: '11px' }}>
+                        {tone}
+                      </Badge>
+                      {score !== null && (
+                        <Badge style={{ background: 'rgba(59, 130, 246, 0.15)', color: '#60a5fa', fontSize: '11px' }}>
+                          Khớp: {score}%
+                        </Badge>
+                      )}
+                    </div>
                     {isSelected && (
                       <Badge style={{ background: 'rgba(34, 197, 94, 0.15)', color: '#4ade80', fontSize: '11px' }}>
                         ĐÃ CHỌN
@@ -97,14 +108,14 @@ export const IdeaPanel: React.FC<IdeaPanelProps> = ({
                     {idea.title}
                   </h4>
                   <p style={{ margin: 0, fontSize: '13px', color: '#cbd5e1', lineHeight: 1.5 }}>
-                    {idea.premise}
+                    {idea.premise || idea.summary || idea.logline}
                   </p>
                 </div>
 
                 <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid rgba(255, 255, 255, 0.06)', display: 'flex', justifyContent: 'flex-end' }}>
                   <Button
                     variant={isSelected ? 'outline' : 'primary'}
-                    onClick={() => onSelectIdea(idea.id)}
+                    onClick={() => onSelectIdea(ideaId)}
                     disabled={isSelectingIdea || isSelected}
                     style={{ fontSize: '13px', padding: '6px 14px' }}
                   >

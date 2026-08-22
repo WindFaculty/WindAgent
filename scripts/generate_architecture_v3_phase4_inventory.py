@@ -106,6 +106,17 @@ def _route_lock() -> dict:
     }
 
 
+def _route_receipt() -> dict:
+    """Dedicated model-route receipt SQL authority (model_route_receipts_v3)
+    reached through SQLModelRouteReceiptRepository (P0.3.6 diagnostics)."""
+    return {
+        "classification": _DURABLE,
+        "authority": "dedicated-sql:model_route_receipts_v3",
+        "source": "dedicated-sql:model_route_receipts_v3",
+        "migration_disposition": "cutover-to-dedicated-route-receipt-sql",
+    }
+
+
 def _derived(source: str, authority: str | None = None) -> dict:
     return {
         "classification": _DERIVED,
@@ -231,7 +242,6 @@ _POLICY: dict[tuple[str, str], dict] = {
     ("POST", "/api/v3/episodes/{episode_id}/select-idea"): _durable("episodes"),
     ("GET", "/api/v3/episodes/{episode_id}/shots"): _durable("shots"),
     ("POST", "/api/v3/episodes/{episode_id}/shots"): _durable("shots"),
-    ("POST", "/api/v3/episodes/{episode_id}/start-generation"): _durable("episodes"),
     ("GET", "/api/v3/episodes/{episode_id}/storyboard"): _durable("storyboards"),
     ("POST", "/api/v3/episodes/{episode_id}/storyboard/actions/sync"): _durable("storyboards"),
     ("GET", "/api/v3/episodes/{episode_id}/storyboard/scenes"): _durable("scenes"),
@@ -320,6 +330,10 @@ _POLICY: dict[tuple[str, str], dict] = {
     ("GET", "/api/v3/routing/graph"): _derived("v3_resources:routing_rules"),
     ("GET", "/api/v3/routing/locks/{lock_id}"): _route_lock(),
     ("GET", "/api/v3/routing/metrics"): _derived("v3_resources:routing_rules"),
+    ("GET", "/api/v3/routing/receipts"): _route_receipt(),
+    ("GET", "/api/v3/routing/roles"): _derived(
+        "core-contract:studio.story_roles"
+    ),
     ("GET", "/api/v3/routing/rules"): _durable("routing_rules"),
     ("POST", "/api/v3/routing/rules"): _durable("routing_rules"),
     ("DELETE", "/api/v3/routing/rules/{rule_id}"): _durable("routing_rules"),
@@ -353,9 +367,11 @@ _POLICY: dict[tuple[str, str], dict] = {
     ("POST", "/api/v3/studio/series"): _studio_durable("series"),
     ("GET", "/api/v3/studio/series"): _studio_durable("series"),
     ("GET", "/api/v3/studio/series/{series_id}"): _studio_durable("series"),
+    ("PATCH", "/api/v3/studio/series/{series_id}"): _studio_durable("series"),
     ("POST", "/api/v3/studio/series/{series_id}/episodes"): _studio_durable("episodes"),
     ("GET", "/api/v3/studio/series/{series_id}/episodes"): _studio_durable("episodes"),
     ("GET", "/api/v3/studio/episodes/{episode_id}"): _studio_durable("episodes"),
+    ("PATCH", "/api/v3/studio/episodes/{episode_id}"): _studio_durable("episodes"),
     ("POST", "/api/v3/studio/episodes/{episode_id}/runs"): _studio_durable("runs"),
     ("GET", "/api/v3/studio/runs/{run_id}"): _studio_durable("runs"),
     ("GET", "/api/v3/studio/runs/{run_id}/events"): _studio_durable("runs"),
@@ -367,6 +383,7 @@ _POLICY: dict[tuple[str, str], dict] = {
     ("GET", "/api/v3/studio/artifacts/{artifact_id}"): _studio_durable("artifacts"),
     ("GET", "/api/v3/studio/capabilities"): _derived("runtime:studio"),
     ("GET", "/api/v3/studio/readiness"): _derived("runtime:studio"),
+    ("GET", "/api/v3/studio/episodes/{episode_id}/preflight"): _derived("runtime:studio"),
 
     # ── System (DERIVED) ───────────────────────────────────────────────────
     ("GET", "/api/v3/system/health"): _derived("runtime:system"),

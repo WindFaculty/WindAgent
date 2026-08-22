@@ -57,16 +57,11 @@ class PipelineRun(BaseModel):
     run_id: str = Field(..., description="Execution run identifier")
     episode_id: str = Field(..., description="Target episode identifier")
     checkpoint: str = Field(..., description="Pipeline stage being executed")
-    status: str = Field("COMPLETED", description="Run status ('PENDING', 'RUNNING', 'COMPLETED', 'FAILED', 'CANCELLED')")
-    progress_percent: int = Field(100, description="Run execution progress")
+    status: str = Field("PENDING", description="Run status ('PENDING', 'RUNNING', 'COMPLETED', 'FAILED', 'CANCELLED')")
+    progress_percent: int = Field(0, description="Run execution progress")
     started_at: str = Field(..., description="ISO 8601 UTC timestamp")
     completed_at: Optional[str] = Field(None, description="ISO 8601 UTC timestamp")
     error_message: Optional[str] = None
-
-
-class StartGenerationRequest(BaseModel):
-    checkpoint: Optional[str] = Field(None, description="Target checkpoint stage")
-    prompt_override: Optional[str] = Field(None, description="Custom prompt or direction")
 
 
 class SelectIdeaRequest(BaseModel):
@@ -234,43 +229,6 @@ async def get_episode_runs(
     return [PipelineRun(**r) for r in runs]
 
 
-@router.post("/{episode_id}/start-generation", response_model=PipelineRun, operation_id="episodes.startGeneration")
-async def start_generation(
-    episode_id: str = Path(..., description="Episode ID"),
-    body: StartGenerationRequest = ...,
-    idempotency_key: Optional[str] = Header(None, alias="Idempotency-Key"),
-    service: V3ResourceService = Depends(get_v3_resource_service),
-) -> PipelineRun:
-    """Start an AI generation run for the next or requested checkpoint stage."""
-    ep = await service.get(NS_EPISODES, episode_id)
-    if ep is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Episode '{episode_id}' not found.")
-
-    now_iso = utc_now().isoformat()
-    target_stage = body.checkpoint or ep["current_checkpoint"]
-    run_id = f"run-{uuid.uuid4().hex[:8]}"
-
-    new_run = {
-        "run_id": run_id,
-        "episode_id": episode_id,
-        "checkpoint": target_stage,
-        "status": "COMPLETED",
-        "progress_percent": 100,
-        "started_at": now_iso,
-        "completed_at": now_iso,
-    }
-    await service.create(NS_EPISODE_RUNS, run_id, new_run)
-
-    # Generate sample artifact for the stage if not present
-    rev_id = f"rev-{uuid.uuid4().hex[:6]}"
-    ep_updates = dict(ep)
-    ep_updates["current_revision_id"] = rev_id
-    ep_updates["updated_at"] = now_iso
-    await service.update(NS_EPISODES, episode_id, ep_updates, ep["version"])
-
-    return PipelineRun(**new_run)
-
-
 @router.post("/{episode_id}/select-idea", response_model=EpisodeDetail, operation_id="episodes.selectIdea")
 async def select_idea(
     episode_id: str = Path(..., description="Episode ID"),
@@ -400,12 +358,40 @@ async def cancel_run(
     episode_id: str = Path(..., description="Episode ID"),
     service: V3ResourceService = Depends(get_v3_resource_service),
 ) -> Dict[str, Any]:
-    """Cancel any active generation runs on the episode."""
+    """Cancel active generation runs on the episode.
+
+    P0.8 truth repair: no fabricated CANCELLED. When the episode holds no
+    run at all the answer is honest (NO_ACTIVE_RUN), never a fake success.
+    """
     ep = await service.get(NS_EPISODES, episode_id)
     if ep is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Episode '{episode_id}' not found.")
 
-    return {"episode_id": episode_id, "status": "CANCELLED", "timestamp": utc_now().isoformat()}
+    runs = await service.list(NS_EPISODE_RUNS)
+    episode_runs = [r for r in runs if r.get("episode_id") == episode_id]
+    cancellable = [
+        r for r in episode_runs
+        if r.get("status") in ("PENDING", "RUNNING")
+    ]
+    now_iso = utc_now().isoformat()
+    for r in cancellable:
+        updated = dict(r)
+        updated["status"] = "CANCELLED"
+        updated["completed_at"] = now_iso
+        await service.update(NS_EPISODE_RUNS, r["run_id"], updated, r.get("version", 1) or 1)
+
+    if not cancellable and not episode_runs:
+        return {
+            "episode_id": episode_id,
+            "status": "NO_ACTIVE_RUN",
+            "timestamp": now_iso,
+        }
+    return {
+        "episode_id": episode_id,
+        "status": "CANCELLED" if cancellable else "NO_ACTIVE_RUN",
+        "cancelled_run_ids": [r["run_id"] for r in cancellable],
+        "timestamp": now_iso,
+    }
 
 
 @ws_router.websocket("/{episode_id}")

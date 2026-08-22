@@ -9,14 +9,14 @@
   },
   "git": {
     "branch": "refactor/architecture-v3-hardening",
-    "head_sha": "422bfc7072f9799244018215a6b3b2725bf81d41",
-    "head_tree_sha": "7147a6d3d4f5758ea9fd5c831ea146d41caff601",
+    "head_sha": "38a9855be6bc45d3c464ca5894985d8f59f5e524",
+    "head_tree_sha": "1cb827389d3547cf12b9c764d738561b73145159",
     "author": "Antigravity",
-    "committed_at": "2026-08-22 00:02:28 +0700",
-    "subject": "docs(phase16): certify ARCHITECTURE_V3_OPTIMIZED_AND_CERTIFIED for be6c54e871cbf293772687f64bd18fe29104f485",
+    "committed_at": "2026-08-22 17:03:19 +0700",
+    "subject": "feat(p0-ui): connect episode workspace to the real studio pipeline",
     "worktree_state": {
-      "dirty_entries": 4,
-      "porcelain": "M artifacts/architecture_v2_runtime_cutover/phase_13/import_graph.json\n M artifacts/video_production/script_eval/phase_00_baseline/baseline_manifest.json\n M artifacts/video_production/script_eval/phase_00_baseline/baseline_verdict.json\n M artifacts/video_production/script_eval/phase_00_baseline/environment.json"
+      "dirty_entries": 25,
+      "porcelain": "M artifacts/architecture_v2_runtime_cutover/phase_13/dependency_boundary_report.json\n M artifacts/architecture_v2_runtime_cutover/phase_13/import_graph.json\n M artifacts/architecture_v3/phase_01/v3_boundary_report.json\n M artifacts/architecture_v3/phase_01/v3_import_graph.json\n M artifacts/video_production/script_eval/phase_00_baseline/baseline_manifest.json\n M artifacts/video_production/script_eval/phase_00_baseline/baseline_verdict.json\n M docs/plans/p0_7_frontend_convergence.md\n M frontend/app/src/features/episodes/hooks/useEpisode.ts\n M frontend/app/src/features/episodes/hooks/useEpisodeCommands.ts\n M frontend/app/src/features/episodes/hooks/useEpisodes.ts\n M frontend/app/src/features/episodes/pages/EpisodeWorkspacePage.tsx\n M frontend/app/src/features/episodes/workspace/IdeaPanel.tsx\n M frontend/app/src/features/episodes/workspace/OutlinePanel.tsx\n M frontend/app/src/features/episodes/workspace/ScreenplayPanel.tsx\n M frontend/app/src/features/episodes/workspace/StoryBiblePanel.tsx\n M frontend/app/src/features/projects/hooks/useCreateEpisode.ts\n M frontend/app/src/features/projects/hooks/useProject.ts\n M frontend/app/src/features/projects/hooks/useProjects.ts\n M frontend/app/src/features/projects/pages/ProjectDetailPage.tsx\n M frontend/app/src/features/studio/pages/StudioHomePage.tsx\n M frontend/packages/api-client/src/client.ts\n M frontend/packages/api-contracts/src/studio.ts\n D run_codex_cli_openrouter.ps1\n?? frontend/app/src/features/studio/components/\n?? frontend/app/src/features/studio/hooks/"
     }
   },
   "windagent": {
@@ -26,5 +26,5 @@
     "provider_protocol_version": "1.0.0",
     "artifact_protocol_version": "1.0.0"
   },
-  "timestamp_utc": "2026-08-21T18:10:41+00:00"
+  "timestamp_utc": "2026-08-22T10:55:09+00:00"
 }

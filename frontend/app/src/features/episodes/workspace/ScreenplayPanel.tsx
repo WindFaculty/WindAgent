@@ -21,16 +21,18 @@ export const ScreenplayPanel: React.FC<ScreenplayPanelProps> = ({
 }) => {
   const content = artifact?.content || {};
   const scenes = content.scenes || [];
+  const logline = content.logline;
+  const title = content.title;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
         <div>
           <h3 style={{ margin: '0 0 4px 0', fontSize: '18px', fontWeight: 700, color: '#f8fafc' }}>
-            Bản Thảo Kịch Bản (Screenplay Draft)
+            {title ? `Bản Thảo Kịch Bản: ${title}` : 'Bản Thảo Kịch Bản (Screenplay Draft)'}
           </h3>
           <span style={{ fontSize: '13px', color: '#94a3b8' }}>
-            Kịch bản chi tiết theo chuẩn công nghiệp điện ảnh
+            {logline || 'Kịch bản chi tiết theo chuẩn công nghiệp điện ảnh'} ({scenes.length} cảnh)
           </span>
         </div>
 
@@ -69,38 +71,66 @@ export const ScreenplayPanel: React.FC<ScreenplayPanelProps> = ({
             lineHeight: 1.6,
           }}
         >
-          {scenes.map((scene: any, idx: number) => (
-            <div key={idx} style={{ marginBottom: '32px' }}>
-              <div
-                style={{
-                  fontWeight: 700,
-                  fontSize: '15px',
-                  color: '#38bdf8',
-                  marginBottom: '12px',
-                  letterSpacing: '0.5px',
-                }}
-              >
-                CẢNH {scene.scene_number || idx + 1}: {scene.heading}
-              </div>
+          {scenes.map((scene: any, idx: number) => {
+            const sceneNumber = scene.order || scene.scene_number || idx + 1;
+            const heading = scene.heading || (scene.location_id ? `CẢNH TẠI ${String(scene.location_id).toUpperCase()}` : `CẢNH ${sceneNumber}`);
+            const actionText = scene.action_description || scene.action || '';
+            const dialogues = scene.dialogue || [];
+            const transition = scene.transition;
 
-              {scene.action && (
-                <p style={{ margin: '0 0 16px 0', fontSize: '14px', color: '#cbd5e1' }}>
-                  {scene.action}
-                </p>
-              )}
-
-              {scene.dialogue && scene.dialogue.map((d: any, dIdx: number) => (
-                <div key={dIdx} style={{ margin: '12px auto', maxWidth: '480px', textAlign: 'center' }}>
-                  <div style={{ fontWeight: 700, color: '#facc15', fontSize: '13px', letterSpacing: '1px' }}>
-                    {d.speaker}
-                  </div>
-                  <div style={{ fontSize: '14px', color: '#f8fafc', marginTop: '2px' }}>
-                    {d.text}
-                  </div>
+            return (
+              <div key={idx} style={{ marginBottom: '32px' }}>
+                <div
+                  style={{
+                    fontWeight: 700,
+                    fontSize: '15px',
+                    color: '#38bdf8',
+                    marginBottom: '12px',
+                    letterSpacing: '0.5px',
+                  }}
+                >
+                  CẢNH {sceneNumber}: {heading}
                 </div>
-              ))}
-            </div>
-          ))}
+
+                {actionText && (
+                  <p style={{ margin: '0 0 16px 0', fontSize: '14px', color: '#cbd5e1' }}>
+                    {actionText}
+                  </p>
+                )}
+
+                {scene.narration && (
+                  <div style={{ margin: '12px auto', maxWidth: '520px', fontStyle: 'italic', color: '#94a3b8', textAlign: 'center', fontSize: '13px' }}>
+                    [Lời dẫn: {scene.narration}]
+                  </div>
+                )}
+
+                {dialogues.map((d: any, dIdx: number) => {
+                  const speaker = d.speaker || d.character_id || 'NHÂN VẬT';
+                  return (
+                    <div key={dIdx} style={{ margin: '14px auto', maxWidth: '480px', textAlign: 'center' }}>
+                      <div style={{ fontWeight: 700, color: '#facc15', fontSize: '13px', letterSpacing: '1px' }}>
+                        {String(speaker).toUpperCase()}
+                      </div>
+                      {d.delivery && (
+                        <div style={{ fontSize: '12px', color: '#94a3b8', fontStyle: 'italic' }}>
+                          ({d.delivery})
+                        </div>
+                      )}
+                      <div style={{ fontSize: '14px', color: '#f8fafc', marginTop: '2px', textAlign: 'left', display: 'inline-block' }}>
+                        {d.text}
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {transition && (
+                  <div style={{ textAlign: 'right', fontWeight: 700, color: '#64748b', fontSize: '13px', marginTop: '16px' }}>
+                    {transition}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

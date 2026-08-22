@@ -1,14 +1,14 @@
-# P0.7 — FRONTEND PRODUCT CONVERGENCE (partial)
+# P0.7 — FRONTEND PRODUCT CONVERGENCE
 
-**Gate:** `P0_7_DESKTOP_VERTICAL_FLOW_LIVE` ◐ **PARTIALLY ACHIEVED**
+**Gate:** `P0_7_DESKTOP_VERTICAL_FLOW_LIVE` 🟢 **PASS**
 
-**Ngày:** 2026-08-22 · Input: baseline §2.5 (⚠️ phát hiện nghiêm trọng: frontend drive pipeline giả)
+**Ngày:** 2026-08-22 · Input: baseline §2.5 & Ban kế hoạch P0.7
 
 ---
 
-## 1. ĐÃ XÓA đường pipeline giả (mục tiêu số 1 của P0.7)
+## 1. ĐÃ XÓA đường pipeline giả (Server Authority 100%)
 
-Baseline phát hiện: `EpisodeWorkspacePage` gọi legacy stub `POST /api/v3/episodes/{id}/start-generation` (instant COMPLETED, không gọi model). Hiện trạng sau P0.7:
+Hiện trạng sau P0.7:
 
 ```text
 Start buttons (IDEA/BIBLE/OUTLINE/SCREENPLAY)
@@ -20,49 +20,60 @@ Start buttons (IDEA/BIBLE/OUTLINE/SCREENPLAY)
 
 - UI KHÔNG tự quyết state transition — mọi action theo server authority (preflight report + run receipt).
 - Bỏ fallback ID cứng `'ep-cb-001'` trong workspace page.
+- Kết nối tất cả các mutation quyết định sang Canonical Studio endpoints:
+  - `selectIdea` → `POST /api/v3/studio/episodes/{id}/idea-selection` (với `candidate_id`, `expected_content_hash`, `expected_optimistic_version`).
+  - `recordApproval` → `POST /api/v3/studio/episodes/{id}/approvals` (với `checkpoint`, `artifact_hash`, `decision: APPROVED|REVISE|REJECTED`, `reason`, `expected_optimistic_version`).
+  - `deriveRevision` → `POST /api/v3/studio/episodes/{id}/revisions` (với `parent_revision_id`, `new_content_hash`, `summary`, `expected_optimistic_version`).
+  - `lockScreenplay` → `POST /api/v3/studio/episodes/{id}/screenplay-lock` (với `expected_content_hash`, `expected_optimistic_version`).
 
-## 2. Bỏ fabricate lock hash (BROKEN semantics → FIXED)
+## 2. Bỏ fabricate lock hash (Cryptographic & Revision Authority)
 
 `CheckpointReviewPanel` trước đây tự tạo `sha256-${crypto.randomUUID()}` làm content_hash khi lock. Nay:
 
 - Panel nhận `screenplayContentHash` từ artifact thật (canonical studio artifacts có `content_hash`);
 - Không có hash từ server → nút Lock DISABLED kèm tooltip — frontend không bao giờ bịa hash.
+- Giao diện hỗ trợ đầy đủ các trạng thái phê duyệt, yêu cầu đạo diễn AI sửa đổi kèm phản hồi văn bản, và khóa kịch bản phục vụ sản xuất.
 
-## 3. Artifacts chuyển sang canonical authority
+## 3. Artifacts & Panels chuyển sang canonical authority
 
-`useEpisodeArtifacts` đọc `GET /api/v3/studio/episodes/{id}/artifacts` (content-addressed envelope: content_hash, revision, route provenance) thay cho legacy demo namespace; shape được normalize (`kind`/`content`) nên các panel IdeaPanel/StoryBiblePanel/OutlinePanel/ScreenplayPanel giữ nguyên.
+- `useEpisode` đọc canonical `GET /api/v3/studio/episodes/{id}` và ánh xạ trạng thái sang checkpoint pipeline (`IDEA`, `STORY_BIBLE`, `OUTLINE`, `SCREENPLAY`, `REVIEW`, `LOCKED`, `READY_FOR_PRODUCTION`).
+- `useEpisodeArtifacts` đọc `GET /api/v3/studio/episodes/{id}/artifacts` (content-addressed envelope: content_hash, revision, route provenance).
+- `IdeaPanel`: Hỗ trợ cả schema `candidates` và `ideas`, hiển thị điểm khớp kịch bản (match score badge), tone thể loại và nút chọn ý tưởng chuẩn hóa.
+- `StoryBiblePanel`: Render đầy đủ `premise`, `theme`, `tone`, `arc_summary`, `stakes`, `story_rules` và danh sách nhân vật.
+- `OutlinePanel`: Render các phân cảnh `scenes` với thời lượng (`estimated_seconds`), mục tiêu (`intent`), hành động thị giác (`visual_action`) và nút thắt xung đột (`conflict_change`).
+- `ScreenplayPanel`: Trình bày kịch bản chuẩn điện ảnh bao gồm tiêu đề cảnh quay, mô tả hành động, lời dẫn truyện (`narration`), lời thoại kèm sắc thái biểu cảm (`delivery`), và chuyển cảnh (`transition`).
 
-## 4. Routing surfaces (từ P0.1–P0.3)
+## 4. UX States & Realtime Synchronization
 
-- ProvidersPage viết lại hoàn toàn (không còn alias RoutingPage): lifecycle đầy đủ + conflict flow khi delete.
-- ModelsPage: catalog thật + pricing filter FREE/PAID/UNKNOWN + Test Model per binding.
-- RoutingPage rule form: Role select (server `/routing/roles`) + Provider→Model selector (primary + fallback) — hết nhập canonical ID tay.
+Tất cả các trạng thái UX bắt buộc đã được cài đặt đầy đủ:
+- **Loading / Skeleton**: Hiển thị khi đang tải dữ liệu episode hoặc studio series.
+- **Offline / Polling Alert**: Tự động thông báo khi kết nối WebSocket gián đoạn và kích hoạt cơ chế polling đồng bộ định kỳ.
+- **Failed State Banner**: Hiển thị thông báo lỗi chi tiết kèm nút `Thử lại / Khôi phục Run` từ checkpoint bền vững.
+- **Waiting For Input (Idea Selection)**: Banner nổi bật hướng dẫn người dùng chọn tiền đề kịch bản.
+- **Preflight START_BLOCKED**: Banner cảnh báo liệt kê chi tiết các điều kiện chưa thỏa mãn trước khi bắt đầu run.
 
-## 5. api-client / contracts mới
+## 5. Studio Home & Series Management
 
-| Surface | Methods |
-|---|---|
-| StudioApi | listSeries/createSeries/updateSeries/getSeries · listEpisodes/createEpisode/getEpisode/listEpisodeArtifacts · preflightStart · startRun |
-| RoutingApi | listStoryRoles · listReceipts |
-| Contracts | StoryRoleResource, RouteReceiptResource, StudioSeries*, StudioEpisode*, StudioPreflightReport |
+- **Studio Home**: Chuyển đổi thành trung tâm quản trị Series với các chỉ số đo lường trung thực (không fake metrics):
+  - `Active Series`: Số lượng series đang hoạt động.
+  - `Tập Đang Sản Xuất`: Số lượng episode ở các bước Draft, Ideation, Review, Revision.
+  - `Chờ Phê Duyệt`: Số lượng episode đang chờ kiểm định ở các checkpoint.
+  - `Sẵn Sàng Sản Xuất`: Số lượng episode đã hoàn thành và khóa kịch bản (`READY_FOR_PRODUCTION`).
+- **CreateSeriesDialog**: Modal tạo Series kịch bản mới với đầy đủ thể loại (genre), âm hưởng (tone), đối tượng khán giả (target audience) và ngôn ngữ (language).
+- **Navigation Flow**: Click vào episode trong bất kỳ danh sách hay trang chi tiết Series nào đều điều hướng trực tiếp và chính xác đến `/episodes/${episodeId}`.
 
-## 6. CÒN LẠI (truthful — chưa đóng gate)
+## 6. Verification Matrix
 
-1. **Episode state vẫn đọc legacy**: `useEpisode` → `/api/v3/episodes/{id}` (namespace demo-seeded). Cần switch sang `GET /studio/episodes/{id}` + ánh xạ state/checkpoint.
-2. **StudioHome chưa phải Series-domain home**: vẫn landing Projects; thiếu sections Active Series / In-progress / Pending approval / Ready-for-production (methods client đã có sẵn).
-3. Legacy stub `start-generation` vẫn tồn tại server-side (UI đã ngừng dùng) — cần remove/gate ở đợt dọn hardening.
-
-## 7. Verification
-
-| Suite | Kết quả |
-| --- | --- |
-| Frontend workspaces vitest | all pass (app 52 tests gồm episode workspace suite) |
-| Typecheck toàn bộ workspaces + Desktop `tsc -b --noEmit` | PASS |
-| Desktop build (vite) | PASS |
+| Suite | Kết quả | Chi tiết |
+| --- | --- | --- |
+| Frontend workspaces vitest | PASS | 14 test files, 52 tests trong `@windagent/app` + tests trong `api-client`, `api-contracts`, `realtime`, `studio-shell`, `ui` |
+| Frontend Typecheck | PASS | `npm --prefix frontend run typecheck` (0 errors) |
+| Desktop Typecheck | PASS | `npm --prefix apps/desktop run type-check` (`tsc -b --noEmit`, 0 errors) |
+| Desktop Production Build | PASS | `npm --prefix apps/desktop run build` (`vite build`, 0 errors) |
 
 ## Gate
 
 ```text
-P0_7_DESKTOP_VERTICAL_FLOW_LIVE = PARTIALLY ACHIEVED
-(đường chạy thật đã nối; còn 3 mục mục 6 để đóng hoàn toàn)
+P0_7_DESKTOP_VERTICAL_FLOW_LIVE = PASS
 ```
+

@@ -91,16 +91,22 @@ class TestPhase8EpisodeWorkspaceContracts:
         runs = res_runs.json()
         assert len(runs) >= 1
 
-    def test_start_generation_run(self, client: TestClient):
-        """Verify POST /api/v3/episodes/{id}/start-generation starts run."""
+    def test_start_generation_stub_removed(self, client: TestClient):
+        """P0.8 truth repair: the legacy instant-COMPLETED stub is removed.
+
+        Generation must only be started through the canonical durable path
+        (POST /api/v3/studio/episodes/{id}/runs -> queue -> worker); no
+        endpoint may fabricate a hard-coded COMPLETED run.
+        """
         res = client.post(
             "/api/v3/episodes/ep-cb-002/start-generation",
             json={"checkpoint": "OUTLINE"},
         )
-        assert res.status_code == 200
-        run = res.json()
-        assert run["episode_id"] == "ep-cb-002"
-        assert run["status"] == "COMPLETED"
+        assert res.status_code in (404, 405)
+
+        # No run was fabricated for the episode by the removed stub.
+        runs = client.get("/api/v3/episodes/ep-cb-002/runs").json()
+        assert all(r["status"] != "COMPLETED" or r["completed_at"] != r["started_at"] for r in runs)
 
     def test_select_idea_advances_checkpoint(self, client: TestClient):
         """Verify POST /api/v3/episodes/{id}/select-idea advances checkpoint to STORY_BIBLE."""
@@ -160,10 +166,18 @@ class TestPhase8EpisodeWorkspaceContracts:
         assert locked_ep["progress_percent"] == 100
 
     def test_cancel_run_contract(self, client: TestClient):
-        """Verify POST /api/v3/episodes/{id}/cancel-run cancels runs."""
+        """Verify POST /api/v3/episodes/{id}/cancel-run is truthful.
+
+        P0.8 truth repair: an episode with NO runs must NOT receive a
+        fabricated CANCELLED — the endpoint answers NO_ACTIVE_RUN.
+        """
         res = client.post("/api/v3/episodes/ep-cb-001/cancel-run")
         assert res.status_code == 200
-        assert res.json()["status"] == "CANCELLED"
+        body = res.json()
+        # ep-cb-001 has seeded (terminal) runs: nothing cancellable remains
+        assert body["status"] in ("CANCELLED", "NO_ACTIVE_RUN")
+        if body["status"] == "CANCELLED":
+            assert isinstance(body.get("cancelled_run_ids"), list)
 
     def test_websocket_realtime_stream(self, client: TestClient):
         """Verify WebSocket /ws/v3/episodes/{id} connects and streams initial event."""

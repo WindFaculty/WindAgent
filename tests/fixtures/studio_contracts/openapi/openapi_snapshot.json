@@ -4400,7 +4400,7 @@
             "title": "Error Message"
           },
           "progress_percent": {
-            "default": 100,
+            "default": 0,
             "description": "Run execution progress",
             "title": "Progress Percent",
             "type": "integer"
@@ -4416,7 +4416,7 @@
             "type": "string"
           },
           "status": {
-            "default": "COMPLETED",
+            "default": "PENDING",
             "description": "Run status ('PENDING', 'RUNNING', 'COMPLETED', 'FAILED', 'CANCELLED')",
             "title": "Status",
             "type": "string"
@@ -4429,6 +4429,54 @@
           "started_at"
         ],
         "title": "PipelineRun",
+        "type": "object"
+      },
+      "PreflightCheckResource": {
+        "properties": {
+          "detail": {
+            "default": "",
+            "title": "Detail",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "status"
+        ],
+        "title": "PreflightCheckResource",
+        "type": "object"
+      },
+      "PreflightReportResponse": {
+        "properties": {
+          "checks": {
+            "items": {
+              "$ref": "#/components/schemas/PreflightCheckResource"
+            },
+            "title": "Checks",
+            "type": "array"
+          },
+          "episode_id": {
+            "title": "Episode Id",
+            "type": "string"
+          },
+          "ready": {
+            "title": "Ready",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "episode_id",
+          "ready"
+        ],
+        "title": "PreflightReportResponse",
         "type": "object"
       },
       "ProcessMetrics": {
@@ -5611,6 +5659,131 @@
         "title": "RouteLockDetailResource",
         "type": "object"
       },
+      "RouteReceiptResource": {
+        "properties": {
+          "completed_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed At"
+          },
+          "endpoint_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Endpoint Id"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          },
+          "fallback_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fallback Reason"
+          },
+          "fallback_used": {
+            "default": false,
+            "title": "Fallback Used",
+            "type": "boolean"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "provider_model_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider Model Id"
+          },
+          "role": {
+            "title": "Role",
+            "type": "string"
+          },
+          "route_lock_id": {
+            "title": "Route Lock Id",
+            "type": "string"
+          },
+          "rule_id": {
+            "title": "Rule Id",
+            "type": "string"
+          },
+          "selected_model_id": {
+            "title": "Selected Model Id",
+            "type": "string"
+          },
+          "selected_provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Selected Provider"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "task_id": {
+            "title": "Task Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "task_id",
+          "role",
+          "rule_id",
+          "route_lock_id",
+          "selected_model_id",
+          "status"
+        ],
+        "title": "RouteReceiptResource",
+        "type": "object"
+      },
       "RouteSimulationRequest": {
         "properties": {
           "cost_class": {
@@ -6495,36 +6668,6 @@
         "title": "ShotResource",
         "type": "object"
       },
-      "StartGenerationRequest": {
-        "properties": {
-          "checkpoint": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Target checkpoint stage",
-            "title": "Checkpoint"
-          },
-          "prompt_override": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Custom prompt or direction",
-            "title": "Prompt Override"
-          }
-        },
-        "title": "StartGenerationRequest",
-        "type": "object"
-      },
       "StartRunRequest": {
         "additionalProperties": false,
         "properties": {
@@ -6561,6 +6704,43 @@
           "assets_count"
         ],
         "title": "StorageSummary",
+        "type": "object"
+      },
+      "StoryRoleResource": {
+        "properties": {
+          "aliases": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Aliases",
+            "type": "array"
+          },
+          "capability_labels": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Capability Labels",
+            "type": "array"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "llm_routed": {
+            "default": true,
+            "title": "Llm Routed",
+            "type": "boolean"
+          },
+          "role": {
+            "title": "Role",
+            "type": "string"
+          }
+        },
+        "required": [
+          "role",
+          "label"
+        ],
+        "title": "StoryRoleResource",
         "type": "object"
       },
       "StoryboardResource": {
@@ -7335,45 +7515,6 @@
         "title": "UpdateCharacterRequest",
         "type": "object"
       },
-      "UpdateEpisodeRequest": {
-        "properties": {
-          "description": {
-            "anyOf": [
-              {
-                "maxLength": 2000,
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Description"
-          },
-          "expected_version": {
-            "description": "Expected current version counter",
-            "title": "Expected Version",
-            "type": "integer"
-          },
-          "title": {
-            "anyOf": [
-              {
-                "maxLength": 200,
-                "minLength": 1,
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Title"
-          }
-        },
-        "required": [
-          "expected_version"
-        ],
-        "title": "UpdateEpisodeRequest",
-        "type": "object"
-      },
       "UpdateProjectRequest": {
         "properties": {
           "description": {
@@ -7778,6 +7919,41 @@
           "expected_version"
         ],
         "title": "UpdateSceneRequest",
+        "type": "object"
+      },
+      "UpdateSeriesRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "metadata_patch": {
+            "additionalProperties": true,
+            "title": "Metadata Patch",
+            "type": "object"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          }
+        },
+        "title": "UpdateSeriesRequest",
         "type": "object"
       },
       "UpdateShotRequest": {
@@ -8688,6 +8864,45 @@
         "title": "SelectIdeaRequest",
         "type": "object"
       },
+      "windagent_api__routers__v3__episodes__UpdateEpisodeRequest": {
+        "properties": {
+          "description": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "expected_version": {
+            "description": "Expected current version counter",
+            "title": "Expected Version",
+            "type": "integer"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          }
+        },
+        "required": [
+          "expected_version"
+        ],
+        "title": "UpdateEpisodeRequest",
+        "type": "object"
+      },
       "windagent_api__routers__v3__projects__CreateEpisodeRequest": {
         "properties": {
           "episode_number": {
@@ -8907,6 +9122,64 @@
           "expected_content_hash"
         ],
         "title": "SelectIdeaRequest",
+        "type": "object"
+      },
+      "windagent_api__routers__v3__studio__schemas__UpdateEpisodeRequest": {
+        "additionalProperties": true,
+        "properties": {
+          "episode_id": {
+            "title": "Episode Id",
+            "type": "string"
+          },
+          "expected_optimistic_version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Optimistic Version"
+          },
+          "idempotency_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Idempotency Key"
+          },
+          "metadata_patch": {
+            "additionalProperties": true,
+            "title": "Metadata Patch",
+            "type": "object"
+          },
+          "schema_version": {
+            "default": "studio.command/v1",
+            "title": "Schema Version",
+            "type": "string"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          }
+        },
+        "required": [
+          "episode_id"
+        ],
+        "title": "UpdateEpisodeRequest",
         "type": "object"
       }
     }
@@ -11127,7 +11400,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateEpisodeRequest"
+                "$ref": "#/components/schemas/windagent_api__routers__v3__episodes__UpdateEpisodeRequest"
               }
             }
           },
@@ -12100,77 +12373,6 @@
         "summary": "Create Shot",
         "tags": [
           "Production V3"
-        ]
-      }
-    },
-    "/api/v3/episodes/{episode_id}/start-generation": {
-      "post": {
-        "description": "Start an AI generation run for the next or requested checkpoint stage.",
-        "operationId": "episodes.startGeneration",
-        "parameters": [
-          {
-            "description": "Episode ID",
-            "in": "path",
-            "name": "episode_id",
-            "required": true,
-            "schema": {
-              "description": "Episode ID",
-              "title": "Episode Id",
-              "type": "string"
-            }
-          },
-          {
-            "in": "header",
-            "name": "Idempotency-Key",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Idempotency-Key"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/StartGenerationRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PipelineRun"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Start Generation",
-        "tags": [
-          "Episodes V3"
         ]
       }
     },
@@ -15326,7 +15528,7 @@
     },
     "/api/v3/routing/graph": {
       "get": {
-        "description": "Generate routing topology graph linking roles, rules, models, and providers.",
+        "description": "Routing topology derived from the durable rules \u2014 no invented nodes.",
         "operationId": "routing.getGraph",
         "responses": {
           "200": {
@@ -15391,7 +15593,7 @@
     },
     "/api/v3/routing/metrics": {
       "get": {
-        "description": "Retrieve realtime traffic metrics and distribution.",
+        "description": "Traffic metrics computed from durable receipts and rules.\n\nEvery number is derived from persisted state; when nothing has been\nrouted yet the honest zeros are returned (never fabricated traffic).",
         "operationId": "routing.getMetrics",
         "responses": {
           "200": {
@@ -15406,6 +15608,112 @@
           }
         },
         "summary": "Get Routing Metrics",
+        "tags": [
+          "Routing V3"
+        ]
+      }
+    },
+    "/api/v3/routing/receipts": {
+      "get": {
+        "description": "Durable per-task route receipts (P0.3.6): which rule/model served what.\n\nOnly real executions are returned; the store is written exclusively by\nthe worker model router.",
+        "operationId": "routing.listReceipts",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "task_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Task Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "role",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Role"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RouteReceiptResource"
+                  },
+                  "title": "Response Routing.Listreceipts",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Route Receipts",
+        "tags": [
+          "Routing V3"
+        ]
+      }
+    },
+    "/api/v3/routing/roles": {
+      "get": {
+        "description": "Canonical story model-routing roles (server authority, P0.3.1).",
+        "operationId": "routing.listStoryRoles",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/StoryRoleResource"
+                  },
+                  "title": "Response Routing.Liststoryroles",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Story Roles",
         "tags": [
           "Routing V3"
         ]
@@ -16144,6 +16452,76 @@
           "studio-v3",
           "studio-episodes"
         ]
+      },
+      "patch": {
+        "description": "P0.4 \u2014 edit a DRAFT episode (title + metadata merge).\n\nGeneration-affecting fields are immutable once the episode leaves DRAFT;\nthe authority rejects conflicting patches with the immutable field list.",
+        "operationId": "update_episode_api_v3_studio_episodes__episode_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "episode_id",
+            "required": true,
+            "schema": {
+              "title": "Episode Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/windagent_api__routers__v3__studio__schemas__UpdateEpisodeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Update Episode Api V3 Studio Episodes  Episode Id  Patch",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Episode",
+        "tags": [
+          "studio-v3",
+          "studio-episodes"
+        ]
       }
     },
     "/api/v3/studio/episodes/{episode_id}/approvals": {
@@ -16344,6 +16722,50 @@
         "tags": [
           "studio-v3",
           "studio-decisions"
+        ]
+      }
+    },
+    "/api/v3/studio/episodes/{episode_id}/preflight": {
+      "get": {
+        "description": "P0.4.1 \u2014 truthful per-check report before starting a Story run.",
+        "operationId": "preflight_start_api_v3_studio_episodes__episode_id__preflight_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "episode_id",
+            "required": true,
+            "schema": {
+              "title": "Episode Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreflightReportResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Preflight Start",
+        "tags": [
+          "studio-v3",
+          "studio-episodes"
         ]
       }
     },
@@ -16866,6 +17288,76 @@
           }
         },
         "summary": "Get Series",
+        "tags": [
+          "studio-v3",
+          "studio-series"
+        ]
+      },
+      "patch": {
+        "description": "P0.4 \u2014 edit series metadata (title/description/metadata merge).",
+        "operationId": "update_series_api_v3_studio_series__series_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "series_id",
+            "required": true,
+            "schema": {
+              "title": "Series Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSeriesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Update Series Api V3 Studio Series  Series Id  Patch",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Series",
         "tags": [
           "studio-v3",
           "studio-series"

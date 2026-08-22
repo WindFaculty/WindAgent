@@ -165,6 +165,78 @@ export const EpisodeWorkspacePage: React.FC<EpisodeWorkspacePageProps> = ({ epis
         </div>
       </div>
 
+      {/* Offline Alert */}
+      {!isConnected && (
+        <div
+          style={{
+            padding: '10px 16px',
+            marginBottom: '16px',
+            background: 'rgba(234, 179, 8, 0.1)',
+            border: '1px solid rgba(234, 179, 8, 0.25)',
+            borderRadius: '10px',
+            color: '#facc15',
+            fontSize: '13px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+          }}
+        >
+          <WifiOff size={15} />
+          <span>Mất kết nối realtime WebSocket — chuyển sang chế độ đồng bộ định kỳ (Polling).</span>
+        </div>
+      )}
+
+      {/* P0.7 — Required UX State: FAILED */}
+      {episode.state === 'FAILED' && (
+        <Card
+          style={{
+            padding: '20px',
+            marginBottom: '20px',
+            background: 'rgba(239, 68, 68, 0.12)',
+            border: '1px solid rgba(239, 68, 68, 0.4)',
+            borderRadius: '12px',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: '#f87171' }}>
+              <AlertCircle size={22} />
+              <div>
+                <strong style={{ fontSize: '15px' }}>Tiến trình tạo kịch bản đã gặp lỗi (FAILED).</strong>
+                <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#fca5a5' }}>
+                  Có thể do lỗi mạng hoặc quota provider. Nhấn nút bên cạnh để khôi phục và tiếp tục từ checkpoint gần nhất.
+                </p>
+              </div>
+            </div>
+            <Button variant="primary" onClick={() => void handleStartStory()} disabled={isGenerating}>
+              Thử lại / Khôi phục Run
+            </Button>
+          </div>
+        </Card>
+      )}
+
+      {/* P0.7 — Required UX State: WAITING FOR INPUT (Idea Selection) */}
+      {(episode.state === 'IDEA_REVIEW' || episode.current_checkpoint === 'IDEA') && latestIdeaSet && (
+        <div
+          style={{
+            padding: '12px 18px',
+            marginBottom: '18px',
+            background: 'rgba(56, 189, 248, 0.1)',
+            border: '1px solid rgba(56, 189, 248, 0.3)',
+            borderRadius: '12px',
+            color: '#38bdf8',
+            fontSize: '13px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+          }}
+        >
+          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#38bdf8', animation: 'pulse 1.5s infinite' }} />
+          <span>
+            <strong>Đang chờ bạn chọn ý tưởng:</strong> Hãy xem xét các ý tưởng bên dưới và bấm &quot;Chọn ý tưởng này&quot; để tiếp tục tự động sinh Story Bible và Kịch bản.
+          </span>
+        </div>
+      )}
+
       {/* P0.7 — Start Story drives the real durable run (preflight-gated) */}
       {startError && (
         <Card
@@ -202,7 +274,16 @@ export const EpisodeWorkspacePage: React.FC<EpisodeWorkspacePageProps> = ({ epis
             artifact={latestIdeaSet}
             isGenerating={isGenerating}
             onStartGeneration={() => void handleStartStory()}
-            onSelectIdea={(ideaId) => selectIdea({ idea_id: ideaId, expected_version: episode.version })}
+            onSelectIdea={async (ideaId) => {
+              await selectIdea({
+                candidate_id: ideaId,
+                revision_id: latestIdeaSet?.revision_id || episode.current_revision_id || '',
+                expected_content_hash: (latestIdeaSet as any)?.content_hash || '',
+                expected_optimistic_version: episode.version,
+              });
+              invalidate();
+              refetch();
+            }}
             isSelectingIdea={isSelectingIdea}
           />
         )}
@@ -246,17 +327,44 @@ export const EpisodeWorkspacePage: React.FC<EpisodeWorkspacePageProps> = ({ epis
         isSubmitting={isSubmittingDecision || isLocking}
         screenplayContentHash={(latestScreenplay as any)?.content_hash ?? null}
         onApprove={async (revId, expectedVer) => {
-          await submitDecision({ decision: 'APPROVED', revision_id: revId, expected_version: expectedVer });
+          const currentArtifact =
+            activeTab === 'SCREENPLAY' || activeTab === 'REVIEW'
+              ? latestScreenplay
+              : activeTab === 'OUTLINE'
+              ? latestOutline
+              : activeTab === 'STORY_BIBLE'
+              ? latestStoryBible
+              : latestIdeaSet;
+          const hash = (currentArtifact as any)?.content_hash || (latestScreenplay as any)?.content_hash || '';
+          await submitDecision({
+            decision: 'APPROVED',
+            revision_id: revId,
+            checkpoint: episode.current_checkpoint || activeTab,
+            artifact_hash: hash,
+            expected_optimistic_version: expectedVer,
+          });
           invalidate();
           refetch();
         }}
         onRevise={async (revId, feedback, expectedVer) => {
-          await submitDecision({ decision: 'REVISE', revision_id: revId, feedback, expected_version: expectedVer });
+          const hash = (latestScreenplay as any)?.content_hash || '';
+          await submitDecision({
+            decision: 'REVISE',
+            revision_id: revId,
+            checkpoint: episode.current_checkpoint || 'SCREENPLAY',
+            artifact_hash: hash,
+            feedback,
+            expected_optimistic_version: expectedVer,
+          });
           invalidate();
           refetch();
         }}
         onLock={async (revId, contentHash, expectedVer) => {
-          await lockScreenplay({ revision_id: revId, content_hash: contentHash, expected_version: expectedVer });
+          await lockScreenplay({
+            revision_id: revId,
+            expected_content_hash: contentHash,
+            expected_optimistic_version: expectedVer,
+          });
           invalidate();
           refetch();
         }}

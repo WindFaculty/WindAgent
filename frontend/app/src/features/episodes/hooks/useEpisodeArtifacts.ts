@@ -38,7 +38,23 @@ export function useEpisodeArtifacts(episodeId?: string) {
     queryKey: EPISODE_RUNS_QUERY_KEY(episodeId ?? ''),
     queryFn: async () => {
       if (!episodeId) return [];
-      return client.episodes.getRuns(episodeId);
+      // P0.8 canonical-only: run truth = the canonical episode view
+      // (active_run_id + run_url from /api/v3/studio). No legacy demo-namespace
+      // run list — a fabricated COMPLETED row must never reach the UI.
+      const raw: any = await client.studio.getEpisode(episodeId);
+      if (!raw?.active_run_id) return [];
+      const startedAt = String(raw.updated_at || new Date().toISOString());
+      const state = String(raw.state || 'DRAFT');
+      return [
+        {
+          run_id: String(raw.active_run_id),
+          episode_id: episodeId,
+          checkpoint: raw.awaiting_checkpoint ? String(raw.awaiting_checkpoint) : state,
+          status: 'RUNNING',
+          progress_percent: 0,
+          started_at: startedAt,
+        },
+      ] as unknown as PipelineRun[];
     },
     enabled: Boolean(episodeId),
     staleTimeMs: 10000,
