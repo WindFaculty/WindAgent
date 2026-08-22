@@ -6,6 +6,7 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Wifi, WifiOff, AlertCircle } from 'lucide-react';
 import { useRouter } from '../../../app/router';
+import { useApiClient } from '../../../shared/hooks/useApiClient';
 import { useEpisode } from '../hooks/useEpisode';
 import { useEpisodeArtifacts } from '../hooks/useEpisodeArtifacts';
 import { useEpisodeCommands } from '../hooks/useEpisodeCommands';
@@ -25,7 +26,8 @@ export interface EpisodeWorkspacePageProps {
 
 export const EpisodeWorkspacePage: React.FC<EpisodeWorkspacePageProps> = ({ episodeId: propEpisodeId }) => {
   const { currentRoute, navigate } = useRouter();
-  const episodeId = propEpisodeId || (currentRoute as any)?.params?.episodeId || 'ep-cb-001';
+  const client = useApiClient();
+  const episodeId = propEpisodeId || (currentRoute as any)?.params?.episodeId || '';
 
   const { episode, isLoading, isError, error, refetch, invalidate } = useEpisode(episodeId);
   const {
@@ -37,7 +39,6 @@ export const EpisodeWorkspacePage: React.FC<EpisodeWorkspacePageProps> = ({ epis
 
 
   const {
-    startGeneration,
     isGenerating,
     selectIdea,
     isSelectingIdea,
@@ -48,6 +49,30 @@ export const EpisodeWorkspacePage: React.FC<EpisodeWorkspacePageProps> = ({ epis
   } = useEpisodeCommands(episodeId);
 
   const { isConnected } = useEpisodeRealtime(episodeId);
+
+  // P0.7 — the Start buttons drive the REAL durable Story run through
+  // /api/v3/studio (preflight gate + start-or-resume), never the legacy
+  // instant-COMPLETED stub. Server state decides; the UI only reports.
+  const [startError, setStartError] = useState<string | null>(null);
+  const handleStartStory = async () => {
+    setStartError(null);
+    try {
+      const report = await client.studio.preflightStart(episodeId);
+      const failed = report.checks.filter((c) => c.status === 'FAIL');
+      if (!report.ready) {
+        setStartError(
+          'START_BLOCKED: ' +
+            failed.map((c) => `${c.name}${c.detail ? ` — ${c.detail}` : ''}`).join('; '),
+        );
+        return;
+      }
+      await client.studio.startRun(episodeId, crypto.randomUUID());
+      invalidate();
+      refetch();
+    } catch (err: any) {
+      setStartError(err?.message || 'Không thể bắt đầu Story run.');
+    }
+  };
 
   const [activeTab, setActiveTab] = useState<CheckpointStage>('SCREENPLAY');
 
@@ -140,6 +165,28 @@ export const EpisodeWorkspacePage: React.FC<EpisodeWorkspacePageProps> = ({ epis
         </div>
       </div>
 
+      {/* P0.7 — Start Story drives the real durable run (preflight-gated) */}
+      {startError && (
+        <Card
+          style={{
+            padding: '16px 20px',
+            marginBottom: '18px',
+            background: 'rgba(239, 68, 68, 0.08)',
+            border: '1px solid rgba(239, 68, 68, 0.35)',
+            borderRadius: '12px',
+          }}
+          role="alert"
+        >
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', color: '#fca5a5' }}>
+            <AlertCircle size={18} />
+            <div>
+              <strong>Không thể bắt đầu Story run.</strong>
+              <div style={{ fontSize: '13px', marginTop: '4px' }}>{startError}</div>
+            </div>
+          </div>
+        </Card>
+      )}
+
       {/* Pipeline Stepper */}
       <EpisodePipeline
         currentCheckpoint={episode.current_checkpoint || 'IDEA'}
@@ -154,7 +201,7 @@ export const EpisodeWorkspacePage: React.FC<EpisodeWorkspacePageProps> = ({ epis
           <IdeaPanel
             artifact={latestIdeaSet}
             isGenerating={isGenerating}
-            onStartGeneration={() => startGeneration({ checkpoint: 'IDEA' })}
+            onStartGeneration={() => void handleStartStory()}
             onSelectIdea={(ideaId) => selectIdea({ idea_id: ideaId, expected_version: episode.version })}
             isSelectingIdea={isSelectingIdea}
           />
@@ -164,7 +211,7 @@ export const EpisodeWorkspacePage: React.FC<EpisodeWorkspacePageProps> = ({ epis
           <StoryBiblePanel
             artifact={latestStoryBible}
             isGenerating={isGenerating}
-            onStartGeneration={() => startGeneration({ checkpoint: 'STORY_BIBLE' })}
+            onStartGeneration={() => void handleStartStory()}
           />
         )}
 
@@ -172,7 +219,7 @@ export const EpisodeWorkspacePage: React.FC<EpisodeWorkspacePageProps> = ({ epis
           <OutlinePanel
             artifact={latestOutline}
             isGenerating={isGenerating}
-            onStartGeneration={() => startGeneration({ checkpoint: 'OUTLINE' })}
+            onStartGeneration={() => void handleStartStory()}
           />
         )}
 
@@ -180,7 +227,7 @@ export const EpisodeWorkspacePage: React.FC<EpisodeWorkspacePageProps> = ({ epis
           <ScreenplayPanel
             artifact={latestScreenplay}
             isGenerating={isGenerating}
-            onStartGeneration={() => startGeneration({ checkpoint: 'SCREENPLAY' })}
+            onStartGeneration={() => void handleStartStory()}
           />
         )}
 
@@ -188,7 +235,7 @@ export const EpisodeWorkspacePage: React.FC<EpisodeWorkspacePageProps> = ({ epis
           <ScreenplayPanel
             artifact={latestScreenplay}
             isGenerating={isGenerating}
-            onStartGeneration={() => startGeneration({ checkpoint: 'SCREENPLAY' })}
+            onStartGeneration={() => void handleStartStory()}
           />
         )}
       </Card>
@@ -197,6 +244,7 @@ export const EpisodeWorkspacePage: React.FC<EpisodeWorkspacePageProps> = ({ epis
       <CheckpointReviewPanel
         episode={episode}
         isSubmitting={isSubmittingDecision || isLocking}
+        screenplayContentHash={(latestScreenplay as any)?.content_hash ?? null}
         onApprove={async (revId, expectedVer) => {
           await submitDecision({ decision: 'APPROVED', revision_id: revId, expected_version: expectedVer });
           invalidate();

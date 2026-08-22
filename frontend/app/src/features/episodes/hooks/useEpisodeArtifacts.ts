@@ -17,7 +17,18 @@ export function useEpisodeArtifacts(episodeId?: string) {
     queryKey: EPISODE_ARTIFACTS_QUERY_KEY(episodeId ?? ''),
     queryFn: async () => {
       if (!episodeId) return [];
-      return client.episodes.getArtifacts(episodeId);
+      // P0.7: canonical content-addressed studio artifacts (real revision
+      // authority + content_hash), not the legacy demo namespace.
+      const rows = await client.studio.listEpisodeArtifacts(episodeId);
+      return rows.map((a: any) => ({
+        artifact_id: String(a.artifact_id ?? ''),
+        episode_id: String(a.episode_id ?? episodeId),
+        kind: String(a.artifact_type ?? a.kind ?? ''),
+        revision_id: a.revision_id ? String(a.revision_id) : '',
+        content: (a.content ?? {}) as Record<string, any>,
+        created_at: String(a.created_at ?? ''),
+        ...a,
+      })) as EpisodeArtifactEnvelope[];
     },
     enabled: Boolean(episodeId),
     staleTimeMs: 10000,

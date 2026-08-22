@@ -7,6 +7,12 @@ import type {
   EpisodeResource,
   CursorPage,
   RuntimeCapabilityProfile,
+  StudioSeriesListResponse,
+  StudioSeriesCreateResponse,
+  StudioSeriesUpdateResponse,
+  StudioEpisodeListResponse,
+  StudioEpisodeCreateResponse,
+  StudioPreflightReport,
   ReadinessResponse,
   AgentDefinitionResource,
   AgentInstanceResource,
@@ -194,6 +200,64 @@ export class StudioApi {
 
   async getReadiness(): Promise<ReadinessResponse> {
     return this.transport.get<ReadinessResponse>('/api/v3/studio/readiness');
+  }
+
+  // ── P0.7 — canonical Series / Episodes / Runs surfaces ──────────────────
+
+  async listSeries(params?: { cursor?: string; limit?: number }): Promise<StudioSeriesListResponse> {    return this.transport.get<StudioSeriesListResponse>('/api/v3/studio/series', params);
+  }
+
+  async createSeries(data: { title: string; description?: string; metadata?: Record<string, unknown> }, idempotencyKey: string): Promise<StudioSeriesCreateResponse> {
+    return this.transport.post<StudioSeriesCreateResponse>('/api/v3/studio/series', {
+      schema_version: 'studio.command/v1',
+      title: data.title,
+      description: data.description ?? '',
+      metadata: data.metadata ?? {},
+    }, { headers: { 'X-Idempotency-Key': idempotencyKey } });
+  }
+
+  async updateSeries(seriesId: string, data: { title?: string; description?: string; metadata_patch?: Record<string, unknown> }, idempotencyKey: string): Promise<StudioSeriesUpdateResponse> {
+    return this.transport.patch<StudioSeriesUpdateResponse>(
+      `/api/v3/studio/series/${encodeURIComponent(seriesId)}`,
+      data,
+      { headers: { 'X-Idempotency-Key': idempotencyKey } },
+    );
+  }
+
+  async getSeries(seriesId: string): Promise<Record<string, unknown>> {
+    return this.transport.get<Record<string, unknown>>(`/api/v3/studio/series/${encodeURIComponent(seriesId)}`);
+  }
+
+  async listEpisodes(seriesId: string): Promise<StudioEpisodeListResponse> {
+    return this.transport.get<StudioEpisodeListResponse>(`/api/v3/studio/series/${encodeURIComponent(seriesId)}/episodes`);
+  }
+
+  async createEpisode(seriesId: string, data: { series_id: string; title: string; episode_number?: number; metadata?: Record<string, unknown> }, idempotencyKey: string): Promise<StudioEpisodeCreateResponse> {
+    return this.transport.post<StudioEpisodeCreateResponse>(`/api/v3/studio/series/${encodeURIComponent(seriesId)}/episodes`, {
+      schema_version: 'studio.command/v1',
+      series_id: data.series_id,
+      title: data.title,
+      episode_number: data.episode_number ?? 1,
+      metadata: data.metadata ?? {},
+    }, { headers: { 'X-Idempotency-Key': idempotencyKey } });
+  }
+
+  async getEpisode(episodeId: string): Promise<Record<string, unknown>> {
+    return this.transport.get<Record<string, unknown>>(`/api/v3/studio/episodes/${encodeURIComponent(episodeId)}`);
+  }
+
+  /** Canonical content-addressed story artifacts (includes content_hash). */
+  async listEpisodeArtifacts(episodeId: string): Promise<Array<Record<string, any>>> {
+    return this.transport.get<Array<Record<string, any>>>(`/api/v3/studio/episodes/${encodeURIComponent(episodeId)}/artifacts`);
+  }
+
+  async preflightStart(episodeId: string): Promise<StudioPreflightReport> {
+    return this.transport.get<StudioPreflightReport>(`/api/v3/studio/episodes/${encodeURIComponent(episodeId)}/preflight`);
+  }
+
+  /** Start or resume the durable Story run (202 + Location). */
+  async startRun(episodeId: string, idempotencyKey: string): Promise<{ run_id: string; episode_id: string; resuming: boolean; run_url: string }> {
+    return this.transport.post(`/api/v3/studio/episodes/${encodeURIComponent(episodeId)}/runs`, {}, { headers: { 'X-Idempotency-Key': idempotencyKey } });
   }
 }
 

@@ -11,6 +11,10 @@ import type { EpisodeResource } from '@windagent/api-contracts';
 export interface CheckpointReviewPanelProps {
   episode: EpisodeResource;
   isSubmitting?: boolean;
+  /** P0.7: the REAL server-side content hash of the current screenplay
+   *  artifact. Lock stays disabled until the artifact provides one — the
+   *  frontend never fabricates hashes. */
+  screenplayContentHash?: string | null;
   onApprove: (revisionId: string, expectedVersion: number) => Promise<any>;
   onRevise: (revisionId: string, feedback: string, expectedVersion: number) => Promise<any>;
   onLock: (revisionId: string, contentHash: string, expectedVersion: number) => Promise<any>;
@@ -19,6 +23,7 @@ export interface CheckpointReviewPanelProps {
 export const CheckpointReviewPanel: React.FC<CheckpointReviewPanelProps> = ({
   episode,
   isSubmitting,
+  screenplayContentHash,
   onApprove,
   onRevise,
   onLock,
@@ -57,10 +62,12 @@ export const CheckpointReviewPanel: React.FC<CheckpointReviewPanelProps> = ({
 
   const handleLock = async () => {
     setErrorMsg(null);
+    if (!screenplayContentHash) {
+      setErrorMsg('Chưa có artifact kịch bản với content hash từ server — không thể khóa.');
+      return;
+    }
     try {
-      // Create sha-256 hash representation
-      const contentHash = `sha256-${crypto.randomUUID().replace(/-/g, '')}`;
-      await onLock(revisionId, contentHash, episode.version);
+      await onLock(revisionId, screenplayContentHash, episode.version);
     } catch (err: any) {
       setErrorMsg(err?.message || 'Khóa kịch bản thất bại.');
     }
@@ -135,7 +142,8 @@ export const CheckpointReviewPanel: React.FC<CheckpointReviewPanelProps> = ({
               <Button
                 variant="primary"
                 onClick={handleLock}
-                disabled={isSubmitting}
+                disabled={isSubmitting || !screenplayContentHash}
+                title={screenplayContentHash ? undefined : 'Cần artifact kịch bản từ server'}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
