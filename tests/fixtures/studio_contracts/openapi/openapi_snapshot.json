@@ -2098,14 +2098,70 @@
       },
       "CreateLocationRequest": {
         "properties": {
+          "architecture": {
+            "default": "",
+            "title": "Architecture",
+            "type": "string"
+          },
           "atmosphere": {
             "default": "",
             "title": "Atmosphere",
             "type": "string"
           },
+          "color_palette": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Color Palette",
+            "type": "array"
+          },
+          "continuity_notes": {
+            "default": "",
+            "title": "Continuity Notes",
+            "type": "string"
+          },
+          "day_scene_compatible": {
+            "default": true,
+            "title": "Day Scene Compatible",
+            "type": "boolean"
+          },
           "description": {
             "default": "",
             "title": "Description",
+            "type": "string"
+          },
+          "exterior": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exterior"
+          },
+          "important_props": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Important Props",
+            "type": "array"
+          },
+          "interior": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interior"
+          },
+          "lighting_character": {
+            "default": "",
+            "title": "Lighting Character",
             "type": "string"
           },
           "name": {
@@ -2113,6 +2169,16 @@
             "minLength": 1,
             "title": "Name",
             "type": "string"
+          },
+          "night_scene_compatible": {
+            "default": true,
+            "title": "Night Scene Compatible",
+            "type": "boolean"
+          },
+          "reusable_set": {
+            "default": false,
+            "title": "Reusable Set",
+            "type": "boolean"
           },
           "type": {
             "default": "Interior",
@@ -3728,27 +3794,148 @@
       },
       "InitializeWorldBibleRequest": {
         "properties": {
+          "continuity_constraints": {
+            "anyOf": [
+              {
+                "items": {},
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Continuity Constraints"
+          },
           "core_theme": {
-            "default": "",
-            "title": "Core Theme",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Core Theme"
+          },
+          "environment_style": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Environment Style"
+          },
+          "expected_version": {
+            "default": 1,
+            "description": "Unused on initialize; kept for schema symmetry",
+            "title": "Expected Version",
+            "type": "integer"
+          },
+          "magic_rules": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Magic Rules"
+          },
+          "physical_rules": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Physical Rules"
           },
           "rules": {
-            "items": {
-              "type": "string"
-            },
-            "title": "Rules",
-            "type": "array"
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rules"
           },
           "setting_summary": {
-            "default": "",
-            "title": "Setting Summary",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Setting Summary"
+          },
+          "social_rules": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Social Rules"
+          },
+          "technology_rules": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Technology Rules"
           },
           "timeline_era": {
-            "default": "",
-            "title": "Timeline Era",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timeline Era"
+          },
+          "visual_style": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Visual Style"
           },
           "world_name": {
             "description": "Explicit canonical world name",
@@ -3841,27 +4028,109 @@
       },
       "LocationResource": {
         "properties": {
+          "architecture": {
+            "default": "",
+            "title": "Architecture",
+            "type": "string"
+          },
           "atmosphere": {
             "default": "",
             "title": "Atmosphere",
             "type": "string"
+          },
+          "color_palette": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Color Palette",
+            "type": "array"
+          },
+          "content_hash": {
+            "default": "",
+            "title": "Content Hash",
+            "type": "string"
+          },
+          "continuity_notes": {
+            "default": "",
+            "title": "Continuity Notes",
+            "type": "string"
+          },
+          "day_scene_compatible": {
+            "default": true,
+            "title": "Day Scene Compatible",
+            "type": "boolean"
           },
           "description": {
             "default": "",
             "title": "Description",
             "type": "string"
           },
+          "exterior": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exterior"
+          },
           "id": {
             "title": "Id",
+            "type": "string"
+          },
+          "important_props": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Important Props",
+            "type": "array"
+          },
+          "interior": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interior"
+          },
+          "last_synced_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Synced Hash"
+          },
+          "lighting_character": {
+            "default": "",
+            "title": "Lighting Character",
             "type": "string"
           },
           "name": {
             "title": "Name",
             "type": "string"
           },
+          "night_scene_compatible": {
+            "default": true,
+            "title": "Night Scene Compatible",
+            "type": "boolean"
+          },
           "project_id": {
             "title": "Project Id",
             "type": "string"
+          },
+          "reusable_set": {
+            "default": false,
+            "title": "Reusable Set",
+            "type": "boolean"
           },
           "type": {
             "default": "Interior",
@@ -7998,6 +8267,180 @@
         "title": "UpdateCharacterRequest",
         "type": "object"
       },
+      "UpdateLocationRequest": {
+        "properties": {
+          "architecture": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Architecture"
+          },
+          "atmosphere": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Atmosphere"
+          },
+          "color_palette": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color Palette"
+          },
+          "continuity_notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Continuity Notes"
+          },
+          "day_scene_compatible": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Day Scene Compatible"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "expected_version": {
+            "description": "Optimistic locking version",
+            "title": "Expected Version",
+            "type": "integer"
+          },
+          "exterior": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exterior"
+          },
+          "important_props": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Important Props"
+          },
+          "interior": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interior"
+          },
+          "lighting_character": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lighting Character"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "night_scene_compatible": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Night Scene Compatible"
+          },
+          "reusable_set": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reusable Set"
+          },
+          "type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Type"
+          }
+        },
+        "required": [
+          "expected_version"
+        ],
+        "title": "UpdateLocationRequest",
+        "type": "object"
+      },
       "UpdateProjectRequest": {
         "properties": {
           "description": {
@@ -8737,6 +9180,18 @@
       },
       "UpdateWorldBibleRequest": {
         "properties": {
+          "continuity_constraints": {
+            "anyOf": [
+              {
+                "items": {},
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Continuity Constraints"
+          },
           "core_theme": {
             "anyOf": [
               {
@@ -8748,10 +9203,49 @@
             ],
             "title": "Core Theme"
           },
+          "environment_style": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Environment Style"
+          },
           "expected_version": {
             "description": "Optimistic locking version",
             "title": "Expected Version",
             "type": "integer"
+          },
+          "magic_rules": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Magic Rules"
+          },
+          "physical_rules": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Physical Rules"
           },
           "rules": {
             "anyOf": [
@@ -8778,6 +9272,34 @@
             ],
             "title": "Setting Summary"
           },
+          "social_rules": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Social Rules"
+          },
+          "technology_rules": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Technology Rules"
+          },
           "timeline_era": {
             "anyOf": [
               {
@@ -8788,6 +9310,17 @@
               }
             ],
             "title": "Timeline Era"
+          },
+          "visual_style": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Visual Style"
           },
           "world_name": {
             "anyOf": [
@@ -9202,9 +9735,29 @@
       },
       "WorldBibleResource": {
         "properties": {
+          "content_hash": {
+            "default": "",
+            "title": "Content Hash",
+            "type": "string"
+          },
+          "continuity_constraints": {
+            "items": {},
+            "title": "Continuity Constraints",
+            "type": "array"
+          },
           "core_theme": {
             "default": "",
             "title": "Core Theme",
+            "type": "string"
+          },
+          "current_revision_id": {
+            "default": "",
+            "title": "Current Revision Id",
+            "type": "string"
+          },
+          "environment_style": {
+            "default": "",
+            "title": "Environment Style",
             "type": "string"
           },
           "factions_count": {
@@ -9222,6 +9775,20 @@
             "title": "Lore Count",
             "type": "integer"
           },
+          "magic_rules": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Magic Rules",
+            "type": "array"
+          },
+          "physical_rules": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Physical Rules",
+            "type": "array"
+          },
           "project_id": {
             "title": "Project Id",
             "type": "string"
@@ -9238,6 +9805,20 @@
             "title": "Setting Summary",
             "type": "string"
           },
+          "social_rules": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Social Rules",
+            "type": "array"
+          },
+          "technology_rules": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Technology Rules",
+            "type": "array"
+          },
           "timeline_era": {
             "default": "",
             "title": "Timeline Era",
@@ -9253,6 +9834,11 @@
             "title": "Version",
             "type": "integer"
           },
+          "visual_style": {
+            "default": "",
+            "title": "Visual Style",
+            "type": "string"
+          },
           "world_name": {
             "title": "World Name",
             "type": "string"
@@ -9263,6 +9849,20 @@
           "world_name"
         ],
         "title": "WorldBibleResource",
+        "type": "object"
+      },
+      "WorldSyncActionApplyRequest": {
+        "properties": {
+          "action_index": {
+            "minimum": 0.0,
+            "title": "Action Index",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "action_index"
+        ],
+        "title": "WorldSyncActionApplyRequest",
         "type": "object"
       },
       "upload": {
@@ -13253,6 +13853,128 @@
         ]
       }
     },
+    "/api/v3/episodes/{episode_id}/world/actions/canon-sync": {
+      "post": {
+        "description": "Propose world canon changes from the episode's locked screenplay.\n\nFail closed with 409 SCREENPLAY_NOT_LOCKED when there is no locked\nscreenplay. Never mutates canon directly \u2014 proposals are applied through\nexplicit apply commands.",
+        "operationId": "world.canonSync",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "episode_id",
+            "required": true,
+            "schema": {
+              "title": "Episode Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "project_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response World.Canonsync",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "World Canon Sync",
+        "tags": [
+          "World V3"
+        ]
+      }
+    },
+    "/api/v3/episodes/{episode_id}/world/actions/continuity-check": {
+      "post": {
+        "description": "Read-only continuity check of the locked screenplay vs World Canon.\n\nReports UNKNOWN_LOCATION / WORLD_RULE_CONFLICT / TIMELINE_CONFLICT /\nLOCATION_CONTINUITY_CONFLICT findings. Never mutates anything.",
+        "operationId": "world.continuityCheck",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "episode_id",
+            "required": true,
+            "schema": {
+              "title": "Episode Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "project_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response World.Continuitycheck",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "World Continuity Check",
+        "tags": [
+          "World V3"
+        ]
+      }
+    },
     "/api/v3/files": {
       "get": {
         "description": "List workspace files. Returns real filesystem records only.",
@@ -14817,7 +15539,7 @@
         ]
       },
       "patch": {
-        "description": "Update the World Bible with optimistic concurrency check.",
+        "description": "Update the World Bible with optimistic concurrency check.\n\nP1.2: every manual edit bumps the version, recomputes the deterministic\ncontent hash and pins an immutable revision.",
         "operationId": "world.update",
         "parameters": [
           {
@@ -15113,6 +15835,68 @@
         ]
       }
     },
+    "/api/v3/projects/{project_id}/world/locations/{location_id}": {
+      "patch": {
+        "description": "Update the location production profile with optimistic concurrency.\n\n``last_synced_hash`` is intentionally left untouched \u2014 drift against the\nstored baseline classifies this location as CONFLICT on the next sync.",
+        "operationId": "world.updateLocation",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "title": "Project Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "location_id",
+            "required": true,
+            "schema": {
+              "title": "Location Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateLocationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LocationResource"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Location",
+        "tags": [
+          "World V3"
+        ]
+      }
+    },
     "/api/v3/projects/{project_id}/world/lore": {
       "get": {
         "operationId": "world.listLore",
@@ -15204,6 +15988,54 @@
           }
         },
         "summary": "Create Lore",
+        "tags": [
+          "World V3"
+        ]
+      }
+    },
+    "/api/v3/projects/{project_id}/world/revisions": {
+      "get": {
+        "description": "Immutable version history of the World Bible (P1.2 pinning).",
+        "operationId": "world.listRevisions",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "title": "Project Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "title": "Response World.Listrevisions",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List World Revisions",
         "tags": [
           "World V3"
         ]
@@ -19075,6 +19907,105 @@
         "summary": "Update Workflow",
         "tags": [
           "Workflows V3"
+        ]
+      }
+    },
+    "/api/v3/world-sync/{proposal_id}": {
+      "get": {
+        "operationId": "world.getWorldSyncProposal",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "proposal_id",
+            "required": true,
+            "schema": {
+              "title": "Proposal Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response World.Getworldsyncproposal",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get World Sync Proposal",
+        "tags": [
+          "World V3"
+        ]
+      }
+    },
+    "/api/v3/world-sync/{proposal_id}/apply": {
+      "post": {
+        "description": "Apply one proposed action.\n\nADD_LOCATION creates the canon location with a sync baseline;\nUPDATE_PROPOSED merges structural facts only. NO_CHANGE and CONFLICT are\nrefused \u2014 manual resolution is the only path for conflicts.",
+        "operationId": "world.applyWorldSyncAction",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "proposal_id",
+            "required": true,
+            "schema": {
+              "title": "Proposal Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorldSyncActionApplyRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response World.Applyworldsyncaction",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Apply World Sync Action",
+        "tags": [
+          "World V3"
         ]
       }
     },

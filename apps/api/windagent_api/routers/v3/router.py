@@ -16,7 +16,7 @@ from windagent_api.routers.v3.episodes import router as v3_episodes_router, ws_r
 
 # Phase 9 — Story Production Domain
 from windagent_api.routers.v3.characters import router as v3_characters_router
-from windagent_api.routers.v3.world import router as v3_world_router
+from windagent_api.routers.v3.world import router as v3_world_router, sync_router as v3_world_sync_router
 from windagent_api.routers.v3.storyboard import router as v3_storyboard_router, ws_router as v3_storyboard_ws_router
 from windagent_api.routers.v3.reviews import router as v3_reviews_router
 from windagent_api.routers.v3.assets import router as v3_assets_router
@@ -59,6 +59,7 @@ v3_router.include_router(v3_episodes_ws_router)
 # Phase 9 — Story Production Domain routers
 v3_router.include_router(v3_characters_router)
 v3_router.include_router(v3_world_router)
+v3_router.include_router(v3_world_sync_router)
 v3_router.include_router(v3_storyboard_router)
 v3_router.include_router(v3_storyboard_ws_router)
 v3_router.include_router(v3_reviews_router)
