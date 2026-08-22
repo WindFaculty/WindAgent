@@ -231,8 +231,24 @@ class _FakeProviders:
 
 
 class _FakeCapability:
-    def __init__(self, available: bool):
+    """Fake capability probe honouring the real profile contract.
+
+    P0.4.1: the profile must report all three story-critical capabilities —
+    ``worker``, ``model_route`` and ``story_engine``. ``omit_worker=True``
+    simulates a broken probe that leaves the worker capability out, which the
+    preflight must treat as FAIL (missing ≠ available).
+    """
+
+    def __init__(
+        self,
+        available: bool = True,
+        *,
+        omit_worker: bool = False,
+        worker_available: bool | None = None,
+    ):
         self.available = available
+        self.omit_worker = omit_worker
+        self.worker_available = available if worker_available is None else worker_available
 
     async def get_capabilities(self):
         from windagent_core.contracts.studio.capabilities import (
@@ -242,12 +258,20 @@ class _FakeCapability:
         )
 
         status = CapabilityStatus.AVAILABLE if self.available else CapabilityStatus.UNAVAILABLE
-        return RuntimeCapabilityProfile(
-            capabilities=[
-                RuntimeCapability(name="model_route", status=status, source="fake"),
-                RuntimeCapability(name="story_engine", status=status, source="fake"),
-            ]
-        )
+        capabilities = [
+            RuntimeCapability(name="model_route", status=status, source="fake"),
+            RuntimeCapability(name="story_engine", status=status, source="fake"),
+        ]
+        if not self.omit_worker:
+            worker_status = (
+                CapabilityStatus.AVAILABLE
+                if self.worker_available
+                else CapabilityStatus.UNAVAILABLE
+            )
+            capabilities.append(
+                RuntimeCapability(name="worker", status=worker_status, source="fake")
+            )
+        return RuntimeCapabilityProfile(capabilities=capabilities)
 
 
 def _ruleset_covering_all_roles() -> RoutingRuleSet:
@@ -309,6 +333,131 @@ async def test_preflight_passes_with_full_configuration():
     )
     report = await preflight.run(_episode_with_brief().episode_id)
     assert report["ready"] is True, report
+    worker_check = next(
+        c for c in report["checks"] if c["name"] == "worker_capability_available"
+    )
+    assert worker_check["status"] == "PASS"
+
+
+async def test_preflight_fails_closed_when_worker_capability_missing():
+    """P0.4.1 fail-closed: ``model_route`` AVAILABLE + ``story_engine``
+    AVAILABLE but NO ``worker`` entry in the profile must FAIL — a missing
+    capability is never silently treated as available."""
+    series = SeriesProject(series_id=SeriesProjectId("srs-p04-noworker"), title="NoWorker")
+    preflight = StoryStartPreflight(
+        episodes_repo=_StaticRepo(_episode_with_brief()),
+        series_repo=_StaticRepo(series),
+        provider_management_service=_FakeProviders(
+            [{"enabled": True, "endpoints": [{"is_configured": True}]}]
+        ),
+        route_lock_service=RouteLockService(ruleset=_ruleset_covering_all_roles()),
+        capability_provider=_FakeCapability(available=True, omit_worker=True),
+    )
+    report = await preflight.run(_episode_with_brief().episode_id)
+    worker_check = next(
+        c for c in report["checks"] if c["name"] == "worker_capability_available"
+    )
+    assert report["ready"] is False
+    assert worker_check["status"] == "FAIL"
+    assert "worker=MISSING" in worker_check["detail"]
+
+
+async def test_start_endpoint_blocks_when_worker_unavailable():
+    """worker UNAVAILABLE (everything else green) → hard START_BLOCKED gate."""
+
+    class WorkerUnavailableService:
+        def __init__(self) -> None:
+            self._preflight = StoryStartPreflight(
+                episodes_repo=_StaticRepo(_episode_with_brief()),
+                series_repo=_StaticRepo(
+                    SeriesProject(series_id=SeriesProjectId("srs-p04-preflight"), title="S")
+                ),
+                provider_management_service=_FakeProviders(
+                    [{"enabled": True, "endpoints": [{"is_configured": True}]}]
+                ),
+                route_lock_service=RouteLockService(ruleset=_ruleset_covering_all_roles()),
+                capability_provider=_FakeCapability(available=True, worker_available=False),
+            )
+
+        async def preflight_start(self, *, episode_id):
+            return await self._preflight.run(episode_id)
+
+        async def get_episode(self, *, episode_id):  # no active run
+            return {"active_run_id": None}
+
+        def parse_id(self, id_cls, value, label):
+            return id_cls(value)
+
+        async def start_or_resume_run(self, **_kwargs):  # pragma: no cover
+            raise AssertionError("start must be blocked before the orchestrator")
+
+    app = FastAPI()
+    app.include_router(router_runs_start, prefix="/api/v3/studio")
+    app.include_router(router_episode, prefix="/api/v3/studio")
+    app.dependency_overrides[get_studio_application_service] = lambda: WorkerUnavailableService()
+    client = TestClient(app)
+
+    response = client.post(
+        "/api/v3/studio/episodes/ep-p04-preflight/runs",
+        json={},
+        headers={"X-Idempotency-Key": "p04-worker-unavailable-1"},
+    )
+    assert response.status_code == 409
+    payload = response.json()
+    assert payload["code"] == "START_BLOCKED"
+    assert any(r.startswith("worker_capability_available") for r in payload["reasons"])
+
+
+async def test_start_endpoint_resumes_active_run_despite_config_drift():
+    """P0.5 invariant: RESUME of an existing non-terminal run is never blocked
+    by configuration drift — the preflight hard gate applies to NEW runs only."""
+
+    class DriftedConfigWithActiveRunService:
+        def __init__(self) -> None:
+            self._preflight = StoryStartPreflight(
+                episodes_repo=_StaticRepo(_episode_with_brief()),
+                series_repo=_StaticRepo(
+                    SeriesProject(series_id=SeriesProjectId("srs-p04-preflight"), title="S")
+                ),
+                provider_management_service=_FakeProviders([]),
+                route_lock_service=RouteLockService(ruleset=RoutingRuleSet(rules=[])),
+                capability_provider=_FakeCapability(available=False),
+            )
+
+        async def preflight_start(self, *, episode_id):
+            return await self._preflight.run(episode_id)
+
+        async def get_episode(self, *, episode_id):  # active non-terminal run
+            return {"active_run_id": "run_0001"}
+
+        def parse_id(self, id_cls, value, label):  # pragma: no cover
+            return id_cls(value)
+
+        async def start_or_resume_run(self, *, episode_id, idempotency_key):
+            from windagent_core.contracts.studio.commands import StartRunResult
+            from windagent_core.contracts.studio.ids import StudioRunId
+
+            return StartRunResult(
+                run_id=StudioRunId("run_0001"), episode_id=episode_id, resuming=True
+            )
+
+    app = FastAPI()
+    app.include_router(router_runs_start, prefix="/api/v3/studio")
+    app.include_router(router_episode, prefix="/api/v3/studio")
+    app.dependency_overrides[get_studio_application_service] = (
+        lambda: DriftedConfigWithActiveRunService()
+    )
+    client = TestClient(app)
+
+    response = client.post(
+        "/api/v3/studio/episodes/ep-p04-preflight/runs",
+        json={},
+        headers={"X-Idempotency-Key": "p04-resume-drift-1"},
+    )
+    assert response.status_code == 202, response.text
+    payload = response.json()
+    assert payload["resuming"] is True
+    assert payload["run_id"] == "run_0001"
 
 
 async def test_start_endpoint_returns_start_blocked_when_not_ready():
@@ -326,8 +475,8 @@ async def test_start_endpoint_returns_start_blocked_when_not_ready():
         async def get_episode(self, *, episode_id):  # no active run
             return {"active_run_id": None}
 
-        async def parse_id(self, id_cls, value, label):  # pragma: no cover
-            return value
+        def parse_id(self, id_cls, value, label):  # pragma: no cover
+            return id_cls(value)
 
         async def start_or_resume_run(self, **_kwargs):  # pragma: no cover
             raise AssertionError("start must be blocked before the orchestrator")

@@ -200,6 +200,11 @@ class TestPhase7WorkerComposition:
             assert container.provider_registry is not None
             assert container.tool_registry is not None
             assert container.intelligence_pipeline is not None
+            assert container.orchestration_container.uow_factory is container.sql_uow_factory
+            assert (
+                container.orchestration_container.recovery_manager.uow_factory
+                is container.sql_uow_factory
+            )
             await container.shutdown()
         except ImportError as e:
             pytest.fail(f"Cannot import Worker composition: {e}")

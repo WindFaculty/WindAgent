@@ -12234,7 +12234,7 @@
       "from": "worker",
       "to": "execution",
       "file": "apps/worker/windagent_worker/composition/core.py",
-      "line": 60
+      "line": 64
     },
     {
       "from": "worker",

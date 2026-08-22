@@ -2158,77 +2158,6 @@
         }
       }
     },
-    "/api/v3/episodes/{episode_id}/start-generation": {
-      "post": {
-        "tags": [
-          "Episodes V3"
-        ],
-        "summary": "Start Generation",
-        "description": "Start an AI generation run for the next or requested checkpoint stage.",
-        "operationId": "episodes.startGeneration",
-        "parameters": [
-          {
-            "name": "episode_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "description": "Episode ID",
-              "title": "Episode Id"
-            },
-            "description": "Episode ID"
-          },
-          {
-            "name": "Idempotency-Key",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Idempotency-Key"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/StartGenerationRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PipelineRun"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/v3/episodes/{episode_id}/select-idea": {
       "post": {
         "tags": [
@@ -2400,7 +2329,7 @@
           "Episodes V3"
         ],
         "summary": "Cancel Run",
-        "description": "Cancel any active generation runs on the episode.",
+        "description": "Cancel active generation runs on the episode.\n\nP0.8 truth repair: no fabricated CANCELLED. When the episode holds no\nrun at all the answer is honest (NO_ACTIVE_RUN), never a fake success.",
         "operationId": "episodes.cancelRun",
         "parameters": [
           {
@@ -13725,13 +13654,13 @@
             "type": "string",
             "title": "Status",
             "description": "Run status ('PENDING', 'RUNNING', 'COMPLETED', 'FAILED', 'CANCELLED')",
-            "default": "COMPLETED"
+            "default": "PENDING"
           },
           "progress_percent": {
             "type": "integer",
             "title": "Progress Percent",
             "description": "Run execution progress",
-            "default": 100
+            "default": 0
           },
           "started_at": {
             "type": "string",
@@ -16007,36 +15936,6 @@
           "updated_at"
         ],
         "title": "ShotResource"
-      },
-      "StartGenerationRequest": {
-        "properties": {
-          "checkpoint": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Checkpoint",
-            "description": "Target checkpoint stage"
-          },
-          "prompt_override": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Prompt Override",
-            "description": "Custom prompt or direction"
-          }
-        },
-        "type": "object",
-        "title": "StartGenerationRequest"
       },
       "StartRunRequest": {
         "properties": {

@@ -1,17 +1,15 @@
 /**
  * StudioPage shell tests (C3) — canonical StudioHomePage through real providers.
- * Server-backed data only: projects from /api/v3/projects, health from /api/v3/system/health.
- * No series vocabulary, no /api/v3/studio/series mocks — canonical V3 contract only.
+ * Server-backed data only: Series from /api/v3/studio/series and live health.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 import { StudioPage } from '@windagent/app';
 import {
-  cursorPage,
   jsonResponse,
   pathname,
-  project,
   renderCanonical,
+  series,
   type FetchFn,
 } from './canonical';
 
@@ -21,8 +19,11 @@ beforeEach(() => {
   window.location.hash = '#/studio';
   fetchMock = vi.fn<FetchFn>(async (input: string | URL) => {
     const path = pathname(input);
-    if (path.endsWith('/api/v3/projects')) {
-      return jsonResponse(200, cursorPage([project('proj_1', 'Chú thỏ và cánh diều')]));
+    if (path.endsWith('/api/v3/studio/series')) {
+      return jsonResponse(200, { items: [series('proj_1', 'Chú thỏ và cánh diều')] });
+    }
+    if (path.endsWith('/api/v3/studio/series/proj_1/episodes')) {
+      return jsonResponse(200, { items: [] });
     }
     if (path.endsWith('/health')) return jsonResponse(200, { status: 'healthy' });
     if (path.endsWith('/api/v3/project-templates')) return jsonResponse(200, []);
@@ -50,8 +51,8 @@ describe('StudioPage shell (C3) — canonical', () => {
   it('shows degraded capability status when backend reports non-healthy', async () => {
     fetchMock.mockImplementation(async (input: string | URL) => {
       const path = pathname(input);
-      if (path.endsWith('/api/v3/projects')) {
-        return jsonResponse(200, cursorPage([]));
+      if (path.endsWith('/api/v3/studio/series')) {
+        return jsonResponse(200, { items: [] });
       }
       if (path.endsWith('/health')) return jsonResponse(200, { status: 'degraded' });
       if (path.endsWith('/api/v3/project-templates')) return jsonResponse(200, []);
@@ -68,7 +69,7 @@ describe('StudioPage shell (C3) — canonical', () => {
       const path = pathname(input);
       if (path.endsWith('/health')) throw new Error('network down');
       if (path.endsWith('/api/v3/project-templates')) return jsonResponse(200, []);
-      return jsonResponse(200, cursorPage([]));
+      return jsonResponse(200, { items: [] });
     });
     renderCanonical(<StudioPage />);
     await waitFor(() => {
@@ -86,12 +87,12 @@ describe('StudioPage shell (C3) — canonical', () => {
     expect(screen.queryByText(/episode_count/)).not.toBeInTheDocument();
   });
 
-  it('navigates to projects via quick access card', async () => {
+  it('navigates to the full Series catalog', async () => {
     renderCanonical(<StudioPage />);
     await waitFor(() => {
       expect(screen.getByText('Chú thỏ và cánh diều')).toBeInTheDocument();
     });
-    fireEvent.click(screen.getByText('Dự Án Phim'));
+    fireEvent.click(screen.getByText('Xem tất cả'));
     await waitFor(() => {
       expect(window.location.hash).toBe('#/projects');
     });

@@ -435,6 +435,9 @@ class FakeCapabilityPort:
                 RuntimeCapability(
                     name="model_route", status=CapabilityStatus.AVAILABLE, source="fake", reason="test double"
                 ),
+                RuntimeCapability(
+                    name="story_engine", status=CapabilityStatus.AVAILABLE, source="fake", reason="test double"
+                ),
             ],
             fail_closed_flags=[],
             certification_mode=True,

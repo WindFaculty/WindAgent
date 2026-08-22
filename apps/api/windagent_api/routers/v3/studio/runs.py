@@ -31,8 +31,8 @@ async def start_or_resume_run(
     parsed = service.parse_id(EpisodeId, episode_id, "episode_id")
     # P0.4.1 — a NEW run must pass the server-side preflight; resuming an
     # existing run is never blocked by configuration drift. Only FAIL checks
-    # block; WARN surfaces honest non-blocking findings (e.g. worker not yet
-    # heartbeating — durable queue accepts submit-before-worker).
+    # block. Worker/model-route/story-engine capability gaps are hard failures
+    # for a new run; the durable resume path below remains drift-tolerant.
     report = await service.preflight_start(episode_id=parsed)
     if not report["ready"] and (await _has_no_active_run(service, parsed)):
         failed = [c for c in report["checks"] if c["status"] == "FAIL"]

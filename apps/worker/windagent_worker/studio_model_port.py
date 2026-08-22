@@ -291,7 +291,7 @@ class RouteLockedModelPort:
         """
         if not isinstance(primary_exc, FALLBACK_ELIGIBLE_FAILURES):
             return None
-        fallback_model = self._fallback_model_for(primary_receipt)
+        fallback_model = self._resolve_declared_fallback_model(primary_receipt)
         if not fallback_model or fallback_model == primary_receipt.canonical_model_id:
             return None
         try:
@@ -361,7 +361,7 @@ class RouteLockedModelPort:
         )
         return result
 
-    def _fallback_model_for(self, receipt: RouteLockReceipt) -> Optional[str]:
+    def _resolve_declared_fallback_model(self, receipt: RouteLockReceipt) -> Optional[str]:
         """Resolve the matched rule's declared fallback canonical model."""
         ruleset = self._route_lock_service.current_ruleset
         for rule in ruleset.rules:

@@ -55,7 +55,11 @@ class CoreComposer:
         uow_factory = db.session_factory
         sql_uow_factory = self.make_sql_uow_factory(uow_factory)
         event_dispatcher = EventDispatcher()
-        orchestration_container = OrchestrationContainer(uow_factory=uow_factory)
+        # Orchestration services consume the repository-bearing UnitOfWorkPort,
+        # not a raw SQLAlchemy AsyncSession.  Passing the session factory here
+        # leaves startup recovery without recovery_leader_leases (and the other
+        # durable repositories) and only fails once a production worker starts.
+        orchestration_container = OrchestrationContainer(uow_factory=sql_uow_factory)
         if settings.fake_runtime:
             from windagent_execution.adapters.fake_runtime_adapter import (
                 FakeRuntimeAdapter,

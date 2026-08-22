@@ -66,8 +66,9 @@ Tất cả các trạng thái UX bắt buộc đã được cài đặt đầy �
 
 | Suite | Kết quả | Chi tiết |
 | --- | --- | --- |
-| Frontend workspaces vitest | PASS | 14 test files, 52 tests trong `@windagent/app` + tests trong `api-client`, `api-contracts`, `realtime`, `studio-shell`, `ui` |
+| Frontend workspaces vitest | PASS | 22 test files, **119 tests**: `@windagent/app` 52 + api-client 20 + api-contracts 5 + realtime 8 + studio-shell 11 + ui 23 |
 | Frontend Typecheck | PASS | `npm --prefix frontend run typecheck` (0 errors) |
+| Desktop Vitest | PASS | **4 test files, 27 tests**; mocks dùng canonical `/api/v3/studio/series`, không còn legacy `/api/v3/projects` |
 | Desktop Typecheck | PASS | `npm --prefix apps/desktop run type-check` (`tsc -b --noEmit`, 0 errors) |
 | Desktop Production Build | PASS | `npm --prefix apps/desktop run build` (`vite build`, 0 errors) |
 

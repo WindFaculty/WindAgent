@@ -1,22 +1,21 @@
 /**
  * ProjectsPage tests — canonical ProjectsPage through real providers.
- * Server authority only: list/search via /api/v3/projects, create via POST /api/v3/projects.
+ * Server authority only: list/search/create via canonical Studio Series.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 import { ProjectsPage } from '@windagent/app';
 import {
-  cursorPage,
   jsonResponse,
   pathname,
-  project,
   renderCanonical,
+  series,
   type FetchFn,
 } from './canonical';
 
-const PROJECTS = [
-  project('proj_1', 'Chú thỏ và cánh diều', 'Animation / Epic Saga'),
-  project('proj_2', 'Cyberpunk Odyssey 2099', 'Cyberpunk / Sci-Fi'),
+const SERIES = [
+  series('proj_1', 'Chú thỏ và cánh diều', 'Animation / Epic Saga'),
+  series('proj_2', 'Cyberpunk Odyssey 2099', 'Cyberpunk / Sci-Fi'),
 ];
 
 let fetchMock: ReturnType<typeof vi.fn<FetchFn>>;
@@ -25,13 +24,7 @@ beforeEach(() => {
   window.location.hash = '#/projects';
   fetchMock = vi.fn<FetchFn>(async (input: string | URL) => {
     const path = pathname(input);
-    const url = new URL(String(input));
-    if (path.endsWith('/api/v3/projects') && url.searchParams.has('search')) {
-      const q = (url.searchParams.get('search') || '').toLowerCase();
-      const filtered = PROJECTS.filter((p) => p.name.toLowerCase().includes(q));
-      return jsonResponse(200, cursorPage(filtered));
-    }
-    if (path.endsWith('/api/v3/projects')) return jsonResponse(200, cursorPage(PROJECTS));
+    if (path.endsWith('/api/v3/studio/series')) return jsonResponse(200, { items: SERIES });
     if (path.endsWith('/api/v3/system/health')) return jsonResponse(200, { status: 'healthy' });
     if (path.endsWith('/api/v3/project-templates')) return jsonResponse(200, []);
     throw new Error(`unmocked URL: ${path}`);
@@ -85,13 +78,11 @@ describe('ProjectsPage (canonical)', () => {
   it('opens creation modal and creates a new project', async () => {
     fetchMock.mockImplementation(async (input: string | URL, init?: RequestInit) => {
       const path = pathname(input);
-      const url = new URL(String(input));
-      if (path.endsWith('/api/v3/projects') && (!init || init.method !== 'POST')) {
-        if (url.searchParams.has('search')) return jsonResponse(200, cursorPage([]));
-        return jsonResponse(200, cursorPage(PROJECTS));
+      if (path.endsWith('/api/v3/studio/series') && (!init || init.method !== 'POST')) {
+        return jsonResponse(200, { items: SERIES });
       }
-      if (path.endsWith('/api/v3/projects') && init?.method === 'POST') {
-        return jsonResponse(201, project('proj_new', 'Dự án mới'));
+      if (path.endsWith('/api/v3/studio/series') && init?.method === 'POST') {
+        return jsonResponse(201, { series_id: 'proj_new', title: 'Dự án mới' });
       }
       if (path.endsWith('/api/v3/system/health')) return jsonResponse(200, { status: 'healthy' });
       if (path.endsWith('/api/v3/project-templates')) return jsonResponse(200, []);
@@ -117,7 +108,7 @@ describe('ProjectsPage (canonical)', () => {
   it('handles backend offline or error state gracefully', async () => {
     fetchMock.mockImplementation(async (input: string | URL) => {
       const path = pathname(input);
-      if (path.endsWith('/api/v3/projects')) throw new Error('network down');
+      if (path.endsWith('/api/v3/studio/series')) throw new Error('network down');
       if (path.endsWith('/api/v3/system/health')) throw new Error('network down');
       if (path.endsWith('/api/v3/project-templates')) return jsonResponse(200, []);
       throw new Error(`unmocked URL: ${path}`);

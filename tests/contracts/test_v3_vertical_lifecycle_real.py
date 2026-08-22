@@ -3,15 +3,16 @@ Real V3 Product Vertical E2E — canonical path proof.
 
 Covers the roadmap vertical:
   API V3 -> Series -> Episode -> Story Workflow -> Orchestrator -> Durable Queue
-  -> Worker -> ModelExecutionPort (FixtureModelPort) -> Deterministic Provider
+  -> Worker -> RouteLockedModelPort -> Deterministic Provider Adapter
   -> Story Pipeline -> Persistence -> Review -> Revision -> Lock
   -> READY_FOR_PRODUCTION
 
 This test goes through:
   - API composition (TestClient + ApplicationContainer)
   - Durable Queue (SqlDurableTaskQueue via StudioTaskSubmissionAdapter)
-  - Worker (ProductionWorker + StudioRuntimeAdapter + SqlUnitOfWork)
-  - ModelExecutionPort via FixtureModelPort with golden fixtures (deterministic, no network)
+  - Worker (ProductionWorker + production WorkerContainer composition)
+  - RouteLockedModelPort + EndpointExecutionCoordinator with a controlled
+    provider adapter returning golden fixtures (deterministic, no network)
 
 Router/provider integration is proven separately:
   tests/integration/test_architecture_v3_phase10_provider_routing.py covers
@@ -23,11 +24,13 @@ It MUST NOT bypass queue/worker or manually insert final artifacts.
 from __future__ import annotations
 
 import json
+import os
 import sys
 import tempfile
 import uuid
 from pathlib import Path
 
+import httpx
 import pytest
 from fastapi.testclient import TestClient
 
@@ -38,14 +41,13 @@ sys.path.insert(0, str(REPO_ROOT / "scripts" / "verification"))
 from windagent_api.composition.container import ApplicationContainer
 from windagent_api.main import app
 import windagent_api.dependencies as api_deps
-from windagent_storage.queue.sql_queue import SqlDurableTaskQueue
-from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork
+from windagent_core.contracts.providers import ProviderRequest, ProviderResponse
+from windagent_core.contracts.providers.usage import ProviderUsage
+from windagent_providers.management import ProviderAdapterFactory, ProviderProbeService
+from windagent_storage.security.encryption import decrypt
 from windagent_storage.unit_of_work.studio_uow import StudioUnitOfWork
+from windagent_worker.composition import WorkerContainer, WorkerRuntimeSettings
 from windagent_worker.runner import ProductionWorker
-from windagent_execution.registry import ExecutionRuntimeRegistry
-from windagent_intelligence.story.prompts.fixture import FixtureModelPort
-from windagent_intelligence.story.runtime_handlers import HANDLER_REGISTRY
-from windagent_worker.studio_runtime import StudioRuntimeAdapter
 from windagent_core.domain.studio.approval import ApprovalPolicy, ApprovalCheckpoint, ApprovalMode
 
 from produce_b3_evidence import GOLDEN_GENERATION_RESPONSE
@@ -74,11 +76,82 @@ def _fixture_responses() -> dict:
         "story.bibles.generate": bible,
         "story.beats.generate": beats,
         "story.outline.generate": outline,
+        "story.outline.structured": outline,
         "story.screenplay.write": screenplay,
         "story.screenplay.structured": screenplay,
         "story.review.assess": review,
         "story.revise.rewrite": json.dumps({**GOLDEN_SCREENPLAY_DRAFT, "draft_id": "draft_rabbit_kite_r2"}, ensure_ascii=False),
     }
+
+
+def _vertical_database_url(tmp: Path) -> str:
+    """Use an explicitly provisioned PostgreSQL test DB, else isolated SQLite.
+
+    The PostgreSQL URL is deliberately test-specific: this contract must never
+    infer that a development database is disposable from WINDAGENT_DATABASE_URL.
+    """
+    postgres_url = os.environ.get("WINDAGENT_TEST_POSTGRES_URL", "").strip()
+    if postgres_url:
+        if not postgres_url.startswith("postgresql+asyncpg://"):
+            raise AssertionError(
+                "WINDAGENT_TEST_POSTGRES_URL must use postgresql+asyncpg"
+            )
+        return postgres_url
+    return f"sqlite+aiosqlite:///{tmp / 'vertical.db'}"
+
+
+class _DeterministicProviderAdapter:
+    """Controlled transport behind the real router/coordinator provider seam."""
+
+    def __init__(self) -> None:
+        self.calls: list[tuple[ProviderRequest, str]] = []
+
+    async def generate(
+        self, request: ProviderRequest, model_id: str | None = None
+    ) -> ProviderResponse:
+        self.calls.append((request, model_id or ""))
+        responses = _fixture_responses()
+        schema_title = str((request.structured_output_schema or {}).get("title", ""))
+        prompt_id = {
+            "IdeaGenerationOutput": "story.ideation.generate",
+            "BibleGenerationOutput": "story.bibles.generate",
+            "BeatGenerationOutput": "story.beats.generate",
+            "OutlineGenerationOutput": "story.outline.structured",
+            "ScreenplayGenerationOutput": "story.screenplay.structured",
+            "ReviewOutput": "story.review.assess",
+            "ScreenplayRevisionOutput": "story.revise.rewrite",
+        }.get(schema_title, "")
+        try:
+            content = responses[prompt_id]
+        except KeyError as exc:  # fail loudly; never infer an unrelated artifact
+            raise AssertionError(
+                f"unrecognized Story provider schema title: {schema_title!r}"
+            ) from exc
+        return ProviderResponse(
+            provider_id="vertical-test-provider",
+            provider_model_id=model_id,
+            content=content,
+            finish_reason="stop",
+            usage=ProviderUsage(prompt_tokens=17, completion_tokens=31),
+        )
+
+
+def _worker_settings(db_url: str, canonical_model: str, tmp: Path) -> WorkerRuntimeSettings:
+    return WorkerRuntimeSettings(
+        database_url=db_url,
+        fake_runtime=False,
+        studio_runtime=True,
+        studio_model_route=True,
+        studio_canonical_model=canonical_model,
+        blender_engine=False,
+        asset_gateway=False,
+        asset_normalizer=False,
+        artifact_root=str(tmp / "artifacts"),
+        asset_library_root=str(tmp / "asset-library"),
+        blender_executable="",
+        certification_enabled=False,
+        certification_conflict=False,
+    )
 
 
 @pytest.mark.asyncio
@@ -114,8 +187,7 @@ async def test_v3_vertical_lifecycle_via_canonical_path():
       27 final artifacts still durable
     """
     tmp = Path(tempfile.mkdtemp(prefix="v3_vert_"))
-    db_path = tmp / "vertical.db"
-    db_url = f"sqlite+aiosqlite:///{db_path}"
+    db_url = _vertical_database_url(tmp)
 
     container = ApplicationContainer(db_url=db_url)
     await container.bootstrap()
@@ -139,13 +211,10 @@ async def test_v3_vertical_lifecycle_via_canonical_path():
     api_deps._container = container
     client = TestClient(app)
 
-    # P0.4.1 preflight requires at least one enabled provider with a
-    # configured credential. Register one through the real durable API path
-    # (the FixtureModelPort worker bypasses endpoints; this only satisfies
-    # the provider-configuration gate honestly).
+    # Register and discover a provider through production management/probe
+    # services. Only the HTTP transport is controlled; provider/catalog SQL
+    # persistence is real and is consumed by the worker composition below.
     import base64
-    import os
-
     os.environ.setdefault(
         "WINDAGENT_ENCRYPTION_KEY", base64.b64encode(b"v" * 32).decode()
     )
@@ -158,9 +227,49 @@ async def test_v3_vertical_lifecycle_via_canonical_path():
             "base_url": "https://vertical.test/v1",
             "protocol_mode": "openai",
             "api_key": "synthetic-vertical-key",
+            "endpoint_id": "ep-vertical-test",
         },
     )
     assert provider_resp.status_code in (200, 201), provider_resp.text
+
+    def models_handler(request: httpx.Request) -> httpx.Response:
+        assert request.url.path == "/v1/models"
+        return httpx.Response(200, json={"data": [{"id": "vertical-story-v1"}]})
+
+    async with httpx.AsyncClient(
+        transport=httpx.MockTransport(models_handler)
+    ) as provider_client:
+        probe = ProviderProbeService(
+            ProviderAdapterFactory(decrypt, http_client=provider_client),
+            container.provider_management_service._repository,
+        )
+        connected = await probe.test_connection("ep-vertical-test")
+        assert connected.reachable is True
+        assert connected.auth_valid is True
+        synced = await probe.sync_models("ep-vertical-test")
+        assert synced.ok is True
+        assert synced.added == ["vertical-story-v1"]
+
+    discovered = container.provider_management_service.list_discovered_models(
+        "vertical-test-provider"
+    )
+    assert len(discovered) == 1
+    canonical_model = discovered[0]["id"]
+
+    worker_container = WorkerContainer(
+        settings=_worker_settings(db_url, canonical_model, tmp)
+    )
+    manifest = await worker_container.bootstrap()
+    assert manifest["studio"] is True
+    assert manifest["provider_routing"] is True
+    assert worker_container.studio_endpoint_bindings
+
+    provider_adapter = _DeterministicProviderAdapter()
+    worker_container.provider_execution_coordinator._adapter_resolver = (
+        lambda _candidate: provider_adapter
+    )
+    worker = ProductionWorker(name="vert-worker", worker_container=worker_container)
+    await worker.start()
 
     # 1. System health
     health = client.get("/api/v3/system/health")
@@ -224,31 +333,12 @@ async def test_v3_vertical_lifecycle_via_canonical_path():
         nodes = (await sess.execute(sql_text("SELECT dag_node_id, status FROM studio_run_nodes WHERE run_id=:rid"), {"rid": run_id})).fetchall()
         assert any(n[1] == "DISPATCHED" for n in nodes)
 
-    # 8-9. Worker claims task with lease/fencing
-    fix_port = FixtureModelPort(responses=_fixture_responses())
-    adapter = StudioRuntimeAdapter(
-        handler_registry=HANDLER_REGISTRY,
-        session_factory=container.db.session_factory,
-        studio_uow_factory=lambda: StudioUnitOfWork(container.db.session_factory),
-        model_port=fix_port,
-        certification=False,
-    )
-    registry = ExecutionRuntimeRegistry()
-    registry.register_capability("studio", adapter)
-    q = SqlDurableTaskQueue(container.db.session_factory)
-    worker = ProductionWorker(
-        name="vert-worker",
-        task_queue=q,
-        execution_registry=registry,
-        uow_factory=lambda: SqlUnitOfWork(container.db.session_factory),
-        studio_reconciler=container.studio_run_service,
-    )
-    await worker.start()
-
-    # Drive the DAG to completion via worker ticks
+    # 8-9. The already-heartbeating production worker claims the durable task.
     max_ticks = 20
+    ticks: list[dict] = []
     for _ in range(max_ticks):
         tick = await worker.poll_and_execute_tick()
+        ticks.append(tick)
         if tick.get("status") == "idle":
             # Check if DAG is terminal
             async with container.db.session_factory() as sess:
@@ -272,7 +362,13 @@ async def test_v3_vertical_lifecycle_via_canonical_path():
         # 9. Worker claimed
         assert any(r[2] is not None for r in nodes), "No task claimed"
         # 10. Lease/fencing exists via task_id presence
-        assert statuses.get("idea.generate") == "SUCCEEDED"
+        assert statuses.get("idea.generate") == "SUCCEEDED", {
+            "ticks": ticks,
+            "provider_schema_titles": [
+                (request.structured_output_schema or {}).get("title")
+                for request, _ in provider_adapter.calls
+            ],
+        }
         # Check that at least idea.evaluate and bible succeeded
         assert statuses.get("idea.evaluate") == "SUCCEEDED"
         assert statuses.get("bible.generate") == "SUCCEEDED"
@@ -280,13 +376,22 @@ async def test_v3_vertical_lifecycle_via_canonical_path():
         assert statuses.get("outline.generate") == "SUCCEEDED"
         assert statuses.get("screenplay.generate") == "SUCCEEDED"
 
-    # 12-13. Model Router/Port invoked via fixture requests
-    assert len(fix_port.requests) >= 1
-    caps = {r.capability for r in fix_port.requests}
-    assert "ideation" in caps or "story.ideation.generate" in caps
-    assert "bibles" in caps
-    # 14. Provider adapter invoked (fixture)
-    assert fix_port.requests[0].capability in _fixture_responses()
+    # 12-14. Model router, endpoint coordinator and provider adapter all ran;
+    # the production model port persisted one truthful receipt per completion.
+    assert provider_adapter.calls
+    async with container.db.session_factory() as sess:
+        receipts = (
+            await sess.execute(
+                sql_text(
+                    "SELECT selected_model_id, endpoint_id, status "
+                    "FROM model_route_receipts_v3"
+                )
+            )
+        ).fetchall()
+    assert len(receipts) >= len(provider_adapter.calls)
+    assert {row[0] for row in receipts} == {canonical_model}
+    assert all(row[1] == "ep-vertical-test" for row in receipts)
+    assert all(row[2] == "success" for row in receipts)
 
     # 16-21. Story artifacts persisted - strict canonical assertions (no fallback)
     async with StudioUnitOfWork(container.db.session_factory) as uow:
@@ -436,9 +541,9 @@ async def test_v3_vertical_lifecycle_via_canonical_path():
         if uniq_sorted:
             assert uniq_sorted == list(range(min(uniq_sorted), max(uniq_sorted) + 1)), f"Gap in sequence: {uniq_sorted}"
 
-    # 33-37. Restart persistence: simulate app/storage restart by creating new container with same DB file
+    # 33-37. Restart persistence: create a new container against the same DB.
     await worker.stop()
-    # Keep db file, create new container
+    await worker_container.shutdown()
     container2 = ApplicationContainer(db_url=db_url)
     await container2.bootstrap()
     app.state.container = container2

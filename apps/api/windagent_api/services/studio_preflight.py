@@ -163,12 +163,24 @@ class StoryStartPreflight:
                 story_engine = profile.by_name("story_engine")
                 worker = profile.by_name("worker")
                 problems: List[str] = []
-                if worker is not None and worker.status.value != "AVAILABLE":
+                # P0.4.1 fail-closed: a missing capability is NOT available —
+                # it blocks the start exactly like an unavailable one.
+                if worker is None:
+                    problems.append("worker=MISSING (capability absent from profile)")
+                elif worker.status.value != "AVAILABLE":
                     problems.append(f"worker={worker.status.value} ({(worker.reason or '')[:80]})")
-                if model_route is not None and model_route.status.value != "AVAILABLE":
-                    problems.append(f"model_route={model_route.status.value} ({model_route.reason[:80]})")
-                if story_engine is not None and story_engine.status.value != "AVAILABLE":
-                    problems.append(f"story_engine={story_engine.status.value}")
+                if model_route is None:
+                    problems.append("model_route=MISSING (capability absent from profile)")
+                elif model_route.status.value != "AVAILABLE":
+                    problems.append(
+                        f"model_route={model_route.status.value} ({(model_route.reason or '')[:80]})"
+                    )
+                if story_engine is None:
+                    problems.append("story_engine=MISSING (capability absent from profile)")
+                elif story_engine.status.value != "AVAILABLE":
+                    problems.append(
+                        f"story_engine={story_engine.status.value} ({(story_engine.reason or '')[:80]})"
+                    )
                 if problems:
                     checks.append(
                         {"name": "worker_capability_available", "status": "FAIL", "detail": "; ".join(problems)}

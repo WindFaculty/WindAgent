@@ -20,7 +20,13 @@ from fastapi.testclient import TestClient
 from windagent_api.main import app
 from windagent_api.routers.v3.studio.dependencies import get_studio_application_service
 from windagent_api.services.studio_application_service import StudioApplicationService
+from windagent_api.services.studio_preflight import (
+    REQUIRED_STORY_CAPABILITIES,
+    StoryStartPreflight,
+)
 from windagent_core.events.studio import StudioEventEnvelope
+from windagent_providers.routing.route_lock_service import RouteLockService
+from windagent_providers.routing.rules import RoutingRule, RoutingRuleSet
 from tests.fakes.studio_fakes import (
     FakeApprovalRepository,
     FakeArtifactRepository,
@@ -35,6 +41,16 @@ from tests.fakes.studio_fakes import (
 
 HASH = "a" * 64
 
+_CREATIVE_BRIEF = {
+    "brief_id": "brf_c1_contract",
+    "title": "C1 Contract Brief",
+    "genre": "fantasy",
+    "logline": "A paper kite finds the wind.",
+    "tone": "warm",
+    "audience": "kids",
+    "language": "vi",
+}
+
 _key_counter = 0
 
 
@@ -42,6 +58,14 @@ def _idem() -> str:
     global _key_counter
     _key_counter += 1
     return f"idem_c1_{_key_counter:06d}"
+
+
+class _FakeProviders:
+    def __init__(self, providers):
+        self._providers = providers
+
+    def list_providers(self):
+        return self._providers
 
 
 def _build_fake_service() -> StudioApplicationService:
@@ -56,6 +80,30 @@ def _build_fake_service() -> StudioApplicationService:
         revisions_repo=FakeRevisionRepository(orchestrator),
         artifacts_repo=FakeArtifactRepository(),
         approvals_repo=FakeApprovalRepository(orchestrator),
+        preflight=_build_preflight(orchestrator),
+    )
+
+
+def _build_preflight(orchestrator: FakeStudioOrchestrator) -> StoryStartPreflight:
+    """Compose the REAL P0.4.1 preflight over the contract-test fakes so the
+    start endpoint observes the same hard gate as production composition."""
+    rules = [
+        RoutingRule(
+            rule_id=f"role-{capability}",
+            rule_version=1,
+            canonical_model_id=f"test/model-{capability}",
+            task_labels=[capability],
+        )
+        for capability in REQUIRED_STORY_CAPABILITIES
+    ]
+    return StoryStartPreflight(
+        episodes_repo=FakeEpisodeRepository(orchestrator),
+        series_repo=FakeSeriesRepository(orchestrator),
+        provider_management_service=_FakeProviders(
+            [{"enabled": True, "endpoints": [{"is_configured": True}]}]
+        ),
+        route_lock_service=RouteLockService(ruleset=RoutingRuleSet(rules=rules)),
+        capability_provider=FakeCapabilityPort(),
     )
 
 
@@ -223,6 +271,9 @@ class TestV3ContractWithFakes:
                 "series_id": series_id,
                 "title": "Tập 1: Chiếc diều giấy",
                 "episode_number": number,
+                # P0.4.1: a startable episode carries a valid creative brief —
+                # the real composed preflight fails closed without one.
+                "metadata": {"creative_brief": _CREATIVE_BRIEF},
             },
         )
 

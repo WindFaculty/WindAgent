@@ -57,10 +57,11 @@ Module mới `apps/api/windagent_api/services/studio_preflight.py` — server ki
 | 2 | `creative_brief_valid` | thiếu hoặc không parse được `CreativeBrief` frozen contract | YES |
 | 3 | `provider_configured` | không có provider enabled nào có endpoint configured credential | YES |
 | 4 | `routing_rules_resolve` | còn role story nào không resolve được rule trong ruleset hiện tại | YES |
-| 5 | `worker_capability_available` | model_route/story_engine chưa AVAILABLE | **WARN** |
+| 5 | `worker_capability_available` | capability provider/probe lỗi, hoặc bất kỳ capability `worker` / `model_route` / `story_engine` bị thiếu hay khác `AVAILABLE` | **YES** |
 | 6 | `persistence_available` | series của episode đọc không được | YES |
 
-- WARN cho #5 là quyết định có chủ đích: durable queue chấp nhận submit-before-worker (crash/restart/desktop-close phải không mất run) — chặn theo heartbeat sẽ mâu thuẫn P0.5.4. Report vẫn trung thực chi tiết lý do.
+- #5 là hard gate fail-closed cho **START NEW RUN**: capability thiếu không bao giờ được diễn giải thành AVAILABLE. `worker`, `model_route`, và `story_engine` đều phải có mặt và đều `AVAILABLE`.
+- **RESUME EXISTING NON-TERMINAL RUN** vẫn giữ invariant P0.5: config/heartbeat drift không chặn resume; preflight chỉ chặn việc tạo run mới.
 - API: `GET /api/v3/studio/episodes/{id}/preflight` → report `{episode_id, ready, checks[{name,status,detail}]}` truthy từng check.
 - Gate: `POST /episodes/{id}/runs` chạy preflight trước; nếu có check FAIL và episode KHÔNG có active run để resume → **409 `START_BLOCKED`** kèm `reasons[]`. Resume run đang hoạt động không bao giờ bị chặn bởi config drift.
 - Wire thật: preflight compose từ `provider_management_service` + `route_lock_service` (ruleset projection hiện hành) + capability probe attestation-based + read adapters.
@@ -83,10 +84,10 @@ Module mới `apps/api/windagent_api/services/studio_preflight.py` — server ki
 
 | Suite | Kết quả |
 | --- | --- |
-| `tests/integration/test_p0_4_studio_projects.py` (7 test: metadata validation trên create, merge semantics, draft-editable → immutable sau DRAFT, title luôn editable, stale protection, preflight đủ thiếu + preflight pass, START_BLOCKED 409) | **7 passed** |
+| `tests/integration/test_p0_4_studio_projects.py` (metadata/update semantics; provider/probe fail-closed; worker missing; worker unavailable; full capability PASS; START_BLOCKED; active-run resume under drift) | **PASS** trong focused matrix cuối |
 | Studio regression (`test_studio_run_service.py` + contracts roundtrip) | **32 passed** |
-| Vertical lifecycle thật (`test_v3_vertical_lifecycle_real.py`) | **1 passed** — cập nhật: đăng ký provider thật qua API path để thỏa mãn preflight (FixtureModelPort worker vẫn bypass endpoint) |
-| Full `tests/contracts` (ignore phase7/phase16/code-video) | **540 passed, 31 skipped, 0 FAILED** |
+| Vertical lifecycle thật (`test_v3_vertical_lifecycle_real.py`) | **1 passed** — `ProductionWorker` + production `WorkerContainer` + durable route lock/coordinator; chỉ provider network transport dùng deterministic adapter |
+| Canonical Studio contracts/consumers đúng scope CI | **739 passed, 31 baseline skips, 0 FAILED** |
 | ruff toàn bộ file thay đổi | clean |
 
 Ghi chú trung thực:

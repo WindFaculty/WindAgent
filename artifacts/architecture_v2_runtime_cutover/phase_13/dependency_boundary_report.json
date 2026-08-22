@@ -1,19 +1,6 @@
 {
-  "status": "FAIL",
-  "total_violations": 2,
-  "violations": [
-    {
-      "rule": "production_fallback_reference",
-      "file": "apps/worker/windagent_worker/studio_model_port.py",
-      "line": 294,
-      "message": "Production code references test fallback symbol: fallback_model = self._fallback_model_for(primary_receipt)"
-    },
-    {
-      "rule": "production_fallback_reference",
-      "file": "apps/worker/windagent_worker/studio_model_port.py",
-      "line": 364,
-      "message": "Production code references test fallback symbol: def _fallback_model_for(self, receipt: RouteLockReceipt) -> Optional[str]:"
-    }
-  ],
+  "status": "PASS",
+  "total_violations": 0,
+  "violations": [],
   "circular_dependency_cycles": 0
 }
