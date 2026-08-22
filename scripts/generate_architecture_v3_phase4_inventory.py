@@ -125,6 +125,18 @@ def _studio_durable(namespace: str) -> dict:
     }
 
 
+def _provider_management() -> dict:
+    """Dedicated provider-management SQL authority (provider_vendors /
+    provider_credentials / provider_endpoints) reached through
+    ProviderManagementService -> SQLProviderManagementRepository."""
+    return {
+        "classification": _DURABLE,
+        "authority": "dedicated-sql:provider_vendors,provider_credentials,provider_endpoints",
+        "source": "dedicated-sql:provider_vendors,provider_credentials,provider_endpoints",
+        "migration_disposition": "cutover-to-dedicated-provider-management-sql",
+    }
+
+
 _POLICY: dict[tuple[str, str], dict] = {
     # ── Agent definitions / instances (Wave D) ─────────────────────────────
     ("GET", "/api/v3/agent-definitions"): _durable("agent_definitions"),
@@ -270,6 +282,7 @@ _POLICY: dict[tuple[str, str], dict] = {
     ("POST", "/api/v3/projects/{project_id}/episodes"): _durable("episodes"),
     ("GET", "/api/v3/projects/{project_id}/world"): _durable("world_bibles"),
     ("PATCH", "/api/v3/projects/{project_id}/world"): _durable("world_bibles"),
+    ("POST", "/api/v3/projects/{project_id}/world/initialize"): _durable("world_bibles"),
     ("GET", "/api/v3/projects/{project_id}/world/factions"): _durable("factions"),
     ("POST", "/api/v3/projects/{project_id}/world/factions"): _durable("factions"),
     ("GET", "/api/v3/projects/{project_id}/world/locations"): _durable("locations"),
@@ -288,6 +301,12 @@ _POLICY: dict[tuple[str, str], dict] = {
     ("POST", "/api/v3/providers/{provider_id}/test-connection"): _derived("v3_resources:providers"),
     ("GET", "/api/v3/providers/rules"): _durable("routing_rules"),
     ("POST", "/api/v3/providers/rules"): _durable("routing_rules"),
+    ("PATCH", "/api/v3/providers/{provider_id}"): _provider_management(),
+    ("DELETE", "/api/v3/providers/{provider_id}"): _provider_management(),
+    ("PUT", "/api/v3/providers/{provider_id}/credential"): _provider_management(),
+    ("DELETE", "/api/v3/providers/{provider_id}/credential"): _provider_management(),
+    ("POST", "/api/v3/providers/{provider_id}/models/test"): _provider_management(),
+    ("POST", "/api/v3/providers/{provider_id}/sync-models"): _provider_management(),
 
     # ── Reviews (Wave C) ───────────────────────────────────────────────────
     ("GET", "/api/v3/reviews"): _durable("reviews"),

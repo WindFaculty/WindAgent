@@ -130,6 +130,7 @@ class ApplicationContainer:
         self.worker_heartbeat_repo = repo_bundle.worker_heartbeat_repo
         self.task_submission = repo_bundle.task_submission
         self.studio_task_submission = repo_bundle.studio_task_submission
+        self.route_receipt_repo = repo_bundle.route_receipt_repo
 
         # 5. Application/query services.
         projects = ProjectComposer()

@@ -9,8 +9,10 @@ import {
   useAssignProviderModelRule,
   useCreateProvider,
   useProviderModelRules,
+  useProviderModels,
   useProviders,
   useProvidersHealth,
+  useStoryRoles,
   useTestProviderConnection,
 } from '../../providers/hooks/useProviders';
 
@@ -67,16 +69,22 @@ export const RoutingPage: React.FC = () => {
   const providersQuery = useProviders();
   const healthQuery = useProvidersHealth();
   const rulesQuery = useProviderModelRules();
+  const rolesQuery = useStoryRoles();
   const createProvider = useCreateProvider();
   const testConnection = useTestProviderConnection();
   const assignRule = useAssignProviderModelRule();
   const [providerForm, setProviderForm] = useState<AddProviderRequest>(emptyProvider);
   const [ruleForm, setRuleForm] = useState<AssignProviderModelRuleRequest>(emptyRule);
+  const [ruleProviderId, setRuleProviderId] = useState('');
+  const [ruleFallbackId, setRuleFallbackId] = useState('');
   const [lastReceipt, setLastReceipt] = useState<ProviderConnectionTestResult | null>(null);
 
   const providers = providersQuery.data ?? [];
   const health = healthQuery.data ?? {};
   const rules = rulesQuery.data ?? [];
+  const roles = rolesQuery.data ?? [];
+  const ruleModelsQuery = useProviderModels(ruleProviderId);
+  const fallbackModelsQuery = useProviderModels(ruleFallbackId);
   const endpoints = useMemo(
     () => providers.flatMap((provider) => provider.endpoints),
     [providers],
@@ -92,6 +100,8 @@ export const RoutingPage: React.FC = () => {
     event.preventDefault();
     await assignRule.mutateAsync(ruleForm);
     setRuleForm(emptyRule);
+    setRuleProviderId('');
+    setRuleFallbackId('');
   };
 
   const probe = async (providerId: string, endpointId: string) => {
@@ -188,14 +198,119 @@ export const RoutingPage: React.FC = () => {
         <form onSubmit={(event) => void submitRule(event)} style={panel}>
           <h2 style={{ marginTop: 0 }}>Assign model rule</h2>
           <div style={{ display: 'grid', gap: 10 }}>
-            <input required placeholder="Role/capability (coding, planning, review)" style={field} value={ruleForm.role} onChange={(event) => setRuleForm({ ...ruleForm, role: event.target.value })} />
-            <input required placeholder="Rule name" style={field} value={ruleForm.name} onChange={(event) => setRuleForm({ ...ruleForm, name: event.target.value })} />
-            <input required placeholder="Discovered canonical model id" style={field} value={ruleForm.primary_canonical_model_id} onChange={(event) => setRuleForm({ ...ruleForm, primary_canonical_model_id: event.target.value })} />
+            <select
+              required
+              style={field}
+              value={ruleForm.role}
+              onChange={(event) => {
+                const role = event.target.value;
+                const spec = roles.find((candidate) => candidate.role === role);
+                setRuleForm({
+                  ...ruleForm,
+                  role,
+                  name: ruleForm.name || (spec ? `${spec.label} rule` : ''),
+                });
+              }}
+            >
+              <option value="" disabled>Story role…</option>
+              {roles.map((spec) => (
+                <option key={spec.role} value={spec.role}>
+                  {spec.label} ({spec.role}){spec.llm_routed ? '' : ' · local'}
+                </option>
+              ))}
+            </select>
+            <input
+              required
+              placeholder="Rule name"
+              style={field}
+              value={ruleForm.name}
+              onChange={(event) => setRuleForm({ ...ruleForm, name: event.target.value })}
+            />
+            <label style={{ display: 'grid', gap: 4 }}>
+              <span style={{ color: '#94a3b8' }}>Primary provider</span>
+              <select
+                required
+                style={field}
+                value={ruleProviderId}
+                onChange={(event) => {
+                  setRuleProviderId(event.target.value);
+                  setRuleForm({ ...ruleForm, primary_canonical_model_id: '' });
+                }}
+              >
+                <option value="" disabled>Select provider…</option>
+                {providers.map((provider) => (
+                  <option key={provider.id} value={provider.id}>{provider.display_name}</option>
+                ))}
+              </select>
+            </label>
+            <label style={{ display: 'grid', gap: 4 }}>
+              <span style={{ color: '#94a3b8' }}>Primary model</span>
+              <select
+                required
+                style={field}
+                value={ruleForm.primary_canonical_model_id}
+                onChange={(event) => setRuleForm({ ...ruleForm, primary_canonical_model_id: event.target.value })}
+              >
+                <option value="" disabled>
+                  {ruleProviderId ? 'Select model from catalog…' : 'Select a provider first'}
+                </option>
+                {(ruleModelsQuery.data ?? []).map((model) => (
+                  <option key={model.id} value={model.id}>
+                    {model.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label style={{ display: 'grid', gap: 4 }}>
+              <span style={{ color: '#94a3b8' }}>Fallback provider (optional)</span>
+              <select
+                style={field}
+                value={ruleFallbackId}
+                onChange={(event) => {
+                  setRuleFallbackId(event.target.value);
+                  setRuleForm({ ...ruleForm, fallback_canonical_model_id: undefined });
+                }}
+              >
+                <option value="">None</option>
+                {providers.map((provider) => (
+                  <option key={provider.id} value={provider.id}>{provider.display_name}</option>
+                ))}
+              </select>
+            </label>
+            <label style={{ display: 'grid', gap: 4 }}>
+              <span style={{ color: '#94a3b8' }}>Fallback model (optional)</span>
+              <select
+                style={field}
+                value={ruleForm.fallback_canonical_model_id ?? ''}
+                onChange={(event) =>
+                  setRuleForm({
+                    ...ruleForm,
+                    fallback_canonical_model_id: event.target.value || undefined,
+                  })
+                }
+              >
+                <option value="">
+                  {ruleFallbackId ? 'Select fallback model…' : 'None'}
+                </option>
+                {(fallbackModelsQuery.data ?? []).map((model) => (
+                  <option key={model.id} value={model.id}>
+                    {model.name}
+                  </option>
+                ))}
+              </select>
+            </label>
             <button disabled={assignRule.isPending} style={button} type="submit">Assign rule</button>
             {assignRule.error && <span role="alert">{errorText(assignRule.error)}</span>}
           </div>
           <ul>
-            {rules.map((rule) => <li key={rule.role}><strong>{rule.role}</strong> → <code>{rule.primary_canonical_model_id}</code></li>)}
+            {rules.map((rule) => (
+              <li key={rule.role}>
+                <strong>{rule.role}</strong> → <code>{rule.primary_canonical_model_id}</code>
+                {rule.fallback_canonical_model_id
+                  ? <> (fallback: <code>{rule.fallback_canonical_model_id}</code>)</>
+                  : null}
+              </li>
+            ))}
           </ul>
         </form>
       </div>

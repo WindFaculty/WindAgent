@@ -52,16 +52,21 @@ NS_CONVERSATION_EVENTS = "conversation_events"
 
 
 # Candidate key fields used to derive a stable resource_id per item.
+# Ordering contract:
+#   job_id beats artifact_id      -> a production job is keyed by its own
+#                                    identity, not by the asset it produced.
+#   artifact_id beats revision_id -> episode artifacts sharing one revision
+#                                    each keep their own envelope row.
 _ID_KEY_FIELDS = (
     "id",
-    "artifact_id",
     "run_id",
-    "revision_id",
     "lock_id",
     "job_id",
-    "project_id",
-    "event_id",
     "generation_id",
+    "event_id",
+    "project_id",
+    "artifact_id",
+    "revision_id",
 )
 
 

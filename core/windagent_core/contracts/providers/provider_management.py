@@ -187,6 +187,65 @@ class ProviderManagementRepositoryPort(Protocol):
         """Return all endpoints for a vendor (never any credential secret)."""
         ...
 
+    # -- lifecycle mutations (P0.1) ----------------------------------------- #
+    def update_provider(
+        self,
+        vendor_id: str,
+        *,
+        name: Optional[str] = None,
+        vendor_type: Optional[str] = None,
+        enabled: Optional[bool] = None,
+        supports_model_discovery: Optional[bool] = None,
+        supports_openai_compatible: Optional[bool] = None,
+    ) -> Optional[ProviderVendorRecord]:
+        """Update editable vendor fields; return the refreshed record."""
+        ...
+
+    def update_endpoint(
+        self,
+        endpoint_id: str,
+        *,
+        base_url: Optional[str] = None,
+        protocol_mode: Optional[str] = None,
+        enabled: Optional[bool] = None,
+    ) -> Optional[ProviderEndpointRecord]:
+        """Update editable endpoint fields; return the refreshed record."""
+        ...
+
+    def delete_vendor(self, vendor_id: str) -> Dict[str, int]:
+        """Delete a vendor plus its owned endpoints/credentials/bindings.
+
+        Returns removed-row counts per table. Callers MUST verify routing-rule
+        dependencies first — this method never inspects rules itself.
+        """
+        ...
+
+    def list_model_rules(self, *, include_disabled: bool = False) -> List[ModelRuleRecord]:
+        """List rules (optionally including disabled ones), priority asc then role."""
+        ...
+
+    def set_rules_enabled(self, roles: List[str], *, enabled: bool) -> int:
+        """Enable/disable the given rule roles; return the number of changed rows."""
+        ...
+
+    def upsert_credential(
+        self, vendor_id: str, secret: str, label: Optional[str] = None
+    ) -> ProviderCredentialRecord:
+        """Create or rotate the vendor credential (raw secret encrypted at rest)."""
+        ...
+
+    def remove_credentials(self, vendor_id: str) -> int:
+        """Detach and delete every credential of a vendor; return removed count."""
+        ...
+
+    def list_bound_canonical_ids(self, vendor_id: str) -> List[str]:
+        """Return canonical model ids bound to any endpoint of the vendor."""
+        ...
+
+    def get_credential_summary(self, vendor_id: str) -> Optional[Dict[str, Any]]:
+        """Return credential metadata only (label/version/timestamps, never secrets)."""
+        ...
+
     # -- probe material + probe status ------------------------------------- #
     def get_probe_material(self, endpoint_id: str) -> Optional[ProviderProbeMaterial]:
         """Return endpoint probe material (credential ciphertext) to the trusted seam."""
@@ -201,6 +260,22 @@ class ProviderManagementRepositoryPort(Protocol):
         self, endpoint_id: str, discovered_models: List[DiscoveredModel]
     ) -> List[Dict[str, Any]]:
         """Persist discovered endpoint/model bindings; return binding records."""
+        ...
+
+    def reconcile_discovered_models(
+        self, endpoint_id: str, discovered_models: List[DiscoveredModel]
+    ) -> Dict[str, Any]:
+        """P0.2.4 — classify a sync into added/updated/unchanged/unavailable."""
+        ...
+
+    def resolve_provider_model_id(
+        self, endpoint_id: str, canonical_model_id: str
+    ) -> Optional[str]:
+        """Provider-facing model id of the active binding (Test Model seam)."""
+        ...
+
+    def list_all_discovered_models(self) -> List[Dict[str, Any]]:
+        """Whole durable registry across every vendor (/api/v3/models merge)."""
         ...
 
     def list_discovered_models(self, vendor_id: str) -> List[Dict[str, Any]]:

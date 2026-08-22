@@ -139,6 +139,15 @@ def get_provider_management_service(request: Request):
     return container.provider_management_service
 
 
+def get_route_receipt_repository(request: Request):
+    """Returns the durable route-receipt repository (P0.3.6)."""
+    container = get_container(request)
+    repo = getattr(container, "route_receipt_repo", None)
+    if repo is None:
+        raise RuntimeError("RouteReceiptRepository is not composed.")
+    return repo
+
+
 def get_provider_probe_service(request: Request):
     """Returns the composed provider probe service (Phase 10)."""
     container = get_container(request)

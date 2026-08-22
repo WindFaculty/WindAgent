@@ -1,7 +1,7 @@
 {
   "phase": "04",
   "generated_by": "scripts/generate_architecture_v3_phase4_inventory.py",
-  "route_count": 185,
+  "route_count": 192,
   "routes": [
     {
       "method": "GET",
@@ -931,6 +931,15 @@
       "migration_disposition": "migrated-to-v3_resources"
     },
     {
+      "method": "POST",
+      "path": "/api/v3/projects/{project_id}/world/initialize",
+      "module": "windagent_api.routers.v3.world.initialize_world_bible",
+      "classification": "DURABLE",
+      "authority": "v3_resources:world_bibles",
+      "source": "v3_resources:world_bibles",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
       "method": "GET",
       "path": "/api/v3/projects/{project_id}/world/locations",
       "module": "windagent_api.routers.v3.world.list_locations",
@@ -1012,6 +1021,15 @@
       "migration_disposition": "migrated-to-v3_resources"
     },
     {
+      "method": "DELETE",
+      "path": "/api/v3/providers/{provider_id}",
+      "module": "windagent_api.routers.v3.providers.delete_provider",
+      "classification": "DURABLE",
+      "authority": "dedicated-sql:provider_vendors,provider_credentials,provider_endpoints",
+      "source": "dedicated-sql:provider_vendors,provider_credentials,provider_endpoints",
+      "migration_disposition": "cutover-to-dedicated-provider-management-sql"
+    },
+    {
       "method": "GET",
       "path": "/api/v3/providers/{provider_id}",
       "module": "windagent_api.routers.v3.providers.get_provider",
@@ -1019,6 +1037,33 @@
       "authority": "v3_resources:providers",
       "source": "v3_resources:providers",
       "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v3/providers/{provider_id}",
+      "module": "windagent_api.routers.v3.providers.update_provider",
+      "classification": "DURABLE",
+      "authority": "dedicated-sql:provider_vendors,provider_credentials,provider_endpoints",
+      "source": "dedicated-sql:provider_vendors,provider_credentials,provider_endpoints",
+      "migration_disposition": "cutover-to-dedicated-provider-management-sql"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v3/providers/{provider_id}/credential",
+      "module": "windagent_api.routers.v3.providers.remove_provider_credential",
+      "classification": "DURABLE",
+      "authority": "dedicated-sql:provider_vendors,provider_credentials,provider_endpoints",
+      "source": "dedicated-sql:provider_vendors,provider_credentials,provider_endpoints",
+      "migration_disposition": "cutover-to-dedicated-provider-management-sql"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v3/providers/{provider_id}/credential",
+      "module": "windagent_api.routers.v3.providers.rotate_provider_credential",
+      "classification": "DURABLE",
+      "authority": "dedicated-sql:provider_vendors,provider_credentials,provider_endpoints",
+      "source": "dedicated-sql:provider_vendors,provider_credentials,provider_endpoints",
+      "migration_disposition": "cutover-to-dedicated-provider-management-sql"
     },
     {
       "method": "GET",
@@ -1046,6 +1091,24 @@
       "authority": "v3_resources:models",
       "source": "v3_resources:models",
       "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/providers/{provider_id}/models/test",
+      "module": "windagent_api.routers.v3.providers.test_provider_model",
+      "classification": "DURABLE",
+      "authority": "dedicated-sql:provider_vendors,provider_credentials,provider_endpoints",
+      "source": "dedicated-sql:provider_vendors,provider_credentials,provider_endpoints",
+      "migration_disposition": "cutover-to-dedicated-provider-management-sql"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/providers/{provider_id}/sync-models",
+      "module": "windagent_api.routers.v3.providers.sync_provider_models",
+      "classification": "DURABLE",
+      "authority": "dedicated-sql:provider_vendors,provider_credentials,provider_endpoints",
+      "source": "dedicated-sql:provider_vendors,provider_credentials,provider_endpoints",
+      "migration_disposition": "cutover-to-dedicated-provider-management-sql"
     },
     {
       "method": "POST",

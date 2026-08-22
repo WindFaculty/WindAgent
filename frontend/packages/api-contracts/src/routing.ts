@@ -108,3 +108,31 @@ export interface RouteLockDetailResource {
     reason: string;
   };
 }
+
+/** P0.3.1 — canonical story model-routing role (server authority). */
+export interface StoryRoleResource {
+  role: string;
+  label: string;
+  capability_labels: string[];
+  llm_routed: boolean;
+  aliases: string[];
+}
+
+/** P0.3.6 — durable per-task route receipt written by the model router. */
+export interface RouteReceiptResource {
+  id: string;
+  task_id: string;
+  role: string;
+  rule_id: string;
+  route_lock_id: string;
+  selected_provider?: string | null;
+  selected_model_id: string;
+  provider_model_id?: string | null;
+  endpoint_id?: string | null;
+  fallback_used: boolean;
+  fallback_reason?: string | null;
+  status: 'success' | 'failed';
+  error_code?: string | null;
+  started_at?: string | null;
+  completed_at?: string | null;
+}

@@ -18,6 +18,8 @@ export type ModelModality =
   | 'text->audio'
   | 'multimodal->multimodal';
 
+export type ModelPricingClass = 'FREE' | 'PAID' | 'UNKNOWN';
+
 export interface ModelEndpointBinding {
   id: string;
   endpoint_id: string;
@@ -26,6 +28,13 @@ export interface ModelEndpointBinding {
   equivalence_level: 'exact' | 'compatible' | 'approximate' | 'fallback';
   confidence: number;
   is_active: boolean;
+  /** P0.2 — reconciliation state: active | unavailable | deprecated */
+  availability?: 'active' | 'unavailable' | 'deprecated';
+  pricing_class?: ModelPricingClass;
+  input_price?: number | null;
+  output_price?: number | null;
+  currency?: string | null;
+  last_discovered_at?: string | null;
 }
 
 export interface ModelPricing {
@@ -45,6 +54,7 @@ export interface ModelDefinitionResource {
   modalities: ModelModality[];
   is_local: boolean;
   is_active: boolean;
+  pricing_class?: ModelPricingClass;
   pricing?: ModelPricing;
   bindings: ModelEndpointBinding[];
   benchmarks?: Record<string, number>;
@@ -57,6 +67,7 @@ export interface ModelFilterParams {
   capability?: string;
   modality?: string;
   is_local?: boolean;
+  pricing?: ModelPricingClass;
   search?: string;
   cursor?: string;
   limit?: number;

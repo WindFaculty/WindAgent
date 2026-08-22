@@ -119,15 +119,18 @@ async def test_add_probe_discover_rules_worker_route_and_audit(provider_db):
             ProviderAdapterFactory(decrypt, http_client=client),
             repo,
         )
-        result = await probe.test_connection("ep-openrouter-test")
+        # P0.2.1: Test Connection is connectivity-only (one /models handshake).
+        connection = await probe.test_connection("ep-openrouter-test")
+        assert connection.reachable is True
+        assert connection.auth_valid is True
+        assert connection.discovered_models == []
+        assert calls == ["/v1/models"]
 
-    assert result.reachable is True
-    assert result.auth_valid is True
-    assert result.discovered_models == [
-        "deepseek-v4",
-        "qwen-planner",
-        "gemma-review",
-    ]
+        # P0.2.1: Sync Models is the explicit discovery operation.
+        sync = await probe.sync_models("ep-openrouter-test")
+
+    assert sync.ok is True
+    assert sorted(sync.added) == ["deepseek-v4", "gemma-review", "qwen-planner"]
     assert calls == ["/v1/models", "/v1/models"]
     assert session.query(EndpointModelBindingORM).count() == 3
     assert session.query(EndpointHealthSampleORM).one().healthy is True
@@ -297,7 +300,14 @@ def test_http_add_connect_discover_and_assign_rule_gate(provider_db):
             json={"endpoint_id": "ep-http-provider"},
         )
         assert connected.status_code == 200
-        assert connected.json()["model_discovery"] == ["http-coder"]
+        assert connected.json()["reachable"] is True
+
+        # P0.2.1: catalog refresh is the explicit Sync Models operation.
+        import asyncio
+
+        sync_receipt = asyncio.run(probe.sync_models("ep-http-provider"))
+        assert sync_receipt.ok is True
+        assert sync_receipt.added == ["http-coder"]
 
         models = client.get("/api/v3/providers/http-provider/models")
         assert models.status_code == 200

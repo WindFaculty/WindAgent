@@ -402,9 +402,19 @@ class StudioRuntimeAdapter(ExecutionRuntimePort):
                     task_id=durable_task_id,
                 )
             except Exception as exc:  # noqa: BLE001 — mapped through the B taxonomy
-                from windagent_intelligence.story.prompts.structured import story_error_code
+                from windagent_core.contracts.studio.story_roles import (
+                    ROUTING_UNAVAILABLE,
+                    RoutingUnavailableError,
+                )
+                from windagent_intelligence.story.prompts.structured import (
+                    story_error_code,
+                )
 
-                code = story_error_code(exc)
+                code = (
+                    ROUTING_UNAVAILABLE
+                    if isinstance(exc, RoutingUnavailableError)
+                    else story_error_code(exc)
+                )
                 return self._fail(
                     handle,
                     code,

@@ -31,6 +31,7 @@ from typing import Any, Dict, Optional
 from jsonschema import Draft202012Validator
 
 from windagent_core.contracts.studio.errors import StudioValidationError
+from windagent_core.contracts.studio.story_roles import RoutingUnavailableError
 from windagent_intelligence.story.prompts.registry import (
     OUTPUT_FORMAT_JSON,
     OUTPUT_FORMAT_TEXT,
@@ -270,6 +271,10 @@ class StoryModelBoundary:
         try:
             result = await self.model_port.complete(request)
         except StoryModelError:
+            raise
+        except RoutingUnavailableError:
+            # P0.3.4 fail-closed routing: never disguised as a transient
+            # provider error — retrying cannot fix missing configuration.
             raise
         except Exception as exc:  # port contract: never raises; fakes may
             raise StoryProviderTransientError(

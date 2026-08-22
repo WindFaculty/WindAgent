@@ -381,13 +381,11 @@ async def run_chain() -> Dict[str, Any]:
         uow_factory=lambda: SqlUnitOfWork(db.session_factory),
         studio_reconciler=service,
     )
-    submission = StudioTaskSubmissionAdapter(db.session_factory)
     await worker.start()
 
-    started = await service.start_or_resume_run(
+    await service.start_or_resume_run(
         StartRunCommand(idempotency_key="b9-run", episode_id=episode_id)
     )
-    run_id = str(started.run_id)
     seen_hashes: set = set()
     steps: List[Dict[str, Any]] = []
     artifacts_by_type: Dict[str, Any] = {}

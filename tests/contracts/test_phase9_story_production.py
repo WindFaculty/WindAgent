@@ -83,6 +83,55 @@ class TestWorldE2E:
         assert "factions_count" in wb
         assert "lore_count" in wb
 
+    def test_get_uninitialized_world_bible_does_not_create(self, client):
+        """P1.0 truth repair: GET must not fabricate an 'Untitled World'."""
+        r = client.get("/api/v3/projects/proj-noir-03/world")
+        assert r.status_code == 404
+        body = r.json()
+        detail = body.get("detail", {})
+        assert detail.get("error_code") == "WORLD_BIBLE_NOT_INITIALIZED"
+
+    def test_initialize_world_bible_explicitly(self, client):
+        """P1.0 truth repair: world creation is an explicit POST command."""
+        import uuid as _uuid
+        proj_r = client.post(
+            "/api/v3/projects",
+            json={"name": f"P10 World Init {_uuid.uuid4().hex[:6]}"},
+        )
+        assert proj_r.status_code == 201
+        pid = proj_r.json()["id"]
+
+        r = client.post(
+            f"/api/v3/projects/{pid}/world/initialize",
+            json={
+                "world_name": "Vùng Đất Rồng",
+                "setting_summary": "Các vương quốc cổ đại dưới ngọn núi rồng thiêng.",
+                "core_theme": "Khôi phục viên ngọc nguyên tố.",
+                "timeline_era": "Thời đại Huyền Thoại",
+            },
+        )
+        assert r.status_code == 201
+        wb = r.json()
+        assert wb["world_name"] == "Vùng Đất Rồng"
+        # Now GET succeeds without mutating anything.
+        r2 = client.get(f"/api/v3/projects/{pid}/world")
+        assert r2.status_code == 200
+        assert r2.json()["world_name"] == "Vùng Đất Rồng"
+
+    def test_initialize_world_bible_twice_conflict(self, client):
+        import uuid as _uuid
+        proj_r = client.post(
+            "/api/v3/projects",
+            json={"name": f"P10 World Dup {_uuid.uuid4().hex[:6]}"},
+        )
+        pid = proj_r.json()["id"]
+        payload = {"world_name": "Duplicate Init"}
+        r1 = client.post(f"/api/v3/projects/{pid}/world/initialize", json=payload)
+        assert r1.status_code == 201
+        r2 = client.post(f"/api/v3/projects/{pid}/world/initialize", json=payload)
+        assert r2.status_code == 409
+        assert r2.json()["detail"]["error_code"] == "WORLD_BIBLE_ALREADY_INITIALIZED"
+
     def test_update_world_bible_optimistic_lock(self, client):
         wb = client.get("/api/v3/projects/proj-cyberpunk-01/world").json()
         r = client.patch(
@@ -183,10 +232,80 @@ class TestStoryboardE2E:
         assert conflict_r.status_code == 409
 
     def test_sync_storyboard_action(self, client):
+        """P1.0 truth repair: sync on an unlocked episode fails closed."""
         r = client.post("/api/v3/episodes/ep-cb-001/storyboard/actions/sync")
-        assert r.status_code == 200
-        sb = r.json()
+        assert r.status_code == 409
+        assert r.json()["detail"]["error_code"] == "SCREENPLAY_NOT_LOCKED"
+
+    def test_sync_pins_actual_locked_screenplay_revision(self, client):
+        """P1.0 truth repair: after an explicit lock, sync pins the ACTUAL
+        locked revision — never a synthetic rev-{episode_id}-lock value."""
+        ep_r = client.get("/api/v3/episodes/ep-cb-002")
+        version = ep_r.json()["version"]
+        lock_payload = {
+            "revision_id": "rev-cb-002-lock-v7",
+            "content_hash": "a" * 64,
+            "expected_version": version,
+        }
+        lock_r = client.post("/api/v3/episodes/ep-cb-002/lock", json=lock_payload)
+        assert lock_r.status_code == 200
+
+        sync_r = client.post("/api/v3/episodes/ep-cb-002/storyboard/actions/sync")
+        assert sync_r.status_code == 200
+        sb = sync_r.json()
         assert sb["status"] == "SYNCED"
+        assert sb["source_screenplay_revision_id"] == "rev-cb-002-lock-v7"
+        assert sb["source_screenplay_content_hash"] == "a" * 64
+        assert sb["source_screenplay_artifact_id"], "Lock receipt artifact must be resolvable"
+
+    def test_sync_unknown_episode_404(self, client):
+        r = client.post("/api/v3/episodes/ep-does-not-exist/storyboard/actions/sync")
+        assert r.status_code == 404
+
+    def test_create_scene_requires_storyboard_ownership(self, client):
+        """P1.0 truth repair: scenes cannot be created without a storyboard."""
+        r = client.post(
+            "/api/v3/storyboard/scenes",
+            json={"title": "Orphan Scene Should Fail"},
+        )
+        assert r.status_code == 422, "storyboard_id is now mandatory"
+
+    def test_create_scene_unknown_storyboard_404(self, client):
+        r = client.post(
+            "/api/v3/storyboard/scenes",
+            json={"storyboard_id": "sb-missing-404", "title": "No Board"},
+        )
+        assert r.status_code == 404
+        assert r.json()["detail"]["error_code"] == "STORYBOARD_NOT_FOUND"
+
+    def test_create_scene_numbering_local_to_storyboard(self, client):
+        """P1.0 truth repair: scene_number is local to the storyboard and the
+        scene inherits full episode/revision ownership lineage."""
+        existing = client.get("/api/v3/episodes/ep-cb-001/storyboard/scenes").json()
+        expected_number = max(s["scene_number"] for s in existing) + 1
+
+        r = client.post(
+            "/api/v3/storyboard/scenes",
+            json={"storyboard_id": "sb-cb-001", "title": "Owned Scene P10"},
+        )
+        assert r.status_code == 201
+        scene = r.json()
+        assert scene["storyboard_id"] == "sb-cb-001"
+        assert scene["episode_id"] == "ep-cb-001"
+        assert scene["scene_number"] == expected_number
+        assert scene["source_screenplay_revision_id"] == "rev-cb-001-v3"
+
+    def test_create_scene_revision_mismatch_conflict(self, client):
+        r = client.post(
+            "/api/v3/storyboard/scenes",
+            json={
+                "storyboard_id": "sb-cb-001",
+                "title": "Wrong Pin Scene",
+                "source_screenplay_revision_id": "rev-some-other-lock",
+            },
+        )
+        assert r.status_code == 409
+        assert r.json()["detail"]["error_code"] == "SCREENPLAY_REVISION_MISMATCH"
 
 
 # ─────────────────────────────────────────────────────────────────────────────

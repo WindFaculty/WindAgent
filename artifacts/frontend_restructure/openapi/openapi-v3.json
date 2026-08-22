@@ -2161,7 +2161,7 @@
           "Episodes V3"
         ],
         "summary": "Lock Screenplay",
-        "description": "Lock screenplay for production readiness with content hash verification.",
+        "description": "Lock screenplay for production readiness with content hash verification.\n\nP1.0 truth repair: the lock command persists a LockedScreenplayReceipt\nartifact so downstream pre-production consumers can resolve the ACTUAL\nrevision_id / content_hash / artifact_id instead of synthesizing them.",
         "operationId": "episodes.lockScreenplay",
         "parameters": [
           {
@@ -2616,7 +2616,7 @@
           "World V3"
         ],
         "summary": "Get World Bible",
-        "description": "Retrieve the World Bible for a project.",
+        "description": "Retrieve the World Bible for a project.\n\nP1.0 truth repair: GET is read-only. When no World Bible exists the API\nreturns 404 WORLD_BIBLE_NOT_INITIALIZED; a read never mutates the domain\nby fabricating an \"Untitled World\" record.",
         "operationId": "world.get",
         "parameters": [
           {
@@ -2682,6 +2682,59 @@
         },
         "responses": {
           "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorldBibleResource"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v3/projects/{project_id}/world/initialize": {
+      "post": {
+        "tags": [
+          "World V3"
+        ],
+        "summary": "Initialize World Bible",
+        "description": "Explicitly initialize the World Bible for a project (P1.0 truth repair).\n\nCreation is a command, not a side effect of reads or Canon Sync.",
+        "operationId": "world.initialize",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InitializeWorldBibleRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
             "description": "Successful Response",
             "content": {
               "application/json": {
@@ -3041,7 +3094,7 @@
           "Storyboard V3"
         ],
         "summary": "Sync Storyboard From Screenplay",
-        "description": "Sync storyboard scenes from the locked screenplay revision.",
+        "description": "Sync storyboard from the ACTUAL locked screenplay revision.\n\nP1.0 truth repair: resolves the lock authority receipt first. When the\nepisode has no locked screenplay the request fails closed with\n409 SCREENPLAY_NOT_LOCKED and no storyboard record is created.",
         "operationId": "storyboard.syncFromScreenplay",
         "parameters": [
           {
@@ -3131,7 +3184,7 @@
           "Storyboard V3"
         ],
         "summary": "Create Scene",
-        "description": "Create a new storyboard scene.",
+        "description": "Create a storyboard scene with full ownership lineage (P1.0 truth repair).\n\nA scene MUST belong to an existing storyboard (and through it an episode),\npin the storyboard's actual screenplay revision, and number locally within\nthat storyboard. Orphan scenes cannot be created.",
         "operationId": "storyboard.createScene",
         "requestBody": {
           "content": {
@@ -4111,7 +4164,7 @@
           "Production V3"
         ],
         "summary": "Get Production Plan",
-        "description": "Retrieve the active production plan for an episode.",
+        "description": "Retrieve the active production plan for an episode.\n\nP1.0 truth repair: GET is read-only. When no plan exists the API returns\n404 PRODUCTION_PLAN_NOT_CREATED; it never fabricates a plan (or synthetic\nrevision pins) as a side effect of a read.",
         "operationId": "production.getPlan",
         "parameters": [
           {
@@ -4669,7 +4722,7 @@
           "Production V3"
         ],
         "summary": "Retry Job",
-        "description": "Retry a failed or blocked job.",
+        "description": "Retry a failed or blocked job.\n\nP1.0 truth repair: re-queueing without a real executor consumer is a fake\n``QUEUED`` claim, so retries fail closed until P2 executors land.",
         "operationId": "production.retryJob",
         "parameters": [
           {
@@ -4837,7 +4890,7 @@
           "Production V3"
         ],
         "summary": "Get Delivery Artifact",
-        "description": "Get final delivery package for an episode.",
+        "description": "Get final delivery package for an episode.\n\nP1.0 truth repair: read-only. No delivery record is fabricated on GET.",
         "operationId": "production.getDelivery",
         "parameters": [
           {
@@ -6586,7 +6639,7 @@
           "Models V3"
         ],
         "summary": "List Models",
-        "description": "List canonical model definitions matching criteria.",
+        "description": "List canonical model definitions matching criteria.\n\nP0.2.2/P0.2.3: the primary source is the durable discovered registry fed\nby provider Sync Models; the demo catalog only appears under the explicit\ndemo profile. ``pricing`` filters strictly by the advertised class.",
         "operationId": "models.list",
         "parameters": [
           {
@@ -6660,6 +6713,24 @@
               "title": "Is Local"
             },
             "description": "Filter by local/cloud execution"
+          },
+          {
+            "name": "pricing",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by pricing class: FREE | PAID | UNKNOWN",
+              "title": "Pricing"
+            },
+            "description": "Filter by pricing class: FREE | PAID | UNKNOWN"
           },
           {
             "name": "search",
@@ -6817,6 +6888,245 @@
         }
       }
     },
+    "/api/v3/providers/{provider_id}": {
+      "patch": {
+        "tags": [
+          "Providers V3"
+        ],
+        "summary": "Update Provider",
+        "description": "Edit provider display name, endpoint configuration and enabled state.\n\nCatalog-only (demo) providers cannot be edited \u2014 register a durable\nprovider first. The API key is never part of an update payload; rotate it\nthrough ``PUT /{provider_id}/credential`` instead.",
+        "operationId": "providers.update",
+        "parameters": [
+          {
+            "name": "provider_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Provider Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProviderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProviderResource"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Providers V3"
+        ],
+        "summary": "Delete Provider",
+        "description": "Delete a durable provider (vendor + endpoints + credentials + bindings).\n\nFails with 409 while any ENABLED routing rule still references one of the\nprovider's bound canonical models. Pass ``allow_disabling_rules=true`` to\nexplicitly disable those conflicting rules first \u2014 never a silent cascade.",
+        "operationId": "providers.delete",
+        "parameters": [
+          {
+            "name": "provider_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Provider Id"
+            }
+          },
+          {
+            "name": "allow_disabling_rules",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Allow Disabling Rules"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteProviderResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Providers V3"
+        ],
+        "summary": "Get Provider",
+        "description": "Retrieve details for a specific provider by ID.",
+        "operationId": "providers.get",
+        "parameters": [
+          {
+            "name": "provider_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Provider Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProviderResource"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v3/providers/{provider_id}/credential": {
+      "put": {
+        "tags": [
+          "Providers V3"
+        ],
+        "summary": "Rotate Provider Credential",
+        "description": "Rotate (or first-configure) the provider credential.\n\nThe raw key is encrypted at rest and never returned, logged, or audited.",
+        "operationId": "providers.rotateCredential",
+        "parameters": [
+          {
+            "name": "provider_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Provider Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CredentialPutRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CredentialStatusResource"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Providers V3"
+        ],
+        "summary": "Remove Provider Credential",
+        "description": "Remove the provider credential. Endpoints become unconfigured.",
+        "operationId": "providers.removeCredential",
+        "parameters": [
+          {
+            "name": "provider_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Provider Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CredentialStatusResource"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v3/providers/health": {
       "get": {
         "tags": [
@@ -6907,56 +7217,13 @@
         }
       }
     },
-    "/api/v3/providers/{provider_id}": {
-      "get": {
-        "tags": [
-          "Providers V3"
-        ],
-        "summary": "Get Provider",
-        "description": "Retrieve details for a specific provider by ID.",
-        "operationId": "providers.get",
-        "parameters": [
-          {
-            "name": "provider_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Provider Id"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProviderResource"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/v3/providers/{provider_id}/models": {
       "get": {
         "tags": [
           "Providers V3"
         ],
         "summary": "Get Provider Models",
-        "description": "Retrieve models registered and available on this provider.",
+        "description": "Retrieve models registered and available on this provider.\n\nP0.2.3 \u2014 server-side FREE/PAID/UNKNOWN filter over the durable registry.",
         "operationId": "providers.getModels",
         "parameters": [
           {
@@ -6967,6 +7234,24 @@
               "type": "string",
               "title": "Provider Id"
             }
+          },
+          {
+            "name": "pricing",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by pricing class: FREE | PAID | UNKNOWN",
+              "title": "Pricing"
+            },
+            "description": "Filter by pricing class: FREE | PAID | UNKNOWN"
           }
         ],
         "responses": {
@@ -7095,7 +7380,7 @@
           "Providers V3"
         ],
         "summary": "Test Provider Connection",
-        "description": "Perform a REAL server-side connection handshake and model discovery.\n\nFor providers registered in the dedicated SQL authority, this performs an\nactual adapter network call + model discovery (never a timer/catalog/random\nsimulation). Demo-only providers (seeded in non-production) fall back to the\ndemo catalog so legacy contract tests remain green.",
+        "description": "Perform a REAL server-side connection handshake (connectivity/auth).\n\nP0.2.1: this operation NO LONGER discovers models \u2014 catalog refresh is the\nexplicit ``POST /{provider_id}/sync-models`` operation. Demo-only providers\n(seeded in non-production) fall back to the demo catalog so legacy contract\ntests remain green.",
         "operationId": "providers.testConnection",
         "parameters": [
           {
@@ -7132,6 +7417,119 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProviderConnectionTestResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v3/providers/{provider_id}/sync-models": {
+      "post": {
+        "tags": [
+          "Providers V3"
+        ],
+        "summary": "Sync Provider Models",
+        "description": "Explicitly discover + durably reconcile this provider's model catalog.\n\nP0.2.1/P0.2.4: independent from Test Connection. One pass classifies every\nbinding as ADDED / UPDATED / UNCHANGED / UNAVAILABLE \u2014 nothing is deleted\njust because one discovery pass missed it.",
+        "operationId": "providers.syncModels",
+        "parameters": [
+          {
+            "name": "provider_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Provider Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/SyncModelsRequest"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Req"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncModelsResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v3/providers/{provider_id}/models/test": {
+      "post": {
+        "tags": [
+          "Providers V3"
+        ],
+        "summary": "Test Provider Model",
+        "description": "P0.2.5 \u2014 verify one bound model with a tiny REAL inference.\n\nVerifies endpoint, credential, model id, protocol, and response path.\nNever used for quality benchmarking; returns no quality metrics.",
+        "operationId": "providers.testModel",
+        "parameters": [
+          {
+            "name": "provider_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Provider Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TestModelRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelProbeReceiptResource"
                 }
               }
             }
@@ -7352,13 +7750,39 @@
         }
       }
     },
+    "/api/v3/routing/roles": {
+      "get": {
+        "tags": [
+          "Routing V3"
+        ],
+        "summary": "List Story Roles",
+        "description": "Canonical story model-routing roles (server authority, P0.3.1).",
+        "operationId": "routing.listStoryRoles",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/StoryRoleResource"
+                  },
+                  "type": "array",
+                  "title": "Response Routing.Liststoryroles"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v3/routing/graph": {
       "get": {
         "tags": [
           "Routing V3"
         ],
         "summary": "Get Routing Graph",
-        "description": "Generate routing topology graph linking roles, rules, models, and providers.",
+        "description": "Routing topology derived from the durable rules \u2014 no invented nodes.",
         "operationId": "routing.getGraph",
         "responses": {
           "200": {
@@ -7380,7 +7804,7 @@
           "Routing V3"
         ],
         "summary": "Get Routing Metrics",
-        "description": "Retrieve realtime traffic metrics and distribution.",
+        "description": "Traffic metrics computed from durable receipts and rules.\n\nEvery number is derived from persisted state; when nothing has been\nrouted yet the honest zeros are returned (never fabricated traffic).",
         "operationId": "routing.getMetrics",
         "responses": {
           "200": {
@@ -7464,6 +7888,86 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/RouteLockDetailResource"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v3/routing/receipts": {
+      "get": {
+        "tags": [
+          "Routing V3"
+        ],
+        "summary": "List Route Receipts",
+        "description": "Durable per-task route receipts (P0.3.6): which rule/model served what.\n\nOnly real executions are returned; the store is written exclusively by\nthe worker model router.",
+        "operationId": "routing.listReceipts",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Task Id"
+            }
+          },
+          {
+            "name": "role",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Role"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 100,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RouteReceiptResource"
+                  },
+                  "title": "Response Routing.Listreceipts"
                 }
               }
             }
@@ -10920,6 +11424,12 @@
       },
       "CreateSceneRequest": {
         "properties": {
+          "storyboard_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Storyboard Id",
+            "description": "Owning storyboard (no orphan scenes)"
+          },
           "title": {
             "type": "string",
             "maxLength": 200,
@@ -10957,11 +11467,13 @@
                 "type": "null"
               }
             ],
-            "title": "Source Screenplay Revision Id"
+            "title": "Source Screenplay Revision Id",
+            "description": "Must match the storyboard's pinned screenplay revision when provided."
           }
         },
         "type": "object",
         "required": [
+          "storyboard_id",
           "title"
         ],
         "title": "CreateSceneRequest"
@@ -11193,6 +11705,76 @@
         ],
         "title": "CreateWorkflowRequest"
       },
+      "CredentialPutRequest": {
+        "properties": {
+          "api_key": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Api Key"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "api_key"
+        ],
+        "title": "CredentialPutRequest"
+      },
+      "CredentialStatusResource": {
+        "properties": {
+          "provider_id": {
+            "type": "string",
+            "title": "Provider Id"
+          },
+          "configured": {
+            "type": "boolean",
+            "title": "Configured"
+          },
+          "credential_reference": {
+            "type": "string",
+            "title": "Credential Reference",
+            "default": ""
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label"
+          },
+          "secret_version": {
+            "type": "integer",
+            "title": "Secret Version",
+            "default": 0
+          },
+          "updated_at": {
+            "type": "string",
+            "title": "Updated At",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "provider_id",
+          "configured"
+        ],
+        "title": "CredentialStatusResource",
+        "description": "Credential state WITHOUT any secret material."
+      },
       "DashboardAgentsSummary": {
         "properties": {
           "total": {
@@ -11398,6 +11980,46 @@
           "recent_activities"
         ],
         "title": "DashboardSummaryResponse"
+      },
+      "DeleteProviderResult": {
+        "properties": {
+          "provider_id": {
+            "type": "string",
+            "title": "Provider Id"
+          },
+          "deleted": {
+            "type": "boolean",
+            "title": "Deleted"
+          },
+          "removed_endpoints": {
+            "type": "integer",
+            "title": "Removed Endpoints",
+            "default": 0
+          },
+          "removed_credentials": {
+            "type": "integer",
+            "title": "Removed Credentials",
+            "default": 0
+          },
+          "removed_bindings": {
+            "type": "integer",
+            "title": "Removed Bindings",
+            "default": 0
+          },
+          "disabled_rule_roles": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Disabled Rule Roles"
+          }
+        },
+        "type": "object",
+        "required": [
+          "provider_id",
+          "deleted"
+        ],
+        "title": "DeleteProviderResult"
       },
       "DeliveryArtifactResource": {
         "properties": {
@@ -12033,6 +12655,44 @@
         "type": "object",
         "title": "HTTPValidationError"
       },
+      "InitializeWorldBibleRequest": {
+        "properties": {
+          "world_name": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "World Name",
+            "description": "Explicit canonical world name"
+          },
+          "setting_summary": {
+            "type": "string",
+            "title": "Setting Summary",
+            "default": ""
+          },
+          "core_theme": {
+            "type": "string",
+            "title": "Core Theme",
+            "default": ""
+          },
+          "rules": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Rules"
+          },
+          "timeline_era": {
+            "type": "string",
+            "title": "Timeline Era",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "world_name"
+        ],
+        "title": "InitializeWorldBibleRequest"
+      },
       "JobSubmissionReceipt": {
         "properties": {
           "job_id": {
@@ -12471,6 +13131,11 @@
             "title": "Is Active",
             "default": true
           },
+          "pricing_class": {
+            "type": "string",
+            "title": "Pricing Class",
+            "default": "UNKNOWN"
+          },
           "pricing": {
             "anyOf": [
               {
@@ -12547,6 +13212,60 @@
             "type": "boolean",
             "title": "Is Active",
             "default": true
+          },
+          "availability": {
+            "type": "string",
+            "title": "Availability",
+            "default": "active"
+          },
+          "pricing_class": {
+            "type": "string",
+            "title": "Pricing Class",
+            "default": "UNKNOWN"
+          },
+          "input_price": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Input Price"
+          },
+          "output_price": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Output Price"
+          },
+          "currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currency"
+          },
+          "last_discovered_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Discovered At"
           }
         },
         "type": "object",
@@ -12585,6 +13304,76 @@
         },
         "type": "object",
         "title": "ModelPricing"
+      },
+      "ModelProbeReceiptResource": {
+        "properties": {
+          "provider_id": {
+            "type": "string",
+            "title": "Provider Id"
+          },
+          "endpoint_id": {
+            "type": "string",
+            "title": "Endpoint Id"
+          },
+          "canonical_model_id": {
+            "type": "string",
+            "title": "Canonical Model Id"
+          },
+          "provider_model_id": {
+            "type": "string",
+            "title": "Provider Model Id"
+          },
+          "ok": {
+            "type": "boolean",
+            "title": "Ok"
+          },
+          "latency_ms": {
+            "type": "number",
+            "title": "Latency Ms"
+          },
+          "finish_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finish Reason"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "completed_at": {
+            "type": "string",
+            "title": "Completed At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "provider_id",
+          "endpoint_id",
+          "canonical_model_id",
+          "provider_model_id",
+          "ok",
+          "latency_ms",
+          "message",
+          "completed_at"
+        ],
+        "title": "ModelProbeReceiptResource"
       },
       "ModelRuleResource": {
         "properties": {
@@ -13284,6 +14073,28 @@
             "title": "Is Configured",
             "default": true
           },
+          "credential_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Credential Label"
+          },
+          "credential_updated_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Credential Updated At"
+          },
           "models_count": {
             "type": "integer",
             "title": "Models Count",
@@ -13366,6 +14177,11 @@
             "type": "string",
             "title": "Status",
             "default": "healthy"
+          },
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled",
+            "default": true
           },
           "capabilities": {
             "items": {
@@ -13950,6 +14766,131 @@
           "routing_snapshot"
         ],
         "title": "RouteLockDetailResource"
+      },
+      "RouteReceiptResource": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "task_id": {
+            "type": "string",
+            "title": "Task Id"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "rule_id": {
+            "type": "string",
+            "title": "Rule Id"
+          },
+          "route_lock_id": {
+            "type": "string",
+            "title": "Route Lock Id"
+          },
+          "selected_provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Selected Provider"
+          },
+          "selected_model_id": {
+            "type": "string",
+            "title": "Selected Model Id"
+          },
+          "provider_model_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider Model Id"
+          },
+          "endpoint_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Endpoint Id"
+          },
+          "fallback_used": {
+            "type": "boolean",
+            "title": "Fallback Used",
+            "default": false
+          },
+          "fallback_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fallback Reason"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At"
+          },
+          "completed_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "task_id",
+          "role",
+          "rule_id",
+          "route_lock_id",
+          "selected_model_id",
+          "status"
+        ],
+        "title": "RouteReceiptResource"
       },
       "RouteSimulationRequest": {
         "properties": {
@@ -14903,6 +15844,43 @@
         ],
         "title": "StorageSummary"
       },
+      "StoryRoleResource": {
+        "properties": {
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "capability_labels": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Capability Labels"
+          },
+          "llm_routed": {
+            "type": "boolean",
+            "title": "Llm Routed",
+            "default": true
+          },
+          "aliases": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Aliases"
+          }
+        },
+        "type": "object",
+        "required": [
+          "role",
+          "label"
+        ],
+        "title": "StoryRoleResource"
+      },
       "StoryboardResource": {
         "properties": {
           "id": {
@@ -14916,6 +15894,28 @@
           "source_screenplay_revision_id": {
             "type": "string",
             "title": "Source Screenplay Revision Id"
+          },
+          "source_screenplay_content_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Screenplay Content Hash"
+          },
+          "source_screenplay_artifact_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Screenplay Artifact Id"
           },
           "status": {
             "type": "string",
@@ -15027,6 +16027,101 @@
           "decided_by"
         ],
         "title": "SubmitReviewDecisionRequest"
+      },
+      "SyncModelsRequest": {
+        "properties": {
+          "endpoint_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Endpoint Id"
+          }
+        },
+        "type": "object",
+        "title": "SyncModelsRequest"
+      },
+      "SyncModelsResult": {
+        "properties": {
+          "provider_id": {
+            "type": "string",
+            "title": "Provider Id"
+          },
+          "endpoint_id": {
+            "type": "string",
+            "title": "Endpoint Id"
+          },
+          "ok": {
+            "type": "boolean",
+            "title": "Ok"
+          },
+          "added": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Added"
+          },
+          "updated": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Updated"
+          },
+          "unchanged": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Unchanged"
+          },
+          "unavailable": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Unavailable"
+          },
+          "discovered_count": {
+            "type": "integer",
+            "title": "Discovered Count",
+            "default": 0
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "completed_at": {
+            "type": "string",
+            "title": "Completed At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "provider_id",
+          "endpoint_id",
+          "ok",
+          "message",
+          "completed_at"
+        ],
+        "title": "SyncModelsResult",
+        "description": "P0.2.1/P0.2.4 \u2014 explicit Sync Models operation receipt."
       },
       "SystemHealthResponse": {
         "properties": {
@@ -15230,6 +16325,21 @@
         },
         "type": "object",
         "title": "TestConnectionRequest"
+      },
+      "TestModelRequest": {
+        "properties": {
+          "model_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Model Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "model_id"
+        ],
+        "title": "TestModelRequest",
+        "description": "Canonical model id to verify with one tiny real inference."
       },
       "TrafficDistributionItem": {
         "properties": {
@@ -15620,6 +16730,82 @@
           "expected_version"
         ],
         "title": "UpdateProjectRequest"
+      },
+      "UpdateProviderRequest": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "base_url": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base Url"
+          },
+          "protocol_mode": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(openai|anthropic|gemini|ollama)$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Protocol Mode"
+          },
+          "enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enabled"
+          },
+          "supports_model_discovery": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Supports Model Discovery"
+          },
+          "supports_openai_compatible": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Supports Openai Compatible"
+          }
+        },
+        "type": "object",
+        "title": "UpdateProviderRequest",
+        "description": "Partial provider edit. Secrets are NEVER editable through this route."
       },
       "UpdateRoutingRuleRequest": {
         "properties": {

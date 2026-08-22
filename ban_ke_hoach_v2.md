@@ -1,1862 +1,1886 @@
-Dựa trên roadmap trong tài liệu bạn gửi và đối chiếu trực tiếp repository `WindFaculty/WindAgent` tại snapshot **`ac2c19c59ca3c16c86e81d761c0a70b911bb294e`**, tôi sẽ coi **Phase 0–5 là foundation đã được hoàn thành/đạt gate trước khi bắt đầu phần này**. Commit đó đúng là snapshot được dùng trong báo cáo, và bản thân commit chủ yếu thêm công cụ tải Stitch chứ chưa thực hiện migration frontend. 
+# Kế hoạch P1 — WindAgent Production Readiness & Visual Pre-Production
 
-# Roadmap chi tiết — Phase 6 → Phase 10
+**Điều kiện bắt đầu:** `WINDAGENT_P0_FEATURE_COMPLETE`
+**Baseline dự kiến:** commit kết thúc P0, không cố định tiếp tục trực tiếp trên `cfa7ffb...`.
 
-## 0. Dependency graph
-
-```text
-Phase 0–5
-API V3 foundation
-Generated Client
-Router/App Foundation
-Design System
-       │
-       ▼
-┌────────────────────────────┐
-│ PHASE 6                    │
-│ Dashboard + Monitoring     │
-└─────────────┬──────────────┘
-              │
-              ▼
-┌────────────────────────────┐
-│ PHASE 7                    │
-│ Projects + Studio          │
-└─────────────┬──────────────┘
-              │
-              ▼
-┌────────────────────────────┐
-│ PHASE 8                    │
-│ Episode Workspace          │
-│ Story → Screenplay         │
-└─────────────┬──────────────┘
-              │
-              ▼
-       PHASE 9.0
- Shared Story Production
-       Contracts
-              │
-     ┌────────┼────────┬────────┬────────┐
-     ▼        ▼        ▼        ▼        ▼
-    9A       9B       9C       9D       9E
-Characters World Storyboard Reviews Assets
-     │        │        │        │        │
-     └────────┴────────┴────────┴────────┘
-                       │
-                       ▼
-┌────────────────────────────┐
-│ PHASE 10                   │
-│ Production                 │
-│ Shot → Audio → Render      │
-└────────────────────────────┘
-```
-
-**Phase 9A–9E là nhóm duy nhất nên chạy song song mạnh.** Phase 6 → 7 → 8 nên tuần tự, vì Phase 6 đóng vai trò proving ground cho Query + generated client + realtime + routing mà Phase 7/8 sẽ tái sử dụng.
-
----
-
-# PHASE 6 — Dashboard + Monitoring Production Cutover
-
-## Mục tiêu
-
-Biến Dashboard từ UI có dữ liệu mô phỏng thành **observability surface chạy hoàn toàn bằng runtime data thật**, đồng thời tạo Monitoring page làm nguồn quan sát hệ thống chuyên sâu.
-
-Đây là phase kiểm chứng toàn bộ foundation từ Phase 2–5.
-
-Snapshot hiện tại cho thấy `Dashboard.tsx` vẫn chứa model distribution, chart datasets, KPI giả và manual refresh sử dụng `Math.random()`. `App.tsx` lại polling health mỗi 5 giây, metrics mỗi 2 giây và Web fallback sang số liệu random.
-
-## 6.0 — Preflight
-
-Trước khi sửa code:
+Gate cuối P1:
 
 ```text
-git status
-current SHA
-OpenAPI generation PASS
-frontend typecheck PASS
-frontend unit tests PASS
-backend tests PASS
-web build PASS
-desktop build PASS
+WINDAGENT_P1_PRODUCTION_PACKAGE_READY
 ```
 
-Lưu:
+Mục tiêu P1 không phải render video. P1 phải biến:
 
 ```text
-artifacts/frontend_restructure/phase_06/baseline/
-├── commit.json
-├── test_baseline.json
-├── api_contract_baseline.json
-├── dashboard_runtime_inventory.json
-├── synthetic_data_inventory.json
-└── baseline.md
+LOCKED SCREENPLAY
 ```
 
-Phải inventory toàn bộ:
+thành:
 
 ```text
-Math.random()
-setInterval
-setTimeout
-hardcoded KPI
-hardcoded model usage
-hardcoded chart data
-Tauri get_system_metrics
-health polling
-```
-
----
-
-## 6.1 — Canonical monitoring contract
-
-Backend trở thành authority cho dữ liệu observability.
-
-Tạo V3 API:
-
-```http
-GET /api/v3/dashboard/summary
-
-GET /api/v3/system/metrics
-GET /api/v3/system/health
-
-GET /api/v3/monitoring/workers
-GET /api/v3/monitoring/providers
-GET /api/v3/monitoring/agents
-GET /api/v3/monitoring/queues
-GET /api/v3/monitoring/runs
-```
-
-Realtime:
-
-```text
-/ws/v3/system/metrics
-/ws/v3/events
-```
-
-Không để Desktop và Web có hai định nghĩa CPU/GPU khác nhau.
-
-Canonical payload:
-
-```ts
-SystemMetrics {
-    sampled_at
-    cpu
-    memory
-    gpu[]
-    disk
-    process
-}
-
-GpuMetrics {
-    id
-    name
-    utilization_percent
-    temperature_c
-    memory_used_bytes
-    memory_total_bytes
-}
-```
-
-Với máy không có GPU metrics:
-
-```text
-supported = false
-```
-
-không được giả số liệu.
-
----
-
-## 6.2 — Dashboard summary service
-
-Tạo application query tập hợp:
-
-```text
-projects
-episodes
-active runs
-agents
-models/providers
-recent activity
-system status
-storage
-```
-
-Ví dụ:
-
-```http
-GET /api/v3/dashboard/summary
-```
-
-trả về:
-
-```text
-projects.total
-episodes.total
-episodes.active
-runs.running
-runs.failed
-agents.running
-agents.total
-providers.healthy
-providers.total
-activity
-model_usage
-storage
-```
-
-Không để Dashboard tự fetch 8 endpoint rồi tự tổng hợp business metrics.
-
----
-
-## 6.3 — Frontend feature
-
-Target:
-
-```text
-frontend/app/src/features/dashboard/
-├── pages/
-│   └── DashboardPage.tsx
-├── components/
-│   ├── StudioSummaryCards.tsx
-│   ├── SystemResourceCards.tsx
-│   ├── StudioActivityChart.tsx
-│   ├── ModelUsagePanel.tsx
-│   ├── AgentSwarmSummary.tsx
-│   ├── RecentActivityFeed.tsx
-│   └── StorageSummary.tsx
-├── hooks/
-│   ├── useDashboardSummary.ts
-│   └── useSystemMetrics.ts
-└── model/
-```
-
-Và:
-
-```text
-frontend/app/src/features/monitoring/
-├── MonitoringPage.tsx
-├── ResourceMetrics.tsx
-├── WorkerStatus.tsx
-├── QueueMetrics.tsx
-├── ProviderHealth.tsx
-├── AgentMetrics.tsx
-├── RuntimeMetrics.tsx
-└── hooks/
-```
-
----
-
-## 6.4 — Loại state khỏi `App`
-
-`App.tsx` không còn sở hữu:
-
-```text
-metrics
-setMetrics
-refreshInterval
-setRefreshInterval
-health polling
-Tauri get_system_metrics
-```
-
-`DashboardPage` không còn props kiểu:
-
-```tsx
-metrics={...}
-setMetrics={...}
-setActiveTab={...}
-```
-
-Navigation sử dụng router:
-
-```ts
-navigate("/studio/projects")
-```
-
-Manual refresh chỉ:
-
-```ts
-queryClient.invalidateQueries(...)
-```
-
-không sinh số liệu mới.
-
----
-
-## 6.5 — Realtime metrics
-
-Luồng:
-
-```text
-System Metrics Collector
-          ↓
-Event Publisher
-          ↓
-WebSocket
-          ↓
-RealtimeClient
-          ↓
-Query Cache
-          ↓
-Dashboard / Monitoring
-```
-
-Bắt buộc test:
-
-```text
-disconnect
-reconnect
-duplicate event
-out-of-order event
-sequence gap
-backend restart
-page refresh
-WebSocket unavailable
-```
-
-Nếu realtime unavailable:
-
-```text
-WS → HTTP snapshot
-```
-
-được phép fallback.
-
-Không fallback thành mock.
-
----
-
-## 6.6 — Monitoring route
-
-Canonical routes:
-
-```text
-/dashboard
-/monitoring
-```
-
-Dashboard chỉ summary.
-
-Monitoring mới chứa:
-
-```text
-CPU
-RAM
-GPU
-VRAM
-workers
-queue depth
-running jobs
-agents
-provider latency
-provider errors
-API latency
-recent failures
-```
-
----
-
-## 6.7 — Tests
-
-Unit:
-
-```text
-DashboardSummaryCards
-SystemResourceCards
-ModelUsagePanel
-useDashboardSummary
-useSystemMetrics
-```
-
-Contract:
-
-```text
-dashboard summary schema
-system metric schema
-metrics websocket envelope
-```
-
-E2E:
-
-```text
-open /dashboard
-→ real summary rendered
-→ open /monitoring
-→ metrics received
-→ backend reconnect
-→ page recovers
-```
-
-Test Web và Tauri.
-
----
-
-## Phase 6 gate
-
-Bắt buộc:
-
-```text
-Math.random() runtime metrics          = 0
-synthetic dashboard KPI                = 0
-Dashboard-owned system polling         = 0
-direct fetch                           = 0
-generated API client                   = PASS
-realtime reconnect test                = PASS
-Web dashboard                          = PASS
-Desktop dashboard                      = PASS
-Monitoring                             = PASS
-visual regression                      = PASS
-```
-
-Evidence:
-
-```text
-artifacts/frontend_restructure/phase_06/final/
-```
-
-Final verdict:
-
-```text
-FRONTEND_V2_PHASE_06_DASHBOARD_MONITORING_VERIFIED
-```
-
----
-
-# PHASE 7 — Projects + Studio Convergence
-
-## Mục tiêu
-
-Hợp nhất hai implementation đang chồng lấn:
-
-```text
-StudioPage
-ProjectsPage
-```
-
-thành một architecture thống nhất:
-
-```text
-Studio Home
-    ↓
-Projects
-    ↓
-Project Detail
-    ↓
-Episodes
-```
-
-Hiện cả `StudioPage` và `ProjectsPage` đều tự khởi tạo `HttpStudioApiClient + StudioStore`; Studio còn tự parse hash và quản lý mutation/local state.
-
----
-
-## 7.0 — Chốt Project vs Series
-
-Đây là hard gate.
-
-Nếu ADR Phase 1 đã chọn:
-
-```text
-Project
-```
-
-thì frontend không được tiếp tục lan truyền `Series`.
-
-Có thể backend tạm thời vẫn map:
-
-```text
-Project facade
+LOCKED SCREENPLAY
       ↓
-existing StudioSeries service
+CHARACTER CANON
+      ↓
+WORLD CANON
+      ↓
+ASSET REQUIREMENTS
+      ↓
+APPROVED / PINNED ASSETS
+      ↓
+STORYBOARD
+      ↓
+SHOT PLAN
+      ↓
+PRODUCTION PACKAGE
+      ↓
+PRODUCTION_PACKAGE_READY
 ```
 
-nhưng V3 contract phải dùng vocabulary canonical.
+Sau P1, Blender/Unreal/TTS/Animation/Render mới có đầu vào đủ chặt để triển khai ở P2.
 
-Ví dụ:
+---
+
+# 1. Phạm vi P1
+
+| Workstream | Mục tiêu                             |
+| ---------- | ------------------------------------ |
+| **P1.0**   | Truth repair + authority convergence |
+| **P1.1**   | Character Canon                      |
+| **P1.2**   | World Canon                          |
+| **P1.3**   | Asset Requirement & Asset Registry   |
+| **P1.4**   | Storyboard Authority                 |
+| **P1.5**   | Shot Planning                        |
+| **P1.6**   | Production Package & Readiness       |
+| **P1.7**   | Frontend Pre-Production Workflow     |
+| **P1.8**   | Functional E2E Acceptance            |
+
+Không thuộc P1:
+
+```text
+TTS production
+voice synthesis pipeline
+lip sync
+rig generation
+animation execution
+Blender scene generation
+Unreal scene generation
+rendering
+video compositing
+final MP4
+YouTube publishing
+```
+
+Các API AUDIO / ANIMATION / RENDER / VIDEO hiện có không được tính là hoàn thành P1 nếu chúng chưa có executor thực.
+
+---
+
+# 2. Tình trạng hiện tại cần tận dụng
+
+Repo đã có khá nhiều nền cho P1.
+
+Characters đã có durable CRUD, psychology, visual profile, voice profile, relationship graph và optimistic concurrency.
+
+World đã có World Bible, Locations, Factions và Lore trên durable V3 resource authority.
+
+Assets đã có revision, provenance, approval/rejection và dependency chain.
+
+Storyboard đã có storyboard, scenes và generation-job resources.
+
+Production đã có plan, shots và stage-job contract.
+
+Frontend cũng đã có riêng feature packages cho Characters, World, Assets, Storyboard và Production thay vì phải dựng lại từ đầu.
+
+Nhưng có một số phần phải sửa trước khi dùng làm production authority.
+
+---
+
+# PHASE P1.0 — PRE-PRODUCTION TRUTH REPAIR
+
+## Mục tiêu
+
+Đưa toàn bộ Characters / World / Assets / Storyboard / Production về nguyên tắc:
+
+```text
+NO SYNTHETIC AUTHORITY
+NO FAKE REVISION
+NO GET-SIDE EFFECT
+NO FAKE QUEUED JOB
+NO UNVERIFIED ASSET CLAIM
+```
+
+Đây là phase bắt buộc.
+
+---
+
+## P1.0.1 Sửa Storyboard sync
+
+Hiện `sync_storyboard_from_screenplay()` đang tự tạo:
+
+```python
+source_screenplay_revision_id = f"rev-{episode_id}-lock"
+```
+
+thay vì đọc actual locked screenplay.
+
+Phải đổi thành:
+
+```text
+Episode
+   ↓
+Studio Lock Authority
+   ↓
+LockedScreenplayReceipt
+   ↓
+actual revision_id
+actual content_hash
+actual artifact_id
+   ↓
+Storyboard
+```
+
+Nếu Episode chưa có locked screenplay:
+
+```text
+409 SCREENPLAY_NOT_LOCKED
+```
+
+Không tạo storyboard.
+
+---
+
+## P1.0.2 Sửa Scene ownership
+
+Hiện create scene có thể tạo:
+
+```text
+storyboard_id = ""
+episode_id = ""
+```
+
+và đánh `scene_number` dựa trên tổng scene toàn hệ thống.
+
+Phải bắt buộc:
+
+```text
+scene
+ ├─ episode_id
+ ├─ storyboard_id
+ ├─ source_screenplay_revision_id
+ └─ scene_number local to storyboard
+```
+
+Không tồn tại orphan scene.
+
+---
+
+## P1.0.3 Sửa Production GET side effect
+
+Hiện GET production plan có thể tự tạo:
+
+```text
+screenplay_revision_id = rev-{episode_id}-lock
+storyboard_revision_id = sb-{episode_id}
+```
+
+GET phải chỉ GET.
+
+Nếu chưa có plan:
 
 ```http
-GET  /api/v3/projects
-POST /api/v3/projects
-
-GET   /api/v3/projects/:projectId
-PATCH /api/v3/projects/:projectId
-
-GET  /api/v3/projects/:projectId/episodes
-POST /api/v3/projects/:projectId/episodes
-```
-
-Không cần rewrite domain implementation ngay.
-
----
-
-## 7.1 — Generated project client
-
-Operation IDs:
-
-```text
-projects.list
-projects.get
-projects.create
-projects.update
-
-episodes.listForProject
-episodes.create
-```
-
-Frontend tuyệt đối không tạo:
-
-```text
-Date.now()
-Math.random()
-```
-
-để làm idempotency key.
-
-Shared transport tự sinh:
-
-```http
-Idempotency-Key: UUID
-```
-
----
-
-## 7.2 — Projects feature
-
-```text
-features/projects/
-├── pages/
-│   ├── ProjectsPage.tsx
-│   └── ProjectDetailPage.tsx
-├── components/
-│   ├── ProjectCard.tsx
-│   ├── ProjectList.tsx
-│   ├── ProjectFilters.tsx
-│   ├── CreateProjectDialog.tsx
-│   ├── CreateEpisodeDialog.tsx
-│   └── ProjectTemplatePicker.tsx
-└── hooks/
-    ├── useProjects.ts
-    ├── useProject.ts
-    ├── useCreateProject.ts
-    └── useCreateEpisode.ts
-```
-
-State:
-
-```text
-projects                → TanStack Query
-project                  → TanStack Query
-search/filter/sort       → URL search params
-dialog open/closed       → local UI state
-form                     → form state
-```
-
----
-
-## 7.3 — Studio Home
-
-Studio Home không còn làm router + API + workflow engine.
-
-Nó chỉ hiển thị:
-
-```text
-recent projects
-recent episodes
-pipeline activity
-create project
-continue episode
-```
-
-Route:
-
-```text
-/studio
-/studio/projects
-/studio/projects/:projectId
-```
-
----
-
-## 7.4 — StudioStore migration
-
-Không xóa package ngay.
-
-Phase 7 chỉ:
-
-```text
-ProjectsPage → remove StudioStore
-StudioHome   → remove StudioStore
-ProjectDetail→ remove StudioStore
-```
-
-Episode flow cũ vẫn có thể giữ `StudioStore` đến Phase 8.
-
-Sau Phase 8 mới có thể đạt:
-
-```text
-production StudioStore consumers = 0
-```
-
-rồi giữ package dead cho Phase 16 cleanup.
-
----
-
-## 7.5 — Capability handling
-
-Capabilities không được load thủ công ở từng page.
-
-Tạo:
-
-```ts
-useCapabilities()
+404 PRODUCTION_PLAN_NOT_CREATED
 ```
 
 hoặc:
 
-```ts
-useSystemCapabilities()
-```
-
-Cache dùng chung toàn application.
-
-Các nút chỉ disabled khi capability thật unavailable.
-
-Không fake-success.
-
----
-
-## 7.6 — Project templates
-
-Các template hiện có thể giữ lại nếu được xác định là **template sản phẩm thực**, nhưng phải chuyển khỏi component:
-
-```text
-frontend static template registry
-```
-
-hoặc backend:
-
-```http
-GET /api/v3/project-templates
-```
-
-Không coi chúng là runtime project data.
-
----
-
-## 7.7 — E2E
-
-Critical flow:
-
-```text
-Open Projects
-      ↓
-Create Project
-      ↓
-Project appears from server
-      ↓
-Open Project
-      ↓
-Create Episode
-      ↓
-Episode persisted
-      ↓
-Refresh browser
-      ↓
-Project + Episode still exist
-```
-
-Thêm:
-
-```text
-duplicate submission test
-409 expected_version test
-network failure
-404
-500
-empty state
-```
-
----
-
-## Phase 7 gate
-
-```text
-StudioStore in Projects              = 0
-StudioStore in Studio Home           = 0
-manual hash parsing there            = 0
-direct fetch                         = 0
-duplicate client construction        = 0
-Project/Series vocabulary conflict   = 0 in new frontend
-Create Project E2E                   = PASS
-Create Episode E2E                   = PASS
-reload persistence                   = PASS
-Web                                  = PASS
-Desktop                              = PASS
-```
-
-Verdict:
-
-```text
-FRONTEND_V2_PHASE_07_PROJECTS_STUDIO_VERIFIED
-```
-
----
-
-# PHASE 8 — Canonical Episode Workspace
-
-Đây là **phase quan trọng nhất của frontend mới**, vì đây chính là workflow tạo kịch bản cốt lõi của WindAgent.
-
-`EpisodesPage` hiện vẫn là mock dataset `DEFAULT_EPISODES`; tạo Episode chỉ thêm object vào React state.
-
-## Mục tiêu cuối
-
-```text
-Project
-   ↓
-Episode
-   ↓
-┌──────────────────────────────┐
-│ Episode Workspace            │
-│                              │
-│ Idea                         │
-│ Story Bible                  │
-│ Beats                        │
-│ Outline                      │
-│ Screenplay                   │
-│ Review                       │
-│ Lock                         │
-│ Storyboard                   │
-│ Production                   │
-└──────────────────────────────┘
-```
-
-Một workspace, một route context, một source of truth.
-
----
-
-## 8.0 — Episode contract
-
-Canonical fields tối thiểu:
-
-```text
-id
-project_id
-title
-description
-state
-current_checkpoint
-current_revision_id
-optimistic_version
-created_at
-updated_at
-```
-
-Không lưu `progress = 65` như một mutable UI field.
-
-Progress phải derive từ pipeline state.
-
----
-
-## 8.1 — APIs
-
-```http
-GET    /api/v3/episodes/:id
-PATCH  /api/v3/episodes/:id
-DELETE /api/v3/episodes/:id
-
-GET /api/v3/episodes/:id/artifacts
-GET /api/v3/episodes/:id/revisions
-GET /api/v3/episodes/:id/runs
-```
-
-Commands:
-
-```text
-episodes.startGeneration
-episodes.selectIdea
-episodes.requestRevision
-episodes.approveCheckpoint
-episodes.lockScreenplay
-episodes.cancelRun
-```
-
----
-
-## 8.2 — Workspace route
-
-```text
-/studio/episodes/:episodeId
-/studio/episodes/:episodeId/idea
-/studio/episodes/:episodeId/story
-/studio/episodes/:episodeId/outline
-/studio/episodes/:episodeId/screenplay
-/studio/episodes/:episodeId/review
-/studio/episodes/:episodeId/storyboard
-/studio/episodes/:episodeId/production
-```
-
-Parent loader/query chịu trách nhiệm Episode context.
-
-Tabs không tự fetch cùng Episode lại.
-
----
-
-## 8.3 — Feature architecture
-
-```text
-features/episodes/
-├── pages/
-│   ├── EpisodesPage.tsx
-│   └── EpisodeWorkspacePage.tsx
-│
-├── workspace/
-│   ├── IdeaPanel.tsx
-│   ├── StoryBiblePanel.tsx
-│   ├── BeatsPanel.tsx
-│   ├── OutlinePanel.tsx
-│   ├── ScreenplayPanel.tsx
-│   ├── CheckpointReviewPanel.tsx
-│   └── EpisodePipeline.tsx
-│
-├── components/
-│   ├── EpisodeCard.tsx
-│   ├── EpisodeStatus.tsx
-│   ├── RevisionSelector.tsx
-│   └── RunProgress.tsx
-│
-└── hooks/
-```
-
----
-
-## 8.4 — Revision authority
-
-Mọi approval phải gắn vào immutable revision.
-
-Ví dụ:
-
 ```json
 {
-  "episode_id": "...",
-  "revision_id": "...",
-  "decision": "APPROVED",
-  "expected_version": 8
+  "status": "NOT_INITIALIZED"
 }
 ```
 
-Không approve "screenplay hiện tại" một cách mơ hồ.
-
-Lock cũng phải xác định:
-
-```text
-revision_id
-content_hash
-expected_version
-```
-
-Ý tưởng này hiện đã xuất hiện trong Studio implementation và nên được giữ khi chuyển sang V3 canonical client.
+nhưng không được tạo database state.
 
 ---
 
-## 8.5 — Episode realtime
+## P1.0.4 Sửa World GET side effect
 
-Events:
+World API hiện GET một World Bible chưa tồn tại thì tự tạo `Untitled World`.
+
+Phải tách:
 
 ```text
-episode.updated
-run.started
-run.progress
-run.failed
-run.completed
-
-artifact.created
-revision.created
-
-checkpoint.awaiting_approval
-checkpoint.approved
-checkpoint.revision_requested
-
-screenplay.locked
+GET world
+POST/initialize world
 ```
 
-Query cache update trực tiếp từ events.
+hoặc world được tạo explicit trong quá trình Canon Sync.
 
-Không polling Episode 2–5 giây.
+Read request không được mutate domain.
 
 ---
 
-## 8.6 — Conflict handling
+## P1.0.5 Production stage jobs phải truthful
 
-Case bắt buộc:
+Hiện:
 
 ```text
-Client A opens version 7
-Client B approves version 7 → server becomes 8
-Client A tries approval expected_version=7
-                       ↓
-                     409
-                       ↓
-invalidate/refetch
-                       ↓
-show conflict state
+POST AUDIO
+POST ANIMATION
+POST RENDER
+POST VIDEO
 ```
 
-Không silently retry mutation.
+chỉ tạo record:
+
+```text
+state = QUEUED
+```
+
+chứ chưa chứng minh có worker executor thực.
+
+Trong P1:
+
+```text
+executor unavailable
+      ↓
+CAPABILITY_UNAVAILABLE
+```
+
+Không được trả:
+
+```text
+QUEUED
+```
+
+nếu không có consumer.
+
+P2 mới enable các endpoint này.
 
 ---
 
-## 8.7 — Deep link/recovery
-
-Phải test:
+## Gate
 
 ```text
-refresh page mid-generation
-close/reopen desktop
-open direct episode URL
-backend restarts
-WS disconnected
-event sequence gap
+P1_0_PREPRODUCTION_TRUTH_REPAIRED
 ```
-
-UI phải recover từ server snapshot.
 
 ---
 
-## 8.8 — Critical certification flow
+# PHASE P1.1 — CHARACTER CANON
 
-Đây là E2E quan trọng nhất Phase 8:
+## Mục tiêu
+
+Character không chỉ là CRUD resource.
+
+P1 phải tạo **canonical production character** có thể tái sử dụng xuyên các Episode.
+
+Current Character resource đã có identity, psychology, visual profile, voice profile và relationships.
+
+P1 mở rộng semantics thay vì tạo duplicate Character model khác.
+
+---
+
+## P1.1.1 Character source
+
+Ưu tiên lấy từ structured artifacts P0:
 
 ```text
-Create Project
-      ↓
-Create Episode
-      ↓
-Start Generation
-      ↓
-Ideas generated
-      ↓
-Select Idea
-      ↓
+Selected Idea
+    ↓
 Story Bible
-      ↓
-Approve
-      ↓
-Outline
-      ↓
-Approve
-      ↓
-Screenplay
-      ↓
-Review
-      ↓
-Approve
-      ↓
-Lock Screenplay
-      ↓
-READY_FOR_PRODUCTION
+    ↓
+Locked Screenplay
+    ↓
+Character Canon Sync
 ```
 
-Không được mock bất kỳ checkpoint nào.
+Không gọi LLM lại nếu dữ liệu structured hiện tại đã đủ.
 
----
-
-## Phase 8 gate
+LLM chỉ dùng để:
 
 ```text
-DEFAULT_EPISODES runtime              = 0
-local-only episode creation           = 0
-manual StudioStore instance           = 0
-manual hash parsing                   = 0
-polling episode state                 = 0
-generated V3 client                   = PASS
-revision conflict                     = PASS
-reconnect/resume                      = PASS
-full screenplay E2E                   = PASS
-Web                                   = PASS
-Desktop                               = PASS
-```
-
-Verdict:
-
-```text
-FRONTEND_V2_PHASE_08_EPISODE_WORKSPACE_VERIFIED
+extract missing structured fields
+normalize
+resolve incomplete description
 ```
 
 ---
 
-# PHASE 9 — Story Production Domain
+## P1.1.2 Canonical Character Profile
 
-Phase này nên chia thành:
-
-```text
-9.0 Shared contracts
-9A Characters
-9B World
-9C Storyboard
-9D Reviews
-9E Assets
-9F Integration certification
-```
-
-Sau **9.0 PASS**, 9A–9E có thể triển khai song song.
-
----
-
-# Phase 9.0 — Shared contract freeze
-
-Trước khi chia worker, freeze:
-
-```text
-Project ID
-Episode ID
-Revision ID
-Character ID
-Location ID
-Scene ID
-Asset ID
-Review ID
-Generation Job ID
-```
-
-Và relationship:
-
-```text
-Project
- ├── Character
- ├── World
- └── Episode
-       ├── ScreenplayRevision
-       ├── Storyboard
-       │     └── Scene[]
-       ├── Review[]
-       └── Asset[]
-```
-
-Nếu không freeze trước, năm nhánh sẽ tự phát minh schema khác nhau.
-
----
-
-# Phase 9A — Characters
-
-`CharactersPage` hiện dùng toàn bộ `DEFAULT_CHARACTERS` và thao tác create chỉ thêm vào React state.
-
-Target:
-
-```text
-features/characters/
-├── CharactersPage
-├── CharacterDetailPage
-├── CharacterEditor
-├── CharacterRelationships
-├── CharacterVisualProfile
-├── CharacterVoiceProfile
-└── CharacterAssets
-```
-
-API:
-
-```http
-GET  /api/v3/projects/:projectId/characters
-POST /api/v3/projects/:projectId/characters
-
-GET   /api/v3/characters/:id
-PATCH /api/v3/characters/:id
-DELETE /api/v3/characters/:id
-
-GET /api/v3/characters/:id/relationships
-GET /api/v3/characters/:id/assets
-```
-
-Canonical model:
+Tối thiểu:
 
 ```text
 identity
-role
-biography
-psychology
-visual_profile
-voice_profile
-relationships
-revision
-```
+ ├─ name
+ ├─ aliases
+ ├─ story_role
+ └─ biography
 
-Character references trong screenplay/storyboard phải dùng ID, không dùng tên tự do.
+personality
+ ├─ traits
+ ├─ flaw
+ ├─ motivation
+ ├─ goal
+ └─ fears
+
+visual
+ ├─ physical_description
+ ├─ body_type
+ ├─ age_appearance
+ ├─ hair
+ ├─ clothing
+ ├─ colors
+ ├─ distinguishing_features
+ └─ style_notes
+
+voice
+ ├─ voice_style
+ ├─ age_range
+ ├─ speaking_style
+ ├─ sample_lines
+ └─ optional voice_model_id
+
+continuity
+ ├─ immutable_features
+ ├─ wardrobe_rules
+ ├─ allowed_variations
+ └─ forbidden_variations
+
+relationships[]
+```
 
 ---
 
-# Phase 9B — World
+## P1.1.3 Source lineage
 
-Đây gần như feature mới hoàn toàn.
-
-Route:
+Mỗi character version cần:
 
 ```text
-/studio/projects/:projectId/world
+source_series_id
+source_story_bible_artifact_id
+source_screenplay_revision_id
+source_hash
 ```
 
-Model:
+Không để một Character thay đổi mà không biết nó xuất phát từ đâu.
+
+---
+
+## P1.1.4 Canon Sync
+
+Không overwrite manual edit.
+
+Flow:
 
 ```text
-World
+New Locked Screenplay
+       ↓
+Extract proposed character changes
+       ↓
+Compare against Canon
+       ↓
+NO CHANGE
+ADD CHARACTER
+UPDATE PROPOSED
+CONFLICT
+       ↓
+Human/Policy decision
+       ↓
+Character Revision
+```
+
+---
+
+## P1.1.5 Version pinning
+
+Episode không tham chiếu:
+
+```text
+character_id only
+```
+
+mà production package phải pin:
+
+```text
+character_id
+character_version
+content_hash
+```
+
+Ví dụ:
+
+```text
+Khoa
+Character v4
+sha256:...
+```
+
+Episode đang production sẽ không bị thay đổi khi Character v5 được tạo cho Episode sau.
+
+---
+
+## P1.1.6 Character readiness
+
+Tối thiểu production-ready cần:
+
+```text
+name
+story role
+visual identity
+continuity constraints
+```
+
+Voice chưa bắt buộc cho P1.
+
+Status:
+
+```text
+DRAFT
+REVIEW_REQUIRED
+APPROVED
+PRODUCTION_READY
+```
+
+### Gate
+
+```text
+P1_1_CHARACTER_CANON_LIVE
+```
+
+---
+
+# PHASE P1.2 — WORLD CANON
+
+Current World domain đã có:
+
+```text
+World Bible
 Locations
 Factions
 Lore
-Timeline
-Rules
-VisualReferences
 ```
 
-API:
-
-```text
-world.get
-world.update
-
-locations.list/create/update
-factions.list/create/update
-lore.list/create/update
-```
-
-Story agents phải có thể consume World Bible bằng domain service, không scrape UI representation.
+P1 phải biến nó thành production canon.
 
 ---
 
-# Phase 9C — Storyboard
-
-Snapshot hiện tại dùng `DEFAULT_SCENES`; Generate Art chỉ đổi state sang `Generating`, chờ `setTimeout(2000)` rồi gán một ảnh cố định.
-
-Target:
-
-```text
-Screenplay locked revision
-         ↓
-Storyboard generation
-         ↓
-Scene records
-         ↓
-Concept generation jobs
-         ↓
-Generated asset revision
-```
-
-API:
-
-```http
-GET  /api/v3/episodes/:id/storyboard
-POST /api/v3/episodes/:id/storyboard/actions/sync
-
-POST /api/v3/storyboard/scenes
-PATCH /api/v3/storyboard/scenes/:sceneId
-
-POST /api/v3/storyboard/scenes/:sceneId/generations
-```
-
-Generation phải trả:
-
-```text
-generation_id
-status
-submitted_at
-```
-
-Sau đó realtime:
-
-```text
-generation.queued
-generation.started
-generation.progress
-generation.completed
-generation.failed
-```
-
-**Không timer giả.**
-
-Scene phải ghi:
-
-```text
-source_screenplay_revision_id
-```
-
-để tránh storyboard được sinh từ screenplay cũ.
-
----
-
-# Phase 9D — Reviews
-
-`ReviewsPage` hiện sử dụng `DEFAULT_VERSIONS`, `DEFAULT_COMMENTS`; Approve/Revision chỉ đổi local state.
-
-Phase 8 đã xử lý **checkpoint approval của screenplay**.
-
-Phase 9D mở rộng thành generic review system cho:
-
-```text
-storyboard
-character revision
-asset revision
-production preview
-```
+## P1.2.1 World Bible
 
 Canonical:
 
 ```text
-Review
-ReviewSubject
-ReviewComment
-ReviewDecision
-Revision
+world_name
+setting_summary
+core_theme
+timeline_era
+
+physical_rules
+technology_rules
+magic_rules
+social_rules
+
+visual_style
+environment_style
+
+continuity_constraints
 ```
-
-Decision:
-
-```json
-{
-  "decision": "APPROVED",
-  "revision_id": "...",
-  "expected_version": 12,
-  "reason": "..."
-}
-```
-
-Không approve mutable object.
 
 ---
 
-# Phase 9E — Assets
+## P1.2.2 Location
 
-Migrate khỏi:
+Location production profile:
 
 ```text
-/api/v2/video-production/assets
+location_id
+name
+type
+
+description
+atmosphere
+
+interior / exterior
+day / night compatibility
+
+architecture
+lighting_character
+color_palette
+
+important_props[]
+reusable_set
+continuity_notes
 ```
 
-sang canonical:
+Không nhất thiết generate 3D asset ở P1.
 
-```http
-GET  /api/v3/assets
-POST /api/v3/assets
+---
 
-GET /api/v3/assets/:id
+## P1.2.3 Faction / Lore
 
-GET /api/v3/assets/:id/revisions
-GET /api/v3/assets/:id/provenance
-GET /api/v3/assets/:id/dependencies
+Giữ lại nhưng production pipeline chỉ consume khi relevant.
 
-POST /api/v3/assets/:id/actions/approve
-POST /api/v3/assets/:id/actions/reject
+Không bắt tất cả Episode phải có:
+
+```text
+faction
+lore
+history
 ```
 
-Storage phải durable.
+nếu screenplay không sử dụng.
 
-Asset cần provenance:
+---
+
+## P1.2.4 World sync
+
+Tương tự Character:
+
+```text
+P0 Story Bible
++
+Locked Screenplay
+       ↓
+Canon diff
+       ↓
+new location?
+world rule conflict?
+lore update?
+       ↓
+revision
+```
+
+---
+
+## P1.2.5 Continuity checker
+
+Trước storyboard:
+
+```text
+Screenplay scene
+      ↓
+Location references
+      ↓
+World Canon
+```
+
+Phát hiện:
+
+```text
+UNKNOWN_LOCATION
+WORLD_RULE_CONFLICT
+TIMELINE_CONFLICT
+LOCATION_CONTINUITY_CONFLICT
+```
+
+Không tự sửa silently.
+
+### Gate
+
+```text
+P1_2_WORLD_CANON_LIVE
+```
+
+---
+
+# PHASE P1.3 — ASSET REQUIREMENTS & ASSET REGISTRY
+
+Asset Router hiện có provenance và revision architecture khá phù hợp.
+
+P1 phải tách hai khái niệm:
+
+```text
+Asset Requirement
+```
+
+và:
+
+```text
+Asset
+```
+
+---
+
+## P1.3.1 Asset Requirements extraction
+
+Từ locked screenplay + canon:
+
+```text
+Character
+Location
+Prop
+Environment
+Reference image
+Music requirement
+SFX requirement
+```
+
+Ví dụ:
+
+```text
+Requirement:
+PROP_SWORD_001
+
+type: PROP
+scene usage: [3, 7, 8]
+description: ...
+mandatory: true
+```
+
+---
+
+## P1.3.2 Asset lifecycle
+
+```text
+REQUIRED
+   ↓
+SOURCING / GENERATING / UPLOADING
+   ↓
+DRAFT
+   ↓
+REVIEW
+   ↓
+APPROVED
+   ↓
+PINNED
+```
+
+Failure path:
+
+```text
+REJECTED
+SUPERSEDED
+UNAVAILABLE
+```
+
+---
+
+## P1.3.3 Asset source
+
+P1 hỗ trợ:
+
+```text
+UPLOAD
+IMPORT
+REFERENCE
+GENERATED
+```
+
+Không bắt buộc asset generation model.
+
+Có thể upload reference image thủ công và P1 vẫn PASS.
+
+---
+
+## P1.3.4 Provenance
+
+Giữ các trường hiện có:
 
 ```text
 source
 generator
 model
-prompt/reference
+prompt
+reference_ids
 job_id
-created_at
 parent_revision
+```
+
+nhưng sửa `content_hash`.
+
+Hiện content hash được tạo từ:
+
+```text
+asset_id + prompt + timestamp
+```
+
+chứ không phải content thực.
+
+P1 yêu cầu:
+
+```text
+SHA-256(actual asset bytes)
+```
+
+hoặc checksum immutable do storage provider xác nhận.
+
+Format:
+
+```text
+64-char SHA-256
+```
+
+Nếu không xác minh được content:
+
+```text
+HASH_UNVERIFIED
+```
+
+và không được `PINNED`.
+
+---
+
+## P1.3.5 Asset dependency
+
+Ví dụ:
+
+```text
+Character Reference v3
+        ↓
+3D Character Model
+        ↓
+Rig
+        ↓
+Animation
+```
+
+P1 chỉ cần dependency graph đúng.
+
+Các node 3D chưa cần tồn tại.
+
+---
+
+## P1.3.6 Approval
+
+Approval pin:
+
+```text
+asset_id
+revision_id
 content_hash
+approved_by
+approved_at
 ```
 
-Đặc biệt quan trọng sau này khi Blender agents tái sử dụng asset.
+Không approve “latest”.
+
+Approve một revision cụ thể.
+
+### Gate
+
+```text
+P1_3_ASSET_AUTHORITY_LIVE
+```
 
 ---
 
-# Phase 9F — Integration certification
+# PHASE P1.4 — STORYBOARD AUTHORITY
 
-Sau khi 9A–9E merge:
+Đây là trọng tâm lớn nhất của P1.
+
+## Canonical flow
 
 ```text
-Project
-   ↓
-Character + World
-   ↓
-Episode
-   ↓
 Locked Screenplay
-   ↓
-Storyboard sync
-   ↓
-Scene
-   ↓
-Concept Generation
-   ↓
-Asset
-   ↓
-Review
-   ↓
-Approved Asset
-```
-
-Kiểm tra cross-reference:
-
-```text
-character references valid
-world/location references valid
-screenplay revision pinned
-asset provenance valid
-review revision pinned
+      ↓
+Scene Parser
+      ↓
+Storyboard Revision
+      ↓
+Scene Records
+      ↓
+Character / World resolution
+      ↓
+Asset requirements
+      ↓
+Storyboard Review
 ```
 
 ---
 
-## Phase 9 gate
+## P1.4.1 Screenplay parsing
 
-Production source:
+Ưu tiên deterministic parser từ structured screenplay.
 
-```text
-DEFAULT_CHARACTERS       = 0
-DEFAULT_SCENES           = 0
-DEFAULT_COMMENTS         = 0
-DEFAULT_VERSIONS         = 0
-fake generation timer    = 0
-hardcoded media URL      = 0 runtime dependency
-```
+Không gọi LLM chỉ để tìm scene nếu screenplay đã là structured artifact.
 
-Và:
-
-```text
-Characters E2E            PASS
-World E2E                 PASS
-Storyboard E2E            PASS
-Reviews E2E               PASS
-Assets E2E                PASS
-cross-domain integration  PASS
-Web                       PASS
-Desktop                   PASS
-```
-
-Verdict:
-
-```text
-FRONTEND_V2_PHASE_09_STORY_PRODUCTION_VERIFIED
-```
-
----
-
-# PHASE 10 — Production Cutover
-
-Phase 10 chuyển từ **kịch bản đã lock** sang production thật.
-
-Hiện `ProductionWorkspacePage` hardcode `projectId: "proj-alpha"` và luôn trả `new FakeProductionApiClient()`.
-
-Đây là thứ Phase 10 bắt buộc loại khỏi runtime.
-
----
-
-## 10.0 — Scope boundary
-
-Phase này tập trung:
-
-```text
-Frontend/API production architecture
-+
-wiring tới production engine hiện có
-```
-
-Không biến Phase 10 thành một dự án viết lại Blender/render engine.
-
-Engine tiếp tục nằm sau application ports.
-
-Frontend chỉ biết:
-
-```text
-ProductionPlan
-Shot
-Job
-Artifact
-Receipt
-```
-
----
-
-## 10.1 — Episode-centric Production
-
-Không giữ Production là một project shell độc lập.
-
-Canonical:
-
-```text
-Project
- └── Episode
-      └── Production
-```
-
-Route:
-
-```text
-/studio/episodes/:episodeId/production
-```
-
-Workspace:
-
-```text
-Production
-├── Overview
-├── Shots
-├── Audio
-├── Animation
-├── Render
-└── Delivery
-```
-
----
-
-## 10.2 — Production contract
-
-```text
-ProductionPlan
-Shot
-ShotRevision
-AudioJob
-AnimationJob
-RenderJob
-VideoJob
-DeliveryArtifact
-```
-
-Production Plan phải pin:
+Mỗi scene phải pin:
 
 ```text
 screenplay_revision_id
-storyboard_revision_id
-character_revision/reference
-asset_revision/reference
-```
-
-Không sản xuất từ `"latest"` không xác định.
-
----
-
-## 10.3 — APIs
-
-```http
-GET /api/v3/episodes/:episodeId/production
-
-GET  /api/v3/episodes/:episodeId/shots
-POST /api/v3/episodes/:episodeId/shots
-
-GET   /api/v3/shots/:id
-PATCH /api/v3/shots/:id
-```
-
-Jobs:
-
-```text
-production.createPlan
-
-audio.submit
-audio.cancel
-audio.retry
-
-animation.submit
-animation.cancel
-animation.retry
-
-render.submit
-render.cancel
-render.retry
-
-video.submit
-video.cancel
-video.retry
-```
-
-Job response:
-
-```json
-{
-  "job_id": "...",
-  "state": "QUEUED",
-  "submitted_at": "...",
-  "correlation_id": "..."
-}
+screenplay_scene_id
+screenplay_scene_hash
 ```
 
 ---
 
-## 10.4 — Job state machine
+## P1.4.2 Scene schema
 
-Không để từng engine tự phát minh status.
-
-Canonical:
+Target:
 
 ```text
-PENDING
-QUEUED
-RUNNING
-SUCCEEDED
-FAILED
-CANCELLED
+scene_id
+storyboard_id
+episode_id
+
+scene_number
+title
+
+source_screenplay_revision_id
+source_screenplay_scene_id
+
+location_id
+character_refs[]
+required_asset_refs[]
+
+script_text
+visual_summary
+action_summary
+
+dialogue_refs[]
+estimated_duration
+
+time_of_day
+mood
+
+status
+version
+```
+
+---
+
+## P1.4.3 Storyboard revision
+
+Không chỉ:
+
+```text
+Storyboard
+```
+
+mà:
+
+```text
+StoryboardRevision
+```
+
+để support:
+
+```text
+v1
+ ↓
+manual changes
+ ↓
+v2
+```
+
+Production Package pin một revision cụ thể.
+
+---
+
+## P1.4.4 Sync semantics
+
+First sync:
+
+```text
+Locked screenplay
+     ↓
+Storyboard v1
+```
+
+Screenplay unchanged + sync:
+
+```text
+IDEMPOTENT
+```
+
+Screenplay revision changed:
+
+```text
+old storyboard remains immutable
+          ↓
+new storyboard revision/branch
+```
+
+Không overwrite storyboard đang được production package sử dụng.
+
+---
+
+## P1.4.5 Concept image generation
+
+Không bắt buộc để P1 PASS.
+
+Nếu image generation provider có thật:
+
+```text
+Scene
+ ↓
+Durable task
+ ↓
+Provider
+ ↓
+Asset
+ ↓
+Asset revision
+ ↓
+Scene concept_asset_ref
+```
+
+Nếu không có:
+
+```text
+IMAGE_GENERATION_UNAVAILABLE
+```
+
+UI disable button.
+
+Không tạo job `QUEUED` vĩnh viễn.
+
+---
+
+## P1.4.6 Manual storyboard operation
+
+Cho phép:
+
+```text
+edit visual summary
+change location
+change character assignment
+adjust estimated duration
+split scene
+```
+
+Nhưng:
+
+```text
+original screenplay lineage
+```
+
+phải còn nguyên.
+
+### Gate
+
+```text
+P1_4_STORYBOARD_AUTHORITY_LIVE
+```
+
+---
+
+# PHASE P1.5 — SHOT PLANNING
+
+Storyboard Scene chưa đủ để Blender/Unreal chạy.
+
+P1 cần:
+
+```text
+Scene
+   ↓
+Shots
+```
+
+---
+
+## P1.5.1 Shot generation
+
+Có thể sử dụng rule mới từ P0:
+
+```text
+studio.preproduction.shotplan.generate
+```
+
+Nhưng output bắt buộc structured.
+
+---
+
+## P1.5.2 Shot model
+
+Target:
+
+```text
+shot_id
+scene_id
+episode_id
+
+shot_number
+duration
+
+shot_size
+framing
+camera_angle
+
+lens
+camera_movement
+
+subject_character_refs[]
+location_ref
+asset_refs[]
+
+action
+dialogue_ref
+audio_cue
+
+lighting_intent
+composition_notes
+
+continuity_from
+continuity_to
+
+status
+version
+```
+
+Current production resource đã có:
+
+```text
+camera_movement
+focal_length
+duration_seconds
+scene_id
+```
+
+nên mở rộng nó thay vì tạo một Shot aggregate trùng lặp.
+
+---
+
+## P1.5.3 Duration validation
+
+Phải kiểm tra:
+
+```text
+Σ shot.duration
+≈
+scene.duration
+```
+
+và:
+
+```text
+Σ scene.duration
+≈
+target episode duration
+```
+
+Có tolerance nhưng không bỏ qua mismatch lớn.
+
+---
+
+## P1.5.4 Continuity
+
+Check liên tiếp:
+
+```text
+character
+wardrobe
+location
+prop
+screen direction
+time of day
+```
+
+P1 chỉ cần structural continuity validation.
+
+Computer vision review để P2/P3.
+
+---
+
+## P1.5.5 Manual editing
+
+UI hỗ trợ:
+
+```text
+Add shot
+Delete draft shot
+Reorder
+Split
+Merge
+Change lens
+Change camera
+Change duration
+```
+
+Pinned shot plan không được mutate.
+
+Muốn sửa:
+
+```text
+derive ShotPlan revision
+```
+
+### Gate
+
+```text
+P1_5_SHOT_PLAN_LIVE
+```
+
+---
+
+# PHASE P1.6 — PRODUCTION PACKAGE
+
+Đây là output chính của P1.
+
+Không lấy current `ProductionPlan` và gọi nó “ready” chỉ vì record tồn tại.
+
+---
+
+## P1.6.1 ProductionPackage
+
+Canonical package:
+
+```text
+ProductionPackage
+│
+├── episode
+│
+├── locked_screenplay
+│   ├── revision_id
+│   ├── artifact_id
+│   └── content_hash
+│
+├── character_canon[]
+│   ├── character_id
+│   ├── version
+│   └── hash
+│
+├── world_canon
+│   └── version/hash
+│
+├── locations[]
+│
+├── assets[]
+│   ├── asset_id
+│   ├── revision_id
+│   └── content_hash
+│
+├── storyboard
+│   ├── revision_id
+│   └── hash
+│
+├── scenes[]
+│
+├── shot_plan
+│   ├── revision_id
+│   └── hash
+│
+├── constraints
+│
+└── production_target
+```
+
+---
+
+## P1.6.2 Production target
+
+P1 có thể lưu:
+
+```text
+BLENDER
+UNREAL
+GENERIC_3D
+```
+
+nhưng **không execute engine**.
+
+Ví dụ:
+
+```text
+production_target = BLENDER
+```
+
+chỉ có nghĩa:
+
+> package sẽ được P2 Blender adapter consume.
+
+---
+
+## P1.6.3 Preflight validator
+
+Trước package ready:
+
+```text
+screenplay locked?
+characters resolved?
+world references valid?
+locations resolved?
+storyboard complete?
+shots cover scenes?
+required assets resolved?
+all mandatory assets approved?
+all pinned hashes valid?
+duration valid?
+orphan resource?
+```
+
+Output:
+
+```text
+READY
 BLOCKED
 ```
 
-Với failure:
+và:
 
 ```text
-error_code
-retryable
-failure_stage
-attempt
-max_attempts
+blocking_findings[]
+warnings[]
 ```
 
 ---
 
-## 10.5 — Production UI
+## P1.6.4 Không overload Episode state
+
+P0 có thể đã dùng:
 
 ```text
-features/production/
-├── ProductionPage.tsx
-├── ProductionOverview.tsx
-├── ShotList.tsx
-├── ShotInspector.tsx
-├── AudioPanel.tsx
-├── AnimationPanel.tsx
-├── RenderPanel.tsx
-├── DeliveryPanel.tsx
-└── components/
-    ├── JobProgress.tsx
-    ├── JobFailure.tsx
-    ├── RetryAction.tsx
-    └── ArtifactPreview.tsx
+READY_FOR_PRODUCTION
 ```
 
-Không còn:
+cho story completion.
 
-```tsx
-new FakeProductionApiClient()
-```
-
-trong production application.
-
-`FakeProductionApiClient` được phép tồn tại tại:
+P1 nên có authority riêng:
 
 ```text
-tests/
-fixtures/
-storybook/
+story_status = READY_FOR_PRODUCTION
+preproduction_status = PACKAGE_READY
 ```
 
-cho đến Phase 16 cleanup.
+Không cố nhồi tất cả vào một Episode enum.
 
 ---
 
-## 10.6 — Realtime production jobs
+## P1.6.5 Immutable handoff
 
-Event types:
-
-```text
-production.started
-
-shot.updated
-
-audio.started
-audio.completed
-audio.failed
-
-animation.started
-animation.completed
-animation.failed
-
-render.started
-render.progress
-render.completed
-render.failed
-
-video.completed
-```
-
-Đặc biệt render lâu phải support:
+Sau:
 
 ```text
-reconnect
-resume
-snapshot
-sequence gap recovery
+Finalize Production Package
 ```
 
-Không phụ thuộc vào page đang mở.
+manifest phải content-addressed:
+
+```text
+package_id
+package_hash
+created_at
+```
+
+Sau đó dependency version mới không được làm package cũ thay đổi.
+
+Ví dụ:
+
+```text
+Character v4 → v5
+```
+
+package đang pin v4 vẫn hợp lệ.
 
 ---
 
-## 10.7 — Failure UX
+## P1.6.6 Invalidation
 
-Ví dụ render fail do VRAM:
+Nếu locked screenplay bị derive thành revision mới:
 
 ```text
-FAILED
-RENDER_OUT_OF_MEMORY
-retryable=false/true
+screenplay rev 10
+      ↓
+ProductionPackage A
 ```
 
-UI phải hiển thị failure thật.
+vẫn immutable.
 
-Không tự đổi thành success.
-
-Nếu job retryable:
+New screenplay:
 
 ```text
-Retry
+rev 11
 ```
 
-Nếu cần human action:
+phải tạo:
 
 ```text
-Blocked
-→ reason
-→ suggested action
+ProductionPackage B
+```
+
+không sửa Package A.
+
+### Gate
+
+```text
+P1_6_PRODUCTION_PACKAGE_READY
 ```
 
 ---
 
-## 10.8 — Artifact integration
+# PHASE P1.7 — FRONTEND PRE-PRODUCTION WORKFLOW
 
-Output của từng stage phải trở thành artifact/asset thật:
+Không redesign frontend framework.
 
-```text
-TTS output
-animation cache
-scene render
-shot render
-final video
-```
+Reuse các feature package đã tồn tại.
 
-Không lưu URL tùy tiện trong component.
+---
 
-Frontend tham chiếu:
+## Navigation
+
+Target workflow:
 
 ```text
-artifact_id
-asset_id
-revision_id
+STORY
+  Studio
+  Episodes
+
+PRE-PRODUCTION
+  Characters
+  World
+  Assets
+  Storyboard
+  Production
 ```
 
 ---
 
-## 10.9 — Production certification E2E
-
-Tối thiểu phải chạy được:
+## Character UI
 
 ```text
-Open LOCKED Episode
-       ↓
-Open Production
-       ↓
-Create Production Plan
-       ↓
-Load Storyboard
-       ↓
-Create/verify Shots
-       ↓
-Submit at least one REAL production job
-       ↓
-Observe QUEUED
-       ↓
-RUNNING
-       ↓
-SUCCEEDED or truthful FAILED
-       ↓
-Artifact persisted
-       ↓
-Refresh application
-       ↓
-same job + artifact recovered
+Character Library
+Character Detail
+Relationships
+Visual Profile
+Continuity
+Version History
+Approval
 ```
 
-Quan trọng: **SUCCESS không phải điều kiện duy nhất để PASS**.
+---
 
-Ví dụ Blender/render engine không thể render do asset thật bị thiếu thì:
+## World UI
 
 ```text
-BLOCKED / FAILED
+World Bible
+Locations
+Factions
+Lore
+Continuity warnings
+```
+
+---
+
+## Asset UI
+
+```text
+Required
+Missing
+Draft
+Review
+Approved
+Pinned
+```
+
+Asset detail:
+
+```text
+Preview
+Provenance
+Revision history
+Dependencies
+Approval
+```
+
+---
+
+## Storyboard UI
+
+Main composition:
+
+```text
+Scene list
+      |
+      | selected
+      ↓
+Scene Detail
+├── script
+├── visual summary
+├── characters
+├── location
+├── required assets
+└── concept reference
+```
+
+---
+
+## Shot Planner
+
+```text
+Scene 01
+
+Shot 01
+Wide / 24mm / Static / 4s
+
+Shot 02
+Medium / 50mm / Dolly / 3s
+
+Shot 03
+Close Up / 85mm / Static / 2s
+```
+
+Drag/drop chỉ thay order qua server command; không frontend-only persistence.
+
+---
+
+## Production page
+
+Trong P1 không nên có các nút giả:
+
+```text
+Render
+Animate
+Generate Video
+```
+
+Nếu executor chưa có.
+
+Target:
+
+```text
+Production Readiness
+
+Screenplay       ✓
+Characters       ✓
+World            ✓
+Storyboard       ✓
+Shot Plan        ✓
+Assets           14/16
+Mandatory Assets 12/12
+
+[Finalize Production Package]
+```
+
+Sau finalize:
+
+```text
+PRODUCTION PACKAGE READY
+
+Package:
+pkg_xxx
+
+Target:
+Blender
+
+[View Manifest]
+```
+
+### Gate
+
+```text
+P1_7_PREPRODUCTION_UI_LIVE
+```
+
+---
+
+# PHASE P1.8 — FUNCTIONAL E2E ACCEPTANCE
+
+P1 test từ **P0 locked screenplay**, không tạo fake fixture ở giữa pipeline.
+
+---
+
+## Scenario A — Happy path
+
+```text
+Locked Screenplay
+      ↓
+Character Sync
+      ↓
+World Sync
+      ↓
+Asset Requirements
+      ↓
+Upload/Approve required references
+      ↓
+Storyboard
+      ↓
+Shot Plan
+      ↓
+Preflight
+      ↓
+Finalize
+      ↓
+PRODUCTION_PACKAGE_READY
+```
+
+---
+
+## Scenario B — Missing mandatory asset
+
+```text
+Required sword asset missing
+      ↓
+Preflight
+      ↓
+BLOCKED
+```
+
+Không được finalize.
+
+---
+
+## Scenario C — Character version changes
+
+```text
+Character v2
+      ↓
+Package A pins v2
+      ↓
+Character edited → v3
+```
+
+Expected:
+
+```text
+Package A still pins v2
+new package may select v3
+```
+
+---
+
+## Scenario D — New screenplay revision
+
+```text
+Screenplay v5
+      ↓
+Storyboard A
+      ↓
+Production Package A
+
+derive screenplay v6
+```
+
+Expected:
+
+```text
+A unchanged
+new storyboard required
+new production package required
+```
+
+---
+
+## Scenario E — Wrong lineage
+
+Inject:
+
+```text
+Storyboard says screenplay rev-X
+Package says screenplay rev-Y
+```
+
+Expected:
+
+```text
+PREPRODUCTION_LINEAGE_MISMATCH
+```
+
+---
+
+## Scenario F — Restart
+
+During preparation:
+
+```text
+restart API
+restart Worker
+close Desktop
+reopen
+```
+
+Expected:
+
+```text
+all canonical data restored
+no duplicate characters
+no duplicate assets
+no duplicate storyboard
+```
+
+---
+
+## Scenario G — Unsupported renderer
+
+Call:
+
+```text
+POST .../render/submit
+```
+
+without configured production executor.
+
+Expected:
+
+```text
+CAPABILITY_UNAVAILABLE
+```
+
+not:
+
+```text
+QUEUED
+```
+
+Đây đặc biệt quan trọng vì implementation hiện tại chỉ tạo queued record.
+
+---
+
+# 3. Routing roles mới trong P1
+
+Tận dụng P0 Model Router.
+
+Chỉ thêm role thực sự cần LLM:
+
+```text
+studio.preproduction.character.extract
+
+studio.preproduction.world.extract
+
+studio.preproduction.assets.extract
+
+studio.preproduction.storyboard.enrich
+
+studio.preproduction.shotplan.generate
+
+studio.preproduction.continuity.review
+```
+
+Không bắt buộc một model riêng cho mỗi role.
+
+Có thể:
+
+```text
+storyboard.enrich
+shotplan.generate
+```
+
+cùng resolve về một model.
+
+---
+
+# 4. Nguyên tắc: deterministic trước, LLM sau
+
+Đây nên là quy tắc cứng của P1.
+
+Ví dụ:
+
+```text
+Screenplay Scene List
+```
+
+đã structured:
+
+→ deterministic projection.
+
+Không gọi LLM.
+
+```text
+Character name
+location
+dialogue
+scene ordering
+artifact hashes
+lineage
+```
+
+đều phải deterministic.
+
+LLM chỉ làm:
+
+```text
+visual interpretation
+shot suggestions
+creative enrichment
+continuity reasoning
+missing description enrichment
+```
+
+Không cho LLM quyết định database identity hoặc hash.
+
+---
+
+# 5. Test matrix P1
+
+| Layer                            | Gate |
+| -------------------------------- | ---- |
+| Character CRUD/versioning        | PASS |
+| Character canon sync             | PASS |
+| Character lineage                | PASS |
+| World CRUD/versioning            | PASS |
+| World canon sync                 | PASS |
+| World continuity                 | PASS |
+| Asset requirements               | PASS |
+| Asset actual hash                | PASS |
+| Asset revision                   | PASS |
+| Asset approval/pinning           | PASS |
+| Storyboard screenplay lineage    | PASS |
+| Scene ownership                  | PASS |
+| Storyboard revision              | PASS |
+| Storyboard idempotent sync       | PASS |
+| Shot generation schema           | PASS |
+| Shot ordering                    | PASS |
+| Duration validation              | PASS |
+| Production preflight             | PASS |
+| Immutable package                | PASS |
+| Invalidation/version pinning     | PASS |
+| Unsupported executor fail-closed | PASS |
+| Frontend feature tests           | PASS |
+| Desktop typecheck                | PASS |
+| Desktop build                    | PASS |
+| SQLite P1 integration            | PASS |
+| PostgreSQL P1 vertical slice     | PASS |
+
+Không cần full Phase-16 certification.
+
+---
+
+# 6. Thứ tự thực hiện
+
+```text
+P1.0 Truth Repair
+        │
+        ├──────────────┐
+        ↓              ↓
+P1.1 Characters    P1.2 World
+        │              │
+        └──────┬───────┘
+               ↓
+         P1.3 Assets
+               ↓
+       P1.4 Storyboard
+               ↓
+       P1.5 Shot Plan
+               ↓
+ P1.6 Production Package
+               ↓
+       P1.7 Frontend
+               ↓
+       P1.8 Real E2E
+               ↓
+WINDAGENT_P1_PRODUCTION_PACKAGE_READY
+```
+
+P1.1 và P1.2 có thể làm song song.
+
+Frontend có thể triển khai song song sau khi contract của từng phase ổn định.
+
+---
+
+# 7. Commit strategy
+
+Tách commit rõ:
+
+```text
+fix(p1-truth): remove synthetic preproduction authority
+
+feat(p1-character): canonical character sync and pinning
+
+feat(p1-world): canonical world and continuity
+
+feat(p1-assets): asset requirements provenance and approval
+
+feat(p1-storyboard): real screenplay-pinned storyboard
+
+feat(p1-shots): production shot planning
+
+feat(p1-package): immutable production handoff package
+
+feat(p1-ui): preproduction desktop workflow
+
+test(p1): end-to-end production readiness
+```
+
+Không trộn:
+
+```text
+Storyboard
 +
-truthful reason
+Blender
 +
-persistent receipt
+audio
++
+frontend redesign
++
+certification evidence
 ```
 
-vẫn chứng minh frontend/API architecture hoạt động chính xác.
-
-Fake-success mới là FAIL.
+trong cùng commit.
 
 ---
 
-# Phase 10 gate
+# 8. Definition of Done cuối P1
+
+P1 chỉ PASS khi:
 
 ```text
-FakeProductionApiClient runtime usage    = 0
-hardcoded proj-alpha                     = 0
-production local-only state authority    = 0
-fake setTimeout jobs                     = 0
-direct /api/v2 production call           = 0
-
-Episode → Production context             PASS
-real job receipt                         PASS
-job realtime                             PASS
-reconnect recovery                       PASS
-failure UX                               PASS
-artifact persistence                     PASS
-Web                                      PASS
-Desktop                                  PASS
+[PASS] No synthetic screenplay revision
+[PASS] No GET-side-effect creating domain records
+[PASS] Character Canon derived from real Story artifacts
+[PASS] Character versions pinnable
+[PASS] World Canon durable and versioned
+[PASS] World references validated
+[PASS] Asset requirements extracted
+[PASS] Mandatory asset completeness known
+[PASS] Asset hash represents actual content
+[PASS] Asset revisions immutable
+[PASS] Approved assets pinned by revision/hash
+[PASS] Storyboard reads actual locked screenplay
+[PASS] Every scene has real episode/storyboard lineage
+[PASS] Storyboard supports revisions
+[PASS] Shot Plan covers every required scene
+[PASS] Shot timing is internally valid
+[PASS] Character/location/asset refs resolve
+[PASS] Production preflight blocks invalid package
+[PASS] Production Package is immutable
+[PASS] Package pins all exact revisions/hashes
+[PASS] Unsupported production executors fail closed
+[PASS] Desktop can complete the whole P1 workflow
+[PASS] PostgreSQL E2E passes
 ```
 
-Verdict:
+Final artifact:
 
 ```text
-FRONTEND_V2_PHASE_10_PRODUCTION_VERIFIED
-```
-
----
-
-# Test matrix bắt buộc cho Phase 6–10
-
-| Test                     | P6 | P7 | P8 | P9 | P10 |
-| ------------------------ | -: | -: | -: | -: | --: |
-| TypeScript               |  ✓ |  ✓ |  ✓ |  ✓ |   ✓ |
-| ESLint architecture      |  ✓ |  ✓ |  ✓ |  ✓ |   ✓ |
-| Backend unit             |  ✓ |  ✓ |  ✓ |  ✓ |   ✓ |
-| Frontend unit            |  ✓ |  ✓ |  ✓ |  ✓ |   ✓ |
-| OpenAPI validation       |  ✓ |  ✓ |  ✓ |  ✓ |   ✓ |
-| Generated client compile |  ✓ |  ✓ |  ✓ |  ✓ |   ✓ |
-| Contract tests           |  ✓ |  ✓ |  ✓ |  ✓ |   ✓ |
-| Web build                |  ✓ |  ✓ |  ✓ |  ✓ |   ✓ |
-| Desktop build            |  ✓ |  ✓ |  ✓ |  ✓ |   ✓ |
-| Web E2E                  |  ✓ |  ✓ |  ✓ |  ✓ |   ✓ |
-| Desktop smoke            |  ✓ |  ✓ |  ✓ |  ✓ |   ✓ |
-| Realtime reconnect       |  ✓ |  — |  ✓ |  ✓ |   ✓ |
-| Visual regression        |  ✓ |  ✓ |  ✓ |  ✓ |   ✓ |
-| Persistence/reload       |  ✓ |  ✓ |  ✓ |  ✓ |   ✓ |
-
----
-
-# Evidence protocol
-
-Tôi đề xuất giữ cùng structure cho cả 5 phase:
-
-```text
-artifacts/frontend_restructure/
-├── phase_06/
-│   ├── baseline/
-│   ├── contracts/
-│   ├── tests/
-│   ├── e2e/
-│   ├── screenshots/
-│   └── final/
-│
-├── phase_07/
-├── phase_08/
-├── phase_09/
-└── phase_10/
-```
-
-Mỗi `final/` bắt buộc:
-
-```text
-final_verdict.json
-phase_report.md
-changed_files.json
-api_contract_report.json
-architecture_report.json
-frontend_test_report.json
-backend_test_report.json
-web_build_report.json
-desktop_build_report.json
-e2e_report.json
-mock_runtime_scan.json
-legacy_api_scan.json
-risk_register.md
-```
-
-Không được ghi `PASS` chỉ dựa vào số test.
-
-`final_verdict.json` phải liệt kê riêng:
-
-```text
-tests_passed
-contract_passed
-architecture_passed
-runtime_mock_free
-legacy_api_free_for_scope
-web_verified
-desktop_verified
-critical_e2e_verified
+ProductionPackage
+SHA256: ...
+Status: READY
+Target: Blender / Unreal / Generic
 ```
 
 ---
 
-# Quy tắc implementation xuyên Phase 6–10
+# 9. Trạng thái WindAgent sau P1
 
-Các coding agent phải tuân thủ các invariant sau:
-
-```text
-Không tự sửa domain business logic ngoài scope.
-
-Không đổi API contract mà không regenerate OpenAPI client.
-
-Không direct fetch trong feature.
-
-Không thêm mock runtime để "làm UI chạy".
-
-Không fallback từ API failure sang fake data.
-
-Không fake job bằng setTimeout.
-
-Không copy handwritten contract sang frontend.
-
-Không tạo Store riêng trong Page.
-
-Không tự parse location.hash.
-
-Không tạo idempotency key riêng tại từng page.
-
-Không xóa V2 backend trước Phase 15.
-
-Không xóa dead frontend trước Phase 16.
-
-Không cho Web import source từ Desktop.
-
-Không thay đổi visual direction đã chốt ở Phase 5
-trừ khi cần accessibility/responsive correctness.
-```
-
----
-
-# Điểm checkpoint quan trọng nhất
-
-Tôi sẽ đặt ba checkpoint lớn:
+Sau P1, kiến trúc sản phẩm sẽ trở thành:
 
 ```text
-PHASE 6 PASS
-    ↓
-Frontend infrastructure proven
-    ↓
-PHASE 7 + 8
-    ↓
-SCREENPLAY_VERTICAL_SLICE_VERIFIED
-    ↓
-PHASE 9
-    ↓
-STORY_PRODUCTION_DOMAIN_VERIFIED
-    ↓
-PHASE 10
-    ↓
-REAL_PRODUCTION_CUTOVER_VERIFIED
+IDEA
+ ↓
+STORY
+ ↓
+SCREENPLAY
+ ↓
+REVIEW / REVISION
+ ↓
+LOCK
+ ─────────────── P0
+ ↓
+CHARACTER CANON
+ ↓
+WORLD CANON
+ ↓
+ASSET MANIFEST
+ ↓
+STORYBOARD
+ ↓
+SHOT PLAN
+ ↓
+PRODUCTION PACKAGE
+ ─────────────── P1
+ ↓
+AUDIO
+ ↓
+BLENDER / UNREAL
+ ↓
+ANIMATION
+ ↓
+RENDER
+ ↓
+COMPOSITE
+ ↓
+FINAL VIDEO
+ ─────────────── P2+
 ```
 
-Trong đó **Phase 8 phải được xem là gate ưu tiên cao nhất**. Nếu flow:
-
-```text
-Project
-→ Episode
-→ Idea
-→ Story
-→ Screenplay
-→ Review
-→ Lock
-```
-
-chưa chạy ổn định bằng backend thật, **không nên đẩy mạnh Phase 9/10**, vì Characters, Storyboard, Assets và Production đều phụ thuộc screenplay/revision authority này.
-
-Sau Phase 10, trạng thái mong muốn là: **toàn bộ chuỗi từ Project → screenplay đã lock → Storyboard/Character/World/Assets → Production đã chạy trên frontend architecture mới; runtime không còn phụ thuộc `DEFAULT_*`, `Math.random()`, `setTimeout()` giả generation hoặc `FakeProductionApiClient`.** Khi đó mới hợp lý đi tiếp Phase 11 Agent System và Phase 12 Model Infrastructure.
+Tôi đánh giá đây là ranh giới tốt nhất cho P1. **Không nên đưa Blender rendering thật vào P1.** Nếu P1 kết thúc bằng một `ProductionPackage` immutable, có lineage đầy đủ và đủ dữ liệu để engine consume, thì P2 có thể tập trung hoàn toàn vào execution thay vì vừa render vừa phải sửa Story/Asset/Storyboard authority.

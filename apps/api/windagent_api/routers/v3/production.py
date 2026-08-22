@@ -172,25 +172,24 @@ async def get_production_plan(
     episode_id: str = Path(...),
     service: V3ResourceService = Depends(get_v3_resource_service),
 ) -> ProductionPlanResource:
-    """Retrieve the active production plan for an episode."""
+    """Retrieve the active production plan for an episode.
+
+    P1.0 truth repair: GET is read-only. When no plan exists the API returns
+    404 PRODUCTION_PLAN_NOT_CREATED; it never fabricates a plan (or synthetic
+    revision pins) as a side effect of a read.
+    """
     plan = await service.get(NS_PRODUCTION_PLANS, episode_id)
     if plan is None:
-        # Create empty initial plan pinned to locked revisions
-        now = utc_now().isoformat()
-        plan_data = {
-            "id": f"plan-{episode_id}",
-            "episode_id": episode_id,
-            "project_id": None,
-            "screenplay_revision_id": f"rev-{episode_id}-lock",
-            "storyboard_revision_id": f"sb-{episode_id}",
-            "character_references": [],
-            "asset_references": [],
-            "status": "PLANNING",
-            "progress_percent": 0,
-            "created_at": now,
-            "updated_at": now,
-        }
-        plan = await service.create(NS_PRODUCTION_PLANS, episode_id, plan_data)
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={
+                "error_code": "PRODUCTION_PLAN_NOT_CREATED",
+                "message": (
+                    f"No production plan initialized for episode '{episode_id}'. "
+                    "Create one explicitly via POST /episodes/{episode_id}/production/plan."
+                ),
+            },
+        )
 
     shots = await service.list(NS_SHOTS)
     shots = [s for s in shots if s.get("episode_id") == episode_id]
@@ -328,31 +327,23 @@ async def _submit_stage_job(
     body: SubmitJobRequest,
     service: V3ResourceService,
 ) -> JobSubmissionReceipt:
-    job_id = f"job-{stage.lower()}-{uuid.uuid4().hex[:8]}"
-    now = utc_now().isoformat()
-    job: Dict[str, Any] = {
-        "job_id": job_id,
-        "episode_id": episode_id,
-        "shot_id": body.shot_id,
-        "job_type": stage.upper(),
-        "state": "QUEUED",
-        "progress_percent": 0,
-        "error_code": None,
-        "retryable": True,
-        "failure_stage": None,
-        "attempt": 1,
-        "max_attempts": 3,
-        "artifact_id": None,
-        "correlation_id": body.correlation_id or f"corr-{job_id}",
-        "submitted_at": now,
-        "completed_at": None,
-    }
-    created = await service.create(NS_PRODUCTION_JOBS, job_id, job)
-    return JobSubmissionReceipt(
-        job_id=job_id,
-        state="QUEUED",
-        submitted_at=now,
-        correlation_id=created.get("correlation_id"),
+    """Fail closed: no production executor is composed in P1.
+
+    P1.0 truth repair (P1.0.5): AUDIO/ANIMATION/RENDER/VIDEO submissions MUST
+    NOT create fake ``QUEUED`` records without a real consumer. Until P2 wires
+    actual executors, every submission returns CAPABILITY_UNAVAILABLE and
+    persists nothing.
+    """
+    raise HTTPException(
+        status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+        detail={
+            "error_code": "CAPABILITY_UNAVAILABLE",
+            "job_type": stage.upper(),
+            "message": (
+                f"No {stage.upper()} executor is composed in this deployment; "
+                "production stage jobs are enabled in P2."
+            ),
+        },
     )
 
 
@@ -417,7 +408,11 @@ async def retry_job(
     body: RetryJobRequest = ...,
     service: V3ResourceService = Depends(get_v3_resource_service),
 ) -> JobSubmissionReceipt:
-    """Retry a failed or blocked job."""
+    """Retry a failed or blocked job.
+
+    P1.0 truth repair: re-queueing without a real executor consumer is a fake
+    ``QUEUED`` claim, so retries fail closed until P2 executors land.
+    """
     job = await service.get(NS_PRODUCTION_JOBS, body.job_id)
     if job is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Job '{body.job_id}' not found.")
@@ -426,18 +421,16 @@ async def retry_job(
             status_code=status.HTTP_409_CONFLICT,
             detail=f"Job '{body.job_id}' has exceeded max retry attempts ({job.get('max_attempts')}).",
         )
-    updates = dict(job)
-    updates["state"] = "QUEUED"
-    updates["attempt"] = job.get("attempt", 1) + 1
-    updates["error_code"] = None
-    updates["failure_stage"] = None
-    updates["submitted_at"] = utc_now().isoformat()
-    updated = await service.update(NS_PRODUCTION_JOBS, body.job_id, updates, job["version"])
-    return JobSubmissionReceipt(
-        job_id=updated["job_id"],
-        state="QUEUED",
-        submitted_at=updated["submitted_at"],
-        correlation_id=updated.get("correlation_id"),
+    raise HTTPException(
+        status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+        detail={
+            "error_code": "CAPABILITY_UNAVAILABLE",
+            "job_type": str(job.get("job_type") or stage).upper(),
+            "message": (
+                f"No {str(job.get('job_type') or stage).upper()} executor is composed in this "
+                "deployment; production stage jobs are enabled in P2."
+            ),
+        },
     )
 
 
@@ -472,23 +465,19 @@ async def get_delivery_artifact(
     episode_id: str = Path(...),
     service: V3ResourceService = Depends(get_v3_resource_service),
 ) -> DeliveryArtifactResource:
-    """Get final delivery package for an episode."""
+    """Get final delivery package for an episode.
+
+    P1.0 truth repair: read-only. No delivery record is fabricated on GET.
+    """
     delivery = await service.get(NS_DELIVERY_ARTIFACTS, episode_id)
     if delivery is None:
-        now = utc_now().isoformat()
-        delivery_data = {
-            "id": f"delivery-{episode_id}",
-            "episode_id": episode_id,
-            "video_asset_id": None,
-            "resolution": "1080p",
-            "codec": "H.264",
-            "duration_seconds": 0,
-            "file_size_bytes": 0,
-            "download_url": None,
-            "manifest_url": None,
-            "created_at": now,
-        }
-        delivery = await service.create(NS_DELIVERY_ARTIFACTS, episode_id, delivery_data)
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={
+                "error_code": "DELIVERY_ARTIFACT_NOT_READY",
+                "message": f"No delivery artifact produced yet for episode '{episode_id}'.",
+            },
+        )
     return DeliveryArtifactResource(**delivery)
 
 

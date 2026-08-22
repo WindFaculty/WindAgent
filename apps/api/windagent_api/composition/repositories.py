@@ -14,6 +14,7 @@ from windagent_storage.database.connection import DatabaseManager
 from windagent_storage.database.sync_factory import make_sync_session_factory
 from windagent_storage.repositories.v3_routing_repositories import (
     SQLEndpointBindingRepository,
+    SQLModelRouteReceiptRepository,
     SQLProviderRoutingAuditRepository,
 )
 from windagent_storage.repositories.v3_repositories import (
@@ -51,6 +52,7 @@ class RepositoryBundle:
     binding_repo: SQLEndpointBindingRepository
     audit_repo: SQLProviderRoutingAuditRepository
     lock_repo: SQLRouteLockRepository
+    route_receipt_repo: SQLModelRouteReceiptRepository
     provider_management_repo: SQLProviderManagementRepository
     endpoint_registry: SQLEndpointRegistryRepository
     endpoint_state: SQLEndpointStateRepository
@@ -82,6 +84,7 @@ class RepositoryComposer:
             binding_repo=binding_repo,
             audit_repo=audit_repo,
             lock_repo=lock_repo,
+            route_receipt_repo=SQLModelRouteReceiptRepository(sync_factory()),
             provider_management_repo=SQLProviderManagementRepository(sync_factory()),
             endpoint_registry=SQLEndpointRegistryRepository(sync_factory()),
             endpoint_state=SQLEndpointStateRepository(sync_factory()),

@@ -972,7 +972,7 @@
       "from": "orchestration",
       "to": "core",
       "file": "orchestration/windagent_orchestration/studio/service.py",
-      "line": 1335
+      "line": 1343
     },
     {
       "from": "orchestration",
@@ -6156,19 +6156,19 @@
       "from": "providers",
       "to": "core",
       "file": "providers/windagent_providers/management/probe.py",
-      "line": 17
+      "line": 28
     },
     {
       "from": "providers",
       "to": "core",
       "file": "providers/windagent_providers/management/probe.py",
-      "line": 17
+      "line": 28
     },
     {
       "from": "providers",
       "to": "core",
       "file": "providers/windagent_providers/management/probe.py",
-      "line": 17
+      "line": 28
     },
     {
       "from": "providers",
@@ -8814,7 +8814,7 @@
       "from": "storage",
       "to": "core",
       "file": "storage/windagent_storage/repositories/provider_management_repository.py",
-      "line": 339
+      "line": 751
     },
     {
       "from": "storage",
@@ -9042,7 +9042,13 @@
       "from": "storage",
       "to": "core",
       "file": "storage/windagent_storage/repositories/v3_routing_repositories.py",
-      "line": 240
+      "line": 128
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/repositories/v3_routing_repositories.py",
+      "line": 357
     },
     {
       "from": "storage",
@@ -10516,6 +10522,12 @@
     },
     {
       "from": "api",
+      "to": "providers",
+      "file": "apps/api/windagent_api/routers/v3/models.py",
+      "line": 22
+    },
+    {
+      "from": "api",
       "to": "core",
       "file": "apps/api/windagent_api/routers/v3/monitoring.py",
       "line": 11
@@ -10531,6 +10543,30 @@
       "to": "core",
       "file": "apps/api/windagent_api/routers/v3/projects.py",
       "line": 16
+    },
+    {
+      "from": "api",
+      "to": "providers",
+      "file": "apps/api/windagent_api/routers/v3/providers.py",
+      "line": 33
+    },
+    {
+      "from": "api",
+      "to": "providers",
+      "file": "apps/api/windagent_api/routers/v3/providers.py",
+      "line": 33
+    },
+    {
+      "from": "api",
+      "to": "providers",
+      "file": "apps/api/windagent_api/routers/v3/providers.py",
+      "line": 33
+    },
+    {
+      "from": "api",
+      "to": "providers",
+      "file": "apps/api/windagent_api/routers/v3/providers.py",
+      "line": 33
     },
     {
       "from": "api",
@@ -10596,7 +10632,7 @@
       "from": "api",
       "to": "core",
       "file": "apps/api/windagent_api/routers/v3/storyboard.py",
-      "line": 15
+      "line": 19
     },
     {
       "from": "api",

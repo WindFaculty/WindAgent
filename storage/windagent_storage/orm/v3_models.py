@@ -123,6 +123,13 @@ class EndpointModelBindingORM(BaseORM):
     pricing_overrides_json = Column(Text, nullable=False, default="{}")
     enabled = Column(Boolean, nullable=False, default=True)
     priority = Column(Integer, nullable=False, default=50)
+    # P0.2 — discovery reconciliation + truthful pricing metadata
+    availability = Column(String(16), nullable=False, default="active")  # active | unavailable | deprecated
+    pricing_class = Column(String(16), nullable=False, default="UNKNOWN")  # FREE | PAID | UNKNOWN
+    input_price = Column(Float, nullable=True)   # provider-advertised USD/token; NULL = not advertised
+    output_price = Column(Float, nullable=True)  # provider-advertised USD/token; NULL = not advertised
+    currency = Column(String(8), nullable=True)
+    last_discovered_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, nullable=False, default=default_utc_now)
     updated_at = Column(DateTime, nullable=False, default=default_utc_now)
 
@@ -310,3 +317,31 @@ class ResponseCacheEntryORM(BaseORM):
     ttl_seconds = Column(Integer, nullable=True)
     expires_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, nullable=False, default=default_utc_now)
+
+
+class ModelRouteReceiptV3ORM(BaseORM):
+    """One durable receipt per LLM task routed through the model router (P0.3.6)."""
+
+    __tablename__ = "model_route_receipts_v3"
+
+    id = Column(String(128), primary_key=True)
+    task_id = Column(String(128), nullable=False, index=True)
+    role = Column(String(128), nullable=False, default="")
+    rule_id = Column(String(128), nullable=False, default="")
+    route_lock_id = Column(String(128), ForeignKey("route_locks_v3.id"), nullable=False)
+    selected_provider = Column(String(128), nullable=True)
+    selected_model_id = Column(String(128), nullable=False, default="")
+    provider_model_id = Column(String(128), nullable=True)
+    endpoint_id = Column(String(128), nullable=True)
+    fallback_used = Column(Boolean, nullable=False, default=False)
+    fallback_reason = Column(String(128), nullable=True)
+    status = Column(String(16), nullable=False, default="success")  # success | failed
+    error_code = Column(String(128), nullable=True)
+    started_at = Column(DateTime, nullable=False)
+    completed_at = Column(DateTime, nullable=False)
+    created_at = Column(DateTime, nullable=False, default=default_utc_now)
+
+    __table_args__ = (
+        Index("ix_model_route_receipts_task", "task_id"),
+        Index("ix_model_route_receipts_role_created", "role", "created_at"),
+    )

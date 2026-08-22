@@ -312,7 +312,7 @@ class TestCodeVideoAssemblyContracts:
         self, video_02_plan: CodeVideoPlan, synthetic_takes: list[TakeReceipt], tmp_path: Path
     ) -> None:
         """Verify AssembleMasterStepExecutor executes cleanly as pipeline step."""
-        executor = AssembleMasterStepExecutor()
+        executor = AssembleMasterStepExecutor(assembler=VisualMasterAssembler())
         result = executor.execute(
             plan=video_02_plan,
             takes=synthetic_takes,

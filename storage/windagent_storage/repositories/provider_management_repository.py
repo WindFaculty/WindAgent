@@ -39,11 +39,15 @@ from windagent_storage.orm.v3_models import (
     CanonicalModelV3ORM,
     EndpointHealthSampleORM,
     EndpointModelBindingORM,
+    EndpointRateLimitWindowORM,
+    EndpointRuntimeStateORM,
+    ModelDiscoverySnapshotORM,
     ModelRoutingRuleV3ORM,
     ProviderCredentialORM,
     ProviderEndpointORM,
     ProviderRoutingAuditV3ORM,
     ProviderVendorORM,
+    RouteAttemptV3ORM,
 )
 from windagent_storage.factory import create_sql_endpoint_binding_repository
 from windagent_storage.security.encryption import encrypt
@@ -51,6 +55,20 @@ from windagent_storage.security.encryption import encrypt
 
 def _utc_now() -> datetime:
     return datetime.now(timezone.utc)
+
+
+def _aggregate_pricing_class(bindings: List[Dict[str, Any]]) -> str:
+    """Truthful model-level pricing class from its provider bindings.
+
+    PAID wins over FREE (the model costs money somewhere it is offered);
+    UNKNOWN only when NO binding advertises pricing. Never guessed.
+    """
+    classes = [b.get("pricing_class", "UNKNOWN") for b in bindings]
+    if "PAID" in classes:
+        return "PAID"
+    if "FREE" in classes:
+        return "FREE"
+    return "UNKNOWN"
 
 
 class SQLProviderManagementRepository(ProviderManagementRepositoryPort):
@@ -177,6 +195,293 @@ class SQLProviderManagementRepository(ProviderManagementRepositoryPort):
         return [self._endpoint_to_record(r) for r in rows]
 
     # ------------------------------------------------------------------ #
+    # Lifecycle mutations (P0.1)
+    # ------------------------------------------------------------------ #
+    def update_provider(
+        self,
+        vendor_id: str,
+        *,
+        name: Optional[str] = None,
+        vendor_type: Optional[str] = None,
+        enabled: Optional[bool] = None,
+        supports_model_discovery: Optional[bool] = None,
+        supports_openai_compatible: Optional[bool] = None,
+    ) -> Optional[ProviderVendorRecord]:
+        row = self.session.query(ProviderVendorORM).filter_by(id=vendor_id).first()
+        if row is None:
+            return None
+        if name is not None:
+            row.name = name
+        if vendor_type is not None:
+            row.vendor_type = vendor_type
+        if enabled is not None:
+            row.enabled = enabled
+        if supports_model_discovery is not None:
+            row.supports_model_discovery = supports_model_discovery
+        if supports_openai_compatible is not None:
+            row.supports_openai_compatible = supports_openai_compatible
+        row.updated_at = _utc_now()
+        try:
+            self.session.flush()
+            self.session.commit()
+        except Exception:
+            self.session.rollback()
+            raise
+        return self.get_provider(vendor_id)
+
+    def update_endpoint(
+        self,
+        endpoint_id: str,
+        *,
+        base_url: Optional[str] = None,
+        protocol_mode: Optional[str] = None,
+        enabled: Optional[bool] = None,
+    ) -> Optional[ProviderEndpointRecord]:
+        row = self.session.query(ProviderEndpointORM).filter_by(id=endpoint_id).first()
+        if row is None:
+            return None
+        if base_url:
+            row.base_url = base_url
+        if protocol_mode:
+            row.protocol_mode = protocol_mode
+        if enabled is not None:
+            row.enabled = enabled
+        row.updated_at = _utc_now()
+        try:
+            self.session.flush()
+            self.session.commit()
+        except Exception:
+            self.session.rollback()
+            raise
+        return self.get_endpoint(endpoint_id)
+
+    def delete_vendor(self, vendor_id: str) -> Dict[str, int]:
+        """Delete a vendor plus all provider-owned dependent rows atomically.
+
+        Removal order respects FKs: attempts -> runtime state -> rate windows
+        -> health samples -> discovery snapshots -> bindings -> endpoints ->
+        credentials -> vendor. Canonical model rows are intentionally kept
+        (shared identity, not provider-owned). The removed-row counts are
+        returned so the service can record them in the audit trail.
+        """
+        endpoint_ids = [
+            row.id
+            for row in (
+                self.session.query(ProviderEndpointORM.id)
+                .filter_by(vendor_id=vendor_id)
+                .all()
+            )
+        ]
+        try:
+            binding_ids: List[str] = []
+            removed_bindings = 0
+            if endpoint_ids:
+                binding_ids = [
+                    row.id
+                    for row in (
+                        self.session.query(EndpointModelBindingORM.id)
+                        .filter(EndpointModelBindingORM.endpoint_id.in_(endpoint_ids))
+                        .all()
+                    )
+                ]
+            removed_attempts = 0
+            if binding_ids:
+                removed_attempts = (
+                    self.session.query(RouteAttemptV3ORM)
+                    .filter(RouteAttemptV3ORM.provider_binding_id.in_(binding_ids))
+                    .delete(synchronize_session=False)
+                )
+                removed_bindings = (
+                    self.session.query(EndpointModelBindingORM)
+                    .filter(EndpointModelBindingORM.id.in_(binding_ids))
+                    .delete(synchronize_session=False)
+                )
+            removed_runtime = 0
+            removed_rate_windows = 0
+            removed_health = 0
+            removed_snapshots = 0
+            removed_endpoints = 0
+            if endpoint_ids:
+                removed_runtime = (
+                    self.session.query(EndpointRuntimeStateORM)
+                    .filter(EndpointRuntimeStateORM.endpoint_id.in_(endpoint_ids))
+                    .delete(synchronize_session=False)
+                )
+                removed_rate_windows = (
+                    self.session.query(EndpointRateLimitWindowORM)
+                    .filter(EndpointRateLimitWindowORM.endpoint_id.in_(endpoint_ids))
+                    .delete(synchronize_session=False)
+                )
+                removed_health = (
+                    self.session.query(EndpointHealthSampleORM)
+                    .filter(EndpointHealthSampleORM.endpoint_id.in_(endpoint_ids))
+                    .delete(synchronize_session=False)
+                )
+                removed_snapshots = (
+                    self.session.query(ModelDiscoverySnapshotORM)
+                    .filter(ModelDiscoverySnapshotORM.endpoint_id.in_(endpoint_ids))
+                    .delete(synchronize_session=False)
+                )
+                removed_endpoints = (
+                    self.session.query(ProviderEndpointORM)
+                    .filter_by(vendor_id=vendor_id)
+                    .delete(synchronize_session=False)
+                )
+            removed_credentials = (
+                self.session.query(ProviderCredentialORM)
+                .filter_by(vendor_id=vendor_id)
+                .delete(synchronize_session=False)
+            )
+            removed_vendors = (
+                self.session.query(ProviderVendorORM)
+                .filter_by(id=vendor_id)
+                .delete(synchronize_session=False)
+            )
+            self.session.commit()
+        except Exception:
+            self.session.rollback()
+            raise
+        return {
+            "vendors": int(removed_vendors),
+            "endpoints": int(removed_endpoints),
+            "credentials": int(removed_credentials),
+            "bindings": int(removed_bindings),
+            "health_samples": int(removed_health),
+            "discovery_snapshots": int(removed_snapshots),
+            "rate_windows": int(removed_rate_windows),
+            "runtime_states": int(removed_runtime),
+            "route_attempts": int(removed_attempts),
+        }
+
+    def list_model_rules(self, *, include_disabled: bool = False) -> List[ModelRuleRecord]:
+        query = self.session.query(ModelRoutingRuleV3ORM)
+        if not include_disabled:
+            query = query.filter_by(enabled=True)
+        rows = query.order_by(
+            ModelRoutingRuleV3ORM.priority.asc(), ModelRoutingRuleV3ORM.role.asc()
+        ).all()
+        return [self._rule_to_record(r) for r in rows]
+
+    def set_rules_enabled(self, roles: List[str], *, enabled: bool) -> int:
+        if not roles:
+            return 0
+        changed = (
+            self.session.query(ModelRoutingRuleV3ORM)
+            .filter(ModelRoutingRuleV3ORM.role.in_(roles))
+            .update({"enabled": enabled, "updated_at": _utc_now()}, synchronize_session=False)
+        )
+        try:
+            self.session.flush()
+            self.session.commit()
+        except Exception:
+            self.session.rollback()
+            raise
+        return int(changed)
+
+    def upsert_credential(
+        self, vendor_id: str, secret: str, label: Optional[str] = None
+    ) -> ProviderCredentialRecord:
+        """Create or rotate the vendor credential; attach to unlinked endpoints.
+
+        The raw ``secret`` is encrypted at rest here and never returned.
+        """
+        ciphertext = encrypt(secret) if not secret.startswith("enc:v1:") else secret
+        existing = (
+            self.session.query(ProviderCredentialORM)
+            .filter_by(vendor_id=vendor_id)
+            .order_by(ProviderCredentialORM.created_at.asc())
+            .first()
+        )
+        try:
+            if existing is None:
+                existing = ProviderCredentialORM(
+                    id=f"cred-{uuid.uuid4().hex[:12]}",
+                    vendor_id=vendor_id,
+                    label=label or f"{vendor_id} credential",
+                    secret_ciphertext=ciphertext,
+                )
+                self.session.add(existing)
+                self.session.flush()
+            else:
+                existing.secret_ciphertext = ciphertext
+                existing.label = label or existing.label
+                existing.secret_version = (existing.secret_version or 1) + 1
+                existing.enabled = True
+                existing.updated_at = _utc_now()
+                self.session.flush()
+            # Attach the credential to any vendor endpoint missing one so probe
+            # material stays consistent after rotation/removal cycles.
+            self.session.query(ProviderEndpointORM).filter(
+                ProviderEndpointORM.vendor_id == vendor_id,
+                ProviderEndpointORM.credential_id.is_(None),
+            ).update({"credential_id": existing.id}, synchronize_session=False)
+            self.session.commit()
+        except Exception:
+            self.session.rollback()
+            raise
+        return ProviderCredentialRecord(
+            id=existing.id,
+            vendor_id=vendor_id,
+            label=existing.label,
+            secret_ciphertext=existing.secret_ciphertext,
+            secret_version=existing.secret_version,
+            is_env_ref=existing.is_env_ref,
+            env_var_name=existing.env_var_name,
+            enabled=existing.enabled,
+            created_at=existing.created_at,
+            updated_at=existing.updated_at,
+        )
+
+    def remove_credentials(self, vendor_id: str) -> int:
+        """Detach endpoints from credentials then delete the credential rows."""
+        try:
+            self.session.query(ProviderEndpointORM).filter_by(vendor_id=vendor_id).update(
+                {"credential_id": None}, synchronize_session=False
+            )
+            removed = (
+                self.session.query(ProviderCredentialORM)
+                .filter_by(vendor_id=vendor_id)
+                .delete(synchronize_session=False)
+            )
+            self.session.commit()
+        except Exception:
+            self.session.rollback()
+            raise
+        return int(removed)
+
+    def list_bound_canonical_ids(self, vendor_id: str) -> List[str]:
+        rows = (
+            self.session.query(EndpointModelBindingORM.canonical_model_id)
+            .join(
+                ProviderEndpointORM,
+                ProviderEndpointORM.id == EndpointModelBindingORM.endpoint_id,
+            )
+            .filter(ProviderEndpointORM.vendor_id == vendor_id)
+            .distinct()
+            .all()
+        )
+        return [row[0] for row in rows]
+
+    def get_credential_summary(self, vendor_id: str) -> Optional[Dict[str, Any]]:
+        """Credential metadata only — never any secret material."""
+        cred = (
+            self.session.query(ProviderCredentialORM)
+            .filter_by(vendor_id=vendor_id)
+            .order_by(ProviderCredentialORM.created_at.asc())
+            .first()
+        )
+        if cred is None or not cred.secret_ciphertext:
+            return None
+        return {
+            "credential_reference": f"cred:{cred.id}",
+            "label": cred.label,
+            "secret_version": cred.secret_version,
+            "enabled": cred.enabled,
+            "created_at": cred.created_at.isoformat(),
+            "updated_at": cred.updated_at.isoformat(),
+        }
+
+    # ------------------------------------------------------------------ #
     # Probe material + probe status
     # ------------------------------------------------------------------ #
     def get_probe_material(self, endpoint_id: str) -> Optional[ProviderProbeMaterial]:
@@ -230,6 +535,98 @@ class SQLProviderManagementRepository(ProviderManagementRepositoryPort):
     ) -> List[Dict[str, Any]]:
         return self._binding_repo.register_discovery_snapshot(endpoint_id, discovered_models)
 
+    def reconcile_discovered_models(
+        self, endpoint_id: str, discovered_models: List[DiscoveredModel]
+    ) -> Dict[str, Any]:
+        """P0.2.4 — one sync classified into added/updated/unchanged/unavailable."""
+        return self._binding_repo.reconcile_discovery_snapshot(
+            endpoint_id, discovered_models
+        )
+
+    def resolve_provider_model_id(
+        self, endpoint_id: str, canonical_model_id: str
+    ) -> Optional[str]:
+        """Provider-facing model id of the active binding for a canonical model."""
+        row = (
+            self.session.query(EndpointModelBindingORM)
+            .filter(
+                EndpointModelBindingORM.endpoint_id == endpoint_id,
+                EndpointModelBindingORM.canonical_model_id == canonical_model_id,
+                EndpointModelBindingORM.availability == "active",
+            )
+            .first()
+        )
+        if row is None:
+            row = (
+                self.session.query(EndpointModelBindingORM)
+                .filter_by(
+                    endpoint_id=endpoint_id,
+                    canonical_model_id=canonical_model_id,
+                    enabled=True,
+                )
+                .first()
+            )
+        return row.provider_model_id if row else None
+
+    def list_all_discovered_models(self) -> List[Dict[str, Any]]:
+        """Whole durable registry across every vendor (P0.2 /api/v3/models)."""
+        rows = (
+            self.session.query(
+                CanonicalModelV3ORM,
+                EndpointModelBindingORM,
+                ProviderEndpointORM,
+                ProviderVendorORM,
+            )
+            .join(
+                EndpointModelBindingORM,
+                EndpointModelBindingORM.canonical_model_id == CanonicalModelV3ORM.id,
+            )
+            .join(
+                ProviderEndpointORM,
+                ProviderEndpointORM.id == EndpointModelBindingORM.endpoint_id,
+            )
+            .join(
+                ProviderVendorORM,
+                ProviderVendorORM.id == ProviderEndpointORM.vendor_id,
+            )
+            .filter(
+                CanonicalModelV3ORM.enabled.is_(True),
+                EndpointModelBindingORM.availability == "active",
+            )
+            .order_by(
+                CanonicalModelV3ORM.canonical_name.asc(),
+                EndpointModelBindingORM.provider_model_id.asc(),
+            )
+            .all()
+        )
+        grouped: Dict[str, Dict[str, Any]] = {}
+        for model, binding, endpoint, vendor in rows:
+            item = grouped.setdefault(
+                model.id,
+                {
+                    "id": model.id,
+                    "name": model.canonical_name,
+                    "vendor": model.vendor,
+                    "family": model.family,
+                    "description": "",
+                    "context_window": model.context_window or 0,
+                    "max_output_tokens": 0,
+                    "capabilities": json.loads(model.capabilities_json or "[]"),
+                    "modalities": [],
+                    "is_local": endpoint.protocol_mode == "ollama",
+                    "is_active": model.enabled,
+                    "pricing_class": "UNKNOWN",
+                    "bindings": [],
+                    "benchmarks": {},
+                    "created_at": model.created_at.isoformat(),
+                    "updated_at": model.updated_at.isoformat(),
+                },
+            )
+            item["bindings"].append(self._binding_payload(binding, vendor.id))
+        for item in grouped.values():
+            item["pricing_class"] = _aggregate_pricing_class(item["bindings"])
+        return list(grouped.values())
+
     def list_discovered_models(self, vendor_id: str) -> List[Dict[str, Any]]:
         rows = (
             self.session.query(
@@ -273,24 +670,39 @@ class SQLProviderManagementRepository(ProviderManagementRepositoryPort):
                     "modalities": [],
                     "is_local": endpoint.protocol_mode == "ollama",
                     "is_active": model.enabled,
+                    "pricing_class": "UNKNOWN",
                     "bindings": [],
                     "benchmarks": {},
                     "created_at": model.created_at.isoformat(),
                     "updated_at": model.updated_at.isoformat(),
                 },
             )
-            item["bindings"].append(
-                {
-                    "id": binding.id,
-                    "endpoint_id": binding.endpoint_id,
-                    "provider_id": vendor_id,
-                    "provider_model_id": binding.provider_model_id,
-                    "equivalence_level": binding.equivalence_level,
-                    "confidence": 1.0,
-                    "is_active": binding.enabled,
-                }
-            )
+            item["bindings"].append(self._binding_payload(binding, vendor_id))
+        for item in grouped.values():
+            item["pricing_class"] = _aggregate_pricing_class(item["bindings"])
         return list(grouped.values())
+
+    @staticmethod
+    def _binding_payload(binding: EndpointModelBindingORM, vendor_id: str) -> Dict[str, Any]:
+        return {
+            "id": binding.id,
+            "endpoint_id": binding.endpoint_id,
+            "provider_id": vendor_id,
+            "provider_model_id": binding.provider_model_id,
+            "equivalence_level": binding.equivalence_level,
+            "confidence": 1.0,
+            "is_active": binding.enabled,
+            "availability": getattr(binding, "availability", "active"),
+            "pricing_class": getattr(binding, "pricing_class", "UNKNOWN"),
+            "input_price": getattr(binding, "input_price", None),
+            "output_price": getattr(binding, "output_price", None),
+            "currency": getattr(binding, "currency", None),
+            "last_discovered_at": (
+                binding.last_discovered_at.isoformat()
+                if getattr(binding, "last_discovered_at", None)
+                else None
+            ),
+        }
 
     # ------------------------------------------------------------------ #
     # Model rules

@@ -1,1291 +1,1412 @@
-# WindAgent — Architecture V3 Optimization & Hardening Plan
+# Kế hoạch P0 — WindAgent Feature Completion
 
-## 1. Mục tiêu
+**Baseline:** `cfa7ffb33fc1801ca8ad8115c605c320ddb4c51a`
 
-Đợt này **không phát triển thêm feature mới**. Mục tiêu là đưa toàn bộ WindAgent về một kiến trúc V3 thống nhất, có dependency graph rõ ràng, một nguồn authority duy nhất cho dữ liệu, realtime contract thực, composition root gọn và worker pipeline dễ kiểm chứng.
+Tôi đề xuất P0 không còn là một phase refactor. Đây sẽ là **Product Vertical Slice Completion**: lấy Architecture V3 hiện tại và biến nó thành một WindAgent Studio thực sự sử dụng được.
 
-Baseline kỹ thuật dùng để refactor là:
+Gate cuối:
 
 ```text
-ac61c38cdca90100a14ec0ea26c4d19c35f7caa4
+WINDAGENT_P0_FEATURE_COMPLETE
 ```
 
-Cần đặc biệt lưu ý: nhánh `main` trên GitHub hiện vẫn trỏ tới `7e1cd9fa...` ngày 22/07/2026, trong khi `ac61c38...` là code mới hơn đang được phân tích. Vì vậy phải xác lập source-of-truth trước khi sửa kiến trúc; không được mặc định checkout `main` rồi refactor.
+P0 chỉ PASS khi người dùng có thể thực hiện toàn bộ:
 
-Root workspace hiện vẫn tự nhận là Architecture V2 và chứa toàn bộ package API, Worker, orchestration, providers, tools, workflows, storage...
+```text
+Configure Provider
+        ↓
+Test Connection
+        ↓
+Discover / Sync Models
+        ↓
+Configure Routing Rules
+        ↓
+Create Series
+        ↓
+Create Episode
+        ↓
+Enter Creative Brief
+        ↓
+Generate Ideas
+        ↓
+Select Idea
+        ↓
+Story Bible / World / Characters
+        ↓
+Beat Sheet
+        ↓
+Outline
+        ↓
+Screenplay
+        ↓
+Review
+        ↓
+Revision
+        ↓
+Optional Human Approval
+        ↓
+Lock
+        ↓
+READY_FOR_PRODUCTION
+```
+
+Và đường chạy phải là:
+
+```text
+Desktop/Web UI
+   ↓
+Shared frontend app
+   ↓
+API V3
+   ↓
+StudioApplicationService
+   ↓
+OrchestratorService
+   ↓
+Durable Queue
+   ↓
+Worker
+   ↓
+Model Router
+   ↓
+Provider
+   ↓
+Persistence
+```
+
+Không fake client, không direct handler invocation, không hard-coded artifact.
 
 ---
 
-# 2. Nguyên tắc của đợt refactor
+## 1. Trạng thái bắt đầu
 
-Không rewrite WindAgent từ đầu.
+P0 không bắt đầu từ số 0.
 
-Phải giữ lại các phần đang có giá trị:
+Provider backend đã có SQL authority, API key encrypted-at-rest, provider registration, real network connection test và model discovery.  Connection test cho durable provider thực sự gọi adapter và discovery, còn demo fallback đã bị giới hạn vào explicit demo profile.
 
-* durable SQL queue;
-* lease + fencing token;
-* transactional outbox;
-* atomic finalization;
-* SQLite WAL/local-first;
-* PostgreSQL profile;
-* API / Worker process separation;
-* Studio SQL path đã durable;
-* migration + backup guards;
-* crash recovery.
+Frontend hiện đã có chức năng add provider, nhập API key, test connection và tạo model rule. Tuy nhiên `ProvidersPage` hiện chỉ đơn giản render `RoutingPage`, cho thấy ranh giới Providers/Models/Routing vẫn chưa hoàn thiện ở mức sản phẩm.
 
-Không được sửa checker chỉ để “làm xanh”.
+Studio API cũng đã có create/list/get Series, create/list/get Episode, start/resume run, event stream, select idea, approval, revision và screenplay lock.
 
-Không được thêm dependency `tools → workflows` để hợp thức hóa cycle.
+Episode frontend đã có `IdeaPanel`, `StoryBiblePanel`, `OutlinePanel`, `ScreenplayPanel`, `CheckpointReviewPanel` và pipeline UI.
 
-Không được thay durable storage bằng in-memory adapter.
+Do đó P0 chủ yếu là:
 
-Không được trộn refactor kiến trúc với redesign UI, Blender feature, Live Record feature hay chức năng mới.
+```text
+COMPLETE
++ CONNECT
++ HARDEN FEATURE SEMANTICS
++ REAL E2E
+```
 
-Không được xóa legacy/dead code nếu chưa có caller/dependency evidence.
+chứ không phải redesign architecture thêm lần nữa.
 
 ---
 
-# 3. Kiến trúc đích
+# 2. Phạm vi P0
 
-Kiến trúc V3 nên có dependency direction:
+| Workstream | Mục tiêu                           |
+| ---------- | ---------------------------------- |
+| P0-A       | Provider lifecycle hoàn chỉnh      |
+| P0-B       | Model discovery/catalog hoàn chỉnh |
+| P0-C       | Model routing hoàn chỉnh           |
+| P0-D       | Series/Episode usable              |
+| P0-E       | Story pipeline thực                |
+| P0-F       | Review/Revision/Approval/Lock      |
+| P0-G       | Desktop vertical workflow          |
+| P0-H       | Functional E2E verification        |
 
-```text
-                         ENTRY POINTS
-                  ┌─────────┼─────────┐
-                  │         │         │
-                 API      Worker      CLI
-                  │         │         │
-                  └──── Composition ──┘
-                            │
-                            ▼
-                  APPLICATION LAYER
-        ┌────────────┬────────────┬────────────┐
-        │            │            │            │
- Orchestration   Workflows   Intelligence    Skills
-        │            │            │
-        ├──────── Context / Memory / Verification
-        │
-        ▼
-                  CORE / PORTS
-        ┌──────────────────────────────┐
-        │ Domain                      │
-        │ Contracts                   │
-        │ Repository Ports            │
-        │ Provider Ports              │
-        │ Tool Ports                  │
-        │ Execution Ports             │
-        │ Event contracts             │
-        │ Errors / IDs / state        │
-        └──────────────────────────────┘
-            ▲          ▲          ▲
-            │          │          │
-        Storage    Providers     Tools
-            │       Execution    Plugins
-            └──── Infrastructure ──┘
-```
-
-Quy tắc quan trọng:
+Không thuộc P0:
 
 ```text
-Application ─X─> concrete Storage
-Application ─X─> concrete Provider
-Application ─X─> concrete Tool implementation
-
-Infrastructure ─X─> Application
-
-Core ─X─> Framework
-Core ─X─> Storage
-Core ─X─> Provider implementation
+Blender rendering
+Unreal production
+automatic rigging
+full asset generation
+TTS production
+final MP4
+Browser Agent
+general Agent Workspace
+Memory redesign
+Live Record completion
+code-video certification
+full Phase-16 certification
 ```
 
-Ngoại lệ duy nhất:
-
-```text
-apps/* composition root
-```
-
-được phép nhìn cả application và infrastructure để dependency injection.
-
-Policy hiện tại chưa đạt điều này. Ví dụ configuration đang cho phép `orchestration → storage` và `storage → providers`.
+Các module đó giữ nguyên, không xóa.
 
 ---
 
-# 4. Phase 0 — Freeze baseline và xác lập source of truth
+# PHASE P0.0 — FEATURE TRUTH BASELINE
 
-**Priority: P0**
+## Mục tiêu
 
-Đây phải là phase đầu tiên.
-
-### Công việc
-
-1. Xác nhận checkout chứa chính xác commit:
+Trước khi code, xác định chính xác cái gì:
 
 ```text
-ac61c38cdca90100a14ec0ea26c4d19c35f7caa4
+WORKING
+PARTIAL
+UI_ONLY
+BACKEND_ONLY
+STUB
+BROKEN
+NOT_REQUIRED_FOR_P0
 ```
 
-2. Ghi lại:
+### P0.0.1 Capture baseline
+
+Ghi:
 
 ```text
-HEAD SHA
+HEAD
+tree SHA
 branch
-git status
-dirty files
-submodules
+dirty state
+
 Python version
 Node version
-uv.lock hash
-package-lock hash
+database backend
+
+API tests
+Studio tests
+provider tests
+worker tests
+frontend tests
+desktop build
 ```
 
-3. Không merge `main` vào baseline một cách tự động.
+Không cần chạy full Phase-16 certification.
 
-4. Tạo nhánh chuyên biệt:
+### P0.0.2 Inventory P0 APIs
+
+Đặc biệt:
 
 ```text
-refactor/architecture-v3-hardening
+/api/v3/providers
+/api/v3/models
+/api/v3/routing
+
+/api/v3/studio/series
+/api/v3/studio/episodes
+/api/v3/studio/runs
+/api/v3/studio/artifacts
+/api/v3/studio/... decisions
 ```
 
-từ đúng baseline được xác nhận.
-
-5. Chạy baseline:
-
-```bash
-uv run python scripts/check_architecture_imports.py
-uv run pytest
-```
-
-và toàn bộ web/desktop test hiện có.
-
-6. Xuất:
+Xác định cho từng endpoint:
 
 ```text
-artifacts/architecture_v3/baseline/
-├── baseline.json
-├── dependency-report.json
-├── test-report.json
-├── workspace-packages.json
-├── route-inventory.json
-└── git-state.txt
+UI consumer?
+real persistence?
+real runtime?
+demo fallback?
+stub?
+missing mutation?
 ```
+
+### P0.0.3 Freeze existing contracts
+
+Studio request schemas hiện reuse canonical command contracts; không nên phá chúng tùy tiện.  Các command hiện đã chứa idempotency, optimistic version, artifact hash và revision lineage.
+
+Nếu thiếu field presentation như:
+
+```text
+target audience
+language
+genre
+tone
+creative brief
+target duration
+constraints
+```
+
+P0 ưu tiên chuẩn hóa chúng trong `metadata` hiện hữu thay vì tạo contract V2 không cần thiết.
 
 ### Gate
 
 ```text
-ARCH_V3_BASELINE_FROZEN
-```
-
-Không qua Phase 1 nếu chưa freeze baseline.
-
----
-
-# 5. Phase 1 — Định nghĩa Architecture V3 Contract
-
-**Priority: P0**
-
-Hiện checker và config vẫn mang Architecture V2. `check_architecture_imports.py` cũng mặc định đọc `scaffold_v2.yaml`.
-
-### Tạo policy V3
-
-Nên tạo:
-
-```text
-configs/architecture/scaffold_v3.yaml
-```
-
-và sau cutover mới retire V2 policy.
-
-### Dependency matrix mới
-
-| Package         | Được phụ thuộc                                   |
-| --------------- | ------------------------------------------------ |
-| `core`          | external stdlib/type libraries tối thiểu         |
-| `orchestration` | `core`                                           |
-| `workflows`     | `core`, orchestration contracts nếu thật sự cần  |
-| `intelligence`  | `core`, context contracts                        |
-| `context`       | `core`                                           |
-| `memory`        | `core`                                           |
-| `verification`  | `core`                                           |
-| `skills`        | `core`                                           |
-| `providers`     | `core`                                           |
-| `tools`         | `core`                                           |
-| `execution`     | `core`                                           |
-| `storage`       | `core`                                           |
-| `plugins`       | `core`                                           |
-| `observability` | `core`                                           |
-| API             | application + infrastructure chỉ tại composition |
-| Worker          | application + infrastructure chỉ tại composition |
-| CLI             | application + infrastructure chỉ tại composition |
-
-### Checker phải bắt thêm
-
-```text
-dependency cycle
-undeclared dependency
-framework import trong core
-application → infrastructure
-infrastructure → application
-cross-app import
-module-level mutable production store
-production test fallback
-legacy authority
-concrete adapter construction ngoài composition root
-```
-
-### Gate
-
-```text
-ARCH_V3_POLICY_FROZEN
-```
-
-Ở phase này chưa cần zero violation. Mục tiêu là policy đúng trước, rồi mới sửa code theo policy.
-
----
-
-# 6. Phase 2 — Phá toàn bộ dependency cycle
-
-**Priority: P0**
-
-Cycle rõ nhất hiện tại:
-
-```text
-tools → workflows → tools
-```
-
-`capture/base.py` trong tools đang import `Resolution` và `Scene` từ workflows.
-
-Trong khi `workflows` đã khai báo phụ thuộc `windagent-tools`.
-
-### Refactor
-
-Di chuyển các type trung lập:
-
-```text
-Scene
-Resolution
-TakeConfig-related contracts
-Video media contracts
-Capture contracts
-render request/result contracts
-```
-
-khỏi:
-
-```text
-workflows/windagent_workflows/code_video/contracts*
-```
-
-sang:
-
-```text
-core/windagent_core/contracts/code_video/
-```
-
-hoặc:
-
-```text
-core/windagent_core/contracts/media/
-```
-
-Sau đó:
-
-```text
-tools ────────┐
-              ▼
-             core
-              ▲
-              │
-workflows ────┘
-```
-
-### Sau đó scan toàn workspace
-
-Không chỉ sửa cycle đầu tiên. Tìm toàn bộ SCC — strongly connected components — trong dependency graph.
-
-### Gate
-
-```text
-dependency_cycles = 0
-undeclared_workspace_dependencies = 0
+P0_0_FEATURE_TRUTH_CAPTURED
 ```
 
 ---
 
-# 7. Phase 3 — Dependency Inversion toàn hệ thống
+# PHASE P0.1 — PROVIDER MANAGEMENT
 
-**Priority: P0**
+Đây nên là feature hoàn thiện đầu tiên vì Story pipeline phụ thuộc provider.
 
-Đây là phase quan trọng nhất của kiến trúc.
-
-Hiện `orchestration` được policy cho phép import storage trực tiếp. `storage` còn được phép phụ thuộc providers.
-
-Cần loại bỏ hai hướng này.
-
-## 7.1 Repository ports
-
-Đưa interface về core:
+## Target UI
 
 ```text
-core/contracts/repositories/
-├── project_repository.py
-├── episode_repository.py
-├── task_repository.py
-├── workflow_repository.py
-├── event_store.py
-├── outbox_repository.py
-├── provider_registry_repository.py
-├── routing_repository.py
-├── asset_repository.py
-└── review_repository.py
-```
+Providers
 
-Application nhận:
+[ Add Provider ]
 
-```python
-ProjectRepositoryPort
-TaskRepositoryPort
-EventStorePort
+OpenRouter
+● Connected
+Base URL: ...
+Credential: configured
+Models: 123
+[Test Connection] [Sync Models] [Edit]
+
+Google AI Studio
+● Connected
+...
+
+Ollama
+● Local
 ...
 ```
 
-không nhận:
+## P0.1.1 Provider lifecycle
 
-```python
-SqlProjectRepository
-SqlUnitOfWork
-SQLAlchemy Session
-```
-
-## 7.2 Provider ports
-
-Core định nghĩa:
+Hoàn thiện:
 
 ```text
-ModelExecutionPort
-ModelRegistryPort
-ProviderHealthPort
-ProviderDiscoveryPort
-RoutingAuditPort
+Create
+Read
+Edit
+Enable / Disable
+Credential rotate
+Credential remove
+Test connection
+Delete
 ```
 
-`providers` chỉ chứa adapter ra OpenRouter, Google, Ollama, Groq...
+Delete phải fail nếu provider còn được model routing rule sử dụng, trừ khi người dùng xử lý dependency trước.
 
-Routing policy không nên nằm lẫn với HTTP/provider adapter.
+Không cascade silently.
 
-Nên đưa policy sang:
+## P0.1.2 Credential security
+
+API key:
 
 ```text
-intelligence/routing/
+write-only
+encrypted at rest
+never returned
+never logged
+never included in event payload
+never committed to evidence
 ```
 
-hoặc một application routing module tương đương.
-
-## 7.3 Storage không được phụ thuộc Providers
-
-Storage chỉ biết:
+UI chỉ được biết:
 
 ```text
-core models
-core ports
-ORM mapping
-SQL
+configured
+not configured
+credential label
+last updated
 ```
 
-Không được biết implementation/provider package.
+## P0.1.3 Endpoint configuration
+
+Tối thiểu:
+
+```text
+base URL
+protocol mode
+provider type
+credential
+enabled state
+```
+
+Protocol hiện đã có:
+
+```text
+OpenAI-compatible
+Anthropic
+Gemini
+Ollama
+```
+
+ở frontend hiện tại.
+
+MVP provider target:
+
+```text
+OpenRouter
+Google AI Studio
+Groq
+Ollama
+Custom OpenAI-compatible
+```
+
+OpenRouter và Groq có thể đi qua OpenAI-compatible adapter nếu implementation hiện tại cho phép; không tạo adapter riêng chỉ để có tên provider.
+
+## P0.1.4 Connection test
+
+Phải kiểm tra thật:
+
+```text
+DNS/network
+authentication
+base URL
+protocol compatibility
+model discovery
+latency
+```
+
+Receipt:
+
+```text
+reachable
+auth_valid
+latency
+models_found
+error_code
+message
+checked_at
+```
+
+Backend đã có phần lớn contract này.
 
 ### Gate
 
 ```text
-application_direct_storage_imports = 0
-storage_to_provider_imports = 0
-infrastructure_to_application_imports = 0
-```
-
-Ngoại trừ migration/testing infrastructure được allowlist cụ thể, không dùng broad allowlist.
-
----
-
-# 8. Phase 4 — Single Authority cho toàn bộ API V3
-
-**Priority: P0**
-
-Đây là việc lớn nhất về persistence.
-
-`projects.py` hiện gọi mình là canonical authority nhưng sử dụng `_PROJECTS_STORE`, `_EPISODES_STORE` và idempotency map trong RAM.
-
-Phải inventory toàn bộ `/api/v3`.
-
-Phân loại từng route:
-
-```text
-DURABLE
-DERIVED
-EPHEMERAL
-DEMO
-INVALID
-```
-
-Canonical API production chỉ được:
-
-```text
-DURABLE
-DERIVED
-```
-
-### Thứ tự migration
-
-#### Wave A — authority nền
-
-```text
-projects
-episodes
-tasks
-workflows
-```
-
-#### Wave B — model system
-
-```text
-providers
-models
-routing
-routing rules
-endpoint binding
-provider health history
-```
-
-#### Wave C — content production
-
-```text
-assets
-reviews
-world
-storyboard
-characters
-```
-
-#### Wave D — agents
-
-```text
-agent_definitions
-agent_instances
-conversations
-```
-
-### Pattern bắt buộc
-
-```text
-Router
-   ↓
-Application Service
-   ↓
-Port
-   ↓
-SQL Repository
-   ↓
-Unit of Work
-```
-
-Không:
-
-```text
-Router
-   ↓
-global dict
-```
-
-Seed data phải chuyển vào:
-
-```text
-tests/fixtures/
-```
-
-hoặc:
-
-```text
-demo profile
-```
-
-### Gate
-
-```text
-production_module_level_stores = 0
-canonical_v3_in_memory_authorities = 0
-```
-
-Test bắt buộc:
-
-```text
-create → restart API → read
-```
-
-Dữ liệu phải còn nguyên.
-
----
-
-# 9. Phase 5 — Chuẩn hóa Unit of Work và transaction boundaries
-
-**Priority: P0**
-
-Không để mỗi feature tự nghĩ transaction semantics.
-
-Chuẩn hóa:
-
-```text
-Command
-   ↓
-UoW begin
-   ↓
-domain mutation
-   ↓
-repository writes
-   ↓
-event store
-   ↓
-outbox
-   ↓
-commit
-```
-
-Atomic operation quan trọng:
-
-```text
-task state
-result
-domain event
-outbox event
-lease finalization
-```
-
-phải commit cùng transaction khi nghiệp vụ yêu cầu.
-
-Không làm giảm độ an toàn của finalization hiện tại.
-
-### Gate
-
-Crash injection tại từng điểm:
-
-```text
-before write
-after state write
-after event write
-before commit
-after commit
-```
-
-không được tạo split state.
-
----
-
-# 10. Phase 6 — Realtime Architecture V3
-
-**Priority: P0**
-
-Root `/ws` hiện mới làm connected/ping/ack.
-
-Frontend lại gửi subscription envelope và chỉ xử lý message có `event_type`.
-
-Hai protocol hiện không tương thích.
-
-### Canonical protocol
-
-Client:
-
-```json
-{
-  "type": "subscribe",
-  "aggregate_type": "run",
-  "aggregate_id": "run_123",
-  "after_sequence": 71
-}
-```
-
-Server:
-
-```json
-{
-  "type": "subscribed",
-  "aggregate_type": "run",
-  "aggregate_id": "run_123",
-  "cursor": 71
-}
-```
-
-Event:
-
-```json
-{
-  "event_id": "...",
-  "event_type": "...",
-  "aggregate_type": "...",
-  "aggregate_id": "...",
-  "sequence": 72,
-  "occurred_at": "...",
-  "payload": {}
-}
-```
-
-### Architecture
-
-```text
-Worker transaction
-      │
-      └── Outbox
-            │
-            ▼
-      Event Dispatcher
-            │
-            ▼
-          WS Hub
-            │
-            ▼
-        Subscribers
-```
-
-Reconnect:
-
-```text
-after_sequence
-      ↓
-SQL replay
-      ↓
-catch-up complete
-      ↓
-live push
-```
-
-Endpoint `/ws/conversations/{id}` hiện poll DB mỗi `0.1s`.
-
-Sau khi WS Hub hoạt động, polling này phải được retire hoặc chỉ còn fallback rõ ràng.
-
-### Gate
-
-```text
-WS subscription contract PASS
-reconnect replay PASS
-duplicate suppression PASS
-sequence ordering PASS
-heartbeat PASS
-outbox → UI E2E PASS
+P0_1_PROVIDER_LIFECYCLE_LIVE
 ```
 
 ---
 
-# 11. Phase 7 — Tách ApplicationContainer
+# PHASE P0.2 — MODEL DISCOVERY & MODEL CATALOG
 
-**Priority: P1**
+Hiện Models page đã có canonical catalog, filter theo vendor/capability/local và hiển thị endpoint bindings/context.
 
-`ApplicationContainer` hiện compose cả `ExecutionRuntimeRegistry` và `WorktreeContextManager`, dù docstring nói API không trực tiếp compose tool subprocess runtime.
+P0 cần nối nó chặt với provider discovery.
 
-API nên làm:
+## P0.2.1 Tách Test Connection khỏi Sync Models
 
-```text
-HTTP
-validation
-application service
-query
-command submission
-realtime
-health
-```
-
-API không nên sở hữu execution runtime.
-
-### Cấu trúc đề xuất
+Không nên phụ thuộc:
 
 ```text
-apps/api/windagent_api/composition/
-├── database.py
-├── repositories.py
-├── studio.py
-├── projects.py
-├── providers.py
-├── realtime.py
-├── health.py
-└── container.py
+Test Connection
+    →
+implicitly discover models
 ```
-
-`container.py` chỉ orchestrate composers.
-
-Sau Phase 7:
-
-```text
-API → durable task submission
-Worker → actual execution
-```
-
-### Gate
-
-```text
-API ExecutionRuntimeRegistry instances = 0
-API WorktreeContextManager instances = 0
-```
-
-trừ trường hợp có ADR riêng chứng minh cần thiết.
-
----
-
-# 12. Phase 8 — Tách WorkerContainer
-
-**Priority: P1**
-
-Worker composition hiện gom queue, Studio, routing, Blender, asset gateway, normalizer và nhiều feature flag trong cùng container.
-
-Tách thành:
-
-```text
-apps/worker/windagent_worker/composition/
-├── core.py
-├── queue.py
-├── providers.py
-├── studio.py
-├── video.py
-├── assets.py
-├── outbox.py
-└── container.py
-```
-
-Feature flag parsing cũng không nên rải:
-
-```python
-os.getenv(...)
-```
-
-khắp bootstrap.
-
-Tạo typed runtime configuration duy nhất:
-
-```text
-WorkerRuntimeSettings
-```
-
-và validate lúc startup.
-
-### Gate
-
-Worker bootstrap phải có thể trả ra manifest:
-
-```json
-{
-  "studio": true,
-  "provider_routing": true,
-  "blender": false,
-  "asset_gateway": false
-}
-```
-
-Không hidden capability.
-
----
-
-# 13. Phase 9 — Tách ProductionWorker execution pipeline
-
-**Priority: P1**
-
-`poll_and_execute_tick()` hiện chứa quá nhiều trách nhiệm.
-
-Refactor thành:
-
-```text
-poll_and_execute_tick
-        │
-        ▼
-     claim()
-        │
-     lease_guard()
-        │
-     prepare()
-        │
-     execute()
-        │
-     validate()
-        │
-     finalize()
-        │
-     reconcile()
-        │
-     release()
-```
-
-Các module:
-
-```text
-worker/pipeline/
-├── claim.py
-├── lease_guard.py
-├── executor.py
-├── result_validator.py
-├── finalizer.py
-└── reconciler.py
-```
-
-Tạo:
-
-```text
-TaskExecutionContext
-```
-
-chứa:
-
-```text
-task id
-worker id
-fencing token
-attempt
-runtime handle
-timestamps
-```
-
-### Quy tắc
-
-Finalizer là authority duy nhất quyết định terminal persistence.
-
-Execution adapter không được tự commit task state.
-
-### Gate
-
-Mỗi stage test độc lập.
-
-Fencing test:
-
-```text
-claim A
-lease takeover B
-late result A
-→ REJECT
-```
-
-phải PASS.
-
----
-
-# 14. Phase 10 — Chuẩn hóa Provider / Model / Routing architecture
-
-**Priority: P1**
-
-Sau khi persistence authority ổn định mới nối Providers Hub.
 
 Target:
 
 ```text
-Provider
-    │
-    ├── Endpoint
-    │      ├── credentials reference
-    │      ├── status
-    │      └── capabilities
-    │
-    └── Models
-           │
-           └── ModelRule
+Test Connection
+Sync Models
 ```
 
-Một model có rule riêng:
+là hai operation rõ ràng.
+
+## P0.2.2 Durable discovered model registry
+
+Model discovery phải persist:
 
 ```text
-OpenRouter
-├── deepseek-v4 → coding
-├── qwen → planning
-└── gemma → review
+provider_id
+endpoint_id
+provider_model_id
+canonical_model_id
+
+display_name
+capabilities
+context_window
+
+availability
+
+pricing_class
+input_price
+output_price
+currency
+
+last_discovered_at
 ```
 
-Tách:
+Pricing:
 
 ```text
-Provider Adapter
-Model Discovery
-Health Probe
-Routing Policy
-Route Lock
-Quota State
-Audit Log
-```
-
-Frontend không quyết định connection state.
-
-Providers UI hiện đang dùng mock data và random latency; trạng thái đó phải bị cấm trong production profile.
-
-### Gate
-
-```text
-Add Provider
-→ DB
-→ encrypted credential
-→ real Test Connect
-→ model discovery
-→ assign rule
-→ Worker route
-→ audit
-```
-
-E2E PASS.
-
----
-
-# 15. Phase 11 — Frontend architecture cleanup
-
-**Priority: P1**
-
-Web và Desktop tiếp tục dùng shared application.
-
-Frontend chỉ giữ:
-
-```text
-form state
-UI state
-cached query state
-temporary optimistic state
-```
-
-Không giữ server authority.
-
-Cấm trong production UI:
-
-```text
-Math.random() health
-fake latency
-fake connected
-fake credentials valid
-hardcoded provider authority
-```
-
-Tất cả backend data phải đi qua:
-
-```text
-API contracts
-      ↓
-client
-      ↓
-query/mutation layer
-      ↓
-feature UI
-```
-
-Realtime đi qua duy nhất:
-
-```text
-@windagent/realtime
-```
-
-Không tạo WebSocket riêng trong từng feature.
-
----
-
-# 16. Phase 12 — Versioning, docs và naming cutover
-
-**Priority: P1**
-
-Hiện README root vẫn ghi `/api/v2/*` canonical.
-
-API README cũng mô tả API V2.
-
-Trong khi runtime đã trả `410 Gone` cho V2 và hướng sang V3.
-
-Phải đồng bộ:
-
-```text
-README.md
-apps/api/README.md
-apps/worker/README.md
-apps/desktop/README.md
-pyproject descriptions
-docstrings
-architecture checker
-configs
-environment docs
-API docs
-```
-
-Rename dần:
-
-```text
-OrchestrationV2Container
-→ OrchestrationContainer
-```
-
-nhưng chỉ sau khi caller migration hoàn tất.
-
-Không mass rename ở đầu roadmap.
-
-### Gate
-
-Search toàn repo:
-
-```text
-Architecture V2
-/api/v2
-Phase 7
-legacy canonical
-```
-
-Mọi occurrence phải thuộc một trong:
-
-```text
-migration history
-tombstone
-archived document
-compatibility test
-```
-
----
-
-# 17. Phase 13 — Dead code và legacy retirement
-
-**Priority: P1**
-
-Không xóa trước Phase 12.
-
-Lập caller graph cho:
-
-```text
-apps/desktop/src/api/client.ts
-old desktop pages
-old V2 adapters
-deprecated workflows
-unused provider clients
-duplicate DTOs
-obsolete scripts
-```
-
-Phân loại:
-
-```text
-ACTIVE
-COMPATIBILITY
-TEST_ONLY
-DEMO
-DEAD
+FREE
+PAID
 UNKNOWN
 ```
 
-Chỉ `DEAD` có evidence mới được xóa.
+**Không suy đoán pricing.**
 
-`UNKNOWN` không được xóa.
+Nếu provider không trả metadata pricing:
 
-Legacy quarantine phải tiếp tục fail-closed.
+```text
+UNKNOWN
+```
+
+## P0.2.3 Free / Paid controls
+
+Đáp ứng UI Providers mà ta đã thiết kế trước đó:
+
+```text
+[Sync All]
+[Get Free Models]
+[Get Paid Models]
+```
+
+Nhưng semantics:
+
+* Provider có pricing API thật → dùng server-side filter.
+* Provider chỉ trả model list → sync trước, filter metadata đã biết.
+* Không có pricing authority → hiển thị UNKNOWN, không tự gắn Paid/Free.
+
+## P0.2.4 Discovery reconciliation
+
+Một lần sync phải phân loại:
+
+```text
+ADDED
+UPDATED
+UNCHANGED
+UNAVAILABLE
+```
+
+Không xóa model ngay chỉ vì một lần discovery không thấy nó.
+
+Dùng trạng thái:
+
+```text
+active
+unavailable
+deprecated
+```
+
+## P0.2.5 Model probe
+
+Cho phép:
+
+```text
+[Test Model]
+```
+
+Thực hiện một inference nhỏ thật để xác minh:
+
+```text
+endpoint
+credential
+model ID
+protocol
+response
+```
+
+Không dùng test này để benchmark chất lượng.
+
+### Gate
+
+```text
+P0_2_MODEL_CATALOG_LIVE
+```
 
 ---
 
-# 18. Phase 14 — Security và configuration hardening
+# PHASE P0.3 — ROUTING RULES
 
-**Priority: P1/P2**
+Đây là phần quyết định model nào làm từng bước Story.
 
-Tập trung:
+Backend hiện đã support durable rule gồm primary model, fallback model, priority và role.
 
-```text
-API keys
-provider credentials
-workspace paths
-subprocess execution
-Tauri
-WebSocket
-```
+P0 cần nâng nó từ một form nhập ID thủ công thành router usable.
 
-Provider secret:
+## P0.3.1 Canonical Story roles
+
+Tối thiểu:
 
 ```text
-Frontend
-   │ transient
-   ▼
-API
-   │
-encrypt
-   ▼
-secret store / encrypted DB
+studio.story.idea.generate
+studio.story.idea.evaluate
+
+studio.story.bible.generate
+
+studio.story.beats.generate
+studio.story.outline.generate
+
+studio.story.screenplay.generate
+studio.story.screenplay.review
+studio.story.screenplay.revise
 ```
 
-Frontend không được nhận lại plaintext key.
+Lock không cần LLM.
 
-Tauri hiện:
+## P0.3.2 Mỗi rule là một resource độc lập
 
-```json
-"csp": null
+Ví dụ:
+
+```text
+Rule: Screenplay Writer
+Role:
+studio.story.screenplay.generate
+
+Primary:
+Gemini ...
+
+Fallback:
+DeepSeek ...
+
+Enabled:
+true
+
+Priority:
+10
 ```
 
-Phải chuyển sang CSP cụ thể trước production desktop build.
+Không có một global object chứa hàng loạt hard-coded model names.
 
-Sidecar API/Worker có thể triển khai sau khi kiến trúc runtime đã ổn.
+## P0.3.3 Không nhập canonical ID bằng text
+
+Current UI đang bắt người dùng nhập:
+
+```text
+Discovered canonical model id
+```
+
+thủ công.
+
+P0 phải chuyển thành:
+
+```text
+Provider selector
+    ↓
+Model selector
+```
+
+lấy trực tiếp từ Model Catalog.
+
+## P0.3.4 Resolution order
+
+Target:
+
+```text
+exact role rule
+      ↓
+capability/default rule
+      ↓
+system default
+      ↓
+FAIL CLOSED
+```
+
+Không tìm thấy model hợp lệ:
+
+```text
+ROUTING_UNAVAILABLE
+```
+
+không tự chọn model ngẫu nhiên.
+
+## P0.3.5 Fallback
+
+Fallback chỉ xảy ra với các failure được định nghĩa:
+
+```text
+endpoint unavailable
+timeout
+rate limit
+temporary provider failure
+```
+
+Không fallback khi:
+
+```text
+schema validation failure
+bad prompt contract
+business rule violation
+invalid artifact
+```
+
+## P0.3.6 Route receipt
+
+Mỗi LLM task persist:
+
+```text
+task_id
+role
+rule_id
+
+selected_provider
+selected_model
+
+fallback_used
+fallback_reason
+
+started_at
+completed_at
+```
+
+Điều này cực kỳ quan trọng để sau này debug chất lượng Story.
+
+### Gate
+
+```text
+P0_3_MODEL_ROUTING_LIVE
+```
 
 ---
 
-# 19. Phase 15 — Performance optimization
+# PHASE P0.4 — SERIES & EPISODE PRODUCT COMPLETION
 
-**Priority: P2**
+API Series/Episode hiện đã có create/list/get.
 
-Chỉ tối ưu performance sau khi authority và boundaries ổn định.
+P0 cần biến chúng thành usable product resources.
 
-Đo:
+## Series metadata authority
 
-| Metric                      | Mục tiêu kiểm soát             |
-| --------------------------- | ------------------------------ |
-| durable queue claim latency | regression không vượt baseline |
-| enqueue p95                 | regression không vượt baseline |
-| DB transaction duration     | theo command                   |
-| Worker execution overhead   | tách khỏi model/tool runtime   |
-| WebSocket dispatch          | đo outbox → client             |
-| reconnect replay            | theo số event                  |
-| SQLite lock errors          | 0 trong acceptance workload    |
-| PostgreSQL contention       | không tạo duplicate claim      |
-| API endpoint latency        | đo P50/P95/P99                 |
+Chuẩn hóa:
 
-Không “optimize” bằng cách bỏ durability.
+```text
+title
+description
+
+target_audience
+language
+genre
+tone
+
+narrative_style
+content_constraints
+
+approval_policy
+```
+
+Vì command hiện hỗ trợ `metadata`, P0 có thể sử dụng schema metadata được validate thay vì phá `studio.command/v1`.
+
+## Episode metadata
+
+```text
+title
+episode_number
+
+logline
+creative_brief
+
+target_duration
+target_audience
+
+episode_constraints
+```
+
+## Required operations
+
+```text
+Create Series
+List Series
+Open Series
+Edit Series metadata
+
+Create Episode
+List Episodes
+Open Episode
+Edit draft Episode metadata
+```
+
+Sau khi Story run bắt đầu, các field ảnh hưởng generation phải có semantics rõ ràng:
+
+```text
+either immutable
+or generate new revision
+```
+
+Không silently mutate context của run đang tồn tại.
+
+## P0.4.1 Preflight
+
+Trước nút:
+
+```text
+Start Story
+```
+
+server kiểm tra:
+
+```text
+Episode exists
+Creative brief valid
+Provider configured
+Required routing rules resolve
+Worker capability available
+Persistence available
+```
+
+Nếu thiếu:
+
+```text
+START_BLOCKED
+```
+
+kèm lý do rõ ràng.
+
+### Gate
+
+```text
+P0_4_STUDIO_PROJECTS_USABLE
+```
 
 ---
 
-# 20. Phase 16 — Final architecture certification
+# PHASE P0.5 — REAL STORY PIPELINE
 
-Chạy toàn bộ:
+Đây là core của P0.
 
-```bash
-architecture checker
-ruff
-pytest unit
-pytest architecture
-pytest contract
-SQLite integration
-PostgreSQL integration
-API smoke
-Worker recovery
-queue/fencing tests
-outbox tests
-WebSocket replay tests
-web tests
-desktop tests
-typecheck
-build
-```
-
-Sau đó chạy các failure injections:
+## Canonical DAG
 
 ```text
+idea.generate
+     ↓
+idea.evaluate
+     ↓
+WAIT_FOR_IDEA_SELECTION
+     ↓
+bible.generate
+     ↓
+beats.generate
+     ↓
+outline.generate
+     ↓
+screenplay.generate
+     ↓
+screenplay.review
+```
+
+Không bypass Worker.
+
+## P0.5.1 Inputs
+
+Mỗi task phải nhận input từ authoritative artifacts:
+
+```text
+Series metadata
+Episode creative brief
+Selected idea
+Story Bible
+World/Character canon
+previous artifact
+revision lineage
+```
+
+Không đọc ngầm state global.
+
+## P0.5.2 Structured outputs
+
+Mỗi LLM output:
+
+```text
+Provider raw response
+       ↓
+parser
+       ↓
+schema validator
+       ↓
+domain validator
+       ↓
+artifact
+```
+
+Nếu invalid:
+
+```text
+TASK_FAILED
+```
+
+hoặc controlled repair.
+
+Không persist garbage artifact rồi tiếp tục DAG.
+
+## P0.5.3 Durable artifact chain
+
+Mỗi artifact phải có:
+
+```text
+artifact_id
+artifact_type
+
+series_id
+episode_id
+revision_id
+
+parent/input hashes
+content_hash
+
+created_at
+creator/task
+
+schema_version
+```
+
+## P0.5.4 Pause/resume
+
+Đã có `start_or_resume_run`.
+
+P0 phải xác nhận:
+
+```text
+process crash
 API restart
-Worker restart
-worker killed during execution
-DB transient failure
-lease expiration
-late result
-duplicate command
-duplicate event
-WebSocket disconnect/reconnect
-provider timeout
-provider rate limit
+worker restart
+user close desktop
+```
+
+không làm mất run.
+
+Resume không chạy lại task đã successfully committed.
+
+## P0.5.5 Idea selection
+
+Flow:
+
+```text
+Generate candidates
+        ↓
+Persist candidate set
+        ↓
+Pause
+        ↓
+User selects candidate
+        ↓
+CAS / optimistic version check
+        ↓
+Resume DAG
+```
+
+Command hiện đã có:
+
+```text
+revision_id
+candidate_id
+expected_content_hash
+expected_optimistic_version
+```
+
+nên giữ nguyên semantics này.
+
+### Gate
+
+```text
+P0_5_STORY_DAG_REAL
 ```
 
 ---
 
-# 21. Hard gates cuối cùng
+# PHASE P0.6 — REVIEW → REVISION → APPROVAL → LOCK
 
-| Gate                   | Điều kiện                             |
-| ---------------------- | ------------------------------------- |
-| `G0_SOURCE_AUTHORITY`  | baseline SHA/branch xác định          |
-| `G1_DEPENDENCY_DAG`    | cycle = 0                             |
-| `G2_DECLARED_DEPS`     | undeclared dependency = 0             |
-| `G3_CORE_PURITY`       | framework/infra import trong core = 0 |
-| `G4_LAYERING`          | application → concrete infra = 0      |
-| `G5_STORAGE_INVERSION` | storage → providers = 0               |
-| `G6_V3_AUTHORITY`      | canonical in-memory stores = 0        |
-| `G7_DURABILITY`        | restart persistence PASS              |
-| `G8_REALTIME`          | replay + push + dedup PASS            |
-| `G9_API_ISOLATION`     | API không compose execution runtime   |
-| `G10_WORKER_PIPELINE`  | stages tách và test được              |
-| `G11_TRUTHFUL_UI`      | fake success production = 0           |
-| `G12_DOCS`             | canonical docs = V3                   |
-| `G13_TESTS`            | toàn bộ required suites PASS          |
-| `G14_ARCH_CERTIFIED`   | architecture checker PASS             |
+## Review
 
-Final verdict duy nhất được phép:
+Review artifact tối thiểu cần:
 
 ```text
-ARCHITECTURE_V3_OPTIMIZED_AND_CERTIFIED
+overall score
+
+plot
+character
+continuity
+pacing
+dialogue
+audience fit
+production feasibility
+
+findings
+severity
+evidence
+suggested correction
+```
+
+Review phải là data, không chỉ free-text.
+
+## Revision
+
+Nếu review yêu cầu sửa:
+
+```text
+Screenplay Revision N
+         ↓
+Review
+         ↓
+Revision N+1
+```
+
+Phải bounded.
+
+Không có infinite autonomous loop.
+
+## Approval policy
+
+Support:
+
+```text
+AUTO
+REQUIRE_HUMAN
+CONDITIONAL
+```
+
+Ví dụ conditional:
+
+```text
+review has blocking finding
+score below threshold
+large revision
+```
+
+## Approval
+
+Current command đã bind decision với:
+
+```text
+revision
+checkpoint
+artifact_hash
+actor
+optimistic_version
+```
+
+đây là đúng direction và phải giữ.
+
+## Lock
+
+Lock chỉ PASS nếu:
+
+```text
+correct episode
+correct revision
+correct screenplay hash
+
+review requirements satisfied
+approval requirements satisfied
+
+not already superseded
+optimistic version matches
+```
+
+Sau lock:
+
+```text
+SCREENPLAY_LOCKED
+        ↓
+READY_FOR_PRODUCTION
+```
+
+## P0.6.1 Sửa semantic `issued_at`
+
+Lỗi timestamp synthetic mà ta phát hiện trong `cfa7ffb...` nên được sửa ở đây, không đợi Phase 16.
+
+Production:
+
+```text
+issued_at = actual persisted approval/lock time
+```
+
+Test:
+
+```text
+inject deterministic Clock
+```
+
+Không derive timestamp từ content hash.
+
+Đây là **feature correctness**, không chỉ certification cleanup.
+
+## P0.6.2 Immutability
+
+Sau lock:
+
+```text
+screenplay cannot mutate
+```
+
+Muốn sửa:
+
+```text
+derive revision
+```
+
+không unlock object cũ.
+
+### Gate
+
+```text
+P0_6_SCREENPLAY_LOCK_SEMANTICS_VERIFIED
 ```
 
 ---
 
-# 22. Thứ tự triển khai thực tế
+# PHASE P0.7 — FRONTEND PRODUCT CONVERGENCE
+
+Frontend architecture hiện đã đủ tốt. Không redesign framework nữa.
+
+## Providers
+
+`ProvidersPage` không còn chỉ alias `RoutingPage`.
+
+Tách product surfaces:
 
 ```text
-Phase 0
-Baseline / branch authority
-     │
-     ▼
-Phase 1
-Architecture V3 policy
-     │
-     ▼
-Phase 2
-Break dependency cycles
-     │
-     ▼
-Phase 3
-Ports + dependency inversion
-     │
-     ▼
-Phase 4
-Single V3 authority
-     │
-     ▼
-Phase 5
-Transaction/UoW
-     │
-     ▼
-Phase 6
-Realtime
-     │
-     ├──────────────┐
-     ▼              ▼
-Phase 7          Phase 8
-API composition  Worker composition
-     │              │
-     └──────┬───────┘
-            ▼
-         Phase 9
-      Worker pipeline
-            │
-            ▼
-         Phase 10
- Provider/Model/Routing
-            │
-            ▼
-         Phase 11
-     Frontend boundary
-            │
-            ▼
-     Phase 12 → Phase 13
-      Docs       Cleanup
-            │
-            ▼
-         Phase 14
-      Security/config
-            │
-            ▼
-         Phase 15
-       Performance
-            │
-            ▼
-         Phase 16
-    Final certification
+Providers
+    provider / endpoint / API key / connection
+
+Models
+    discovered catalog / free-paid / capabilities
+
+Routing
+    task role → model rule
 ```
 
-## Quy tắc dừng
-
-Trong toàn bộ Phase 0–9:
-
-> **Không mở rộng feature mới.**
-
-Live Record, Blender extension, UI redesign, Browser Agent, provider UX mới và các feature production khác chỉ được tiếp tục sau khi các gate nền sau đạt PASS:
+## Studio Home
 
 ```text
-G0
-G1
-G2
-G3
-G4
-G5
-G6
-G7
-G8
-G9
-G10
+New Series
+
+Active Series
+Episodes in progress
+Pending approval
+Ready for Production
 ```
 
-Kiến trúc hiện tại có nền durable khá tốt; mục tiêu của roadmap này là **không phá phần tốt**, mà loại bỏ các đường tắt V2/V3, đưa toàn bộ dependency graph về một chiều và biến API/Worker/frontend thành các vertical slice có authority rõ ràng.
+Không fake metrics.
+
+## Series
+
+```text
+Series info
+Episodes
+Create Episode
+Open Episode
+```
+
+## Episode Workspace
+
+Reuse những component đã tồn tại:
+
+```text
+EpisodePipeline
+IdeaPanel
+StoryBiblePanel
+OutlinePanel
+ScreenplayPanel
+CheckpointReviewPanel
+```
+
+Bổ sung only missing integration.
+
+## Actions
+
+UI expose theo server state:
+
+```text
+Start
+Select Idea
+Resume
+Approve
+Reject
+Request Revision
+Lock
+```
+
+Không frontend tự quyết state transition.
+
+## Required UX states
+
+```text
+loading
+running
+waiting for input
+waiting approval
+failed
+retrying
+locked
+ready
+offline
+provider unavailable
+```
+
+### Gate
+
+```text
+P0_7_DESKTOP_VERTICAL_FLOW_LIVE
+```
+
+---
+
+# PHASE P0.8 — FUNCTIONAL E2E ACCEPTANCE
+
+Đây chưa phải Phase-16 certification.
+
+Mục đích đơn giản:
+
+> WindAgent có làm được công việc thật không?
+
+## Scenario A — Auto approval
+
+```text
+Provider configured
+↓
+Models discovered
+↓
+Rules configured
+↓
+Create Series
+↓
+Create Episode
+↓
+Generate
+↓
+Select Idea
+↓
+Story
+↓
+Outline
+↓
+Screenplay
+↓
+Review PASS
+↓
+Lock
+↓
+READY_FOR_PRODUCTION
+```
+
+## Scenario B — Human approval
+
+```text
+...
+Review
+↓
+WAITING_FOR_APPROVAL
+↓
+Approve
+↓
+Lock
+```
+
+## Scenario C — Revision
+
+```text
+Review finds issue
+↓
+Revision
+↓
+Review again
+↓
+Approval
+↓
+Lock
+```
+
+## Scenario D — Provider failure
+
+```text
+Primary provider failure
+↓
+router determines fallback allowed
+↓
+fallback model
+↓
+route receipt records fallback
+↓
+pipeline continues
+```
+
+## Scenario E — Restart recovery
+
+During pipeline:
+
+```text
+kill Worker
+restart Worker
+```
+
+Expected:
+
+```text
+run resumes
+no duplicate artifacts
+no duplicate state transition
+```
+
+---
+
+# 3. Test matrix P0
+
+| Layer                            | Required                        |
+| -------------------------------- | ------------------------------- |
+| Provider unit                    | PASS                            |
+| Provider API contract            | PASS                            |
+| Credential security              | PASS                            |
+| Model discovery                  | PASS                            |
+| Model reconciliation             | PASS                            |
+| Routing resolution               | PASS                            |
+| Routing fallback                 | PASS                            |
+| Series/Episode                   | PASS                            |
+| Story artifact validation        | PASS                            |
+| Story DAG                        | PASS                            |
+| Run resume                       | PASS                            |
+| Idea CAS                         | PASS                            |
+| Review/revision                  | PASS                            |
+| Approval                         | PASS                            |
+| Lock immutability                | PASS                            |
+| Frontend feature tests           | PASS                            |
+| Desktop typecheck                | PASS                            |
+| Desktop build                    | PASS                            |
+| SQLite integration               | PASS                            |
+| PostgreSQL Studio vertical slice | PASS                            |
+| Real-provider smoke              | PASS or `SKIPPED_NO_CREDENTIAL` |
+
+`SKIPPED_NO_CREDENTIAL` không được tính thành PASS.
+
+Không cần ở P0:
+
+```text
+full repository certification
+36-suite Phase16 matrix
+full Blender regression
+final evidence attestation
+```
+
+---
+
+# 4. Thứ tự thực hiện
+
+```text
+P0.0 Feature Truth
+          │
+          ├─────────────────┐
+          ↓                 ↓
+P0.1 Providers        P0.4 Series/Episode
+          │                 │
+          ↓                 │
+P0.2 Models                 │
+          │                 │
+          ↓                 │
+P0.3 Routing                │
+          └────────┬────────┘
+                   ↓
+             P0.5 Story DAG
+                   ↓
+        P0.6 Review / Revision /
+             Approval / Lock
+                   ↓
+             P0.7 Frontend
+                   ↓
+             P0.8 Real E2E
+                   ↓
+       WINDAGENT_P0_FEATURE_COMPLETE
+```
+
+Frontend không nhất thiết đợi P0.6 mới bắt đầu. UI của feature nào backend contract đã ổn thì có thể triển khai song song.
+
+---
+
+# 5. Quy tắc code trong P0
+
+Không thêm architecture layer mới nếu existing layer giải quyết được vấn đề.
+
+Ưu tiên:
+
+```text
+FIX EXISTING FEATURE
+        >
+NEW ABSTRACTION
+```
+
+và:
+
+```text
+existing contract
+        >
+new duplicate contract
+
+existing service
+        >
+parallel service
+
+real persistence
+        >
+frontend/local state
+
+server authority
+        >
+frontend inference
+
+real provider
+        >
+demo receipt
+```
+
+Không được vì test determinism mà thay đổi semantics production.
+
+---
+
+# 6. Commit strategy
+
+Tôi khuyên chia P0 thành các commit/PR độc lập:
+
+```text
+feat(p0-provider): complete provider lifecycle
+
+feat(p0-models): durable discovery and catalog sync
+
+feat(p0-routing): story model routing rules
+
+feat(p0-studio): complete series and episode inputs
+
+feat(p0-story): complete real story DAG
+
+feat(p0-review): revision approval and lock semantics
+
+feat(p0-ui): complete studio vertical workflow
+
+test(p0): real functional vertical slice
+
+docs(p0): feature-complete handoff
+```
+
+Không tạo thêm commit kiểu:
+
+```text
+provider + story + UI + evidence + unrelated code-video
+```
+
+như vấn đề atomicity ở commit hiện tại.
+
+---
+
+# 7. Definition of Done cuối P0
+
+P0 chỉ được đóng khi:
+
+```text
+[PASS] API key có thể cấu hình an toàn
+[PASS] Provider test thật
+[PASS] Models sync thật
+[PASS] Free/Paid/Unknown truthful
+[PASS] Model rules persist
+[PASS] Worker sử dụng đúng durable rules
+[PASS] Series chạy thật
+[PASS] Episode chạy thật
+[PASS] Story DAG chạy qua durable worker
+[PASS] Idea selection pause/resume thật
+[PASS] Story artifacts persist
+[PASS] Screenplay generated thật
+[PASS] Review thật
+[PASS] Revision lineage đúng
+[PASS] Human approval hoạt động
+[PASS] Screenplay lock immutable
+[PASS] READY_FOR_PRODUCTION đạt được
+[PASS] Desktop thực hiện được toàn bộ flow
+[PASS] restart không làm mất run
+[PASS] PostgreSQL vertical slice
+[PASS] không hard-coded success
+```
+
+**Không yêu cầu Phase-16 certification phải PASS để đóng P0.**
+
+Sau P0, trạng thái dự án nên là:
+
+```text
+ARCHITECTURE V3
+      +
+FEATURE COMPLETE STORY STUDIO
+      +
+REAL PROVIDER ROUTING
+      +
+REAL DURABLE STORY PIPELINE
+      +
+USABLE DESKTOP
+```
+
+Sau đó mới chuyển sang **P1: Characters / World / Assets / Storyboard / Production handoff**, rồi cuối cùng mới làm một đợt hardening + certification toàn repo.

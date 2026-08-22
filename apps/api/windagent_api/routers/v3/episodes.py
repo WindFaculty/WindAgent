@@ -345,7 +345,12 @@ async def lock_screenplay(
     body: LockScreenplayRequest = ...,
     service: V3ResourceService = Depends(get_v3_resource_service),
 ) -> EpisodeDetail:
-    """Lock screenplay for production readiness with content hash verification."""
+    """Lock screenplay for production readiness with content hash verification.
+
+    P1.0 truth repair: the lock command persists a LockedScreenplayReceipt
+    artifact so downstream pre-production consumers can resolve the ACTUAL
+    revision_id / content_hash / artifact_id instead of synthesizing them.
+    """
     curr = await service.get(NS_EPISODES, episode_id)
     if curr is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Episode '{episode_id}' not found.")
@@ -355,6 +360,7 @@ async def lock_screenplay(
             detail=f"Stale version conflict for episode '{episode_id}'. Expected {curr['version']}, got {body.expected_version}.",
         )
 
+    now_iso = utc_now().isoformat()
     updates = dict(curr)
     updates["state"] = "LOCKED"
     updates["current_checkpoint"] = "LOCKED"
@@ -362,11 +368,28 @@ async def lock_screenplay(
     metadata["locked_revision_id"] = body.revision_id
     metadata["content_hash"] = body.content_hash
     updates["metadata"] = metadata
-    updates["updated_at"] = utc_now().isoformat()
+    updates["updated_at"] = now_iso
 
     updated = await service.update(NS_EPISODES, episode_id, updates, body.expected_version)
     if updated is None:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f"Stale version conflict for episode '{episode_id}'.")
+
+    receipt_id = f"art-{uuid.uuid4().hex[:12]}"
+    await service.create(NS_EPISODE_ARTIFACTS, receipt_id, {
+        "artifact_id": receipt_id,
+        "episode_id": episode_id,
+        "kind": "LockedScreenplayReceipt",
+        "revision_id": body.revision_id,
+        "content": {
+            "receipt_id": receipt_id,
+            "locked_revision_id": body.revision_id,
+            "content_hash": body.content_hash,
+            "state": "READY_FOR_PRODUCTION",
+            "issued_at": now_iso,
+        },
+        "created_at": now_iso,
+    })
+
     ep = dict(updated)
     ep["progress_percent"] = 100
     return EpisodeDetail(**ep)

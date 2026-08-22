@@ -12,18 +12,24 @@ from __future__ import annotations
 from datetime import datetime, timezone
 import asyncio
 import json
+import os
 import uuid
 from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect, status
 from pydantic import BaseModel, Field
 from windagent_api.dependencies import (
     get_route_lock_service,
+    get_route_receipt_repository,
     get_routing_authority_bridge,
     get_v3_resource_service,
 )
 from windagent_api.services.routing_authority_bridge import RoutingAuthorityBridge
 from windagent_api.services.v3_resource_service import V3ResourceService
 from windagent_api.services.v3_demo_seed import NS_ROUTING_RULES
+from windagent_core.contracts.studio.story_roles import (
+    ROUTING_UNAVAILABLE,
+    story_role_choices,
+)
 from windagent_providers.routing.route_lock import RouteLockRecord
 from windagent_providers.routing.route_lock_service import (
     NoMatchingRuleError,
@@ -181,6 +187,32 @@ class RouteLockDetailResource(BaseModel):
     status: str
     created_at: str
     routing_snapshot: Dict[str, Any]
+
+
+class StoryRoleResource(BaseModel):
+    role: str
+    label: str
+    capability_labels: List[str] = Field(default_factory=list)
+    llm_routed: bool = True
+    aliases: List[str] = Field(default_factory=list)
+
+
+class RouteReceiptResource(BaseModel):
+    id: str
+    task_id: str
+    role: str
+    rule_id: str
+    route_lock_id: str
+    selected_provider: Optional[str] = None
+    selected_model_id: str
+    provider_model_id: Optional[str] = None
+    endpoint_id: Optional[str] = None
+    fallback_used: bool = False
+    fallback_reason: Optional[str] = None
+    status: str
+    error_code: Optional[str] = None
+    started_at: Optional[str] = None
+    completed_at: Optional[str] = None
 
 
 def _rule_to_resource(r: Dict[str, Any]) -> RoutingRuleResource:
@@ -375,33 +407,45 @@ async def delete_routing_rule(
     return {"deleted": True, "id": rule_id}
 
 
+@router.get("/roles", response_model=List[StoryRoleResource], operation_id="routing.listStoryRoles")
+async def list_story_roles() -> List[StoryRoleResource]:
+    """Canonical story model-routing roles (server authority, P0.3.1)."""
+    return [StoryRoleResource(**choice) for choice in story_role_choices()]
+
+
 @router.get("/graph", response_model=RoutingGraphData, operation_id="routing.getGraph")
 async def get_routing_graph(
     service: V3ResourceService = Depends(get_v3_resource_service),
 ) -> RoutingGraphData:
-    """Generate routing topology graph linking roles, rules, models, and providers."""
+    """Routing topology derived from the durable rules — no invented nodes."""
     nodes: List[RoutingGraphNode] = []
     links: List[RoutingGraphLink] = []
-
-    roles = ["Coordinator", "Coder", "Planner", "VisualInspector", "Director", "Worker"]
-    for role in roles:
-        nodes.append(RoutingGraphNode(id=f"role-{role.lower()}", label=role, type="role"))
+    seen_roles: set[str] = set()
 
     rules = await service.list(NS_ROUTING_RULES)
     for r in rules:
         nodes.append(RoutingGraphNode(id=r["id"], label=r.get("name", r["id"]), type="rule"))
-        for agent_type in r.get("agent_types", []):
-            r_node_id = f"role-{agent_type.lower()}"
-            links.append(RoutingGraphLink(source=r_node_id, target=r["id"], label="triggers", weight=1.0))
+        role_labels = list(r.get("agent_types", [])) + list(r.get("task_labels", []))
+        for agent_type in role_labels:
+            if agent_type not in seen_roles:
+                seen_roles.add(agent_type)
+                nodes.append(
+                    RoutingGraphNode(id=f"role-{agent_type.lower()}", label=agent_type, type="role")
+                )
+            links.append(
+                RoutingGraphLink(source=f"role-{agent_type.lower()}", target=r["id"], label="triggers", weight=1.0)
+            )
 
         m_id = r.get("canonical_model_id", "")
-        nodes.append(RoutingGraphNode(id=f"mod-{m_id}", label=m_id.split("/")[-1], type="model"))
-        links.append(RoutingGraphLink(source=r["id"], target=f"mod-{m_id}", label="primary (80%)", weight=0.8))
+        if m_id:
+            nodes.append(RoutingGraphNode(id=f"mod-{m_id}", label=m_id.split("/")[-1], type="model"))
+            links.append(RoutingGraphLink(source=r["id"], target=f"mod-{m_id}", label="primary", weight=1.0))
 
         if r.get("fallback_model_id"):
             f_id = r["fallback_model_id"]
-            nodes.append(RoutingGraphNode(id=f"mod-{f_id}", label=f_id.split("/")[-1], type="model"))
-            links.append(RoutingGraphLink(source=r["id"], target=f"mod-{f_id}", label="fallback (20%)", weight=0.2))
+            if not any(n.id == f"mod-{f_id}" for n in nodes):
+                nodes.append(RoutingGraphNode(id=f"mod-{f_id}", label=f_id.split("/")[-1], type="model"))
+            links.append(RoutingGraphLink(source=r["id"], target=f"mod-{f_id}", label="fallback", weight=1.0))
 
     unique_nodes = {n.id: n for n in nodes}.values()
     return RoutingGraphData(nodes=list(unique_nodes), links=links)
@@ -410,24 +454,65 @@ async def get_routing_graph(
 @router.get("/metrics", response_model=RoutingMetricsData, operation_id="routing.getMetrics")
 async def get_routing_metrics(
     service: V3ResourceService = Depends(get_v3_resource_service),
+    receipts=Depends(get_route_receipt_repository),
 ) -> RoutingMetricsData:
-    """Retrieve realtime traffic metrics and distribution."""
-    distribution: List[TrafficDistributionItem] = [
-        TrafficDistributionItem(model_id="anthropic/claude-3-5-sonnet", model_name="Claude 3.5 Sonnet", provider="Anthropic Direct", percentage=46.2, request_count=12480),
-        TrafficDistributionItem(model_id="google/gemini-1.5-pro", model_name="Gemini 1.5 Pro", provider="Google AI Studio", percentage=28.5, request_count=7700),
-        TrafficDistributionItem(model_id="google/gemini-1.5-flash", model_name="Gemini 1.5 Flash", provider="Google AI Studio", percentage=14.3, request_count=3860),
-        TrafficDistributionItem(model_id="deepseek/deepseek-r1", model_name="DeepSeek R1", provider="DeepSeek Direct", percentage=8.2, request_count=2210),
-        TrafficDistributionItem(model_id="ollama/qwen2.5-coder", model_name="Qwen 2.5 Coder", provider="Ollama Local", percentage=2.8, request_count=750),
-    ]
+    """Traffic metrics computed from durable receipts and rules.
 
+    Every number is derived from persisted state; when nothing has been
+    routed yet the honest zeros are returned (never fabricated traffic).
+    """
     rules = await service.list(NS_ROUTING_RULES)
+    receipt_rows = receipts.list_receipts(limit=500)
+
+    total = len(receipt_rows)
+    distribution_map: Dict[str, Dict[str, Any]] = {}
+    success_count = 0
+    latency_total_ms = 0.0
+    latency_samples = 0
+    for row in receipt_rows:
+        model_id = row.get("selected_model_id") or "unknown"
+        entry = distribution_map.setdefault(
+            model_id,
+            {"model_id": model_id, "model_name": (model_id.split("/")[-1] or model_id), "provider": row.get("selected_provider") or "unknown", "request_count": 0},
+        )
+        entry["request_count"] += 1
+        if row.get("status") == "success":
+            success_count += 1
+        started, completed = row.get("started_at"), row.get("completed_at")
+        if started and completed:
+            try:
+                delta = (
+                    datetime.fromisoformat(completed) - datetime.fromisoformat(started)
+                ).total_seconds()
+                if delta >= 0:
+                    latency_total_ms += delta * 1000.0
+                    latency_samples += 1
+            except ValueError:
+                pass
+
+    distribution = sorted(
+        (
+            TrafficDistributionItem(
+                model_id=e["model_id"],
+                model_name=e["model_name"],
+                provider=e["provider"],
+                percentage=round(e["request_count"] * 100.0 / total, 1),
+                request_count=e["request_count"],
+            )
+            for e in distribution_map.values()
+        ),
+        key=lambda item: item.request_count,
+        reverse=True,
+    )
+    fallback_chains = sum(1 for r in rules if r.get("fallback_model_id"))
+
     return RoutingMetricsData(
-        total_routes=27000,
-        active_rules=len(rules),
-        fallback_chains=3,
-        avg_latency_ms=36.4,
-        success_rate_percent=99.7,
-        traffic_balance_percent=94.2,
+        total_routes=receipts.count_receipts(),
+        active_rules=sum(1 for r in rules if r.get("enabled", True)),
+        fallback_chains=fallback_chains,
+        avg_latency_ms=round(latency_total_ms / latency_samples, 1) if latency_samples else 0.0,
+        success_rate_percent=round(success_count * 100.0 / total, 1) if total else 0.0,
+        traffic_balance_percent=0.0,
         traffic_distribution=distribution,
     )
 
@@ -467,7 +552,10 @@ async def simulate_route_decision(
     except NoMatchingRuleError as exc:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No routing rule matched for role '{req.role}'. {exc}",
+            detail={
+                "code": ROUTING_UNAVAILABLE,
+                "message": f"No routing rule matched for role '{req.role}'. {exc}",
+            },
         )
 
     snapshot = lock.routing_snapshot
@@ -527,11 +615,46 @@ async def get_route_lock(
     return _lock_record_to_resource(lock)
 
 
+@router.get("/receipts", response_model=List[RouteReceiptResource], operation_id="routing.listReceipts")
+async def list_route_receipts(
+    task_id: Optional[str] = None,
+    role: Optional[str] = None,
+    limit: int = 100,
+    receipts=Depends(get_route_receipt_repository),
+) -> List[RouteReceiptResource]:
+    """Durable per-task route receipts (P0.3.6): which rule/model served what.
+
+    Only real executions are returned; the store is written exclusively by
+    the worker model router.
+    """
+    return [
+        RouteReceiptResource(**row)
+        for row in receipts.list_receipts(task_id=task_id, role=role, limit=limit)
+    ]
+
+
 # ─── Realtime Model Infrastructure WebSocket ────────────────────────────────
 
 @ws_router.websocket("/ws/v3/model-infra")
 async def model_infra_realtime_stream(websocket: WebSocket) -> None:
-    """Stream model infrastructure events: provider health changes, routing decisions, policy updates."""
+    """Stream model infrastructure events.
+
+    The canned heartbeat is demo-profile-only. Outside the demo profile the
+    socket fails closed: no fabricated health stream is served.
+    """
+    if os.getenv("WINDAGENT_PROFILE", "").strip().lower() != "demo":
+        await websocket.accept()
+        await websocket.send_text(
+            json.dumps(
+                {
+                    "type": "model_infra.unavailable",
+                    "timestamp": iso_now(),
+                    "data": {"reason": "realtime_model_infra_not_available"},
+                }
+            )
+        )
+        await websocket.close(code=1011)
+        return
     await websocket.accept()
     try:
         # Send initial snapshot

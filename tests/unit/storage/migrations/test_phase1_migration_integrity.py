@@ -281,10 +281,10 @@ class TestAlembicHeadIntegrity:
         assert len(heads) == 1, f"revision graph must stay linear, got heads={heads}"
         # Intentional tripwire (GAP D): bump this only when a new migration is
         # appended to the chain — the test exists to fail loudly on drift.
-        assert heads[0] == "0015_execution_lease_release"
+        assert heads[0] == "0017_route_receipts"
 
     def test_verify_single_head_passes_on_linear_chain(self):
-        assert verify_single_head() == "0015_execution_lease_release"
+        assert verify_single_head() == "0017_route_receipts"
 
     def test_verify_single_head_raises_on_multiple_heads(self, monkeypatch):
         monkeypatch.setattr(
@@ -299,8 +299,8 @@ class TestAlembicHeadIntegrity:
 
     def test_current_matches_head_after_upgrade(self, fresh_db: str):
         alembic_upgrade_head(fresh_db)
-        assert alembic_current(fresh_db) == ("0015_execution_lease_release",)
-        assert verify_single_head(fresh_db) == "0015_execution_lease_release"
+        assert alembic_current(fresh_db) == ("0017_route_receipts",)
+        assert verify_single_head(fresh_db) == "0017_route_receipts"
 
     def test_current_empty_after_downgrade_base(self, fresh_db: str):
         alembic_upgrade_head(fresh_db)

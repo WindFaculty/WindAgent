@@ -31,10 +31,17 @@ domain policy (Plan A A6 step 5).
 from __future__ import annotations
 
 import hashlib
-from dataclasses import dataclass, field
+import uuid
+from dataclasses import dataclass, field, replace
+from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
 from windagent_core.contracts.providers import ProviderRequest, ProviderResponse
+from windagent_core.contracts.studio.story_roles import (
+    ROUTING_UNAVAILABLE,
+    RoutingUnavailableError,
+    expand_role_labels,
+)
 from windagent_providers.base.errors import (
     AuthenticationFailure,
     CancellationFailure,
@@ -55,7 +62,11 @@ from windagent_providers.base.errors import (
 )
 from windagent_providers.routing.rule_matcher import RuleMatchContext
 from windagent_providers.routing.rules import RoutingRule, RoutingRuleSet
-from windagent_providers.routing.route_lock_service import RouteLockService
+from windagent_providers.routing.route_lock_service import (
+    CanonicalModelDisabledError,
+    NoMatchingRuleError,
+    RouteLockService,
+)
 
 try:  # frozen intelligence port (B-owned protocol; provider never imports B logic)
     from windagent_intelligence.video.ports import (
@@ -80,6 +91,26 @@ UNKNOWN = "unknown"
 #: Default canonical model used by the studio routing rule; env is a
 #: compatibility input, never embedded domain policy.
 DEFAULT_STUDIO_CANONICAL_MODEL = "windagent/story-default"
+
+#: Rule id of the worker system-default route (lowest priority, P0.3.4).
+SYSTEM_DEFAULT_RULE_ID = "system-default"
+
+#: Failure classes eligible for rule-declared model fallback (P0.3.5).
+#: Exactly: endpoint unavailable, timeout, rate limit, temporary provider
+#: failure — plus exhaustion of every exact-equivalent endpoint. Schema
+#: validation, auth, safety, and prompt-contract failures NEVER fall back.
+FALLBACK_ELIGIBLE_FAILURES = (
+    NetworkFailure,
+    TimeoutFailure,
+    ProviderUnavailableFailure,
+    RateLimitFailure,
+    SameModelEndpointExhausted,
+)
+
+
+def utc_now_naive() -> datetime:
+    """Naive UTC timestamp (storage convention of the durable tables)."""
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 @dataclass(frozen=True)
@@ -181,6 +212,7 @@ class RouteLockedModelPort:
         disabled_models: Optional[set] = None,
         scope_type: str = "studio_model",
         max_attempts: int = 5,
+        receipt_repository: Any = None,
     ) -> None:
         self._route_lock_service = route_lock_service
         self._coordinator = coordinator
@@ -188,30 +220,238 @@ class RouteLockedModelPort:
         self._disabled_models = disabled_models or set()
         self._scope_type = scope_type
         self._max_attempts = max_attempts
+        #: Optional durable route-receipt writer (P0.3.6). Receipt failures
+        #: never break routing — they are diagnostics, not the transaction.
+        self._receipt_repository = receipt_repository
 
     # -- PreproductionModelPort --------------------------------------------
 
     async def complete(self, request: Any) -> Any:
         receipt = await self.lock_route(request)
         provider_request = self._build_provider_request(request, receipt)
-        response = await self._coordinator.execute(
-            provider_request,
-            self._route_lock_service.get_lock_by_id(receipt.route_lock_id),
-            turn_id=(request.metadata or {}).get("task_id") or receipt.route_lock_id,
-            max_attempts=self._max_attempts,
+        turn_id = (request.metadata or {}).get("task_id") or receipt.route_lock_id
+        started_at = utc_now_naive()
+        try:
+            response = await self._coordinator.execute(
+                provider_request,
+                self._route_lock_service.get_lock_by_id(receipt.route_lock_id),
+                turn_id=turn_id,
+                max_attempts=self._max_attempts,
+            )
+        except ProviderFailure as exc:
+            classification = classify_provider_error(exc)
+            fallback_result = await self._execute_rule_fallback(
+                request,
+                receipt,
+                provider_request,
+                exc,
+                classification.code,
+                turn_id=turn_id,
+                started_at=started_at,
+            )
+            if fallback_result is not None:
+                return fallback_result
+            self._record_receipt(
+                request=request,
+                receipt=receipt,
+                response=None,
+                started_at=started_at,
+                status="failed",
+                error_code=classification.code,
+            )
+            raise
+        completed_at = utc_now_naive()
+        result = self._to_completion_result(request, response, receipt)
+        self._record_receipt(
+            request=request,
+            receipt=receipt,
+            response=response,
+            started_at=started_at,
+            completed_at=completed_at,
         )
-        return self._to_completion_result(request, response, receipt)
+        return result
+
+    async def _execute_rule_fallback(
+        self,
+        request: Any,
+        primary_receipt: RouteLockReceipt,
+        provider_request: ProviderRequest,
+        primary_exc: ProviderFailure,
+        reason_code: str,
+        *,
+        turn_id: str,
+        started_at: datetime,
+    ) -> Optional[Any]:
+        """Retry a transient failure against the rule's declared fallback model.
+
+        Only ``FALLBACK_ELIGIBLE_FAILURES`` may fall back, and only when the
+        matched rule declares a different fallback canonical model. The
+        primary lock is never mutated: a separate pinned fallback lock keeps
+        endpoint attempts FK-consistent and audited.
+        """
+        if not isinstance(primary_exc, FALLBACK_ELIGIBLE_FAILURES):
+            return None
+        fallback_model = self._fallback_model_for(primary_receipt)
+        if not fallback_model or fallback_model == primary_receipt.canonical_model_id:
+            return None
+        try:
+            fallback_lock = self._route_lock_service.create_fallback_lock(
+                scope_type=f"{self._scope_type}_fallback",
+                scope_id=(
+                    f"{primary_receipt.route_lock_id}:"
+                    f"{uuid.uuid4().hex[:10]}"
+                ),
+                canonical_model_id=fallback_model,
+                reason=f"model_failover:{reason_code}"[:255],
+                source_lock_id=primary_receipt.route_lock_id,
+            )
+        except Exception:  # noqa: BLE001 — fallback lock issues never mask the primary failure
+            return None
+
+        fallback_receipt = replace(
+            primary_receipt,
+            route_lock_id=fallback_lock.lock_id,
+            canonical_model_id=fallback_model,
+        )
+        fallback_request = provider_request.model_copy(
+            update={
+                "model_id": fallback_model,
+                "idempotency_key": f"studio:{fallback_lock.lock_id}",
+            }
+        )
+        try:
+            response = await self._coordinator.execute(
+                fallback_request,
+                fallback_lock,
+                turn_id=turn_id,
+                max_attempts=self._max_attempts,
+            )
+        except Exception:  # noqa: BLE001 — original failure wins over fallback failure
+            self._record_receipt(
+                request=request,
+                receipt=primary_receipt,
+                response=None,
+                started_at=started_at,
+                status="failed",
+                error_code=reason_code,
+                fallback_used=True,
+                fallback_reason=reason_code,
+            )
+            return None
+        completed_at = utc_now_naive()
+        result = self._to_completion_result(request, response, fallback_receipt)
+        result = replace(
+            result,
+            usage={
+                **result.usage,
+                "fallback_used": True,
+                "fallback_reason": reason_code,
+            },
+        )
+        self._record_receipt(
+            request=request,
+            receipt=primary_receipt,
+            response=response,
+            started_at=started_at,
+            completed_at=completed_at,
+            fallback_used=True,
+            fallback_reason=reason_code,
+            override_lock_id=fallback_lock.lock_id,
+            override_model_id=fallback_model,
+        )
+        return result
+
+    def _fallback_model_for(self, receipt: RouteLockReceipt) -> Optional[str]:
+        """Resolve the matched rule's declared fallback canonical model."""
+        ruleset = self._route_lock_service.current_ruleset
+        for rule in ruleset.rules:
+            if rule.rule_id == receipt.rule_id:
+                return rule.fallback_model_id
+        return None
+
+    def _record_receipt(
+        self,
+        *,
+        request: Any,
+        receipt: RouteLockReceipt,
+        response: Optional[ProviderResponse],
+        started_at: datetime,
+        completed_at: Optional[datetime] = None,
+        status: str = "success",
+        error_code: Optional[str] = None,
+        fallback_used: bool = False,
+        fallback_reason: Optional[str] = None,
+        override_lock_id: Optional[str] = None,
+        override_model_id: Optional[str] = None,
+    ) -> None:
+        """Persist one route receipt row (P0.3.6); diagnostics only."""
+        repo = self._receipt_repository
+        if repo is None:
+            return
+        metadata = request.metadata or {}
+        task_id = str(
+            metadata.get("task_id")
+            or getattr(request, "request_id", "")
+            or receipt.route_lock_id
+        )
+        rule_id = receipt.rule_id or ""
+        role = (
+            rule_id[len("role-") :]
+            if rule_id.startswith("role-")
+            else (getattr(request, "capability", "") or "")
+        )
+        raw_metadata = getattr(response, "raw_metadata", {}) or {}
+        try:
+            repo.record_receipt(
+                task_id=task_id[:128],
+                role=(role or "")[:128],
+                rule_id=rule_id[:128],
+                route_lock_id=override_lock_id or receipt.route_lock_id,
+                selected_provider=(
+                    str(provider_value) if (provider_value := getattr(response, "provider_id", None)) else None
+                ),
+                selected_model_id=(
+                    override_model_id
+                    or getattr(response, "canonical_model_id", None)
+                    or receipt.canonical_model_id
+                ),
+                provider_model_id=getattr(response, "provider_model_id", None),
+                endpoint_id=getattr(response, "endpoint_id", None)
+                or raw_metadata.get("endpoint_id"),
+                fallback_used=fallback_used,
+                fallback_reason=fallback_reason,
+                status=status,
+                error_code=error_code,
+                started_at=started_at,
+                completed_at=completed_at or utc_now_naive(),
+            )
+        except Exception as exc:  # noqa: BLE001 — receipts must never break routing
+            import logging
+
+            logging.getLogger("windagent.worker.studio").warning(
+                "Route receipt write failed: %s", exc
+            )
 
     async def lock_route(self, request: Any) -> RouteLockReceipt:
         """Lock the canonical model for this request scope (create-or-reuse)."""
         scope_id = _scope_id(request, prefix=self._scope_type)
+        capability = request.capability
         context = RuleMatchContext(
             scope_type=self._scope_type,
             scope_id=scope_id,
-            task_labels=[request.capability],
-            available_capabilities=[request.capability],
+            # P0.3.1: expand the capability label so rules authored with the
+            # canonical story role (or its plan alias) match short
+            # prompt-registry capabilities symmetrically.
+            task_labels=expand_role_labels(capability),
+            available_capabilities=expand_role_labels(capability),
         )
-        record = self._route_lock_service.resolve_or_create_lock(context)
+        record = None
+        try:
+            record = self._route_lock_service.resolve_or_create_lock(context)
+        except (NoMatchingRuleError, CanonicalModelDisabledError) as exc:
+            # P0.3.4 fail-closed: no valid model → typed ROUTING_UNAVAILABLE,
+            # never a random selection.
+            raise RoutingUnavailableError(request.capability, str(exc)) from exc
         return RouteLockReceipt(
             route_lock_id=record.lock_id,
             canonical_model_id=record.canonical_model_id,
@@ -294,6 +534,37 @@ def build_studio_ruleset(
     )
 
 
+def compose_story_ruleset(
+    sql_ruleset: RoutingRuleSet,
+    *,
+    system_default_model: Optional[str],
+) -> RoutingRuleSet:
+    """Resolution order composition (P0.3.4).
+
+    SQL role rules keep their configured priorities and win first; when a
+    system-default model is explicitly configured it is appended ONCE as the
+    lowest-priority wildcard rule so unmatched roles resolve to it instead of
+    failing. With no SQL rule and no default, resolution fails closed with
+    ``NoMatchingRuleError`` → ``ROUTING_UNAVAILABLE``.
+    """
+    rules = list(sql_ruleset.rules)
+    if system_default_model:
+        already_default = any(
+            r.rule_id == SYSTEM_DEFAULT_RULE_ID for r in rules
+        )
+        if not already_default:
+            rules.append(
+                RoutingRule(
+                    rule_id=SYSTEM_DEFAULT_RULE_ID,
+                    rule_version=1,
+                    canonical_model_id=system_default_model,
+                    description="System default route (lowest priority)",
+                    priority=10_000,
+                )
+            )
+    return RoutingRuleSet(rules=rules)
+
+
 __all__ = [
     "TRANSIENT",
     "QUOTA",
@@ -302,10 +573,14 @@ __all__ = [
     "SAFETY",
     "TERMINAL",
     "UNKNOWN",
+    "ROUTING_UNAVAILABLE",
     "DEFAULT_STUDIO_CANONICAL_MODEL",
+    "SYSTEM_DEFAULT_RULE_ID",
+    "FALLBACK_ELIGIBLE_FAILURES",
     "FailureClassification",
     "RouteLockReceipt",
     "classify_provider_error",
     "RouteLockedModelPort",
     "build_studio_ruleset",
+    "compose_story_ruleset",
 ]

@@ -8,19 +8,27 @@ depend only on core contracts and provider adapters — never on storage/ORM.
 from windagent_providers.management.adapter_factory import ProviderAdapterFactory
 from windagent_providers.management.policy_projection import RoutingPolicyProjection
 from windagent_providers.management.probe import (
+    ModelProbeReceipt,
+    ModelSyncResult,
     ProviderNotFoundError,
     ProviderProbeService,
 )
 from windagent_providers.management.service import (
     ProviderAlreadyExistsError,
+    ProviderInUseError,
     ProviderManagementService,
+    ProviderVendorNotFoundError,
 )
 
 __all__ = [
     "ProviderAdapterFactory",
+    "ModelProbeReceipt",
+    "ModelSyncResult",
     "ProviderNotFoundError",
     "ProviderProbeService",
     "ProviderAlreadyExistsError",
+    "ProviderInUseError",
     "ProviderManagementService",
+    "ProviderVendorNotFoundError",
     "RoutingPolicyProjection",
 ]

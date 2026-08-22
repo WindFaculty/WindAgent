@@ -57,6 +57,12 @@ class EndpointBindingRepositoryPort(Protocol):
         self, endpoint_id: str, discovered_models: List[Any]
     ) -> List[Dict[str, Any]]: ...
 
+    def reconcile_discovery_snapshot(
+        self, endpoint_id: str, discovered_models: List[Any]
+    ) -> Dict[str, Any]:
+        """P0.2.4 — classify a sync into added/updated/unchanged/unavailable."""
+        ...
+
     def get_exact_equivalent_endpoints(
         self, canonical_model_id: str
     ) -> List[Dict[str, Any]]: ...

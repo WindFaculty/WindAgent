@@ -1,20 +1,25 @@
 """
-V3 Models Router — Canonical Model Infrastructure Authority (Phase 12).
-Provides canonical model registry, capability matrices, context limits, and endpoint bindings.
-
-Phase 4: model catalog reads are DERIVED from the durable namespaced V3
-resource authority (seeded in non-production). No module-level RAM stores.
+V3 Models Router — Canonical Model Infrastructure Authority (Phase 12 / P0.2).
+Serves the DURABLE discovered-model registry (provider sync authority) merged
+with the demo catalog under the explicit demo profile. Supports server-side
+FREE/PAID/UNKNOWN pricing classification — never guessed, only what providers
+advertise.
 """
 
 from __future__ import annotations
 
+import os
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
-from windagent_api.dependencies import get_v3_resource_service
+from windagent_api.dependencies import (
+    get_provider_management_service,
+    get_v3_resource_service,
+)
 from windagent_api.services.v3_resource_service import V3ResourceService
 from windagent_api.services.v3_demo_seed import NS_MODELS
+from windagent_providers.management import ProviderManagementService
 
 def iso_now() -> str:
     return datetime.now(timezone.utc).isoformat()
@@ -30,6 +35,12 @@ class ModelEndpointBinding(BaseModel):
     equivalence_level: str = "exact"
     confidence: float = 1.0
     is_active: bool = True
+    availability: str = "active"
+    pricing_class: str = "UNKNOWN"
+    input_price: Optional[float] = None
+    output_price: Optional[float] = None
+    currency: Optional[str] = None
+    last_discovered_at: Optional[str] = None
 
 
 class ModelPricing(BaseModel):
@@ -49,6 +60,7 @@ class ModelDefinitionResource(BaseModel):
     modalities: List[str] = Field(default_factory=list)
     is_local: bool = False
     is_active: bool = True
+    pricing_class: str = "UNKNOWN"
     pricing: Optional[ModelPricing] = None
     bindings: List[ModelEndpointBinding] = Field(default_factory=list)
     benchmarks: Dict[str, float] = Field(default_factory=dict)
@@ -70,6 +82,7 @@ def _model_to_resource(m: Dict[str, Any]) -> ModelDefinitionResource:
         modalities=m.get("modalities", []),
         is_local=m.get("is_local", False),
         is_active=m.get("is_active", True),
+        pricing_class=m.get("pricing_class", "UNKNOWN"),
         pricing=ModelPricing(**pricing) if pricing else None,
         bindings=[ModelEndpointBinding(**b) for b in m.get("bindings", [])],
         benchmarks=m.get("benchmarks", {}),
@@ -78,17 +91,46 @@ def _model_to_resource(m: Dict[str, Any]) -> ModelDefinitionResource:
     )
 
 
+def _merged_catalog(
+    durable: List[Dict[str, Any]], demo: List[Dict[str, Any]]
+) -> List[Dict[str, Any]]:
+    """Durable discovered registry wins on id collision; demo fills the rest."""
+    by_id: Dict[str, Dict[str, Any]] = {}
+    for m in demo:
+        by_id[m["id"]] = m
+    for m in durable:
+        by_id[m["id"]] = m
+    return list(by_id.values())
+
+
 @router.get("", response_model=List[ModelDefinitionResource], operation_id="models.list")
 async def list_models(
     provider: Optional[str] = Query(None, description="Filter by provider ID"),
     capability: Optional[str] = Query(None, description="Filter by capability"),
     modality: Optional[str] = Query(None, description="Filter by modality"),
     is_local: Optional[bool] = Query(None, description="Filter by local/cloud execution"),
+    pricing: Optional[str] = Query(None, description="Filter by pricing class: FREE | PAID | UNKNOWN"),
     search: Optional[str] = Query(None, description="Search term across name, vendor, description"),
     service: V3ResourceService = Depends(get_v3_resource_service),
+    management: ProviderManagementService = Depends(get_provider_management_service),
 ) -> List[ModelDefinitionResource]:
-    """List canonical model definitions matching criteria."""
-    results = await service.list(NS_MODELS)
+    """List canonical model definitions matching criteria.
+
+    P0.2.2/P0.2.3: the primary source is the durable discovered registry fed
+    by provider Sync Models; the demo catalog only appears under the explicit
+    demo profile. ``pricing`` filters strictly by the advertised class.
+    """
+    pricing_filter = pricing.strip().upper() if pricing else None
+    if pricing_filter not in (None, "FREE", "PAID", "UNKNOWN"):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="pricing must be one of: FREE, PAID, UNKNOWN.",
+        )
+
+    results = _merged_catalog(
+        management.list_all_discovered_models(),
+        await service.list(NS_MODELS) if os.getenv("WINDAGENT_PROFILE", "").strip().lower() == "demo" else [],
+    )
 
     if provider:
         p_lower = provider.lower()
@@ -108,6 +150,9 @@ async def list_models(
     if is_local is not None:
         results = [m for m in results if m.get("is_local") == is_local]
 
+    if pricing_filter:
+        results = [m for m in results if m.get("pricing_class", "UNKNOWN") == pricing_filter]
+
     if search:
         s_lower = search.strip().lower()
         results = [
@@ -125,9 +170,15 @@ async def list_models(
 async def get_model(
     model_id: str,
     service: V3ResourceService = Depends(get_v3_resource_service),
+    management: ProviderManagementService = Depends(get_provider_management_service),
 ) -> ModelDefinitionResource:
     """Retrieve details for a specific canonical model by ID."""
     clean_id = model_id.strip()
+
+    for model in management.list_all_discovered_models():
+        if model["id"] == clean_id or model.get("name", "").lower() == clean_id.lower():
+            return _model_to_resource(model)
+
     model = await service.get(NS_MODELS, clean_id)
     if model is not None:
         return _model_to_resource(model)

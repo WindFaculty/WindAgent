@@ -292,8 +292,8 @@ def test_real_port_is_not_a_fixture_provider():
 
 
 async def test_lock_route_rejects_disabled_model_fail_closed():
+    from windagent_core.contracts.studio.story_roles import RoutingUnavailableError
     from windagent_providers.routing.route_lock_service import (
-        CanonicalModelDisabledError,
         RouteLockService as RLS,
     )
 
@@ -304,5 +304,7 @@ async def test_lock_route_rejects_disabled_model_fail_closed():
         ),
         object(),  # never reached: lock fails first
     )
-    with pytest.raises(CanonicalModelDisabledError):
+    # P0.3.4: a disabled canonical model is not a valid route -> typed
+    # ROUTING_UNAVAILABLE instead of a raw matcher error.
+    with pytest.raises(RoutingUnavailableError):
         await port.lock_route(_request())

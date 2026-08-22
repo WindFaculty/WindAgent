@@ -1123,8 +1123,8 @@ export const ProviderConfigPanel: React.FC<ProviderConfigPanelProps> = ({
                   <span style={{ fontSize: '0.68rem', color: '#94a3b8', display: 'block' }}>
                     Authentication
                   </span>
-                  <span style={{ fontSize: '0.82rem', fontWeight: 700, color: formData.status === 'error' ? '#f87171' : '#34d399' }}>
-                    {formData.status === 'error' ? 'Failed' : 'Verified'}
+                  <span style={{ fontSize: '0.82rem', fontWeight: 700, color: formData.status === 'offline' ? '#f87171' : '#34d399' }}>
+                    {formData.status === 'offline' ? 'Failed' : 'Verified'}
                   </span>
                 </div>
 
@@ -1145,7 +1145,7 @@ export const ProviderConfigPanel: React.FC<ProviderConfigPanelProps> = ({
                     style={{
                       fontSize: '0.82rem',
                       fontWeight: 700,
-                      color: formData.status === 'error' ? '#f87171' : '#34d399',
+                      color: formData.status === 'offline' ? '#f87171' : '#34d399',
                       display: 'flex',
                       alignItems: 'center',
                       gap: '4px',
@@ -1156,10 +1156,10 @@ export const ProviderConfigPanel: React.FC<ProviderConfigPanelProps> = ({
                         width: '6px',
                         height: '6px',
                         borderRadius: '50%',
-                        backgroundColor: formData.status === 'error' ? '#f87171' : '#34d399',
+                        backgroundColor: formData.status === 'offline' ? '#f87171' : '#34d399',
                       }}
                     />
-                    {formData.status === 'error' ? 'Unhealthy' : 'Healthy'}
+                    {formData.status === 'offline' ? 'Unhealthy' : 'Healthy'}
                   </span>
                 </div>
               </div>

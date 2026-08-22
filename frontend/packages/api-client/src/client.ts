@@ -65,12 +65,21 @@ import type {
   AddProviderRequest,
   ProviderModelRuleResource,
   AssignProviderModelRuleRequest,
+  UpdateProviderRequest,
+  RotateCredentialRequest,
+  CredentialStatusResource,
+  DeleteProviderResult,
+  SyncModelsResult,
+  TestModelRequest,
+  ModelProbeReceiptResource,
   RoutingRuleResource,
   RoutingGraphData,
   RoutingMetricsData,
   RouteSimulationRequest,
   RouteDecisionResource,
   RouteLockDetailResource,
+  StoryRoleResource,
+  RouteReceiptResource,
   // Phase 13 — Platform & Administration Domain
   BrowserSessionResource,
   CreateBrowserSessionRequest,
@@ -836,6 +845,50 @@ export class ProvidersApi {
   async assignModelRule(request: AssignProviderModelRuleRequest): Promise<ProviderModelRuleResource> {
     return this.transport.post<ProviderModelRuleResource>('/api/v3/providers/rules', request);
   }
+
+  /** P0.1 — edit provider identity / endpoint / enabled state (never secrets). */
+  async update(id: string, request: UpdateProviderRequest): Promise<ProviderResource> {
+    return this.transport.patch<ProviderResource>(`/api/v3/providers/${encodeURIComponent(id)}`, request);
+  }
+
+  /** P0.1 — delete; pass allowDisablingRules only as an explicit user decision. */
+  async remove(id: string, allowDisablingRules?: boolean): Promise<DeleteProviderResult> {
+    return this.transport.delete<DeleteProviderResult>(
+      `/api/v3/providers/${encodeURIComponent(id)}`,
+      allowDisablingRules ? { query: { allow_disabling_rules: true } } : undefined,
+    );
+  }
+
+  /** P0.1 — rotate (or first-configure) the credential; raw key never returned. */
+  async rotateCredential(id: string, request: RotateCredentialRequest): Promise<CredentialStatusResource> {
+    return this.transport.put<CredentialStatusResource>(
+      `/api/v3/providers/${encodeURIComponent(id)}/credential`,
+      request,
+    );
+  }
+
+  /** P0.1 — remove the credential; endpoints become unconfigured. */
+  async removeCredential(id: string): Promise<CredentialStatusResource> {
+    return this.transport.delete<CredentialStatusResource>(
+      `/api/v3/providers/${encodeURIComponent(id)}/credential`,
+    );
+  }
+
+  /** P0.2.1 — explicit model catalog sync (independent from Test Connection). */
+  async syncModels(id: string, endpointId?: string): Promise<SyncModelsResult> {
+    return this.transport.post<SyncModelsResult>(
+      `/api/v3/providers/${encodeURIComponent(id)}/sync-models`,
+      { endpoint_id: endpointId },
+    );
+  }
+
+  /** P0.2.5 — verify one bound model with a tiny real inference. */
+  async testModel(id: string, request: TestModelRequest): Promise<ModelProbeReceiptResource> {
+    return this.transport.post<ModelProbeReceiptResource>(
+      `/api/v3/providers/${encodeURIComponent(id)}/models/test`,
+      request,
+    );
+  }
 }
 
 export class RoutingApi {
@@ -875,6 +928,16 @@ export class RoutingApi {
 
   async getLock(lockId: string): Promise<RouteLockDetailResource> {
     return this.transport.get<RouteLockDetailResource>(`/api/v3/routing/locks/${encodeURIComponent(lockId)}`);
+  }
+
+  /** P0.3.1 — canonical story model-routing roles (server authority). */
+  async listStoryRoles(): Promise<StoryRoleResource[]> {
+    return this.transport.get<StoryRoleResource[]>('/api/v3/routing/roles');
+  }
+
+  /** P0.3.6 — durable per-task route receipts. */
+  async listReceipts(params?: { task_id?: string; role?: string; limit?: number }): Promise<RouteReceiptResource[]> {
+    return this.transport.get<RouteReceiptResource[]>('/api/v3/routing/receipts', params);
   }
 }
 

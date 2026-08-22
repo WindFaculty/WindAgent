@@ -22,7 +22,6 @@ import signal
 import socket
 import subprocess
 import sys
-import tempfile
 import time
 import uuid
 from pathlib import Path
@@ -95,8 +94,6 @@ async def test_api_worker_durable_runtime_two_process(tmp_path):
     base = f"http://127.0.0.1:{port}"
 
     # 2. Pre-create canonical schema so the child processes don't race on DDL.
-    import sqlite3
-
     ddl_script = tmp / "create_tables.py"
     ddl_script.write_text(
         "import asyncio, os\n"

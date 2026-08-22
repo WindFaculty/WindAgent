@@ -56,10 +56,12 @@ def test_production_events_replay_route_is_retired(client):
 def test_v3_production_surface_is_available(client):
     """The canonical V3 production router answers on its plan surface.
 
-    The V3 plan endpoint lazily provisions a default plan for the requested
-    episode, so a fresh id still yields 200 — proving the route is live
-    (not the 410 tombstone).
+    P1.0 truth repair: GET is read-only, so a fresh episode id yields
+    404 PRODUCTION_PLAN_NOT_CREATED — proving the route is live
+    (not the 410 tombstone) and no longer fabricates a plan on read.
     """
     res = client.get("/api/v3/episodes/ep_none/production")
-    assert res.status_code == 200, res.text
-    assert res.json()["episode_id"] == "ep_none"
+    assert res.status_code == 404, res.text
+    body = res.json()
+    assert body["detail"]["error_code"] == "PRODUCTION_PLAN_NOT_CREATED"
+    assert body["detail"]["message"].startswith("No production plan initialized")

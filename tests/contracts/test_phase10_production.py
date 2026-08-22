@@ -2,11 +2,13 @@
 Phase 10 — Production Cutover Domain Contract Tests.
 Verifies:
 - Episode -> Production plan lifecycle & pinned screenplay/storyboard revisions
+- GET is read-only (P1.0: no plan auto-creation, no synthetic revision pins)
 - Shot CRUD & optimistic concurrency (version locking)
-- Real job submission (Audio, Animation, Render, Video) returning server receipts
-- Job cancellation & retry state transitions
+- Stage jobs (Audio, Animation, Render, Video) fail closed with
+  CAPABILITY_UNAVAILABLE until real executors are composed in P2
+- Job cancellation on existing records & fail-closed retry
 - Truthful failure diagnostics (error codes, retryable flag, stage)
-- Delivery artifact resolution & persistence
+- Delivery artifact resolution without read-side effects
 - Cross-domain integration
 """
 from __future__ import annotations
@@ -18,7 +20,7 @@ from __future__ import annotations
 # ─────────────────────────────────────────────────────────────────────────────
 
 class TestProductionPlan:
-    def test_get_or_create_production_plan(self, client):
+    def test_get_existing_production_plan(self, client):
         r = client.get("/api/v3/episodes/ep-cb-001/production")
         assert r.status_code == 200
         plan = r.json()
@@ -28,6 +30,17 @@ class TestProductionPlan:
         assert "status" in plan
         assert "progress_percent" in plan
         assert "version" in plan
+
+    def test_get_missing_production_plan_does_not_create(self, client):
+        """P1.0 truth repair: GET is read-only — no synthetic plan, no fake pins."""
+        r = client.get("/api/v3/episodes/ep-p10-uninitialized/production")
+        assert r.status_code == 404
+        detail = r.json()["detail"]
+        assert detail["error_code"] == "PRODUCTION_PLAN_NOT_CREATED"
+
+        # No record was created by the failed read.
+        r2 = client.get("/api/v3/episodes/ep-p10-uninitialized/production")
+        assert r2.status_code == 404
 
     def test_create_production_plan_pinned_revisions(self, client):
         payload = {
@@ -115,75 +128,64 @@ class TestShots:
 # ─────────────────────────────────────────────────────────────────────────────
 
 class TestStageJobs:
-    def test_submit_audio_job_receipt(self, client):
+    """P1.0 truth repair (P1.0.5): stage jobs fail closed without a real executor.
+
+    AUDIO / ANIMATION / RENDER / VIDEO submissions must return
+    CAPABILITY_UNAVAILABLE and persist nothing until P2 wires executors.
+    """
+
+    def _assert_capability_unavailable(self, client, stage):
         r = client.post(
-            "/api/v3/episodes/ep-cb-001/production/audio/submit",
-            json={"shot_id": "shot-cb-001-01", "correlation_id": "test-corr-audio-01"},
+            f"/api/v3/episodes/ep-cb-001/production/{stage}/submit",
+            json={"shot_id": "shot-cb-001-01", "correlation_id": "test-corr-fail-closed"},
         )
-        assert r.status_code == 201
-        receipt = r.json()
-        assert "job_id" in receipt
-        assert receipt["state"] == "QUEUED"
-        assert receipt["correlation_id"] == "test-corr-audio-01"
+        assert r.status_code == 503
+        detail = r.json()["detail"]
+        assert detail["error_code"] == "CAPABILITY_UNAVAILABLE"
+        assert detail["job_type"] == stage.upper()
+        return r
 
-    def test_submit_animation_job_receipt(self, client):
-        r = client.post(
-            "/api/v3/episodes/ep-cb-001/production/animation/submit",
-            json={"shot_id": "shot-cb-001-01"},
+    def test_submit_audio_job_fails_closed(self, client):
+        self._assert_capability_unavailable(client, "audio")
+
+    def test_submit_animation_job_fails_closed(self, client):
+        self._assert_capability_unavailable(client, "animation")
+
+    def test_submit_render_job_fails_closed(self, client):
+        self._assert_capability_unavailable(client, "render")
+
+    def test_submit_video_job_fails_closed(self, client):
+        self._assert_capability_unavailable(client, "video")
+
+    def test_failed_submission_persists_no_queued_job(self, client):
+        """No fake QUEUED record may survive a failed submission."""
+        before = len(client.get("/api/v3/episodes/ep-cb-001/production/jobs").json())
+        self._assert_capability_unavailable(client, "render")
+        after = len(client.get("/api/v3/episodes/ep-cb-001/production/jobs").json())
+        assert after == before, "CAPABILITY_UNAVAILABLE submission must not create job records"
+
+    def test_retry_fails_closed_without_executor(self, client):
+        retry_r = client.post(
+            "/api/v3/episodes/ep-cb-001/production/audio/retry",
+            json={"job_id": "job-audio-001"},
         )
-        assert r.status_code == 201
-        receipt = r.json()
-        assert "job_id" in receipt
-        assert receipt["state"] == "QUEUED"
+        assert retry_r.status_code == 503
+        assert retry_r.json()["detail"]["error_code"] == "CAPABILITY_UNAVAILABLE"
 
-    def test_submit_render_job_receipt(self, client):
-        r = client.post(
-            "/api/v3/episodes/ep-cb-001/production/render/submit",
-            json={"shot_id": "shot-cb-001-02"},
-        )
-        assert r.status_code == 201
-        receipt = r.json()
-        assert "job_id" in receipt
-        assert receipt["state"] == "QUEUED"
-
-    def test_submit_video_job_receipt(self, client):
-        r = client.post(
-            "/api/v3/episodes/ep-cb-001/production/video/submit",
-            json={},
-        )
-        assert r.status_code == 201
-        receipt = r.json()
-        assert "job_id" in receipt
-        assert receipt["state"] == "QUEUED"
-
-    def test_cancel_job(self, client):
-        # Create a job first
-        sub_r = client.post(
-            "/api/v3/episodes/ep-cb-001/production/render/submit",
-            json={"shot_id": "shot-cb-001-03"},
-        )
-        job_id = sub_r.json()["job_id"]
-
+    def test_cancel_existing_job(self, client):
         cancel_r = client.post(
             "/api/v3/episodes/ep-cb-001/production/render/cancel",
-            json={"job_id": job_id, "reason": "User stopped execution"},
+            json={"job_id": "job-render-001", "reason": "User stopped execution"},
         )
         assert cancel_r.status_code == 200
         assert cancel_r.json()["state"] == "CANCELLED"
 
-    def test_retry_job(self, client):
-        sub_r = client.post(
-            "/api/v3/episodes/ep-cb-001/production/audio/submit",
-            json={"shot_id": "shot-cb-001-02"},
+    def test_cancel_unknown_job_404(self, client):
+        cancel_r = client.post(
+            "/api/v3/episodes/ep-cb-001/production/render/cancel",
+            json={"job_id": "job-does-not-exist"},
         )
-        job_id = sub_r.json()["job_id"]
-
-        retry_r = client.post(
-            "/api/v3/episodes/ep-cb-001/production/audio/retry",
-            json={"job_id": job_id},
-        )
-        assert retry_r.status_code == 200
-        assert retry_r.json()["state"] == "QUEUED"
+        assert cancel_r.status_code == 404
 
     def test_list_jobs_and_filter_by_stage(self, client):
         r = client.get("/api/v3/episodes/ep-cb-001/production/jobs")
@@ -211,6 +213,12 @@ class TestDeliveryPackage:
         assert "codec" in delivery
         assert "duration_seconds" in delivery
         assert "file_size_bytes" in delivery
+
+    def test_get_missing_delivery_does_not_create(self, client):
+        """P1.0 truth repair: reads never fabricate delivery records."""
+        r = client.get("/api/v3/episodes/ep-p10-uninitialized/production/delivery")
+        assert r.status_code == 404
+        assert r.json()["detail"]["error_code"] == "DELIVERY_ARTIFACT_NOT_READY"
 
 
 # ─────────────────────────────────────────────────────────────────────────────

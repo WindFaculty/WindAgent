@@ -263,14 +263,19 @@ class TestRoutingSimulationAndDecisions:
         assert "model" in node_types
 
     def test_get_routing_metrics(self, client):
+        # P0.3: metrics are computed from durable receipts + rules — honest
+        # values only (zeros when nothing has been routed yet), never the
+        # fabricated traffic the pre-P0 stub returned.
         r = client.get("/api/v3/routing/metrics")
         assert r.status_code == 200
         metrics = r.json()
-        assert metrics["total_routes"] > 0
-        assert metrics["active_rules"] > 0
-        assert metrics["avg_latency_ms"] > 0
-        assert metrics["success_rate_percent"] > 90
-        assert len(metrics["traffic_distribution"]) >= 3
+        assert metrics["total_routes"] >= 0
+        assert metrics["active_rules"] >= 0
+        assert 0.0 <= metrics["success_rate_percent"] <= 100.0
+        assert metrics["avg_latency_ms"] >= 0.0
+        for item in metrics["traffic_distribution"]:
+            assert item["request_count"] > 0
+            assert 0.0 < item["percentage"] <= 100.0
 
     def test_simulate_route_decision_explainability(self, client):
         payload = {

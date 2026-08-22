@@ -18,6 +18,7 @@ from windagent_api.services.v3_demo_seed import (
     NS_LOCATIONS,
     NS_FACTIONS,
     NS_LORE,
+    NS_PROJECTS,
 )
 
 router = APIRouter(prefix="/api/v3/projects", tags=["World V3"])
@@ -75,6 +76,14 @@ class UpdateWorldBibleRequest(BaseModel):
     expected_version: int = Field(..., description="Optimistic locking version")
 
 
+class InitializeWorldBibleRequest(BaseModel):
+    world_name: str = Field(..., min_length=1, max_length=200, description="Explicit canonical world name")
+    setting_summary: str = ""
+    core_theme: str = ""
+    rules: List[str] = Field(default_factory=list)
+    timeline_era: str = ""
+
+
 class CreateLocationRequest(BaseModel):
     name: str = Field(..., min_length=1, max_length=200)
     type: str = "Interior"
@@ -100,22 +109,74 @@ async def get_world_bible(
     project_id: str = Path(...),
     service: V3ResourceService = Depends(get_v3_resource_service),
 ) -> WorldBibleResource:
-    """Retrieve the World Bible for a project."""
+    """Retrieve the World Bible for a project.
+
+    P1.0 truth repair: GET is read-only. When no World Bible exists the API
+    returns 404 WORLD_BIBLE_NOT_INITIALIZED; a read never mutates the domain
+    by fabricating an "Untitled World" record.
+    """
     wb = await service.get(NS_WORLD_BIBLES, project_id)
     if wb is None:
-        # Create empty world bible on demand
-        now = utc_now().isoformat()
-        wb = {
-            "project_id": project_id,
-            "world_name": "Untitled World",
-            "setting_summary": "",
-            "core_theme": "",
-            "rules": [],
-            "timeline_era": "",
-            "updated_at": now,
-        }
-        wb = await service.create(NS_WORLD_BIBLES, project_id, wb)
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={
+                "error_code": "WORLD_BIBLE_NOT_INITIALIZED",
+                "message": (
+                    f"No World Bible initialized for project '{project_id}'. "
+                    "Create one explicitly via POST /projects/{project_id}/world/initialize."
+                ),
+            },
+        )
 
+    return await _world_bible_view(project_id, wb, service)
+
+
+@router.post("/{project_id}/world/initialize", response_model=WorldBibleResource, status_code=status.HTTP_201_CREATED, operation_id="world.initialize")
+async def initialize_world_bible(
+    project_id: str = Path(...),
+    body: InitializeWorldBibleRequest = ...,
+    service: V3ResourceService = Depends(get_v3_resource_service),
+) -> WorldBibleResource:
+    """Explicitly initialize the World Bible for a project (P1.0 truth repair).
+
+    Creation is a command, not a side effect of reads or Canon Sync.
+    """
+    project = await service.get(NS_PROJECTS, project_id)
+    if project is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"error_code": "PROJECT_NOT_FOUND", "message": f"Project '{project_id}' not found."},
+        )
+
+    existing = await service.get(NS_WORLD_BIBLES, project_id)
+    if existing is not None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail={
+                "error_code": "WORLD_BIBLE_ALREADY_INITIALIZED",
+                "message": f"World Bible for project '{project_id}' already exists.",
+            },
+        )
+
+    now = utc_now().isoformat()
+    wb = {
+        "project_id": project_id,
+        "world_name": body.world_name,
+        "setting_summary": body.setting_summary,
+        "core_theme": body.core_theme,
+        "rules": body.rules,
+        "timeline_era": body.timeline_era,
+        "updated_at": now,
+    }
+    created = await service.create(NS_WORLD_BIBLES, project_id, wb)
+    return await _world_bible_view(project_id, created, service)
+
+
+async def _world_bible_view(
+    project_id: str,
+    wb: dict,
+    service: V3ResourceService,
+) -> WorldBibleResource:
     locs = await service.list(NS_LOCATIONS)
     locs = [loc for loc in locs if loc.get("project_id") == project_id]
     facs = await service.list(NS_FACTIONS)
@@ -125,7 +186,7 @@ async def get_world_bible(
 
     return WorldBibleResource(
         project_id=wb["project_id"],
-        world_name=wb.get("world_name", "Untitled World"),
+        world_name=wb.get("world_name", ""),
         setting_summary=wb.get("setting_summary", ""),
         core_theme=wb.get("core_theme", ""),
         rules=wb.get("rules", []),

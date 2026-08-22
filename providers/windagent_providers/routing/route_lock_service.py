@@ -272,6 +272,54 @@ class RouteLockService:
         )
         return new_record
 
+    def create_fallback_lock(
+        self,
+        scope_type: str,
+        scope_id: str,
+        canonical_model_id: str,
+        reason: str,
+        source_lock_id: Optional[str] = None,
+    ) -> RouteLockRecord:
+        """Create a durable lock pinned to an explicit fallback model.
+
+        Model-level failover (P0.3.5) never mutates the primary route lock's
+        canonical model; instead a separate pinned lock is created so endpoint
+        attempts stay FK-consistent and fully audited. No rule evaluation
+        happens here: the caller resolved the target model from the matched
+        rule's declared fallback chain.
+        """
+        if canonical_model_id in self._disabled_models:
+            raise CanonicalModelDisabledError(canonical_model_id)
+        snapshot = {
+            "rule_id": "fallback",
+            "rule_version": 1,
+            "canonical_model_id": canonical_model_id,
+            "selected_at": time.time(),
+            "reason": reason,
+            "fallback": True,
+            "source_lock_id": source_lock_id or "",
+        }
+        lock_dict = self._lock_repo.create_lock(
+            scope_type=scope_type or "fallback",
+            scope_id=scope_id,
+            canonical_model_id=canonical_model_id,
+            routing_snapshot=snapshot,
+            policy_version=1,
+        )
+        record = RouteLockRecord.from_dict(lock_dict)
+        self._audit(
+            action="fallback",
+            scope_type=record.scope,
+            scope_id=record.scope_id,
+            lock_id=record.lock_id,
+            canonical_model_id=canonical_model_id,
+            previous_canonical_model_id="",
+            new_canonical_model_id=canonical_model_id,
+            reason=reason[:255],
+            metadata={"source_lock_id": source_lock_id or ""},
+        )
+        return record
+
     def get_active_lock(self, scope_type: str, scope_id: str) -> Optional[RouteLockRecord]:
         scope_key = self._scope_key(scope_type, scope_id)
         return self._repo_get_active(scope_key)

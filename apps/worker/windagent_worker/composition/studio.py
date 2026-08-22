@@ -74,31 +74,50 @@ class StudioComposer:
             from windagent_worker.studio_model_port import (
                 RouteLockedModelPort,
                 build_studio_ruleset,
+                compose_story_ruleset,
             )
 
             canonical_model = settings.studio_canonical_model or None
-            if canonical_model:
-                ruleset = build_studio_ruleset(canonical_model)
-                endpoint_bindings = binding_repo.get_exact_equivalent_endpoints(
-                    canonical_model
-                )
-            else:
+            sql_ruleset = None
+            if provider_management_repo is not None:
                 from windagent_providers.management import RoutingPolicyProjection
 
-                ruleset = (
-                    RoutingPolicyProjection(provider_management_repo).load_ruleset()
-                    if provider_management_repo is not None
-                    else build_studio_ruleset(None)
-                )
-                seen: set[str] = set()
-                for rule in ruleset.sorted_rules():
-                    for binding in binding_repo.get_exact_equivalent_endpoints(
-                        rule.canonical_model_id
-                    ):
+                sql_ruleset = RoutingPolicyProjection(
+                    provider_management_repo
+                ).load_ruleset()
+            if canonical_model:
+                # P0.3.4 resolution order: durable SQL role rules first, the
+                # configured system default appended once at lowest priority.
+                if sql_ruleset is not None:
+                    ruleset = compose_story_ruleset(
+                        sql_ruleset, system_default_model=canonical_model
+                    )
+                else:
+                    ruleset = build_studio_ruleset(canonical_model)
+            elif sql_ruleset is not None:
+                ruleset = sql_ruleset
+            else:
+                ruleset = build_studio_ruleset(None)
+            seen: set[str] = set()
+            for rule in ruleset.sorted_rules():
+                targets = [rule.canonical_model_id]
+                if rule.fallback_model_id:
+                    targets.append(rule.fallback_model_id)
+                for target in targets:
+                    for binding in binding_repo.get_exact_equivalent_endpoints(target):
                         binding_id = str(binding.get("id", ""))
                         if binding_id not in seen:
                             endpoint_bindings.append(binding)
                             seen.add(binding_id)
+            receipt_repository = None
+            try:
+                from windagent_storage.repositories.v3_routing_repositories import (
+                    SQLModelRouteReceiptRepository,
+                )
+
+                receipt_repository = SQLModelRouteReceiptRepository(sync_factory())
+            except Exception as exc:  # noqa: BLE001 — diagnostics stay optional
+                logger.warning("Route receipt repository unavailable: %s", exc)
             route_lock_service = RouteLockService(
                 ruleset=ruleset,
                 lock_repository=lock_repo,
@@ -108,6 +127,7 @@ class StudioComposer:
                 route_lock_service,
                 coordinator,
                 canonical_model=canonical_model,
+                receipt_repository=receipt_repository,
             )
         return StudioRouteBundle(
             provider_execution_coordinator=coordinator,

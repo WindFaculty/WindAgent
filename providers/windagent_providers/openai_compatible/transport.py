@@ -577,12 +577,26 @@ class OpenAICompatibleTransport:
             results = []
             for item in raw_models:
                 m_id = item.get("id", "")
+                pricing = item.get("pricing") or {}
+                context_window: Optional[int] = None
+                for key in ("context_length", "context_window"):
+                    value = item.get(key)
+                    if isinstance(value, int) and value > 0:
+                        context_window = value
+                        break
                 results.append(
                     DiscoveredModel(
                         raw_model_id=m_id,
                         canonical_name=m_id,
                         provider_id=self.provider_name,
+                        context_window=context_window,
                         capabilities=["chat", "streaming", "tool_use"],
+                        display_name=item.get("name") or None,
+                        # Raw provider-advertised prices (USD/token strings);
+                        # classification happens at persistence time and stays
+                        # UNKNOWN when the catalog omits them.
+                        pricing_prompt=pricing.get("prompt"),
+                        pricing_completion=pricing.get("completion"),
                     )
                 )
             return results

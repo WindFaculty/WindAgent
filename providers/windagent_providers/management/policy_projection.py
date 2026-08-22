@@ -42,18 +42,24 @@ class RoutingPolicyProjection:
             policy = json.loads(r.policy_json) if r.policy_json else {}
         except (TypeError, ValueError):
             policy = {}
+        role = r.role.strip()
         return RoutingRule(
-            rule_id=f"role-{r.role}",
+            rule_id=f"role-{role}",
             rule_version=int(policy.get("version", 1)),
             canonical_model_id=r.primary_canonical_model_id,
+            fallback_model_id=r.fallback_canonical_model_id,
             description=r.description or r.name,
             enabled=r.enabled,
             priority=r.priority,
             agent_types=policy.get("agent_types", []),
             # RouteLockedModelPort exposes the requested role/capability as a
             # task label. A dedicated SQL role therefore matches Worker
-            # requests without relying on an unset agent_type field.
-            task_labels=policy.get("task_labels") or [r.role],
+            # requests without relying on an unset agent_type field. The
+            # request CONTEXT is expanded to the story-role equivalence class
+            # (P0.3.1), so a canonical role or plan alias also matches the
+            # short prompt-registry capabilities — rules keep their verbatim
+            # role as the single required label.
+            task_labels=policy.get("task_labels") or [role],
             workflow_types=policy.get("workflow_types", []),
             required_capabilities=policy.get("required_capabilities", []),
             min_context_tokens=int(policy.get("min_context_tokens", 0)),

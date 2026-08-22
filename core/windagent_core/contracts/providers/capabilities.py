@@ -95,13 +95,48 @@ class ModelDescriptor:
 
 @dataclass
 class DiscoveredModel:
-    """Dynamically Discovered Model Information."""
+    """Dynamically Discovered Model Information.
+
+    Pricing fields carry the RAW strings returned by the provider catalog
+    (e.g. OpenRouter ``pricing.prompt``/``pricing.completion``, USD per
+    token). ``None`` means the provider did not advertise pricing — callers
+    must classify such models as UNKNOWN and never guess FREE/PAID.
+    """
 
     raw_model_id: str
     canonical_name: str
     provider_id: str
     context_window: Optional[int] = None
     capabilities: List[str] = field(default_factory=list)
+    display_name: Optional[str] = None
+    pricing_prompt: Optional[str] = None
+    pricing_completion: Optional[str] = None
+
+
+PRICING_CLASS_FREE = "FREE"
+PRICING_CLASS_PAID = "PAID"
+PRICING_CLASS_UNKNOWN = "UNKNOWN"
+
+
+def classify_pricing_class(
+    pricing_prompt: Optional[str], pricing_completion: Optional[str]
+) -> str:
+    """Classify FREE/PAID strictly from provider-advertised pricing.
+
+    - both prices advertised and exactly zero -> FREE
+    - both advertised and any nonzero      -> PAID
+    - missing or unparseable               -> UNKNOWN (never guessed)
+    """
+    if pricing_prompt is None or pricing_completion is None:
+        return PRICING_CLASS_UNKNOWN
+    try:
+        prompt_value = float(str(pricing_prompt).strip())
+        completion_value = float(str(pricing_completion).strip())
+    except (TypeError, ValueError):
+        return PRICING_CLASS_UNKNOWN
+    if prompt_value == 0.0 and completion_value == 0.0:
+        return PRICING_CLASS_FREE
+    return PRICING_CLASS_PAID
 
 
 @dataclass

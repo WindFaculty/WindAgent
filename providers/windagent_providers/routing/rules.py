@@ -69,6 +69,10 @@ class RoutingRule:
     enabled: bool = True
     priority: int = RulePriority.NORMAL
 
+    # Model-level fallback target (P0.3.5). Never used for matching; carried
+    # so the executor may retry transient failures against another model.
+    fallback_model_id: Optional[str] = None
+
     # Predicates
     task_labels: List[str] = field(default_factory=list)
     agent_types: List[str] = field(default_factory=list)

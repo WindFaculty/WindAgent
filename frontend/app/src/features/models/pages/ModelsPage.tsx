@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import type { ModelDefinitionResource } from '@windagent/api-contracts';
+import type { ModelDefinitionResource, ModelPricingClass } from '@windagent/api-contracts';
 import { useModels } from '../hooks/useModels';
 import { ModelCapabilities } from '../components/ModelCapabilities';
 import { ModelAvailability } from '../components/ModelAvailability';
@@ -9,12 +9,14 @@ export const ModelsPage: React.FC = () => {
   const [search, setSearch] = useState('');
   const [selectedProvider, setSelectedProvider] = useState<string>('all');
   const [selectedCapability, setSelectedCapability] = useState<string>('all');
+  const [selectedPricing, setSelectedPricing] = useState<string>('all');
   const [localOnly, setLocalOnly] = useState(false);
   const [activeModel, setActiveModel] = useState<ModelDefinitionResource | null>(null);
 
   const { data: models = [], isLoading, error } = useModels({
     provider: selectedProvider !== 'all' ? selectedProvider : undefined,
     capability: selectedCapability !== 'all' ? selectedCapability : undefined,
+    pricing: selectedPricing !== 'all' ? (selectedPricing as ModelPricingClass) : undefined,
     is_local: localOnly ? true : undefined,
     search: search.trim() || undefined,
   });
@@ -181,6 +183,24 @@ export const ModelsPage: React.FC = () => {
           <option value="reasoning">Reasoning</option>
         </select>
 
+        <select
+          value={selectedPricing}
+          onChange={(e) => setSelectedPricing(e.target.value)}
+          style={{
+            padding: '8px 12px',
+            backgroundColor: 'var(--bg-subpanel, #1f2937)',
+            border: '1px solid var(--border-color, #374151)',
+            borderRadius: '6px',
+            color: 'var(--text-primary, #f9fafb)',
+            fontSize: '0.85rem',
+          }}
+        >
+          <option value="all">All Pricing</option>
+          <option value="FREE">Free</option>
+          <option value="PAID">Paid</option>
+          <option value="UNKNOWN">Unknown pricing</option>
+        </select>
+
         <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '0.85rem', color: 'var(--text-secondary, #d1d5db)' }}>
           <input
             type="checkbox"
@@ -248,7 +268,24 @@ export const ModelsPage: React.FC = () => {
                   >
                     {model.vendor}
                   </span>
-                  <ModelAvailability bindings={model.bindings} isActive={model.is_active} />
+                  <div style={{ alignItems: 'center', display: 'flex', gap: '6px' }}>
+                    {model.pricing_class && model.pricing_class !== 'UNKNOWN' && (
+                      <span
+                        style={{
+                          fontSize: '0.68rem',
+                          fontWeight: 700,
+                          textTransform: 'uppercase',
+                          padding: '2px 6px',
+                          borderRadius: '4px',
+                          backgroundColor: model.pricing_class === 'FREE' ? 'rgba(74, 222, 128, 0.15)' : 'rgba(251, 191, 36, 0.15)',
+                          color: model.pricing_class === 'FREE' ? '#4ade80' : '#fbbf24',
+                        }}
+                      >
+                        {model.pricing_class}
+                      </span>
+                    )}
+                    <ModelAvailability bindings={model.bindings} isActive={model.is_active} />
+                  </div>
                 </div>
                 <div>
                   <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-primary, #f9fafb)' }}>

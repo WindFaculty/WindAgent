@@ -5,6 +5,10 @@ No fake setTimeout timers. All generation returns a server-issued job ID.
 
 Phase 4: storyboards, scenes, and generation jobs are persisted through the
 namespaced durable V3 resource authority. No module-level RAM stores.
+
+P1.0 truth repair: storyboard sync reads the ACTUAL locked screenplay from
+the lock authority (no synthetic ``rev-{episode_id}-lock`` ids) and scenes
+carry full ownership lineage (episode/storyboard/revision, local numbering).
 """
 from __future__ import annotations
 import asyncio
@@ -14,6 +18,11 @@ from fastapi import APIRouter, Depends, HTTPException, Path, WebSocket, WebSocke
 from pydantic import BaseModel, Field
 from windagent_core.domain.lifecycle import utc_now
 from windagent_api.dependencies import get_v3_resource_service
+from windagent_api.services.preproduction_authority import (
+    EpisodeNotFoundError,
+    ScreenplayNotLockedError,
+    resolve_locked_screenplay,
+)
 from windagent_api.services.v3_resource_service import V3ResourceService
 from windagent_api.services.v3_demo_seed import (
     NS_STORYBOARDS,
@@ -47,6 +56,8 @@ class StoryboardResource(BaseModel):
     id: str
     episode_id: str
     source_screenplay_revision_id: str
+    source_screenplay_content_hash: Optional[str] = None
+    source_screenplay_artifact_id: Optional[str] = None
     status: str = "DRAFT"
     scenes_count: int = 0
     version: int = 1
@@ -67,12 +78,16 @@ class GenerationJobResource(BaseModel):
 
 
 class CreateSceneRequest(BaseModel):
+    storyboard_id: str = Field(..., min_length=1, description="Owning storyboard (no orphan scenes)")
     title: str = Field(..., min_length=1, max_length=200)
     script_text: str = ""
     location: str = ""
     character_ids: List[str] = Field(default_factory=list)
     duration_seconds: int = 120
-    source_screenplay_revision_id: Optional[str] = None
+    source_screenplay_revision_id: Optional[str] = Field(
+        None,
+        description="Must match the storyboard's pinned screenplay revision when provided.",
+    )
 
 
 class UpdateSceneRequest(BaseModel):
@@ -108,6 +123,8 @@ async def get_episode_storyboard(
         id=sb["id"],
         episode_id=sb["episode_id"],
         source_screenplay_revision_id=sb["source_screenplay_revision_id"],
+        source_screenplay_content_hash=sb.get("source_screenplay_content_hash"),
+        source_screenplay_artifact_id=sb.get("source_screenplay_artifact_id"),
         status=sb.get("status", "DRAFT"),
         scenes_count=len(scenes),
         version=sb.get("version", 1),
@@ -121,14 +138,34 @@ async def sync_storyboard_from_screenplay(
     episode_id: str = Path(...),
     service: V3ResourceService = Depends(get_v3_resource_service),
 ) -> StoryboardResource:
-    """Sync storyboard scenes from the locked screenplay revision."""
+    """Sync storyboard from the ACTUAL locked screenplay revision.
+
+    P1.0 truth repair: resolves the lock authority receipt first. When the
+    episode has no locked screenplay the request fails closed with
+    409 SCREENPLAY_NOT_LOCKED and no storyboard record is created.
+    """
+    try:
+        locked = await resolve_locked_screenplay(service, episode_id)
+    except EpisodeNotFoundError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"error_code": exc.code, "message": exc.message},
+        ) from exc
+    except ScreenplayNotLockedError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail={"error_code": exc.code, "message": exc.message},
+        ) from exc
+
     sb = await service.get(NS_STORYBOARDS, episode_id)
     now = utc_now().isoformat()
     if sb is None:
         sb_data = {
             "id": f"sb-{uuid.uuid4().hex[:8]}",
             "episode_id": episode_id,
-            "source_screenplay_revision_id": f"rev-{episode_id}-lock",
+            "source_screenplay_revision_id": locked.revision_id,
+            "source_screenplay_content_hash": locked.content_hash or None,
+            "source_screenplay_artifact_id": locked.artifact_id,
             "status": "SYNCED",
             "created_at": now,
             "updated_at": now,
@@ -136,6 +173,9 @@ async def sync_storyboard_from_screenplay(
         await service.create(NS_STORYBOARDS, episode_id, sb_data)
     else:
         updates = dict(sb)
+        updates["source_screenplay_revision_id"] = locked.revision_id
+        updates["source_screenplay_content_hash"] = locked.content_hash or None
+        updates["source_screenplay_artifact_id"] = locked.artifact_id
         updates["status"] = "SYNCED"
         updates["updated_at"] = now
         await service.update(NS_STORYBOARDS, episode_id, updates, sb["version"])
@@ -159,15 +199,53 @@ async def create_scene(
     body: CreateSceneRequest = ...,
     service: V3ResourceService = Depends(get_v3_resource_service),
 ) -> SceneResource:
-    """Create a new storyboard scene."""
-    scene_id = f"scene-{uuid.uuid4().hex[:8]}"
+    """Create a storyboard scene with full ownership lineage (P1.0 truth repair).
+
+    A scene MUST belong to an existing storyboard (and through it an episode),
+    pin the storyboard's actual screenplay revision, and number locally within
+    that storyboard. Orphan scenes cannot be created.
+    """
+    # Storyboards are stored episode-keyed; resolve the board by its public
+    # identifier (or the episode-scoped key) without inventing one.
+    boards = await service.list(NS_STORYBOARDS)
+    sb = next(
+        (
+            b
+            for b in boards
+            if b.get("id") == body.storyboard_id or b.get("episode_id") == body.storyboard_id
+        ),
+        None,
+    )
+    if sb is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"error_code": "STORYBOARD_NOT_FOUND", "message": f"Storyboard '{body.storyboard_id}' not found."},
+        )
+
+    board_revision = str(sb.get("source_screenplay_revision_id") or "")
+    if body.source_screenplay_revision_id and body.source_screenplay_revision_id != board_revision:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail={
+                "error_code": "SCREENPLAY_REVISION_MISMATCH",
+                "message": (
+                    f"Scene revision '{body.source_screenplay_revision_id}' does not match "
+                    f"storyboard pin '{board_revision}'."
+                ),
+            },
+        )
+
     now = utc_now().isoformat()
     scenes = await service.list(NS_SCENES)
+    board_scenes = [s for s in scenes if s.get("storyboard_id") == body.storyboard_id]
+    scene_number = max((int(s.get("scene_number", 0)) for s in board_scenes), default=0) + 1
+
+    scene_id = f"scene-{uuid.uuid4().hex[:8]}"
     new_scene = {
         "id": scene_id,
-        "storyboard_id": "",
-        "episode_id": "",
-        "scene_number": len(scenes) + 1,
+        "storyboard_id": sb["id"],
+        "episode_id": sb["episode_id"],
+        "scene_number": scene_number,
         "title": body.title,
         "status": "DRAFT",
         "script_text": body.script_text,
@@ -175,7 +253,7 @@ async def create_scene(
         "location": body.location,
         "character_ids": body.character_ids,
         "concept_image_url": None,
-        "source_screenplay_revision_id": body.source_screenplay_revision_id,
+        "source_screenplay_revision_id": board_revision,
         "created_at": now,
         "updated_at": now,
     }
