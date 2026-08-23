@@ -4019,6 +4019,18 @@
         "title": "FileResource",
         "type": "object"
       },
+      "FinalizePackageRequest": {
+        "properties": {
+          "production_target": {
+            "default": "GENERIC_3D",
+            "description": "Target engine label stored on the package. P1 never executes the engine.",
+            "title": "Production Target",
+            "type": "string"
+          }
+        },
+        "title": "FinalizePackageRequest",
+        "type": "object"
+      },
       "GenerationJobResource": {
         "properties": {
           "completed_at": {
@@ -14361,6 +14373,154 @@
         ]
       }
     },
+    "/api/v3/episodes/{episode_id}/production/package/actions/finalize": {
+      "post": {
+        "description": "Freeze the pre-production state into an immutable Production Package.\n\nFails closed with every blocking finding when preflight is BLOCKED.\nContent-addressed idempotency: finalizing unchanged content returns the\nSAME package (HTTP 200); changed content yields a NEW immutable package.",
+        "operationId": "production.finalizePackage",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "episode_id",
+            "required": true,
+            "schema": {
+              "title": "Episode Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FinalizePackageRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Production.Finalizepackage",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Finalize Package",
+        "tags": [
+          "Production V3"
+        ]
+      }
+    },
+    "/api/v3/episodes/{episode_id}/production/package/preflight": {
+      "get": {
+        "description": "Read-only production package preflight (plan \u00a7P1.6.3). Never mutates.",
+        "operationId": "production.preflightPackage",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "episode_id",
+            "required": true,
+            "schema": {
+              "title": "Episode Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Production.Preflightpackage",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Preflight Package Endpoint",
+        "tags": [
+          "Production V3"
+        ]
+      }
+    },
+    "/api/v3/episodes/{episode_id}/production/packages": {
+      "get": {
+        "description": "Finalized packages for an episode, newest first.",
+        "operationId": "production.listPackages",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "episode_id",
+            "required": true,
+            "schema": {
+              "title": "Episode Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "title": "Response Production.Listpackages",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Packages",
+        "tags": [
+          "Production V3"
+        ]
+      }
+    },
     "/api/v3/episodes/{episode_id}/production/plan": {
       "post": {
         "description": "Initialize or update production plan with pinned screenplay & storyboard revisions.",
@@ -16396,6 +16556,51 @@
           }
         },
         "summary": "Get Production Job",
+        "tags": [
+          "Production V3"
+        ]
+      }
+    },
+    "/api/v3/production/packages/{package_id}": {
+      "get": {
+        "description": "Fetch one finalized package by its content-addressed id.",
+        "operationId": "production.getPackage",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "package_id",
+            "required": true,
+            "schema": {
+              "title": "Package Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Production.Getpackage",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Package",
         "tags": [
           "Production V3"
         ]

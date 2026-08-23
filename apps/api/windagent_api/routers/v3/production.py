@@ -19,17 +19,33 @@ from __future__ import annotations
 import asyncio
 import uuid
 from typing import Any, Dict, List, Optional
-from fastapi import APIRouter, Depends, HTTPException, Path, Query, WebSocket, WebSocketDisconnect, status
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, Response, WebSocket, WebSocketDisconnect, status
 from pydantic import BaseModel, Field
 from windagent_core.domain.lifecycle import utc_now
 from windagent_api.dependencies import get_v3_resource_service
 from windagent_api.services.v3_resource_service import V3ResourceService
-from windagent_api.services.character_canon_authority import compute_content_hash
+from windagent_api.services.character_canon_authority import (
+    CHARACTER_STATUS_PRODUCTION_READY,
+    compute_content_hash,
+)
+from windagent_api.services.preproduction_authority import (
+    LockedScreenplayRef,
+    PreproductionAuthorityError,
+    resolve_locked_screenplay,
+)
+from windagent_api.services.asset_requirement_authority import NS_ASSET_REQUIREMENTS
+from windagent_api.routers.v3.storyboard import (
+    NS_STORYBOARD_REVISIONS,
+    _compute_storyboard_revision_hash,
+)
+from windagent_api.routers.v3.assets import ASSET_STATUS_PINNED
 from windagent_api.services.v3_demo_seed import (
     NS_CHARACTERS,
+    NS_EPISODES,
     NS_PRODUCTION_PLANS,
     NS_SCENES,
     NS_SHOTS,
+    NS_WORLD_BIBLES,
     NS_PRODUCTION_JOBS,
     NS_DELIVERY_ARTIFACTS,
 )
@@ -630,7 +646,7 @@ async def validate_episode_shots(
             })
 
     scene_total = sum(int(s.get("duration_seconds", 0)) for s in scenes)
-    ep = await service.get("episodes", episode_id)
+    ep = await service.get(NS_EPISODES, episode_id)
     target_duration = ((ep or {}).get("metadata") or {}).get("target_duration_seconds")
     if target_duration is None:
         if scenes:
@@ -1116,6 +1132,516 @@ async def merge_shots(
 
     await service.delete(NS_SHOTS, second["id"])
     return _shot_to_resource(merged or merged_updates)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# P1.6 — Production Package: preflight validation + immutable handoff
+# ─────────────────────────────────────────────────────────────────────────────
+
+NS_PRODUCTION_PACKAGES = "production_packages"
+NS_LOCATIONS = "locations"
+PACKAGE_SCHEMA = "windagent.production_package.v1"
+PRODUCTION_TARGETS = ("BLENDER", "UNREAL", "GENERIC_3D")
+
+
+class FinalizePackageRequest(BaseModel):
+    production_target: str = Field(
+        "GENERIC_3D",
+        description="Target engine label stored on the package. P1 never executes the engine.",
+    )
+
+
+def _referenced_character_ids(
+    scenes: List[Dict[str, Any]], shots: List[Dict[str, Any]]
+) -> List[str]:
+    refs: set = set()
+    for s in scenes:
+        refs |= set(s.get("character_ids") or [])
+    for s in shots:
+        refs |= set(s.get("subject_character_refs") or [])
+    return sorted(refs)
+
+
+def _episode_requirement(req: Dict[str, Any], episode_id: str) -> bool:
+    if str(req.get("episode_id") or "") == episode_id:
+        return True
+    # Older requirement rows may only carry scene_usage scene numbers.
+    return False
+
+
+async def build_production_preflight(
+    service: V3ResourceService, episode_id: str
+) -> Dict[str, Any]:
+    """Read-only preflight validator (plan §P1.6.3).
+
+    Returns READY/BLOCKED with blocking_findings[] and warnings[]. A GET never
+    mutates state and never fabricates readiness.
+    """
+    blocking: List[Dict[str, Any]] = []
+    warnings: List[Dict[str, Any]] = []
+
+    def block(code: str, message: str, **extra: Any) -> None:
+        finding = {"code": code, "severity": "BLOCKING", "message": message}
+        finding.update(extra)
+        blocking.append(finding)
+
+    def warn(code: str, message: str, **extra: Any) -> None:
+        finding = {"code": code, "severity": "WARNING", "message": message}
+        finding.update(extra)
+        warnings.append(finding)
+
+    checks: Dict[str, Any] = {}
+
+    ep = await service.get(NS_EPISODES, episode_id)
+    if ep is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Episode '{episode_id}' not found.")
+
+    # ── Locked screenplay ────────────────────────────────────────────────────
+    lock_ref = None
+    try:
+        lock_ref = await resolve_locked_screenplay(service, episode_id)
+    except PreproductionAuthorityError as exc:
+        block("SCREENPLAY_NOT_LOCKED", str(exc))
+    checks["screenplay_locked"] = lock_ref is not None
+
+    # ── Storyboard sync + lineage + drift ────────────────────────────────────
+    board = await service.get(NS_STORYBOARDS, episode_id)
+    board_rev: Optional[Dict[str, Any]] = None
+    if board is None:
+        block(
+            "STORYBOARD_NOT_SYNCED",
+            f"Episode '{episode_id}' has no synced storyboard.",
+        )
+        checks["storyboard_synced"] = False
+        checks["storyboard_lineage_matches_lock"] = False
+        checks["storyboard_hash_current"] = False
+    else:
+        checks["storyboard_synced"] = True
+        lineage_ok = True
+        if lock_ref is not None and str(board.get("source_screenplay_revision_id") or "") != lock_ref.revision_id:
+            lineage_ok = False
+            block(
+                "PREPRODUCTION_LINEAGE_MISMATCH",
+                (
+                    f"Storyboard pins screenplay '{board.get('source_screenplay_revision_id')}' "
+                    f"but the episode lock pins '{lock_ref.revision_id}'."
+                ),
+                storyboard_revision=board.get("source_screenplay_revision_id"),
+                locked_revision=lock_ref.revision_id,
+            )
+        checks["storyboard_lineage_matches_lock"] = lineage_ok
+
+        rev_id = str(board.get("current_revision_id") or "")
+        board_rev = await service.get(NS_STORYBOARD_REVISIONS, rev_id) if rev_id else None
+        if board_rev is None or not board_rev.get("content_hash"):
+            checks["storyboard_hash_current"] = False
+            block("STORYBOARD_REVISION_HASH_MISSING", "Storyboard revision has no content hash.")
+        else:
+            current_scenes = [
+                s for s in await service.list(NS_SCENES) if s.get("episode_id") == episode_id
+            ]
+            recomputed = _compute_storyboard_revision_hash(board_rev, current_scenes)
+            drift = recomputed != board_rev["content_hash"]
+            checks["storyboard_hash_current"] = not drift
+            if drift:
+                block(
+                    "STORYBOARD_REVISION_DRIFT",
+                    "Scenes changed after the last storyboard revision stamp.",
+                )
+
+    scenes = sorted(
+        (s for s in await service.list(NS_SCENES) if s.get("episode_id") == episode_id),
+        key=lambda s: s.get("scene_number", 0),
+    )
+    shots = sorted(
+        (s for s in await service.list(NS_SHOTS) if s.get("episode_id") == episode_id),
+        key=lambda s: s.get("shot_number", 0),
+    )
+    if not scenes:
+        block("STORYBOARD_EMPTY", f"Episode '{episode_id}' has no scene records.")
+
+    for scene in scenes:
+        loc_id = str(scene.get("location_id") or "")
+        if not loc_id:
+            warn(
+                "LOCATION_UNRESOLVED",
+                f"Scene {scene.get('scene_number')} has no canonical location_id.",
+                scene_id=scene["id"],
+            )
+        elif await service.get(NS_LOCATIONS, loc_id) is None:
+            block(
+                "LOCATION_UNRESOLVED",
+                f"Scene {scene.get('scene_number')} references unknown location '{loc_id}'.",
+                scene_id=scene["id"],
+                location_id=loc_id,
+            )
+
+    # ── Shot plan pinned + structurally valid ────────────────────────────────
+    plan = await _get_shot_plan(service, episode_id)
+    pinned = plan is not None and str(plan.get("status")) == "PINNED"
+    checks["shot_plan_pinned"] = pinned
+    if not pinned:
+        block(
+            "SHOT_PLAN_NOT_PINNED",
+            f"Episode '{episode_id}' has no pinned shot plan.",
+        )
+
+    validation = await validate_episode_shots(service, episode_id)
+    shot_blockers = [f for f in validation.get("findings", []) if f["severity"] == "BLOCKING"]
+    checks["shots_valid"] = not shot_blockers
+    if shot_blockers:
+        block(
+            "SHOT_PLAN_INVALID",
+            f"{len(shot_blockers)} structural shot finding(s).",
+            findings=shot_blockers,
+        )
+    for finding in validation.get("findings", []):
+        if finding["severity"] == "WARNING":
+            warn(finding["code"], finding["message"])
+
+    # ── Character canon readiness ────────────────────────────────────────────
+    characters_by_id = {c["id"]: c for c in await service.list(NS_CHARACTERS)}
+    referenced_ids = _referenced_character_ids(scenes, shots)
+    unresolved = [cid for cid in referenced_ids if cid not in characters_by_id]
+    not_ready = [
+        {"character_id": cid, "status": str(characters_by_id[cid].get("status") or "")}
+        for cid in referenced_ids
+        if cid in characters_by_id
+        and str(characters_by_id[cid].get("status") or "") != CHARACTER_STATUS_PRODUCTION_READY
+    ]
+    checks["characters_production_ready"] = not unresolved and not not_ready
+    for cid in unresolved:
+        block(
+            "UNRESOLVED_CHARACTER_REF",
+            f"Episode references unknown character '{cid}'.",
+            character_id=cid,
+        )
+    if not_ready:
+        block(
+            "CHARACTERS_NOT_PRODUCTION_READY",
+            "Referenced characters have not reached PRODUCTION_READY.",
+            characters=not_ready,
+        )
+
+    # ── Mandatory assets resolved to PINNED assets ──────────────────────────
+    requirements = [
+        r for r in await service.list(NS_ASSET_REQUIREMENTS)
+        if _episode_requirement(r, episode_id)
+    ]
+    mandatory_missing: List[Dict[str, Any]] = []
+    assets_not_pinned: List[Dict[str, Any]] = []
+    pinned_assets: List[Dict[str, Any]] = []
+    for req in requirements:
+        if not req.get("mandatory"):
+            continue
+        if str(req.get("status") or "") != "FULFILLED" or not req.get("linked_asset_id"):
+            mandatory_missing.append({
+                "requirement_id": req.get("requirement_id"),
+                "name": req.get("name"),
+            })
+            continue
+        asset = await service.get(NS_ASSETS, str(req["linked_asset_id"]))
+        pin = (asset or {}).get("approval_pin") or {}
+        if (
+            asset is None
+            or str(asset.get("status") or "") != ASSET_STATUS_PINNED
+            or not pin.get("revision_id")
+            or not pin.get("content_hash")
+        ):
+            assets_not_pinned.append({
+                "requirement_id": req.get("requirement_id"),
+                "asset_id": req.get("linked_asset_id"),
+            })
+        else:
+            pinned_assets.append({
+                "asset_id": asset["id"],
+                "revision_id": pin["revision_id"],
+                "content_hash": pin["content_hash"],
+            })
+    checks["mandatory_assets_resolved"] = not mandatory_missing and not assets_not_pinned
+    if mandatory_missing:
+        block(
+            "MANDATORY_ASSET_MISSING",
+            f"{len(mandatory_missing)} mandatory requirement(s) unfulfilled.",
+            requirements=mandatory_missing,
+        )
+    if assets_not_pinned:
+        block(
+            "ASSET_NOT_PINNED",
+            "Fulfilled mandatory assets are missing a verified approval pin.",
+            assets=assets_not_pinned,
+        )
+
+    # ── World canon present ──────────────────────────────────────────────────
+    world = await service.get(NS_WORLD_BIBLES, str(ep.get("project_id") or ""))
+    checks["world_canon_present"] = world is not None
+    if world is None:
+        block("WORLD_BIBLE_MISSING", "The episode's project has no world bible.")
+    elif not world.get("content_hash"):
+        warn(
+            "WORLD_CANON_HASH_ABSENT",
+            "World bible has no stamped content hash; run a world sync first.",
+        )
+
+    status_value = "READY" if not blocking else "BLOCKED"
+    return {
+        "episode_id": episode_id,
+        "status": status_value,
+        "blocking_findings": blocking,
+        "warnings": warnings,
+        "checks": checks,
+    }
+
+
+@router.get("/episodes/{episode_id}/production/package/preflight", operation_id="production.preflightPackage")
+async def preflight_package_endpoint(
+    episode_id: str = Path(...),
+    service: V3ResourceService = Depends(get_v3_resource_service),
+) -> Dict[str, Any]:
+    """Read-only production package preflight (plan §P1.6.3). Never mutates."""
+    if await service.get(NS_EPISODES, episode_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Episode '{episode_id}' not found.")
+    return await build_production_preflight(service, episode_id)
+
+
+def _build_package_manifest(
+    *,
+    lock_ref: LockedScreenplayRef,
+    ep: Dict[str, Any],
+    world: Dict[str, Any],
+    board: Dict[str, Any],
+    board_rev: Dict[str, Any],
+    scenes: List[Dict[str, Any]],
+    plan: Dict[str, Any],
+    characters: List[Dict[str, Any]],
+    character_refs: List[str],
+    pinned_assets: List[Dict[str, Any]],
+    locations: List[Dict[str, Any]],
+    validation_totals: Dict[str, Any],
+    production_target: str,
+) -> Dict[str, Any]:
+    """Assemble the canonical ProductionPackage manifest (plan §P1.6.1).
+
+    The hash covers EVERYTHING except package_id/package_hash/created_at so
+    identical content deterministically re-addresses the same package.
+    """
+    character_rows = []
+    by_id = {c["id"]: c for c in characters}
+    for cid in character_refs:
+        c = by_id.get(cid)
+        if c is not None:
+            character_rows.append({
+                "character_id": cid,
+                "version": int(c.get("version", 1)),
+                "hash": str(c.get("content_hash") or ""),
+            })
+
+    manifest: Dict[str, Any] = {
+        "schema": PACKAGE_SCHEMA,
+        "episode": {
+            "episode_id": ep["id"],
+            "project_id": ep.get("project_id"),
+            "title": ep.get("title"),
+            "state": ep.get("state"),
+        },
+        "locked_screenplay": {
+            "revision_id": lock_ref.revision_id,
+            "artifact_id": lock_ref.artifact_id,
+            "content_hash": lock_ref.content_hash,
+        },
+        "character_canon": character_rows,
+        "world_canon": {
+            "project_id": (world or {}).get("project_id"),
+            "current_revision_id": (world or {}).get("current_revision_id", ""),
+            "content_hash": (world or {}).get("content_hash", ""),
+            "version": (world or {}).get("version", 1),
+        },
+        "locations": locations,
+        "assets": pinned_assets,
+        "storyboard": {
+            "revision_id": board.get("current_revision_id"),
+            "source_screenplay_revision_id": board.get("source_screenplay_revision_id"),
+            "hash": (board_rev or {}).get("content_hash", ""),
+        },
+        "scenes": [
+            {
+                "scene_id": s["id"],
+                "scene_number": s.get("scene_number"),
+                "title": s.get("title"),
+                "duration_seconds": s.get("duration_seconds"),
+                "location_id": s.get("location_id"),
+                "source_screenplay_scene_hash": s.get("source_screenplay_scene_hash"),
+            }
+            for s in scenes
+        ],
+        "shot_plan": {
+            "revision_id": plan.get("current_revision_id"),
+            "hash": plan.get("content_hash", ""),
+            "shot_count": validation_totals.get("shots", 0),
+        },
+        "constraints": {
+            "duration_tolerance_fraction": DURATION_TOLERANCE_FRACTION,
+            "duration_tolerance_min_seconds": DURATION_TOLERANCE_MIN_SECONDS,
+            **validation_totals,
+        },
+        "production_target": production_target,
+    }
+    package_hash = compute_content_hash(manifest)
+    manifest["package_hash"] = package_hash
+    manifest["package_id"] = f"pkg-{package_hash[:12]}"
+    return manifest
+
+
+@router.post("/episodes/{episode_id}/production/package/actions/finalize", operation_id="production.finalizePackage")
+async def finalize_package(
+    episode_id: str = Path(...),
+    body: FinalizePackageRequest = ...,
+    response: Response = None,
+    service: V3ResourceService = Depends(get_v3_resource_service),
+) -> Dict[str, Any]:
+    """Freeze the pre-production state into an immutable Production Package.
+
+    Fails closed with every blocking finding when preflight is BLOCKED.
+    Content-addressed idempotency: finalizing unchanged content returns the
+    SAME package (HTTP 200); changed content yields a NEW immutable package.
+    """
+    if body.production_target not in PRODUCTION_TARGETS:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail={
+                "error_code": "INVALID_PRODUCTION_TARGET",
+                "message": f"production_target must be one of {', '.join(PRODUCTION_TARGETS)}.",
+            },
+        )
+    ep = await service.get(NS_EPISODES, episode_id)
+    if ep is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Episode '{episode_id}' not found.")
+
+    preflight = await build_production_preflight(service, episode_id)
+    if preflight["status"] != "READY":
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail={
+                "error_code": "PREPRODUCTION_NOT_READY",
+                "message": "Preflight blocked package finalization.",
+                "blocking_findings": preflight["blocking_findings"],
+                "warnings": preflight["warnings"],
+            },
+        )
+
+    lock_ref = await resolve_locked_screenplay(service, episode_id)
+    world = await service.get(NS_WORLD_BIBLES, str(ep.get("project_id") or ""))
+    board = await service.get(NS_STORYBOARDS, episode_id)
+    board_rev = await service.get(NS_STORYBOARD_REVISIONS, board["current_revision_id"])
+    scenes = sorted(
+        (s for s in await service.list(NS_SCENES) if s.get("episode_id") == episode_id),
+        key=lambda s: s.get("scene_number", 0),
+    )
+    shots = sorted(
+        (s for s in await service.list(NS_SHOTS) if s.get("episode_id") == episode_id),
+        key=lambda s: s.get("shot_number", 0),
+    )
+    plan = (await _get_shot_plan(service, episode_id)) or {}
+    all_characters = await service.list(NS_CHARACTERS)
+    referenced = _referenced_character_ids(scenes, shots)
+
+    # Locations actually used by the package's scenes (resolved during preflight).
+    location_ids: List[str] = []
+    for s in scenes:
+        loc_id = str(s.get("location_id") or "")
+        if loc_id and loc_id not in location_ids:
+            location_ids.append(loc_id)
+    locations: List[Dict[str, Any]] = []
+    for loc_id in location_ids:
+        loc = await service.get(NS_LOCATIONS, loc_id)
+        if loc is not None:
+            locations.append({
+                "location_id": loc_id,
+                "name": loc.get("name"),
+                "type": loc.get("type"),
+            })
+
+    # Mandatory fulfilled+PINNED assets (already validated by preflight).
+    pinned_assets: List[Dict[str, Any]] = []
+    requirements = [
+        r for r in await service.list(NS_ASSET_REQUIREMENTS)
+        if _episode_requirement(r, episode_id) and r.get("mandatory")
+    ]
+    for req in requirements:
+        if str(req.get("status") or "") != "FULFILLED" or not req.get("linked_asset_id"):
+            continue
+        if str(req.get("status") or "") != "FULFILLED" or not req.get("linked_asset_id"):
+            continue
+        asset = await service.get(NS_ASSETS, str(req["linked_asset_id"])) or {}
+        pin = asset.get("approval_pin") or {}
+        pinned_assets.append({
+            "asset_id": asset.get("id"),
+            "revision_id": pin.get("revision_id"),
+            "content_hash": pin.get("content_hash"),
+        })
+
+    manifest = _build_package_manifest(
+        lock_ref=lock_ref,
+        ep=ep,
+        world=world,
+        board=board,
+        board_rev=board_rev,
+        scenes=scenes,
+        plan=plan,
+        characters=all_characters,
+        character_refs=referenced,
+        pinned_assets=pinned_assets,
+        locations=locations,
+        validation_totals=(await validate_episode_shots(service, episode_id))["totals"],
+        production_target=body.production_target,
+    )
+
+    existing = await service.get(NS_PRODUCTION_PACKAGES, manifest["package_id"])
+    if existing is not None:
+        if response is not None:
+            response.status_code = status.HTTP_200_OK
+        return {"package": existing, "reused": True}
+
+    now = utc_now().isoformat()
+    record = {
+        **manifest,
+        "episode_id": episode_id,
+        "status": "FINALIZED",
+        "created_at": now,
+    }
+    created = await service.create(NS_PRODUCTION_PACKAGES, manifest["package_id"], record)
+    if response is not None:
+        response.status_code = status.HTTP_201_CREATED
+    return {"package": created, "reused": False}
+
+
+@router.get("/episodes/{episode_id}/production/packages", operation_id="production.listPackages")
+async def list_packages(
+    episode_id: str = Path(...),
+    service: V3ResourceService = Depends(get_v3_resource_service),
+) -> List[Dict[str, Any]]:
+    """Finalized packages for an episode, newest first."""
+    packages = [
+        p for p in await service.list(NS_PRODUCTION_PACKAGES)
+        if p.get("episode_id") == episode_id
+    ]
+    packages.sort(key=lambda p: p.get("created_at") or "", reverse=True)
+    return packages
+
+
+@router.get("/production/packages/{package_id}", operation_id="production.getPackage")
+async def get_package(
+    package_id: str = Path(...),
+    service: V3ResourceService = Depends(get_v3_resource_service),
+) -> Dict[str, Any]:
+    """Fetch one finalized package by its content-addressed id."""
+    package = await service.get(NS_PRODUCTION_PACKAGES, package_id)
+    if package is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"error_code": "PACKAGE_NOT_FOUND", "message": f"No package '{package_id}'."},
+        )
+    return package
 
 
 async def _submit_stage_job(
