@@ -1,27 +1,18 @@
+/**
+ * useLiveRecord — Recording UI store (P0)
+ * Gate: LIVE_RECORD_P0_ARCHITECTURE_FROZEN
+ *
+ * This hook is intentionally UI-only. Domain lives in `../domain/` and contracts in
+ * `../contracts/`. Do NOT inline LiveExecutionPlan / state machine / director logic here.
+ * Future phases replace mock clock/bitrate/telemetry with `contracts/ipc.ts` polling
+ * and `domain/stateMachine.ts` transitions.
+ */
 import { useState, useEffect, useCallback } from 'react';
+import type { SceneItem as DomainSceneItem, RecentRecording as DomainRecentRecording } from '../domain/types';
 
-export interface SceneItem {
-  id: string;
-  index: number;
-  title: string;
-  duration: string;
-  durationSec: number;
-  status: 'completed' | 'active' | 'pending';
-  script?: string;
-}
-
-export interface RecentRecording {
-  id: string;
-  title: string;
-  resolution: string;
-  fps: number;
-  format: string;
-  date: string;
-  time: string;
-  size: string;
-  duration: string;
-  thumbnailUrl?: string;
-}
+// Re-export domain projections for component compat (canonical types live in domain/types.ts)
+export type SceneItem = DomainSceneItem;
+export type RecentRecording = DomainRecentRecording;
 
 export interface AudioLevels {
   mic: number;

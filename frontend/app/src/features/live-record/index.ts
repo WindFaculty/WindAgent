@@ -1,5 +1,8 @@
+export * from './domain';
+export * from './contracts';
 export * from './pages/LiveRecordPage';
-export * from './hooks/useLiveRecord';
+export { useLiveRecord, formatDuration } from './hooks/useLiveRecord';
+export type { AudioLevels } from './hooks/useLiveRecord';
 export * from './components/LiveVideoPreview';
 export * from './components/RecordingStatusPanel';
 export * from './components/DeviceSettingsPanel';

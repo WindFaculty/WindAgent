@@ -3,6 +3,9 @@
 // Provides native system-metrics commands via Tauri IPC so the frontend
 // can display real CPU / RAM / GPU numbers.
 // All hardcoded absolute paths have been eliminated for 100% OS path portability.
+// Phase 0 — Live Record control plane lives in `live_record/` module, not inlined here.
+
+pub mod live_record;
 
 use once_cell::sync::Lazy;
 use serde::Serialize;
@@ -221,7 +224,21 @@ fn read_nvidia_gpu() -> (f32, String, f32, f32, f32) {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![app_metadata, get_system_metrics])
+        .manage(live_record::RecorderSharedState::default())
+        .invoke_handler(tauri::generate_handler![
+            app_metadata,
+            get_system_metrics,
+            // generate_handler resolves the macro-generated __cmd__ items in
+            // the declaring module, so paths must point at live_record::commands.
+            live_record::commands::recorder_prepare,
+            live_record::commands::recorder_start,
+            live_record::commands::recorder_pause,
+            live_record::commands::recorder_resume,
+            live_record::commands::recorder_stop,
+            live_record::commands::recorder_get_status,
+            live_record::commands::recorder_create_marker,
+            live_record::commands::recorder_get_capabilities
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

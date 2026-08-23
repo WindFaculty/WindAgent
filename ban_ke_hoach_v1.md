@@ -1,1412 +1,1476 @@
-# Kế hoạch P0 — WindAgent Feature Completion
+Từ 7 lựa chọn bạn vừa chốt, kiến trúc nên được xây theo hướng **AI điều phối một buổi quay đã được chuẩn bị trước**, không phải AI tự do viết code trong lúc quay.
 
-**Baseline:** `cfa7ffb33fc1801ca8ad8115c605c320ddb4c51a`
+Có một điểm cần chuẩn hóa trước: Google hiện có **Gemini 3 Flash** với model ID `gemini-3-flash-preview`, nhưng model này **không hỗ trợ Live API**. Model Live tương ứng hiện tại là **Gemini 3.1 Flash Live Preview**, ID `gemini-3.1-flash-live-preview`; nó hỗ trợ video input, text output và function calling. Vì vậy UI có thể hiển thị tên role là **“Gemini 3 Flash Live”**, nhưng routing production nên lấy model thực tế từ catalog của Provider và hiện tại resolve thành `gemini-3.1-flash-live-preview`. ([Google AI for Developers][1])
 
-Tôi đề xuất P0 không còn là một phase refactor. Đây sẽ là **Product Vertical Slice Completion**: lấy Architecture V3 hiện tại và biến nó thành một WindAgent Studio thực sự sử dụng được.
-
-Gate cuối:
+## 1. Kiến trúc mục tiêu
 
 ```text
-WINDAGENT_P0_FEATURE_COMPLETE
+EPISODES
+   │
+   ├── Script / Scenes / Demo flow
+   │
+   └── Recording Preparation
+           │
+           ├── Narration script
+           ├── Prepared source code
+           ├── Commands
+           ├── Browser actions
+           ├── Tool actions
+           ├── Expected screen states
+           └── Recovery instructions
+                    │
+                    ▼
+          FROZEN LIVE EXECUTION PLAN
+                    │
+            hash + version + approval
+                    │
+                    ▼
+              LIVE RECORD
+                    │
+        ┌───────────┴────────────┐
+        │                        │
+        ▼                        ▼
+ GEMINI LIVE DIRECTOR       RECORDING ENGINE
+        │                        │
+ screen frames                   │
+ current cue                     │
+ tool results                    │
+        │                        │
+        ▼                        ▼
+ Constrained Tool Gate     Windows Graphics Capture
+        │                        │
+        ├─ Code Playback         ▼
+        ├─ Browser          D3D11 Frame Pipeline
+        ├─ Terminal              │
+        ├─ Tool Runner           ▼
+        ├─ Scene Control       NVENC
+        └─ Recording Ctrl        │
+                                 ▼
+                          FFmpeg / libav
+                                 │
+                                 ▼
+                         MKV Segments
+                                 │
+                                 ▼
+                       recording timeline
+                                 │
+                                 ▼
+                      POST PRODUCTION
+                                 │
+                           TTS model khác
 ```
 
-P0 chỉ PASS khi người dùng có thể thực hiện toàn bộ:
+Điểm cốt lõi là:
 
-```text
-Configure Provider
-        ↓
-Test Connection
-        ↓
-Discover / Sync Models
-        ↓
-Configure Routing Rules
-        ↓
-Create Series
-        ↓
-Create Episode
-        ↓
-Enter Creative Brief
-        ↓
-Generate Ideas
-        ↓
-Select Idea
-        ↓
-Story Bible / World / Characters
-        ↓
-Beat Sheet
-        ↓
-Outline
-        ↓
-Screenplay
-        ↓
-Review
-        ↓
-Revision
-        ↓
-Optional Human Approval
-        ↓
-Lock
-        ↓
-READY_FOR_PRODUCTION
-```
+> **Gemini không sáng tạo hành động mới trong lúc quay. Gemini quan sát màn hình, xác định trạng thái hiện tại và chọn hành động tiếp theo trong tập hành động đã được chuẩn bị và đóng băng trước khi quay.**
 
-Và đường chạy phải là:
+Đây là khác biệt quan trọng giữa một “computer-use agent tự do” và **production recording agent**.
 
-```text
-Desktop/Web UI
-   ↓
-Shared frontend app
-   ↓
-API V3
-   ↓
-StudioApplicationService
-   ↓
-OrchestratorService
-   ↓
-Durable Queue
-   ↓
-Worker
-   ↓
-Model Router
-   ↓
-Provider
-   ↓
-Persistence
-```
-
-Không fake client, không direct handler invocation, không hard-coded artifact.
+Repo hiện tại rất phù hợp để chuyển theo hướng này. `LiveRecordPage` đã được tách thành page + panels nhưng `useLiveRecord.ts` hiện vẫn là mock state với scene, timer, bitrate, recording giả lập.   Tauri hiện cũng mới chủ yếu cung cấp system metrics/NVML chứ chưa có recording engine native.
 
 ---
 
-## 1. Trạng thái bắt đầu
+# 2. Nguyên tắc kiến trúc bắt buộc
 
-P0 không bắt đầu từ số 0.
+Tôi đề nghị đóng băng 6 nguyên tắc này ngay từ đầu.
 
-Provider backend đã có SQL authority, API key encrypted-at-rest, provider registration, real network connection test và model discovery.  Connection test cho durable provider thực sự gọi adapter và discovery, còn demo fallback đã bị giới hạn vào explicit demo profile.
+### A. Episode là source of truth
 
-Frontend hiện đã có chức năng add provider, nhập API key, test connection và tạo model rule. Tuy nhiên `ProvidersPage` hiện chỉ đơn giản render `RoutingPage`, cho thấy ranh giới Providers/Models/Routing vẫn chưa hoàn thiện ở mức sản phẩm.
+Không để Live Record tự chứa kịch bản riêng.
 
-Studio API cũng đã có create/list/get Series, create/list/get Episode, start/resume run, event stream, select idea, approval, revision và screenplay lock.
-
-Episode frontend đã có `IdeaPanel`, `StoryBiblePanel`, `OutlinePanel`, `ScreenplayPanel`, `CheckpointReviewPanel` và pipeline UI.
-
-Do đó P0 chủ yếu là:
+Luồng phải là:
 
 ```text
-COMPLETE
-+ CONNECT
-+ HARDEN FEATURE SEMANTICS
-+ REAL E2E
+Episode
+→ Recording Preparation
+→ LiveExecutionPlan revision
+→ RecordingTake
 ```
 
-chứ không phải redesign architecture thêm lần nữa.
+Nếu Episode thay đổi sau khi plan đã được freeze:
+
+```text
+episode_revision != execution_plan.episode_revision
+        ↓
+RECORDING_PLAN_STALE
+        ↓
+không cho Start Recording
+```
 
 ---
 
-# 2. Phạm vi P0
+### B. Model chuẩn bị và model quay là hai role khác nhau
 
-| Workstream | Mục tiêu                           |
-| ---------- | ---------------------------------- |
-| P0-A       | Provider lifecycle hoàn chỉnh      |
-| P0-B       | Model discovery/catalog hoàn chỉnh |
-| P0-C       | Model routing hoàn chỉnh           |
-| P0-D       | Series/Episode usable              |
-| P0-E       | Story pipeline thực                |
-| P0-F       | Review/Revision/Approval/Lock      |
-| P0-G       | Desktop vertical workflow          |
-| P0-H       | Functional E2E verification        |
-
-Không thuộc P0:
+Model chuẩn bị trước:
 
 ```text
-Blender rendering
-Unreal production
-automatic rigging
-full asset generation
-TTS production
-final MP4
-Browser Agent
-general Agent Workspace
-Memory redesign
-Live Record completion
-code-video certification
-full Phase-16 certification
+RECORDING_PREPARER
 ```
 
-Các module đó giữ nguyên, không xóa.
+Gemini Live trong lúc quay:
+
+```text
+LIVE_DIRECTOR
+```
+
+Sau này TTS:
+
+```text
+NARRATION_TTS
+```
+
+Tất cả resolve qua **Provider + Model Routing** hiện có.
+
+Frontend Providers đã có các primitive cho credential rotation, test connection, model sync, model testing và routing rules nên không cần tạo hệ thống API key riêng cho Live Record.
 
 ---
 
-# PHASE P0.0 — FEATURE TRUTH BASELINE
+### C. Gemini không được gửi source code tùy ý
+
+Không expose tool kiểu:
+
+```text
+write_file(path, content)
+```
+
+cho Gemini Live.
+
+Thay bằng:
+
+```text
+execute_prepared_action(action_id)
+```
+
+Ví dụ:
+
+```json
+{
+  "action_id": "code_017",
+  "type": "CODE_PLAYBACK",
+  "target_file": "src/agent.py",
+  "payload_ref": "artifact://code/code_017",
+  "before_hash": "...",
+  "after_hash": "...",
+  "typing_mode": "TYPE",
+  "chars_per_second": 22
+}
+```
+
+Gemini chỉ được nói:
+
+```text
+execute_prepared_action("code_017")
+```
+
+Không được truyền code vào function call.
+
+Đây sẽ là lớp bảo vệ quan trọng nhất.
+
+---
+
+### D. Recording engine không phụ thuộc Gemini
+
+Ngay cả Gemini mất kết nối:
+
+```text
+Gemini disconnect
+       │
+       ├── Tool execution → STOP
+       ├── Scene advancement → STOP
+       │
+       └── Recorder → vẫn còn sống
+```
+
+Recording process không được nằm chung lifecycle với AI session.
+
+---
+
+### E. Recording 60 FPS ≠ gửi Gemini 60 FPS
+
+Capture:
+
+```text
+1920x1080 @ 60 FPS
+```
+
+Recording pipeline giữ đủ 60 FPS.
+
+Gemini observation nên chỉ:
+
+```text
+event-driven
+hoặc
+1–2 FPS
+```
+
+và có thể downscale:
+
+```text
+1280×720 JPEG/WebP
+```
+
+Đây là hai pipeline riêng:
+
+```text
+WGC
+ │
+ ├── Recording path → 60 FPS → NVENC
+ │
+ └── AI observation → sampler → 1–2 FPS → Gemini
+```
+
+---
+
+### F. Audio để lại extension point nhưng chưa kích hoạt
+
+Production engine có thể chuẩn bị abstraction cho:
+
+```text
+WASAPI
+```
+
+nhưng milestone đầu:
+
+```text
+capture_audio = false
+```
+
+Không nên dành Phase đầu để hoàn thiện audio pipeline khi audio sẽ được TTS tạo sau.
+
+---
+
+# 3. Phase 0 — Freeze baseline và contracts
 
 ## Mục tiêu
 
-Trước khi code, xác định chính xác cái gì:
+Biến Live Record hiện tại từ “mock UI cần sửa” thành một subsystem có boundary rõ.
+
+### Việc cần làm
+
+Xác định bốn subsystem:
 
 ```text
-WORKING
-PARTIAL
-UI_ONLY
-BACKEND_ONLY
-STUB
-BROKEN
-NOT_REQUIRED_FOR_P0
+Live Recording Domain
+Live Director
+Native Recording Engine
+Recording UI
 ```
 
-### P0.0.1 Capture baseline
-
-Ghi:
+Không nhét toàn bộ logic vào:
 
 ```text
-HEAD
-tree SHA
-branch
-dirty state
-
-Python version
-Node version
-database backend
-
-API tests
-Studio tests
-provider tests
-worker tests
-frontend tests
-desktop build
+useLiveRecord.ts
 ```
 
-Không cần chạy full Phase-16 certification.
-
-### P0.0.2 Inventory P0 APIs
-
-Đặc biệt:
+hoặc:
 
 ```text
-/api/v3/providers
-/api/v3/models
-/api/v3/routing
-
-/api/v3/studio/series
-/api/v3/studio/episodes
-/api/v3/studio/runs
-/api/v3/studio/artifacts
-/api/v3/studio/... decisions
+src-tauri/src/lib.rs
 ```
 
-Xác định cho từng endpoint:
-
-```text
-UI consumer?
-real persistence?
-real runtime?
-demo fallback?
-stub?
-missing mutation?
-```
-
-### P0.0.3 Freeze existing contracts
-
-Studio request schemas hiện reuse canonical command contracts; không nên phá chúng tùy tiện.  Các command hiện đã chứa idempotency, optimistic version, artifact hash và revision lineage.
-
-Nếu thiếu field presentation như:
-
-```text
-target audience
-language
-genre
-tone
-creative brief
-target duration
-constraints
-```
-
-P0 ưu tiên chuẩn hóa chúng trong `metadata` hiện hữu thay vì tạo contract V2 không cần thiết.
+`src-tauri/src/lib.rs` hiện đã chứa metrics/NVML; recording native không nên tiếp tục mở rộng file này thành god-file.
 
 ### Gate
 
 ```text
-P0_0_FEATURE_TRUTH_CAPTURED
+LIVE_RECORD_P0_ARCHITECTURE_FROZEN
+```
+
+Phải có:
+
+* domain contract;
+* state machine;
+* IPC contract;
+* Gemini tool contract;
+* recording engine contract;
+* security boundary.
+
+---
+
+# 4. Phase 1 — Recording Domain
+
+Tạo domain model cho toàn bộ quá trình.
+
+## Entity chính
+
+```text
+LiveExecutionPlan
+RecordingScene
+RecordingCue
+PreparedAction
+ExpectedVisualState
+
+LiveRecordSession
+RecordingTake
+RecordingSegment
+RecordingEvent
+DirectorSession
+```
+
+### LiveExecutionPlan
+
+Nên chứa tối thiểu:
+
+```text
+id
+episode_id
+episode_revision_id
+
+preparation_revision
+plan_hash
+
+status
+created_at
+frozen_at
+
+director_role
+recording_profile
+
+scenes[]
+actions[]
+
+source_workspace_hash
+```
+
+Status:
+
+```text
+DRAFT
+PREPARED
+VALIDATED
+FROZEN
+STALE
+INVALID
+```
+
+Sau `FROZEN`, tuyệt đối không mutate.
+
+---
+
+# 5. Phase 2 — Episode → Recording Preparation Package
+
+Đây là phần quan trọng nhất trước Gemini Live.
+
+Trong Episode Workspace thêm:
+
+```text
+Prepare Recording
+```
+
+Model `RECORDING_PREPARER` đọc:
+
+```text
+screenplay
+scene
+demo objective
+source code hiện tại
+desired final code
+browser workflow
+commands
+```
+
+và tạo:
+
+```text
+Recording Preparation Package
+```
+
+## Một scene nên trở thành
+
+```yaml
+scene:
+  id: scene-03
+  title: Build Agent Core
+
+  narration:
+    source: episode_script
+
+  actions:
+    - action_id: code-001
+      type: open_file
+
+    - action_id: code-002
+      type: code_playback
+
+    - action_id: terminal-001
+      type: run_command
+
+    - action_id: verify-001
+      type: visual_verify
+
+    - action_id: browser-001
+      type: browser_navigation
+
+  expected_result:
+    test: PASS
 ```
 
 ---
 
-# PHASE P0.1 — PROVIDER MANAGEMENT
+# 6. Prepared Source Code Bundle
 
-Đây nên là feature hoàn thiện đầu tiên vì Story pipeline phụ thuộc provider.
-
-## Target UI
-
-```text
-Providers
-
-[ Add Provider ]
-
-OpenRouter
-● Connected
-Base URL: ...
-Credential: configured
-Models: 123
-[Test Connection] [Sync Models] [Edit]
-
-Google AI Studio
-● Connected
-...
-
-Ollama
-● Local
-...
-```
-
-## P0.1.1 Provider lifecycle
-
-Hoàn thiện:
-
-```text
-Create
-Read
-Edit
-Enable / Disable
-Credential rotate
-Credential remove
-Test connection
-Delete
-```
-
-Delete phải fail nếu provider còn được model routing rule sử dụng, trừ khi người dùng xử lý dependency trước.
-
-Không cascade silently.
-
-## P0.1.2 Credential security
-
-API key:
-
-```text
-write-only
-encrypted at rest
-never returned
-never logged
-never included in event payload
-never committed to evidence
-```
-
-UI chỉ được biết:
-
-```text
-configured
-not configured
-credential label
-last updated
-```
-
-## P0.1.3 Endpoint configuration
-
-Tối thiểu:
-
-```text
-base URL
-protocol mode
-provider type
-credential
-enabled state
-```
-
-Protocol hiện đã có:
-
-```text
-OpenAI-compatible
-Anthropic
-Gemini
-Ollama
-```
-
-ở frontend hiện tại.
-
-MVP provider target:
-
-```text
-OpenRouter
-Google AI Studio
-Groq
-Ollama
-Custom OpenAI-compatible
-```
-
-OpenRouter và Groq có thể đi qua OpenAI-compatible adapter nếu implementation hiện tại cho phép; không tạo adapter riêng chỉ để có tên provider.
-
-## P0.1.4 Connection test
-
-Phải kiểm tra thật:
-
-```text
-DNS/network
-authentication
-base URL
-protocol compatibility
-model discovery
-latency
-```
-
-Receipt:
-
-```text
-reachable
-auth_valid
-latency
-models_found
-error_code
-message
-checked_at
-```
-
-Backend đã có phần lớn contract này.
-
-### Gate
-
-```text
-P0_1_PROVIDER_LIFECYCLE_LIVE
-```
-
----
-
-# PHASE P0.2 — MODEL DISCOVERY & MODEL CATALOG
-
-Hiện Models page đã có canonical catalog, filter theo vendor/capability/local và hiển thị endpoint bindings/context.
-
-P0 cần nối nó chặt với provider discovery.
-
-## P0.2.1 Tách Test Connection khỏi Sync Models
-
-Không nên phụ thuộc:
-
-```text
-Test Connection
-    →
-implicitly discover models
-```
-
-Target:
-
-```text
-Test Connection
-Sync Models
-```
-
-là hai operation rõ ràng.
-
-## P0.2.2 Durable discovered model registry
-
-Model discovery phải persist:
-
-```text
-provider_id
-endpoint_id
-provider_model_id
-canonical_model_id
-
-display_name
-capabilities
-context_window
-
-availability
-
-pricing_class
-input_price
-output_price
-currency
-
-last_discovered_at
-```
-
-Pricing:
-
-```text
-FREE
-PAID
-UNKNOWN
-```
-
-**Không suy đoán pricing.**
-
-Nếu provider không trả metadata pricing:
-
-```text
-UNKNOWN
-```
-
-## P0.2.3 Free / Paid controls
-
-Đáp ứng UI Providers mà ta đã thiết kế trước đó:
-
-```text
-[Sync All]
-[Get Free Models]
-[Get Paid Models]
-```
-
-Nhưng semantics:
-
-* Provider có pricing API thật → dùng server-side filter.
-* Provider chỉ trả model list → sync trước, filter metadata đã biết.
-* Không có pricing authority → hiển thị UNKNOWN, không tự gắn Paid/Free.
-
-## P0.2.4 Discovery reconciliation
-
-Một lần sync phải phân loại:
-
-```text
-ADDED
-UPDATED
-UNCHANGED
-UNAVAILABLE
-```
-
-Không xóa model ngay chỉ vì một lần discovery không thấy nó.
-
-Dùng trạng thái:
-
-```text
-active
-unavailable
-deprecated
-```
-
-## P0.2.5 Model probe
-
-Cho phép:
-
-```text
-[Test Model]
-```
-
-Thực hiện một inference nhỏ thật để xác minh:
-
-```text
-endpoint
-credential
-model ID
-protocol
-response
-```
-
-Không dùng test này để benchmark chất lượng.
-
-### Gate
-
-```text
-P0_2_MODEL_CATALOG_LIVE
-```
-
----
-
-# PHASE P0.3 — ROUTING RULES
-
-Đây là phần quyết định model nào làm từng bước Story.
-
-Backend hiện đã support durable rule gồm primary model, fallback model, priority và role.
-
-P0 cần nâng nó từ một form nhập ID thủ công thành router usable.
-
-## P0.3.1 Canonical Story roles
-
-Tối thiểu:
-
-```text
-studio.story.idea.generate
-studio.story.idea.evaluate
-
-studio.story.bible.generate
-
-studio.story.beats.generate
-studio.story.outline.generate
-
-studio.story.screenplay.generate
-studio.story.screenplay.review
-studio.story.screenplay.revise
-```
-
-Lock không cần LLM.
-
-## P0.3.2 Mỗi rule là một resource độc lập
+Model chuẩn bị code trước cần xuất **exact payload**, không chỉ instruction.
 
 Ví dụ:
 
 ```text
-Rule: Screenplay Writer
+PreparedCodeBundle
+ ├── step-001
+ │    ├── file
+ │    ├── before_hash
+ │    ├── final_content
+ │    ├── after_hash
+ │    └── typing_profile
+ │
+ ├── step-002
+ └── ...
+```
+
+Như vậy lúc quay Gemini không viết:
+
+> “Hãy tạo class Agent ...”
+
+mà chỉ quyết định:
+
+```text
+step-002 đã đến lúc chạy
+```
+
+Sau đó executor viết chính xác nội dung đã chuẩn bị.
+
+---
+
+# 7. Phase 3 — Tool Manifest
+
+Đây là lớp biến “full agent” thành “controlled full agent”.
+
+Gemini Live được nhận function declaration kiểu:
+
+```text
+advance_cue(cue_id)
+
+execute_prepared_action(action_id)
+
+verify_visual_state(state_id)
+
+pause_recording()
+
+resume_recording()
+
+create_marker(marker_type)
+
+retry_action(action_id)
+
+request_operator(reason)
+```
+
+### Tuyệt đối không expose trực tiếp
+
+```text
+shell(command)
+write_file(content)
+open_url(url)
+click(x, y)
+powershell(script)
+```
+
+Thay vào đó:
+
+```text
+run_prepared_command("cmd-003")
+
+open_prepared_url("browser-007")
+
+perform_browser_action("browser-action-014")
+```
+
+Mọi argument thật nằm trong immutable plan.
+
+---
+
+# 8. Phase 4 — Google Live Provider
+
+Google provider hiện tại dùng:
+
+```text
+generateContent
+streamGenerateContent
+```
+
+qua HTTP.
+
+Không nên sửa adapter đó thành Live adapter.
+
+Tạo transport riêng:
+
+```text
+providers/
+└── windagent_providers/
+    └── google/
+        ├── adapter.py
+        └── live/
+            ├── contracts.py
+            ├── token_service.py
+            ├── capability.py
+            └── session.py
+```
+
+Conceptually:
+
+```text
+GoogleGeminiProviderAdapter
+    → generateContent
+
+GoogleGeminiLiveProvider
+    → Live API
+```
+
+---
+
+# 9. Model capability detection
+
+Model routing cần biết:
+
+```text
+live_api
+video_input
+text_output
+function_calling
+```
+
 Role:
-studio.story.screenplay.generate
-
-Primary:
-Gemini ...
-
-Fallback:
-DeepSeek ...
-
-Enabled:
-true
-
-Priority:
-10
-```
-
-Không có một global object chứa hàng loạt hard-coded model names.
-
-## P0.3.3 Không nhập canonical ID bằng text
-
-Current UI đang bắt người dùng nhập:
 
 ```text
-Discovered canonical model id
+LIVE_DIRECTOR
 ```
 
-thủ công.
+chỉ được resolve model đáp ứng cả 4 capability.
 
-P0 phải chuyển thành:
+Không hard-code:
 
 ```text
-Provider selector
-    ↓
-Model selector
+provider == google
 ```
 
-lấy trực tiếp từ Model Catalog.
+trong Live Record UI.
 
-## P0.3.4 Resolution order
-
-Target:
+UI chỉ yêu cầu:
 
 ```text
-exact role rule
-      ↓
-capability/default rule
-      ↓
-system default
-      ↓
-FAIL CLOSED
+role = LIVE_DIRECTOR
 ```
 
-Không tìm thấy model hợp lệ:
+Router quyết định provider/model.
+
+---
+
+# 10. Phase 5 — Ephemeral token bootstrap
+
+Đây là architecture tôi khuyến nghị.
 
 ```text
-ROUTING_UNAVAILABLE
+Desktop
+   │
+   │ Start Live Director
+   ▼
+WindAgent API
+   │
+   ├── Resolve LIVE_DIRECTOR
+   ├── Google provider?
+   ├── credential configured?
+   ├── live capability?
+   └── issue ephemeral token
+           │
+           ▼
+        Desktop
+           │
+           ▼
+Google Live API
 ```
 
-không tự chọn model ngẫu nhiên.
+Google khuyến nghị ephemeral token cho client kết nối trực tiếp Live API; token ngắn hạn giúp không phải đưa API key lâu dài xuống desktop/browser và giảm thêm một network proxy hop. ([Google AI for Developers][2])
 
-## P0.3.5 Fallback
-
-Fallback chỉ xảy ra với các failure được định nghĩa:
+API key thật vẫn nằm trong:
 
 ```text
-endpoint unavailable
-timeout
-rate limit
-temporary provider failure
-```
-
-Không fallback khi:
-
-```text
-schema validation failure
-bad prompt contract
-business rule violation
-invalid artifact
-```
-
-## P0.3.6 Route receipt
-
-Mỗi LLM task persist:
-
-```text
-task_id
-role
-rule_id
-
-selected_provider
-selected_model
-
-fallback_used
-fallback_reason
-
-started_at
-completed_at
-```
-
-Điều này cực kỳ quan trọng để sau này debug chất lượng Story.
-
-### Gate
-
-```text
-P0_3_MODEL_ROUTING_LIVE
+Providers
 ```
 
 ---
 
-# PHASE P0.4 — SERIES & EPISODE PRODUCT COMPLETION
-
-API Series/Episode hiện đã có create/list/get.
-
-P0 cần biến chúng thành usable product resources.
-
-## Series metadata authority
-
-Chuẩn hóa:
+## Endpoint đề xuất
 
 ```text
-title
-description
-
-target_audience
-language
-genre
-tone
-
-narrative_style
-content_constraints
-
-approval_policy
+POST /api/v3/live-record/sessions/bootstrap
 ```
 
-Vì command hiện hỗ trợ `metadata`, P0 có thể sử dụng schema metadata được validate thay vì phá `studio.command/v1`.
+Request:
 
-## Episode metadata
-
-```text
-title
-episode_number
-
-logline
-creative_brief
-
-target_duration
-target_audience
-
-episode_constraints
+```json
+{
+  "episode_id": "...",
+  "execution_plan_id": "..."
+}
 ```
 
-## Required operations
+Response:
 
-```text
-Create Series
-List Series
-Open Series
-Edit Series metadata
-
-Create Episode
-List Episodes
-Open Episode
-Edit draft Episode metadata
+```json
+{
+  "session_id": "...",
+  "provider_id": "...",
+  "model_id": "gemini-3.1-flash-live-preview",
+  "token": "...",
+  "expires_at": "...",
+  "execution_plan_hash": "..."
+}
 ```
 
-Sau khi Story run bắt đầu, các field ảnh hưởng generation phải có semantics rõ ràng:
+Token:
+
+* không persist;
+* không log;
+* không trả lại qua GET;
+* one-session use;
+* constrain vào exact model/config.
+
+---
+
+# 11. Phase 6 — Gemini Live Director Client
+
+Tôi khuyến nghị Live WebSocket client nằm phía **desktop TypeScript**, không nằm trong Python API.
+
+Lý do:
 
 ```text
-either immutable
-or generate new revision
+Desktop → Gemini
 ```
 
-Không silently mutate context của run đang tồn tại.
-
-## P0.4.1 Preflight
-
-Trước nút:
+ngắn hơn:
 
 ```text
-Start Story
+Desktop → WindAgent API → Gemini
 ```
 
-server kiểm tra:
+và Google cũng thiết kế ephemeral token cho kiểu kết nối trực tiếp này. ([Google AI for Developers][2])
+
+Component mới:
 
 ```text
-Episode exists
-Creative brief valid
-Provider configured
-Required routing rules resolve
-Worker capability available
-Persistence available
+frontend/app/src/features/live-record/live-director/
 ```
 
-Nếu thiếu:
+gồm:
 
 ```text
-START_BLOCKED
-```
-
-kèm lý do rõ ràng.
-
-### Gate
-
-```text
-P0_4_STUDIO_PROJECTS_USABLE
+LiveDirectorClient
+LiveDirectorSession
+FrameSampler
+ToolCallDispatcher
+CueContextBuilder
+SessionResumptionManager
 ```
 
 ---
 
-# PHASE P0.5 — REAL STORY PIPELINE
+# 12. Context Gemini nhận
 
-Đây là core của P0.
+Không dump toàn bộ Episode mỗi frame.
 
-## Canonical DAG
-
-```text
-idea.generate
-     ↓
-idea.evaluate
-     ↓
-WAIT_FOR_IDEA_SELECTION
-     ↓
-bible.generate
-     ↓
-beats.generate
-     ↓
-outline.generate
-     ↓
-screenplay.generate
-     ↓
-screenplay.review
-```
-
-Không bypass Worker.
-
-## P0.5.1 Inputs
-
-Mỗi task phải nhận input từ authoritative artifacts:
+Session start:
 
 ```text
-Series metadata
-Episode creative brief
-Selected idea
-Story Bible
-World/Character canon
-previous artifact
-revision lineage
+system instruction
++
+frozen plan summary
++
+allowed tools
++
+current scene
 ```
 
-Không đọc ngầm state global.
-
-## P0.5.2 Structured outputs
-
-Mỗi LLM output:
+Sau đó mỗi cycle:
 
 ```text
-Provider raw response
-       ↓
-parser
-       ↓
-schema validator
-       ↓
-domain validator
-       ↓
-artifact
+Current cue
+Current expected state
+Latest screen frame
+Last tool result
+Elapsed scene time
 ```
 
-Nếu invalid:
+Gemini làm:
 
 ```text
-TASK_FAILED
+Observe
+  ↓
+Compare with expected state
+  ↓
+Select approved action
+  ↓
+Execute
+  ↓
+Observe
 ```
 
-hoặc controlled repair.
+Đúng nghĩa một agent loop nhưng bị giới hạn bởi plan.
 
-Không persist garbage artifact rồi tiếp tục DAG.
+---
 
-## P0.5.3 Durable artifact chain
+# 13. Phase 7 — Code Playback Engine
 
-Mỗi artifact phải có:
+Đây là subsystem riêng.
+
+Ví dụ một prepared action:
 
 ```text
-artifact_id
-artifact_type
-
-series_id
-episode_id
-revision_id
-
-parent/input hashes
-content_hash
-
-created_at
-creator/task
-
-schema_version
+CODE_PLAYBACK
 ```
 
-## P0.5.4 Pause/resume
-
-Đã có `start_or_resume_run`.
-
-P0 phải xác nhận:
+Engine:
 
 ```text
-process crash
-API restart
-worker restart
-user close desktop
+1. Verify active app = VS Code
+2. Verify expected file
+3. Verify before_hash
+4. Position cursor
+5. Type prepared payload
+6. Save
+7. Read file
+8. Verify after_hash
+9. Return success/failure
 ```
 
-không làm mất run.
+Gemini chỉ nhận:
 
-Resume không chạy lại task đã successfully committed.
+```json
+{
+  "action_id": "code-017",
+  "status": "SUCCESS"
+}
+```
 
-## P0.5.5 Idea selection
+Không cần nhìn nội dung source code được generate.
+
+---
+
+## Hai playback mode
+
+Nên hỗ trợ:
+
+```text
+TYPE
+PASTE
+```
+
+`TYPE`:
+
+```text
+15–40 chars/s
+```
+
+phù hợp quay tutorial.
+
+`PASTE`:
+
+dùng đoạn dài không cần diễn typing.
+
+Có thể thêm:
+
+```text
+pause_after_line
+pause_after_block
+highlight_range
+scroll_to_anchor
+```
+
+để footage nhìn tự nhiên.
+
+---
+
+# 14. Browser và Tool Executor
+
+Browser subsystem hiện đã tồn tại trong repo, vì vậy Live Record nên sử dụng lại execution layer thay vì tạo browser automation riêng.
+
+Recording plan chỉ lưu:
+
+```text
+browser-action-001
+browser-action-002
+...
+```
+
+Ví dụ:
+
+```yaml
+browser-action-002:
+  operation: CLICK
+  target:
+    semantic_text: "API Keys"
+  expected_after:
+    url_contains: "/apikey"
+```
+
+Gemini:
+
+```text
+run_prepared_browser_action("browser-action-002")
+```
+
+Sau đó screenshot tiếp theo dùng để verify.
+
+---
+
+# 15. Phase 8 — Native Production Recording Engine
+
+Đây là phần lớn nhất của project.
+
+Tôi đề nghị **không implement recording engine trực tiếp trong Tauri `lib.rs`**.
+
+Hiện Tauri Rust mới khá nhỏ và dependency chỉ gồm Tauri, serde, sysinfo, NVML...
+
+Tạo native crate riêng:
+
+```text
+apps/desktop/native/
+└── recording-engine/
+    ├── Cargo.toml
+    └── src/
+        ├── main.rs
+        ├── capture/
+        ├── encoder/
+        ├── muxer/
+        ├── segment/
+        ├── preview/
+        ├── telemetry/
+        └── ipc/
+```
+
+Tauri trở thành:
+
+```text
+control plane
+```
+
+Recording engine:
+
+```text
+data plane
+```
+
+---
+
+# 16. Capture pipeline
+
+```text
+Windows Graphics Capture
+          │
+          ▼
+       D3D11
+          │
+          ├─────────────► Preview Sampler
+          │                   │
+          │                   ▼
+          │               Gemini frames
+          │
+          ▼
+       NVENC
+          │
+          ▼
+     H.264 / HEVC
+          │
+          ▼
+     libavformat
+          │
+          ▼
+         MKV
+```
+
+Quan trọng:
+
+> Không đưa raw 1080p60 frames qua React/Tauri IPC.
+
+Tauri chỉ nhận:
+
+```text
+preview frames
+metrics
+events
+```
+
+Encoding chạy hoàn toàn native.
+
+---
+
+# 17. MKV segmented recording
+
+Tôi chọn MKV thay vì MP4 trong lúc record.
+
+Ví dụ:
+
+```text
+take_0001/
+ ├── segment_0001.mkv
+ ├── segment_0002.mkv
+ ├── segment_0003.mkv
+ ├── timeline.jsonl
+ └── manifest.json
+```
+
+Segment mặc định:
+
+```text
+5 hoặc 10 phút
+```
+
+Ưu điểm:
+
+* crash recovery tốt hơn;
+* không mất toàn bộ recording nếu process chết;
+* dễ cắt take;
+* dễ remux sau cùng.
+
+Kết thúc:
+
+```text
+MKV segments
+   ↓
+validate
+   ↓
+concat/remux
+   ↓
+final.mkv / final.mp4
+```
+
+---
+
+# 18. WASAPI
+
+Chuẩn bị architecture:
+
+```text
+AudioCapturePort
+```
+
+implementation sau:
+
+```text
+WasapiCapture
+```
+
+Nhưng P0/P1:
+
+```text
+audio_enabled = false
+```
+
+Không block feature Live Record vì audio.
+
+---
+
+# 19. Phase 9 — Tauri IPC
+
+Thay vì hàng trăm command, dùng API nhỏ.
+
+Ví dụ:
+
+```text
+recorder_prepare
+recorder_start
+recorder_pause
+recorder_resume
+recorder_stop
+recorder_get_status
+recorder_create_marker
+```
+
+Event:
+
+```text
+recorder://status
+recorder://segment
+recorder://preview
+recorder://warning
+recorder://error
+```
+
+Frontend không được thao tác NVENC/libav trực tiếp.
+
+---
+
+# 20. Phase 10 — Refactor Live Record UI
+
+UI hiện tại về mặt hình thức đã gần với control room cần thiết, nên không cần redesign lớn.
+
+Cần thay mock bằng real state.
+
+## Panel preview
+
+Hiển thị:
+
+```text
+real captured screen
++
+REC
++
+current cue
++
+Gemini state
+```
+
+---
+
+## Scene List
+
+Từ:
+
+```text
+DEFAULT_SCENES
+```
+
+chuyển thành:
+
+```text
+LiveExecutionPlan.scenes
+```
+
+---
+
+## Teleprompter
+
+Không còn hard-code script.
+
+Nguồn:
+
+```text
+Episode → Recording Scene narration
+```
+
+---
+
+## Recording Status
+
+Real telemetry:
+
+```text
+elapsed
+frames captured
+frames encoded
+frames dropped
+current segment
+disk write speed
+NVENC status
+bitrate
+```
+
+---
+
+# 21. Thêm Director panel
+
+Tôi sẽ thay phần mock “Swarm” trong preview bằng trạng thái thực:
+
+```text
+LIVE DIRECTOR
+
+Gemini 3 Flash Live
+Connected
+
+Scene 3 / 12
+Cue 8 / 21
+
+Observing screen...
+Expected:
+Tests should pass
+
+Last action:
+run_prepared_command(cmd-008)
+
+Result:
+PASS
+```
+
+Không cần hiển thị chain-of-thought.
+
+Chỉ hiển thị:
+
+```text
+Observation
+Decision
+Action
+Result
+```
+
+ở mức operational.
+
+---
+
+# 22. State machine tổng thể
+
+```text
+IDLE
+ ↓
+PREPARING
+ ↓
+PREFLIGHT
+ ↓
+READY
+ ↓
+RECORDING
+ ├─ PAUSED
+ ├─ DIRECTOR_DEGRADED
+ └─ RECOVERING
+ ↓
+FINALIZING
+ ↓
+COMPLETED
+```
+
+Fail closed nếu:
+
+```text
+plan stale
+workspace hash mismatch
+provider unavailable
+wrong model capability
+record path invalid
+NVENC unavailable
+disk insufficient
+prepared action tampered
+```
+
+---
+
+# 23. Preflight trước khi nút Start được enable
+
+Nút:
+
+```text
+Bắt đầu ghi
+```
+
+chỉ enable nếu:
+
+```text
+Episode revision OK
+Execution plan FROZEN
+Source workspace hash OK
+All prepared artifacts present
+LIVE_DIRECTOR route resolves
+Provider credential valid
+Gemini Live connectivity OK
+Recorder sidecar healthy
+WGC available
+NVENC available
+Disk space sufficient
+Output path writable
+```
+
+Kết quả:
+
+```text
+READY
+```
+
+hoặc:
+
+```text
+BLOCKED
+```
+
+kèm blocker cụ thể.
+
+---
+
+# 24. Session recovery
+
+Gemini Live phải có session resumption.
+
+Google Live có support `sessionResumption`; ephemeral token mặc định cũng có giới hạn lifetime nên session dài phải được thiết kế reconnect/resume từ đầu. ([Google AI for Developers][2])
 
 Flow:
 
 ```text
-Generate candidates
-        ↓
-Persist candidate set
-        ↓
-Pause
-        ↓
-User selects candidate
-        ↓
-CAS / optimistic version check
-        ↓
-Resume DAG
+Live socket lost
+     ↓
+freeze tool executor
+     ↓
+retain current cue
+     ↓
+resume session
+     ↓
+send latest state + screenshot
+     ↓
+continue
 ```
 
-Command hiện đã có:
+Gemini không được replay action đã success.
+
+Mọi action cần:
 
 ```text
-revision_id
-candidate_id
-expected_content_hash
-expected_optimistic_version
-```
-
-nên giữ nguyên semantics này.
-
-### Gate
-
-```text
-P0_5_STORY_DAG_REAL
+execution_id
+idempotency_key
 ```
 
 ---
 
-# PHASE P0.6 — REVIEW → REVISION → APPROVAL → LOCK
+# 25. Recording timeline — cực kỳ quan trọng cho TTS sau này
 
-## Review
-
-Review artifact tối thiểu cần:
+Mỗi event ghi vào:
 
 ```text
-overall score
-
-plot
-character
-continuity
-pacing
-dialogue
-audience fit
-production feasibility
-
-findings
-severity
-evidence
-suggested correction
+timeline.jsonl
 ```
 
-Review phải là data, không chỉ free-text.
+Ví dụ:
 
-## Revision
-
-Nếu review yêu cầu sửa:
-
-```text
-Screenplay Revision N
-         ↓
-Review
-         ↓
-Revision N+1
+```json
+{"t":12.410,"type":"SCENE_START","scene":"scene-03"}
+{"t":18.122,"type":"ACTION_START","action":"code-017"}
+{"t":34.554,"type":"ACTION_SUCCESS","action":"code-017"}
+{"t":35.090,"type":"NARRATION_CUE","cue":"voice-009"}
 ```
 
-Phải bounded.
-
-Không có infinite autonomous loop.
-
-## Approval policy
-
-Support:
+Sau này TTS model chỉ cần:
 
 ```text
-AUTO
-REQUIRE_HUMAN
-CONDITIONAL
+Episode narration
++
+timeline
 ```
 
-Ví dụ conditional:
+để tạo:
 
 ```text
-review has blocking finding
-score below threshold
-large revision
-```
-
-## Approval
-
-Current command đã bind decision với:
-
-```text
-revision
-checkpoint
-artifact_hash
-actor
-optimistic_version
-```
-
-đây là đúng direction và phải giữ.
-
-## Lock
-
-Lock chỉ PASS nếu:
-
-```text
-correct episode
-correct revision
-correct screenplay hash
-
-review requirements satisfied
-approval requirements satisfied
-
-not already superseded
-optimistic version matches
-```
-
-Sau lock:
-
-```text
-SCREENPLAY_LOCKED
-        ↓
-READY_FOR_PRODUCTION
-```
-
-## P0.6.1 Sửa semantic `issued_at`
-
-Lỗi timestamp synthetic mà ta phát hiện trong `cfa7ffb...` nên được sửa ở đây, không đợi Phase 16.
-
-Production:
-
-```text
-issued_at = actual persisted approval/lock time
-```
-
-Test:
-
-```text
-inject deterministic Clock
-```
-
-Không derive timestamp từ content hash.
-
-Đây là **feature correctness**, không chỉ certification cleanup.
-
-## P0.6.2 Immutability
-
-Sau lock:
-
-```text
-screenplay cannot mutate
-```
-
-Muốn sửa:
-
-```text
-derive revision
-```
-
-không unlock object cũ.
-
-### Gate
-
-```text
-P0_6_SCREENPLAY_LOCK_SEMANTICS_VERIFIED
-```
-
----
-
-# PHASE P0.7 — FRONTEND PRODUCT CONVERGENCE
-
-Frontend architecture hiện đã đủ tốt. Không redesign framework nữa.
-
-## Providers
-
-`ProvidersPage` không còn chỉ alias `RoutingPage`.
-
-Tách product surfaces:
-
-```text
-Providers
-    provider / endpoint / API key / connection
-
-Models
-    discovered catalog / free-paid / capabilities
-
-Routing
-    task role → model rule
-```
-
-## Studio Home
-
-```text
-New Series
-
-Active Series
-Episodes in progress
-Pending approval
-Ready for Production
-```
-
-Không fake metrics.
-
-## Series
-
-```text
-Series info
-Episodes
-Create Episode
-Open Episode
-```
-
-## Episode Workspace
-
-Reuse những component đã tồn tại:
-
-```text
-EpisodePipeline
-IdeaPanel
-StoryBiblePanel
-OutlinePanel
-ScreenplayPanel
-CheckpointReviewPanel
-```
-
-Bổ sung only missing integration.
-
-## Actions
-
-UI expose theo server state:
-
-```text
-Start
-Select Idea
-Resume
-Approve
-Reject
-Request Revision
-Lock
-```
-
-Không frontend tự quyết state transition.
-
-## Required UX states
-
-```text
-loading
-running
-waiting for input
-waiting approval
-failed
-retrying
-locked
-ready
-offline
-provider unavailable
-```
-
-### Gate
-
-```text
-P0_7_DESKTOP_VERTICAL_FLOW_LIVE
-```
-
----
-
-# PHASE P0.8 — FUNCTIONAL E2E ACCEPTANCE
-
-Đây chưa phải Phase-16 certification.
-
-Mục đích đơn giản:
-
-> WindAgent có làm được công việc thật không?
-
-## Scenario A — Auto approval
-
-```text
-Provider configured
-↓
-Models discovered
-↓
-Rules configured
-↓
-Create Series
-↓
-Create Episode
-↓
-Generate
-↓
-Select Idea
-↓
-Story
-↓
-Outline
-↓
-Screenplay
-↓
-Review PASS
-↓
-Lock
-↓
-READY_FOR_PRODUCTION
-```
-
-## Scenario B — Human approval
-
-```text
+voice-001.wav
+voice-002.wav
 ...
-Review
-↓
-WAITING_FOR_APPROVAL
-↓
-Approve
-↓
-Lock
 ```
 
-## Scenario C — Revision
+và align chính xác với video.
+
+Đây là lý do dù chưa làm TTS, **timeline phải hoàn thiện ngay ở Live Record P1**.
+
+---
+
+# 26. Phase 11 — Failure policy
+
+Ba loại lỗi.
+
+### Recoverable
 
 ```text
-Review finds issue
-↓
-Revision
-↓
-Review again
-↓
-Approval
-↓
-Lock
+Gemini network disconnect
+Browser page slow
+Visual verification timeout
+Tool command timeout
 ```
 
-## Scenario D — Provider failure
+→ retry/resume.
+
+### Operator required
 
 ```text
-Primary provider failure
-↓
-router determines fallback allowed
-↓
-fallback model
-↓
-route receipt records fallback
-↓
-pipeline continues
+UI changed
+VS Code unexpected dialog
+Website requires login
 ```
 
-## Scenario E — Restart recovery
+→ pause + yêu cầu người dùng.
 
-During pipeline:
+### Fatal
 
 ```text
-kill Worker
-restart Worker
+disk full
+NVENC failure
+capture device destroyed
+plan tampered
+workspace hash mismatch
 ```
 
-Expected:
+→ stop/finalize current segment.
+
+---
+
+# 27. Acceptance gates
+
+Tôi sẽ chia feature này thành các gate.
+
+| Gate                   | Điều kiện                                   |
+| ---------------------- | ------------------------------------------- |
+| `LR_P0_ARCHITECTURE`   | contracts + state machine frozen            |
+| `LR_P1_EPISODE_PLAN`   | Episode → frozen execution plan             |
+| `LR_P2_PROVIDER_LIVE`  | Provider routing → Gemini Live              |
+| `LR_P3_DIRECTOR`       | screen → Gemini → constrained function call |
+| `LR_P4_CODE_PLAYBACK`  | prepared code được viết lại chính xác       |
+| `LR_P5_BROWSER_TOOLS`  | browser/tool actions từ plan hoạt động      |
+| `LR_P6_NATIVE_CAPTURE` | WGC capture thật                            |
+| `LR_P7_NVENC`          | 1080p60 → NVENC                             |
+| `LR_P8_SEGMENTED_MKV`  | MKV segmentation + recovery                 |
+| `LR_P9_UI`             | toàn bộ mock telemetry được thay            |
+| `LR_P10_E2E`           | Episode → quay hoàn chỉnh                   |
+| `LR_P11_PRODUCTION`    | stress/recovery/performance PASS            |
+
+---
+
+# 28. E2E bắt buộc
+
+Kịch bản acceptance nên có một Episode test khoảng 5–10 phút:
 
 ```text
-run resumes
-no duplicate artifacts
-no duplicate state transition
+Scene 1
+Open VS Code
+
+Scene 2
+Open prepared file
+
+Scene 3
+Type prepared code
+
+Scene 4
+Run pytest
+
+Scene 5
+Observe PASS
+
+Scene 6
+Open browser
+
+Scene 7
+Navigate prepared page
+
+Scene 8
+Run prepared tool
+
+Scene 9
+Return VS Code
+
+Scene 10
+Finish recording
+```
+
+Sau run phải chứng minh:
+
+```text
+0 unapproved actions
+
+all source hashes correct
+
+all commands came from plan
+
+all browser actions came from plan
+
+recording playable
+
+all MKV segments valid
+
+timeline complete
+
+Episode/plan/take lineage correct
 ```
 
 ---
 
-# 3. Test matrix P0
+# 29. Performance gate
 
-| Layer                            | Required                        |
-| -------------------------------- | ------------------------------- |
-| Provider unit                    | PASS                            |
-| Provider API contract            | PASS                            |
-| Credential security              | PASS                            |
-| Model discovery                  | PASS                            |
-| Model reconciliation             | PASS                            |
-| Routing resolution               | PASS                            |
-| Routing fallback                 | PASS                            |
-| Series/Episode                   | PASS                            |
-| Story artifact validation        | PASS                            |
-| Story DAG                        | PASS                            |
-| Run resume                       | PASS                            |
-| Idea CAS                         | PASS                            |
-| Review/revision                  | PASS                            |
-| Approval                         | PASS                            |
-| Lock immutability                | PASS                            |
-| Frontend feature tests           | PASS                            |
-| Desktop typecheck                | PASS                            |
-| Desktop build                    | PASS                            |
-| SQLite integration               | PASS                            |
-| PostgreSQL Studio vertical slice | PASS                            |
-| Real-provider smoke              | PASS or `SKIPPED_NO_CREDENTIAL` |
-
-`SKIPPED_NO_CREDENTIAL` không được tính thành PASS.
-
-Không cần ở P0:
+Với 1080p60 nên đặt baseline:
 
 ```text
-full repository certification
-36-suite Phase16 matrix
-full Blender regression
-final evidence attestation
+Dropped frames < 0.1%
+
+Recording engine:
+no sustained CPU saturation
+
+NVENC:
+hardware encoder confirmed
+
+Preview:
+< 200 ms perceived delay
+
+Gemini sampling:
+1–2 FPS maximum normally
+
+MKV:
+every segment independently playable
+
+30–60 minute soak:
+PASS
 ```
+
+Không nên benchmark Gemini latency chung với recorder latency. Hai subsystem phải đo riêng.
 
 ---
 
-# 4. Thứ tự thực hiện
+# 30. Thứ tự triển khai tôi khuyến nghị
 
 ```text
-P0.0 Feature Truth
-          │
-          ├─────────────────┐
-          ↓                 ↓
-P0.1 Providers        P0.4 Series/Episode
-          │                 │
-          ↓                 │
-P0.2 Models                 │
-          │                 │
-          ↓                 │
-P0.3 Routing                │
-          └────────┬────────┘
-                   ↓
-             P0.5 Story DAG
-                   ↓
-        P0.6 Review / Revision /
-             Approval / Lock
-                   ↓
-             P0.7 Frontend
-                   ↓
-             P0.8 Real E2E
-                   ↓
-       WINDAGENT_P0_FEATURE_COMPLETE
+Phase 0
+Architecture freeze
+     ↓
+Phase 1
+Domain + DB
+     ↓
+Phase 2
+Episode → Prepared Recording Plan
+     ↓
+Phase 3
+Constrained Tool Manifest
+     ↓
+Phase 4
+Provider LIVE_DIRECTOR capability
+     ↓
+Phase 5
+Ephemeral token + Gemini Live
+     ↓
+Phase 6
+Screen → Gemini → function calling
+     ↓
+Phase 7
+Code / Browser / Tool Playback
+     ↓
+Phase 8
+Native WGC capture
+     ↓
+Phase 9
+NVENC + libav + segmented MKV
+     ↓
+Phase 10
+Live Record UI integration
+     ↓
+Phase 11
+Recovery + E2E + soak
+     ↓
+PRODUCTION READY
 ```
 
-Frontend không nhất thiết đợi P0.6 mới bắt đầu. UI của feature nào backend contract đã ổn thì có thể triển khai song song.
+## Điểm kiến trúc quan trọng nhất
 
----
+Tôi sẽ **không xây Gemini thành coder trong lúc quay**.
 
-# 5. Quy tắc code trong P0
-
-Không thêm architecture layer mới nếu existing layer giải quyết được vấn đề.
-
-Ưu tiên:
+Vai trò của Gemini Live nên là:
 
 ```text
-FIX EXISTING FEATURE
-        >
-NEW ABSTRACTION
+          GEMINI LIVE
+              │
+       Observe Screen
+              │
+       Understand State
+              │
+    Compare With Script/Cue
+              │
+       Choose Next Step
+              │
+   ┌──────────┴──────────┐
+   │                     │
+Prepared Action       Wait / Retry
+   │
+   ▼
+Deterministic Executor
 ```
 
-và:
+Nhờ đó buổi quay vẫn mang cảm giác một AI agent đang tự vận hành VS Code, Browser và tools, nhưng phía dưới nó có **một execution package đã chuẩn bị, versioned, hashed và kiểm soát hoàn toàn**. Đây là cách phù hợp hơn nhiều cho production video vì tránh tình trạng Gemini bất ngờ sửa sai code, đổi flow, mở sai trang hoặc phá take đang quay.
 
-```text
-existing contract
-        >
-new duplicate contract
+Với repo hiện tại, tôi đánh giá phần cần làm lớn nhất không phải UI mà là **Recording Preparation Package + constrained Live Director + Rust recording sidecar**. UI Live Record hiện có thể giữ khoảng 70–80% cấu trúc visual và thay dần mock state bằng subsystem thật.
 
-existing service
-        >
-parallel service
-
-real persistence
-        >
-frontend/local state
-
-server authority
-        >
-frontend inference
-
-real provider
-        >
-demo receipt
-```
-
-Không được vì test determinism mà thay đổi semantics production.
-
----
-
-# 6. Commit strategy
-
-Tôi khuyên chia P0 thành các commit/PR độc lập:
-
-```text
-feat(p0-provider): complete provider lifecycle
-
-feat(p0-models): durable discovery and catalog sync
-
-feat(p0-routing): story model routing rules
-
-feat(p0-studio): complete series and episode inputs
-
-feat(p0-story): complete real story DAG
-
-feat(p0-review): revision approval and lock semantics
-
-feat(p0-ui): complete studio vertical workflow
-
-test(p0): real functional vertical slice
-
-docs(p0): feature-complete handoff
-```
-
-Không tạo thêm commit kiểu:
-
-```text
-provider + story + UI + evidence + unrelated code-video
-```
-
-như vấn đề atomicity ở commit hiện tại.
-
----
-
-# 7. Definition of Done cuối P0
-
-P0 chỉ được đóng khi:
-
-```text
-[PASS] API key có thể cấu hình an toàn
-[PASS] Provider test thật
-[PASS] Models sync thật
-[PASS] Free/Paid/Unknown truthful
-[PASS] Model rules persist
-[PASS] Worker sử dụng đúng durable rules
-[PASS] Series chạy thật
-[PASS] Episode chạy thật
-[PASS] Story DAG chạy qua durable worker
-[PASS] Idea selection pause/resume thật
-[PASS] Story artifacts persist
-[PASS] Screenplay generated thật
-[PASS] Review thật
-[PASS] Revision lineage đúng
-[PASS] Human approval hoạt động
-[PASS] Screenplay lock immutable
-[PASS] READY_FOR_PRODUCTION đạt được
-[PASS] Desktop thực hiện được toàn bộ flow
-[PASS] restart không làm mất run
-[PASS] PostgreSQL vertical slice
-[PASS] không hard-coded success
-```
-
-**Không yêu cầu Phase-16 certification phải PASS để đóng P0.**
-
-Sau P0, trạng thái dự án nên là:
-
-```text
-ARCHITECTURE V3
-      +
-FEATURE COMPLETE STORY STUDIO
-      +
-REAL PROVIDER ROUTING
-      +
-REAL DURABLE STORY PIPELINE
-      +
-USABLE DESKTOP
-```
-
-Sau đó mới chuyển sang **P1: Characters / World / Assets / Storyboard / Production handoff**, rồi cuối cùng mới làm một đợt hardening + certification toàn repo.
+[1]: https://ai.google.dev/gemini-api/docs/models/gemini-3.1-flash-live-preview?utm_source=chatgpt.com "Gemini 3.1 Flash live preview  |  Gemini API  |  Google AI for Developers"
+[2]: https://ai.google.dev/gemini-api/docs/live-api/ephemeral-tokens?hl=vi&utm_source=chatgpt.com "Mã thông báo tạm thời  |  Gemini API  |  Google AI for Developers"
