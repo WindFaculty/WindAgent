@@ -1,8 +1,14 @@
 /**
- * Phase 10 — ProductionPage
- * Canonical Episode-Centric Production Workspace.
+ * P1.7 — ProductionPage
+ * Canonical Episode-Centric Pre-Production Workspace.
  * ZERO FakeProductionApiClient. ZERO hardcoded proj-alpha. ZERO fake timers.
  * Fully backed by /api/v3/episodes/{episodeId}/production + WebSocket stream.
+ *
+ * P1 truth rules: the fake Render / Animate / Generate-Video buttons are GONE.
+ * The default tab is the Production Readiness gate (P1.6 preflight) with an
+ * explicit Finalize action producing a content-addressed package. Stage tabs
+ * below are honest, read-only job history viewers — engine executors arrive
+ * in P2 and no button pretends otherwise.
  */
 import React, { useState } from 'react';
 import {
@@ -10,17 +16,15 @@ import {
   useShots,
   useCreateShot,
   useProductionJobs,
-  useSubmitStageJob,
-  useRetryStageJob,
   useDeliveryArtifact,
   useProductionRealtime,
 } from '../hooks/useProduction';
 import { JobProgress } from '../components/JobProgress';
 import { JobFailure } from '../components/JobFailure';
 import { ArtifactPreview } from '../components/ArtifactPreview';
-import type { JobStage } from '@windagent/api-contracts';
+import { ProductionReadiness } from '../components/ProductionReadiness';
 
-export type ProductionTab = 'overview' | 'shots' | 'audio' | 'animation' | 'render' | 'delivery';
+export type ProductionTab = 'readiness' | 'overview' | 'shots' | 'audio' | 'animation' | 'render' | 'delivery';
 
 interface ProductionPageProps {
   episodeId: string;
@@ -28,9 +32,19 @@ interface ProductionPageProps {
   apiBaseUrl?: string;
 }
 
+/** Honest notice rendered in every stage panel: P1 ships no executor. */
+const StagePendingNotice: React.FC<{ stage: string }> = ({ stage }) => (
+  <div className="production-stage-panel__notice">
+    <strong>P1 chưa kết nối executor {stage}.</strong>{' '}
+    Không thể gửi job mới từ giao diện — danh sách dưới đây chỉ là lịch sử job
+    đọc-cho-muộn từ API. Luồng bàn giao pre-production nằm ở tab{' '}
+    <em>Readiness</em> (Production Package).
+  </div>
+);
+
 export const ProductionPage: React.FC<ProductionPageProps> = ({
   episodeId,
-  initialTab = 'overview',
+  initialTab = 'readiness',
   apiBaseUrl = '',
 }) => {
   const [activeTab, setActiveTab] = useState<ProductionTab>(initialTab);
@@ -44,12 +58,6 @@ export const ProductionPage: React.FC<ProductionPageProps> = ({
 
   // Mutations
   const createShot = useCreateShot(episodeId);
-  const submitAudio = useSubmitStageJob(episodeId, 'AUDIO');
-  const submitAnimation = useSubmitStageJob(episodeId, 'ANIMATION');
-  const submitRender = useSubmitStageJob(episodeId, 'RENDER');
-  const submitVideo = useSubmitStageJob(episodeId, 'VIDEO');
-
-  const retryJob = useRetryStageJob(episodeId, (jobs.find((j: any) => j.job_id)?.job_type as JobStage) || 'RENDER');
 
   // Realtime WebSocket subscription
   useProductionRealtime(episodeId, apiBaseUrl);
@@ -81,6 +89,7 @@ export const ProductionPage: React.FC<ProductionPageProps> = ({
   const renderJobs = jobs.filter((j: any) => j.job_type === 'RENDER');
 
   const tabs: { id: ProductionTab; label: string; count?: number }[] = [
+    { id: 'readiness', label: '✅ Readiness' },
     { id: 'overview', label: '📊 Tổng quan' },
     { id: 'shots', label: '🎬 Phân cảnh (Shots)', count: shots.length },
     { id: 'audio', label: '🎙️ Audio / Voice', count: audioJobs.length },
@@ -137,6 +146,11 @@ export const ProductionPage: React.FC<ProductionPageProps> = ({
       </nav>
 
       <main className="production-page__content">
+        {/* ─── READINESS TAB (P1.7 default) ─── */}
+        {activeTab === 'readiness' && (
+          <ProductionReadiness episodeId={episodeId} />
+        )}
+
         {/* ─── OVERVIEW TAB ─── */}
         {activeTab === 'overview' && plan && (
           <div className="production-overview">
@@ -158,33 +172,24 @@ export const ProductionPage: React.FC<ProductionPageProps> = ({
               </div>
 
               <div className="production-card">
-                <h3>🚀 Tiến trình sản xuất</h3>
-                <div className="production-progress-bar">
-                  <div
-                    className="production-progress-bar__fill"
-                    style={{ width: `${plan.progress_percent}%` }}
-                  />
-                </div>
+                <h3>🚦 Trạng thái pre-production</h3>
+                <p className="empty-hint">
+                  P1 kết thúc ở ranh giới pre-production: gate chân thực duy nhất
+                  là Production Readiness. Xem checklist trực tiếp tại tab{' '}
+                  <em>Readiness</em>.
+                </p>
                 <div className="production-stage-checklist">
                   <div className={`production-stage-item ${shots.length > 0 ? 'done' : ''}`}>
-                    <span>1. Phân cảnh (Shots Breakdown)</span>
-                    <span>{shots.length > 0 ? '✅ Hoàn tất' : '⏳ Chưa có'}</span>
+                    <span>1. Phân cảnh (Shot Plan)</span>
+                    <span>{shots.length > 0 ? `✅ ${shots.length} shots` : '⏳ Chưa có'}</span>
                   </div>
                   <div className={`production-stage-item ${audioJobs.some((j: any) => j.state === 'SUCCEEDED') ? 'done' : ''}`}>
-                    <span>2. Tạo thoại (Audio/TTS)</span>
-                    <span>{audioJobs.some((j: any) => j.state === 'SUCCEEDED') ? '✅ Hoàn tất' : '⏳ Đang chờ'}</span>
-                  </div>
-                  <div className={`production-stage-item ${animJobs.some((j: any) => j.state === 'SUCCEEDED') ? 'done' : ''}`}>
-                    <span>3. Diễn hoạt (Animation)</span>
-                    <span>{animJobs.some((j: any) => j.state === 'SUCCEEDED') ? '✅ Hoàn tất' : '⏳ Đang chờ'}</span>
-                  </div>
-                  <div className={`production-stage-item ${renderJobs.some((j: any) => j.state === 'SUCCEEDED') ? 'done' : ''}`}>
-                    <span>4. Kết xuất (Render Engine)</span>
-                    <span>{renderJobs.some((j: any) => j.state === 'SUCCEEDED') ? '✅ Hoàn tất' : '⏳ Đang chờ'}</span>
+                    <span>2. Thực thi engine (Audio → Animation → Render)</span>
+                    <span>⏳ P2</span>
                   </div>
                   <div className={`production-stage-item ${delivery?.video_asset_id ? 'done' : ''}`}>
-                    <span>5. Đóng gói & Xuất bản (Delivery)</span>
-                    <span>{delivery?.video_asset_id ? '✅ Sẵn sàng' : '⏳ Đang chờ'}</span>
+                    <span>3. Xuất bản (Delivery)</span>
+                    <span>⏳ P2</span>
                   </div>
                 </div>
               </div>
@@ -258,7 +263,7 @@ export const ProductionPage: React.FC<ProductionPageProps> = ({
           </div>
         )}
 
-        {/* ─── AUDIO TAB ─── */}
+        {/* ─── AUDIO TAB (read-only job history) ─── */}
         {activeTab === 'audio' && (
           <div className="production-stage-panel">
             <div className="production-stage-panel__header">
@@ -266,28 +271,19 @@ export const ProductionPage: React.FC<ProductionPageProps> = ({
                 <h3>🎙️ Giai đoạn Audio & Lồng tiếng (TTS)</h3>
                 <p>Tạo file âm thanh thoại và tiếng động nền từ kịch bản phân cảnh.</p>
               </div>
-              <button
-                className="btn btn--primary"
-                onClick={() => submitAudio.mutate({ shot_id: selectedShot?.id })}
-                disabled={submitAudio.isPending}
-              >
-                {submitAudio.isPending ? '⏳ Đang gửi...' : '🚀 Bắt đầu tạo Audio'}
-              </button>
             </div>
 
+            <StagePendingNotice stage="Audio/TTS" />
+
             <div className="production-jobs-list">
-              <h4>Tiến trình Audio Jobs ({audioJobs.length})</h4>
+              <h4>Lịch sử Audio Jobs ({audioJobs.length})</h4>
               {audioJobs.length === 0 ? (
-                <p className="empty-hint">Chưa có audio job nào được gửi.</p>
+                <p className="empty-hint">Chưa có audio job nào trong lịch sử.</p>
               ) : (
                 audioJobs.map((job: any) => (
                   <div key={job.job_id} className="production-job-card">
                     <JobProgress job={job} />
-                    <JobFailure
-                      job={job}
-                      onRetry={() => retryJob.mutate(job.job_id)}
-                      isRetrying={retryJob.isPending}
-                    />
+                    <JobFailure job={job} />
                     <ArtifactPreview artifactId={job.artifact_id} type="audio" />
                   </div>
                 ))
@@ -296,7 +292,7 @@ export const ProductionPage: React.FC<ProductionPageProps> = ({
           </div>
         )}
 
-        {/* ─── ANIMATION TAB ─── */}
+        {/* ─── ANIMATION TAB (read-only job history) ─── */}
         {activeTab === 'animation' && (
           <div className="production-stage-panel">
             <div className="production-stage-panel__header">
@@ -304,28 +300,19 @@ export const ProductionPage: React.FC<ProductionPageProps> = ({
                 <h3>🧊 Giai đoạn Diễn hoạt 3D / Animation</h3>
                 <p>Tạo animation curves, camera tracking và visual blockout.</p>
               </div>
-              <button
-                className="btn btn--primary"
-                onClick={() => submitAnimation.mutate({ shot_id: selectedShot?.id })}
-                disabled={submitAnimation.isPending}
-              >
-                {submitAnimation.isPending ? '⏳ Đang gửi...' : '🚀 Bắt đầu Animation Job'}
-              </button>
             </div>
 
+            <StagePendingNotice stage="Animation" />
+
             <div className="production-jobs-list">
-              <h4>Tiến trình Animation Jobs ({animJobs.length})</h4>
+              <h4>Lịch sử Animation Jobs ({animJobs.length})</h4>
               {animJobs.length === 0 ? (
-                <p className="empty-hint">Chưa có animation job nào được gửi.</p>
+                <p className="empty-hint">Chưa có animation job nào trong lịch sử.</p>
               ) : (
                 animJobs.map((job: any) => (
                   <div key={job.job_id} className="production-job-card">
                     <JobProgress job={job} />
-                    <JobFailure
-                      job={job}
-                      onRetry={() => retryJob.mutate(job.job_id)}
-                      isRetrying={retryJob.isPending}
-                    />
+                    <JobFailure job={job} />
                     <ArtifactPreview artifactId={job.artifact_id} type="animation" />
                   </div>
                 ))
@@ -334,7 +321,7 @@ export const ProductionPage: React.FC<ProductionPageProps> = ({
           </div>
         )}
 
-        {/* ─── RENDER TAB ─── */}
+        {/* ─── RENDER TAB (read-only job history) ─── */}
         {activeTab === 'render' && (
           <div className="production-stage-panel">
             <div className="production-stage-panel__header">
@@ -342,28 +329,19 @@ export const ProductionPage: React.FC<ProductionPageProps> = ({
                 <h3>🖥️ Giai đoạn Kết xuất (Render Engine)</h3>
                 <p>Thực hiện raytracing, compositing và hiệu ứng ánh sáng.</p>
               </div>
-              <button
-                className="btn btn--primary"
-                onClick={() => submitRender.mutate({ shot_id: selectedShot?.id })}
-                disabled={submitRender.isPending}
-              >
-                {submitRender.isPending ? '⏳ Đang gửi...' : '🚀 Bắt đầu Render Job'}
-              </button>
             </div>
 
+            <StagePendingNotice stage="Render" />
+
             <div className="production-jobs-list">
-              <h4>Tiến trình Render Jobs ({renderJobs.length})</h4>
+              <h4>Lịch sử Render Jobs ({renderJobs.length})</h4>
               {renderJobs.length === 0 ? (
-                <p className="empty-hint">Chưa có render job nào được gửi.</p>
+                <p className="empty-hint">Chưa có render job nào trong lịch sử.</p>
               ) : (
                 renderJobs.map((job: any) => (
                   <div key={job.job_id} className="production-job-card">
                     <JobProgress job={job} />
-                    <JobFailure
-                      job={job}
-                      onRetry={() => retryJob.mutate(job.job_id)}
-                      isRetrying={retryJob.isPending}
-                    />
+                    <JobFailure job={job} />
                     <ArtifactPreview artifactId={job.artifact_id} type="render" />
                   </div>
                 ))
@@ -372,7 +350,7 @@ export const ProductionPage: React.FC<ProductionPageProps> = ({
           </div>
         )}
 
-        {/* ─── DELIVERY TAB ─── */}
+        {/* ─── DELIVERY TAB (read-only) ─── */}
         {activeTab === 'delivery' && (
           <div className="production-stage-panel">
             <div className="production-stage-panel__header">
@@ -380,14 +358,9 @@ export const ProductionPage: React.FC<ProductionPageProps> = ({
                 <h3>📦 Gói xuất bản & Phân phối (Delivery)</h3>
                 <p>Xuất bản tập phim hoàn chỉnh sau khi kết xuất tất cả phân cảnh.</p>
               </div>
-              <button
-                className="btn btn--primary"
-                onClick={() => submitVideo.mutate({})}
-                disabled={submitVideo.isPending}
-              >
-                {submitVideo.isPending ? '⏳ Đang xuất...' : '🎬 Đóng gói Video'}
-              </button>
             </div>
+
+            <StagePendingNotice stage="Video/Delivery" />
 
             {delivery && (
               <div className="delivery-card">

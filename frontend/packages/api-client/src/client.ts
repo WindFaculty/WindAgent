@@ -94,6 +94,12 @@ import type {
   ProductionJobResource,
   JobSubmissionReceipt,
   DeliveryArtifactResource,
+  // P1.6 — Production Package
+  ProductionTarget,
+  PreflightFinding,
+  ProductionPreflight,
+  ProductionPackageResource,
+  FinalizePackageResult,
   // Phase 12 — Models, Providers & Routing
   ModelDefinitionResource,
   ModelFilterParams,
@@ -994,6 +1000,30 @@ export class ProductionApi {
 
   async getDelivery(episodeId: string): Promise<DeliveryArtifactResource> {
     return this.transport.get<DeliveryArtifactResource>(`/api/v3/episodes/${encodeURIComponent(episodeId)}/production/delivery`);
+  }
+
+  // ── P1.6 — Production Package (readiness + immutable handoff) ────────────
+
+  async preflightPackage(episodeId: string): Promise<ProductionPreflight> {
+    return this.transport.get<ProductionPreflight>(`/api/v3/episodes/${encodeURIComponent(episodeId)}/production/package/preflight`);
+  }
+
+  async finalizePackage(
+    episodeId: string,
+    data: { production_target: ProductionTarget }
+  ): Promise<FinalizePackageResult> {
+    return this.transport.post<FinalizePackageResult>(
+      `/api/v3/episodes/${encodeURIComponent(episodeId)}/production/package/actions/finalize`,
+      data
+    );
+  }
+
+  async listPackages(episodeId: string): Promise<ProductionPackageResource[]> {
+    return this.transport.get<ProductionPackageResource[]>(`/api/v3/episodes/${encodeURIComponent(episodeId)}/production/packages`);
+  }
+
+  async getPackage(packageId: string): Promise<ProductionPackageResource> {
+    return this.transport.get<ProductionPackageResource>(`/api/v3/production/packages/${encodeURIComponent(packageId)}`);
   }
 }
 

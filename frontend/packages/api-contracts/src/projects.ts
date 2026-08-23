@@ -315,3 +315,47 @@ export interface DeliveryArtifactResource {
   manifest_url?: string | null;
   created_at: string;
 }
+
+// ─── P1.5/P1.6 — Shot Planning & Production Package ─────────────────────────
+
+export type ProductionTarget = 'BLENDER' | 'UNREAL' | 'GENERIC_3D';
+
+export interface PreflightFinding {
+  code: string;
+  severity: 'BLOCKING' | 'WARNING';
+  message: string;
+  [key: string]: unknown;
+}
+
+export interface ProductionPreflight {
+  episode_id: string;
+  status: 'READY' | 'BLOCKED';
+  blocking_findings: PreflightFinding[];
+  warnings: PreflightFinding[];
+  checks: Record<string, boolean>;
+}
+
+export interface ProductionPackageResource {
+  package_id: string;
+  package_hash: string;
+  schema: string;
+  status: string;
+  episode_id: string;
+  created_at: string;
+  production_target: ProductionTarget;
+  episode: { episode_id: string; project_id?: string | null; title?: string | null; state?: string | null };
+  locked_screenplay: { revision_id: string; artifact_id?: string | null; content_hash: string };
+  character_canon: { character_id: string; version: number; hash: string }[];
+  world_canon: { project_id?: string | null; current_revision_id: string; content_hash: string; version: number };
+  locations: { location_id: string; name?: string | null; type?: string | null }[];
+  assets: { asset_id: string; revision_id: string; content_hash: string }[];
+  storyboard: { revision_id?: string | null; source_screenplay_revision_id?: string | null; hash: string };
+  scenes: Record<string, unknown>[];
+  shot_plan: { revision_id: string; hash: string; shot_count: number };
+  constraints: Record<string, unknown>;
+}
+
+export interface FinalizePackageResult {
+  package: ProductionPackageResource;
+  reused: boolean;
+}

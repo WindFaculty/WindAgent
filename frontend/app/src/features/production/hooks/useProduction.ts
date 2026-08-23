@@ -17,6 +17,8 @@ export const productionKeys = {
   jobs: (episodeId: string, stage?: string) => [...productionKeys.all, 'jobs', episodeId, stage ?? 'all'] as const,
   job: (jobId: string) => [...productionKeys.all, 'job', jobId] as const,
   delivery: (episodeId: string) => [...productionKeys.all, 'delivery', episodeId] as const,
+  preflight: (episodeId: string) => [...productionKeys.all, 'preflight', episodeId] as const,
+  packages: (episodeId: string) => [...productionKeys.all, 'packages', episodeId] as const,
 };
 
 export function useProductionPlan(episodeId: string) {
@@ -167,6 +169,40 @@ export function useDeliveryArtifact(episodeId: string) {
     queryKey: productionKeys.delivery(episodeId),
     queryFn: () => client.production.getDelivery(episodeId),
     enabled: Boolean(episodeId),
+  });
+}
+
+// ─── P1.6 — Production Readiness & Package handoff ──────────────────────────
+
+export function useProductionPreflight(episodeId: string, enabled = true) {
+  const client = useApiClient();
+  return useQuery({
+    queryKey: productionKeys.preflight(episodeId),
+    queryFn: () => client.production.preflightPackage(episodeId),
+    enabled: Boolean(episodeId) && enabled,
+  });
+}
+
+export function usePackages(episodeId: string, enabled = true) {
+  const client = useApiClient();
+  return useQuery({
+    queryKey: productionKeys.packages(episodeId),
+    queryFn: () => client.production.listPackages(episodeId),
+    enabled: Boolean(episodeId) && enabled,
+  });
+}
+
+export function useFinalizePackage(episodeId: string) {
+  const client = useApiClient();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { production_target: 'BLENDER' | 'UNREAL' | 'GENERIC_3D' }) =>
+      client.production.finalizePackage(episodeId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: productionKeys.packages(episodeId) });
+      queryClient.invalidateQueries({ queryKey: productionKeys.preflight(episodeId) });
+      queryClient.invalidateQueries({ queryKey: productionKeys.plan(episodeId) });
+    },
   });
 }
 
