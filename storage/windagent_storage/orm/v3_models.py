@@ -30,8 +30,8 @@ class V3ResourceORM(BaseORM):
     data_json = Column(Text, nullable=False, default="{}")
     version = Column(Integer, nullable=False, default=1)
     idempotency_key = Column(String(128), nullable=True)
-    created_at = Column(DateTime, nullable=False, default=default_utc_now)
-    updated_at = Column(DateTime, nullable=False, default=default_utc_now)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
+    updated_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
 
     __table_args__ = (
         Index("ix_v3_resources_namespace_id", "namespace", "resource_id", unique=True),
@@ -53,8 +53,8 @@ class ProviderVendorORM(BaseORM):
     supports_model_discovery = Column(Boolean, nullable=False, default=True)
     supports_openai_compatible = Column(Boolean, nullable=False, default=True)
     enabled = Column(Boolean, nullable=False, default=True)
-    created_at = Column(DateTime, nullable=False, default=default_utc_now)
-    updated_at = Column(DateTime, nullable=False, default=default_utc_now)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
+    updated_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
 
 
 class ProviderCredentialORM(BaseORM):
@@ -68,8 +68,8 @@ class ProviderCredentialORM(BaseORM):
     is_env_ref = Column(Boolean, nullable=False, default=False)
     env_var_name = Column(String(128), nullable=True)
     enabled = Column(Boolean, nullable=False, default=True)
-    created_at = Column(DateTime, nullable=False, default=default_utc_now)
-    updated_at = Column(DateTime, nullable=False, default=default_utc_now)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
+    updated_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
 
 
 class ProviderEndpointORM(BaseORM):
@@ -88,9 +88,9 @@ class ProviderEndpointORM(BaseORM):
     weight = Column(Integer, nullable=False, default=100)
     enabled = Column(Boolean, nullable=False, default=True)
     test_status = Column(String(32), nullable=False, default="untested")  # untested | pass | fail
-    last_tested_at = Column(DateTime, nullable=True)
-    created_at = Column(DateTime, nullable=False, default=default_utc_now)
-    updated_at = Column(DateTime, nullable=False, default=default_utc_now)
+    last_tested_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
+    updated_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
 
 
 class CanonicalModelV3ORM(BaseORM):
@@ -105,8 +105,8 @@ class CanonicalModelV3ORM(BaseORM):
     capabilities_json = Column(Text, nullable=False, default="[]")
     tool_call_protocol = Column(String(64), nullable=True)
     enabled = Column(Boolean, nullable=False, default=True)
-    created_at = Column(DateTime, nullable=False, default=default_utc_now)
-    updated_at = Column(DateTime, nullable=False, default=default_utc_now)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
+    updated_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
 
 
 class EndpointModelBindingORM(BaseORM):
@@ -129,9 +129,9 @@ class EndpointModelBindingORM(BaseORM):
     input_price = Column(Float, nullable=True)   # provider-advertised USD/token; NULL = not advertised
     output_price = Column(Float, nullable=True)  # provider-advertised USD/token; NULL = not advertised
     currency = Column(String(8), nullable=True)
-    last_discovered_at = Column(DateTime, nullable=True)
-    created_at = Column(DateTime, nullable=False, default=default_utc_now)
-    updated_at = Column(DateTime, nullable=False, default=default_utc_now)
+    last_discovered_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
+    updated_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
 
     __table_args__ = (
         Index("ix_endpoint_model_bindings_canonical", "canonical_model_id", "enabled"),
@@ -149,8 +149,8 @@ class ModelRoutingRuleV3ORM(BaseORM):
     enabled = Column(Boolean, nullable=False, default=True)
     priority = Column(Integer, nullable=False, default=1)
     policy_json = Column(Text, nullable=False, default="{}")
-    created_at = Column(DateTime, nullable=False, default=default_utc_now)
-    updated_at = Column(DateTime, nullable=False, default=default_utc_now)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
+    updated_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
 
 
 class RouteLockV3ORM(BaseORM):
@@ -165,9 +165,9 @@ class RouteLockV3ORM(BaseORM):
     routing_snapshot_json = Column(Text, nullable=False, default="{}")
     status = Column(String(32), nullable=False, default="active")  # active | released
     reselection_reason = Column(String(128), nullable=True)
-    created_at = Column(DateTime, nullable=False, default=default_utc_now)
-    updated_at = Column(DateTime, nullable=False, default=default_utc_now)
-    released_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
+    updated_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
+    released_at = Column(DateTime(timezone=True), nullable=True)
 
     __table_args__ = (
         Index("ix_route_locks_v3_scope", "scope_type", "scope_id", "status"),
@@ -199,7 +199,7 @@ class ProviderRoutingAuditV3ORM(BaseORM):
     reason = Column(String(255), nullable=True)
     actor = Column(String(128), nullable=False, default="system")
     metadata_json = Column(Text, nullable=False, default="{}")
-    created_at = Column(DateTime, nullable=False, default=default_utc_now)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
 
     __table_args__ = (
         Index("ix_provider_routing_audit_scope", "scope_type", "scope_id"),
@@ -219,9 +219,9 @@ class RouteAttemptV3ORM(BaseORM):
     status = Column(String(32), nullable=False, default="pending")  # pending | success | failed
     http_status = Column(Integer, nullable=True)
     error_class = Column(String(64), nullable=True)
-    started_at = Column(DateTime, nullable=False, default=default_utc_now)
-    first_token_at = Column(DateTime, nullable=True)
-    finished_at = Column(DateTime, nullable=True)
+    started_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
+    first_token_at = Column(DateTime(timezone=True), nullable=True)
+    finished_at = Column(DateTime(timezone=True), nullable=True)
     prompt_tokens = Column(Integer, nullable=False, default=0)
     completion_tokens = Column(Integer, nullable=False, default=0)
     partial_artifact_id = Column(String(128), nullable=True)
@@ -234,14 +234,14 @@ class EndpointRuntimeStateORM(BaseORM):
     circuit_state = Column(String(32), nullable=False, default="closed")  # closed | open | half_open
     consecutive_failures = Column(Integer, nullable=False, default=0)
     consecutive_successes = Column(Integer, nullable=False, default=0)
-    cooldown_until = Column(DateTime, nullable=True)
-    last_429_at = Column(DateTime, nullable=True)
-    last_failure_at = Column(DateTime, nullable=True)
+    cooldown_until = Column(DateTime(timezone=True), nullable=True)
+    last_429_at = Column(DateTime(timezone=True), nullable=True)
+    last_failure_at = Column(DateTime(timezone=True), nullable=True)
     last_error_class = Column(String(64), nullable=True)
     latency_p50_ms = Column(Float, nullable=True, default=0.0)
     latency_p90_ms = Column(Float, nullable=True, default=0.0)
     success_rate = Column(Float, nullable=True, default=1.0)
-    updated_at = Column(DateTime, nullable=False, default=default_utc_now)
+    updated_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
 
 
 class EndpointHealthSampleORM(BaseORM):
@@ -253,7 +253,7 @@ class EndpointHealthSampleORM(BaseORM):
     latency_ms = Column(Float, nullable=False, default=0.0)
     status_code = Column(Integer, nullable=True)
     error_message = Column(Text, nullable=True)
-    sampled_at = Column(DateTime, nullable=False, default=default_utc_now)
+    sampled_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
 
 
 class EndpointRateLimitWindowORM(BaseORM):
@@ -264,7 +264,7 @@ class EndpointRateLimitWindowORM(BaseORM):
     window_type = Column(String(32), nullable=False)  # minute | day
     requests_count = Column(Integer, nullable=False, default=0)
     tokens_count = Column(Integer, nullable=False, default=0)
-    window_start_at = Column(DateTime, nullable=False, default=default_utc_now)
+    window_start_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
 
 
 class ProviderQuotaSnapshotV3ORM(BaseORM):
@@ -277,9 +277,9 @@ class ProviderQuotaSnapshotV3ORM(BaseORM):
     remaining_tokens_today = Column(Integer, nullable=True)
     remaining_credit = Column(Float, nullable=True)
     credit_currency = Column(String(16), nullable=True)
-    reset_at = Column(DateTime, nullable=True)
+    reset_at = Column(DateTime(timezone=True), nullable=True)
     raw_json = Column(Text, nullable=False, default="{}")
-    created_at = Column(DateTime, nullable=False, default=default_utc_now)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
 
 
 class ProviderUsageLedgerORM(BaseORM):
@@ -294,7 +294,7 @@ class ProviderUsageLedgerORM(BaseORM):
     total_tokens = Column(Integer, nullable=False, default=0)
     latency_ms = Column(Float, nullable=False, default=0.0)
     cost_usd = Column(Float, nullable=False, default=0.0)
-    created_at = Column(DateTime, nullable=False, default=default_utc_now)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
 
 
 class ModelDiscoverySnapshotORM(BaseORM):
@@ -304,7 +304,7 @@ class ModelDiscoverySnapshotORM(BaseORM):
     endpoint_id = Column(String(64), ForeignKey("provider_endpoints.id"), nullable=False)
     raw_response_json = Column(Text, nullable=False)
     discovered_models_json = Column(Text, nullable=False, default="[]")
-    discovered_at = Column(DateTime, nullable=False, default=default_utc_now)
+    discovered_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
 
 
 class ResponseCacheEntryORM(BaseORM):
@@ -315,8 +315,8 @@ class ResponseCacheEntryORM(BaseORM):
     request_hash = Column(String(64), nullable=False)
     response_json = Column(Text, nullable=False)
     ttl_seconds = Column(Integer, nullable=True)
-    expires_at = Column(DateTime, nullable=True)
-    created_at = Column(DateTime, nullable=False, default=default_utc_now)
+    expires_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
 
 
 class ModelRouteReceiptV3ORM(BaseORM):
@@ -337,9 +337,9 @@ class ModelRouteReceiptV3ORM(BaseORM):
     fallback_reason = Column(String(128), nullable=True)
     status = Column(String(16), nullable=False, default="success")  # success | failed
     error_code = Column(String(128), nullable=True)
-    started_at = Column(DateTime, nullable=False)
-    completed_at = Column(DateTime, nullable=False)
-    created_at = Column(DateTime, nullable=False, default=default_utc_now)
+    started_at = Column(DateTime(timezone=True), nullable=False)
+    completed_at = Column(DateTime(timezone=True), nullable=False)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
 
     __table_args__ = (
         Index("ix_model_route_receipts_task", "task_id"),

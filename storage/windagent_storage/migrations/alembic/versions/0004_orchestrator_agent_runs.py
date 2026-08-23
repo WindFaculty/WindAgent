@@ -90,7 +90,7 @@ def upgrade() -> None:
                  capabilities_json, enabled, created_at, updated_at)
                 VALUES
                 ('windagent/local-agent', 'windagent', 'local-agent', 'WindAgent Local Agent',
-                 'v1', 128000, '[\"tool_use\"]', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+                 'v1', 128000, '[\"tool_use\"]', TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
                 """
             )
         )

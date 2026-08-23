@@ -36,6 +36,17 @@ def upgrade() -> None:
     op.create_index("uq_worktrees_agent_instance", "worktrees", ["agent_instance_id"], unique=True)
     op.create_index("uq_worktrees_branch", "worktrees", ["branch"], unique=True)
     op.create_index("ix_worktrees_status", "worktrees", ["status"])
+    # Expand alembic_version.version_num to accommodate long revision ids (PG enforces
+    # VARCHAR(32) by default; 0008_conversation_stream_recovery is 33 chars).
+    bind = op.get_bind()
+    if bind.dialect.name == "postgresql":
+        # Retrieve current type length; only alter if still 32.
+        res = bind.execute(sa.text(
+            "SELECT character_maximum_length FROM information_schema.columns "
+            "WHERE table_name='alembic_version' AND column_name='version_num'"
+        )).scalar()
+        if res is not None and int(res) < 64:
+            bind.execute(sa.text("ALTER TABLE alembic_version ALTER COLUMN version_num TYPE VARCHAR(128)"))
 
 
 def downgrade() -> None:

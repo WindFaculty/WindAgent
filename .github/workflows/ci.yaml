@@ -846,6 +846,100 @@ jobs:
           name: studio-roadmap-gates-evidence
           path: artifacts/ci/studio-roadmap-gates/
 
+  p1-e2e-postgres:
+    name: P1 E2E PostgreSQL Vertical Slice (P1 Production Readiness)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: windagent
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U test -d windagent"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      WINDAGENT_TEST_POSTGRES_URL: postgresql+asyncpg://test:test@localhost:5432/windagent
+      WINDAGENT_DATABASE_URL: postgresql+asyncpg://test:test@localhost:5432/windagent
+      TMPDIR: ${{ runner.temp }}
+      TEMP: ${{ runner.temp }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v3
+        with:
+          version: ${{ env.UV_VERSION }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Sync dependencies
+        run: uv sync --all-packages
+
+      - name: PostgreSQL P1 vertical slice must PASS (not skip)
+        run: |
+          python scripts/verification/run_command_receipt.py \
+            --name p1_postgres_vertical \
+            --output artifacts/ci/p1-e2e-postgres/receipts/p1_vertical.json \
+            --timeout 600 \
+            -- uv run pytest tests/contracts/test_p1_e2e_acceptance.py::TestPostgresVerticalSlice -vv --tb=short 2>&1 | tee /tmp/pg_vertical.txt
+          # Fail if test was skipped
+          if grep -q "skipped" /tmp/pg_vertical.txt; then
+            echo "PostgreSQL P1 vertical slice was skipped — WINDAGENT_TEST_POSTGRES_URL not set or DB unavailable"
+            cat /tmp/pg_vertical.txt
+            exit 1
+          fi
+          if grep -q "FAILED" /tmp/pg_vertical.txt; then
+            echo "PostgreSQL P1 vertical slice failed"
+            cat /tmp/pg_vertical.txt
+            exit 1
+          fi
+          if ! grep -q "1 passed" /tmp/pg_vertical.txt; then
+            echo "PostgreSQL P1 vertical slice did not report PASSED"
+            cat /tmp/pg_vertical.txt
+            exit 1
+          fi
+
+      - name: P1 additional PG gates (real asset, idempotency, atomicity, CAS)
+        run: |
+          python scripts/verification/run_command_receipt.py \
+            --name p1_pg_additional \
+            --output artifacts/ci/p1-e2e-postgres/receipts/p1_additional.json \
+            --timeout 600 \
+            -- uv run pytest tests/contracts/test_p1_real_asset_persistence.py tests/contracts/test_p1_pg_idempotency_atomicity_cas.py -v --tb=short
+
+      - name: Full P1 E2E suite on PostgreSQL
+        run: |
+          python scripts/verification/run_command_receipt.py \
+            --name p1_e2e_full_postgres \
+            --output artifacts/ci/p1-e2e-postgres/receipts/p1_full.json \
+            --timeout 900 \
+            -- uv run pytest tests/contracts/test_p1_e2e_acceptance.py -v --tb=short 2>&1 | tee /tmp/pg_full.txt
+          if grep -q "FAILED" /tmp/pg_full.txt; then
+            echo "P1 E2E on PostgreSQL had failures"
+            exit 1
+          fi
+
+      - name: Capture environment
+        if: always()
+        run: |
+          python scripts/verification/capture_environment.py \
+            --cwd . \
+            --output artifacts/ci/p1-e2e-postgres/environment.json
+
+      - name: Upload P1 PG evidence
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: p1-e2e-postgres-evidence
+          path: artifacts/ci/p1-e2e-postgres/
+
   final-evidence:
     name: Final Evidence Gate
     needs:
@@ -863,6 +957,7 @@ jobs:
       - desktop-test
       - desktop-test-windows
       - studio-roadmap-gates
+      - p1-e2e-postgres
     runs-on: ubuntu-latest
     if: always()
     steps:
@@ -889,7 +984,7 @@ jobs:
       - name: Validate job evidence and candidate identity
         env:
           CI_JOB_RESULTS: >-
-            {"artifact-protocol":"${{ needs.artifact-protocol.result }}","version-consistency":"${{ needs.version-consistency.result }}","architecture-boundaries":"${{ needs.architecture-boundaries.result }}","python-unit-sqlite":"${{ needs.python-unit-sqlite.result }}","python-unit-windows":"${{ needs.python-unit-windows.result }}","python-integration-sqlite":"${{ needs.python-integration-sqlite.result }}","python-integration-postgres":"${{ needs.python-integration-postgres.result }}","runtime-smoke":"${{ needs.runtime-smoke.result }}","cli-contract":"${{ needs.cli-contract.result }}","web-test":"${{ needs.web-test.result }}","web-test-windows":"${{ needs.web-test-windows.result }}","desktop-test":"${{ needs.desktop-test.result }}","desktop-test-windows":"${{ needs.desktop-test-windows.result }}","studio-roadmap-gates":"${{ needs.studio-roadmap-gates.result }}"}
+            {"artifact-protocol":"${{ needs.artifact-protocol.result }}","version-consistency":"${{ needs.version-consistency.result }}","architecture-boundaries":"${{ needs.architecture-boundaries.result }}","python-unit-sqlite":"${{ needs.python-unit-sqlite.result }}","python-unit-windows":"${{ needs.python-unit-windows.result }}","python-integration-sqlite":"${{ needs.python-integration-sqlite.result }}","python-integration-postgres":"${{ needs.python-integration-postgres.result }}","runtime-smoke":"${{ needs.runtime-smoke.result }}","cli-contract":"${{ needs.cli-contract.result }}","web-test":"${{ needs.web-test.result }}","web-test-windows":"${{ needs.web-test-windows.result }}","desktop-test":"${{ needs.desktop-test.result }}","desktop-test-windows":"${{ needs.desktop-test-windows.result }}","studio-roadmap-gates":"${{ needs.studio-roadmap-gates.result }}","p1-e2e-postgres":"${{ needs.p1-e2e-postgres.result }}"}
         run: |
           uv run python scripts/verification/validate_ci_evidence.py \
             --download-root artifacts/ci/downloaded \
@@ -912,6 +1007,7 @@ jobs:
               web-test-windows \
               desktop-test \
               desktop-test-windows \
+              p1-e2e-postgres \
             --output artifacts/ci/final-evidence/ci_run_manifest.json
 
       - name: Capture final environment

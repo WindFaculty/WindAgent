@@ -62,16 +62,16 @@ def upgrade() -> None:
         sa.Column("provider_model_id", sa.String(128), nullable=True),
         sa.Column("endpoint_id", sa.String(128), nullable=True),
         sa.Column(
-            "fallback_used", sa.Boolean(), nullable=False, server_default=sa.text("0")
+            "fallback_used", sa.Boolean(), nullable=False, server_default=sa.false()
         ),
         sa.Column("fallback_reason", sa.String(128), nullable=True),
         sa.Column(
             "status", sa.String(16), nullable=False, server_default="success"
         ),
         sa.Column("error_code", sa.String(128), nullable=True),
-        sa.Column("started_at", sa.DateTime(), nullable=False),
-        sa.Column("completed_at", sa.DateTime(), nullable=False),
-        sa.Column("created_at", sa.DateTime(), nullable=False),
+        sa.Column("started_at", sa.DateTime(timezone=True), nullable=False),
+        sa.Column("completed_at", sa.DateTime(timezone=True), nullable=False),
+        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
     )
     op.create_index(
         "ix_model_route_receipts_task", _TABLE, ["task_id"]

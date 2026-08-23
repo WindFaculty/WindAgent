@@ -27,8 +27,8 @@ class TaskRunORM(BaseORM):
     project_id = Column(String(64), nullable=True)
     worktree_id = Column(String(64), nullable=True)
     facts_json = Column(Text, nullable=False, default="{}")
-    created_at = Column(DateTime, nullable=False, default=default_utc_now)
-    updated_at = Column(DateTime, nullable=False, default=default_utc_now)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
+    updated_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
 
     __table_args__ = (
         Index("ix_task_runs_session_state", "session_id", "state"),
@@ -47,8 +47,8 @@ class WorkflowRunV2ORM(BaseORM):
     version = Column(Integer, nullable=False, default=1)
     checkpoint_cursor = Column(Integer, nullable=False, default=0)
     definition_json = Column(Text, nullable=False, default="{}")
-    created_at = Column(DateTime, nullable=False, default=default_utc_now)
-    updated_at = Column(DateTime, nullable=False, default=default_utc_now)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
+    updated_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
 
     __table_args__ = (
         Index("ix_v2_workflow_runs_task_state", "task_run_id", "state"),
@@ -67,9 +67,9 @@ class WorkflowStepRunORM(BaseORM):
     state = Column(String(32), nullable=False, default="pending")
     result_json = Column(Text, nullable=True)
     error = Column(Text, nullable=True)
-    ready_at = Column(DateTime, nullable=True)
+    ready_at = Column(DateTime(timezone=True), nullable=True)
     priority = Column(Integer, nullable=False, default=2)
-    updated_at = Column(DateTime, nullable=False, default=default_utc_now)
+    updated_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
 
     __table_args__ = (
         Index("ix_workflow_step_runs_run_state", "workflow_run_id", "state"),
@@ -85,13 +85,13 @@ class ExecutionLeaseORM(BaseORM):
     run_id = Column(String(36), nullable=False)
     worker_id = Column(String(64), nullable=False)
     status = Column(String(32), nullable=False, default="active")  # active | expired | released | completed
-    expires_at = Column(DateTime, nullable=False)
+    expires_at = Column(DateTime(timezone=True), nullable=False)
     idempotency_key = Column(String(128), nullable=False, unique=True)
     lease_generation = Column(Integer, nullable=False, default=1)
     fencing_token = Column(String(128), nullable=True)
-    released_at = Column(DateTime, nullable=True)
-    created_at = Column(DateTime, nullable=False, default=default_utc_now)
-    updated_at = Column(DateTime, nullable=False, default=default_utc_now)
+    released_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
+    updated_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
 
     __table_args__ = (
         Index("ix_execution_leases_status_expires", "status", "expires_at"),
@@ -110,11 +110,11 @@ class RuntimeExecutionORM(BaseORM):
     lease_generation = Column(Integer, nullable=False, default=1)
     fencing_token = Column(String(128), nullable=False, index=True)
     status = Column(String(32), nullable=False, default="dispatched")  # dispatched | running | completed | failed | cancelled | timeout | lost | unknown
-    heartbeat_at = Column(DateTime, nullable=True)
+    heartbeat_at = Column(DateTime(timezone=True), nullable=True)
     result_ref = Column(String(256), nullable=True)
     error_metadata_json = Column(Text, nullable=True)
-    created_at = Column(DateTime, nullable=False, default=default_utc_now)
-    updated_at = Column(DateTime, nullable=False, default=default_utc_now)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
+    updated_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
 
     __table_args__ = (
         Index("ix_runtime_executions_status_heartbeat", "status", "heartbeat_at"),
@@ -127,9 +127,9 @@ class RecoveryLeaderLeaseORM(BaseORM):
 
     lease_name = Column(String(64), primary_key=True, default="recovery_leader")
     leader_id = Column(String(64), nullable=False)
-    expires_at = Column(DateTime, nullable=False)
-    created_at = Column(DateTime, nullable=False, default=default_utc_now)
-    updated_at = Column(DateTime, nullable=False, default=default_utc_now)
+    expires_at = Column(DateTime(timezone=True), nullable=False)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
+    updated_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
 
 
 class ExecutionAttemptORM(BaseORM):
@@ -141,8 +141,8 @@ class ExecutionAttemptORM(BaseORM):
     worker_id = Column(String(64), nullable=False)
     status = Column(String(32), nullable=False, default="pending")
     error = Column(Text, nullable=True)
-    started_at = Column(DateTime, nullable=False, default=default_utc_now)
-    finished_at = Column(DateTime, nullable=True)
+    started_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
+    finished_at = Column(DateTime(timezone=True), nullable=True)
 
     __table_args__ = (
         Index("ix_execution_attempts_step_attempt", "step_run_id", "attempt_index"),
@@ -157,7 +157,7 @@ class WorkflowCheckpointORM(BaseORM):
     step_id = Column(String(36), nullable=False)
     cursor = Column(Integer, nullable=False)
     state_json = Column(Text, nullable=False)
-    created_at = Column(DateTime, nullable=False, default=default_utc_now)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
 
     __table_args__ = (
         Index("ix_workflow_checkpoints_run_cursor", "run_id", "cursor"),
@@ -173,7 +173,7 @@ class CancellationRequestORM(BaseORM):
     reason = Column(Text, nullable=False)
     requested_by = Column(String(64), nullable=False, default="user")
     status = Column(String(32), nullable=False, default="pending")  # pending | processed
-    created_at = Column(DateTime, nullable=False, default=default_utc_now)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
 
 
 class WorkerRegistrationORM(BaseORM):
@@ -183,7 +183,7 @@ class WorkerRegistrationORM(BaseORM):
     runtime_type = Column(String(32), nullable=False, default="local")
     health = Column(String(32), nullable=False, default="healthy")  # healthy | degraded | unhealthy
     active_leases = Column(Integer, nullable=False, default=0)
-    last_heartbeat_at = Column(DateTime, nullable=False, default=default_utc_now)
+    last_heartbeat_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
     metadata_json = Column(Text, nullable=False, default="{}")
 
     __table_args__ = (
@@ -199,7 +199,7 @@ class WorkflowEdgeORM(BaseORM):
     source_step_id = Column(String(36), nullable=False)
     target_step_id = Column(String(36), nullable=False)
     condition_json = Column(Text, nullable=True)
-    created_at = Column(DateTime, nullable=False, default=default_utc_now)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
 
 
 class MemoryRecordORM(BaseORM):
@@ -210,8 +210,8 @@ class MemoryRecordORM(BaseORM):
     memory_type = Column(String(32), nullable=False, default="short_term")  # short_term | long_term | working
     key = Column(String(128), nullable=False)
     value_json = Column(Text, nullable=False)
-    created_at = Column(DateTime, nullable=False, default=default_utc_now)
-    updated_at = Column(DateTime, nullable=False, default=default_utc_now)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
+    updated_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
 
 
 class PluginInstallationORM(BaseORM):
@@ -221,7 +221,7 @@ class PluginInstallationORM(BaseORM):
     version = Column(String(32), nullable=False)
     status = Column(String(32), nullable=False, default="active")  # active | disabled | quarantined
     manifest_json = Column(Text, nullable=False, default="{}")
-    installed_at = Column(DateTime, nullable=False, default=default_utc_now)
+    installed_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
 
 
 class SkillInstallationORM(BaseORM):
@@ -231,7 +231,7 @@ class SkillInstallationORM(BaseORM):
     version = Column(String(32), nullable=False)
     status = Column(String(32), nullable=False, default="active")
     manifest_json = Column(Text, nullable=False, default="{}")
-    installed_at = Column(DateTime, nullable=False, default=default_utc_now)
+    installed_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
 
 
 class TaskExecutionResultORM(BaseORM):
@@ -243,7 +243,7 @@ class TaskExecutionResultORM(BaseORM):
     execution_status = Column(String(32), nullable=False, default="completed")
     result_data_json = Column(Text, nullable=False, default="{}")
     artifacts_data_json = Column(Text, nullable=False, default="[]")
-    created_at = Column(DateTime, nullable=False, default=default_utc_now)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=default_utc_now)
 
     @property
     def result_data(self) -> dict:

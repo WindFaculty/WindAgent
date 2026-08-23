@@ -22,7 +22,8 @@ Covers the P1.5 plan sub-phases against the real API surface:
 
 Tests reuse the demo-seeded Cyberpunk episode ``ep-cb-001`` (locked at its
 real draft revision rev-cb-001-v3, storyboard synced) which carries three
-seeded shots whose durations intentionally drift from their scene lengths.
+seeded shots whose durations now match their scene lengths (70+80=150 and
+105=105); timing drift must be introduced artificially to test the validator.
 """
 from __future__ import annotations
 
@@ -197,9 +198,9 @@ class TestDeterministicGeneration:
         assert set(seeded) == {
             "shot-cb-001-01", "shot-cb-001-02", "shot-cb-001-03",
         }, "existing seeded shots must survive generation untouched"
-        assert int(seeded["shot-cb-001-01"]["duration_seconds"]) == 6
-        assert int(seeded["shot-cb-001-02"]["duration_seconds"]) == 4
-        assert int(seeded["shot-cb-001-03"]["duration_seconds"]) == 8
+        assert int(seeded["shot-cb-001-01"]["duration_seconds"]) == 70
+        assert int(seeded["shot-cb-001-02"]["duration_seconds"]) == 80
+        assert int(seeded["shot-cb-001-03"]["duration_seconds"]) == 105
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -208,20 +209,30 @@ class TestDeterministicGeneration:
 
 class TestValidation:
     def test_seeded_timing_drift_is_detected(self, client):
-        """The demo seed's shot timings genuinely drift from scene lengths —
-        the validator must say so instead of pretending everything is green."""
+        """After fixing the canonical seed, the seeded timings are valid —
+        but artificially introduced drift must still be flagged."""
         _lock(client)
         _sync(client)
         _generate(client)
 
+        # Baseline is now VALID
         body = _validation(client).json()
-        assert body["status"] == "INVALID"
+        assert body["status"] == "VALID", body["findings"]
+
+        # Introduce drift: patch one shot to break scene total
+        plan = _plan(client).json()
+        victim = next(s for s in plan["shots"] if s["id"] == "shot-cb-001-01")
+        r = client.patch(f"/api/v3/shots/{victim['id']}", json={"duration_seconds": 1, "expected_version": victim["version"]})
+        assert r.status_code == 200, r.text
+
+        drifted = _validation(client).json()
+        assert drifted["status"] == "INVALID"
         mismatch_scenes = {
-            f["scene_id"] for f in _blocking(body)
+            f["scene_id"] for f in _blocking(drifted)
             if f["code"] == "SHOT_DURATION_MISMATCH"
         }
         assert "scene-cb-001-01" in mismatch_scenes, (
-            "6+4=10s of shots vs a 150s scene must be flagged"
+            "1+80=81s of shots vs a 150s scene must be flagged"
         )
 
     def test_fixed_timings_validate_clean(self, client):
@@ -481,9 +492,10 @@ class TestManualOperations:
         plan = self._prepared(client)
         target = next(s for s in plan["shots"] if s["id"] == "shot-cb-001-03")
 
+        # shot-cb-001-03 is 105s after fix; 106 is out of range
         r = client.post(
             f"/api/v3/shots/{target['id']}/actions/split",
-            json={"expected_version": target["version"], "split_seconds": 99},
+            json={"expected_version": target["version"], "split_seconds": 106},
         )
         assert r.status_code == 422
         assert r.json()["detail"]["error_code"] == "SPLIT_OUT_OF_RANGE"

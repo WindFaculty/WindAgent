@@ -270,12 +270,17 @@ def _backfill_legacy_data() -> None:
     ).fetchall()
     for row in projects:
         project_id, name, status, active_revision_id, created_at, updated_at = row
-        bind.execute(
-            text(
-                "INSERT OR IGNORE INTO studio_series_projects "
-                "(series_id, title, description, episode_ids_json, created_at, updated_at, metadata_json) "
-                "VALUES (:sid, :title, '', :episodes, :created_at, :updated_at, :meta)"
-            ),
+        series_sql = (
+            "INSERT INTO studio_series_projects "
+            "(series_id, title, description, episode_ids_json, created_at, updated_at, metadata_json) "
+            "VALUES (:sid, :title, '', :episodes, :created_at, :updated_at, :meta) "
+            "ON CONFLICT(series_id) DO NOTHING"
+            if bind.dialect.name == "postgresql"
+            else "INSERT OR IGNORE INTO studio_series_projects "
+            "(series_id, title, description, episode_ids_json, created_at, updated_at, metadata_json) "
+            "VALUES (:sid, :title, '', :episodes, :created_at, :updated_at, :meta)"
+        )
+        bind.execute(text(series_sql),
             {
                 "sid": project_id,
                 "title": name or "Untitled Production",
@@ -290,13 +295,19 @@ def _backfill_legacy_data() -> None:
                 ),
             },
         )
-        bind.execute(
-            text(
-                "INSERT OR IGNORE INTO studio_episodes "
-                "(episode_id, series_id, title, episode_number, state, created_at, updated_at, "
-                "optimistic_version, metadata_json) "
-                "VALUES (:eid, :sid, :title, 1, 'DRAFT', :created_at, :updated_at, 0, :meta)"
-            ),
+        episode_sql = (
+            "INSERT INTO studio_episodes "
+            "(episode_id, series_id, title, episode_number, state, created_at, updated_at, "
+            "optimistic_version, metadata_json) "
+            "VALUES (:eid, :sid, :title, 1, 'DRAFT', :created_at, :updated_at, 0, :meta) "
+            "ON CONFLICT(episode_id) DO NOTHING"
+            if bind.dialect.name == "postgresql"
+            else "INSERT OR IGNORE INTO studio_episodes "
+            "(episode_id, series_id, title, episode_number, state, created_at, updated_at, "
+            "optimistic_version, metadata_json) "
+            "VALUES (:eid, :sid, :title, 1, 'DRAFT', :created_at, :updated_at, 0, :meta)"
+        )
+        bind.execute(text(episode_sql),
             {
                 "eid": synthetic_episode_id(project_id),
                 "sid": project_id,
@@ -320,15 +331,23 @@ def _backfill_legacy_data() -> None:
         hash_backfilled = not (content_hash and len(str(content_hash)) == 64)
         final_hash = normalize_legacy_hash(str(content_hash or ""), rev_id, sequence or 0, status or "DRAFT")
         mapped = map_legacy_status(status or "DRAFT")
-        bind.execute(
-            text(
-                "INSERT OR IGNORE INTO studio_revisions "
-                "(revision_id, series_id, episode_id, parent_revision_id, creator, actor, created_at, "
-                "content_hash, state, status, lock_state, invalidation_intent, summary, metadata_json, "
-                "optimistic_version) "
-                "VALUES (:rid, :sid, :eid, :parent, 'legacy:migration', 'legacy:migration', :created_at, "
-                ":hash, :state, :state, :lock_state, NULL, '', :meta, 0)"
-            ),
+        revision_sql = (
+            "INSERT INTO studio_revisions "
+            "(revision_id, series_id, episode_id, parent_revision_id, creator, actor, created_at, "
+            "content_hash, state, status, lock_state, invalidation_intent, summary, metadata_json, "
+            "optimistic_version) "
+            "VALUES (:rid, :sid, :eid, :parent, 'legacy:migration', 'legacy:migration', :created_at, "
+            ":hash, :state, :state, :lock_state, NULL, '', :meta, 0) "
+            "ON CONFLICT(revision_id) DO NOTHING"
+            if bind.dialect.name == "postgresql"
+            else "INSERT OR IGNORE INTO studio_revisions "
+            "(revision_id, series_id, episode_id, parent_revision_id, creator, actor, created_at, "
+            "content_hash, state, status, lock_state, invalidation_intent, summary, metadata_json, "
+            "optimistic_version) "
+            "VALUES (:rid, :sid, :eid, :parent, 'legacy:migration', 'legacy:migration', :created_at, "
+            ":hash, :state, :state, :lock_state, NULL, '', :meta, 0)"
+        )
+        bind.execute(text(revision_sql),
             {
                 "rid": rev_id,
                 "sid": project_id,

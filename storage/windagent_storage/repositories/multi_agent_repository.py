@@ -1007,7 +1007,7 @@ class MultiAgentRepository:
                  audit_only, created_at)
                 VALUES (:partial_artifact_id, :conversation_id, :agent_instance_id,
                         :agent_session_id, :agent_run_id, :stream_id, :sequence,
-                        :content_redacted, :failure_reason, 1, :created_at)
+                        :content_redacted, :failure_reason, :audit_only, :created_at)
                 """
             ),
             {
@@ -1020,6 +1020,7 @@ class MultiAgentRepository:
                 "sequence": sequence,
                 "content_redacted": content_redacted,
                 "failure_reason": failure_reason[:512],
+                "audit_only": True,
                 "created_at": utc_now(),
             },
         )

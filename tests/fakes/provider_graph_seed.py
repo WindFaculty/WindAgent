@@ -40,7 +40,7 @@ def seed_canonical_model(session: Session, canonical_model_id: str, vendor: str 
             INSERT INTO canonical_models_v3
             (id, vendor, family, canonical_name, revision, context_window,
              capabilities_json, tool_call_protocol, enabled, created_at, updated_at)
-            VALUES (:id, :vendor, :family, :name, 'latest', 128000, '[]', NULL, 1, :now, :now)
+            VALUES (:id, :vendor, :family, :name, 'latest', 128000, '[]', NULL, TRUE, :now, :now)
             ON CONFLICT(id) DO NOTHING
             """
         ),
@@ -74,7 +74,7 @@ def seed_provider_graph(
             INSERT INTO canonical_models_v3
             (id, vendor, family, canonical_name, revision, context_window,
              capabilities_json, tool_call_protocol, enabled, created_at, updated_at)
-            VALUES (:id, :vendor, :family, :name, 'latest', 128000, '[]', NULL, 1, :now, :now)
+            VALUES (:id, :vendor, :family, :name, 'latest', 128000, '[]', NULL, TRUE, :now, :now)
             ON CONFLICT(id) DO NOTHING
             """
         ),
@@ -94,7 +94,7 @@ def seed_provider_graph(
                 INSERT INTO provider_vendors
                 (id, name, vendor_type, supports_model_discovery,
                  supports_openai_compatible, enabled, created_at, updated_at)
-                VALUES (:id, :name, 'cloud', 1, 1, 1, :now, :now)
+                VALUES (:id, :name, 'cloud', TRUE, TRUE, TRUE, :now, :now)
                 ON CONFLICT(id) DO NOTHING
                 """
             ),
@@ -109,7 +109,7 @@ def seed_provider_graph(
                  region, priority, weight, enabled, test_status, last_tested_at,
                  created_at, updated_at)
                 VALUES (:id, :vendor_id, NULL, :base_url, 'openai', NULL, NULL, 1.0,
-                        'global', 50, 100, 1, 'pass', NULL, :now, :now)
+                        'global', 50, 100, TRUE, 'pass', NULL, :now, :now)
                 ON CONFLICT(id) DO NOTHING
                 """
             ),
@@ -140,7 +140,7 @@ def seed_provider_graph(
                 "canonical_model_id": canonical_model_id,
                 "provider_model_id": binding["provider_model_id"],
                 "equivalence": binding.get("equivalence_level", "exact_revision"),
-                "enabled": int(bool(binding.get("is_active", True))),
+                "enabled": bool(binding.get("is_active", True)),
                 "now": now,
             },
         )
@@ -199,7 +199,7 @@ class PersistentRouteLocks:
                     INSERT INTO canonical_models_v3
                     (id, vendor, family, canonical_name, revision, context_window,
                      capabilities_json, tool_call_protocol, enabled, created_at, updated_at)
-                    VALUES (:id, 'seed', 'seed', :name, 'latest', 128000, '[]', NULL, 1, :now, :now)
+                    VALUES (:id, 'seed', 'seed', :name, 'latest', 128000, '[]', NULL, TRUE, :now, :now)
                     ON CONFLICT(id) DO NOTHING
                     """
                 ),

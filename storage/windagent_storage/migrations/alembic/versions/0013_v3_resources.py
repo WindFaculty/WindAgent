@@ -44,8 +44,8 @@ def upgrade() -> None:
         sa.Column("data_json", sa.Text(), nullable=False, server_default="{}"),
         sa.Column("version", sa.Integer(), nullable=False, server_default="1"),
         sa.Column("idempotency_key", sa.String(128), nullable=True),
-        sa.Column("created_at", sa.DateTime(), nullable=False),
-        sa.Column("updated_at", sa.DateTime(), nullable=False),
+        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
+        sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
         if_not_exists=True,
     )
     op.create_index(
