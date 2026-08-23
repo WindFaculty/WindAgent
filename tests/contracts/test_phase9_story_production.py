@@ -197,25 +197,23 @@ class TestStoryboardE2E:
             assert scene["source_screenplay_revision_id"], \
                 f"Scene {scene['id']} must have non-null screenplay revision pin"
 
-    def test_trigger_generation_returns_job_id(self, client):
-        """Generation must return a server-issued generation_id immediately. No fake timers."""
+    def test_trigger_generation_fails_closed_without_provider(self, client):
+        """P1.4.5 truth repair: no image-generation provider is composed in P1,
+        so triggering concept art fails closed with IMAGE_GENERATION_UNAVAILABLE
+        instead of fabricating a QUEUED job that would sit forever."""
         r = client.post(
             "/api/v3/storyboard/scenes/scene-cb-001-01/generations",
             json={},
         )
-        assert r.status_code == 201
-        job = r.json()
-        assert "generation_id" in job, "Must return server-issued generation_id"
-        assert "submitted_at" in job
-        assert job["status"] == "QUEUED", "Initial status must be QUEUED, not a mock terminal state"
+        assert r.status_code == 503
+        detail = r.json()["detail"]
+        assert detail["error_code"] == "IMAGE_GENERATION_UNAVAILABLE"
 
-    def test_generation_job_polling(self, client):
-        """Generation job must be pollable via GET."""
-        trigger_r = client.post("/api/v3/storyboard/scenes/scene-cb-001-02/generations", json={})
-        gen_id = trigger_r.json()["generation_id"]
-        poll_r = client.get(f"/api/v3/storyboard/scenes/scene-cb-001-02/generations/{gen_id}")
-        assert poll_r.status_code == 200
-        assert poll_r.json()["generation_id"] == gen_id
+    def test_unknown_generation_job_polling_404(self, client):
+        """Generation jobs can only exist when a provider created them; the
+        poll endpoint stays honest for unknown ids."""
+        r = client.get("/api/v3/storyboard/scenes/scene-cb-001-02/generations/gen-never-created")
+        assert r.status_code == 404
 
     def test_update_scene_optimistic_lock(self, client):
         scene_r = client.get("/api/v3/episodes/ep-cb-001/storyboard/scenes")
@@ -514,22 +512,21 @@ class TestCrossDomainIntegration:
                     f"Scene {scene['id']} pinned to {scene_rev_id}, expected {board_rev_id}"
 
     def test_asset_job_id_traceable(self, client):
-        """Assets produced by generation jobs should reference job_id for traceability."""
-        gen_r = client.post("/api/v3/storyboard/scenes/scene-cb-001-01/generations", json={})
-        job_id = gen_r.json()["generation_id"]
-
+        """Assets record whatever job_id their provenance claims — even when
+        the producing job came from outside this deployment (P1 has no
+        in-process generation provider, so the id is caller-supplied)."""
         asset_r = client.post("/api/v3/assets", json={
             "name": "Generated Concept 9F",
             "type": "IMAGE",
             "source": "GENERATED",
             "generator": "Imagen",
             "model": "imagen-3.5-generate",
-            "job_id": job_id,
+            "job_id": "gen-external-9f",
             "episode_id": "ep-cb-001",
             "scene_id": "scene-cb-001-01",
         })
         assert asset_r.status_code == 201
-        assert asset_r.json()["provenance"]["job_id"] == job_id
+        assert asset_r.json()["provenance"]["job_id"] == "gen-external-9f"
 
     def test_review_decision_revision_schema(self, client):
         """Review decisions must always carry revision_id + expected_version (cannot approve mutable objects)."""

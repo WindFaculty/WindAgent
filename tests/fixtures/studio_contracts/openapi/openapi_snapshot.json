@@ -2842,6 +2842,11 @@
       },
       "CreateSceneRequest": {
         "properties": {
+          "action_summary": {
+            "default": "",
+            "title": "Action Summary",
+            "type": "string"
+          },
           "character_ids": {
             "items": {
               "type": "string"
@@ -2857,6 +2862,11 @@
           "location": {
             "default": "",
             "title": "Location",
+            "type": "string"
+          },
+          "mood": {
+            "default": "",
+            "title": "Mood",
             "type": "string"
           },
           "script_text": {
@@ -2886,6 +2896,11 @@
             "maxLength": 200,
             "minLength": 1,
             "title": "Title",
+            "type": "string"
+          },
+          "visual_summary": {
+            "default": "",
+            "title": "Visual Summary",
             "type": "string"
           }
         },
@@ -7111,6 +7126,11 @@
       },
       "SceneResource": {
         "properties": {
+          "action_summary": {
+            "default": "",
+            "title": "Action Summary",
+            "type": "string"
+          },
           "character_ids": {
             "items": {
               "type": "string"
@@ -7134,6 +7154,14 @@
             "title": "Created At",
             "type": "string"
           },
+          "dialogue_refs": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Dialogue Refs",
+            "type": "array"
+          },
           "duration_seconds": {
             "default": 120,
             "title": "Duration Seconds",
@@ -7151,6 +7179,40 @@
             "default": "",
             "title": "Location",
             "type": "string"
+          },
+          "location_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location Id"
+          },
+          "mood": {
+            "default": "",
+            "title": "Mood",
+            "type": "string"
+          },
+          "parent_scene_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Scene Id"
+          },
+          "required_asset_refs": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Required Asset Refs",
+            "type": "array"
           },
           "scene_number": {
             "title": "Scene Number",
@@ -7172,6 +7234,28 @@
             ],
             "title": "Source Screenplay Revision Id"
           },
+          "source_screenplay_scene_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Screenplay Scene Hash"
+          },
+          "source_screenplay_scene_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Screenplay Scene Id"
+          },
           "status": {
             "default": "DRAFT",
             "title": "Status",
@@ -7180,6 +7264,28 @@
           "storyboard_id": {
             "title": "Storyboard Id",
             "type": "string"
+          },
+          "storyboard_revision_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Storyboard Revision Id"
+          },
+          "time_of_day": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Time Of Day"
           },
           "title": {
             "title": "Title",
@@ -7194,6 +7300,11 @@
             "default": 1,
             "title": "Version",
             "type": "integer"
+          },
+          "visual_summary": {
+            "default": "",
+            "title": "Visual Summary",
+            "type": "string"
           }
         },
         "required": [
@@ -7485,6 +7596,33 @@
         "title": "ShotResource",
         "type": "object"
       },
+      "SplitSceneRequest": {
+        "properties": {
+          "expected_version": {
+            "description": "Optimistic lock version of the scene being split",
+            "title": "Expected Version",
+            "type": "integer"
+          },
+          "split_at_char": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Character offset in script_text where part 2 begins; defaults to the midpoint.",
+            "title": "Split At Char"
+          }
+        },
+        "required": [
+          "expected_version"
+        ],
+        "title": "SplitSceneRequest",
+        "type": "object"
+      },
       "StartRunRequest": {
         "additionalProperties": false,
         "properties": {
@@ -7567,6 +7705,17 @@
             "title": "Created At",
             "type": "string"
           },
+          "current_revision_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Revision Id"
+          },
           "episode_id": {
             "title": "Episode Id",
             "type": "string"
@@ -7628,6 +7777,70 @@
           "source_screenplay_revision_id"
         ],
         "title": "StoryboardResource",
+        "type": "object"
+      },
+      "StoryboardRevisionResource": {
+        "properties": {
+          "content_hash": {
+            "default": "",
+            "title": "Content Hash",
+            "type": "string"
+          },
+          "created_at": {
+            "default": "",
+            "title": "Created At",
+            "type": "string"
+          },
+          "episode_id": {
+            "title": "Episode Id",
+            "type": "string"
+          },
+          "origin": {
+            "default": "SYNC",
+            "title": "Origin",
+            "type": "string"
+          },
+          "revision_id": {
+            "title": "Revision Id",
+            "type": "string"
+          },
+          "revision_number": {
+            "title": "Revision Number",
+            "type": "integer"
+          },
+          "scene_count": {
+            "default": 0,
+            "title": "Scene Count",
+            "type": "integer"
+          },
+          "source_screenplay_content_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Screenplay Content Hash"
+          },
+          "source_screenplay_revision_id": {
+            "title": "Source Screenplay Revision Id",
+            "type": "string"
+          },
+          "storyboard_id": {
+            "title": "Storyboard Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "revision_id",
+          "episode_id",
+          "storyboard_id",
+          "revision_number",
+          "source_screenplay_revision_id"
+        ],
+        "title": "StoryboardRevisionResource",
         "type": "object"
       },
       "SubmitJobRequest": {
@@ -9089,6 +9302,17 @@
       },
       "UpdateSceneRequest": {
         "properties": {
+          "action_summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Action Summary"
+          },
           "character_ids": {
             "anyOf": [
               {
@@ -9102,6 +9326,17 @@
               }
             ],
             "title": "Character Ids"
+          },
+          "duration_seconds": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Seconds"
           },
           "expected_version": {
             "description": "Optimistic lock version",
@@ -9118,6 +9353,17 @@
               }
             ],
             "title": "Location"
+          },
+          "mood": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mood"
           },
           "script_text": {
             "anyOf": [
@@ -9140,6 +9386,17 @@
               }
             ],
             "title": "Title"
+          },
+          "visual_summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Visual Summary"
           }
         },
         "required": [
@@ -14277,7 +14534,7 @@
     },
     "/api/v3/episodes/{episode_id}/storyboard/actions/sync": {
       "post": {
-        "description": "Sync storyboard from the ACTUAL locked screenplay revision.\n\nP1.0 truth repair: resolves the lock authority receipt first. When the\nepisode has no locked screenplay the request fails closed with\n409 SCREENPLAY_NOT_LOCKED and no storyboard record is created.",
+        "description": "Sync the storyboard from the ACTUAL locked screenplay (plan P1.4.4).\n\n- No lock \u2192 fail closed 409 SCREENPLAY_NOT_LOCKED.\n- First sync \u2192 Storyboard v1 + immutable StoryboardRevision v1 + Scene\n  Records projected deterministically from the structured screenplay.\n- Same screenplay revision again \u2192 IDEMPOTENT (missing scenes backfilled,\n  nothing duplicated, no new revision).\n- Changed screenplay revision \u2192 the old revision remains immutable; a NEW\n  storyboard revision branch is created and projected.",
         "operationId": "storyboard.syncFromScreenplay",
         "parameters": [
           {
@@ -14313,6 +14570,53 @@
           }
         },
         "summary": "Sync Storyboard From Screenplay",
+        "tags": [
+          "Storyboard V3"
+        ]
+      }
+    },
+    "/api/v3/episodes/{episode_id}/storyboard/revisions": {
+      "get": {
+        "description": "Immutable storyboard revision history (plan P1.4.3).",
+        "operationId": "storyboard.listRevisions",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "episode_id",
+            "required": true,
+            "schema": {
+              "title": "Episode Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/StoryboardRevisionResource"
+                  },
+                  "title": "Response Storyboard.Listrevisions",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Storyboard Revisions",
         "tags": [
           "Storyboard V3"
         ]
@@ -18320,7 +18624,7 @@
     },
     "/api/v3/storyboard/scenes/{scene_id}": {
       "patch": {
-        "description": "Update a storyboard scene with optimistic concurrency check.",
+        "description": "Manual storyboard operation (plan P1.4.6).\n\nEdits may change presentation fields but NEVER touch the original\nscreenplay lineage (source_* columns are immutable here). Every manual\nedit bumps the storyboard's immutable revision (origin MANUAL_EDIT).",
         "operationId": "storyboard.updateScene",
         "parameters": [
           {
@@ -18371,9 +18675,66 @@
         ]
       }
     },
+    "/api/v3/storyboard/scenes/{scene_id}/actions/split": {
+      "post": {
+        "description": "Split a scene into two consecutive parts (plan P1.4.6).\n\nBoth parts keep the original screenplay lineage (same source revision,\nscene id and hash); part 2 carries ``parent_scene_id`` pointing at part 1.\nThe estimated duration splits evenly as a starting point for manual tuning.",
+        "operationId": "storyboard.splitScene",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "scene_id",
+            "required": true,
+            "schema": {
+              "title": "Scene Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SplitSceneRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SceneResource"
+                  },
+                  "title": "Response Storyboard.Splitscene",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Split Scene",
+        "tags": [
+          "Storyboard V3"
+        ]
+      }
+    },
     "/api/v3/storyboard/scenes/{scene_id}/generations": {
       "post": {
-        "description": "Trigger concept art generation for a storyboard scene.\nReturns a server-issued generation_id immediately.\nNo fake timers \u2014 realtime progress via WebSocket.",
+        "description": "Trigger concept art generation for a storyboard scene.\n\nP1.4.5 truth repair: there is NO wired image-generation provider in P1,\nso this fails closed with 503 IMAGE_GENERATION_UNAVAILABLE instead of\nfabricating a QUEUED job that would sit forever. The UI disables the\nbutton until a provider exists.",
         "operationId": "storyboard.triggerGeneration",
         "parameters": [
           {
