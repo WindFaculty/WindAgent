@@ -96,7 +96,6 @@ import type {
   DeliveryArtifactResource,
   // P1.6 — Production Package
   ProductionTarget,
-  PreflightFinding,
   ProductionPreflight,
   ProductionPackageResource,
   FinalizePackageResult,

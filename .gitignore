@@ -92,6 +92,8 @@ db_backups/
 .pytest_tmp/
 apps/web/coverage/
 artifacts/ci/
+artifacts/p1_production_readiness/
+artifacts/tmp_phase14_debug/
 artifacts/architecture_v2_production_hardening/phase_07/quarantine/
 test_repo/
 test_repo2/
