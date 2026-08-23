@@ -19,7 +19,7 @@ from windagent_api.routers.v3.characters import router as v3_characters_router
 from windagent_api.routers.v3.world import router as v3_world_router, sync_router as v3_world_sync_router
 from windagent_api.routers.v3.storyboard import router as v3_storyboard_router, ws_router as v3_storyboard_ws_router
 from windagent_api.routers.v3.reviews import router as v3_reviews_router
-from windagent_api.routers.v3.assets import router as v3_assets_router
+from windagent_api.routers.v3.assets import router as v3_assets_router, req_router as v3_asset_requirements_router
 
 # Phase 10 — Production Cutover Domain
 from windagent_api.routers.v3.production import router as v3_production_router, ws_router as v3_production_ws_router
@@ -64,6 +64,7 @@ v3_router.include_router(v3_storyboard_router)
 v3_router.include_router(v3_storyboard_ws_router)
 v3_router.include_router(v3_reviews_router)
 v3_router.include_router(v3_assets_router)
+v3_router.include_router(v3_asset_requirements_router)
 
 # Phase 10 — Production Cutover Domain routers
 v3_router.include_router(v3_production_router)

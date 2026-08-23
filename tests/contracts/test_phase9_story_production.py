@@ -386,7 +386,14 @@ class TestReviewsE2E:
 
 class TestAssetsE2E:
     def test_create_asset_has_provenance(self, client):
-        """Every asset must record provenance chain at creation time."""
+        """Every asset must record provenance chain at creation time.
+
+        P1.3.4 truth repair: without actual bytes the hash is honestly
+        HASH_UNVERIFIED (never synthesized from prompt+timestamp); with
+        bytes it is SHA-256 over the real content.
+        """
+        import base64 as b64
+
         r = client.post("/api/v3/assets", json={
             "name": "Test Concept Art 9F",
             "type": "IMAGE",
@@ -397,12 +404,29 @@ class TestAssetsE2E:
             "prompt": "Test prompt for phase 9F certification",
         })
         assert r.status_code == 201
-        asset = r.json()
-        prov = asset["provenance"]
+        prov = r.json()["provenance"]
         assert prov["source"] == "GENERATED"
         assert prov["generator"] == "Imagen"
         assert prov["model"] == "imagen-3.5-generate"
-        assert prov["content_hash"], "content_hash must not be empty"
+        assert prov["content_hash"] == ""
+        assert prov["hash_status"] == "HASH_UNVERIFIED"
+
+        payload = b"real-bytes-for-hash-check"
+        r2 = client.post("/api/v3/assets", json={
+            "name": "Test Uploaded Art 9F",
+            "type": "IMAGE",
+            "episode_id": "ep-cb-001",
+            "source": "UPLOADED",
+            "content_base64": b64.b64encode(payload).decode(),
+        })
+        assert r2.status_code == 201, r2.text
+        prov2 = r2.json()["provenance"]
+        import hashlib
+
+        expected = hashlib.sha256(payload).hexdigest()
+        assert prov2["content_hash"] == expected, "hash must be SHA-256 of the ACTUAL bytes"
+        assert len(prov2["content_hash"]) == 64
+        assert prov2["hash_status"] == "VERIFIED"
 
     def test_asset_revisions_history(self, client):
         """Must be able to retrieve revision history."""

@@ -10524,7 +10524,7 @@
       "from": "api",
       "to": "core",
       "file": "apps/api/windagent_api/routers/v3/assets.py",
-      "line": 15
+      "line": 23
     },
     {
       "from": "api",

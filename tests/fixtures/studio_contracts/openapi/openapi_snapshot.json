@@ -51,6 +51,108 @@
         "title": "ActivityDataPoint",
         "type": "object"
       },
+      "AddAssetRevisionRequest": {
+        "properties": {
+          "content_base64": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content Base64"
+          },
+          "generator": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Generator"
+          },
+          "job_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Job Id"
+          },
+          "media_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Media Url"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "parent_revision_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Revision Id"
+          },
+          "prompt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prompt"
+          },
+          "reference_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Reference Ids",
+            "type": "array"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "GENERATED | UPLOADED | IMPORTED | REFERENCE",
+            "title": "Source"
+          }
+        },
+        "title": "AddAssetRevisionRequest",
+        "type": "object"
+      },
       "AddProviderRequest": {
         "properties": {
           "api_key": {
@@ -477,6 +579,39 @@
         "title": "AgentsMonitoringResponse",
         "type": "object"
       },
+      "ApprovalPin": {
+        "properties": {
+          "approved_at": {
+            "title": "Approved At",
+            "type": "string"
+          },
+          "approved_by": {
+            "title": "Approved By",
+            "type": "string"
+          },
+          "asset_id": {
+            "title": "Asset Id",
+            "type": "string"
+          },
+          "content_hash": {
+            "title": "Content Hash",
+            "type": "string"
+          },
+          "revision_id": {
+            "title": "Revision Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "asset_id",
+          "revision_id",
+          "content_hash",
+          "approved_by",
+          "approved_at"
+        ],
+        "title": "ApprovalPin",
+        "type": "object"
+      },
       "ApproveAssetRequest": {
         "properties": {
           "approved_by": {
@@ -595,6 +730,11 @@
             "description": "Which AI system produced this asset",
             "title": "Generator"
           },
+          "hash_status": {
+            "default": "HASH_UNVERIFIED",
+            "title": "Hash Status",
+            "type": "string"
+          },
           "job_id": {
             "anyOf": [
               {
@@ -648,7 +788,7 @@
             "type": "array"
           },
           "source": {
-            "description": "GENERATED | UPLOADED | IMPORTED",
+            "description": "GENERATED | UPLOADED | IMPORTED | REFERENCE",
             "title": "Source",
             "type": "string"
           }
@@ -659,8 +799,97 @@
         "title": "AssetProvenance",
         "type": "object"
       },
+      "AssetRequirementResource": {
+        "properties": {
+          "content_hash": {
+            "default": "",
+            "title": "Content Hash",
+            "type": "string"
+          },
+          "created_at": {
+            "default": "",
+            "title": "Created At",
+            "type": "string"
+          },
+          "description": {
+            "default": "",
+            "title": "Description",
+            "type": "string"
+          },
+          "episode_id": {
+            "title": "Episode Id",
+            "type": "string"
+          },
+          "linked_asset_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Linked Asset Id"
+          },
+          "mandatory": {
+            "default": true,
+            "title": "Mandatory",
+            "type": "boolean"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "project_id": {
+            "title": "Project Id",
+            "type": "string"
+          },
+          "requirement_id": {
+            "title": "Requirement Id",
+            "type": "string"
+          },
+          "scene_usage": {
+            "items": {},
+            "title": "Scene Usage",
+            "type": "array"
+          },
+          "status": {
+            "default": "OPEN",
+            "title": "Status",
+            "type": "string"
+          },
+          "type": {
+            "title": "Type",
+            "type": "string"
+          },
+          "updated_at": {
+            "default": "",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "requirement_id",
+          "project_id",
+          "episode_id",
+          "type",
+          "name"
+        ],
+        "title": "AssetRequirementResource",
+        "type": "object"
+      },
       "AssetResource": {
         "properties": {
+          "approval_pin": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ApprovalPin"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "character_id": {
             "anyOf": [
               {
@@ -721,6 +950,17 @@
           "provenance": {
             "$ref": "#/components/schemas/AssetProvenance"
           },
+          "requirement_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requirement Id"
+          },
           "scene_id": {
             "anyOf": [
               {
@@ -763,6 +1003,16 @@
       },
       "AssetRevisionResource": {
         "properties": {
+          "approval_pin": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ApprovalPin"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "asset_id": {
             "title": "Asset Id",
             "type": "string"
@@ -1773,6 +2023,18 @@
             ],
             "title": "Character Id"
           },
+          "content_base64": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Actual asset bytes (base64). When provided the content hash is SHA-256 over these bytes and marked VERIFIED; otherwise HASH_UNVERIFIED.",
+            "title": "Content Base64"
+          },
           "episode_id": {
             "anyOf": [
               {
@@ -1867,6 +2129,25 @@
             ],
             "title": "Prompt"
           },
+          "reference_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Reference Ids",
+            "type": "array"
+          },
+          "requirement_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Asset Requirement this asset fulfils",
+            "title": "Requirement Id"
+          },
           "scene_id": {
             "anyOf": [
               {
@@ -1880,7 +2161,7 @@
           },
           "source": {
             "default": "GENERATED",
-            "description": "GENERATED | UPLOADED | IMPORTED",
+            "description": "GENERATED | UPLOADED | IMPORTED | REFERENCE",
             "title": "Source",
             "type": "string"
           },
@@ -6950,6 +7231,26 @@
         "title": "SeriesListResponse",
         "type": "object"
       },
+      "SetAssetStatusRequest": {
+        "properties": {
+          "expected_version": {
+            "description": "Optimistic locking version",
+            "title": "Expected Version",
+            "type": "integer"
+          },
+          "status": {
+            "description": "One of: REQUIRED, SOURCING, GENERATING, UPLOADING, DRAFT, REVIEW, APPROVED, PINNED, REJECTED, SUPERSEDED, UNAVAILABLE",
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "expected_version"
+        ],
+        "title": "SetAssetStatusRequest",
+        "type": "object"
+      },
       "SetCharacterStatusRequest": {
         "properties": {
           "expected_version": {
@@ -10984,7 +11285,7 @@
         ]
       },
       "post": {
-        "description": "Create an asset record with full provenance chain.",
+        "description": "Create an asset record with full provenance chain.\n\nP1.3.4: the content hash is SHA-256 over the ACTUAL bytes when\n``content_base64`` is provided; without verifiable content the asset is\nmarked HASH_UNVERIFIED and can never be PINNED.",
         "operationId": "assets.create",
         "requestBody": {
           "content": {
@@ -11069,7 +11370,7 @@
     },
     "/api/v3/assets/{asset_id}/actions/approve": {
       "post": {
-        "description": "Approve an asset at a specific revision. Cannot approve a mutable (un-versioned) asset.",
+        "description": "Approve a SPECIFIC revision (plan P1.3.6) and record its approval pin.\n\nThe pin carries asset_id + revision_id + content_hash + approved_by +\napproved_at \u2014 never a floating \"latest\".",
         "operationId": "assets.approve",
         "parameters": [
           {
@@ -11168,6 +11469,59 @@
           }
         },
         "summary": "Reject Asset",
+        "tags": [
+          "Assets V3"
+        ]
+      }
+    },
+    "/api/v3/assets/{asset_id}/actions/set-status": {
+      "post": {
+        "description": "Advance the asset lifecycle one step at a time (plan P1.3.2).\n\nPINNED fails closed unless the current revision is approved AND its\ncontent hash is VERIFIED \u2014 HASH_UNVERIFIED content can never be pinned.",
+        "operationId": "assets.setStatus",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "asset_id",
+            "required": true,
+            "schema": {
+              "title": "Asset Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetAssetStatusRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetResource"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set Asset Status",
         "tags": [
           "Assets V3"
         ]
@@ -11305,6 +11659,57 @@
           }
         },
         "summary": "List Asset Revisions",
+        "tags": [
+          "Assets V3"
+        ]
+      },
+      "post": {
+        "description": "Pin a NEW immutable revision with a hash over its actual bytes.",
+        "operationId": "assets.addRevision",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "asset_id",
+            "required": true,
+            "schema": {
+              "title": "Asset Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddAssetRevisionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetRevisionResource"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Add Asset Revision",
         "tags": [
           "Assets V3"
         ]
@@ -12763,6 +13168,113 @@
         "summary": "Get Episode Artifacts",
         "tags": [
           "Episodes V3"
+        ]
+      }
+    },
+    "/api/v3/episodes/{episode_id}/assets/requirements": {
+      "get": {
+        "operationId": "assets.listEpisodeRequirements",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "episode_id",
+            "required": true,
+            "schema": {
+              "title": "Episode Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AssetRequirementResource"
+                  },
+                  "title": "Response Assets.Listepisoderequirements",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Episode Requirements",
+        "tags": [
+          "Assets V3"
+        ]
+      }
+    },
+    "/api/v3/episodes/{episode_id}/assets/requirements/actions/sync": {
+      "post": {
+        "description": "Deterministically extract asset requirements from the locked screenplay.\n\nFail closed with 409 SCREENPLAY_NOT_LOCKED when there is no lock.\nIdempotent: existing requirements are never duplicated or mutated.",
+        "operationId": "assets.syncRequirements",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "episode_id",
+            "required": true,
+            "schema": {
+              "title": "Episode Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "project_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Assets.Syncrequirements",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Sync Asset Requirements",
+        "tags": [
+          "Assets V3"
         ]
       }
     },
@@ -15249,6 +15761,52 @@
         "summary": "Update Project",
         "tags": [
           "Projects V3"
+        ]
+      }
+    },
+    "/api/v3/projects/{project_id}/assets/requirements": {
+      "get": {
+        "operationId": "assets.listProjectRequirements",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "title": "Project Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AssetRequirementResource"
+                  },
+                  "title": "Response Assets.Listprojectrequirements",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Project Requirements",
+        "tags": [
+          "Assets V3"
         ]
       }
     },
