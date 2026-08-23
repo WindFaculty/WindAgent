@@ -2954,10 +2954,48 @@
       },
       "CreateShotRequest": {
         "properties": {
+          "action": {
+            "default": "",
+            "title": "Action",
+            "type": "string"
+          },
+          "asset_refs": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Asset Refs",
+            "type": "array"
+          },
+          "audio_cue": {
+            "default": "",
+            "title": "Audio Cue",
+            "type": "string"
+          },
+          "camera_angle": {
+            "default": "Eye Level",
+            "title": "Camera Angle",
+            "type": "string"
+          },
           "camera_movement": {
             "default": "Static",
             "title": "Camera Movement",
             "type": "string"
+          },
+          "composition_notes": {
+            "default": "",
+            "title": "Composition Notes",
+            "type": "string"
+          },
+          "dialogue_ref": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dialogue Ref"
           },
           "duration_seconds": {
             "default": 5,
@@ -2967,6 +3005,21 @@
           "focal_length": {
             "default": "35mm",
             "title": "Focal Length",
+            "type": "string"
+          },
+          "framing": {
+            "default": "",
+            "title": "Framing",
+            "type": "string"
+          },
+          "lighting_intent": {
+            "default": "",
+            "title": "Lighting Intent",
+            "type": "string"
+          },
+          "location_ref": {
+            "default": "",
+            "title": "Location Ref",
             "type": "string"
           },
           "scene_id": {
@@ -2990,6 +3043,18 @@
               }
             ],
             "title": "Shot Number"
+          },
+          "shot_size": {
+            "default": "MEDIUM",
+            "title": "Shot Size",
+            "type": "string"
+          },
+          "subject_character_refs": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Subject Character Refs",
+            "type": "array"
           }
         },
         "title": "CreateShotRequest",
@@ -4710,6 +4775,33 @@
         "title": "MemorySearchRequest",
         "type": "object"
       },
+      "MergeShotsRequest": {
+        "properties": {
+          "expected_versions": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "description": "Optimistic lock version per shot id",
+            "title": "Expected Versions",
+            "type": "object"
+          },
+          "shot_ids": {
+            "description": "Consecutive shots to merge, in order",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 2,
+            "title": "Shot Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "shot_ids",
+          "expected_versions"
+        ],
+        "title": "MergeShotsRequest",
+        "type": "object"
+      },
       "ModelDefinitionResource": {
         "properties": {
           "benchmarks": {
@@ -6168,6 +6260,27 @@
         "title": "RejectAssetRequest",
         "type": "object"
       },
+      "ReorderShotRequest": {
+        "properties": {
+          "expected_version": {
+            "description": "Optimistic locking version",
+            "title": "Expected Version",
+            "type": "integer"
+          },
+          "new_position": {
+            "description": "1-based position in the episode shot order",
+            "minimum": 1.0,
+            "title": "New Position",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "new_position",
+          "expected_version"
+        ],
+        "title": "ReorderShotRequest",
+        "type": "object"
+      },
       "RetryJobRequest": {
         "properties": {
           "job_id": {
@@ -7491,6 +7604,11 @@
       },
       "ShotResource": {
         "properties": {
+          "action": {
+            "default": "",
+            "title": "Action",
+            "type": "string"
+          },
           "animation_asset_id": {
             "anyOf": [
               {
@@ -7501,6 +7619,13 @@
               }
             ],
             "title": "Animation Asset Id"
+          },
+          "asset_refs": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Asset Refs",
+            "type": "array"
           },
           "audio_asset_id": {
             "anyOf": [
@@ -7513,14 +7638,62 @@
             ],
             "title": "Audio Asset Id"
           },
+          "audio_cue": {
+            "default": "",
+            "title": "Audio Cue",
+            "type": "string"
+          },
+          "camera_angle": {
+            "default": "Eye Level",
+            "title": "Camera Angle",
+            "type": "string"
+          },
           "camera_movement": {
             "default": "Static",
             "title": "Camera Movement",
             "type": "string"
           },
+          "composition_notes": {
+            "default": "",
+            "title": "Composition Notes",
+            "type": "string"
+          },
+          "continuity_from": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Continuity From"
+          },
+          "continuity_to": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Continuity To"
+          },
           "created_at": {
             "title": "Created At",
             "type": "string"
+          },
+          "dialogue_ref": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dialogue Ref"
           },
           "duration_seconds": {
             "default": 5,
@@ -7536,8 +7709,23 @@
             "title": "Focal Length",
             "type": "string"
           },
+          "framing": {
+            "default": "",
+            "title": "Framing",
+            "type": "string"
+          },
           "id": {
             "title": "Id",
+            "type": "string"
+          },
+          "lighting_intent": {
+            "default": "",
+            "title": "Lighting Intent",
+            "type": "string"
+          },
+          "location_ref": {
+            "default": "",
+            "title": "Location Ref",
             "type": "string"
           },
           "production_plan_id": {
@@ -7570,10 +7758,22 @@
             "title": "Shot Number",
             "type": "integer"
           },
+          "shot_size": {
+            "default": "MEDIUM",
+            "title": "Shot Size",
+            "type": "string"
+          },
           "status": {
             "default": "DRAFT",
             "title": "Status",
             "type": "string"
+          },
+          "subject_character_refs": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Subject Character Refs",
+            "type": "array"
           },
           "updated_at": {
             "title": "Updated At",
@@ -7621,6 +7821,33 @@
           "expected_version"
         ],
         "title": "SplitSceneRequest",
+        "type": "object"
+      },
+      "SplitShotRequest": {
+        "properties": {
+          "expected_version": {
+            "description": "Optimistic locking version",
+            "title": "Expected Version",
+            "type": "integer"
+          },
+          "split_seconds": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Duration assigned to part 1; defaults to an even split.",
+            "title": "Split Seconds"
+          }
+        },
+        "required": [
+          "expected_version"
+        ],
+        "title": "SplitShotRequest",
         "type": "object"
       },
       "StartRunRequest": {
@@ -9442,6 +9669,17 @@
       },
       "UpdateShotRequest": {
         "properties": {
+          "action": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Action"
+          },
           "animation_asset_id": {
             "anyOf": [
               {
@@ -9452,6 +9690,20 @@
               }
             ],
             "title": "Animation Asset Id"
+          },
+          "asset_refs": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Asset Refs"
           },
           "audio_asset_id": {
             "anyOf": [
@@ -9464,6 +9716,28 @@
             ],
             "title": "Audio Asset Id"
           },
+          "audio_cue": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Audio Cue"
+          },
+          "camera_angle": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Camera Angle"
+          },
           "camera_movement": {
             "anyOf": [
               {
@@ -9475,9 +9749,32 @@
             ],
             "title": "Camera Movement"
           },
+          "composition_notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Composition Notes"
+          },
+          "dialogue_ref": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dialogue Ref"
+          },
           "duration_seconds": {
             "anyOf": [
               {
+                "minimum": 1.0,
                 "type": "integer"
               },
               {
@@ -9502,6 +9799,39 @@
             ],
             "title": "Focal Length"
           },
+          "framing": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Framing"
+          },
+          "lighting_intent": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lighting Intent"
+          },
+          "location_ref": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location Ref"
+          },
           "render_asset_id": {
             "anyOf": [
               {
@@ -9513,6 +9843,17 @@
             ],
             "title": "Render Asset Id"
           },
+          "shot_size": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Shot Size"
+          },
           "status": {
             "anyOf": [
               {
@@ -9523,6 +9864,20 @@
               }
             ],
             "title": "Status"
+          },
+          "subject_character_refs": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subject Character Refs"
           }
         },
         "required": [
@@ -14111,6 +14466,231 @@
         ]
       }
     },
+    "/api/v3/episodes/{episode_id}/production/shot-plan": {
+      "get": {
+        "description": "Retrieve the shot plan state for an episode.\n\nP1 truth rule: GET never creates the plan. Absent plan => 404\nSHOT_PLAN_NOT_CREATED.",
+        "operationId": "production.getShotPlan",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "episode_id",
+            "required": true,
+            "schema": {
+              "title": "Episode Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Production.Getshotplan",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Shot Plan",
+        "tags": [
+          "Production V3"
+        ]
+      }
+    },
+    "/api/v3/episodes/{episode_id}/production/shot-plan/actions/derive": {
+      "post": {
+        "description": "Derive a fresh DRAFT revision from the pinned snapshot (P1.5.5).\n\nThe pinned revision stays immutable for the production package; live shot\nrecords become editable again from the derived copy.",
+        "operationId": "production.deriveShotPlan",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "episode_id",
+            "required": true,
+            "schema": {
+              "title": "Episode Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Production.Deriveshotplan",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Derive Shot Plan",
+        "tags": [
+          "Production V3"
+        ]
+      }
+    },
+    "/api/v3/episodes/{episode_id}/production/shot-plan/actions/generate": {
+      "post": {
+        "description": "Deterministically project shots for scenes that have none (P1.5.1).\n\nRule-based \u2014 no LLM. Scenes with existing shots are left untouched, so\nre-runs are idempotent backfill. Fails closed when no storyboard exists.",
+        "operationId": "production.generateShotPlan",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "episode_id",
+            "required": true,
+            "schema": {
+              "title": "Episode Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Production.Generateshotplan",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Generate Shot Plan",
+        "tags": [
+          "Production V3"
+        ]
+      }
+    },
+    "/api/v3/episodes/{episode_id}/production/shot-plan/actions/pin": {
+      "post": {
+        "description": "Pin the current shot ordering as an immutable revision (P1.5.5).\n\nA pinned plan snapshots every shot with a deterministic content hash.\nWhile pinned, all shot mutations fail closed; derive a new draft revision\nto keep editing.",
+        "operationId": "production.pinShotPlan",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "episode_id",
+            "required": true,
+            "schema": {
+              "title": "Episode Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Production.Pinshotplan",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Pin Shot Plan",
+        "tags": [
+          "Production V3"
+        ]
+      }
+    },
+    "/api/v3/episodes/{episode_id}/production/shot-plan/validation": {
+      "get": {
+        "description": "Read-only structural validation of the episode's shots (no mutation).",
+        "operationId": "production.validateShotPlan",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "episode_id",
+            "required": true,
+            "schema": {
+              "title": "Episode Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Production.Validateshotplan",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Validate Shot Plan Endpoint",
+        "tags": [
+          "Production V3"
+        ]
+      }
+    },
     "/api/v3/episodes/{episode_id}/production/video/submit": {
       "post": {
         "operationId": "production.submitVideo",
@@ -14484,6 +15064,59 @@
           }
         },
         "summary": "Create Shot",
+        "tags": [
+          "Production V3"
+        ]
+      }
+    },
+    "/api/v3/episodes/{episode_id}/shots/actions/merge": {
+      "post": {
+        "description": "Merge two CONSECUTIVE shots of the same scene into one.",
+        "operationId": "production.mergeShots",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "episode_id",
+            "required": true,
+            "schema": {
+              "title": "Episode Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MergeShotsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShotResource"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Merge Shots",
         "tags": [
           "Production V3"
         ]
@@ -18487,6 +19120,49 @@
       }
     },
     "/api/v3/shots/{shot_id}": {
+      "delete": {
+        "description": "Delete a DRAFT shot (manual editing, plan P1.5.5).",
+        "operationId": "production.deleteShot",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "shot_id",
+            "required": true,
+            "schema": {
+              "title": "Shot Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Production.Deleteshot",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Shot",
+        "tags": [
+          "Production V3"
+        ]
+      },
       "get": {
         "description": "Retrieve shot details.",
         "operationId": "production.getShot",
@@ -18529,7 +19205,7 @@
         ]
       },
       "patch": {
-        "description": "Update shot details with optimistic locking.",
+        "description": "Update shot details with optimistic locking (plan P1.5.5).",
         "operationId": "production.updateShot",
         "parameters": [
           {
@@ -18575,6 +19251,116 @@
           }
         },
         "summary": "Update Shot",
+        "tags": [
+          "Production V3"
+        ]
+      }
+    },
+    "/api/v3/shots/{shot_id}/actions/reorder": {
+      "post": {
+        "description": "Server-side reorder command \u2014 the frontend never persists order locally.",
+        "operationId": "production.reorderShot",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "shot_id",
+            "required": true,
+            "schema": {
+              "title": "Shot Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReorderShotRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShotResource"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Reorder Shot",
+        "tags": [
+          "Production V3"
+        ]
+      }
+    },
+    "/api/v3/shots/{shot_id}/actions/split": {
+      "post": {
+        "description": "Split one shot into two consecutive halves sharing the framing.",
+        "operationId": "production.splitShot",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "shot_id",
+            "required": true,
+            "schema": {
+              "title": "Shot Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SplitShotRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ShotResource"
+                  },
+                  "title": "Response Production.Splitshot",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Split Shot",
         "tags": [
           "Production V3"
         ]
