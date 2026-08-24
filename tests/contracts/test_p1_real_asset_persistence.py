@@ -59,6 +59,12 @@ def _sync_all(client, episode_id=DEMO_EPISODE):
     client.post(f"/api/v3/episodes/{episode_id}/production/shot-plan/actions/generate")
 
 
+# Ladder rank mirrors the product state machine (DRAFT -> ... -> PRODUCTION_READY).
+# The postgres matrix shares one ephemeral DB across tests, so earlier tests may
+# have already promoted these demo characters; never step the ladder backwards.
+_CHAR_STATUS_RANK = {"DRAFT": 0, "REVIEW_REQUIRED": 1, "APPROVED": 2, "PRODUCTION_READY": 3}
+
+
 def _enrich_characters(client):
     chars = client.get(f"/api/v3/projects/{DEMO_PROJECT}/characters").json()
     for char in chars:
@@ -74,7 +80,7 @@ def _enrich_characters(client):
             assert r.status_code == 200, r.text
             char = r.json()
         for nxt in ("REVIEW_REQUIRED", "APPROVED", "PRODUCTION_READY"):
-            if char.get("status") == nxt:
+            if _CHAR_STATUS_RANK.get(char.get("status"), -1) >= _CHAR_STATUS_RANK[nxt]:
                 continue
             r = client.post(f"/api/v3/characters/{char['id']}/actions/set-status", json={"status": nxt, "expected_version": char["version"]})
             assert r.status_code == 200, r.text
@@ -286,7 +292,11 @@ class TestPostgresRealAsset:
             _sync_all(api)
             _enrich_characters(api)
             reqs = api.get(f"/api/v3/episodes/{DEMO_EPISODE}/assets/requirements").json()
-            req = next(r for r in reqs if r.get("mandatory") and r.get("status") == "OPEN")
+            # Shared ephemeral DB: earlier postgres tests may have already
+            # fulfilled every OPEN mandatory requirement. Persistence proof
+            # only needs an existing requirement to attach the real asset to.
+            open_reqs = [r for r in reqs if r.get("mandatory") and r.get("status") == "OPEN"]
+            req = open_reqs[0] if open_reqs else next(r for r in reqs if r.get("mandatory"))
             r = api.post("/api/v3/assets", json={
                 "name": f"PG Real {req['name']}",
                 "type": "IMAGE",

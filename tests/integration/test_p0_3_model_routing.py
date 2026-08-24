@@ -491,7 +491,7 @@ def test_receipts_and_roles_api_surface(routing_db):
     assert payload[0]["status"] == "success"
 
 
-def test_alembic_head_is_route_receipts():
+def test_alembic_head_is_live_record_domain():
     from windagent_storage.migrations.runner import alembic_heads
 
-    assert list(alembic_heads()) == ["0017_route_receipts"]
+    assert list(alembic_heads()) == ["0019_live_record_domain"]
