@@ -9,14 +9,14 @@
   },
   "git": {
     "branch": "refactor/architecture-v3-hardening",
-    "head_sha": "67b1f840e473ccae1f028739d98d5c2b199acc02",
-    "head_tree_sha": "c7d719ae0e6d78a4bae38f08ea6ade9794caa61d",
+    "head_sha": "ab0e5e123c7bc1e96f304e1673ce4c546996ef85",
+    "head_tree_sha": "5aff642800a104267e7c36d3daaa200a3bcbc80e",
     "author": "Antigravity",
-    "committed_at": "2026-08-25 03:29:25 +0700",
-    "subject": "docs(dpg): container validation GREEN - readiness matrix updated with real results",
+    "committed_at": "2026-08-25 03:48:22 +0700",
+    "subject": "docs(dpg): record first-push workflow parse failure and new candidate 8457f05",
     "worktree_state": {
-      "dirty_entries": 4,
-      "porcelain": "M .github/workflows/ci.yaml\n M artifacts/video_production/script_eval/phase_00_baseline/baseline_manifest.json\n M artifacts/video_production/script_eval/phase_00_baseline/baseline_verdict.json\n M prompt.md"
+      "dirty_entries": 27,
+      "porcelain": "M  .gitattributes\n M .github/workflows/ci.yaml\n M artifacts/production_ui/final_acceptance/d6e8a7f9c2b1e4f3a5d8b7c6a9e0f1d2c3b4a5e6/checksums.json\n M artifacts/production_ui/final_acceptance/d6e8a7f9c2b1e4f3a5d8b7c6a9e0f1d2c3b4a5e6/run_manifest.json\n M artifacts/video_production/handoff/handoff_checksums.sha256\n M artifacts/video_production/handoff/handoff_manifest.json\n M artifacts/video_production/handoff/handoff_report.md\n M artifacts/video_production/handoff/open_risks.json\nMM artifacts/video_production/script_eval/phase_00_baseline/baseline_manifest.json\nMM artifacts/video_production/script_eval/phase_00_baseline/baseline_verdict.json\n M artifacts/video_production/script_eval/phase_00_baseline/environment.json\n M artifacts/video_production/script_eval/phase_00_baseline/model_manifest.json\n M artifacts/video_production/script_eval/phase_00_baseline/prompt_manifest.json\n M prompt.md\n M scripts/verification/chaos_phase25.py\n M scripts/verification/command_registry.yaml\n M scripts/verification/produce_script_eval_phase0_baseline.py\n M tests/architecture/test_scaffold_v2.py\n M tests/contracts/api/test_phase11_api_worker_cli_websocket.py\n M tests/contracts/test_phase13_platform_admin.py\n M tests/unit/cli/test_cli_commands.py\n M tests/unit/cli/test_phase26_convergence.py\n M tests/unit/intelligence/story/test_lock_service.py\n M tests/unit/observability/test_phase10_health.py\n M tests/unit/tools/test_phase3_blender_runtime.py\n M tests/unit/tools/test_ssrf_protection.py\n?? tests/component/observability/test_phase10_health_schema_regression.py"
     }
   },
   "windagent": {
@@ -26,5 +26,5 @@
     "provider_protocol_version": "1.0.0",
     "artifact_protocol_version": "1.0.0"
   },
-  "timestamp_utc": "2026-08-24T20:47:42+00:00"
+  "timestamp_utc": "2026-08-24T22:24:16+00:00"
 }
