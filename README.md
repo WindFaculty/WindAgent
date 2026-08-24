@@ -27,7 +27,45 @@ launchers, CI, and package installation use only the canonical packages above.
 - [uv](https://docs.astral.sh/uv/)
 - Node.js 20+ and npm
 - Optional: Rust and Tauri CLI for the desktop bundle
-- Optional: PostgreSQL for the authoritative multi-replica profile
+- Optional: Docker Desktop (WSL2 backend) for the local PostgreSQL — see below
+- Optional: a machine-installed PostgreSQL for the authoritative multi-replica profile
+
+## PostgreSQL via Docker (local dev/tests)
+
+Production runs on real PostgreSQL 16. Locally, `compose.yaml` provisions the
+same thing with the exact credentials CI uses (`test:test`, database
+`windagent`), so test semantics match `.github/workflows/ci.yaml`. The host
+port defaults to `55432` to coexist with any locally installed PostgreSQL.
+Override it via `--port`, the `WINDAGENT_POSTGRES_PORT` shell variable, or a
+repo-root `.env` copied from `.env.example` — all three reach both Docker and
+the wrapper (the wrapper injects the resolved port into `docker compose`, so
+the published mapping can never drift from the URL it dials).
+
+```powershell
+# Start + wait until pg_isready reports healthy (no blind sleeps)
+.venv\Scripts\python.exe scripts\dev_postgres.py up
+
+# One-shot real-PostgreSQL test run:
+#   ephemeral database -> Alembic migrations -> backend identity attestation
+#   -> pytest -m postgres -> drop the ephemeral database.
+# On ANY failure the database and evidence under artifacts/ci/dev-postgres/
+# are kept for inspection.
+.venv\Scripts\python.exe scripts\dev_postgres.py test
+```
+
+Extra pytest arguments replace the default `-m postgres` selection:
+
+```powershell
+.venv\Scripts\python.exe scripts\dev_postgres.py test -- tests/contracts/test_p1_pg_idempotency_atomicity_cas.py -q
+```
+
+Other subcommands: `status`, `url [--db NAME]`, `migrate [--db NAME]`,
+`psql-drop --db NAME`, and `down [--clean]` (`--clean` also deletes the data
+volume). Migrations always run through the canonical programmatic runner
+(`windagent_storage.migrations.runner`) — never hand-written DDL.
+
+The desktop recording stack (Tauri/WGC/WASAPI/NVENC) is Windows-native and is
+never dockerized; only PostgreSQL runs in Docker here.
 
 ## Start the API
 

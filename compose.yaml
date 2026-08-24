@@ -1,0 +1,53 @@
+# WindAgent local development/test infrastructure.
+#
+# Production database is PostgreSQL 16 everywhere; this file only changes how
+# the database is provisioned locally (Docker instead of a Windows-installed
+# PostgreSQL service). Credentials are development-only and mirror the CI
+# service containers in .github/workflows/ci.yaml so local semantics match CI:
+#
+#   POSTGRES_DB=windagent  POSTGRES_USER=test  POSTGRES_PASSWORD=test
+#
+# The host port defaults to 55432 (NOT 5432) so the container can coexist with
+# a machine-local PostgreSQL service. Override it without editing this file:
+#
+#   PowerShell: $env:WINDAGENT_POSTGRES_PORT = "55433"
+#   bash:       WINDAGENT_POSTGRES_PORT=55433 docker compose up -d postgres
+#
+# Typical usage:
+#   docker compose up -d postgres          # start (waits for nothing; use the wrapper)
+#   python scripts/dev_postgres.py up      # start + wait until healthy
+#   python scripts/dev_postgres.py test    # disposable DB + migrations + pytest -m postgres
+#   docker compose down                    # stop (keeps the dev volume)
+#   docker compose down -v                 # stop AND delete the dev volume
+
+name: windagent-dev
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: windagent-postgres
+    environment:
+      POSTGRES_DB: windagent
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+      # Keep init/autovacuum quiet on developer laptops.
+      POSTGRES_INITDB_ARGS: "--data-checksums"
+    ports:
+      - "${WINDAGENT_POSTGRES_PORT:-55432}:5432"
+    volumes:
+      # Development mode keeps data across restarts. Certification/test runs
+      # never reuse it: scripts/dev_postgres.py creates an ephemeral database
+      # per run inside this cluster and drops it afterwards.
+      - windagent-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      # Readiness is defined by pg_isready, never by process uptime alone.
+      test: ["CMD-SHELL", "pg_isready -U test -d windagent"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+volumes:
+  windagent-postgres-data:
+    name: windagent-postgres-data
