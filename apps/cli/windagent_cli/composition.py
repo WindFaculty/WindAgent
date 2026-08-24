@@ -28,6 +28,18 @@ from typing import Optional, Sequence
 logger = logging.getLogger("windagent.cli.composition")
 
 
+def _canonical_schema_head() -> Optional[str]:
+    """Canonical Alembic head for the health checker's schema_migration gate.
+
+    Local import: this file is a composition root, but keeping the storage
+    dependency lazy matches the per-command composition strategy.
+    """
+    from windagent_storage.migrations.runner import alembic_heads
+
+    heads = alembic_heads()
+    return heads[0] if len(heads) == 1 else None
+
+
 def _require_existing_sqlite_database(db_url: str) -> None:
     """Fail before connecting when a read command targets a missing SQLite DB."""
     from pathlib import Path
@@ -122,6 +134,7 @@ class DoctorCommandComposer:
             skill_registry=skill_registry,
             workflow_registry=workflow_registry,
             event_dispatcher=event_dispatcher,
+            expected_schema_head=_canonical_schema_head(),
             profile=profile,
         )
 
@@ -835,6 +848,7 @@ class StatusCommandComposer:
             skill_registry=skill_registry,
             workflow_registry=workflow_registry,
             event_dispatcher=event_dispatcher,
+            expected_schema_head=_canonical_schema_head(),
             profile=profile,
         )
 

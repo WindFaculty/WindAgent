@@ -30,10 +30,10 @@ async def test_outbox_publisher_exists_but_not_running_returns_down():
 
 @pytest.mark.asyncio
 async def test_schema_revision_outdated_returns_down():
-    """If schema revision is behind expected head (002_legacy_data), readiness returns DOWN."""
+    """If the DB revision lags the injected canonical head, readiness returns DOWN."""
     mock_session = AsyncMock(spec=AsyncSession)
     mock_result = MagicMock()
-    mock_result.fetchone.return_value = ("001_initial", 1)
+    mock_result.fetchall.return_value = [("001_initial",)]
     mock_session.execute.return_value = mock_result
 
     class MockSessionFactory:
@@ -46,6 +46,7 @@ async def test_schema_revision_outdated_returns_down():
 
     checker = HealthChecker(
         db_session_factory=MockSessionFactory(),
+        expected_schema_head="002_legacy_data",
         profile=HealthProfile.DEVELOPMENT,
     )
 
@@ -57,10 +58,10 @@ async def test_schema_revision_outdated_returns_down():
 
 @pytest.mark.asyncio
 async def test_schema_revision_head_verified_returns_up():
-    """If schema revision matches expected head (002_legacy_data), readiness returns UP."""
+    """If the DB revision matches the canonical Alembic head, readiness returns UP."""
     mock_session = AsyncMock(spec=AsyncSession)
     mock_result = MagicMock()
-    mock_result.fetchone.return_value = ("002_legacy_data", 2)
+    mock_result.fetchall.return_value = [("002_legacy_data",)]
     mock_session.execute.return_value = mock_result
 
     class MockSessionFactory:

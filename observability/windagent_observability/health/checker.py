@@ -50,12 +50,18 @@ class HealthChecker:
         outbox_repository: Optional[Any] = None,
         outbox_publisher: Optional[Any] = None,
         required_paths: Optional[List[Path]] = None,
+        expected_schema_head: Optional[str] = None,
         profile: HealthProfile = HealthProfile.DEVELOPMENT,
         bundle: Optional[HealthDependencyBundle] = None,
     ):
         """
         Initialize HealthChecker with required dependencies or a typed HealthDependencyBundle.
+
+        ``expected_schema_head`` is injected by the composition root from the
+        canonical Alembic script directory (``windagent_storage.migrations.runner.alembic_heads``)
+        so the schema_migration check never hardcodes a revision here.
         """
+        self._expected_schema_head = expected_schema_head
         if bundle is not None:
             self._db_session_factory = db_session_factory or bundle.database
             self._worker_status_query = worker_status_query or bundle.worker
@@ -330,10 +336,14 @@ class HealthChecker:
                 required=True
             )
     
-    EXPECTED_HEAD_REVISIONS = {"002_legacy_data", "002"}
-
     async def _check_schema_migration(self) -> HealthCheckResult:
-        """Check current schema revision against expected head."""
+        """Check the canonical Alembic revision against the injected head.
+
+        Reads ``alembic_version`` — the single source of truth maintained by
+        ``windagent_storage.migrations.runner``. The legacy per-app
+        ``migration_history`` table is NOT part of the canonical migration
+        system and must not gate readiness.
+        """
         if self._db_session_factory is None:
             return HealthCheckResult(
                 name="schema_migration",
@@ -341,51 +351,57 @@ class HealthChecker:
                 message="Cannot check schema without database",
                 required=self._profile != HealthProfile.TEST
             )
-        
-        try:
-            # Check migration history table
-            async with self._db_session_factory() as session:
-                result = await session.execute(text("""
-                    SELECT MAX(revision) as latest_revision, COUNT(*) as total_migrations
-                    FROM migration_history
-                """))
-                row = result.fetchone()
-                
-                if row is None or row[0] is None:
-                    return HealthCheckResult(
-                        name="schema_migration",
-                        status=HealthStatus.DOWN,
-                        message="No migrations applied",
-                        details={"latest_revision": None, "total_migrations": 0},
-                        required=True
-                    )
-                
-                latest_revision = str(row[0]) if row[0] else "unknown"
-                total_migrations = row[1] if row[1] else 0
-                
-                if latest_revision not in self.EXPECTED_HEAD_REVISIONS:
-                    return HealthCheckResult(
-                        name="schema_migration",
-                        status=HealthStatus.DOWN,
-                        message=f"Schema revision '{latest_revision}' does not match expected head '002_legacy_data'",
-                        details={
-                            "latest_revision": latest_revision,
-                            "expected_head": "002_legacy_data",
-                            "total_migrations": total_migrations,
-                        },
-                        required=True
-                    )
 
+        try:
+            async with self._db_session_factory() as session:
+                result = await session.execute(text("SELECT version_num FROM alembic_version"))
+                revisions = sorted(str(row[0]) for row in result.fetchall())
+
+            if not revisions:
                 return HealthCheckResult(
                     name="schema_migration",
-                    status=HealthStatus.UP,
-                    message=f"Schema head verified at revision {latest_revision}",
+                    status=HealthStatus.DOWN,
+                    message="No migrations applied - alembic_version is empty",
+                    details={"latest_revision": None},
+                    required=True
+                )
+
+            if len(revisions) > 1:
+                # Multiple rows can only mean a branched/failed migration state.
+                return HealthCheckResult(
+                    name="schema_migration",
+                    status=HealthStatus.DOWN,
+                    message=f"Multiple Alembic revisions present: {revisions}",
+                    details={"alembic_version_rows": revisions},
+                    required=True
+                )
+
+            latest_revision = revisions[0]
+            if self._expected_schema_head is not None and latest_revision != self._expected_schema_head:
+                return HealthCheckResult(
+                    name="schema_migration",
+                    status=HealthStatus.DOWN,
+                    message=(
+                        f"Schema revision '{latest_revision}' does not match "
+                        f"canonical Alembic head '{self._expected_schema_head}'"
+                    ),
                     details={
                         "latest_revision": latest_revision,
-                        "total_migrations": total_migrations
+                        "expected_head": self._expected_schema_head,
                     },
                     required=True
                 )
+
+            return HealthCheckResult(
+                name="schema_migration",
+                status=HealthStatus.UP,
+                message=f"Alembic schema head verified at revision {latest_revision}",
+                details={
+                    "latest_revision": latest_revision,
+                    "expected_head": self._expected_schema_head,
+                },
+                required=True
+            )
         except Exception as e:
             if "no such table" in str(e).lower():
                 return HealthCheckResult(

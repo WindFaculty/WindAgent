@@ -50,6 +50,7 @@ def get_health_checker(request: Request) -> HealthChecker:
             skill_registry=skill_registry,
             workflow_registry=workflow_registry,
             event_dispatcher=event_dispatcher,
+            expected_schema_head=getattr(container, "expected_schema_head", None) if container else None,
             profile=profile,
         )
     

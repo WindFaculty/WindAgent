@@ -9798,13 +9798,19 @@
       "from": "api",
       "to": "storage",
       "file": "apps/api/windagent_api/composition/container.py",
-      "line": 285
+      "line": 107
     },
     {
       "from": "api",
       "to": "storage",
       "file": "apps/api/windagent_api/composition/container.py",
-      "line": 301
+      "line": 298
+    },
+    {
+      "from": "api",
+      "to": "storage",
+      "file": "apps/api/windagent_api/composition/container.py",
+      "line": 314
     },
     {
       "from": "api",
@@ -11556,77 +11562,65 @@
       "from": "cli",
       "to": "storage",
       "file": "apps/cli/windagent_cli/composition.py",
-      "line": 70
+      "line": 37
     },
     {
       "from": "cli",
       "to": "storage",
       "file": "apps/cli/windagent_cli/composition.py",
-      "line": 71
+      "line": 82
     },
     {
       "from": "cli",
       "to": "storage",
       "file": "apps/cli/windagent_cli/composition.py",
-      "line": 71
+      "line": 83
+    },
+    {
+      "from": "cli",
+      "to": "storage",
+      "file": "apps/cli/windagent_cli/composition.py",
+      "line": 83
     },
     {
       "from": "cli",
       "to": "providers",
       "file": "apps/cli/windagent_cli/composition.py",
-      "line": 75
+      "line": 87
     },
     {
       "from": "cli",
       "to": "tools",
       "file": "apps/cli/windagent_cli/composition.py",
-      "line": 76
+      "line": 88
     },
     {
       "from": "cli",
       "to": "plugins",
       "file": "apps/cli/windagent_cli/composition.py",
-      "line": 77
+      "line": 89
     },
     {
       "from": "cli",
       "to": "skills",
       "file": "apps/cli/windagent_cli/composition.py",
-      "line": 78
+      "line": 90
     },
     {
       "from": "cli",
       "to": "workflows",
       "file": "apps/cli/windagent_cli/composition.py",
-      "line": 79
+      "line": 91
     },
     {
       "from": "cli",
       "to": "observability",
-      "file": "apps/cli/windagent_cli/composition.py",
-      "line": 80
-    },
-    {
-      "from": "cli",
-      "to": "observability",
-      "file": "apps/cli/windagent_cli/composition.py",
-      "line": 81
-    },
-    {
-      "from": "cli",
-      "to": "observability",
-      "file": "apps/cli/windagent_cli/composition.py",
-      "line": 81
-    },
-    {
-      "from": "cli",
-      "to": "storage",
       "file": "apps/cli/windagent_cli/composition.py",
       "line": 92
     },
     {
       "from": "cli",
-      "to": "storage",
+      "to": "observability",
       "file": "apps/cli/windagent_cli/composition.py",
       "line": 93
     },
@@ -11634,115 +11628,121 @@
       "from": "cli",
       "to": "observability",
       "file": "apps/cli/windagent_cli/composition.py",
-      "line": 135
+      "line": 93
     },
     {
       "from": "cli",
       "to": "storage",
       "file": "apps/cli/windagent_cli/composition.py",
-      "line": 250
+      "line": 104
     },
     {
       "from": "cli",
       "to": "storage",
       "file": "apps/cli/windagent_cli/composition.py",
-      "line": 251
+      "line": 105
+    },
+    {
+      "from": "cli",
+      "to": "observability",
+      "file": "apps/cli/windagent_cli/composition.py",
+      "line": 148
+    },
+    {
+      "from": "cli",
+      "to": "storage",
+      "file": "apps/cli/windagent_cli/composition.py",
+      "line": 263
+    },
+    {
+      "from": "cli",
+      "to": "storage",
+      "file": "apps/cli/windagent_cli/composition.py",
+      "line": 264
     },
     {
       "from": "cli",
       "to": "orchestration",
       "file": "apps/cli/windagent_cli/composition.py",
-      "line": 252
-    },
-    {
-      "from": "cli",
-      "to": "providers",
-      "file": "apps/cli/windagent_cli/composition.py",
-      "line": 253
-    },
-    {
-      "from": "cli",
-      "to": "tools",
-      "file": "apps/cli/windagent_cli/composition.py",
-      "line": 254
-    },
-    {
-      "from": "cli",
-      "to": "storage",
-      "file": "apps/cli/windagent_cli/composition.py",
       "line": 265
     },
     {
       "from": "cli",
-      "to": "storage",
+      "to": "providers",
       "file": "apps/cli/windagent_cli/composition.py",
       "line": 266
     },
     {
       "from": "cli",
+      "to": "tools",
+      "file": "apps/cli/windagent_cli/composition.py",
+      "line": 267
+    },
+    {
+      "from": "cli",
+      "to": "storage",
+      "file": "apps/cli/windagent_cli/composition.py",
+      "line": 278
+    },
+    {
+      "from": "cli",
+      "to": "storage",
+      "file": "apps/cli/windagent_cli/composition.py",
+      "line": 279
+    },
+    {
+      "from": "cli",
       "to": "providers",
       "file": "apps/cli/windagent_cli/composition.py",
-      "line": 295
+      "line": 308
     },
     {
       "from": "cli",
       "to": "storage",
       "file": "apps/cli/windagent_cli/composition.py",
-      "line": 296
+      "line": 309
     },
     {
       "from": "cli",
       "to": "storage",
       "file": "apps/cli/windagent_cli/composition.py",
-      "line": 297
+      "line": 310
     },
     {
       "from": "cli",
       "to": "storage",
       "file": "apps/cli/windagent_cli/composition.py",
-      "line": 322
+      "line": 335
     },
     {
       "from": "cli",
       "to": "storage",
       "file": "apps/cli/windagent_cli/composition.py",
-      "line": 323
+      "line": 336
     },
     {
       "from": "cli",
       "to": "storage",
       "file": "apps/cli/windagent_cli/composition.py",
-      "line": 323
+      "line": 336
     },
     {
       "from": "cli",
       "to": "storage",
       "file": "apps/cli/windagent_cli/composition.py",
-      "line": 374
+      "line": 387
     },
     {
       "from": "cli",
       "to": "storage",
       "file": "apps/cli/windagent_cli/composition.py",
-      "line": 393
+      "line": 406
     },
     {
       "from": "cli",
       "to": "storage",
       "file": "apps/cli/windagent_cli/composition.py",
-      "line": 394
-    },
-    {
-      "from": "cli",
-      "to": "storage",
-      "file": "apps/cli/windagent_cli/composition.py",
-      "line": 449
-    },
-    {
-      "from": "cli",
-      "to": "storage",
-      "file": "apps/cli/windagent_cli/composition.py",
-      "line": 461
+      "line": 407
     },
     {
       "from": "cli",
@@ -11754,181 +11754,193 @@
       "from": "cli",
       "to": "storage",
       "file": "apps/cli/windagent_cli/composition.py",
-      "line": 487
+      "line": 474
     },
     {
       "from": "cli",
       "to": "storage",
       "file": "apps/cli/windagent_cli/composition.py",
-      "line": 501
+      "line": 475
     },
     {
       "from": "cli",
       "to": "storage",
       "file": "apps/cli/windagent_cli/composition.py",
-      "line": 502
+      "line": 500
+    },
+    {
+      "from": "cli",
+      "to": "storage",
+      "file": "apps/cli/windagent_cli/composition.py",
+      "line": 514
+    },
+    {
+      "from": "cli",
+      "to": "storage",
+      "file": "apps/cli/windagent_cli/composition.py",
+      "line": 515
     },
     {
       "from": "cli",
       "to": "providers",
       "file": "apps/cli/windagent_cli/composition.py",
-      "line": 598
+      "line": 611
     },
     {
       "from": "cli",
       "to": "storage",
       "file": "apps/cli/windagent_cli/composition.py",
-      "line": 599
+      "line": 612
     },
     {
       "from": "cli",
       "to": "storage",
       "file": "apps/cli/windagent_cli/composition.py",
-      "line": 600
+      "line": 613
     },
     {
       "from": "cli",
       "to": "storage",
       "file": "apps/cli/windagent_cli/composition.py",
-      "line": 618
+      "line": 631
     },
     {
       "from": "cli",
       "to": "tools",
       "file": "apps/cli/windagent_cli/composition.py",
-      "line": 654
+      "line": 667
     },
     {
       "from": "cli",
       "to": "core",
       "file": "apps/cli/windagent_cli/composition.py",
-      "line": 702
+      "line": 715
     },
     {
       "from": "cli",
       "to": "storage",
       "file": "apps/cli/windagent_cli/composition.py",
-      "line": 788
+      "line": 801
     },
     {
       "from": "cli",
       "to": "storage",
       "file": "apps/cli/windagent_cli/composition.py",
-      "line": 789
+      "line": 802
     },
     {
       "from": "cli",
       "to": "storage",
       "file": "apps/cli/windagent_cli/composition.py",
-      "line": 789
+      "line": 802
     },
     {
       "from": "cli",
       "to": "providers",
-      "file": "apps/cli/windagent_cli/composition.py",
-      "line": 793
-    },
-    {
-      "from": "cli",
-      "to": "tools",
-      "file": "apps/cli/windagent_cli/composition.py",
-      "line": 794
-    },
-    {
-      "from": "cli",
-      "to": "plugins",
-      "file": "apps/cli/windagent_cli/composition.py",
-      "line": 795
-    },
-    {
-      "from": "cli",
-      "to": "skills",
-      "file": "apps/cli/windagent_cli/composition.py",
-      "line": 796
-    },
-    {
-      "from": "cli",
-      "to": "workflows",
-      "file": "apps/cli/windagent_cli/composition.py",
-      "line": 797
-    },
-    {
-      "from": "cli",
-      "to": "observability",
-      "file": "apps/cli/windagent_cli/composition.py",
-      "line": 798
-    },
-    {
-      "from": "cli",
-      "to": "observability",
-      "file": "apps/cli/windagent_cli/composition.py",
-      "line": 799
-    },
-    {
-      "from": "cli",
-      "to": "observability",
-      "file": "apps/cli/windagent_cli/composition.py",
-      "line": 799
-    },
-    {
-      "from": "cli",
-      "to": "storage",
-      "file": "apps/cli/windagent_cli/composition.py",
-      "line": 805
-    },
-    {
-      "from": "cli",
-      "to": "storage",
       "file": "apps/cli/windagent_cli/composition.py",
       "line": 806
     },
     {
       "from": "cli",
+      "to": "tools",
+      "file": "apps/cli/windagent_cli/composition.py",
+      "line": 807
+    },
+    {
+      "from": "cli",
+      "to": "plugins",
+      "file": "apps/cli/windagent_cli/composition.py",
+      "line": 808
+    },
+    {
+      "from": "cli",
+      "to": "skills",
+      "file": "apps/cli/windagent_cli/composition.py",
+      "line": 809
+    },
+    {
+      "from": "cli",
+      "to": "workflows",
+      "file": "apps/cli/windagent_cli/composition.py",
+      "line": 810
+    },
+    {
+      "from": "cli",
+      "to": "observability",
+      "file": "apps/cli/windagent_cli/composition.py",
+      "line": 811
+    },
+    {
+      "from": "cli",
+      "to": "observability",
+      "file": "apps/cli/windagent_cli/composition.py",
+      "line": 812
+    },
+    {
+      "from": "cli",
+      "to": "observability",
+      "file": "apps/cli/windagent_cli/composition.py",
+      "line": 812
+    },
+    {
+      "from": "cli",
+      "to": "storage",
+      "file": "apps/cli/windagent_cli/composition.py",
+      "line": 818
+    },
+    {
+      "from": "cli",
+      "to": "storage",
+      "file": "apps/cli/windagent_cli/composition.py",
+      "line": 819
+    },
+    {
+      "from": "cli",
       "to": "core",
       "file": "apps/cli/windagent_cli/composition.py",
-      "line": 862
+      "line": 876
     },
     {
       "from": "cli",
       "to": "core",
       "file": "apps/cli/windagent_cli/composition.py",
-      "line": 862
+      "line": 876
     },
     {
       "from": "cli",
       "to": "storage",
       "file": "apps/cli/windagent_cli/composition.py",
-      "line": 866
+      "line": 880
     },
     {
       "from": "cli",
       "to": "workflows",
       "file": "apps/cli/windagent_cli/composition.py",
-      "line": 922
+      "line": 936
     },
     {
       "from": "cli",
       "to": "workflows",
       "file": "apps/cli/windagent_cli/composition.py",
-      "line": 922
+      "line": 936
     },
     {
       "from": "cli",
       "to": "workflows",
       "file": "apps/cli/windagent_cli/composition.py",
-      "line": 945
+      "line": 959
     },
     {
       "from": "cli",
       "to": "storage",
       "file": "apps/cli/windagent_cli/composition.py",
-      "line": 86
+      "line": 98
     },
     {
       "from": "cli",
       "to": "storage",
       "file": "apps/cli/windagent_cli/composition.py",
-      "line": 332
+      "line": 345
     },
     {
       "from": "cli",

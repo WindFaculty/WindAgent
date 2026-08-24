@@ -84,15 +84,10 @@ class TestReadinessChecks:
     
     @pytest.mark.asyncio
     async def test_schema_migration_check_with_history(self):
-        """Schema migration check should return revision from history table."""
+        """Schema migration check should read the canonical alembic_version table."""
         mock_session = AsyncMock()
         mock_result = AsyncMock()
-        mock_row = Mock()
-        mock_row.__getitem__ = Mock(side_effect=lambda x: {
-            0: "002",
-            1: 2
-        }.get(x))
-        mock_result.fetchone = Mock(return_value=mock_row)
+        mock_result.fetchall = Mock(return_value=[("002",)])
         mock_session.execute = AsyncMock(return_value=mock_result)
         mock_cm = AsyncMock()
         mock_cm.__aenter__ = AsyncMock(return_value=mock_session)
@@ -103,10 +98,128 @@ class TestReadinessChecks:
 
         checker = HealthChecker(db_session_factory=mock_session_factory)
         result = await checker._check_schema_migration()
-        
+
         assert result.name == "schema_migration"
         assert result.status == HealthStatus.UP
         assert "002" in result.message
+        executed_sql = mock_session.execute.call_args[0][0]
+        assert "alembic_version" in str(executed_sql)
+
+    @pytest.mark.asyncio
+    async def test_schema_migration_check_empty_table_fails_closed(self):
+        """An empty alembic_version table means no migrations applied -> DOWN."""
+        mock_session = AsyncMock()
+        mock_result = AsyncMock()
+        mock_result.fetchall = Mock(return_value=[])
+        mock_session.execute = AsyncMock(return_value=mock_result)
+        mock_cm = AsyncMock()
+        mock_cm.__aenter__ = AsyncMock(return_value=mock_session)
+        mock_cm.__aexit__ = AsyncMock(return_value=None)
+
+        def mock_session_factory():
+            return mock_cm
+
+        checker = HealthChecker(db_session_factory=mock_session_factory)
+        result = await checker._check_schema_migration()
+
+        assert result.status == HealthStatus.DOWN
+        assert "no migrations applied" in result.message.lower()
+
+    @pytest.mark.asyncio
+    async def test_schema_migration_multiple_revisions_fail_closed(self):
+        """Multiple alembic_version rows mean a branched state -> DOWN (GAP D)."""
+        mock_session = AsyncMock()
+        mock_result = AsyncMock()
+        mock_result.fetchall = Mock(return_value=[("0018_fix_timestamptz",), ("0019_live_record_domain",)])
+        mock_session.execute = AsyncMock(return_value=mock_result)
+        mock_cm = AsyncMock()
+        mock_cm.__aenter__ = AsyncMock(return_value=mock_session)
+        mock_cm.__aexit__ = AsyncMock(return_value=None)
+
+        def mock_session_factory():
+            return mock_cm
+
+        checker = HealthChecker(db_session_factory=mock_session_factory)
+        result = await checker._check_schema_migration()
+
+        assert result.status == HealthStatus.DOWN
+        assert "multiple" in result.message.lower()
+
+    @pytest.mark.asyncio
+    async def test_schema_migration_mismatch_injected_head_fails(self):
+        """A revision behind the injected canonical head must fail closed."""
+        mock_session = AsyncMock()
+        mock_result = AsyncMock()
+        mock_result.fetchall = Mock(return_value=[("0017_route_receipts",)])
+        mock_session.execute = AsyncMock(return_value=mock_result)
+        mock_cm = AsyncMock()
+        mock_cm.__aenter__ = AsyncMock(return_value=mock_session)
+        mock_cm.__aexit__ = AsyncMock(return_value=None)
+
+        def mock_session_factory():
+            return mock_cm
+
+        checker = HealthChecker(
+            db_session_factory=mock_session_factory,
+            expected_schema_head="0019_live_record_domain",
+        )
+        result = await checker._check_schema_migration()
+
+        assert result.status == HealthStatus.DOWN
+        assert "0019_live_record_domain" in result.details["expected_head"]
+
+    @pytest.mark.asyncio
+    async def test_schema_migration_matches_injected_head(self):
+        """The injected canonical head matching the DB revision is UP."""
+        mock_session = AsyncMock()
+        mock_result = AsyncMock()
+        mock_result.fetchall = Mock(return_value=[("0019_live_record_domain",)])
+        mock_session.execute = AsyncMock(return_value=mock_result)
+        mock_cm = AsyncMock()
+        mock_cm.__aenter__ = AsyncMock(return_value=mock_session)
+        mock_cm.__aexit__ = AsyncMock(return_value=None)
+
+        def mock_session_factory():
+            return mock_cm
+
+        checker = HealthChecker(
+            db_session_factory=mock_session_factory,
+            expected_schema_head="0019_live_record_domain",
+        )
+        result = await checker._check_schema_migration()
+
+        assert result.status == HealthStatus.UP
+        assert "0019_live_record_domain" in result.message
+
+    @pytest.mark.asyncio
+    async def test_schema_migration_real_alembic_sqlite_is_up(self, tmp_path):
+        """Regression: a fresh DB migrated by the canonical runner must be UP.
+
+        The legacy check queried the retired per-app ``migration_history``
+        table, so every Alembic-migrated database failed readiness forever.
+        """
+        from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+        from windagent_storage.migrations.runner import alembic_heads, alembic_upgrade_head
+
+        db_file = tmp_path / "health_regression.db"
+        db_url = f"sqlite+aiosqlite:///{db_file.as_posix()}"
+        alembic_upgrade_head(db_url)
+
+        engine = create_async_engine(db_url)
+        factory = async_sessionmaker(engine, expire_on_commit=False)
+
+        heads = alembic_heads()
+        checker = HealthChecker(
+            db_session_factory=factory,
+            expected_schema_head=heads[0] if len(heads) == 1 else None,
+        )
+        try:
+            result = await checker._check_schema_migration()
+        finally:
+            await engine.dispose()
+
+        assert result.status == HealthStatus.UP, result.message
+        assert heads and heads[0] in result.message
     
     @pytest.mark.asyncio
     async def test_worker_heartbeat_check_available(self):
@@ -283,11 +396,10 @@ class TestFullReadinessCheck:
         """Full readiness check should pass with all components healthy."""
         # Mock all dependencies
         mock_session = AsyncMock()
-        # Configure execute to return a result with fetchone returning a row
+        # Configure execute so the schema check reads one alembic_version row
         mock_result = Mock()
-        mock_row = Mock()
-        mock_row.__getitem__ = Mock(side_effect=lambda x: {"revision": "002_legacy_data", "count": 2, 0: "002_legacy_data", 1: 2}.get(x, 0))
-        mock_result.fetchone = Mock(return_value=mock_row)
+        mock_result.fetchall = Mock(return_value=[("002_legacy_data",)])
+        mock_result.fetchone = Mock(return_value=None)
         mock_session.execute = AsyncMock(return_value=mock_result)
         mock_cm = AsyncMock()
         mock_cm.__aenter__ = AsyncMock(return_value=mock_session)

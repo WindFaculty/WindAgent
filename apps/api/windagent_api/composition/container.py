@@ -96,6 +96,19 @@ class ApplicationContainer:
         self.studio_run_service: Optional[Any] = None
         self.is_initialized: bool = False
 
+    @property
+    def expected_schema_head(self) -> Optional[str]:
+        """Canonical Alembic head, injected into the health checker.
+
+        Read live (not cached at init) so a migration added after process
+        start is still reported correctly. ``None`` lets the readiness check
+        accept any single applied revision instead of guessing.
+        """
+        from windagent_storage.migrations.runner import alembic_heads
+
+        heads = alembic_heads()
+        return heads[0] if len(heads) == 1 else None
+
     async def bootstrap(self) -> None:
         """Bootstraps database pools, migrations, and service graphs.
 
