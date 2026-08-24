@@ -204,10 +204,15 @@ jobs:
     runs-on: ubuntu-latest
     env:
       WINDAGENT_DATABASE_URL: sqlite+aiosqlite:///windagent.db
-      TMPDIR: ${{ runner.temp }}
-      TEMP: ${{ runner.temp }}
     steps:
       - uses: actions/checkout@v4
+      # ADR 0006 §5: writable temp dir for tests. Job-level `env:` cannot use
+      # the runner context (it makes the whole workflow file invalid), so the
+      # temp vars are published from the first step via $GITHUB_ENV instead.
+      - name: Configure writable temp dir
+        run: |
+          echo "TMPDIR=$RUNNER_TEMP" >> "$GITHUB_ENV"
+          echo "TEMP=$RUNNER_TEMP" >> "$GITHUB_ENV"
       - uses: astral-sh/setup-uv@v3
         with:
           version: ${{ env.UV_VERSION }}
@@ -318,11 +323,15 @@ jobs:
     runs-on: ubuntu-latest
     env:
       WINDAGENT_DATABASE_URL: sqlite+aiosqlite:///windagent.db
-      # ADR 0006 §5: writable temp dir for tests.
-      TMPDIR: ${{ runner.temp }}
-      TEMP: ${{ runner.temp }}
     steps:
       - uses: actions/checkout@v4
+
+      # ADR 0006 §5: writable temp dir for tests (job-level `env:` cannot use
+      # the runner context; publish from the first step instead).
+      - name: Configure writable temp dir
+        run: |
+          echo "TMPDIR=$RUNNER_TEMP" >> "$GITHUB_ENV"
+          echo "TEMP=$RUNNER_TEMP" >> "$GITHUB_ENV"
 
       - uses: astral-sh/setup-uv@v3
         with:
@@ -815,10 +824,15 @@ jobs:
     env:
       WINDAGENT_TEST_POSTGRES_URL: postgresql+asyncpg://test:test@localhost:5432/windagent
       WINDAGENT_DATABASE_URL: postgresql+asyncpg://test:test@localhost:5432/windagent
-      TMPDIR: ${{ runner.temp }}
-      TEMP: ${{ runner.temp }}
     steps:
       - uses: actions/checkout@v4
+
+      # Job-level `env:` cannot use the runner context (it makes the whole
+      # workflow file invalid); publish temp vars from the first step instead.
+      - name: Configure writable temp dir
+        run: |
+          echo "TMPDIR=$RUNNER_TEMP" >> "$GITHUB_ENV"
+          echo "TEMP=$RUNNER_TEMP" >> "$GITHUB_ENV"
 
       - uses: astral-sh/setup-uv@v3
         with:
@@ -942,11 +956,12 @@ jobs:
   architecture-suite:
     name: Architecture Test Suite (full)
     runs-on: ubuntu-latest
-    env:
-      TMPDIR: ${{ runner.temp }}
-      TEMP: ${{ runner.temp }}
     steps:
       - uses: actions/checkout@v4
+      - name: Configure writable temp dir
+        run: |
+          echo "TMPDIR=$RUNNER_TEMP" >> "$GITHUB_ENV"
+          echo "TEMP=$RUNNER_TEMP" >> "$GITHUB_ENV"
       - uses: astral-sh/setup-uv@v3
         with:
           version: ${{ env.UV_VERSION }}
@@ -979,11 +994,12 @@ jobs:
   unit-pure:
     name: Unit (pure, xdist)
     runs-on: ubuntu-latest
-    env:
-      TMPDIR: ${{ runner.temp }}
-      TEMP: ${{ runner.temp }}
     steps:
       - uses: actions/checkout@v4
+      - name: Configure writable temp dir
+        run: |
+          echo "TMPDIR=$RUNNER_TEMP" >> "$GITHUB_ENV"
+          echo "TEMP=$RUNNER_TEMP" >> "$GITHUB_ENV"
       - uses: astral-sh/setup-uv@v3
         with:
           version: ${{ env.UV_VERSION }}
@@ -1018,10 +1034,12 @@ jobs:
     runs-on: ubuntu-latest
     env:
       WINDAGENT_DATABASE_URL: sqlite+aiosqlite:///windagent.db
-      TMPDIR: ${{ runner.temp }}
-      TEMP: ${{ runner.temp }}
     steps:
       - uses: actions/checkout@v4
+      - name: Configure writable temp dir
+        run: |
+          echo "TMPDIR=$RUNNER_TEMP" >> "$GITHUB_ENV"
+          echo "TEMP=$RUNNER_TEMP" >> "$GITHUB_ENV"
       - uses: astral-sh/setup-uv@v3
         with:
           version: ${{ env.UV_VERSION }}
@@ -1054,11 +1072,12 @@ jobs:
   contracts:
     name: Contracts (API + Story)
     runs-on: ubuntu-latest
-    env:
-      TMPDIR: ${{ runner.temp }}
-      TEMP: ${{ runner.temp }}
     steps:
       - uses: actions/checkout@v4
+      - name: Configure writable temp dir
+        run: |
+          echo "TMPDIR=$RUNNER_TEMP" >> "$GITHUB_ENV"
+          echo "TEMP=$RUNNER_TEMP" >> "$GITHUB_ENV"
       - uses: astral-sh/setup-uv@v3
         with:
           version: ${{ env.UV_VERSION }}
@@ -1091,11 +1110,12 @@ jobs:
   verification-tier:
     name: Verification
     runs-on: ubuntu-latest
-    env:
-      TMPDIR: ${{ runner.temp }}
-      TEMP: ${{ runner.temp }}
     steps:
       - uses: actions/checkout@v4
+      - name: Configure writable temp dir
+        run: |
+          echo "TMPDIR=$RUNNER_TEMP" >> "$GITHUB_ENV"
+          echo "TEMP=$RUNNER_TEMP" >> "$GITHUB_ENV"
       - uses: astral-sh/setup-uv@v3
         with:
           version: ${{ env.UV_VERSION }}
@@ -1145,10 +1165,14 @@ jobs:
     env:
       WINDAGENT_DATABASE_URL: postgresql+asyncpg://test:test@localhost:5432/windagent
       WINDAGENT_TEST_POSTGRES_URL: postgresql+asyncpg://test:test@localhost:5432/windagent
-      TMPDIR: ${{ runner.temp }}
-      TEMP: ${{ runner.temp }}
     steps:
       - uses: actions/checkout@v4
+      # Job-level `env:` cannot use the runner context (it makes the whole
+      # workflow file invalid); publish temp vars from the first step instead.
+      - name: Configure writable temp dir
+        run: |
+          echo "TMPDIR=$RUNNER_TEMP" >> "$GITHUB_ENV"
+          echo "TEMP=$RUNNER_TEMP" >> "$GITHUB_ENV"
       - uses: astral-sh/setup-uv@v3
         with:
           version: ${{ env.UV_VERSION }}
@@ -1191,14 +1215,20 @@ jobs:
     runs-on: windows-latest
     env:
       WINDAGENT_DATABASE_URL: sqlite+aiosqlite:///windagent.db
-      TMPDIR: ${{ runner.temp }}
-      TEMP: ${{ runner.temp }}
-      TMP: ${{ runner.temp }}
     defaults:
       run:
         shell: pwsh
     steps:
       - uses: actions/checkout@v4
+      # Job-level `env:` cannot use the runner context (it makes the whole
+      # workflow file invalid); publish temp vars from the first step instead.
+      # Bash explicitly, because this job's default shell is pwsh.
+      - name: Configure writable temp dir
+        run: |
+          echo "TMPDIR=$RUNNER_TEMP" >> "$GITHUB_ENV"
+          echo "TEMP=$RUNNER_TEMP" >> "$GITHUB_ENV"
+          echo "TMP=$RUNNER_TEMP" >> "$GITHUB_ENV"
+        shell: bash
       - uses: astral-sh/setup-uv@v3
         with:
           version: ${{ env.UV_VERSION }}
@@ -1231,11 +1261,14 @@ jobs:
   e2e-multiprocess:
     name: E2E Multiprocess
     runs-on: ubuntu-latest
-    env:
-      TMPDIR: ${{ runner.temp }}
-      TEMP: ${{ runner.temp }}
     steps:
       - uses: actions/checkout@v4
+      # Job-level `env:` cannot use the runner context (it makes the whole
+      # workflow file invalid); publish temp vars from the first step instead.
+      - name: Configure writable temp dir
+        run: |
+          echo "TMPDIR=$RUNNER_TEMP" >> "$GITHUB_ENV"
+          echo "TEMP=$RUNNER_TEMP" >> "$GITHUB_ENV"
       - uses: astral-sh/setup-uv@v3
         with:
           version: ${{ env.UV_VERSION }}
