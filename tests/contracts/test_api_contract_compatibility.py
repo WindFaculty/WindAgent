@@ -13,7 +13,7 @@ from __future__ import annotations
 
 from typing import Any, Dict
 
-from tests.fixtures.canonical_bunny_episode import build_canonical_bunny_episode
+from tests.fixtures.canonical.canonical_bunny_episode import build_canonical_bunny_episode
 
 
 def test_command_envelope_contract() -> None:

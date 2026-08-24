@@ -1,6 +1,123 @@
 {
   "components": {
     "schemas": {
+      "ActionExecuteRequest": {
+        "description": "Server-side execution envelope (RUN_COMMAND / TOOL_RUN).",
+        "properties": {
+          "cwd": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cwd"
+          },
+          "timeout_seconds": {
+            "default": 30.0,
+            "exclusiveMinimum": 0.0,
+            "maximum": 120.0,
+            "title": "Timeout Seconds",
+            "type": "number"
+          }
+        },
+        "title": "ActionExecuteRequest",
+        "type": "object"
+      },
+      "ActionResultRequest": {
+        "properties": {
+          "action_id": {
+            "minLength": 1,
+            "title": "Action Id",
+            "type": "string"
+          },
+          "after_hash_observed": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "After Hash Observed"
+          },
+          "before_hash_observed": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Before Hash Observed"
+          },
+          "cue_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cue Id"
+          },
+          "detail": {
+            "default": "",
+            "title": "Detail",
+            "type": "string"
+          },
+          "execution_id": {
+            "minLength": 1,
+            "title": "Execution Id",
+            "type": "string"
+          },
+          "observed": {
+            "additionalProperties": true,
+            "title": "Observed",
+            "type": "object"
+          },
+          "scene_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scene Id"
+          },
+          "status": {
+            "pattern": "^(SUCCESS|FAILURE)$",
+            "title": "Status",
+            "type": "string"
+          },
+          "t": {
+            "minimum": 0.0,
+            "title": "T",
+            "type": "number"
+          },
+          "take_id": {
+            "minLength": 1,
+            "title": "Take Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "take_id",
+          "action_id",
+          "status",
+          "execution_id",
+          "t"
+        ],
+        "title": "ActionResultRequest",
+        "type": "object"
+      },
       "ActivityDataPoint": {
         "properties": {
           "ideas_count": {
@@ -579,6 +696,102 @@
         "title": "AgentsMonitoringResponse",
         "type": "object"
       },
+      "AppendEventRequest": {
+        "properties": {
+          "action_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Action Id"
+          },
+          "cue_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cue Id"
+          },
+          "detail": {
+            "default": "",
+            "title": "Detail",
+            "type": "string"
+          },
+          "event_type": {
+            "minLength": 1,
+            "title": "Event Type",
+            "type": "string"
+          },
+          "execution_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Execution Id"
+          },
+          "marker_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Marker Type"
+          },
+          "payload": {
+            "additionalProperties": true,
+            "title": "Payload",
+            "type": "object"
+          },
+          "scene_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scene Id"
+          },
+          "segment_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Segment Id"
+          },
+          "t": {
+            "default": 0.0,
+            "minimum": 0.0,
+            "title": "T",
+            "type": "number"
+          }
+        },
+        "required": [
+          "event_type"
+        ],
+        "title": "AppendEventRequest",
+        "type": "object"
+      },
       "ApprovalPin": {
         "properties": {
           "approved_at": {
@@ -1117,6 +1330,37 @@
         "title": "AssignModelRuleRequest",
         "type": "object"
       },
+      "BootstrapSessionRequest": {
+        "properties": {
+          "current_episode_revision_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Episode Revision Id"
+          },
+          "episode_id": {
+            "minLength": 1,
+            "title": "Episode Id",
+            "type": "string"
+          },
+          "execution_plan_id": {
+            "minLength": 1,
+            "title": "Execution Plan Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "episode_id",
+          "execution_plan_id"
+        ],
+        "title": "BootstrapSessionRequest",
+        "type": "object"
+      },
       "BrowserActionResponse": {
         "properties": {
           "error": {
@@ -1202,6 +1446,20 @@
           "y"
         ],
         "title": "BrowserClickRequest",
+        "type": "object"
+      },
+      "BrowserExecuteRequest": {
+        "description": "Optional overrides \u2014 recording parameters still come from the plan.",
+        "properties": {
+          "timeout_seconds": {
+            "default": 60.0,
+            "exclusiveMinimum": 0.0,
+            "maximum": 120.0,
+            "title": "Timeout Seconds",
+            "type": "number"
+          }
+        },
+        "title": "BrowserExecuteRequest",
         "type": "object"
       },
       "BrowserNavigateRequest": {
@@ -2536,6 +2794,68 @@
           "content"
         ],
         "title": "CreateMemoryRequest",
+        "type": "object"
+      },
+      "CreatePlanRequest": {
+        "properties": {
+          "actions": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Actions",
+            "type": "array"
+          },
+          "episode_id": {
+            "minLength": 1,
+            "title": "Episode Id",
+            "type": "string"
+          },
+          "episode_revision_id": {
+            "minLength": 1,
+            "title": "Episode Revision Id",
+            "type": "string"
+          },
+          "payload_bundles": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payload Bundles"
+          },
+          "recording_profile": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recording Profile"
+          },
+          "scenes": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Scenes",
+            "type": "array"
+          }
+        },
+        "required": [
+          "episode_id",
+          "episode_revision_id"
+        ],
+        "title": "CreatePlanRequest",
         "type": "object"
       },
       "CreateProductionPlanRequest": {
@@ -3923,6 +4243,23 @@
         "title": "EpisodeResource",
         "type": "object"
       },
+      "EventListResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "EventListResponse",
+        "type": "object"
+      },
       "FactionResource": {
         "properties": {
           "description": {
@@ -5246,6 +5583,67 @@
         "title": "PageInfo",
         "type": "object"
       },
+      "PatchPlanContentRequest": {
+        "properties": {
+          "actions": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actions"
+          },
+          "payload_bundles": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payload Bundles"
+          },
+          "scenes": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scenes"
+          },
+          "source_workspace_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Workspace Hash"
+          }
+        },
+        "title": "PatchPlanContentRequest",
+        "type": "object"
+      },
       "PatchSettingsRequest": {
         "properties": {
           "values": {
@@ -5327,6 +5725,23 @@
         "title": "PipelineRun",
         "type": "object"
       },
+      "PlanListResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "PlanListResponse",
+        "type": "object"
+      },
       "PreflightCheckResource": {
         "properties": {
           "detail": {
@@ -5373,6 +5788,62 @@
           "ready"
         ],
         "title": "PreflightReportResponse",
+        "type": "object"
+      },
+      "PrepareRecordingRequest": {
+        "properties": {
+          "episode_id": {
+            "minLength": 1,
+            "title": "Episode Id",
+            "type": "string"
+          },
+          "episode_revision_id": {
+            "minLength": 1,
+            "title": "Episode Revision Id",
+            "type": "string"
+          },
+          "plan_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Plan Id"
+          },
+          "recording_profile": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recording Profile"
+          },
+          "scenes": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Scenes",
+            "type": "array"
+          },
+          "source_workspace_hash": {
+            "default": "",
+            "title": "Source Workspace Hash",
+            "type": "string"
+          }
+        },
+        "required": [
+          "episode_id",
+          "episode_revision_id"
+        ],
+        "title": "PrepareRecordingRequest",
         "type": "object"
       },
       "ProcessMetrics": {
@@ -6244,6 +6715,83 @@
           "decision"
         ],
         "title": "RecordApprovalRequest",
+        "type": "object"
+      },
+      "RecordSegmentRequest": {
+        "description": "One finalized MKV segment relayed from the desktop engine host.",
+        "properties": {
+          "duration_sec": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Sec"
+          },
+          "ended_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ended At"
+          },
+          "file_token": {
+            "default": "",
+            "title": "File Token",
+            "type": "string"
+          },
+          "is_playable": {
+            "default": false,
+            "title": "Is Playable",
+            "type": "boolean"
+          },
+          "manifest": {
+            "additionalProperties": true,
+            "title": "Manifest",
+            "type": "object"
+          },
+          "segment_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Segment Id"
+          },
+          "segment_index": {
+            "minimum": 0.0,
+            "title": "Segment Index",
+            "type": "integer"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At"
+          }
+        },
+        "required": [
+          "segment_index"
+        ],
+        "title": "RecordSegmentRequest",
         "type": "object"
       },
       "RejectAssetRequest": {
@@ -8328,6 +8876,23 @@
         "title": "SystemMetricsResponse",
         "type": "object"
       },
+      "TakeListResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "TakeListResponse",
+        "type": "object"
+      },
       "TaskResource": {
         "properties": {
           "assigned_agent_instance_id": {
@@ -8503,6 +9068,24 @@
           "request_count"
         ],
         "title": "TrafficDistributionItem",
+        "type": "object"
+      },
+      "TransitionPlanRequest": {
+        "description": "Body for lifecycle transitions; ``current_episode_revision_id`` is only\nrequired by ``check`` (staleness assertion) but accepted on any command so\ncallers can assert freshness in the same round trip.",
+        "properties": {
+          "current_episode_revision_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Episode Revision Id"
+          }
+        },
+        "title": "TransitionPlanRequest",
         "type": "object"
       },
       "TriggerGenerationRequest": {
@@ -15821,6 +16404,1545 @@
         ]
       }
     },
+    "/api/v3/live-record/plans": {
+      "get": {
+        "operationId": "list_plans_api_v3_live_record_plans_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "episode_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Episode Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Plans",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
+      },
+      "post": {
+        "operationId": "create_plan_api_v3_live_record_plans_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePlanRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Create Plan Api V3 Live Record Plans Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Plan",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
+      }
+    },
+    "/api/v3/live-record/plans/{plan_id}": {
+      "get": {
+        "operationId": "get_plan_api_v3_live_record_plans__plan_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "plan_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Plan Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Plan Api V3 Live Record Plans  Plan Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Plan",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
+      }
+    },
+    "/api/v3/live-record/plans/{plan_id}/actions/result": {
+      "post": {
+        "description": "Verify a desktop-executed action and append its timeline event.",
+        "operationId": "record_action_result_api_v3_live_record_plans__plan_id__actions_result_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "plan_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Plan Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActionResultRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Record Action Result Api V3 Live Record Plans  Plan Id  Actions Result Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Record Action Result",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
+      }
+    },
+    "/api/v3/live-record/plans/{plan_id}/actions/{action_id}/execute": {
+      "post": {
+        "description": "Server-side execution \u2014 RUN_COMMAND / TOOL_RUN via the SafeShellRunner.\n\nThe command line is resolved from the frozen plan's payload bundle, never\nfrom request args; the caller cannot smuggle arbitrary shell text through\nthis endpoint (Constrained Action Gate).",
+        "operationId": "execute_action_api_v3_live_record_plans__plan_id__actions__action_id__execute_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "plan_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Plan Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "action_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Action Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActionExecuteRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Execute Action Api V3 Live Record Plans  Plan Id  Actions  Action Id  Execute Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Execute Action",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
+      }
+    },
+    "/api/v3/live-record/plans/{plan_id}/actions/{action_id}/execute-browser": {
+      "post": {
+        "description": "Server-side BROWSER_NAVIGATION / BROWSER_ACTION execution.\n\nSection 14: reuse the existing browser execution layer. All targets come\nfrom the frozen plan's payload bundle / semantic fields; the response\nverifies ``expected_after.url_contains`` against the observed URL.",
+        "operationId": "execute_browser_action_endpoint_api_v3_live_record_plans__plan_id__actions__action_id__execute_browser_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "plan_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Plan Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "action_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Action Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BrowserExecuteRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Execute Browser Action Endpoint Api V3 Live Record Plans  Plan Id  Actions  Action Id  Execute Browser Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Execute Browser Action Endpoint",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
+      }
+    },
+    "/api/v3/live-record/plans/{plan_id}/actions/{action_id}/prepare": {
+      "post": {
+        "description": "Resolve a frozen prepared action into a desktop dispatch ticket.",
+        "operationId": "prepare_action_api_v3_live_record_plans__plan_id__actions__action_id__prepare_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "plan_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Plan Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "action_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Action Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Prepare Action Api V3 Live Record Plans  Plan Id  Actions  Action Id  Prepare Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Prepare Action",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
+      }
+    },
+    "/api/v3/live-record/plans/{plan_id}/content": {
+      "patch": {
+        "description": "Edit plan content before freeze; VALIDATED drops back to PREPARED.",
+        "operationId": "patch_plan_content_api_v3_live_record_plans__plan_id__content_patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "plan_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Plan Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchPlanContentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Patch Plan Content Api V3 Live Record Plans  Plan Id  Content Patch",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Patch Plan Content",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
+      }
+    },
+    "/api/v3/live-record/plans/{plan_id}/freeze": {
+      "post": {
+        "description": "FROZEN is immutable; only staleness may later be observed onto it.",
+        "operationId": "freeze_plan_api_v3_live_record_plans__plan_id__freeze_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "plan_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Plan Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Idempotency-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Freeze Plan Api V3 Live Record Plans  Plan Id  Freeze Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Freeze Plan",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
+      }
+    },
+    "/api/v3/live-record/plans/{plan_id}/mark-invalid": {
+      "post": {
+        "operationId": "mark_plan_invalid_api_v3_live_record_plans__plan_id__mark_invalid_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "plan_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Plan Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Idempotency-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Mark Plan Invalid Api V3 Live Record Plans  Plan Id  Mark Invalid Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Mark Plan Invalid",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
+      }
+    },
+    "/api/v3/live-record/plans/{plan_id}/mark-stale": {
+      "post": {
+        "operationId": "mark_plan_stale_api_v3_live_record_plans__plan_id__mark_stale_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "plan_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Plan Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Idempotency-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Mark Plan Stale Api V3 Live Record Plans  Plan Id  Mark Stale Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Mark Plan Stale",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
+      }
+    },
+    "/api/v3/live-record/plans/{plan_id}/prepare": {
+      "post": {
+        "description": "DRAFT -> PREPARED: preparation content is complete.",
+        "operationId": "prepare_plan_api_v3_live_record_plans__plan_id__prepare_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "plan_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Plan Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Idempotency-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Prepare Plan Api V3 Live Record Plans  Plan Id  Prepare Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Prepare Plan",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
+      }
+    },
+    "/api/v3/live-record/plans/{plan_id}/privacy-scan": {
+      "post": {
+        "description": "Section 23/33 preflight guard: prove plan content is secret-free.\n\nScans payload bundles (typed code / commands), narration and action\nmetadata against credential-shaped patterns plus exact matches of the\nconfigured provider credentials. Findings are masked; any finding blocks\nrecording (fail-closed).",
+        "operationId": "privacy_scan_api_v3_live_record_plans__plan_id__privacy_scan_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "plan_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Plan Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Privacy Scan Api V3 Live Record Plans  Plan Id  Privacy Scan Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Privacy Scan",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
+      }
+    },
+    "/api/v3/live-record/plans/{plan_id}/staleness-check": {
+      "post": {
+        "description": "Assert the plan's bound revision matches the episode's current revision\n(Principle A). 422 RECORDING_PLAN_STALE when the episode has moved on.",
+        "operationId": "staleness_check_api_v3_live_record_plans__plan_id__staleness_check_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "plan_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Plan Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransitionPlanRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Staleness Check Api V3 Live Record Plans  Plan Id  Staleness Check Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Staleness Check",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
+      }
+    },
+    "/api/v3/live-record/plans/{plan_id}/takes": {
+      "get": {
+        "operationId": "list_takes_api_v3_live_record_plans__plan_id__takes_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "plan_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Plan Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TakeListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Takes",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
+      },
+      "post": {
+        "description": "Open a recording take on a FROZEN plan; stamps the canonical plan hash.",
+        "operationId": "create_take_api_v3_live_record_plans__plan_id__takes_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "plan_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Plan Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Idempotency-Key"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Create Take Api V3 Live Record Plans  Plan Id  Takes Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Take",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
+      }
+    },
+    "/api/v3/live-record/plans/{plan_id}/validate": {
+      "post": {
+        "operationId": "validate_plan_api_v3_live_record_plans__plan_id__validate_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "plan_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Plan Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Idempotency-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Validate Plan Api V3 Live Record Plans  Plan Id  Validate Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Validate Plan",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
+      }
+    },
+    "/api/v3/live-record/preparations": {
+      "post": {
+        "description": "Build a Recording Preparation Package into a DRAFT LiveExecutionPlan.",
+        "operationId": "prepare_recording_package_api_v3_live_record_preparations_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PrepareRecordingRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Prepare Recording Package Api V3 Live Record Preparations Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Prepare Recording Package",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
+      }
+    },
+    "/api/v3/live-record/sessions/bootstrap": {
+      "post": {
+        "description": "Issue an ephemeral LIVE_DIRECTOR token for Desktop \u2192 Gemini direct.\n\nRequest is POST only; token never appears on GET. One call = one session.\nThe plan must be FROZEN and not stale (Principle A) or the call fails\nclosed with 409/422.",
+        "operationId": "bootstrap_session_api_v3_live_record_sessions_bootstrap_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BootstrapSessionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Bootstrap Session Api V3 Live Record Sessions Bootstrap Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Bootstrap Session",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
+      }
+    },
+    "/api/v3/live-record/sessions/{session_id}": {
+      "get": {
+        "description": "Inspect a director session (never returns raw token).",
+        "operationId": "get_session_api_v3_live_record_sessions__session_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Session Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Session Api V3 Live Record Sessions  Session Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Session",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
+      }
+    },
+    "/api/v3/live-record/sessions/{session_id}/token-refresh": {
+      "post": {
+        "description": "Re-mint an ephemeral LIVE_DIRECTOR token for a reconnecting desktop.\n\nSection 24/\u00a735: takes outlive the ~30-minute token TTL, so resumption must\npair with refresh. The fresh token is bound to the same model + frozen\nplan_hash; it appears only in this response (POST-only, never logged).",
+        "operationId": "refresh_session_token_api_v3_live_record_sessions__session_id__token_refresh_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Session Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Idempotency-Key"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Refresh Session Token Api V3 Live Record Sessions  Session Id  Token Refresh Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Refresh Session Token",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
+      }
+    },
+    "/api/v3/live-record/takes/{take_id}": {
+      "get": {
+        "operationId": "get_take_api_v3_live_record_takes__take_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "take_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Take Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Take Api V3 Live Record Takes  Take Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Take",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
+      }
+    },
+    "/api/v3/live-record/takes/{take_id}/events": {
+      "get": {
+        "description": "Append-only recording timeline ordered by per-take ``seq``.",
+        "operationId": "list_take_events_api_v3_live_record_takes__take_id__events_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "take_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Take Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Take Events",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
+      },
+      "post": {
+        "description": "Append one timeline row (CUE_ENTERED / ACTION_EXECUTED / MARKER / ...);\nthe repository assigns the monotonic per-take sequence.",
+        "operationId": "append_take_event_api_v3_live_record_takes__take_id__events_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "take_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Take Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AppendEventRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Append Take Event Api V3 Live Record Takes  Take Id  Events Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Append Take Event",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
+      }
+    },
+    "/api/v3/live-record/takes/{take_id}/segments": {
+      "get": {
+        "operationId": "list_take_segments_api_v3_live_record_takes__take_id__segments_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "take_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Take Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response List Take Segments Api V3 Live Record Takes  Take Id  Segments Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Take Segments",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
+      },
+      "post": {
+        "description": "Ingest one finalized MKV segment (engine \u2192 host \u2192 DB lineage, LR_P8).\n\nUpsert keyed by segment_id \u2014 replays after a host reconnect are\nidempotent; no idempotency-key requirement because the natural key already\ncollapses duplicates.",
+        "operationId": "record_take_segment_api_v3_live_record_takes__take_id__segments_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "take_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Take Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecordSegmentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Record Take Segment Api V3 Live Record Takes  Take Id  Segments Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Record Take Segment",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
+      }
+    },
     "/api/v3/logs": {
       "get": {
         "description": "List runtime log records with filters. Real activity only.",
@@ -22035,6 +24157,1545 @@
           }
         },
         "summary": "Internal Architecture"
+      }
+    },
+    "/live-record/plans": {
+      "get": {
+        "operationId": "list_plans_live_record_plans_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "episode_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Episode Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Plans",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
+      },
+      "post": {
+        "operationId": "create_plan_live_record_plans_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePlanRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Create Plan Live Record Plans Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Plan",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
+      }
+    },
+    "/live-record/plans/{plan_id}": {
+      "get": {
+        "operationId": "get_plan_live_record_plans__plan_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "plan_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Plan Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Plan Live Record Plans  Plan Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Plan",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
+      }
+    },
+    "/live-record/plans/{plan_id}/actions/result": {
+      "post": {
+        "description": "Verify a desktop-executed action and append its timeline event.",
+        "operationId": "record_action_result_live_record_plans__plan_id__actions_result_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "plan_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Plan Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActionResultRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Record Action Result Live Record Plans  Plan Id  Actions Result Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Record Action Result",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
+      }
+    },
+    "/live-record/plans/{plan_id}/actions/{action_id}/execute": {
+      "post": {
+        "description": "Server-side execution \u2014 RUN_COMMAND / TOOL_RUN via the SafeShellRunner.\n\nThe command line is resolved from the frozen plan's payload bundle, never\nfrom request args; the caller cannot smuggle arbitrary shell text through\nthis endpoint (Constrained Action Gate).",
+        "operationId": "execute_action_live_record_plans__plan_id__actions__action_id__execute_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "plan_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Plan Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "action_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Action Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActionExecuteRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Execute Action Live Record Plans  Plan Id  Actions  Action Id  Execute Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Execute Action",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
+      }
+    },
+    "/live-record/plans/{plan_id}/actions/{action_id}/execute-browser": {
+      "post": {
+        "description": "Server-side BROWSER_NAVIGATION / BROWSER_ACTION execution.\n\nSection 14: reuse the existing browser execution layer. All targets come\nfrom the frozen plan's payload bundle / semantic fields; the response\nverifies ``expected_after.url_contains`` against the observed URL.",
+        "operationId": "execute_browser_action_endpoint_live_record_plans__plan_id__actions__action_id__execute_browser_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "plan_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Plan Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "action_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Action Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BrowserExecuteRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Execute Browser Action Endpoint Live Record Plans  Plan Id  Actions  Action Id  Execute Browser Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Execute Browser Action Endpoint",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
+      }
+    },
+    "/live-record/plans/{plan_id}/actions/{action_id}/prepare": {
+      "post": {
+        "description": "Resolve a frozen prepared action into a desktop dispatch ticket.",
+        "operationId": "prepare_action_live_record_plans__plan_id__actions__action_id__prepare_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "plan_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Plan Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "action_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Action Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Prepare Action Live Record Plans  Plan Id  Actions  Action Id  Prepare Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Prepare Action",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
+      }
+    },
+    "/live-record/plans/{plan_id}/content": {
+      "patch": {
+        "description": "Edit plan content before freeze; VALIDATED drops back to PREPARED.",
+        "operationId": "patch_plan_content_live_record_plans__plan_id__content_patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "plan_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Plan Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchPlanContentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Patch Plan Content Live Record Plans  Plan Id  Content Patch",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Patch Plan Content",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
+      }
+    },
+    "/live-record/plans/{plan_id}/freeze": {
+      "post": {
+        "description": "FROZEN is immutable; only staleness may later be observed onto it.",
+        "operationId": "freeze_plan_live_record_plans__plan_id__freeze_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "plan_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Plan Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Idempotency-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Freeze Plan Live Record Plans  Plan Id  Freeze Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Freeze Plan",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
+      }
+    },
+    "/live-record/plans/{plan_id}/mark-invalid": {
+      "post": {
+        "operationId": "mark_plan_invalid_live_record_plans__plan_id__mark_invalid_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "plan_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Plan Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Idempotency-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Mark Plan Invalid Live Record Plans  Plan Id  Mark Invalid Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Mark Plan Invalid",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
+      }
+    },
+    "/live-record/plans/{plan_id}/mark-stale": {
+      "post": {
+        "operationId": "mark_plan_stale_live_record_plans__plan_id__mark_stale_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "plan_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Plan Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Idempotency-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Mark Plan Stale Live Record Plans  Plan Id  Mark Stale Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Mark Plan Stale",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
+      }
+    },
+    "/live-record/plans/{plan_id}/prepare": {
+      "post": {
+        "description": "DRAFT -> PREPARED: preparation content is complete.",
+        "operationId": "prepare_plan_live_record_plans__plan_id__prepare_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "plan_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Plan Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Idempotency-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Prepare Plan Live Record Plans  Plan Id  Prepare Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Prepare Plan",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
+      }
+    },
+    "/live-record/plans/{plan_id}/privacy-scan": {
+      "post": {
+        "description": "Section 23/33 preflight guard: prove plan content is secret-free.\n\nScans payload bundles (typed code / commands), narration and action\nmetadata against credential-shaped patterns plus exact matches of the\nconfigured provider credentials. Findings are masked; any finding blocks\nrecording (fail-closed).",
+        "operationId": "privacy_scan_live_record_plans__plan_id__privacy_scan_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "plan_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Plan Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Privacy Scan Live Record Plans  Plan Id  Privacy Scan Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Privacy Scan",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
+      }
+    },
+    "/live-record/plans/{plan_id}/staleness-check": {
+      "post": {
+        "description": "Assert the plan's bound revision matches the episode's current revision\n(Principle A). 422 RECORDING_PLAN_STALE when the episode has moved on.",
+        "operationId": "staleness_check_live_record_plans__plan_id__staleness_check_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "plan_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Plan Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransitionPlanRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Staleness Check Live Record Plans  Plan Id  Staleness Check Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Staleness Check",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
+      }
+    },
+    "/live-record/plans/{plan_id}/takes": {
+      "get": {
+        "operationId": "list_takes_live_record_plans__plan_id__takes_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "plan_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Plan Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TakeListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Takes",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
+      },
+      "post": {
+        "description": "Open a recording take on a FROZEN plan; stamps the canonical plan hash.",
+        "operationId": "create_take_live_record_plans__plan_id__takes_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "plan_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Plan Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Idempotency-Key"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Create Take Live Record Plans  Plan Id  Takes Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Take",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
+      }
+    },
+    "/live-record/plans/{plan_id}/validate": {
+      "post": {
+        "operationId": "validate_plan_live_record_plans__plan_id__validate_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "plan_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Plan Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Idempotency-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Validate Plan Live Record Plans  Plan Id  Validate Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Validate Plan",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
+      }
+    },
+    "/live-record/preparations": {
+      "post": {
+        "description": "Build a Recording Preparation Package into a DRAFT LiveExecutionPlan.",
+        "operationId": "prepare_recording_package_live_record_preparations_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PrepareRecordingRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Prepare Recording Package Live Record Preparations Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Prepare Recording Package",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
+      }
+    },
+    "/live-record/sessions/bootstrap": {
+      "post": {
+        "description": "Issue an ephemeral LIVE_DIRECTOR token for Desktop \u2192 Gemini direct.\n\nRequest is POST only; token never appears on GET. One call = one session.\nThe plan must be FROZEN and not stale (Principle A) or the call fails\nclosed with 409/422.",
+        "operationId": "bootstrap_session_live_record_sessions_bootstrap_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BootstrapSessionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Bootstrap Session Live Record Sessions Bootstrap Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Bootstrap Session",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
+      }
+    },
+    "/live-record/sessions/{session_id}": {
+      "get": {
+        "description": "Inspect a director session (never returns raw token).",
+        "operationId": "get_session_live_record_sessions__session_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Session Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Session Live Record Sessions  Session Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Session",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
+      }
+    },
+    "/live-record/sessions/{session_id}/token-refresh": {
+      "post": {
+        "description": "Re-mint an ephemeral LIVE_DIRECTOR token for a reconnecting desktop.\n\nSection 24/\u00a735: takes outlive the ~30-minute token TTL, so resumption must\npair with refresh. The fresh token is bound to the same model + frozen\nplan_hash; it appears only in this response (POST-only, never logged).",
+        "operationId": "refresh_session_token_live_record_sessions__session_id__token_refresh_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Session Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Idempotency-Key"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Refresh Session Token Live Record Sessions  Session Id  Token Refresh Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Refresh Session Token",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
+      }
+    },
+    "/live-record/takes/{take_id}": {
+      "get": {
+        "operationId": "get_take_live_record_takes__take_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "take_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Take Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Take Live Record Takes  Take Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Take",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
+      }
+    },
+    "/live-record/takes/{take_id}/events": {
+      "get": {
+        "description": "Append-only recording timeline ordered by per-take ``seq``.",
+        "operationId": "list_take_events_live_record_takes__take_id__events_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "take_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Take Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Take Events",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
+      },
+      "post": {
+        "description": "Append one timeline row (CUE_ENTERED / ACTION_EXECUTED / MARKER / ...);\nthe repository assigns the monotonic per-take sequence.",
+        "operationId": "append_take_event_live_record_takes__take_id__events_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "take_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Take Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Idempotency-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AppendEventRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Append Take Event Live Record Takes  Take Id  Events Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Append Take Event",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
+      }
+    },
+    "/live-record/takes/{take_id}/segments": {
+      "get": {
+        "operationId": "list_take_segments_live_record_takes__take_id__segments_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "take_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Take Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response List Take Segments Live Record Takes  Take Id  Segments Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Take Segments",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
+      },
+      "post": {
+        "description": "Ingest one finalized MKV segment (engine \u2192 host \u2192 DB lineage, LR_P8).\n\nUpsert keyed by segment_id \u2014 replays after a host reconnect are\nidempotent; no idempotency-key requirement because the natural key already\ncollapses duplicates.",
+        "operationId": "record_take_segment_live_record_takes__take_id__segments_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "take_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "title": "Take Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecordSegmentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Record Take Segment Live Record Takes  Take Id  Segments Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Record Take Segment",
+        "tags": [
+          "live-record",
+          "live-record"
+        ]
       }
     }
   }

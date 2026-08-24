@@ -302,20 +302,61 @@ class BrowserSessionService:
         )
         return BrowserState(**self._apply_capture(record.state, capture).__dict__)
 
-    async def click(self, session_id: str, x: int, y: int) -> BrowserState:
+    async def click(
+        self,
+        session_id: str,
+        x: int,
+        y: int,
+        *,
+        require_user_control: bool = True,
+    ) -> BrowserState:
         record = self._sessions.get(session_id)
         if record is None:
             raise BrowserSessionConflictError(
                 "Navigate before interacting with the browser."
             )
         async with record.lock:
-            if record.state.controlled_by != "user":
+            if require_user_control and record.state.controlled_by != "user":
                 raise BrowserSessionConflictError(
                     "Take user control before clicking the browser preview."
                 )
             record.state.loading = True
             try:
                 await record.client.click_xy(x, y)
+                return await self._capture_after_action(record)
+            except (AgentBrowserError, ValueError) as exc:
+                self._mark_failure(record.state, exc)
+                raise BrowserSessionError(str(exc)) from exc
+
+    async def click_semantic(
+        self,
+        session_id: str,
+        target: str,
+        *,
+        locator: str = "text",
+    ) -> BrowserState:
+        """Click a semantic locator / CSS selector / @ref — agent-side action.
+
+        Used by the Live Record prepared-action executor (ban_ke_hoach_v1.md
+        Section 14): the target comes from the frozen plan's own bundle, never
+        from a model argument, so no user-control handoff is required.
+        """
+        clean = (target or "").strip()
+        if not clean:
+            raise BrowserSessionError("Semantic click target cannot be empty.")
+        if locator not in {"text", "css", "ref"}:
+            raise BrowserSessionError(f"Unsupported semantic click locator {locator!r}.")
+        if locator == "ref" and not clean.startswith("@"):
+            raise BrowserSessionError("Snapshot-reference clicks must use an @ref.")
+        record = self._sessions.get(session_id)
+        if record is None:
+            raise BrowserSessionConflictError(
+                "Navigate before interacting with the browser."
+            )
+        async with record.lock:
+            record.state.loading = True
+            try:
+                await record.client.click_target(clean, locator=locator)
                 return await self._capture_after_action(record)
             except (AgentBrowserError, ValueError) as exc:
                 self._mark_failure(record.state, exc)
@@ -339,13 +380,18 @@ class BrowserSessionService:
                 raise BrowserSessionError(str(exc)) from exc
 
     async def scroll(
-        self, session_id: str, direction: Literal["up", "down"], pixels: int
+        self,
+        session_id: str,
+        direction: Literal["up", "down"],
+        pixels: int,
+        *,
+        require_user_control: bool = True,
     ) -> BrowserState:
         record = self._sessions.get(session_id)
         if record is None:
             raise BrowserSessionConflictError("Navigate before scrolling the browser.")
         async with record.lock:
-            if record.state.controlled_by != "user":
+            if require_user_control and record.state.controlled_by != "user":
                 raise BrowserSessionConflictError(
                     "Take user control before scrolling the browser preview."
                 )

@@ -1121,6 +1121,12 @@
     {
       "from": "intelligence",
       "to": "core",
+      "file": "intelligence/windagent_intelligence/live_record/preparation_service.py",
+      "line": 14
+    },
+    {
+      "from": "intelligence",
+      "to": "core",
       "file": "intelligence/windagent_intelligence/model_router/policy.py",
       "line": 10
     },
@@ -8651,6 +8657,90 @@
     {
       "from": "storage",
       "to": "core",
+      "file": "storage/windagent_storage/live_record/repositories.py",
+      "line": 29
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/live_record/repositories.py",
+      "line": 30
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/live_record/repositories.py",
+      "line": 30
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/live_record/repositories.py",
+      "line": 30
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/live_record/repositories.py",
+      "line": 35
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/live_record/repositories.py",
+      "line": 36
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/live_record/repositories.py",
+      "line": 36
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/live_record/repositories.py",
+      "line": 36
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/live_record/repositories.py",
+      "line": 36
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/live_record/repositories.py",
+      "line": 36
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/live_record/repositories.py",
+      "line": 43
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/live_record/repositories.py",
+      "line": 43
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/live_record/repositories.py",
+      "line": 43
+    },
+    {
+      "from": "storage",
+      "to": "core",
+      "file": "storage/windagent_storage/live_record/repositories.py",
+      "line": 43
+    },
+    {
+      "from": "storage",
+      "to": "core",
       "file": "storage/windagent_storage/mappers/domain_orm.py",
       "line": 10
     },
@@ -9629,6 +9719,12 @@
     {
       "from": "api",
       "to": "core",
+      "file": "apps/api/windagent_api/main.py",
+      "line": 61
+    },
+    {
+      "from": "api",
+      "to": "core",
       "file": "apps/api/windagent_api/__init__.py",
       "line": 5
     },
@@ -9702,13 +9798,13 @@
       "from": "api",
       "to": "storage",
       "file": "apps/api/windagent_api/composition/container.py",
-      "line": 269
+      "line": 285
     },
     {
       "from": "api",
       "to": "storage",
       "file": "apps/api/windagent_api/composition/container.py",
-      "line": 285
+      "line": 301
     },
     {
       "from": "api",
@@ -9739,6 +9835,42 @@
       "to": "storage",
       "file": "apps/api/windagent_api/composition/health.py",
       "line": 11
+    },
+    {
+      "from": "api",
+      "to": "storage",
+      "file": "apps/api/windagent_api/composition/live_record.py",
+      "line": 78
+    },
+    {
+      "from": "api",
+      "to": "storage",
+      "file": "apps/api/windagent_api/composition/live_record.py",
+      "line": 78
+    },
+    {
+      "from": "api",
+      "to": "storage",
+      "file": "apps/api/windagent_api/composition/live_record.py",
+      "line": 78
+    },
+    {
+      "from": "api",
+      "to": "storage",
+      "file": "apps/api/windagent_api/composition/live_record.py",
+      "line": 78
+    },
+    {
+      "from": "api",
+      "to": "storage",
+      "file": "apps/api/windagent_api/composition/live_record.py",
+      "line": 78
+    },
+    {
+      "from": "api",
+      "to": "storage",
+      "file": "apps/api/windagent_api/composition/live_record.py",
+      "line": 41
     },
     {
       "from": "api",
@@ -10524,7 +10656,7 @@
       "from": "api",
       "to": "core",
       "file": "apps/api/windagent_api/routers/v3/assets.py",
-      "line": 15
+      "line": 23
     },
     {
       "from": "api",
@@ -10536,7 +10668,7 @@
       "from": "api",
       "to": "core",
       "file": "apps/api/windagent_api/routers/v3/characters.py",
-      "line": 13
+      "line": 20
     },
     {
       "from": "api",
@@ -10596,7 +10728,7 @@
       "from": "api",
       "to": "core",
       "file": "apps/api/windagent_api/routers/v3/production.py",
-      "line": 17
+      "line": 24
     },
     {
       "from": "api",
@@ -10710,7 +10842,7 @@
       "from": "api",
       "to": "core",
       "file": "apps/api/windagent_api/routers/v3/storyboard.py",
-      "line": 19
+      "line": 27
     },
     {
       "from": "api",
@@ -10734,13 +10866,55 @@
       "from": "api",
       "to": "core",
       "file": "apps/api/windagent_api/routers/v3/world.py",
-      "line": 13
+      "line": 17
     },
     {
       "from": "api",
       "to": "core",
       "file": "apps/api/windagent_api/routers/v3/common/events.py",
       "line": 6
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v3/live_record/actions.py",
+      "line": 72
+    },
+    {
+      "from": "api",
+      "to": "tools",
+      "file": "apps/api/windagent_api/routers/v3/live_record/actions.py",
+      "line": 127
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v3/live_record/actions.py",
+      "line": 178
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v3/live_record/actions.py",
+      "line": 118
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v3/live_record/dependencies.py",
+      "line": 15
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v3/live_record/dependencies.py",
+      "line": 15
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/routers/v3/live_record/errors.py",
+      "line": 8
     },
     {
       "from": "api",
@@ -10903,6 +11077,180 @@
       "to": "core",
       "file": "apps/api/windagent_api/routers/v3/studio/series.py",
       "line": 20
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/services/live_record_application_service.py",
+      "line": 20
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/services/live_record_application_service.py",
+      "line": 20
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/services/live_record_application_service.py",
+      "line": 20
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/services/live_record_application_service.py",
+      "line": 20
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/services/live_record_application_service.py",
+      "line": 26
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/services/live_record_application_service.py",
+      "line": 26
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/services/live_record_application_service.py",
+      "line": 26
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/services/live_record_application_service.py",
+      "line": 31
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/services/live_record_application_service.py",
+      "line": 32
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/services/live_record_application_service.py",
+      "line": 32
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/services/live_record_application_service.py",
+      "line": 32
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/services/live_record_application_service.py",
+      "line": 32
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/services/live_record_application_service.py",
+      "line": 32
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/services/live_record_application_service.py",
+      "line": 32
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/services/live_record_application_service.py",
+      "line": 40
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/services/live_record_application_service.py",
+      "line": 40
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/services/live_record_application_service.py",
+      "line": 40
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/services/live_record_application_service.py",
+      "line": 40
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/services/live_record_application_service.py",
+      "line": 149
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/services/live_record_application_service.py",
+      "line": 704
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/services/live_record_application_service.py",
+      "line": 451
+    },
+    {
+      "from": "api",
+      "to": "providers",
+      "file": "apps/api/windagent_api/services/live_record_application_service.py",
+      "line": 454
+    },
+    {
+      "from": "api",
+      "to": "providers",
+      "file": "apps/api/windagent_api/services/live_record_application_service.py",
+      "line": 457
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/services/live_record_application_service.py",
+      "line": 556
+    },
+    {
+      "from": "api",
+      "to": "core",
+      "file": "apps/api/windagent_api/services/live_record_application_service.py",
+      "line": 591
+    },
+    {
+      "from": "api",
+      "to": "providers",
+      "file": "apps/api/windagent_api/services/live_record_application_service.py",
+      "line": 594
+    },
+    {
+      "from": "api",
+      "to": "providers",
+      "file": "apps/api/windagent_api/services/live_record_application_service.py",
+      "line": 597
+    },
+    {
+      "from": "api",
+      "to": "providers",
+      "file": "apps/api/windagent_api/services/live_record_application_service.py",
+      "line": 597
+    },
+    {
+      "from": "api",
+      "to": "providers",
+      "file": "apps/api/windagent_api/services/live_record_application_service.py",
+      "line": 498
     },
     {
       "from": "api",

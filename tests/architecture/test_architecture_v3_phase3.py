@@ -11,7 +11,6 @@ Phase 3 dependency-inversion gates are green.
 """
 
 import re
-import sys
 from pathlib import Path
 
 import yaml
@@ -21,8 +20,6 @@ import check_architecture_imports as checker  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPTS = ROOT / "scripts"
-if str(SCRIPTS) not in sys.path:
-    sys.path.insert(0, str(SCRIPTS))
 
 
 def v3_policy() -> dict:

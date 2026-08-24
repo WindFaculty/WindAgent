@@ -45,7 +45,7 @@ from windagent_worker.studio_model_port import (
     build_studio_ruleset,
     classify_provider_error,
 )
-from tests.fakes.routing_fakes import InMemoryLockStore
+from tests.fakes.providers.routing import InMemoryLockStore
 
 BINDING = {
     "endpoint_id": "ep-stub-1",

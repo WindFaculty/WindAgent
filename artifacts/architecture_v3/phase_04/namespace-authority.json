@@ -10,7 +10,10 @@
       "execution_authority": "api-v3-resources",
       "mutation_path": "V3ResourceService CRUD(NS_PROJECTS)",
       "restart_behavior": "generic SQL persists across restart",
-      "evidence_symbols": ["windagent_api.routers.v3.projects.create_project", "V3ResourceService"],
+      "evidence_symbols": [
+        "windagent_api.routers.v3.projects.create_project",
+        "V3ResourceService"
+      ],
       "phase4_duplicate_mutable_authority": false,
       "bridge_present": false,
       "bridge_class": null,
@@ -24,7 +27,10 @@
       "execution_authority": "api-v3-resources",
       "mutation_path": "V3ResourceService CRUD(NS_EPISODES)",
       "restart_behavior": "generic SQL persists across restart",
-      "evidence_symbols": ["windagent_api.routers.v3.episodes.create_episode", "V3ResourceService"],
+      "evidence_symbols": [
+        "windagent_api.routers.v3.episodes.create_episode",
+        "V3ResourceService"
+      ],
       "phase4_duplicate_mutable_authority": false,
       "bridge_present": false,
       "bridge_class": null,
@@ -38,7 +44,10 @@
       "execution_authority": "api-v3-resources",
       "mutation_path": "V3ResourceService CRUD(NS_EPISODE_ARTIFACTS)",
       "restart_behavior": "generic SQL persists across restart",
-      "evidence_symbols": ["windagent_api.routers.v3.episodes.get_episode_artifacts", "V3ResourceService"],
+      "evidence_symbols": [
+        "windagent_api.routers.v3.episodes.get_episode_artifacts",
+        "V3ResourceService"
+      ],
       "phase4_duplicate_mutable_authority": false,
       "bridge_present": false,
       "bridge_class": null,
@@ -52,7 +61,10 @@
       "execution_authority": "api-v3-resources",
       "mutation_path": "V3ResourceService CRUD(NS_EPISODE_RUNS)",
       "restart_behavior": "generic SQL persists across restart",
-      "evidence_symbols": ["windagent_api.routers.v3.episodes.get_episode_runs", "V3ResourceService"],
+      "evidence_symbols": [
+        "windagent_api.routers.v3.episodes.get_episode_runs",
+        "V3ResourceService"
+      ],
       "phase4_duplicate_mutable_authority": false,
       "bridge_present": false,
       "bridge_class": null,
@@ -66,7 +78,10 @@
       "execution_authority": "api-v3-resources",
       "mutation_path": "V3ResourceService CRUD(NS_TASKS)",
       "restart_behavior": "generic SQL persists across restart",
-      "evidence_symbols": ["windagent_api.routers.v3.tasks.create_task", "V3ResourceService"],
+      "evidence_symbols": [
+        "windagent_api.routers.v3.tasks.create_task",
+        "V3ResourceService"
+      ],
       "phase4_duplicate_mutable_authority": false,
       "bridge_present": false,
       "bridge_class": null,
@@ -80,7 +95,10 @@
       "execution_authority": "api-v3-resources",
       "mutation_path": "V3ResourceService CRUD(NS_WORKFLOWS)",
       "restart_behavior": "generic SQL persists across restart",
-      "evidence_symbols": ["windagent_api.routers.v3.workflows.create_workflow", "V3ResourceService"],
+      "evidence_symbols": [
+        "windagent_api.routers.v3.workflows.create_workflow",
+        "V3ResourceService"
+      ],
       "phase4_duplicate_mutable_authority": false,
       "bridge_present": false,
       "bridge_class": null,
@@ -94,7 +112,10 @@
       "execution_authority": "api-v3-resources",
       "mutation_path": "V3ResourceService CRUD(NS_WORKFLOW_RUNS)",
       "restart_behavior": "generic SQL persists across restart",
-      "evidence_symbols": ["windagent_api.routers.v3.workflows.trigger_workflow_run", "V3ResourceService"],
+      "evidence_symbols": [
+        "windagent_api.routers.v3.workflows.trigger_workflow_run",
+        "V3ResourceService"
+      ],
       "phase4_duplicate_mutable_authority": false,
       "bridge_present": false,
       "bridge_class": null,
@@ -108,7 +129,16 @@
       "execution_authority": "dedicated-provider-execution (CanonicalModelRegistryService + EndpointExecutionCoordinator over provider_vendors/provider_endpoints/endpoint_model_bindings SQL)",
       "mutation_path": "no V3 catalog CRUD (read-only); provider execution mutations via CanonicalModelRegistryService / EndpointExecutionCoordinator -> SQLEndpointBindingRepository / SQLEndpointRegistryRepository / SQLEndpointStateRepository / SQLQuotaStateRepository / SQLRouteAttemptRepository",
       "restart_behavior": "both surfaces durable but not bridged: v3_resources catalog rows persist; dedicated provider SQL (provider_vendors/provider_endpoints/endpoint_model_bindings/endpoint_runtime_state/route_attempts_v3) persists; Phase 10 owns catalog-to-execution integration",
-      "evidence_symbols": ["windagent_api.routers.v3.providers.list_providers", "windagent_api.routers.v3.providers.get_provider", "windagent_api.composition.ApplicationContainer.bootstrap", "windagent_worker.composition.WorkerContainer.bootstrap", "windagent_providers.registry.canonical_registry.CanonicalModelRegistryService", "windagent_providers.routing.execution_coordinator.EndpointExecutionCoordinator", "windagent_storage.repositories.v3_routing_repositories.SQLEndpointBindingRepository", "windagent_storage.repositories.v3_repositories.SQLEndpointRegistryRepository"],
+      "evidence_symbols": [
+        "windagent_api.routers.v3.providers.list_providers",
+        "windagent_api.routers.v3.providers.get_provider",
+        "windagent_api.composition.ApplicationContainer.bootstrap",
+        "windagent_worker.composition.WorkerContainer.bootstrap",
+        "windagent_providers.registry.canonical_registry.CanonicalModelRegistryService",
+        "windagent_providers.routing.execution_coordinator.EndpointExecutionCoordinator",
+        "windagent_storage.repositories.v3_routing_repositories.SQLEndpointBindingRepository",
+        "windagent_storage.repositories.v3_repositories.SQLEndpointRegistryRepository"
+      ],
       "phase4_duplicate_mutable_authority": false,
       "bridge_present": false,
       "bridge_class": null,
@@ -122,7 +152,16 @@
       "execution_authority": "dedicated-provider-execution (CanonicalModelRegistryService + EndpointExecutionCoordinator over canonical_models_v3/endpoint_model_bindings SQL)",
       "mutation_path": "no V3 catalog CRUD (read-only); model execution mutations via CanonicalModelRegistryService / EndpointExecutionCoordinator -> SQLEndpointBindingRepository / SQLEndpointRegistryRepository / SQLEndpointStateRepository / SQLQuotaStateRepository / SQLRouteAttemptRepository",
       "restart_behavior": "both surfaces durable but not bridged: v3_resources catalog rows persist; dedicated model SQL (canonical_models_v3/endpoint_model_bindings/endpoint_runtime_state/route_attempts_v3) persists; Phase 10 owns catalog-to-execution integration",
-      "evidence_symbols": ["windagent_api.routers.v3.models.list_models", "windagent_api.routers.v3.models.get_model", "windagent_api.composition.ApplicationContainer.bootstrap", "windagent_worker.composition.WorkerContainer.bootstrap", "windagent_providers.registry.canonical_registry.CanonicalModelRegistryService", "windagent_providers.routing.execution_coordinator.EndpointExecutionCoordinator", "windagent_storage.repositories.v3_routing_repositories.SQLEndpointBindingRepository", "windagent_storage.repositories.v3_repositories.SQLEndpointRegistryRepository"],
+      "evidence_symbols": [
+        "windagent_api.routers.v3.models.list_models",
+        "windagent_api.routers.v3.models.get_model",
+        "windagent_api.composition.ApplicationContainer.bootstrap",
+        "windagent_worker.composition.WorkerContainer.bootstrap",
+        "windagent_providers.registry.canonical_registry.CanonicalModelRegistryService",
+        "windagent_providers.routing.execution_coordinator.EndpointExecutionCoordinator",
+        "windagent_storage.repositories.v3_routing_repositories.SQLEndpointBindingRepository",
+        "windagent_storage.repositories.v3_repositories.SQLEndpointRegistryRepository"
+      ],
       "phase4_duplicate_mutable_authority": false,
       "bridge_present": false,
       "bridge_class": null,
@@ -136,7 +175,11 @@
       "execution_authority": "v3_resources:routing_rules (generic SQL canonical); runtime RoutingRuleSet is a class-B cache",
       "mutation_path": "V3ResourceService create/update/delete(NS_ROUTING_RULES) -> RoutingAuthorityBridge.refresh_ruleset()",
       "restart_behavior": "SQL rules persist; runtime RoutingRuleSet rebuilt on refresh/restart (class B non-authoritative cache)",
-      "evidence_symbols": ["windagent_api.routers.v3.routing.create_routing_rule", "windagent_api.services.routing_authority_bridge.RoutingAuthorityBridge.refresh_ruleset", "windagent_providers.routing.route_lock_service.RouteLockService"],
+      "evidence_symbols": [
+        "windagent_api.routers.v3.routing.create_routing_rule",
+        "windagent_api.services.routing_authority_bridge.RoutingAuthorityBridge.refresh_ruleset",
+        "windagent_providers.routing.route_lock_service.RouteLockService"
+      ],
       "phase4_duplicate_mutable_authority": false,
       "bridge_present": true,
       "bridge_class": "B",
@@ -150,7 +193,11 @@
       "execution_authority": "dedicated-sql:route_locks_v3",
       "mutation_path": "RouteLockService.resolve_or_create_lock -> SQLRouteLockRepository",
       "restart_behavior": "dedicated SQL persists across restart; generic v3_resources:route_locks is not the active authority",
-      "evidence_symbols": ["windagent_api.routers.v3.routing.get_route_lock", "windagent_providers.routing.route_lock_service.RouteLockService", "SQLRouteLockRepository"],
+      "evidence_symbols": [
+        "windagent_api.routers.v3.routing.get_route_lock",
+        "windagent_providers.routing.route_lock_service.RouteLockService",
+        "SQLRouteLockRepository"
+      ],
       "phase4_duplicate_mutable_authority": false,
       "bridge_present": false,
       "bridge_class": null,
@@ -164,7 +211,10 @@
       "execution_authority": "api-v3-resources",
       "mutation_path": "V3ResourceService CRUD(NS_ASSETS)",
       "restart_behavior": "generic SQL persists across restart",
-      "evidence_symbols": ["windagent_api.routers.v3.assets.create_asset", "V3ResourceService"],
+      "evidence_symbols": [
+        "windagent_api.routers.v3.assets.create_asset",
+        "V3ResourceService"
+      ],
       "phase4_duplicate_mutable_authority": false,
       "bridge_present": false,
       "bridge_class": null,
@@ -178,7 +228,10 @@
       "execution_authority": "api-v3-resources",
       "mutation_path": "V3ResourceService CRUD(NS_ASSET_REVISIONS)",
       "restart_behavior": "generic SQL persists across restart",
-      "evidence_symbols": ["windagent_api.routers.v3.assets.list_asset_revisions", "V3ResourceService"],
+      "evidence_symbols": [
+        "windagent_api.routers.v3.assets.list_asset_revisions",
+        "V3ResourceService"
+      ],
       "phase4_duplicate_mutable_authority": false,
       "bridge_present": false,
       "bridge_class": null,
@@ -192,7 +245,10 @@
       "execution_authority": "api-v3-resources",
       "mutation_path": "V3ResourceService CRUD(NS_REVIEWS)",
       "restart_behavior": "generic SQL persists across restart",
-      "evidence_symbols": ["windagent_api.routers.v3.reviews.create_review", "V3ResourceService"],
+      "evidence_symbols": [
+        "windagent_api.routers.v3.reviews.create_review",
+        "V3ResourceService"
+      ],
       "phase4_duplicate_mutable_authority": false,
       "bridge_present": false,
       "bridge_class": null,
@@ -206,7 +262,10 @@
       "execution_authority": "api-v3-resources",
       "mutation_path": "V3ResourceService CRUD(NS_REVIEW_COMMENTS)",
       "restart_behavior": "generic SQL persists across restart",
-      "evidence_symbols": ["windagent_api.routers.v3.reviews.add_review_comment", "V3ResourceService"],
+      "evidence_symbols": [
+        "windagent_api.routers.v3.reviews.add_review_comment",
+        "V3ResourceService"
+      ],
       "phase4_duplicate_mutable_authority": false,
       "bridge_present": false,
       "bridge_class": null,
@@ -220,7 +279,10 @@
       "execution_authority": "api-v3-resources",
       "mutation_path": "V3ResourceService CRUD(NS_REVIEW_DECISIONS)",
       "restart_behavior": "generic SQL persists across restart",
-      "evidence_symbols": ["windagent_api.routers.v3.reviews.submit_review_decision", "V3ResourceService"],
+      "evidence_symbols": [
+        "windagent_api.routers.v3.reviews.submit_review_decision",
+        "V3ResourceService"
+      ],
       "phase4_duplicate_mutable_authority": false,
       "bridge_present": false,
       "bridge_class": null,
@@ -234,7 +296,10 @@
       "execution_authority": "api-v3-resources",
       "mutation_path": "V3ResourceService CRUD(NS_WORLD_BIBLES)",
       "restart_behavior": "generic SQL persists across restart",
-      "evidence_symbols": ["windagent_api.routers.v3.world.update_world_bible", "V3ResourceService"],
+      "evidence_symbols": [
+        "windagent_api.routers.v3.world.update_world_bible",
+        "V3ResourceService"
+      ],
       "phase4_duplicate_mutable_authority": false,
       "bridge_present": false,
       "bridge_class": null,
@@ -248,7 +313,10 @@
       "execution_authority": "api-v3-resources",
       "mutation_path": "V3ResourceService CRUD(NS_LOCATIONS)",
       "restart_behavior": "generic SQL persists across restart",
-      "evidence_symbols": ["windagent_api.routers.v3.world.create_location", "V3ResourceService"],
+      "evidence_symbols": [
+        "windagent_api.routers.v3.world.create_location",
+        "V3ResourceService"
+      ],
       "phase4_duplicate_mutable_authority": false,
       "bridge_present": false,
       "bridge_class": null,
@@ -262,7 +330,10 @@
       "execution_authority": "api-v3-resources",
       "mutation_path": "V3ResourceService CRUD(NS_FACTIONS)",
       "restart_behavior": "generic SQL persists across restart",
-      "evidence_symbols": ["windagent_api.routers.v3.world.create_faction", "V3ResourceService"],
+      "evidence_symbols": [
+        "windagent_api.routers.v3.world.create_faction",
+        "V3ResourceService"
+      ],
       "phase4_duplicate_mutable_authority": false,
       "bridge_present": false,
       "bridge_class": null,
@@ -276,7 +347,10 @@
       "execution_authority": "api-v3-resources",
       "mutation_path": "V3ResourceService CRUD(NS_LORE)",
       "restart_behavior": "generic SQL persists across restart",
-      "evidence_symbols": ["windagent_api.routers.v3.world.create_lore", "V3ResourceService"],
+      "evidence_symbols": [
+        "windagent_api.routers.v3.world.create_lore",
+        "V3ResourceService"
+      ],
       "phase4_duplicate_mutable_authority": false,
       "bridge_present": false,
       "bridge_class": null,
@@ -290,7 +364,10 @@
       "execution_authority": "api-v3-resources",
       "mutation_path": "V3ResourceService CRUD(NS_STORYBOARDS)",
       "restart_behavior": "generic SQL persists across restart",
-      "evidence_symbols": ["windagent_api.routers.v3.storyboard.sync_storyboard_from_screenplay", "V3ResourceService"],
+      "evidence_symbols": [
+        "windagent_api.routers.v3.storyboard.sync_storyboard_from_screenplay",
+        "V3ResourceService"
+      ],
       "phase4_duplicate_mutable_authority": false,
       "bridge_present": false,
       "bridge_class": null,
@@ -304,7 +381,10 @@
       "execution_authority": "api-v3-resources",
       "mutation_path": "V3ResourceService CRUD(NS_SCENES)",
       "restart_behavior": "generic SQL persists across restart",
-      "evidence_symbols": ["windagent_api.routers.v3.storyboard.create_scene", "V3ResourceService"],
+      "evidence_symbols": [
+        "windagent_api.routers.v3.storyboard.create_scene",
+        "V3ResourceService"
+      ],
       "phase4_duplicate_mutable_authority": false,
       "bridge_present": false,
       "bridge_class": null,
@@ -318,7 +398,10 @@
       "execution_authority": "api-v3-resources",
       "mutation_path": "V3ResourceService CRUD(NS_GENERATION_JOBS)",
       "restart_behavior": "generic SQL persists across restart",
-      "evidence_symbols": ["windagent_api.routers.v3.storyboard.trigger_concept_generation", "V3ResourceService"],
+      "evidence_symbols": [
+        "windagent_api.routers.v3.storyboard.trigger_concept_generation",
+        "V3ResourceService"
+      ],
       "phase4_duplicate_mutable_authority": false,
       "bridge_present": false,
       "bridge_class": null,
@@ -332,7 +415,10 @@
       "execution_authority": "api-v3-resources",
       "mutation_path": "V3ResourceService CRUD(NS_CHARACTERS)",
       "restart_behavior": "generic SQL persists across restart",
-      "evidence_symbols": ["windagent_api.routers.v3.characters.create_character", "V3ResourceService"],
+      "evidence_symbols": [
+        "windagent_api.routers.v3.characters.create_character",
+        "V3ResourceService"
+      ],
       "phase4_duplicate_mutable_authority": false,
       "bridge_present": false,
       "bridge_class": null,
@@ -346,7 +432,10 @@
       "execution_authority": "api-v3-resources",
       "mutation_path": "V3ResourceService CRUD(NS_PRODUCTION_PLANS)",
       "restart_behavior": "generic SQL persists across restart",
-      "evidence_symbols": ["windagent_api.routers.v3.production.create_production_plan", "V3ResourceService"],
+      "evidence_symbols": [
+        "windagent_api.routers.v3.production.create_production_plan",
+        "V3ResourceService"
+      ],
       "phase4_duplicate_mutable_authority": false,
       "bridge_present": false,
       "bridge_class": null,
@@ -360,7 +449,10 @@
       "execution_authority": "api-v3-resources",
       "mutation_path": "V3ResourceService CRUD(NS_SHOTS)",
       "restart_behavior": "generic SQL persists across restart",
-      "evidence_symbols": ["windagent_api.routers.v3.production.create_shot", "V3ResourceService"],
+      "evidence_symbols": [
+        "windagent_api.routers.v3.production.create_shot",
+        "V3ResourceService"
+      ],
       "phase4_duplicate_mutable_authority": false,
       "bridge_present": false,
       "bridge_class": null,
@@ -374,7 +466,10 @@
       "execution_authority": "api-v3-resources",
       "mutation_path": "V3ResourceService CRUD(NS_PRODUCTION_JOBS)",
       "restart_behavior": "generic SQL persists across restart",
-      "evidence_symbols": ["windagent_api.routers.v3.production.submit_animation_job", "V3ResourceService"],
+      "evidence_symbols": [
+        "windagent_api.routers.v3.production.submit_animation_job",
+        "V3ResourceService"
+      ],
       "phase4_duplicate_mutable_authority": false,
       "bridge_present": false,
       "bridge_class": null,
@@ -388,7 +483,10 @@
       "execution_authority": "api-v3-resources",
       "mutation_path": "V3ResourceService CRUD(NS_DELIVERY_ARTIFACTS)",
       "restart_behavior": "generic SQL persists across restart",
-      "evidence_symbols": ["windagent_api.routers.v3.production.get_delivery_artifact", "V3ResourceService"],
+      "evidence_symbols": [
+        "windagent_api.routers.v3.production.get_delivery_artifact",
+        "V3ResourceService"
+      ],
       "phase4_duplicate_mutable_authority": false,
       "bridge_present": false,
       "bridge_class": null,
@@ -402,7 +500,10 @@
       "execution_authority": "v3_resources:agent_definitions (generic durable configuration)",
       "mutation_path": "V3ResourceService CRUD(NS_AGENT_DEFINITIONS)",
       "restart_behavior": "generic SQL persists across restart",
-      "evidence_symbols": ["windagent_api.routers.v3.agent_definitions.create_agent_definition", "V3ResourceService"],
+      "evidence_symbols": [
+        "windagent_api.routers.v3.agent_definitions.create_agent_definition",
+        "V3ResourceService"
+      ],
       "phase4_duplicate_mutable_authority": false,
       "bridge_present": false,
       "bridge_class": null,
@@ -416,7 +517,10 @@
       "execution_authority": "api-v3-resources",
       "mutation_path": "V3ResourceService CRUD(NS_AGENT_ACTIVITY)",
       "restart_behavior": "generic SQL persists across restart",
-      "evidence_symbols": ["windagent_api.routers.v3.agent_definitions.get_agent_activity", "V3ResourceService"],
+      "evidence_symbols": [
+        "windagent_api.routers.v3.agent_definitions.get_agent_activity",
+        "V3ResourceService"
+      ],
       "phase4_duplicate_mutable_authority": false,
       "bridge_present": false,
       "bridge_class": null,
@@ -430,7 +534,11 @@
       "execution_authority": "multi-agent-sql (dedicated SQL via OrchestratorService -> MultiAgentRepository)",
       "mutation_path": "OrchestratorService.launch_agent/start_agent/stop_agent/restart_agent -> MultiAgentRepository",
       "restart_behavior": "dedicated SQL persists across restart; API projection is class A (no independently persisted projection)",
-      "evidence_symbols": ["windagent_api.routers.v3.agent_instances.launch_agent_instance", "windagent_orchestration.orchestrator_service.OrchestratorService.launch_agent", "windagent_storage.repositories.multi_agent_repository.MultiAgentRepository"],
+      "evidence_symbols": [
+        "windagent_api.routers.v3.agent_instances.launch_agent_instance",
+        "windagent_orchestration.orchestrator_service.OrchestratorService.launch_agent",
+        "windagent_storage.repositories.multi_agent_repository.MultiAgentRepository"
+      ],
       "phase4_duplicate_mutable_authority": false,
       "bridge_present": false,
       "bridge_class": null,
@@ -444,7 +552,11 @@
       "execution_authority": "multi-agent-sql (dedicated SQL via OrchestratorService -> MultiAgentRepository)",
       "mutation_path": "OrchestratorService.create_conversation -> MultiAgentRepository",
       "restart_behavior": "dedicated SQL persists across restart; API projection is class A (no independently persisted projection)",
-      "evidence_symbols": ["windagent_api.routers.v3.conversations.create_conversation", "windagent_orchestration.orchestrator_service.OrchestratorService.create_conversation", "windagent_storage.repositories.multi_agent_repository.MultiAgentRepository"],
+      "evidence_symbols": [
+        "windagent_api.routers.v3.conversations.create_conversation",
+        "windagent_orchestration.orchestrator_service.OrchestratorService.create_conversation",
+        "windagent_storage.repositories.multi_agent_repository.MultiAgentRepository"
+      ],
       "phase4_duplicate_mutable_authority": false,
       "bridge_present": false,
       "bridge_class": null,
@@ -458,7 +570,172 @@
       "execution_authority": "multi-agent-sql (dedicated SQL event store via OrchestratorService -> MultiAgentRepository)",
       "mutation_path": "OrchestratorService.create_conversation/launch_agent/stop_agent -> MultiAgentRepository.append_event / append_event_if_absent (event store append writers)",
       "restart_behavior": "dedicated SQL event store persists across restart; API projection is class A (no independently persisted projection)",
-      "evidence_symbols": ["windagent_api.routers.v3.conversations.get_conversation_events", "windagent_orchestration.orchestrator_service.OrchestratorService", "windagent_storage.repositories.multi_agent_repository.MultiAgentRepository.append_event", "windagent_storage.repositories.multi_agent_repository.MultiAgentRepository.append_event_if_absent"],
+      "evidence_symbols": [
+        "windagent_api.routers.v3.conversations.get_conversation_events",
+        "windagent_orchestration.orchestrator_service.OrchestratorService",
+        "windagent_storage.repositories.multi_agent_repository.MultiAgentRepository.append_event",
+        "windagent_storage.repositories.multi_agent_repository.MultiAgentRepository.append_event_if_absent"
+      ],
+      "phase4_duplicate_mutable_authority": false,
+      "bridge_present": false,
+      "bridge_class": null,
+      "future_bridge_phase": null
+    },
+    {
+      "namespace": "asset_requirements",
+      "canonical_api_authority": "v3_resources:asset_requirements",
+      "aggregate_category": "content",
+      "dedicated_runtime_repository": null,
+      "execution_authority": "api-v3-resources",
+      "mutation_path": "V3ResourceService CRUD(NS_ASSET_REQUIREMENTS)",
+      "restart_behavior": "generic SQL persists across restart",
+      "evidence_symbols": [
+        "windagent_api.routers.v3.assets.sync_asset_requirements",
+        "windagent_api.routers.v3.assets.list_episode_requirements",
+        "windagent_api.services.asset_requirement_authority",
+        "V3ResourceService"
+      ],
+      "phase4_duplicate_mutable_authority": false,
+      "bridge_present": false,
+      "bridge_class": null,
+      "future_bridge_phase": null
+    },
+    {
+      "namespace": "canon_sync_proposals",
+      "canonical_api_authority": "v3_resources:canon_sync_proposals",
+      "aggregate_category": "content",
+      "dedicated_runtime_repository": null,
+      "execution_authority": "api-v3-resources",
+      "mutation_path": "V3ResourceService CRUD(NS_CANON_SYNC)",
+      "restart_behavior": "generic SQL persists across restart",
+      "evidence_symbols": [
+        "windagent_api.routers.v3.characters.canon_sync_characters",
+        "windagent_api.routers.v3.characters.apply_canon_sync_action",
+        "V3ResourceService"
+      ],
+      "phase4_duplicate_mutable_authority": false,
+      "bridge_present": false,
+      "bridge_class": null,
+      "future_bridge_phase": null
+    },
+    {
+      "namespace": "character_revisions",
+      "canonical_api_authority": "v3_resources:character_revisions",
+      "aggregate_category": "content",
+      "dedicated_runtime_repository": null,
+      "execution_authority": "api-v3-resources",
+      "mutation_path": "V3ResourceService CRUD(NS_CHARACTER_REVISIONS)",
+      "restart_behavior": "generic SQL persists across restart",
+      "evidence_symbols": [
+        "windagent_api.routers.v3.characters.list_character_revisions",
+        "V3ResourceService"
+      ],
+      "phase4_duplicate_mutable_authority": false,
+      "bridge_present": false,
+      "bridge_class": null,
+      "future_bridge_phase": null
+    },
+    {
+      "namespace": "production_packages",
+      "canonical_api_authority": "v3_resources:production_packages",
+      "aggregate_category": "content",
+      "dedicated_runtime_repository": null,
+      "execution_authority": "api-v3-resources",
+      "mutation_path": "V3ResourceService CRUD(NS_PRODUCTION_PACKAGES)",
+      "restart_behavior": "generic SQL persists across restart",
+      "evidence_symbols": [
+        "windagent_api.routers.v3.production.list_packages",
+        "windagent_api.routers.v3.production.finalize_package",
+        "V3ResourceService"
+      ],
+      "phase4_duplicate_mutable_authority": false,
+      "bridge_present": false,
+      "bridge_class": null,
+      "future_bridge_phase": null
+    },
+    {
+      "namespace": "shot_plans",
+      "canonical_api_authority": "v3_resources:shot_plans",
+      "aggregate_category": "content",
+      "dedicated_runtime_repository": null,
+      "execution_authority": "api-v3-resources",
+      "mutation_path": "V3ResourceService CRUD(NS_SHOT_PLANS)",
+      "restart_behavior": "generic SQL persists across restart",
+      "evidence_symbols": [
+        "windagent_api.routers.v3.production.get_shot_plan",
+        "windagent_api.routers.v3.production.generate_shot_plan",
+        "V3ResourceService"
+      ],
+      "phase4_duplicate_mutable_authority": false,
+      "bridge_present": false,
+      "bridge_class": null,
+      "future_bridge_phase": null
+    },
+    {
+      "namespace": "shot_plan_revisions",
+      "canonical_api_authority": "v3_resources:shot_plan_revisions",
+      "aggregate_category": "content",
+      "dedicated_runtime_repository": null,
+      "execution_authority": "api-v3-resources",
+      "mutation_path": "V3ResourceService CRUD(NS_SHOT_PLAN_REVISIONS)",
+      "restart_behavior": "generic SQL persists across restart",
+      "evidence_symbols": [
+        "windagent_api.routers.v3.production.pin_shot_plan",
+        "windagent_api.routers.v3.production.derive_shot_plan",
+        "V3ResourceService"
+      ],
+      "phase4_duplicate_mutable_authority": false,
+      "bridge_present": false,
+      "bridge_class": null,
+      "future_bridge_phase": null
+    },
+    {
+      "namespace": "storyboard_revisions",
+      "canonical_api_authority": "v3_resources:storyboard_revisions",
+      "aggregate_category": "content",
+      "dedicated_runtime_repository": null,
+      "execution_authority": "api-v3-resources",
+      "mutation_path": "V3ResourceService CRUD(NS_STORYBOARD_REVISIONS)",
+      "restart_behavior": "generic SQL persists across restart",
+      "evidence_symbols": [
+        "windagent_api.routers.v3.storyboard.list_storyboard_revisions",
+        "V3ResourceService"
+      ],
+      "phase4_duplicate_mutable_authority": false,
+      "bridge_present": false,
+      "bridge_class": null,
+      "future_bridge_phase": null
+    },
+    {
+      "namespace": "world_bible_revisions",
+      "canonical_api_authority": "v3_resources:world_bible_revisions",
+      "aggregate_category": "content",
+      "dedicated_runtime_repository": null,
+      "execution_authority": "api-v3-resources",
+      "mutation_path": "V3ResourceService CRUD(NS_WORLD_REVISIONS)",
+      "restart_behavior": "generic SQL persists across restart",
+      "evidence_symbols": [
+        "windagent_api.routers.v3.world.list_world_revisions",
+        "V3ResourceService"
+      ],
+      "phase4_duplicate_mutable_authority": false,
+      "bridge_present": false,
+      "bridge_class": null,
+      "future_bridge_phase": null
+    },
+    {
+      "namespace": "world_sync_proposals",
+      "canonical_api_authority": "v3_resources:world_sync_proposals",
+      "aggregate_category": "content",
+      "dedicated_runtime_repository": null,
+      "execution_authority": "api-v3-resources",
+      "mutation_path": "V3ResourceService CRUD(NS_WORLD_SYNC)",
+      "restart_behavior": "generic SQL persists across restart",
+      "evidence_symbols": [
+        "windagent_api.routers.v3.world.world_canon_sync",
+        "windagent_api.routers.v3.world.apply_world_sync_action",
+        "V3ResourceService"
+      ],
       "phase4_duplicate_mutable_authority": false,
       "bridge_present": false,
       "bridge_class": null,
@@ -476,7 +753,16 @@
         "bridge_class": null,
         "mutation_path": "no V3 catalog CRUD (read-only); provider execution mutations via CanonicalModelRegistryService / EndpointExecutionCoordinator -> SQLEndpointBindingRepository / SQLEndpointRegistryRepository / SQLEndpointStateRepository / SQLQuotaStateRepository / SQLRouteAttemptRepository",
         "restart_behavior": "both surfaces durable but not bridged: v3_resources catalog rows persist; dedicated provider SQL (provider_vendors/provider_endpoints/endpoint_model_bindings/endpoint_runtime_state/route_attempts_v3) persists; Phase 10 owns catalog-to-execution integration",
-        "evidence_symbols": ["windagent_api.routers.v3.providers.list_providers", "windagent_api.routers.v3.providers.get_provider", "windagent_api.composition.ApplicationContainer.bootstrap", "windagent_worker.composition.WorkerContainer.bootstrap", "windagent_providers.registry.canonical_registry.CanonicalModelRegistryService", "windagent_providers.routing.execution_coordinator.EndpointExecutionCoordinator", "windagent_storage.repositories.v3_routing_repositories.SQLEndpointBindingRepository", "windagent_storage.repositories.v3_repositories.SQLEndpointRegistryRepository"],
+        "evidence_symbols": [
+          "windagent_api.routers.v3.providers.list_providers",
+          "windagent_api.routers.v3.providers.get_provider",
+          "windagent_api.composition.ApplicationContainer.bootstrap",
+          "windagent_worker.composition.WorkerContainer.bootstrap",
+          "windagent_providers.registry.canonical_registry.CanonicalModelRegistryService",
+          "windagent_providers.routing.execution_coordinator.EndpointExecutionCoordinator",
+          "windagent_storage.repositories.v3_routing_repositories.SQLEndpointBindingRepository",
+          "windagent_storage.repositories.v3_repositories.SQLEndpointRegistryRepository"
+        ],
         "phase4_duplicate_mutable_authority": false,
         "future_owner": "phase-10-provider-model-routing"
       },
@@ -488,7 +774,16 @@
         "bridge_class": null,
         "mutation_path": "no V3 catalog CRUD (read-only); model execution mutations via CanonicalModelRegistryService / EndpointExecutionCoordinator -> SQLEndpointBindingRepository / SQLEndpointRegistryRepository / SQLEndpointStateRepository / SQLQuotaStateRepository / SQLRouteAttemptRepository",
         "restart_behavior": "both surfaces durable but not bridged: v3_resources catalog rows persist; dedicated model SQL (canonical_models_v3/endpoint_model_bindings/endpoint_runtime_state/route_attempts_v3) persists; Phase 10 owns catalog-to-execution integration",
-        "evidence_symbols": ["windagent_api.routers.v3.models.list_models", "windagent_api.routers.v3.models.get_model", "windagent_api.composition.ApplicationContainer.bootstrap", "windagent_worker.composition.WorkerContainer.bootstrap", "windagent_providers.registry.canonical_registry.CanonicalModelRegistryService", "windagent_providers.routing.execution_coordinator.EndpointExecutionCoordinator", "windagent_storage.repositories.v3_routing_repositories.SQLEndpointBindingRepository", "windagent_storage.repositories.v3_repositories.SQLEndpointRegistryRepository"],
+        "evidence_symbols": [
+          "windagent_api.routers.v3.models.list_models",
+          "windagent_api.routers.v3.models.get_model",
+          "windagent_api.composition.ApplicationContainer.bootstrap",
+          "windagent_worker.composition.WorkerContainer.bootstrap",
+          "windagent_providers.registry.canonical_registry.CanonicalModelRegistryService",
+          "windagent_providers.routing.execution_coordinator.EndpointExecutionCoordinator",
+          "windagent_storage.repositories.v3_routing_repositories.SQLEndpointBindingRepository",
+          "windagent_storage.repositories.v3_repositories.SQLEndpointRegistryRepository"
+        ],
         "phase4_duplicate_mutable_authority": false,
         "future_owner": "phase-10-provider-model-routing"
       },
@@ -500,7 +795,11 @@
         "bridge_class": "B",
         "mutation_path": "V3ResourceService create/update/delete(NS_ROUTING_RULES) -> RoutingAuthorityBridge.refresh_ruleset(); RouteLockService.resolve_or_create_lock -> SQLRouteLockRepository",
         "restart_behavior": "SQL rules persist; runtime RoutingRuleSet rebuilt on refresh/restart (class B non-authoritative cache); route locks persist in dedicated route_locks_v3",
-        "evidence_symbols": ["windagent_api.services.routing_authority_bridge.RoutingAuthorityBridge.refresh_ruleset", "windagent_providers.routing.route_lock_service.RouteLockService", "SQLRouteLockRepository"],
+        "evidence_symbols": [
+          "windagent_api.services.routing_authority_bridge.RoutingAuthorityBridge.refresh_ruleset",
+          "windagent_providers.routing.route_lock_service.RouteLockService",
+          "SQLRouteLockRepository"
+        ],
         "phase4_duplicate_mutable_authority": false,
         "future_owner": null
       },
@@ -512,7 +811,10 @@
         "bridge_class": null,
         "mutation_path": "OrchestratorService.create_conversation/launch_agent/stop_agent -> MultiAgentRepository",
         "restart_behavior": "dedicated SQL persists across restart; API projection is class A (no independently persisted projection)",
-        "evidence_symbols": ["windagent_orchestration.orchestrator_service.OrchestratorService", "windagent_storage.repositories.multi_agent_repository.MultiAgentRepository"],
+        "evidence_symbols": [
+          "windagent_orchestration.orchestrator_service.OrchestratorService",
+          "windagent_storage.repositories.multi_agent_repository.MultiAgentRepository"
+        ],
         "phase4_duplicate_mutable_authority": false,
         "future_owner": null
       }

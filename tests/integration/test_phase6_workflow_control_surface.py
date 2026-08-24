@@ -5,16 +5,6 @@ Verifies GET /workflow, GET /runner, POST /pause, POST /resume, POST /stop, and 
 
 from __future__ import annotations
 
-import sys
-from pathlib import Path
-
-root = Path(__file__).resolve().parent.parent.parent
-sys.path.insert(0, str(root))
-for pkg in ["core", "storage", "orchestration", "execution", "workflows"]:
-    p = str(root / pkg)
-    if p not in sys.path:
-        sys.path.insert(0, p)
-
 import pytest
 import pytest_asyncio
 from httpx import AsyncClient, ASGITransport

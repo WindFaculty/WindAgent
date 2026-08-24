@@ -17,11 +17,11 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from sqlalchemy import text
 
-from tests.fakes.phase8_controlled_doubles import (
+from tests.fakes.execution.controlled_runtime import (
     ControlledHermesRuntime,
     ScriptedProviderAdapter,
 )
-from tests.fakes.provider_graph_seed import PersistentRouteLocks, seed_provider_graph
+from tests.fakes.providers.provider_graph import PersistentRouteLocks, seed_provider_graph
 from windagent_api.routers.conversation_streams import router as conversation_streams_router
 from windagent_api.services.realtime_hub import RealtimeHub
 from windagent_core.contracts.providers.responses import ProviderResponse, ProviderUsage
@@ -43,6 +43,8 @@ from windagent_storage.realtime.sql_replay import SqlRealtimeReplayAdapter
 from windagent_storage.repositories.multi_agent_repository import MultiAgentRepository
 from windagent_storage.repositories.v3_repositories import SQLRouteAttemptRepository
 from windagent_storage.unit_of_work.sql_uow import SqlUnitOfWork
+pytestmark = pytest.mark.postgres
+
 
 
 def _stable_route_locks(

@@ -24,6 +24,10 @@ class ModelCapability(str, Enum):
     STREAMING = "streaming"
     COMPUTER_USE = "computer_use"
     PROMPT_CACHING = "prompt_caching"
+    # Live Record — Gemini Live Director (ban_ke_hoach_v1.md Section 9)
+    # LIVE_API + VIDEO_INPUT + TEXT_OUTPUT (CHAT) + FUNCTION_CALLING (TOOL_USE)
+    LIVE_API = "live_api"
+    VIDEO_INPUT = "video_input"
 
 
 @dataclass
@@ -129,11 +133,88 @@ KNOWN_MODEL_PROFILES: Dict[str, ModelCapabilityProfile] = {
         cost_per_1k_completion_tokens=0.0,
         recommended_for=["privacy", "offline", "local"],
     ),
+    # ── Live Director — Gemini 3.1 Flash Live Preview (ban_ke_hoach_v1.md Section 1)
+    # UI displays "Gemini 3 Flash Live"; routing resolves to gemini-3.1-flash-live-preview
+    # which supports Live API + video_input + text_output + function_calling.
+    "gemini-3.1-flash-live-preview": ModelCapabilityProfile(
+        model_id="gemini-3.1-flash-live-preview",
+        provider_name="google",
+        capabilities=[
+            ModelCapability.CHAT,
+            ModelCapability.TOOL_USE,
+            ModelCapability.VISION,
+            ModelCapability.STREAMING,
+            ModelCapability.LIVE_API,
+            ModelCapability.VIDEO_INPUT,
+        ],
+        context_window=1000000,
+        cost_per_1k_prompt_tokens=0.0005,
+        cost_per_1k_completion_tokens=0.002,
+        recommended_for=["live_director", "realtime", "video_input"],
+    ),
+    # Alias displayed in UI — same capabilities, maps to live preview at runtime
+    "gemini-3-flash-preview": ModelCapabilityProfile(
+        model_id="gemini-3-flash-preview",
+        provider_name="google",
+        capabilities=[
+            ModelCapability.CHAT,
+            ModelCapability.TOOL_USE,
+            ModelCapability.VISION,
+            ModelCapability.STREAMING,
+            ModelCapability.LIVE_API,
+            ModelCapability.VIDEO_INPUT,
+        ],
+        context_window=1000000,
+        cost_per_1k_prompt_tokens=0.0005,
+        cost_per_1k_completion_tokens=0.002,
+        recommended_for=["live_director", "realtime", "video_input"],
+    ),
 }
+
+
+# ── Live Director capability gate (ban_ke_hoach_v1.md Section 9) ─────────────
+
+LIVE_DIRECTOR_REQUIRED_CAPABILITIES = [
+    ModelCapability.LIVE_API,
+    ModelCapability.VIDEO_INPUT,
+    ModelCapability.CHAT,  # text_output
+    ModelCapability.TOOL_USE,  # function_calling
+]
+
+
+def is_live_director_capable(profile: ModelCapabilityProfile) -> bool:
+    """Return True iff the model satisfies all four LIVE_DIRECTOR gates."""
+    return profile.supports_all(LIVE_DIRECTOR_REQUIRED_CAPABILITIES)
+
+
+def resolve_live_director_model(
+    candidates: Dict[str, ModelCapabilityProfile] | None = None,
+) -> ModelCapabilityProfile | None:
+    """Resolve the canonical LIVE_DIRECTOR model from known profiles.
+
+    Preference: gemini-3.1-flash-live-preview (real Live API) over alias.
+    """
+    registry = candidates if candidates is not None else KNOWN_MODEL_PROFILES
+    # Exact live preview first
+    live = registry.get("gemini-3.1-flash-live-preview")
+    if live is not None and is_live_director_capable(live):
+        return live
+    # Fall back to alias if someone registered it
+    alias = registry.get("gemini-3-flash-preview")
+    if alias is not None and is_live_director_capable(alias):
+        return alias
+    # Generic fallback: any profile that satisfies the gate
+    for profile in registry.values():
+        if is_live_director_capable(profile):
+            return profile
+    return None
 
 
 __all__ = [
     "ModelCapability",
     "ModelCapabilityProfile",
     "KNOWN_MODEL_PROFILES",
+    "LIVE_DIRECTOR_REQUIRED_CAPABILITIES",
+    "is_live_director_capable",
+    "resolve_live_director_model",
 ]

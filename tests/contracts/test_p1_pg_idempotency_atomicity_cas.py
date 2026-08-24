@@ -215,6 +215,7 @@ class TestIdempotency:
             assert pkg2["package_hash"] == pkg1["package_hash"]
 
 
+@pytest.mark.postgres
 class TestPostgresIdempotency:
     def test_pg_canon_sync_twice_no_duplicates(self, monkeypatch, tmp_path, pg_url):
         if not pg_url or not pg_url.startswith("postgresql+asyncpg://"):
@@ -230,6 +231,7 @@ class TestPostgresIdempotency:
             chars_after = api.get(f"/api/v3/projects/{DEMO_PROJECT}/characters").json()
             assert {c["id"] for c in chars_before} == {c["id"] for c in chars_after}
 
+    @pytest.mark.postgres
     def test_pg_requirement_sync_twice(self, monkeypatch, tmp_path, pg_url):
         if not pg_url or not pg_url.startswith("postgresql+asyncpg://"):
             pytest.skip("PG not available")
@@ -263,6 +265,7 @@ class TestAtomicity:
         after = client.get(f"/api/v3/episodes/{DEMO_EPISODE}/production/packages").json()
         assert after == [], "failed finalize must not create partial package"
 
+    @pytest.mark.postgres
     def test_pg_failed_finalize_no_partial(self, monkeypatch, tmp_path, pg_url):
         if not pg_url or not pg_url.startswith("postgresql+asyncpg://"):
             pytest.skip("PG not available")
@@ -332,6 +335,7 @@ class TestCAS:
         r2 = client.patch(f"/api/v3/shots/{sid}", json={"duration_seconds": target["duration_seconds"] + 1, "expected_version": v})
         assert r2.status_code == 409, r2.text
 
+    @pytest.mark.postgres
     def test_pg_cas_character(self, monkeypatch, tmp_path, pg_url):
         if not pg_url or not pg_url.startswith("postgresql+asyncpg://"):
             pytest.skip("PG not available")

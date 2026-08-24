@@ -5,6 +5,8 @@
 // `apps/desktop/native/recording-engine/` and is NOT inlined here.
 
 pub mod commands;
+pub mod engine_host;
+pub mod playback;
 pub mod state;
 #[cfg(test)]
 mod tests;
@@ -14,6 +16,8 @@ pub use commands::{
     recorder_create_marker, recorder_get_capabilities, recorder_get_status, recorder_pause,
     recorder_resume, recorder_prepare, recorder_start, recorder_stop,
 };
+pub use engine_host::{EngineHost, EngineHostState, EventSink};
+pub use playback::{playback_execute_code, playback_probe_environment};
 pub use state::{can_transition, LiveRecordState, RecorderSharedState};
 pub use types::{
     MarkerRequest, NativeCapabilities, RecorderPrepareRequest, RecorderProfile,

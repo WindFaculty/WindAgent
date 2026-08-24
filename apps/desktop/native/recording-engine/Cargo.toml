@@ -2,14 +2,26 @@
 name = "windagent-recording-engine"
 version = "0.1.0"
 edition = "2021"
-description = "WindAgent native recording sidecar — data plane (WGC/D3D11/NVENC/libav/MKV). P0 skeleton only."
+description = "WindAgent native recording sidecar — data plane (WGC/D3D11/NVENC/libav/MKV). Phases 8-9 implementation."
 license = "Proprietary"
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+base64 = "0.22"
 
-# Phase 8 deps (added later, not in P0):
-# windows = { version = "0.58", features = ["Win32_Graphics_Dxgi", "Win32_Graphics_Direct3D11", "Win32_System_Com"] }
-# nvml-wrapper = "0.10"
-# ffmpeg-next = "7"
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.59", features = ["Win32_Storage_FileSystem"] }
+
+# Phase 8 deps (gated for Windows CI; mock path works everywhere):
+# windows = { version = "0.58", features = ["Win32_Graphics_Dxgi", "Win32_Graphics_Direct3D11", "Win32_System_Com"], optional = true }
+# nvml-wrapper = { version = "0.10", optional = true }
+
+[features]
+default = []
+wgc = []
+nvenc = []
+
+[[bin]]
+name = "windagent-recorder"
+path = "src/bin/recorder.rs"

@@ -14,7 +14,7 @@ from __future__ import annotations
 import copy
 import hashlib
 
-from tests.fixtures.canonical_bunny_episode import (
+from tests.fixtures.canonical.canonical_bunny_episode import (
     build_canonical_bunny_episode,
 )
 

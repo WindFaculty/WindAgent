@@ -6,12 +6,13 @@ Verifies canonical V3 Projects, Episodes, Templates, Idempotency, and Optimistic
 import uuid
 import pytest
 from fastapi.testclient import TestClient
-from windagent_api.main import app
+
+from tests.support.api import isolated_api_client
 
 
 @pytest.fixture
-def client():
-    return TestClient(app)
+def client(monkeypatch, tmp_path):
+    yield from isolated_api_client(monkeypatch, tmp_path, profile="demo")
 
 
 class TestPhase7ProjectsAndStudioContracts:

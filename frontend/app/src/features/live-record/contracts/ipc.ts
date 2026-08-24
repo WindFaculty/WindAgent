@@ -13,7 +13,8 @@ export type RecorderCommand =
   | 'recorder_resume'
   | 'recorder_stop'
   | 'recorder_get_status'
-  | 'recorder_create_marker';
+  | 'recorder_create_marker'
+  | 'recorder_get_capabilities';
 
 export interface RecorderPrepareRequest {
   readonly execution_plan_id: string;
@@ -81,7 +82,11 @@ export interface RecorderPreviewFrame {
   readonly width: number;
   readonly height: number;
   readonly ts: number; // monotonic ms
-  // Raw 1080p60 frames NEVER cross IPC — only down-sampled preview frames at low FPS
+  /**
+   * Down-scaled JPEG (≤1280×720, ≤2 FPS) — the ONLY frame payload allowed to
+   * cross IPC (Principle E). Raw 1080p60 frames never leave the engine.
+   */
+  readonly jpeg_base64?: string;
 }
 
 // IPC payload shape validation helpers
@@ -98,4 +103,9 @@ export interface NativeCapabilities {
   readonly wasapi_available: boolean; // P0: false engineering, but capability advertised
   readonly disk_free_gb: number;
   readonly output_writable: boolean;
+  // Phase 8/9 real-probe extensions — present only when the engine sidecar
+  // is available and has probed the host's ffmpeg pipeline.
+  readonly engine_available?: boolean;
+  readonly backend?: string; // "ffmpeg-ddagrab-nvenc" | "mock"
+  readonly blockers?: readonly string[];
 }

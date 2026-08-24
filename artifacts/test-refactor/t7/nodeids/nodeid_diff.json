@@ -1,0 +1,138 @@
+{
+  "baseline_count": 4518,
+  "current_count": 4569,
+  "unchanged_count": 3581,
+  "removed_count": 937,
+  "added_count": 988,
+  "moved_count": 1019,
+  "renamed_count": 0,
+  "unexplained_removed": 0,
+  "unexplained_added": 51,
+  "added_unmatched_sample": [
+    "tests/architecture/boundaries/test_domain_invariants.py::test_api_depends_only_on_application_ports",
+    "tests/architecture/boundaries/test_domain_invariants.py::test_domain_has_no_infrastructure_dependencies",
+    "tests/architecture/boundaries/test_domain_invariants.py::test_no_legacy_runtime_imports",
+    "tests/architecture/boundaries/test_domain_invariants.py::test_storage_implements_declared_ports",
+    "tests/contracts/api/test_live_record_actions_api.py::test_bootstrap_fail_closed_when_credential_missing",
+    "tests/contracts/api/test_live_record_actions_api.py::test_bootstrap_mints_remote_token_when_credential_present",
+    "tests/contracts/api/test_live_record_actions_api.py::test_execute_rejects_non_server_executable_types",
+    "tests/contracts/api/test_live_record_actions_api.py::test_execute_runs_prepared_command_only",
+    "tests/contracts/api/test_live_record_actions_api.py::test_prepare_rejects_unknown_action_and_unfrozen_plan",
+    "tests/contracts/api/test_live_record_actions_api.py::test_prepare_returns_payload_for_code_playback",
+    "tests/contracts/api/test_live_record_actions_api.py::test_result_hash_mismatch_records_tamper_even_if_desktop_claims_success",
+    "tests/contracts/api/test_live_record_actions_api.py::test_result_rejects_action_outside_plan",
+    "tests/contracts/api/test_live_record_actions_api.py::test_result_success_with_matching_hashes",
+    "tests/e2e/test_live_record_e2e.py::test_director_loop_end_to_end_golden",
+    "tests/e2e/test_live_record_e2e.py::test_unapproved_action_gated_and_tamper_detected",
+    "tests/unit/domain/live_record/test_live_record_failure_policy.py::test_canonical_codes_classify[BROWSER_PAGE_SLOW-RECOVERABLE]",
+    "tests/unit/domain/live_record/test_live_record_failure_policy.py::test_canonical_codes_classify[CAPTURE_DEVICE_DESTROYED-FATAL]",
+    "tests/unit/domain/live_record/test_live_record_failure_policy.py::test_canonical_codes_classify[DISK_FULL-FATAL]",
+    "tests/unit/domain/live_record/test_live_record_failure_policy.py::test_canonical_codes_classify[GEMINI_DISCONNECT-RECOVERABLE]",
+    "tests/unit/domain/live_record/test_live_record_failure_policy.py::test_canonical_codes_classify[LOGIN_REQUIRED-OPERATOR_REQUIRED]"
+  ],
+  "removed_unmatched_sample": [],
+  "moved_mappings_sample": [
+    {
+      "old_nodeid": "tests/integration/test_phase14_two_process_e2e.py::test_api_worker_durable_runtime_two_process",
+      "new_nodeid": "tests/e2e/multiprocess/test_api_worker_durability.py::test_api_worker_durable_runtime_two_process",
+      "reason": "moved during T0-T6 hard cutover (git mv / tier reclassification)"
+    },
+    {
+      "old_nodeid": "tests/integration/test_phase1_multiprocess_e2e.py::test_true_multi_process_cross_process_route_lock",
+      "new_nodeid": "tests/e2e/multiprocess/test_orchestration_multiprocess.py::test_true_multi_process_cross_process_route_lock",
+      "reason": "moved during T0-T6 hard cutover (git mv / tier reclassification)"
+    },
+    {
+      "old_nodeid": "tests/integration/test_phase_g25_session_recovery.py::test_cancel_has_distinct_terminal_semantics",
+      "new_nodeid": "tests/e2e/multiprocess/test_session_recovery.py::test_cancel_has_distinct_terminal_semantics",
+      "reason": "moved during T0-T6 hard cutover (git mv / tier reclassification)"
+    },
+    {
+      "old_nodeid": "tests/integration/test_phase_g25_session_recovery.py::test_conversation_detail_returns_durable_events",
+      "new_nodeid": "tests/e2e/multiprocess/test_session_recovery.py::test_conversation_detail_returns_durable_events",
+      "reason": "moved during T0-T6 hard cutover (git mv / tier reclassification)"
+    },
+    {
+      "old_nodeid": "tests/integration/test_phase_g25_session_recovery.py::test_cursor_replay_and_isolation_contract",
+      "new_nodeid": "tests/e2e/multiprocess/test_session_recovery.py::test_cursor_replay_and_isolation_contract",
+      "reason": "moved during T0-T6 hard cutover (git mv / tier reclassification)"
+    },
+    {
+      "old_nodeid": "tests/unit/api/test_api_v2.py::test_api_v1_tombstone_returns_410",
+      "new_nodeid": "tests/contracts/api/test_api_v2.py::test_api_v1_tombstone_returns_410",
+      "reason": "moved during T0-T6 hard cutover (git mv / tier reclassification)"
+    },
+    {
+      "old_nodeid": "tests/unit/api/test_api_v2.py::test_api_v2_tombstone_returns_410",
+      "new_nodeid": "tests/contracts/api/test_api_v2.py::test_api_v2_tombstone_returns_410",
+      "reason": "moved during T0-T6 hard cutover (git mv / tier reclassification)"
+    },
+    {
+      "old_nodeid": "tests/unit/api/test_api_v2.py::test_api_v3_is_canonical_surface",
+      "new_nodeid": "tests/contracts/api/test_api_v2.py::test_api_v3_is_canonical_surface",
+      "reason": "moved during T0-T6 hard cutover (git mv / tier reclassification)"
+    },
+    {
+      "old_nodeid": "tests/unit/api/test_api_v2.py::test_health_and_architecture_endpoints",
+      "new_nodeid": "tests/contracts/api/test_api_v2.py::test_health_and_architecture_endpoints",
+      "reason": "moved during T0-T6 hard cutover (git mv / tier reclassification)"
+    },
+    {
+      "old_nodeid": "tests/unit/api/test_architecture_v3_phase6_realtime.py::test_catchup_complete_precedes_concurrent_live_delivery",
+      "new_nodeid": "tests/contracts/api/test_architecture_v3_phase6_realtime.py::test_catchup_complete_precedes_concurrent_live_delivery",
+      "reason": "moved during T0-T6 hard cutover (git mv / tier reclassification)"
+    },
+    {
+      "old_nodeid": "tests/unit/api/test_architecture_v3_phase6_realtime.py::test_conversation_compat_endpoint_fails_closed_without_hub",
+      "new_nodeid": "tests/contracts/api/test_architecture_v3_phase6_realtime.py::test_conversation_compat_endpoint_fails_closed_without_hub",
+      "reason": "moved during T0-T6 hard cutover (git mv / tier reclassification)"
+    },
+    {
+      "old_nodeid": "tests/unit/api/test_architecture_v3_phase6_realtime.py::test_conversation_compat_endpoint_uses_hub",
+      "new_nodeid": "tests/contracts/api/test_architecture_v3_phase6_realtime.py::test_conversation_compat_endpoint_uses_hub",
+      "reason": "moved during T0-T6 hard cutover (git mv / tier reclassification)"
+    },
+    {
+      "old_nodeid": "tests/unit/api/test_architecture_v3_phase6_realtime.py::test_conversation_streams_no_longer_polls_sql",
+      "new_nodeid": "tests/contracts/api/test_architecture_v3_phase6_realtime.py::test_conversation_streams_no_longer_polls_sql",
+      "reason": "moved during T0-T6 hard cutover (git mv / tier reclassification)"
+    },
+    {
+      "old_nodeid": "tests/unit/api/test_architecture_v3_phase6_realtime.py::test_duplicate_suppression_and_strict_ascending",
+      "new_nodeid": "tests/contracts/api/test_architecture_v3_phase6_realtime.py::test_duplicate_suppression_and_strict_ascending",
+      "reason": "moved during T0-T6 hard cutover (git mv / tier reclassification)"
+    },
+    {
+      "old_nodeid": "tests/unit/api/test_architecture_v3_phase6_realtime.py::test_failed_live_send_does_not_advance_cursor",
+      "new_nodeid": "tests/contracts/api/test_architecture_v3_phase6_realtime.py::test_failed_live_send_does_not_advance_cursor",
+      "reason": "moved during T0-T6 hard cutover (git mv / tier reclassification)"
+    },
+    {
+      "old_nodeid": "tests/unit/api/test_architecture_v3_phase6_realtime.py::test_no_live_event_precedes_catchup_complete",
+      "new_nodeid": "tests/contracts/api/test_architecture_v3_phase6_realtime.py::test_no_live_event_precedes_catchup_complete",
+      "reason": "moved during T0-T6 hard cutover (git mv / tier reclassification)"
+    },
+    {
+      "old_nodeid": "tests/unit/api/test_architecture_v3_phase6_realtime.py::test_outbox_publisher_to_hub_e2e",
+      "new_nodeid": "tests/contracts/api/test_architecture_v3_phase6_realtime.py::test_outbox_publisher_to_hub_e2e",
+      "reason": "moved during T0-T6 hard cutover (git mv / tier reclassification)"
+    },
+    {
+      "old_nodeid": "tests/unit/api/test_architecture_v3_phase6_realtime.py::test_repeated_subscribe_same_stream_replaces",
+      "new_nodeid": "tests/contracts/api/test_architecture_v3_phase6_realtime.py::test_repeated_subscribe_same_stream_replaces",
+      "reason": "moved during T0-T6 hard cutover (git mv / tier reclassification)"
+    },
+    {
+      "old_nodeid": "tests/unit/api/test_architecture_v3_phase6_realtime.py::test_replay_live_race_durable_lower_sequence_not_skipped",
+      "new_nodeid": "tests/contracts/api/test_architecture_v3_phase6_realtime.py::test_replay_live_race_durable_lower_sequence_not_skipped",
+      "reason": "moved during T0-T6 hard cutover (git mv / tier reclassification)"
+    },
+    {
+      "old_nodeid": "tests/unit/api/test_architecture_v3_phase6_realtime.py::test_root_ws_heartbeat_json_and_legacy",
+      "new_nodeid": "tests/contracts/api/test_architecture_v3_phase6_realtime.py::test_root_ws_heartbeat_json_and_legacy",
+      "reason": "moved during T0-T6 hard cutover (git mv / tier reclassification)"
+    }
+  ],
+  "UNEXPLAINED_REMOVED_NODEIDS": 0,
+  "summary": "baseline 4518 -> current 4569 delta 51 moved 1019 unexplained_removed 0"
+}

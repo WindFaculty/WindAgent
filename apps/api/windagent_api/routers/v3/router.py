@@ -43,6 +43,9 @@ from windagent_api.routers.v3.memory import router as v3_memory_router
 from windagent_api.routers.v3.logs import router as v3_logs_router, ws_router as v3_logs_ws_router
 from windagent_api.routers.v3.settings import router as v3_settings_router
 
+# Live Record — Episode -> LiveExecutionPlan -> RecordingTake lineage (ban_ke_hoach_v1.md Phase 1)
+from windagent_api.routers.v3.live_record import router as v3_live_record_router
+
 v3_router = APIRouter()
 
 # Include Modular V3 Subrouters
@@ -92,4 +95,9 @@ v3_router.include_router(v3_memory_router)
 v3_router.include_router(v3_logs_router)
 v3_router.include_router(v3_logs_ws_router)
 v3_router.include_router(v3_settings_router)
+
+# Live Record routers — legacy mount at /live-record/* (kept for unit tests)
+# plus canonical mount at /api/v3/live-record/* per ban_ke_hoach_v1.md Section 10
+v3_router.include_router(v3_live_record_router)
+v3_router.include_router(v3_live_record_router, prefix="/api/v3")
 

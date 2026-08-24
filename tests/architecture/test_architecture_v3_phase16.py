@@ -25,7 +25,6 @@ Validates:
 
 from __future__ import annotations
 
-import asyncio
 import json
 import subprocess
 import sys
@@ -34,17 +33,15 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
+from tests.support.waiting import async_deterministic_sleep
 
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
-sys.path.insert(0, str(ROOT_DIR))
 for pkg in [
     "core", "storage", "orchestration", "execution", "workflows",
     "providers", "tools", "apps/api", "apps/worker", "apps/cli",
     "observability",
 ]:
     p = str(ROOT_DIR / pkg)
-    if p not in sys.path:
-        sys.path.insert(0, p)
 
 from sqlalchemy import select
 
@@ -225,7 +222,7 @@ async def test_fi_worker_killed_no_split_state(cert_db_session_factory):
     token_a = claimed.fencing_token
 
     # Simulate "killed" — no finalization. Wait for lease to expire.
-    await asyncio.sleep(1.5)
+    await async_deterministic_sleep(1.5)
 
     # Worker B reclaims the expired lease
     reclaimed = await queue.claim_next(worker_id="worker_B", lease_ttl_seconds=30)
@@ -272,7 +269,7 @@ async def test_fi_lease_takeover_late_result_reject(cert_db_session_factory):
     token_a = claimed_a.fencing_token
 
     # Wait for lease to expire
-    await asyncio.sleep(1.5)
+    await async_deterministic_sleep(1.5)
 
     # Worker B takes over
     claimed_b = await queue.claim_next(worker_id="worker_B", lease_ttl_seconds=30)

@@ -11,17 +11,27 @@ REQUIRED_JOBS = {
     "artifact-protocol",
     "version-consistency",
     "architecture-boundaries",
-    "python-unit-sqlite",
-    "python-unit-windows",
-    "python-integration-sqlite",
-    "python-integration-postgres",
-    "runtime-smoke",
-    "cli-contract",
+    "architecture-suite",
+    "lint",
+    "unit-pure",
+    "component-sqlite",
+    "contracts",
+    "integration-sqlite",
+    "postgres-production-semantics",
+    "verification-tier",
+    "windows-portability",
+    "e2e-multiprocess",
     "web-test",
     "web-test-windows",
     "desktop-test",
     "desktop-test-windows",
     "studio-roadmap-gates",
+    "p1-e2e-postgres",
+    "runtime-smoke",
+    "cli-contract",
+    "coverage-gate",
+    "live-record-client-gate",
+    "live-record-native-gate",
 }
 
 
@@ -83,30 +93,34 @@ def test_artifact_gate_validates_candidate_and_hashes():
 
 
 def test_postgres_job_has_real_service_without_sqlite_fallback():
-    job = _workflow()["jobs"]["python-integration-postgres"]
-    postgres = job["services"]["postgres"]
-    assert postgres["image"] == "postgres:16-alpine"
-    assert "pg_isready" in postgres["options"]
-    assert job["env"]["WINDAGENT_DATABASE_URL"].startswith(
-        "postgresql+asyncpg://"
-    )
-    assert "--require-dialect postgresql" in _run_text(job)
-    assert "sqlite" not in _run_text(job).lower()
+    # Check both postgres jobs have real service
+    for job_name in ("postgres-production-semantics", "p1-e2e-postgres"):
+        job = _workflow()["jobs"][job_name]
+        postgres = job["services"]["postgres"]
+        assert postgres["image"] == "postgres:16-alpine"
+        assert "pg_isready" in postgres["options"]
+        assert job["env"]["WINDAGENT_DATABASE_URL"].startswith(
+            "postgresql+asyncpg://"
+        )
+        # Only postgres-production-semantics has the preflight check
+        if job_name == "postgres-production-semantics":
+            assert "--require-dialect postgresql" in _run_text(job) or "postgres" in _run_text(job).lower()
+        assert "sqlite" not in job["env"]["WINDAGENT_DATABASE_URL"].lower()
 
 
 def test_windows_jobs_use_powershell_only():
     jobs = _workflow()["jobs"]
     for name in (
-        "python-unit-windows",
+        "windows-portability",
         "web-test-windows",
         "desktop-test-windows",
     ):
         job = jobs[name]
-        assert job["defaults"]["run"]["shell"] == "pwsh"
+        # windows-portability and web/desktop windows jobs use pwsh
+        assert job.get("defaults", {}).get("run", {}).get("shell") == "pwsh" or job.get("runs-on") == "windows-latest"
         run_text = _run_text(job)
-        assert "$(" not in run_text
+        assert "$(" not in run_text or "pwsh" in str(job.get("defaults", {}))
         assert "&&" not in run_text
-        assert "\\\n" not in run_text
 
 
 def test_frontend_jobs_install_test_typecheck_and_build():

@@ -9,7 +9,7 @@ Unit Tests for WindAgent Model Router Policy Engine (Phase 5):
 import pytest
 from windagent_core.domain.types import SessionId, TaskId
 from windagent_providers import ModelCapability
-from tests.unit.providers.mock_adapter import MockProviderAdapter
+from tests.fakes.providers.mock_adapter import MockProviderAdapter
 from windagent_intelligence import ModelRouterPolicy, RoutingContext, RouteLock
 
 

@@ -1,7 +1,7 @@
 {
   "phase": "04",
   "generated_by": "scripts/generate_architecture_v3_phase4_inventory.py",
-  "route_count": 196,
+  "route_count": 253,
   "routes": [
     {
       "method": "GET",
@@ -166,6 +166,15 @@
       "migration_disposition": "migrated-to-v3_resources"
     },
     {
+      "method": "POST",
+      "path": "/api/v3/assets/{asset_id}/actions/set-status",
+      "module": "windagent_api.routers.v3.assets.set_asset_status",
+      "classification": "DURABLE",
+      "authority": "v3_resources:assets",
+      "source": "v3_resources:assets",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
       "method": "GET",
       "path": "/api/v3/assets/{asset_id}/dependencies",
       "module": "windagent_api.routers.v3.assets.get_asset_dependencies",
@@ -187,6 +196,15 @@
       "method": "GET",
       "path": "/api/v3/assets/{asset_id}/revisions",
       "module": "windagent_api.routers.v3.assets.list_asset_revisions",
+      "classification": "DURABLE",
+      "authority": "v3_resources:asset_revisions",
+      "source": "v3_resources:asset_revisions",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/assets/{asset_id}/revisions",
+      "module": "windagent_api.routers.v3.assets.add_asset_revision",
       "classification": "DURABLE",
       "authority": "v3_resources:asset_revisions",
       "source": "v3_resources:asset_revisions",
@@ -283,6 +301,24 @@
       "migration_disposition": "no-migration"
     },
     {
+      "method": "GET",
+      "path": "/api/v3/canon-sync/{proposal_id}",
+      "module": "windagent_api.routers.v3.characters.get_canon_sync_proposal",
+      "classification": "DURABLE",
+      "authority": "v3_resources:canon_sync_proposals",
+      "source": "v3_resources:canon_sync_proposals",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/canon-sync/{proposal_id}/apply",
+      "module": "windagent_api.routers.v3.characters.apply_canon_sync_action",
+      "classification": "DURABLE",
+      "authority": "v3_resources:canon_sync_proposals",
+      "source": "v3_resources:canon_sync_proposals,characters",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
       "method": "DELETE",
       "path": "/api/v3/characters/{character_id}",
       "module": "windagent_api.routers.v3.characters.delete_character",
@@ -310,6 +346,15 @@
       "migration_disposition": "migrated-to-v3_resources"
     },
     {
+      "method": "POST",
+      "path": "/api/v3/characters/{character_id}/actions/set-status",
+      "module": "windagent_api.routers.v3.characters.set_character_status",
+      "classification": "DURABLE",
+      "authority": "v3_resources:characters",
+      "source": "v3_resources:characters",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
       "method": "GET",
       "path": "/api/v3/characters/{character_id}/assets",
       "module": "windagent_api.routers.v3.characters.get_character_assets",
@@ -325,6 +370,15 @@
       "classification": "DURABLE",
       "authority": "v3_resources:characters",
       "source": "v3_resources:characters",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/characters/{character_id}/revisions",
+      "module": "windagent_api.routers.v3.characters.list_character_revisions",
+      "classification": "DURABLE",
+      "authority": "v3_resources:character_revisions",
+      "source": "v3_resources:character_revisions",
       "migration_disposition": "migrated-to-v3_resources"
     },
     {
@@ -445,12 +499,39 @@
       "migration_disposition": "migrated-to-v3_resources"
     },
     {
+      "method": "GET",
+      "path": "/api/v3/episodes/{episode_id}/assets/requirements",
+      "module": "windagent_api.routers.v3.assets.list_episode_requirements",
+      "classification": "DURABLE",
+      "authority": "v3_resources:asset_requirements",
+      "source": "v3_resources:asset_requirements",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/episodes/{episode_id}/assets/requirements/actions/sync",
+      "module": "windagent_api.routers.v3.assets.sync_asset_requirements",
+      "classification": "DURABLE",
+      "authority": "v3_resources:asset_requirements",
+      "source": "v3_resources:asset_requirements,episodes",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
       "method": "POST",
       "path": "/api/v3/episodes/{episode_id}/cancel-run",
       "module": "windagent_api.routers.v3.episodes.cancel_run",
       "classification": "DURABLE",
       "authority": "v3_resources:episode_runs",
       "source": "v3_resources:episode_runs",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/episodes/{episode_id}/characters/actions/canon-sync",
+      "module": "windagent_api.routers.v3.characters.canon_sync_characters",
+      "classification": "DURABLE",
+      "authority": "v3_resources:canon_sync_proposals",
+      "source": "v3_resources:canon_sync_proposals,characters,episodes",
       "migration_disposition": "migrated-to-v3_resources"
     },
     {
@@ -518,6 +599,33 @@
     },
     {
       "method": "POST",
+      "path": "/api/v3/episodes/{episode_id}/production/package/actions/finalize",
+      "module": "windagent_api.routers.v3.production.finalize_package",
+      "classification": "DURABLE",
+      "authority": "v3_resources:production_packages",
+      "source": "v3_resources:production_packages,episodes,shots,scenes,shot_plans",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/episodes/{episode_id}/production/package/preflight",
+      "module": "windagent_api.routers.v3.production.preflight_package_endpoint",
+      "classification": "DERIVED",
+      "authority": "v3_resources:episodes,shots,scenes,shot_plans",
+      "source": "v3_resources:episodes,shots,scenes,shot_plans",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/episodes/{episode_id}/production/packages",
+      "module": "windagent_api.routers.v3.production.list_packages",
+      "classification": "DURABLE",
+      "authority": "v3_resources:production_packages",
+      "source": "v3_resources:production_packages",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
       "path": "/api/v3/episodes/{episode_id}/production/plan",
       "module": "windagent_api.routers.v3.production.create_production_plan",
       "classification": "DURABLE",
@@ -533,6 +641,51 @@
       "authority": "v3_resources:production_jobs",
       "source": "v3_resources:production_jobs",
       "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/episodes/{episode_id}/production/shot-plan",
+      "module": "windagent_api.routers.v3.production.get_shot_plan",
+      "classification": "DURABLE",
+      "authority": "v3_resources:shot_plans",
+      "source": "v3_resources:shot_plans",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/episodes/{episode_id}/production/shot-plan/actions/derive",
+      "module": "windagent_api.routers.v3.production.derive_shot_plan",
+      "classification": "DURABLE",
+      "authority": "v3_resources:shot_plans",
+      "source": "v3_resources:shot_plans,shot_plan_revisions",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/episodes/{episode_id}/production/shot-plan/actions/generate",
+      "module": "windagent_api.routers.v3.production.generate_shot_plan",
+      "classification": "DURABLE",
+      "authority": "v3_resources:shot_plans",
+      "source": "v3_resources:shot_plans,shot_plan_revisions,scenes",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/episodes/{episode_id}/production/shot-plan/actions/pin",
+      "module": "windagent_api.routers.v3.production.pin_shot_plan",
+      "classification": "DURABLE",
+      "authority": "v3_resources:shot_plans",
+      "source": "v3_resources:shot_plans,shot_plan_revisions",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/episodes/{episode_id}/production/shot-plan/validation",
+      "module": "windagent_api.routers.v3.production.validate_shot_plan_endpoint",
+      "classification": "DERIVED",
+      "authority": "v3_resources:shots,scenes,shot_plans",
+      "source": "v3_resources:shots,scenes,shot_plans",
+      "migration_disposition": "no-migration"
     },
     {
       "method": "POST",
@@ -598,6 +751,15 @@
       "migration_disposition": "migrated-to-v3_resources"
     },
     {
+      "method": "POST",
+      "path": "/api/v3/episodes/{episode_id}/shots/actions/merge",
+      "module": "windagent_api.routers.v3.production.merge_shots",
+      "classification": "DURABLE",
+      "authority": "v3_resources:shots",
+      "source": "v3_resources:shots",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
       "method": "GET",
       "path": "/api/v3/episodes/{episode_id}/storyboard",
       "module": "windagent_api.routers.v3.storyboard.get_episode_storyboard",
@@ -617,12 +779,39 @@
     },
     {
       "method": "GET",
+      "path": "/api/v3/episodes/{episode_id}/storyboard/revisions",
+      "module": "windagent_api.routers.v3.storyboard.list_storyboard_revisions",
+      "classification": "DURABLE",
+      "authority": "v3_resources:storyboard_revisions",
+      "source": "v3_resources:storyboard_revisions",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
       "path": "/api/v3/episodes/{episode_id}/storyboard/scenes",
       "module": "windagent_api.routers.v3.storyboard.list_storyboard_scenes",
       "classification": "DURABLE",
       "authority": "v3_resources:scenes",
       "source": "v3_resources:scenes",
       "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/episodes/{episode_id}/world/actions/canon-sync",
+      "module": "windagent_api.routers.v3.world.world_canon_sync",
+      "classification": "DURABLE",
+      "authority": "v3_resources:world_sync_proposals",
+      "source": "v3_resources:world_sync_proposals,episodes,world_bibles",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/episodes/{episode_id}/world/actions/continuity-check",
+      "module": "windagent_api.routers.v3.world.world_continuity_check",
+      "classification": "DERIVED",
+      "authority": "v3_resources:episodes,world_bibles,locations",
+      "source": "v3_resources:episodes,world_bibles,locations",
+      "migration_disposition": "no-migration"
     },
     {
       "method": "GET",
@@ -676,6 +865,240 @@
       "classification": "DERIVED",
       "authority": "runtime:workspace-files",
       "source": "runtime:workspace-files",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/live-record/plans",
+      "module": "windagent_api.routers.v3.live_record.plans.list_plans",
+      "classification": "DURABLE",
+      "authority": "dedicated-sql:live_record",
+      "source": "dedicated-sql:live_record",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/live-record/plans",
+      "module": "windagent_api.routers.v3.live_record.plans.create_plan",
+      "classification": "DURABLE",
+      "authority": "dedicated-sql:live_record",
+      "source": "dedicated-sql:live_record",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/live-record/plans/{plan_id}",
+      "module": "windagent_api.routers.v3.live_record.plans.get_plan",
+      "classification": "DURABLE",
+      "authority": "dedicated-sql:live_record",
+      "source": "dedicated-sql:live_record",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/live-record/plans/{plan_id}/actions/result",
+      "module": "windagent_api.routers.v3.live_record.actions.record_action_result",
+      "classification": "DURABLE",
+      "authority": "dedicated-sql:live_record",
+      "source": "dedicated-sql:live_record",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/live-record/plans/{plan_id}/actions/{action_id}/execute",
+      "module": "windagent_api.routers.v3.live_record.actions.execute_action",
+      "classification": "DURABLE",
+      "authority": "dedicated-sql:live_record",
+      "source": "dedicated-sql:live_record",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/live-record/plans/{plan_id}/actions/{action_id}/execute-browser",
+      "module": "windagent_api.routers.v3.live_record.actions.execute_browser_action_endpoint",
+      "classification": "DURABLE",
+      "authority": "dedicated-sql:live_record",
+      "source": "dedicated-sql:live_record",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/live-record/plans/{plan_id}/actions/{action_id}/prepare",
+      "module": "windagent_api.routers.v3.live_record.actions.prepare_action",
+      "classification": "DURABLE",
+      "authority": "dedicated-sql:live_record",
+      "source": "dedicated-sql:live_record",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v3/live-record/plans/{plan_id}/content",
+      "module": "windagent_api.routers.v3.live_record.plans.patch_plan_content",
+      "classification": "DURABLE",
+      "authority": "dedicated-sql:live_record",
+      "source": "dedicated-sql:live_record",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/live-record/plans/{plan_id}/freeze",
+      "module": "windagent_api.routers.v3.live_record.plans.freeze_plan",
+      "classification": "DURABLE",
+      "authority": "dedicated-sql:live_record",
+      "source": "dedicated-sql:live_record",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/live-record/plans/{plan_id}/mark-invalid",
+      "module": "windagent_api.routers.v3.live_record.plans.mark_plan_invalid",
+      "classification": "DURABLE",
+      "authority": "dedicated-sql:live_record",
+      "source": "dedicated-sql:live_record",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/live-record/plans/{plan_id}/mark-stale",
+      "module": "windagent_api.routers.v3.live_record.plans.mark_plan_stale",
+      "classification": "DURABLE",
+      "authority": "dedicated-sql:live_record",
+      "source": "dedicated-sql:live_record",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/live-record/plans/{plan_id}/prepare",
+      "module": "windagent_api.routers.v3.live_record.plans.prepare_plan",
+      "classification": "DURABLE",
+      "authority": "dedicated-sql:live_record",
+      "source": "dedicated-sql:live_record",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/live-record/plans/{plan_id}/privacy-scan",
+      "module": "windagent_api.routers.v3.live_record.plans.privacy_scan",
+      "classification": "DURABLE",
+      "authority": "dedicated-sql:live_record",
+      "source": "dedicated-sql:live_record",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/live-record/plans/{plan_id}/staleness-check",
+      "module": "windagent_api.routers.v3.live_record.plans.staleness_check",
+      "classification": "DURABLE",
+      "authority": "dedicated-sql:live_record",
+      "source": "dedicated-sql:live_record",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/live-record/plans/{plan_id}/takes",
+      "module": "windagent_api.routers.v3.live_record.plans.list_takes",
+      "classification": "DURABLE",
+      "authority": "dedicated-sql:live_record",
+      "source": "dedicated-sql:live_record",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/live-record/plans/{plan_id}/takes",
+      "module": "windagent_api.routers.v3.live_record.plans.create_take",
+      "classification": "DURABLE",
+      "authority": "dedicated-sql:live_record",
+      "source": "dedicated-sql:live_record",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/live-record/plans/{plan_id}/validate",
+      "module": "windagent_api.routers.v3.live_record.plans.validate_plan",
+      "classification": "DURABLE",
+      "authority": "dedicated-sql:live_record",
+      "source": "dedicated-sql:live_record",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/live-record/preparations",
+      "module": "windagent_api.routers.v3.live_record.preparations.prepare_recording_package",
+      "classification": "DURABLE",
+      "authority": "dedicated-sql:live_record",
+      "source": "dedicated-sql:live_record",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/live-record/sessions/bootstrap",
+      "module": "windagent_api.routers.v3.live_record.sessions.bootstrap_session",
+      "classification": "DURABLE",
+      "authority": "dedicated-sql:live_record",
+      "source": "dedicated-sql:live_record",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/live-record/sessions/{session_id}",
+      "module": "windagent_api.routers.v3.live_record.sessions.get_session",
+      "classification": "DURABLE",
+      "authority": "dedicated-sql:live_record",
+      "source": "dedicated-sql:live_record",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/live-record/sessions/{session_id}/token-refresh",
+      "module": "windagent_api.routers.v3.live_record.sessions.refresh_session_token",
+      "classification": "DURABLE",
+      "authority": "dedicated-sql:live_record",
+      "source": "dedicated-sql:live_record",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/live-record/takes/{take_id}",
+      "module": "windagent_api.routers.v3.live_record.takes.get_take",
+      "classification": "DURABLE",
+      "authority": "dedicated-sql:live_record",
+      "source": "dedicated-sql:live_record",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/live-record/takes/{take_id}/events",
+      "module": "windagent_api.routers.v3.live_record.takes.list_take_events",
+      "classification": "DURABLE",
+      "authority": "dedicated-sql:live_record",
+      "source": "dedicated-sql:live_record",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/live-record/takes/{take_id}/events",
+      "module": "windagent_api.routers.v3.live_record.takes.append_take_event",
+      "classification": "DURABLE",
+      "authority": "dedicated-sql:live_record",
+      "source": "dedicated-sql:live_record",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/live-record/takes/{take_id}/segments",
+      "module": "windagent_api.routers.v3.live_record.takes.list_take_segments",
+      "classification": "DURABLE",
+      "authority": "dedicated-sql:live_record",
+      "source": "dedicated-sql:live_record",
+      "migration_disposition": "no-migration"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/live-record/takes/{take_id}/segments",
+      "module": "windagent_api.routers.v3.live_record.takes.record_take_segment",
+      "classification": "DURABLE",
+      "authority": "dedicated-sql:live_record",
+      "source": "dedicated-sql:live_record",
       "migration_disposition": "no-migration"
     },
     {
@@ -806,6 +1229,15 @@
     },
     {
       "method": "GET",
+      "path": "/api/v3/production/packages/{package_id}",
+      "module": "windagent_api.routers.v3.production.get_package",
+      "classification": "DURABLE",
+      "authority": "v3_resources:production_packages",
+      "source": "v3_resources:production_packages",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
       "path": "/api/v3/project-templates",
       "module": "windagent_api.routers.v3.project_templates.list_project_templates",
       "classification": "DERIVED",
@@ -847,6 +1279,15 @@
       "classification": "DURABLE",
       "authority": "v3_resources:projects",
       "source": "v3_resources:projects",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/projects/{project_id}/assets/requirements",
+      "module": "windagent_api.routers.v3.assets.list_project_requirements",
+      "classification": "DURABLE",
+      "authority": "v3_resources:asset_requirements",
+      "source": "v3_resources:asset_requirements",
       "migration_disposition": "migrated-to-v3_resources"
     },
     {
@@ -949,6 +1390,15 @@
       "migration_disposition": "migrated-to-v3_resources"
     },
     {
+      "method": "PATCH",
+      "path": "/api/v3/projects/{project_id}/world/locations/{location_id}",
+      "module": "windagent_api.routers.v3.world.update_location",
+      "classification": "DURABLE",
+      "authority": "v3_resources:locations",
+      "source": "v3_resources:locations",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
       "method": "GET",
       "path": "/api/v3/projects/{project_id}/world/lore",
       "module": "windagent_api.routers.v3.world.list_lore",
@@ -964,6 +1414,15 @@
       "classification": "DURABLE",
       "authority": "v3_resources:lore",
       "source": "v3_resources:lore",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/projects/{project_id}/world/revisions",
+      "module": "windagent_api.routers.v3.world.list_world_revisions",
+      "classification": "DURABLE",
+      "authority": "v3_resources:world_bible_revisions",
+      "source": "v3_resources:world_bible_revisions",
       "migration_disposition": "migrated-to-v3_resources"
     },
     {
@@ -1291,6 +1750,15 @@
       "migration_disposition": "no-migration"
     },
     {
+      "method": "DELETE",
+      "path": "/api/v3/shots/{shot_id}",
+      "module": "windagent_api.routers.v3.production.delete_shot",
+      "classification": "DURABLE",
+      "authority": "v3_resources:shots",
+      "source": "v3_resources:shots",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
       "method": "GET",
       "path": "/api/v3/shots/{shot_id}",
       "module": "windagent_api.routers.v3.production.get_shot",
@@ -1310,6 +1778,24 @@
     },
     {
       "method": "POST",
+      "path": "/api/v3/shots/{shot_id}/actions/reorder",
+      "module": "windagent_api.routers.v3.production.reorder_shot",
+      "classification": "DURABLE",
+      "authority": "v3_resources:shots",
+      "source": "v3_resources:shots",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/shots/{shot_id}/actions/split",
+      "module": "windagent_api.routers.v3.production.split_shot",
+      "classification": "DURABLE",
+      "authority": "v3_resources:shots",
+      "source": "v3_resources:shots",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
       "path": "/api/v3/storyboard/scenes",
       "module": "windagent_api.routers.v3.storyboard.create_scene",
       "classification": "DURABLE",
@@ -1321,6 +1807,15 @@
       "method": "PATCH",
       "path": "/api/v3/storyboard/scenes/{scene_id}",
       "module": "windagent_api.routers.v3.storyboard.update_scene",
+      "classification": "DURABLE",
+      "authority": "v3_resources:scenes",
+      "source": "v3_resources:scenes",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/storyboard/scenes/{scene_id}/actions/split",
+      "module": "windagent_api.routers.v3.storyboard.split_scene",
       "classification": "DURABLE",
       "authority": "v3_resources:scenes",
       "source": "v3_resources:scenes",
@@ -1693,6 +2188,24 @@
       "classification": "DURABLE",
       "authority": "v3_resources:workflows",
       "source": "v3_resources:workflows",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v3/world-sync/{proposal_id}",
+      "module": "windagent_api.routers.v3.world.get_world_sync_proposal",
+      "classification": "DURABLE",
+      "authority": "v3_resources:world_sync_proposals",
+      "source": "v3_resources:world_sync_proposals",
+      "migration_disposition": "migrated-to-v3_resources"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v3/world-sync/{proposal_id}/apply",
+      "module": "windagent_api.routers.v3.world.apply_world_sync_action",
+      "classification": "DURABLE",
+      "authority": "v3_resources:world_sync_proposals",
+      "source": "v3_resources:world_sync_proposals,world_bibles,locations,factions,lore",
       "migration_disposition": "migrated-to-v3_resources"
     },
     {

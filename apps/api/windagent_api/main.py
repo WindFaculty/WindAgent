@@ -57,6 +57,8 @@ from windagent_api.routers.v3.common import (
 )
 from windagent_api.routers.v3.studio.errors import studio_error_handler
 from windagent_core.contracts.studio.errors import StudioError
+from windagent_api.routers.v3.live_record.errors import live_record_error_handler
+from windagent_core.contracts.live_record.errors import LiveRecordError
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -150,6 +152,11 @@ async def domain_exception_handler(request: Request, exc: DomainError) -> JSONRe
 @app.exception_handler(StudioError)
 async def studio_exception_handler(request: Request, exc: StudioError) -> JSONResponse:
     return studio_error_handler(request, exc)
+
+
+@app.exception_handler(LiveRecordError)
+async def live_record_exception_handler(request: Request, exc: LiveRecordError) -> JSONResponse:
+    return live_record_error_handler(request, exc)
 
 
 @app.exception_handler(WindAgentError)

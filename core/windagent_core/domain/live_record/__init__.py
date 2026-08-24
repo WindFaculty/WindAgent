@@ -1,0 +1,93 @@
+"""Canonical Live Record domain (live_record.contract/v0.1)."""
+
+from windagent_core.domain.live_record.lifecycle import (
+    RECORDABLE_STATES,
+    TERMINAL_STATES,
+    LiveExecutionPlanStatus,
+    PlanStatusStateMachine,
+)
+from windagent_core.domain.live_record.plan import (
+    PLAN_HASH_SCHEMA_VERSION,
+    ExpectedVisualState,
+    LiveExecutionPlan,
+    PreparedAction,
+    PreparedActionType,
+    RecordingCue,
+    RecordingProfile,
+    RecordingScene,
+    TypingMode,
+)
+from windagent_core.domain.live_record.runtime import (
+    DirectorSessionRecord,
+    RecordingEventRecord,
+    RecordingSegmentRecord,
+    RecordingTakeRecord,
+)
+from windagent_core.domain.live_record.executor import (
+    ALLOWED_DIRECTOR_TOOLS,
+    DENIED_TOOLS,
+    PREPARED_ACTION_TYPES,
+    DirectorToolCall,
+    ExecutorResult,
+    CodePlaybackProfile,
+    is_allowed_director_tool,
+    validate_tool_call,
+    verify_code_playback_hashes,
+)
+from windagent_core.domain.live_record.preparation import (
+    EpisodePreparationInput,
+    RecordingPreparationBuilder,
+    ScenePreparationInput,
+)
+from windagent_core.domain.live_record.failure_policy import (
+    FAILURE_CODES,
+    FAILURE_POLICIES,
+    PROPOSED_TRANSITIONS,
+    UNKNOWN_FAILURE_POLICY,
+    FailureClass,
+    FailurePolicy,
+    RecoveryAction,
+    classify_failure,
+    proposed_transition,
+)
+
+__all__ = [
+    "RECORDABLE_STATES",
+    "TERMINAL_STATES",
+    "LiveExecutionPlanStatus",
+    "PlanStatusStateMachine",
+    "PLAN_HASH_SCHEMA_VERSION",
+    "ExpectedVisualState",
+    "LiveExecutionPlan",
+    "PreparedAction",
+    "PreparedActionType",
+    "RecordingCue",
+    "RecordingProfile",
+    "RecordingScene",
+    "TypingMode",
+    "DirectorSessionRecord",
+    "RecordingEventRecord",
+    "RecordingSegmentRecord",
+    "RecordingTakeRecord",
+    "ALLOWED_DIRECTOR_TOOLS",
+    "DENIED_TOOLS",
+    "PREPARED_ACTION_TYPES",
+    "DirectorToolCall",
+    "ExecutorResult",
+    "CodePlaybackProfile",
+    "is_allowed_director_tool",
+    "validate_tool_call",
+    "verify_code_playback_hashes",
+    "EpisodePreparationInput",
+    "RecordingPreparationBuilder",
+    "ScenePreparationInput",
+    "FAILURE_CODES",
+    "FAILURE_POLICIES",
+    "PROPOSED_TRANSITIONS",
+    "UNKNOWN_FAILURE_POLICY",
+    "FailureClass",
+    "FailurePolicy",
+    "RecoveryAction",
+    "classify_failure",
+    "proposed_transition",
+]

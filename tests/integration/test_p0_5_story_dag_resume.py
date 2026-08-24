@@ -20,16 +20,13 @@ Assertions that matter:
 from __future__ import annotations
 
 import json
-import sys
 import tempfile
-import uuid
 from pathlib import Path
 
 import pytest
 from sqlalchemy import text
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(REPO_ROOT / "scripts" / "verification"))
 
 from windagent_api.composition.container import ApplicationContainer
 
@@ -182,9 +179,6 @@ async def test_worker_crash_midrun_resume_completes_without_duplicates():
     # The DAG is NOT finished at crash time.
     assert statuses_after_crash.get("lock") != "SUCCEEDED"
 
-    # Committed capabilities belong to the succeeded prefix only.
-    committed_caps = {req.capability for req in port1.requests}
-
     # P0.5.4: re-invoking start while the crashed run is STILL RUNNING
     # resumes the SAME run and never re-submits committed nodes.
     with _sync_engine(container) as sess:
@@ -218,10 +212,8 @@ async def test_worker_crash_midrun_resume_completes_without_duplicates():
     assert final_statuses.get("lock") == "SUCCEEDED", final_statuses
     # Resume never re-ran a committed task: no capability overlap between
     # the crashed worker's completions and the resumed worker's work…
-    resumed_caps = {req.capability for req in port2.requests}
     # …except when the crash happened BEFORE any LLM task of that capability
     # committed; the strict assertion is on the exact succeeded prefix:
-    overlap = resumed_caps & committed_caps
     # A capability may repeat across DIFFERENT nodes legitimately (e.g. two
     # review rounds); what must NEVER happen is a re-execution of a node
     # that already had a committed success. Verify per-node attempt counts.

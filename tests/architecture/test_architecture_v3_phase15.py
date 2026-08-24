@@ -19,20 +19,17 @@ from __future__ import annotations
 
 import asyncio
 import json
-import sys
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 import pytest
 from httpx import AsyncClient, ASGITransport
 from sqlalchemy import select
+from tests.support.waiting import async_deterministic_sleep
 
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
-sys.path.insert(0, str(ROOT_DIR))
 for pkg in ["core", "storage", "orchestration", "execution", "workflows", "providers", "tools", "apps/api", "apps/worker", "apps/cli", "observability"]:
     p = str(ROOT_DIR / pkg)
-    if p not in sys.path:
-        sys.path.insert(0, p)
 
 from windagent_storage.database.connection import DatabaseManager
 from windagent_storage.orm.models import BaseORM as RootBaseORM, OutboxRecordORM
@@ -114,7 +111,7 @@ async def test_gate_g15_1_sqlite_lock_errors_zero(bench_db_session_factory):
                                 lease_row.status = "released"
                     completed_tasks.append(claimed.task_id)
                 else:
-                    await asyncio.sleep(0.01)
+                    await async_deterministic_sleep(0.01)
             except Exception as e:
                 if "locked" in str(e).lower():
                     lock_errors.append(str(e))
@@ -163,7 +160,7 @@ async def test_gate_g15_2_and_3_zero_duplicate_claims_monotonic_fencing(bench_db
                 break
             all_claimed_task_ids.append(claimed.task_id)
             all_claimed_tokens.append(claimed.fencing_token)
-            await asyncio.sleep(0.001)
+            await async_deterministic_sleep(0.001)
 
     racers = [asyncio.create_task(racer(f"racer_{i}")) for i in range(num_workers)]
     await asyncio.gather(*racers)

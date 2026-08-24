@@ -1,12 +1,30 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 import { canTransition, evaluatePreflight, LIVE_RECORD_TRANSITIONS, isPlanFrozen, FAILURE_POLICIES } from '../domain/stateMachine';
 import { checkPlanStaleness, isPlanHashWellFormed, validatePreparedAction, validateTimelineMonotonic } from '../domain/validation';
 import { DIRECTOR_TOOL_DECLARATIONS, DIRECTOR_DENIED_TOOLS, isAllowedDirectorTool, validateDirectorToolCall } from '../contracts/directorTools';
 import { DEFAULT_ENGINE_PROFILE, RECORDING_PERFORMANCE_GATES } from '../contracts/recordingEngine';
 import type { PreparedAction, LiveExecutionPlan } from '../domain/types';
 
-describe('P0 Frozen Contracts — Gate LIVE_RECORD_P0_ARCHITECTURE_FROZEN', () => {
-  // ── State machine ──────────────────────────────────────────────────────────
+const ALL_GUARDS_PASS = {
+  episodeRevisionOk: true,
+  planFrozen: true,
+  planStale: false,
+  workspaceHashOk: true,
+  artifactsPresent: true,
+  actionsUntampered: true,
+  providerResolved: true,
+  credentialValid: true,
+  liveConnectivityOk: true,
+  recorderHealthy: true,
+  wgcAvailable: true,
+  nvencAvailable: true,
+  diskSufficient: true,
+  outputWritable: true,
+  privacyScanPassed: true,
+};
+
+describe('P0 Frozen Contracts - Gate LIVE_RECORD_P0_ARCHITECTURE_FROZEN', () => {
+  // -- State machine ---------------------------------------------------------
   it('state machine allows IDLE -> PREPARING but rejects IDLE -> RECORDING', () => {
     expect(canTransition('IDLE', 'PREPARING')).toBe(true);
     expect(canTransition('IDLE', 'RECORDING')).toBe(false);
@@ -35,69 +53,37 @@ describe('P0 Frozen Contracts — Gate LIVE_RECORD_P0_ARCHITECTURE_FROZEN', () =
     expect(isPlanFrozen('STALE')).toBe(false);
   });
 
-  // ── Preflight — 13 guards ──────────────────────────────────────────────────
-  it('preflight ok only when all 13 guards pass', () => {
-    const ok = evaluatePreflight({
-      episodeRevisionOk: true,
-      planFrozen: true,
-      planStale: false,
-      workspaceHashOk: true,
-      artifactsPresent: true,
-      actionsUntampered: true,
-      providerResolved: true,
-      credentialValid: true,
-      liveConnectivityOk: true,
-      recorderHealthy: true,
-      wgcAvailable: true,
-      nvencAvailable: true,
-      diskSufficient: true,
-      outputWritable: true,
-    });
+  // -- Preflight guards ------------------------------------------------------
+  it('preflight ok only when all guards pass', () => {
+    const ok = evaluatePreflight(ALL_GUARDS_PASS);
     expect(ok.ok).toBe(true);
     expect(ok.blockers.length).toBe(0);
   });
 
   it('preflight blocks when plan not frozen and when stale', () => {
-    const blocked = evaluatePreflight({
-      episodeRevisionOk: true,
-      planFrozen: false,
-      planStale: true,
-      workspaceHashOk: true,
-      artifactsPresent: true,
-      actionsUntampered: true,
-      providerResolved: true,
-      credentialValid: true,
-      liveConnectivityOk: true,
-      recorderHealthy: true,
-      wgcAvailable: true,
-      nvencAvailable: true,
-      diskSufficient: true,
-      outputWritable: true,
-    });
+    const blocked = evaluatePreflight({ ...ALL_GUARDS_PASS, planFrozen: false, planStale: true });
     expect(blocked.ok).toBe(false);
     expect(blocked.blockers.some((b) => b.code === 'PLAN_NOT_FROZEN')).toBe(true);
     expect(blocked.blockers.some((b) => b.code === 'PLAN_STALE')).toBe(true);
   });
 
   it('preflight blocks on NVENC/WGC unavailability (fail-closed)', () => {
-    const r = evaluatePreflight({
-      episodeRevisionOk: true,
-      planFrozen: true,
-      planStale: false,
-      workspaceHashOk: true,
-      artifactsPresent: true,
-      actionsUntampered: true,
-      providerResolved: true,
-      credentialValid: true,
-      liveConnectivityOk: true,
-      recorderHealthy: true,
-      wgcAvailable: false,
-      nvencAvailable: false,
-      diskSufficient: true,
-      outputWritable: true,
-    });
+    const r = evaluatePreflight({ ...ALL_GUARDS_PASS, wgcAvailable: false, nvencAvailable: false });
     expect(r.blockers.some((b) => b.code === 'WGC_UNAVAILABLE')).toBe(true);
     expect(r.blockers.some((b) => b.code === 'NVENC_UNAVAILABLE')).toBe(true);
+  });
+
+  it('preflight fail-closed while privacy scan is pending or failed (Section 23/33)', () => {
+    const pending = evaluatePreflight({ ...ALL_GUARDS_PASS, privacyScanPassed: undefined });
+    expect(pending.ok).toBe(false);
+    expect(pending.blockers.some((b) => b.code === 'PRIVACY_SCAN_FAILED')).toBe(true);
+
+    const failed = evaluatePreflight({ ...ALL_GUARDS_PASS, privacyScanPassed: false });
+    expect(failed.ok).toBe(false);
+    expect(failed.blockers.some((b) => b.code === 'PRIVACY_SCAN_FAILED')).toBe(true);
+
+    const passed = evaluatePreflight(ALL_GUARDS_PASS);
+    expect(passed.blockers.some((b) => b.code === 'PRIVACY_SCAN_FAILED')).toBe(false);
   });
 
   it('failure policies cover all three classes', () => {
@@ -107,7 +93,7 @@ describe('P0 Frozen Contracts — Gate LIVE_RECORD_P0_ARCHITECTURE_FROZEN', () =
     expect(classes.has('FATAL')).toBe(true);
   });
 
-  // ── Plan validation ────────────────────────────────────────────────────────
+  // -- Plan validation -------------------------------------------------------
   it('detects stale plan via episode_revision mismatch', () => {
     const plan = { episode_revision_id: 'rev_001' } as LiveExecutionPlan;
     expect(checkPlanStaleness(plan, 'rev_002').stale).toBe(true);
@@ -143,7 +129,7 @@ describe('P0 Frozen Contracts — Gate LIVE_RECORD_P0_ARCHITECTURE_FROZEN', () =
     expect(validateTimelineMonotonic([{ t: 0 }, { t: 5 }, { t: 3 }])).toBe(false);
   });
 
-  // ── Director tool manifest ─────────────────────────────────────────────────
+  // -- Director tool manifest ------------------------------------------------
   it('director allowlist contains constrained tools only', () => {
     const names = DIRECTOR_TOOL_DECLARATIONS.map((d) => d.name);
     expect(names).toContain('execute_prepared_action');
@@ -182,7 +168,7 @@ describe('P0 Frozen Contracts — Gate LIVE_RECORD_P0_ARCHITECTURE_FROZEN', () =
     expect(validateDirectorToolCall(callBad, allowed, states).reason).toBe('ACTION_NOT_IN_PLAN');
   });
 
-  // ── Recording engine ───────────────────────────────────────────────────────
+  // -- Recording engine ------------------------------------------------------
   it('engine defaults to 1920x1080@60 H264 segmented MKV, audio disabled', () => {
     expect(DEFAULT_ENGINE_PROFILE.resolution).toEqual({ width: 1920, height: 1080 });
     expect(DEFAULT_ENGINE_PROFILE.fps).toBe(60);
@@ -198,7 +184,7 @@ describe('P0 Frozen Contracts — Gate LIVE_RECORD_P0_ARCHITECTURE_FROZEN', () =
     expect(RECORDING_PERFORMANCE_GATES.nvenc_required).toBe(true);
   });
 
-  // ── Subsystem boundary evidence ────────────────────────────────────────────
+  // -- Subsystem boundary evidence -------------------------------------------
   it('four subsystems are importable (no god file)', async () => {
     const domain = await import('../domain');
     const contracts = await import('../contracts');

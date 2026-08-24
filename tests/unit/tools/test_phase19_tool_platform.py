@@ -6,15 +6,11 @@ path sandbox traversal/symlink protection, destructive tool permission guards, a
 
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 
 root = Path(__file__).resolve().parent.parent.parent.parent
-sys.path.insert(0, str(root))
 for pkg in ["core", "storage", "orchestration", "execution", "workflows", "tools"]:
     p = str(root / pkg)
-    if p not in sys.path:
-        sys.path.insert(0, p)
 
 import pytest
 import windagent_tools

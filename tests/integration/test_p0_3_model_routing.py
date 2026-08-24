@@ -52,7 +52,9 @@ from windagent_storage.repositories.v3_routing_repositories import (
     SQLModelRouteReceiptRepository,
 )
 from windagent_worker.studio_model_port import RouteLockedModelPort
-from tests.fakes.routing_fakes import InMemoryLockStore
+from tests.fakes.providers.routing import InMemoryLockStore
+pytestmark = pytest.mark.postgres
+
 
 PRIMARY_MODEL = "test/primary-model"
 FALLBACK_MODEL = "test/fallback-model"

@@ -1,0 +1,23 @@
+{
+  "git": {
+    "source_sha": "73079a9b6d3e18eae5fd2c49c6d5ec8e8bad5aaa",
+    "verified_sha": "73079a9b6d3e18eae5fd2c49c6d5ec8e8bad5aaa",
+    "branch": "refactor/architecture-v3-hardening",
+    "worktree_clean": false
+  },
+  "runtime": {
+    "os": "windows",
+    "os_version": "10",
+    "python": "3.11.15",
+    "python_implementation": "CPython",
+    "uv": "0.11.28 (ebf0f43d7 2026-07-07 x86_64-pc-windows-msvc)",
+    "node": "22.23.1",
+    "npm": "",
+    "postgres": null
+  },
+  "tools": {
+    "pytest": "9.1.1",
+    "ruff": "0.16.0",
+    "mypy": null
+  }
+}

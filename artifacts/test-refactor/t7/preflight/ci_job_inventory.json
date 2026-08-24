@@ -1,0 +1,29 @@
+{
+  "jobs": [
+    "artifact-protocol",
+    "version-consistency",
+    "architecture-boundaries",
+    "python-unit-sqlite",
+    "python-unit-windows",
+    "python-integration-sqlite",
+    "python-integration-postgres",
+    "runtime-smoke",
+    "cli-contract",
+    "web-test",
+    "web-test-windows",
+    "desktop-test",
+    "desktop-test-windows",
+    "studio-roadmap-gates",
+    "p1-e2e-postgres",
+    "lint",
+    "unit-pure",
+    "component-sqlite",
+    "contracts",
+    "verification-tier",
+    "postgres-production-semantics",
+    "windows-portability",
+    "e2e-multiprocess",
+    "final-evidence"
+  ],
+  "job_count": 24
+}

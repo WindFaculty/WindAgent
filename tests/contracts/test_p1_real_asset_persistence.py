@@ -13,6 +13,7 @@ Verifies:
 """
 from __future__ import annotations
 
+import pytest
 import base64
 import hashlib
 
@@ -270,3 +271,31 @@ class TestRealAssetPersistence:
             assert any(r["revision_id"] == rev_id and r["provenance"]["content_hash"] == PNG_1X1_HASH for r in revs)
             restored = second.get(f"/api/v3/production/packages/{pkg_id}").json()
             assert restored["package_hash"] == pkg["package_hash"]
+
+@pytest.mark.postgres
+class TestPostgresRealAsset:
+    def test_pg_real_asset_on_postgres(self, monkeypatch, tmp_path):
+        import os
+        pg_url = os.environ.get("WINDAGENT_TEST_POSTGRES_URL", "").strip()
+        if not pg_url or not pg_url.startswith("postgresql+asyncpg://"):
+            pytest.skip("PG not available")
+        monkeypatch.setenv("WINDAGENT_PROFILE", "demo")
+        monkeypatch.setenv("WINDAGENT_DATABASE_URL", pg_url)
+        with TestClient(app) as api:
+            _lock(api)
+            _sync_all(api)
+            _enrich_characters(api)
+            reqs = api.get(f"/api/v3/episodes/{DEMO_EPISODE}/assets/requirements").json()
+            req = next(r for r in reqs if r.get("mandatory") and r.get("status") == "OPEN")
+            r = api.post("/api/v3/assets", json={
+                "name": f"PG Real {req['name']}",
+                "type": "IMAGE",
+                "episode_id": DEMO_EPISODE,
+                "project_id": DEMO_PROJECT,
+                "requirement_id": req["requirement_id"],
+                "content_base64": PNG_1X1_B64,
+            })
+            assert r.status_code == 201, r.text
+            asset = r.json()
+            assert asset["provenance"]["content_hash"] == PNG_1X1_HASH
+

@@ -27,6 +27,9 @@
   "bundle": {
     "active": true,
     "targets": "all",
+    "externalBin": [
+      "binaries/windagent-recorder"
+    ],
     "icon": [
       "icons/icon.png"
     ]

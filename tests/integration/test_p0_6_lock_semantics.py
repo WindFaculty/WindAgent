@@ -15,7 +15,6 @@ and inspects the persisted LockedScreenplayReceipt artifact.
 from __future__ import annotations
 
 import json
-import sys
 import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
@@ -23,7 +22,6 @@ from pathlib import Path
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(REPO_ROOT / "scripts" / "verification"))
 
 from windagent_api.composition.container import ApplicationContainer
 

@@ -348,13 +348,17 @@ class GoogleGeminiProviderAdapter:
             results = []
             for item in raw_models:
                 m_name = item.get("name", "").replace("models/", "")
+                caps = ["chat", "streaming", "tool_use", "vision"]
+                # Live API models expose video input + live capabilities (Section 1: gemini-3.1-flash-live-preview)
+                if "live" in m_name.lower():
+                    caps.extend(["live_api", "video_input"])
                 results.append(
                     DiscoveredModel(
                         raw_model_id=m_name,
                         canonical_name=item.get("displayName", m_name),
                         provider_id=self.provider_name,
                         context_window=item.get("inputTokenLimit", 1000000),
-                        capabilities=["chat", "streaming", "tool_use", "vision"],
+                        capabilities=caps,
                     )
                 )
             return results

@@ -73,6 +73,7 @@ class ApplicationContainer:
         self.orchestrator_service: Optional[OrchestratorService] = None
         self.studio_application_service: Optional[Any] = None
         self.studio_capability_provider: Optional[Any] = None
+        self.live_record_application_service: Optional[Any] = None
         self.v3_resource_service: Optional[Any] = None
         self.routing_authority_bridge: Optional[Any] = None
         self.provider_management_service: Optional[Any] = None
@@ -182,6 +183,21 @@ class ApplicationContainer:
         studio_bundle = StudioComposer.compose_application(self, repo_bundle)
         self.studio_capability_provider = studio_bundle.studio_capability_provider
         self.studio_application_service = studio_bundle.studio_application_service
+
+        # 9b. Live Record surface (ban_ke_hoach_v1.md Phase 1): plan/take
+        # repositories over the shared async session factory. The credential
+        # resolver lets the director bootstrap mint REAL Google ephemeral
+        # tokens from the encrypted provider credential store.
+        from windagent_api.composition.live_record import (
+            LiveRecordComposer,
+            make_provider_credential_resolver,
+        )
+        self.live_record_application_service = LiveRecordComposer.compose(
+            self.db,
+            credential_resolver=make_provider_credential_resolver(
+                repo_bundle.provider_management_repo
+            ),
+        )
 
         # 10. Health/readiness query.
         health_bundle = HealthComposer.compose(repo_bundle)

@@ -1,0 +1,38 @@
+{
+  "total_collected": 4569,
+  "by_tier_collected": {
+    "architecture": 594,
+    "component": 427,
+    "contracts": 822,
+    "e2e": 7,
+    "integration": 135,
+    "regression": 25,
+    "unit": 2157,
+    "verification": 402
+  },
+  "by_tier_files": {
+    "unit": 145,
+    "component": 55,
+    "contracts": 65,
+    "integration": 24,
+    "e2e": 5,
+    "architecture": 67,
+    "verification": 26,
+    "regression": 2,
+    "support": 7,
+    "fakes": 6,
+    "fixtures": 5
+  },
+  "nodeids_sample": [
+    "tests/architecture/boundaries/test_domain_invariants.py::test_domain_has_no_infrastructure_dependencies",
+    "tests/architecture/boundaries/test_domain_invariants.py::test_storage_implements_declared_ports",
+    "tests/architecture/boundaries/test_domain_invariants.py::test_api_depends_only_on_application_ports",
+    "tests/architecture/boundaries/test_domain_invariants.py::test_no_legacy_runtime_imports",
+    "tests/architecture/test_architecture_policy.py::test_checker_rejects_architecture_violation[<lambda>-cross_app_dependency]",
+    "tests/architecture/test_architecture_policy.py::test_checker_rejects_architecture_violation[<lambda>-disallowed_dependency]",
+    "tests/architecture/test_architecture_policy.py::test_checker_rejects_architecture_violation[<lambda>-core_framework_import]",
+    "tests/architecture/test_architecture_policy.py::test_checker_rejects_architecture_violation[<lambda>-undeclared_workspace_dependency]",
+    "tests/architecture/test_architecture_policy.py::test_checker_rejects_architecture_violation[<lambda>-dependency_cycle]",
+    "tests/architecture/test_architecture_policy.py::test_checker_rejects_architecture_violation[<lambda>-namespace_path_mismatch]"
+  ]
+}

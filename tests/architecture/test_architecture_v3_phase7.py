@@ -24,7 +24,6 @@ from __future__ import annotations
 
 import ast
 import asyncio
-import sys
 from pathlib import Path
 
 import pytest
@@ -34,10 +33,6 @@ import check_architecture_imports as checker  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPTS = ROOT / "scripts"
-if str(SCRIPTS) not in sys.path:
-    sys.path.insert(0, str(SCRIPTS))
-if str(ROOT / "apps" / "api") not in sys.path:
-    sys.path.insert(0, str(ROOT / "apps" / "api"))
 
 API_PACKAGE = ROOT / "apps" / "api" / "windagent_api"
 COMPOSITION_DIR = API_PACKAGE / "composition"

@@ -19,6 +19,8 @@ export interface LiveVideoPreviewProps {
   fps?: number;
   activeSceneIndex?: number;
   teleprompterText?: string;
+  /** Real sidecar preview (data:image/jpeg;base64) — overlays the simulation when present. */
+  previewDataUrl?: string;
 }
 
 export const LiveVideoPreview: React.FC<LiveVideoPreviewProps> = ({
@@ -28,6 +30,7 @@ export const LiveVideoPreview: React.FC<LiveVideoPreviewProps> = ({
   fps = 60,
   activeSceneIndex = 1,
   teleprompterText = '',
+  previewDataUrl,
 }) => {
   const [screenMode, setScreenMode] = useState<AIAgentScreenMode>('host');
   const [terminalLogIndex, setTerminalLogIndex] = useState<number>(4);
@@ -96,6 +99,24 @@ export const LiveVideoPreview: React.FC<LiveVideoPreviewProps> = ({
       {/* ========================================================================= */}
       {/* SCREEN VIEWPORTS (AI AGENT OPERATION SCREENS)                             */}
       {/* ========================================================================= */}
+
+      {/* Real sidecar preview frame (≤1280×720 JPEG @ ≤2FPS, Principle E).
+          Rendered above the simulation layers but below the overlay badges. */}
+      {previewDataUrl && (
+        <img
+          src={previewDataUrl}
+          alt="Live preview từ recording engine"
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            zIndex: 4,
+          }}
+        />
+      )}
 
       {/* Mode 1: AI STUDIO HOST STAGE */}
       {screenMode === 'host' && (

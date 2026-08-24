@@ -48,6 +48,8 @@ from windagent_providers.routing.route_lock_service import (
 )
 from windagent_providers.routing.rule_matcher import RuleMatchContext, RuleMatcher
 from windagent_providers.routing.rules import RoutingRule, RoutingRuleSet
+pytestmark = pytest.mark.postgres
+
 
 
 # ──────────────────────────────────────────────

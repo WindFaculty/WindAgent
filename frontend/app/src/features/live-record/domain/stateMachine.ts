@@ -87,7 +87,8 @@ export type PreflightBlockerCode =
   | 'NVENC_UNAVAILABLE'
   | 'DISK_INSUFFICIENT'
   | 'OUTPUT_PATH_NOT_WRITABLE'
-  | 'ACTION_TAMPERED';
+  | 'ACTION_TAMPERED'
+  | 'PRIVACY_SCAN_FAILED';
 
 export interface PreflightBlocker {
   readonly code: PreflightBlockerCode;
@@ -117,6 +118,8 @@ export function evaluatePreflight(checks: {
   nvencAvailable: boolean;
   diskSufficient: boolean;
   outputWritable: boolean;
+  /** §23/§33: plan content proven secret-free. Absent ⇒ fail-closed blocker. */
+  privacyScanPassed?: boolean;
 }): PreflightResult {
   const blockers: PreflightBlocker[] = [];
 
@@ -125,6 +128,7 @@ export function evaluatePreflight(checks: {
   if (!checks.workspaceHashOk) blockers.push({ code: 'WORKSPACE_HASH_MISMATCH', message: 'Source workspace hash mismatch', recoverable: false });
   if (!checks.artifactsPresent) blockers.push({ code: 'ARTIFACT_MISSING', message: 'Thiếu prepared artifact', recoverable: true });
   if (!checks.actionsUntampered) blockers.push({ code: 'ACTION_TAMPERED', message: 'Prepared action hash không khớp plan_hash', recoverable: false });
+  if (checks.privacyScanPassed !== true) blockers.push({ code: 'PRIVACY_SCAN_FAILED', message: 'Privacy scan chưa PASS — có thể có secret trong nội dung quay', recoverable: true });
   if (!checks.providerResolved) blockers.push({ code: 'PROVIDER_UNAVAILABLE', message: 'Không resolve được LIVE_DIRECTOR provider', recoverable: true });
   if (!checks.credentialValid) blockers.push({ code: 'CREDENTIAL_INVALID', message: 'Provider credential invalid', recoverable: true });
   if (!checks.liveConnectivityOk) blockers.push({ code: 'LIVE_CONNECTIVITY_FAILED', message: 'Không kết nối được Gemini Live', recoverable: true });

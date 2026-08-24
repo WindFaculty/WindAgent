@@ -61,7 +61,7 @@ def run_stage_h_verification() -> bool:
 
     # 3. UI43: Asset Behavioral Tests
     print("[3/6] Running UI43 Asset Behavioral Suite...")
-    from tests.fakes.fake_asset_resolver import FakeAssetResolver
+    from tests.fakes.storage.asset_resolver import FakeAssetResolver
 
     resolver = FakeAssetResolver()
     valid_ssrf, _ = resolver.validate_ssrf_url("https://cdn.windagent.local/asset.glb")

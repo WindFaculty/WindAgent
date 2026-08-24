@@ -31,6 +31,8 @@ from windagent_providers.routing.route_lock_service import (
 )
 from windagent_providers.routing.rule_matcher import RuleMatchContext
 from windagent_providers.routing.rules import RoutingRule, RoutingRuleSet
+pytestmark = pytest.mark.postgres
+
 
 
 def _db_url() -> str:
@@ -55,7 +57,7 @@ def factories(db_url):
     # FK enforcement (GAP A): route_locks_v3.canonical_model_id references
     # canonical_models_v3.id. Production seeds models from discovery before a
     # lock is resolved; tests seed the model the rule resolves to here.
-    from tests.fakes.provider_graph_seed import seed_canonical_model
+    from tests.fakes.providers.provider_graph import seed_canonical_model
     seed_canonical_model(sf(), "cm-gpt4o")
     return sf
 

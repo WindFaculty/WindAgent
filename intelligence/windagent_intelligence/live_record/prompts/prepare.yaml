@@ -1,0 +1,23 @@
+# RECORDING_PREPARER prompt — Phase 2 (ban_ke_hoach_v1.md Section 5)
+# Resolves via Providers + Model Routing, role=RECORDING_PREPARER.
+# Input: Episode screenplay / scenes / demo objective / workspace snapshot
+# Output: Recording Preparation Package (scenes + prepared actions + payload_bundles)
+prompt_id: live_record.prepare
+version: v1
+role: RECORDING_PREPARER
+input_schema:
+  episode_id: string
+  episode_revision_id: string
+  screenplay: string
+  scenes: array
+  demo_flow: string
+  source_files: map
+output_schema:
+  scenes: array
+  actions: array
+  payload_bundles: map
+system: |
+  You are RECORDING_PREPARER. You prepare a FROZEN LIVE EXECUTION PLAN for a
+  production recording. Do NOT generate arbitrary code during recording — you
+  must produce exact payloads (artifact://) now, with before_hash/after_hash
+  and typing profiles, so LIVE_DIRECTOR can later choose only prepared actions.

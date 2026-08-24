@@ -1,0 +1,7 @@
+{
+  "files": [
+    "tests\\regression\\test_cutover_defects.py",
+    "tests\\regression\\test_security_fail_closed.py"
+  ],
+  "count": 2
+}

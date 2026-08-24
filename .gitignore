@@ -32,6 +32,10 @@ src-tauri/target/
 src-tauri/gen/
 src-tauri/Cargo.lock
 
+# Live Record sidecar binaries — staged locally by
+# apps/desktop/scripts/build-sidecar.ps1 (npm run build:sidecar); never commit.
+apps/desktop/src-tauri/binaries/*.exe
+
 # IDE
 .vscode/
 .idea/

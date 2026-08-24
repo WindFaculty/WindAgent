@@ -14,7 +14,6 @@ from __future__ import annotations
 
 import json
 import re
-import sys
 from pathlib import Path
 
 import yaml
@@ -23,8 +22,6 @@ import check_architecture_imports as checker  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPTS = ROOT / "scripts"
-if str(SCRIPTS) not in sys.path:
-    sys.path.insert(0, str(SCRIPTS))
 
 INVENTORY_PATH = (
     ROOT / "artifacts" / "architecture_v3" / "phase_04" / "route-inventory.json"
@@ -45,7 +42,6 @@ def _load_namespace_authority() -> dict:
 
 def _actual_routes() -> set[tuple[str, str]]:
     """Return the set of (method, path) actually registered on the app."""
-    sys.path.insert(0, str(ROOT / "apps" / "api"))
     from windagent_api.main import app
 
     routes: set[tuple[str, str]] = set()

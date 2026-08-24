@@ -1,0 +1,18 @@
+{
+  "created_at": "2026-08-23T12:27:47.924690+00:00",
+  "commit_sha": "73079a9b6d3e18eae5fd2c49c6d5ec8e8bad5aaa",
+  "branch": "refactor/architecture-v3-hardening",
+  "worktree_clean": false,
+  "counts": {
+    "collected_nodeids": 4518,
+    "architecture": 590,
+    "contracts": 710,
+    "integration": 140,
+    "regression": 25,
+    "unit": 3053,
+    "fakes_or_fixtures": 0
+  },
+  "platform": "Windows-10-10.0.26200-SP0",
+  "python": "3.11.15 (main, Jun 23 2026, 15:20:37) [MSC v.1944 64 bit (AMD64)]",
+  "note": "junit.xml pending full run (timeout 600s exceeded on Windows); baseline uses collection only. Full junit will be generated in T6 with sharded runs."
+}

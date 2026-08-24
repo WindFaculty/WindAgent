@@ -372,7 +372,6 @@ def _matrix() -> Dict[str, Any]:
                 "tests/architecture/test_phase03_video_production_architecture.py",
                 "tests/architecture/test_phase08_director_canonical.py",
                 "tests/architecture/test_phase3_blender_architecture.py",
-                "tests/integration/test_vp3d_ui_p7_realtime_state_verified.py",
                 "tests/unit/core/test_phase03_video_production_contracts.py",
                 "tests/unit/core/test_phase03_video_production_domain.py",
                 "tests/unit/core/test_phase03_video_production_events.py",

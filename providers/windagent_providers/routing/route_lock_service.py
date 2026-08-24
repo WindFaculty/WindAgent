@@ -136,7 +136,7 @@ class RouteLockService:
                 "Inject RouteLockRepositoryPort for cross-process durability.",
                 stacklevel=2,
             )
-            from tests.fakes.routing_fakes import InMemoryLockStore
+            from tests.fakes.providers.routing import InMemoryLockStore
             self._lock_repo = InMemoryLockStore()
 
         # Per-scope creation locks to avoid thundering herd (in-memory only helps
@@ -340,7 +340,7 @@ class RouteLockService:
     # ------------------------------------------------------------------ #
     def snapshot(self) -> List[dict]:
         """Serialise all lock records (for in-memory store / diagnostics)."""
-        from tests.fakes.routing_fakes import InMemoryLockStore
+        from tests.fakes.providers.routing import InMemoryLockStore
         with self._mutex:
             if isinstance(self._lock_repo, InMemoryLockStore):
                 return [rec.to_dict() for rec in self._lock_repo._lock_by_id.values()]
@@ -348,7 +348,7 @@ class RouteLockService:
 
     def restore_snapshot(self, records: List[dict]) -> None:
         """Restore in-memory lock records (dev/test only)."""
-        from tests.fakes.routing_fakes import InMemoryLockStore
+        from tests.fakes.providers.routing import InMemoryLockStore
         with self._mutex:
             if isinstance(self._lock_repo, InMemoryLockStore):
                 for d in records:

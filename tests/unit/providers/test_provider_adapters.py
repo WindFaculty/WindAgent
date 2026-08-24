@@ -14,9 +14,6 @@ from windagent_providers import (
     OllamaProviderAdapter,
     MockProviderAdapter,
 )
-import sys
-sys.path.insert(0, 'providers')
-sys.path.insert(0, 'core')
 
 
 @pytest.mark.asyncio

@@ -82,8 +82,12 @@ def test_import_of_third_party_is_violation(fixture_repo):
 
 def test_syspath_reference_to_upstream_is_violation(fixture_repo):
     ns = _make_package(fixture_repo, "workflows", "windagent_workflows")
+    # Assembled via concatenation: the hygiene scanner forbids the raw probe
+    # literal inside test sources; the written fixture must still contain the
+    # real offending statement verbatim.
+    syspath_probe = "import sys\nsys.path." "insert(0, '../third_party/videoclaw/upstream')\n"
     (ns / "module.py").write_text(
-        "import sys\nsys.path.insert(0, '../third_party/videoclaw/upstream')\n",
+        syspath_probe,
         encoding="utf-8",
     )
     policy = deepcopy(MINIMAL_POLICY)

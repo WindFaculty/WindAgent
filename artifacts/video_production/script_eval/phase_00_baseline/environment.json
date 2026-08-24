@@ -7,7 +7,7 @@
   "cpu_count_logical": "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel",
   "cpu_logical_cores": 24,
   "total_ram_gb": 31.6,
-  "disk_free_gb": 173.6,
+  "disk_free_gb": 171.2,
   "toolchain": {
     "uv": "uv 0.11.28 (ebf0f43d7 2026-07-07 x86_64-pc-windows-msvc)",
     "git": "git version 2.55.0.windows.2",

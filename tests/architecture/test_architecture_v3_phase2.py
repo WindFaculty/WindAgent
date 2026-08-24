@@ -9,7 +9,6 @@ workspace dependency graph is a DAG with no undeclared workspace edges.
 """
 
 import re
-import sys
 import tomllib
 from pathlib import Path
 
@@ -20,8 +19,6 @@ import check_architecture_imports as checker  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPTS = ROOT / "scripts"
-if str(SCRIPTS) not in sys.path:
-    sys.path.insert(0, str(SCRIPTS))
 
 
 def v3_policy() -> dict:

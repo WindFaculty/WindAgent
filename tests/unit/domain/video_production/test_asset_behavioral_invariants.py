@@ -11,8 +11,8 @@ Validates:
 
 from __future__ import annotations
 
-from tests.fakes.fake_asset_resolver import FakeAssetResolver
-from tests.fixtures.canonical_bunny_episode import build_canonical_bunny_episode
+from tests.fakes.storage.asset_resolver import FakeAssetResolver
+from tests.fixtures.canonical.canonical_bunny_episode import build_canonical_bunny_episode
 
 
 def test_asset_taxonomy_and_query_filtering() -> None:

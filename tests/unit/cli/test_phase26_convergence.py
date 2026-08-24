@@ -6,16 +6,10 @@ and sidecar manager dynamic port reservation and process lifecycle.
 
 from __future__ import annotations
 
-import sys
 import json
 from pathlib import Path
 
 root = Path(__file__).resolve().parent.parent.parent.parent
-sys.path.insert(0, str(root))
-for pkg in ["core", "storage", "orchestration", "execution", "workflows", "tools", "apps/cli", "apps/desktop"]:
-    p = str(root / pkg)
-    if p not in sys.path:
-        sys.path.insert(0, p)
 
 from windagent_cli.main import main, doctor, architecture_check
 from sidecar_manager import SidecarManager, get_free_port

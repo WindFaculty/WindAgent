@@ -15,16 +15,16 @@
   },
   "dependencies": {
     "@tanstack/react-query": "^5.62.0",
-    "@windagent/api-contracts": "file:../packages/api-contracts",
+    "@tauri-apps/api": "^2.11.1",
     "@windagent/api-client": "file:../packages/api-client",
+    "@windagent/api-contracts": "file:../packages/api-contracts",
     "@windagent/realtime": "file:../packages/realtime",
     "@windagent/studio-shell": "file:../packages/studio-shell",
     "@windagent/ui": "file:../packages/ui",
-
+    "lucide-react": "^0.344.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "zustand": "^5.0.14",
-    "lucide-react": "^0.344.0"
+    "zustand": "^5.0.14"
   },
   "devDependencies": {
     "@types/react": "^18.3.12",

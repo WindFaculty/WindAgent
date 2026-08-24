@@ -1,0 +1,181 @@
+{
+  "entries": [
+    "tests/unit/storage",
+    "tests/unit/storage/migrations",
+    "tests/unit/providers/test_route_lock",
+    "tests/unit/providers/test_cache_singleflight",
+    "tests/unit/providers/test_endpoint_failover",
+    "tests/unit/providers/test_endpoint_detection",
+    "tests/unit/providers/test_native_adapters",
+    "tests/unit/providers/test_openai_compatible_transport",
+    "tests/unit/providers/test_phase5_asset_gateway",
+    "tests/unit/providers/test_phase6_canonical",
+    "tests/unit/providers/test_provider_v3_fault_injection",
+    "tests/unit/providers/test_studio_model_port",
+    "tests/unit/providers/test_v3_contracts",
+    "tests/unit/observability",
+    "tests/unit/worker",
+    "tests/unit/orchestration/test_studio",
+    "tests/unit/orchestration/test_phase17",
+    "tests/unit/orchestration/test_concurrency_and_crash",
+    "tests/unit/orchestration/test_dispatcher_leases",
+    "tests/unit/orchestration/test_durable_task_manager",
+    "tests/unit/orchestration/test_orchestration_engine",
+    "tests/unit/orchestration/test_phase19_cost_quota",
+    "tests/unit/orchestration/test_phase2",
+    "tests/unit/orchestration/test_phase3",
+    "tests/unit/orchestration/test_phase4",
+    "tests/unit/orchestration/test_phase5",
+    "tests/unit/orchestration/test_phase6",
+    "tests/unit/orchestration/test_phase7",
+    "tests/unit/orchestration/test_phase8",
+    "tests/unit/orchestration/test_phase9",
+    "tests/unit/orchestration/test_recovery",
+    "tests/unit/orchestration/test_retry_classifier",
+    "tests/unit/orchestration/test_scheduler",
+    "tests/unit/orchestration/test_workflow_engine",
+    "tests/unit/tools/test_agent_browser_tool",
+    "tests/unit/tools/test_phase3_blender_runtime",
+    "tests/unit/tools/test_phase4_blender_scene",
+    "tests/unit/tools/test_phase7",
+    "tests/unit/tools/test_plugins_skills_mcp",
+    "tests/unit/execution",
+    "tests/unit/memory",
+    "tests/unit/scripts",
+    "tests/unit/verification",
+    "tests/unit/api",
+    "tests/unit/core/test_phase1_production_engine_port",
+    "tests/unit/core/test_repository_root",
+    "tests/unit/core/test_phase5_canonical_contracts",
+    "tests/unit/core/test_phase7_version_authority",
+    "tests/unit/test_phase7_composition",
+    "tests/unit/intelligence/test_phase24_ffmpeg_assembly",
+    "tests/unit/intelligence/test_phase25_golden_scene",
+    "tests/unit/intelligence/test_phase26_episode",
+    "tests/unit/intelligence/story/test_fixture_port",
+    "tests/unit/intelligence/story/test_structured_invocation",
+    "tests/unit/intelligence/test_intelligence_system",
+    "tests/unit/intelligence/test_phase23_workspace",
+    "tests/unit/domain/video_production/test_stage_f_human_agent_collaboration",
+    "tests/unit/domain/video_production/test_stage_g_recovery_conflict",
+    "tests/unit/final/test_phase28_full_adoption",
+    "tests/unit/test_phase8_api_v1_removal",
+    "tests/unit/providers/mock_adapter",
+    "tests/unit/tools/test_phase12_browser_runtime",
+    "tests/unit/tools/test_phase22_technical_review",
+    "tests/unit/workflows/test_phase5_model_routing",
+    "tests/unit/execution/test_phase18_execution_worker",
+    "tests/unit/memory/test_memory_system",
+    "tests/unit/orchestration/test_phase17_durable_workflow",
+    "tests/unit/orchestration/test_scheduler"
+  ],
+  "count": 68,
+  "violating_if_removed": {
+    "tests/unit/test_phase8_api_v1_removal.py": [
+      "TestClient"
+    ],
+    "tests/unit/api/test_openapi_snapshot.py": [
+      "subprocess"
+    ],
+    "tests/unit/core/test_phase5_canonical_contracts.py": [
+      "subprocess"
+    ],
+    "tests/unit/core/test_phase7_version_authority.py": [
+      "subprocess"
+    ],
+    "tests/unit/core/test_repository_root.py": [
+      "subprocess"
+    ],
+    "tests/unit/domain/video_production/test_stage_f_human_agent_collaboration.py": [
+      "TestClient"
+    ],
+    "tests/unit/domain/video_production/test_stage_g_recovery_conflict.py": [
+      "TestClient"
+    ],
+    "tests/unit/execution/test_phase18_execution_worker.py": [
+      "time.sleep"
+    ],
+    "tests/unit/final/test_phase28_full_adoption.py": [
+      "TestClient",
+      "subprocess"
+    ],
+    "tests/unit/intelligence/test_intelligence_system.py": [
+      "subprocess"
+    ],
+    "tests/unit/intelligence/test_phase23_workspace.py": [
+      "TestClient"
+    ],
+    "tests/unit/memory/test_memory_system.py": [
+      "time.sleep"
+    ],
+    "tests/unit/orchestration/test_phase17_durable_workflow.py": [
+      "time.sleep"
+    ],
+    "tests/unit/orchestration/test_phase2_orchestrator_supervisor.py": [
+      "aiosqlite",
+      "sqlalchemy",
+      "DatabaseManager",
+      "TestClient"
+    ],
+    "tests/unit/orchestration/test_phase6_conversation_recovery.py": [
+      "aiosqlite",
+      "DatabaseManager",
+      "SqlUnitOfWork",
+      "TestClient"
+    ],
+    "tests/unit/orchestration/test_scheduler.py": [
+      "asyncio.sleep"
+    ],
+    "tests/unit/providers/mock_adapter.py": [
+      "asyncio.sleep"
+    ],
+    "tests/unit/providers/test_cache_singleflight.py": [
+      "httpx"
+    ],
+    "tests/unit/providers/test_endpoint_detection.py": [
+      "httpx"
+    ],
+    "tests/unit/providers/test_endpoint_failover.py": [
+      "httpx"
+    ],
+    "tests/unit/providers/test_native_adapters.py": [
+      "httpx"
+    ],
+    "tests/unit/providers/test_openai_compatible_transport.py": [
+      "httpx"
+    ],
+    "tests/unit/providers/test_phase5_asset_gateway.py": [
+      "asyncio.sleep"
+    ],
+    "tests/unit/providers/test_provider_v3_fault_injection.py": [
+      "httpx"
+    ],
+    "tests/unit/scripts/test_check_version_consistency.py": [
+      "subprocess"
+    ],
+    "tests/unit/scripts/test_validate_artifact_schema.py": [
+      "subprocess"
+    ],
+    "tests/unit/storage/migrations/test_phase1_migration_integrity.py": [
+      "aiosqlite",
+      "sqlalchemy",
+      "create_engine",
+      "DatabaseManager",
+      "SqlUnitOfWork",
+      "TestClient"
+    ],
+    "tests/unit/tools/test_phase12_browser_runtime.py": [
+      "asyncio.sleep"
+    ],
+    "tests/unit/tools/test_phase22_technical_review.py": [
+      "httpx"
+    ],
+    "tests/unit/worker/test_production_worker.py": [
+      "time.sleep"
+    ],
+    "tests/unit/workflows/test_phase5_model_routing.py": [
+      "httpx"
+    ]
+  },
+  "violating_count": 31
+}

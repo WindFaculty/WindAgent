@@ -1,0 +1,8 @@
+{
+  "@pytest\\.mark\\.postgres": 0,
+  "@pytest\\.mark\\.regression": 0,
+  "@pytest\\.mark\\.slow": 0,
+  "@pytest\\.mark\\.multiprocess": 0,
+  "@pytest\\.mark\\.windows_only": 0,
+  "@pytest\\.mark\\.network": 0
+}

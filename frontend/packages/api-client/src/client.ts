@@ -1311,6 +1311,164 @@ export class SettingsApi {
   }
 }
 
+// ─── Live Record — Recording Preparation / Plans / Takes / Sessions ─────────
+
+export class LiveRecordApi {
+  constructor(private transport: HttpTransport) {}
+
+  // ── Preparations (Episode workspace → DRAFT plan) ─────────────────────────
+
+  async prepare(body: {
+    episode_id: string;
+    episode_revision_id: string;
+    source_workspace_hash?: string;
+    recording_profile?: Record<string, unknown> | null;
+    scenes: Array<Record<string, unknown>>;
+    plan_id?: string | null;
+  }, idempotencyKey: string): Promise<Record<string, unknown>> {
+    return this.transport.post<Record<string, unknown>>(
+      '/api/v3/live-record/preparations',
+      body,
+      { headers: { 'X-Idempotency-Key': idempotencyKey } },
+    );
+  }
+
+  // ── Plans ──────────────────────────────────────────────────────────────────
+
+  async listPlans(params?: { episode_id?: string; status?: string; limit?: number }): Promise<Record<string, unknown>> {
+    return this.transport.get<Record<string, unknown>>('/api/v3/live-record/plans', params);
+  }
+
+  async getPlan(planId: string): Promise<Record<string, unknown>> {
+    return this.transport.get<Record<string, unknown>>(`/api/v3/live-record/plans/${encodeURIComponent(planId)}`);
+  }
+
+  async updatePlanContent(planId: string, data: { expected_version: number } & Record<string, unknown>): Promise<Record<string, unknown>> {
+    return this.transport.patch<Record<string, unknown>>(`/api/v3/live-record/plans/${encodeURIComponent(planId)}/content`, data);
+  }
+
+  async transitionPlan(planId: string, action: 'prepare' | 'validate' | 'freeze' | 'mark-stale' | 'mark-invalid' | 'staleness-check'): Promise<Record<string, unknown>> {
+    return this.transport.post<Record<string, unknown>>(`/api/v3/live-record/plans/${encodeURIComponent(planId)}/${action}`, {});
+  }
+
+  // ── Takes ─────────────────────────────────────────────────────────────────
+
+  async createTake(planId: string, body: Record<string, unknown> = {}): Promise<Record<string, unknown>> {
+    return this.transport.post<Record<string, unknown>>(`/api/v3/live-record/plans/${encodeURIComponent(planId)}/takes`, body);
+  }
+
+  async listTakes(planId: string): Promise<Record<string, unknown>> {
+    return this.transport.get<Record<string, unknown>>(`/api/v3/live-record/plans/${encodeURIComponent(planId)}/takes`);
+  }
+
+  async getTake(takeId: string): Promise<Record<string, unknown>> {
+    return this.transport.get<Record<string, unknown>>(`/api/v3/live-record/takes/${encodeURIComponent(takeId)}`);
+  }
+
+  async listTakeEvents(takeId: string, params?: { limit?: number; cursor?: string }): Promise<Record<string, unknown>> {
+    return this.transport.get<Record<string, unknown>>(`/api/v3/live-record/takes/${encodeURIComponent(takeId)}/events`, params);
+  }
+
+  async appendTakeEvent(takeId: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+    return this.transport.post<Record<string, unknown>>(`/api/v3/live-record/takes/${encodeURIComponent(takeId)}/events`, body);
+  }
+
+  // ── Segments (engine → host → DB lineage, LR_P8) ──────────────────────────
+
+  async recordTakeSegment(takeId: string, body: {
+    segment_id?: string;
+    segment_index: number;
+    file_token?: string;
+    started_at?: string | null;
+    ended_at?: string | null;
+    duration_sec?: number | null;
+    is_playable?: boolean;
+    manifest?: Record<string, unknown>;
+  }): Promise<Record<string, unknown>> {
+    return this.transport.post<Record<string, unknown>>(
+      `/api/v3/live-record/takes/${encodeURIComponent(takeId)}/segments`,
+      body,
+    );
+  }
+
+  async listTakeSegments(takeId: string): Promise<Record<string, unknown>> {
+    return this.transport.get<Record<string, unknown>>(`/api/v3/live-record/takes/${encodeURIComponent(takeId)}/segments`);
+  }
+
+  // ── Director session bootstrap (ephemeral token, POST-only) ───────────────
+
+  async bootstrapSession(body: {
+    episode_id: string;
+    execution_plan_id: string;
+    current_episode_revision_id?: string | null;
+  }, idempotencyKey: string): Promise<Record<string, unknown>> {
+    return this.transport.post<Record<string, unknown>>(
+      '/api/v3/live-record/sessions/bootstrap',
+      body,
+      { headers: { 'X-Idempotency-Key': idempotencyKey } },
+    );
+  }
+
+  async getSession(sessionId: string): Promise<Record<string, unknown>> {
+    return this.transport.get<Record<string, unknown>>(`/api/v3/live-record/sessions/${encodeURIComponent(sessionId)}`);
+  }
+
+  /** Section 24/§35: re-mint the ephemeral token for a reconnecting desktop. */
+  async refreshSessionToken(sessionId: string, idempotencyKey: string): Promise<Record<string, unknown>> {
+    return this.transport.post<Record<string, unknown>>(
+      `/api/v3/live-record/sessions/${encodeURIComponent(sessionId)}/token-refresh`,
+      {},
+      { headers: { 'X-Idempotency-Key': idempotencyKey } },
+    );
+  }
+
+  // ── Privacy scan (Section 23/33 preflight guard) ─────────────────────────
+
+  async runPrivacyScan(planId: string): Promise<Record<string, unknown>> {
+    return this.transport.post<Record<string, unknown>>(
+      `/api/v3/live-record/plans/${encodeURIComponent(planId)}/privacy-scan`,
+      {},
+    );
+  }
+
+  // ── Prepared actions (dispatch tickets + result verification) ─────────────
+
+  async prepareAction(planId: string, actionId: string): Promise<Record<string, unknown>> {
+    return this.transport.post<Record<string, unknown>>(
+      `/api/v3/live-record/plans/${encodeURIComponent(planId)}/actions/${encodeURIComponent(actionId)}/prepare`,
+      {},
+    );
+  }
+
+  async executeActionCommand(planId: string, actionId: string, body: { cwd?: string; timeout_seconds?: number }, idempotencyKey: string): Promise<Record<string, unknown>> {
+    return this.transport.post<Record<string, unknown>>(
+      `/api/v3/live-record/plans/${encodeURIComponent(planId)}/actions/${encodeURIComponent(actionId)}/execute`,
+      body,
+      { headers: { 'X-Idempotency-Key': idempotencyKey } },
+    );
+  }
+
+  async reportActionResult(planId: string, body: {
+    take_id: string;
+    action_id: string;
+    status: 'SUCCESS' | 'FAILURE';
+    execution_id: string;
+    t: number;
+    detail?: string;
+    before_hash_observed?: string | null;
+    after_hash_observed?: string | null;
+    observed?: Record<string, unknown>;
+    scene_id?: string | null;
+    cue_id?: string | null;
+  }, idempotencyKey: string): Promise<Record<string, unknown>> {
+    return this.transport.post<Record<string, unknown>>(
+      `/api/v3/live-record/plans/${encodeURIComponent(planId)}/actions/result`,
+      body,
+      { headers: { 'X-Idempotency-Key': idempotencyKey } },
+    );
+  }
+}
+
 export class WindAgentClient {
   readonly transport: HttpTransport;
   readonly projects: ProjectsApi;
@@ -1343,6 +1501,8 @@ export class WindAgentClient {
   readonly memory: MemoryApi;
   readonly logs: LogsApi;
   readonly settings: SettingsApi;
+  // Live Record — recording preparation & director sessions
+  readonly liveRecord: LiveRecordApi;
 
   constructor(options: TransportOptions) {
     this.transport = new HttpTransport(options);
@@ -1376,6 +1536,7 @@ export class WindAgentClient {
     this.memory = new MemoryApi(this.transport);
     this.logs = new LogsApi(this.transport);
     this.settings = new SettingsApi(this.transport);
+    this.liveRecord = new LiveRecordApi(this.transport);
   }
 }
 

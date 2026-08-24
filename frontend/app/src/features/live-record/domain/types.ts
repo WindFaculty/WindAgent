@@ -89,7 +89,7 @@ export interface LiveExecutionPlan {
   readonly episode_id: string;
   readonly episode_revision_id: string;
   readonly preparation_revision: number;
-  readonly plan_hash: string; // sha256 over canonical scenes+actions
+  readonly plan_hash: string; // sha256 over canonical scenes+actions+payload_bundles
   readonly status: LiveExecutionPlanStatus;
   readonly created_at: string; // ISO
   readonly frozen_at?: string;
@@ -97,6 +97,8 @@ export interface LiveExecutionPlan {
   readonly recording_profile: RecordingProfile;
   readonly scenes: readonly RecordingScene[];
   readonly actions: readonly PreparedAction[];
+  /** Prepared payload bundles keyed by action_id — exact artifact content map (Section 6) */
+  readonly payload_bundles?: Readonly<Record<string, string>>;
   readonly source_workspace_hash: string;
   readonly version: number;
 }

@@ -225,6 +225,7 @@ fn read_nvidia_gpu() -> (f32, String, f32, f32, f32) {
 pub fn run() {
     tauri::Builder::default()
         .manage(live_record::RecorderSharedState::default())
+        .manage(live_record::engine_host::EngineHostState::default())
         .invoke_handler(tauri::generate_handler![
             app_metadata,
             get_system_metrics,
@@ -237,7 +238,9 @@ pub fn run() {
             live_record::commands::recorder_stop,
             live_record::commands::recorder_get_status,
             live_record::commands::recorder_create_marker,
-            live_record::commands::recorder_get_capabilities
+            live_record::commands::recorder_get_capabilities,
+            live_record::playback::playback_execute_code,
+            live_record::playback::playback_probe_environment
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

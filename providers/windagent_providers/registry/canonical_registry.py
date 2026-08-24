@@ -67,7 +67,7 @@ class CanonicalModelRegistryService:
                 "Inject EndpointBindingRepositoryPort for production durability.",
                 stacklevel=2,
             )
-            from tests.fakes.routing_fakes import InMemoryBindingStore
+            from tests.fakes.providers.routing import InMemoryBindingStore
             self._repo = InMemoryBindingStore()
 
     # ------------------------------------------------------------------ #
@@ -101,7 +101,7 @@ class CanonicalModelRegistryService:
 
     @property
     def is_durable(self) -> bool:
-        from tests.fakes.routing_fakes import InMemoryBindingStore
+        from tests.fakes.providers.routing import InMemoryBindingStore
         return not isinstance(self._repo, InMemoryBindingStore)
 
     # ------------------------------------------------------------------ #

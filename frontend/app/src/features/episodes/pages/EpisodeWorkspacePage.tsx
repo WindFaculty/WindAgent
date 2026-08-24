@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { ArrowLeft, Wifi, WifiOff, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Wifi, WifiOff, AlertCircle, Video } from 'lucide-react';
 import { useRouter } from '../../../app/router';
 import { useApiClient } from '../../../shared/hooks/useApiClient';
 import { useEpisode } from '../hooks/useEpisode';
@@ -76,6 +76,31 @@ export const EpisodeWorkspacePage: React.FC<EpisodeWorkspacePageProps> = ({ epis
 
   const [activeTab, setActiveTab] = useState<CheckpointStage>('SCREENPLAY');
 
+  // Phase E — Live Record cutover: build the Recording Preparation Package
+  // (DRAFT LiveExecutionPlan) then hand off to the Live Record workspace.
+  const [isPreparingRecording, setIsPreparingRecording] = useState(false);
+  const [prepareError, setPrepareError] = useState<string | null>(null);
+  const handlePrepareRecording = async () => {
+    setPrepareError(null);
+    const revisionId = episode?.current_revision_id || '';
+    if (!revisionId) {
+      setPrepareError('PREPARE_BLOCKED: Episode chưa có revision — cần kịch bản đã lưu trước khi ghi hình.');
+      return;
+    }
+    setIsPreparingRecording(true);
+    try {
+      await client.liveRecord.prepare(
+        { episode_id: episodeId, episode_revision_id: revisionId, scenes: [] },
+        crypto.randomUUID(),
+      );
+      navigate('/live-record');
+    } catch (err: any) {
+      setPrepareError(err?.message || 'Không chuẩn bị được gói ghi hình.');
+    } finally {
+      setIsPreparingRecording(false);
+    }
+  };
+
   // Auto-align active tab when episode loads if not already chosen
   React.useEffect(() => {
     if (episode?.current_checkpoint) {
@@ -144,7 +169,7 @@ export const EpisodeWorkspacePage: React.FC<EpisodeWorkspacePageProps> = ({ epis
           </div>
         </div>
 
-        {/* Realtime & Progress Badge */}
+        {/* Realtime & Progress Badge + Prepare Recording */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div
             style={{
@@ -162,6 +187,15 @@ export const EpisodeWorkspacePage: React.FC<EpisodeWorkspacePageProps> = ({ epis
             {isConnected ? <Wifi size={13} /> : <WifiOff size={13} />}
             <span>{isConnected ? 'Realtime Connected' : 'Polling Sync'}</span>
           </div>
+
+          <Button
+            variant="primary"
+            onClick={() => void handlePrepareRecording()}
+            disabled={isPreparingRecording}
+          >
+            <Video size={15} style={{ marginRight: '6px' }} />
+            {isPreparingRecording ? 'Đang chuẩn bị...' : 'Chuẩn bị ghi hình'}
+          </Button>
         </div>
       </div>
 
@@ -184,6 +218,16 @@ export const EpisodeWorkspacePage: React.FC<EpisodeWorkspacePageProps> = ({ epis
           <WifiOff size={15} />
           <span>Mất kết nối realtime WebSocket — chuyển sang chế độ đồng bộ định kỳ (Polling).</span>
         </div>
+      )}
+
+      {/* Live Record preparation error */}
+      {prepareError && (
+        <Card style={{ padding: '14px', marginBottom: '18px', background: 'rgba(239, 68, 68, 0.1)', borderColor: 'rgba(239, 68, 68, 0.3)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#f87171', fontSize: '13px' }}>
+            <AlertCircle size={17} />
+            <span>{prepareError}</span>
+          </div>
+        </Card>
       )}
 
       {/* P0.7 — Required UX State: FAILED */}

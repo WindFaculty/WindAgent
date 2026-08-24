@@ -14,6 +14,8 @@ dependencies = [
 dev = [
     "pytest>=8.0.0",
     "pytest-asyncio>=0.23.0",
+    "pytest-xdist>=3.0.0",
+    "pytest-cov>=5.0.0",
     "httpx>=0.27.0",
     "pyyaml>=6.0.0",
     "ruff>=0.8.0",
@@ -68,9 +70,11 @@ testpaths = ["tests"]
 pythonpath = [
     ".",
     "scripts",
+    "scripts/verification",
     "apps/api",
     "apps/cli",
     "apps/worker",
+    "apps/desktop",
     "core",
     "orchestration",
     "intelligence",
@@ -86,6 +90,18 @@ pythonpath = [
     "evals",
     "plugins",
     "skills",
+]
+markers = [
+    "postgres: requires real PostgreSQL semantics (row locking, CAS, fencing, isolation)",
+    "slow: intentionally expensive (multiprocess, long-running, large fixture)",
+    "regression: fixed production defect (keep bug ID in test name)",
+    "multiprocess: starts OS processes (uvicorn, worker, subprocess)",
+    "windows_only: Windows-specific behavior",
+    "network: controlled network boundary (httpx.MockTransport or loopback only)",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::UserWarning",
 ]
 
 [tool.ruff]

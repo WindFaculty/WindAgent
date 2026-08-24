@@ -1,3 +1,7 @@
+> **Trạng thái tài liệu** — hoàn thiện lần 1 ngày 2026-08-24: thêm §31–§42 (trạng thái triển khai thực tế, đặc tả ExpectedVisualState, threat model, vận hành capture, token refresh, timeline clock, take lifecycle, phương pháp đo gate + chiến lược CI, model/quota policy, MVP cut line, risk register, ước lượng effort) và các bổ sung điểm tại §13, §23, §24, §25, §27.
+>
+> Mọi nhận định "repo hiện tại" trong thân bài là snapshot thời điểm **lập kế hoạch**, không phải hiện tại — trạng thái triển khai thật xem §31. Track kiểm thử/production-hardening song song nằm ở `ban_ke_hoach_v2.md`.
+
 Từ 7 lựa chọn bạn vừa chốt, kiến trúc nên được xây theo hướng **AI điều phối một buổi quay đã được chuẩn bị trước**, không phải AI tự do viết code trong lúc quay.
 
 Có một điểm cần chuẩn hóa trước: Google hiện có **Gemini 3 Flash** với model ID `gemini-3-flash-preview`, nhưng model này **không hỗ trợ Live API**. Model Live tương ứng hiện tại là **Gemini 3.1 Flash Live Preview**, ID `gemini-3.1-flash-live-preview`; nó hỗ trợ video input, text output và function calling. Vì vậy UI có thể hiển thị tên role là **“Gemini 3 Flash Live”**, nhưng routing production nên lấy model thực tế từ catalog của Provider và hiện tại resolve thành `gemini-3.1-flash-live-preview`. ([Google AI for Developers][1])
@@ -786,6 +790,25 @@ scroll_to_anchor
 
 để footage nhìn tự nhiên.
 
+## Chính sách formatter/linter bắt buộc cho CODE_PLAYBACK
+
+`after_hash` sẽ mismatch gần như chắc chắn nếu VS Code chạy format-on-save / organize-imports / trim trailing whitespace sau khi executor gõ xong. Đây là lỗi sẽ nổ ngay ở lần chạy E2E đầu tiên nếu không chốt trước. Luật:
+
+```text
+1. Workspace quay = tắt formatOnSave, organizeImports, trim
+   trailing whitespace (settings scoped workspace). Preflight
+   verify bằng cách đọc settings.json của workspace mục tiêu.
+2. Hấp thụ lúc chuẩn bị: preparer chạy chính formatter mục tiêu
+   lên final_content TRƯỚC khi tính after_hash ⇒ kể cả formatter
+   có chạy sau khi gõ, kết quả vẫn khớp hash.
+3. after_hash mismatch ⇒ FAILURE + diff report cho operator.
+   Tuyệt đối không tự sửa file.
+4. Auto-save của editor tắt; save do executor chủ động (Ctrl+S)
+   sau khi gõ xong.
+```
+
+Nguyên tắc: **hash là hợp đồng** — mọi bước làm trôi nội dung khỏi hash phải bị tắt, hoặc được hấp thụ trước ở bước chuẩn bị (luật 2).
+
 ---
 
 # 14. Browser và Tool Executor
@@ -1163,6 +1186,9 @@ WGC available
 NVENC available
 Disk space sufficient
 Output path writable
+Capture target đã chọn (monitor/window — §34)
+Privacy scan đạt: không secret trong vùng quay (§33)
+Formatter-on-save đã tắt cho workspace mục tiêu (§13)
 ```
 
 Kết quả:

@@ -117,6 +117,19 @@ def _route_receipt() -> dict:
     }
 
 
+def _live_record() -> dict:
+    """Dedicated Live Record SQL authority (windagent_storage.orm.live_record_models:
+    live_execution_plans, recording_takes, director_sessions, live_record_events,
+    live_record_segments) reached through LiveRecordComposer repositories
+    (ban_ke_hoach_v1.md Phase 1). Never a v3_resources namespace."""
+    return {
+        "classification": _DURABLE,
+        "authority": "dedicated-sql:live_record",
+        "source": "dedicated-sql:live_record",
+        "migration_disposition": "no-migration",
+    }
+
+
 def _derived(source: str, authority: str | None = None) -> dict:
     return {
         "classification": _DERIVED,
@@ -409,6 +422,126 @@ _POLICY: dict[tuple[str, str], dict] = {
     ("POST", "/api/v3/workflows"): _durable("workflows"),
     ("GET", "/api/v3/workflows/{workflow_id}"): _durable("workflows"),
     ("PATCH", "/api/v3/workflows/{workflow_id}"): _durable("workflows"),
+
+    # ── Assets (Wave C additions: requirements + status/revision actions) ──
+    ("GET", "/api/v3/episodes/{episode_id}/assets/requirements"): _durable("asset_requirements"),
+    ("GET", "/api/v3/projects/{project_id}/assets/requirements"): _durable("asset_requirements"),
+    ("POST", "/api/v3/assets/{asset_id}/actions/set-status"): _durable("assets"),
+    ("POST", "/api/v3/assets/{asset_id}/revisions"): _durable("asset_revisions"),
+    ("POST", "/api/v3/episodes/{episode_id}/assets/requirements/actions/sync"): {
+        "classification": _DURABLE,
+        "authority": "v3_resources:asset_requirements",
+        "source": "v3_resources:asset_requirements,episodes",
+        "migration_disposition": "migrated-to-v3_resources",
+    },
+
+    # ── Canon sync (character canon proposals) ─────────────────────────────
+    ("GET", "/api/v3/canon-sync/{proposal_id}"): _durable("canon_sync_proposals"),
+    ("POST", "/api/v3/canon-sync/{proposal_id}/apply"): {
+        "classification": _DURABLE,
+        "authority": "v3_resources:canon_sync_proposals",
+        "source": "v3_resources:canon_sync_proposals,characters",
+        "migration_disposition": "migrated-to-v3_resources",
+    },
+    ("POST", "/api/v3/episodes/{episode_id}/characters/actions/canon-sync"): {
+        "classification": _DURABLE,
+        "authority": "v3_resources:canon_sync_proposals",
+        "source": "v3_resources:canon_sync_proposals,characters,episodes",
+        "migration_disposition": "migrated-to-v3_resources",
+    },
+
+    # ── Characters (revisions + status action) ────────────────────────────
+    ("GET", "/api/v3/characters/{character_id}/revisions"): _durable("character_revisions"),
+    ("POST", "/api/v3/characters/{character_id}/actions/set-status"): _durable("characters"),
+
+    # ── Live Record (dedicated SQL authority, ban_ke_hoach_v1.md Phase 1) ──
+    ("GET", "/api/v3/live-record/plans"): _live_record(),
+    ("POST", "/api/v3/live-record/plans"): _live_record(),
+    ("GET", "/api/v3/live-record/plans/{plan_id}"): _live_record(),
+    ("PATCH", "/api/v3/live-record/plans/{plan_id}/content"): _live_record(),
+    ("POST", "/api/v3/live-record/plans/{plan_id}/freeze"): _live_record(),
+    ("POST", "/api/v3/live-record/plans/{plan_id}/mark-invalid"): _live_record(),
+    ("POST", "/api/v3/live-record/plans/{plan_id}/mark-stale"): _live_record(),
+    ("POST", "/api/v3/live-record/plans/{plan_id}/prepare"): _live_record(),
+    ("POST", "/api/v3/live-record/plans/{plan_id}/privacy-scan"): _live_record(),
+    ("POST", "/api/v3/live-record/plans/{plan_id}/staleness-check"): _live_record(),
+    ("POST", "/api/v3/live-record/plans/{plan_id}/validate"): _live_record(),
+    ("GET", "/api/v3/live-record/plans/{plan_id}/takes"): _live_record(),
+    ("POST", "/api/v3/live-record/plans/{plan_id}/takes"): _live_record(),
+    ("POST", "/api/v3/live-record/plans/{plan_id}/actions/result"): _live_record(),
+    ("POST", "/api/v3/live-record/plans/{plan_id}/actions/{action_id}/execute"): _live_record(),
+    ("POST", "/api/v3/live-record/plans/{plan_id}/actions/{action_id}/execute-browser"): _live_record(),
+    ("POST", "/api/v3/live-record/plans/{plan_id}/actions/{action_id}/prepare"): _live_record(),
+    ("GET", "/api/v3/live-record/sessions/{session_id}"): _live_record(),
+    ("POST", "/api/v3/live-record/sessions/bootstrap"): _live_record(),
+    ("POST", "/api/v3/live-record/sessions/{session_id}/token-refresh"): _live_record(),
+    ("GET", "/api/v3/live-record/takes/{take_id}"): _live_record(),
+    ("GET", "/api/v3/live-record/takes/{take_id}/events"): _live_record(),
+    ("POST", "/api/v3/live-record/takes/{take_id}/events"): _live_record(),
+    ("GET", "/api/v3/live-record/takes/{take_id}/segments"): _live_record(),
+    ("POST", "/api/v3/live-record/takes/{take_id}/segments"): _live_record(),
+    ("POST", "/api/v3/live-record/preparations"): _live_record(),
+
+    # ── Production packages / shot plans (P1.5/P1.6) ───────────────────────
+    ("DELETE", "/api/v3/shots/{shot_id}"): _durable("shots"),
+    ("POST", "/api/v3/shots/{shot_id}/actions/reorder"): _durable("shots"),
+    ("POST", "/api/v3/shots/{shot_id}/actions/split"): _durable("shots"),
+    ("POST", "/api/v3/episodes/{episode_id}/shots/actions/merge"): _durable("shots"),
+    ("POST", "/api/v3/storyboard/scenes/{scene_id}/actions/split"): _durable("scenes"),
+    ("GET", "/api/v3/episodes/{episode_id}/production/package/preflight"): _derived(
+        "v3_resources:episodes,shots,scenes,shot_plans"
+    ),
+    ("GET", "/api/v3/episodes/{episode_id}/production/packages"): _durable("production_packages"),
+    ("GET", "/api/v3/production/packages/{package_id}"): _durable("production_packages"),
+    ("POST", "/api/v3/episodes/{episode_id}/production/package/actions/finalize"): {
+        "classification": _DURABLE,
+        "authority": "v3_resources:production_packages",
+        "source": "v3_resources:production_packages,episodes,shots,scenes,shot_plans",
+        "migration_disposition": "migrated-to-v3_resources",
+    },
+    ("GET", "/api/v3/episodes/{episode_id}/production/shot-plan"): _durable("shot_plans"),
+    ("GET", "/api/v3/episodes/{episode_id}/production/shot-plan/validation"): _derived(
+        "v3_resources:shots,scenes,shot_plans"
+    ),
+    ("POST", "/api/v3/episodes/{episode_id}/production/shot-plan/actions/generate"): {
+        "classification": _DURABLE,
+        "authority": "v3_resources:shot_plans",
+        "source": "v3_resources:shot_plans,shot_plan_revisions,scenes",
+        "migration_disposition": "migrated-to-v3_resources",
+    },
+    ("POST", "/api/v3/episodes/{episode_id}/production/shot-plan/actions/pin"): {
+        "classification": _DURABLE,
+        "authority": "v3_resources:shot_plans",
+        "source": "v3_resources:shot_plans,shot_plan_revisions",
+        "migration_disposition": "migrated-to-v3_resources",
+    },
+    ("POST", "/api/v3/episodes/{episode_id}/production/shot-plan/actions/derive"): {
+        "classification": _DURABLE,
+        "authority": "v3_resources:shot_plans",
+        "source": "v3_resources:shot_plans,shot_plan_revisions",
+        "migration_disposition": "migrated-to-v3_resources",
+    },
+    ("GET", "/api/v3/episodes/{episode_id}/storyboard/revisions"): _durable("storyboard_revisions"),
+
+    # ── World (revisions / sync proposals / continuity) ────────────────────
+    ("PATCH", "/api/v3/projects/{project_id}/world/locations/{location_id}"): _durable("locations"),
+    ("GET", "/api/v3/projects/{project_id}/world/revisions"): _durable("world_bible_revisions"),
+    ("GET", "/api/v3/world-sync/{proposal_id}"): _durable("world_sync_proposals"),
+    ("POST", "/api/v3/world-sync/{proposal_id}/apply"): {
+        "classification": _DURABLE,
+        "authority": "v3_resources:world_sync_proposals",
+        "source": "v3_resources:world_sync_proposals,world_bibles,locations,factions,lore",
+        "migration_disposition": "migrated-to-v3_resources",
+    },
+    ("POST", "/api/v3/episodes/{episode_id}/world/actions/canon-sync"): {
+        "classification": _DURABLE,
+        "authority": "v3_resources:world_sync_proposals",
+        "source": "v3_resources:world_sync_proposals,episodes,world_bibles",
+        "migration_disposition": "migrated-to-v3_resources",
+    },
+    ("POST", "/api/v3/episodes/{episode_id}/world/actions/continuity-check"): _derived(
+        "v3_resources:episodes,world_bibles,locations"
+    ),
 
     # ── WebSocket realtime streams (DERIVED) ───────────────────────────────
     ("WS", "/ws/v3/agent-system"): _derived("runtime:realtime"),

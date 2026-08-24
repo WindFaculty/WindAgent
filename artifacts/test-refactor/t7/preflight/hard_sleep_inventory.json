@@ -1,0 +1,27 @@
+{
+  "files_with_sleep": [
+    "tests\\architecture\\test_architecture_v3_phase15.py",
+    "tests\\architecture\\test_architecture_v3_phase16.py",
+    "tests\\architecture\\test_phase3_negative.py",
+    "tests\\component\\scripts\\test_studio_c8_c9_certification.py",
+    "tests\\component\\worker\\test_phase04_worker_heartbeat.py",
+    "tests\\component\\worker\\test_studio_run_deadline.py",
+    "tests\\contracts\\api\\test_architecture_v3_phase6_realtime.py",
+    "tests\\e2e\\test_live_record_e2e.py",
+    "tests\\e2e\\multiprocess\\test_api_worker_durability.py",
+    "tests\\e2e\\multiprocess\\test_orchestration_multiprocess.py",
+    "tests\\e2e\\multiprocess\\test_session_recovery.py",
+    "tests\\support\\process.py",
+    "tests\\support\\waiting.py",
+    "tests\\unit\\execution\\test_phase18_execution_worker.py",
+    "tests\\unit\\memory\\test_memory_system.py",
+    "tests\\unit\\orchestration\\test_phase17_durable_workflow.py",
+    "tests\\unit\\orchestration\\test_scheduler.py",
+    "tests\\unit\\providers\\mock_adapter.py",
+    "tests\\unit\\providers\\test_phase5_asset_gateway.py",
+    "tests\\unit\\tools\\test_phase12_browser_runtime.py",
+    "tests\\unit\\worker\\test_production_worker.py",
+    "tests\\verification\\test_evidence_generation.py"
+  ],
+  "count": 22
+}

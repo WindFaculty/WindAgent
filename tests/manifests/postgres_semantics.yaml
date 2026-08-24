@@ -1,0 +1,47 @@
+# Postgres Production Semantics Manifest — T7
+# Maps required production capabilities to concrete test file patterns.
+# Each capability MUST be covered by at least one test marked with @pytest.mark.postgres
+# and collected via `pytest -m postgres`. Entries may be file paths or full node IDs.
+
+cas:
+  - "tests/contracts/test_p1_pg_idempotency_atomicity_cas.py"
+  - "tests/component/migrations/test_phase1_migration_integrity.py"
+
+lease_fencing:
+  - "tests/component/execution/test_phase18_execution_worker.py"
+  - "tests/component/worker/test_phase04_worker_heartbeat.py"
+
+multi_worker_claim:
+  - "tests/component/execution/test_phase18_execution_worker.py"
+  - "tests/component/worker/test_production_worker.py"
+
+idempotency_concurrency:
+  - "tests/contracts/test_p1_pg_idempotency_atomicity_cas.py"
+  - "tests/contracts/test_p1_pg_idempotency_atomicity_cas.py"
+
+outbox_atomicity:
+  - "tests/contracts/test_p1_pg_idempotency_atomicity_cas.py"
+  - "tests/component/observability/test_phase6_outbox_runtime.py"
+
+transaction_isolation:
+  - "tests/contracts/test_p1_pg_idempotency_atomicity_cas.py"
+  - "tests/component/orchestration/test_phase6_conversation_recovery.py"
+
+unique_constraint_race:
+  - "tests/component/migrations/test_phase1_migration_integrity.py"
+
+replica_coordination:
+  - "tests/component/execution/test_phase18_execution_worker.py"
+  - "tests/component/worker/test_production_worker.py"
+
+durable_route_lock:
+  - "tests/integration/test_phase1_routing_authority.py"
+  - "tests/unit/providers/test_route_lock.py"
+
+migration_integrity:
+  - "tests/component/migrations/test_phase1_migration_integrity.py"
+
+postgres_vertical_slice:
+  - "tests/contracts/test_p1_e2e_acceptance.py"
+  - "tests/contracts/test_p1_real_asset_persistence.py"
+  - "tests/contracts/test_v3_vertical_lifecycle_real.py"

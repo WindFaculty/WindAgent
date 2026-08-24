@@ -1,4 +1,3 @@
-import sys
 import tomllib
 from pathlib import Path
 
@@ -7,8 +6,6 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPTS = ROOT / "scripts"
-if str(SCRIPTS) not in sys.path:
-    sys.path.insert(0, str(SCRIPTS))
 
 import check_architecture_imports as checker  # noqa: E402
 import check_architecture_v3 as v3_entry  # noqa: E402

@@ -11,7 +11,7 @@ from __future__ import annotations
 import asyncio
 import uuid
 from typing import Any, Dict, List, Optional
-from fastapi import APIRouter, Depends, Header, HTTPException, Path, Query, WebSocket, WebSocketDisconnect, status
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, WebSocket, WebSocketDisconnect, status
 from pydantic import BaseModel, Field
 
 from windagent_core.domain.lifecycle import utc_now

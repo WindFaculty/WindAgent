@@ -552,6 +552,7 @@ class TestScenarioGUnsupportedExecutor:
 # PostgreSQL P1 vertical slice — opt-in via WINDAGENT_TEST_POSTGRES_URL
 # ─────────────────────────────────────────────────────────────────────────────
 
+@pytest.mark.postgres
 class TestPostgresVerticalSlice:
     def test_happy_path_on_postgres(self, monkeypatch, tmp_path):
         pg_url = os.environ.get("WINDAGENT_TEST_POSTGRES_URL", "").strip()
