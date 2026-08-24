@@ -99,12 +99,16 @@ không, mọi lần `test` chết ở bước attestation trước khi pytest ch
 
 ## Tác động lên T7
 
-- Candidate cũ (`ead8c28`) **hết giá trị**: ba fix trên yêu cầu candidate mới.
-  Candidate hiện tại: **`2e662aa281710905ec9b3a6aa3aa7d4cd1e84a15`**
-  (`2e662aa`, cây sạch trừ `prompt.md`, đã rerun toàn bộ local gates gồm ma
-  trận container PG).
-- CI certification counter: **0/3** (chưa push lần nào kể từ reset).
-- Bước tiếp theo: PHASE J — push `2e662aa…` lên
+- Candidate cũ (`ead8c28`) **hết giá trị**: các fix trên yêu cầu candidate mới.
+  CANDIDATE_CODE_SHA hiện tại: **`8457f05`**
+  (commit cuối cùng của mã/test; commit docs có thể đứng trên nó).
+  Ghi chú PHASE J lần 1: push đầu tiên (`67b1f840`) thất bại ở mức
+  workflow — toàn bộ `ci.yaml` bị GitHub từ chối parse vì job-level `env:`
+  dùng `${{ runner.temp }}` (context `runner` không tồn tại ở đó; lỗi này
+  tồn tại từ trước, mọi run trước đây trên nhánh đều 0 job). Đã sửa tại
+  `8457f05` bằng cách publish TMPDIR/TEMP qua `$GITHUB_ENV` từ step đầu.
+- CI certification counter: **0/3** (chưa có run PASS nào kể từ reset).
+- Bước tiếp theo: push `8457f05…` lên
   `origin/refactor/architecture-v3-hardening`, xác minh remote SHA == local,
   theo dõi 24 job bắt buộc + final-evidence, yêu cầu 3 consecutive PASS cùng
   SHA (cổng chính: `p1-e2e-postgres`, `postgres-production-semantics`).
