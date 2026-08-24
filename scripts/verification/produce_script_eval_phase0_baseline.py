@@ -149,6 +149,15 @@ def build_prompt_manifest() -> dict:
     return prompts
 
 
+def _probe_tool_version(binary: str) -> str:
+    """First version line of *binary*, or the literal "missing" when absent."""
+    try:
+        proc = subprocess.run([binary, "--version"], capture_output=True, text=True)
+    except OSError:
+        return "missing"
+    return proc.stdout.splitlines()[0] if proc.returncode == 0 else "missing"
+
+
 def build_environment() -> dict:
     return {
         "os": platform.platform(),
@@ -164,7 +173,9 @@ def build_environment() -> dict:
             "uv": subprocess.run(["uv", "--version"], capture_output=True, text=True).stdout.strip(),
             "git": subprocess.run(["git", "--version"], capture_output=True, text=True).stdout.strip(),
             "node": subprocess.run(["node", "--version"], capture_output=True, text=True).stdout.strip(),
-            "ffmpeg": subprocess.run(["ffmpeg", "-version"], capture_output=True, text=True).stdout.splitlines()[0] if subprocess.run(["ffmpeg", "-version"], capture_output=True, text=True).returncode == 0 else "missing",
+            # A missing binary raises FileNotFoundError (not a non-zero exit) —
+            # that is still just "missing", not a producer crash.
+            "ffmpeg": _probe_tool_version("ffmpeg"),
         },
     }
 

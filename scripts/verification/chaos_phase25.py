@@ -496,8 +496,19 @@ def run_ch01_worker_kill_generating(workdir: Path, candidate_sha: str) -> Dict[s
     executor = _ScriptedExecutor()
     eng = _new_engine(workdir, executor=executor)
     eng.create_run(project_id="vp_chaos", revision_id="rev1", revision_hash="a" * 64, run_id=run_id)
-    eng.start(run_id, worker_id="worker_A", lease_ttl=0.01)
+    eng.start(run_id, worker_id="worker_A", lease_ttl=120.0)
     _approve_all_gates(eng, run_id)
+
+    # Worker A "dies" mid-flight: force its lease to expire ON THE WALL CLOCK.
+    # The expiry must be explicit here — a tiny start TTL would make this test
+    # pass only on hosts slow enough for the lease to lapse before the next
+    # advance() (fast CI runners reject the advance with a stale-write error).
+    run = eng.load(run_id)
+    run.lease.expires_at = time.time() - 1.0
+    eng.store.save(run)
+    lease_expired = eng.load(run_id).lease.is_expired()
+    assert lease_expired, "lease must be expired after worker death"
+
     run = _drive_to_provider(eng, run_id)
     assert run.state == ProductionRunState.WAITING_PROVIDER, run.state
     pending = run.checkpoint.pending_external_operation
@@ -505,12 +516,11 @@ def run_ch01_worker_kill_generating(workdir: Path, candidate_sha: str) -> Dict[s
     external_id_before = pending.external_id
     submits_before = _submission_event_count(run)
 
-    # Worker A "dies": force its lease to expire (like CH13) and prove it.
+    # advance() reassigned the lease to the driving worker; expire it again so
+    # the NEW worker's recovery below mirrors a dead-worker takeover.
     run = eng.load(run_id)
     run.lease.expires_at = time.time() - 1.0
     eng.store.save(run)
-    lease_expired = eng.load(run_id).lease.is_expired()
-    assert lease_expired, "lease must be expired after worker death"
 
     t0 = time.perf_counter()
     # New worker reconciles with inspector reporting GENERATING (same job).

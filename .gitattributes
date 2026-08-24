@@ -3,3 +3,13 @@
 *.sha256        text eol=lf
 *.sha256sum     text eol=lf
 checksums.sha256 text eol=lf
+
+# Handoff-pinned component trees and phase evidence are part of the integrity
+# contract (scripts/verification/verify_phase03_handoff.py hashes their raw
+# bytes). Force LF on every platform so a Windows dev checkout and the Linux
+# CI runner see identical bytes.
+artifacts/video_production/**  text eol=lf
+docs/video_production/**       text eol=lf
+core/windagent_core/contracts/video_production/** text eol=lf
+core/windagent_core/events/video_production.py    text eol=lf
+tests/fixtures/video_production/**             text eol=lf
