@@ -50,19 +50,25 @@ jobs:
 
       - name: Validate candidate evidence
         run: |
-          BUNDLE="artifacts/architecture_v2_production_hardening/phase_07/runs/ci-${{ github.run_id }}-${{ github.run_attempt }}/evidence_bundle.json"
+          RUN_DIR="artifacts/architecture_v2_production_hardening/phase_07/runs/ci-${{ github.run_id }}-${{ github.run_attempt }}"
+          BUNDLE="$RUN_DIR/evidence_bundle.json"
           uv run python scripts/verification/validate_evidence_bundle.py "$BUNDLE"
           uv run python scripts/validate_artifact_schema.py "$BUNDLE" \
             --verify-hashes \
             --fail-on-warning \
             --repo-root . \
             --candidate-sha "${{ github.sha }}"
+          # Validate the CURRENT run's artifacts recursively. The committed
+          # final/ directory attests a DIFFERENT branch's publication commit
+          # (evidence identity is per-branch; this gate must not block the
+          # candidate on another lineage's stale pointer).
           uv run python scripts/validate_artifact_schema.py \
-            --directory artifacts/architecture_v2_production_hardening/phase_07 \
+            --directory "$RUN_DIR" \
             --recursive \
             --verify-hashes \
             --fail-on-warning \
-            --repo-root .
+            --repo-root . \
+            --candidate-sha "${{ github.sha }}"
 
       - name: Verify negative fixtures fail
         run: |
@@ -724,6 +730,7 @@ jobs:
       # binding on this runner; install the matching one WITHOUT touching the
       # lockfile.
       - name: Install Linux rolldown native binding (missing from Windows-generated lockfile)
+        working-directory: frontend
         run: |
           RD_VERSION=$(node -p "require('./node_modules/rolldown/package.json').version")
           echo "rolldown ${RD_VERSION}: installing @rolldown/binding-linux-x64-gnu"
@@ -950,8 +957,16 @@ jobs:
             --timeout 600 \
             -- uv run pytest tests/contracts/test_p1_real_asset_persistence.py tests/contracts/test_p1_pg_idempotency_atomicity_cas.py -v --tb=short
 
-      - name: Full P1 E2E suite on PostgreSQL
+      - name: Full P1 E2E suite on PostgreSQL (isolated database)
         run: |
+          # The vertical-slice step pinned immutable demo data (shot plan) into
+          # the shared service database. The full suite re-runs that slice, so
+          # it must start from a CLEAN database — isolation via a dedicated
+          # database, NOT by weakening the tests.
+          export PGURL="postgresql://test:test@localhost:5432/windagent"
+          psql "$PGURL" -c "DROP DATABASE IF EXISTS windagent_full;" -c "CREATE DATABASE windagent_full;"
+          export WINDAGENT_TEST_POSTGRES_URL="postgresql+asyncpg://test:test@localhost:5432/windagent_full"
+          export WINDAGENT_DATABASE_URL="postgresql+asyncpg://test:test@localhost:5432/windagent_full"
           python scripts/verification/run_command_receipt.py \
             --name p1_e2e_full_postgres \
             --output artifacts/ci/p1-e2e-postgres/receipts/p1_full.json \

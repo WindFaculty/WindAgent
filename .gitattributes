@@ -13,3 +13,8 @@ docs/video_production/**       text eol=lf
 core/windagent_core/contracts/video_production/** text eol=lf
 core/windagent_core/events/video_production.py    text eol=lf
 tests/fixtures/video_production/**             text eol=lf
+
+# Vendored upstream snapshot: the phase-4 intake verifier hashes raw bytes,
+# so git must never apply any conversion to it (-text keeps every platform's
+# checkout byte-identical to what was committed).
+third_party/**                 -text

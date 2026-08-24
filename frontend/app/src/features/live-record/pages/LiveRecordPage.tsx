@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Video, Play, Pause, Square, Settings, Bot } from 'lucide-react';
+import { Video, Play, Pause, Square, Settings } from 'lucide-react';
 import { useLiveRecord, formatDuration } from '../hooks/useLiveRecord';
 import { useLiveRecorderSession } from '../hooks/useLiveRecorderSession';
 import { useLiveDirectorPlan } from '../hooks/useLiveDirectorPlan';
@@ -80,7 +80,6 @@ export const LiveRecordPage: React.FC = () => {
   // Plan mode drives Scene List / teleprompter from the FROZEN plan (Section 20);
   // without a plan (fresh web/dev session) the page keeps the legacy mock store.
   const planMode = planScenes.length > 0;
-  const [activePosition, setActivePosition] = useState(0);
   const [isStartingEngine, setIsStartingEngine] = useState(false);
 
   // Take lineage: createTake before engine start → segments relay into the DB.
@@ -103,7 +102,9 @@ export const LiveRecordPage: React.FC = () => {
   );
 
   const recorder = useLiveRecorderSession({ onSegmentEvent: relaySegment });
-  const director = useLiveDirector({
+  // The director engine loop must keep running even though nothing reads the
+  // hook's return value here (noUnusedLocals forbids an unused binding).
+  useLiveDirector({
     plan,
     previewFrame: recorder.previewFrame,
     takeId: takeIdRef.current,
@@ -113,7 +114,6 @@ export const LiveRecordPage: React.FC = () => {
   });
   const rs = recorder.status;
   const effectiveIsRecording = rs ? rs.state === 'RECORDING' : isRecording;
-  const effectivePaused = rs ? rs.state === 'PAUSED' : isPaused;
   const effectiveTimeFormatted = rs ? formatDuration(rs.elapsed_sec) : recordingTimeFormatted;
   const effectiveFrames = rs ? rs.frames_captured : recordedFrames;
   const effectiveDropped = rs ? rs.frames_dropped : droppedFrames;

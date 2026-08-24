@@ -38,11 +38,13 @@ UPSTREAM_SHA = "5a16ae23a4f1cb6886c44c0205f7b7e52a34c276"
 UPSTREAM_REPO = "https://github.com/HITsz-TMG/VideoClaw"
 # Archive (codeload tarball) SHA-256 downloaded during intake.
 ARCHIVE_SHA256 = "6353b4cc1785b1c5d466b4e90427eb964844593f5721d74fa008c90b6baa6b18"
-# Vendored tree grew to 457 files when the render-media purge collateral damage
-# was restored (FilmAgent-pics, video-claw-pics, demo/logo images — commit
-# d213efb8). The intake-time pin was 443 files; the manifest below records both
-# so the inventory check verifies against the current authoritative counts.
-EXPECTED_FILE_COUNT = 457
+# The vendored tree is 443 files: intake vendored 443 (media included), the
+# render-media purge collateral-deleted 34 of them, and commit d213efb8
+# restored exactly those 34 — so the tree returned to its intake size. An
+# earlier EXPECTED_FILE_COUNT=457 was measured on a dirty dev worktree whose
+# upstream/ contained 14 untracked .ruff_cache files; a clean checkout can
+# never match that, which broke this gate on CI.
+EXPECTED_FILE_COUNT = 443
 INTAKE_FILE_COUNT = 443
 RESTORE_COMMIT = "d213efb8721a15d68dd1392b8809cf561357fd09"
 
