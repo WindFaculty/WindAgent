@@ -126,3 +126,8 @@ workspace/
 scripts/screenshots/
 scripts/ui_test_results.json
 
+
+# Coverage tool output
+.coverage
+.coverage.*
+htmlcov/

@@ -61,10 +61,11 @@ def test_architecture_check_fails_closed_outside_repo(tmp_path):
         timeout=60,
     )
     # Fallback to direct python if uv not available in subprocess PATH
+    # — keep cwd outside the repo so the fail-closed contract is what is proven.
     if result.returncode == 1 and "No module named windagent_cli" in result.stderr:
         result = subprocess.run(
             [sys.executable, "-m", "windagent_cli", "architecture-check"],
-            cwd=ROOT,
+            cwd=tmp_path,
             capture_output=True,
             text=True,
             timeout=60,
