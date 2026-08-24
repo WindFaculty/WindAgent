@@ -11,6 +11,8 @@ Verdict target: FRONTEND_V2_PHASE_13_PLATFORM_ADMIN_VERIFIED
 from __future__ import annotations
 
 import json
+import os
+from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
@@ -94,7 +96,11 @@ class TestWorkspaceFiles:
 
     def test_absolute_path_rejected(self, tmp_path, client):
         _reset_workspace_root(tmp_path, client)
-        r = client.post("/api/v3/files", json={"path": "C:/Windows/system32/evil.txt", "name": "evil.txt", "content": "x"})
+        # An ABSOLUTE path for the RUNNING OS must be rejected (a Windows-style
+        # drive path is merely a relative subfolder name on POSIX, where the
+        # product correctly contains it inside the workspace).
+        evil = str(Path(tmp_path) / "evil.txt") if os.name != "nt" else "C:/Windows/system32/evil.txt"
+        r = client.post("/api/v3/files", json={"path": evil, "name": "evil.txt", "content": "x"})
         assert r.status_code == 400
 
     def test_traversal_rejected(self, tmp_path, client):

@@ -81,9 +81,27 @@ async def test_worker_v2_skeleton_lifecycle():
     assert not worker.is_ready
 
 
-def test_cli_v2_skeleton_doctor():
+def test_cli_v2_skeleton_doctor(monkeypatch):
+    """The scaffold-exposed doctor entry runs and maps its verdict onto the
+    documented exit-code domain. The real verdict is machine-dependent (the
+    composer migrates the default DB first), so the composer is scripted."""
+    class _ScriptedComposer:
+        def __init__(self, *args, **kwargs) -> None:
+            pass
+
+        def run_checks_sync(self) -> dict:
+            return {
+                "overall_status": "DOWN",
+                "profile": "development",
+                "checks": {"database": {"passed": False, "details": "scripted"}},
+            }
+
+    import sys
+
+    cli_main = sys.modules["windagent_cli.main"]
+    monkeypatch.setattr(cli_main, "DoctorCommandComposer", _ScriptedComposer)
     exit_code = doctor()
-    assert exit_code != 0
+    assert exit_code == 2
 
 
 def test_cli_v2_skeleton_architecture_check():

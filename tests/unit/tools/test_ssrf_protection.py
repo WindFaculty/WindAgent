@@ -50,7 +50,7 @@ class TestSSRFProtection:
             with pytest.raises(AgentBrowserPolicyError, match="Private|non-routable|reserved|unspecified"):
                 validate_navigation_url(url, allowed_domains=(), allow_private_network=False)
 
-    def test_reject_localhost(self):
+    def test_reject_localhost(self, monkeypatch):
             """Reject localhost and .local domains."""
             urls = [
                 "http://localhost:8000/path",
@@ -60,14 +60,44 @@ class TestSSRFProtection:
             for url in urls:
                 with pytest.raises(AgentBrowserPolicyError, match="Private or local"):
                     validate_navigation_url(url, allowed_domains=(), allow_private_network=False)
-        
-            # localhost.localdomain is NOT a .local TLD domain, so it's allowed
+
+            # localhost.localdomain is NOT caught by the .local textual rule —
+            # but some environments (CI runners) DNS-resolve it to a loopback
+            # address, which the policy must still reject. Pin the resolver to a
+            # public address so this case tests ONLY the textual rule,
+            # independent of the host's /etc/hosts.
+            import socket
+
+            def _public_resolve(hostname, *args, **kwargs):
+                if hostname == "localhost.localdomain":
+                    return [(socket.AF_INET, socket.SOCK_STREAM, 6, "", ("93.184.216.34", 0))]
+                return socket.getaddrinfo(hostname, *args, **kwargs)
+
+            monkeypatch.setattr(socket, "getaddrinfo", _public_resolve)
             result = validate_navigation_url(
                 "http://localhost.localdomain/path",
                 allowed_domains=(),
                 allow_private_network=False,
             )
             assert result == "http://localhost.localdomain/path"
+
+    def test_reject_dns_resolving_to_loopback(self, monkeypatch):
+        """A hostname that DNS-resolves to loopback must be rejected regardless
+        of its textual form (real CI behavior for localhost.localdomain)."""
+        import socket
+
+        def _loopback_resolve(hostname, *args, **kwargs):
+            if hostname == "localhost.localdomain":
+                return [(socket.AF_INET6, socket.SOCK_STREAM, 6, "", ("::1", 0))]
+            return socket.getaddrinfo(hostname, *args, **kwargs)
+
+        monkeypatch.setattr(socket, "getaddrinfo", _loopback_resolve)
+        with pytest.raises(AgentBrowserPolicyError, match="resolved to private or non-routable IP"):
+            validate_navigation_url(
+                "http://localhost.localdomain/path",
+                allowed_domains=(),
+                allow_private_network=False,
+            )
 
     def test_allow_private_network_opt_in(self):
         """Allow private network when explicitly opted in."""

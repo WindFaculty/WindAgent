@@ -323,11 +323,15 @@ def test_lock_refuses_hash_mismatch_on_report():
 def test_lock_handler_registered_and_async():
     handler = LockHandler()
     assert handler.task_type.value == "studio.story.lock"
+    # ONE receipt instance for both the handle() argument and the lineage ref:
+    # content_hash() covers issued_at (auto-generated per instance), so two
+    # separately constructed receipts only hash identically by clock-tick luck.
+    receipt = _receipt(approval_mode="AUTO")
     result = _run(handler.handle(
         GOLDEN_DRAFT,
         _clean_report(),
-        _receipt(approval_mode="AUTO"),
-        lineage_refs=_lineage_refs(receipt=_receipt(approval_mode="AUTO")),
+        receipt,
+        lineage_refs=_lineage_refs(receipt=receipt),
     ))
     assert result.package.manifest_count == 11
     assert result.package.receipt_id.value.startswith("rcpt_")

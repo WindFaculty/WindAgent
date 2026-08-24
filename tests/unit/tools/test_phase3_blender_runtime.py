@@ -13,6 +13,7 @@ Covers the plan's test matrix:
 import asyncio
 import json
 import os
+import sys
 from pathlib import Path
 
 import pytest
@@ -230,7 +231,12 @@ class TestBlenderInstallationDetector:
         )
         assert detector.detect() == []
 
-    def test_multiple_versions_ordered_by_source(self, tmp_path):
+    def test_multiple_versions_ordered_by_source(self, tmp_path, monkeypatch):
+        # The standard-location scan is a Windows-only product behavior
+        # (detector.py gates it on sys.platform); pin the platform so the scan
+        # code path itself is exercised on every OS instead of silently skipped
+        # on Linux CI.
+        monkeypatch.setattr(sys, "platform", "win32")
         (tmp_path / "BF").mkdir()
         (tmp_path / "BF" / "Blender 4.5").mkdir()
         (tmp_path / "BF" / "Blender 5.1").mkdir()
@@ -248,7 +254,8 @@ class TestBlenderInstallationDetector:
         assert "standard_location" in sources
         assert len(candidates) == 2
 
-    def test_path_with_spaces(self, tmp_path):
+    def test_path_with_spaces(self, tmp_path, monkeypatch):
+        monkeypatch.setattr(sys, "platform", "win32")
         spaced = tmp_path / "Blender Foundation" / "Blender 4.5"
         spaced.mkdir(parents=True)
         exe = spaced / "blender.exe"

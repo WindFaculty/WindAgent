@@ -51,7 +51,32 @@ async def test_worker_typed_ids_and_canonical_events():
     assert worker.is_running is False
 
 
-def test_cli_doctor_phase11_checks(capsys):
+def test_cli_doctor_phase11_checks(monkeypatch, capsys):
+    """Doctor output surfaces the Phase 11 check sections and maps a DOWN
+    verdict to exit code 2. The composer is scripted because the real one
+    migrates the default DB before checking it (machine-dependent verdict)."""
+
+    class _ScriptedComposer:
+        def __init__(self, *args, **kwargs) -> None:
+            pass
+
+        def run_checks_sync(self) -> dict:
+            return {
+                "overall_status": "DOWN",
+                "profile": "development",
+                "checks": {
+                    "import_boundary_check": {"passed": True, "details": "Zero import boundary violations"},
+                    "duplicate_model_check": {"passed": True, "details": "ZERO duplicate models found"},
+                    "schema_migration": {"passed": False, "details": "No migrations applied - alembic_version is empty"},
+                    "configuration": {"passed": True, "details": "Configuration valid (env: development)"},
+                    "worker": {"passed": False, "details": "No active workers (available: False)"},
+                },
+            }
+
+    import sys
+
+    cli_main = sys.modules["windagent_cli.main"]
+    monkeypatch.setattr(cli_main, "DoctorCommandComposer", _ScriptedComposer)
     res = cli_doctor()
     assert res == 2
     captured = capsys.readouterr().out

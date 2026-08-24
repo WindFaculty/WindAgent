@@ -11,12 +11,41 @@ from pathlib import Path
 
 root = Path(__file__).resolve().parent.parent.parent.parent
 
+import sys
+
+import windagent_cli.main  # noqa: F401 — loads the real module into sys.modules
 from windagent_cli.main import main, doctor, architecture_check
+
+cli_main = sys.modules["windagent_cli.main"]
 from sidecar_manager import SidecarManager, get_free_port
 
 
-def test_cli_doctor_text_and_json(capsys):
-    """Verify CLI doctor command in text and JSON mode."""
+class _ScriptedDoctorComposer:
+    """Deterministic health verdicts: the live composer migrates the default
+    DB before checking it, so its real verdict is machine-dependent."""
+
+    def __init__(self, overall_status: str, *args, **kwargs) -> None:
+        self._overall_status = overall_status
+
+    def run_checks_sync(self) -> dict:
+        return {
+            "overall_status": self._overall_status,
+            "profile": "development",
+            "checks": {
+                "database": {"passed": True, "details": "SQL connection verified"},
+                "worker": {
+                    "passed": False,
+                    "details": "No active workers (available: False)",
+                },
+            },
+        }
+
+
+def test_cli_doctor_text_and_json(monkeypatch, capsys):
+    """Verify CLI doctor command in text and JSON mode (scripted DOWN verdict)."""
+    monkeypatch.setattr(
+        cli_main, "DoctorCommandComposer", lambda *a, **k: _ScriptedDoctorComposer("DOWN")
+    )
     res_text = doctor(json_mode=False)
     assert res_text == 2
     captured_text = capsys.readouterr().out
