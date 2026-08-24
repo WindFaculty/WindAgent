@@ -94,7 +94,7 @@ commands:
       - uv
       - run
       - pytest
-      - tests/unit/core/test_phase7_version_authority.py
+      - tests/architecture/canonical/test_phase7_version_authority.py
       - -q
     expected_exit_codes: [0]
     timeout: 120

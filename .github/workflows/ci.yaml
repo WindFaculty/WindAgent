@@ -394,6 +394,18 @@ jobs:
             --timeout 600 \
             -- npm ci
 
+      # @windagent/app is a file:-dependency resolved at its REAL location
+      # (../../frontend/app), so tsc resolves its imports through the frontend
+      # workspace tree. That tree needs its own node_modules for the typecheck.
+      - name: Install frontend workspace deps (source tree of the file:-dependency)
+        run: |
+          python scripts/verification/run_command_receipt.py \
+            --name frontend_workspace_npm_ci \
+            --cwd frontend \
+            --output artifacts/ci/web-test/receipts/frontend_npm_ci.json \
+            --timeout 600 \
+            -- npm ci
+
       - name: Typecheck
         run: |
           python scripts/verification/run_command_receipt.py \
@@ -468,6 +480,18 @@ jobs:
             --timeout 600 `
             -- npm.cmd ci
 
+      # @windagent/app is a file:-dependency resolved at its REAL location
+      # (../../frontend/app), so tsc resolves its imports through the frontend
+      # workspace tree. That tree needs its own node_modules for the typecheck.
+      - name: Install frontend workspace deps (source tree of the file:-dependency)
+        run: |
+          python scripts/verification/run_command_receipt.py `
+            --name frontend_workspace_npm_ci `
+            --cwd frontend `
+            --output artifacts/ci/web-test-windows/receipts/frontend_npm_ci.json `
+            --timeout 600 `
+            -- npm.cmd ci
+
       - name: Typecheck
         run: |
           python scripts/verification/run_command_receipt.py `
@@ -529,6 +553,18 @@ jobs:
             --name desktop_npm_ci \
             --cwd apps/desktop \
             --output artifacts/ci/desktop-test/receipts/npm_ci.json \
+            --timeout 600 \
+            -- npm ci
+
+      # @windagent/app is a file:-dependency resolved at its REAL location
+      # (../../frontend/app), so tsc resolves its imports through the frontend
+      # workspace tree. That tree needs its own node_modules for the typecheck.
+      - name: Install frontend workspace deps (source tree of the file:-dependency)
+        run: |
+          python scripts/verification/run_command_receipt.py \
+            --name frontend_workspace_npm_ci \
+            --cwd frontend \
+            --output artifacts/ci/desktop-test/receipts/frontend_npm_ci.json \
             --timeout 600 \
             -- npm ci
 
@@ -606,6 +642,18 @@ jobs:
             --timeout 600 `
             -- npm.cmd ci
 
+      # @windagent/app is a file:-dependency resolved at its REAL location
+      # (../../frontend/app), so tsc resolves its imports through the frontend
+      # workspace tree. That tree needs its own node_modules for the typecheck.
+      - name: Install frontend workspace deps (source tree of the file:-dependency)
+        run: |
+          python scripts/verification/run_command_receipt.py `
+            --name frontend_workspace_npm_ci `
+            --cwd frontend `
+            --output artifacts/ci/desktop-test-windows/receipts/frontend_npm_ci.json `
+            --timeout 600 `
+            -- npm.cmd ci
+
       - name: Typecheck
         run: |
           python scripts/verification/run_command_receipt.py `
@@ -669,6 +717,17 @@ jobs:
             --output artifacts/ci/live-record-client-gate/receipts/npm_ci.json \
             --timeout 600 \
             -- npm ci
+
+      # The lockfile was generated on Windows, and npm keeps platform-optional
+      # deps out of the lockfile when they do not match the generating OS
+      # (npm/cli#4828). vitest's rolldown bundler therefore has no native
+      # binding on this runner; install the matching one WITHOUT touching the
+      # lockfile.
+      - name: Install Linux rolldown native binding (missing from Windows-generated lockfile)
+        run: |
+          RD_VERSION=$(node -p "require('./node_modules/rolldown/package.json').version")
+          echo "rolldown ${RD_VERSION}: installing @rolldown/binding-linux-x64-gnu"
+          npm install --no-save --ignore-scripts "@rolldown/binding-linux-x64-gnu@${RD_VERSION}"
 
       - name: Typecheck app workspace
         run: |
@@ -787,7 +846,7 @@ jobs:
             -- uv run pytest tests/contracts tests/unit/domain/studio \
               tests/contracts/api/test_studio_v3_api.py tests/unit/api/test_studio_contract_fixtures.py \
               tests/component/worker/test_studio_runtime.py tests/component/worker/test_studio_model_runtime.py \
-              tests/component/providers/test_studio_model_port.py \
+              tests/unit/providers/test_studio_model_port.py \
               -q --junitxml=artifacts/ci/studio-roadmap-gates/test-results/pytest.xml
 
       - name: Capture environment
@@ -860,21 +919,26 @@ jobs:
             --name p1_postgres_vertical \
             --output artifacts/ci/p1-e2e-postgres/receipts/p1_vertical.json \
             --timeout 600 \
-            -- uv run pytest tests/contracts/test_p1_e2e_acceptance.py::TestPostgresVerticalSlice -vv --tb=short 2>&1 | tee /tmp/pg_vertical.txt
+            -- uv run pytest tests/contracts/test_p1_e2e_acceptance.py::TestPostgresVerticalSlice -vv --tb=short
+          # The receipt wrapper captures the subprocess stdout and persists it
+          # under receipts/logs/<name>.stdout.log — pipe the pytest output into
+          # that file, not into a shell tee the wrapper never sees.
+          PG_LOG=artifacts/ci/p1-e2e-postgres/receipts/logs/p1_postgres_vertical.stdout.log
+          test -f "$PG_LOG" || { echo "receipt log missing: $PG_LOG"; exit 1; }
           # Fail if test was skipped
-          if grep -q "skipped" /tmp/pg_vertical.txt; then
+          if grep -q "skipped" "$PG_LOG"; then
             echo "PostgreSQL P1 vertical slice was skipped — WINDAGENT_TEST_POSTGRES_URL not set or DB unavailable"
-            cat /tmp/pg_vertical.txt
+            cat "$PG_LOG"
             exit 1
           fi
-          if grep -q "FAILED" /tmp/pg_vertical.txt; then
+          if grep -q "FAILED" "$PG_LOG"; then
             echo "PostgreSQL P1 vertical slice failed"
-            cat /tmp/pg_vertical.txt
+            cat "$PG_LOG"
             exit 1
           fi
-          if ! grep -q "1 passed" /tmp/pg_vertical.txt; then
+          if ! grep -Eq "[0-9]+ passed" "$PG_LOG"; then
             echo "PostgreSQL P1 vertical slice did not report PASSED"
-            cat /tmp/pg_vertical.txt
+            cat "$PG_LOG"
             exit 1
           fi
 
@@ -892,9 +956,12 @@ jobs:
             --name p1_e2e_full_postgres \
             --output artifacts/ci/p1-e2e-postgres/receipts/p1_full.json \
             --timeout 900 \
-            -- uv run pytest tests/contracts/test_p1_e2e_acceptance.py -v --tb=short 2>&1 | tee /tmp/pg_full.txt
-          if grep -q "FAILED" /tmp/pg_full.txt; then
+            -- uv run pytest tests/contracts/test_p1_e2e_acceptance.py -v --tb=short
+          PG_LOG=artifacts/ci/p1-e2e-postgres/receipts/logs/p1_e2e_full_postgres.stdout.log
+          test -f "$PG_LOG" || { echo "receipt log missing: $PG_LOG"; exit 1; }
+          if grep -q "FAILED" "$PG_LOG"; then
             echo "P1 E2E on PostgreSQL had failures"
+            cat "$PG_LOG"
             exit 1
           fi
 
@@ -1124,6 +1191,18 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Sync dependencies
         run: uv sync --all-packages
+      # The phase-0 baseline producer records the local ffmpeg version in its
+      # environment evidence; a missing binary must degrade to "missing",
+      # but on runners where it IS installable we prefer the real probe.
+      - name: Install ffmpeg (optional toolchain probe)
+        run: |
+          if command -v ffmpeg >/dev/null 2>&1; then
+            echo "ffmpeg already present: $(ffmpeg -version | head -1)"
+          elif command -v apt-get >/dev/null 2>&1; then
+            sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+          else
+            echo "no package manager available; producer will record ffmpeg as missing"
+          fi
       - name: Verification tests
         run: |
           python scripts/verification/run_command_receipt.py \
