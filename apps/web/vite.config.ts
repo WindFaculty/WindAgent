@@ -59,6 +59,10 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html"],
+      // Bootstrap entry points mount React against a real DOM node and cannot
+      // be exercised under happy-dom; the application components they render
+      // are what the thresholds measure.
+      exclude: ["src/main.tsx", "src/test/**"],
       thresholds: {
         statements: 75,
         branches: 65,
