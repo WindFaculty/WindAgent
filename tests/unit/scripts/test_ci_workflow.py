@@ -84,7 +84,14 @@ def test_artifact_gate_validates_candidate_and_hashes():
     assert "generate_phase7_evidence.py" in run_text
     assert "validate_evidence_bundle.py" in run_text
     assert "validate_artifact_schema.py" in run_text
-    assert "--directory artifacts/architecture_v2_production_hardening/phase_07" in run_text
+    # The recursive validation is scoped to the CURRENT run's directory
+    # (RUN_DIR pins it to ci-<run_id>-<attempt>); committed final/ evidence of
+    # other lineages must not block this candidate.
+    assert (
+        'RUN_DIR="artifacts/architecture_v2_production_hardening/phase_07/runs/ci-'
+        in run_text
+    )
+    assert '--directory "$RUN_DIR"' in run_text
     assert "--recursive" in run_text
     assert "--verify-hashes" in run_text
     assert "--fail-on-warning" in run_text

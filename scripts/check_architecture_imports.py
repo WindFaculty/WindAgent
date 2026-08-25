@@ -504,6 +504,9 @@ def check(root: Path, config: dict) -> tuple[dict, dict]:
             for violation in check_v3_module_level_mutable_stores(root, packages, config):
                 violations.append(violation)
 
+    # rglob iteration order differs between platforms and filesystems; sort
+    # the edges so the serialized graph is byte-stable across machines.
+    edges.sort(key=lambda item: (item["from"], item["to"], item["file"], item["line"]))
     graph_report = {
         "nodes": [{"id": name, "path": info["path"], "namespace": info["namespace"]} for name, info in packages.items()],
         "edges": edges,
@@ -1315,6 +1318,13 @@ def main(argv=None) -> int:
                         help="Skip root marker validation (for testing only)")
     parser.add_argument("--skip-scaffold-check", action="store_true",
                         help="Skip scaffold architecture check (for testing only)")
+    parser.add_argument(
+        "--no-write",
+        action="store_true",
+        help="Compute the verdict without writing dependency_boundary_report.json / "
+        "import_graph.json (used by --no-write verifier runs so re-verification "
+        "never mutates the working tree)",
+    )
     args = parser.parse_args(argv)
 
     root: Optional[Path] = None
@@ -1504,19 +1514,21 @@ def main(argv=None) -> int:
             print("Zero boundary violations detected")
 
     # Reports default inside the selected checkout, never the source checkout
-    # that happened to provide this installed checker.
-    report_path = args.report or (
-        root
-        / "artifacts"
-        / "architecture_v2_runtime_cutover"
-        / "phase_13"
-        / "dependency_boundary_report.json"
-    )
-    report_path.parent.mkdir(parents=True, exist_ok=True)
-    report_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
-    graph_path = args.graph or report_path.with_name("import_graph.json")
-    graph_path.parent.mkdir(parents=True, exist_ok=True)
-    graph_path.write_text(json.dumps(graph, indent=2), encoding="utf-8")
+    # that happened to provide this installed checker. --no-write skips them
+    # entirely so verify-only runs leave the tree untouched.
+    if not args.no_write:
+        report_path = args.report or (
+            root
+            / "artifacts"
+            / "architecture_v2_runtime_cutover"
+            / "phase_13"
+            / "dependency_boundary_report.json"
+        )
+        report_path.parent.mkdir(parents=True, exist_ok=True)
+        report_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
+        graph_path = args.graph or report_path.with_name("import_graph.json")
+        graph_path.parent.mkdir(parents=True, exist_ok=True)
+        graph_path.write_text(json.dumps(graph, indent=2), encoding="utf-8")
     return exit_code
 
 

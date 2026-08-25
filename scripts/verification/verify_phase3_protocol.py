@@ -195,7 +195,7 @@ def run_contract_tests() -> dict:
 # ----------------------------------------------------------------------
 # Architecture report
 # ----------------------------------------------------------------------
-def run_architecture_report() -> dict:
+def run_architecture_report(no_write: bool = False) -> dict:
     report = {
         "schema_version": "1.0.0",
         "phase": 3,
@@ -226,9 +226,19 @@ def run_architecture_report() -> dict:
             }
         )
 
+    # In no-write mode the checker must not rewrite its phase-13 reports
+    # either — re-verification has to leave the working tree untouched.
+    checker_argv = [
+        "scripts/check_architecture_imports.py",
+        "--root",
+        str(ROOT),
+        "--json",
+    ]
+    if no_write:
+        checker_argv.append("--no-write")
     run(
         "Architecture imports checker",
-        ["scripts/check_architecture_imports.py", "--root", str(ROOT), "--json"],
+        checker_argv,
     )
     run("Duplicate canonical models", ["scripts/check_duplicate_canonical_models.py"])
     return report
@@ -243,7 +253,7 @@ def main(no_write: bool = False) -> int:
 
     schema_matrix = run_schema_validation_matrix()
     contract_receipt = run_contract_tests()
-    architecture_report = run_architecture_report()
+    architecture_report = run_architecture_report(no_write=no_write)
 
     matrix_ok = all(
         f["status"] == "PASSED" for f in schema_matrix["invalid_fixtures"].values()

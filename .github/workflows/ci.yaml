@@ -400,6 +400,16 @@ jobs:
             --timeout 600 \
             -- npm ci
 
+      # npm/cli#4828: a lockfile generated on Windows omits the Linux native
+      # optional deps. vite's rollup needs @rollup/rollup-linux-x64-gnu at
+      # test/build time; install it WITHOUT touching the lockfile.
+      - name: Install Linux rollup native binding (missing from Windows-generated lockfile)
+        working-directory: apps/web
+        run: |
+          RU_VERSION=$(node -p "require('./node_modules/rollup/package.json').version")
+          echo "rollup ${RU_VERSION}: installing @rollup/rollup-linux-x64-gnu"
+          npm install --no-save --ignore-scripts "@rollup/rollup-linux-x64-gnu@${RU_VERSION}"
+
       # @windagent/app is a file:-dependency resolved at its REAL location
       # (../../frontend/app), so tsc resolves its imports through the frontend
       # workspace tree. That tree needs its own node_modules for the typecheck.
