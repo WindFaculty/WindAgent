@@ -4,8 +4,8 @@
   "generated_at": "2026-08-25T01:41:11.119121+00:00",
   "certification_requirement": "3 consecutive PASS GitHub Actions runs on one immutable candidate SHA (push run first, then two independent workflow_dispatch runs on the same ref with no commits in between)",
   "candidate_code_sha": "0e9b8bd3a29eda4cc766edc1f3787682ef66b0a7",
-  "evidence_publication_sha": null,
-  "evidence_publication_note": "Filled by the certification report commit that publishes this manifest (a git commit cannot reference its own SHA).",
+  "evidence_publication_sha": "e41c8c340cbd39f91ce5b49ee91d18b9a9104a27",
+  "evidence_publication_note": "The commit that first published this evidence bundle and manifest.",
   "runs": [
     {
       "slot": "run_1",
