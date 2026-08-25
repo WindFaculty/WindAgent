@@ -1,0 +1,114 @@
+{
+  "schema_version": "1.0.0",
+  "gate": "T7_TEST_ARCHITECTURE_PRODUCTION_READY",
+  "generated_at": "2026-08-25T01:41:11.119121+00:00",
+  "certification_requirement": "3 consecutive PASS GitHub Actions runs on one immutable candidate SHA (push run first, then two independent workflow_dispatch runs on the same ref with no commits in between)",
+  "candidate_code_sha": "0e9b8bd3a29eda4cc766edc1f3787682ef66b0a7",
+  "evidence_publication_sha": null,
+  "evidence_publication_note": "Filled by the certification report commit that publishes this manifest (a git commit cannot reference its own SHA).",
+  "runs": [
+    {
+      "slot": "run_1",
+      "run_id": 32795448269,
+      "trigger_event": "push",
+      "conclusion": "success",
+      "head_sha": "0e9b8bd3a29eda4cc766edc1f3787682ef66b0a7",
+      "jobs_total": 25,
+      "jobs_failed": 0,
+      "started_at": "2026-08-25T00:54:07Z",
+      "completed_at": "2026-08-25T01:02:32Z",
+      "html_url": "https://github.com/WindFaculty/WindAgent/actions/runs/32795448269",
+      "files": {
+        "bundle_contents/ci_run_manifest.json": {
+          "sha256": "38d2426ab9970bbe25c83956f891ba79694dbb7b8c41927598690230a16e3d7b",
+          "bytes": 19621
+        },
+        "bundle_contents/environment.json": {
+          "sha256": "a71dc5903544c6ec533cc45555bbd98540b11dc061300ee40b1216bdb21302f3",
+          "bytes": 541
+        },
+        "final_evidence_bundle.zip": {
+          "sha256": "dcb8a5622f3bd2a505dd2c3c53bf9a572074c46ba6c5dd27139fc6e4bff5bc8e",
+          "bytes": 4498
+        },
+        "jobs.json": {
+          "sha256": "e47a70fa23ad5bc06689b4b8da3b4bd0091d3245407b5d8c33c8f7bec5916851",
+          "bytes": 4774
+        },
+        "run_summary.json": {
+          "sha256": "ec7dea2e22b625dbcb03f90f18d5c6805dbd14189051e3250a4eaa881864dd9f",
+          "bytes": 444
+        }
+      }
+    },
+    {
+      "slot": "run_2",
+      "run_id": 32796802813,
+      "trigger_event": "workflow_dispatch",
+      "conclusion": "success",
+      "head_sha": "0e9b8bd3a29eda4cc766edc1f3787682ef66b0a7",
+      "jobs_total": 25,
+      "jobs_failed": 0,
+      "started_at": "2026-08-25T01:14:52Z",
+      "completed_at": "2026-08-25T01:22:25Z",
+      "html_url": "https://github.com/WindFaculty/WindAgent/actions/runs/32796802813",
+      "files": {
+        "bundle_contents/ci_run_manifest.json": {
+          "sha256": "85505dd2b9acf4bdbb29a26eee143da14795563ff21a5a8616f085193b120da4",
+          "bytes": 19621
+        },
+        "bundle_contents/environment.json": {
+          "sha256": "a71dc5903544c6ec533cc45555bbd98540b11dc061300ee40b1216bdb21302f3",
+          "bytes": 541
+        },
+        "final_evidence_bundle.zip": {
+          "sha256": "85cd8c0d7a9a07b55f382f4d0d59e8de28f6cbe9aba9b3c4025e6b2bc1ffa854",
+          "bytes": 4535
+        },
+        "jobs.json": {
+          "sha256": "325264de4e1ff5f8964d2a529ba442632b063dbb8c1d5ba09dba0fa9abb64de9",
+          "bytes": 4774
+        },
+        "run_summary.json": {
+          "sha256": "d44b26be01b8eaf954d1529cb133a44d37331a5c334e82398aba36889ba4a4ee",
+          "bytes": 457
+        }
+      }
+    },
+    {
+      "slot": "run_3",
+      "run_id": 32797518556,
+      "trigger_event": "workflow_dispatch",
+      "conclusion": "success",
+      "head_sha": "0e9b8bd3a29eda4cc766edc1f3787682ef66b0a7",
+      "jobs_total": 25,
+      "jobs_failed": 0,
+      "started_at": "2026-08-25T01:25:57Z",
+      "completed_at": "2026-08-25T01:33:38Z",
+      "html_url": "https://github.com/WindFaculty/WindAgent/actions/runs/32797518556",
+      "files": {
+        "bundle_contents/ci_run_manifest.json": {
+          "sha256": "bae0b0989c85f4decc8eb9670f896612daf3c9cca134960cc9e1e4e471867299",
+          "bytes": 19621
+        },
+        "bundle_contents/environment.json": {
+          "sha256": "a71dc5903544c6ec533cc45555bbd98540b11dc061300ee40b1216bdb21302f3",
+          "bytes": 541
+        },
+        "final_evidence_bundle.zip": {
+          "sha256": "0b6ea7cbe5ffde94c2948ddef1536e1d02c311e4f389323ae8c9bd0cbe94ba28",
+          "bytes": 4496
+        },
+        "jobs.json": {
+          "sha256": "c9b56d20cd1306e12f298764e291d36a556cde310440e9b2bacddd3c0e91b704",
+          "bytes": 4774
+        },
+        "run_summary.json": {
+          "sha256": "a560e83c072adbeb01dd32e901aef621ee2246d949a421d43117ee7acc70fa28",
+          "bytes": 457
+        }
+      }
+    }
+  ],
+  "derived_from": ".tmp/build_certification_manifest.py"
+}

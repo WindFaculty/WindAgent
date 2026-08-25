@@ -1,0 +1,23 @@
+{
+  "git": {
+    "source_sha": "0e9b8bd3a29eda4cc766edc1f3787682ef66b0a7",
+    "verified_sha": "0e9b8bd3a29eda4cc766edc1f3787682ef66b0a7",
+    "branch": "refactor/architecture-v3-hardening",
+    "worktree_clean": true
+  },
+  "runtime": {
+    "os": "linux",
+    "os_version": "6.17.0-1022-azure",
+    "python": "3.11.16",
+    "python_implementation": "CPython",
+    "uv": "0.5.0",
+    "node": "22.23.2",
+    "npm": "10.9.8",
+    "postgres": "16.15-1.pgdg24.04+2)"
+  },
+  "tools": {
+    "pytest": null,
+    "ruff": null,
+    "mypy": null
+  }
+}

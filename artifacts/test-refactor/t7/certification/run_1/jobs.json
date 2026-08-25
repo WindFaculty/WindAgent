@@ -1,0 +1,25 @@
+{"completed_at":null,"conclusion":"success","name":"Integration (SQLite)","started_at":null,"url":"https://github.com/WindFaculty/WindAgent/actions/runs/32795448269/job/97645672279"}
+{"completed_at":null,"conclusion":"success","name":"Artifact Protocol Gate","started_at":null,"url":"https://github.com/WindFaculty/WindAgent/actions/runs/32795448269/job/97645672336"}
+{"completed_at":null,"conclusion":"success","name":"Version Consistency Gate","started_at":null,"url":"https://github.com/WindFaculty/WindAgent/actions/runs/32795448269/job/97645672337"}
+{"completed_at":null,"conclusion":"success","name":"Runtime Smoke Gate","started_at":null,"url":"https://github.com/WindFaculty/WindAgent/actions/runs/32795448269/job/97645672365"}
+{"completed_at":null,"conclusion":"success","name":"Lint \u0026 Test Architecture Hygiene","started_at":null,"url":"https://github.com/WindFaculty/WindAgent/actions/runs/32795448269/job/97645672372"}
+{"completed_at":null,"conclusion":"success","name":"Architecture Boundaries Gate","started_at":null,"url":"https://github.com/WindFaculty/WindAgent/actions/runs/32795448269/job/97645672373"}
+{"completed_at":null,"conclusion":"success","name":"Web Test \u0026 Build (Ubuntu)","started_at":null,"url":"https://github.com/WindFaculty/WindAgent/actions/runs/32795448269/job/97645672378"}
+{"completed_at":null,"conclusion":"success","name":"Component (SQLite)","started_at":null,"url":"https://github.com/WindFaculty/WindAgent/actions/runs/32795448269/job/97645672383"}
+{"completed_at":null,"conclusion":"success","name":"Web Test \u0026 Build (Windows)","started_at":null,"url":"https://github.com/WindFaculty/WindAgent/actions/runs/32795448269/job/97645672387"}
+{"completed_at":null,"conclusion":"success","name":"E2E Multiprocess","started_at":null,"url":"https://github.com/WindFaculty/WindAgent/actions/runs/32795448269/job/97645672392"}
+{"completed_at":null,"conclusion":"success","name":"P1 E2E PostgreSQL Vertical Slice (P1 Production Readiness)","started_at":null,"url":"https://github.com/WindFaculty/WindAgent/actions/runs/32795448269/job/97645672394"}
+{"completed_at":null,"conclusion":"success","name":"Studio Roadmap Gates (checkers + contracts)","started_at":null,"url":"https://github.com/WindFaculty/WindAgent/actions/runs/32795448269/job/97645672405"}
+{"completed_at":null,"conclusion":"success","name":"Contracts (API + Story)","started_at":null,"url":"https://github.com/WindFaculty/WindAgent/actions/runs/32795448269/job/97645672410"}
+{"completed_at":null,"conclusion":"success","name":"Unit (pure, xdist)","started_at":null,"url":"https://github.com/WindFaculty/WindAgent/actions/runs/32795448269/job/97645672426"}
+{"completed_at":null,"conclusion":"success","name":"Coverage Gate","started_at":null,"url":"https://github.com/WindFaculty/WindAgent/actions/runs/32795448269/job/97645672433"}
+{"completed_at":null,"conclusion":"success","name":"Live Record Client Gate (frontend/app)","started_at":null,"url":"https://github.com/WindFaculty/WindAgent/actions/runs/32795448269/job/97645672440"}
+{"completed_at":null,"conclusion":"success","name":"Verification","started_at":null,"url":"https://github.com/WindFaculty/WindAgent/actions/runs/32795448269/job/97645672445"}
+{"completed_at":null,"conclusion":"success","name":"Desktop Test \u0026 Build (Windows)","started_at":null,"url":"https://github.com/WindFaculty/WindAgent/actions/runs/32795448269/job/97645672456"}
+{"completed_at":null,"conclusion":"success","name":"Live Record Native Gate (recording-engine crate)","started_at":null,"url":"https://github.com/WindFaculty/WindAgent/actions/runs/32795448269/job/97645672540"}
+{"completed_at":null,"conclusion":"success","name":"Architecture Test Suite (full)","started_at":null,"url":"https://github.com/WindFaculty/WindAgent/actions/runs/32795448269/job/97645672567"}
+{"completed_at":null,"conclusion":"success","name":"CLI Contract Gate","started_at":null,"url":"https://github.com/WindFaculty/WindAgent/actions/runs/32795448269/job/97645672629"}
+{"completed_at":null,"conclusion":"success","name":"Windows Portability (unit + component)","started_at":null,"url":"https://github.com/WindFaculty/WindAgent/actions/runs/32795448269/job/97645672635"}
+{"completed_at":null,"conclusion":"success","name":"Desktop Test \u0026 Build (Ubuntu)","started_at":null,"url":"https://github.com/WindFaculty/WindAgent/actions/runs/32795448269/job/97645672662"}
+{"completed_at":null,"conclusion":"success","name":"Postgres Production Semantics","started_at":null,"url":"https://github.com/WindFaculty/WindAgent/actions/runs/32795448269/job/97645672743"}
+{"completed_at":null,"conclusion":"success","name":"Final Evidence Gate","started_at":null,"url":"https://github.com/WindFaculty/WindAgent/actions/runs/32795448269/job/97647236869"}

@@ -1,0 +1,605 @@
+{
+  "manifest_version": "1.0.0",
+  "generated_at": "2026-08-25T01:33:32.482716+00:00",
+  "verified_sha": "0e9b8bd3a29eda4cc766edc1f3787682ef66b0a7",
+  "ci": {
+    "run_id": "32797518556",
+    "run_attempt": "1"
+  },
+  "required_jobs": [
+    "artifact-protocol",
+    "version-consistency",
+    "architecture-boundaries",
+    "architecture-suite",
+    "lint",
+    "unit-pure",
+    "component-sqlite",
+    "contracts",
+    "integration-sqlite",
+    "postgres-production-semantics",
+    "verification-tier",
+    "windows-portability",
+    "e2e-multiprocess",
+    "web-test",
+    "web-test-windows",
+    "desktop-test",
+    "desktop-test-windows",
+    "studio-roadmap-gates",
+    "p1-e2e-postgres",
+    "runtime-smoke",
+    "cli-contract",
+    "coverage-gate",
+    "live-record-client-gate",
+    "live-record-native-gate"
+  ],
+  "github_job_results": {
+    "artifact-protocol": "success",
+    "version-consistency": "success",
+    "architecture-boundaries": "success",
+    "architecture-suite": "success",
+    "lint": "success",
+    "unit-pure": "success",
+    "component-sqlite": "success",
+    "contracts": "success",
+    "integration-sqlite": "success",
+    "postgres-production-semantics": "success",
+    "verification-tier": "success",
+    "windows-portability": "success",
+    "e2e-multiprocess": "success",
+    "web-test": "success",
+    "web-test-windows": "success",
+    "desktop-test": "success",
+    "desktop-test-windows": "success",
+    "studio-roadmap-gates": "success",
+    "p1-e2e-postgres": "success",
+    "runtime-smoke": "success",
+    "cli-contract": "success",
+    "coverage-gate": "success",
+    "live-record-client-gate": "success",
+    "live-record-native-gate": "success"
+  },
+  "jobs": [
+    {
+      "job": "artifact-protocol",
+      "status": "PASS",
+      "environment_sha256": "6c2d6c39b27c37d194023b47903de10077948ecd4d62ae7b801fe5ab16001aa8",
+      "receipts": [
+        {
+          "command_id": "architecture_imports_check",
+          "receipt_sha256": "9d0b993604055d2098c506b0ffe33df8ba6a0b60956a104a446b84a5e9946292",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        },
+        {
+          "command_id": "architecture_scaffold_check",
+          "receipt_sha256": "eff8643c8116d30429614cbf3b8656c1bdfb5725b166f20fff5be43f59600424",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        },
+        {
+          "command_id": "artifact_schema_validation",
+          "receipt_sha256": "03dc7327ec06b720eaa428c528be52437031e86d31cc353e3d9d5d1b49b15c4e",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        },
+        {
+          "command_id": "negative_fixtures_tests",
+          "receipt_sha256": "61bb64b8eba7f7ecb90dcabacdab469b9ef3f6047b5bda7138a5decbfdaf643d",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        },
+        {
+          "command_id": "pytest_integration",
+          "receipt_sha256": "b64ab21b780a2a9531012d859d0a7ad214feadeeb96ede2d639a6ced0b57d078",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        },
+        {
+          "command_id": "pytest_unit",
+          "receipt_sha256": "bfbdb3b610ef5d30d782fb35c77177013e3dc2a489961d7b4614cf79481f909a",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        },
+        {
+          "command_id": "version_authority_tests",
+          "receipt_sha256": "2c5f85bb6e44a5465617f4c131fe83179d1b58e6361e518f4581f6d67ec69723",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        },
+        {
+          "command_id": "version_check",
+          "receipt_sha256": "d3e138e1bdc8003157e5f13e70d90e2a99f166007525c04119dc3150420ecb5a",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "job": "version-consistency",
+      "status": "PASS",
+      "environment_sha256": "a71dc5903544c6ec533cc45555bbd98540b11dc061300ee40b1216bdb21302f3",
+      "receipts": [
+        {
+          "command_id": "version_consistency",
+          "receipt_sha256": "e4793233333cb67d931f642e6574f036921b78bf58633f18e0cec4f34f3687d6",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "job": "architecture-boundaries",
+      "status": "PASS",
+      "environment_sha256": "a71dc5903544c6ec533cc45555bbd98540b11dc061300ee40b1216bdb21302f3",
+      "receipts": [
+        {
+          "command_id": "architecture_boundaries",
+          "receipt_sha256": "9e5d715b7edc15256b867716e58c441db28df6a6cb9ac2450ef2b40ad8213cc0",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        },
+        {
+          "command_id": "no_legacy_orchestration",
+          "receipt_sha256": "90fa3a2aaf7308c78061f9a75854d01673bf03cecd6fef2d155e66be0e78a082",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        },
+        {
+          "command_id": "ruff_check",
+          "receipt_sha256": "7e3193a5e3d4af10477856609dbab1c8bab47cb28687f550478a3be623e87e77",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "job": "architecture-suite",
+      "status": "PASS",
+      "environment_sha256": "844ac4028f10bc497da6ccfacc77e26d5fcb8914857e8c5729e4621f1e376aa3",
+      "receipts": [
+        {
+          "command_id": "architecture_suite",
+          "receipt_sha256": "04df319677b9fb64aacd0992d06047ca5b33e72c34ddc3a231aae0d6b5e4c270",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "job": "lint",
+      "status": "PASS",
+      "environment_sha256": "a71dc5903544c6ec533cc45555bbd98540b11dc061300ee40b1216bdb21302f3",
+      "receipts": [
+        {
+          "command_id": "ruff_check",
+          "receipt_sha256": "55a0bbe0157e62abec399a2778bc2b3150d3f23dbe6d54018d952a57ae1e8b69",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        },
+        {
+          "command_id": "test_architecture_hygiene",
+          "receipt_sha256": "097f8ea3802adaba9f855dae53301d75a9bc8401c3a895fa4012618f10b52ac9",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "job": "unit-pure",
+      "status": "PASS",
+      "environment_sha256": "844ac4028f10bc497da6ccfacc77e26d5fcb8914857e8c5729e4621f1e376aa3",
+      "receipts": [
+        {
+          "command_id": "unit_pure",
+          "receipt_sha256": "4a1229b871ac1e93ee3f23920b34483be69b9b616147634e48df38330163727c",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "job": "component-sqlite",
+      "status": "PASS",
+      "environment_sha256": "844ac4028f10bc497da6ccfacc77e26d5fcb8914857e8c5729e4621f1e376aa3",
+      "receipts": [
+        {
+          "command_id": "component_sqlite",
+          "receipt_sha256": "587cd106f385c9458d01fddd8993decf85412ea77dabfb38c3688700f73cd3d5",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "job": "contracts",
+      "status": "PASS",
+      "environment_sha256": "a71dc5903544c6ec533cc45555bbd98540b11dc061300ee40b1216bdb21302f3",
+      "receipts": [
+        {
+          "command_id": "contracts",
+          "receipt_sha256": "7fe0e6bec6c3ca105fac399b53f9883b4fc76ee68a45a76b00b240f1fce8560d",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "job": "integration-sqlite",
+      "status": "PASS",
+      "environment_sha256": "a71dc5903544c6ec533cc45555bbd98540b11dc061300ee40b1216bdb21302f3",
+      "receipts": [
+        {
+          "command_id": "integration_sqlite",
+          "receipt_sha256": "eab203024d1a096d1ba2b6724c6885600088d1464ad0df4b7b921f7499cb423d",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "job": "postgres-production-semantics",
+      "status": "PASS",
+      "environment_sha256": "a71dc5903544c6ec533cc45555bbd98540b11dc061300ee40b1216bdb21302f3",
+      "receipts": [
+        {
+          "command_id": "postgres_backend_attestation",
+          "receipt_sha256": "b38e9ca835d3bdc2aea5777f44fdec0bb3b5e510a34c9d2f44897754c93ed7a5",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        },
+        {
+          "command_id": "postgres_semantics",
+          "receipt_sha256": "72c9921a4a5d27f2eada431e69c7617689debe5f4472c34267cba78ee15e49d4",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "job": "verification-tier",
+      "status": "PASS",
+      "environment_sha256": "844ac4028f10bc497da6ccfacc77e26d5fcb8914857e8c5729e4621f1e376aa3",
+      "receipts": [
+        {
+          "command_id": "verification",
+          "receipt_sha256": "896cc97425861b8469e4f7036d571659b3ad2056908b61525d46c5e52a6afe14",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "job": "windows-portability",
+      "status": "PASS",
+      "environment_sha256": "d03c5b970bc9ba0e8e2599c0d57f68e0f316797080aca85b397eb6a64b6ffcc9",
+      "receipts": [
+        {
+          "command_id": "windows_portability",
+          "receipt_sha256": "8e4e33de3fa50fd8d02d6b8a1b4ffd15c081cfb5d826a9e00e27fc9ec80733dc",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "job": "e2e-multiprocess",
+      "status": "PASS",
+      "environment_sha256": "a71dc5903544c6ec533cc45555bbd98540b11dc061300ee40b1216bdb21302f3",
+      "receipts": [
+        {
+          "command_id": "e2e_multiprocess",
+          "receipt_sha256": "9d35dd5c456b93d19a3454cb7b2e9ce9b52a2de5badc26e9172358e6c9255df9",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "job": "web-test",
+      "status": "PASS",
+      "environment_sha256": "916d849b6ba70f2a0cdf5679b8c03aadd276bc39e76cbbaaf2597ed8da12adfe",
+      "receipts": [
+        {
+          "command_id": "web_build",
+          "receipt_sha256": "d586c71657e21adeff2afdf92ba5860788e0fc60e1f9419b77f912f0d47c846c",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        },
+        {
+          "command_id": "frontend_workspace_npm_ci",
+          "receipt_sha256": "1d7db223be121a1d75634fd662d69a3687b7b1c938d34c99f1b55bc89427377e",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        },
+        {
+          "command_id": "web_npm_ci",
+          "receipt_sha256": "5c3139865b5e4fcb425d2ff30a463b0ef4b26f83a65794225462cacf9553b08e",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        },
+        {
+          "command_id": "web_test_coverage",
+          "receipt_sha256": "506c4371e32ae8623e37da0b7be590379d293f17596a7c2d74153d063c500e58",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        },
+        {
+          "command_id": "web_typecheck",
+          "receipt_sha256": "6cd98705061ac746343bdb98696c8fd690d883e0ea9a624aee371fa051e8b96b",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "job": "web-test-windows",
+      "status": "PASS",
+      "environment_sha256": "482d411292f000cd8049645a0bbd819af78e3cafac2eb7e3c911525cbd99f370",
+      "receipts": [
+        {
+          "command_id": "web_windows_build",
+          "receipt_sha256": "2c9d457be99feae5b482d7ee40cbbf703f05ddfc8d1517d561c5713f6b176cb1",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        },
+        {
+          "command_id": "frontend_workspace_npm_ci",
+          "receipt_sha256": "330de6e236d769486b1708a921f11b481f5f72e4f20484591333755ec56fb96a",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        },
+        {
+          "command_id": "web_windows_npm_ci",
+          "receipt_sha256": "6a471a1a305b7e9aafbb41915bbba54811e516034678a0e90bc4de111cb158e5",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        },
+        {
+          "command_id": "web_windows_tests",
+          "receipt_sha256": "3842f1f8914a4147423bc75c5169da2540e7b4eee7ce62b86ddb7ee65c3518d5",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        },
+        {
+          "command_id": "web_windows_typecheck",
+          "receipt_sha256": "5d5a38d7f979bbd6bac54370ef5f3ee20de86db9fbe6ec0cf942461bcebad47b",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "job": "desktop-test",
+      "status": "PASS",
+      "environment_sha256": "916d849b6ba70f2a0cdf5679b8c03aadd276bc39e76cbbaaf2597ed8da12adfe",
+      "receipts": [
+        {
+          "command_id": "desktop_build",
+          "receipt_sha256": "d38f6070ae4837abe4fe57773e69f4495b95f4319c30d99b7b0254a8e42bf344",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        },
+        {
+          "command_id": "frontend_workspace_npm_ci",
+          "receipt_sha256": "a785dd82f7ba53e38e02f5f4fd5b4a5885d8268eec4bd53dbb763db0e6bdafc7",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        },
+        {
+          "command_id": "desktop_npm_ci",
+          "receipt_sha256": "a209630109406f19eab81a8960204143691ad96cdca4bcb66b5f93bcf5fe4882",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        },
+        {
+          "command_id": "desktop_tests",
+          "receipt_sha256": "752a802fd9d10b8884534613ce37a0e7595ec590903db386d3cc37f85c61b99b",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        },
+        {
+          "command_id": "desktop_typecheck",
+          "receipt_sha256": "83396af2ee3cc81a5a3ca44563bb51f747ba72f78337863315a92e74465f5f38",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "job": "desktop-test-windows",
+      "status": "PASS",
+      "environment_sha256": "482d411292f000cd8049645a0bbd819af78e3cafac2eb7e3c911525cbd99f370",
+      "receipts": [
+        {
+          "command_id": "desktop_windows_build",
+          "receipt_sha256": "4cb1337c3d662c1b5b59dd621973d07b43399979dfb654e7892ae7ddf612cb88",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        },
+        {
+          "command_id": "frontend_workspace_npm_ci",
+          "receipt_sha256": "755c5a6af20121a1a4b26f35860e398d99d916a02a3750e1aa6c0b38113b1fe4",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        },
+        {
+          "command_id": "desktop_windows_npm_ci",
+          "receipt_sha256": "7e9642a48ec76fa0a46454f0c68563c6970bd9c0442b85d06751dc31777aa2d7",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        },
+        {
+          "command_id": "desktop_windows_tests",
+          "receipt_sha256": "eaa155440c936f864d64798439974429becc1c5523d0e19b2411154520d0b170",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        },
+        {
+          "command_id": "desktop_windows_typecheck",
+          "receipt_sha256": "b4a77fe14a69626cbb76c8c79ee5155c530ef2c4da8d929d60ff8d79b94e4433",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "job": "studio-roadmap-gates",
+      "status": "PASS",
+      "environment_sha256": "844ac4028f10bc497da6ccfacc77e26d5fcb8914857e8c5729e4621f1e376aa3",
+      "receipts": [
+        {
+          "command_id": "studio_checkers",
+          "receipt_sha256": "9277dae8831d5aaa4865a459f4d26f28bc92f30eebe1550c0a00387071bb2dc1",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        },
+        {
+          "command_id": "studio_contracts",
+          "receipt_sha256": "9be0865793258efe3bec73a112c9b02377e11018856cbc3087d8104e6d5861ad",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "job": "p1-e2e-postgres",
+      "status": "PASS",
+      "environment_sha256": "a71dc5903544c6ec533cc45555bbd98540b11dc061300ee40b1216bdb21302f3",
+      "receipts": [
+        {
+          "command_id": "p1_pg_additional",
+          "receipt_sha256": "4b940f867b2b309cdb981cdc71bfc776c992a37d1ae1083a444dede852979110",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        },
+        {
+          "command_id": "p1_e2e_full_postgres",
+          "receipt_sha256": "e95200476d8d57ca60afca9dd27d7e6298d750c00de6406bf8d15fbd2e013786",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        },
+        {
+          "command_id": "p1_postgres_vertical",
+          "receipt_sha256": "74295b0d491244fc02e3e2f4d6e4889271d06f7cb4ff66a2421b7f1e44c3f4cb",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        },
+        {
+          "command_id": "postgres_backend_attestation",
+          "receipt_sha256": "051c59bbcc75bdbb2addee19008a47d414db4497ae192d9e63cc8ec59db18fab",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "job": "runtime-smoke",
+      "status": "PASS",
+      "environment_sha256": "a71dc5903544c6ec533cc45555bbd98540b11dc061300ee40b1216bdb21302f3",
+      "receipts": [
+        {
+          "command_id": "runtime_version_smoke",
+          "receipt_sha256": "d1c0dd980809f39aee28ba832ee2e24d8704e7a6985c0bf9e78c94c04ffde5f8",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "job": "cli-contract",
+      "status": "PASS",
+      "environment_sha256": "844ac4028f10bc497da6ccfacc77e26d5fcb8914857e8c5729e4621f1e376aa3",
+      "receipts": [
+        {
+          "command_id": "cli_contract",
+          "receipt_sha256": "b1d61d14c87b4abd683a870795dfbd92a70057518b13a133a9024d42f23d24bc",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "job": "coverage-gate",
+      "status": "PASS",
+      "environment_sha256": "844ac4028f10bc497da6ccfacc77e26d5fcb8914857e8c5729e4621f1e376aa3",
+      "receipts": [
+        {
+          "command_id": "coverage",
+          "receipt_sha256": "46c4a7ee44bdc02646f9a6b9d6cfe7b89fd33abb9119d5e03040d008014578a2",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "job": "live-record-client-gate",
+      "status": "PASS",
+      "environment_sha256": "916d849b6ba70f2a0cdf5679b8c03aadd276bc39e76cbbaaf2597ed8da12adfe",
+      "receipts": [
+        {
+          "command_id": "live_record_client_npm_ci",
+          "receipt_sha256": "f10e5ba2e20836573bcba8d5f39ed0af8a9eb551fc0bea9a30fadd146e6360b9",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        },
+        {
+          "command_id": "live_record_client_tests",
+          "receipt_sha256": "923b93e641a088a2a9ee84fe9beee63c7f079cfad58c511a7efe9b815cf0f966",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        },
+        {
+          "command_id": "live_record_client_typecheck",
+          "receipt_sha256": "286d46713812061a7e2008f3b8953f38bbb97b9f953634984138ba6cadd3dc69",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "job": "live-record-native-gate",
+      "status": "PASS",
+      "environment_sha256": "df06384e842f74c65810e224b84460b93c4d3064f33aec01b0bbc3d9a6adfa1d",
+      "receipts": [
+        {
+          "command_id": "live_record_native_cargo_test",
+          "receipt_sha256": "706e47f87dec55f66c5d189aa0f34ee306d749c7b53d19eb090ca98ee61a3f91",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        },
+        {
+          "command_id": "live_record_sidecar_stage",
+          "receipt_sha256": "7907f1d2289bded96d8df44d4df2dc7729166dc68698f3d5c14b1967c4d88d21",
+          "exit_code": 0,
+          "result": "SUCCESS"
+        }
+      ],
+      "errors": []
+    }
+  ],
+  "errors": [],
+  "verdict": "PASS"
+}
