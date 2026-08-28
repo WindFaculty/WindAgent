@@ -3,7 +3,7 @@
  * Layout: Center column (header + 8-step pipeline + hero + bottom panels) + Right Inspector (banner + recent projects + useful links)
  * Preserves canonical data hooks: useStudioSeries, useCapabilities, templates.
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Lightbulb,
   BookOpen,
@@ -131,7 +131,7 @@ const FALLBACK_PROJECTS = [
 export const StudioHomePage: React.FC = () => {
   const { navigate } = useRouter();
   const { series, metrics, isLoading: isSeriesLoading, createSeries, refetch, invalidate } = useStudioSeries();
-  const { isReady } = useCapabilities();
+  const { status: healthStatus, isReady } = useCapabilities();
   const { templates } = useProjectTemplates();
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -140,19 +140,6 @@ export const StudioHomePage: React.FC = () => {
   const [activeStep] = useState(1);
   const [recentTab, setRecentTab] = useState<'projects' | 'templates' | 'activity'>('projects');
   const [filterSort, setFilterSort] = useState('Sick');
-  const [healthStatus, setHealthStatus] = useState<string>('healthy');
-  useEffect(() => {
-    let cancelled = false;
-    fetch('/health')
-      .then((r) => r.json())
-      .then((j) => {
-        if (!cancelled) setHealthStatus(j?.status ?? 'healthy');
-      })
-      .catch(() => {
-        if (!cancelled) setHealthStatus('UNKNOWN');
-      });
-    return () => { cancelled = true; };
-  }, []);
 
   const handleOpenSeries = (seriesId: string) => navigate(`/projects/${seriesId}`);
   const handleSelectTemplate = (tmpl: ProjectTemplate) => {

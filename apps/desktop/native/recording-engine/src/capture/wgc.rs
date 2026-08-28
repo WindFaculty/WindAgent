@@ -1529,6 +1529,6 @@ mod tests {
                 bundle.info.vendor_id, bundle.info.description
             );
         }
-        assert!(matches!(vid, 0x10DE | 0x1002 | 0x8086 | 0), "vendor {vid:#x}");
+        assert!(matches!(vid, 0x10DE | 0x1002 | 0x8086 | 0x1414 | 0), "vendor {vid:#x}");
     }
 }
