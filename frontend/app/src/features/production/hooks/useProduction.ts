@@ -55,7 +55,7 @@ export function useCreateShot(episodeId: string) {
   const client = useApiClient();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: { scene_id?: string; shot_number?: number; camera_movement?: string; focal_length?: string; duration_seconds?: number }) =>
+    mutationFn: (data: { scene_id?: string; shot_number?: number; shot_size?: string; framing?: string; camera_angle?: string; camera_movement?: string; focal_length?: string; duration_seconds?: number; subject_character_refs?: string[]; location_ref?: string; action?: string }) =>
       client.production.createShot(episodeId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: productionKeys.shots(episodeId) });
@@ -68,8 +68,8 @@ export function useUpdateShot(episodeId: string) {
   const client = useApiClient();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ shotId, ...data }: { shotId: string; camera_movement?: string; focal_length?: string; duration_seconds?: number; status?: string; audio_asset_id?: string; animation_asset_id?: string; render_asset_id?: string; expected_version: number }) =>
-      client.production.updateShot(shotId, data),
+    mutationFn: ({ shotId, ...data }: { shotId: string; shot_size?: string; framing?: string; camera_angle?: string; camera_movement?: string; focal_length?: string; duration_seconds?: number; status?: string; subject_character_refs?: string[]; location_ref?: string; action?: string; audio_asset_id?: string; animation_asset_id?: string; render_asset_id?: string; expected_version: number }) =>
+      client.production.updateShot(shotId, data as any),
     onSuccess: (updated: any) => {
       queryClient.invalidateQueries({ queryKey: productionKeys.shots(episodeId) });
       queryClient.invalidateQueries({ queryKey: productionKeys.shot(updated?.id) });

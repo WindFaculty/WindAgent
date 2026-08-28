@@ -135,7 +135,11 @@ class RecordingScene(BaseModel):
 
 
 class RecordingProfile(BaseModel):
-    """Recording profile — audio locked OFF in P0 (Principle F)."""
+    """Plan-level recording intent (V2).
+
+    Engine-facing audio is a multi-track config on ``RecordingEngineProfile``
+    (mic + system as separate MKV tracks) — it never appears here.
+    """
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
@@ -143,7 +147,6 @@ class RecordingProfile(BaseModel):
     fps: Literal[30, 60] = 60
     codec: Literal["H264", "HEVC"] = "H264"
     segment_minutes: Literal[5, 10] = 5
-    audio_enabled: Literal[False] = False
 
 
 # ─── Aggregate ───────────────────────────────────────────────────────────────

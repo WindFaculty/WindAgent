@@ -1,0 +1,11 @@
+source: FFmpeg git clone --branch n8.1 --depth 1 https://github.com/FFmpeg/FFmpeg.git
+commit: 9047fa1b084f76b1b4d065af2d743df1b40dfb56
+built_by: scripts/live_record/build_libav_from_source.sh (MSYS2 mingw-w64 gcc)
+configure_flags: --enable-shared --disable-static --disable-programs --disable-doc --disable-debug --disable-network --disable-autodetect --disable-everything --enable-muxer=matroska --enable-protocol=file --disable-swscale --disable-swresample --disable-avfilter --disable-avdevice --disable-iconv --disable-zlib --disable-bzlib --disable-lzma
+
+avutil-60.dll  sha256=f911a63a8c861843003587a8238981ea936a250a1bec862220d4d4d9c4b4f200  bytes=1613164
+avcodec-62.dll  sha256=03a6f8ca17f0fd5e34421a3596cba2b8024e1549ab800217e03d01e8caa4f515  bytes=719380
+avformat-62.dll  sha256=e81e04ac9f22f938974429cc8c1d112f162a0619a371d3cd42699ea26e8f3037  bytes=869189
+
+libwinpthread-1.dll  sha256=029d3d2e7bc8651b4b7886708424914790e0225b6a47f650a441e5e697d2111e  bytes=63875
+libwinpthread-1.dll provenance: MSYS2 package mingw-w64-x86_64-winpthreads 14.0.0.r302.gd7f3c5201-1 (MIT), copied from /mingw64/bin at build time

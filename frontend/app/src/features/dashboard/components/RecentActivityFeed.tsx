@@ -48,33 +48,40 @@ export const RecentActivityFeed: React.FC<RecentActivityFeedProps> = ({ summary 
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-        {activities.map((act) => (
-          <div
-            key={act.id}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '12px 14px',
-              background: 'rgba(255, 255, 255, 0.02)',
-              borderRadius: '8px',
-              border: '1px solid rgba(255, 255, 255, 0.04)',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div style={{ padding: '6px', borderRadius: '6px', background: 'rgba(255,255,255,0.05)' }}>
-                {getIconForType(act.type)}
-              </div>
-              <div>
-                <div style={{ fontSize: '13px', fontWeight: 500, color: '#f8fafc' }}>{act.title}</div>
-                <div style={{ fontSize: '11px', color: '#64748b' }}>Loại: {act.type}</div>
-              </div>
-            </div>
-            <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '10px', background: 'rgba(78, 222, 163, 0.15)', color: '#4edea3' }}>
-              {act.status}
-            </span>
+        {activities.length === 0 ? (
+          <div style={{ padding: '24px 16px', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px dashed rgba(255,255,255,0.08)' }}>
+            <div style={{ fontSize: '13px', color: '#94a3b8', marginBottom: '4px' }}>Chưa có hoạt động gần đây</div>
+            <div style={{ fontSize: '11px', color: '#64748b' }}>Các sự kiện từ Swarm & Pipeline sẽ hiển thị tại đây</div>
           </div>
-        ))}
+        ) : (
+          activities.map((act) => (
+            <div
+              key={act.id}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '12px 14px',
+                background: 'rgba(255, 255, 255, 0.02)',
+                borderRadius: '8px',
+                border: '1px solid rgba(255, 255, 255, 0.04)',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{ padding: '6px', borderRadius: '6px', background: 'rgba(255,255,255,0.05)' }}>
+                  {getIconForType(act.type)}
+                </div>
+                <div>
+                  <div style={{ fontSize: '13px', fontWeight: 500, color: '#f8fafc' }}>{act.title}</div>
+                  <div style={{ fontSize: '11px', color: '#64748b' }}>Loại: {act.type}</div>
+                </div>
+              </div>
+              <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '10px', background: 'rgba(78, 222, 163, 0.15)', color: '#4edea3' }}>
+                {act.status}
+              </span>
+            </div>
+          ))
+        )}
       </div>
     </Card>
   );

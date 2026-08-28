@@ -28,7 +28,17 @@ export interface ProviderItem {
   enableCache: boolean;
   lastTestLatency?: number;
   lastTestTime?: string;
+  lastTestStatus?: 'success' | 'failure';
+  lastTestMessage?: string;
+  lastTestAuthValid?: boolean;
 }
+
+/**
+ * No hardcoded demo providers — the registry is server authority only.
+ * Providers are loaded from GET /api/v3/providers and the durable provider SQL authority.
+ * Kept as empty array for backwards-compat imports; new code must use the API hook.
+ */
+export const DEFAULT_PROVIDERS: ProviderItem[] = [];
 
 interface ProviderRegistryTableProps {
   providers: ProviderItem[];
@@ -72,8 +82,8 @@ export const ProviderRegistryTable: React.FC<ProviderRegistryTableProps> = ({
             gap: '4px',
             padding: '2px 8px',
             borderRadius: '12px',
-            backgroundColor: 'rgba(16, 185, 129, 0.12)',
-            color: '#34d399',
+            backgroundColor: 'rgba(34, 197, 94, 0.12)',
+            color: '#22c55e',
             fontSize: '0.72rem',
             fontWeight: 600,
             whiteSpace: 'nowrap',
@@ -92,8 +102,8 @@ export const ProviderRegistryTable: React.FC<ProviderRegistryTableProps> = ({
             gap: '4px',
             padding: '2px 8px',
             borderRadius: '12px',
-            backgroundColor: 'rgba(245, 158, 11, 0.14)',
-            color: '#fbbf24',
+            backgroundColor: 'rgba(234, 179, 8, 0.14)',
+            color: '#eab308',
             fontSize: '0.72rem',
             fontWeight: 600,
             whiteSpace: 'nowrap',
@@ -112,7 +122,7 @@ export const ProviderRegistryTable: React.FC<ProviderRegistryTableProps> = ({
           padding: '2px 8px',
           borderRadius: '12px',
           backgroundColor: 'rgba(239, 68, 68, 0.14)',
-          color: '#f87171',
+          color: '#ef4444',
           fontSize: '0.72rem',
           fontWeight: 600,
           whiteSpace: 'nowrap',
@@ -133,11 +143,11 @@ export const ProviderRegistryTable: React.FC<ProviderRegistryTableProps> = ({
             gap: '5px',
             padding: '3px 9px',
             borderRadius: '6px',
-            backgroundColor: 'rgba(16, 185, 129, 0.12)',
-            color: '#34d399',
+            backgroundColor: 'rgba(34, 197, 94, 0.12)',
+            color: '#22c55e',
             fontSize: '0.72rem',
             fontWeight: 600,
-            border: '1px solid rgba(16, 185, 129, 0.25)',
+            border: '1px solid rgba(34, 197, 94, 0.25)',
           }}
         >
           Connected
@@ -153,11 +163,11 @@ export const ProviderRegistryTable: React.FC<ProviderRegistryTableProps> = ({
             gap: '2px',
             padding: '3px 8px',
             borderRadius: '6px',
-            backgroundColor: 'rgba(245, 158, 11, 0.12)',
-            color: '#fbbf24',
+            backgroundColor: 'rgba(234, 179, 8, 0.12)',
+            color: '#eab308',
             fontSize: '0.72rem',
             fontWeight: 600,
-            border: '1px solid rgba(245, 158, 11, 0.25)',
+            border: '1px solid rgba(234, 179, 8, 0.25)',
           }}
         >
           Warning <ChevronRight size={12} />
@@ -173,7 +183,7 @@ export const ProviderRegistryTable: React.FC<ProviderRegistryTableProps> = ({
           padding: '3px 8px',
           borderRadius: '6px',
           backgroundColor: 'rgba(239, 68, 68, 0.12)',
-          color: '#f87171',
+          color: '#ef4444',
           fontSize: '0.72rem',
           fontWeight: 600,
           border: '1px solid rgba(239, 68, 68, 0.25)',
@@ -191,7 +201,7 @@ export const ProviderRegistryTable: React.FC<ProviderRegistryTableProps> = ({
         flexDirection: 'column',
         backgroundColor: 'rgba(11, 19, 38, 0.85)',
         borderRadius: '14px',
-        border: '1px solid rgba(66, 71, 84, 0.4)',
+        border: '1px solid rgba(51, 65, 85, 0.45)',
         backdropFilter: 'blur(16px)',
         overflow: 'hidden',
         height: '100%',
@@ -204,7 +214,7 @@ export const ProviderRegistryTable: React.FC<ProviderRegistryTableProps> = ({
           justifyContent: 'space-between',
           alignItems: 'center',
           padding: '16px 18px',
-          borderBottom: '1px solid rgba(66, 71, 84, 0.3)',
+          borderBottom: '1px solid rgba(51, 65, 85, 0.35)',
           flexWrap: 'wrap',
           gap: '12px',
         }}
@@ -212,7 +222,7 @@ export const ProviderRegistryTable: React.FC<ProviderRegistryTableProps> = ({
         <h2
           style={{
             margin: 0,
-            fontSize: '1rem',
+            fontSize: '0.98rem',
             fontWeight: 700,
             color: 'var(--text-main, #f8fafc)',
             letterSpacing: '-0.01em',
@@ -229,10 +239,10 @@ export const ProviderRegistryTable: React.FC<ProviderRegistryTableProps> = ({
               alignItems: 'center',
               gap: '6px',
               backgroundColor: 'rgba(17, 24, 39, 0.8)',
-              border: '1px solid rgba(66, 71, 84, 0.5)',
+              border: '1px solid rgba(51, 65, 85, 0.5)',
               borderRadius: '8px',
               padding: '6px 10px',
-              minWidth: '160px',
+              minWidth: '150px',
             }}
           >
             <Search size={13} color="#94a3b8" />
@@ -258,7 +268,7 @@ export const ProviderRegistryTable: React.FC<ProviderRegistryTableProps> = ({
             onChange={(e) => setStatusFilter(e.target.value as any)}
             style={{
               backgroundColor: 'rgba(17, 24, 39, 0.8)',
-              border: '1px solid rgba(66, 71, 84, 0.5)',
+              border: '1px solid rgba(51, 65, 85, 0.5)',
               borderRadius: '8px',
               color: '#94a3b8',
               fontSize: '0.78rem',
@@ -288,7 +298,7 @@ export const ProviderRegistryTable: React.FC<ProviderRegistryTableProps> = ({
           <thead>
             <tr
               style={{
-                borderBottom: '1px solid rgba(66, 71, 84, 0.25)',
+                borderBottom: '1px solid rgba(51, 65, 85, 0.3)',
                 color: '#64748b',
                 fontWeight: 600,
                 fontSize: '0.72rem',
@@ -313,9 +323,9 @@ export const ProviderRegistryTable: React.FC<ProviderRegistryTableProps> = ({
                   key={provider.id}
                   onClick={() => onSelectProvider(provider)}
                   style={{
-                    borderBottom: '1px solid rgba(66, 71, 84, 0.2)',
+                    borderBottom: '1px solid rgba(51, 65, 85, 0.25)',
                     backgroundColor: isSelected
-                      ? 'rgba(59, 130, 246, 0.12)'
+                      ? 'rgba(37, 99, 235, 0.15)'
                       : 'transparent',
                     cursor: 'pointer',
                     transition: 'background-color 0.12s ease',
@@ -362,7 +372,7 @@ export const ProviderRegistryTable: React.FC<ProviderRegistryTableProps> = ({
                         fontFamily: 'var(--font-mono, monospace)',
                         fontSize: '0.72rem',
                         color: '#94a3b8',
-                        maxWidth: '180px',
+                        maxWidth: '160px',
                         display: 'inline-block',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
@@ -486,7 +496,7 @@ export const ProviderRegistryTable: React.FC<ProviderRegistryTableProps> = ({
       <div
         style={{
           padding: '12px 18px',
-          borderTop: '1px solid rgba(66, 71, 84, 0.25)',
+          borderTop: '1px solid rgba(51, 65, 85, 0.3)',
           fontSize: '0.72rem',
           color: '#64748b',
           display: 'flex',

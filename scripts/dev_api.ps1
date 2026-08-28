@@ -106,6 +106,12 @@ if (-not $env:WINDAGENT_DATABASE_URL) {
     $DatabasePath = (Join-Path $RepoRoot "windagent.db").Replace("\", "/")
     $env:WINDAGENT_DATABASE_URL = "sqlite+aiosqlite:///$DatabasePath"
 }
+if ([string]::IsNullOrWhiteSpace($env:WINDAGENT_ENCRYPTION_KEY)) {
+    Write-Host "[api] FAIL: WINDAGENT_ENCRYPTION_KEY is required to store provider API keys securely." -ForegroundColor Red
+    Write-Host "[api] Generate one once with: `$bytes = [byte[]](1..32 | ForEach-Object { Get-Random -Maximum 256 }); [Convert]::ToBase64String(`$bytes)" -ForegroundColor Yellow
+    Write-Host "[api] Then set it before starting: `$env:WINDAGENT_ENCRYPTION_KEY = '<generated value>'" -ForegroundColor Yellow
+    exit 1
+}
 if ($Mock) {
     $env:WINDAGENT_MODEL_BACKEND = "mock"
     $env:WINDAGENT_MOCK_GUI      = "1"

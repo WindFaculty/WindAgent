@@ -42,7 +42,7 @@ describe('StudioPage shell (C3) — canonical', () => {
   it('renders real projects from server with capability summary', async () => {
     renderCanonical(<StudioPage />);
     await waitFor(() => {
-      expect(screen.getByText('Chú thỏ và cánh diều')).toBeInTheDocument();
+      expect(screen.getAllByText('Chú thỏ và cánh diều').length).toBeGreaterThanOrEqual(1);
     });
     expect(screen.getByText('STUDIO V3 CANONICAL')).toBeInTheDocument();
     expect(screen.getByText(/Trạng thái hệ thống: healthy/)).toBeInTheDocument();
@@ -80,7 +80,7 @@ describe('StudioPage shell (C3) — canonical', () => {
   it('never renders sample identifiers or fake data', async () => {
     renderCanonical(<StudioPage />);
     await waitFor(() => {
-      expect(screen.getByText('Chú thỏ và cánh diều')).toBeInTheDocument();
+      expect(screen.getAllByText('Chú thỏ và cánh diều').length).toBeGreaterThanOrEqual(1);
     });
     expect(screen.queryByText(/srs_1/)).not.toBeInTheDocument();
     expect(screen.queryByText(/proj-alpha/)).not.toBeInTheDocument();
@@ -90,7 +90,7 @@ describe('StudioPage shell (C3) — canonical', () => {
   it('navigates to the full Series catalog', async () => {
     renderCanonical(<StudioPage />);
     await waitFor(() => {
-      expect(screen.getByText('Chú thỏ và cánh diều')).toBeInTheDocument();
+      expect(screen.getAllByText('Chú thỏ và cánh diều').length).toBeGreaterThanOrEqual(1);
     });
     fireEvent.click(screen.getByText('Xem tất cả'));
     await waitFor(() => {

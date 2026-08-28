@@ -123,11 +123,13 @@ def test_action_payload_must_be_artifact_uri():
         _action(payload_ref="print('hello')")
 
 
-def test_audio_locked_off_in_profile():
+def test_profile_has_no_legacy_audio_boolean():
+    """V2: audio is multi-track engine config — the plan-level slot must not
+    accept the P0 `audio_enabled` field at all (extra="forbid")."""
     profile = RecordingProfile()
-    assert profile.audio_enabled is False
+    assert not hasattr(profile, "audio_enabled")
     with pytest.raises(Exception):
-        RecordingProfile.model_validate({**profile.model_dump(), "audio_enabled": True})
+        RecordingProfile.model_validate({**profile.model_dump(), "audio_enabled": False})
 
 
 # ---------------------------------------------------------------------------

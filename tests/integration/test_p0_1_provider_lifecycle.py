@@ -509,6 +509,27 @@ def test_http_lifecycle_patch_delete_and_credential_routes(api_client, provider_
     assert gone.status_code == 404
 
 
+def test_create_provider_reports_unavailable_credential_storage(api_client, monkeypatch):
+    """A missing encryption key must not surface as an opaque 500 response."""
+    monkeypatch.delenv("WINDAGENT_ENCRYPTION_KEY", raising=False)
+    monkeypatch.delenv("WINDA_AGENT_ENCRYPTION_KEY", raising=False)
+
+    response = api_client.post(
+        "/api/v3/providers",
+        json={
+            "id": "openrouter",
+            "name": "OpenRouter",
+            "type": "cloud",
+            "base_url": "https://openrouter.ai/api/v1",
+            "protocol_mode": "openai",
+            "api_key": "test-key-not-a-real-secret",
+        },
+    )
+
+    assert response.status_code == 503
+    assert "WINDAGENT_ENCRYPTION_KEY" in response.json()["detail"]
+
+
 def test_http_mutations_fail_closed_for_catalog_only_providers(api_client):
     patch = api_client.patch(
         "/api/v3/providers/catalog-only", json={"name": "nope"}

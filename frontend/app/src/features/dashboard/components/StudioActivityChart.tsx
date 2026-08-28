@@ -23,6 +23,7 @@ export const StudioActivityChart: React.FC<StudioActivityChartProps> = ({ summar
   const totalOutlines = timeframePoints.reduce((acc, p) => acc + p.outlines_count, 0);
   const totalScripts = timeframePoints.reduce((acc, p) => acc + p.scripts_count, 0);
   const totalRenders = timeframePoints.reduce((acc, p) => acc + p.renders_count, 0);
+  const isEmpty = timeframePoints.length === 0 || timeframePoints.every((p) => p.total_activity === 0);
 
   // Generate SVG path from points
   const generateSvgPath = () => {
@@ -105,42 +106,51 @@ export const StudioActivityChart: React.FC<StudioActivityChartProps> = ({ summar
 
       {/* SVG Chart Area */}
       <div style={{ width: '100%', height: '180px', position: 'relative', marginBottom: '20px' }}>
-        <svg viewBox="0 0 1000 180" preserveAspectRatio="none" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
-          <defs>
-            <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#4d8eff" stopOpacity="0.35" />
-              <stop offset="70%" stopColor="#4d8eff" stopOpacity="0.08" />
-              <stop offset="100%" stopColor="#4d8eff" stopOpacity="0.0" />
-            </linearGradient>
-          </defs>
+        {isEmpty ? (
+          <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px dashed rgba(255,255,255,0.08)' }}>
+            <span style={{ fontSize: '13px', color: '#94a3b8', marginBottom: '4px' }}>Chưa có dữ liệu hoạt động</span>
+            <span style={{ fontSize: '11px', color: '#64748b' }}>Tạo dự án & tập phim để thấy biểu đồ theo thời gian thực</span>
+          </div>
+        ) : (
+          <svg viewBox="0 0 1000 180" preserveAspectRatio="none" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
+            <defs>
+              <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#4d8eff" stopOpacity="0.35" />
+                <stop offset="70%" stopColor="#4d8eff" stopOpacity="0.08" />
+                <stop offset="100%" stopColor="#4d8eff" stopOpacity="0.0" />
+              </linearGradient>
+            </defs>
 
-          {/* Grid lines */}
-          <line x1="0" y1="40" x2="1000" y2="40" stroke="rgba(255,255,255,0.06)" strokeDasharray="4 4" />
-          <line x1="0" y1="90" x2="1000" y2="90" stroke="rgba(255,255,255,0.06)" strokeDasharray="4 4" />
-          <line x1="0" y1="140" x2="1000" y2="140" stroke="rgba(255,255,255,0.06)" strokeDasharray="4 4" />
+            {/* Grid lines */}
+            <line x1="0" y1="40" x2="1000" y2="40" stroke="rgba(255,255,255,0.06)" strokeDasharray="4 4" />
+            <line x1="0" y1="90" x2="1000" y2="90" stroke="rgba(255,255,255,0.06)" strokeDasharray="4 4" />
+            <line x1="0" y1="140" x2="1000" y2="140" stroke="rgba(255,255,255,0.06)" strokeDasharray="4 4" />
 
-          {/* Filled Area */}
-          {areaPath && <path d={areaPath} fill="url(#chartGradient)" />}
+            {/* Filled Area */}
+            {areaPath && <path d={areaPath} fill="url(#chartGradient)" />}
 
-          {/* Line Stroke */}
-          {linePath && <path d={linePath} fill="none" stroke="#4d8eff" strokeWidth="3" strokeLinecap="round" />}
+            {/* Line Stroke */}
+            {linePath && <path d={linePath} fill="none" stroke="#4d8eff" strokeWidth="3" strokeLinecap="round" />}
 
-          {/* Dots */}
-          {coords.map((c, i) => (
-            <g key={i}>
-              <circle cx={c.x} cy={c.y} r="4" fill="#4d8eff" stroke="#0f172a" strokeWidth="2" />
-            </g>
-          ))}
-        </svg>
+            {/* Dots */}
+            {coords.map((c, i) => (
+              <g key={i}>
+                <circle cx={c.x} cy={c.y} r="4" fill="#4d8eff" stroke="#0f172a" strokeWidth="2" />
+              </g>
+            ))}
+          </svg>
+        )}
 
         {/* Labels below chart */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px' }}>
-          {coords.map((c, i) => (
-            <span key={i} style={{ fontSize: '11px', color: '#64748b' }}>
-              {c.label}
-            </span>
-          ))}
-        </div>
+        {!isEmpty && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px' }}>
+            {coords.map((c, i) => (
+              <span key={i} style={{ fontSize: '11px', color: '#64748b' }}>
+                {c.label}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Metric Counters Breakdown */}

@@ -40,7 +40,10 @@ def test_default_provider_test_connect_fails_closed_before_demo_compatibility():
     production_guard = source.index('!= "demo"')
     demo_catalog = source.index("discovered_map")
     assert production_guard < demo_catalog
-    assert "Register a durable" in source
+    # Catalog-only ids no longer receive a connection receipt: outside the
+    # explicit demo profile the test-connect endpoint fails closed with a
+    # 404 instead of turning a read-only catalog row into connection authority.
+    assert "is not registered." in source
 
 
 def test_worker_composes_sql_model_rule_projection():

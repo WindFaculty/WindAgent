@@ -7,7 +7,8 @@ use super::commands::*;
 use super::state::*;
 use super::ALLOWED_RECORDER_COMMANDS;
 use super::{
-    MarkerRequest, RecorderPrepareRequest, RecorderProfile, RecorderStartRequest,
+    MarkerRequest, MuteRequest, RecorderPrepareRequest, RecorderProfile,
+    RecorderStartRequest,
 };
 
 fn prepare_request(plan_hash: &str) -> RecorderPrepareRequest {
@@ -16,13 +17,7 @@ fn prepare_request(plan_hash: &str) -> RecorderPrepareRequest {
         execution_plan_hash: plan_hash.into(),
         episode_id: "ep-001".into(),
         output_dir: "D:/recordings".into(),
-        profile: RecorderProfile {
-            resolution: "1920x1080".into(),
-            fps: 60,
-            codec: "H264".into(),
-            segment_minutes: 5,
-            audio_enabled: false,
-        },
+        profile: RecorderProfile::default(), // quality-first V2 defaults
     }
 }
 
@@ -88,7 +83,7 @@ fn blocked_recovers_through_preparing() {
 
 #[test]
 fn allowed_commands_mirror_ts_contract() {
-    // RecorderCommand union (+ capability probe) in contracts/ipc.ts
+    // RecorderCommand union (+ capability/source probes) in contracts/ipc.ts (V2)
     assert_eq!(
         ALLOWED_RECORDER_COMMANDS,
         &[
@@ -99,7 +94,10 @@ fn allowed_commands_mirror_ts_contract() {
             "recorder_stop",
             "recorder_get_status",
             "recorder_create_marker",
+            "recorder_mute",
+            "recorder_recover",
             "recorder_get_capabilities",
+            "recorder_get_sources",
         ]
     );
 }
@@ -119,16 +117,49 @@ fn prepare_rejects_non_sha256_hash() {
 }
 
 #[test]
-fn prepare_rejects_audio_enabled() {
-    // Principle F: audio stays off in P0.
-    let mut req = prepare_request(&"a".repeat(64));
-    req.profile.audio_enabled = true;
+fn sidecar_prepare_args_forward_v2_profile_verbatim() {
+    // V2: the profile mirrors EngineProfile field-for-field and reaches the
+    // sidecar unmodified — the engine validator is the single source of truth.
+    let req = prepare_request(&"a".repeat(64));
+    let args = sidecar_prepare_args(&req).unwrap();
+    assert_eq!(args["op"], "prepare");
+    assert_eq!(args["args"]["execution_plan_id"], "plan-001");
+    let profile = &args["args"]["profile"];
+    assert_eq!(profile["capture_source"]["kind"], "DISPLAY");
+    assert_eq!(profile["video"]["encoder"], "NVENC");
+    assert_eq!(profile["video"]["rate_control"], "CQP");
+    assert_eq!(profile["video"]["fps"], 60);
+    assert_eq!(profile["audio"]["sample_rate"], 48000);
+    assert_eq!(profile["audio"]["microphone"]["enabled"], true);
+    assert_eq!(profile["container"]["format"], "MKV");
+    assert_eq!(profile["container"]["segment_minutes"], 5);
+}
+
+#[test]
+fn mute_requires_an_active_take() {
+    let shared = RecorderSharedState::default();
+    let req = MuteRequest { mic_muted: true, system_muted: false };
+    assert!(mute_core(&shared, &req)
+        .unwrap_err()
+        .starts_with("RECORDER_MUTE_REJECTED"));
+}
+
+#[test]
+fn recover_is_rejected_during_an_active_take() {
     let mut shared = RecorderSharedState::default();
-    assert_eq!(
-        prepare_core(&mut shared, &req).unwrap_err(),
-        "RECORDER_PREPARE_REJECTED: audio_enabled must be false in P0"
-    );
-    assert_eq!(shared.state, LiveRecordState::Idle);
+    // IDLE → allowed by the gate (the engine still fails closed without files).
+    assert!(recover_gate(&shared).is_ok());
+
+    shared.state = LiveRecordState::Recording;
+    assert!(recover_gate(&shared)
+        .unwrap_err()
+        .starts_with("RECORDER_RECOVER_REJECTED"));
+
+    shared.state = LiveRecordState::Paused;
+    assert!(recover_gate(&shared).is_err());
+
+    shared.state = LiveRecordState::Finalizing;
+    assert!(recover_gate(&shared).is_err());
 }
 
 #[test]
@@ -270,4 +301,36 @@ fn status_reports_real_state_and_blockers() {
             "NVENC_UNAVAILABLE".to_string()
         ])
     );
+}
+
+// ─── Supervision guards (engine respawn / mid-take death) ────────────────────
+
+#[test]
+fn respawn_only_from_take_free_states() {
+    use LiveRecordState as S;
+    // Take-free states: a fresh sidecar is legitimate.
+    for free in [S::Idle, S::Blocked, S::Completed, S::Failed] {
+        assert!(respawn_allowed(free), "{} must allow respawn", free.as_str());
+    }
+    // Everything else may carry a live take: respawning would silently swap
+    // the data plane out from under the session.
+    for live in [
+        S::Preparing,
+        S::Preflight,
+        S::Ready,
+        S::Recording,
+        S::Paused,
+        S::DirectorDegraded,
+        S::Recovering,
+        S::Finalizing,
+    ] {
+        assert!(!respawn_allowed(live), "{} must not respawn", live.as_str());
+    }
+}
+
+#[test]
+fn dead_engine_error_names_the_session_state() {
+    let msg = dead_engine_mid_take(LiveRecordState::Recording);
+    assert!(msg.starts_with("ENGINE_DEAD_MID_TAKE"), "{msg}");
+    assert!(msg.contains("RECORDING"), "{msg}");
 }

@@ -26,7 +26,6 @@ pub const MAX_CHARS_PER_SECOND: u32 = 40;
 const VK_CONTROL: u16 = 0x11;
 const VK_V: u16 = 0x56;
 const VK_S: u16 = 0x53;
-const INPUT_KEYBOARD: u32 = 1;
 const KEYEVENTF_KEYUP: u32 = 0x0002;
 const KEYEVENTF_UNICODE: u32 = 0x0004;
 const CF_UNICODETEXT: u32 = 13;

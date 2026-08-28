@@ -49,10 +49,11 @@ export function useCreateScene() {
   const client = useApiClient();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: { episodeId: string; title: string; script_text?: string; location?: string; character_ids?: string[]; source_screenplay_revision_id?: string }) =>
-      client.storyboard.createScene(data),
+    mutationFn: (data: { episodeId: string; storyboard_id: string; title: string; script_text?: string; location?: string; character_ids?: string[]; duration_seconds?: number; source_screenplay_revision_id?: string }) =>
+      client.storyboard.createScene({ storyboard_id: data.storyboard_id, title: data.title, script_text: data.script_text, location: data.location, character_ids: data.character_ids, duration_seconds: data.duration_seconds, source_screenplay_revision_id: data.source_screenplay_revision_id }),
     onSuccess: (_result, vars) => {
       queryClient.invalidateQueries({ queryKey: storyboardKeys.scenes(vars.episodeId) });
+      queryClient.invalidateQueries({ queryKey: storyboardKeys.board(vars.episodeId) });
     },
   });
 }

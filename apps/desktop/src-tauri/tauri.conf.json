@@ -30,6 +30,9 @@
     "externalBin": [
       "binaries/windagent-recorder"
     ],
+    "resources": [
+      "resources/libav/*"
+    ],
     "icon": [
       "icons/icon.png"
     ]

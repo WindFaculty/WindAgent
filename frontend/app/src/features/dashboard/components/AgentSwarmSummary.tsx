@@ -56,25 +56,31 @@ export const AgentSwarmSummary: React.FC<AgentSwarmSummaryProps> = ({ summary })
       </div>
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-        {agents?.active_roles.map((role) => (
-          <div
-            key={role}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '8px 14px',
-              background: 'rgba(78, 222, 163, 0.08)',
-              border: '1px solid rgba(78, 222, 163, 0.2)',
-              borderRadius: '20px',
-              fontSize: '13px',
-              color: '#f8fafc',
-            }}
-          >
-            <CheckCircle2 size={14} color="#4edea3" />
-            <span>{role}</span>
+        {agents?.active_roles && agents.active_roles.length > 0 ? (
+          agents.active_roles.map((role) => (
+            <div
+              key={role}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '8px 14px',
+                background: 'rgba(78, 222, 163, 0.08)',
+                border: '1px solid rgba(78, 222, 163, 0.2)',
+                borderRadius: '20px',
+                fontSize: '13px',
+                color: '#f8fafc',
+              }}
+            >
+              <CheckCircle2 size={14} color="#4edea3" />
+              <span>{role}</span>
+            </div>
+          ))
+        ) : (
+          <div style={{ padding: '16px', textAlign: 'center', width: '100%', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px dashed rgba(255,255,255,0.08)', fontSize: '13px', color: '#64748b' }}>
+            Chưa có agent hoạt động — khởi tạo agent trong Workspace
           </div>
-        ))}
+        )}
       </div>
     </Card>
   );

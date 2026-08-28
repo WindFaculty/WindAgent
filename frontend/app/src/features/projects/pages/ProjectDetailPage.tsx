@@ -28,7 +28,7 @@ export const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ projectId:
   const [isCreateEpisodeOpen, setIsCreateEpisodeOpen] = useState(false);
 
   const cover = project ? getCoverDesign(project.id, project.name) : null;
-  const genre = (project?.metadata?.genre as string) || cover?.genre || 'Sci-Fi';
+  const genre = (project?.metadata?.genre as string) || null;
 
   const handleOpenEpisode = (episodeId: string) => {
     // Navigate to canonical episode workspace
@@ -119,7 +119,7 @@ export const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ projectId:
               backdropFilter: 'blur(8px)',
             }}
           >
-            {genre}
+            {genre || 'Chưa phân loại'}
           </Badge>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#ffffff', fontSize: '13px', background: 'rgba(0,0,0,0.4)', padding: '4px 10px', borderRadius: '16px', backdropFilter: 'blur(4px)' }}>
             <Layers size={14} />

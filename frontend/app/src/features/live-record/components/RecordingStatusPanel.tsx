@@ -1,5 +1,5 @@
 import React from 'react';
-import { Clock, Film, AlertTriangle, HardDrive, Zap } from 'lucide-react';
+import { Clock, Film, AlertTriangle, HardDrive, Zap, Gauge } from 'lucide-react';
 
 export interface RecordingStatusPanelProps {
   isRecording: boolean;
@@ -7,8 +7,15 @@ export interface RecordingStatusPanelProps {
   recordedFrames: number;
   droppedFrames: number;
   droppedFramesPercent: string;
-  storageUsedGB: number;
-  currentBitrate: number;
+  /** §18: null ⇒ the engine hasn't measured it — render "—", never a guess. */
+  storageUsedGB: number | null;
+  currentBitrate: number | null;
+  /** §17 real engine telemetry — undefined on the legacy mock path. */
+  captureFps?: number;
+  encodeFps?: number;
+  avSyncErrorMs?: number;
+  /** §18 resource stage: normal | preview_degraded | director_degraded | danger. */
+  resourceStage?: string;
 }
 
 export const RecordingStatusPanel: React.FC<RecordingStatusPanelProps> = ({
@@ -19,7 +26,16 @@ export const RecordingStatusPanel: React.FC<RecordingStatusPanelProps> = ({
   droppedFramesPercent,
   storageUsedGB,
   currentBitrate,
+  captureFps,
+  encodeFps,
+  avSyncErrorMs,
+  resourceStage,
 }) => {
+  const stageColor =
+    resourceStage === 'danger' ? '#ef4444'
+    : resourceStage === 'director_degraded' ? '#f59e0b'
+    : resourceStage === 'preview_degraded' ? '#eab308'
+    : '#22c55e';
   return (
     <div
       style={{
@@ -122,7 +138,7 @@ export const RecordingStatusPanel: React.FC<RecordingStatusPanelProps> = ({
             <span>Dung lượng đã dùng</span>
           </div>
           <span style={{ fontSize: '14px', fontWeight: 700, color: '#f8fafc', fontFamily: 'monospace' }}>
-            {storageUsedGB.toFixed(2)} GB
+            {storageUsedGB !== null ? `${storageUsedGB.toFixed(2)} GB` : '—'}
           </span>
         </div>
 
@@ -133,9 +149,51 @@ export const RecordingStatusPanel: React.FC<RecordingStatusPanelProps> = ({
             <span>Tốc độ ghi hiện tại</span>
           </div>
           <span style={{ fontSize: '14px', fontWeight: 700, color: '#f8fafc', fontFamily: 'monospace' }}>
-            {currentBitrate} Mbps
+            {currentBitrate !== null ? `${currentBitrate.toFixed(1)} Mbps` : '—'}
           </span>
         </div>
+
+        {/* §17 engine telemetry — only rendered when the native engine reports it */}
+        {(captureFps !== undefined || encodeFps !== undefined) && (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#94a3b8', fontSize: '13px' }}>
+              <Gauge size={16} color="#38bdf8" />
+              <span>Capture / Encode FPS</span>
+            </div>
+            <span style={{ fontSize: '14px', fontWeight: 700, color: '#f8fafc', fontFamily: 'monospace' }}>
+              {captureFps !== undefined ? captureFps.toFixed(1) : '—'} / {encodeFps !== undefined ? encodeFps.toFixed(1) : '—'}
+            </span>
+          </div>
+        )}
+        {avSyncErrorMs !== undefined && (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#94a3b8', fontSize: '13px' }}>
+              <Clock size={16} color="#f472b6" />
+              <span>A/V sync</span>
+            </div>
+            <span
+              style={{
+                fontSize: '14px',
+                fontWeight: 700,
+                color: Math.abs(avSyncErrorMs) > 40 ? '#facc15' : '#f8fafc',
+                fontFamily: 'monospace',
+              }}
+            >
+              {avSyncErrorMs >= 0 ? '+' : ''}{avSyncErrorMs.toFixed(1)} ms
+            </span>
+          </div>
+        )}
+        {resourceStage !== undefined && resourceStage !== 'normal' && (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#94a3b8', fontSize: '13px' }}>
+              <AlertTriangle size={16} color={stageColor} />
+              <span>Resource stage</span>
+            </div>
+            <span style={{ fontSize: '13px', fontWeight: 700, color: stageColor, fontFamily: 'monospace' }}>
+              {resourceStage}
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -41,6 +41,7 @@ from windagent_providers.management import (
     ProviderProbeService,
     ProviderVendorNotFoundError,
 )
+from windagent_storage.security.encryption import EncryptionKeyMissingError
 
 def iso_now() -> str:
     return datetime.now(timezone.utc).isoformat()
@@ -229,12 +230,16 @@ async def list_providers(
     service: V3ResourceService = Depends(get_v3_resource_service),
     management: ProviderManagementService = Depends(get_provider_management_service),
 ) -> List[ProviderResource]:
-    """Retrieve all configured AI model providers with physical endpoints.
+    """Retrieve configured providers from the durable provider authority.
 
-    Durable providers registered via ``POST /api/v3/providers`` are merged with
-    the demo catalog (non-production) so both authorities surface.
+    The legacy catalog is visible only when the process explicitly opts into
+    ``WINDAGENT_PROFILE=demo``.  Normal development and production therefore
+    fail closed and never present seed rows as configured connections.
     """
     durable = management.list_providers()
+    if os.getenv("WINDAGENT_PROFILE", "").strip().lower() != "demo":
+        return [_provider_to_resource(p) for p in durable]
+
     demo = await service.list(NS_PROVIDERS)
     by_id: Dict[str, Dict[str, Any]] = {}
     for p in demo:
@@ -272,6 +277,14 @@ async def create_provider(
             status_code=status.HTTP_409_CONFLICT,
             detail=f"Provider '{exc.vendor_id}' already exists.",
         )
+    except EncryptionKeyMissingError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=(
+                "Credential storage is unavailable. Configure "
+                "WINDAGENT_ENCRYPTION_KEY for the API process and restart it."
+            ),
+        ) from exc
     return _provider_to_resource(provider)
 
 
@@ -372,6 +385,14 @@ async def rotate_provider_credential(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Provider '{provider_id}' not found.",
         ) from exc
+    except EncryptionKeyMissingError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=(
+                "Credential storage is unavailable. Configure "
+                "WINDAGENT_ENCRYPTION_KEY for the API process and restart it."
+            ),
+        ) from exc
     return CredentialStatusResource(**result)
 
 
@@ -465,6 +486,11 @@ async def get_provider(
     durable = management.get_provider(clean_id)
     if durable is not None:
         return _provider_to_resource(durable)
+    if os.getenv("WINDAGENT_PROFILE", "").strip().lower() != "demo":
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Provider '{provider_id}' not found.",
+        )
     provider = await service.get(NS_PROVIDERS, clean_id)
     if provider is None:
         raise HTTPException(
@@ -500,6 +526,11 @@ async def get_provider_models(
         if pricing_filter:
             models = [m for m in models if m.get("pricing_class") == pricing_filter]
         return models
+    if os.getenv("WINDAGENT_PROFILE", "").strip().lower() != "demo":
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Provider '{provider_id}' not found.",
+        )
     provider = await service.get(NS_PROVIDERS, clean_id)
     if provider is None:
         raise HTTPException(
@@ -526,6 +557,11 @@ async def get_provider_endpoints(
     durable = management.get_provider(clean_id)
     if durable is not None:
         return [ProviderEndpointResource(**ep) for ep in durable.get("endpoints", [])]
+    if os.getenv("WINDAGENT_PROFILE", "").strip().lower() != "demo":
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Provider '{provider_id}' not found.",
+        )
     provider = await service.get(NS_PROVIDERS, clean_id)
     if provider is None:
         raise HTTPException(
@@ -546,6 +582,11 @@ async def get_provider_health(
     durable = management.get_provider(clean_id)
     if durable is not None:
         return durable.get("status", "healthy")
+    if os.getenv("WINDAGENT_PROFILE", "").strip().lower() != "demo":
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Provider '{provider_id}' not found.",
+        )
     provider = await service.get(NS_PROVIDERS, clean_id)
     if provider is None:
         raise HTTPException(
@@ -636,11 +677,8 @@ async def test_provider_connection(
     # read-only catalog row into connection authority.
     if os.getenv("WINDAGENT_PROFILE", "").strip().lower() != "demo":
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=(
-                f"Provider '{provider_id}' is catalog-only. Register a durable "
-                "endpoint before testing its connection."
-            ),
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Provider '{provider_id}' is not registered.",
         )
 
     # Explicit demo-profile compatibility for legacy sample-data contracts.

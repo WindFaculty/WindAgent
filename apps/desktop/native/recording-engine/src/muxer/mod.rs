@@ -1,115 +1,91 @@
-﻿//! Muxer — Phase 9 (ban_ke_hoach_v1.md Section 17)
+//! Muxer — real libavformat MKV writer (ban_ke_hoach_v1.md §9).
 //!
-//! `EncodedPacket` → `libavformat` → MKV segments (5 or 10 min) + timeline.jsonl
-//! Every segment is independently playable; crash recovery retains prior segments.
+//! `libav_loader` loads `avformat`/`avutil` DLLs at runtime (no import-lib
+//! linking); `libav` implements the segmented MKV writer on top; `tracks`
+//! builds Matroska CodecPrivate records (avcC/hvcC/AAC ASC); `timestamps`
+//! owns PTS conversion and segment-boundary routing.
+//!
+//! Segmentation rule (§9): never cut mid-GOP — an IDR is forced at every
+//! boundary; the segment closes only after all packets belonging to it
+//! (by PTS) have been written; each file is finished (trailer + fsync +
+//! atomic rename from `.tmp`) so it is independently playable.
+
+pub mod libav;
+pub mod libav_loader;
+/// Dev/CI simulation writer — never selected in production (Principle H).
+pub mod mock;
+pub mod timestamps;
+pub mod tracks;
 
 use serde::{Deserialize, Serialize};
 
-pub trait MuxerPort: Send {
-    fn prepare(&mut self, output_dir: &str) -> Result<(), String>;
-    fn write_packet(&mut self, packet: &crate::encoder::EncodedPacket) -> Result<(), String>;
-    fn finalize_segment(&mut self, segment_index: u32) -> Result<MuxedSegment, String>;
-    fn finalize_take(&mut self) -> Result<(), String>;
+use crate::encoder::EncodedPacket;
+
+/// Logical MKV tracks — mic and system audio are NEVER mixed pre-record.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum TrackId {
+    Video,
+    Mic,
+    System,
 }
 
+impl TrackId {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Video => "video",
+            Self::Mic => "mic",
+            Self::System => "system",
+        }
+    }
+}
+
+/// Per-track stream parameters fixed at take start.
+#[derive(Debug, Clone)]
+pub enum TrackParams {
+    VideoH264 { width: u32, height: u32, fps: u32 },
+    VideoHevc { width: u32, height: u32, fps: u32 },
+    Aac { sample_rate: u32, channels: u32 },
+}
+
+/// Report for one closed segment file.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MuxedSegment {
     pub index: u32,
-    pub file_token: String, // tokenized delivery ref, never raw FS path to UI
+    /// Tokenized delivery ref (`take_xxx/segment_NNNN.mkv`) — never a raw path.
+    pub file_token: String,
     pub duration_sec: f64,
-    pub is_playable: bool,
     pub byte_len: u64,
+    pub is_playable: bool,
 }
 
-// ─── LibAV (real) ──────────────────────────────────────────────────────────
-
-pub struct LibavMuxer {
-    output_dir: Option<String>,
-    bytes_written: u64,
-}
-
-impl LibavMuxer {
-    pub fn new() -> Self {
-        Self {
-            output_dir: None,
-            bytes_written: 0,
-        }
-    }
-}
-
-impl Default for LibavMuxer {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl MuxerPort for LibavMuxer {
-    fn prepare(&mut self, output_dir: &str) -> Result<(), String> {
-        if output_dir.is_empty() {
-            return Err("MUXER_PREPARE_REJECTED: output_dir required".into());
-        }
-        self.output_dir = Some(output_dir.to_string());
+/// Abstract muxer port. One segment is open at a time; the driver routes
+/// packets by [`timestamps::SegmentRouter`] so B-frame reordering stays
+/// correct across boundaries.
+pub trait MuxerPort: Send {
+    fn prepare(&mut self, output_dir: &str) -> Result<(), String>;
+    /// Begin a new `.tmp` segment with the given track layout.
+    fn open_segment(&mut self, index: u32, tracks: &[(TrackId, TrackParams)]) -> Result<(), String>;
+    /// Stage video CodecPrivate (avcC/hvcC) into the open segment while its
+    /// header is still lazy — must run between `open_segment` and the first
+    /// `write_packet` (§9 handshake). Simulation backends ignore it.
+    fn stage_video_extradata(&mut self, _avcc_or_hvcc: &[u8]) -> Result<(), String> {
         Ok(())
     }
-
-    fn write_packet(&mut self, packet: &crate::encoder::EncodedPacket) -> Result<(), String> {
-        if self.output_dir.is_none() {
-            return Err("MUXER_NOT_PREPARED".into());
-        }
-        self.bytes_written += packet.data_len as u64;
+    /// Stage AAC AudioSpecificConfig for one audio track, same timing
+    /// contract as [`MuxerPort::stage_video_extradata`].
+    fn stage_audio_extradata(&mut self, _track: TrackId, _asc: &[u8]) -> Result<(), String> {
         Ok(())
     }
-
-    fn finalize_segment(&mut self, segment_index: u32) -> Result<MuxedSegment, String> {
-        let dir = self.output_dir.clone().unwrap_or_else(|| "take_mock".into());
-        Ok(MuxedSegment {
-            index: segment_index,
-            file_token: format!("{}/segment_{:04}.mkv", dir, segment_index),
-            duration_sec: 300.0,
-            is_playable: true,
-            byte_len: self.bytes_written,
-        })
-    }
-
-    fn finalize_take(&mut self) -> Result<(), String> {
-        Ok(())
+    fn write_packet(&mut self, track: TrackId, packet: &EncodedPacket) -> Result<(), String>;
+    /// Finish the open segment: trailer → flush → fsync → atomic rename.
+    fn close_segment(&mut self) -> Result<MuxedSegment, String>;
+    fn finalize_take(&mut self) -> Result<(), String>;
+    /// Bytes written to the currently open segment (telemetry).
+    fn bytes_written(&self) -> u64 {
+        0
     }
 }
 
-// ─── Mock ──────────────────────────────────────────────────────────────────
-
-pub struct MockMuxer {
-    inner: LibavMuxer,
-}
-
-impl MockMuxer {
-    pub fn new() -> Self {
-        Self {
-            inner: LibavMuxer::new(),
-        }
-    }
-}
-
-impl Default for MockMuxer {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl MuxerPort for MockMuxer {
-    fn prepare(&mut self, output_dir: &str) -> Result<(), String> {
-        self.inner.prepare(output_dir)
-    }
-
-    fn write_packet(&mut self, packet: &crate::encoder::EncodedPacket) -> Result<(), String> {
-        self.inner.write_packet(packet)
-    }
-
-    fn finalize_segment(&mut self, segment_index: u32) -> Result<MuxedSegment, String> {
-        self.inner.finalize_segment(segment_index)
-    }
-
-    fn finalize_take(&mut self) -> Result<(), String> {
-        self.inner.finalize_take()
-    }
-}
+/// Fail-closed error surfaced when the bundled libav runtime is absent.
+pub const LIBAV_UNAVAILABLE: &str =
+    "LIBAV_UNAVAILABLE: avformat/avutil runtime DLLs not found — recording blocked";

@@ -73,21 +73,74 @@ export const CHECKPOINT_STEPS: CheckpointStepInfo[] = [
 ];
 
 export function getStageProgress(stage: string): number {
-  switch (stage) {
+  const s = String(stage || '').toUpperCase();
+  switch (s) {
     case 'LOCKED':
     case 'READY_FOR_PRODUCTION':
       return 100;
     case 'REVIEW':
       return 85;
+    case 'SCREENPLAY_REVIEW':
+      return 70;
+    case 'REVISING':
+      return 60;
     case 'SCREENPLAY':
       return 70;
+    case 'OUTLINE_REVIEW':
+      return 50;
     case 'OUTLINE':
       return 50;
+    case 'STORY_BIBLE_REVIEW':
+      return 30;
     case 'STORY_BIBLE':
       return 30;
+    case 'IDEA_REVIEW':
+      return 15;
     case 'IDEA':
       return 15;
+    case 'DRAFT':
+      return 5;
+    case 'FAILED':
+    case 'CANCELLED':
+      return 0;
     default:
       return 5;
   }
+}
+
+/** Map canonical EpisodeState to Vietnamese label + colors (no mock buckets) */
+export function getEpisodeStateMeta(state: string): { label: string; bg: string; color: string; border: string; dot: string } {
+  const s = String(state || '').toUpperCase();
+  switch (s) {
+    case 'READY_FOR_PRODUCTION':
+      return { label: 'Sẵn sàng sản xuất', bg: 'rgba(34,197,94,0.14)', color: '#4ade80', border: 'rgba(34,197,94,0.28)', dot: '#22c55e' };
+    case 'LOCKED':
+      return { label: 'Đã khóa', bg: 'rgba(34,197,94,0.14)', color: '#4ade80', border: 'rgba(34,197,94,0.28)', dot: '#22c55e' };
+    case 'SCREENPLAY_REVIEW':
+      return { label: 'Chờ duyệt kịch bản', bg: 'rgba(59,130,246,0.14)', color: '#60a5fa', border: 'rgba(59,130,246,0.30)', dot: '#3b82f6' };
+    case 'OUTLINE_REVIEW':
+      return { label: 'Chờ duyệt dàn ý', bg: 'rgba(245,158,11,0.14)', color: '#fbbf24', border: 'rgba(245,158,11,0.30)', dot: '#f59e0b' };
+    case 'STORY_BIBLE_REVIEW':
+      return { label: 'Chờ duyệt Story Bible', bg: 'rgba(168,85,247,0.14)', color: '#c084fc', border: 'rgba(168,85,247,0.30)', dot: '#a855f7' };
+    case 'IDEA_REVIEW':
+      return { label: 'Chờ duyệt ý tưởng', bg: 'rgba(56,189,248,0.14)', color: '#38bdf8', border: 'rgba(56,189,248,0.28)', dot: '#0ea5e9' };
+    case 'REVISING':
+      return { label: 'Đang chỉnh sửa', bg: 'rgba(245,158,11,0.14)', color: '#fbbf24', border: 'rgba(245,158,11,0.30)', dot: '#f59e0b' };
+    case 'FAILED':
+      return { label: 'Thất bại', bg: 'rgba(239,68,68,0.14)', color: '#f87171', border: 'rgba(239,68,68,0.28)', dot: '#ef4444' };
+    case 'CANCELLED':
+      return { label: 'Đã hủy', bg: 'rgba(100,116,139,0.14)', color: '#94a3b8', border: 'rgba(100,116,139,0.24)', dot: '#64748b' };
+    case 'DRAFT':
+    default:
+      return { label: 'Bản nháp', bg: 'rgba(100,116,139,0.14)', color: '#94a3b8', border: 'rgba(100,116,139,0.24)', dot: '#64748b' };
+  }
+}
+
+export function getProgressColor(progress: number): string {
+  if (progress >= 100) return '#22c55e';
+  if (progress >= 70) return '#3b82f6';
+  if (progress >= 50) return '#f59e0b';
+  if (progress >= 30) return '#a78bfa';
+  if (progress >= 15) return '#38bdf8';
+  return '#5b6478';
 }

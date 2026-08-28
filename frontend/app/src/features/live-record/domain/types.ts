@@ -103,12 +103,17 @@ export interface LiveExecutionPlan {
   readonly version: number;
 }
 
+/**
+ * Plan-level recording intent (V2). The engine-facing profile lives in
+ * `contracts/recordingEngine.ts` (`RecordingEngineProfile`) — audio there is
+ * a multi-track config (mic + system as separate MKV tracks, §11), never the
+ * P0 `audio_enabled: false` boolean this slot used to carry.
+ */
 export type RecordingProfile = {
   readonly resolution: '1920x1080' | '1280x720' | '3840x2160';
   readonly fps: 60 | 30;
   readonly codec: 'H264' | 'HEVC';
   readonly segment_minutes: 5 | 10;
-  readonly audio_enabled: false; // P0: false per Principle F
 };
 
 // ─── Runtime lineage ─────────────────────────────────────────────────────────

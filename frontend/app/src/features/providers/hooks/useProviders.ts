@@ -190,7 +190,10 @@ export function useSyncProviderModels() {
     mutationFn: (args: { providerId: string; endpointId?: string }) =>
       client.providers.syncModels(args.providerId, args.endpointId),
     onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: providerKeys.list() });
       queryClient.invalidateQueries({ queryKey: providerKeys.detail(variables.providerId) });
+      queryClient.invalidateQueries({ queryKey: providerKeys.models(variables.providerId) });
+      queryClient.invalidateQueries({ queryKey: providerKeys.health() });
       queryClient.invalidateQueries({ queryKey: modelKeys.all });
     },
   });

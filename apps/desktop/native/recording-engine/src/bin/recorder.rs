@@ -63,13 +63,10 @@ fn main() {
     });
 
     let mut service = RecorderService::new();
-    // Answer `capabilities` eagerly so the host can preflight without waiting
-    // for its first request round-trip.
-    let (resp, events) = service.handle(EngineRequest::Capabilities);
-    let _ = write_line(&mut out, &resp);
-    for event in events {
-        let _ = write_line(&mut out, &event);
-    }
+    // Protocol invariant (§16): exactly ONE response per request, matched by
+    // the `op` field on both sides. An unsolicited startup answer would
+    // desynchronize the host's request/response pairing, so the host's first
+    // `capabilities` round-trip is the only handshake there is.
 
     loop {
         // 1. Drain background events produced between requests.

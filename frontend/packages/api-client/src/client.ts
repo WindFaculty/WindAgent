@@ -707,6 +707,16 @@ export class CharactersApi {
     return this.transport.delete<void>(`/api/v3/characters/${encodeURIComponent(characterId)}`);
   }
 
+  async setStatus(
+    characterId: string,
+    data: { status: string; expected_version: number },
+  ): Promise<CharacterResource> {
+    return this.transport.post<CharacterResource>(
+      `/api/v3/characters/${encodeURIComponent(characterId)}/actions/set-status`,
+      data,
+    );
+  }
+
   async getRelationships(characterId: string): Promise<CharacterRelationship[]> {
     return this.transport.get<CharacterRelationship[]>(`/api/v3/characters/${encodeURIComponent(characterId)}/relationships`);
   }
@@ -725,16 +735,28 @@ export class WorldApi {
     return this.transport.get<WorldBibleResource>(`/api/v3/projects/${encodeURIComponent(projectId)}/world`);
   }
 
-  async updateWorldBible(projectId: string, data: { world_name?: string; setting_summary?: string; core_theme?: string; rules?: string[]; timeline_era?: string; expected_version: number }): Promise<WorldBibleResource> {
+  async initializeWorldBible(projectId: string, data: { world_name: string; setting_summary?: string; core_theme?: string; rules?: string[]; timeline_era?: string; visual_style?: string; environment_style?: string }): Promise<WorldBibleResource> {
+    return this.transport.post<WorldBibleResource>(`/api/v3/projects/${encodeURIComponent(projectId)}/world/initialize`, data);
+  }
+
+  async updateWorldBible(projectId: string, data: { world_name?: string; setting_summary?: string; core_theme?: string; rules?: string[]; timeline_era?: string; visual_style?: string; environment_style?: string; physical_rules?: string[]; technology_rules?: string[]; magic_rules?: string[]; social_rules?: string[]; expected_version: number }): Promise<WorldBibleResource> {
     return this.transport.patch<WorldBibleResource>(`/api/v3/projects/${encodeURIComponent(projectId)}/world`, data);
+  }
+
+  async listRevisions(projectId: string): Promise<Record<string, unknown>[]> {
+    return this.transport.get<Record<string, unknown>[]>(`/api/v3/projects/${encodeURIComponent(projectId)}/world/revisions`);
   }
 
   async listLocations(projectId: string): Promise<LocationResource[]> {
     return this.transport.get<LocationResource[]>(`/api/v3/projects/${encodeURIComponent(projectId)}/world/locations`);
   }
 
-  async createLocation(projectId: string, data: { name: string; type?: string; description?: string; atmosphere?: string }): Promise<LocationResource> {
+  async createLocation(projectId: string, data: { name: string; type?: string; description?: string; atmosphere?: string; architecture?: string; lighting_character?: string; color_palette?: string[]; important_props?: string[]; reusable_set?: boolean; continuity_notes?: string; interior?: boolean; exterior?: boolean; day_scene_compatible?: boolean; night_scene_compatible?: boolean }): Promise<LocationResource> {
     return this.transport.post<LocationResource>(`/api/v3/projects/${encodeURIComponent(projectId)}/world/locations`, data);
+  }
+
+  async updateLocation(projectId: string, locationId: string, data: { name?: string; type?: string; description?: string; atmosphere?: string; architecture?: string; lighting_character?: string; color_palette?: string[]; important_props?: string[]; reusable_set?: boolean; continuity_notes?: string; interior?: boolean; exterior?: boolean; day_scene_compatible?: boolean; night_scene_compatible?: boolean; expected_version: number }): Promise<LocationResource> {
+    return this.transport.patch<LocationResource>(`/api/v3/projects/${encodeURIComponent(projectId)}/world/locations/${encodeURIComponent(locationId)}`, data);
   }
 
   async listFactions(projectId: string): Promise<FactionResource[]> {
@@ -771,7 +793,7 @@ export class StoryboardApi {
     return this.transport.get<SceneResource[]>(`/api/v3/episodes/${encodeURIComponent(episodeId)}/storyboard/scenes`);
   }
 
-  async createScene(data: { title: string; script_text?: string; location?: string; character_ids?: string[]; duration_seconds?: number; source_screenplay_revision_id?: string }): Promise<SceneResource> {
+  async createScene(data: { storyboard_id: string; title: string; script_text?: string; location?: string; character_ids?: string[]; duration_seconds?: number; source_screenplay_revision_id?: string }): Promise<SceneResource> {
     return this.transport.post<SceneResource>('/api/v3/storyboard/scenes', data);
   }
 
@@ -929,7 +951,7 @@ export class ProductionApi {
     return this.transport.get<ShotResource[]>(`/api/v3/episodes/${encodeURIComponent(episodeId)}/shots`);
   }
 
-  async createShot(episodeId: string, data: { scene_id?: string; shot_number?: number; camera_movement?: string; focal_length?: string; duration_seconds?: number }): Promise<ShotResource> {
+  async createShot(episodeId: string, data: { scene_id?: string; shot_number?: number; shot_size?: string; framing?: string; camera_angle?: string; camera_movement?: string; focal_length?: string; duration_seconds?: number; subject_character_refs?: string[]; location_ref?: string; action?: string }): Promise<ShotResource> {
     return this.transport.post<ShotResource>(`/api/v3/episodes/${encodeURIComponent(episodeId)}/shots`, data);
   }
 
@@ -937,7 +959,7 @@ export class ProductionApi {
     return this.transport.get<ShotResource>(`/api/v3/shots/${encodeURIComponent(shotId)}`);
   }
 
-  async updateShot(shotId: string, data: { camera_movement?: string; focal_length?: string; duration_seconds?: number; status?: string; audio_asset_id?: string; animation_asset_id?: string; render_asset_id?: string; expected_version: number }): Promise<ShotResource> {
+  async updateShot(shotId: string, data: { shot_size?: string; framing?: string; camera_angle?: string; camera_movement?: string; focal_length?: string; duration_seconds?: number; status?: string; subject_character_refs?: string[]; location_ref?: string; action?: string; audio_asset_id?: string; animation_asset_id?: string; render_asset_id?: string; expected_version: number }): Promise<ShotResource> {
     return this.transport.patch<ShotResource>(`/api/v3/shots/${encodeURIComponent(shotId)}`, data);
   }
 

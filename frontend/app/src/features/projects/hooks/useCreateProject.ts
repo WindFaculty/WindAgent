@@ -27,7 +27,7 @@ export function useCreateProject() {
           title: input.name,
           description: input.description || '',
           metadata: {
-            genre: input.genre || 'Sci-Fi',
+            ...(input.genre ? { genre: input.genre } : {}),
             ...(input.initial_episode_title
               ? { initial_episode_title: input.initial_episode_title }
               : {}),
@@ -40,7 +40,7 @@ export function useCreateProject() {
         name: res.title,
         description: input.description || '',
         episodes_count: 0,
-        metadata: { genre: input.genre },
+        metadata: input.genre ? { genre: input.genre } : {},
         version: 1,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),

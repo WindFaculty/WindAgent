@@ -159,15 +159,15 @@ const SharedAppContent: React.FC<SharedAppContentProps> = ({ customRouteRenderer
     }
 
     if (route.id === 'characters') {
-      return <CharactersPage projectId={params.projectId ?? 'proj-cyberpunk-01'} />;
+      return <CharactersPage projectId={params.projectId ?? ''} />;
     }
 
     if (route.id === 'world') {
-      return <WorldPage projectId={params.projectId ?? 'proj-cyberpunk-01'} />;
+      return <WorldPage projectId={params.projectId ?? ''} />;
     }
 
     if (route.id === 'storyboard') {
-      return <StoryboardPage episodeId={params.episodeId ?? 'ep-cb-001'} />;
+      return <StoryboardPage episodeId={params.episodeId} />;
     }
 
     if (route.id === 'reviews') {

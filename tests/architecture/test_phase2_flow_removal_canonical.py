@@ -111,6 +111,10 @@ ALLOWED_FILES = (
 SKIP_DIR_NAMES = {
     "__pycache__", ".venv", "node_modules", "dist", "build", ".git", ".idea",
     ".pytest_cache", "coverage", ".mypy_cache", ".ruff_cache", ".tox",
+    # Rust/Cargo build output: compiled artifacts (.pdb/.rlib/.rmeta) embed
+    # dependency symbols whose byte patterns can match banned tokens without
+    # any source-level residue.
+    "target",
 }
 SKIP_SUFFIXES = {
     ".pyc", ".pyo", ".png", ".jpg", ".jpeg", ".gif", ".svg", ".ico",

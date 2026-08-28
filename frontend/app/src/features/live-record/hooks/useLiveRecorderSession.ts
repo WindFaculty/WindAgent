@@ -1,11 +1,12 @@
 /**
- * useLiveRecorderSession — Phase E cutover (ban_ke_hoach_v1.md Section 9-11)
+ * useLiveRecorderSession — V2 native cutover (ban_ke_hoach_v1.md Section 9-11)
  *
  * Real-state replacement for the mock clock in `useLiveRecord`. Binds the
  * frozen Tauri surface:
- *   commands: recorder_prepare|start|pause|resume|stop|create_marker|
- *             get_status|get_capabilities
- *   events:   recorder://status|segment|preview|warning|error|timeline
+ *   commands: recorder_prepare|start|pause|resume|stop|create_marker|mute|
+ *             recover|get_status|get_capabilities
+ *   events:   recorder://status|segment|preview|warning|error|timeline|
+ *             audio-meter
  *
  * On the web (no Tauri runtime) every command resolves to null and the page
  * keeps rendering via the legacy mock hook — dev fallback stays intact.
@@ -13,8 +14,12 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type {
+  AudioMeterEvent,
+  CaptureSources,
   NativeCapabilities,
+  MuteRequest,
   RecorderCommand,
+  RecoverRequest,
   RecorderPrepareRequest,
   RecorderPreviewFrame,
   RecorderSegmentEvent,
@@ -42,6 +47,8 @@ export interface RecorderSessionState {
   readonly capabilities: NativeCapabilities | null;
   readonly previewFrame: RecorderPreviewFrame | null;
   readonly segments: readonly RecorderSegmentEvent[];
+  /** Latest per-track loudness (mic/system kept separate — §11). */
+  readonly audioMeter: AudioMeterEvent | null;
   readonly timeline: readonly TimelineEntry[];
   readonly warnings: readonly string[];
   readonly errors: readonly string[];
@@ -56,6 +63,10 @@ export interface UseLiveRecorderSessionResult extends RecorderSessionState {
   resume(): Promise<Record<string, unknown> | null>;
   stop(): Promise<Record<string, unknown> | null>;
   createMarker(request: MarkerRequest): Promise<string | null>;
+  mute(request: MuteRequest): Promise<void | null>;
+  recover(request: RecoverRequest): Promise<Record<string, unknown> | null>;
+  /** §17 source picker data — real monitor/window enumeration (native only). */
+  getSources(): Promise<CaptureSources | null>;
   refreshStatus(): Promise<void>;
   refreshCapabilities(): Promise<void>;
   dismissErrors(): void;
@@ -82,6 +93,7 @@ export function useLiveRecorderSession(
   const [capabilities, setCapabilities] = useState<NativeCapabilities | null>(null);
   const [previewFrame, setPreviewFrame] = useState<RecorderPreviewFrame | null>(null);
   const [segments, setSegments] = useState<readonly RecorderSegmentEvent[]>([]);
+  const [audioMeter, setAudioMeter] = useState<AudioMeterEvent | null>(null);
   const [timeline, setTimeline] = useState<readonly TimelineEntry[]>([]);
   const [warnings, setWarnings] = useState<readonly string[]>([]);
   const [errors, setErrors] = useState<readonly string[]>([]);
@@ -112,6 +124,10 @@ export function useLiveRecorderSession(
         try {
           optionsRef.current.onSegmentEvent?.(ev.payload);
         } catch { /* relay is best-effort — never break the event pipeline */ }
+      }));
+      unlisten.push(await listen<AudioMeterEvent>('recorder://audio-meter', (ev) => {
+        // Only the newest meter sample matters for a UI bar display.
+        setAudioMeter(ev.payload);
       }));
       unlisten.push(await listen<TimelineEntry>('recorder://timeline', (ev) => {
         setTimeline((prev) => {
@@ -173,10 +189,34 @@ export function useLiveRecorderSession(
     [invokeCommand],
   );
 
+  /** V2 (§11): silences the MKV tracks themselves — never meters only. */
+  const mute = useCallback(
+    async (request: MuteRequest) => {
+      await invokeCommand<void>('recorder_mute', { request });
+    },
+    [invokeCommand],
+  );
+
+  /** V2 (§15): rebuild an interrupted take's manifest from completed segments. */
+  const recover = useCallback(
+    (request: RecoverRequest) => invokeCommand<Record<string, unknown>>('recorder_recover', { request }),
+    [invokeCommand],
+  );
+
   const refreshStatus = useCallback(async () => {
     const raw = await invokeCommand<Record<string, unknown>>('recorder_get_status');
     if (raw) setStatusRaw(raw);
   }, [invokeCommand]);
+
+  /** §17: enumerate real capture targets — monitors + top-level windows. */
+  const getSources = useCallback(
+    async (): Promise<CaptureSources | null> => {
+      const raw = await invokeCommand<Record<string, unknown>>('recorder_get_sources');
+      if (!raw || typeof raw !== 'object') return null;
+      return raw as unknown as CaptureSources;
+    },
+    [invokeCommand],
+  );
 
   const refreshCapabilities = useCallback(async () => {
     const raw = await invokeCommand<Record<string, unknown>>('recorder_get_capabilities');
@@ -186,6 +226,17 @@ export function useLiveRecorderSession(
   }, [invokeCommand]);
 
   const dismissErrors = useCallback(() => setErrors([]), []);
+
+  // Probe the capability surface once on mount (§15 preflight inputs) and
+  // again whenever the sidecar restarts under us (status flips to IDLE with a
+  // fresh contract). Without this the preflight gates would stay null forever
+  // and hard-disable the record button even on a fully healthy machine.
+  const refreshCapabilitiesRef = useRef(refreshCapabilities);
+  refreshCapabilitiesRef.current = refreshCapabilities;
+  useEffect(() => {
+    if (!native) return;
+    void refreshCapabilitiesRef.current();
+  }, [native]);
 
   // Poll status at 1 Hz while native — mirrors the sidecar heartbeat.
   useEffect(() => {
@@ -207,6 +258,7 @@ export function useLiveRecorderSession(
     capabilities,
     previewFrame,
     segments,
+    audioMeter,
     timeline,
     warnings,
     errors,
@@ -216,6 +268,9 @@ export function useLiveRecorderSession(
     resume,
     stop,
     createMarker,
+    mute,
+    recover,
+    getSources,
     refreshStatus,
     refreshCapabilities,
     dismissErrors,

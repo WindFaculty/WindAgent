@@ -140,8 +140,10 @@ def test_s3_missing_key_fail_closed(provider, monkeypatch):
     secret = SECRET_VALUE + f"-{provider}-s3"
     payload = _provider_payload(provider, secret, pid)
     res = client.post("/api/v3/providers", json=payload)
-    # Should fail closed, not succeed with plaintext fallback
-    assert res.status_code in (400, 500), f"Expected fail-closed, got {res.status_code} {res.text}"
+    # Should fail closed, not succeed with plaintext fallback. 503 is the
+    # dedicated EncryptionKeyMissingError mapping ("credential storage
+    # unavailable" + operator guidance), not a misclassified crash.
+    assert res.status_code in (400, 500, 503), f"Expected fail-closed, got {res.status_code} {res.text}"
     assert secret not in res.text
     # Verify fail-closed request left NO rows at all — vendor/credential/endpoint
     # must be absent, not merely "present but encrypted" (transaction rollback).

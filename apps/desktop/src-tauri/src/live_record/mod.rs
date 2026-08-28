@@ -13,20 +13,21 @@ mod tests;
 pub mod types;
 
 pub use commands::{
-    recorder_create_marker, recorder_get_capabilities, recorder_get_status, recorder_pause,
-    recorder_resume, recorder_prepare, recorder_start, recorder_stop,
+    recorder_create_marker, recorder_get_capabilities, recorder_get_sources, recorder_get_status,
+    recorder_mute, recorder_pause, recorder_recover, recorder_resume, recorder_prepare,
+    recorder_start, recorder_stop,
 };
 pub use engine_host::{EngineHost, EngineHostState, EventSink};
 pub use playback::{playback_execute_code, playback_probe_environment};
 pub use state::{can_transition, LiveRecordState, RecorderSharedState};
 pub use types::{
-    MarkerRequest, NativeCapabilities, RecorderPrepareRequest, RecorderProfile,
-    RecorderStartRequest, RecorderStatus,
+    CaptureSources, MarkerRequest, MonitorSource, MuteRequest, NativeCapabilities, RecoverRequest,
+    RecorderPrepareRequest, RecorderProfile, RecorderStartRequest, RecorderStatus,
 };
 
-/// Allowed command names — mirrors `RecorderCommand` (+ capability probe) in
-/// `frontend/app/src/features/live-record/contracts/ipc.ts`.
-/// Enforced by gate tests in `tests.rs`.
+/// Allowed command names — mirrors `RecorderCommand` (+ capability/source
+/// probes) in `frontend/app/src/features/live-record/contracts/ipc.ts`
+/// (V2: + mute/recover/sources). Enforced by gate tests in `tests.rs`.
 pub const ALLOWED_RECORDER_COMMANDS: &[&str] = &[
     "recorder_prepare",
     "recorder_start",
@@ -35,5 +36,8 @@ pub const ALLOWED_RECORDER_COMMANDS: &[&str] = &[
     "recorder_stop",
     "recorder_get_status",
     "recorder_create_marker",
+    "recorder_mute",
+    "recorder_recover",
     "recorder_get_capabilities",
+    "recorder_get_sources",
 ];

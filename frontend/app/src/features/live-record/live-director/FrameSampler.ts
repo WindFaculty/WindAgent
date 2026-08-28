@@ -61,7 +61,7 @@ export class FrameSampler {
     if (!b64) return false;
     this.stage({
       dataUrl: `data:image/jpeg;base64,${b64}`,
-      ts: typeof payload.ts === 'number' ? payload.ts : nowMs,
+      ts: typeof payload.timestamp_ms === 'number' ? payload.timestamp_ms : nowMs,
       // Frozen observation resolution — sidecar guarantees ≤1280×720.
       width: 1280,
       height: 720,

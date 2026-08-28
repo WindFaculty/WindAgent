@@ -46,7 +46,8 @@ export class HttpError extends Error {
     readonly statusText: string,
     readonly responseBody?: string
   ) {
-    super(`API returned HTTP ${status}${statusText ? `: ${statusText}` : ''}`);
+    const statusMessage = `API returned HTTP ${status}${statusText ? `: ${statusText}` : ''}`;
+    super(responseBody ? `${statusMessage} - ${responseBody}` : statusMessage);
     this.name = 'HttpError';
     this.retryable = status >= 500;
   }

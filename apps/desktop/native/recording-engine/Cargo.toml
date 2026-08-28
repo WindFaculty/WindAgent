@@ -1,8 +1,8 @@
 [package]
 name = "windagent-recording-engine"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
-description = "WindAgent native recording sidecar — data plane (WGC/D3D11/NVENC/libav/MKV). Phases 8-9 implementation."
+description = "WindAgent native recording sidecar — data plane (direct WGC/D3D11/NVENC/libav/MKV). Gate: LIVE_RECORD_V2_CONTRACT_FROZEN."
 license = "Proprietary"
 
 [dependencies]
@@ -11,16 +11,58 @@ serde_json = "1"
 base64 = "0.22"
 
 [target.'cfg(windows)'.dependencies]
-windows-sys = { version = "0.59", features = ["Win32_Storage_FileSystem"] }
+# Frozen ABI helpers (disk free / QPC clock).
+windows-sys = { version = "0.59", features = [
+    "Win32_Storage_FileSystem",
+    "Win32_System_Performance",
+    "Win32_System_SystemInformation",
+    "Win32_System_Threading",
+] }
 
-# Phase 8 deps (gated for Windows CI; mock path works everywhere):
-# windows = { version = "0.58", features = ["Win32_Graphics_Dxgi", "Win32_Graphics_Direct3D11", "Win32_System_Com"], optional = true }
-# nvml-wrapper = { version = "0.10", optional = true }
+# Native production stack: WGC capture, D3D11 device/video-processor, DXGI
+# adapter selection, WASAPI mic+loopback, Media Foundation AAC, WIC JPEG,
+# QPC, window/monitor enumeration, runtime DLL loading (NVENC + libav).
+# Pinned exactly — this crate transcribes ABI structs against these APIs.
+windows = { version = "=0.58.0", features = [
+    "Foundation",
+    "Graphics",
+    "Graphics_Capture",
+    "Graphics_DirectX",
+    "Graphics_DirectX_Direct3D11",
+    "Win32_Foundation",
+    "Win32_Graphics_Direct3D",
+    "Win32_Graphics_Direct3D11",
+    "Win32_Graphics_Dxgi",
+    "Win32_Graphics_Dxgi_Common",
+    "Win32_Graphics_Gdi",
+    "Win32_Graphics_Imaging",
+    "Win32_Media_Audio",
+    "Win32_Media_KernelStreaming",
+    "Win32_Media_MediaFoundation",
+    "Win32_Security",
+    "Win32_System_Com",
+    "Win32_System_LibraryLoader",
+    "Win32_System_Performance",
+    "Win32_System_SystemInformation",
+    "Win32_System_Threading",
+    "Win32_UI_WindowsAndMessaging",
+] }
+
+# GPU utilization / temperature / VRAM for telemetry + thermal policy (§17, §18).
+# NVML loads the driver's own library at runtime; absent driver degrades to None.
+nvml-wrapper = { version = "0.10", optional = true }
 
 [features]
-default = []
-wgc = []
-nvenc = []
+# NVML GPU telemetry is ON by default (§17/§18): the wrapper loads the
+# driver's own nvml.dll at runtime and degrades to `None` readings without
+# it, so an absent driver never blocks recording — only the numbers vanish.
+# Opt out explicitly with --no-default-features where the dependency is
+# unwanted (minimal CI images).
+default = ["nvml"]
+nvml = ["dep:nvml-wrapper"]
+# Development-only comparison backend (ffmpeg CLI). Never enabled for
+# production builds; the production service must not import it.
+ffmpeg-dev = []
 
 [[bin]]
 name = "windagent-recorder"

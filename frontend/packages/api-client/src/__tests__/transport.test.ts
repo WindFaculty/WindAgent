@@ -192,4 +192,22 @@ describe('HttpTransport', () => {
 
     await expect(transport.get('/api/v3/projects')).rejects.toThrow(HttpError);
   });
+
+  it('preserves FastAPI detail messages in HttpError', async () => {
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 409,
+      statusText: 'Conflict',
+      headers: new Headers({ 'content-type': 'application/json' }),
+      json: async () => ({ detail: 'Register a durable endpoint before testing its connection.' }),
+    });
+
+    const transport = new HttpTransport({
+      baseUrl: 'http://localhost:8000',
+      fetchImpl: mockFetch as unknown as typeof fetch,
+    });
+
+    await expect(transport.post('/api/v3/providers/openai/test-connection'))
+      .rejects.toThrow('Register a durable endpoint before testing its connection.');
+  });
 });

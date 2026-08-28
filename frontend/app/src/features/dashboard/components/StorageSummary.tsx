@@ -19,7 +19,7 @@ export const StorageSummary: React.FC<StorageSummaryProps> = ({ summary }) => {
   const usedPercent =
     storage && storage.workspace_total_bytes > 0
       ? ((storage.workspace_used_bytes / storage.workspace_total_bytes) * 100).toFixed(1)
-      : '0.5';
+      : '0.0';
 
   return (
     <Card

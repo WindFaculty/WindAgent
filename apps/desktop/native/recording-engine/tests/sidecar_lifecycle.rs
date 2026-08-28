@@ -62,12 +62,13 @@ fn sidecar_lifecycle_eof_shutdown_and_protocol_responses() {
     }
 
     // Scenario 2: well-formed request answered, then EOF → clean exit.
-    // Wire op is the serde snake_case variant name ("capabilities").
+    // Wire op is the serde snake_case variant name ("capabilities"); unit
+    // variants carry no args (V2 frozen tag+content envelope).
     {
         let mut child = spawn_sidecar();
         {
             let stdin = child.stdin.as_mut().expect("stdin piped");
-            writeln!(stdin, r#"{{"op":"capabilities","args":{{}}}}"#).expect("write request");
+            writeln!(stdin, r#"{{"op":"capabilities"}}"#).expect("write request");
         }
         drop(child.stdin.take()); // as_mut above only borrows — take() actually closes the pipe
         let output = wait_clean_exit(child, "capabilities round-trip");

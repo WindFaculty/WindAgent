@@ -238,7 +238,10 @@ pub fn run() {
             live_record::commands::recorder_stop,
             live_record::commands::recorder_get_status,
             live_record::commands::recorder_create_marker,
+            live_record::commands::recorder_mute,
+            live_record::commands::recorder_recover,
             live_record::commands::recorder_get_capabilities,
+            live_record::commands::recorder_get_sources,
             live_record::playback::playback_execute_code,
             live_record::playback::playback_probe_environment
         ])

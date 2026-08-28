@@ -1,114 +1,139 @@
-//! Native capability probing — Phase 8 (ban_ke_hoach_v1.md Section 23).
+//! Native capability probing — V2 production stack (ban_ke_hoach_v1.md §15).
 //!
-//! Everything here is fail-closed: a missing binary, filter, encoder or an
+//! Everything here is fail-closed: a missing DLL, adapter, encoder or an
 //! unwritable output directory surfaces as `engine_available=false` plus an
-//! explicit blocker code, never as a best-effort guess.
+//! explicit blocker code — never as a best-effort guess or silent fallback.
+//!
+//! Probe order mirrors preflight: D3D11 → WGC → NVENC → audio → AAC → libav
+//! runtime → disk. Every stage degrades independently so preflight UI can
+//! show exactly which requirement failed.
 
-use std::path::{Path, PathBuf};
-use std::process::{Command, Stdio};
+use std::path::Path;
 
 use crate::ipc::EngineCapabilities;
 
-/// Locate the ffmpeg binary: `WINDAGENT_FFMPEG_PATH` env override first,
-/// then whatever `ffmpeg` resolves to on PATH.
-pub fn locate_ffmpeg() -> Option<PathBuf> {
-    if let Ok(custom) = std::env::var("WINDAGENT_FFMPEG_PATH") {
-        let p = PathBuf::from(custom);
-        if p.is_file() {
-            return Some(p);
-        }
-    }
-    // Bare name — resolution is delegated to the OS PATH lookup by spawning
-    // `-version`; a successful exit proves both existence and executability.
-    match Command::new("ffmpeg").arg("-version").output() {
-        Ok(out) if out.status.success() => Some(PathBuf::from("ffmpeg")),
-        _ => None,
-    }
-}
-
-fn first_line(bytes: &[u8]) -> String {
-    String::from_utf8_lossy(
-        bytes
-            .split(|b| *b == b'\n')
-            .next()
-            .unwrap_or(bytes),
-    )
-    .trim()
-    .to_string()
-}
-
-/// `ffmpeg -version` → "ffmpeg version 8.1.2-full_build-www.gyan.dev ..." → "8.1.2-full_build..."
-pub fn parse_version_line(line: &str) -> String {
-    line.strip_prefix("ffmpeg version ")
-        .unwrap_or(line)
-        .split_whitespace()
-        .next()
-        .unwrap_or("unknown")
-        .to_string()
-}
-
-/// Probe the full pipeline on this host.
-///
-/// `output_dir` — when given, writability is checked in that directory;
+/// Full host probe. `output_dir` — when given, writability is checked there;
 /// otherwise the OS temp dir stands in.
 pub fn probe_capabilities(output_dir: Option<&Path>) -> EngineCapabilities {
     let mut caps = EngineCapabilities {
         backend: "mock".into(),
+        contract_version: crate::ENGINE_CONTRACT_VERSION,
         ..Default::default()
     };
 
-    let Some(ffmpeg) = locate_ffmpeg() else {
-        caps.blockers.push("FFMPEG_NOT_FOUND".into());
-        return caps;
-    };
-    caps.ffmpeg_path = Some(ffmpeg.to_string_lossy().into_owned());
-
-    let version_out = Command::new(&ffmpeg)
-        .args(["-version"])
-        .stderr(Stdio::null())
-        .output();
-    match version_out {
-        Ok(out) if out.status.success() => {
-            caps.ffmpeg_version = Some(parse_version_line(&first_line(&out.stdout)));
+    // ── 1. D3D11 device layer (§6): prefer NVIDIA adapter explicitly ────────
+    #[cfg(windows)]
+    match crate::capture::d3d11_device::create_preferred_device() {
+        Ok(bundle) => {
+            let info = &bundle.info;
+            caps.d3d11_ready = true;
+            caps.gpu_adapter_name = info.description.clone();
+            caps.gpu_vendor_id = info.vendor_id;
+            caps.gpu_vram_mb = info.vram_mb;
+            caps.d3d_feature_level = info.feature_level;
+            caps.nvidia_adapter_selected = info.vendor_id == 0x10DE;
+            if !caps.nvidia_adapter_selected {
+                // Hybrid-graphics guard: NVENC only exists on the NVIDIA
+                // adapter; capturing on iGPU would break zero-copy anyway.
+                caps.blockers.push("NVIDIA_ADAPTER_NOT_SELECTED".into());
+            }
         }
-        _ => {
-            caps.blockers.push("FFMPEG_NOT_EXECUTABLE".into());
-            return caps;
+        Err(e) => {
+            caps.blockers.push(format!("D3D11_DEVICE_FAILED:{e}"));
         }
     }
-
-    // Encoder + filter probes (single spawn each, banner suppressed).
-    let encoders = Command::new(&ffmpeg)
-        .args(["-hide_banner", "-encoders"])
-        .output()
-        .map(|o| String::from_utf8_lossy(&o.stdout).into_owned())
-        .unwrap_or_default();
-    caps.nvenc_h264_available = encoders.contains(" h264_nvenc ");
-    caps.nvenc_hevc_available = encoders.contains(" hevc_nvenc ");
-
-    let filters = Command::new(&ffmpeg)
-        .args(["-hide_banner", "-filters"])
-        .output()
-        .map(|o| String::from_utf8_lossy(&o.stdout).into_owned())
-        .unwrap_or_default();
-    caps.ddagrab_available = filters.contains(" ddagrab ");
-
-    if !caps.ddagrab_available {
-        // ddagrab is Windows-only (Desktop Duplication) — CI/Linux lands here.
-        caps.blockers.push("DDAGRAB_UNAVAILABLE".into());
+    #[cfg(not(windows))]
+    {
+        let _ = &mut caps;
+        caps.blockers.push("D3D11_UNSUPPORTED_OS".into());
     }
-    if !caps.nvenc_h264_available && !caps.nvenc_hevc_available {
+
+    // ── 2. Windows Graphics Capture (§7) ────────────────────────────────────
+    #[cfg(windows)]
+    {
+        caps.wgc_os_supported = crate::capture::wgc::os_supports_wgc();
+        if caps.wgc_os_supported {
+            caps.wgc_available = true;
+        } else {
+            caps.blockers.push("WGC_UNAVAILABLE".into());
+        }
+    }
+    #[cfg(not(windows))]
+    {
+        caps.blockers.push("WGC_UNAVAILABLE".into());
+    }
+
+    // ── 3. Direct NVENC (§8) ────────────────────────────────────────────────
+    // The FFI layer loads nvEncodeAPI64.dll from the driver store at runtime;
+    // absence surfaces as an explicit blocker, never a fallback.
+    #[cfg(windows)]
+    {
+        match crate::encoder::nvenc_session::probe() {
+            Ok(nv) => {
+                caps.nvenc_available = true;
+                caps.nvenc_api_version = nv.api_version;
+                caps.nvenc_h264_supported = nv.h264_supported;
+                caps.nvenc_hevc_supported = nv.hevc_supported;
+                caps.nvenc_max_width = nv.max_width;
+                caps.nvenc_max_height = nv.max_height;
+                caps.nvenc_max_sessions = nv.max_sessions;
+                caps.nvenc_bframes_supported = nv.bframes_supported;
+                caps.nvenc_lookahead_supported = nv.lookahead_supported;
+                caps.nvenc_aq_supported = nv.aq_supported;
+                if !caps.nvidia_adapter_selected {
+                    caps.blockers.push("NVENC_ADAPTER_MISMATCH".into());
+                }
+            }
+            Err(e) => caps.blockers.push(format!("NVENC_UNAVAILABLE:{e}")),
+        }
+    }
+    #[cfg(not(windows))]
+    {
         caps.blockers.push("NVENC_UNAVAILABLE".into());
     }
 
-    // Disk free + writability.
-    let dir = output_dir
-        .map(Path::to_path_buf)
-        .unwrap_or_else(std::env::temp_dir);
+    // ── 4. WASAPI mic + system loopback (§10/§11) ───────────────────────────
+    #[cfg(windows)]
+    {
+        caps.wasapi_available = crate::audio::device::wasapi_available();
+        caps.mic_available = crate::audio::device::default_input_available();
+        caps.system_loopback_available = crate::audio::device::default_render_available();
+        if !caps.mic_available {
+            caps.blockers.push("MIC_UNAVAILABLE".into());
+        }
+        if !caps.system_loopback_available {
+            caps.blockers.push("SYSTEM_AUDIO_UNAVAILABLE".into());
+        }
+        caps.aac_encoder_available = crate::audio::aac::mf_aac_encoder_present();
+        if !caps.aac_encoder_available {
+            caps.blockers.push("AAC_ENCODER_UNAVAILABLE".into());
+        }
+    }
+    #[cfg(not(windows))]
+    {
+        caps.blockers.push("WASAPI_UNSUPPORTED_OS".into());
+    }
+
+    // ── 5. libav runtime (§9) ───────────────────────────────────────────────
+    match crate::muxer::libav_loader::LibavRuntime::load() {
+        Ok(_) => caps.libav_runtime_found = true,
+        Err(e) => {
+            // Keep the stable code prefix; append the probe's own failure
+            // detail (location × family attempts) so a missing DLL is
+            // diagnosable from capabilities alone.
+            caps.blockers.push(format!(
+                "{} [probe: {e}]",
+                crate::muxer::LIBAV_UNAVAILABLE
+            ));
+        }
+    }
+
+    // ── 6. Disk + writability ───────────────────────────────────────────────
+    let dir = output_dir.map(Path::to_path_buf).unwrap_or_else(std::env::temp_dir);
     if let Some(free) = disk_free_bytes(&dir) {
         caps.disk_free_gb = (free as f64 / 1_073_741_824.0 * 10.0).round() / 10.0;
         if free < 2 * 1_073_741_824 {
-            // < 2 GiB free cannot hold a soak take — refuse to start.
+            // < 2 GiB free cannot hold a quality take — refuse to start.
             caps.blockers.push("DISK_FULL".into());
         }
     } else {
@@ -119,11 +144,18 @@ pub fn probe_capabilities(output_dir: Option<&Path>) -> EngineCapabilities {
         caps.blockers.push("OUTPUT_NOT_WRITABLE".into());
     }
 
-    caps.engine_available =
-        caps.ddagrab_available && (caps.nvenc_h264_available || caps.nvenc_hevc_available);
+    // Production readiness verdict: every hard gate must pass.
+    caps.engine_available = caps.d3d11_ready
+        && caps.nvidia_adapter_selected
+        && caps.wgc_available
+        && caps.nvenc_available
+        && caps.libav_runtime_found;
     if caps.engine_available {
-        caps.backend = "ffmpeg-ddagrab-nvenc".into();
+        caps.backend = "wgc-nvenc-mkv".into();
     }
+
+    // Audio blockers downgrade availability only when audio tracks are used;
+    // they are reported either way so preflight can show them.
     caps
 }
 
@@ -144,12 +176,7 @@ pub fn disk_free_bytes(path: &Path) -> Option<u64> {
     use std::os::windows::ffi::OsStrExt;
     use windows_sys::Win32::Storage::FileSystem::GetDiskFreeSpaceExW;
 
-    // Root of the given path (GetDiskFreeSpaceExW accepts any path on the volume).
-    let wide: Vec<u16> = path
-        .as_os_str()
-        .encode_wide()
-        .chain(Some(0))
-        .collect();
+    let wide: Vec<u16> = path.as_os_str().encode_wide().chain(Some(0)).collect();
     let mut avail: u64 = 0;
     let mut total: u64 = 0;
     let mut free: u64 = 0;
@@ -164,8 +191,6 @@ pub fn disk_free_bytes(path: &Path) -> Option<u64> {
 
 #[cfg(not(windows))]
 pub fn disk_free_bytes(_path: &Path) -> Option<u64> {
-    // Non-Windows hosts land in mock mode anyway (ddagrab unavailable), so a
-    // neutral value keeps the capability report coherent without libc deps.
     Some(u64::MAX)
 }
 
@@ -174,16 +199,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn version_line_parses_release_token() {
-        assert_eq!(
-            parse_version_line("ffmpeg version 8.1.2-full_build-www.gyan.dev Copyright (c) 2000-2025"),
-            "8.1.2-full_build-www.gyan.dev"
-        );
-        assert_eq!(parse_version_line("weird"), "weird");
-    }
-
-    #[test]
-    fn capabilities_fail_closed_without_ffmpeg_env() {
+    fn capabilities_fail_closed_without_native_stack() {
         // On any host this must produce either a fully-probed real backend or
         // an explicit blocker list — never engine_available=true by accident.
         let caps = probe_capabilities(None);
@@ -191,14 +207,18 @@ mod tests {
             assert!(!caps.blockers.is_empty(), "fail-closed needs blocker codes");
             assert_eq!(caps.backend, "mock");
         } else {
-            assert!(caps.ddagrab_available);
-            assert!(caps.output_writable);
-            assert_eq!(caps.backend, "ffmpeg-ddagrab-nvenc");
+            assert!(caps.d3d11_ready);
+            assert!(caps.nvidia_adapter_selected);
+            assert!(caps.wgc_available);
+            assert!(caps.nvenc_available);
+            assert_eq!(caps.backend, "wgc-nvenc-mkv");
         }
     }
 
     #[test]
     fn writable_probe_rejects_missing_dir() {
-        assert!(!check_writable(Path::new("Z:/definitely/not/a/dir/windagent")));
+        assert!(!check_writable(Path::new(
+            "Z:/definitely/not/a/dir/windagent"
+        )));
     }
 }

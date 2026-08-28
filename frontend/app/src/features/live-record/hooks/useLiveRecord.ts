@@ -1,11 +1,16 @@
 /**
- * useLiveRecord — Recording UI store (P0)
+ * useLiveRecord — UI-only store (P0 store, demoted by Phase 14 / §18).
  * Gate: LIVE_RECORD_P0_ARCHITECTURE_FROZEN
  *
- * This hook is intentionally UI-only. Domain lives in `../domain/` and contracts in
- * `../contracts/`. Do NOT inline LiveExecutionPlan / state machine / director logic here.
- * Future phases replace mock clock/bitrate/telemetry with `contracts/ipc.ts` polling
- * and `domain/stateMachine.ts` transitions.
+ * §18 mandate: this hook NO LONGER supplies production metrics. Inside the
+ * Tauri desktop shell every counter comes from the recording engine via
+ * `useLiveRecordingController`; the values here are a web-dev preview fallback
+ * that never runs in the shell (it starts idle at zero and only ticks after an
+ * explicit user action in a plain browser).
+ *
+ * This hook is intentionally UI-only. Domain lives in `../domain/` and
+ * contracts in `../contracts/`. Camera/webcam/bitrate/temperature residue from
+ * V1 was removed — §17 allows monitors and application windows only.
  */
 import { useState, useEffect, useCallback } from 'react';
 import type { SceneItem as DomainSceneItem, RecentRecording as DomainRecentRecording } from '../domain/types';
@@ -81,7 +86,7 @@ const DEFAULT_RECORDINGS: RecentRecording[] = [
     title: 'WindAgent_Demo_Part1',
     resolution: '1080p',
     fps: 60,
-    format: 'MP4',
+    format: 'MKV', // master container — MP4 is export-only (§3)
     date: '16/05/2025',
     time: '10:24 AM',
     size: '2.46 GB',
@@ -92,7 +97,7 @@ const DEFAULT_RECORDINGS: RecentRecording[] = [
     title: 'WindAgent_Demo_Part2',
     resolution: '1080p',
     fps: 60,
-    format: 'MP4',
+    format: 'MKV',
     date: '16/05/2025',
     time: '10:45 AM',
     size: '2.18 GB',
@@ -103,7 +108,7 @@ const DEFAULT_RECORDINGS: RecentRecording[] = [
     title: 'Q&A_Session_Take1',
     resolution: '1080p',
     fps: 60,
-    format: 'MP4',
+    format: 'MKV',
     date: '16/05/2025',
     time: '11:32 AM',
     size: '1.35 GB',
@@ -122,33 +127,30 @@ export function formatDuration(totalSeconds: number): string {
   ].join(':');
 }
 
-export function useLiveRecord() {
-  // Recording controls & clock
-  const [isRecording, setIsRecording] = useState<boolean>(true);
-  const [isPaused, setIsPaused] = useState<boolean>(false);
-  const [recordSeconds, setRecordSeconds] = useState<number>(768); // 00:12:48 initial
-  const [recordedFrames, setRecordedFrames] = useState<number>(45942);
-  const [droppedFrames, setDroppedFrames] = useState<number>(12);
-  const [storageUsedGB, setStorageUsedGB] = useState<number>(5.68);
-  const [currentBitrate, setCurrentBitrate] = useState<number>(42.5);
+/** Full store shape — the controller re-exposes its single instance as `.ui`. */
+export type UseLiveRecordResult = ReturnType<typeof useLiveRecord>;
 
-  // Hardware & Config Settings
-  const [cameraSource, setCameraSource] = useState<string>('Sony A7 IV (USB)');
-  const [micSource, setMicSource] = useState<string>('Shure MV7+ (USB)');
+export function useLiveRecord() {
+  // Web-dev preview clock — starts IDLE AT ZERO; nothing ticks until the user
+  // presses start in a browser without the desktop shell.
+  const [isRecording, setIsRecording] = useState<boolean>(false);
+  const [isPaused, setIsPaused] = useState<boolean>(false);
+  const [recordSeconds, setRecordSeconds] = useState<number>(0);
+  const [recordedFrames, setRecordedFrames] = useState<number>(0);
+  const [droppedFrames] = useState<number>(0);
+  const [storageUsedGB, setStorageUsedGB] = useState<number>(0);
+  const [currentBitrate, setCurrentBitrate] = useState<number>(0);
+
+  // Display-only settings (the real engine profile lives in the controller)
   const [resolution, setResolution] = useState<string>('1920 x 1080 (Full HD)');
   const [fps, setFps] = useState<number>(60);
-  const [bitrate, setBitrate] = useState<string>('20 Mbps');
-  const [format, setFormat] = useState<string>('MP4 (H.264)');
   const [savePath, setSavePath] = useState<string>('D:\\WindAgent\\Recordings');
-  const [autoSplit, setAutoSplit] = useState<boolean>(true);
-  const [deviceConnected, setDeviceConnected] = useState<boolean>(true);
-  const [deviceTemp, setDeviceTemp] = useState<number>(42);
 
-  // Audio Monitoring
+  // Audio Monitoring (web-dev visualizer fallback; engine meters override it)
   const [audioLevels, setAudioLevels] = useState<AudioLevels>({
-    mic: -10,
-    system: -18,
-    voiceover: -6,
+    mic: -100,
+    system: -100,
+    voiceover: -100,
     isMicMuted: false,
     isSystemMuted: false,
     isVoiceoverMuted: false,
@@ -174,7 +176,7 @@ export function useLiveRecord() {
   const [isAddSceneOpen, setIsAddSceneOpen] = useState<boolean>(false);
   const [selectedPlayback, setSelectedPlayback] = useState<RecentRecording | null>(null);
 
-  // Timer Tick
+  // Timer Tick (web-dev preview only)
   useEffect(() => {
     if (!isRecording || isPaused) return;
 
@@ -188,21 +190,21 @@ export function useLiveRecord() {
     return () => clearInterval(interval);
   }, [isRecording, isPaused, fps]);
 
-  // Audio Visualizer level updater
+  // Audio Visualizer level updater (web-dev preview only)
   useEffect(() => {
-    if (!isRecording && !deviceConnected) return;
+    if (!isRecording) return;
 
     const interval = setInterval(() => {
       setAudioLevels((prev) => ({
         ...prev,
-        mic: prev.isMicMuted ? -60 : -12,
-        system: prev.isSystemMuted ? -60 : -18,
-        voiceover: prev.isVoiceoverMuted ? -60 : -8,
+        mic: prev.isMicMuted ? -100 : -12,
+        system: prev.isSystemMuted ? -100 : -18,
+        voiceover: prev.isVoiceoverMuted ? -100 : -8,
       }));
     }, 250);
 
     return () => clearInterval(interval);
-  }, [isRecording, deviceConnected]);
+  }, [isRecording]);
 
   // Actions
   const handleStartRecording = useCallback(() => {
@@ -227,7 +229,7 @@ export function useLiveRecord() {
         title: `WindAgent_Take_${recordings.length + 1}`,
         resolution: resolution.includes('4K') ? '4K UHD' : '1080p',
         fps,
-        format: format.split(' ')[0],
+        format: 'MKV', // master container (§3) — MP4 belongs to post-production
         date: new Date().toLocaleDateString('vi-VN'),
         time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
         size: `${storageUsedGB.toFixed(2)} GB`,
@@ -241,7 +243,7 @@ export function useLiveRecord() {
       setRecordedFrames(0);
       setStorageUsedGB(0);
     }
-  }, [isRecording, recordSeconds, recordings.length, resolution, fps, format, storageUsedGB]);
+  }, [isRecording, recordSeconds, recordings.length, resolution, fps, storageUsedGB]);
 
   const handleSelectScene = useCallback((index: number) => {
     setActiveSceneIndex(index);
@@ -296,30 +298,15 @@ export function useLiveRecord() {
     recordingTimeFormatted: formatDuration(recordSeconds),
     recordedFrames,
     droppedFrames,
-    setDroppedFrames,
     droppedFramesPercent: recordedFrames > 0 ? ((droppedFrames / recordedFrames) * 100).toFixed(2) : '0.00',
     storageUsedGB,
     currentBitrate,
-    cameraSource,
-    setCameraSource,
-    micSource,
-    setMicSource,
     resolution,
     setResolution,
     fps,
     setFps,
-    bitrate,
-    setBitrate,
-    format,
-    setFormat,
     savePath,
     setSavePath,
-    autoSplit,
-    setAutoSplit,
-    deviceConnected,
-    setDeviceConnected,
-    deviceTemp,
-    setDeviceTemp,
     audioLevels,
     scenes,
     activeSceneIndex,

@@ -71,7 +71,7 @@ function makePlan(): LiveExecutionPlan {
     episode_id: 'ep_1',
     episode_revision_id: 'rev_1',
     status: 'FROZEN',
-    recording_profile: { resolution: '1920x1080', fps: 60 },
+    recording_profile: { resolution: '1920x1080', fps: 60, codec: 'H264', segment_minutes: 5 },
     scenes: [
       {
         scene_id: 'scene-01',

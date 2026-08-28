@@ -11,6 +11,7 @@
 //! in-recording — MP4 moov requires finalization). Crash recovery retains
 //! all completed segments.
 
+pub mod recovery;
 pub mod timeline_writer;
 
 use serde::{Deserialize, Serialize};
@@ -22,6 +23,8 @@ pub struct SegmentInfo {
     pub started_at_ms: u64,
     pub ended_at_ms: Option<u64>,
     pub duration_sec: f64,
+    /// Committed bytes on disk (V2 contract field — mirrors `SegmentEntry`).
+    pub byte_len: u64,
     pub is_playable: bool,
 }
 
@@ -87,6 +90,7 @@ impl Segmenter {
             started_at_ms: started,
             ended_at_ms: Some(now_ms),
             duration_sec,
+            byte_len: 0,
             is_playable: true,
         };
         self.segments.push(info.clone());
@@ -129,6 +133,7 @@ impl Segmenter {
                     index: s.index,
                     file_token: s.file_token.clone(),
                     duration_sec: s.duration_sec,
+                    byte_len: s.byte_len,
                     is_playable: s.is_playable,
                 })
                 .collect(),

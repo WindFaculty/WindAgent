@@ -19,8 +19,8 @@ use tauri::{AppHandle, State};
 use super::engine_host::{EngineHost, EngineHostState};
 use super::state::{assert_transition, can_transition, LiveRecordState, RecorderSharedState};
 use super::types::{
-    MarkerRequest, NativeCapabilities, RecorderPrepareRequest, RecorderStartRequest,
-    RecorderStatus,
+    CaptureSources, MarkerRequest, MonitorSource, MuteRequest, NativeCapabilities, RecoverRequest,
+    RecorderPrepareRequest, RecorderStartRequest, RecorderStatus,
 };
 
 // ─── Core logic (pure over shared state — unit-testable) ─────────────────────
@@ -30,6 +30,11 @@ fn is_sha256_hex(s: &str) -> bool {
 }
 
 /// Validate a prepare payload without touching state — shared by both paths.
+///
+/// V2: profile semantics (NVENC-only, CQP, MKV segmentation, multi-track
+/// audio) are validated fail-closed by the engine sidecar's own validator —
+/// the control plane only guards identity fields and never re-interprets
+/// encoder settings (Principle D).
 pub(crate) fn validate_prepare_request(
     request: &RecorderPrepareRequest,
 ) -> Result<(), String> {
@@ -38,10 +43,6 @@ pub(crate) fn validate_prepare_request(
     }
     if !is_sha256_hex(&request.execution_plan_hash) {
         return Err("RECORDER_PREPARE_REJECTED: plan_hash must be sha256 hex".into());
-    }
-    if request.profile.audio_enabled {
-        // Principle F — audio stays disabled until the TTS stage.
-        return Err("RECORDER_PREPARE_REJECTED: audio_enabled must be false in P0".into());
     }
     Ok(())
 }
@@ -153,6 +154,40 @@ pub(crate) fn create_marker_core(
     Ok(format!("MARKER_ACK:{}", request.marker_type))
 }
 
+/// V2 (§11): mute toggles reach the recorder itself — they require an active
+/// take (RECORDING/PAUSED); muting meters only is forbidden.
+pub(crate) fn mute_core(
+    shared: &RecorderSharedState,
+    _request: &MuteRequest,
+) -> Result<(), String> {
+    if !matches!(
+        shared.state,
+        LiveRecordState::Recording | LiveRecordState::Paused
+    ) {
+        return Err(format!(
+            "RECORDER_MUTE_REJECTED: mute requires RECORDING/PAUSED, current {}",
+            shared.state.as_str()
+        ));
+    }
+    Ok(())
+}
+
+/// V2 (§15): crash recovery scans a take directory and rebuilds its manifest.
+/// It must never run while a take is live — the engine would be rewriting the
+/// very segments recovery wants to validate.
+pub(crate) fn recover_gate(shared: &RecorderSharedState) -> Result<(), String> {
+    if matches!(
+        shared.state,
+        LiveRecordState::Recording | LiveRecordState::Paused | LiveRecordState::Finalizing
+    ) {
+        return Err(format!(
+            "RECORDER_RECOVER_REJECTED: cannot recover during an active take ({})",
+            shared.state.as_str()
+        ));
+    }
+    Ok(())
+}
+
 pub(crate) fn status_of(shared: &RecorderSharedState) -> RecorderStatus {
     RecorderStatus {
         state: shared.state,
@@ -163,6 +198,12 @@ pub(crate) fn status_of(shared: &RecorderSharedState) -> RecorderStatus {
         frames_encoded: 0,
         frames_dropped: 0,
         dropped_pct: 0.0,
+        capture_fps: 0.0,
+        encode_fps: 0.0,
+        av_sync_error_ms: None,
+        mic_drift_ppm: None,
+        system_drift_ppm: None,
+        resource_stage: "normal".into(),
         current_segment_index: None,
         current_segment_path: None,
         disk_write_mbps: None,
@@ -182,13 +223,42 @@ pub(crate) fn status_of(shared: &RecorderSharedState) -> RecorderStatus {
 type EngineGuard<'a> = std::sync::MutexGuard<'a, Option<EngineHost>>;
 type SharedGuard<'a> = std::sync::MutexGuard<'a, RecorderSharedState>;
 
+/// Session states in which spawning (or respawning) an engine is legitimate —
+/// no take can be live in them. Mid-take a dead sidecar is a crash to surface,
+/// never to paper over with a fresh Idle process that knows nothing about the
+/// prepared plan or the running take.
+pub(crate) fn respawn_allowed(state: LiveRecordState) -> bool {
+    matches!(
+        state,
+        LiveRecordState::Idle
+            | LiveRecordState::Blocked
+            | LiveRecordState::Completed
+            | LiveRecordState::Failed
+    )
+}
+
+/// Error for "engine gone while a take is live" — the session must land in
+/// FAILED instead of continuing against a data plane that no longer exists.
+pub(crate) fn dead_engine_mid_take(state: LiveRecordState) -> String {
+    format!(
+        "ENGINE_DEAD_MID_TAKE: recording engine is not running and must not respawn from {} \
+         (recover the take on next launch, then re-prepare)",
+        state.as_str()
+    )
+}
+
 /// Make sure a live host exists (spawning it on first use); the caller then
 /// borrows it with `host_of`. Split in two so no borrow is held across the
-/// spawn.
-fn ensure_spawned(engine: &mut EngineGuard<'_>, app: &AppHandle) -> bool {
+/// spawn. `allow_respawn=false` turns silent replacement off — callers in a
+/// take-live context check [`respawn_allowed`] themselves and surface
+/// [`dead_engine_mid_take`] instead.
+fn ensure_spawned(engine: &mut EngineGuard<'_>, app: &AppHandle, allow_respawn: bool) -> bool {
     let alive = matches!(engine.as_ref(), Some(host) if host.is_alive());
     if alive {
         return true;
+    }
+    if !allow_respawn {
+        return false;
     }
     let Some(sidecar) = EngineHost::locate_sidecar() else {
         return false;
@@ -230,78 +300,44 @@ fn engine_ok(host: &mut EngineHost, request: Value, op: &str) -> Result<Value, S
     }
 }
 
-/// `"1920x1080"` (TS contract) → `[1920, 1080]` (sidecar tuple).
-fn parse_resolution(spec: &str) -> Result<[u32; 2], String> {
-    let (w, h) = spec
-        .split_once(['x', 'X'])
-        .ok_or_else(|| format!("RECORDER_PREPARE_REJECTED: bad resolution '{spec}'"))?;
-    let width: u32 = w
-        .trim()
-        .parse()
-        .map_err(|_| format!("RECORDER_PREPARE_REJECTED: bad resolution '{spec}'"))?;
-    let height: u32 = h
-        .trim()
-        .parse()
-        .map_err(|_| format!("RECORDER_PREPARE_REJECTED: bad resolution '{spec}'"))?;
-    Ok([width, height])
-}
-
-/// Build the sidecar's `prepare` args from the TS-mirror request struct.
-fn sidecar_prepare_args(request: &RecorderPrepareRequest) -> Value {
-    let profile = &request.profile;
-    let codec = if profile.codec.eq_ignore_ascii_case("hevc") {
-        "HEVC"
-    } else {
-        "H264"
-    };
-    // Validation already ran; a bad spec falls back to the 1080p default so
-    // the sidecar's own validator is the single source of truth.
-    let resolution = parse_resolution(&profile.resolution).unwrap_or([1920, 1080]);
-    json!({
+/// Build the sidecar's `prepare` args. The V2 profile mirrors the engine's
+/// `EngineProfile` field-for-field, so it is serialized verbatim — the sidecar
+/// validator stays the single source of truth for every encoder setting.
+pub(crate) fn sidecar_prepare_args(request: &RecorderPrepareRequest) -> Result<Value, String> {
+    let profile = serde_json::to_value(&request.profile)
+        .map_err(|e| format!("RECORDER_PREPARE_REJECTED: profile serialize failed: {e}"))?;
+    Ok(json!({
         "op": "prepare",
         "args": {
             "execution_plan_id": request.execution_plan_id,
             "execution_plan_hash": request.execution_plan_hash,
             "episode_id": request.episode_id,
             "output_dir": request.output_dir,
-            "profile": {
-                "resolution": resolution,
-                "fps": profile.fps,
-                "codec": codec,
-                "segment_minutes": profile.segment_minutes,
-                "audio_enabled": profile.audio_enabled,
-            },
+            "profile": profile,
         }
-    })
+    }))
 }
 
-fn sidecar_capabilities_to_native(payload: &Value) -> NativeCapabilities {
-    NativeCapabilities {
-        // ddagrab IS the desktop-capture capability in this backend.
-        wgc_available: payload
-            .get("ddagrab_available")
-            .and_then(Value::as_bool)
-            .unwrap_or(false),
-        nvenc_available: payload
-            .get("nvenc_h264_available")
-            .and_then(Value::as_bool)
-            .or_else(|| payload.get("nvenc_hevc_available").and_then(Value::as_bool))
-            .unwrap_or(false),
-        wasapi_available: false, // Principle F: locked through P1
-        disk_free_gb: payload
-            .get("disk_free_gb")
-            .and_then(Value::as_f64)
-            .unwrap_or(0.0) as f32,
-        output_writable: payload
-            .get("output_writable")
-            .and_then(Value::as_bool)
-            .unwrap_or(false),
-    }
+/// The V2 `EngineCapabilities` shape is mirrored 1:1 by [`NativeCapabilities`],
+/// so a real probe round-trips through serde without any remapping. Missing
+/// fields deserialize to defaults (false/0/empty) which fail closed in the
+/// preflight gate below.
+fn sidecar_capabilities_to_native(payload: &Value) -> Result<NativeCapabilities, String> {
+    serde_json::from_value(payload.clone())
+        .map_err(|e| format!("ENGINE_MALFORMED_RESPONSE: capabilities decode failed: {e}"))
 }
 
 fn probe_native_capabilities(host: &mut EngineHost) -> Result<NativeCapabilities, String> {
     let payload = engine_ok(host, json!({"op": "capabilities"}), "capabilities")?;
-    Ok(sidecar_capabilities_to_native(&payload))
+    // A simulation sidecar is never usable from the production control plane —
+    // refuse it here so prepare/start/capabilities all fail closed on `mock`.
+    if payload.get("backend").and_then(Value::as_str) == Some("mock") {
+        return Err(
+            "ENGINE_MOCK_BACKEND_REFUSED: simulation backend is not allowed in production"
+                .into(),
+        );
+    }
+    sidecar_capabilities_to_native(&payload)
 }
 
 /// Merge live sidecar telemetry into the control-plane status view.
@@ -317,17 +353,36 @@ fn merged_status(shared: &RecorderSharedState, telemetry: &Value) -> RecorderSta
         telemetry.get("frames_dropped").and_then(Value::as_u64).unwrap_or(0);
     status.dropped_pct =
         telemetry.get("dropped_pct").and_then(Value::as_f64).unwrap_or(0.0) as f32;
+    // §17 real telemetry — measured values only; absent probes stay None/zero.
+    status.capture_fps =
+        telemetry.get("capture_fps").and_then(Value::as_f64).unwrap_or(0.0) as f32;
+    status.encode_fps =
+        telemetry.get("encode_fps").and_then(Value::as_f64).unwrap_or(0.0) as f32;
+    status.av_sync_error_ms = telemetry.get("av_sync_error_ms").and_then(Value::as_f64);
+    status.mic_drift_ppm = telemetry.get("mic_drift_ppm").and_then(Value::as_f64);
+    status.system_drift_ppm = telemetry.get("system_drift_ppm").and_then(Value::as_f64);
+    if let Some(stage) = telemetry.get("resource_stage").and_then(Value::as_str) {
+        status.resource_stage = stage.to_string();
+    }
+    status.current_segment_index =
+        telemetry.get("current_segment_index").and_then(Value::as_u64).map(|i| i as u32);
+    status.disk_write_mbps =
+        Some(telemetry.get("disk_write_mbps").and_then(Value::as_f64).unwrap_or(0.0) as f32);
     status.bitrate_mbps =
         telemetry.get("bitrate_mbps").and_then(Value::as_f64).unwrap_or(0.0) as f32;
     if let Some(nvenc) = telemetry.get("nvenc_status").and_then(Value::as_str) {
         status.nvenc_status = nvenc.to_string();
     }
     if let Some(state) = telemetry.get("state").and_then(Value::as_str) {
+        // Engine states arrive lowercase (ServiceState::as_str). Transient
+        // ones (`probing`/`preparing`/`recovering`) and failures stay with
+        // the session machine's own view — it owns those phase transitions.
         status.state = match state {
-            "RECORDING" => LiveRecordState::Recording,
-            "PAUSED" => LiveRecordState::Paused,
-            "STOPPED" | "COMPLETED" => LiveRecordState::Completed,
-            "IDLE" if shared.state == LiveRecordState::Idle => LiveRecordState::Idle,
+            "recording" => LiveRecordState::Recording,
+            "paused" => LiveRecordState::Paused,
+            "completed" | "finalizing" => LiveRecordState::Completed,
+            "ready" if shared.state == LiveRecordState::Ready => LiveRecordState::Ready,
+            "idle" if shared.state == LiveRecordState::Idle => LiveRecordState::Idle,
             _ => shared.state,
         };
     }
@@ -361,7 +416,9 @@ pub fn recorder_prepare(
     let mut shared_guard = lock(&shared)?;
     let mut engine_guard = lock_engine(&engine)?;
 
-    if ensure_spawned(&mut engine_guard, &app) {
+    // Prepare only ever runs from quiescent states (the transition gate below
+    // enforces it), so a fresh spawn is always legitimate here.
+    if ensure_spawned(&mut engine_guard, &app, true) {
         let capabilities = probe_native_capabilities(host_of(&mut engine_guard))?;
 
         assert_transition(shared_guard.state, LiveRecordState::Preparing)?;
@@ -371,8 +428,10 @@ pub fn recorder_prepare(
         assert_transition(shared_guard.state, LiveRecordState::Preflight)?;
         shared_guard.state = LiveRecordState::Preflight;
 
-        if capabilities.wgc_available && capabilities.nvenc_available {
-            let args = sidecar_prepare_args(&request);
+        // V2 gate: the engine itself decides availability from the full native
+        // stack (D3D11 + WGC + NVENC + audio paths); no per-field re-check here.
+        if capabilities.engine_available {
+            let args = sidecar_prepare_args(&request)?;
             let payload = engine_ok(host_of(&mut engine_guard), args, "prepare")?;
             if payload.get("prepared").and_then(Value::as_bool) == Some(true) {
                 assert_transition(shared_guard.state, LiveRecordState::Ready)?;
@@ -386,12 +445,10 @@ pub fn recorder_prepare(
         }
 
         // Real probe says this host cannot record — surface ITS blockers.
-        let payload = engine_ok(
-            host_of(&mut engine_guard),
-            json!({"op": "capabilities"}),
-            "capabilities",
-        )?;
-        shared_guard.blockers = blockers_of(&payload, "ENGINE_UNAVAILABLE");
+        shared_guard.blockers = capabilities.blockers.clone();
+        if shared_guard.blockers.is_empty() {
+            shared_guard.blockers = vec!["ENGINE_UNAVAILABLE".into()];
+        }
         assert_transition(shared_guard.state, LiveRecordState::Blocked)?;
         shared_guard.state = LiveRecordState::Blocked;
         return Ok(format!("BLOCKED:{}", request.execution_plan_id));
@@ -422,7 +479,14 @@ pub fn recorder_start(
 ) -> Result<String, String> {
     let mut shared_guard = lock(&shared)?;
     let mut engine_guard = lock_engine(&engine)?;
-    if ensure_spawned(&mut engine_guard, &app) {
+    // Starting must talk to the engine that was prepared — never spawn a fresh
+    // one behind the session's back. A dead host in READY is a failed prepare
+    // continuation: fail closed instead of recording into nothing.
+    let spawned = ensure_spawned(&mut engine_guard, &app, false);
+    if !spawned && !respawn_allowed(shared_guard.state) {
+        return Err(dead_engine_mid_take(shared_guard.state));
+    }
+    if spawned {
         let take_id = request.take_id.clone().unwrap_or_default();
         let payload = engine_ok(
             host_of(&mut engine_guard),
@@ -463,7 +527,11 @@ pub fn recorder_pause(
 ) -> Result<(), String> {
     let mut shared_guard = lock(&shared)?;
     let mut engine_guard = lock_engine(&engine)?;
-    if ensure_spawned(&mut engine_guard, &app) {
+    let spawned = ensure_spawned(&mut engine_guard, &app, false);
+    if !spawned && !respawn_allowed(shared_guard.state) {
+        return Err(dead_engine_mid_take(shared_guard.state));
+    }
+    if spawned {
         engine_ok(host_of(&mut engine_guard), json!({"op": "pause"}), "pause")?;
     }
     pause_core(&mut shared_guard)
@@ -477,7 +545,11 @@ pub fn recorder_resume(
 ) -> Result<(), String> {
     let mut shared_guard = lock(&shared)?;
     let mut engine_guard = lock_engine(&engine)?;
-    if ensure_spawned(&mut engine_guard, &app) {
+    let spawned = ensure_spawned(&mut engine_guard, &app, false);
+    if !spawned && !respawn_allowed(shared_guard.state) {
+        return Err(dead_engine_mid_take(shared_guard.state));
+    }
+    if spawned {
         engine_ok(host_of(&mut engine_guard), json!({"op": "resume"}), "resume")?;
     }
     resume_core(&mut shared_guard)
@@ -497,7 +569,8 @@ pub fn recorder_stop(
             shared_guard.state.as_str()
         ));
     }
-    if ensure_spawned(&mut engine_guard, &app) {
+    let spawned = ensure_spawned(&mut engine_guard, &app, false);
+    if spawned {
         let payload = engine_ok(host_of(&mut engine_guard), json!({"op": "stop"}), "stop")?;
         let take_id = payload
             .get("take_id")
@@ -510,6 +583,17 @@ pub fn recorder_stop(
         shared_guard.take_id = Some(take_id.clone());
         return Ok(take_id);
     }
+    if !respawn_allowed(shared_guard.state) {
+        // Mid-take with a dead engine: the tail segment was never committed and
+        // no finalize can happen. Land FAILED honestly — the crash-safe prefix
+        // plus recovery rebuild salvage what was flushed.
+        shared_guard.blockers.push("ENGINE_DEAD_MID_TAKE".into());
+        assert_transition(shared_guard.state, LiveRecordState::Finalizing)?;
+        shared_guard.state = LiveRecordState::Finalizing;
+        assert_transition(shared_guard.state, LiveRecordState::Failed)?;
+        shared_guard.state = LiveRecordState::Failed;
+        return Err(dead_engine_mid_take(shared_guard.state));
+    }
 
     stop_core(&mut shared_guard)
 }
@@ -521,24 +605,87 @@ pub fn recorder_create_marker(
     engine: EngineHandle<'_>,
     app: AppHandle,
 ) -> Result<String, String> {
-    create_marker_core(&*lock(&shared)?, &request)?; // same gating either way
+    let shared_guard = lock(&shared)?;
+    create_marker_core(&shared_guard, &request)?; // same gating either way
 
     let mut engine_guard = lock_engine(&engine)?;
-    if ensure_spawned(&mut engine_guard, &app) {
-        engine_ok(
+    // Markers are mid-take by definition (core gate enforces RECORDING/PAUSED)
+    // — a dead engine must surface, not respawn.
+    if !ensure_spawned(&mut engine_guard, &app, false) {
+        return Err(dead_engine_mid_take(shared_guard.state));
+    }
+    engine_ok(
+        host_of(&mut engine_guard),
+        json!({
+            "op": "marker",
+            "args": {
+                "marker_type": request.marker_type,
+                "cue_id": request.cue_id,
+                "action_id": request.action_id,
+            }
+        }),
+        "marker",
+    )?;
+    Ok(format!("MARKER_ACK:{}", request.marker_type))
+}
+
+/// V2 (§11): recorder-level mute — the toggle reaches the data plane so the
+/// MKV tracks genuinely fall silent; UI meters reflect the same state.
+#[tauri::command]
+pub fn recorder_mute(
+    request: MuteRequest,
+    shared: SharedHandle<'_>,
+    engine: EngineHandle<'_>,
+    app: AppHandle,
+) -> Result<(), String> {
+    let shared_guard = lock(&shared)?;
+    mute_core(&shared_guard, &request)?;
+
+    let mut engine_guard = lock_engine(&engine)?;
+    // Mute is a data-plane toggle mid-take — no silent respawn either.
+    if !ensure_spawned(&mut engine_guard, &app, false) {
+        return Err(dead_engine_mid_take(shared_guard.state));
+    }
+    engine_ok(
+        host_of(&mut engine_guard),
+        json!({
+            "op": "mute",
+            "args": {
+                "mic_muted": request.mic_muted,
+                "system_muted": request.system_muted,
+            }
+        }),
+        "mute",
+    )?;
+    Ok(())
+}
+
+/// V2 (§15): scan a take directory for an interrupted recording, validate
+/// completed segments, rebuild the manifest, drop only the unfinished tail.
+#[tauri::command]
+pub fn recorder_recover(
+    request: RecoverRequest,
+    shared: SharedHandle<'_>,
+    engine: EngineHandle<'_>,
+    app: AppHandle,
+) -> Result<Value, String> {
+    let shared_guard = lock(&shared)?;
+    recover_gate(&shared_guard)?;
+
+    let mut engine_guard = lock_engine(&engine)?;
+    if ensure_spawned(&mut engine_guard, &app, respawn_allowed(shared_guard.state)) {
+        return engine_ok(
             host_of(&mut engine_guard),
             json!({
-                "op": "marker",
-                "args": {
-                    "marker_type": request.marker_type,
-                    "cue_id": request.cue_id,
-                    "action_id": request.action_id,
-                }
+                "op": "recover",
+                "args": { "output_dir": request.output_dir }
             }),
-            "marker",
-        )?;
+            "recover",
+        );
     }
-    Ok(format!("MARKER_ACK:{}", request.marker_type))
+    // No sidecar: nothing to recover from — fail closed with an explicit code
+    // rather than pretending success.
+    Err("ENGINE_UNAVAILABLE: no recording engine sidecar to recover with".into())
 }
 
 #[tauri::command]
@@ -549,14 +696,31 @@ pub fn recorder_get_status(
 ) -> Result<RecorderStatus, String> {
     let shared_guard = lock(&shared)?;
     let mut engine_guard = lock_engine(&engine)?;
-    if ensure_spawned(&mut engine_guard, &app) {
-        if let Ok(telemetry) =
-            engine_ok(host_of(&mut engine_guard), json!({"op": "status"}), "status")
-        {
-            return Ok(merged_status(&shared_guard, &telemetry));
+    let spawned = ensure_spawned(&mut engine_guard, &app, respawn_allowed(shared_guard.state));
+    if spawned {
+        // Never swallow an engine failure into a healthy-looking status: the
+        // session view stays authoritative and the fault lands as a blocker.
+        match engine_ok(host_of(&mut engine_guard), json!({"op": "status"}), "status") {
+            Ok(telemetry) => return Ok(merged_status(&shared_guard, &telemetry)),
+            Err(e) => {
+                let mut status = status_of(&*shared_guard);
+                status
+                    .blockers
+                    .get_or_insert_with(Vec::new)
+                    .push(format!("ENGINE_STATUS_FAILED:{e}"));
+                return Ok(status);
+            }
         }
     }
-    Ok(status_of(&*shared_guard))
+    let mut status = status_of(&*shared_guard);
+    if !respawn_allowed(shared_guard.state) {
+        // Engine dead mid-take — say so instead of a silent all-zero status.
+        status
+            .blockers
+            .get_or_insert_with(Vec::new)
+            .push("ENGINE_DEAD_MID_TAKE".into());
+    }
+    Ok(status)
 }
 
 #[tauri::command]
@@ -565,14 +729,41 @@ pub fn recorder_get_capabilities(
     app: AppHandle,
 ) -> Result<NativeCapabilities, String> {
     let mut engine_guard = lock_engine(&engine)?;
-    if ensure_spawned(&mut engine_guard, &app) {
+    // Probe-only command — never carries take state, so respawning is safe.
+    if ensure_spawned(&mut engine_guard, &app, true) {
         return probe_native_capabilities(host_of(&mut engine_guard));
     }
+    // No sidecar: everything unavailable — the all-defaults probe fails closed.
     Ok(NativeCapabilities {
-        wgc_available: false,   // no sidecar → no desktop capture path
-        nvenc_available: false, // true only after a real NVENC probe
-        wasapi_available: false, // P1 locked false per Principle F
-        disk_free_gb: 0.0,
-        output_writable: false,
+        blockers: vec!["ENGINE_UNAVAILABLE".into()],
+        ..Default::default()
+    })
+}
+
+/// §17 source picker data — real monitor/window enumeration from the engine.
+/// Read-only like the capability probe, so respawning is always legitimate.
+#[tauri::command]
+pub fn recorder_get_sources(
+    engine: EngineHandle<'_>,
+    app: AppHandle,
+) -> Result<CaptureSources, String> {
+    let mut engine_guard = lock_engine(&engine)?;
+    if ensure_spawned(&mut engine_guard, &app, true) {
+        let payload = engine_ok(host_of(&mut engine_guard), json!({"op": "sources"}), "sources")?;
+        return serde_json::from_value(payload)
+            .map_err(|e| format!("ENGINE_MALFORMED_RESPONSE: sources decode failed: {e}"));
+    }
+    // No sidecar (web dev / CI): the primary display stays the honest default
+    // target and no windows are claimed.
+    Ok(CaptureSources {
+        monitors: vec![MonitorSource {
+            kind: "DISPLAY".into(),
+            id: String::new(),
+            label: "Primary display".into(),
+            width: 0,
+            height: 0,
+            is_primary: true,
+        }],
+        windows: Vec::new(),
     })
 }

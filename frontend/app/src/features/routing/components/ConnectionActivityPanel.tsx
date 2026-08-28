@@ -8,13 +8,20 @@ export interface ActivityItem {
   time: string;
 }
 
+/**
+ * No hardcoded demo activity — the feed is built from real provider test receipts
+ * (POST /api/v3/providers/:id/test-connection, sync-models, etc.) and live in
+ * RoutingPage's derived state. Kept as empty array for backwards-compat imports.
+ */
+export const DEFAULT_ACTIVITIES: ActivityItem[] = [];
+
 interface ConnectionActivityPanelProps {
-  activities: ActivityItem[];
+  activities?: ActivityItem[];
   onViewAll?: () => void;
 }
 
 export const ConnectionActivityPanel: React.FC<ConnectionActivityPanelProps> = ({
-  activities,
+  activities = [],
   onViewAll,
 }) => {
   const renderStatusIcon = (type: ActivityItem['type']) => {
@@ -35,7 +42,7 @@ export const ConnectionActivityPanel: React.FC<ConnectionActivityPanelProps> = (
         flexDirection: 'column',
         backgroundColor: 'rgba(11, 19, 38, 0.85)',
         borderRadius: '14px',
-        border: '1px solid rgba(66, 71, 84, 0.4)',
+        border: '1px solid rgba(51, 65, 85, 0.45)',
         backdropFilter: 'blur(16px)',
         overflow: 'hidden',
         padding: '16px 18px',
@@ -47,7 +54,7 @@ export const ConnectionActivityPanel: React.FC<ConnectionActivityPanelProps> = (
         <h2
           style={{
             margin: 0,
-            fontSize: '0.95rem',
+            fontSize: '0.98rem',
             fontWeight: 700,
             color: 'var(--text-main, #f8fafc)',
             letterSpacing: '-0.01em',
@@ -72,8 +79,13 @@ export const ConnectionActivityPanel: React.FC<ConnectionActivityPanelProps> = (
         </button>
       </div>
 
-      {/* Activity Feed */}
+      {/* Activity Feed — real receipts only; empty until first real test */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        {activities.length === 0 && (
+          <div style={{ padding: '12px', textAlign: 'center', color: '#64748b', fontSize: '0.74rem', border: '1px dashed rgba(51,65,85,0.4)', borderRadius: '8px' }}>
+            No connection activity yet. Run “Test Connection” or “Sync Models” on a provider to populate this feed from real receipts.
+          </div>
+        )}
         {activities.map((act) => (
           <div
             key={act.id}

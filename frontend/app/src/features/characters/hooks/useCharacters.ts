@@ -34,8 +34,8 @@ export function useCreateCharacter(projectId: string) {
   const client = useApiClient();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: { name: string; role?: string; biography?: string; dominant_trait?: string; flaw?: string; alignment_score?: number; voice_style?: string }) =>
-      client.characters.create(projectId, data, `create-char-${Date.now()}`),
+    mutationFn: (data: { name: string; role?: string; biography?: string; dominant_trait?: string; flaw?: string; alignment_score?: number; voice_style?: string; physical_description?: string; aliases?: string[] }) =>
+      client.characters.create(projectId, data as any, `create-char-${Date.now()}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: characterKeys.list(projectId) });
     },
@@ -46,10 +46,11 @@ export function useUpdateCharacter() {
   const client = useApiClient();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ characterId, ...data }: { characterId: string; name?: string; role?: string; biography?: string; dominant_trait?: string; flaw?: string; alignment_score?: number; expected_version: number }) =>
-      client.characters.update(characterId, data),
+    mutationFn: ({ characterId, ...data }: { characterId: string; name?: string; role?: string; biography?: string; dominant_trait?: string; flaw?: string; alignment_score?: number; expected_version: number; physical_description?: string; aliases?: string[]; traits?: string[]; motivation?: string; goal?: string }) =>
+      client.characters.update(characterId, data as any),
     onSuccess: (updated: CharacterResource) => {
       queryClient.invalidateQueries({ queryKey: characterKeys.detail(updated.id) });
+      queryClient.invalidateQueries({ queryKey: characterKeys.all });
     },
   });
 }
@@ -61,6 +62,19 @@ export function useDeleteCharacter(projectId: string) {
     mutationFn: (characterId: string) => client.characters.delete(characterId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: characterKeys.list(projectId) });
+    },
+  });
+}
+
+export function useSetCharacterStatus() {
+  const client = useApiClient();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ characterId, ...data }: { characterId: string; status: string; expected_version: number }) =>
+      client.characters.setStatus(characterId, data),
+    onSuccess: (updated: CharacterResource) => {
+      queryClient.invalidateQueries({ queryKey: characterKeys.detail(updated.id) });
+      queryClient.invalidateQueries({ queryKey: characterKeys.all });
     },
   });
 }

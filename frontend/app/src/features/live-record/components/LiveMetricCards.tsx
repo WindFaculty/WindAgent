@@ -1,19 +1,86 @@
 import React from 'react';
-import { Clock, AlertTriangle, Cpu, Monitor, HardDrive, Activity } from 'lucide-react';
+import { Clock, AlertTriangle, Activity, Monitor, HardDrive, Gauge } from 'lucide-react';
+import type { LiveRecordingMetrics } from '../hooks/useLiveRecordingController';
 
 export interface LiveMetricCardsProps {
   recordingTimeFormatted: string;
   isRecording: boolean;
   droppedFrames: number;
   droppedFramesPercent: string;
+  /** §18 engine metrics — null ⇒ render an honest "—", never a hardcoded number. */
+  metrics: LiveRecordingMetrics;
 }
+
+const NOT_MEASURED = '—';
+
+/** §18 resource stage → human label. Unknown stage ⇒ unknown label. */
+function streamHealthLabel(stage: string | null): { text: string; color: string } {
+  switch (stage) {
+    case 'normal':
+      return { text: 'Tốt', color: '#4ade80' };
+    case 'preview_degraded':
+      return { text: 'Preview hạ cấp', color: '#fbbf24' };
+    case 'director_degraded':
+      return { text: 'Director suy giảm', color: '#fbbf24' };
+    case 'danger':
+      return { text: 'Nguy hiểm', color: '#f87171' };
+    default:
+      return { text: NOT_MEASURED, color: '#94a3b8' };
+  }
+}
+
+function formatDiskFree(gb: number | null): string {
+  if (gb === null || Number.isNaN(gb)) return NOT_MEASURED;
+  return gb >= 1024 ? `${(gb / 1024).toFixed(2)} TB` : `${gb.toFixed(0)} GB`;
+}
+
+/** One metric tile — value or the honest em-dash when the engine hasn't measured it. */
+const MetricCard: React.FC<{
+  icon: React.ReactNode;
+  title: string;
+  value: string;
+  valueColor?: string;
+  sub: React.ReactNode;
+}> = ({ icon, title, value, valueColor = '#f8fafc', sub }) => (
+  <div
+    style={{
+      backgroundColor: '#0c1322',
+      border: '1px solid rgba(59, 130, 246, 0.2)',
+      borderRadius: '14px',
+      padding: '16px',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'space-between',
+      minHeight: '100px',
+      boxShadow: '0 4px 16px -4px rgba(0, 0, 0, 0.4)',
+    }}
+  >
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#94a3b8', fontSize: '12px' }}>
+      {icon}
+      <span>{title}</span>
+    </div>
+    <div style={{ marginTop: '8px' }}>
+      <div style={{ fontSize: '20px', fontWeight: 800, color: valueColor, fontFamily: 'monospace' }}>
+        {value}
+      </div>
+      <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>{sub}</div>
+    </div>
+  </div>
+);
 
 export const LiveMetricCards: React.FC<LiveMetricCardsProps> = ({
   recordingTimeFormatted,
   isRecording,
   droppedFrames,
   droppedFramesPercent,
+  metrics,
 }) => {
+  const health = streamHealthLabel(metrics.resourceStage);
+  const captureFpsText =
+    metrics.captureFps !== null && metrics.captureFps > 0 ? metrics.captureFps.toFixed(1) : NOT_MEASURED;
+  const encodeFpsText =
+    metrics.encodeFps !== null && metrics.encodeFps > 0 ? `${metrics.encodeFps.toFixed(1)} fps encode` : 'chưa đo được';
+
   return (
     <div
       style={{
@@ -23,260 +90,89 @@ export const LiveMetricCards: React.FC<LiveMetricCardsProps> = ({
         width: '100%',
       }}
     >
-      {/* Card 1: Thời Gian Ghi */}
-      <div
-        style={{
-          backgroundColor: '#0c1322',
-          border: '1px solid rgba(59, 130, 246, 0.2)',
-          borderRadius: '14px',
-          padding: '16px',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          minHeight: '100px',
-          boxShadow: '0 4px 16px -4px rgba(0, 0, 0, 0.4)',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#94a3b8', fontSize: '12px' }}>
-          <Clock size={15} color="#60a5fa" />
-          <span>Thời Gian Ghi</span>
-        </div>
+      {/* Card 1: Thời Gian Ghi — engine clock (§4 QPC authority) */}
+      <MetricCard
+        icon={<Clock size={15} color="#60a5fa" />}
+        title="Thời Gian Ghi"
+        value={recordingTimeFormatted}
+        sub={
+          isRecording ? (
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#4ade80' }}>
+              <span
+                style={{
+                  display: 'inline-block',
+                  width: '6px',
+                  height: '6px',
+                  borderRadius: '50%',
+                  backgroundColor: '#22c55e',
+                  boxShadow: '0 0 6px #22c55e',
+                }}
+              />
+              Đang ghi
+            </span>
+          ) : (
+            'Sẵn sàng'
+          )
+        }
+      />
 
-        <div style={{ marginTop: '8px' }}>
-          <div style={{ fontSize: '20px', fontWeight: 800, color: '#f8fafc', fontFamily: 'monospace' }}>
-            {recordingTimeFormatted}
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px', fontSize: '11px', color: isRecording ? '#4ade80' : '#94a3b8' }}>
-            <span
-              style={{
-                display: 'inline-block',
-                width: '6px',
-                height: '6px',
-                borderRadius: '50%',
-                backgroundColor: isRecording ? '#22c55e' : '#64748b',
-                boxShadow: isRecording ? '0 0 6px #22c55e' : 'none',
-              }}
-            />
-            {isRecording ? 'Đang ghi' : 'Sẵn sàng'}
-          </div>
-        </div>
-      </div>
+      {/* Card 2: Frames Bị Rớt — engine counter, not a mock increment */}
+      <MetricCard
+        icon={<AlertTriangle size={15} color="#fbbf24" />}
+        title="Frames Bị Rớt"
+        value={String(droppedFrames)}
+        sub={`${droppedFramesPercent}%`}
+      />
 
-      {/* Card 2: Frames Bị Rớt */}
-      <div
-        style={{
-          backgroundColor: '#0c1322',
-          border: '1px solid rgba(59, 130, 246, 0.2)',
-          borderRadius: '14px',
-          padding: '16px',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          minHeight: '100px',
-          boxShadow: '0 4px 16px -4px rgba(0, 0, 0, 0.4)',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#94a3b8', fontSize: '12px' }}>
-          <AlertTriangle size={15} color="#fbbf24" />
-          <span>Frames Bị Rớt</span>
-        </div>
+      {/* Card 3: Capture FPS — real §21 telemetry (null ⇒ "—") */}
+      <MetricCard
+        icon={<Gauge size={15} color="#60a5fa" />}
+        title="Capture FPS"
+        value={captureFpsText}
+        sub={encodeFpsText}
+      />
 
-        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: '8px' }}>
-          <div>
-            <div style={{ fontSize: '20px', fontWeight: 800, color: '#f8fafc' }}>
-              {droppedFrames}
-            </div>
-            <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>
-              {droppedFramesPercent}%
-            </div>
-          </div>
+      {/* Card 4: GPU / NVENC — probed adapter name + live NVENC status */}
+      <MetricCard
+        icon={<Monitor size={15} color="#34d399" />}
+        title="GPU · NVENC"
+        value={
+          metrics.nvencStatus === 'ENCODING'
+            ? 'ENCODING'
+            : metrics.nvencStatus === 'IDLE'
+              ? 'IDLE'
+              : metrics.nvencStatus === 'ERROR'
+                ? 'LỖI'
+                : metrics.nvencStatus === 'UNAVAILABLE'
+                  ? 'KHÔNG CÓ'
+                  : NOT_MEASURED
+        }
+        valueColor={
+          metrics.nvencStatus === 'ENCODING'
+            ? '#34d399'
+            : metrics.nvencStatus === 'ERROR' || metrics.nvencStatus === 'UNAVAILABLE'
+              ? '#f87171'
+              : '#f8fafc'
+        }
+        sub={metrics.gpuAdapterName ?? 'adapter chưa dò được'}
+      />
 
-          {/* Sparkline */}
-          <svg width="60" height="24" viewBox="0 0 60 24" fill="none">
-            <path
-              d="M2 18 L 12 18 L 22 14 L 32 19 L 42 12 L 52 16 L 58 14"
-              stroke="#fbbf24"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </div>
-      </div>
+      {/* Card 5: Dung lượng trống — REAL free space from the capability probe */}
+      <MetricCard
+        icon={<HardDrive size={15} color="#4ade80" />}
+        title="Dung Lượng Trống"
+        value={formatDiskFree(metrics.diskFreeGb)}
+        sub={metrics.diskWriteMbps !== null ? `ghi ${metrics.diskWriteMbps.toFixed(1)} MB/s` : 'ổ lưu bản ghi'}
+      />
 
-      {/* Card 3: CPU Usage */}
-      <div
-        style={{
-          backgroundColor: '#0c1322',
-          border: '1px solid rgba(59, 130, 246, 0.2)',
-          borderRadius: '14px',
-          padding: '16px',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          minHeight: '100px',
-          boxShadow: '0 4px 16px -4px rgba(0, 0, 0, 0.4)',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#94a3b8', fontSize: '12px' }}>
-          <Cpu size={15} color="#60a5fa" />
-          <span>CPU Usage</span>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: '8px' }}>
-          <div>
-            <div style={{ fontSize: '20px', fontWeight: 800, color: '#f8fafc' }}>
-              18%
-            </div>
-            <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>
-              4.6 / 24 Cores
-            </div>
-          </div>
-
-          {/* Sparkline */}
-          <svg width="60" height="24" viewBox="0 0 60 24" fill="none">
-            <path
-              d="M2 16 L 14 12 L 26 18 L 38 8 L 50 14 L 58 10"
-              stroke="#60a5fa"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </div>
-      </div>
-
-      {/* Card 4: GPU Usage */}
-      <div
-        style={{
-          backgroundColor: '#0c1322',
-          border: '1px solid rgba(59, 130, 246, 0.2)',
-          borderRadius: '14px',
-          padding: '16px',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          minHeight: '100px',
-          boxShadow: '0 4px 16px -4px rgba(0, 0, 0, 0.4)',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#94a3b8', fontSize: '12px' }}>
-          <Monitor size={15} color="#34d399" />
-          <span>GPU Usage</span>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: '8px' }}>
-          <div>
-            <div style={{ fontSize: '20px', fontWeight: 800, color: '#f8fafc' }}>
-              32%
-            </div>
-            <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>
-              NVIDIA RTX 3060
-            </div>
-          </div>
-
-          {/* Sparkline */}
-          <svg width="60" height="24" viewBox="0 0 60 24" fill="none">
-            <path
-              d="M2 20 L 15 14 L 28 17 L 40 6 L 52 12 L 58 8"
-              stroke="#34d399"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </div>
-      </div>
-
-      {/* Card 5: Dung Lượng Còn Lại */}
-      <div
-        style={{
-          backgroundColor: '#0c1322',
-          border: '1px solid rgba(59, 130, 246, 0.2)',
-          borderRadius: '14px',
-          padding: '16px',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          minHeight: '100px',
-          boxShadow: '0 4px 16px -4px rgba(0, 0, 0, 0.4)',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#94a3b8', fontSize: '12px' }}>
-          <HardDrive size={15} color="#4ade80" />
-          <span>Dung Lượng Còn Lại</span>
-        </div>
-
-        <div style={{ marginTop: '8px' }}>
-          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: '20px', fontWeight: 800, color: '#f8fafc' }}>72%</span>
-            <span style={{ fontSize: '11px', color: '#94a3b8' }}>842 GB / 1.16 TB</span>
-          </div>
-
-          {/* Progress Bar */}
-          <div
-            style={{
-              width: '100%',
-              height: '4px',
-              backgroundColor: 'rgba(255, 255, 255, 0.1)',
-              borderRadius: '2px',
-              marginTop: '6px',
-              overflow: 'hidden',
-            }}
-          >
-            <div
-              style={{
-                width: '72%',
-                height: '100%',
-                backgroundColor: '#22c55e',
-                borderRadius: '2px',
-              }}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Card 6: Stream Health */}
-      <div
-        style={{
-          backgroundColor: '#0c1322',
-          border: '1px solid rgba(59, 130, 246, 0.2)',
-          borderRadius: '14px',
-          padding: '16px',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          minHeight: '100px',
-          boxShadow: '0 4px 16px -4px rgba(0, 0, 0, 0.4)',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#94a3b8', fontSize: '12px' }}>
-          <Activity size={15} color="#22c55e" />
-          <span>Stream Health</span>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: '8px' }}>
-          <div>
-            <div style={{ fontSize: '20px', fontWeight: 800, color: '#4ade80' }}>
-              Tốt
-            </div>
-            <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>
-              Ổn định
-            </div>
-          </div>
-
-          {/* Sparkline */}
-          <svg width="60" height="24" viewBox="0 0 60 24" fill="none">
-            <path
-              d="M2 18 L 12 16 L 24 19 L 36 10 L 48 8 L 58 12"
-              stroke="#22c55e"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </div>
-      </div>
+      {/* Card 6: Stream Health — derived from the engine's resource_stage (§18) */}
+      <MetricCard
+        icon={<Activity size={15} color={health.color} />}
+        title="Stream Health"
+        value={health.text}
+        valueColor={health.color}
+        sub={`rớt ${droppedFramesPercent}%`}
+      />
     </div>
   );
 };

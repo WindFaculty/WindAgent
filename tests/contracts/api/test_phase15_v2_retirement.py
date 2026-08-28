@@ -13,7 +13,12 @@ from windagent_api.main import app
 
 
 @pytest.fixture
-def client():
+def client(monkeypatch):
+    # Full-suite ordering runs stub-container tests first (they assign
+    # SimpleNamespace containers onto app.state and never restore), so this
+    # file forces get_container to compose the real one; monkeypatch puts
+    # whatever was there back afterwards.
+    monkeypatch.setattr(app.state, "container", None, raising=False)
     return TestClient(app)
 
 

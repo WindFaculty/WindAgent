@@ -12,17 +12,26 @@ export interface ProviderKpiStats {
 }
 
 interface ProviderKpisProps {
-  stats: ProviderKpiStats;
+  stats?: Partial<ProviderKpiStats>;
 }
 
 export const ProviderKpis: React.FC<ProviderKpisProps> = ({ stats }) => {
-  const percentOnline = Math.round((stats.connectedProviders / (stats.totalProviders || 1)) * 100);
-  const percentHealthy = Math.round((stats.healthyEndpoints / (stats.totalProviders || 1)) * 100);
+  // No hardcode — all values come from real API/DB via parent. Zeros are honest when nothing has been routed yet.
+  const connectedProviders = stats?.connectedProviders ?? 0;
+  const totalProviders = stats?.totalProviders ?? 0;
+  const activeModels = stats?.activeModels ?? 0;
+  const healthyEndpoints = stats?.healthyEndpoints ?? 0;
+  const lastSyncTime = stats?.lastSyncTime ?? '—';
+  const lastSyncFormatted = stats?.lastSyncFormatted ?? 'No sync yet';
+  const avgResponseTimeMs = stats?.avgResponseTimeMs ?? 0;
+
+  const percentOnline = Math.round((connectedProviders / (totalProviders || 1)) * 100);
+  const percentHealthy = Math.round((healthyEndpoints / (totalProviders || 1)) * 100);
 
   const kpis = [
     {
       label: 'Connected Providers',
-      value: `${stats.connectedProviders} / ${stats.totalProviders}`,
+      value: `${connectedProviders} / ${totalProviders}`,
       subtext: `${percentOnline}% online`,
       icon: <Link2 size={20} color="#60a5fa" />,
       iconBg: 'rgba(59, 130, 246, 0.15)',
@@ -30,7 +39,7 @@ export const ProviderKpis: React.FC<ProviderKpisProps> = ({ stats }) => {
     },
     {
       label: 'Active Models',
-      value: stats.activeModels.toString(),
+      value: activeModels.toString(),
       subtext: 'Across all providers',
       icon: <Box size={20} color="#c084fc" />,
       iconBg: 'rgba(168, 85, 247, 0.15)',
@@ -38,7 +47,7 @@ export const ProviderKpis: React.FC<ProviderKpisProps> = ({ stats }) => {
     },
     {
       label: 'Healthy Endpoints',
-      value: stats.healthyEndpoints.toString(),
+      value: healthyEndpoints.toString(),
       subtext: `${percentHealthy}% healthy`,
       icon: <ShieldCheck size={20} color="#34d399" />,
       iconBg: 'rgba(16, 185, 129, 0.15)',
@@ -46,15 +55,15 @@ export const ProviderKpis: React.FC<ProviderKpisProps> = ({ stats }) => {
     },
     {
       label: 'Last Sync',
-      value: stats.lastSyncTime,
-      subtext: stats.lastSyncFormatted,
+      value: lastSyncTime,
+      subtext: lastSyncFormatted,
       icon: <Clock size={20} color="#22d3ee" />,
       iconBg: 'rgba(6, 182, 212, 0.15)',
       iconBorder: 'rgba(6, 182, 212, 0.3)',
     },
     {
       label: 'Avg Response Time',
-      value: `${stats.avgResponseTimeMs} ms`,
+      value: `${avgResponseTimeMs} ms`,
       subtext: 'Across healthy endpoints',
       icon: <Zap size={20} color="#a78bfa" />,
       iconBg: 'rgba(139, 92, 246, 0.15)',
@@ -70,6 +79,7 @@ export const ProviderKpis: React.FC<ProviderKpisProps> = ({ stats }) => {
         gap: '14px',
         width: '100%',
       }}
+      className="kpi-cards-grid"
     >
       {kpis.map((kpi, index) => (
         <div
@@ -80,8 +90,8 @@ export const ProviderKpis: React.FC<ProviderKpisProps> = ({ stats }) => {
             gap: '14px',
             padding: '14px 18px',
             borderRadius: '12px',
-            backgroundColor: 'rgba(17, 24, 39, 0.75)',
-            border: '1px solid rgba(66, 71, 84, 0.4)',
+            backgroundColor: 'rgba(11, 19, 38, 0.75)',
+            border: '1px solid rgba(51, 65, 85, 0.45)',
             backdropFilter: 'blur(12px)',
             transition: 'transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease',
           }}
@@ -91,7 +101,7 @@ export const ProviderKpis: React.FC<ProviderKpisProps> = ({ stats }) => {
             e.currentTarget.style.boxShadow = '0 6px 18px rgba(0, 0, 0, 0.35)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = 'rgba(66, 71, 84, 0.4)';
+            e.currentTarget.style.borderColor = 'rgba(51, 65, 85, 0.45)';
             e.currentTarget.style.transform = 'translateY(0)';
             e.currentTarget.style.boxShadow = 'none';
           }}
@@ -130,7 +140,7 @@ export const ProviderKpis: React.FC<ProviderKpisProps> = ({ stats }) => {
             </span>
             <span
               style={{
-                fontSize: '1.25rem',
+                fontSize: '1.28rem',
                 fontWeight: 700,
                 color: 'var(--text-main, #f8fafc)',
                 letterSpacing: '-0.02em',

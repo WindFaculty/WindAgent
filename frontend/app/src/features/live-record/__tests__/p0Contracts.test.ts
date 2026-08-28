@@ -3,6 +3,7 @@ import { canTransition, evaluatePreflight, LIVE_RECORD_TRANSITIONS, isPlanFrozen
 import { checkPlanStaleness, isPlanHashWellFormed, validatePreparedAction, validateTimelineMonotonic } from '../domain/validation';
 import { DIRECTOR_TOOL_DECLARATIONS, DIRECTOR_DENIED_TOOLS, isAllowedDirectorTool, validateDirectorToolCall } from '../contracts/directorTools';
 import { DEFAULT_ENGINE_PROFILE, RECORDING_PERFORMANCE_GATES } from '../contracts/recordingEngine';
+import type { RecorderCommand } from '../contracts/ipc';
 import type { PreparedAction, LiveExecutionPlan } from '../domain/types';
 
 const ALL_GUARDS_PASS = {
@@ -168,13 +169,61 @@ describe('P0 Frozen Contracts - Gate LIVE_RECORD_P0_ARCHITECTURE_FROZEN', () => 
     expect(validateDirectorToolCall(callBad, allowed, states).reason).toBe('ACTION_NOT_IN_PLAN');
   });
 
-  // -- Recording engine ------------------------------------------------------
-  it('engine defaults to 1920x1080@60 H264 segmented MKV, audio disabled', () => {
-    expect(DEFAULT_ENGINE_PROFILE.resolution).toEqual({ width: 1920, height: 1080 });
-    expect(DEFAULT_ENGINE_PROFILE.fps).toBe(60);
-    expect(DEFAULT_ENGINE_PROFILE.codec).toBe('H264');
-    expect(DEFAULT_ENGINE_PROFILE.muxer).toBe('MKV_SEGMENTED');
-    expect(DEFAULT_ENGINE_PROFILE.audio_enabled).toBe(false);
+  // -- Recording engine (V2 frozen contract) ---------------------------------
+  it('engine defaults to 1920x1080@60 H264 CQP segmented MKV, multi-track audio', () => {
+    expect(DEFAULT_ENGINE_PROFILE.video.width).toBe(1920);
+    expect(DEFAULT_ENGINE_PROFILE.video.height).toBe(1080);
+    expect(DEFAULT_ENGINE_PROFILE.video.fps).toBe(60);
+    expect(DEFAULT_ENGINE_PROFILE.video.encoder).toBe('NVENC'); // no software fallback
+    expect(DEFAULT_ENGINE_PROFILE.video.codec).toBe('H264');
+    expect(DEFAULT_ENGINE_PROFILE.video.rate_control).toBe('CQP');
+    expect(DEFAULT_ENGINE_PROFILE.container.format).toBe('MKV'); // master container
+    // V2: mic + system are separate MKV tracks, never mixed pre-record.
+    expect(DEFAULT_ENGINE_PROFILE.audio.microphone.enabled).toBe(true);
+    expect(DEFAULT_ENGINE_PROFILE.audio.system.enabled).toBe(true);
+  });
+
+  it('ipc command surface exposes the V2 ops', async () => {
+    const commands: readonly RecorderCommand[] = [
+      'recorder_prepare',
+      'recorder_start',
+      'recorder_pause',
+      'recorder_resume',
+      'recorder_stop',
+      'recorder_get_status',
+      'recorder_create_marker',
+      'recorder_mute',
+      'recorder_recover',
+      'recorder_get_capabilities',
+    ];
+    expect(commands).toContain('recorder_mute');
+    expect(commands).toContain('recorder_recover');
+  });
+
+  // V2 frozen preview shape — must mirror EngineEvent::Preview from the sidecar
+  // (take_id/width/height/data_len/timestamp_ms/jpeg_base64, jpeg required).
+  it('preview events map the engine timestamp into the AI observation frame', async () => {
+    const { FrameSampler } = await import('../live-director/FrameSampler');
+    const sampler = new FrameSampler({ mode: 'event-driven' });
+    const staged = sampler.stageFromRecorderEvent({
+      take_id: 'take-1',
+      width: 1280,
+      height: 720,
+      data_len: 42,
+      timestamp_ms: 1234,
+      jpeg_base64: 'aGVsbG8=',
+    }, 9999);
+    expect(staged).toBe(true);
+    const frame = sampler.consume(9999);
+    expect(frame?.ts).toBe(1234); // engine media clock wins over Date.now()
+    expect(frame?.dataUrl).toBe('data:image/jpeg;base64,aGVsbG8=');
+
+    // Heartbeat frames carry no JPEG payload → never staged.
+    const empty = new FrameSampler();
+    expect(empty.stageFromRecorderEvent({
+      take_id: 'take-1', width: 1280, height: 720, data_len: 0,
+      timestamp_ms: 5, jpeg_base64: '',
+    })).toBe(false);
   });
 
   it('performance gates frozen per spec', () => {

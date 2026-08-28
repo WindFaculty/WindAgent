@@ -128,8 +128,8 @@ class TestPhase6DashboardAndMonitoringContracts:
             assert "tokens_per_second" in m
             assert "latency_ms" in m
 
-        # Storage
-        assert data["storage"]["workspace_used_bytes"] > 0
+        # Storage — honest zeros when workspace empty (no mock baseline)
+        assert data["storage"]["workspace_used_bytes"] >= 0
         assert data["storage"]["workspace_total_bytes"] > 0
 
     def test_monitoring_workers_contract(self, client: TestClient):

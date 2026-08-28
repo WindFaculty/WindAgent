@@ -4,43 +4,75 @@ import { X, Upload, CheckCircle2 } from 'lucide-react';
 interface ImportEnvModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onImport: (detectedKeys: Record<string, string>) => void;
+  onImport: (detectedKeys: Record<string, string>) => Promise<{ imported: number; errors: string[] }>;
 }
 
 export const ImportEnvModal: React.FC<ImportEnvModalProps> = ({ isOpen, onClose, onImport }) => {
-  const [envContent, setEnvContent] = useState(
-    `# Upstream AI Provider API Keys
-OPENROUTER_API_KEY=sk-or-v1-xxxxxxxxxxxxxxxxxxxxxx
-OPENAI_API_KEY=sk-proj-xxxxxxxxxxxxxxxxxxxxxx
-ANTHROPIC_API_KEY=sk-ant-api03-xxxxxxxxxxxxxxxxxxxxxx
-GEMINI_API_KEY=AIzaSyxxxxxxxxxxxxxxxxxxxxxx
-GROQ_API_KEY=gsk_xxxxxxxxxxxxxxxxxxxxxx`
-  );
+  // No prefilled fake keys — user must paste real .env content; placeholder shows format only.
+  const [envContent, setEnvContent] = useState('');
   const [success, setSuccess] = useState(false);
+  const [parseError, setParseError] = useState('');
+  const [isImporting, setIsImporting] = useState(false);
 
   if (!isOpen) return null;
 
-  const handleParseAndImport = () => {
+  const handleParseAndImport = async () => {
     const lines = envContent.split('\n');
     const detected: Record<string, string> = {};
 
-    for (const line of lines) {
-      const trimmed = line.trim();
+    for (let raw of lines) {
+      let trimmed = raw.trim();
       if (!trimmed || trimmed.startsWith('#')) continue;
+      // Support `export KEY=val` prefix commonly present in shell exports
+      if (trimmed.toLowerCase().startsWith('export ')) trimmed = trimmed.slice(7).trim();
       const eqIdx = trimmed.indexOf('=');
-      if (eqIdx !== -1) {
-        const key = trimmed.slice(0, eqIdx).trim();
-        const val = trimmed.slice(eqIdx + 1).trim();
-        detected[key] = val;
+      if (eqIdx === -1) continue;
+      let key = trimmed.slice(0, eqIdx).trim();
+      let val = trimmed.slice(eqIdx + 1).trim();
+      // Strip inline comment not inside quotes (simple: ` #` separator)
+      // Preserve quoted values intact
+      if (!((val.startsWith('"') && val.includes('"', 1)) || (val.startsWith("'") && val.includes("'", 1)))) {
+        const hashIdx = val.indexOf(' #');
+        if (hashIdx !== -1) val = val.slice(0, hashIdx).trim();
       }
+      // Strip surrounding single/double quotes
+      if ((val.startsWith('"') && val.endsWith('"') && val.length >= 2) || (val.startsWith("'") && val.endsWith("'") && val.length >= 2)) {
+        val = val.slice(1, -1);
+      }
+      // Unescape escaped quotes
+      val = val.replace(/\\"/g, '"').replace(/\\'/g, "'");
+      if (!key || !val) continue;
+      // Skip placeholder values
+      if (val === '...' || val.toLowerCase() === 'changeme') continue;
+      // Validate key shape
+      if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(key)) continue;
+      detected[key] = val;
     }
 
-    onImport(detected);
-    setSuccess(true);
-    setTimeout(() => {
-      setSuccess(false);
-      onClose();
-    }, 1200);
+    if (Object.keys(detected).length === 0) {
+      setParseError('No valid keys found. Expected format: KEY=value (quotes are optional).');
+      setTimeout(() => setParseError(''), 3000);
+      return;
+    }
+    setParseError('');
+    setIsImporting(true);
+    try {
+      const result = await onImport(detected);
+      if (result.imported === 0) {
+        setParseError(result.errors[0] || 'No matching provider keys could be saved.');
+        return;
+      }
+      setSuccess(true);
+      setTimeout(() => {
+        setSuccess(false);
+        setEnvContent('');
+        onClose();
+      }, 1200);
+    } catch (error) {
+      setParseError(error instanceof Error ? error.message : 'Unable to import provider credentials.');
+    } finally {
+      setIsImporting(false);
+    }
   };
 
   return (
@@ -113,6 +145,7 @@ GROQ_API_KEY=gsk_xxxxxxxxxxxxxxxxxxxxxx`
             rows={7}
             value={envContent}
             onChange={(e) => setEnvContent(e.target.value)}
+            placeholder={`# Paste your real .env — keys are sent to POST /api/v3/providers/{id}/credential (encrypted at rest)\nOPENROUTER_API_KEY=sk-or-v1-...\nOPENAI_API_KEY=sk-proj-...\nANTHROPIC_API_KEY=sk-ant-...\nGEMINI_API_KEY=AIza...\nGROQ_API_KEY=gsk_...`}
             style={{
               width: '100%',
               backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -127,6 +160,11 @@ GROQ_API_KEY=gsk_xxxxxxxxxxxxxxxxxxxxxx`
             }}
           />
 
+          {parseError && (
+            <div role="alert" style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#fbbf24', fontSize: '0.76rem', fontWeight: 600, padding: '6px 8px', borderRadius: '6px', backgroundColor: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.3)' }}>
+              {parseError}
+            </div>
+          )}
           {success && (
             <div
               style={{
@@ -171,6 +209,7 @@ GROQ_API_KEY=gsk_xxxxxxxxxxxxxxxxxxxxxx`
             <button
               type="button"
               onClick={handleParseAndImport}
+              disabled={isImporting}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -182,11 +221,12 @@ GROQ_API_KEY=gsk_xxxxxxxxxxxxxxxxxxxxxx`
                 color: '#ffffff',
                 fontSize: '0.8rem',
                 fontWeight: 700,
-                cursor: 'pointer',
+                cursor: isImporting ? 'wait' : 'pointer',
+                opacity: isImporting ? 0.7 : 1,
               }}
             >
               <Upload size={14} />
-              <span>Import Variables</span>
+              <span>{isImporting ? 'Importing…' : 'Import Variables'}</span>
             </button>
           </div>
         </div>

@@ -179,6 +179,12 @@ async def get_model(
         if model["id"] == clean_id or model.get("name", "").lower() == clean_id.lower():
             return _model_to_resource(model)
 
+    if os.getenv("WINDAGENT_PROFILE", "").strip().lower() != "demo":
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Canonical model '{model_id}' not found in registry.",
+        )
+
     model = await service.get(NS_MODELS, clean_id)
     if model is not None:
         return _model_to_resource(model)

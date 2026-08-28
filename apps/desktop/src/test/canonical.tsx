@@ -29,7 +29,7 @@ export function renderCanonical(ui: React.ReactElement, options: RenderCanonical
 
 /** Pathname matcher for mocked fetch — ignores baseUrl/host, matches suffix. */
 export function pathname(url: string | URL): string {
-  return new URL(String(url)).pathname;
+  return new URL(String(url), 'http://localhost').pathname;
 }
 
 export function project(id: string, name: string, genre = 'Drama / Mystery Noir') {

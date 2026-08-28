@@ -3,6 +3,11 @@ export * from './contracts';
 export * from './pages/LiveRecordPage';
 export { useLiveRecord, formatDuration } from './hooks/useLiveRecord';
 export type { AudioLevels } from './hooks/useLiveRecord';
+export { useLiveRecordingController } from './hooks/useLiveRecordingController';
+export type {
+  UseLiveRecordingControllerResult,
+  LiveRecordingMetrics,
+} from './hooks/useLiveRecordingController';
 export * from './components/LiveVideoPreview';
 export * from './components/RecordingStatusPanel';
 export * from './components/DeviceSettingsPanel';

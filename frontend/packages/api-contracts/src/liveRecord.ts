@@ -27,12 +27,12 @@ export interface LiveExecutionPlanResource {
   plan_hash: string;
   status: LiveExecutionPlanStatus;
   director_role: 'LIVE_DIRECTOR';
+  /** Plan-level intent (V2) — engine audio is multi-track config, not a boolean here. */
   recording_profile: {
     resolution: '1920x1080' | '1280x720' | '3840x2160';
     fps: 30 | 60;
     codec: 'H264' | 'HEVC';
     segment_minutes: 5 | 10;
-    audio_enabled: false; // Principle F — locked OFF at the type level
   };
   scenes: unknown[];
   actions: unknown[];

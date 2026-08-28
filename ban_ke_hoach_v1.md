@@ -1,1502 +1,1725 @@
-> **Trạng thái tài liệu** — hoàn thiện lần 1 ngày 2026-08-24: thêm §31–§42 (trạng thái triển khai thực tế, đặc tả ExpectedVisualState, threat model, vận hành capture, token refresh, timeline clock, take lifecycle, phương pháp đo gate + chiến lược CI, model/quota policy, MVP cut line, risk register, ước lượng effort) và các bổ sung điểm tại §13, §23, §24, §25, §27.
->
-> Mọi nhận định "repo hiện tại" trong thân bài là snapshot thời điểm **lập kế hoạch**, không phải hiện tại — trạng thái triển khai thật xem §31. Track kiểm thử/production-hardening song song nằm ở `ban_ke_hoach_v2.md`.
+Đã đủ thông tin để khóa kiến trúc. Tôi không cần hỏi thêm trước khi lập kế hoạch implementation.
 
-Từ 7 lựa chọn bạn vừa chốt, kiến trúc nên được xây theo hướng **AI điều phối một buổi quay đã được chuẩn bị trước**, không phải AI tự do viết code trong lúc quay.
+Tôi cũng đã kiểm tra lại code trên nhánh `refactor/architecture-v3-hardening`. Có một điểm quan trọng: **kiến trúc mong muốn đã được mô tả trong repo, nhưng phần native WGC/D3D11/NVENC thực tế hiện vẫn chủ yếu là skeleton; production path hiện tại vẫn chạy qua FFmpeg `ddagrab`**.
 
-Có một điểm cần chuẩn hóa trước: Google hiện có **Gemini 3 Flash** với model ID `gemini-3-flash-preview`, nhưng model này **không hỗ trợ Live API**. Model Live tương ứng hiện tại là **Gemini 3.1 Flash Live Preview**, ID `gemini-3.1-flash-live-preview`; nó hỗ trợ video input, text output và function calling. Vì vậy UI có thể hiển thị tên role là **“Gemini 3 Flash Live”**, nhưng routing production nên lấy model thực tế từ catalog của Provider và hiện tại resolve thành `gemini-3.1-flash-live-preview`. ([Google AI for Developers][1])
+## 1. Requirement được khóa
 
-## 1. Kiến trúc mục tiêu
+Từ đây Live Record được coi là có các invariant sau:
 
-```text
-EPISODES
-   │
-   ├── Script / Scenes / Demo flow
-   │
-   └── Recording Preparation
-           │
-           ├── Narration script
-           ├── Prepared source code
-           ├── Commands
-           ├── Browser actions
-           ├── Tool actions
-           ├── Expected screen states
-           └── Recovery instructions
-                    │
-                    ▼
-          FROZEN LIVE EXECUTION PLAN
-                    │
-            hash + version + approval
-                    │
-                    ▼
-              LIVE RECORD
-                    │
-        ┌───────────┴────────────┐
-        │                        │
-        ▼                        ▼
- GEMINI LIVE DIRECTOR       RECORDING ENGINE
-        │                        │
- screen frames                   │
- current cue                     │
- tool results                    │
-        │                        │
-        ▼                        ▼
- Constrained Tool Gate     Windows Graphics Capture
-        │                        │
-        ├─ Code Playback         ▼
-        ├─ Browser          D3D11 Frame Pipeline
-        ├─ Terminal              │
-        ├─ Tool Runner           ▼
-        ├─ Scene Control       NVENC
-        └─ Recording Ctrl        │
-                                 ▼
-                          FFmpeg / libav
-                                 │
-                                 ▼
-                         MKV Segments
-                                 │
-                                 ▼
-                       recording timeline
-                                 │
-                                 ▼
-                      POST PRODUCTION
-                                 │
-                           TTS model khác
-```
+| Hạng mục              | Quyết định cuối                                         |
+| --------------------- | ------------------------------------------------------- |
+| Video source          | Chỉ màn hình / window, **không camera/webcam**          |
+| Runtime               | **Tauri Desktop only**                                  |
+| Capture               | **Direct Windows Graphics Capture**                     |
+| GPU surface           | **D3D11**                                               |
+| Encoder               | **Direct NVENC**, bắt buộc                              |
+| CPU/software fallback | **Không cho production fallback**                       |
+| Container             | **MKV segmented**                                       |
+| Mic                   | Track riêng                                             |
+| System Audio          | Track riêng                                             |
+| Capture quality       | Quality-first                                           |
+| Resource policy       | Có thể dùng tối đa CPU/GPU/RAM hợp lý để đạt chất lượng |
+| Recording duration    | Chưa khóa; xác định bằng soak test thực tế              |
+| AI Director           | Preview riêng ≤2 FPS, không chạm raw recording path     |
 
-Điểm cốt lõi là:
-
-> **Gemini không sáng tạo hành động mới trong lúc quay. Gemini quan sát màn hình, xác định trạng thái hiện tại và chọn hành động tiếp theo trong tập hành động đã được chuẩn bị và đóng băng trước khi quay.**
-
-Đây là khác biệt quan trọng giữa một “computer-use agent tự do” và **production recording agent**.
-
-Repo hiện tại rất phù hợp để chuyển theo hướng này. `LiveRecordPage` đã được tách thành page + panels nhưng `useLiveRecord.ts` hiện vẫn là mock state với scene, timer, bitrate, recording giả lập.   Tauri hiện cũng mới chủ yếu cung cấp system metrics/NVML chứ chưa có recording engine native.
-
----
-
-# 2. Nguyên tắc kiến trúc bắt buộc
-
-Tôi đề nghị đóng băng 6 nguyên tắc này ngay từ đầu.
-
-### A. Episode là source of truth
-
-Không để Live Record tự chứa kịch bản riêng.
-
-Luồng phải là:
+Pipeline cuối cùng:
 
 ```text
-Episode
-→ Recording Preparation
-→ LiveExecutionPlan revision
-→ RecordingTake
-```
-
-Nếu Episode thay đổi sau khi plan đã được freeze:
-
-```text
-episode_revision != execution_plan.episode_revision
-        ↓
-RECORDING_PLAN_STALE
-        ↓
-không cho Start Recording
+Windows Graphics Capture
+        │
+        ▼
+    D3D11 Device
+        │
+        ▼
+ID3D11Texture2D
+        │
+        ├──────────────────────────────┐
+        │                              │
+        ▼                              ▼
+NVENC direct GPU                Preview pipeline
+        │                       GPU downscale
+        │                       ≤1280×720
+        │                       1–2 FPS
+        │                              │
+        │                              ▼
+        │                        Gemini Live
+        │
+        ▼
+Encoded H264/HEVC
+        │
+        ├─────────────── Mic WASAPI
+        │
+        ├─────────────── System WASAPI loopback
+        │
+        ▼
+     libavformat
+        │
+        ▼
+ segmented MKV
+        │
+        ├── Video track
+        ├── Microphone track
+        └── System audio track
 ```
 
 ---
 
-### B. Model chuẩn bị và model quay là hai role khác nhau
+# 2. Audit lại code hiện tại
 
-Model chuẩn bị trước:
+Các gap hiện tại khá rõ.
 
-```text
-RECORDING_PREPARER
+Cargo đã khai báo feature `wgc` và `nvenc`, nhưng chúng đang rỗng; dependency Windows/D3D11 còn bị comment.
+
+`WgcCapture` hiện vẫn:
+
+```rust
+probe_available() -> false
+poll_frame() -> None
 ```
 
-Gemini Live trong lúc quay:
+tức chưa có WGC thực.
 
-```text
-LIVE_DIRECTOR
+`NvencEncoder` cũng tương tự: probe trả `false`; `encode()` hiện tạo `EncodedPacket` mô phỏng dựa trên `data_len`, chưa gọi `nvEncodeAPI.dll`.
+
+`LibavMuxer` hiện chưa phải libavformat thực; nó chủ yếu cộng `bytes_written` và tạo metadata segment.
+
+Quan trọng hơn, `RecorderService` production hiện trực tiếp sở hữu:
+
+```rust
+FfmpegSegmentCapture
+FfmpegPreview
 ```
 
-Sau này TTS:
+và khi Start sẽ spawn FFmpeg capture.  Sau đó `start()` thực sự dựng `FfmpegCaptureConfig` rồi chạy `FfmpegSegmentCapture::start()`.
 
-```text
-NARRATION_TTS
+Audio hiện bị khóa hoàn toàn. `EngineProfile` có:
+
+```rust
+audio_enabled: false
 ```
 
-Tất cả resolve qua **Provider + Model Routing** hiện có.
+và validation từ chối `audio_enabled=true`.
 
-Frontend Providers đã có các primitive cho credential rotation, test connection, model sync, model testing và routing rules nên không cần tạo hệ thống API key riêng cho Live Record.
+`WasapiCapture` cũng đang `probe_available() -> false` và `start()` trả `WASAPI_DISABLED`.
+
+Frontend contract vẫn chứa `SOFTWARE_FALLBACK` và `audio_enabled: false`, nên contract này cũng phải được nâng version.
+
+Vì vậy đây không phải task "polish Live Record". Đây là **native recording-engine completion/cutover**.
 
 ---
 
-### C. Gemini không được gửi source code tùy ý
+# 3. Nguyên tắc production mới
 
-Không expose tool kiểu:
+Tôi đề nghị khóa thêm 8 nguyên tắc.
 
-```text
-write_file(path, content)
-```
+### A. Zero-copy là mục tiêu bắt buộc
 
-cho Gemini Live.
-
-Thay bằng:
-
-```text
-execute_prepared_action(action_id)
-```
-
-Ví dụ:
-
-```json
-{
-  "action_id": "code_017",
-  "type": "CODE_PLAYBACK",
-  "target_file": "src/agent.py",
-  "payload_ref": "artifact://code/code_017",
-  "before_hash": "...",
-  "after_hash": "...",
-  "typing_mode": "TYPE",
-  "chars_per_second": 22
-}
-```
-
-Gemini chỉ được nói:
-
-```text
-execute_prepared_action("code_017")
-```
-
-Không được truyền code vào function call.
-
-Đây sẽ là lớp bảo vệ quan trọng nhất.
-
----
-
-### D. Recording engine không phụ thuộc Gemini
-
-Ngay cả Gemini mất kết nối:
-
-```text
-Gemini disconnect
-       │
-       ├── Tool execution → STOP
-       ├── Scene advancement → STOP
-       │
-       └── Recorder → vẫn còn sống
-```
-
-Recording process không được nằm chung lifecycle với AI session.
-
----
-
-### E. Recording 60 FPS ≠ gửi Gemini 60 FPS
-
-Capture:
-
-```text
-1920x1080 @ 60 FPS
-```
-
-Recording pipeline giữ đủ 60 FPS.
-
-Gemini observation nên chỉ:
-
-```text
-event-driven
-hoặc
-1–2 FPS
-```
-
-và có thể downscale:
-
-```text
-1280×720 JPEG/WebP
-```
-
-Đây là hai pipeline riêng:
+Hot path:
 
 ```text
 WGC
- │
- ├── Recording path → 60 FPS → NVENC
- │
- └── AI observation → sampler → 1–2 FPS → Gemini
+ ↓
+ID3D11Texture2D
+ ↓
+NVENC registered D3D11 resource
+ ↓
+Encoded bitstream
 ```
+
+Không được có:
+
+```text
+GPU texture
+ ↓
+Readback RAM
+ ↓
+CPU BGRA frame
+ ↓
+Upload GPU
+ ↓
+NVENC
+```
+
+trong đường quay chính.
+
+CPU readback chỉ được phép cho preview/debug cực thấp FPS nếu thực sự cần.
+
+### B. FFmpeg CLI không còn là capture backend production
+
+`ffmpeg_capture.rs` có thể được giữ:
+
+```text
+test
+debug
+legacy comparison
+```
+
+nhưng production build:
+
+```text
+WGC unavailable
+       ↓
+BLOCK RECORDING
+```
+
+Không được:
+
+```text
+WGC failure
+ ↓
+silently fallback ddagrab
+```
+
+### C. NVENC cũng fail-closed
+
+Không có:
+
+```text
+NVENC
+ ↓ failure
+x264
+```
+
+Production phải báo:
+
+```text
+NVENC_UNAVAILABLE
+```
+
+và khóa Start.
+
+### D. MKV là master
+
+Không cần MP4 trong recording engine.
+
+```text
+take_xxx/
+├── segment_000000.mkv
+├── segment_000001.mkv
+├── segment_000002.mkv
+├── timeline.jsonl
+├── manifest.json
+└── recovery.json
+```
+
+MP4 sau này là export/post-production, không phải responsibility của hot recording path.
+
+### E. Audio phải multi-track
+
+Không mix trước khi lưu.
+
+```text
+MKV
+├── Track 0: Video
+├── Track 1: Microphone
+└── Track 2: Desktop/System Audio
+```
+
+### F. Một clock authority
+
+Video, Mic và System Audio phải cùng dựa trên:
+
+```text
+QueryPerformanceCounter / QPC
+```
+
+để chống A/V drift.
+
+### G. Recording ưu tiên hơn AI
+
+Nếu tài nguyên căng:
+
+```text
+Recording pipeline > Preview > Gemini observation
+```
+
+Không bao giờ giảm chất lượng file quay chỉ để giữ Gemini preview 2 FPS.
+
+Preview có thể tự hạ:
+
+```text
+2 FPS
+↓
+1 FPS
+↓
+0.5 FPS
+```
+
+nhưng recorder vẫn giữ nguyên.
+
+### H. Native status là source of truth
+
+Không còn mock metric chen vào Tauri production.
 
 ---
 
-### F. Audio để lại extension point nhưng chưa kích hoạt
+# 4. PHASE 0 — Freeze Recording Engine V2 contract
 
-Production engine có thể chuẩn bị abstraction cho:
+Trước tiên sửa contract.
 
-```text
-WASAPI
+Hiện `RecordingEngineProfile` còn quá đơn giản.
+
+Chuyển thành đại loại:
+
+```ts
+interface RecordingProfile {
+  capture_source: {
+    kind: "DISPLAY" | "WINDOW";
+    id: string;
+  };
+
+  video: {
+    width: number;
+    height: number;
+    fps: 30 | 60;
+
+    encoder: "NVENC";
+    codec: "H264" | "HEVC";
+
+    rate_control: "CQP";
+    cq: number;
+
+    preset: "P5" | "P6" | "P7";
+    multipass: "FULL_RES";
+    lookahead: number;
+    spatial_aq: boolean;
+    temporal_aq: boolean;
+    b_frames: number;
+    gop_frames: number;
+  };
+
+  audio: {
+    microphone: {
+      enabled: boolean;
+      device_id: string;
+    };
+
+    system: {
+      enabled: boolean;
+      device_id: string;
+    };
+
+    sample_rate: 48000;
+    codec: "AAC";
+  };
+
+  container: {
+    format: "MKV";
+    segment_minutes: 5 | 10;
+  };
+}
 ```
 
-nhưng milestone đầu:
+### Default quality profile
+
+Tôi đề xuất ban đầu:
 
 ```text
-capture_audio = false
+1920×1080
+60 FPS
+
+NVENC H.264
+CQP
+CQ 16
+Preset P7
+HQ tuning
+Full-resolution multipass
+Lookahead 32
+Spatial AQ ON
+Temporal AQ ON
+B-frames 3
+GOP 120 frames / 2 sec
+
+Audio 48 kHz
+AAC
+Mic separate
+System separate
+
+MKV
+5-minute segments
 ```
 
-Không nên dành Phase đầu để hoàn thiện audio pipeline khi audio sẽ được TTS tạo sau.
-
----
-
-# 3. Phase 0 — Freeze baseline và contracts
-
-## Mục tiêu
-
-Biến Live Record hiện tại từ “mock UI cần sửa” thành một subsystem có boundary rõ.
-
-### Việc cần làm
-
-Xác định bốn subsystem:
+CQ nên cho phép khoảng:
 
 ```text
-Live Recording Domain
-Live Director
-Native Recording Engine
-Recording UI
+14 = cực cao
+16 = high-quality default
+18 = quality/storage cân bằng
+20 = nhẹ hơn
 ```
 
-Không nhét toàn bộ logic vào:
-
-```text
-useLiveRecord.ts
-```
-
-hoặc:
-
-```text
-src-tauri/src/lib.rs
-```
-
-`src-tauri/src/lib.rs` hiện đã chứa metrics/NVML; recording native không nên tiếp tục mở rộng file này thành god-file.
+Không nên dùng fixed `20 Mbps` làm authority nữa. Với quay code/text, **CQP phù hợp hơn CBR** vì nó ưu tiên chất lượng theo complexity.
 
 ### Gate
 
 ```text
-LIVE_RECORD_P0_ARCHITECTURE_FROZEN
-```
-
-Phải có:
-
-* domain contract;
-* state machine;
-* IPC contract;
-* Gemini tool contract;
-* recording engine contract;
-* security boundary.
-
----
-
-# 4. Phase 1 — Recording Domain
-
-Tạo domain model cho toàn bộ quá trình.
-
-## Entity chính
-
-```text
-LiveExecutionPlan
-RecordingScene
-RecordingCue
-PreparedAction
-ExpectedVisualState
-
-LiveRecordSession
-RecordingTake
-RecordingSegment
-RecordingEvent
-DirectorSession
-```
-
-### LiveExecutionPlan
-
-Nên chứa tối thiểu:
-
-```text
-id
-episode_id
-episode_revision_id
-
-preparation_revision
-plan_hash
-
-status
-created_at
-frozen_at
-
-director_role
-recording_profile
-
-scenes[]
-actions[]
-
-source_workspace_hash
-```
-
-Status:
-
-```text
-DRAFT
-PREPARED
-VALIDATED
-FROZEN
-STALE
-INVALID
-```
-
-Sau `FROZEN`, tuyệt đối không mutate.
-
----
-
-# 5. Phase 2 — Episode → Recording Preparation Package
-
-Đây là phần quan trọng nhất trước Gemini Live.
-
-Trong Episode Workspace thêm:
-
-```text
-Prepare Recording
-```
-
-Model `RECORDING_PREPARER` đọc:
-
-```text
-screenplay
-scene
-demo objective
-source code hiện tại
-desired final code
-browser workflow
-commands
-```
-
-và tạo:
-
-```text
-Recording Preparation Package
-```
-
-## Một scene nên trở thành
-
-```yaml
-scene:
-  id: scene-03
-  title: Build Agent Core
-
-  narration:
-    source: episode_script
-
-  actions:
-    - action_id: code-001
-      type: open_file
-
-    - action_id: code-002
-      type: code_playback
-
-    - action_id: terminal-001
-      type: run_command
-
-    - action_id: verify-001
-      type: visual_verify
-
-    - action_id: browser-001
-      type: browser_navigation
-
-  expected_result:
-    test: PASS
+LIVE_RECORD_V2_CONTRACT_FROZEN
 ```
 
 ---
 
-# 6. Prepared Source Code Bundle
+# 5. PHASE 1 — Native dependencies
 
-Model chuẩn bị code trước cần xuất **exact payload**, không chỉ instruction.
-
-Ví dụ:
+File trọng tâm:
 
 ```text
-PreparedCodeBundle
- ├── step-001
- │    ├── file
- │    ├── before_hash
- │    ├── final_content
- │    ├── after_hash
- │    └── typing_profile
- │
- ├── step-002
- └── ...
+apps/desktop/native/recording-engine/Cargo.toml
 ```
 
-Như vậy lúc quay Gemini không viết:
+Hiện Windows dependencies mới chỉ được comment.
 
-> “Hãy tạo class Agent ...”
-
-mà chỉ quyết định:
+Bổ sung Windows APIs cần thiết:
 
 ```text
-step-002 đã đến lúc chạy
+Windows.Graphics.Capture
+Direct3D11
+DXGI
+COM
+WinRT
+Media
+MMDevice
+WASAPI
+QPC
 ```
 
-Sau đó executor viết chính xác nội dung đã chuẩn bị.
+Kiến trúc module nên chuyển thành:
+
+```text
+src/
+├── capture/
+│   ├── mod.rs
+│   ├── wgc.rs
+│   ├── capture_item.rs
+│   └── d3d11_device.rs
+│
+├── encoder/
+│   ├── mod.rs
+│   ├── nvenc.rs
+│   ├── nvenc_api.rs
+│   └── nvenc_session.rs
+│
+├── audio/
+│   ├── mod.rs
+│   ├── device.rs
+│   ├── microphone.rs
+│   ├── loopback.rs
+│   └── clock.rs
+│
+├── muxer/
+│   ├── mod.rs
+│   ├── libav.rs
+│   ├── tracks.rs
+│   └── timestamps.rs
+│
+└── ...
+```
+
+### Gate
+
+Windows release build thành công mà không cần mock feature.
 
 ---
 
-# 7. Phase 3 — Tool Manifest
+# 6. PHASE 2 — D3D11 Device Layer
 
-Đây là lớp biến “full agent” thành “controlled full agent”.
-
-Gemini Live được nhận function declaration kiểu:
+Tạo một D3D11 device duy nhất cho cả capture và encoder.
 
 ```text
-advance_cue(cue_id)
-
-execute_prepared_action(action_id)
-
-verify_visual_state(state_id)
-
-pause_recording()
-
-resume_recording()
-
-create_marker(marker_type)
-
-retry_action(action_id)
-
-request_operator(reason)
+D3D11CreateDevice
+      ↓
+ID3D11Device
+      ↓
+ID3D11DeviceContext
+      ↓
+IDXGIDevice
 ```
 
-### Tuyệt đối không expose trực tiếp
+Ưu tiên adapter NVIDIA.
+
+Probe phải trả:
 
 ```text
-shell(command)
-write_file(content)
-open_url(url)
-click(x, y)
-powershell(script)
+adapter name
+vendor
+VRAM
+D3D feature level
+device creation status
 ```
 
-Thay vào đó:
+Quan trọng: tránh để Windows chọn Intel iGPU nếu laptop hybrid graphics.
+
+Nếu nhiều adapter:
 
 ```text
-run_prepared_command("cmd-003")
-
-open_prepared_url("browser-007")
-
-perform_browser_action("browser-action-014")
+prefer NVIDIA
 ```
 
-Mọi argument thật nằm trong immutable plan.
+và verify captured texture + NVENC cùng GPU adapter.
 
----
-
-# 8. Phase 4 — Google Live Provider
-
-Google provider hiện tại dùng:
+### Gate
 
 ```text
-generateContent
-streamGenerateContent
-```
-
-qua HTTP.
-
-Không nên sửa adapter đó thành Live adapter.
-
-Tạo transport riêng:
-
-```text
-providers/
-└── windagent_providers/
-    └── google/
-        ├── adapter.py
-        └── live/
-            ├── contracts.py
-            ├── token_service.py
-            ├── capability.py
-            └── session.py
-```
-
-Conceptually:
-
-```text
-GoogleGeminiProviderAdapter
-    → generateContent
-
-GoogleGeminiLiveProvider
-    → Live API
+D3D11_DEVICE_READY
+NVIDIA_ADAPTER_SELECTED
 ```
 
 ---
 
-# 9. Model capability detection
+# 7. PHASE 3 — Direct Windows Graphics Capture
 
-Model routing cần biết:
+Thay skeleton trong `capture/mod.rs`. Hiện backend thật đang luôn unavailable.
 
-```text
-live_api
-video_input
-text_output
-function_calling
-```
-
-Role:
+Implementation:
 
 ```text
-LIVE_DIRECTOR
+GraphicsCaptureItem
+        ↓
+Direct3D11CaptureFramePool
+        ↓
+GraphicsCaptureSession
+        ↓
+FrameArrived
+        ↓
+ID3D11Texture2D
 ```
 
-chỉ được resolve model đáp ứng cả 4 capability.
-
-Không hard-code:
+Support:
 
 ```text
-provider == google
+Full display
+Specific window
 ```
 
-trong Live Record UI.
+Không camera.
 
-UI chỉ yêu cầu:
+Cần xử lý:
 
 ```text
-role = LIVE_DIRECTOR
+resolution change
+window resize
+display disconnect
+HDR/SDR format
+DPI
+window close
+capture item invalidation
 ```
 
-Router quyết định provider/model.
+Frame object phải trở thành handle/resource thay vì:
 
----
+```rust
+data_len: usize
+```
 
-# 10. Phase 5 — Ephemeral token bootstrap
-
-Đây là architecture tôi khuyến nghị.
+Ví dụ abstraction:
 
 ```text
-Desktop
-   │
-   │ Start Live Director
-   ▼
-WindAgent API
-   │
-   ├── Resolve LIVE_DIRECTOR
-   ├── Google provider?
-   ├── credential configured?
-   ├── live capability?
-   └── issue ephemeral token
-           │
-           ▼
-        Desktop
-           │
-           ▼
-Google Live API
+CapturedFrame
+├── texture
+├── width
+├── height
+├── format
+├── qpc_timestamp
+└── frame_number
 ```
 
-Google khuyến nghị ephemeral token cho client kết nối trực tiếp Live API; token ngắn hạn giúp không phải đưa API key lâu dài xuống desktop/browser và giảm thêm một network proxy hop. ([Google AI for Developers][2])
+### Bắt buộc
 
-API key thật vẫn nằm trong:
+Không clone pixel buffer mỗi frame.
+
+### Gate
+
+Test capture:
 
 ```text
-Providers
-```
-
----
-
-## Endpoint đề xuất
-
-```text
-POST /api/v3/live-record/sessions/bootstrap
-```
-
-Request:
-
-```json
-{
-  "episode_id": "...",
-  "execution_plan_id": "..."
-}
-```
-
-Response:
-
-```json
-{
-  "session_id": "...",
-  "provider_id": "...",
-  "model_id": "gemini-3.1-flash-live-preview",
-  "token": "...",
-  "expires_at": "...",
-  "execution_plan_hash": "..."
-}
-```
-
-Token:
-
-* không persist;
-* không log;
-* không trả lại qua GET;
-* one-session use;
-* constrain vào exact model/config.
-
----
-
-# 11. Phase 6 — Gemini Live Director Client
-
-Tôi khuyến nghị Live WebSocket client nằm phía **desktop TypeScript**, không nằm trong Python API.
-
-Lý do:
-
-```text
-Desktop → Gemini
-```
-
-ngắn hơn:
-
-```text
-Desktop → WindAgent API → Gemini
-```
-
-và Google cũng thiết kế ephemeral token cho kiểu kết nối trực tiếp này. ([Google AI for Developers][2])
-
-Component mới:
-
-```text
-frontend/app/src/features/live-record/live-director/
-```
-
-gồm:
-
-```text
-LiveDirectorClient
-LiveDirectorSession
-FrameSampler
-ToolCallDispatcher
-CueContextBuilder
-SessionResumptionManager
+1080p60
+5 min
+60 FPS sustained
+no RAM growth
+no CPU framebuffer copy
 ```
 
 ---
 
-# 12. Context Gemini nhận
+# 8. PHASE 4 — Direct NVENC
 
-Không dump toàn bộ Episode mỗi frame.
+Thay implementation giả trong `encoder/mod.rs`.
 
-Session start:
-
-```text
-system instruction
-+
-frozen plan summary
-+
-allowed tools
-+
-current scene
-```
-
-Sau đó mỗi cycle:
+Flow:
 
 ```text
-Current cue
-Current expected state
-Latest screen frame
-Last tool result
-Elapsed scene time
+nvEncodeAPICreateInstance
+        ↓
+NvEncOpenEncodeSessionEx
+        ↓
+NvEncInitializeEncoder
+        ↓
+NvEncRegisterResource(D3D11 texture)
+        ↓
+NvEncMapInputResource
+        ↓
+NvEncEncodePicture
+        ↓
+NvEncLockBitstream
+        ↓
+encoded packet
 ```
 
-Gemini làm:
+Không copy texture về CPU trước encoder.
+
+Probe phải xác minh:
 
 ```text
-Observe
-  ↓
-Compare with expected state
-  ↓
-Select approved action
-  ↓
-Execute
-  ↓
-Observe
+NVENC API
+H264 support
+HEVC support
+max resolution
+max sessions
+B-frame support
+lookahead
+AQ
+10-bit capability
 ```
 
-Đúng nghĩa một agent loop nhưng bị giới hạn bởi plan.
+### High Quality profile
 
----
-
-# 13. Phase 7 — Code Playback Engine
-
-Đây là subsystem riêng.
-
-Ví dụ một prepared action:
+Ưu tiên:
 
 ```text
-CODE_PLAYBACK
+P7
+CQP
+multipass full-resolution
+lookahead
+AQ
+B-frames
 ```
 
-Engine:
+Nếu GPU tải quá cao thì **không tự động hạ profile** trong take.
+
+Chỉ cảnh báo:
 
 ```text
-1. Verify active app = VS Code
-2. Verify expected file
-3. Verify before_hash
-4. Position cursor
-5. Type prepared payload
-6. Save
-7. Read file
-8. Verify after_hash
-9. Return success/failure
+GPU_HEADROOM_LOW
 ```
 
-Gemini chỉ nhận:
+User quyết định profile cho take tiếp theo.
 
-```json
-{
-  "action_id": "code-017",
-  "status": "SUCCESS"
-}
-```
-
-Không cần nhìn nội dung source code được generate.
-
----
-
-## Hai playback mode
-
-Nên hỗ trợ:
+### Gate
 
 ```text
-TYPE
-PASTE
-```
-
-`TYPE`:
-
-```text
-15–40 chars/s
-```
-
-phù hợp quay tutorial.
-
-`PASTE`:
-
-dùng đoạn dài không cần diễn typing.
-
-Có thể thêm:
-
-```text
-pause_after_line
-pause_after_block
-highlight_range
-scroll_to_anchor
-```
-
-để footage nhìn tự nhiên.
-
-## Chính sách formatter/linter bắt buộc cho CODE_PLAYBACK
-
-`after_hash` sẽ mismatch gần như chắc chắn nếu VS Code chạy format-on-save / organize-imports / trim trailing whitespace sau khi executor gõ xong. Đây là lỗi sẽ nổ ngay ở lần chạy E2E đầu tiên nếu không chốt trước. Luật:
-
-```text
-1. Workspace quay = tắt formatOnSave, organizeImports, trim
-   trailing whitespace (settings scoped workspace). Preflight
-   verify bằng cách đọc settings.json của workspace mục tiêu.
-2. Hấp thụ lúc chuẩn bị: preparer chạy chính formatter mục tiêu
-   lên final_content TRƯỚC khi tính after_hash ⇒ kể cả formatter
-   có chạy sau khi gõ, kết quả vẫn khớp hash.
-3. after_hash mismatch ⇒ FAILURE + diff report cho operator.
-   Tuyệt đối không tự sửa file.
-4. Auto-save của editor tắt; save do executor chủ động (Ctrl+S)
-   sau khi gõ xong.
-```
-
-Nguyên tắc: **hash là hợp đồng** — mọi bước làm trôi nội dung khỏi hash phải bị tắt, hoặc được hấp thụ trước ở bước chuẩn bị (luật 2).
-
----
-
-# 14. Browser và Tool Executor
-
-Browser subsystem hiện đã tồn tại trong repo, vì vậy Live Record nên sử dụng lại execution layer thay vì tạo browser automation riêng.
-
-Recording plan chỉ lưu:
-
-```text
-browser-action-001
-browser-action-002
-...
-```
-
-Ví dụ:
-
-```yaml
-browser-action-002:
-  operation: CLICK
-  target:
-    semantic_text: "API Keys"
-  expected_after:
-    url_contains: "/apikey"
-```
-
-Gemini:
-
-```text
-run_prepared_browser_action("browser-action-002")
-```
-
-Sau đó screenshot tiếp theo dùng để verify.
-
----
-
-# 15. Phase 8 — Native Production Recording Engine
-
-Đây là phần lớn nhất của project.
-
-Tôi đề nghị **không implement recording engine trực tiếp trong Tauri `lib.rs`**.
-
-Hiện Tauri Rust mới khá nhỏ và dependency chỉ gồm Tauri, serde, sysinfo, NVML...
-
-Tạo native crate riêng:
-
-```text
-apps/desktop/native/
-└── recording-engine/
-    ├── Cargo.toml
-    └── src/
-        ├── main.rs
-        ├── capture/
-        ├── encoder/
-        ├── muxer/
-        ├── segment/
-        ├── preview/
-        ├── telemetry/
-        └── ipc/
-```
-
-Tauri trở thành:
-
-```text
-control plane
-```
-
-Recording engine:
-
-```text
-data plane
-```
-
----
-
-# 16. Capture pipeline
-
-```text
-Windows Graphics Capture
-          │
-          ▼
-       D3D11
-          │
-          ├─────────────► Preview Sampler
-          │                   │
-          │                   ▼
-          │               Gemini frames
-          │
-          ▼
-       NVENC
-          │
-          ▼
-     H.264 / HEVC
-          │
-          ▼
-     libavformat
-          │
-          ▼
-         MKV
-```
-
-Quan trọng:
-
-> Không đưa raw 1080p60 frames qua React/Tauri IPC.
-
-Tauri chỉ nhận:
-
-```text
-preview frames
-metrics
-events
-```
-
-Encoding chạy hoàn toàn native.
-
----
-
-# 17. MKV segmented recording
-
-Tôi chọn MKV thay vì MP4 trong lúc record.
-
-Ví dụ:
-
-```text
-take_0001/
- ├── segment_0001.mkv
- ├── segment_0002.mkv
- ├── segment_0003.mkv
- ├── timeline.jsonl
- └── manifest.json
-```
-
-Segment mặc định:
-
-```text
-5 hoặc 10 phút
-```
-
-Ưu điểm:
-
-* crash recovery tốt hơn;
-* không mất toàn bộ recording nếu process chết;
-* dễ cắt take;
-* dễ remux sau cùng.
-
-Kết thúc:
-
-```text
-MKV segments
+WGC texture
    ↓
+direct NVENC
+   ↓
+valid Annex-B stream
+```
+
+30 phút không encoder stall.
+
+---
+
+# 9. PHASE 5 — Native MKV / libavformat
+
+`LibavMuxer` hiện chưa phải muxer thật.
+
+Thực hiện real:
+
+```text
+avformat_alloc_output_context2
+avformat_new_stream
+avcodec_parameters
+avio_open
+avformat_write_header
+av_interleaved_write_frame
+av_write_trailer
+```
+
+Không dùng FFmpeg command-line để quay.
+
+Libav được dùng cho:
+
+```text
+Muxing
+Audio encoding/resampling nếu cần
+Probe/validation
+```
+
+đều hợp lệ với requirement direct capture.
+
+### Segmentation
+
+Không cắt file ở frame bất kỳ.
+
+```text
+segment boundary requested
+          ↓
+force/request IDR
+          ↓
+finish current GOP
+          ↓
+close MKV
+          ↓
+fsync
+          ↓
+manifest update
+          ↓
+new MKV
+```
+
+Mỗi segment phải independently playable.
+
+### Gate
+
+Dùng `ffprobe` kiểm tra từng segment:
+
+```text
+valid container
+H264/HEVC track exists
+correct 60 FPS metadata
+monotonic timestamps
+no corrupt tail
+```
+
+---
+
+# 10. PHASE 6 — WASAPI Microphone
+
+Thay `WasapiCapture` placeholder hiện tại.
+
+Sử dụng event-driven WASAPI.
+
+```text
+IMMDeviceEnumerator
+        ↓
+Mic endpoint
+        ↓
+IAudioClient
+        ↓
+IAudioCaptureClient
+```
+
+Không poll busy-loop.
+
+Capture:
+
+```text
+native device format
+ ↓
+resample
+ ↓
+48 kHz
+ ↓
+audio encoder
+```
+
+Nếu microphone mono thì giữ track mono; không cần fake stereo nếu không có lý do.
+
+---
+
+# 11. PHASE 7 — WASAPI System Audio Loopback
+
+Đây là một capture client riêng:
+
+```text
+Render endpoint
+      ↓
+AUDCLNT_STREAMFLAGS_LOOPBACK
+      ↓
+IAudioCaptureClient
+```
+
+Không trộn với mic.
+
+Cuối cùng:
+
+```text
+Track 1 = Mic
+Track 2 = System
+```
+
+Mute UI phải tác động recorder:
+
+```text
+mic mute
+system mute
+```
+
+không chỉ tắt meter trên frontend.
+
+---
+
+# 12. PHASE 8 — Unified media clock & A/V sync
+
+Đây là phase không nên bỏ qua.
+
+Dùng:
+
+```text
+QueryPerformanceCounter
+```
+
+làm clock chung.
+
+Mỗi frame:
+
+```text
+video_pts = frame_qpc - recording_start_qpc
+```
+
+Mỗi audio packet:
+
+```text
+audio_pts = packet_qpc - recording_start_qpc
+```
+
+Định kỳ tính:
+
+```text
+mic drift
+system drift
+video drift
+```
+
+Nếu audio clock lệch nhỏ:
+
+```text
+resampler compensation
+```
+
+Không được sửa bằng cách drop hàng loạt audio frame.
+
+### Metric
+
+```text
+av_sync_error_ms
+mic_drift_ppm
+system_drift_ppm
+```
+
+### Gate
+
+Sau soak test dài:
+
+```text
+audio/video sync không trôi có thể nhận thấy
+```
+
+---
+
+# 13. PHASE 9 — GPU preview path
+
+Recording path tuyệt đối không phụ thuộc Director.
+
+Từ D3D11 texture:
+
+```text
+texture
+ ↓
+GPU downscale
+ ↓
+1280×720
+ ↓
+JPEG
+ ↓
+recorder://preview
+```
+
+Rate gate:
+
+```text
+max 2 FPS
+```
+
+Nếu system load tăng:
+
+```text
+2 → 1 → 0.5 FPS
+```
+
+nhưng:
+
+```text
+recording FPS NEVER changes
+```
+
+Gemini outage cũng không được làm recorder stop.
+
+---
+
+# 14. PHASE 10 — RecorderService hard cutover
+
+Đây là thay đổi lớn nhất trong `service.rs`.
+
+Hiện service trực tiếp dùng FFmpeg capture.
+
+Sau cutover:
+
+```text
+RecorderService
+├── WgcCapture
+├── NvencEncoder
+├── WasapiMic
+├── WasapiLoopback
+├── LibavMuxer
+├── PreviewPipeline
+├── SegmentManager
+├── TimelineWriter
+└── Telemetry
+```
+
+Xóa production code:
+
+```rust
+FfmpegSegmentCapture
+FfmpegPreview
+```
+
+khỏi `RecorderService`.
+
+Không cần nhất thiết xóa file `ffmpeg_capture.rs` ngay; có thể giữ làm development comparator, nhưng production service không import nó.
+
+### Service state machine
+
+Nâng thành:
+
+```text
+IDLE
+ ↓
+PROBING
+ ↓
+READY
+ ↓
+PREPARING
+ ↓
+RECORDING
+ ↔
+PAUSED
+ ↓
+FINALIZING
+ ↓
+COMPLETED
+
+RECOVERING
+ERROR
+```
+
+---
+
+# 15. PHASE 11 — Crash-safe segmented writer
+
+Mỗi segment:
+
+```text
+.tmp
+ ↓
+write
+ ↓
+finish MKV
+ ↓
+flush
+ ↓
+fsync
+ ↓
 validate
-   ↓
-concat/remux
-   ↓
-final.mkv / final.mp4
+ ↓
+rename atomic → .mkv
+ ↓
+manifest update
+```
+
+Manifest sử dụng atomic write:
+
+```text
+manifest.tmp
+ ↓
+fsync
+ ↓
+rename
+```
+
+Không để crash làm mất toàn take.
+
+### Recovery
+
+Khi desktop mở:
+
+```text
+scan recording directories
+ ↓
+find incomplete take
+ ↓
+validate all .mkv
+ ↓
+discard only invalid unfinished tail
+ ↓
+rebuild manifest
+ ↓
+RECOVERED
+```
+
+### Gate
+
+Trong lúc record:
+
+```text
+taskkill recording-engine.exe /F
+```
+
+sau đó mở lại.
+
+Kết quả yêu cầu:
+
+```text
+mọi completed segment vẫn playable
+timeline còn nguyên
+take recoverable
 ```
 
 ---
 
-# 18. WASAPI
+# 16. PHASE 12 — Tauri control plane
 
-Chuẩn bị architecture:
+Tauri tiếp tục đúng vai trò hiện tại:
 
 ```text
-AudioCapturePort
+React
+ ↓ IPC
+Tauri
+ ↓ JSON/control
+Recording sidecar
 ```
 
-implementation sau:
+Không chuyển video raw qua Tauri.
+
+Các command:
 
 ```text
-WasapiCapture
-```
-
-Nhưng P0/P1:
-
-```text
-audio_enabled = false
-```
-
-Không block feature Live Record vì audio.
-
----
-
-# 19. Phase 9 — Tauri IPC
-
-Thay vì hàng trăm command, dùng API nhỏ.
-
-Ví dụ:
-
-```text
+recorder_probe
 recorder_prepare
 recorder_start
 recorder_pause
 recorder_resume
 recorder_stop
-recorder_get_status
 recorder_create_marker
+recorder_get_status
+recorder_get_capabilities
+recorder_recover
 ```
 
-Event:
+Events:
 
 ```text
+recorder://state
 recorder://status
-recorder://segment
 recorder://preview
+recorder://audio-meter
+recorder://segment
+recorder://timeline
 recorder://warning
 recorder://error
 ```
 
-Frontend không được thao tác NVENC/libav trực tiếp.
+### Engine supervision
+
+Tauri phải:
+
+```text
+spawn
+health check
+detect crash
+collect exit code
+restart only when safe
+```
+
+Không tự restart sidecar giữa một active take rồi giả vờ tiếp tục.
 
 ---
 
-# 20. Phase 10 — Refactor Live Record UI
+# 17. PHASE 13 — Frontend hard cutover
 
-UI hiện tại về mặt hình thức đã gần với control room cần thiết, nên không cần redesign lớn.
+Tại UI hiện tại cần sửa vài quyết định thiết kế.
 
-Cần thay mock bằng real state.
+## Bỏ Camera
 
-## Panel preview
-
-Hiển thị:
+Panel:
 
 ```text
-real captured screen
-+
-REC
-+
-current cue
-+
-Gemini state
+Nguồn Màn hình / Camera
 ```
 
----
-
-## Scene List
-
-Từ:
+đổi thành:
 
 ```text
-DEFAULT_SCENES
+Nguồn ghi hình
 ```
 
-chuyển thành:
+Options:
 
 ```text
-LiveExecutionPlan.scenes
+Monitor 1
+Monitor 2
+Application Window
 ```
 
----
+Không Sony camera, webcam, USB camera.
 
-## Teleprompter
-
-Không còn hard-code script.
-
-Nguồn:
+## Settings mới
 
 ```text
-Episode → Recording Scene narration
-```
+Video
+├── Source
+├── Resolution
+├── FPS
+├── Codec
+├── Quality
+└── Segment duration
 
----
+Audio
+├── Microphone
+├── System Audio
+├── Mic mute
+└── System mute
 
-## Recording Status
-
-Real telemetry:
-
-```text
-elapsed
-frames captured
-frames encoded
-frames dropped
-current segment
-disk write speed
-NVENC status
-bitrate
+Storage
+├── Recording folder
+└── Available storage
 ```
 
 ---
 
-# 21. Thêm Director panel
+# 18. PHASE 14 — Loại bỏ mock authority
 
-Tôi sẽ thay phần mock “Swarm” trong preview bằng trạng thái thực:
+`useLiveRecord()` không được cung cấp production metrics nữa.
 
-```text
-LIVE DIRECTOR
-
-Gemini 3 Flash Live
-Connected
-
-Scene 3 / 12
-Cue 8 / 21
-
-Observing screen...
-Expected:
-Tests should pass
-
-Last action:
-run_prepared_command(cmd-008)
-
-Result:
-PASS
-```
-
-Không cần hiển thị chain-of-thought.
-
-Chỉ hiển thị:
+Tạo:
 
 ```text
-Observation
-Decision
-Action
-Result
+useLiveRecordingController
 ```
 
-ở mức operational.
+làm application orchestration layer.
+
+```text
+LiveRecordPage
+       ↓
+useLiveRecordingController
+       ├── useLiveRecorderSession
+       ├── useLiveDirector
+       ├── plan loader
+       ├── preflight
+       └── Take API
+```
+
+Controller chịu trách nhiệm:
+
+```text
+probe
+prepare
+start
+pause
+resume
+stop
+marker
+recover
+```
+
+React component chỉ render.
 
 ---
 
-# 22. State machine tổng thể
+# 19. PHASE 15 — Preflight thật
+
+Trước Start:
 
 ```text
-IDLE
+D3D11 adapter PASS
+WGC PASS
+NVENC PASS
+capture source valid
+mic PASS
+system loopback PASS
+output writable
+disk PASS
+FrozenPlan PASS
+privacy scan PASS
+sidecar healthy
+```
+
+Nếu một critical item fail:
+
+```text
+START disabled
+```
+
+Không dùng optimistic default.
+
+---
+
+# 20. PHASE 16 — Gemini Live lifecycle
+
+Hạ tầng Gemini hiện có rồi; phần cần hoàn thiện chủ yếu là orchestration.
+
+Start:
+
+```text
+Probe recorder
  ↓
-PREPARING
+Preflight
  ↓
-PREFLIGHT
+Create Take
  ↓
-READY
+Prepare native recorder
  ↓
-RECORDING
- ├─ PAUSED
- ├─ DIRECTOR_DEGRADED
- └─ RECOVERING
+Bootstrap Gemini Live
  ↓
-FINALIZING
+Connect
  ↓
-COMPLETED
+Director READY
+ ↓
+Start recorder
 ```
 
-Fail closed nếu:
+Nếu Gemini mất kết nối **sau khi đã quay**:
 
 ```text
-plan stale
-workspace hash mismatch
-provider unavailable
-wrong model capability
-record path invalid
-NVENC unavailable
-disk insufficient
-prepared action tampered
+Director DEGRADED
+Recording CONTINUES
+```
+
+Điều này rất quan trọng.
+
+Recording engine là critical path; AI Director không phải critical dependency sau Start.
+
+---
+
+# 21. PHASE 17 — Real telemetry
+
+Hiện `service.rs` còn hard-code:
+
+```text
+frames_dropped = 0
+dropped_pct = 0
+```
+
+và bitrate phần nào là estimate.
+
+Phải thay bằng metric thật:
+
+```text
+Capture FPS
+Encode FPS
+Frames captured
+Frames submitted
+Frames encoded
+Frames dropped
+Capture queue depth
+Encoder queue depth
+
+NVENC latency p50/p95
+GPU utilization
+Video encode utilization
+VRAM usage
+
+CPU utilization
+RAM
+
+Disk write MB/s
+Disk queue
+Disk remaining
+
+Mic RMS/Peak
+System RMS/Peak
+Audio underruns
+
+A/V sync error
+
+Preview FPS
+Preview latency
+
+Director latency
+Director reconnects
 ```
 
 ---
 
-# 23. Preflight trước khi nút Start được enable
+# 22. PHASE 18 — Quality-first thermal/resource policy
 
-Nút:
+Vì yêu cầu của bạn là **ưu tiên chất lượng và được phép sử dụng tối đa phần cứng**, không cần tối ưu để máy chạy "nhẹ".
 
-```text
-Bắt đầu ghi
-```
+Tuy nhiên phải tránh thermal collapse.
 
-chỉ enable nếu:
+Recorder theo dõi:
 
 ```text
-Episode revision OK
-Execution plan FROZEN
-Source workspace hash OK
-All prepared artifacts present
-LIVE_DIRECTOR route resolves
-Provider credential valid
-Gemini Live connectivity OK
-Recorder sidecar healthy
-WGC available
-NVENC available
-Disk space sufficient
-Output path writable
-Capture target đã chọn (monitor/window — §34)
-Privacy scan đạt: không secret trong vùng quay (§33)
-Formatter-on-save đã tắt cho workspace mục tiêu (§13)
+GPU temperature
+GPU encode utilization
+GPU clock
+VRAM
+CPU temperature nếu lấy được
+disk temperature nếu có
 ```
 
-Kết quả:
+Policy:
 
 ```text
-READY
+normal
+    ↓
+use configured HQ profile
+
+high GPU load
+    ↓
+degrade preview first
+
+still high
+    ↓
+degrade Gemini observation rate
+
+recording pipeline unchanged
 ```
 
-hoặc:
+Chỉ khi đạt mức nguy hiểm mới cảnh báo/dừng bảo vệ dữ liệu.
+
+Không tự hạ:
 
 ```text
-BLOCKED
+60 → 30 FPS
+CQ 16 → 24
+1080p → 720p
 ```
 
-kèm blocker cụ thể.
+giữa một take.
 
 ---
 
-# 24. Session recovery
+# 23. PHASE 19 — Progressive soak benchmark
 
-Gemini Live phải có session resumption.
+Vì chưa biết hệ thống chịu được bao lâu, không đặt con số tùy ý.
 
-Google Live có support `sessionResumption`; ephemeral token mặc định cũng có giới hạn lifetime nên session dài phải được thiết kế reconnect/resume từ đầu. ([Google AI for Developers][2])
+Test lần đầu theo staircase.
 
-Flow:
-
-```text
-Live socket lost
-     ↓
-freeze tool executor
-     ↓
-retain current cue
-     ↓
-resume session
-     ↓
-send latest state + screenshot
-     ↓
-continue
-```
-
-Gemini không được replay action đã success.
-
-Mọi action cần:
+### Test A
 
 ```text
-execution_id
-idempotency_key
+1080p60
+5 phút
 ```
+
+Verify media.
+
+### Test B
+
+```text
+15 phút
+```
+
+### Test C
+
+```text
+30 phút
+```
+
+### Test D
+
+```text
+60 phút
+```
+
+### Test E
+
+```text
+120 phút
+```
+
+### Test F
+
+Nếu vẫn ổn:
+
+```text
+240 phút
+```
+
+Mỗi stage chỉ chạy nếu stage trước PASS.
 
 ---
 
-# 25. Recording timeline — cực kỳ quan trọng cho TTS sau này
+# 24. Thu thập dữ liệu trong stress test
 
-Mỗi event ghi vào:
+Ghi mỗi 1–5 giây:
 
 ```text
-timeline.jsonl
+timestamp
+capture_fps
+encode_fps
+dropped_frames
+GPU %
+GPU encode %
+GPU temperature
+VRAM
+CPU %
+RAM
+disk MB/s
+disk free
+A/V drift
+preview latency
+Gemini latency
 ```
+
+Sau test tạo report:
+
+```text
+P50
+P95
+P99
+max
+```
+
+và chart theo thời gian.
+
+Từ đó mới quyết định:
+
+```text
+safe continuous recording duration
+```
+
+Thực tế nếu engine đúng và disk đủ, duration không nên bị giới hạn bởi architecture; mục tiêu phải là **resource-bound chứ không phải memory-leak-bound**.
+
+---
+
+# 25. Failure injection test
+
+Không chỉ soak.
+
+Phải chủ động phá hệ thống.
+
+```text
+Kill Gemini WebSocket
+Kill API
+Disable microphone
+Change default audio device
+Disconnect headset
+Lock Windows
+Resize window
+Change display resolution
+Unplug external display
+NVENC initialization failure
+Disk low
+Disk full
+Output permission removed
+Kill recorder sidecar
+Kill Tauri UI
+Force sleep/wake
+```
+
+Và xác định expected behavior cho từng trường hợp.
 
 Ví dụ:
 
-```json
-{"t":12.410,"type":"SCENE_START","scene":"scene-03"}
-{"t":18.122,"type":"ACTION_START","action":"code-017"}
-{"t":34.554,"type":"ACTION_SUCCESS","action":"code-017"}
-{"t":35.090,"type":"NARRATION_CUE","cue":"voice-009"}
-```
-
-Sau này TTS model chỉ cần:
-
 ```text
-Episode narration
-+
-timeline
-```
+Gemini dies
+→ continue recording
 
-để tạo:
+Mic dies
+→ video + system audio continue
+→ warning
 
-```text
-voice-001.wav
-voice-002.wav
-...
-```
+System audio dies
+→ video + mic continue
+→ warning
 
-và align chính xác với video.
+Disk full
+→ safely finalize current segment if possible
+→ stop
 
-Đây là lý do dù chưa làm TTS, **timeline phải hoàn thiện ngay ở Live Record P1**.
+WGC source disappears
+→ finalize
+→ stop with CAPTURE_SOURCE_LOST
 
----
-
-# 26. Phase 11 — Failure policy
-
-Ba loại lỗi.
-
-### Recoverable
-
-```text
-Gemini network disconnect
-Browser page slow
-Visual verification timeout
-Tool command timeout
-```
-
-→ retry/resume.
-
-### Operator required
-
-```text
-UI changed
-VS Code unexpected dialog
-Website requires login
-```
-
-→ pause + yêu cầu người dùng.
-
-### Fatal
-
-```text
-disk full
-NVENC failure
-capture device destroyed
-plan tampered
-workspace hash mismatch
-```
-
-→ stop/finalize current segment.
-
----
-
-# 27. Acceptance gates
-
-Tôi sẽ chia feature này thành các gate.
-
-| Gate                   | Điều kiện                                   |
-| ---------------------- | ------------------------------------------- |
-| `LR_P0_ARCHITECTURE`   | contracts + state machine frozen            |
-| `LR_P1_EPISODE_PLAN`   | Episode → frozen execution plan             |
-| `LR_P2_PROVIDER_LIVE`  | Provider routing → Gemini Live              |
-| `LR_P3_DIRECTOR`       | screen → Gemini → constrained function call |
-| `LR_P4_CODE_PLAYBACK`  | prepared code được viết lại chính xác       |
-| `LR_P5_BROWSER_TOOLS`  | browser/tool actions từ plan hoạt động      |
-| `LR_P6_NATIVE_CAPTURE` | WGC capture thật                            |
-| `LR_P7_NVENC`          | 1080p60 → NVENC                             |
-| `LR_P8_SEGMENTED_MKV`  | MKV segmentation + recovery                 |
-| `LR_P9_UI`             | toàn bộ mock telemetry được thay            |
-| `LR_P10_E2E`           | Episode → quay hoàn chỉnh                   |
-| `LR_P11_PRODUCTION`    | stress/recovery/performance PASS            |
-
----
-
-# 28. E2E bắt buộc
-
-Kịch bản acceptance nên có một Episode test khoảng 5–10 phút:
-
-```text
-Scene 1
-Open VS Code
-
-Scene 2
-Open prepared file
-
-Scene 3
-Type prepared code
-
-Scene 4
-Run pytest
-
-Scene 5
-Observe PASS
-
-Scene 6
-Open browser
-
-Scene 7
-Navigate prepared page
-
-Scene 8
-Run prepared tool
-
-Scene 9
-Return VS Code
-
-Scene 10
-Finish recording
-```
-
-Sau run phải chứng minh:
-
-```text
-0 unapproved actions
-
-all source hashes correct
-
-all commands came from plan
-
-all browser actions came from plan
-
-recording playable
-
-all MKV segments valid
-
-timeline complete
-
-Episode/plan/take lineage correct
+NVENC dies
+→ finalize if possible
+→ hard stop
 ```
 
 ---
 
-# 29. Performance gate
+# 26. PHASE 20 — Packaging production
 
-Với 1080p60 nên đặt baseline:
+Installer phải chứa mọi runtime dependency.
+
+Không dựa vào:
 
 ```text
-Dropped frames < 0.1%
-
-Recording engine:
-no sustained CPU saturation
-
-NVENC:
-hardware encoder confirmed
-
-Preview:
-< 200 ms perceived delay
-
-Gemini sampling:
-1–2 FPS maximum normally
-
-MKV:
-every segment independently playable
-
-30–60 minute soak:
-PASS
+user-installed ffmpeg
+PATH
+developer SDK
+Visual Studio environment
 ```
 
-Không nên benchmark Gemini latency chung với recorder latency. Hai subsystem phải đo riêng.
+Build pipeline phải package:
+
+```text
+WindAgent.exe
+recording-engine.exe
+
+required libav DLLs
+required runtime DLLs
+```
+
+NVIDIA driver vẫn là system prerequisite.
+
+Startup probe hiển thị rõ:
+
+```text
+Compatible NVIDIA GPU
+Driver version
+NVENC API version
+WGC support
+Audio support
+```
 
 ---
 
-# 30. Thứ tự triển khai tôi khuyến nghị
+# 27. Test hierarchy
+
+Tôi đề xuất chia test rõ:
 
 ```text
-Phase 0
-Architecture freeze
-     ↓
-Phase 1
-Domain + DB
-     ↓
-Phase 2
-Episode → Prepared Recording Plan
-     ↓
-Phase 3
-Constrained Tool Manifest
-     ↓
-Phase 4
-Provider LIVE_DIRECTOR capability
-     ↓
-Phase 5
-Ephemeral token + Gemini Live
-     ↓
-Phase 6
-Screen → Gemini → function calling
-     ↓
-Phase 7
-Code / Browser / Tool Playback
-     ↓
-Phase 8
-Native WGC capture
-     ↓
-Phase 9
-NVENC + libav + segmented MKV
-     ↓
-Phase 10
-Live Record UI integration
-     ↓
-Phase 11
-Recovery + E2E + soak
-     ↓
-PRODUCTION READY
+tests/component/
+    WGC abstractions
+    NVENC state
+    timestamp math
+    segment state
+    audio drift
+
+tests/contract/
+    TS ↔ Tauri ↔ sidecar IPC
+
+tests/integration/
+    WGC → NVENC
+    NVENC → MKV
+    WASAPI → MKV
+    full A/V
+
+tests/e2e/
+    Tauri Live Record
+
+tests/verification/
+    5m
+    15m
+    30m
+    60m+
+    crash recovery
 ```
 
-## Điểm kiến trúc quan trọng nhất
+Không để test production recorder bị che bởi mock path.
 
-Tôi sẽ **không xây Gemini thành coder trong lúc quay**.
+---
 
-Vai trò của Gemini Live nên là:
+# 28. Các file hiện tại sẽ chịu impact lớn nhất
+
+### Native engine
 
 ```text
-          GEMINI LIVE
-              │
-       Observe Screen
-              │
-       Understand State
-              │
-    Compare With Script/Cue
-              │
-       Choose Next Step
-              │
-   ┌──────────┴──────────┐
-   │                     │
-Prepared Action       Wait / Retry
-   │
-   ▼
-Deterministic Executor
+apps/desktop/native/recording-engine/Cargo.toml
+
+src/lib.rs
+
+src/capture/mod.rs
+src/capture/ffmpeg_capture.rs
+
+src/encoder/mod.rs
+
+src/audio/mod.rs
+
+src/muxer/mod.rs
+
+src/preview/*
+src/probe.rs
+src/service.rs
+src/telemetry/*
+src/segment/*
+src/ipc/*
 ```
 
-Nhờ đó buổi quay vẫn mang cảm giác một AI agent đang tự vận hành VS Code, Browser và tools, nhưng phía dưới nó có **một execution package đã chuẩn bị, versioned, hashed và kiểm soát hoàn toàn**. Đây là cách phù hợp hơn nhiều cho production video vì tránh tình trạng Gemini bất ngờ sửa sai code, đổi flow, mở sai trang hoặc phá take đang quay.
+`service.rs` là file cutover quan trọng nhất vì nó đang điều phối FFmpeg backend.
 
-Với repo hiện tại, tôi đánh giá phần cần làm lớn nhất không phải UI mà là **Recording Preparation Package + constrained Live Director + Rust recording sidecar**. UI Live Record hiện có thể giữ khoảng 70–80% cấu trúc visual và thay dần mock state bằng subsystem thật.
+### Tauri
 
-[1]: https://ai.google.dev/gemini-api/docs/models/gemini-3.1-flash-live-preview?utm_source=chatgpt.com "Gemini 3.1 Flash live preview  |  Gemini API  |  Google AI for Developers"
-[2]: https://ai.google.dev/gemini-api/docs/live-api/ephemeral-tokens?hl=vi&utm_source=chatgpt.com "Mã thông báo tạm thời  |  Gemini API  |  Google AI for Developers"
+```text
+apps/desktop/src-tauri/src/live_record/
+├── commands.rs
+├── engine_host.rs
+├── state.rs
+├── types.rs
+├── playback.rs
+└── tests.rs
+```
+
+### Frontend
+
+```text
+frontend/app/src/features/live-record/
+├── contracts/
+├── hooks/
+├── pages/LiveRecordPage.tsx
+├── components/DeviceSettingsPanel.tsx
+├── components/AudioMonitoringPanel.tsx
+├── components/RecordingStatusPanel.tsx
+├── components/LiveMetricCards.tsx
+├── components/LiveVideoPreview.tsx
+├── components/DirectorPanel.tsx
+└── __tests__/
+```
+
+---
+
+# 29. Thứ tự thực hiện bắt buộc
+
+Tôi sẽ thực hiện theo dependency graph này, không theo UI:
+
+```text
+P0  Contract V2
+ │
+ ▼
+P1  Dependencies / Windows native foundation
+ │
+ ▼
+P2  D3D11
+ │
+ ▼
+P3  WGC
+ │
+ ▼
+P4  NVENC
+ │
+ ▼
+P5  LibAV/MKV
+ │
+ ├─────────────┐
+ ▼             ▼
+P6 Mic       P7 System Audio
+ │             │
+ └──────┬──────┘
+        ▼
+P8 A/V clock
+        │
+        ▼
+P9 Preview
+        │
+        ▼
+P10 RecorderService cutover
+        │
+        ▼
+P11 Recovery
+        │
+        ▼
+P12 Tauri
+        │
+        ▼
+P13 Frontend
+        │
+        ▼
+P14 Mock removal
+        │
+        ▼
+P15 Preflight
+        │
+        ▼
+P16 Gemini Director integration
+        │
+        ▼
+P17 Telemetry
+        │
+        ▼
+P18 Quality/thermal policy
+        │
+        ▼
+P19 Soak + chaos
+        │
+        ▼
+P20 Packaging
+```
+
+---
+
+# 30. Definition of Done cuối cùng
+
+Không được tuyên bố hoàn thành chỉ vì nút "Record" hoạt động.
+
+`LIVE_RECORD_PRODUCTION_READY` chỉ PASS khi luồng sau chạy thật:
+
+```text
+Tauri Desktop
+      ↓
+Load Frozen Episode Plan
+      ↓
+Native capability probe
+      ↓
+NVIDIA D3D11 adapter
+      ↓
+WGC source selected
+      ↓
+NVENC probe PASS
+      ↓
+Mic WASAPI PASS
+      ↓
+System loopback PASS
+      ↓
+Preflight PASS
+      ↓
+Create Take
+      ↓
+Connect Gemini Live
+      ↓
+Start
+      ↓
+WGC → D3D11 → NVENC
+      ↓
+MKV segmented
+      ↓
+Video Track
+Mic Track
+System Track
+      ↓
+Gemini observes low-FPS preview
+      ↓
+Director executes frozen actions
+      ↓
+Pause / Resume
+      ↓
+Segment rollover
+      ↓
+Stop
+      ↓
+Flush encoder/audio
+      ↓
+Finalize MKV
+      ↓
+Manifest + Timeline
+      ↓
+Playback
+      ↓
+ffprobe validation PASS
+```
+
+Và phải chứng minh:
+
+```text
+No FFmpeg screen-capture backend in production path
+No CPU/software encoder fallback
+No fake recording metrics
+No mock state in Tauri production
+No camera dependency
+No raw 1080p60 frames through Tauri IPC
+No mixed mic/system master track
+No corrupted completed segments after crash
+No uncontrolled A/V drift
+```
+
+## Điểm quan trọng nhất
+
+Tôi sẽ coi **Direct WGC → D3D11 → NVENC → MKV** là một hard architectural gate, không phải optimization sau này.
+
+Hiện repo ghi kiến trúc này trong comment, nhưng implementation thực vẫn đang là FFmpeg capture cùng các WGC/NVENC/muxer skeleton.
+
+Do đó lần triển khai tiếp theo nên là một **hard cutover khỏi FFmpeg capture**, chứ không tiếp tục mở rộng `FfmpegSegmentCapture`.
+
+Với tiêu chí của bạn, tôi cũng sẽ không đặt deadline hay rút gọn scope để "xong nhanh": ưu tiên **đúng native architecture, zero-copy, chất lượng cao, multi-track audio, crash recovery và kiểm chứng bằng soak test thực tế**.

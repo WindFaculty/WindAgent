@@ -82,12 +82,28 @@ impl TimelineWriter {
     }
 }
 
-/// Write `manifest.json` at finalize time.
+/// Write `manifest.json` at finalize time — crash-safe ladder identical to
+/// the MKV segments (§17): `.tmp` → write → fsync → atomic rename, so a torn
+/// manifest never exists under its final name and recovery always sees
+/// either the previous complete file or the new one.
 pub fn write_manifest(dir: &Path, manifest: &SegmentManifest) -> Result<(), String> {
     let json = serde_json::to_string_pretty(manifest)
         .map_err(|e| format!("MANIFEST_SERIALIZE_FAILED: {}", e))?;
-    std::fs::write(dir.join("manifest.json"), json)
-        .map_err(|e| format!("MANIFEST_WRITE_FAILED: {}", e))
+    let tmp_path = dir.join("manifest.json.tmp");
+    {
+        let mut file = std::fs::OpenOptions::new()
+            .create(true)
+            .write(true)
+            .truncate(true)
+            .open(&tmp_path)
+            .map_err(|e| format!("MANIFEST_WRITE_FAILED: {}", e))?;
+        file.write_all(json.as_bytes())
+            .and_then(|()| file.flush())
+            .and_then(|()| file.sync_all())
+            .map_err(|e| format!("MANIFEST_WRITE_FAILED: {}", e))?;
+    }
+    std::fs::rename(&tmp_path, dir.join("manifest.json"))
+        .map_err(|e| format!("MANIFEST_WRITE_FAILED: rename: {}", e))
 }
 
 /// Current UTC time as RFC3339 with millisecond precision (`…T…Z`).

@@ -28,7 +28,7 @@ const GUARD_LABELS: ReadonlyArray<{ key: keyof PreflightChecks; label: string }>
   { key: 'credentialValid', label: 'Credential hợp lệ' },
   { key: 'liveConnectivityOk', label: 'Gemini Live kết nối được' },
   { key: 'recorderHealthy', label: 'Recorder sidecar healthy' },
-  { key: 'wgcAvailable', label: 'Capture (ddagrab/WGC) sẵn sàng' },
+  { key: 'wgcAvailable', label: 'Capture WGC sẵn sàng' },
   { key: 'nvencAvailable', label: 'NVENC sẵn sàng' },
   { key: 'diskSufficient', label: 'Dung lượng đĩa đủ' },
   { key: 'outputWritable', label: 'Thư mục output ghi được' },

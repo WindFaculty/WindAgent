@@ -114,18 +114,18 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 fontSize: '13px',
               }}
             >
-              <option>NVIDIA NVENC H.264 (Phần cứng tăng tốc)</option>
-              <option>NVIDIA NVENC HEVC / AV1</option>
-              <option>Intel QuickSync Video</option>
-              <option>x264 (CPU Software)</option>
+              {/* NVENC direct is mandatory — no software/QuickSync fallback exists (§3-B). */}
+              <option>NVIDIA NVENC H.264 (Direct · bắt buộc)</option>
+              <option>NVIDIA NVENC HEVC (Direct)</option>
             </select>
           </div>
 
           <div>
             <label style={{ display: 'block', color: '#94a3b8', marginBottom: '6px', fontWeight: 600 }}>
-              Chất lượng Audio Sample Rate
+              Audio Engine
             </label>
             <select
+              disabled
               style={{
                 width: '100%',
                 backgroundColor: '#090d16',
@@ -134,11 +134,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 padding: '8px 12px',
                 color: '#f8fafc',
                 fontSize: '13px',
+                opacity: 0.7,
               }}
             >
-              <option>48 kHz / 24-bit (Chuẩn Studio)</option>
-              <option>96 kHz / 24-bit (Hi-Res Audio)</option>
-              <option>44.1 kHz / 16-bit (CD Quality)</option>
+              {/* WASAPI shared-mode 48 kHz → AAC multi-track; fixed by the engine contract. */}
+              <option>WASAPI 48 kHz → AAC (mic + system track riêng)</option>
             </select>
           </div>
         </div>

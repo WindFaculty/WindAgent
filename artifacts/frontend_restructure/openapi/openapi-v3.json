@@ -1286,7 +1286,7 @@
           "Dashboard V3"
         ],
         "summary": "Get Dashboard Summary",
-        "description": "Retrieve comprehensive unified dashboard summary.",
+        "description": "Retrieve comprehensive unified dashboard summary \u2014 zero mock.\n\nEvery field is aggregated from the durable V3 resource authority.\nEmpty workspace honestly returns zeros / empty lists.",
         "operationId": "dashboard.getSummary",
         "responses": {
           "200": {
@@ -8518,7 +8518,7 @@
           "Providers V3"
         ],
         "summary": "List Providers",
-        "description": "Retrieve all configured AI model providers with physical endpoints.\n\nDurable providers registered via ``POST /api/v3/providers`` are merged with\nthe demo catalog (non-production) so both authorities surface.",
+        "description": "Retrieve configured providers from the durable provider authority.\n\nThe legacy catalog is visible only when the process explicitly opts into\n``WINDAGENT_PROFILE=demo``.  Normal development and production therefore\nfail closed and never present seed rows as configured connections.",
         "operationId": "providers.list",
         "responses": {
           "200": {

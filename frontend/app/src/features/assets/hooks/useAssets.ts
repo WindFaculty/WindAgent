@@ -21,6 +21,32 @@ export function useAssets(params?: { episode_id?: string; project_id?: string; s
   });
 }
 
+export function useCreateAsset() {
+  const client = useApiClient();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: {
+      name: string;
+      type?: string;
+      episode_id?: string;
+      project_id?: string;
+      scene_id?: string;
+      character_id?: string;
+      source?: string;
+      generator?: string;
+      model?: string;
+      prompt?: string;
+      job_id?: string;
+      parent_revision_id?: string;
+      media_url?: string;
+      content_base64?: string;
+    }) => client.assets.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: assetKeys.all });
+    },
+  });
+}
+
 export function useAsset(assetId: string) {
   const client = useApiClient();
   return useQuery({

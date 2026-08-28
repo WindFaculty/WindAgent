@@ -40,11 +40,24 @@ export interface RouterProviderProps {
 }
 
 export const RouterProvider: React.FC<RouterProviderProps> = ({ initialPath, children }) => {
+  const normalizePath = useCallback((raw: string): string => {
+    if (!raw) return '/dashboard';
+    const qIdx = raw.indexOf('?');
+    let pathPart = qIdx === -1 ? raw : raw.slice(0, qIdx);
+    const queryPart = qIdx === -1 ? '' : raw.slice(qIdx);
+    pathPart = pathPart.replace(/\/+/g, '/');
+    if (!pathPart.startsWith('/')) pathPart = `/${pathPart}`;
+    if (pathPart.length > 1 && pathPart.endsWith('/')) pathPart = pathPart.slice(0, -1);
+    const normalized = `${pathPart}${queryPart}`;
+    return normalized || '/dashboard';
+  }, []);
+
   const getHashPath = useCallback((): string => {
-    if (typeof window === 'undefined') return initialPath || '/dashboard';
+    if (typeof window === 'undefined') return normalizePath(initialPath || '/dashboard');
     const hash = window.location.hash.replace(/^#/, '').trim();
-    return hash.startsWith('/') ? hash : `/${hash}`;
-  }, [initialPath]);
+    if (!hash || hash === '/') return normalizePath(initialPath || '/dashboard');
+    return normalizePath(hash);
+  }, [initialPath, normalizePath]);
 
   const [currentPath, setCurrentPath] = useState<string>(() => getHashPath() || '/dashboard');
 
@@ -76,26 +89,45 @@ export const RouterProvider: React.FC<RouterProviderProps> = ({ initialPath, chi
   }, [getHashPath]);
 
   const navigate = useCallback((target: string, params?: Record<string, string>) => {
-    let destPath = target;
-    if (!target.startsWith('/')) {
-      const byId = findRouteById(target);
-      destPath = byId ? byId.path : `/${target}`;
+    let destPath = target.trim();
+    if (!destPath) destPath = '/dashboard';
+    // If target doesn't look like a path (no slash) try id lookup first; otherwise treat as path
+    if (!destPath.startsWith('/')) {
+      const byId = findRouteById(destPath);
+      if (byId) destPath = byId.path;
+      else destPath = `/${destPath}`;
     }
 
     if (params) {
       for (const [k, v] of Object.entries(params)) {
+        // Replace :param occurrences; encode value but preserve slashes inside param by encoding
         destPath = destPath.replace(`:${k}`, encodeURIComponent(v));
       }
+      // If any :param remains unreplaced, leave as-is (will 404) — do not silently drop
     }
+
+    destPath = normalizePath(destPath);
 
     if (typeof window !== 'undefined') {
-      window.location.hash = `#${destPath}`;
+      // Avoid pushing duplicate history entry if already at dest
+      const currentHash = window.location.hash.replace(/^#/, '');
+      const normalizedCurrent = normalizePath(currentHash || '/');
+      if (normalizedCurrent !== destPath) {
+        window.location.hash = `#${destPath}`;
+      }
     }
     setCurrentPath(destPath);
-  }, []);
+  }, [normalizePath]);
 
   const goBack = useCallback(() => {
-    if (typeof window !== 'undefined') window.history.back();
+    if (typeof window === 'undefined') return;
+    // If no prior hash history, navigate to dashboard instead of leaving the app
+    if (window.history.length <= 1) {
+      window.location.hash = '#/dashboard';
+      setCurrentPath('/dashboard');
+      return;
+    }
+    window.history.back();
   }, []);
 
   const goForward = useCallback(() => {

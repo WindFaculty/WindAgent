@@ -18,7 +18,7 @@ export const ProjectList: React.FC<ProjectListProps> = ({ projects, onOpen }) =>
     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
       {projects.map((project) => {
         const cover = getCoverDesign(project.id, project.name);
-        const genre = (project.metadata?.genre as string) || cover.genre;
+        const genre = (project.metadata?.genre as string) || null;
         const epCount = project.episodes_count ?? 0;
 
         return (
@@ -72,13 +72,13 @@ export const ProjectList: React.FC<ProjectListProps> = ({ projects, onOpen }) =>
                   </span>
                   <Badge
                     style={{
-                      background: cover.badgeBg,
-                      border: `1px solid ${cover.badgeBorder}`,
-                      color: cover.accent,
+                      background: genre ? cover.badgeBg : 'rgba(148,163,184,0.12)',
+                      border: `1px solid ${genre ? cover.badgeBorder : 'rgba(148,163,184,0.25)'}`,
+                      color: genre ? cover.accent : '#94a3b8',
                       fontSize: '11px',
                     }}
                   >
-                    {genre}
+                    {genre ? genre.split('/')[0].trim() : 'Chưa phân loại'}
                   </Badge>
                 </div>
                 <p

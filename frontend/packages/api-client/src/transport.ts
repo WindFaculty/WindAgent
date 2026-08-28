@@ -111,13 +111,23 @@ export class HttpTransport {
         if (!response.ok) {
           const contentType = response.headers.get('content-type') || '';
           if (contentType.includes('application/problem+json') || contentType.includes('application/json')) {
+            let jsonBody: Record<string, unknown> | null = null;
             try {
-              const problemJson = (await response.json()) as ApiProblem;
-              if (problemJson && (problemJson.code || problemJson.title)) {
-                throw new ApiError(problemJson);
-              }
-            } catch (err) {
-              if (err instanceof ApiError) throw err;
+              jsonBody = (await response.json()) as Record<string, unknown>;
+            } catch {
+              jsonBody = null;
+            }
+            if (jsonBody && (jsonBody.code || jsonBody.title)) {
+              throw new ApiError(jsonBody as unknown as ApiProblem);
+            }
+            if (jsonBody) {
+              const detail = jsonBody.detail;
+              const body = typeof detail === 'string'
+                ? detail
+                : detail !== undefined
+                  ? JSON.stringify(detail)
+                  : JSON.stringify(jsonBody);
+              throw new HttpError(response.status, response.statusText, body);
             }
           }
           const text = await response.text().catch(() => '');

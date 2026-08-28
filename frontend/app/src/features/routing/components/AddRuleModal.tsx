@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Plus, Layers } from 'lucide-react';
 import type { ModelRuleItem } from './ModelRuleAssignmentPanel';
 import type { ProviderItem } from './ProviderRegistryTable';
@@ -8,6 +8,8 @@ interface AddRuleModalProps {
   onClose: () => void;
   providers: ProviderItem[];
   onAddRule: (rule: ModelRuleItem) => void;
+  initialProviderId?: string;
+  initialModel?: string;
 }
 
 export const AddRuleModal: React.FC<AddRuleModalProps> = ({
@@ -15,6 +17,8 @@ export const AddRuleModal: React.FC<AddRuleModalProps> = ({
   onClose,
   providers,
   onAddRule,
+  initialProviderId,
+  initialModel,
 }) => {
   const [taskName, setTaskName] = useState('');
   const [taskType, setTaskType] = useState<ModelRuleItem['type']>('coding');
@@ -22,16 +26,48 @@ export const AddRuleModal: React.FC<AddRuleModalProps> = ({
   const [modelName, setModelName] = useState('deepseek-r1');
   const [isPrimary, setIsPrimary] = useState(true);
 
+  // Keep provider selection in sync when provider list loads async or changes
+  useEffect(() => {
+    if (!isOpen) return;
+    if (providers.length === 0) return;
+    const exists = providers.some((p) => p.name === selectedProvider || p.id === selectedProvider);
+    if (!exists) {
+      setSelectedProvider(providers[0].name);
+      // Suggest first model from provider allowlist if available
+      if (providers[0].models && providers[0].models.length > 0) {
+        setModelName(providers[0].models[0].split('/').pop() || providers[0].models[0]);
+      }
+    }
+  }, [providers, selectedProvider, isOpen]);
+
+  useEffect(() => {
+    if (!isOpen || !initialModel) return;
+    const provider = providers.find((item) => item.id === initialProviderId);
+    if (provider) setSelectedProvider(provider.name);
+    setModelName(initialModel);
+  }, [initialModel, initialProviderId, isOpen, providers]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setTaskName('');
+      setModelName('deepseek-r1');
+      setIsPrimary(true);
+      setTaskType('coding');
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!taskName.trim()) return;
+    if (!taskName.trim() || !modelName.trim()) return;
+    if (providers.length === 0) return;
 
+    const resolvedProvider = providers.find((p) => p.name === selectedProvider || p.id === selectedProvider)?.name ?? selectedProvider;
     const newRule: ModelRuleItem = {
       id: `rule-${Date.now()}`,
       name: taskName.trim(),
-      providerModel: `${selectedProvider} / ${modelName}`,
+      providerModel: `${resolvedProvider} / ${modelName.trim()}`,
       type: taskType,
       isPrimary,
     };
@@ -157,24 +193,39 @@ export const AddRuleModal: React.FC<AddRuleModalProps> = ({
               </label>
               <select
                 value={selectedProvider}
-                onChange={(e) => setSelectedProvider(e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setSelectedProvider(val);
+                  const prov = providers.find((p) => p.name === val);
+                  if (prov?.models?.[0]) setModelName(prov.models[0].split('/').pop() || prov.models[0]);
+                }}
+                disabled={providers.length === 0}
                 style={{
                   width: '100%',
                   padding: '8px 10px',
                   borderRadius: '6px',
                   backgroundColor: 'rgba(0, 0, 0, 0.4)',
                   border: '1px solid rgba(66, 71, 84, 0.6)',
-                  color: '#f8fafc',
+                  color: providers.length === 0 ? '#64748b' : '#f8fafc',
                   fontSize: '0.8rem',
                   outline: 'none',
                 }}
               >
-                {providers.map((p) => (
-                  <option key={p.id} value={p.name}>
-                    {p.name}
-                  </option>
-                ))}
+                {providers.length === 0 ? (
+                  <option value="">No providers registered</option>
+                ) : (
+                  providers.map((p) => (
+                    <option key={p.id} value={p.name}>
+                      {p.name}
+                    </option>
+                  ))
+                )}
               </select>
+              {providers.length === 0 && (
+                <span style={{ fontSize: '0.68rem', color: '#f59e0b', marginTop: '4px', display: 'block' }}>
+                  Register a provider first.
+                </span>
+              )}
             </div>
           </div>
 
@@ -244,18 +295,20 @@ export const AddRuleModal: React.FC<AddRuleModalProps> = ({
 
             <button
               type="submit"
+              disabled={providers.length === 0 || !taskName.trim() || !modelName.trim()}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '6px',
                 padding: '8px 18px',
                 borderRadius: '6px',
-                background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+                background: providers.length === 0 ? 'rgba(59,130,246,0.3)' : 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
                 border: 'none',
                 color: '#ffffff',
                 fontSize: '0.8rem',
                 fontWeight: 700,
-                cursor: 'pointer',
+                cursor: providers.length === 0 ? 'not-allowed' : 'pointer',
+                opacity: providers.length === 0 ? 0.6 : 1,
               }}
             >
               <Plus size={14} />
