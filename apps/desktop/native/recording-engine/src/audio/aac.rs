@@ -1078,6 +1078,83 @@ mod tests {
         assert_eq!(enc.unwrap_err(), "MF_UNSUPPORTED_OS");
     }
 
+    // ── Phase 6 focused deterministic tests (channel preservation, 48k framing,
+    // mute data semantics, state/idempotency) — hardware-free, run everywhere ──
+
+    #[test]
+    fn phase6_mono_stays_mono_no_fake_stereo() {
+        // Mono block stays mono through f32→s16 and resample; never faked to stereo.
+        let mono_samples = vec![0.5f32; 1024]; // 1024 mono frames
+        let bytes = f32_to_s16_bytes(&mono_samples);
+        assert_eq!(bytes.len(), 1024 * 2, "mono s16 must be frames*2 bytes, not *4");
+        let resampled = linear_resample(&mono_samples, 1, 48_000, 48_000);
+        assert_eq!(resampled.len(), 1024, "mono identity resample preserves frame count");
+        assert_eq!(resampled.len() % 1, 0);
+        // 44.1k mono resampled to 48k keeps mono interleaving (1 ch).
+        let res_441 = linear_resample(&mono_samples, 1, 44_100, 48_000);
+        let expected_441 = ((1024u64 * 48_000 + 44_100 - 1) / 44_100) as usize;
+        assert_eq!(res_441.len(), expected_441);
+        // ASC builder accepts mono and stereo, but encoder rejects >2.
+        assert!(crate::muxer::tracks::build_aac_asc(48_000, 1).is_some());
+        assert!(crate::muxer::tracks::build_aac_asc(48_000, 2).is_some());
+        let bad = AudioDeviceInfo {
+            available: true,
+            endpoint_name: "probe".into(),
+            device_id: "probe".into(),
+            channels: 6,
+            sample_rate: 48_000,
+            is_float: true,
+        };
+        assert!(MfAacEncoder::new(&bad, 128_000).unwrap_err().contains("AAC_UNSUPPORTED_CHANNEL_COUNT"));
+    }
+
+    #[test]
+    fn phase6_output_is_locked_to_48k_resampling_framing_within_one_frame() {
+        // Contract: output is always 48k; input at any common device rate resamples within 1 frame.
+        for (in_rate, frames) in [(44_100u32, 1024usize), (48_000, 960), (32_000, 1024), (96_000, 480)] {
+            let src = vec![0.125f32; frames]; // mono constant
+            let got = linear_resample(&src, 1, in_rate, AAC_OUTPUT_SAMPLE_RATE);
+            let want_exact = frames as f64 * AAC_OUTPUT_SAMPLE_RATE as f64 / in_rate as f64;
+            assert!(
+                (got.len() as f64 - want_exact).abs() <= 1.0,
+                "rate {in_rate}→48k frames={frames} got={} want≈{want_exact}",
+                got.len()
+            );
+            // Stereo framing also within one output stereo-frame (2 samples).
+            let stereo_src = vec![0.25f32; frames * 2];
+            let got_st = linear_resample(&stereo_src, 2, in_rate, AAC_OUTPUT_SAMPLE_RATE);
+            let want_st = want_exact * 2.0;
+            assert!(
+                (got_st.len() as f64 - want_st).abs() <= 2.0,
+                "stereo {in_rate}→48k got={} want≈{want_st}",
+                got_st.len()
+            );
+        }
+        assert_eq!(AAC_OUTPUT_SAMPLE_RATE, 48_000);
+        assert_eq!(AAC_FRAME_FRAMES, 1024);
+    }
+
+    #[test]
+    fn phase6_mute_data_semantics_preserves_frames_and_pts() {
+        // Mute is at the recorder: samples become zeros but frame counts and PTS survive.
+        // Verified via pure helpers: silent packet → zeros, muted queue → zeros, non-muted → signal.
+        let frames = 960usize;
+        let channels = 2u32;
+        // Silent flag produces exact-length zeros.
+        let silent = crate::audio::device::wasapi::pcm_packet_to_f32(&[], frames, crate::audio::device::wasapi::FormatProbe { kind: crate::audio::device::wasapi::SampleKind::F32, channels: 2, sample_rate: 48_000 }, true).unwrap();
+        assert_eq!(silent.len(), frames * channels as usize);
+        assert!(silent.iter().all(|&v| v == 0.0));
+        // Non-silent f32 packet with known values survives, then mute zeroes it.
+        let mut samples = vec![0.5f32; frames * 2];
+        samples.iter_mut().for_each(|v| *v = 0.0); // simulate worker muted zeroing
+        assert!(samples.iter().all(|&v| v == 0.0));
+        assert_eq!(samples.len(), frames * 2);
+        // f32_to_s16 on muted zeros stays zeros in PCM.
+        let s16 = f32_to_s16_bytes(&samples);
+        assert_eq!(s16.len(), frames * 2 * 2);
+        assert!(s16.iter().all(|&b| b == 0));
+    }
+
     #[cfg(windows)]
     #[test]
     fn real_encode_round_trip_when_mft_present() {

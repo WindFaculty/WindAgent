@@ -1,0 +1,100 @@
+{
+  "phase": "ban_ke_hoach_v1 Phase 4 — Durable Recursive Subagents",
+  "generated_at": "2026-08-28T16:30:00+07:00",
+  "baseline_commit": "0f869d16cb0bc850d6e5097db0d8bc1089cb9d49",
+  "objective": "Durable parent-to-child delegation contract over task_plan_versions, task_node_runs, AgentInstance/Session/Run, dependency edges, concurrency groups, plan revisions, leases and Phase 2 budgets. Spawn returns only durable handle; results via explicit durable events/artifacts/summaries.",
+  "delegation_contract": {
+    "handle": "DelegationHandle (child_agent_run_id, parent_agent_run_id, root_agent_run_id, delegation_depth, delegation_reason, allocated_budget, failure_policy)",
+    "spawn_returns": "durable child handle only; child result via explicit durable events/artifacts/summaries, never raw output",
+    "persisted_fields": ["parent_agent_run_id", "root_agent_run_id", "delegation_depth", "delegation_reason", "allocated_budget", "child_result_summary", "child_artifact_refs"],
+    "bounded_context": ["goal", "subtask", "relevant_artifacts", "selected_memory", "policy", "skills", "allocated_budget"],
+    "failure_policies": ["retry", "replace", "partial_success", "skip", "escalate", "fail_parent"],
+    "depth_budget_authority": "Phase 2 AgentBudgetController (clamp_limits, max_recursion_depth, max_child_agents, max_parallel_children); child cannot create new budget",
+    "location_core": "core/windagent_core/domain/delegation.py",
+    "controller": "orchestration/windagent_orchestration/delegation/controller.py",
+    "port": "core/windagent_core/contracts/repositories/delegation_repository.py",
+    "storage_impl": "storage/windagent_storage/repositories/delegation_repository.py",
+    "migration": "storage/windagent_storage/migrations/alembic/versions/0021_agent_delegation.py",
+    "table": "agent_delegations",
+    "orm": "storage/windagent_storage/orm/delegation_models.py",
+    "orm_stub": "storage/windagent_storage/orm/agent_runs_stub.py"
+  },
+  "persistence": {
+    "table": "agent_delegations",
+    "columns": ["child_agent_run_id PK FK agent_runs", "parent_agent_run_id", "root_agent_run_id", "delegation_depth", "delegation_reason", "failure_policy", "allocated_budget_json", "child_result_summary_json", "child_artifact_refs_json", "bounded_context_json", "version CAS", "created_at", "updated_at"],
+    "indexes": ["ix_agent_delegations_parent", "ix_agent_delegations_root", "ix_agent_delegations_depth"],
+    "downgrade": "drop table only",
+    "forward_only": true
+  },
+  "bounded_context_enforcement": {
+    "project_only": ["goal", "subtask", "relevant_artifacts<=20", "selected_memory<=20", "policy", "skills<=20", "allocated_budget (clamped)"],
+    "never_clone": ["workspace_root", "worktree_id", "raw parent context", "credentials", "provider headers"],
+    "validation": "DelegationContext.validate_bounded() + project_bounded_context() enforces 20-item caps and non-empty goal/subtask"
+  },
+  "failure_policy_semantics": {
+    "retry": "retry_child (parent re-dispatches)",
+    "replace": "replace_child (mark failed, new child spawned separately)",
+    "partial_success": "partial_success_proceed (keep failed summary as partial)",
+    "skip": "skip_child (allow parent to proceed)",
+    "escalate": "escalate (durable escalation event)",
+    "fail_parent": "fail_parent (transition parent loop to FAILED via AgentLoopLifecycle)"
+  },
+  "integration": {
+    "reuse": ["task_plan_versions", "task_node_runs", "AgentInstance/Session/Run", "dependency edges", "concurrency groups", "plan revisions", "execution_leases fencing_token", "Phase 2 budgets"],
+    "orchestrator_seam": "OrchestratorService._delegation_controller_impl() via DelegationRepositoryPort / AgentLoopRepositoryPort (no direct storage import)",
+    "trajectory": "delegation events (delegation_child_spawned/completed/failed/escalated) via MultiAgentRepository.append_event; bounded_context durably stored for compaction audit",
+    "leases": "delegation rows survive lease expiry/takeover; fencing at execution layer, delegation at orchestration layer",
+    "compaction": "ContextCompactor preserves delegation bounded_context; parent pause (PAUSED) does not block child publish"
+  },
+  "validation": {
+    "pytest_phase4": {"cmd": ".venv\\Scripts\\python.exe -m pytest tests/component/orchestration/test_phase4_recursive_subagents.py -v", "exit_code": 0, "passed": 10, "failed": 0},
+    "pytest_phase2": {"cmd": ".venv\\Scripts\\python.exe -m pytest tests/component/orchestration/test_phase2_agent_loop_budget.py -v", "exit_code": 0, "passed": 10, "failed": 0},
+    "pytest_unit_agent_loop": {"cmd": ".venv\\Scripts\\python.exe -m pytest tests/unit/core/test_agent_loop_state.py -v", "exit_code": 0, "passed": 8, "failed": 0},
+    "pytest_all_relevant": {"cmd": ".venv\\Scripts\\python.exe -m pytest tests/component/orchestration/test_phase4_recursive_subagents.py tests/component/orchestration/test_phase2_agent_loop_budget.py tests/unit/core/test_agent_loop_state.py -v", "exit_code": 0, "passed": 28, "failed": 0},
+    "architecture_v3": {"cmd": ".venv\\Scripts\\python.exe scripts/check_architecture_v3.py", "exit_code": 0, "violations": 0, "result": "PASS"},
+    "architecture_imports": {"cmd": ".venv\\Scripts\\python.exe scripts/check_architecture_imports.py --config configs/architecture/scaffold_v3.yaml --skip-scaffold-check", "exit_code": 0, "violations": 0, "result": "PASS"},
+    "ruff": {"cmd": ".venv\\Scripts\\python.exe -m ruff check core/windagent_core/domain/delegation.py orchestration/windagent_orchestration/delegation/controller.py storage/windagent_storage/repositories/delegation_repository.py storage/windagent_storage/orm/delegation_models.py core/windagent_core/contracts/repositories/delegation_repository.py --select E4,E7,E9,F", "exit_code": 0, "result": "All checks passed!"}
+  },
+  "scenario_coverage": {
+    "parent_research_a_b_script_critic": "Parent spawns 4 children (Research A/B, Script, Critic) with distinct failure policies; verified via test_parent_spawns_four_children_with_bounded_context",
+    "restart": "Delegations survive worker restart (new DelegationController instance sees same rows) via test_restart_visibility",
+    "parent_pause": "Parent PAUSED (WAITING_CHILD->PAUSED) while children publish; then resume to RUNNING via test_parent_pause_child_continues",
+    "child_failure": "Child failure with declared policies (retry/replace/partial/skip/escalate/fail_parent) via test_failure_policies_declared_and_applied and test_fail_parent_policy",
+    "lease_takeover": "Delegation rows survive simulated lease expiry/takeover (new worker reclaims) via test_lease_takeover (durable delegation independent of fencing)",
+    "compaction": "ContextCompactor preserves delegation bounded_context; delegation survives compaction via test_parent_pause_child_continues"
+  },
+  "invariants": {
+    "PostgreSQL_durable_authoritative": true,
+    "no_in_memory_business_truth": true,
+    "one_orchestration_authority_preserved": true,
+    "transaction_boundaries_preserved": true,
+    "core_not_import_storage": true,
+    "orchestration_not_import_concrete_storage": true,
+    "forward_only_migration": true,
+    "cas_safe_writes": true,
+    "fail_closed_on_exhaustion": true,
+    "child_cannot_escalate_parent": true,
+    "spawn_returns_handle_not_raw_output": true,
+    "bounded_context_enforced": true
+  },
+  "acceptance_criteria": {
+    "durable_parent_child_contract": true,
+    "persist_parent_root_depth_reason_budget_summary_refs": true,
+    "spawn_returns_handle_only": true,
+    "bounded_inherited_context": true,
+    "declared_failure_policies": true,
+    "depth_budget_authority_via_phase2": true,
+    "research_a_b_script_critic_scenario_across_restart_pause_failure_lease_compaction": true,
+    "targeted_tests_architecture_lint_pass": true,
+    "phase_04_artifact_verdict_accurately_reports": true
+  },
+  "preserved_dirty_files": [
+    "apps/api/windagent_api/composition/container.py",
+    "core/windagent_core/contracts/__init__.py",
+    "execution/windagent_execution/__init__.py",
+    "orchestration/windagent_orchestration/orchestrator_service.py",
+    "storage/windagent_storage/migrations/alembic/env.py",
+    "storage/windagent_storage/orm/models.py"
+  ],
+  "verdict": "PHASE_04_PASS"
+}

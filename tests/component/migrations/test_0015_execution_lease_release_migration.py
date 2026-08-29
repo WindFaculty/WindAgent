@@ -24,10 +24,11 @@ from windagent_storage.orm.models import BaseORM
 import windagent_storage.orm.v2_orchestration_models  # noqa: F401 — registers ExecutionLeaseORM
 
 TABLE = "execution_leases"
-# HEAD was 0015 when this test was written; live_record migration (0019) is now head.
-# The test still validates 0015's leased_at semantics, but head is 0019.
-HEAD = "0019_live_record_domain"
+# HEAD was 0015 when this test was written; organizational_learning migration (0031) is now head.
+# The test still validates 0015's leased_at semantics, but head is 0031.
+HEAD = "0031_organizational_learning"
 PREV = "0014_route_lock_authority"
+
 
 
 @pytest.fixture

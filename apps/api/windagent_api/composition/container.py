@@ -179,6 +179,7 @@ class ApplicationContainer:
         # 8. Control-plane OrchestratorService.  The API composes it with NO
         # execution runtime and NO worktree manager: dispatch/reattach/cancel
         # methods fail closed or return queued results for Worker pickup.
+        from windagent_storage.repositories.agent_loop_repository import AgentLoopRepository
         self.orchestrator_service = OrchestratorService(
             self.db.session_factory,
             None,  # no execution runtime (Worker ownership)
@@ -189,6 +190,7 @@ class ApplicationContainer:
             self.release_telemetry,
             studio_run_extension=self.studio_run_service,
             repo_factory=lambda session: MultiAgentRepository(session),
+            agent_loop_repo_factory=lambda session: AgentLoopRepository(session),
         )
 
         # 9. Studio V3 surface. The capability provider observes this

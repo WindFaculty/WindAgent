@@ -368,9 +368,21 @@ impl NvencSession {
         let mut packets = Vec::new();
         match encode_result {
             // The picture was encoded into our buffer this call: lock the
-            // bitstream FIRST, release input mappings LAST.
+            // bitstream FIRST, release input mappings LAST. Lock failure must
+            // still release mappings to avoid leaking a mapped resource.
             Ok(status) if status == nv::NV_ENC_SUCCESS => {
-                packets = self.lock_packets(pts_us, false)?;
+                let lock_res = self.lock_packets(pts_us, false);
+                // Ensure every live mapping is released even when lock fails;
+                // otherwise the authoritative mapping would leak across an error
+                // boundary (invariant: encode errors cannot retain a mapping).
+                let packets_res = match lock_res {
+                    Ok(pkts) => pkts,
+                    Err(e) => {
+                        self.release_input_mappings();
+                        return Err(e);
+                    }
+                };
+                packets = packets_res;
                 self.release_input_mappings();
             }
             // Buffered internally (lookahead/B-chain): the mapping stays
@@ -378,7 +390,18 @@ impl NvencSession {
             Ok(_) => {
                 self.pending_outputs += 1;
             }
-            Err(e) => return Err(e),
+            Err(e) => {
+                // Encode rejected the picture — the driver did not consume the
+                // input surface, so unmap only this texture's mapping instead
+                // of discarding every buffered lookahead surface.
+                let raw = tex.as_raw() as usize;
+                if let Some(pos) = self.registered_cache.iter().position(|(k, _, _)| *k == raw) {
+                    if let Some(m) = self.registered_cache[pos].2.take() {
+                        self.api.unmap_input_resource(self.encoder, m);
+                    }
+                }
+                return Err(e);
+            }
         }
         Ok(packets)
     }
@@ -525,6 +548,21 @@ impl NvencSession {
         Ok((*registered, mapped.expect("just filled")))
     }
 
+    /// Resolve PTS from NVENC output timestamp, preserving zero.
+    ///
+    /// NVENC echoes `NV_ENC_PIC_PARAMS.input_time_stamp` exactly in
+    /// `NV_ENC_LOCK_BITSTREAM.output_time_stamp`, including `0` which is a
+    /// valid PTS for the first frame. The API defines no sentinel value for
+    /// "unavailable" output timestamp — zero must not be treated as absent.
+    /// Fallback is retained only for the non-Windows stub where no driver
+    /// exists; on Windows the driver timestamp is always authoritative.
+    #[cfg(windows)]
+    #[inline]
+    pub(crate) fn resolve_output_pts(output_time_stamp: u64, _fallback_pts_us: u64) -> u64 {
+        // Explicitly preserve zero; never conflate it with unavailable.
+        output_time_stamp
+    }
+
     /// Lock the output bitstream and copy out every pending packet.
     ///
     /// `do_not_wait=false` (live encode path) blocks until the driver has
@@ -555,11 +593,7 @@ impl NvencSession {
                 );
             }
         }
-        let pts_us = if lock.output_time_stamp != 0 {
-            lock.output_time_stamp
-        } else {
-            fallback_pts_us
-        };
+        let pts_us = Self::resolve_output_pts(lock.output_time_stamp, fallback_pts_us);
         // B-frame reordering: output_duration is how far DTS lags PTS. With
         // no B-chain there is nothing to reorder — and the driver reports an
         // irregular output_duration anyway, so subtracting it produces a
@@ -1181,11 +1215,13 @@ fn production_encode_texture_probe() {
     };
 
     let mut success_frames = 0u32;
+    let mut emitted_pts: Vec<u64> = Vec::new();
     for frame in 0..70u64 {
         match session.encode_texture(&tex, frame * 16666, frame == 0) {
             Ok(pkts) => {
                 if !pkts.is_empty() {
                     success_frames += pkts.len() as u32;
+                    emitted_pts.push(pkts[0].pts_us);
                     println!(
                         "frame {frame}: {} pkt(s) {} bytes keyframe={} picPts={}",
                         pkts.len(),
@@ -1202,7 +1238,26 @@ fn production_encode_texture_probe() {
         }
     }
     let flushed = session.flush().unwrap_or_default();
-    println!("COMPLETED: drained={success_frames} flushed={} pkt(s)", flushed.len());
+    for p in &flushed {
+        emitted_pts.push(p.pts_us);
+    }
+    println!("COMPLETED: drained={success_frames} flushed={} pkt(s) pts={:?}", flushed.len(), emitted_pts);
+    // Repair Pass 1 regression: zero PTS must be preserved and sequence must be nondecreasing.
+    // NVENC echoes input_time_stamp exactly, including 0 for the first frame.
+    assert!(
+        emitted_pts.contains(&0),
+        "PTS must include 0 (first frame), got {:?}",
+        emitted_pts
+    );
+    for w in emitted_pts.windows(2) {
+        assert!(
+            w[0] <= w[1],
+            "PTS must be nondecreasing, violated at {} -> {} in {:?}",
+            w[0],
+            w[1],
+            emitted_pts
+        );
+    }
 }
 
 /// Diagnostic (run manually): production-shape session (P7/HQ/CQP16/lookahead

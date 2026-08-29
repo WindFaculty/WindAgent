@@ -12,6 +12,7 @@ dependencies = [
     "windagent-orchestration",
     "windagent-execution",
     "windagent-intelligence",
+    "windagent-evals",
     "windagent-providers",
     "windagent-tools",
     "windagent-workflows",
@@ -31,6 +32,7 @@ windagent-core = { workspace = true }
 windagent-orchestration = { workspace = true }
 windagent-execution = { workspace = true }
 windagent-intelligence = { workspace = true }
+windagent-evals = { workspace = true }
 windagent-providers = { workspace = true }
 windagent-tools = { workspace = true }
 windagent-workflows = { workspace = true }

@@ -1,0 +1,93 @@
+{
+  "phase": "ban_ke_hoach_v1 Phase 5 — Long-running Agent Hardening",
+  "generated_at": "2026-08-28T17:15:00+07:00",
+  "baseline_commit": "0f869d16cb0bc850d6e5097db0d8bc1089cb9d49",
+  "objective": "Harden long-running agent continuity over Worker/UI/API/network kills: durable PersistentGoal (goal_id/objective/status/progress_summary/started_at/last_progress_at/completion_criteria/blocked_reason) with CAS transitions, durable checkpoints at every mandated boundary (turn_boundary/tool_boundary/child_admission/child_completion/compaction/external_wait/terminal_state + manual/auto) as opaque JSON-serializable snapshots with host-authority isolation, and heartbeat with two roles (observability + control-plane liveness via fencing-aware renewal → cancellation). State must be deterministic after restart/lease takeover/network partition.",
+  "persistent_goal_contract": {
+    "domain": "core/windagent_core/domain/persistent_goal.py",
+    "status_enum": ["ACTIVE","IN_PROGRESS","BLOCKED","PAUSED","COMPLETED","FAILED","CANCELLED"],
+    "terminal": ["COMPLETED","FAILED","CANCELLED"],
+    "legal_transitions": "ACTIVE->[IN_PROGRESS|BLOCKED|PAUSED|COMPLETED|FAILED|CANCELLED]; IN_PROGRESS->[BLOCKED|PAUSED|COMPLETED|FAILED|CANCELLED]; BLOCKED->[IN_PROGRESS|PAUSED|FAILED|CANCELLED]; PAUSED->[ACTIVE|IN_PROGRESS|BLOCKED|FAILED|CANCELLED]; terminal sink",
+    "fields_per_roadmap": ["goal_id","objective","status","progress_summary","started_at","last_progress_at","completion_criteria","blocked_reason"],
+    "cas_guard": "GoalLifecycle.transition validates legal/terminal and raises ConcurrentStateConflictError on expected_version mismatch; repository UPDATE ... WHERE version=:expected_version",
+    "port": "core/windagent_core/contracts/repositories/persistent_goal_repository.py",
+    "storage_impl": "storage/windagent_storage/repositories/persistent_goal_repository.py",
+    "table": "persistent_goals",
+    "orm": "storage/windagent_storage/orm/persistent_goal_models.py",
+    "migration": "storage/windagent_storage/migrations/alembic/versions/0022_long_running_hardening.py (persistent_goals)"
+  },
+  "durable_checkpoint_contract": {
+    "domain": "core/windagent_core/domain/durable_checkpoint.py",
+    "kinds": ["turn_boundary","tool_boundary","child_admission","child_completion","compaction","external_wait","terminal_state","manual","auto"],
+    "mandated_boundaries": ["turn_boundary","tool_boundary","child_admission","child_completion","compaction","external_wait","terminal_state"],
+    "opaque_snapshot": "JSON-serializable dict, deep-copied on write and read, sanitize_snapshot strips HOST_FORBIDDEN_KEYS (credentials/provider/schedule/memory/learning/host_authority), ensure_json_serializable enforces opaque, assert_no_host_authority fails closed",
+    "sequence": "per-agent_run_id monotonic sequence (MAX(sequence)+1 in transaction) + loop_version_at_checkpoint from agent_loop_states.version",
+    "fencing": "fencing_token carried per checkpoint for stale-write protection, never host authority",
+    "port": "core/windagent_core/contracts/repositories/agent_checkpoint_repository.py",
+    "storage_impl": "storage/windagent_storage/repositories/agent_checkpoint_repository.py",
+    "table": "agent_checkpoints",
+    "orm": "storage/windagent_storage/orm/agent_checkpoint_models.py",
+    "migration": "storage/windagent_storage/migrations/alembic/versions/0022_long_running_hardening.py (agent_checkpoints)"
+  },
+  "heartbeat_hardening": {
+    "location": "orchestration/windagent_orchestration/long_running/heartbeat.py",
+    "two_roles": "observability (worker_id/runtime_run_id/active_leases/metadata/recorded_at/history + determinism_snapshot) + control-plane liveness (fencing lease renewal via lease_manager/task_queue.renew; False -> fencing_rejected -> cancellation_hook -> cancelled_count)",
+    "existing_worker": "apps/worker/windagent_worker/runner.py ProductionWorker + lease.py DurableTaskLeaseManager remain independent process authority; HeartbeatHardening is thin testable facade, no new daemon",
+    "determinism": "history + cancelled_count preserved across ticks; heartbeat after restart creates new instance with same DB lease but independent runtime_run_id, yet prior ticks' durable checkpoints/goals survive (proved via checkpoint restart tests)"
+  },
+  "orchestration": {
+    "goal_service": "orchestration/windagent_orchestration/long_running/goal_service.py (CAS, event emit best-effort via MultiAgentRepository.append_event, no direct SQL in domain)",
+    "checkpoint_service": "orchestration/windagent_orchestration/long_running/checkpoint_service.py (validates kind/snapshot, sanitize, deep-copy, per-agent sequence, event emit best-effort, convenience at_* methods for every mandated boundary)",
+    "no_bloat": "OrchestratorService (~75KB) not inlined; Phase 5 capabilities live in narrow long_running seam (goal_service + checkpoint_service + heartbeat), worker stays claim/execute/heartbeat/checkpoint/recover/finalize only"
+  },
+  "storage": {
+    "migration": "0022_long_running_hardening (forward-only, idempotent, upgrade creates persistent_goals + agent_checkpoints with indexes, downgrade drops both)",
+    "orm_registered": ["storage/windagent_storage/orm/models.py imports persistent_goal_models + agent_checkpoint_models + multi_agent_models", "storage/windagent_storage/migrations/alembic/env.py imports them for BaseORM.metadata"],
+    "indexes": ["ix_persistent_goals_conversation/parent/agent_run/status", "ix_agent_checkpoints_run/kind/run_seq/run_kind"]
+  },
+  "validation": {
+    "pytest_phase5": {"cmd": ".venv\\Scripts\\python.exe -m pytest tests/component/orchestration/test_phase5_long_running_hardening.py -v", "exit_code": 0, "passed": 12, "failed": 0, "detail": "12 passed: goal create/progress, blocked/unblock/pause/resume/complete+terminal, lifecycle illegal/terminal+CAS, restart visibility, checkpoint all mandated boundaries (7+7 convenience, 14 total, per-kind filter, ordered sequence), immutability+JSON, no-host-authority sanitize, loop_version_at_checkpoint, restart+lease_takeover, parent pause child continues (+compaction), deterministic kill scenarios at every stage (turn/tool/child admission/completion/compaction/wait/terminal = 7, ordered sequences), heartbeat two-role observability+fencing liveness (sync+async lease paths)"},
+    "pytest_combined_2_3_4_5": {"cmd": ".venv\\Scripts\\python.exe -m pytest tests/unit/core/test_agent_loop_state.py tests/component/orchestration/test_phase2_agent_loop_budget.py tests/unit/execution/test_phase3_stateful_execution_runtime.py tests/component/orchestration/test_phase4_recursive_subagents.py tests/component/orchestration/test_phase5_long_running_hardening.py -v", "exit_code": 0, "passed": 55, "failed": 0},
+    "architecture_v3": {"cmd": ".venv\\Scripts\\python.exe scripts/check_architecture_v3.py", "exit_code": 0, "violations": 0, "result": "PASS"},
+    "architecture_imports": {"cmd": ".venv\\Scripts\\python.exe scripts/check_architecture_imports.py --config configs/architecture/scaffold_v3.yaml --skip-scaffold-check", "exit_code": 0, "violations": 0, "result": "PASS"},
+    "ruff": {"cmd": ".venv\\Scripts\\python.exe -m ruff check core/windagent_core/domain/persistent_goal.py core/windagent_core/domain/durable_checkpoint.py core/windagent_core/contracts/repositories/persistent_goal_repository.py core/windagent_core/contracts/repositories/agent_checkpoint_repository.py storage/windagent_storage/orm/persistent_goal_models.py storage/windagent_storage/orm/agent_checkpoint_models.py storage/windagent_storage/repositories/persistent_goal_repository.py storage/windagent_storage/repositories/agent_checkpoint_repository.py orchestration/windagent_orchestration/long_running/goal_service.py orchestration/windagent_orchestration/long_running/checkpoint_service.py orchestration/windagent_orchestration/long_running/heartbeat.py --select E4,E7,E9,F", "exit_code": 0, "result": "All checks passed!"}
+  },
+  "invariants": {
+    "PostgreSQL_durable_authoritative": true,
+    "no_in_memory_business_truth": true,
+    "one_orchestration_authority_preserved": true,
+    "no_direct_orchestration_to_storage_coupling": true,
+    "core_not_import_storage": true,
+    "forward_only_migration": true,
+    "cas_safe_writes": true,
+    "fail_closed_on_illegal_terminal_and_host_authority": true,
+    "production_composition_cannot_use_memory_fallback": true,
+    "no_new_daemon": true,
+    "orchestrator_not_bloated": true,
+    "checkpoint_snapshot_opaque_and_immutable": true,
+    "goal_progress_survives_restart": true,
+    "checkpoint_survives_lease_takeover": true,
+    "heartbeat_two_roles_proved": true,
+    "deterministic_after_kill_at_every_stage": true
+  },
+  "acceptance_criteria": {
+    "persistent_goal_with_required_fields": true,
+    "durable_checkpoints_at_turn_tool_child_admission_child_completion_compaction_external_wait_terminal": true,
+    "heartbeat_two_roles_observability_plus_liveness": true,
+    "kill_UI_API_Worker_network_at_each_stage_state_deterministic_after_restart": true,
+    "no_new_daemon_and_worker_heartbeat_preserved": true,
+    "targeted_tests_architecture_lint_pass": true,
+    "phase_05_artifact_verdict_accurately_reports": true
+  },
+  "preserved_dirty_files": [
+    "apps/api/windagent_api/composition/container.py",
+    "apps/desktop/native/recording-engine/* (Phase 3-5 recording-engine dirty preserved, not in Phase 5 agent scope)",
+    "artifacts/ban_ke_hoach_v1/phase_02/*",
+    "artifacts/ban_ke_hoach_v1/phase_03/*",
+    "artifacts/ban_ke_hoach_v1/phase_04/*",
+    "artifacts/ban_ke_hoach_v1/recording_engine_v2_phase_03/*",
+    "artifacts/ban_ke_hoach_v1/recording_engine_v2_phase_04/*",
+    "artifacts/ban_ke_hoach_v1/recording_engine_v2_phase_05/*"
+  ],
+  "verdict": "PHASE_05_PASS"
+}

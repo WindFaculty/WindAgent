@@ -1,0 +1,41 @@
+{
+  "phase": "phase_11",
+  "name": "Candidate -> Experiment -> Promotion & Rollback",
+  "status": "COMPLETED",
+  "verdict": "PASS",
+  "date": "2026-08-29",
+  "plan_references": [
+    "ban_ke_hoach_v1.md §17 (Phase 11 — Candidate -> Experiment -> Promotion)",
+    "ban_ke_hoach_v1.md §24 (Target Data Model)",
+    "ban_ke_hoach_v1.md §25 (Package Ownership)",
+    "ban_ke_hoach_v1.md §27 (Test Strategy)",
+    "ban_ke_hoach_v1.md §28 (Required Chaos Tests - Regression)",
+    "ban_ke_hoach_v1.md §29 (Security Gates)",
+    "ban_ke_hoach_v1.md §30 (Cost Control)",
+    "ban_ke_hoach_v1.md §35 (Self-Improvement Production Gate)"
+  ],
+  "gates": {
+    "gate_1_min_sample_size_enforced": "PASS",
+    "gate_2_beats_baseline_enforced": "PASS",
+    "gate_3_no_safety_regression_enforced": "PASS",
+    "gate_4_no_reliability_regression_enforced": "PASS",
+    "gate_5_cost_within_budget_enforced": "PASS",
+    "gate_6_provenance_complete_enforced": "PASS",
+    "gate_7_uncertainty_acceptable_enforced": "PASS",
+    "high_risk_human_approval_required": "PASS",
+    "bounded_auto_promotion_low_risk": "PASS",
+    "atomic_harness_version_commitment": "PASS",
+    "post_promotion_regression_rollback": "PASS",
+    "architecture_v3_boundary_invariants": "PASS",
+    "alembic_migration_0028_integrity": "PASS"
+  },
+  "metrics": {
+    "phase_11_tests_total": 12,
+    "phase_11_tests_passed": 12,
+    "multi_phase_learning_tests_total": 47,
+    "multi_phase_learning_tests_passed": 47,
+    "migration_tests_passed": 101,
+    "architecture_violations": 0,
+    "ruff_lint_errors": 0
+  }
+}

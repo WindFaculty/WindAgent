@@ -250,8 +250,8 @@ class TestAlembicUpgrade:
         try:
             with engine.begin() as conn:
                 conn.execute(text(
-                    "INSERT INTO conversations (conversation_id, status, created_at, updated_at) "
-                    "VALUES ('c1', 'idle', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)"
+                    "INSERT INTO conversations (conversation_id, status, last_event_sequence, created_at, updated_at) "
+                    "VALUES ('c1', 'idle', 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)"
                 ))
                 conn.execute(text(
                     "INSERT INTO agent_instances (agent_instance_id, conversation_id, agent_type, status, "
@@ -283,10 +283,10 @@ class TestAlembicHeadIntegrity:
         assert len(heads) == 1, f"revision graph must stay linear, got heads={heads}"
         # Intentional tripwire (GAP D): bump this only when a new migration is
         # appended to the chain — the test exists to fail loudly on drift.
-        assert heads[0] == "0019_live_record_domain"
+        assert heads[0] == "0031_organizational_learning"
 
     def test_verify_single_head_passes_on_linear_chain(self):
-        assert verify_single_head() == "0019_live_record_domain"
+        assert verify_single_head() == "0031_organizational_learning"
 
     def test_verify_single_head_raises_on_multiple_heads(self, monkeypatch):
         monkeypatch.setattr(
@@ -301,8 +301,9 @@ class TestAlembicHeadIntegrity:
 
     def test_current_matches_head_after_upgrade(self, fresh_db: str):
         alembic_upgrade_head(fresh_db)
-        assert alembic_current(fresh_db) == ("0019_live_record_domain",)
-        assert verify_single_head(fresh_db) == "0019_live_record_domain"
+        assert alembic_current(fresh_db) == ("0031_organizational_learning",)
+        assert verify_single_head(fresh_db) == "0031_organizational_learning"
+
 
     def test_current_empty_after_downgrade_base(self, fresh_db: str):
         alembic_upgrade_head(fresh_db)
@@ -460,8 +461,8 @@ class TestForeignKeyEnforcement:
         factory = make_sync_session_factory(fresh_db)
         with factory() as session:
             session.execute(text(
-                "INSERT INTO conversations (conversation_id, status, created_at, updated_at) "
-                "VALUES ('c1', 'idle', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)"
+                "INSERT INTO conversations (conversation_id, status, last_event_sequence, created_at, updated_at) "
+                "VALUES ('c1', 'idle', 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)"
             ))
             session.execute(text(
                 "INSERT INTO agent_instances (agent_instance_id, conversation_id, agent_type, status, "
@@ -490,8 +491,8 @@ class TestForeignKeyEnforcement:
         try:
             async with db.session_factory() as session:
                 await session.execute(text(
-                    "INSERT INTO conversations (conversation_id, status, created_at, updated_at) "
-                    "VALUES ('c1', 'idle', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)"
+                    "INSERT INTO conversations (conversation_id, status, last_event_sequence, created_at, updated_at) "
+                    "VALUES ('c1', 'idle', 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)"
                 ))
                 await session.execute(text(
                     "INSERT INTO agent_instances (agent_instance_id, conversation_id, agent_type, status, "

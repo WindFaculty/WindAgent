@@ -1,0 +1,11 @@
+{
+    "schema_version": 2,
+    "commit": "0f869d16cb0bc850d6e5097db0d8bc1089cb9d49",
+    "indexed_at": "2026-08-29T06:36:06Z",
+    "project": "D-code_ca_nhan-WindAgent",
+    "nodes": 39337,
+    "edges": 189807,
+    "original_size": 55443456,
+    "compressed_size": 8121580,
+    "compression_level": 9
+}

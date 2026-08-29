@@ -9,7 +9,7 @@ from __future__ import annotations
 import logging
 from typing import Any, Dict, List, Optional, Tuple
 
-from windagent_context.provenance import ContextItem, ProvenanceManifest
+from windagent_context.provenance import ContextItem, ContextItemProvenance, ProvenanceManifest, SourceType
 from windagent_context.budget import TokenBudgetManager
 from windagent_context.compaction import ContextCompactor
 from windagent_context.repository.index import RepositoryIndex
@@ -33,6 +33,27 @@ class ContextBuilder:
             budget_manager=self.budget_manager,
             compactor=self.compactor,
             repo_index=self.repo_index,
+        )
+
+    def create_context_item(
+        self,
+        item_id: str,
+        content: str,
+        source: str = "",
+        source_type: str = "file_content",
+        retrieval_reason: str = "",
+        confidence: float = 1.0,
+    ) -> ContextItem:
+        stype = SourceType(source_type) if source_type in {s.value for s in SourceType} else SourceType.FILE_CONTENT
+        return ContextItem(
+            item_id=item_id,
+            content=content,
+            provenance=ContextItemProvenance(
+                source=source,
+                source_type=stype,
+                retrieval_reason=retrieval_reason,
+                confidence=confidence,
+            ),
         )
 
     def assemble_context(

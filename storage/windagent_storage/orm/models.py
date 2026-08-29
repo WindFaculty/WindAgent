@@ -19,6 +19,25 @@ class BaseORM(DeclarativeBase):
     pass
 
 
+import windagent_storage.orm.v2_orchestration_models  # noqa: E402,F401  (registers V2 orchestration tables)
+import windagent_storage.orm.multi_agent_models  # noqa: E402,F401  (registers conversations/parent_tasks/plans for Phase 5 goals)
+import windagent_storage.orm.agent_runs_stub  # noqa: E402,F401  (registers agent_runs stub for FK resolution)
+import windagent_storage.orm.agent_loop_models  # noqa: E402,F401  (registers agent_loop_states FK to agent_runs)
+import windagent_storage.orm.delegation_models  # noqa: E402,F401  (registers agent_delegations FK to agent_runs)
+import windagent_storage.orm.persistent_goal_models  # noqa: E402,F401  (registers persistent_goals)
+import windagent_storage.orm.agent_checkpoint_models  # noqa: E402,F401  (registers agent_checkpoints)
+import windagent_storage.orm.memory_v2_models  # noqa: E402,F401  (registers memory_v2_records)
+import windagent_storage.orm.evaluation_models  # noqa: E402,F401  (registers evaluation_records)
+import windagent_storage.orm.experience_models  # noqa: E402,F401  (registers experience_records)
+import windagent_storage.orm.candidate_models  # noqa: E402,F401  (registers learning_candidates and learned_rules)
+import windagent_storage.orm.harness_models  # noqa: E402,F401  (registers harness_versions and refinement_proposals)
+import windagent_storage.orm.experiment_models  # noqa: E402,F401  (registers experiments)
+import windagent_storage.orm.promotion_models  # noqa: E402,F401  (registers promotion_decisions)
+import windagent_storage.orm.skill_evolution_models  # noqa: E402,F401  (registers skill_candidates, skill_versions, skill_promotion_decisions)
+import windagent_storage.orm.subagent_evolution_models  # noqa: E402,F401  (registers subagent_candidates, subagent_spec_versions, subagent_promotion_decisions)
+import windagent_storage.orm.organizational_learning_models  # noqa: E402,F401  (registers learned_rules, conflict_resolutions, multi_agent_attributions)
+
+
 class SessionORM(BaseORM):
     __tablename__ = "chat_sessions"
 

@@ -190,6 +190,8 @@ class OrchestratorService:
         release_telemetry: Any | None = None,
         studio_run_extension: Any | None = None,
         repo_factory: Callable[[Any], MultiAgentRepositoryPort] | None = None,
+        agent_budget_controller: Any | None = None,
+        agent_loop_repo_factory: Callable[[Any], Any] | None = None,
     ) -> None:
         self._session_factory = session_factory
         # Phase 7: the execution runtime port is optional.  The API composes
@@ -212,6 +214,8 @@ class OrchestratorService:
         self._plan_scheduler = DurablePlanScheduler(
             repo_factory=repo_factory, session_factory=session_factory
         )
+        self._agent_budget_controller = agent_budget_controller
+        self._agent_loop_repo_factory = agent_loop_repo_factory
         self._live_runs: dict[str, _LiveRun] = {}
         self._registry_lock = asyncio.Lock()
 
@@ -227,6 +231,16 @@ class OrchestratorService:
             "OrchestratorService requires a repo_factory (MultiAgentRepository factory) "
             "to be injected by a composition root."
         )
+
+    def _budget_controller(self) -> Any | None:
+        if self._agent_budget_controller is not None:
+            return self._agent_budget_controller
+        factory = self._agent_loop_repo_factory
+        if factory is None:
+            return None
+        from windagent_orchestration.agent_loop.budget_controller import AgentBudgetController
+        multi_factory = self._repo_factory
+        return AgentBudgetController(session_factory=self._session_factory, repo_factory=factory, multi_repo_factory=multi_factory)
 
     async def submit_goal(
         self,
@@ -337,6 +351,13 @@ class OrchestratorService:
                     agent_session_id=launch["agent_session_id"],
                 )
                 launches.append(launch)
+            if self._agent_loop_repo_factory is not None:
+                try:
+                    loop_repo = self._agent_loop_repo_factory(session)
+                    for launch in launches:
+                        await loop_repo.ensure_loop_state(agent_run_id=str(launch["agent_run_id"]), default_state="CREATED", limits={}, scope="conversation")
+                except Exception:
+                    pass
             await session.commit()
 
         # The durable scheduler, not WorkflowEngine's in-memory state, chooses
@@ -1013,7 +1034,13 @@ class OrchestratorService:
                 agent_session_id=str(run["agent_session_id"]),
             )
             await session.commit()
-
+        if not succeeded:
+            try:
+                _bc = self._budget_controller()
+                if _bc is not None:
+                    await _bc.record_retry(str(run["agent_run_id"]))
+            except Exception:
+                pass
         async with self._registry_lock:
             self._live_runs.pop(str(run["agent_run_id"]), None)
         dispatched = await self._dispatch_ready_nodes(str(run["parent_task_id"]))
@@ -1214,6 +1241,16 @@ class OrchestratorService:
             run = await repo.routable_agent_run(agent_instance_id, conversation_id)
             if run is None:
                 raise LookupError("running agent not found")
+            try:
+                _bc = self._budget_controller()
+                if _bc is not None:
+                    await _bc.authorize_turn(str(run["agent_run_id"]))
+            except Exception as exc:
+                from windagent_orchestration.agent_loop.budget_controller import BudgetExhaustedError
+                if isinstance(exc, BudgetExhaustedError):
+                    raise RuntimeError(f"budget exhausted: {exc.reason}") from exc
+                if "no such table" not in str(exc).lower():
+                    raise
             route_lock, routing_snapshot = self._resolve_route_lock(run)
             turn_id = self._new_id()
             await repo.create_agent_turn(
@@ -1267,6 +1304,12 @@ class OrchestratorService:
                 routing_snapshot=routing_snapshot,
                 error_class=exc.__class__.__name__,
             )
+            try:
+                _bc = self._budget_controller()
+                if _bc is not None:
+                    await _bc.record_model_failure(str(run["agent_run_id"]))
+            except Exception:
+                pass
             raise
 
         binding = {
@@ -1298,6 +1341,13 @@ class OrchestratorService:
                 agent_session_id=str(run["agent_session_id"]),
             )
             await session.commit()
+        try:
+            _bc = self._budget_controller()
+            if _bc is not None:
+                tokens = int(summary.get("prompt_tokens") or 0) + int(summary.get("completion_tokens") or 0)
+                await _bc.record_turn_tokens(str(run["agent_run_id"]), tokens=tokens, cost=0.0)
+        except Exception:
+            pass
         return AgentTurnResult(
             turn_id=turn_id,
             agent_instance_id=agent_instance_id,

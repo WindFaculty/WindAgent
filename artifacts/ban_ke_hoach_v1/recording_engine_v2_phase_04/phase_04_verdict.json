@@ -1,0 +1,145 @@
+{
+  "phase": "recording_engine_v2 Phase 04 — Direct NVENC",
+  "generated_at": "2026-08-29T00:30:00+07:00",
+  "baseline_commit": "0f869d16cb0bc850d6e5097db0d8bc1089cb9d49",
+  "final_commit": "0f869d16cb0bc850d6e5097db0d8bc1089cb9d49",
+  "branch": "refactor/architecture-v3-hardening",
+  "objective": "Native NVENC path that accepts Phase-3 D3D11 texture directly and emits valid H.264/HEVC Annex-B packets via shared Phase-2 D3D11 device, frozen quality-first CQP profile, fail-closed on NVENC unavailable/API failure. Excludes WGC capture, MKV muxing, audio, preview, service cutover, Tauri/frontend.",
+  "authorities": {
+    "d3d11_device": "capture/d3d11_device.rs / injected shared device",
+    "capture_texture": "Phase-3 CapturedFrame (ID3D11Texture2D)",
+    "encoder_lifecycle": "NvencSession",
+    "abi": "NvencApi",
+    "profile": "frozen RecordingProfile via NvencConfig",
+    "pts": "Phase-3 QPC timeline (TakeClock) — zero preserved"
+  },
+  "implementation": {
+    "direct_resource_flow": "ID3D11Texture2D → register_resource/map_input_resource (MRU 16 ring, single live map per resource) → encode_picture → lock_bitstream → annex_b_to_length_prefixed packet; no Map/staging/CPU RGBA/FFmpeg before NvEncEncodePicture (STATICALLY_VERIFIED)",
+    "shared_device": "service::build_native_ports creates one D3d11Bundle and passes &bundle.device to WgcCapture::with_shared_device and NvencEncoder::open — no second authority (STATICALLY_VERIFIED)",
+    "lifecycle_cleanup": "Registered/mapped released on success, buffered NEED_MORE_INPUT, encode error (FIXED first pass: Err single-unmap), lock failure (FIXED first pass: release before Err), flush (EOS drain ≤64 + release), evict (unmap before unregister), drop (reverse-order, idempotent via Option::take) — preserved in Repair Pass 1",
+    "pts_zero_repair": "REPAIR PASS 1: lock_packets previously treated output_time_stamp==0 as absent and substituted fallback_pts_us → first packet picPts=516646 then 16666 non-monotonic (first-pass FAILURE). Fixed via NvencSession::resolve_output_pts that preserves driver timestamp exactly including zero (no sentinel conflation, never uses nonzero test). PTS/DTS has_b_frames logic unchanged. Extended ignored hardware probe to assert contains(&0) and nondecreasing; added deterministic unit test resolve_output_pts_preserves_zero and static helper presence test.",
+    "quality_frozen": "H264 HIGH_QUALITY / HEVC ULTRA_HIGH_QUALITY, CQP const_qp on P/B/I, multi_pass map, GOP frame_interval_p=b+1, chroma 4:2:0, repeatSPSPPS, lookahead/AQ only via get_encode_caps capability probe (no silent downgrade), validate() rejects out-of-range",
+    "packets_phase5_ready": "sequence_header 256KiB captured at open (fail-closed if 0), PTS preserved zero QPC µs (repaired), IDR FORCEIDR honored, flush drains pending, DTS≡PTS when no B-frames else PTS-duration. Distinction: raw NVENC is Annex-B (00 00 00 01), session converts to length-prefixed via annex_b_to_length_prefixed for MKV avcC/hvcC (intentional, not passthrough)",
+    "fail_closed": "load ladder NVENC_DLL_NOT_FOUND/ENTRY_POINT/API_INIT/DRIVER_TOO_OLD/FUNCTION_TABLE_INCOMPLETE; open NVENC_D3D11_UNAVAILABLE/NO_SESSION/NO_BITSTREAM/NO_SEQUENCE_PARAMS/API_FAILED; encode_texture EOS_ALREADY_SENT; encode_frame NVENC_NO_TEXTURE; no SW/FFmpeg fallback",
+    "fix_applied_first_pass": "nvenc_session.rs — encode_picture Err single-unmap + lock failure release before Err (29 lines)",
+    "fix_applied_repair_pass_1": "nvenc_session.rs — resolve_output_pts helper (preserves zero, explicit unavailable), lock_packets calls helper not `!=0`, extended production_encode_texture_probe to collect emitted_pts and assert monotonic includes 0; encoder/mod.rs — 2 new tests (resolve_output_pts_preserves_zero, lock_packets_zero_pts_not_treated_as_absent)"
+  },
+  "validation": {
+    "unit_nvenc_api": {
+      "cmd": "cargo test --manifest-path apps/desktop/native/recording-engine/Cargo.toml encoder::nvenc_api --lib",
+      "exit_code": 0,
+      "passed": 11,
+      "failed": 0,
+      "detail": "caps ordinals, GUID roundtrip, sdk version, struct sizes/offsets (1800/3584/2552), status names, rc bitfield LSB, hevc bit positions, load idempotent"
+    },
+    "unit_encoder_full": {
+      "cmd": "cargo test --manifest-path apps/desktop/native/recording-engine/Cargo.toml encoder:: --lib",
+      "exit_code": 0,
+      "passed": 19,
+      "failed": 0,
+      "ignored": 5,
+      "detail": "11 nvenc_api + 8 new (nvenc_config_from_profile_maps_frozen_quality, defaults_quality_first, nvenc_unavailable prefix, mock flush idempotent, no Cpu readback static, encode error cleanup static, resolve_output_pts_preserves_zero, lock_packets_zero_pts_not_treated_as_absent); 5 ignored manual diagnostics not counted"
+    },
+    "unit_pts_helper": {
+      "cmd": "cargo test --manifest-path apps/desktop/native/recording-engine/Cargo.toml resolve_output_pts_preserves_zero --lib",
+      "exit_code": 0,
+      "result": "PASS — zero preserved even with fallback 516646, driver timestamp always authoritative",
+      "classification": "STATICALLY_VERIFIED (deterministic unit)"
+    },
+    "cargo_check": {
+      "cmd": "cargo check --manifest-path apps/desktop/native/recording-engine/Cargo.toml",
+      "exit_code": 0,
+      "result": "Finished dev profile in 0.60s, 0 errors, 19 warnings (pre-existing)"
+    },
+    "static_no_cpu_readback": {
+      "cmd": "grep Map/staging/FFmpeg in src/encoder + grep \"if lock.output_time_stamp != 0\"",
+      "result": "0 forbidden hits for both; only NvEncMap/Unmap and resolve_output_pts helper present",
+      "classification": "STATICALLY_VERIFIED"
+    },
+    "hardware_session_lifecycle_probe": {
+      "cmd": "cargo test --lib session_lifecycle_probe -- --ignored --nocapture",
+      "exit_code": 0,
+      "result": "PASS — initialize OK, bitstream OK, sequence-params OK 34 bytes (00 00 00 01 67...), texture OK, register OK, map OK, encode status 0, lock 615 bytes picType IDR",
+      "classification": "OBSERVED"
+    },
+    "hardware_production_encode_texture_probe_first_pass_defect": {
+      "cmd": "cargo test --lib production_encode_texture_probe -- --ignored --nocapture (first pass, before Repair Pass 1)",
+      "exit_code": 0,
+      "result": "FAILED PTS contract — open OK, frame31 picPts=516646 then frame32 picPts=16666 non-monotonic, no zero first, drained=39 — recorded as first-pass FAILURE, not claimed correct",
+      "classification": "OBSERVED (first-pass failure)"
+    },
+    "hardware_production_encode_texture_probe_repaired": {
+      "cmd": "cargo test --lib production_encode_texture_probe -- --ignored --nocapture (Repair Pass 1)",
+      "exit_code": 0,
+      "result": "PASS (repaired) — open OK, 70 synthetic 1920x1080 frames, 39 packets pts=[0, 16666, 33332, 49998, 66664, 83330, 99996, 116662, 133328, 149994, 166660, 183326, 199992, 216658, 233324, 249990, 266656, 283322, 299988, 316654, 333320, 349986, 366652, 383318, 399984, 416650, 433316, 449982, 466648, 483314, 499980, 516646, 533312, 549978, 566644, 583310, 599976, 616642, 633308] nondecreasing, contains(&0) asserted, drained=39 flushed=0",
+      "classification": "OBSERVED (repaired)"
+    },
+    "hardware_production_shape_sustained_probe": {
+      "cmd": "cargo test --lib production_shape_sustained_probe -- --ignored --nocapture",
+      "exit_code": 0,
+      "result": "PASS — 60 frames low-level API, 31×NEED_MORE_INPUT then 29×SUCCESS lock 611B/69B, no stall/AV",
+      "classification": "OBSERVED"
+    },
+    "performance_soak_30min": {
+      "result": "NOT_VERIFIED — not run per packet allowance (do not run unless safely automated)",
+      "classification": "NOT_VERIFIED"
+    }
+  },
+  "changed_files_phase4_scope": [
+    "apps/desktop/native/recording-engine/src/encoder/nvenc_session.rs",
+    "apps/desktop/native/recording-engine/src/encoder/mod.rs"
+  ],
+  "changed_files_repair_pass_1": [
+    "apps/desktop/native/recording-engine/src/encoder/nvenc_session.rs — resolve_output_pts helper + lock_packets fix + probe asserts",
+    "apps/desktop/native/recording-engine/src/encoder/mod.rs — 2 PTS repair tests"
+  ],
+  "preserved_dirty": [
+    "apps/desktop/native/recording-engine/src/capture/wgc.rs (Phase-3 invalid-source vs unavailable distinction, 75 lines)",
+    "apps/api/windagent_api/composition/container.py",
+    "core/windagent_core/contracts/*",
+    "execution/windagent_execution/*",
+    "storage/windagent_storage/*",
+    "artifacts/ban_ke_hoach_v1/phase_03/*"
+  ],
+  "untouched": [
+    "artifacts/ban_ke_hoach_v1/phase_04/",
+    "PHASE_04_REPORT.md (root)",
+    "capture/d3d11_device.rs",
+    "capture/mod.rs",
+    "encoder/nvenc_api.rs",
+    "encoder/nvenc_encoder.rs",
+    "service.rs",
+    "muxer/* (Annex-B vs length-prefixed distinction clarified but no code change)",
+    "audio/*",
+    "preview/*"
+  ],
+  "invariants_verified": {
+    "no_cpu_copy": "STATICALLY_VERIFIED",
+    "same_shared_device": "STATICALLY_VERIFIED",
+    "every_resource_unmapped_once": "STATICALLY_VERIFIED (fixed first pass, preserved)",
+    "zero_pts_preserved_nonmonotonic_fixed": "OBSERVED (repaired probe pts=[0,16666,…] + deterministic unit) + STATICALLY_VERIFIED (no !=0 test)",
+    "raw_annexb_vs_length_prefixed_distinction": "STATICALLY_VERIFIED (raw 00 00 00 01 at driver, length-prefixed at MKV boundary intentional)",
+    "need_more_input_buffered": "OBSERVED",
+    "stale_session_no_packet": "STATICALLY_VERIFIED",
+    "profile_no_silent_degrade": "STATICALLY_VERIFIED",
+    "sequence_header_before_mux": "OBSERVED",
+    "fail_closed": "STATICALLY_VERIFIED",
+    "single_thread_not_sync_no_durable": "STATICALLY_VERIFIED"
+  },
+  "acceptance_criteria": {
+    "direct_texture_lifecycle": true,
+    "quality_profile_behavior": true,
+    "error_semantics_fail_closed": true,
+    "focused_tests_added": true,
+    "cargo_check_pass": true,
+    "no_duplicate_authority": true,
+    "truthful_evidence": true,
+    "hardware_annex_b_probe": true,
+    "pts_zero_monotonic_repaired": true,
+    "soak_30min_no_stall": false
+  },
+  "first_pass_pts_failure": "First-pass production_encode_texture_probe emitted picPts=516646 first then 16666 non-monotonic — output_time_stamp==0 treated as absent and replaced with fallback. Not claimed correct; recorded as failure until Repair Pass 1.",
+  "verdict": "BLOCKED",
+  "verdict_reason": "Implementation-ready after Repair Pass 1 (direct texture, lifecycle cleanup, repaired zero-PTS preservation verified by deterministic unit test + repaired hardware probe pts=[0,16666,…] monotonic includes 0). Formal PASS still blocked by NOT_VERIFIED 30-minute no-stall soak per packet. No PTS correctness was claimed before repaired probe. Repair does not satisfy soak gate.",
+  "next_required": "Run deterministic 30-minute sustained encode (or WGC 1080p60 capture+encode) soak and record FPS/RAM/no-stall, then flip to PASS."
+}

@@ -38,7 +38,14 @@ from windagent_api.routers.v2_artifacts import router as v2_artifacts_router
 from windagent_api.routers.v2_memory import router as v2_memory_router
 from windagent_api.routers.v2_plugins import router as v2_plugins_router
 from windagent_api.routers.v2_skills import router as v2_skills_router
+from windagent_api.routers.v2_subagents import router as v2_subagents_router
+from windagent_api.routers.v2_organizational_learning import router as v2_organizational_learning_router
 from windagent_api.routers.v2_evals import router as v2_evals_router
+from windagent_api.routers.v2_experiences import router as v2_experiences_router
+from windagent_api.routers.v2_candidates import router as v2_candidates_router
+from windagent_api.routers.v2_harness import router as v2_harness_router
+from windagent_api.routers.v2_experiments import router as v2_experiments_router
+from windagent_api.routers.v2_promotions import router as v2_promotions_router
 from windagent_api.routers.v2_observability import router as v2_observability_router
 from windagent_api.routers.v2_browser import router as v2_browser_router
 from windagent_api.routers.v2_production_workspace import router as v2_production_workspace_router
@@ -193,7 +200,14 @@ if ENABLE_V2_API:
     app.include_router(v2_memory_router)
     app.include_router(v2_plugins_router)
     app.include_router(v2_skills_router)
+    app.include_router(v2_subagents_router)
+    app.include_router(v2_organizational_learning_router)
     app.include_router(v2_evals_router)
+    app.include_router(v2_experiences_router)
+    app.include_router(v2_candidates_router)
+    app.include_router(v2_harness_router)
+    app.include_router(v2_experiments_router)
+    app.include_router(v2_promotions_router)
     app.include_router(v2_observability_router)
     app.include_router(v2_browser_router)
     app.include_router(v2_production_workspace_router)

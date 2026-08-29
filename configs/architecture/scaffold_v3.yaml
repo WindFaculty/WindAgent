@@ -420,6 +420,7 @@ packages:
       - "windagent_orchestration"
       - "windagent_execution"
       - "windagent_intelligence"
+      - "windagent_evals"
       - "windagent_providers"
       - "windagent_tools"
       - "windagent_workflows"

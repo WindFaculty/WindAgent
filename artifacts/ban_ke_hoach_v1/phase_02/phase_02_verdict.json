@@ -1,0 +1,58 @@
+{
+  "phase": "ban_ke_hoach_v1 Phase 2 — Durable Agent Loop & Budget Controller",
+  "generated_at": "2026-08-28T16:00:00.000000+00:00",
+  "baseline_commit": "0f869d16cb0bc850d6e5097db0d8bc1089cb9d49",
+  "objective": "Durable 12-state agent-run loop with explicit legal/terminal transitions and persisted hierarchical budget controller (max_turns, wall_time, tokens, cost, model/tool failures, retries, child agents, recursion depth, parallel children) with component-wise minimum inheritance and CAS-safe durable storage.",
+  "state_machine": {
+    "states": ["CREATED","READY","RUNNING","WAITING_TOOL","WAITING_CHILD","WAITING_SCHEDULE","COMPACTING","PAUSED","COMPLETED","FAILED","CANCELLED","ORPHANED"],
+    "terminal": ["COMPLETED","FAILED","CANCELLED","ORPHANED"],
+    "legal_transitions": "CREATED->READY->RUNNING->[WAITING_TOOL|WAITING_CHILD|WAITING_SCHEDULE|COMPACTING|PAUSED]->RUNNING->COMPLETED|FAILED|CANCELLED|ORPHANED; terminal has no outgoing",
+    "location": "core/windagent_core/domain/agent_loop.py",
+    "cas_guard": "AgentLoopLifecycle.transition validates legal/terminal and raises ConcurrentStateConflictError on expected_version mismatch; repository UPDATE ... WHERE version=:expected_version"
+  },
+  "budget": {
+    "dimensions": ["max_turns","max_wall_time_seconds","max_tokens","max_cost_usd","max_model_failures","max_tool_failures","max_retries","max_child_agents","max_recursion_depth","max_parallel_children"],
+    "types": ["AgentBudgetLimits","AgentBudgetUsage","AgentBudgetSnapshot","BudgetScope"],
+    "hierarchy": "Conversation -> Parent Run -> Task Node -> Child Agent -> Tool as component-wise minimum; child may only tighten",
+    "exhaustion": "is_exhausted() >= checks + wall-time; fail-closed, loop to FAILED, event recorded"
+  },
+  "storage": {
+    "migration": "storage/windagent_storage/migrations/alembic/versions/0020_agent_loop_budget.py (forward-only, idempotent, agent_loop_states, downgrade drops)",
+    "orm": "storage/windagent_storage/orm/agent_loop_models.py (no FK for create_all compatibility)",
+    "repository": "storage/windagent_storage/repositories/agent_loop_repository.py (CAS, PRAGMA foreign_keys OFF stub for synthetic tests)"
+  },
+  "orchestration": {
+    "controller": "orchestration/windagent_orchestration/agent_loop/budget_controller.py (requires injection, no direct storage import)",
+    "wiring": "OrchestratorService submit_goal creates loop row, execute_provider_turn authorize before route lock, record tokens after, complete_agent_node records retry"
+  },
+  "validation": {
+    "pytest_phase2_unit": {"cmd": ".venv\\Scripts\\python.exe -m pytest tests/unit/core/test_agent_loop_state.py -q", "exit_code": 0, "passed": 8},
+    "pytest_phase2_component": {"cmd": ".venv\\Scripts\\python.exe -m pytest tests/component/orchestration/test_phase2_agent_loop_budget.py -q", "exit_code": 0, "passed": 10},
+    "pytest_phase1": {"cmd": ".venv\\Scripts\\python.exe -m pytest tests/component/orchestration/test_phase1_execution_trajectory.py -q", "exit_code": 0, "passed": 8},
+    "pytest_combined_32": {"cmd": ".venv\\Scripts\\python.exe -m pytest tests/unit/core/test_agent_loop_state.py tests/component/orchestration/test_phase2_agent_loop_budget.py tests/component/orchestration/test_phase1_execution_trajectory.py tests/component/orchestration/test_phase2_orchestrator_supervisor.py tests/component/orchestration/test_phase6_conversation_recovery.py -q", "exit_code": 0, "passed": 32},
+    "architecture_v3": {"cmd": ".venv\\Scripts\\python.exe scripts/check_architecture_v3.py", "exit_code": 0, "result": "PASS (0 violations)"},
+    "ruff": {"cmd": "ruff check --select E4,E7,E9,F", "exit_code": 0, "result": "All checks passed"}
+  },
+  "invariants": {
+    "durable_recoverable": true,
+    "no_work_after_exhaustion": true,
+    "no_child_escalation": true,
+    "cas_safe": true,
+    "forward_only_migration": true,
+    "one_orchestration_authority": true,
+    "core_not_import_storage": true
+  },
+  "preserved_dirty_files": [
+    "apps/worker/windagent_worker/composition/queue.py",
+    "apps/worker/windagent_worker/lease.py",
+    "orchestration/windagent_orchestration/composition.py",
+    "orchestration/windagent_orchestration/dispatcher/leases.py",
+    "orchestration/windagent_orchestration/task_manager/service.py",
+    "orchestration/windagent_orchestration/workflow_engine/checkpoints.py",
+    "ban_ke_hoach_v1.md",
+    "artifacts/architecture_v3/phase_16/phase_16_verdict.json",
+    "artifacts/ban_ke_hoach_v1/phase_00/",
+    "artifacts/ban_ke_hoach_v1/phase_01/"
+  ],
+  "verdict": "PHASE_02_PASS"
+}

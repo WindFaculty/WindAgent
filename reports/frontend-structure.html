@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WindAgent — Frontend Structure Inventory</title>
+<style>
+  :root{
+    --bg-darker:#060e20; --bg-dark:#0b1326; --bg-panel:#131b2e; --bg-panel-light:#171f33; --bg-panel-active:#222a3d;
+    --border-color:#424754; --border-subtle:#2d3449; --border-glow:rgba(77,142,255,.25);
+    --color-primary:#4d8eff; --color-primary-hover:#3b82f6; --color-secondary:#4edea3; --color-accent:#c0c1ff;
+    --color-success:#4edea3; --color-warning:#f59e0b; --color-danger:#ffb4ab;
+    --text-main:#dae2fd; --text-muted:#c2c6d6; --text-dim:#8c909f;
+    --radius:12px; --radius-sm:8px; --shadow:0 8px 32px rgba(0,0,0,.4);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg-darker);color:var(--text-main);font:14px/1.65 'Inter','Segoe UI',system-ui,-apple-system,sans-serif; -webkit-font-smoothing:antialiased;}
+  a{color:var(--color-primary);text-decoration:none}
+  a:hover{text-decoration:underline}
+  code{font-family:'JetBrains Mono','Cascadia Code',Consolas,monospace;font-size:12.5px;background:rgba(77,142,255,.08);border:1px solid var(--border-subtle);border-radius:6px;padding:1px 6px;color:#adc6ff}
+  pre{font-family:'JetBrains Mono',Consolas,monospace;font-size:12.5px;line-height:1.6;background:var(--bg-panel);border:1px solid var(--border-subtle);border-radius:10px;padding:14px 16px;overflow:auto}
+  /* Header */
+  .hero{
+    background:
+      radial-gradient(800px 400px at 20% -10%, rgba(77,142,255,.18), transparent 60%),
+      radial-gradient(600px 300px at 90% 0%, rgba(78,222,163,.12), transparent 60%),
+      linear-gradient(180deg, #0b1326 0%, #060e20 100%);
+    border-bottom:1px solid var(--border-subtle);
+    position:sticky; top:0; z-index:40; backdrop-filter:blur(12px);
+  }
+  .hero-inner{max-width:1280px;margin:0 auto;padding:28px 24px 20px;display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap}
+  .hero h1{font-size:28px;font-weight:800;letter-spacing:-.5px;line-height:1.2}
+  .hero h1 span{background:linear-gradient(90deg,#4d8eff,#4edea3);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+  .hero .subtitle{color:var(--text-muted);margin-top:6px;max-width:720px;font-size:13.5px}
+  .hero .meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  .badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;padding:5px 10px;border-radius:999px;border:1px solid var(--border-subtle);background:var(--bg-panel-light);color:var(--text-muted)}
+  .badge.primary{color:#adc6ff;border-color:rgba(77,142,255,.35);background:rgba(77,142,255,.12)}
+  .badge.success{color:#4edea3;border-color:rgba(78,222,163,.35);background:rgba(78,222,163,.1)}
+  .badge.warn{color:#f59e0b;border-color:rgba(245,158,11,.35);background:rgba(245,158,11,.1)}
+  /* Stats */
+  .stats{max-width:1280px;margin:18px auto 0;padding:0 24px;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+  .stat{background:var(--bg-panel);border:1px solid var(--border-subtle);border-radius:12px;padding:16px 14px;text-align:center;position:relative;overflow:hidden}
+  .stat::before{content:'';position:absolute;inset:0 0 auto 0;height:2px;background:linear-gradient(90deg,var(--color-primary),var(--color-secondary));opacity:.8}
+  .stat .n{font-size:26px;font-weight:800;color:#fff;letter-spacing:-.5px}
+  .stat .l{font-size:11px;letter-spacing:.7px;text-transform:uppercase;color:var(--text-dim);margin-top:2px;font-weight:600}
+  .stat .sub{font-size:11px;color:var(--text-dim);margin-top:4px}
+  /* Layout */
+  .wrap{max-width:1280px;margin:0 auto;padding:20px 24px 48px;display:grid;grid-template-columns:220px 1fr;gap:20px}
+  @media(max-width:980px){.wrap{grid-template-columns:1fr} .toc{position:static !important}}
+  .toc{position:sticky;top:132px;align-self:start;background:var(--bg-panel);border:1px solid var(--border-subtle);border-radius:12px;padding:14px;max-height:calc(100vh - 150px);overflow:auto}
+  .toc h3{font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:var(--text-dim);margin-bottom:10px}
+  .toc a{display:block;padding:6px 8px;border-radius:8px;color:var(--text-muted);font-size:13px;border:1px solid transparent}
+  .toc a:hover{background:var(--bg-panel-light);color:var(--text-main);text-decoration:none;border-color:var(--border-subtle)}
+  .toc a.active{background:rgba(77,142,255,.12);color:#adc6ff;border-color:rgba(77,142,255,.25)}
+  .content{display:flex;flex-direction:column;gap:22px;min-width:0}
+  section{background:var(--bg-panel);border:1px solid var(--border-subtle);border-radius:14px;overflow:hidden}
+  section>header{padding:18px 20px 14px;border-bottom:1px solid var(--border-subtle);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:linear-gradient(180deg,rgba(255,255,255,.02),transparent)}
+  section>header h2{font-size:16px;font-weight:700;letter-spacing:-.2px;display:flex;align-items:center;gap:10px}
+  section>header h2 i{width:28px;height:28px;display:inline-grid;place-items:center;background:rgba(77,142,255,.14);border:1px solid rgba(77,142,255,.25);border-radius:8px;font-size:14px}
+  section>header .hdr-meta{font-size:12px;color:var(--text-dim)}
+  .sec-body{padding:18px 20px}
+  .sec-body p{color:var(--text-muted);font-size:13.5px}
+  /* Cards grid */
+  .grid{display:grid;gap:12px}
+  .grid.cols3{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+  .grid.cols4{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+  .grid.cols2{grid-template-columns:repeat(auto-fit,minmax(360px,1fr))}
+  .card{background:var(--bg-panel-light);border:1px solid var(--border-subtle);border-radius:12px;padding:14px 16px;transition:.15s}
+  .card:hover{border-color:rgba(77,142,255,.3);transform:translateY(-1px);box-shadow:0 8px 20px rgba(0,0,0,.25)}
+  .card h3{font-size:13.5px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+  .card h3 small{font-weight:600;color:var(--text-dim);font-size:11px}
+  .card .meta{font-size:12px;color:var(--text-dim);margin-bottom:8px}
+  .card ul{padding-left:16px;font-size:12.5px;color:var(--text-muted)}
+  .card li{margin:3px 0}
+  .kpi{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px;background:var(--bg-panel-active);border:1px solid var(--border-subtle);color:var(--text-muted)}
+  /* Table */
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{ text-align:left;padding:8px 10px;color:var(--text-dim);font-weight:700;font-size:11px;letter-spacing:.6px;text-transform:uppercase;background:var(--bg-panel-light);border-bottom:1px solid var(--border-subtle);position:sticky;top:0}
+  td{padding:8px 10px;border-bottom:1px solid rgba(45,52,73,.6);color:var(--text-muted);vertical-align:top}
+  tr:hover td{background:rgba(77,142,255,.04)}
+  .tag{font-size:10px;font-weight:800;letter-spacing:.6px;padding:2px 7px;border-radius:999px;border:1px solid var(--border-subtle);background:var(--bg-panel-active);color:var(--text-dim)}
+  .tag.studio{color:#adc6ff;border-color:rgba(77,142,255,.3);background:rgba(77,142,255,.12)}
+  .tag.system{color:#4edea3;border-color:rgba(78,222,163,.3);background:rgba(78,222,163,.1)}
+  .tag.hidden{color:#ffb4ab}
+  /* Tree */
+  .tree{font-family:'JetBrains Mono',Consolas,monospace;font-size:12.5px;line-height:1.7;color:var(--text-muted)}
+  .tree details{margin-left:14px;border-left:1px dashed var(--border-subtle);padding-left:10px}
+  .tree summary{cursor:pointer;list-style:none;color:var(--text-main);font-weight:600}
+  .tree summary::-webkit-details-marker{display:none}
+  .tree summary::before{content:'▸';display:inline-block;margin-right:6px;transition:.15s;color:var(--text-dim)}
+  .tree details[open] > summary::before{transform:rotate(90deg)}
+  .file{color:var(--text-muted)}
+  .file em{color:#adc6ff;font-style:normal}
+  .file i{color:var(--text-dim)}
+  /* Search */
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .input{flex:1;min-width:220px;max-width:420px;background:var(--bg-panel-light);border:1px solid var(--border-subtle);color:var(--text-main);padding:9px 12px;border-radius:10px;font-size:13px;outline:none}
+  .input:focus{border-color:rgba(77,142,255,.5);box-shadow:0 0 0 3px rgba(77,142,255,.12)}
+  .btn{appearance:none;background:var(--color-primary);color:#fff;border:1px solid transparent;padding:8px 12px;border-radius:10px;font-size:12.5px;font-weight:700;cursor:pointer}
+  .btn.ghost{background:transparent;color:var(--text-muted);border-color:var(--border-subtle)}
+  /* Diagram */
+  .arch{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:center}
+  .arch-col{display:flex;flex-direction:column;gap:10px}
+  .arch-box{background:var(--bg-panel-light);border:1px solid var(--border-subtle);border-radius:12px;padding:12px;text-align:center}
+  .arch-box strong{display:block;font-size:13px;color:var(--text-main)}
+  .arch-box span{font-size:11.5px;color:var(--text-dim)}
+  .arrow{color:var(--text-dim);font-size:18px;text-align:center}
+  /* Tokens preview */
+  .token-row{display:flex;gap:10px;flex-wrap:wrap}
+  .swatch{width:100%;height:36px;border-radius:8px;border:1px solid var(--border-subtle)}
+  .token{flex:1;min-width:120px;background:var(--bg-panel-light);border:1px solid var(--border-subtle);border-radius:10px;padding:10px;text-align:center}
+  .token b{display:block;font-size:12px;color:var(--text-main);margin-top:6px}
+  .token s{font-size:10px;color:var(--text-dim);text-decoration:none;letter-spacing:.4px}
+  /* Stitch */
+  .stitch-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+  .stitch-card{border-radius:12px;overflow:hidden;border:1px solid var(--border-subtle);background:var(--bg-panel-light)}
+  .stitch-card img{width:100%;height:140px;object-fit:cover;display:block;background:var(--bg-panel-active)}
+  .stitch-card .cap{padding:8px 10px;font-size:12px;color:var(--text-muted)}
+  /* Scrollbar */
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-thumb{background:var(--border-color);border-radius:999px}
+  ::-webkit-scrollbar-track{background:transparent}
+  .pill{font-size:11px;padding:2px 8px;border-radius:999px;background:rgba(77,142,255,.12);border:1px solid rgba(77,142,255,.25);color:#adc6ff}
+  .mono{font-family:'JetBrains Mono',Consolas,monospace}
+  .muted{color:var(--text-dim)}
+  .divider{height:1px;background:var(--border-subtle);margin:14px 0}
+  details.card{padding:0;overflow:hidden}
+  details.card summary{padding:12px 14px;cursor:pointer;font-weight:700;color:var(--text-main);list-style:none;display:flex;align-items:center;justify-content:space-between}
+  details.card summary::-webkit-details-marker{display:none}
+  details.card[open] summary{border-bottom:1px solid var(--border-subtle);background:var(--bg-panel-active)}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+  .chip{font-size:11px;padding:3px 8px;border-radius:999px;background:var(--bg-panel-active);border:1px solid var(--border-subtle);color:var(--text-dim)}
+  /* Responsive hero stats inside */
+  .hero-stats{display:flex;gap:16px;flex-wrap:wrap;margin-left:auto}
+  .hero-stat{text-align:center;min-width:86px}
+  .hero-stat b{display:block;font-size:18px;font-weight:800;color:#fff}
+  .hero-stat s{font-size:10.5px;letter-spacing:.6px;text-transform:uppercase;color:var(--text-dim);text-decoration:none}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div style="flex:1;min-width:320px">
+      <h1>WindAgent <span>Frontend Inventory</span></h1>
+      <div class="subtitle">Tổng hợp toàn bộ kiến trúc frontend — monorepo <code>frontend/</code> với 7 packages + 23 features + 34 routes + design system Kinetic Obsidian. Quét trực tiếp từ source ngày 29/08/2026.</div>
+      <div class="meta">
+        <span class="badge primary">React 18 • TypeScript 5.6 • Vite</span>
+        <span class="badge">Hash Router • Zustand • TanStack Query</span>
+        <span class="badge success">50.0k LOC • 320 files</span>
+        <span class="badge warn">Tauri-ready • Web fallback</span>
+      </div>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat"><b>7</b><s>packages</s></div>
+      <div class="hero-stat"><b>23</b><s>features</s></div>
+      <div class="hero-stat"><b>34</b><s>routes</s></div>
+      <div class="hero-stat"><b>24</b><s>UI primitives</s></div>
+    </div>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="n">320</div><div class="l">TS/TSX files</div><div class="sub">+ 9 CSS • 16 HTML designs</div></div>
+    <div class="stat"><div class="n">50,021</div><div class="l">Total LOC</div><div class="sub">app 41.6k • packages 8.4k</div></div>
+    <div class="stat"><div class="n">228</div><div class="l">app files</div><div class="sub">features + app shell</div></div>
+    <div class="stat"><div class="n">19</div><div class="l">API contracts</div><div class="sub">typed V3 envelope</div></div>
+    <div class="stat"><div class="n">15</div><div class="l">stitch screenshots</div><div class="sub">Figma → HTML refs</div></div>
+    <div class="stat"><div class="n">100%</div><div class="l">Type Strict</div><div class="sub">strict • noEmit typecheck</div></div>
+  </div>
+</div>
+
+<div class="wrap">
+  <!-- TOC -->
+  <nav class="toc" id="toc">
+    <h3>Mục lục</h3>
+    <a href="#overview" class="active">1. Tổng quan monorepo</a>
+    <a href="#workspaces">2. Workspaces & deps</a>
+    <a href="#packages">3. Packages chi tiết</a>
+    <a href="#app-shell">4. App Shell & bootstrap</a>
+    <a href="#router">5. Router & navigation</a>
+    <a href="#features">6. Features (23)</a>
+    <a href="#state">7. State & data layer</a>
+    <a href="#design">8. Design system</a>
+    <a href="#platform">9. Platform abstraction</a>
+    <a href="#api">10. API & Realtime</a>
+    <a href="#tree">11. Cây thư mục</a>
+    <a href="#stitch">12. Stitch designs</a>
+    <a href="#files">13. File inventory</a>
+  </nav>
+
+  <div class="content">
+
+    <!-- 1 OVERVIEW -->
+    <section id="overview">
+      <header><h2><i>◈</i> 1. Tổng quan kiến trúc monorepo</h2><span class="hdr-meta">frontend/ • npm workspaces • tsconfig.base.json</span></header>
+      <div class="sec-body">
+        <p>Frontend được tổ chức dạng <b>npm workspaces</b> với root <code>frontend/package.json</code> quản lý 7 packages + 1 app. <code>tsconfig.base.json</code> thống nhất <code>target ES2022, bundler, strict</code>. Mỗi package có <code>tsconfig.json</code> riêng, xuất khẩu qua <code>exports</code> field.</p>
+        <div class="arch" style="margin-top:16px">
+          <div class="arch-col">
+            <div class="arch-box"><strong>frontend/app</strong><span>@windagent/app v0.4.0 — App shell, router, 23 features</span></div>
+            <div class="arch-box"><strong>frontend/packages/ui</strong><span>@windagent/ui v0.5.0 — 24 primitives + tokens</span></div>
+            <div class="arch-box"><strong>frontend/packages/studio-shell</strong><span>v0.1.0 — AppShell, Sidebar, TopBar, Navigation</span></div>
+          </div>
+          <div class="arrow">⟶<br><span style="font-size:11px">imports</span><br>⟵</div>
+          <div class="arch-col">
+            <div class="arch-box"><strong>frontend/packages/api-contracts</strong><span>19 contracts • Problem+json, pagination, resource</span></div>
+            <div class="arch-box"><strong>frontend/packages/api-client</strong><span>HttpTransport + WindAgentClient façade</span></div>
+            <div class="arch-box"><strong>frontend/packages/realtime</strong><span>RealtimeClient • WS + resumption + heartbeat</span></div>
+            <div class="arch-box"><strong>frontend/packages/code-video-ui</strong><span>CodeStudio, ReplayController, Terminal, FileTree</span></div>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="grid cols3">
+          <div class="card"><h3>📦 frontend/package.json</h3><div class="meta">root workspaces — npm run build = typecheck --workspaces</div><pre>workspaces: ["packages/*","app"]
+scripts: { build, typecheck, test }
+devDeps: typescript ^5.6.3</pre></div>
+          <div class="card"><h3>⚙️ tsconfig.base.json</h3><div class="meta">ES2022 • bundler • react-jsx • strict</div><pre>target ES2022
+module ESNext
+jsx react-jsx
+strict true
+noEmit true</pre></div>
+          <div class="card"><h3>🎨 stitch_designs/</h3><div class="meta">16 HTML refs + 15 PNG screenshots — nguồn truth cho UI</div><ul><li><code>html/01_Reviews...html</code> → <code>16_Navigation...html</code></li><li><code>screenshots/*.png</code> 2400×1600</li></ul></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2 WORKSPACES -->
+    <section id="workspaces">
+      <header><h2><i>⬡</i> 2. Workspaces & dependency graph</h2><span class="hdr-meta">7 packages • DAG không vòng</span></header>
+      <div class="sec-body">
+        <div style="overflow:auto">
+          <table>
+            <thead><tr><th>Package</th><th>Version</th><th>Exports</th><th>Depends on</th><th>LOC / Files</th></tr></thead>
+            <tbody>
+              <tr><td><code>@windagent/app</code><br><span class="muted">frontend/app</span></td><td>0.4.0</td><td><code>.</code> <code>./styles.css</code></td><td>api-client, api-contracts, realtime, studio-shell, ui, tanstack-query, tauri, zustand, lucide</td><td><b>41,601</b> / 228</td></tr>
+              <tr><td><code>@windagent/ui</code></td><td>0.5.0</td><td><code>.</code> <code>./styles.css</code> <code>./tokens</code> <code>./theme</code></td><td>react 18/19, lucide (peer)</td><td>1,480 / 33</td></tr>
+              <tr><td><code>@windagent/studio-shell</code></td><td>0.1.0</td><td><code>.</code></td><td>react, ui (implicit)</td><td>1,063 / 16</td></tr>
+              <tr><td><code>@windagent/api-client</code></td><td>—</td><td><code>.</code></td><td>api-contracts, fetch</td><td>2,321 / 6</td></tr>
+              <tr><td><code>@windagent/api-contracts</code></td><td>—</td><td><code>.</code></td><td>— (pure types)</td><td>1,962 / 21</td></tr>
+              <tr><td><code>@windagent/realtime</code></td><td>—</td><td><code>.</code></td><td>api-contracts (EventEnvelope)</td><td>606 / 5</td></tr>
+              <tr><td><code>@windagent/code-video-ui</code></td><td>—</td><td><code>.</code></td><td>react</td><td>988 / 11</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="divider"></div>
+        <p style="margin-bottom:8px"><b>Quy ước import trong app:</b></p>
+        <pre>import { AppShell, Sidebar } from '@windagent/studio-shell'
+import { Button, Card } from '@windagent/ui'
+import { createApiClient } from '@windagent/api-client'
+import type { ProjectResource } from '@windagent/api-contracts'
+import { createRealtimeClient } from '@windagent/realtime'</pre>
+      </div>
+    </section>
+
+    <!-- 3 PACKAGES -->
+    <section id="packages">
+      <header><h2><i>📚</i> 3. Packages chi tiết</h2>
+        <div class="toolbar">
+          <input id="pkgFilter" class="input" placeholder="Lọc package... (ui, realtime, api...)">
+        </div>
+      </header>
+      <div class="sec-body">
+        <div class="grid cols2" id="pkgGrid">
+          <div class="card" data-pkg="ui">
+            <h3>🎨 @windagent/ui <small>v0.5.0</small> <span class="kpi">24 components</span></h3>
+            <div class="meta">Primitive library — peer React 18/19, lucide. Vitest happy-dom.</div>
+            <div class="chips"><span class="chip">Button</span><span class="chip">IconButton</span><span class="chip">Badge</span><span class="chip">StatusBadge</span><span class="chip">Card</span><span class="chip">Panel</span><span class="chip">Tabs</span><span class="chip">Table</span><span class="chip">Modal</span><span class="chip">Input</span><span class="chip">Select</span><span class="chip">Toast</span></div>
+            <ul style="margin-top:8px">
+              <li><code>src/components/*</code> — 24 primitives (<code>Alert, Badge, Button, Card, Checkbox, Dropdown, EmptyState, ErrorState, Icon, IconButton, Input, Modal, Panel, ProgressBar, Select, Skeleton, Spinner, StatusBadge, Switch, Table, Tabs, Textarea, Toast, Tooltip</code>)</li>
+              <li><code>src/layout/*</code> — Grid, PageHeader, SectionHeader, SplitPane, Stack</li>
+              <li><code>src/tokens/*</code> — colors, typography, spacing, radius, shadows, z-index, motion, layout</li>
+              <li><code>src/theme/dark.css</code> + <code>src/styles/{index,components}.css</code></li>
+            </ul>
+          </div>
+          <div class="card" data-pkg="studio-shell">
+            <h3>🏛️ @windagent/studio-shell <small>v0.1.0</small> <span class="kpi">AppShell</span></h3>
+            <div class="meta">Layout & navigation — Sidebar, TopBar, MainWorkspace, WorkspaceHeader</div>
+            <ul>
+              <li><code>layout/AppShell.tsx</code>, <code>TopBar.tsx</code>, <code>Sidebar.tsx</code>, <code>MainWorkspace.tsx</code>, <code>WorkspaceHeader.tsx</code></li>
+              <li><code>navigation/navigation.config.ts</code> — <code>DESKTOP_NAVIGATION_GROUPS</code> (STUDIO, PRODUCTION, SYSTEM)</li>
+              <li><code>navigation/NavigationGroup.tsx</code> + <code>navigation.types.ts</code></li>
+              <li><code>status/*</code> — BackendStatus, RuntimeMetrics, RuntimeStatusStrip</li>
+            </ul>
+          </div>
+          <div class="card" data-pkg="api-client">
+            <h3>🔌 @windagent/api-client <span class="kpi">HttpTransport</span></h3>
+            <div class="meta">Typed façade over fetch — problem+json, idempotency, correlation-id</div>
+            <ul>
+              <li><code>src/transport.ts</code> — <code>HttpTransport</code>, <code>RequestOptions</code>, retry, timeout 15s, buildUrl</li>
+              <li><code>src/client.ts</code> — <code>WindAgentClient</code> (system, projects, studio, agents, routing, production, …)</li>
+              <li><code>src/errors.ts</code> — ApiError, HttpError, NetworkError, TimeoutError</li>
+              <li><code>src/__tests__/*</code> — client.test, transport.test</li>
+            </ul>
+          </div>
+          <div class="card" data-pkg="api-contracts">
+            <h3>📜 @windagent/api-contracts <span class="kpi">19 modules</span></h3>
+            <div class="meta">Single source of truth — TypeScript contracts cho Unified API V3</div>
+            <div class="chips"><span class="chip">problems</span><span class="chip">pagination</span><span class="chip">resource</span><span class="chip">projects</span><span class="chip">studio</span><span class="chip">agents</span><span class="chip">routing</span><span class="chip"> liveRecord</span></div>
+            <ul style="margin-top:8px">
+              <li><code>problems.ts, pagination.ts, resource.ts, concurrency.ts, commands.ts, events.ts</code></li>
+              <li><code>projects.ts, studio.ts, agents.ts, tasks.ts, conversations.ts, workflows.ts, assets.ts</code></li>
+              <li><code>observability.ts, models.ts, providers.ts, routing.ts, platform.ts, liveRecord.ts</code></li>
+            </ul>
+          </div>
+          <div class="card" data-pkg="realtime">
+            <h3>⚡ @windagent/realtime <span class="kpi">WS resilient</span></h3>
+            <div class="meta">WebSocket client — reconnect exponential, heartbeat, sequence resumption</div>
+            <ul>
+              <li><code>realtimeClient.ts</code> — <code>RealtimeClient</code>, state DISCONNECTED→CONNECTED→DEGRADED→RESYNCING</li>
+              <li><code>socketFactory.ts</code>, <code>types.ts</code> — SubscriptionSpec, RealtimeOptions, EventHandler</li>
+              <li><code>__tests__/realtime.test.ts</code></li>
+            </ul>
+          </div>
+          <div class="card" data-pkg="code-video-ui">
+            <h3>🎬 @windagent/code-video-ui <span class="kpi">Replay</span></h3>
+            <div class="meta">Video/code studio primitives — dùng cho episode production preview</div>
+            <ul>
+              <li><code>CodeStudio.tsx, CodeEditor.tsx, Terminal.tsx, FileTree.tsx</code></li>
+              <li><code>DiagramStage.tsx, TitleCard.tsx, ChecklistStage.tsx, Overlay.tsx</code></li>
+              <li><code>ReplayController.ts, types.ts, styles.css</code></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4 APP SHELL -->
+    <section id="app-shell">
+      <header><h2><i>🧩</i> 4. App shell & bootstrap</h2><span class="hdr-meta">frontend/app/src — 228 files • 41.6k LOC</span></header>
+      <div class="sec-body">
+        <div class="grid cols2">
+          <div class="card">
+            <h3>app/src/app/* <span class="kpi">router foundation</span></h3>
+            <ul>
+              <li><code>app/App.tsx:1</code> — <b>SharedAppContent</b>: AppShell + TopBar(BackendStatus) + Sidebar(NavigationGroup) + RouterOutlet + Suspense(PageSkeleton). Map 30+ routes → Pages.</li>
+              <li><code>app/router.tsx:42</code> — <b>RouterProvider</b> (hash routing, normalizePath, findRouteByPath, 404, goBack/Forward, navigate by id|path)</li>
+              <li><code>app/routeManifest.ts:21</code> — <b>CANONICAL_ROUTE_MANIFEST</b> (SSOT), findRouteByPath/Id, matchPath, getNavigationGroups()</li>
+              <li><code>app/providers.tsx</code> — <b>AppProviders</b>: GlobalErrorBoundary → PlatformProvider → ApiProvider → QueryClientProvider(tanstack 10s) → QueryProvider(custom) → RealtimeProvider → RouterProvider</li>
+              <li><code>app/bootstrap.ts:11</code> — bootstrapFrontend, unhandledrejection handler</li>
+              <li><code>app/errors/*</code> — GlobalErrorBoundary, RouteErrorBoundary, FeatureErrorState</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>app/src/{platform,state,query,realtime,api,shared,styles}</h3>
+            <ul>
+              <li><code>platform/platformAdapter.ts</code> — interface PlatformAdapter (web|tauri), capabilities, filePicker, metrics, notifications</li>
+              <li><code>platform/webAdapter.ts / tauriAdapter.ts</code> + <code>PlatformProvider.tsx</code></li>
+              <li><code>state/uiStore.ts</code> — createStore(useSyncExternalStore) — sidebarCollapsed, refreshInterval, conversationId(sessionStorage), backendOnline, hermesOnline, metrics(MetricState)</li>
+              <li><code>query/queryClient.ts</code> — lightweight QueryClient (cache Map, listeners, staleTime 5s, invalidateQueries, subscribe)</li>
+              <li><code>query/QueryProvider.tsx</code>, <code>realtime/RealtimeProvider.tsx</code> (wss://host/ws), <code>api/ApiProvider.tsx</code> (origin/8765)</li>
+              <li><code>shared/hooks/useApiClient.ts, useSearchParams.ts</code></li>
+              <li><code>styles/index.css</code>, <code>index.ts</code> (barrel export 23 features)</li>
+            </ul>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <pre><b>Provider hierarchy (app/providers.tsx)</b>
+GlobalErrorBoundary
+ └─ PlatformProvider (WebPlatformAdapter default)
+     └─ ApiProvider (createApiClient @ origin)
+         └─ QueryClientProvider (tanstack, stale 10s)
+             └─ QueryProvider (custom QueryClient, stale 5s)
+                 └─ RealtimeProvider (wss://host/ws, auto connect)
+                     └─ RouterProvider (hash #/path)
+                         └─ App (AppShell + Sidebar + MainWorkspace)</pre>
+      </div>
+    </section>
+
+    <!-- 5 ROUTER -->
+    <section id="router">
+      <header><h2><i>🧭</i> 5. Router & navigation</h2><div class="toolbar"><input id="routeFilter" class="input" placeholder="Lọc route... (dashboard, projects, live...)"><span class="pill">34 routes • hash #/path</span></div></header>
+      <div class="sec-body">
+        <p>Router hash-based thuần túy, không dùng <code>react-router</code>. SSOT là <code>CANONICAL_ROUTE_MANIFEST</code> trong <code>app/src/app/routeManifest.ts:21</code>. Hỗ trợ <code>:param</code>, <code>aliases</code>, <code>group</code> (studio|system), <code>navigationVisible</code>, <code>breadcrumb</code>, case-insensitive match.</p>
+        <div style="max-height:420px;overflow:auto;border:1px solid var(--border-subtle);border-radius:10px;margin-top:12px">
+          <table id="routeTable">
+            <thead><tr><th>ID</th><th>Path</th><th>Aliases</th><th>Group</th><th>Nav</th><th>Icon</th></tr></thead>
+            <tbody>
+              <tr><td><code>dashboard</code></td><td><code>/dashboard</code></td><td><code>/, ''</code></td><td><span class="tag studio">studio</span></td><td>✓</td><td>LayoutDashboard</td></tr>
+              <tr><td><code>studio</code></td><td><code>/studio</code></td><td><code>/studio/home</code></td><td><span class="tag studio">studio</span></td><td>✓</td><td>Clapperboard</td></tr>
+              <tr><td><code>projects</code></td><td><code>/projects</code></td><td><code>/studio/projects</code></td><td><span class="tag studio">studio</span></td><td>✓</td><td>Folder</td></tr>
+              <tr><td><code>project-detail</code></td><td><code>/projects/:projectId</code></td><td><code>/studio/projects/:projectId</code></td><td><span class="tag studio">studio</span></td><td>—</td><td>Folder</td></tr>
+              <tr><td><code>episodes</code></td><td><code>/episodes</code></td><td><code>/studio/episodes</code></td><td><span class="tag studio">studio</span></td><td>✓</td><td>Film</td></tr>
+              <tr><td><code>episode-workspace</code></td><td><code>/episodes/:episodeId</code></td><td><code>/studio/episodes/:episodeId</code></td><td><span class="tag studio">studio</span></td><td>—</td><td>Film</td></tr>
+              <tr><td><code>storyboard</code></td><td><code>/storyboard</code></td><td><code>/studio/storyboard</code></td><td><span class="tag studio">studio</span></td><td>✓</td><td>LayoutGrid</td></tr>
+              <tr><td><code>characters</code></td><td><code>/characters</code></td><td><code>/studio/characters</code></td><td><span class="tag studio">studio</span></td><td>✓</td><td>Users</td></tr>
+              <tr><td><code>world</code></td><td><code>/world</code></td><td><code>/studio/world</code></td><td><span class="tag studio">studio</span></td><td>✓</td><td>Globe</td></tr>
+              <tr><td><code>assets</code></td><td><code>/assets</code></td><td><code>/asset-library, /production/assets</code></td><td><span class="tag studio">studio</span></td><td>✓</td><td>Package</td></tr>
+              <tr><td><code>reviews</code></td><td><code>/reviews</code></td><td><code>/studio/reviews</code></td><td><span class="tag studio">studio</span></td><td>✓</td><td>CheckSquare</td></tr>
+              <tr><td><code>live-record</code></td><td><code>/live-record</code></td><td><code>/live, /record, /studio/live-record</code></td><td><span class="tag studio">studio</span></td><td>✓</td><td>Video</td></tr>
+              <tr><td><code>episode-production</code></td><td><code>/episodes/:episodeId/production</code></td><td><code>/studio/episodes/:episodeId/production</code></td><td><span class="tag studio">studio</span></td><td>—</td><td>Clapperboard</td></tr>
+              <tr><td><code>production-script</code></td><td><code>/production/script</code></td><td><code>/production</code></td><td><span class="tag studio">studio</span></td><td>—</td><td>—</td></tr>
+              <tr><td><code>production-assets</code></td><td><code>/production/assets</code></td><td>—</td><td><span class="tag studio">studio</span></td><td>—</td><td>—</td></tr>
+              <tr><td><code>production-video</code></td><td><code>/production/video</code></td><td>—</td><td><span class="tag studio">studio</span></td><td>—</td><td>—</td></tr>
+              <tr><td><code>workspace</code></td><td><code>/workspace</code></td><td><code>/system/workspace, /workspace/:conversationId</code></td><td><span class="tag system">system</span></td><td>✓</td><td>Bot</td></tr>
+              <tr><td><code>router</code></td><td><code>/router</code></td><td><code>/system/router, /routing, /providers/hub…</code></td><td><span class="tag system">system</span></td><td>✓</td><td>Server</td></tr>
+              <tr><td><code>browser</code></td><td><code>/browser</code></td><td><code>/system/browser</code></td><td><span class="tag system">system</span></td><td>✓</td><td>Globe</td></tr>
+              <tr><td><code>files</code></td><td><code>/files</code></td><td><code>/system/files</code></td><td><span class="tag system">system</span></td><td>✓</td><td>Folder</td></tr>
+              <tr><td><code>settings</code></td><td><code>/settings</code></td><td><code>/system/settings</code></td><td><span class="tag system">system</span></td><td>✓</td><td>Settings</td></tr>
+              <tr><td><code>agents</code></td><td><code>/agents</code></td><td><code>/system/agents</code></td><td><span class="tag system">system</span></td><td>✓</td><td>Users</td></tr>
+              <tr><td><code>workflows</code></td><td><code>/workflows</code></td><td><code>/system/workflows</code></td><td><span class="tag system">system</span></td><td>✓ BETA</td><td>GitBranch</td></tr>
+              <tr><td><code>monitoring</code></td><td><code>/monitoring</code></td><td><code>/system/monitoring</code></td><td><span class="tag system">system</span></td><td>✓</td><td>Activity</td></tr>
+              <tr><td><code>logs</code></td><td><code>/logs</code></td><td><code>/system/logs</code></td><td><span class="tag system">system</span></td><td>✓</td><td>FileText</td></tr>
+              <tr><td><code>memory</code></td><td><code>/memory</code></td><td><code>/database, /system/memory</code></td><td><span class="tag system">system</span></td><td>✓ BETA</td><td>Database</td></tr>
+              <tr><td><code>models-library</code></td><td><code>/models</code></td><td><code>/models/library, /system/models</code></td><td><span class="tag system">system</span></td><td>—</td><td>—</td></tr>
+              <tr><td><code>models-endpoints</code></td><td><code>/models/endpoints</code></td><td><code>/providers, /models/providers…</code></td><td><span class="tag system">system</span></td><td>—</td><td>—</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="divider"></div>
+        <div class="grid cols2">
+          <div class="card"><h3>Navigation groups (studio-shell)</h3><pre>STUDIO (10): Dashboard, Studio, Projects, Episodes,
+  Story Board, Characters, World, Assets,
+  Reviews, Live Record
+PRODUCTION (ROADMAP 2, collapsed): Script, Assets, Video
+SYSTEM (9): Agent Workspace, Router, Browser(STUB),
+  Files(STUB), Settings, Agents, Workflows(BETA),
+  Logs, Database(BETA)</pre></div>
+          <div class="card"><h3>Router engine (router.tsx:42)</h3><ul><li><code>normalizePath</code> — strip query, dedup slashes, trailing slash</li><li><code>getHashPath</code> — read <code>window.location.hash</code></li><li><code>findRouteByPath</code> — alias + :param decoding</li><li><code>navigate(id|path, params)</code> — param replace + encode</li><li>404 → <code>not-found</code> card + Go to Dashboard</li><li><code>useRouter(), useNavigate(), RouterOutlet</code></li></ul></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6 FEATURES -->
+    <section id="features">
+      <header><h2><i>⚙️</i> 6. Features — 23 modules</h2><div class="toolbar"><input id="featFilter" class="input" placeholder="Lọc feature... (episodes, live, routing...)"><span class="pill">app/src/features/*</span></div></header>
+      <div class="sec-body">
+        <div class="grid cols3" id="featGrid">
+          <div class="card" data-feat="dashboard"><h3>📊 dashboard</h3><div class="meta">Studio overview — 6 components</div><ul><li><code>pages/DashboardPage.tsx</code></li><li><code>components/StudioSummaryCards, SystemResourceCards, StudioActivityChart, AgentSwarmSummary, ModelUsagePanel, StorageSummary, RecentActivityFeed</code></li><li><code>hooks/useDashboardSummary, useSystemMetrics</code> • <code>model/types.ts</code></li></ul></div>
+          <div class="card" data-feat="projects"><h3>📁 projects</h3><div class="meta">CRUD projects & episodes picker</div><ul><li><code>pages/ProjectsPage, ProjectDetailPage</code></li><li><code>components/ProjectCard, List, Filters, StatsBar, CreateProjectDialog, CreateEpisodeDialog, TemplatePicker</code></li><li><code>hooks/useProjects, useProject, useCreateProject, useCapabilities, useProjectTemplates</code></li></ul></div>
+          <div class="card" data-feat="episodes"><h3>🎞️ episodes</h3><div class="meta">Episode pipeline (7 workspace panels)</div><ul><li><code>pages/EpisodesPage, EpisodeWorkspacePage</code></li><li><code>workspace/EpisodePipeline, IdeaPanel, OutlinePanel, ScreenplayPanel, StoryBiblePanel, CheckpointReviewPanel</code></li><li><code>hooks/useEpisodes, useEpisode, useEpisodeArtifacts, useEpisodeCommands, useEpisodeRealtime</code></li></ul></div>
+          <div class="card" data-feat="studio"><h3>🎬 studio</h3><div class="meta">Studio home</div><ul><li><code>pages/StudioHomePage.tsx</code></li><li><code>components/CreateSeriesDialog</code> • <code>hooks/useStudioSeries</code></li></ul></div>
+          <div class="card" data-feat="characters"><h3>👥 characters</h3><ul><li><code>pages/CharactersPage.tsx</code> • <code>hooks/useCharacters.ts</code></li></ul></div>
+          <div class="card" data-feat="world"><h3>🌍 world</h3><ul><li><code>pages/WorldPage.tsx</code> • <code>hooks/useWorld.ts</code></li></ul></div>
+          <div class="card" data-feat="storyboard"><h3>🗒️ storyboard</h3><ul><li><code>pages/StoryboardPage.tsx</code> • <code>hooks/useStoryboard.ts</code></li></ul></div>
+          <div class="card" data-feat="reviews"><h3>✅ reviews</h3><ul><li><code>pages/ReviewsPage.tsx</code> • <code>hooks/useReviews.ts</code></li></ul></div>
+          <div class="card" data-feat="assets"><h3>📦 assets</h3><ul><li><code>pages/AssetsPage.tsx</code> • <code>hooks/useAssets.ts</code></li></ul></div>
+          <div class="card" data-feat="production"><h3>🏭 production <span class="kpi">preview</span></h3><ul><li><code>pages/ProductionPage.tsx</code></li><li><code>components/ArtifactPreview, JobProgress, JobFailure, ProductionReadiness, RetryAction</code></li><li><code>hooks/useProduction.ts</code></li></ul></div>
+          <div class="card" data-feat="live-record"><h3>🔴 live-record <span class="kpi">complex</span></h3><div class="meta">Director + recorder + validation + contracts</div><ul><li><code>pages/LiveRecordPage.tsx</code> • 11 components (Preview, Panels, Teleprompter…)</li><li><code>hooks/useLiveRecord, useLiveDirector, useLiveRecorderSession…</code> (5 hooks)</li><li><code>live-director/{LiveDirectorClient, Session, ToolCallDispatcher, CueContextBuilder, FrameSampler, actionExecutor, SessionResumptionManager}</code></li><li><code>contracts/{ipc, directorTools, recordingEngine} + domain/stateMachine, validation, types</code></li></ul></div>
+          <div class="card" data-feat="agent-workspace"><h3>🤖 agent-workspace</h3><ul><li><code>pages/AgentWorkspacePage.tsx</code></li><li><code>components/AgentInspector, AgentInstanceList, AgentTerminal, BrowserRuntimePanel, CoordinatorPanel, TaskGraph</code></li><li><code>hooks/useAgentWorkspace.ts</code></li></ul></div>
+          <div class="card" data-feat="agents"><h3>👤 agents</h3><ul><li><code>pages/AgentsPage.tsx</code></li><li><code>components/AgentActivity, AgentDefinitionEditor, AgentDefinitionsPage, AgentInstancesPanel, AgentRuntimeMetrics</code></li><li><code>hooks/useAgents.ts</code></li></ul></div>
+          <div class="card" data-feat="workflows"><h3>🔀 workflows <span class="tag">BETA</span></h3><ul><li><code>pages/WorkflowsPage.tsx</code></li><li><code>components/WorkflowEditor, WorkflowRunDetail, WorkflowRunsPanel</code> • <code>hooks/useWorkflows</code></li></ul></div>
+          <div class="card" data-feat="routing"><h3>🧭 routing</h3><div class="meta">Provider hub & routing rules — 15 components</div><ul><li><code>pages/RoutingPage.tsx</code></li><li><code>components/RouteGraph, RouteSimulator, RoutingMetrics, ProviderRegistryTable, ProviderConfigPanel, RouteDecisionInspector, TrafficDistribution…</code> (15)</li><li><code>hooks/useRouting.ts</code></li></ul></div>
+          <div class="card" data-feat="providers"><h3>🔌 providers</h3><ul><li><code>pages/ProvidersPage.tsx</code></li><li><code>components/ProviderDetail, EndpointList, CredentialStatus, EndpointHealth, TestConnectionDialog</code> • <code>hooks/useProviders</code></li></ul></div>
+          <div class="card" data-feat="models"><h3>🧠 models</h3><ul><li><code>pages/ModelsPage.tsx</code></li><li><code>components/ModelDetail, ModelCapabilities, ModelAvailability</code> • <code>hooks/useModels</code></li></ul></div>
+          <div class="card" data-feat="monitoring"><h3>📈 monitoring</h3><ul><li><code>pages/MonitoringPage.tsx</code></li><li><code>components/ResourceMetrics, RuntimeMetrics, QueueMetrics, ProviderHealth, AgentMetrics, WorkerStatus</code> • <code>hooks/useMonitoring</code></li></ul></div>
+          <div class="card" data-feat="browser"><h3>🌐 browser <span class="tag">STUB</span></h3><ul><li><code>pages/BrowserPage.tsx</code> • <code>hooks/useBrowser.ts</code></li></ul></div>
+          <div class="card" data-feat="files"><h3>🗂️ files <span class="tag">STUB</span></h3><ul><li><code>pages/FilesPage.tsx</code> • <code>hooks/useFiles.ts</code></li></ul></div>
+          <div class="card" data-feat="memory"><h3>🧠 memory <span class="tag">BETA</span></h3><ul><li><code>pages/MemoryPage.tsx</code> • <code>hooks/useMemory.ts</code></li></ul></div>
+          <div class="card" data-feat="logs"><h3>📝 logs</h3><ul><li><code>pages/LogsPage.tsx</code> • <code>hooks/useLogs.ts</code></li></ul></div>
+          <div class="card" data-feat="settings"><h3>⚙️ settings</h3><ul><li><code>pages/SettingsPage.tsx</code> • <code>hooks/useSettings.ts</code></li></ul></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7 STATE -->
+    <section id="state">
+      <header><h2><i>🗃️</i> 7. State & data layer</h2><span class="hdr-meta">Zustand-like store • dual query clients • realtime</span></header>
+      <div class="sec-body">
+        <div class="grid cols3">
+          <div class="card">
+            <h3>state/uiStore.ts</h3>
+            <div class="meta">Custom Zustand via <code>useSyncExternalStore</code> — local UI state only</div>
+            <pre>UIState {
+  sidebarCollapsed: boolean
+  refreshInterval: string
+  conversationId: string  // sessionStorage crypto.randomUUID
+  hermesOnline: boolean|null
+  backendOnline: boolean|null
+  metrics: MetricState    // cpu/ram/gpu + histories[6]
+}</pre>
+            <p style="margin-top:8px;font-size:12px;color:var(--text-dim)">Pattern: <code>createStore(initializer) → useStore(selector)</code> + getState/setState/subscribe. Health check 10s via <code>apiClient.system.getHealth()</code> trong App.tsx.</p>
+          </div>
+          <div class="card">
+            <h3>query/queryClient.ts • QueryProvider</h3>
+            <div class="meta">Lightweight cache (Map&lt;hash, state&gt;) — không phụ thuộc TanStack</div>
+            <pre>QueryClient {
+  fetchQuery({queryKey, queryFn, staleTimeMs=5s})
+  getQueryState / setQueryData
+  invalidateQueries({queryKey?})
+  subscribe(key, listener)
+  state: {data, error, isLoading, isFetching,
+          isSuccess, isError, updatedAt}
+}</pre>
+            <p style="margin-top:8px;font-size:12px;color:var(--text-dim)">Đồng thời dùng <b>TanStack Query 5.62</b> (stale 10s, refetchOnWindowFocus false) trong <code>AppProviders</code> — 2 layers song song.</p>
+          </div>
+          <div class="card">
+            <h3>shared/hooks + features hooks</h3>
+            <div class="meta">Mỗi feature có <code>hooks/useX.ts</code> wrap queryClient + apiClient + realtime</div>
+            <ul>
+              <li><code>useApiClient()</code> → WindAgentClient</li>
+              <li><code>useRealtimeClient()</code> → RealtimeClient</li>
+              <li><code>useSearchParams()</code></li>
+              <li>VD: <code>useProjects</code>, <code>useLiveRecord</code>, <code>useRouting</code> — 30+ hooks</li>
+              <li>Tests: <code>__tests__/router.test.ts</code>, <code>platform.test.ts</code>, <code>dashboard.test.ts</code>…</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8 DESIGN -->
+    <section id="design">
+      <header><h2><i>🎨</i> 8. Design system — Kinetic Obsidian</h2><span class="hdr-meta">packages/ui — tokens → theme → components • 24 primitives</span></header>
+      <div class="sec-body">
+        <p>Authority: <code>packages/ui/src/tokens/*</code> (P5.2) → <code>theme/dark.css</code> (P5.3) → <code>styles/components.css</code> → <code>styles/index.css</code> bundle. Dark-only (<code>color-scheme: dark</code>), high-contrast với luminescent accents.</p>
+        <div style="margin:14px 0">
+          <div class="token-row">
+            <div class="token"><div class="swatch" style="background:#060e20;border-color:#1a2340"></div><b>--bg-darker</b><s>#060e20</s></div>
+            <div class="token"><div class="swatch" style="background:#0b1326"></div><b>--bg-dark</b><s>#0b1326</s></div>
+            <div class="token"><div class="swatch" style="background:#131b2e"></div><b>--bg-panel</b><s>#131b2e</s></div>
+            <div class="token"><div class="swatch" style="background:#4d8eff"></div><b>--color-primary</b><s>#4d8eff</s></div>
+            <div class="token"><div class="swatch" style="background:#4edea3"></div><b>--color-secondary</b><s>#4edea3</s></div>
+            <div class="token"><div class="swatch" style="background:#ffb4ab"></div><b>--color-danger</b><s>#ffb4ab</s></div>
+          </div>
+        </div>
+        <div class="grid cols2">
+          <div class="card">
+            <h3>Tokens (8 files)</h3>
+            <ul>
+              <li><code>tokens/colors.css</code> — bg, border, primary/secondary/accent, status, text, kinetic obsidian hierarchy (stitch-*)</li>
+              <li><code>tokens/typography.css, spacing.css, radius.css, shadows.css, z-index.css, motion.css, layout.css</code></li>
+              <li><code>tokens/index.css</code> — @import tất cả</li>
+              <li><code>theme/dark.css:7</code> — <code>[data-theme='dark'], :root { color-scheme: dark }</code></li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Components & layout</h3>
+            <ul>
+              <li><b>24 components</b>: Button, IconButton, Badge, StatusBadge, Card, Panel, EmptyState, Tabs, ProgressBar, Skeleton, Alert, Dropdown, Tooltip, Icon, Input, Textarea, Select, Checkbox, Switch, Modal, Spinner, Table, Toast, ErrorState</li>
+              <li><b>5 layout</b>: Grid, PageHeader, SectionHeader, SplitPane, Stack</li>
+              <li>Icons via <code>lucide-react ^0.344</code></li>
+              <li>Build: <code>vite.config.ts</code> + <code>vitest.config.ts</code> (happy-dom)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 9 PLATFORM -->
+    <section id="platform">
+      <header><h2><i>💻</i> 9. Platform abstraction</h2><span class="hdr-meta">web | tauri — capability-gated</span></header>
+      <div class="sec-body">
+        <div class="grid cols2">
+          <div class="card">
+            <h3>platform/platformAdapter.ts</h3>
+            <pre>PlatformAdapter {
+  kind: 'web'|'tauri'
+  platform: 'web'|'desktop'
+  getSystemCapabilities(): Promise&lt;PlatformCapabilities>
+   // supportsNativeFilePicker, Notifications,
+   // SystemMetrics, LocalRuntime, DeepLinks
+  getSystemMetrics(): Promise&lt;MetricState>
+  openExternal(url): Promise&lt;void>
+  selectFile?(opts): Promise&lt;string|string[]|null>
+  showNotification?(title, opts)
+  getSecureCredential?(key)
+}</pre>
+          </div>
+          <div class="card">
+            <h3>Adapters</h3>
+            <ul>
+              <li><code>platform/webAdapter.ts</code> — <code>WebPlatformAdapter</code> (default trong AppProviders)</li>
+              <li><code>platform/tauriAdapter.ts</code> — gọi <code>@tauri-apps/api ^2.11.1</code> (file picker native, metrics native)</li>
+              <li><code>platform/PlatformProvider.tsx</code> + <code>platform/index.ts</code> barrel</li>
+              <li><code>platform/__tests__/platform.test.ts</code> — parity tests</li>
+            </ul>
+            <p style="margin-top:10px;font-size:12.5px;color:var(--text-muted)">Adapter được inject qua <code>AppProps { platform?: PlatformAdapter }</code> → <code>AppProviders</code> → context. Cho phép SSR/tests mock dễ dàng.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10 API -->
+    <section id="api">
+      <header><h2><i>🔗</i> 10. API & Realtime</h2><span class="hdr-meta">@windagent/api-client • @windagent/realtime • @windagent/api-contracts</span></header>
+      <div class="sec-body">
+        <div class="grid cols3">
+          <div class="card">
+            <h3>api-client/src/transport.ts</h3>
+            <pre>TransportOptions {
+  baseUrl, defaultTimeoutMs=15000,
+  fetchImpl, getCorrelationId
+}
+RequestOptions {
+  method GET|POST|PUT|PATCH|DELETE,
+  path, query, body, headers,
+  idempotencyKey, timeoutMs, signal,
+  retryOnNetworkError (auto for GET/idempotent)
+}
+Headers: Accept problem+json
+  + Idempotency-Key + X-Correlation-ID</pre>
+            <p class="muted" style="font-size:12px;margin-top:8px">baseUrl mặc định <code>window.location.origin</code> hoặc <code>127.0.0.1:8765</code>. Dùng <code>window.fetch</code> nếu có.</p>
+          </div>
+          <div class="card">
+            <h3>api-contracts (19 modules)</h3>
+            <ul>
+              <li><code>problems.ts</code> — ApiProblem (RFC7807)</li>
+              <li><code>resource.ts, pagination.ts (CursorPage), concurrency.ts</code></li>
+              <li><code>projects.ts, studio.ts, liveRecord.ts, agents.ts, tasks.ts, conversations.ts, workflows.ts, assets.ts</code></li>
+              <li><code>observability.ts (SystemMetrics/Health, DashboardSummary)</code>, <code>models.ts, providers.ts, routing.ts, platform.ts, commands.ts, events.ts</code></li>
+            </ul>
+            <p class="muted" style="font-size:12px;margin-top:8px">Mỗi contract có <code>__tests__/contracts.test.ts</code> validate envelope.</p>
+          </div>
+          <div class="card">
+            <h3>realtime/RealtimeClient</h3>
+            <pre>State: DISCONNECTED → CONNECTING
+        → CONNECTED ↔ RESYNCING
+        → DEGRADED
+Opts: url, heartbeatIntervalMs=30s
+  reconnectBase 1s / max 30s / maxAttempts 10
+  getAuthToken() → ?token=
+
+Subscriptions: Map&lt;key, {spec, handlers}&gt;
+  spec: {aggregateType, aggregateId?, afterSequence?}
+  lastProcessedSequences Map&lt;aggregtate, seq&gt;</pre>
+            <p class="muted" style="font-size:12px;margin-top:8px">URL mặc định <code>ws(s)://host/ws</code>. Auto <code>connect()</code> trong RealtimeProvider, cleanup <code>disconnect()</code>.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 11 TREE -->
+    <section id="tree">
+      <header><h2><i>🌳</i> 11. Cây thư mục đầy đủ</h2><span class="hdr-meta">frontend/ — 320 files (không tính node_modules)</span></header>
+      <div class="sec-body">
+        <div class="tree" id="treeView">
+          <details open><summary>frontend/</summary>
+            <div class="file"><em>package.json</em> <i>— workspaces: packages/*, app</i></div>
+            <div class="file"><em>tsconfig.base.json</em> <i>— ES2022 bundler strict</i></div>
+            <div class="file">package-lock.json</div>
+            <details open><summary>app/ <i style="color:var(--text-dim);font-weight:400">— @windagent/app 0.4.0 (228 files, 41.6k LOC)</i></summary>
+              <div class="file">package.json <i>— react 18, tanstack 5.62, tauri 2.11, zustand 5</i></div>
+              <div class="file">tsconfig.json</div>
+              <details open><summary>src/</summary>
+                <div class="file">index.ts <i>— barrel export all features</i></div>
+                <details open><summary>app/</summary>
+                  <div class="file">App.tsx <i>— SharedAppContent + route mapping 30+ branches</i></div>
+                  <div class="file">router.tsx <i>— RouterProvider hash engine</i></div>
+                  <div class="file">routeManifest.ts <i>— 34 routes SSOT</i></div>
+                  <div class="file">providers.tsx <i>— 6-layer hierarchy</i></div>
+                  <div class="file">bootstrap.ts</div>
+                  <div class="file">errors/GlobalErrorBoundary, RouteErrorBoundary, FeatureErrorState</div>
+                </details>
+                <details open><summary>features/ <i>— 23 features</i></summary>
+                  <div class="file">agent-workspace/* — 6 comps + 1 hook + page</div>
+                  <div class="file">agents/* — 5 comps + hook + page</div>
+                  <div class="file">assets, browser, characters, files, logs, memory, models, monitoring, production, projects, providers, reviews, routing (15 comps), settings, storyboard, studio, workflows, world</div>
+                  <div class="file"><b>dashboard/*</b> — 7 comps + 2 hooks + Page</div>
+                  <div class="file"><b>episodes/*</b> — workspace/ (5 panels + Pipeline) + 5 hooks</div>
+                  <div class="file"><b>live-record/*</b> — 11 comps + 5 hooks + live-director/ (7 files) + contracts + domain + native</div>
+                </details>
+                <details><summary>platform/</summary><div class="file">platformAdapter.ts, webAdapter.ts, tauriAdapter.ts, PlatformProvider.tsx</div></details>
+                <details><summary>state/</summary><div class="file">uiStore.ts — useSyncExternalStore store</div></details>
+                <details><summary>query/</summary><div class="file">queryClient.ts (custom), QueryProvider.tsx, index.ts</div></details>
+                <details><summary>realtime/</summary><div class="file">RealtimeProvider.tsx</div></details>
+                <details><summary>api/</summary><div class="file">ApiProvider.tsx — defaultApiBaseUrl()</div></details>
+                <details><summary>shared/</summary><div class="file">hooks/useApiClient.ts, useSearchParams.ts</div></details>
+                <details><summary>styles/</summary><div class="file">index.css</div></details>
+              </details>
+            </details>
+            <details open><summary>packages/ <i>— 6 packages</i></summary>
+              <details open><summary>ui/ <i>33 files 1,480 LOC</i></summary>
+                <div class="file">package.json 0.5.0 — exports ., ./styles.css, ./tokens, ./theme</div>
+                <div class="file">src/index.ts, styles/{index,components}.css, theme/{index,dark}.css</div>
+                <div class="file">tokens: colors, typography, spacing, radius, shadows, z-index, motion, layout, index.css</div>
+                <div class="file">components: 24 primitives + layout: Grid, PageHeader, SectionHeader, SplitPane, Stack</div>
+              </details>
+              <details open><summary>studio-shell/ <i>16 files 1,063 LOC</i></summary>
+                <div class="file">src/layout/* — AppShell, TopBar, Sidebar, MainWorkspace, WorkspaceHeader</div>
+                <div class="file">src/navigation/* — config, types, NavigationGroup</div>
+                <div class="file">src/status/* — BackendStatus, RuntimeMetrics, RuntimeStatusStrip</div>
+              </details>
+              <details><summary>api-client/ <i>6 files 2,321 LOC</i></summary><div class="file">client.ts (WindAgentClient), transport.ts, errors.ts</div></details>
+              <details><summary>api-contracts/ <i>21 files 1,962 LOC</i></summary><div class="file">20 contract modules: problems, pagination, resource, projects, studio, agents…</div></details>
+              <details><summary>realtime/ <i>5 files 606 LOC</i></summary><div class="file">realtimeClient.ts, socketFactory.ts, types.ts</div></details>
+              <details><summary>code-video-ui/ <i>11 files 988 LOC</i></summary><div class="file">CodeStudio, CodeEditor, Terminal, FileTree, DiagramStage, TitleCard, ChecklistStage, Overlay, ReplayController, types, styles</div></details>
+            </details>
+            <details open><summary>stitch_designs/</summary>
+              <div class="file">html/ — 16 HTML (01 Reviews → 16 Navigation) <i>— Tailwind CDN refs</i></div>
+              <div class="file">screenshots/ — 15 PNG 2400×1600</div>
+            </details>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- 12 STITCH -->
+    <section id="stitch">
+      <header><h2><i>🖼️</i> 12. Stitch designs — 16 refs</h2><span class="hdr-meta">stitch_designs/html/*.html — nguồn đối chiếu UI</span></header>
+      <div class="sec-body">
+        <div style="overflow:auto;margin-bottom:12px">
+          <table>
+            <thead><tr><th>#</th><th>File</th><th>Chủ đề</th><th>Screenshot</th></tr></thead>
+            <tbody>
+              <tr><td>01</td><td><code>01_Reviews_-_WindAgent_Studio_9ddba3ae.html</code></td><td>Reviews</td><td>✓ 2400×1600</td></tr>
+              <tr><td>02</td><td><code>02_Characters_-_WindAgent_Studio_0b0b16b3.html</code></td><td>Characters</td><td>✓</td></tr>
+              <tr><td>03</td><td><code>03_Assets_-_WindAgent_Studio__2400x1600__79d2a4a9.html</code></td><td>Assets</td><td>✓</td></tr>
+              <tr><td>04</td><td><code>04_Projects_-_WindAgent_Studio__2400x1600__1998a1a1.html</code></td><td>Projects</td><td>✓</td></tr>
+              <tr><td>05</td><td><code>05_Episodes_-_WindAgent_Studio__2400x1600__6c8e8a8e.html</code></td><td>Episodes</td><td>✓</td></tr>
+              <tr><td>07</td><td><code>07_Assets_-_WindAgent_Studio_fd9b70b6.html</code></td><td>Assets v2</td><td>✓</td></tr>
+              <tr><td>08</td><td><code>08_Dashboard_-_WindAgent_Studio__2400x1600__41f5317d.html</code></td><td>Dashboard</td><td>✓</td></tr>
+              <tr><td>09</td><td><code>09_Story_Board_-_WindAgent_Studio__2400x1600__ab5748d3.html</code></td><td>Story Board</td><td>✓</td></tr>
+              <tr><td>10</td><td><code>10_Dashboard_-_WindAgent_Studio__2400x1600__Redesigned_131fe107.html</code></td><td>Dashboard Redesigned</td><td>✓</td></tr>
+              <tr><td>11</td><td><code>11_Characters_-_WindAgent_Studio__2400x1600__14d5034d.html</code></td><td>Characters v2</td><td>✓</td></tr>
+              <tr><td>12</td><td><code>12_Dashboard_-_WindAgent_Studio_33db8df1.html</code></td><td>Dashboard v3</td><td>✓</td></tr>
+              <tr><td>13</td><td><code>13_Story_Board_-_WindAgent_Studio_1b2a6415.html</code></td><td>Story Board v2</td><td>✓</td></tr>
+              <tr><td>14</td><td><code>14_Reviews_-_WindAgent_Studio__2400x1600__b5c7b7d9.html</code></td><td>Reviews v2</td><td>✓</td></tr>
+              <tr><td>15</td><td><code>15_Projects_-_WindAgent_Studio_bcf5f879.html</code></td><td>Projects v2</td><td>✓</td></tr>
+              <tr><td>16</td><td><code>16_WindAgent_Studio_Navigation_0037d7bb.html</code></td><td>Navigation</td><td>— (no png)</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="muted">HTML refs dùng Tailwind CDN + Google Fonts, là cơ sở cho việc implement các page tương ứng (Dashboard, Projects, Episodes…). Đường dẫn: <code>frontend/stitch_designs/html/*.html</code> và <code>screenshots/*.png</code>.</p>
+      </div>
+    </section>
+
+    <!-- 13 FILES -->
+    <section id="files">
+      <header><h2><i>📄</i> 13. File inventory — tìm kiếm</h2><div class="toolbar"><input id="fileSearch" class="input" placeholder="Tìm file... (Button, router, useProjects...)"><button class="btn ghost" onclick="document.getElementById('fileSearch').value='';filterFiles('')">Xóa</button></div></header>
+      <div class="sec-body">
+        <div id="fileStats" class="muted" style="margin-bottom:10px;font-size:12px">320 files • gõ để lọc • click file để xem đường dẫn đầy đủ</div>
+        <div id="fileList" style="max-height:460px;overflow:auto;border:1px solid var(--border-subtle);border-radius:10px;padding:8px;display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:6px"></div>
+      </div>
+    </section>
+
+    <section style="background:transparent;border:none;padding:18px 0;text-align:center;color:var(--text-dim);font-size:12px">
+      WindAgent Frontend Structure — generated 29/08/2026 từ <code>frontend/</code> source • <span style="color:var(--text-muted)">Kinetic Obsidian • React 18 • TypeScript strict</span><br>
+      File này là snapshot tĩnh — chạy <code>npm run typecheck --workspaces</code> để validate, <code>npm run test --workspaces</code> để kiểm thử.
+    </section>
+
+  </div>
+</div>
+
+<script>
+// TOC active
+const tocLinks = document.querySelectorAll('.toc a');
+const sections = [...document.querySelectorAll('section[id]')];
+const obs = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      tocLinks.forEach(a=>a.classList.toggle('active', a.getAttribute('href')==='#'+e.target.id));
+    }
+  });
+},{rootMargin:'-30% 0px -60% 0px', threshold:0});
+sections.forEach(s=>obs.observe(s));
+tocLinks.forEach(a=>a.addEventListener('click',e=>{
+  e.preventDefault();
+  document.querySelector(a.getAttribute('href')).scrollIntoView({behavior:'smooth', block:'start'});
+}));
+
+// Package filter
+document.getElementById('pkgFilter')?.addEventListener('input',e=>{
+  const q=e.target.value.toLowerCase();
+  document.querySelectorAll('#pkgGrid [data-pkg]').forEach(el=>{
+    el.style.display = !q || el.dataset.pkg.includes(q) || el.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+});
+// Feature filter
+document.getElementById('featFilter')?.addEventListener('input',e=>{
+  const q=e.target.value.toLowerCase();
+  document.querySelectorAll('#featGrid [data-feat]').forEach(el=>{
+    el.style.display = !q || el.dataset.feat.includes(q) || el.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+});
+// Route filter
+document.getElementById('routeFilter')?.addEventListener('input',e=>{
+  const q=e.target.value.toLowerCase();
+  document.querySelectorAll('#routeTable tbody tr').forEach(tr=>{
+    tr.style.display = !q || tr.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+});
+
+// File inventory
+const FILES = [
+"app/package.json","app/tsconfig.json","app/src/index.ts",
+"app/src/app/App.tsx","app/src/app/router.tsx","app/src/app/routeManifest.ts","app/src/app/providers.tsx","app/src/app/bootstrap.ts","app/src/app/errors/GlobalErrorBoundary.tsx","app/src/app/errors/RouteErrorBoundary.tsx","app/src/app/errors/FeatureErrorState.tsx",
+"app/src/platform/platformAdapter.ts","app/src/platform/webAdapter.ts","app/src/platform/tauriAdapter.ts","app/src/platform/PlatformProvider.tsx","app/src/platform/index.ts",
+"app/src/state/uiStore.ts","app/src/state/index.ts",
+"app/src/query/queryClient.ts","app/src/query/QueryProvider.tsx","app/src/query/index.ts",
+"app/src/realtime/RealtimeProvider.tsx",
+"app/src/api/ApiProvider.tsx",
+"app/src/shared/hooks/useApiClient.ts","app/src/shared/hooks/useSearchParams.ts",
+"app/src/styles/index.css",
+"app/src/features/dashboard/pages/DashboardPage.tsx","app/src/features/dashboard/components/StudioSummaryCards.tsx","app/src/features/dashboard/components/SystemResourceCards.tsx","app/src/features/dashboard/components/StudioActivityChart.tsx","app/src/features/dashboard/components/AgentSwarmSummary.tsx","app/src/features/dashboard/components/ModelUsagePanel.tsx","app/src/features/dashboard/components/StorageSummary.tsx","app/src/features/dashboard/components/RecentActivityFeed.tsx","app/src/features/dashboard/hooks/useDashboardSummary.ts","app/src/features/dashboard/hooks/useSystemMetrics.ts",
+"app/src/features/projects/pages/ProjectsPage.tsx","app/src/features/projects/pages/ProjectDetailPage.tsx","app/src/features/projects/components/ProjectCard.tsx","app/src/features/projects/components/ProjectList.tsx","app/src/features/projects/components/ProjectFilters.tsx","app/src/features/projects/components/ProjectStatsBar.tsx","app/src/features/projects/components/CreateProjectDialog.tsx","app/src/features/projects/components/CreateEpisodeDialog.tsx","app/src/features/projects/components/ProjectTemplatePicker.tsx",
+"app/src/features/episodes/pages/EpisodesPage.tsx","app/src/features/episodes/pages/EpisodeWorkspacePage.tsx","app/src/features/episodes/components/EpisodeCard.tsx","app/src/features/episodes/workspace/EpisodePipeline.tsx","app/src/features/episodes/workspace/IdeaPanel.tsx","app/src/features/episodes/workspace/OutlinePanel.tsx","app/src/features/episodes/workspace/ScreenplayPanel.tsx","app/src/features/episodes/workspace/StoryBiblePanel.tsx","app/src/features/episodes/workspace/CheckpointReviewPanel.tsx",
+"app/src/features/live-record/pages/LiveRecordPage.tsx","app/src/features/live-record/components/LiveVideoPreview.tsx","app/src/features/live-record/components/DirectorPanel.tsx","app/src/features/live-record/components/RecordingStatusPanel.tsx","app/src/features/live-record/components/DeviceSettingsPanel.tsx","app/src/features/live-record/components/TeleprompterPanel.tsx","app/src/features/live-record/components/SceneListPanel.tsx","app/src/features/live-record/live-director/LiveDirectorClient.ts","app/src/features/live-record/live-director/LiveDirectorSession.ts","app/src/features/live-record/live-director/ToolCallDispatcher.ts","app/src/features/live-record/domain/stateMachine.ts",
+"app/src/features/routing/pages/RoutingPage.tsx","app/src/features/routing/components/RouteGraph.tsx","app/src/features/routing/components/RouteSimulator.tsx","app/src/features/routing/components/ProviderRegistryTable.tsx","app/src/features/routing/components/RoutingRuleEditor.tsx",
+"app/src/features/agent-workspace/pages/AgentWorkspacePage.tsx","app/src/features/agents/pages/AgentsPage.tsx","app/src/features/workflows/pages/WorkflowsPage.tsx","app/src/features/monitoring/pages/MonitoringPage.tsx","app/src/features/characters/pages/CharactersPage.tsx","app/src/features/world/pages/WorldPage.tsx","app/src/features/storyboard/pages/StoryboardPage.tsx","app/src/features/reviews/pages/ReviewsPage.tsx","app/src/features/assets/pages/AssetsPage.tsx","app/src/features/production/pages/ProductionPage.tsx","app/src/features/browser/pages/BrowserPage.tsx","app/src/features/files/pages/FilesPage.tsx","app/src/features/memory/pages/MemoryPage.tsx","app/src/features/logs/pages/LogsPage.tsx","app/src/features/settings/pages/SettingsPage.tsx","app/src/features/models/pages/ModelsPage.tsx","app/src/features/providers/pages/ProvidersPage.tsx","app/src/features/studio/pages/StudioHomePage.tsx",
+"packages/ui/src/index.ts","packages/ui/src/components/Button.tsx","packages/ui/src/components/Card.tsx","packages/ui/src/components/Modal.tsx","packages/ui/src/components/Table.tsx","packages/ui/src/components/Tabs.tsx","packages/ui/src/components/Input.tsx","packages/ui/src/components/Select.tsx","packages/ui/src/tokens/colors.css","packages/ui/src/tokens/index.css","packages/ui/src/theme/dark.css","packages/ui/src/styles/index.css",
+"packages/studio-shell/src/layout/AppShell.tsx","packages/studio-shell/src/layout/Sidebar.tsx","packages/studio-shell/src/layout/TopBar.tsx","packages/studio-shell/src/navigation/navigation.config.ts","packages/studio-shell/src/status/BackendStatus.tsx",
+"packages/api-client/src/client.ts","packages/api-client/src/transport.ts","packages/api-client/src/errors.ts",
+"packages/api-contracts/src/index.ts","packages/api-contracts/src/projects.ts","packages/api-contracts/src/studio.ts","packages/api-contracts/src/routing.ts","packages/api-contracts/src/liveRecord.ts",
+"packages/realtime/src/realtimeClient.ts","packages/realtime/src/types.ts","packages/realtime/src/socketFactory.ts",
+"packages/code-video-ui/src/CodeStudio.tsx","packages/code-video-ui/src/ReplayController.ts","packages/code-video-ui/src/Terminal.tsx",
+"stitch_designs/html/01_Reviews_-_WindAgent_Studio_9ddba3ae.html","stitch_designs/html/16_WindAgent_Studio_Navigation_0037d7bb.html"
+];
+const fileListEl = document.getElementById('fileList');
+const fileStatsEl = document.getElementById('fileStats');
+function renderFiles(list){
+  fileListEl.innerHTML = list.map(f=>{
+    const parts = f.split('/');
+    const name = parts[parts.length-1];
+    const dir = parts.slice(0,-1).join('/');
+    const ext = name.includes('.') ? name.split('.').pop() : '';
+    const icon = ext==='tsx'?'⚛️':ext==='ts'?'📘':ext==='css'?'🎨':ext==='html'?'🌐':'📄';
+    return `<div style="display:flex;gap:8px;align-items:center;padding:6px 8px;border:1px solid var(--border-subtle);border-radius:8px;background:var(--bg-panel-light);font-size:12px;overflow:hidden" title="${f}">
+      <span>${icon}</span><div style="min-width:0;flex:1"><div style="color:var(--text-main);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${name}</div><div style="color:var(--text-dim);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" class="mono">${dir}/</div></div><code style="font-size:10px;flex-shrink:0">${ext||'—'}</code></div>`;
+  }).join('') || `<div style="color:var(--text-dim);padding:20px;text-align:center;grid-column:1/-1">Không tìm thấy file nào</div>`;
+  fileStatsEl.textContent = list.length + ' files' + (list.length!==FILES.length ? ' (đã lọc từ '+FILES.length+')' : ' • 320 total trong filesystem (hiển thị 78 đại diện + filter)') ;
+}
+function filterFiles(q){
+  q=(q||'').toLowerCase();
+  if(!q) renderFiles(FILES);
+  else renderFiles(FILES.filter(f=>f.toLowerCase().includes(q)));
+}
+document.getElementById('fileSearch').addEventListener('input',e=>filterFiles(e.target.value));
+renderFiles(FILES);
+</script>
+</body>
+</html>

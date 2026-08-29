@@ -1500,15 +1500,80 @@ mod tests {
             id: "WINDAGENT_TEST_NO_SUCH_DISPLAY".into(),
         };
         let mut capture = WgcCapture::new(&source);
-        if let Err(err) = capture.prepare() {
+        let err = capture
+            .prepare()
+            .expect_err("invalid DISPLAY id must fail closed — WGC unavailable or display not found");
+        if os_supports_wgc() {
             assert!(
                 err.contains("WGC_ITEM_CREATION_FAILED"),
-                "expected item-creation failure, got: {err}"
+                "when WGC available, invalid display must report WGC_ITEM_CREATION_FAILED, got: {err}"
+            );
+            assert!(
+                !err.contains("WGC_UNAVAILABLE"),
+                "invalid display must not be masked as WGC_UNAVAILABLE when host supports WGC, got: {err}"
+            );
+        } else {
+            assert!(
+                err.contains("WGC_UNAVAILABLE"),
+                "when WGC unavailable, any prepare must report WGC_UNAVAILABLE first, got: {err}"
             );
         }
-        // If prepare unexpectedly SUCCEEDED the test machine matched the bogus
-        // id — impossible by construction; no assertion needed beyond the
-        // error arm above.
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn unknown_window_token_fails_closed_with_ctx_error() {
+        // Two invalid WINDOW cases: syntactically bad token and well-formed but
+        // nonexistent HWND. Both must fail closed with distinct context when
+        // WGC is available, or WGC_UNAVAILABLE when the host cannot run WGC.
+        for bad_id in ["not_a_hwnd", "99999999", "0", "-7"] {
+            let source = crate::CaptureSource {
+                kind: crate::CaptureSourceKind::Window,
+                id: bad_id.into(),
+            };
+            let mut capture = WgcCapture::new(&source);
+            let err = capture.prepare().expect_err(&format!(
+                "invalid WINDOW token '{bad_id}' must fail closed"
+            ));
+            if os_supports_wgc() {
+                assert!(
+                    err.contains("WGC_ITEM_CREATION_FAILED"),
+                    "when WGC available, bad window token '{bad_id}' must report WGC_ITEM_CREATION_FAILED, got: {err}"
+                );
+            } else {
+                assert!(
+                    err.contains("WGC_UNAVAILABLE"),
+                    "when WGC unavailable, any prepare must report WGC_UNAVAILABLE, got: {err}"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn invalid_source_vs_unavailable_are_distinct_fail_closed_paths() {
+        // Regression: the two fail-closed paths must remain distinguishable and
+        // must never silently succeed or fall back. Mirrors the roadmap §3-B
+        // availability vs invalid-source distinction.
+        let invalid_display = crate::CaptureSource {
+            kind: crate::CaptureSourceKind::Display,
+            id: "WINDAGENT_TEST_NO_SUCH_DISPLAY".into(),
+        };
+        let mut cap = WgcCapture::new(&invalid_display);
+        let err = cap.prepare().expect_err("invalid source must fail closed");
+        if os_supports_wgc() {
+            assert!(err.contains("WGC_ITEM_CREATION_FAILED"), "invalid source when available must be item failure, got: {err}");
+        } else {
+            assert!(err.contains("WGC_UNAVAILABLE"), "unavailable host must be WGC_UNAVAILABLE, got: {err}");
+        }
+        // poll_frame must neverbusy-wait or produce a frame after fail-closed.
+        assert!(cap.poll_frame().is_none());
+        assert_eq!(cap.pending_frames(), 0);
+        // No fallback backend exists — backend stays WGC and availability
+        // reflects the OS gate, not a mock.
+        assert_eq!(cap.backend_name(), "WGC");
+        if !os_supports_wgc() {
+            assert!(!cap.is_available());
+        }
     }
 
     #[cfg(windows)]

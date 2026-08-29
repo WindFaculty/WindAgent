@@ -100,6 +100,21 @@ from windagent_core.contracts.video_production import (
     QualityReviewPort,
 )
 from windagent_core.contracts.realtime import RealtimeReplayPort
+from windagent_core.contracts.stateful_execution import (
+    StatefulExecutionRuntime,
+    StatefulSessionStatus,
+    CreateSessionRequest as StatefulCreateSessionRequest,
+    AttachSessionRequest as StatefulAttachSessionRequest,
+    StatefulExecuteRequest,
+    CheckpointRequest as StatefulCheckpointRequest,
+    RestoreRequest as StatefulRestoreRequest,
+    InspectRequest as StatefulInspectRequest,
+    CancelRequest,
+    TerminateRequest as StatefulTerminateRequest,
+    StatefulSessionHandle,
+    SessionCheckpoint,
+    SessionInspection,
+)
 
 __all__ = [
     "Clock",
@@ -176,12 +191,23 @@ __all__ = [
     "FinalizeTaskExecutionResult",
     "StaleResultRejectedError",
     "TaskFinalizationPort",
-    # Video Production Ports (Phase 3)
     "PreproductionPort",
     "VideoDirectionPort",
     "MediaGenerationProviderPort",
     "AssetStoragePort",
     "QualityReviewPort",
-    # Realtime replay port (Phase 6)
     "RealtimeReplayPort",
+    "StatefulExecutionRuntime",
+    "StatefulSessionStatus",
+    "StatefulCreateSessionRequest",
+    "StatefulAttachSessionRequest",
+    "StatefulExecuteRequest",
+    "StatefulCheckpointRequest",
+    "StatefulRestoreRequest",
+    "StatefulInspectRequest",
+    "CancelRequest",
+    "StatefulTerminateRequest",
+    "StatefulSessionHandle",
+    "SessionCheckpoint",
+    "SessionInspection",
 ]

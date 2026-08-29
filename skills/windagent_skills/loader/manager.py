@@ -231,6 +231,44 @@ class SkillManager:
         logger.info(f"Updated skill [{manifest.id}] to v{manifest.version}")
         return install_path
 
+    def install_skill_code(self, manifest: SkillManifest | Dict[str, Any], code: Optional[str] = None) -> str:
+        """Installs or upgrades a skill directly with provided Python source code (Phase 12)."""
+        if isinstance(manifest, dict):
+            manifest_obj = SkillManifest.from_dict(manifest)
+        else:
+            manifest_obj = manifest
+
+        manifest_obj.validate()
+        self.uninstall_skill(manifest_obj.id)
+        self.register_skill(manifest_obj)
+
+        install_path = os.path.join(self.installed_dir, manifest_obj.id)
+        os.makedirs(install_path, exist_ok=True)
+
+        stub_path = os.path.join(install_path, "__init__.py")
+        with open(stub_path, "w", encoding="utf-8") as f:
+            if code and code.strip():
+                f.write(code)
+            else:
+                f.write(f'# Skill [{manifest_obj.id}] v{manifest_obj.version}\n')
+
+        if manifest_obj.prompt_template:
+            template_path = os.path.join(install_path, "prompt.txt")
+            with open(template_path, "w", encoding="utf-8") as f:
+                f.write(manifest_obj.prompt_template)
+
+        installed_manifest_path = os.path.join(self.manifests_dir, f"{manifest_obj.id}.json")
+        with open(installed_manifest_path, "w", encoding="utf-8") as f:
+            json.dump(manifest_obj.to_dict(), f, indent=2)
+
+        self._update_catalog_index(manifest_obj)
+        logger.info(f"Installed skill code for [{manifest_obj.id}] v{manifest_obj.version} at {install_path}")
+        return install_path
+
+    def rollback_skill_version(self, manifest: SkillManifest | Dict[str, Any], code: Optional[str] = None) -> str:
+        """Rolls back an installed skill to a previous version (Phase 12)."""
+        return self.install_skill_code(manifest, code)
+
     # ------------------------------------------------------------------
     # Hot reload (development only)
     # ------------------------------------------------------------------

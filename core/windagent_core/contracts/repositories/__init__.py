@@ -45,9 +45,26 @@ from windagent_core.contracts.repositories.routing_repository import (
     RoutingUnitOfWork,
     CanonicalModelRepositoryPort,
     EndpointBindingRepository,
-    RouteLockRepository,
     ProviderRoutingAuditRepository,
     RouteAttemptRepositoryPort,
+)
+from windagent_core.contracts.repositories.harness_repository import (
+    HarnessRepositoryProtocol,
+)
+from windagent_core.contracts.repositories.experiment_repository import (
+    ExperimentRepositoryProtocol,
+)
+from windagent_core.contracts.repositories.promotion_repository import (
+    PromotionRepositoryProtocol,
+)
+from windagent_core.contracts.repositories.skill_evolution_repository import (
+    SkillEvolutionRepositoryProtocol,
+)
+from windagent_core.contracts.repositories.subagent_evolution_repository import (
+    SubagentEvolutionRepositoryProtocol,
+)
+from windagent_core.contracts.repositories.organizational_learning_repository import (
+    OrganizationalLearningRepositoryProtocol,
 )
 
 __all__ = [
@@ -75,4 +92,10 @@ __all__ = [
     "RouteLockRepository",
     "ProviderRoutingAuditRepository",
     "RouteAttemptRepositoryPort",
+    "HarnessRepositoryProtocol",
+    "ExperimentRepositoryProtocol",
+    "PromotionRepositoryProtocol",
+    "SkillEvolutionRepositoryProtocol",
+    "SubagentEvolutionRepositoryProtocol",
+    "OrganizationalLearningRepositoryProtocol",
 ]

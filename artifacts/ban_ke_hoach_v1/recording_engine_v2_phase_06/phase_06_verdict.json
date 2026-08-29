@@ -1,0 +1,137 @@
+{
+  "phase": "recording_engine_v2 Phase 06 — WASAPI Microphone",
+  "generated_at": "2026-08-28T23:55:00+07:00",
+  "baseline_commit": "0f869d16cb0bc850d6e5097db0d8bc1089cb9d49",
+  "final_commit": "0f869d16cb0bc850d6e5097db0d8bc1089cb9d49",
+  "branch": "refactor/architecture-v3-hardening",
+  "objective": "Real event-driven WASAPI microphone capture behind audio::AudioCapturePort — endpoint selection, IAudioClient/IAudioCaptureClient lifecycle, format negotiation, 48k conversion, discontinuity/silence/device-loss handling, deterministic cleanup, fail-closed errors; mono stays mono then resamples to 48k no fake stereo; mute affects recorder data not telemetry; no busy polling; preserve single clock/audio packet contracts.",
+  "authorities": {
+    "audio_port": "audio/mod.rs::AudioCapturePort + PcmBlock/EncodedAudioPacket/TrackKind",
+    "mic": "audio/microphone.rs::WasapiMicrophone (sole production §10 mic authority)",
+    "device": "audio/device.rs::wasapi (IMMDeviceEnumerator, ComGuard, FormatProbe, StreamHandle — sole endpoint opener, shared core with loopback)",
+    "resampler_pts": "audio/aac.rs (linear_resample 48k, compensated_frame_count, PtsBook anchor ring, MfAacEncoder 48k/1024-frame)",
+    "muxer_port": "muxer/mod.rs::MuxerPort (Phase-5, owns output — not modified)",
+    "packet_contract": "PcmBlock {samples, channels, sample_rate, qpc} → AAC 48k s16 → AacOut {pts_us, sample_count}",
+    "loopback": "audio/loopback.rs::WasapiLoopback (Phase-7, untouched)"
+  },
+  "implementation": {
+    "endpoint_selection": "resolve_endpoint: empty→default (eMultimedia then eCommunications), else exact ACTIVE GetId match, unknown→WASAPI_DEVICE_NOT_FOUND never substituted (STATICALLY_VERIFIED + OBSERVED unknown_device tests)",
+    "event_driven_lifecycle": "IAudioClient SHARED+EVENTCALLBACK (HNS_BUFFER_100MS), CreateEventW/SetEventHandle/GetService<IAudioCaptureClient>, worker WaitForSingleObject 100ms heartbeat → drain_packets GetNextPacketSize→GetBuffer→pcm_packet_to_f32→ReleaseBuffer with MTA ComGuard per thread; stop flag → Stop → join (STATICALLY_VERIFIED)",
+    "format_negotiation": "probe_from_tags+parse_mix_format: PCM 16/32, IEEE_FLOAT 32, EXTENSIBLE (SUBTYPE_IEEE_FLOAT/PCM, cbSize guard), channels==0 or rate==0 rejected, unsupported→WASAPI_MIX_FORMAT_UNSUPPORTED (STATICALLY_VERIFIED + 3 wasapi pure tests)",
+    "resample_48k": "linear_resample ceil-scaled per-channel, identity when in==out, MfAacEncoder resamples any input→48k before s16, AAC_OUTPUT_SAMPLE_RATE=48000 AAC_FRAME_FRAMES=1024, mono stays mono (channels preserved, build_aac_asc accepts 1+2, >2 rejected) — new framing test within 1 output frame for 44.1k/32k/96k (OBSERVED)",
+    "discontinuity_silence_device_loss": "silent flag→exact zeros preserving PTS, truncated→Fatal WASAPI_PACKET_TRUNCATED, AUDCLNT_E_DEVICE_INVALIDATED/RESOURCES_INVALIDATED→Invalidated mark+last_error, Transient bounded 100 → FAULT_LIMIT, overflow VecDeque 128 drops oldest + overflow_dropped telemetry (STATICALLY_VERIFIED + silent/truncated tests)",
+    "deterministic_cleanup": "prepare drops prior stream (joins worker), StreamHandle::stop cooperative idempotent, Drop stop+join+CloseHandle, WasapiMicrophone is_available from shared flag (STATICALLY_VERIFIED + lifecycle/re_prepare tests)",
+    "fail_closed": "WASAPI_COM_INIT_FAILED, ENUMERATOR_FAILED, DEVICE_NOT_FOUND, DEFAULT_DEVICE_NOT_FOUND, MIX_FORMAT_FAILED/UNSUPPORTED, INITIALIZE_FAILED, EVENT_CREATE/SET_EVENT_FAILED, CAPTURE_SERVICE_FAILED, START_FAILED, ALREADY_STARTED, MIC_NOT_PREPARED, WASAPI_UNSUPPORTED_OS, AAC_UNSUPPORTED_CHANNEL_COUNT/INVALID_RATE/BITRATE_OUT_OF_RANGE, MF_UNSUPPORTED_OS, AUDIO_DEVICE_INVALIDATED:0x88890004 — all UPPER_SNAKE, never silent substitute (STATICALLY_VERIFIED)",
+    "mute_data_semantics": "SharedState.muted zeroed in worker drain_packets preserving frames/PTS, MockAudioCapture zeroed in poll_block; new tests assert muted delivers exact-length zeros preserving channels, not empty (OBSERVED)",
+    "no_busy_polling": "Worker waits on event handle (WaitForSingleObject) with heartbeat, Mock paces 20ms cadence; spec forbids busy poll — none present (STATICALLY_VERIFIED)"
+  },
+  "validation": {
+    "cargo_check": {
+      "cmd": "cargo check --manifest-path apps/desktop/native/recording-engine/Cargo.toml",
+      "exit_code": 0,
+      "result": "Finished dev profile in 0.53s, 0 errors",
+      "classification": "OBSERVED"
+    },
+    "unit_audio_filtered": {
+      "cmd": "cargo test --manifest-path apps/desktop/native/recording-engine/Cargo.toml --lib audio -- --test-threads=1 --nocapture",
+      "exit_code": 0,
+      "passed": 41,
+      "failed": 0,
+      "ignored": 0,
+      "detail": "wasapi pure 7 + aac 20 (incl real_encode_round_trip 26 packets PTS monotonic) + mic 4 + loopback 3 + phase6 8 (mono/channel 48k framing mute idempotency) + service collect_audio_asc",
+      "classification": "OBSERVED"
+    },
+    "unit_full": {
+      "cmd": "cargo test --manifest-path apps/desktop/native/recording-engine/Cargo.toml --lib -- --test-threads=1",
+      "exit_code": 0,
+      "passed": 144,
+      "failed": 0,
+      "ignored": 5,
+      "detail": "5 ignored = manual NVENC driver diagnostics (preset_config_combo_matrix, initialize_params_matrix, session_lifecycle_probe, production_encode_texture_probe, production_shape_sustained_probe) — not counted",
+      "classification": "OBSERVED"
+    },
+    "unit_phase6_new": {
+      "tests": [
+        "phase6_mono_stays_mono_no_fake_stereo — PASS: mono s16 2048 not 4096, resample lengths ceil, ASC mono/stereo ok ch6 rejected",
+        "phase6_output_is_locked_to_48k_resampling_framing_within_one_frame — PASS: 44.1k/48k/32k/96k mono+stereo framing within 1 frame, 48k locked",
+        "phase6_mute_data_semantics_preserves_frames_and_pts — PASS: silent zeros exact length, s16 zeros",
+        "pcmblock_frames_respects_channel_count — PASS: 960 stereo 480 mono 0",
+        "mock_mute_affects_captured_data_not_only_telemetry — PASS: unmuted has signal muted zeros preserving channels",
+        "mock_state_and_idempotency_before_and_after_prepare — PASS: poll before start None prepare->available start/stop idempotent",
+        "wasapi_device_info_defaults_are_fail_closed — PASS",
+        "track_kind_maps_to_muxer_tracks — PASS"
+      ],
+      "classification": "OBSERVED"
+    },
+    "hardware_probe_noninteractive": {
+      "cmd": "cargo run --bin probe_temp (temporary) + cargo test audio::microphone::tests::default_device_round_trip_when_present",
+      "exit_code": 0,
+      "result": "OBSERVED (no fabrication): wasapi_available=true mic_available=true system_available=true aac_available=true; input_endpoints=1 {0.0.1.00000000}.{787cf9c8-4511-40fb-b284-9e416b51440b} render_endpoints=1 {0.0.0.00000000}.{c8f7294e-ac9a-43d9-9ddb-89d2afaa6e63}; default_device_round_trip_when_present PASS (prepared default channels≥1 rate>0 device_id non-empty mute toggle pre-start ok started 120ms→mute→60ms→stop well-formed drain overflow 0); unknown_device → WASAPI_DEVICE_NOT_FOUND PASS; lifecycle fail-closed → MIC_NOT_PREPARED PASS",
+      "classification": "OBSERVED"
+    },
+    "format_silent_truncated": {
+      "tests": ["extensible_float_is_recognized", "plain_pcm16_and_float_tags_are_recognized", "unsupported_formats_fail_closed", "f32_packets_round_trip_little_endian", "i16_packets_scale_into_unit_range", "silent_flag_zeroes_but_preserves_frame_count", "truncated_packets_are_rejected"],
+      "classification": "OBSERVED"
+    },
+    "microphone_permission_deny": {
+      "result": "NOT_VERIFIED — Windows Settings Privacy microphone not denied during run; permission-deny path not triggered; fault mapping to AUDIO_DEVICE_INVALIDATED is fail-closed code-reviewed but not live-injected",
+      "classification": "NOT_VERIFIED"
+    },
+    "device_loss_chaos": {
+      "result": "NOT_VERIFIED — USB unplug / default device switch mid-take not injected; last_error + is_available=false contract unit-tested via fault types but not live chaos",
+      "classification": "NOT_VERIFIED"
+    },
+    "libav_ffprobe_inherited": {
+      "result": "NOT_VERIFIED — LibavRuntime::load() LIBAV_UNAVAILABLE (shared avformat-62/avcodec-62/avutil-60 DLLs not colocated; only static ffmpeg 8.1.2 on PATH); expected for this host; not Phase-6 scope but engine_available=false because of it",
+      "classification": "NOT_VERIFIED"
+    },
+    "soak_30min": {
+      "result": "NOT_VERIFIED — Phase-4 gate, per UNRESOLVED_GATES.md and worker packet (do not run unless safely automated)",
+      "classification": "NOT_VERIFIED"
+    }
+  },
+  "changed_files_phase6_scope": [
+    "apps/desktop/native/recording-engine/src/audio/aac.rs — 3 deterministic tests (channel 48k mute)",
+    "apps/desktop/native/recording-engine/src/audio/mod.rs — 5 deterministic tests (PcmBlock mute idempotency defaults mapping)"
+  ],
+  "preserved_dirty": [
+    "apps/desktop/native/recording-engine/src/capture/wgc.rs (Phase-3)",
+    "apps/desktop/native/recording-engine/src/encoder/mod.rs + nvenc_session.rs (Phase-4 zero-PTS repair)",
+    "apps/desktop/native/recording-engine/src/muxer/libav.rs (Phase-5 B-frame DTS)",
+    "execution/core/storage/api dirty from prior phases"
+  ],
+  "untouched": [
+    "apps/desktop/native/recording-engine/src/audio/loopback.rs (Phase-7)",
+    "apps/desktop/native/recording-engine/src/audio/device.rs (reuse only, not modified)",
+    "apps/desktop/native/recording-engine/src/muxer/**, src/encoder/**, src/capture/**, src/service.rs hard cutover, src/preview/*, src/probe.rs, Tauri, frontend"
+  ],
+  "invariants_verified": {
+    "single_clock_audio_packet_contracts_preserved": "STATICALLY_VERIFIED",
+    "wasapi_microphone_sole_prod_authority_device_owns_endpoint": "STATICALLY_VERIFIED",
+    "no_second_device_or_capture_loop": "STATICALLY_VERIFIED",
+    "mono_stays_mono_then_48k_no_fake_stereo": "OBSERVED (phase6_mono test) + STATICALLY_VERIFIED",
+    "mute_affects_recorder_data_not_telemetry": "OBSERVED (mock_mute + silent tests) + STATICALLY_VERIFIED",
+    "event_driven_no_busy_poll": "STATICALLY_VERIFIED",
+    "format_negotiation_fail_closed": "OBSERVED + STATICALLY_VERIFIED",
+    "discontinuity_silence_device_loss_handled": "STATICALLY_VERIFIED + OBSERVED",
+    "deterministic_cleanup": "STATICALLY_VERIFIED + OBSERVED",
+    "fail_closed_upper_snake": "STATICALLY_VERIFIED + OBSERVED"
+  },
+  "acceptance_criteria": {
+    "endpoint_selection_event_driven_lifecycle": true,
+    "format_negotiation": true,
+    "48k_conversion_framing": true,
+    "discontinuity_silence_device_loss_handling": true,
+    "deterministic_cleanup_fail_closed": true,
+    "mono_not_fake_stereo": true,
+    "mute_affects_recorder_data": true,
+    "no_busy_polling": true,
+    "focused_deterministic_tests_added": true,
+    "cargo_check_pass": true,
+    "real_mic_probe_not_fabricated": true,
+    "no_duplicate_authority_no_out_of_scope_changes": true,
+    "permission_device_loss_stays_not_verified": true
+  },
+  "verdict": "PASS",
+  "verdict_reason": "Phase-6 WASAPI microphone contract satisfied: event-driven IAudioClient/IAudioCaptureClient (SHARED+EVENTCALLBACK, 100ms buffer, WaitForSingleObject heartbeat), format negotiation fail-closed, 48k resample with framing within 1 output frame (44.1k/48k/32k/96k mono+stereo), mono stays mono no fake stereo, mute zeroes recorder data preserving frames/PTS, silence→zeros truncated→Fatal device-loss→Invalidated+last_error overflow oldest-drop with counter, deterministic cleanup (prepare drops prior worker, stop idempotent, Drop joins), fail-closed UPPER_SNAKE, 41 audio / 144 total tests PASS including 8 new Phase-6 deterministic, real default mic probe observed (wasapi true 1 input endpoint exercised start/stop/drain well-formed, unknown id correctly rejected WASAPI_DEVICE_NOT_FOUND, no fabrication), cargo check PASS, no duplicate authority or out-of-scope changes. Permission/device-loss chaos and inherited libav/soak remain NOT_VERIFIED per packet (not Phase-6 scope) — correctly not claimed."
+}

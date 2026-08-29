@@ -14,6 +14,45 @@ from windagent_intelligence.summarizer import ContextSummarizer, SummarizationRe
 from windagent_intelligence.reviewer import TaskReviewer, ReviewResult, ReviewVerdict, ReviewCheck
 from windagent_intelligence.reporter import TaskReporter, ReportFormat, ReportSection, IntelligenceReport
 from windagent_intelligence.pipeline import IntelligencePipeline
+from windagent_intelligence.experience import (
+    Experience,
+    ExperienceState,
+    ExperienceDiagnostics,
+    ExperienceStore,
+)
+from windagent_core.domain.candidate import (
+    LearningCandidate,
+    LearnedRule,
+    CandidateKind,
+    CandidateStatus,
+    CandidateRiskLevel,
+    CandidateScope,
+    LearnedRuleState,
+)
+from windagent_intelligence.candidate import (
+    CandidateGenerator,
+    EligibilityGate,
+    CandidateService,
+    generate_candidate_id,
+)
+
+from windagent_core.domain.harness import (
+    HarnessEntry,
+    HarnessEntryKind,
+    HarnessVersion,
+    HarnessVersionStatus,
+    RefinementProposal,
+    RefinementStatus,
+)
+from windagent_intelligence.harness import (
+    DiffEngine,
+    HarnessAssembler,
+    AssembledHarnessContext,
+    HarnessService,
+    ImmutableBaseGuard,
+    ImmutableBaseViolationError,
+    RefinementEngine,
+)
 
 __version__ = PRODUCT_VERSION
 __all__ = [
@@ -33,4 +72,15 @@ __all__ = [
     "TaskReporter", "ReportFormat", "ReportSection", "IntelligenceReport",
     # pipeline
     "IntelligencePipeline",
+    # experience store (Phase 8)
+    "Experience", "ExperienceState", "ExperienceDiagnostics", "ExperienceStore",
+    # candidate learning (Phase 9)
+    "LearningCandidate", "LearnedRule", "CandidateKind", "CandidateStatus",
+    "CandidateRiskLevel", "CandidateScope", "LearnedRuleState",
+    "CandidateGenerator", "EligibilityGate", "CandidateService", "generate_candidate_id",
+    # continual harness (Phase 10)
+    "HarnessEntry", "HarnessEntryKind", "HarnessVersion", "HarnessVersionStatus",
+    "RefinementProposal", "RefinementStatus",
+    "DiffEngine", "HarnessAssembler", "AssembledHarnessContext", "HarnessService",
+    "ImmutableBaseGuard", "ImmutableBaseViolationError", "RefinementEngine",
 ]

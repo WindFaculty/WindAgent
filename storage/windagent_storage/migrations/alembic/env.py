@@ -30,7 +30,18 @@ if str(_REPO_ROOT) not in sys.path:
 from windagent_storage.orm.models import BaseORM  # noqa: E402
 import windagent_storage.orm.v2_orchestration_models  # noqa: E402,F401  (registers V2 orchestration tables)
 import windagent_storage.orm.v3_models  # noqa: E402,F401  (registers V3 provider/routing tables)
+import windagent_storage.orm.agent_runs_stub  # noqa: E402,F401  (registers agent_runs stub for FK)
+import windagent_storage.orm.agent_loop_models  # noqa: E402,F401  (registers agent loop/budget tables)
+import windagent_storage.orm.delegation_models  # noqa: E402,F401  (registers delegation tables)
+import windagent_storage.orm.persistent_goal_models  # noqa: E402,F401  (registers persistent goals)
+import windagent_storage.orm.agent_checkpoint_models  # noqa: E402,F401  (registers agent checkpoints)
+import windagent_storage.orm.multi_agent_models  # noqa: E402,F401  (registers conversations/parent_tasks/plans)
+import windagent_storage.orm.memory_v2_models  # noqa: E402,F401  (registers memory v2 records)
+import windagent_storage.orm.evaluation_models  # noqa: E402,F401  (registers evaluation records)
+import windagent_storage.orm.experience_models  # noqa: E402,F401  (registers experience records)
+import windagent_storage.orm.candidate_models  # noqa: E402,F401  (registers learning candidates and learned rules)
 import windagent_storage.video_production.video_production_models  # noqa: E402,F401  (registers V2 video production tables)
+
 
 config = context.config
 

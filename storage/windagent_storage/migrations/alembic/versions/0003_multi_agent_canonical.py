@@ -89,6 +89,36 @@ def _insert_select(select_sql: str, expected: int) -> None:
 
 
 def upgrade() -> None:
+    # Phase 2: allow 0001 baseline via BaseORM.metadata.create_all to have
+    # already created canonical tables (multi_agent_models). Make this
+    # migration idempotent so fresh DBs via 0001 + 0003 do not fail with
+    # "table already exists".
+    _orig_create_table = op.create_table
+    _orig_create_index = op.create_index
+
+    def _guarded_create_table(name, *args, **kwargs):
+        if _table_exists(name):
+            return
+        return _orig_create_table(name, *args, **kwargs)
+
+    def _guarded_create_index(name, tablename, *args, **kwargs):
+        if _table_exists(tablename):
+            bind = op.get_bind()
+            if bind.dialect.name == "sqlite":
+                row = bind.execute(
+                    sa.text("SELECT name FROM sqlite_master WHERE type='index' AND name=:name"), {"name": name}
+                ).fetchone()
+                if row is not None:
+                    return
+            else:
+                exists = bind.execute(sa.text("SELECT to_regclass(:name) IS NOT NULL"), {"name": name}).scalar()
+                if exists:
+                    return
+        return _orig_create_index(name, tablename, *args, **kwargs)
+
+    op.create_table = _guarded_create_table  # type: ignore[assignment]
+    op.create_index = _guarded_create_index  # type: ignore[assignment]
+
     # Stage the legacy parent_tasks table so the new canonical table can reuse
     # the name without colliding (Phase 1 data lane: legacy parent_tasks was
     # already consumed by 0002 into v2_tasks).

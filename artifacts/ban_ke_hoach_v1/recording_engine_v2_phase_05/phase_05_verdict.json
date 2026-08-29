@@ -1,0 +1,135 @@
+{
+  "phase": "recording_engine_v2 Phase 05 — Native MKV / libavformat (Repair 1)",
+  "generated_at": "2026-08-28T23:45:00+07:00",
+  "baseline_commit": "0f869d16cb0bc850d6e5097db0d8bc1089cb9d49",
+  "final_commit": "0f869d16cb0bc850d6e5097db0d8bc1089cb9d49",
+  "branch": "refactor/architecture-v3-hardening",
+  "objective": "Native LibavMuxer path that muxes Phase-4 H.264/HEVC length-prefixed packets (plus AAC) into independently playable, segmented MKV files via libavformat APIs — never FFmpeg CLI recorder. Fail-closed on missing runtime/invalid state/timestamp/codec, header after staged extradata, trailer+fsync+atomic rename, B-frame PTS/DTS preserved via AVPacket rescale, ffprobe validation when runtime available.",
+  "authorities": {
+    "muxer": "muxer/libav.rs::LibavMuxer (segmented MKV writer)",
+    "loader": "muxer/libav_loader.rs::LibavRuntime (OnceLock shared-DLL loader, 19 entry points, 62/62/60 ABI)",
+    "muxer_port": "muxer/mod.rs::MuxerPort (prepare/open_segment/stage_video_extradata/stage_audio_extradata/write_packet/close_segment/finalize_take)",
+    "tracks": "muxer/tracks.rs (split_annex_b, annex_b_to_length_prefixed, build_avcc/hvcc, build_aac_asc)",
+    "timestamps": "muxer/timestamps.rs (SegmentRouter, pts_from_micros, assert_monotonic, TIMEBASE_DEN=1_000_000)",
+    "packet_contract": "encoder::EncodedPacket {data, pts_us, dts_us, is_keyframe, codec} — Phase-4 length-prefixed for avcC/hvcC, PTS zero valid, DTS monotonic in decode order when b_frames>0 (NvencSession has_b_frames)"
+  },
+  "implementation": {
+    "verified_native_lifecycle": "open_native (guess_format+'alloc_output_context+'new_stream+codecpar+'time_base 1/1e6/avg_frame_rate+'packet_alloc+'avio_open .tmp) +' flush_header (av_mallocz extradata +' write_header) +' write_native (av_new_packet+'memcpy+'pts/dts/flags/stream_index+'rescale_ts on both fields +'interleaved_write_frame+'unref) +' close_native (header guard+'write_trailer+'io_close+'packet_free/free_context+'WRITE reopen sync_all+'rename .tmp+'.mkv+'stat) — all error-checked via err_str (STATICALLY_VERIFIED)",
+    "gap_fixed_this_pass": "Repair 1: Previous validate_packet_contract blanket-rejected every dts_us != pts_us as MKV_BFRAMES_UNSUPPORTED (misleading V2-disables-B-frames comment). FIXED: added last_dts_by_slot: Vec<Option<i64>> (init vec![None; tracks.len()] alongside last_pts_by_slot), rewrote validate_packet_contract to B-frame-capable: empty/codec/slot checks, this_pts>=0, this_dts>=0, this_dts<=this_pts, DTS monotonic per slot in written (decode) order (< prev_dts → TIMESTAMP_REGRESSION, zero valid, == allowed), PTS preserved verbatim without written-order monotonic when DTS!=PTS (presentation-order vs written-order distinction). Removed MKV_BFRAMES_UNSUPPORTED, removed misleading comment. write_native now stores both per-slot DTS and PTS exactly (no max fabrication) and preserves both via AVPacket pts/dts + av_packet_rescale_ts. Added mk_b_packet helper and 3 new B-frame tests, replaced misleading reject test.",
+    "segmentation_semantics": "SegmentRouter requests IDR at boundary+margin, HoldForNext for reordered packet; LibavMuxer asserts monotonic open index; close writes trailer+fsync+rename atomically; each file independently playable only after header+packets+trailer; no arbitrary mid-GOP cut (STATICALLY_VERIFIED)",
+    "fail_closed_codes": "LIBAV_UNAVAILABLE / LIBAV_ABI_MISMATCH, MKV_NOT_PREPARED, MKV_SEGMENT_INDEX_REGRESSION, MKV_SEGMENT_ALREADY_OPEN, MKV_TRACK_LAYOUT_EMPTY, MKV_TRACK_ORDER_INVALID, MKV_TRACK_DUPLICATED, MKV_SAMPLE_RATE_UNSUPPORTED, MKV_CHANNEL_LAYOUT_UNSUPPORTED, MKV_CODECPAR_NULL, MKV_ALLOC_FAILED, MKV_OPEN_FAILED, MKV_EXTRADATA_MISSING/EMPTY, MKV_HEADER_FAILED/ALREADY_WRITTEN, MKV_UNKNOWN_TRACK, MKV_PACKET_EMPTY/TOO_LARGE/CODEC_MISMATCH, TIMESTAMP_REGRESSION (DTS), TIMESTAMP_INVALID (DTS>PTS or negative), MKV_SEGMENT_EMPTY/STILL_OPEN, MKV_TRAILER/CLOSE/FSYNC/RENAME/STAT_FAILED, MKV_WRITE_FAILED — all typed, never panic, never publish partial .mkv",
+    "bframe_contract": "B-frames are supported via VideoConfig.b_frames (0..4) and NvencSession has_b_frames (dts = pts - output_duration). Muxer preserves EncodedPacket{pts_us,dts_us} verbatim into AVPacket{pts,dts} then av_packet_rescale_ts on both (1/1e6 → stream time_base). DTS monotonic in written (decode) order per slot is enforced; PTS in written order may go backward when B-frames reorder (e.g., decode I0/P3/B1 has PTS 0,100k,33k but DTS monotonic 0,33k,50k) — accepted after Repair 1. Only DTS>PTS or negative or DTS regression are rejected. Tests cover valid B-frame, reordered PTS, DTS regression, DTS>PTS, negative DTS.",
+    "written_vs_presentation": "Written (decode) order is the order packets arrive from encoder and are interleaved via av_interleaved_write_frame — DTS monotonic per slot. Presentation order is sorted by PTS for display — monotonic when sorted, but not in written order when B-frames reorder. Previous PTS monotonic in written order incorrectly rejected valid reordering; Repair 1 enforces DTS monotonic (written) and preserves PTS verbatim, documenting the distinction.",
+    "fix_files": [
+      "apps/desktop/native/recording-engine/src/muxer/libav.rs — 338 insertions (last_dts_by_slot, B-frame-aware validate_packet_contract, write_native DTS bookkeeping, removed MKV_BFRAMES_UNSUPPORTED, bframe tests)"
+    ]
+  },
+  "validation": {
+    "cargo_check": {
+      "cmd": "cargo check --manifest-path apps/desktop/native/recording-engine/Cargo.toml",
+      "exit_code": 0,
+      "result": "Finished dev profile in 0.64s, 0 errors",
+      "classification": "OBSERVED"
+    },
+    "unit_muxer_filtered": {
+      "cmd": "cargo test --manifest-path apps/desktop/native/recording-engine/Cargo.toml muxer --lib -- --test-threads=1",
+      "exit_code": 0,
+      "passed": 36,
+      "failed": 0,
+      "ignored": 0,
+      "detail": "27 pre-existing (paths/tokens/index/masks/layout/state_machine/finalize/router/walker/keyframe_flag(skipped)/loader/transcribed/layouts/verified_constants/version_major/mock/tracksA-7/timestampsA-4) + 7 first-pass contract + 3 Repair 1 B-frame net new (valid_bframe_dts_pts_accepted, bframe_reordered_pts_accepted_when_dts_monotonic, rejects_dts_regression_and_invalid_timestamps) minus 1 removed misleading (rejects_bframes_explicitly_v2_contract) = 36 total contract tests 10",
+      "classification": "OBSERVED"
+    },
+    "unit_full": {
+      "cmd": "cargo test --manifest-path apps/desktop/native/recording-engine/Cargo.toml --lib -- --test-threads=1",
+      "exit_code": 0,
+      "passed": 136,
+      "failed": 0,
+      "ignored": 5,
+      "detail": "5 ignored = manual NVENC driver diagnostics (preset_config_combo_matrix, initialize_params_matrix, session_lifecycle_probe, production_encode_texture_probe, production_shape_sustained_probe) — not counted",
+      "classification": "OBSERVED"
+    },
+    "unit_bframe_contract": {
+      "tests": [
+        "timestamp_zero_is_valid_and_monotonic_per_track — PASS: zero PTS/DTS valid, DTS monotonic per track, duplicate allowed, audio independent",
+        "valid_bframe_dts_pts_accepted — PASS: pts 0 dts0 then pts 33_333 dts 16_000 (DTS!=PTS) accepted, pts 66_666 dts 33_333 accepted",
+        "bframe_reordered_pts_accepted_when_dts_monotonic — PASS: pts 60_000 dts 20_000 then pts 30_000 dts 30_000 (PTS backward in written order but DTS 20k→30k monotonic and DTS<=PTS) accepted",
+        "rejects_dts_regression_and_invalid_timestamps — PASS: dts 40_000 < prev 50_000 → TIMESTAMP_REGRESSION, dts 40_000 > pts 33_333 → TIMESTAMP_INVALID, negative dts → TIMESTAMP_INVALID",
+        "rejects_timestamp_regression_per_track — PASS: dts 40_000 < prev 50_000 → TIMESTAMP_REGRESSION",
+        "rejects_codec_mismatch_per_track — PASS: Video×AAC and Mic×H264 rejected",
+        "rejects_empty_packet_data — PASS: empty → MKV_PACKET_EMPTY",
+        "rejects_unknown_track — PASS: Mic on video-only → MKV_UNKNOWN_TRACK",
+        "segmentation_tmp_never_promoted_on_failure — PASS: LIBAV_UNAVAILABLE or empty-segment MKV_SEGMENT_EMPTY leaves no .mkv"
+      ],
+      "classification": "OBSERVED"
+    },
+    "loader_probe": {
+      "cmd": "cargo test --lib muxer::libav_loader::tests::loader_is_total_and_never_panics -- --nocapture",
+      "exit_code": 0,
+      "result": "PASS — LibavRuntime::load() is total, returns Ok with dll_names+[abi_supported] when shared DLLs present else Err prefixed LIBAV_UNAVAILABLE",
+      "observed_runtime": "LIBAV_UNAVAILABLE on this host: probed 3 location(s) × 3 release family(ies) (avformat-62/avcodec-62/avutil-60, 61/59, 60/58), failures include LoadLibraryW(avutil-60.dll via PATH) The specified module could not be found, WINDAGENT_LIBAV_DIR not set",
+      "classification": "OBSERVED"
+    },
+    "keyframe_simpleblock_walker_real_mkv": {
+      "cmd": "cargo test --lib muxer::libav::tests::keyframe_flag_reaches_mkv_simpleblock -- --nocapture",
+      "exit_code": 0,
+      "result": "PASS (but skipped) — runtime unavailable: eprintln!(\"skipping: libav runtime unavailable on this host\") x2, no file produced; walker counts not executed; NOT counted as probe PASS",
+      "classification": "NOT_VERIFIED (blocker above, not simulated)"
+    },
+    "ffprobe_mock_negative_control": {
+      "cmd": "ffprobe -v error -show_format -show_streams <mock>.mkv",
+      "result": "Invalid data found when processing input — mock starts 0x1A45DFA3 + text, correctly not Matroska; classified as OBSERVED negative control, NOT_VERIFIED as real validation",
+      "classification": "OBSERVED"
+    },
+    "ffprobe_real_libav_mkv": {
+      "cmd": "ffprobe -show_format -show_streams -show_entries stream=codec_name,avg_frame_rate,r_frame_rate,duration,time_base <segment_*.mkv> + EBML walker keyflag counts",
+      "result": "NOT_VERIFIED — no segment_*.mkv produced by LibavMuxer on this host because LibavRuntime::load() fails before alloc_output_context; therefore no command could succeed. Not simulated with mock. Prior mock .tmp ffprobe not valid and marked NOT_VERIFIED. Real validation requires provisioning FFmpeg 8.x shared build DLLs (avformat-62.dll/avcodec-62.dll/avutil-60.dll) via WINDAGENT_LIBAV_DIR or exe dir.",
+      "classification": "NOT_VERIFIED"
+    },
+    "static_transcriptions": {
+      "tests": ["transcribed_layouts_match_the_headers (AVRational 8, AVChannelLayout 24, AVStreamPrefix 24, AVStreamTimingPrefix 96, AVFormatContextPrefix 56, AVCodecParameters 184, AVPacketPartial 80)", "verified_constants_match_ffmpeg_n8_1_2 (AV_CODEC_ID_H264 27, HEVC 173, AAC 0x15002, AV_PKT_FLAG_KEY 0x0001)", "version_major_decodes_ffmpeg_packed_int (60<<16|26<<8|100 → 60)"],
+      "classification": "STATICALLY_VERIFIED"
+    },
+    "performance_soak_30min": {
+      "result": "NOT_VERIFIED — Phase-4 gate, per UNRESOLVED_GATES.md and worker packet (do not run unless safely automated). Does not block implementation contract.",
+      "classification": "NOT_VERIFIED"
+    }
+  },
+  "changed_files_phase5_scope": [
+    "apps/desktop/native/recording-engine/src/muxer/libav.rs"
+  ],
+  "preserved_dirty": [
+    "apps/desktop/native/recording-engine/src/capture/wgc.rs (Phase-3)",
+    "apps/desktop/native/recording-engine/src/encoder/mod.rs + nvenc_session.rs (Phase-4 zero-PTS repair)",
+    "execution/core/storage/api dirty from prior phases"
+  ],
+  "untouched": [
+    "artifacts/ban_ke_hoach_v1/phase_03/ + phase_04/",
+    "capture/d3d11_device.rs, capture/mod.rs, encoder/nvenc_api.rs, encoder/nvenc_encoder.rs, audio/*, preview/*, service.rs hard cutover"
+  ],
+  "invariants_verified": {
+    "no_cpu_copy_second_device": "STATICALLY_VERIFIED",
+    "loader_once_single_runtime": "STATICALLY_VERIFIED",
+    "ffi_structs_versioned_error_checked": "STATICALLY_VERIFIED (19 fns, abi 62/62/60, err_str)",
+    "header_after_staged_extradata_interleaved_rescale_trailer_fsync_rename": "STATICALLY_VERIFIED",
+    "per_track_dts_monotonic_zero_bframe_preserved": "OBSERVED (10 contract tests) + STATICALLY_VERIFIED",
+    "segmentation_mid_gop_never_cut_hold_until_idr_independently_playable": "STATICALLY_VERIFIED",
+    "fail_closed_no_partial_mkv": "OBSERVED (segmentation_tmp_never_promoted_on_failure) + STATICALLY_VERIFIED",
+    "crash_recovery_tmp_discarded": "STATICALLY_VERIFIED",
+    "single_mux_thread_send_not_sync": "STATICALLY_VERIFIED"
+  },
+  "acceptance_criteria": {
+    "native_runtime_lifecycle_correct": true,
+    "per_track_dts_monotonic_zero_bframe_preserved": true,
+    "segmentation_fsync_rename_independently_playable": true,
+    "focused_tests_added_bframe": true,
+    "cargo_check_pass": true,
+    "no_duplicate_authority_no_ffmpeg_subprocess": true,
+    "truthful_evidence_no_simulated_ffprobe": true,
+    "misleading_bframe_comment_removed": true,
+    "real_mkv_ffprobe_validation": false,
+    "soak_30min_gate": false
+  },
+  "verdict": "BLOCKED",
+  "verdict_reason": "Implementation-ready after Repair 1 (native lifecycle correct, per-track DTS monotonic with zero valid, DTS<=PTS, PTS preserved verbatim via AVPacket rescale — valid B-frame DTS!=PTS and reordered PTS accepted, invalid DTS regression/DTS>PTS rejected, staged header+interleaved+trailer+fsync+rename, fail-closed guards, 36 muxer + 136 total PASS, 10 contract tests, ffprobe blocker honestly reported, no simulated mock ffprobe). Formal PASS blocked by NOT_VERIFIED real Libav-produced MKV ffprobe (shared avformat-62/avcodec-62/avutil-60 DLLs not present on host — only static ffmpeg/ffprobe — so no file could be produced/probed; not simulated, prior mock tmp correctly NOT_VERIFIED) plus inherited 30-minute NVENC soak NOT_VERIFIED. Provision FFmpeg 8.x shared DLLs via WINDAGENT_LIBAV_DIR or exe dir and re-run keyframe_flag_reaches_mkv_simpleblock + ffprobe to flip to PASS."
+}

@@ -94,8 +94,8 @@ def test_sqlite_rehearsal_preserves_immutable_plan_and_audit_data(tmp_path: Path
     with sqlite3.connect(database) as connection:
         connection.execute(
             "INSERT INTO conversations "
-            "(conversation_id, status, created_at, updated_at) "
-            "VALUES ('conversation-1', 'idle', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)"
+            "(conversation_id, status, last_event_sequence, created_at, updated_at) "
+            "VALUES ('conversation-1', 'idle', 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)"
         )
         connection.execute(
             "INSERT INTO parent_tasks "

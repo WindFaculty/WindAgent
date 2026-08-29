@@ -1,0 +1,108 @@
+{
+  "phase": "ban_ke_hoach_v1 Phase 6 \u2014 Context Compaction + Memory V2",
+  "generated_at": "2026-08-29T12:30:00+07:00",
+  "baseline_commit": "0f869d16cb0bc850d6e5097db0d8bc1089cb9d49",
+  "objective": "Expand multi-layer memory to 8 scopes (WORKING, SESSION, PROJECT, USER, EPISODIC, SEMANTIC, PROCEDURAL, POLICY) with LearningMetadata (confidence, sample_size, evidence_refs, source_run_ids, validation_status, supersedes_id) and learning admission gates. Integrate ContextCompactor with policy preservation and Phase 5 durable checkpoints. Provide clean SQL repository persistence with CAS versioning without violating architecture boundaries.",
+  "memory_v2_contract": {
+    "domain": "core/windagent_core/domain/memory_v2.py",
+    "scopes": [
+      "working",
+      "session",
+      "project",
+      "user",
+      "episodic",
+      "semantic",
+      "procedural",
+      "policy"
+    ],
+    "validation_statuses": [
+      "unvalidated",
+      "proposed",
+      "validated",
+      "promoted",
+      "rejected",
+      "superseded"
+    ],
+    "learning_metadata": {
+      "fields": [
+        "evidence_refs",
+        "confidence",
+        "sample_size",
+        "source_run_ids",
+        "harness_version",
+        "validation_status",
+        "last_validated_at",
+        "supersedes_id"
+      ],
+      "terminal_statuses": [
+        "rejected",
+        "superseded"
+      ],
+      "validated_statuses": [
+        "validated",
+        "promoted"
+      ]
+    },
+    "write_policy_gates": "Secret pattern scanning; mandatory provenance_source; project_id / session_id scope isolation; learning admission gate (confidence >= 0.7, sample_size >= 3, evidence_refs non-empty for PROMOTED policy)",
+    "superseding_lineage": "Saving record with supersedes_id transitions old memory to SUPERSEDED terminal status",
+    "ttl_policy": "WORKING/SESSION/EPISODIC have default TTLs (1h/24h/30d); PROJECT/USER/SEMANTIC/PROCEDURAL/POLICY are persistent (TTL=None)"
+  },
+  "storage": {
+    "migration": "0023_memory_v2 (forward-only, idempotent, creates memory_v2_records table and indexes)",
+    "table": "memory_v2_records",
+    "orm": "storage/windagent_storage/orm/memory_v2_models.py (MemoryRecordV2ORM registered in models.py & env.py)",
+    "repository": "storage/windagent_storage/repositories/memory_v2_repository.py (Async SQL CRUD, CAS versioned save_record, get_by_key, get_by_id, list_records, supersede_record, evict_expired, count_by_scope)",
+    "indexes": [
+      "ix_memory_v2_scope",
+      "ix_memory_v2_key",
+      "ix_memory_v2_project",
+      "ix_memory_v2_session",
+      "ix_memory_v2_content_hash",
+      "ix_memory_v2_status",
+      "ix_memory_v2_supersedes",
+      "ix_memory_v2_scope_key",
+      "ix_memory_v2_scope_proj",
+      "ix_memory_v2_scope_sess",
+      "ix_memory_v2_status_conf"
+    ]
+  },
+  "context_compaction_integration": {
+    "compactor": "context/windagent_context/compaction.py (ContextCompactor preserves critical policies, decisions, blockers, invariants; generates compaction checkpoint snapshot for Phase 5 CheckpointService)",
+    "builder": "context/windagent_context/builder.py (Prioritized memory assembly: POLICY > SEMANTIC/PROCEDURAL > WORKING/SESSION > EPISODIC with TokenBudgetManager profiles)",
+    "provenance": "context/windagent_context/provenance.py (SourceType: SEMANTIC_MEMORY, PROCEDURAL_MEMORY, POLICY_MEMORY, EPISODIC_MEMORY)"
+  },
+  "orchestration": {
+    "service": "orchestration/windagent_orchestration/long_running/memory_context_service.py (MemoryContextService coordinates Memory V2, ContextCompactor, and CheckpointService without violating architecture boundaries; 0 cross-package direct imports)"
+  },
+  "validation": {
+    "pytest_phase6": {
+      "cmd": ".venv\\Scripts\\pytest.exe tests/component/memory/test_phase6_memory_v2_compaction.py -v",
+      "exit_code": 0,
+      "passed": 10,
+      "failed": 0,
+      "detail": "10 passed: 8 scopes CRUD, LearningMetadata validation statuses, learning admission policy checks, secret exclusion & provenance, superseding lineage, deduplication & TTL, context compaction & checkpoint integration, prompt context assembly prioritization, memory v2 repository SQL CAS durability, restart visibility & durability"
+    },
+    "pytest_combined_regression": {
+      "cmd": ".venv\\Scripts\\pytest.exe tests/component/memory/ tests/unit/context/ tests/component/orchestration/test_phase5_long_running_hardening.py -v",
+      "exit_code": 0,
+      "passed": 49,
+      "failed": 0
+    },
+    "architecture_check_v3": {
+      "cmd": ".venv\\Scripts\\python.exe scripts/check_architecture_v3.py",
+      "exit_code": 0,
+      "violations": 0
+    },
+    "architecture_imports": {
+      "cmd": ".venv\\Scripts\\python.exe scripts/check_architecture_imports.py",
+      "exit_code": 0,
+      "violations": 0
+    },
+    "ruff_lint": {
+      "cmd": ".venv\\Scripts\\ruff.exe check",
+      "exit_code": 0,
+      "status": "All checks passed!"
+    }
+  },
+  "phase_verdict": "PASSED"
+}

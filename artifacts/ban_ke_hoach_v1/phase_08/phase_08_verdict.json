@@ -1,0 +1,67 @@
+{
+  "phase": "phase_08",
+  "name": "Experience Store",
+  "status": "COMPLETED",
+  "verdict": "PASS",
+  "reference": "ban_ke_hoach_v1.md §13 & §24",
+  "completion_date": "2026-08-29",
+  "summary": "Phase 8 implements the Experience Store Architecture turning raw execution telemetry and Phase 7 evaluation records into empirical learning data with full lifecycle states (RAW -> EVALUATED -> DIAGNOSED -> ARCHIVED), attribution engine, and durable storage.",
+  "invariants": {
+    "immutability": "PASS (Pydantic ConfigDict frozen=True)",
+    "distinction_from_learned_rules": "PASS (Experience != LearnedRule != MemoryFact != Skill != Policy)",
+    "state_progression": "PASS (RAW -> EVALUATED -> DIAGNOSED -> ARCHIVED)",
+    "diagnostics_attribution": "PASS (Supported YouTube signal correlation & multi-dimensional evaluation attribution)",
+    "candidate_readiness_gating": "PASS (is_learning_candidate_ready enforces DIAGNOSED, confidence >= 0.6, hypothesis, and evaluation evidence)"
+  },
+  "deliverables": [
+    {
+      "name": "Experience Domain Model",
+      "path": "core/windagent_core/domain/experience.py",
+      "status": "VERIFIED"
+    },
+    {
+      "name": "Experience Diagnostics & Attribution Engine",
+      "path": "intelligence/windagent_intelligence/experience/diagnostics.py",
+      "status": "VERIFIED"
+    },
+    {
+      "name": "ExperienceStore Service",
+      "path": "intelligence/windagent_intelligence/experience/store.py",
+      "status": "VERIFIED"
+    },
+    {
+      "name": "Experience ORM Model",
+      "path": "storage/windagent_storage/orm/experience_models.py",
+      "status": "VERIFIED"
+    },
+    {
+      "name": "Experience SQL Repository",
+      "path": "storage/windagent_storage/repositories/experience_repository.py",
+      "status": "VERIFIED"
+    },
+    {
+      "name": "Alembic Migration 0025",
+      "path": "storage/windagent_storage/migrations/alembic/versions/0025_experience_store.py",
+      "status": "VERIFIED"
+    },
+    {
+      "name": "API V2 Experiences Router",
+      "path": "apps/api/windagent_api/routers/v2_experiences.py",
+      "status": "VERIFIED"
+    },
+    {
+      "name": "Phase 8 Component Tests",
+      "path": "tests/component/intelligence/test_phase8_experience_store.py",
+      "status": "VERIFIED (11/11 passed)"
+    }
+  ],
+  "test_metrics": {
+    "phase_tests_passed": 11,
+    "phase_tests_total": 11,
+    "regression_tests_passed": 32,
+    "migration_tests_passed": 99,
+    "architecture_violations": 0,
+    "ruff_errors": 0
+  }
+}
+

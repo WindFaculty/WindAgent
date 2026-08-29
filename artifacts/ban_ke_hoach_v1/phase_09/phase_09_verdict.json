@@ -1,0 +1,73 @@
+{
+  "phase": "phase_09",
+  "name": "Diagnosis & Candidate Learning",
+  "status": "COMPLETED",
+  "verdict": "PASS",
+  "reference": "ban_ke_hoach_v1.md §14, §23, §24, §25, §27",
+  "completion_date": "2026-08-29",
+  "summary": "Phase 9 implements the Diagnosis & Candidate Learning Engine enabling the agent platform to synthesize LearningCandidates and LearnedRules from empirical experiences, enforce sample size and counter-evidence eligibility thresholds, and prevent un-gated prompt/harness mutations.",
+  "invariants": {
+    "immutability": "PASS (Pydantic ConfigDict frozen=True on LearningCandidate & LearnedRule)",
+    "non_self_promoting": "PASS (Candidates start strictly in PROPOSED state; cannot self-promote)",
+    "hard_rule_single_failure": "PASS (1 failure generates candidate with sample_size=1, failing eligibility gate until threshold is reached)",
+    "distinction_of_concepts": "PASS (Experience != MemoryFact != LearningCandidate != LearnedRule != Skill != Policy)",
+    "eligibility_thresholds": "PASS (Scope-based sample size, confidence threshold, and counter-evidence gating enforced)",
+    "zero_tolerance_safety": "PASS (Bypass/disable safety attempts fail closed)"
+  },
+  "deliverables": [
+    {
+      "name": "Candidate & Learned Rule Domain Models",
+      "path": "core/windagent_core/domain/candidate.py",
+      "status": "VERIFIED"
+    },
+    {
+      "name": "Candidate Generator & Miner",
+      "path": "intelligence/windagent_intelligence/candidate/candidate_generator.py",
+      "status": "VERIFIED"
+    },
+    {
+      "name": "Eligibility Gate",
+      "path": "intelligence/windagent_intelligence/candidate/eligibility_gate.py",
+      "status": "VERIFIED"
+    },
+    {
+      "name": "CandidateService Coordinator",
+      "path": "intelligence/windagent_intelligence/candidate/service.py",
+      "status": "VERIFIED"
+    },
+    {
+      "name": "Storage ORM Models",
+      "path": "storage/windagent_storage/orm/candidate_models.py",
+      "status": "VERIFIED"
+    },
+    {
+      "name": "Alembic Migration 0026",
+      "path": "storage/windagent_storage/migrations/alembic/versions/0026_candidate_learning.py",
+      "status": "VERIFIED"
+    },
+    {
+      "name": "Candidate SQL Repository",
+      "path": "storage/windagent_storage/repositories/candidate_repository.py",
+      "status": "VERIFIED"
+    },
+    {
+      "name": "API V2 Candidates Router",
+      "path": "apps/api/windagent_api/routers/v2_candidates.py",
+      "status": "VERIFIED"
+    },
+    {
+      "name": "Phase 9 Component Tests",
+      "path": "tests/component/intelligence/test_phase9_candidate_learning.py",
+      "status": "VERIFIED (12/12 passed)"
+    }
+  ],
+  "test_metrics": {
+    "phase_tests_passed": 12,
+    "phase_tests_total": 12,
+    "component_regression_tests_passed": 106,
+    "migration_tests_passed": 99,
+    "architecture_violations": 0,
+    "ruff_errors": 0
+  }
+}
+

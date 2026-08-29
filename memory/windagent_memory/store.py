@@ -14,9 +14,15 @@ from __future__ import annotations
 import logging
 import uuid
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 
-from windagent_memory.models import MemoryRecord, MemoryScope, RetentionPolicy
+from windagent_core.domain.memory_v2 import (
+    LearningMetadata,
+    MemoryRecordV2,
+    MemoryScope,
+    ValidationStatus,
+)
+from windagent_memory.models import MemoryRecord, RetentionPolicy
 from windagent_memory.write_policy import MemoryWritePolicy
 
 logger = logging.getLogger("windagent.memory.store")
@@ -38,27 +44,47 @@ class MemoryStore:
         self._hash_index: Dict[str, str] = {}  # content_hash -> record_id
 
     def _make_storage_key(self, scope: MemoryScope, key: str, project_id: Optional[str], session_id: Optional[str]) -> Tuple[str, str, Optional[str], Optional[str]]:
-        return (scope.value, key, project_id, session_id)
+        scope_str = scope.value if hasattr(scope, "value") else str(scope)
+        return (scope_str, key, project_id, session_id)
 
     def _generate_id(self) -> str:
         return f"mem_{uuid.uuid4().hex[:12]}"
 
     # ------------------------------------------------------------------
-    # Save / Update with deduplication
+    # Save / Update with deduplication & superseding
     # ------------------------------------------------------------------
 
-    def save(self, record: MemoryRecord) -> None:
+    def save(self, record: Union[MemoryRecord, MemoryRecordV2]) -> None:
         """Saves or updates a memory record after evaluating MemoryWritePolicy.
         Performs deduplication via content_hash: if an identical record exists, it is deduplicated.
+        If the record supersedes a prior memory (supersedes_id), the prior memory is marked SUPERSEDED.
         """
-        # 1. Validate via write policy (secret exclusion, provenance, scope)
+        # Normalise to MemoryRecord if MemoryRecordV2 passed
+        if isinstance(record, MemoryRecordV2):
+            record = MemoryRecord.from_v2(record)
+
+        # 1. Validate via write policy (secret exclusion, provenance, scope, learning admission)
         self.write_policy.validate_and_enforce(record)
 
         # 2. Compute content hash for dedup if not set
         if not record.content_hash:
             record.content_hash = record.compute_content_hash()
 
-        # 3. Deduplication: check if identical content already exists
+        # 3. Handle superseding lineage: mark superseded record as SUPERSEDED
+        if record.learning_metadata and record.learning_metadata.supersedes_id:
+            old_rec = self.get_by_id(record.learning_metadata.supersedes_id)
+            if old_rec is not None:
+                if old_rec.learning_metadata is not None:
+                    old_rec.learning_metadata = old_rec.learning_metadata.model_copy(
+                        update={"validation_status": ValidationStatus.SUPERSEDED}
+                    )
+                else:
+                    old_rec.learning_metadata = LearningMetadata(validation_status=ValidationStatus.SUPERSEDED)
+                old_rec.updated_at = datetime.now(timezone.utc)
+                self._persist(old_rec)
+                logger.info(f"Marked memory record [{old_rec.id}] as SUPERSEDED by [{record.id or 'new_record'}]")
+
+        # 4. Deduplication: check if identical content already exists
         dup_record_id = self._hash_index.get(record.content_hash)
         if dup_record_id:
             # Check if the duplicate still exists
@@ -68,12 +94,14 @@ class MemoryStore:
                     f"Deduplicated memory save for key [{record.key}]: "
                     f"identical content hash [{record.content_hash[:12]}...] matches record [{dup_record_id}]"
                 )
-                # Update the existing record's timestamp instead of creating new
+                # Update the existing record's timestamp and learning_metadata if provided
                 existing.updated_at = datetime.now(timezone.utc)
+                if record.learning_metadata is not None:
+                    existing.learning_metadata = record.learning_metadata
                 self._persist(existing)
                 return
 
-        # 4. Check for existing record with same (scope, key, project, session) to update
+        # 5. Check for existing record with same (scope, key, project, session) to update
         storage_key = self._make_storage_key(record.scope, record.key, record.project_id, record.session_id)
         existing_record = self._store.get(storage_key)
 
@@ -84,9 +112,12 @@ class MemoryStore:
             existing_record.tags = record.tags
             existing_record.ttl_seconds = record.ttl_seconds
             existing_record.content_hash = record.content_hash
+            if record.learning_metadata is not None:
+                existing_record.learning_metadata = record.learning_metadata
+            existing_record.version = getattr(existing_record, "version", 1) + 1
             existing_record.updated_at = datetime.now(timezone.utc)
             self._persist(existing_record)
-            logger.info(f"Updated memory record [{record.key}] under scope [{record.scope.value}]")
+            logger.info(f"Updated memory record [{record.key}] under scope [{getattr(record.scope, 'value', str(record.scope))}]")
         else:
             # Set ID if not provided
             if not record.id:
@@ -95,7 +126,7 @@ class MemoryStore:
             self._store[storage_key] = record
             self._hash_index[record.content_hash] = record.id
             self._persist(record)
-            logger.info(f"Saved memory record [{record.key}] under scope [{record.scope.value}]")
+            logger.info(f"Saved memory record [{record.key}] under scope [{getattr(record.scope, 'value', str(record.scope))}]")
 
     def save_many(self, records: List[MemoryRecord]) -> int:
         """Saves multiple records atomically. Returns count saved."""
@@ -222,6 +253,95 @@ class MemoryStore:
                 else:
                     results.append(rec)
         return results
+
+    def list_by_status(self, status: Union[ValidationStatus, str], scope: Optional[MemoryScope] = None) -> List[MemoryRecord]:
+        """Lists records with a specific validation_status. Filters expired."""
+        now = datetime.now(timezone.utc)
+        status_val = status.value if hasattr(status, "value") else str(status)
+        results = []
+        for rec in list(self._store.values()):
+            if rec.is_expired(reference_time=now):
+                self._remove_from_store(rec)
+                continue
+            if scope is not None and rec.scope != scope:
+                continue
+            if rec.learning_metadata is not None:
+                val = rec.learning_metadata.validation_status
+                val_str = val.value if hasattr(val, "value") else str(val)
+                if val_str == status_val:
+                    results.append(rec)
+        return sorted(results, key=lambda r: r.updated_at, reverse=True)
+
+    def list_validated_knowledge(
+        self,
+        scope: Optional[MemoryScope] = None,
+        min_confidence: float = 0.0,
+        project_id: Optional[str] = None,
+    ) -> List[MemoryRecord]:
+        """Lists VALIDATED or PROMOTED records across SEMANTIC, PROCEDURAL, or POLICY scopes."""
+        now = datetime.now(timezone.utc)
+        results = []
+        for rec in list(self._store.values()):
+            if rec.is_expired(reference_time=now):
+                self._remove_from_store(rec)
+                continue
+            if scope is not None and rec.scope != scope:
+                continue
+            if project_id is not None and rec.project_id is not None and rec.project_id != project_id:
+                continue
+            if rec.learning_metadata is not None:
+                if rec.learning_metadata.is_validated() and rec.learning_metadata.confidence >= min_confidence:
+                    results.append(rec)
+        return sorted(results, key=lambda r: r.learning_metadata.confidence if r.learning_metadata else 0, reverse=True)
+
+    def list_policies(self, validated_only: bool = True, project_id: Optional[str] = None) -> List[MemoryRecord]:
+        """Lists POLICY memory records."""
+        now = datetime.now(timezone.utc)
+        results = []
+        for rec in list(self._store.values()):
+            if rec.is_expired(reference_time=now):
+                self._remove_from_store(rec)
+                continue
+            if rec.scope != MemoryScope.POLICY:
+                continue
+            if project_id is not None and rec.project_id is not None and rec.project_id != project_id:
+                continue
+            if validated_only:
+                if rec.learning_metadata is not None and rec.learning_metadata.is_validated():
+                    results.append(rec)
+            else:
+                results.append(rec)
+        return sorted(results, key=lambda r: r.updated_at, reverse=True)
+
+    def list_procedural(self, project_id: Optional[str] = None) -> List[MemoryRecord]:
+        """Lists PROCEDURAL memory records."""
+        now = datetime.now(timezone.utc)
+        results = []
+        for rec in list(self._store.values()):
+            if rec.is_expired(reference_time=now):
+                self._remove_from_store(rec)
+                continue
+            if rec.scope != MemoryScope.PROCEDURAL:
+                continue
+            if project_id is not None and rec.project_id is not None and rec.project_id != project_id:
+                continue
+            results.append(rec)
+        return sorted(results, key=lambda r: r.updated_at, reverse=True)
+
+    def list_episodic(self, session_id: Optional[str] = None) -> List[MemoryRecord]:
+        """Lists EPISODIC memory records."""
+        now = datetime.now(timezone.utc)
+        results = []
+        for rec in list(self._store.values()):
+            if rec.is_expired(reference_time=now):
+                self._remove_from_store(rec)
+                continue
+            if rec.scope != MemoryScope.EPISODIC:
+                continue
+            if session_id is not None and rec.session_id != session_id:
+                continue
+            results.append(rec)
+        return sorted(results, key=lambda r: r.created_at, reverse=True)
 
     # ------------------------------------------------------------------
     # TTL / Eviction
