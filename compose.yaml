@@ -1,0 +1,37 @@
+# WindAgent V2 local infrastructure.
+#
+# PostgreSQL is the only canonical database.  The host port defaults to
+# 55433 so this cluster coexists with the OLD WindAgent dev database
+# (55432, see ../WindAgent/compose.yaml) and any machine-local PostgreSQL.
+#
+# Usage:
+#   docker compose up -d postgres
+#   $env:WINDAGENT_DATABASE_URL = "postgresql+asyncpg://windagent:windagent@localhost:55433/windagent_v2"
+#   uv run alembic upgrade head
+
+name: windagent-v2-dev
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: windagent-v2-postgres
+    environment:
+      POSTGRES_DB: windagent_v2
+      POSTGRES_USER: windagent
+      POSTGRES_PASSWORD: windagent
+      POSTGRES_INITDB_ARGS: "--data-checksums"
+    ports:
+      - "${WINDAGENT_POSTGRES_PORT:-55433}:5432"
+    volumes:
+      - windagent-v2-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U windagent -d windagent_v2"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+volumes:
+  windagent-v2-postgres-data:
+    name: windagent-v2-postgres-data

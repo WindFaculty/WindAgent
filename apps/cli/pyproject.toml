@@ -1,0 +1,19 @@
+[project]
+name = "windagent-cli"
+version = "0.1.0"
+description = "WindAgent V2 operational CLI (migrations, bootstrap, parity harnesses)"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "windagent",
+]
+
+[project.scripts]
+windagent = "windagent_cli.main:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/windagent_cli"]

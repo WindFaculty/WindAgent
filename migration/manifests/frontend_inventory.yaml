@@ -1,0 +1,256 @@
+schema_version: 1
+kind: frontend_inventory
+source_baseline:
+  repository: ../WindAgent
+  commit: 01695ca48dddb7220efd60c212e52dac1d6a5f2d
+  captured_on: 2026-09-01
+  include_uncommitted_changes: false
+baseline_rules:
+  old_repository_is_read_only: true
+  server_state_uses_tanstack_query: true
+  ui_state_uses_zustand: true
+capabilities:
+  - id: frontend.shell
+    capability: Web application bootstrap, routing, providers, layout, and error boundaries
+    source:
+      - frontend/app/src/app
+      - frontend/app/src/platform
+    target: frontend/app/src/app
+    owner: frontend
+    action: REWRITE
+    dependencies:
+      - foundation.api_bootstrap
+      - frontend.server_state
+      - frontend.realtime
+    test_oracle:
+      - e2e: protected route, error boundary, and application bootstrap scenarios
+    must_preserve:
+      - accessible navigation and route-level error recovery
+    must_remove:
+      - feature routing coupled to transport implementation
+    status: FROZEN
+
+  - id: frontend.ui_assets
+    capability: Design tokens, icons, static assets, and reusable UI components
+    source:
+      - frontend/packages/ui
+      - design-system
+      - frontend/app/src/styles
+    target: frontend/packages/ui
+    owner: frontend
+    action: KEEP_ASSET
+    dependencies: []
+    test_oracle:
+      - visual: token contrast, responsive layout, and component accessibility review
+    must_preserve:
+      - design tokens, icons, fixtures, and static asset fidelity
+    must_remove:
+      - feature-owned duplicate UI primitives
+    status: FROZEN
+
+  - id: frontend.api_sdk
+    capability: Type-safe API transport contracts consumed by the UI
+    source:
+      - frontend/packages/api-client
+      - frontend/app/src/api
+      - frontend/packages/api-contracts
+    target: frontend/packages/api-sdk (generated from V2 OpenAPI; no source copy)
+    owner: frontend
+    action: DELETE
+    dependencies:
+      - foundation.api_bootstrap
+    test_oracle:
+      - contract: generated SDK compiles from the V2 OpenAPI document
+    must_preserve:
+      - stable transport error and cancellation behaviour where clients rely on it
+    must_remove:
+      - handwritten transport contracts duplicated from backend DTOs
+    status: FROZEN
+
+  - id: frontend.server_state
+    capability: Client-side caching, invalidation, mutation, and request lifecycle state
+    source:
+      - frontend/app/src/api
+      - frontend/app/src/query
+      - frontend/packages/api-client/src
+    target: frontend/app/src/app/providers (TanStack Query standard integration)
+    owner: frontend
+    action: DELETE
+    dependencies:
+      - frontend.api_sdk
+    test_oracle:
+      - unit: cache invalidation, mutation rollback, loading, and error states
+    must_preserve:
+      - externally observable loading, error, and refresh behaviour
+    must_remove:
+      - custom QueryClient and duplicated server-state cache layer
+    status: FROZEN
+
+  - id: frontend.realtime
+    capability: WebSocket connection, durable event synchronization, and reconnect state
+    source:
+      - frontend/packages/realtime
+      - frontend/app/src/realtime
+    target: frontend/packages/realtime
+    owner: frontend
+    action: REWRITE
+    dependencies:
+      - api.realtime
+      - events.realtime_delivery
+    test_oracle:
+      - integration: reconnect resumes a cursor and applies no duplicate event
+    must_preserve:
+      - subscription, reconnect, and backpressure UX semantics
+    must_remove:
+      - direct feature-specific websocket implementations
+    status: FROZEN
+
+  - id: frontend.studio
+    capability: Studio projects, episodes, characters, world, story, storyboard, and review UI
+    source:
+      - frontend/app/src/features/projects
+      - frontend/app/src/features/episodes
+      - frontend/app/src/features/characters
+      - frontend/app/src/features/world
+      - frontend/app/src/features/storyboard
+      - frontend/app/src/features/reviews
+    target: frontend/app/src/modules/studio
+    owner: frontend
+    action: REWRITE
+    dependencies:
+      - frontend.shell
+      - frontend.api_sdk
+      - api.studio
+    test_oracle:
+      - e2e: project-to-episode authoring workflow
+    must_preserve:
+      - Studio navigation and user-visible editing workflows
+    must_remove:
+      - one-feature-per-route transport duplication
+    status: FROZEN
+
+  - id: frontend.agent_system
+    capability: Agent, workspace, workflow, task, and memory user interfaces
+    source:
+      - frontend/app/src/features/agents
+      - frontend/app/src/features/agent-workspace
+      - frontend/app/src/features/workflows
+      - frontend/app/src/features/memory
+    target: frontend/app/src/modules/agent-system
+    owner: frontend
+    action: REWRITE
+    dependencies:
+      - frontend.shell
+      - frontend.api_sdk
+      - api.agent_runtime
+      - api.memory_context
+    test_oracle:
+      - e2e: run creation, progress observation, cancellation, and memory inspection
+    must_preserve:
+      - agent run, task, workflow, and memory user workflows
+    must_remove:
+      - custom transport state in feature stores
+    status: FROZEN
+
+  - id: frontend.model_gateway
+    capability: Provider, model, route, quota, and routing configuration UI
+    source:
+      - frontend/app/src/features/providers
+      - frontend/app/src/features/models
+      - frontend/app/src/features/routing
+    target: frontend/app/src/modules/model-gateway
+    owner: frontend
+    action: REWRITE
+    dependencies:
+      - frontend.shell
+      - frontend.api_sdk
+      - api.model_gateway
+    test_oracle:
+      - e2e: manage provider without rendering or retaining a secret value
+    must_preserve:
+      - provider and routing administration workflow
+    must_remove:
+      - API-key handling in browser state
+    status: FROZEN
+
+  - id: frontend.operations
+    capability: Monitoring, logs, settings, permissions, and administrative UI
+    source:
+      - frontend/app/src/features/monitoring
+      - frontend/app/src/features/logs
+      - frontend/app/src/features/settings
+      - frontend/app/src/platform
+    target: frontend/app/src/modules/operations
+    owner: frontend
+    action: REWRITE
+    dependencies:
+      - frontend.shell
+      - frontend.api_sdk
+      - api.operations
+    test_oracle:
+      - e2e: role-gated operations page and audit-aware settings update
+    must_preserve:
+      - operational visibility and authorization UX
+    must_remove:
+      - privileged actions hidden only by client-side routing
+    status: FROZEN
+
+  - id: frontend.production
+    capability: Production workspace, assets, rendering, and postproduction UI
+    source:
+      - frontend/app/src/features/production
+      - frontend/app/src/features/assets
+    target: frontend/app/src/modules/production
+    owner: frontend
+    action: REWRITE
+    dependencies:
+      - frontend.shell
+      - frontend.api_sdk
+      - api.production
+      - frontend.realtime
+    test_oracle:
+      - e2e: submit a production job and observe durable status updates
+    must_preserve:
+      - asset and render user workflow semantics
+    must_remove:
+      - direct engine assumptions in the UI
+    status: FROZEN
+
+  - id: frontend.live_record
+    capability: Recording plan, session, take, cue, and director UI
+    source:
+      - frontend/app/src/features/live-record
+    target: frontend/app/src/modules/live-record
+    owner: frontend
+    action: REWRITE
+    dependencies:
+      - frontend.shell
+      - frontend.api_sdk
+      - api.live_record
+      - apps.desktop_native
+    test_oracle:
+      - e2e: recording lifecycle and explicit native-capability failure state
+    must_preserve:
+      - operator control flow and status visibility
+    must_remove:
+      - browser-only assumptions about native availability
+    status: FROZEN
+
+  - id: frontend.desktop
+    capability: Desktop-specific composition, IPC bridge, and shell integration
+    source:
+      - apps/desktop/src
+    target: apps/desktop/src
+    owner: desktop
+    action: ADAPT
+    dependencies:
+      - frontend.shell
+      - apps.desktop_native
+      - modules.identity
+    test_oracle:
+      - integration: desktop bridge exposes only capability-approved commands
+    must_preserve:
+      - desktop navigation and IPC lifecycle semantics
+    must_remove:
+      - insecure generic IPC surface
+    status: FROZEN

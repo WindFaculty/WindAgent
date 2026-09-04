@@ -1,0 +1,19 @@
+# Default non-secret configuration for WindAgent V2.
+
+[app]
+name = "windagent-v2"
+default_environment = "development"
+
+[database]
+# Only PostgreSQL is canonical. SQLite is never a valid production default.
+dialect = "postgresql+asyncpg"
+port = 55433
+
+[api]
+host = "0.0.0.0"
+port = 8000
+
+[observability]
+log_level = "INFO"
+metrics_enabled = true
+metrics_path = "/metrics"

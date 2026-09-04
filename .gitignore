@@ -1,0 +1,22 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.db
+
+# Node
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Environment and local artifacts
+.env
+artifacts/
+reports/
+.codebase-memory/

@@ -1,0 +1,265 @@
+schema_version: 1
+kind: api_inventory
+source_baseline:
+  repository: ../WindAgent
+  commit: 01695ca48dddb7220efd60c212e52dac1d6a5f2d
+  captured_on: 2026-09-01
+  include_uncommitted_changes: false
+baseline_rules:
+  old_repository_is_read_only: true
+  canonical_v2_api_prefix: /api/v4
+  routers_may_use_only_command_or_query_buses: true
+capabilities:
+  - id: foundation.api_bootstrap
+    capability: FastAPI composition root, module routing, middleware, and error mapping
+    source:
+      - apps/api/windagent_api/main.py
+      - apps/api/windagent_api/bootstrap
+      - apps/api/windagent_api/routers
+    target: apps/api/bootstrap and apps/api/api
+    owner: foundation
+    action: REWRITE
+    dependencies:
+      - foundation.module_runtime
+      - foundation.security
+      - foundation.observability
+    test_oracle:
+      - integration: API discovers module routers without module-specific bootstrap edits
+      - architecture: routers contain no SQLAlchemy, provider calls, or job implementation
+    must_preserve:
+      - startup and shutdown dependency lifecycle
+      - structured error response behaviour
+    must_remove:
+      - dual-mount compatibility composition
+    status: FROZEN
+
+  - id: api.system_health
+    capability: Root, readiness, liveness, and operational health endpoints
+    source:
+      - apps/api/windagent_api/health.py
+      - observability/windagent_observability/health
+    target: apps/api/api/v4/health
+    owner: foundation
+    action: REWRITE
+    dependencies:
+      - foundation.observability
+      - deploy.runtime_configuration
+    test_oracle:
+      - integration: readiness reports PostgreSQL, worker, and outbox dependencies
+    must_preserve:
+      - clear health and readiness failure semantics
+    must_remove:
+      - health checks coupled to legacy registries
+    status: FROZEN
+
+  - id: api.agent_runtime
+    capability: Agent definitions, conversations, runs, tasks, and workflow-control routes
+    source:
+      - apps/api/windagent_api/routers/v3/agent_definitions.py
+      - apps/api/windagent_api/routers/v3/agent_instances.py
+      - apps/api/windagent_api/routers/v2_conversations.py
+      - apps/api/windagent_api/routers/v2_runs.py
+      - apps/api/windagent_api/routers/v2_tasks.py
+    target: backend/src/windagent/modules/agent_runtime/api
+    owner: agent-runtime
+    action: REWRITE
+    dependencies:
+      - foundation.api_bootstrap
+      - modules.agent_runtime
+      - modules.identity
+    test_oracle:
+      - contract: OpenAPI models and command/query response mapping
+      - integration: stop and cancel operations are authorized and durable
+    must_preserve:
+      - agent, conversation, run, task, and cancellation external semantics
+    must_remove:
+      - router-owned business logic
+    status: FROZEN
+
+  - id: api.model_gateway
+    capability: Provider, model, route, and routing-policy management routes
+    source:
+      - apps/api/windagent_api/routers/v2_providers.py
+      - apps/api/windagent_api/routers/v3/models.py
+      - apps/api/windagent_api/routers/v3/routing.py
+    target: backend/src/windagent/modules/model_gateway/api
+    owner: model-gateway
+    action: REWRITE
+    dependencies:
+      - foundation.api_bootstrap
+      - modules.model_gateway
+      - foundation.security
+    test_oracle:
+      - contract: provider credentials are write-only and route decisions expose safe receipts
+    must_preserve:
+      - provider configuration and routing management semantics
+    must_remove:
+      - secrets in GET responses and duplicated routing APIs
+    status: FROZEN
+
+  - id: api.automation
+    capability: Browser, shell, filesystem, MCP, and tool-execution routes
+    source:
+      - apps/api/windagent_api/routers/v2_browser.py
+      - apps/api/windagent_api/routers/v2_tools.py
+      - apps/api/windagent_api/routers/v2_plugins.py
+    target: backend/src/windagent/modules/automation/api
+    owner: automation
+    action: REWRITE
+    dependencies:
+      - foundation.api_bootstrap
+      - modules.automation
+      - foundation.security
+    test_oracle:
+      - integration: side-effecting request is denied or waits for approval before execution
+    must_preserve:
+      - normalized execution receipt and operator feedback
+    must_remove:
+      - HTTP paths that execute tools before policy evaluation
+    status: FROZEN
+
+  - id: api.memory_context
+    capability: Memory retrieval, writes, context inspection, and policy routes
+    source:
+      - apps/api/windagent_api/routers/v2_memory.py
+      - apps/api/windagent_api/routers/v3/memory.py
+    target: backend/src/windagent/modules/memory/api
+    owner: memory
+    action: REWRITE
+    dependencies:
+      - foundation.api_bootstrap
+      - modules.memory_context
+      - modules.identity
+    test_oracle:
+      - contract: memory records and context previews use distinct schemas
+    must_preserve:
+      - access control and write-policy semantics
+    must_remove:
+      - API model ambiguity between memory and context
+    status: FROZEN
+
+  - id: api.studio
+    capability: Studio project, story, episode, character, world, and storyboard routes
+    source:
+      - apps/api/windagent_api/routers/v3/studio
+      - apps/api/windagent_api/routers/v3/router.py
+    target: backend/src/windagent/modules/studio/api
+    owner: studio
+    action: REWRITE
+    dependencies:
+      - foundation.api_bootstrap
+      - modules.studio
+      - modules.workspace
+    test_oracle:
+      - contract: Studio OpenAPI schema is generated from V2 Pydantic models
+      - integration: project boundaries apply to every resource route
+    must_preserve:
+      - Studio resource lifecycle semantics
+    must_remove:
+      - v3 router aggregation as a permanent API versioning strategy
+    status: FROZEN
+
+  - id: api.production
+    capability: Production workspace, assets, candidates, screenplay, promotion, and rendering routes
+    source:
+      - apps/api/windagent_api/routers/v2_production_workspace.py
+      - apps/api/windagent_api/routers/v2_assets.py
+      - apps/api/windagent_api/routers/v2_candidates.py
+      - apps/api/windagent_api/routers/v2_screenplay_workspace.py
+      - apps/api/windagent_api/routers/v2_promotions.py
+    target: backend/src/windagent/modules/production/api
+    owner: production
+    action: REWRITE
+    dependencies:
+      - foundation.api_bootstrap
+      - modules.production
+      - modules.workspace
+    test_oracle:
+      - integration: production mutations submit jobs and return durable operation receipts
+    must_preserve:
+      - production workspace and asset lifecycle semantics
+    must_remove:
+      - direct storage or engine calls from routers
+    status: FROZEN
+
+  - id: api.live_record
+    capability: Live-record sessions, plans, takes, cues, and director routes
+    source:
+      - apps/api/windagent_api/routers/v3/live_record
+      - apps/api/windagent_api/services/live_record_application_service.py
+    target: backend/src/windagent/modules/live_record/api
+    owner: live-record
+    action: REWRITE
+    dependencies:
+      - foundation.api_bootstrap
+      - modules.live_record
+      - modules.identity
+    test_oracle:
+      - contract: recording state and error responses remain explicit and versioned
+    must_preserve:
+      - session, take, and cue lifecycle semantics
+    must_remove:
+      - legacy and V2 routes mounted simultaneously
+    status: FROZEN
+
+  - id: api.quality
+    capability: Evaluation, verification, experimentation, and report routes
+    source:
+      - apps/api/windagent_api/routers/v2_evals.py
+      - apps/api/windagent_api/routers/v2_experiments.py
+      - apps/api/windagent_api/routers/v2_harness.py
+    target: backend/src/windagent/modules/quality/api
+    owner: quality
+    action: REWRITE
+    dependencies:
+      - foundation.api_bootstrap
+      - modules.quality
+    test_oracle:
+      - contract: run reports expose reproducible inputs and evaluation version
+    must_preserve:
+      - evaluation job submission and report semantics
+    must_remove:
+      - scattered experiment and verification route ownership
+    status: FROZEN
+
+  - id: api.operations
+    capability: Permissions, observability, organization learning, and administration routes
+    source:
+      - apps/api/windagent_api/routers/v2_permissions.py
+      - apps/api/windagent_api/routers/v2_observability.py
+      - apps/api/windagent_api/routers/v2_organizational_learning.py
+      - apps/api/windagent_api/routers/v2_collaboration.py
+    target: apps/api/api/v4/operations
+    owner: foundation
+    action: REWRITE
+    dependencies:
+      - foundation.api_bootstrap
+      - foundation.security
+      - foundation.observability
+    test_oracle:
+      - security: administrative routes require policy-approved principal scopes
+      - contract: operations endpoints disclose no secret data
+    must_preserve:
+      - audit and operational reporting semantics
+    must_remove:
+      - broad unaudited administrative endpoints
+    status: FROZEN
+
+  - id: api.realtime
+    capability: Event websocket and conversation streaming HTTP boundary
+    source:
+      - apps/api/windagent_api/routers/v2_events.py
+      - apps/api/windagent_api/routers/conversation_streams.py
+    target: apps/api/api/v4/realtime
+    owner: foundation
+    action: REWRITE
+    dependencies:
+      - foundation.api_bootstrap
+      - events.realtime_delivery
+    test_oracle:
+      - integration: authenticated reconnect obtains exactly-once client application semantics
+    must_preserve:
+      - stream cursor and backpressure behaviour
+    must_remove:
+      - parallel legacy websocket mount paths
+    status: FROZEN

@@ -1,0 +1,114 @@
+schema_version: 1
+kind: event_inventory
+source_baseline:
+  repository: ../WindAgent
+  commit: 01695ca48dddb7220efd60c212e52dac1d6a5f2d
+  captured_on: 2026-09-01
+  include_uncommitted_changes: false
+baseline_rules:
+  old_repository_is_read_only: true
+  delivery_requires_durable_outbox: true
+capabilities:
+  - id: foundation.events
+    capability: Domain event contract, envelope, registry, dispatch, and subscriptions
+    source:
+      - core/windagent_core/events
+      - core/windagent_core/contracts/repositories
+      - observability/windagent_observability/events
+    target: backend/src/windagent/platform/events
+    owner: foundation
+    action: REWRITE
+    dependencies:
+      - foundation.kernel
+      - foundation.platform_contracts
+    test_oracle:
+      - unit: envelope contains event, aggregate, actor, correlation, causation, sequence, and occurrence fields
+      - contract: versioned payloads are registered and deserialize deterministically
+    must_preserve:
+      - event identity, ordering, correlation, causation, and version semantics
+    must_remove:
+      - feature-specific event envelope types
+    status: FROZEN
+
+  - id: events.outbox_delivery
+    capability: Transactional outbox persistence, claiming, publishing, deduplication, and replay
+    source:
+      - storage/windagent_storage/outbox
+      - observability/windagent_observability/events/publisher.py
+      - apps/worker/windagent_worker/composition/outbox.py
+    target: backend/src/windagent/platform/events/outbox.py
+    owner: foundation
+    action: REWRITE
+    dependencies:
+      - foundation.events
+      - foundation.persistence
+    test_oracle:
+      - integration: domain mutation and outbox record commit together
+      - parity: claim token, aggregate ordering, deduplication, retry, and replay scenarios
+    must_preserve:
+      - atomic write with domain changes
+      - deduplication key and claim-token protection
+      - aggregate sequence ordering
+    must_remove:
+      - in-process-only publication as a durable delivery guarantee
+    status: FROZEN
+
+  - id: events.realtime_delivery
+    capability: WebSocket and stream delivery of durable events to clients
+    source:
+      - apps/api/windagent_api/routers/v2_events.py
+      - apps/api/windagent_api/routers/conversation_streams.py
+      - observability/windagent_observability/events
+    target: backend/src/windagent/platform/realtime
+    owner: foundation
+    action: REWRITE
+    dependencies:
+      - events.outbox_delivery
+      - foundation.security
+    test_oracle:
+      - integration: reconnect replays durable events from a cursor without duplicate application
+      - security: stream subscriptions honor authorization scope
+    must_preserve:
+      - durable replay and event-envelope compatibility semantics
+    must_remove:
+      - duplicate V2 and legacy event route mounts
+    status: FROZEN
+
+  - id: events.production_event_journal
+    capability: Production run event journal and state reconstruction
+    source:
+      - orchestration/windagent_orchestration/production/outbox.py
+      - storage/windagent_storage/video_production/publisher.py
+    target: backend/src/windagent/modules/production/infrastructure/events
+    owner: production
+    action: EXTRACT_LOGIC
+    dependencies:
+      - foundation.events
+      - events.outbox_delivery
+      - modules.production
+    test_oracle:
+      - parity: production run serializes, reloads, and replays the same journal state
+    must_preserve:
+      - event sequence and pending-publication semantics
+    must_remove:
+      - production-specific outbox implementation outside platform delivery
+    status: FROZEN
+
+  - id: events.dead_letter_replay
+    capability: Failed-event observation, dead lettering, and operator replay
+    source:
+      - observability/windagent_observability/events/dead_letter.py
+      - storage/windagent_storage/outbox/sql_repository.py
+    target: backend/src/windagent/platform/events/dead_letters.py
+    owner: foundation
+    action: EXTRACT_LOGIC
+    dependencies:
+      - events.outbox_delivery
+      - foundation.observability
+    test_oracle:
+      - integration: failed delivery records attempts and replay retains event identity
+    must_preserve:
+      - original event identity, attempt history, and operator audit trail
+    must_remove:
+      - silent event loss after retry exhaustion
+    status: FROZEN

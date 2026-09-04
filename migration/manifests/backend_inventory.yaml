@@ -1,0 +1,436 @@
+schema_version: 1
+kind: backend_inventory
+source_baseline:
+  repository: ../WindAgent
+  commit: 01695ca48dddb7220efd60c212e52dac1d6a5f2d
+  captured_on: 2026-09-01
+  include_uncommitted_changes: false
+baseline_rules:
+  old_repository_is_read_only: true
+  v2_must_not_import_legacy_packages: true
+capabilities:
+  - id: foundation.kernel
+    capability: Domain-neutral IDs, errors, result, time, event, and value primitives
+    source:
+      - core/windagent_core
+    target: backend/src/windagent/kernel
+    owner: foundation
+    action: REWRITE
+    dependencies: []
+    test_oracle:
+      - unit: identity, result, error, clock, and event-envelope invariants
+      - architecture: kernel imports no FastAPI, SQLAlchemy, httpx, apps, modules, or providers
+    must_preserve:
+      - typed identifiers and correlation semantics
+      - explicit domain-error and result semantics
+    must_remove:
+      - domain-specific concepts in kernel
+      - infrastructure imports
+    status: FROZEN
+
+  - id: foundation.platform_contracts
+    capability: Command, query, persistence, artifact, security, and telemetry contracts
+    source:
+      - core/windagent_core/contracts
+      - core/windagent_core/adapters
+    target: backend/src/windagent/platform
+    owner: foundation
+    action: REWRITE
+    dependencies:
+      - foundation.kernel
+    test_oracle:
+      - unit: contracts accept fake implementations without infrastructure
+      - architecture: platform remains domain agnostic
+    must_preserve:
+      - explicit ports for UoW, artifact storage, events, jobs, and policies
+    must_remove:
+      - legacy aggregate-specific ports from shared contracts
+    status: FROZEN
+
+  - id: foundation.module_runtime
+    capability: Module discovery, manifests, registration, and capability boundaries
+    source:
+      - plugins
+      - skills/windagent_skills
+      - workflows/windagent_workflows/registry.py
+    target: backend/src/windagent/platform/modules
+    owner: foundation
+    action: REWRITE
+    dependencies:
+      - foundation.platform_contracts
+    test_oracle:
+      - unit: valid and invalid module manifests
+      - integration: module registration does not require editing API or worker bootstrap
+    must_preserve:
+      - manifest validation
+      - explicit capability registration
+    must_remove:
+      - global mutable registries
+    status: FROZEN
+
+  - id: foundation.jobs_worker
+    capability: Durable job runtime, worker lifecycle, leases, retries, and cancellation
+    source:
+      - apps/worker/windagent_worker
+      - orchestration/windagent_orchestration/scheduler
+      - orchestration/windagent_orchestration/workflow_engine
+      - storage/windagent_storage/queue
+      - storage/windagent_storage/repositories
+    target: apps/worker and backend/src/windagent/platform/jobs
+    owner: foundation
+    action: REWRITE
+    dependencies:
+      - foundation.platform_contracts
+      - foundation.persistence
+      - foundation.events
+    test_oracle:
+      - parity: two workers cannot claim the same job
+      - parity: stale or expired lease cannot finalize a job
+      - parity: priority, retry, timeout, cancellation, and restart recovery
+    must_preserve:
+      - atomic claim
+      - priority order
+      - lease heartbeat
+      - fencing token validation
+      - idempotent finalize and cancellation
+    must_remove:
+      - duplicated dispatcher authority
+    status: FROZEN
+
+  - id: foundation.security
+    capability: Authentication, authorization, secrets, audit, and tool policy decisions
+    source:
+      - core/windagent_core/security
+      - tools/windagent_tools/security
+      - apps/api/windagent_api/dependencies.py
+    target: backend/src/windagent/platform/security
+    owner: foundation
+    action: REWRITE
+    dependencies:
+      - foundation.kernel
+      - foundation.platform_contracts
+    test_oracle:
+      - integration: deny and approval-required policies block side-effecting tools
+      - security: secrets are redacted from logs and API responses
+    must_preserve:
+      - allow, deny, and require-approval decisions
+      - auditable principal and actor context
+    must_remove:
+      - direct tool bypass around policy evaluation
+    status: FROZEN
+
+  - id: foundation.observability
+    capability: Causal context, structured logs, metrics, tracing, audit, and probes
+    source:
+      - observability/windagent_observability
+      - apps/api/windagent_api/middleware
+      - apps/worker/windagent_worker
+    target: backend/src/windagent/platform/observability
+    owner: foundation
+    action: REWRITE
+    dependencies:
+      - foundation.kernel
+      - foundation.platform_contracts
+      - foundation.events
+      - foundation.jobs_worker
+      - foundation.security
+    test_oracle:
+      - contract: W3C trace and causal IDs propagate from HTTP into durable jobs
+      - unit: structured logs redact secrets and metrics bound cardinality
+      - integration: worker spans retain job, run, task, actor, and correlation IDs
+    must_preserve:
+      - causal identity across request, job, audit, and worker boundaries
+      - health and readiness visibility
+    must_remove:
+      - unstructured secret-bearing logs
+      - vendor SDK types from platform contracts
+    status: FROZEN
+
+  - id: modules.identity
+    capability: User, session, organization, and access identity domain
+    source:
+      - core/windagent_core/security
+      - apps/api/windagent_api/dependencies.py
+      - storage/windagent_storage/security
+    target: backend/src/windagent/modules/identity
+    owner: identity
+    action: REWRITE
+    dependencies:
+      - foundation.security
+      - foundation.persistence
+    test_oracle:
+      - contract: authenticated principal and authorization scopes
+      - integration: session lifecycle and audit trail
+    must_preserve:
+      - identity-to-actor mapping
+      - authorization boundary semantics
+    must_remove:
+      - feature-specific identity copies
+    status: FROZEN
+
+  - id: modules.model_gateway
+    capability: Provider registry, model selection, routing, fallback, and usage receipts
+    source:
+      - providers/windagent_providers
+      - intelligence/windagent_intelligence/model_router
+    target: backend/src/windagent/modules/model_gateway
+    owner: model-gateway
+    action: REWRITE
+    dependencies:
+      - foundation.platform_contracts
+      - foundation.security
+      - foundation.observability
+    test_oracle:
+      - parity: provider normalization and route scoring fixtures
+      - integration: retry, fallback, quota, and circuit-breaker behaviour
+    must_preserve:
+      - provider protocol normalization
+      - route lock, fallback, retry, quota, health, and receipt semantics
+    must_remove:
+      - more than one routing authority
+    status: FROZEN
+
+  - id: modules.automation
+    capability: Tool definitions, execution runtimes, filesystem, browser, shell, and MCP adapters
+    source:
+      - tools/windagent_tools
+      - execution/windagent_execution
+    target: backend/src/windagent/modules/automation
+    owner: automation
+    action: REWRITE
+    dependencies:
+      - foundation.platform_contracts
+      - foundation.security
+      - foundation.events
+    test_oracle:
+      - integration: policy is evaluated before shell, browser, and filesystem side effects
+      - contract: runtime adapters return normalized execution receipts
+    must_preserve:
+      - sandbox and canonical-path protections
+      - execution receipt and permission semantics
+    must_remove:
+      - side-effecting paths that bypass PolicyEngine
+    status: FROZEN
+
+  - id: modules.agent_runtime
+    capability: Agent sessions, planning, tasks, workflows, checkpoints, and recovery
+    source:
+      - orchestration/windagent_orchestration
+      - workflows/windagent_workflows
+      - orchestration/windagent_orchestration/agent_loop
+    target: backend/src/windagent/modules/agent_runtime
+    owner: agent-runtime
+    action: REWRITE
+    dependencies:
+      - foundation.jobs_worker
+      - foundation.events
+      - modules.model_gateway
+      - modules.automation
+    test_oracle:
+      - parity: task lifecycle, workflow DAG, retry, checkpoint, and cancellation fixtures
+      - integration: runtime submits jobs without owning worker execution
+    must_preserve:
+      - task lifecycle
+      - workflow state transitions
+      - recovery and budget semantics
+    must_remove:
+      - worker execution code from the agent module
+    status: FROZEN
+
+  - id: modules.memory_context
+    capability: Durable memory, retrieval, write policy, and model-call context assembly
+    source:
+      - memory/windagent_memory
+      - context/windagent_context
+      - core/windagent_core/contracts/repositories
+    target: backend/src/windagent/modules/memory and backend/src/windagent/modules/agent_runtime/context
+    owner: memory
+    action: REWRITE
+    dependencies:
+      - foundation.persistence
+      - foundation.security
+      - modules.agent_runtime
+    test_oracle:
+      - parity: memory selection and token-budget fixtures
+      - unit: context, durable memory, and execution state remain distinct types
+    must_preserve:
+      - retrieval, write-policy, and budget semantics
+    must_remove:
+      - conflation of context, memory, and runtime state
+    status: FROZEN
+
+  - id: modules.workspace
+    capability: Workspace resources, collaboration, artifacts, and user project boundaries
+    source:
+      - core/windagent_core/domain/studio
+      - apps/api/windagent_api/routers/v2_collaboration.py
+      - apps/api/windagent_api/services
+    target: backend/src/windagent/modules/workspace
+    owner: workspace
+    action: REWRITE
+    dependencies:
+      - modules.identity
+      - foundation.persistence
+      - foundation.security
+    test_oracle:
+      - integration: collaborator access is constrained by workspace boundary
+      - contract: artifact ownership and resource permissions
+    must_preserve:
+      - workspace ownership and collaboration controls
+    must_remove:
+      - cross-module resource service dependencies
+    status: FROZEN
+
+  - id: modules.studio
+    capability: Story, project, series, episode, character, world, and storyboard domain
+    source:
+      - core/windagent_core/domain/story
+      - intelligence/windagent_intelligence/story
+      - storage/windagent_storage/studio
+      - apps/api/windagent_api/routers/v3/studio
+    target: backend/src/windagent/modules/studio
+    owner: studio
+    action: REWRITE
+    dependencies:
+      - foundation.persistence
+      - foundation.events
+      - modules.workspace
+      - modules.agent_runtime
+    test_oracle:
+      - parity: story transformations and project lifecycle fixtures
+      - integration: project mutations publish durable events
+    must_preserve:
+      - project, episode, story, and storyboard business transitions
+    must_remove:
+      - split domain ownership across core, intelligence, storage, and API services
+    status: FROZEN
+
+  - id: modules.production
+    capability: Video, asset, audio, rendering, code-video, and postproduction workflows
+    source:
+      - core/windagent_core/domain/video_production
+      - intelligence/windagent_intelligence/video
+      - tools/windagent_tools/production_engines
+      - tools/windagent_tools/media
+      - tools/windagent_tools/code_video
+      - workflows/windagent_workflows/video_production
+      - workflows/windagent_workflows/code_video
+    target: backend/src/windagent/modules/production
+    owner: production
+    action: REWRITE
+    dependencies:
+      - foundation.jobs_worker
+      - foundation.events
+      - modules.automation
+      - modules.model_gateway
+    test_oracle:
+      - parity: production IR, retry classification, and FFmpeg command fixtures
+      - integration: deterministic render receipt and artifact publication
+    must_preserve:
+      - production state transitions
+      - deterministic command construction
+      - idempotent rendering semantics
+    must_remove:
+      - technical-layer fragmentation of one production bounded context
+    status: FROZEN
+
+  - id: modules.live_record
+    capability: Recording plans, sessions, takes, cues, director, and native recording integration
+    source:
+      - core/windagent_core/domain/live_record
+      - apps/api/windagent_api/routers/v3/live_record
+      - apps/desktop/src-tauri/src
+    target: backend/src/windagent/modules/live_record and apps/desktop/native/recording
+    owner: live-record
+    action: ADAPT
+    dependencies:
+      - foundation.jobs_worker
+      - foundation.events
+      - modules.identity
+    test_oracle:
+      - contract: recording lifecycle and IPC error model
+      - integration: native capability detection and cancellation
+    must_preserve:
+      - verified native capture, encoder, and lifecycle behaviour
+    must_remove:
+      - legacy API dual-mount and ambiguous ownership boundaries
+    status: FROZEN
+
+  - id: modules.quality
+    capability: Evaluations, verification, regression, and quality gates
+    source:
+      - evals/windagent_evals
+      - verification/windagent_verification
+    target: backend/src/windagent/modules/quality
+    owner: quality
+    action: REWRITE
+    dependencies:
+      - foundation.events
+      - foundation.observability
+    test_oracle:
+      - parity: evaluation scoring and verification fixtures
+      - integration: quality reports are traceable to the evaluated run
+    must_preserve:
+      - deterministic evaluation and verification semantics
+    must_remove:
+      - separate evaluation and verification strategies
+    status: FROZEN
+
+  - id: apps.cli
+    capability: Command-line entry point and operator workflows
+    source:
+      - apps/cli/windagent_cli
+    target: apps/cli
+    owner: foundation
+    action: REWRITE
+    dependencies:
+      - foundation.module_runtime
+      - foundation.security
+    test_oracle:
+      - integration: CLI bootstraps the same module registry as API and worker
+    must_preserve:
+      - explicit operator commands and exit-code semantics
+    must_remove:
+      - direct calls into legacy composition roots
+    status: FROZEN
+
+  - id: apps.desktop_native
+    capability: Tauri desktop shell and native OS capabilities outside recording
+    source:
+      - apps/desktop/src
+      - apps/desktop/src-tauri
+    target: apps/desktop
+    owner: desktop
+    action: ADAPT
+    dependencies:
+      - modules.identity
+      - modules.live_record
+      - frontend.desktop
+    test_oracle:
+      - integration: desktop IPC contracts and capability checks
+    must_preserve:
+      - verified native OS integrations
+    must_remove:
+      - frontend API contracts handwritten in the desktop shell
+    status: FROZEN
+
+  - id: deploy.runtime_configuration
+    capability: Runtime configuration, compose topology, and deployment defaults
+    source:
+      - configs
+      - compose.yaml
+      - .env.example
+    target: deploy and configs
+    owner: foundation
+    action: REWRITE
+    dependencies:
+      - foundation.persistence
+      - foundation.observability
+      - foundation.security
+    test_oracle:
+      - integration: production profile rejects SQLite and reports readiness dependencies
+    must_preserve:
+      - explicit configuration and health dependency behaviour
+    must_remove:
+      - production defaulting to SQLite
+    status: FROZEN

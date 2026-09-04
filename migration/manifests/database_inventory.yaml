@@ -1,0 +1,189 @@
+schema_version: 1
+kind: database_inventory
+source_baseline:
+  repository: ../WindAgent
+  commit: 01695ca48dddb7220efd60c212e52dac1d6a5f2d
+  captured_on: 2026-09-01
+  include_uncommitted_changes: false
+baseline_rules:
+  old_repository_is_read_only: true
+  copy_legacy_alembic_history: false
+capabilities:
+  - id: foundation.persistence
+    capability: Async SQL transaction boundary, unit of work, repositories, and health checks
+    source:
+      - storage/windagent_storage/unit_of_work
+      - storage/windagent_storage/database
+      - storage/windagent_storage/repositories
+    target: backend/src/windagent/platform/persistence
+    owner: foundation
+    action: REWRITE
+    dependencies:
+      - foundation.platform_contracts
+      - foundation.kernel
+    test_oracle:
+      - integration: PostgreSQL transaction commits domain data and outbox atomically
+      - architecture: domain code has no SQLAlchemy imports
+    must_preserve:
+      - transaction boundaries
+      - compare-and-swap and repository consistency semantics
+    must_remove:
+      - infrastructure leaking into domain modules
+    status: FROZEN
+
+  - id: migration.schema_history
+    capability: Database schema evolution and baseline migration policy
+    source:
+      - storage/windagent_storage/migrations
+    target: backend/src/windagent/platform/persistence/postgres/alembic/versions/0001_v2_foundation.py
+    owner: foundation
+    action: REWRITE
+    dependencies:
+      - foundation.persistence
+    test_oracle:
+      - integration: blank PostgreSQL database upgrades to one V2 foundation head
+    must_preserve:
+      - reproducible upgrade and downgrade discipline
+    must_remove:
+      - copied legacy revision chain
+    status: FROZEN
+
+  - id: migration.data_importers
+    capability: Explicit transfer of validated legacy data into V2 aggregates
+    source:
+      - storage/windagent_storage/migrations
+      - storage/windagent_storage/orm
+    target: migration/importers
+    owner: foundation
+    action: REWRITE
+    dependencies:
+      - migration.schema_history
+      - modules.identity
+      - modules.workspace
+    test_oracle:
+      - integration: importer is idempotent, validates counts, and emits a reconciliation report
+    must_preserve:
+      - source-to-target provenance
+      - resumable and auditable import semantics
+    must_remove:
+      - using the legacy schema as V2 runtime schema
+    status: FROZEN
+
+  - id: persistence.job_runtime_data
+    capability: Job envelopes, priorities, leases, checkpoints, cancellations, and runtime executions
+    source:
+      - storage/windagent_storage/queue
+      - storage/windagent_storage/repositories
+      - storage/windagent_storage/orm
+    target: backend/src/windagent/platform/jobs/postgres
+    owner: foundation
+    action: REWRITE
+    dependencies:
+      - foundation.persistence
+      - foundation.jobs_worker
+    test_oracle:
+      - integration: atomic claim, fencing, retry, and restart recovery against PostgreSQL
+    must_preserve:
+      - durable lease and fencing-token state
+      - cancellation and checkpoint durability
+    must_remove:
+      - SQLite production code paths
+    status: FROZEN
+
+  - id: persistence.studio_data
+    capability: Studio project, story, episode, character, world, and storyboard persistence
+    source:
+      - storage/windagent_storage/studio
+      - storage/windagent_storage/orm
+    target: backend/src/windagent/modules/studio/infrastructure
+    owner: studio
+    action: REWRITE
+    dependencies:
+      - foundation.persistence
+      - modules.studio
+    test_oracle:
+      - integration: aggregate persistence and optimistic-concurrency scenarios
+    must_preserve:
+      - project and episode data integrity
+    must_remove:
+      - generic repository exposure to API routers
+    status: FROZEN
+
+  - id: persistence.production_data
+    capability: Production workspace, assets, renders, receipts, and event journal persistence
+    source:
+      - storage/windagent_storage/video_production
+      - storage/windagent_storage/orm
+    target: backend/src/windagent/modules/production/infrastructure
+    owner: production
+    action: REWRITE
+    dependencies:
+      - foundation.persistence
+      - modules.production
+    test_oracle:
+      - integration: render finalization is transactional and idempotent
+    must_preserve:
+      - asset provenance, receipts, and production journal semantics
+    must_remove:
+      - production data ownership scattered across generic storage packages
+    status: FROZEN
+
+  - id: persistence.memory_data
+    capability: Durable memory records, retrieval metadata, and write-policy state
+    source:
+      - storage/windagent_storage/repositories
+      - memory/windagent_memory
+    target: backend/src/windagent/modules/memory/infrastructure
+    owner: memory
+    action: REWRITE
+    dependencies:
+      - foundation.persistence
+      - modules.memory_context
+    test_oracle:
+      - integration: retrieval filters, writes, and retention policy round trip
+    must_preserve:
+      - memory provenance and write-policy semantics
+    must_remove:
+      - transient context represented as durable memory
+    status: FROZEN
+
+  - id: persistence.artifacts
+    capability: Artifact metadata, storage paths, references, and retention
+    source:
+      - storage/windagent_storage/repositories
+      - artifacts
+    target: backend/src/windagent/platform/artifacts
+    owner: foundation
+    action: REWRITE
+    dependencies:
+      - foundation.persistence
+      - foundation.security
+    test_oracle:
+      - integration: artifact ownership, checksum, retention, and authorization checks
+    must_preserve:
+      - metadata-to-blob consistency and provenance
+    must_remove:
+      - unrestricted local filesystem assumptions
+    status: FROZEN
+
+  - id: persistence.identity_security
+    capability: Identity, credential, policy, audit, and provider-secret persistence
+    source:
+      - storage/windagent_storage/security
+      - storage/windagent_storage/repositories
+      - storage/windagent_storage/orm
+    target: backend/src/windagent/modules/identity/infrastructure and backend/src/windagent/platform/security
+    owner: identity
+    action: REWRITE
+    dependencies:
+      - foundation.persistence
+      - foundation.security
+      - modules.identity
+    test_oracle:
+      - security: credentials are encrypted or externalized and never returned by repositories
+      - integration: authorization and audit records survive a transaction boundary
+    must_preserve:
+      - auditability and secret isolation
+    must_remove:
+      - plaintext or feature-local secret stores
+    status: FROZEN

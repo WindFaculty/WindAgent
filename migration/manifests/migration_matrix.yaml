@@ -1,0 +1,529 @@
+schema_version: 1
+kind: migration_matrix
+source_baseline:
+  repository: ../WindAgent
+  commit: 01695ca48dddb7220efd60c212e52dac1d6a5f2d
+  captured_on: 2026-09-01
+  include_uncommitted_changes: false
+matrix_rules:
+  each_id_has_exactly_one_specialist_inventory: true
+  legacy_imports_are_forbidden: true
+  migration_begins_only_after_foundation_gate: true
+capabilities:
+  - id: foundation.kernel
+    capability: Domain-neutral kernel primitives
+    source: core/windagent_core
+    target: backend/src/windagent/kernel
+    owner: foundation
+    action: REWRITE
+    dependencies: []
+    test_oracle: kernel unit and architecture gates
+    status: FROZEN
+  - id: foundation.platform_contracts
+    capability: Domain-agnostic platform contracts
+    source: core/windagent_core/contracts
+    target: backend/src/windagent/platform
+    owner: foundation
+    action: REWRITE
+    dependencies: [foundation.kernel]
+    test_oracle: fake-adapter contract and architecture gates
+    status: FROZEN
+  - id: foundation.module_runtime
+    capability: Module manifests and registration
+    source: plugins, skills, workflows registry
+    target: backend/src/windagent/platform/modules
+    owner: foundation
+    action: REWRITE
+    dependencies: [foundation.platform_contracts]
+    test_oracle: manifest validation and bootstrap integration
+    status: FROZEN
+  - id: foundation.jobs_worker
+    capability: Durable jobs and worker runtime
+    source: apps/worker, orchestration scheduler, storage queues and leases
+    target: apps/worker and backend/src/windagent/platform/jobs
+    owner: foundation
+    action: REWRITE
+    dependencies: [foundation.persistence, foundation.events]
+    test_oracle: claim, lease, fencing, retry, timeout, cancellation, restart parity
+    status: FROZEN
+  - id: foundation.security
+    capability: Policy, secret, authorization, and audit foundation
+    source: core security, tools security, API auth
+    target: backend/src/windagent/platform/security
+    owner: foundation
+    action: REWRITE
+    dependencies: [foundation.kernel, foundation.platform_contracts]
+    test_oracle: policy decision and secret-redaction integration tests
+    status: FROZEN
+  - id: foundation.observability
+    capability: Causal context, structured logs, metrics, tracing, audit, and probes
+    source: observability, API middleware, and worker instrumentation
+    target: backend/src/windagent/platform/observability
+    owner: foundation
+    action: REWRITE
+    dependencies: [foundation.kernel, foundation.platform_contracts, foundation.events, foundation.jobs_worker, foundation.security]
+    test_oracle: W3C propagation, log redaction, bounded metrics, and worker trace integration
+    status: FROZEN
+  - id: modules.identity
+    capability: Identity domain
+    source: core identity, API auth, storage auth
+    target: backend/src/windagent/modules/identity
+    owner: identity
+    action: REWRITE
+    dependencies: [foundation.security, foundation.persistence]
+    test_oracle: authenticated-principal contract and session integration
+    status: FROZEN
+  - id: modules.model_gateway
+    capability: Model provider gateway
+    source: providers and intelligence model router
+    target: backend/src/windagent/modules/model_gateway
+    owner: model-gateway
+    action: REWRITE
+    dependencies: [foundation.platform_contracts, foundation.security, foundation.observability]
+    test_oracle: route scoring and provider-normalization parity
+    status: CUT_OVER
+  - id: modules.automation
+    capability: Tool and execution runtime
+    source: tools and execution
+    target: backend/src/windagent/modules/automation
+    owner: automation
+    action: REWRITE
+    dependencies: [foundation.platform_contracts, foundation.security, foundation.events]
+    test_oracle: policy-before-side-effect integration test
+    status: FROZEN
+  - id: modules.agent_runtime
+    capability: Agents, tasks, workflows, checkpoints, and recovery
+    source: orchestration, workflows, core agent domain
+    target: backend/src/windagent/modules/agent_runtime
+    owner: agent-runtime
+    action: REWRITE
+    dependencies: [foundation.jobs_worker, foundation.events, modules.model_gateway, modules.automation]
+    test_oracle: workflow, retry, checkpoint, and cancellation parity
+    status: FROZEN
+  - id: modules.memory_context
+    capability: Memory and context assembly
+    source: memory, context, core memory contracts
+    target: backend/src/windagent/modules/memory and modules/agent_runtime/context
+    owner: memory
+    action: REWRITE
+    dependencies: [foundation.persistence, foundation.security, modules.agent_runtime]
+    test_oracle: memory-selection and token-budget parity
+    status: FROZEN
+  - id: modules.workspace
+    capability: Workspace resources and collaboration
+    source: core workspace, collaboration router, API services
+    target: backend/src/windagent/modules/workspace
+    owner: workspace
+    action: REWRITE
+    dependencies: [modules.identity, foundation.persistence, foundation.security]
+    test_oracle: workspace authorization integration
+    status: FROZEN
+  - id: modules.studio
+    capability: Studio domain
+    source: core story, intelligence story, studio storage and API
+    target: backend/src/windagent/modules/studio
+    owner: studio
+    action: REWRITE
+    dependencies: [foundation.persistence, foundation.events, modules.workspace, modules.agent_runtime]
+    test_oracle: story transformation and project lifecycle parity
+    status: FROZEN
+  - id: modules.production
+    capability: Production domain
+    source: video domain, intelligence video, production tools and workflows
+    target: backend/src/windagent/modules/production
+    owner: production
+    action: REWRITE
+    dependencies: [foundation.jobs_worker, foundation.events, modules.automation, modules.model_gateway]
+    test_oracle: production IR and FFmpeg command parity
+    status: FROZEN
+  - id: modules.live_record
+    capability: Live-record domain and native integration
+    source: live record domain, API, desktop native code
+    target: backend/src/windagent/modules/live_record and apps/desktop/native/recording
+    owner: live-record
+    action: ADAPT
+    dependencies: [foundation.jobs_worker, foundation.events, modules.identity]
+    test_oracle: recording lifecycle and IPC contracts
+    status: FROZEN
+  - id: modules.quality
+    capability: Evaluation and verification domain
+    source: evals and verification
+    target: backend/src/windagent/modules/quality
+    owner: quality
+    action: REWRITE
+    dependencies: [foundation.events, foundation.observability]
+    test_oracle: evaluation scoring and verification parity
+    status: FROZEN
+  - id: apps.cli
+    capability: Command-line operator experience
+    source: apps/cli
+    target: apps/cli
+    owner: foundation
+    action: REWRITE
+    dependencies: [foundation.module_runtime, foundation.security]
+    test_oracle: shared composition-root integration
+    status: FROZEN
+  - id: apps.desktop_native
+    capability: Desktop shell and native OS integration
+    source: apps/desktop
+    target: apps/desktop
+    owner: desktop
+    action: ADAPT
+    dependencies: [modules.identity, modules.live_record, frontend.desktop]
+    test_oracle: capability-scoped IPC integration
+    status: FROZEN
+  - id: deploy.runtime_configuration
+    capability: Configuration and deployment topology
+    source: configs, compose.yaml, .env.example
+    target: deploy and configs
+    owner: foundation
+    action: REWRITE
+    dependencies: [foundation.persistence, foundation.observability, foundation.security]
+    test_oracle: production startup and readiness checks
+    status: FROZEN
+
+  - id: foundation.persistence
+    capability: SQL transaction, UoW, repository, and health foundation
+    source: storage unit_of_work, database, and repositories
+    target: backend/src/windagent/platform/persistence
+    owner: foundation
+    action: REWRITE
+    dependencies: [foundation.platform_contracts, foundation.kernel]
+    test_oracle: atomic PostgreSQL transaction integration
+    status: FROZEN
+  - id: migration.schema_history
+    capability: V2 database schema history
+    source: legacy Alembic migrations
+    target: platform/persistence/postgres/alembic/versions/0001_v2_foundation.py
+    owner: foundation
+    action: REWRITE
+    dependencies: [foundation.persistence]
+    test_oracle: blank database upgrade integration
+    status: FROZEN
+  - id: migration.data_importers
+    capability: Validated legacy-to-V2 data import
+    source: legacy ORM and migrations
+    target: migration/importers
+    owner: foundation
+    action: REWRITE
+    dependencies: [migration.schema_history, modules.identity, modules.workspace]
+    test_oracle: idempotent import reconciliation test
+    status: FROZEN
+  - id: persistence.job_runtime_data
+    capability: Durable job, lease, checkpoint, and cancellation records
+    source: storage queue, leases, checkpoints, cancellations
+    target: backend/src/windagent/platform/jobs/postgres
+    owner: foundation
+    action: REWRITE
+    dependencies: [foundation.persistence, foundation.jobs_worker]
+    test_oracle: atomic claim and fencing PostgreSQL integration
+    status: FROZEN
+  - id: persistence.studio_data
+    capability: Studio aggregate persistence
+    source: studio storage and ORM
+    target: backend/src/windagent/modules/studio/infrastructure
+    owner: studio
+    action: REWRITE
+    dependencies: [foundation.persistence, modules.studio]
+    test_oracle: optimistic-concurrency integration
+    status: FROZEN
+  - id: persistence.production_data
+    capability: Production, asset, render, and receipt persistence
+    source: video production storage and ORM
+    target: backend/src/windagent/modules/production/infrastructure
+    owner: production
+    action: REWRITE
+    dependencies: [foundation.persistence, modules.production]
+    test_oracle: transactional idempotent render finalization
+    status: FROZEN
+  - id: persistence.memory_data
+    capability: Durable memory persistence
+    source: storage memory and memory module
+    target: backend/src/windagent/modules/memory/infrastructure
+    owner: memory
+    action: REWRITE
+    dependencies: [foundation.persistence, modules.memory_context]
+    test_oracle: retrieval and retention integration
+    status: FROZEN
+  - id: persistence.artifacts
+    capability: Artifact metadata and blob references
+    source: storage artifacts and artifact files
+    target: backend/src/windagent/platform/artifacts
+    owner: foundation
+    action: REWRITE
+    dependencies: [foundation.persistence, foundation.security]
+    test_oracle: ownership, checksum, and retention integration
+    status: FROZEN
+  - id: persistence.identity_security
+    capability: Identity, credential, policy, and audit records
+    source: storage auth, providers, and audit
+    target: modules/identity/infrastructure and platform/security
+    owner: identity
+    action: REWRITE
+    dependencies: [foundation.persistence, foundation.security, modules.identity]
+    test_oracle: secret isolation and audit transaction integration
+    status: FROZEN
+
+  - id: foundation.events
+    capability: Versioned domain-event foundation
+    source: core events, contracts events, observability events
+    target: backend/src/windagent/platform/events
+    owner: foundation
+    action: REWRITE
+    dependencies: [foundation.kernel, foundation.platform_contracts]
+    test_oracle: envelope invariant and version registration tests
+    status: FROZEN
+  - id: events.outbox_delivery
+    capability: Transactional outbox delivery
+    source: storage outbox, event publisher, worker outbox composition
+    target: backend/src/windagent/platform/events/outbox.py
+    owner: foundation
+    action: REWRITE
+    dependencies: [foundation.events, foundation.persistence]
+    test_oracle: atomic write, deduplication, claim, retry, and replay parity
+    status: FROZEN
+  - id: events.realtime_delivery
+    capability: Durable event streams and WebSockets
+    source: v2 events, conversation streams, observability events
+    target: backend/src/windagent/platform/realtime
+    owner: foundation
+    action: REWRITE
+    dependencies: [events.outbox_delivery, foundation.security]
+    test_oracle: authenticated reconnect replay integration
+    status: FROZEN
+  - id: events.production_event_journal
+    capability: Production journal state reconstruction
+    source: production outbox and publisher
+    target: backend/src/windagent/modules/production/infrastructure/events
+    owner: production
+    action: EXTRACT_LOGIC
+    dependencies: [foundation.events, events.outbox_delivery, modules.production]
+    test_oracle: production journal replay parity
+    status: FROZEN
+  - id: events.dead_letter_replay
+    capability: Dead-letter observation and replay
+    source: observability dead-letter and SQL outbox repository
+    target: backend/src/windagent/platform/events/dead_letters.py
+    owner: foundation
+    action: EXTRACT_LOGIC
+    dependencies: [events.outbox_delivery, foundation.observability]
+    test_oracle: replay retains event identity and attempt history
+    status: FROZEN
+
+  - id: foundation.api_bootstrap
+    capability: API composition and middleware
+    source: API main, bootstrap, and routers
+    target: apps/api/bootstrap and apps/api/api
+    owner: foundation
+    action: REWRITE
+    dependencies: [foundation.module_runtime, foundation.security, foundation.observability]
+    test_oracle: module-router discovery and router architecture gate
+    status: FROZEN
+  - id: api.system_health
+    capability: Health and readiness API
+    source: health router and observability health
+    target: apps/api/api/v4/health
+    owner: foundation
+    action: REWRITE
+    dependencies: [foundation.observability, deploy.runtime_configuration]
+    test_oracle: readiness dependency integration
+    status: FROZEN
+  - id: api.agent_runtime
+    capability: Agent, conversation, run, and task API
+    source: v2 agent, conversation, run, and task routers
+    target: modules/agent_runtime/api
+    owner: agent-runtime
+    action: REWRITE
+    dependencies: [foundation.api_bootstrap, modules.agent_runtime, modules.identity]
+    test_oracle: OpenAPI contract and cancellation integration
+    status: FROZEN
+  - id: api.model_gateway
+    capability: Provider and routing management API
+    source: v2 provider, model, and routing routers
+    target: modules/model_gateway/api
+    owner: model-gateway
+    action: REWRITE
+    dependencies: [foundation.api_bootstrap, modules.model_gateway, foundation.security]
+    test_oracle: write-only credential contract
+    status: CUT_OVER
+  - id: api.automation
+    capability: Tool execution API
+    source: v2 browser, tools, and plugins routers
+    target: modules/automation/api
+    owner: automation
+    action: REWRITE
+    dependencies: [foundation.api_bootstrap, modules.automation, foundation.security]
+    test_oracle: policy-before-execution integration
+    status: FROZEN
+  - id: api.memory_context
+    capability: Memory and context API
+    source: v2 memory and context routers
+    target: modules/memory/api
+    owner: memory
+    action: REWRITE
+    dependencies: [foundation.api_bootstrap, modules.memory_context, modules.identity]
+    test_oracle: distinct memory and context schema contract
+    status: FROZEN
+  - id: api.studio
+    capability: Studio resource API
+    source: v3 Studio routers
+    target: modules/studio/api
+    owner: studio
+    action: REWRITE
+    dependencies: [foundation.api_bootstrap, modules.studio, modules.workspace]
+    test_oracle: generated OpenAPI and project-boundary integration
+    status: FROZEN
+  - id: api.production
+    capability: Production workspace and rendering API
+    source: production, asset, candidate, screenplay, promotion routers
+    target: modules/production/api
+    owner: production
+    action: REWRITE
+    dependencies: [foundation.api_bootstrap, modules.production, modules.workspace]
+    test_oracle: durable operation receipt integration
+    status: FROZEN
+  - id: api.live_record
+    capability: Live-record API
+    source: v3 and v2 live-record routers
+    target: modules/live_record/api
+    owner: live-record
+    action: REWRITE
+    dependencies: [foundation.api_bootstrap, modules.live_record, modules.identity]
+    test_oracle: recording state and error schema contract
+    status: FROZEN
+  - id: api.quality
+    capability: Evaluation and verification API
+    source: v2 evals, experiments, and harness routers
+    target: modules/quality/api
+    owner: quality
+    action: REWRITE
+    dependencies: [foundation.api_bootstrap, modules.quality]
+    test_oracle: reproducible evaluation report contract
+    status: FROZEN
+  - id: api.operations
+    capability: Operational administration API
+    source: permissions, observability, learning, collaboration routers
+    target: apps/api/api/v4/operations
+    owner: foundation
+    action: REWRITE
+    dependencies: [foundation.api_bootstrap, foundation.security, foundation.observability]
+    test_oracle: role-gated and secret-safe contract
+    status: FROZEN
+  - id: api.realtime
+    capability: Realtime API boundary
+    source: v2 events and conversation streams routers
+    target: apps/api/api/v4/realtime
+    owner: foundation
+    action: REWRITE
+    dependencies: [foundation.api_bootstrap, events.realtime_delivery]
+    test_oracle: authenticated reconnect integration
+    status: FROZEN
+
+  - id: frontend.shell
+    capability: Frontend bootstrap, route shell, and providers
+    source: frontend app and route source
+    target: frontend/app/src/app
+    owner: frontend
+    action: REWRITE
+    dependencies: [foundation.api_bootstrap, frontend.server_state, frontend.realtime]
+    test_oracle: protected-route and error-boundary e2e
+    status: FROZEN
+  - id: frontend.ui_assets
+    capability: UI tokens, icons, assets, and primitives
+    source: frontend UI package, design-system, UI components
+    target: frontend/packages/ui
+    owner: frontend
+    action: KEEP_ASSET
+    dependencies: []
+    test_oracle: visual and accessibility review
+    status: FROZEN
+  - id: frontend.api_sdk
+    capability: Generated type-safe frontend SDK
+    source: handwritten API client and contracts
+    target: frontend/packages/api-sdk generated from OpenAPI
+    owner: frontend
+    action: DELETE
+    dependencies: [foundation.api_bootstrap]
+    test_oracle: generated SDK compile contract
+    status: FROZEN
+  - id: frontend.server_state
+    capability: Server-state cache and mutation lifecycle
+    source: custom frontend API and query code
+    target: standard TanStack Query provider integration
+    owner: frontend
+    action: DELETE
+    dependencies: [frontend.api_sdk]
+    test_oracle: cache invalidation and mutation rollback unit tests
+    status: FROZEN
+  - id: frontend.realtime
+    capability: Frontend realtime synchronization
+    source: realtime package and app realtime source
+    target: frontend/packages/realtime
+    owner: frontend
+    action: REWRITE
+    dependencies: [api.realtime, events.realtime_delivery]
+    test_oracle: reconnect and duplicate-application integration
+    status: FROZEN
+  - id: frontend.studio
+    capability: Studio UI module
+    source: projects, episodes, characters, world, storyboard, review features
+    target: frontend/app/src/modules/studio
+    owner: frontend
+    action: REWRITE
+    dependencies: [frontend.shell, frontend.api_sdk, api.studio]
+    test_oracle: project-to-episode e2e
+    status: FROZEN
+  - id: frontend.agent_system
+    capability: Agent system UI module
+    source: agent, workspace, workflow, and memory features
+    target: frontend/app/src/modules/agent-system
+    owner: frontend
+    action: REWRITE
+    dependencies: [frontend.shell, frontend.api_sdk, api.agent_runtime, api.memory_context]
+    test_oracle: run, progress, cancellation, and memory e2e
+    status: FROZEN
+  - id: frontend.model_gateway
+    capability: Model gateway UI module
+    source: provider, model, and routing features
+    target: frontend/app/src/modules/model-gateway
+    owner: frontend
+    action: REWRITE
+    dependencies: [frontend.shell, frontend.api_sdk, api.model_gateway]
+    test_oracle: secret-safe provider-management e2e
+    status: FROZEN
+  - id: frontend.operations
+    capability: Operations UI module
+    source: monitoring, logs, settings, and permissions features
+    target: frontend/app/src/modules/operations
+    owner: frontend
+    action: REWRITE
+    dependencies: [frontend.shell, frontend.api_sdk, api.operations]
+    test_oracle: role-gated operations e2e
+    status: FROZEN
+  - id: frontend.production
+    capability: Production UI module
+    source: production and video-production features
+    target: frontend/app/src/modules/production
+    owner: frontend
+    action: REWRITE
+    dependencies: [frontend.shell, frontend.api_sdk, api.production, frontend.realtime]
+    test_oracle: submit-job and status-update e2e
+    status: FROZEN
+  - id: frontend.live_record
+    capability: Live-record UI module
+    source: live-record feature
+    target: frontend/app/src/modules/live-record
+    owner: frontend
+    action: REWRITE
+    dependencies: [frontend.shell, frontend.api_sdk, api.live_record, apps.desktop_native]
+    test_oracle: recording lifecycle and capability failure e2e
+    status: FROZEN
+  - id: frontend.desktop
+    capability: Desktop UI bridge
+    source: desktop React application
+    target: apps/desktop/src
+    owner: desktop
+    action: ADAPT
+    dependencies: [frontend.shell, apps.desktop_native, modules.identity]
+    test_oracle: capability-scoped desktop IPC integration
+    status: FROZEN

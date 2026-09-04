@@ -1,0 +1,160 @@
+"""Durable tables for the Agent Runtime bounded context (Phase 13)."""
+
+from __future__ import annotations
+
+from sqlalchemy import Column, DateTime, Float, Index, Integer, String, Table, Text
+
+from windagent.platform.persistence.metadata import metadata
+
+sessions_table = Table(
+    "agent_sessions",
+    metadata,
+    Column("session_id", String(36), primary_key=True),
+    Column("actor_id", String(100), nullable=False, default="system"),
+    Column("title", String(300), nullable=False, default="Untitled session"),
+    Column("state", String(32), nullable=False, default="IDLE"),
+    Column("budget_limits_json", Text, nullable=False, default="{}"),
+    Column("budget_usage_json", Text, nullable=False, default="{}"),
+    Column("created_at", DateTime(timezone=True), nullable=True),
+    Column("updated_at", DateTime(timezone=True), nullable=True),
+    Column("optimistic_version", Integer, nullable=False, default=0),
+    Column("metadata_json", Text, nullable=False, default="{}"),
+    Index("ix_agent_sessions_actor_id", "actor_id"),
+)
+
+runs_table = Table(
+    "agent_runs",
+    metadata,
+    Column("run_id", String(36), primary_key=True),
+    Column("session_id", String(36), nullable=False),
+    Column("parent_run_id", String(36), nullable=True),
+    Column("state", String(32), nullable=False, default="CREATED"),
+    Column("budget_scope", String(32), nullable=False, default="conversation"),
+    Column("budget_limits_json", Text, nullable=False, default="{}"),
+    Column("budget_usage_json", Text, nullable=False, default="{}"),
+    Column("exhaustion_reason", Text, nullable=True),
+    Column("attempt", Integer, nullable=False, default=1),
+    Column("max_attempts", Integer, nullable=False, default=3),
+    Column("timeout_seconds", Float, nullable=True),
+    Column("created_at", DateTime(timezone=True), nullable=True),
+    Column("updated_at", DateTime(timezone=True), nullable=True),
+    Column("completed_at", DateTime(timezone=True), nullable=True),
+    Column("optimistic_version", Integer, nullable=False, default=0),
+    Column("metadata_json", Text, nullable=False, default="{}"),
+    Index("ix_agent_runs_session_id", "session_id"),
+    Index("ix_agent_runs_parent_run_id", "parent_run_id"),
+)
+
+tasks_table = Table(
+    "agent_tasks",
+    metadata,
+    Column("task_id", String(36), primary_key=True),
+    Column("session_id", String(36), nullable=False),
+    Column("run_id", String(36), nullable=True),
+    Column("workflow_id", String(36), nullable=True),
+    Column("title", String(400), nullable=False),
+    Column("description", Text, nullable=False, default=""),
+    Column("state", String(32), nullable=False, default="RECEIVED"),
+    Column("priority", Integer, nullable=False, default=0),
+    Column("attempt", Integer, nullable=False, default=1),
+    Column("max_attempts", Integer, nullable=False, default=3),
+    Column("timeout_seconds", Float, nullable=True),
+    Column("input_payload_json", Text, nullable=False, default="{}"),
+    Column("output_payload_json", Text, nullable=True),
+    Column("error", Text, nullable=True),
+    Column("awaiting_approval_id", String(36), nullable=True),
+    Column("checkpoint_id", String(36), nullable=True),
+    Column("created_at", DateTime(timezone=True), nullable=True),
+    Column("updated_at", DateTime(timezone=True), nullable=True),
+    Column("completed_at", DateTime(timezone=True), nullable=True),
+    Column("optimistic_version", Integer, nullable=False, default=0),
+    Column("metadata_json", Text, nullable=False, default="{}"),
+    Index("ix_agent_tasks_session_id", "session_id"),
+    Index("ix_agent_tasks_run_id", "run_id"),
+    Index("ix_agent_tasks_workflow_id", "workflow_id"),
+)
+
+workflows_table = Table(
+    "agent_workflows",
+    metadata,
+    Column("workflow_id", String(36), primary_key=True),
+    Column("session_id", String(36), nullable=False),
+    Column("name", String(300), nullable=False),
+    Column("version", Integer, nullable=False, default=1),
+    Column("state", String(32), nullable=False, default="DRAFT"),
+    Column("nodes_json", Text, nullable=False, default="{}"),
+    Column("edges_json", Text, nullable=False, default="[]"),
+    Column("created_at", DateTime(timezone=True), nullable=True),
+    Column("updated_at", DateTime(timezone=True), nullable=True),
+    Column("optimistic_version", Integer, nullable=False, default=0),
+    Column("metadata_json", Text, nullable=False, default="{}"),
+    Index("ix_agent_workflows_session_id", "session_id"),
+)
+
+steps_table = Table(
+    "agent_workflow_steps",
+    metadata,
+    Column("step_id", String(36), primary_key=True),
+    Column("workflow_id", String(36), nullable=False),
+    Column("run_id", String(36), nullable=True),
+    Column("task_id", String(36), nullable=True),
+    Column("node_id", String(100), nullable=False),
+    Column("state", String(32), nullable=False, default="BLOCKED"),
+    Column("attempt", Integer, nullable=False, default=1),
+    Column("max_attempts", Integer, nullable=False, default=3),
+    Column("priority", Integer, nullable=False, default=0),
+    Column("result_json", Text, nullable=True),
+    Column("error", Text, nullable=True),
+    Column("created_at", DateTime(timezone=True), nullable=True),
+    Column("updated_at", DateTime(timezone=True), nullable=True),
+    Column("optimistic_version", Integer, nullable=False, default=0),
+    Index("ix_agent_steps_workflow_id", "workflow_id"),
+    Index("ix_agent_steps_run_id", "run_id"),
+)
+
+checkpoints_table = Table(
+    "agent_checkpoints",
+    metadata,
+    Column("checkpoint_id", String(36), primary_key=True),
+    Column("run_id", String(36), nullable=False),
+    Column("task_id", String(36), nullable=True),
+    Column("workflow_id", String(36), nullable=True),
+    Column("step_id", String(36), nullable=True),
+    Column("seq", Integer, nullable=False, default=0),
+    Column("state_snapshot_json", Text, nullable=False, default="{}"),
+    Column("snapshot_hash", String(64), nullable=False, default=""),
+    Column("created_at", DateTime(timezone=True), nullable=True),
+    Index("ix_agent_checkpoints_run_id", "run_id"),
+    Index("ix_agent_checkpoints_task_id", "task_id"),
+)
+
+approvals_table = Table(
+    "agent_approvals",
+    metadata,
+    Column("approval_id", String(36), primary_key=True),
+    Column("task_id", String(36), nullable=False),
+    Column("run_id", String(36), nullable=True),
+    Column("requested_by", String(100), nullable=False, default="system"),
+    Column("state", String(32), nullable=False, default="PENDING"),
+    Column("payload_json", Text, nullable=False, default="{}"),
+    Column("resolution_json", Text, nullable=True),
+    Column("created_at", DateTime(timezone=True), nullable=True),
+    Column("resolved_at", DateTime(timezone=True), nullable=True),
+    Column("expires_at", DateTime(timezone=True), nullable=True),
+    Index("ix_agent_approvals_task_id", "task_id"),
+    Index("ix_agent_approvals_run_id", "run_id"),
+)
+
+delegations_table = Table(
+    "agent_delegations",
+    metadata,
+    Column("delegation_id", String(36), primary_key=True),
+    Column("parent_run_id", String(36), nullable=False),
+    Column("child_run_id", String(36), nullable=False),
+    Column("status", String(32), nullable=False, default="PENDING"),
+    Column("created_at", DateTime(timezone=True), nullable=True),
+    Column("completed_at", DateTime(timezone=True), nullable=True),
+    Column("metadata_json", Text, nullable=False, default="{}"),
+    Index("ix_agent_delegations_parent", "parent_run_id"),
+    Index("ix_agent_delegations_child", "child_run_id"),
+)

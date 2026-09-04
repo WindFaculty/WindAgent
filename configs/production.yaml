@@ -1,0 +1,37 @@
+# Production Configuration Profile for WindAgent V2
+
+environment: production
+debug: false
+
+database:
+  pool_size: 20
+  max_overflow: 10
+  pool_timeout_seconds: 30
+  pool_recycle_seconds: 1800
+  echo: false
+
+server:
+  host: "0.0.0.0"
+  port: 8000
+  cors_allowed_origins:
+    - "http://localhost"
+    - "http://localhost:80"
+    - "https://app.windagent.ai"
+
+worker:
+  concurrency: 8
+  job_lease_seconds: 60
+  heartbeat_interval_seconds: 10
+  fencing_grace_period_seconds: 5
+
+model_gateway:
+  default_timeout_seconds: 120
+  max_retries: 3
+  circuit_breaker:
+    failure_threshold: 5
+    recovery_time_seconds: 30
+
+telemetry:
+  enabled: true
+  export_interval_seconds: 15
+  log_level: "INFO"

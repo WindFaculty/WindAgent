@@ -1,0 +1,83 @@
+[project]
+name = "windagent-v2-workspace"
+version = "0.1.0"
+description = "WindAgent V2 — clean-room reimplementation foundation (Phase 1 repository base)"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "windagent",
+    "windagent-api",
+    "windagent-worker",
+    "windagent-scheduler",
+    "windagent-cli",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "httpx>=0.27.0",
+    "ruff>=0.8.0",
+    "mypy>=1.13.0",
+    "aiosqlite>=0.20.0",
+]
+
+[tool.uv.workspace]
+members = [
+    "backend",
+    "apps/api",
+    "apps/worker",
+    "apps/scheduler",
+    "apps/cli",
+]
+
+[tool.uv.sources]
+windagent = { workspace = true }
+windagent-api = { workspace = true }
+windagent-worker = { workspace = true }
+windagent-scheduler = { workspace = true }
+windagent-cli = { workspace = true }
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+pythonpath = [".", "scripts"]
+markers = [
+    "architecture: dependency and import boundary rules (must pass without any service)",
+    "postgres: requires real PostgreSQL semantics (row locking, CAS, fencing, isolation)",
+    "slow: intentionally expensive (multiprocess, long-running, large fixture)",
+    "regression: fixed production defect (keep bug ID in test name)",
+    "multiprocess: starts OS processes (uvicorn, worker, subprocess)",
+    "network: controlled network boundary (httpx.MockTransport or loopback only)",
+    "reliability: lease, fencing, retry, cancellation, timeout, and restart recovery",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::UserWarning",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+exclude = [".venv", "__pycache__", "node_modules", "frontend", ".codebase-memory"]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "UP"]
+
+[tool.ruff.lint.per-file-ignores]
+# Barrel re-exports are intentional once contracts stabilize in later phases.
+"**/__init__.py" = ["F401"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unreachable = true
+files = ["backend/src", "apps", "tests", "scripts"]
+mypy_path = "backend/src, apps/api/src, apps/worker/src, apps/scheduler/src, apps/cli/src, apps/desktop/src"
+exclude = ["migrations", "node_modules", "\\.venv"]
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+disallow_untyped_calls = false

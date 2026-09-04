@@ -1,0 +1,72 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: windagent-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-windagent}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-windagent_secret_pass}
+      POSTGRES_DB: ${POSTGRES_DB:-windagent_v2}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-windagent} -d ${POSTGRES_DB:-windagent_v2}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: deploy/docker/Dockerfile.api
+    container_name: windagent-api
+    restart: unless-stopped
+    environment:
+      ENVIRONMENT: production
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-windagent}:${POSTGRES_PASSWORD:-windagent_secret_pass}@postgres:5432/${POSTGRES_DB:-windagent_v2}
+      PORT: 8000
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - app_storage:/app/storage
+      - app_recordings:/app/recordings
+    ports:
+      - "8000:8000"
+
+  worker:
+    build:
+      context: .
+      dockerfile: deploy/docker/Dockerfile.worker
+    container_name: windagent-worker
+    restart: unless-stopped
+    environment:
+      ENVIRONMENT: production
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-windagent}:${POSTGRES_PASSWORD:-windagent_secret_pass}@postgres:5432/${POSTGRES_DB:-windagent_v2}
+      WORKER_CONCURRENCY: 8
+    depends_on:
+      postgres:
+        condition: service_healthy
+      api:
+        condition: service_started
+    volumes:
+      - app_storage:/app/storage
+      - app_recordings:/app/recordings
+
+  frontend:
+    build:
+      context: .
+      dockerfile: deploy/docker/Dockerfile.frontend
+    container_name: windagent-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:
+  app_storage:
+  app_recordings:

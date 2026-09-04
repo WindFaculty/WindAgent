@@ -1,0 +1,19 @@
+{
+  "name": "@windagent/frontend-root",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "app"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=@windagent/app",
+    "typecheck": "npm run typecheck --workspaces",
+    "test": "npm run test --workspaces --if-present",
+    "build": "npm run build --workspaces --if-present"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}

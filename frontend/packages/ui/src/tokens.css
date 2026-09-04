@@ -1,0 +1,104 @@
+:root {
+  /* Surface & Base Palette */
+  --windagent-color-bg: #090c10;
+  --windagent-color-bg-subtle: #0d1117;
+  --windagent-color-surface: #161b22;
+  --windagent-color-surface-hover: #1f242c;
+  --windagent-color-surface-active: #282e38;
+  --windagent-color-glass: rgba(22, 27, 34, 0.75);
+  --windagent-color-glass-border: rgba(255, 255, 255, 0.08);
+
+  /* Borders & Dividers */
+  --windagent-border-subtle: rgba(255, 255, 255, 0.06);
+  --windagent-border-default: rgba(255, 255, 255, 0.12);
+  --windagent-border-strong: rgba(255, 255, 255, 0.2);
+
+  /* Typography & Text */
+  --windagent-color-text: #f0f6fc;
+  --windagent-color-text-secondary: #c9d1d9;
+  --windagent-color-text-muted: #8b949e;
+  --windagent-color-text-dim: #484f58;
+
+  /* Accent & Gradients */
+  --windagent-color-accent: #58a6ff;
+  --windagent-color-accent-hover: #79b8ff;
+  --windagent-color-accent-subtle: rgba(88, 166, 255, 0.15);
+  --windagent-color-brand-gradient: linear-gradient(135deg, #7928ca 0%, #ff0080 100%);
+  --windagent-color-cyan-gradient: linear-gradient(135deg, #0070f3 0%, #00dfd8 100%);
+  --windagent-color-emerald-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+
+  /* Semantic Status Colors */
+  --windagent-color-success: #3fb950;
+  --windagent-color-success-bg: rgba(63, 185, 80, 0.12);
+  --windagent-color-warning: #d29922;
+  --windagent-color-warning-bg: rgba(210, 153, 34, 0.12);
+  --windagent-color-danger: #f85149;
+  --windagent-color-danger-bg: rgba(248, 81, 73, 0.12);
+  --windagent-color-info: #58a6ff;
+  --windagent-color-info-bg: rgba(88, 166, 255, 0.12);
+
+  /* Typography Fonts */
+  --windagent-font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+  --windagent-font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+  /* Border Radii */
+  --windagent-radius-sm: 4px;
+  --windagent-radius-md: 8px;
+  --windagent-radius-lg: 12px;
+  --windagent-radius-xl: 16px;
+  --windagent-radius-full: 9999px;
+
+  /* Spacing */
+  --windagent-space-1: 4px;
+  --windagent-space-2: 8px;
+  --windagent-space-3: 12px;
+  --windagent-space-4: 16px;
+  --windagent-space-5: 20px;
+  --windagent-space-6: 24px;
+  --windagent-space-8: 32px;
+  --windagent-space-10: 40px;
+
+  /* Shadows & Elevation */
+  --windagent-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.24);
+  --windagent-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.35);
+  --windagent-shadow-lg: 0 12px 24px -4px rgba(0, 0, 0, 0.5);
+  --windagent-shadow-glow: 0 0 20px rgba(88, 166, 255, 0.25);
+
+  /* Transitions */
+  --windagent-transition-fast: 120ms cubic-bezier(0.4, 0, 0.2, 1);
+  --windagent-transition-normal: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--windagent-color-bg);
+  color: var(--windagent-color-text);
+  font-family: var(--windagent-font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--windagent-color-bg-subtle);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--windagent-color-surface-hover);
+  border-radius: var(--windagent-radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--windagent-color-text-dim);
+}
